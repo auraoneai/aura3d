@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "0813c47521221f471ed473723962653b43d567dbd9475f0e79ab4cf7c9d87c4f",
+  "sourceSha256": "c6b868cefac394dd744e8179f6784afc0190d71c3e8f195f97c573249f6ed71b",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",
@@ -25,7 +25,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 2.5
+        "intensity": 3.3
       },
       {
         "type": "directional",
@@ -68,8 +68,15 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "showcaseStadiumSeats",
-        "triangles": 0,
+        "assetKey": "ballpark_fanA",
+        "triangles": 625,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ballpark_fanB",
+        "triangles": 555,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
@@ -223,13 +230,6 @@
       },
       {
         "assetKey": "diamondCanyonArch",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "diamondRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -477,11 +477,7 @@
         "practical": false
       },
       {
-        "node": "ondeck-l",
-        "practical": false
-      },
-      {
-        "node": "ondeck-r",
+        "node": "ondeck-mats",
         "practical": false
       },
       {
@@ -497,7 +493,7 @@
         "practical": false
       },
       {
-        "node": "stand-fan-heads",
+        "node": "stand-fans-b",
         "practical": false
       },
       {
@@ -796,10 +792,17 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "showcaseStadiumSeats",
-        "maxTriangles": 8000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
+        "assetKey": "ballpark_fanA",
+        "maxTriangles": 1000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "ballpark_fanB",
+        "maxTriangles": 1000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
       },
       {
         "role": "set-dressing",

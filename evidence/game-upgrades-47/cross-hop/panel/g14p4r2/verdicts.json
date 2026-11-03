@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 1,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat lighting and no shadow under the frog. Coins show as thin edge-on slivers and one appears to float over the grass. Traffic is very crowded and repetitive (cloned trucks and trains). There are large empty grass bands in the middle ground.",
+     "Overcrowded traffic: trucks and locomotives overlap and clip into each other in the far lanes, which reads as a cluttered pile-up. Flat, even lighting and the player has no visible shadow. The frog's sideways pose and face read well.",
+     "Edge-on coins look like floating sticks; large flat empty grass band in mid-frame; locomotives sit tightly behind trucks; flat lighting with no visible player shadow"
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Traffic is extremely dense and cluttered, with many overlapping clones. The sun glow is slightly hazy. The buildings are still plain untextured blocks. Otherwise lighting is good, the frog casts a soft shadow, and depth reads well.",
+     "Very dense traffic that fills the mid-ground, and the trucks partly hide the trams behind them. The sun bloom is a little hazy. On the plus side, the frog casts a grounding shadow and has a readable face, and the coin pickup is clear.",
+     "Very dense, cluttered traffic in which far lanes overlap and are hard to read; trucks and trams crowd each other in places; the bottom grass band is a bit plain"
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The warm sky haze is slightly washed out near the horizon. The frog is seen from behind. The distant row of identical trucks is repetitive. Otherwise the sunset mood is warm, the platforms and frog have shadows, and the coin reads well.",
+     "Orange haze in the upper sky slightly washes out the horizon, and the frog is seen from behind. Still, the warm sunset mood, the frog's grounding shadow and the bevelled platforms give it the most atmosphere.",
+     "Warm sky haze slightly softens the horizon; player seen from behind; mid-ground is somewhat empty; distant vehicles small"
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The pastel palette is still somewhat low in contrast. Rail lanes form busy black-and-lilac grids. Thin white barrier posts float and clutter the scene. The far lanes are hazy. Otherwise the frog shadow, platform bevels and coin read better.",
+     "Pastel ground is somewhat pale and low in contrast, and a few signal poles look sparse and slightly odd. The frog is readable and has a shadow, and the composition is clean.",
+     "Pastel palette is somewhat washed and low contrast; the purple-striped track lanes are busy and noisy; player seen from three-quarter rear; distant vehicles small"
+    ]
+   }
+  ]
+ }
+]

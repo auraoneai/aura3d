@@ -113,6 +113,17 @@ const PALETTE = {
   rock: lin("#9a9684")
 };
 
+/** Product of the painted blob shadows over (x, z): 1 in the open, lower inside a tree's or building's blob. */
+export function blobOcclusion(blobs: readonly ShadowBlob[], x: number, z: number): number {
+  let occ = 1;
+  for (const b of blobs) {
+    const dx = (x - b.x) / b.rx, dz = (z - b.z) / b.rz;
+    const d2 = dx * dx + dz * dz;
+    if (d2 < 1) occ *= 1 - b.strength * (1 - d2) * (1 - d2 * 0.4);
+  }
+  return occ;
+}
+
 export function buildTerrain(step = 0.8, blobs: readonly ShadowBlob[] = []): TerrainMesh {
   const x0 = -96, x1 = 98, z0 = -52, z1 = 60;
   const nx = Math.round((x1 - x0) / step) + 1;
@@ -150,12 +161,7 @@ export function buildTerrain(step = 0.8, blobs: readonly ShadowBlob[] = []): Ter
       c = mix(c, PALETTE.sand, beach * (x > 12 ? 0.35 : 0.9));
       c = mix(c, PALETTE.wet, wet * 0.8);
       // painted blob shadows cast by trees and buildings (sun is behind the camera, to the left)
-      let occ = 1;
-      for (const b of blobs) {
-        const dx = (x - b.x) / b.rx, dz = (z - b.z) / b.rz;
-        const d2 = dx * dx + dz * dz;
-        if (d2 < 1) occ *= 1 - b.strength * (1 - d2) * (1 - d2 * 0.4);
-      }
+      const occ = blobOcclusion(blobs, x, z);
       tint[k] = c[0]! * occ; tint[k + 1] = c[1]! * occ; tint[k + 2] = c[2]! * (occ * 0.5 + 0.5 * Math.sqrt(occ));
     }
   }

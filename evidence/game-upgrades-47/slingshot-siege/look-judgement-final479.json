@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/slingshot-siege/f48/slingshot-siege/frames/f48-slingshot-siege-1/slingshot-siege--default--settle-60s.jpg",
+      "sha256": "1caddc36881a25e9aa2aa015952f86b77718c757bc47fe23722174056b706d4c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/slingshot-siege/f48/slingshot-siege/frames/f48-slingshot-siege-1/slingshot-siege--ch0--settle-60s.jpg",
+      "sha256": "834b198561f43714d3f0ca082f143b4c9a11efbc5addbebeb5f033250478297b"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/slingshot-siege/f48/slingshot-siege/frames/f48-slingshot-siege-1/slingshot-siege--ch1--settle-60s.jpg",
+      "sha256": "4f0398921e28c5ce231316c276769c98424a8d07e9a3d36999a7842fb595d6ca"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/slingshot-siege/f48/slingshot-siege/frames/f48-slingshot-siege-2/slingshot-siege--ch2--settle-60s.jpg",
+      "sha256": "73501d6de367a2f4659683857b983c1f79d41a731e9c03a6a605f072aa17e2ce"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 3.5,
+    "environment_world": 5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 3
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single directional key light lights the scene. The large green ground plane reads as flat and evenly lit, with no gradation or bounce color. The green tone and brightness shift between frames 1-2 and frames 3-4 without any visible motivation."
+    },
+    {
+      "category": "shadows",
+      "seen": "The cone trees, green stakes, barrel and crates cast soft, correctly oriented shadows. Contact shadowing is weak under the arch and windmill bases. The crater dips rely on shading gradients rather than occlusion."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The light-blue water is an opaque flat color with no sky or object reflection. No surface shows specular or environment response, including the stone tiles and the ice block in frame 4."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is one round island diorama with a hard brown cut edge. A uniform gray gradient sky has no clouds. A few distant islands sit on the horizon. The ground is a flat green disc scattered with identical cones and stakes."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is only faint horizon haze where the sea meets the sky. The scene has no fog depth, particles, dust or wind cues."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The photoscanned cliff rocks are dense and realistic. They sit directly beside an untextured, saturated flat-green ground and plain cone trees. Crates, barrel and wood pile use simple painted textures."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The hero props are clean stylized models: the stone arch, windmill, catapult, bird characters, barrel and crates. The filler is primitive geometry: cone trees, box stakes and flat yellow tile strips. The target structure swaps between a red crate, a stone block and an ice block across frames."
+    },
+    {
+      "category": "composition",
+      "seen": "Two cliff masses frame a centered arch and windmill, which reads well. The lower half of the frame is dominated by empty green ground and repetitive cones. The catapult, the main actor, is small and pushed to the left edge."
+    },
+    {
+      "category": "camera",
+      "seen": "All four frames use the same fixed elevated three-quarter view. The play space is legible, but the slingshot sits far from the camera and the foreground wastes space."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Tone mapping is mild with a slight edge darkening. There is no visible bloom, depth of field or color grade to unify the photoreal rocks with the flat stylized ground. Some aliasing appears on the thin stakes."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only text is an in-world wooden sign showing the level name (Driftwood Cove, Quarry Rise, Greenhouse Perch). No score, ammo count, aim indicator or controls are visible in any frame."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

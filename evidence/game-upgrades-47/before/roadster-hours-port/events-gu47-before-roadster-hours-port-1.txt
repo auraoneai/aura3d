@@ -1,0 +1,7 @@
+run gu47-before-roadster-hours-port-1 acr ch5ud was successful after 15m15s playwrightExit 0
+GL_READY roadster-hours-port--sunbreak 85754ms
+GL_DONE roadster-hours-port--sunbreak
+GL_READY roadster-hours-port--redline 59947ms
+GL_DONE roadster-hours-port--redline
+2 passed (13.9m)
+[task-run] PLAYWRIGHT_EXIT=0

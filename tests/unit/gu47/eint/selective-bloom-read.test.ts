@@ -6,15 +6,18 @@ import { describe, expect, it } from "vitest";
 import { WebGL2StateCache } from "../../../../packages/rendering/src/WebGL2StateCache";
 import { WebGL2SamplerRegistry } from "../../../../packages/rendering/src/webgl2/Samplers";
 import { WebGL2ContextLifecycle } from "../../../../packages/rendering/src/webgl2/ContextLifecycle";
-import { BLOOM_BRIGHT_EXTRACT_GLSL, WebGL2LegacyPostPipeline, normalizeNativeBloomOptions } from "../../../../packages/rendering/src/webgl2/LegacyPost";
+import { BLOOM_BRIGHT_EXTRACT_GLSL, BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL, BLOOM_PREFILTER_DOWNSAMPLE_SELECTIVE_GLSL, WebGL2LegacyPostPipeline, normalizeNativeBloomOptions } from "../../../../packages/rendering/src/webgl2/LegacyPost";
 import { resolveBloomPyramidPlan } from "../../../../packages/rendering/src/postprocess/NativeBloomPyramid";
+import { Texture } from "../../../../packages/rendering/src/Texture";
 
 /**
  * GU47 eint EC-6 (E-C handoff 6, EC-7 live read): the native HDR bloom
- * prefilters multiply the soft-knee excess by the material bloom weight carried
- * in HDR alpha, only when the bridge stamps `selective` (a scene material
- * declares a weight other than 1). Unstamped, `u_bloomSelective` is 0 and the
- * factor is exactly 1.0.
+ * prefilters. The ordinary prefilter programs keep their original source and
+ * always run with `u_bloomSelective = 0` (factor exactly 1.0): HDR alpha
+ * carries coverage and the S2 indirect-fraction tag, so it is never read as a
+ * bloom weight. Only a renderer-verified separate signal attachment
+ * (`signalTexture`, half-weighted radiance) switches a prefilter to its
+ * selective twin, which samples `u_bloomWeights`.
  */
 
 type UniformWrite = { readonly program: string; readonly name: string; readonly value: number };
@@ -37,7 +40,8 @@ function countingPipeline() {
     stateCache: new WebGL2StateCache({ label: "test" }),
     counters: { textureBindCount: 0, nativeEnvironmentBindings: 0, nativeShadowMapBindings: 0, drawCalls: 0, programCompiles: 0, shaderProgramCreateCount: 0, shadowRenderTargetsAllocated: 0, releasedTextureHandles: 0 },
     renderTargets: new Set(), buffers: new Set(), shaders: new Set(),
-    activeRenderTarget: null, disposed: false, contextLost: false, errorCheckMode: "frame", device
+    activeRenderTarget: null, disposed: false, contextLost: false, errorCheckMode: "frame", device,
+    textureRegistry: { getTextureHandle: (texture: Texture) => ({ id: `handle:${texture.label}` }) }
   };
   host.lifecycle = new WebGL2ContextLifecycle(host as never, { width: 64, height: 64 } as never);
   host.samplers = new WebGL2SamplerRegistry(host as never);
@@ -47,11 +51,14 @@ function countingPipeline() {
     sources.push(source);
     return { name: `program-${sources.length}` } as unknown as WebGLProgram;
   };
-  return { post, writes, sources };
+  return { post, writes, sources, device };
 }
 
-function runPyramid(selective: boolean) {
-  const { post, writes } = countingPipeline();
+const signalTexture = () => new Texture({ width: 320, height: 180, format: "rgba16f", label: "selective-signal" });
+
+function runPyramid(selective: boolean, foldedExtract = true) {
+  const pipeline = countingPipeline();
+  pipeline.device.bloomFusion.extract = foldedExtract;
   const plan = resolveBloomPyramidPlan(320, 180, "cinematic", true);
   const handle = (id: string) => ({ id }) as never;
   const resources = {
@@ -62,32 +69,53 @@ function runPyramid(selective: boolean) {
   };
   const staging = { textureA: handle("sA"), framebufferA: handle("sFA"), textureB: handle("sB"), framebufferB: handle("sFB") };
   const options = {
-    ...normalizeNativeBloomOptions({ v2: true, threshold: 1, knee: 0.5, intensity: 1, ...(selective ? { selective: true } : {}) }),
+    ...normalizeNativeBloomOptions({ v2: true, threshold: 1, knee: 0.5, intensity: 1, ...(selective ? { selective: true, signalTexture: signalTexture() } : {}) }),
     spread: 0.6
   };
-  post.executeNativeBloomPyramidPasses(handle("src"), 320, 180, resources as never, staging as never, options as never, handle("vao"), true);
-  return writes.filter((write) => write.name === "u_bloomSelective");
+  pipeline.post.executeNativeBloomPyramidPasses(handle("src"), 320, 180, resources as never, staging as never, options as never, handle("vao"), true);
+  return {
+    sources: pipeline.sources,
+    selective: pipeline.writes.filter((write) => write.name === "u_bloomSelective"),
+    weights: pipeline.writes.filter((write) => write.name === "u_bloomWeights")
+  };
 }
 
 describe("GU47 eint EC-6: selective bloom weight read in the native prefilter", () => {
-  it("normalize keeps `selective` only on v2 options that ask for it", () => {
-    expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: true }).selective).toBe(true);
+  it("normalize keeps `selective` only on v2 options with a live separate signal texture", () => {
+    const signal = signalTexture();
+    const normalized = normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: true, signalTexture: signal });
+    expect(normalized.selective).toBe(true);
+    expect(normalized.signalTexture).toBe(signal);
+    // A bare `selective: true` names no signal: HDR alpha is never read as a weight.
+    expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: true })).not.toHaveProperty("selective");
+    expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: true, signalTexture: { width: 320 } })).not.toHaveProperty("selective");
+    const disposed = signalTexture();
+    disposed.dispose();
+    expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: true, signalTexture: disposed })).not.toHaveProperty("selective");
     expect(normalizeNativeBloomOptions({ v2: true, threshold: 1 })).not.toHaveProperty("selective");
-    expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: "yes" })).not.toHaveProperty("selective");
-    // Flag-off (legacy gate) never weights by alpha.
-    expect(normalizeNativeBloomOptions({ threshold: 0.8, selective: true })).not.toHaveProperty("selective");
+    expect(normalizeNativeBloomOptions({ v2: true, threshold: 1, selective: "yes", signalTexture: signal })).not.toHaveProperty("selective");
+    // Flag-off (legacy gate) never weights.
+    expect(normalizeNativeBloomOptions({ threshold: 0.8, selective: true, signalTexture: signal })).not.toHaveProperty("selective");
   });
 
-  it("the pyramid prefilter writes u_bloomSelective = 1 only when stamped", () => {
-    const on = runPyramid(true);
-    const off = runPyramid(false);
-    expect(on.length).toBeGreaterThan(0);
-    expect(on.every((write) => write.value === 1)).toBe(true);
-    expect(off.length).toBe(on.length);
-    expect(off.every((write) => write.value === 0)).toBe(true);
+  it("the pyramid prefilter writes u_bloomSelective = 1 only when stamped with a signal, on the selective twin", () => {
+    for (const foldedExtract of [true, false]) {
+      const on = runPyramid(true, foldedExtract);
+      const off = runPyramid(false, foldedExtract);
+      expect(on.selective.length).toBeGreaterThan(0);
+      expect(on.selective.every((write) => write.value === 1)).toBe(true);
+      expect(on.weights.length).toBe(on.selective.length);
+      expect(on.weights.every((write) => write.value === 2)).toBe(true);
+      expect(on.sources).toContain(foldedExtract ? BLOOM_PREFILTER_DOWNSAMPLE_SELECTIVE_GLSL : BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL);
+      expect(off.selective.length).toBe(on.selective.length);
+      expect(off.selective.every((write) => write.value === 0)).toBe(true);
+      // An ordinary frame keeps the original programs and bindings: no signal sampler is compiled or bound.
+      expect(off.weights).toEqual([]);
+      expect(off.sources.some((source) => source.includes("u_bloomWeights"))).toBe(false);
+    }
   });
 
-  it("both HDR prefilter fragments weight the excess by auraBloomWeight(alpha)", () => {
+  it("both ordinary HDR prefilter fragments keep auraBloomWeight(alpha) at factor 1; only the twins read the signal", () => {
     const { post, sources } = countingPipeline();
     post.ensureBloomPrefilterDownsampleProgram();
     const fused = sources[0]!;
@@ -95,6 +123,12 @@ describe("GU47 eint EC-6: selective bloom weight read in the native prefilter", 
       expect(source).toContain("uniform int u_bloomSelective;");
       expect(source).toContain("float auraBloomWeight(float alpha, int selective)");
       expect(source).toContain("max(soft, luma - u_threshold) / max(luma, 1e-5) * auraBloomWeight(source.a, u_bloomSelective)");
+      expect(source).not.toContain("u_bloomWeights");
+    }
+    for (const source of [BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL, BLOOM_PREFILTER_DOWNSAMPLE_SELECTIVE_GLSL]) {
+      expect(source).toContain("uniform sampler2D u_bloomWeights;");
+      expect(source).toContain("2.0 * texelFetch(u_bloomWeights, pixel, 0).rgb");
+      expect(source).not.toContain("auraBloomWeight");
     }
   });
 
@@ -106,19 +140,22 @@ describe("GU47 eint EC-6: selective bloom weight read in the native prefilter", 
       return null;
     }
   })();
-  it.runIf(tool !== null)("the fused prefilter-downsample fragment compiles with glslangValidator", () => {
+  it.runIf(tool !== null)("the fused prefilter-downsample fragment and both selective twins compile with glslangValidator", () => {
     const { post, sources } = countingPipeline();
     post.ensureBloomPrefilterDownsampleProgram();
     const dir = mkdtempSync(join(tmpdir(), "gu47-eint-bloom-prefilter-"));
-    const file = join(dir, "bloom_prefilter.frag");
-    writeFileSync(file, sources[0]!);
-    let log = "";
-    try {
-      log = execFileSync(tool!, ["-S", "frag", file], { encoding: "utf8" });
-    } catch (error) {
-      log = String((error as { stdout?: string }).stdout ?? error);
-      throw new Error(log);
+    const fragments = { bloom_prefilter: sources[0]!, bloom_bright_selective: BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL, bloom_prefilter_selective: BLOOM_PREFILTER_DOWNSAMPLE_SELECTIVE_GLSL };
+    for (const [name, source] of Object.entries(fragments)) {
+      const file = join(dir, `${name}.frag`);
+      writeFileSync(file, source);
+      let log = "";
+      try {
+        log = execFileSync(tool!, ["-S", "frag", file], { encoding: "utf8" });
+      } catch (error) {
+        log = String((error as { stdout?: string }).stdout ?? error);
+        throw new Error(`${name}: ${log}`);
+      }
+      expect(log).not.toMatch(/ERROR/);
     }
-    expect(log).not.toMatch(/ERROR/);
   });
 });

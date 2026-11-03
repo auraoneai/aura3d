@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-hoops-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "athens",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat, low-contrast grey lighting with the court slightly washed out; the buildings are simple boxes with repeated windows; otherwise the scene is coherent with bleachers and a skyline.",
+     "(recovered by pattern)",
+     "Low contrast and somewhat washed out. The buildings and court are pale grey on grey, the buildings are simple boxes, and the court and paint colours are muted."
+    ]
+   },
+   {
+    "variant": "manila",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Background depth-of-field blur is heavy; there are stray white glyph tiles on the floor at lower left; the court is a little muddy brown; but it has a warm environment, bleachers and reflections.",
+     "(recovered by pattern)",
+     "The backdrop is a heavily blurred photo that is a bit busy and blown out in the middle. A pixelated white glyph decal sits in the bottom-left foreground. The olive-brown court is slightly muddy. Otherwise it has atmosphere and depth."
+    ]
+   },
+   {
+    "variant": "orbit",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very dark, with a mostly black background; a harsh white light pillar runs through the centre; players are still readable and the neon court reads well.",
+     "(recovered by pattern)",
+     "Very dark, with a mostly black void background. A bright white pillar floats in the centre. Some players on the right blend into the darkness. The players and court are still readable."
+    ]
+   },
+   {
+    "variant": "rucker",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Shadows on the left show pixelated/aliased banding; the haze is slightly purple; overall it has good warm sunset mood with buildings and long shadows.",
+     "(recovered by pattern)",
+     "Slightly hazy, with a purple cast. The buildings have simple flat window grids and there are some shadow aliasing artifacts. Overall the mood and lighting are good."
+    ]
+   },
+   {
+    "variant": "shanghai",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Stray white glyph tiles on the floor at lower left; there is some reflection noise on the floor; the tower base is ambiguous; otherwise there is a rich dusk mood with depth.",
+     "(recovered by pattern)",
+     "Glyph decal at bottom left. A bright light streak on the floor. The blurred backdrop doesn't fully match the scene. Overall it has strong reflections and mood."
+    ]
+   },
+   {
+    "variant": "venice",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Noticeable haze washes out the hoop and the far court, giving lower contrast; there are floor glyph tiles at lower left; there is a small cone artifact above a player's head; but the sunset mood and bleachers are an improvement.",
+     "(recovered by pattern)",
+     "Haze lowers contrast, especially on the far hoop. The palm tree floats with no trunk. Glyph decal at bottom left. The player is bent over with an awkward pose. A small spike pokes out from behind a player's head."
+    ]
+   }
+  ]
+ }
+]

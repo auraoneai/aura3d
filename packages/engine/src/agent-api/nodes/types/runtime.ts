@@ -755,6 +755,10 @@ export interface ProductionRuntimePrimitiveResource {
   textureDisposer?: () => void;
   /** C1 upgrade lifecycle: none (no texture inputs) → pending → textured | fallback. */
   textureStatus: "none" | "pending" | "textured" | "fallback";
+  /** GU47 e6: last step the textured upgrade reached (diagnostics `stage`). */
+  textureStage?: string;
+  /** GU47 e6: clock (ms) when the upgrade went `pending` (diagnostics `pendingMs`). */
+  texturePendingSince?: number;
   /** Native texture slots bound by the upgrade (subset of baseColor/normal/metallicRoughness). */
   textureSlots: readonly string[];
   /** Per-resource texture warnings (procedural inputs, fetch failures, skips). */

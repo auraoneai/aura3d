@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-02T21:45:56.735Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-hoops-3d--athens--settle-60s",
+      "aura-hoops-3d--manila--settle-60s",
+      "aura-hoops-3d--orbit--settle-60s",
+      "aura-hoops-3d--rucker--settle-60s",
+      "aura-hoops-3d--shanghai--settle-60s",
+      "aura-hoops-3d--venice--settle-60s"
+    ],
+    "framesB": [
+      "aura-diamond-3d--canyon--settle-60s",
+      "aura-diamond-3d--dome--settle-60s",
+      "aura-diamond-3d--ivy--settle-60s",
+      "aura-diamond-3d--lunar--settle-60s",
+      "aura-diamond-3d--sandlot--settle-60s",
+      "aura-diamond-3d--skyline--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.732,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 44,
+    "sameGameYes": 4,
+    "differentRate": 0.9166666666666666,
+    "ci95": [
+      0.8044643483893369,
+      0.9671167756500444
+    ],
+    "confidentDifferent": 22,
+    "confidentDifferentRate": 0.4583333333333333,
+    "same_game": false,
+    "same_game_confidence": 0.732,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a bright, flat-lit daytime basketball court with plain gray buildings; Image B is a dark, teal-and-magenta night baseball stadium with a glossy, reflective field",
+        "Character models differ: A has varied skin tones, hair and clothing; B has uniform white-uniformed players with blue caps",
+        "Different HUD and ground markers: orange rings under players in A, a white ring target cursor and 'MIDTOWN SKYLINE' wall text in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a baseball field with a canyon-rock stadium; Image B is a basketball court with dark city buildings",
+        "Different lighting and palette: bright daylight green and orange versus dusky purple backlit tones",
+        "Different character styles and markers: small distant baseball players versus larger stylized basketball players with orange ground rings"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a night baseball stadium with a dark, flat, low-saturation palette",
+        "Image B is a sunset basketball court with a pastel gradient sky and a palm tree",
+        "Different character models and ground markers (white ring vs orange/white circles)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field at night with a flat, muted tan and grey palette",
+        "Image B is a glossy, saturated purple and blue basketball court with a dusk sky and reflections",
+        "Different character models and rendering style, with a different sport and camera setup"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a dark, dramatic sky and ivy-covered brick walls, while Image B is a bright, flat-lit basketball court with grey buildings",
+        "The character models differ: A has small, simple white-uniformed figures, B has larger, more detailed figures with textured hair and colorful clothes",
+        "The ground ring markers differ: A uses a white and orange target ring on the field, B uses orange rings under the players"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with red rock formations and a 'Canyon Rim' wall, Image B is a beach basketball court at sunset",
+        "Different lighting and palette: flat daylight and green grass versus hazy pink-peach gradient sky and sand",
+        "Different character models and ground markers: small white-uniformed players with a ring target versus larger dark-skinned stylized players with orange and white circle markers"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a basketball court in a warm pastel sunset with palm tree and tan sand",
+        "Image B is a baseball diamond in a night stadium with teal turf and a city skyline",
+        "Both use similar low-poly stylized human figures with ring markers under players, which suggests a shared engine or studio"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports (basketball court vs baseball field) with different level layouts",
+        "Both use similar low-poly white-skinned humanoid figures with glossy reflective floors and blurred backdrops",
+        "Image A has a dusk, neon-blue palette with ornate lamps; Image B has a flat green and grey stadium look"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports (indoor basketball court vs outdoor baseball field) with different environments and lighting",
+        "Both use similar stylized low-poly human figures with the same orange accent color and ring markers under players",
+        "Different camera setups: tilt-shift blurred close view vs wide, elevated, sharp field view"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different sports: basketball court vs baseball field",
+        "similar low-poly stylized human characters with matching hair, skin and shading",
+        "different settings and palettes: gray urban court vs red-rock canyon with green field"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: baseball field vs basketball court",
+        "Different settings and lighting: stormy ivy-wall stadium vs dusk city skyline",
+        "Different character models and ground markers: small white-uniformed players with an aim ring vs larger stylized players with orange circles"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field and Image B is a basketball court, with different sports and character models",
+        "Different lighting and palette: A has a gray sky over green grass with an orange dirt infield; B has a warm pink-beige sky and sand",
+        "Different HUD and marker styles: A has a bat target ring, B has orange ground rings under players"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar thin, simple stylized humanoid figures",
+        "ring markers at players' feet in both frames",
+        "soft hazy lighting with reflective gray playing surfaces"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a night basketball court with neon-blue floor and lamp posts, while Image B is a daytime baseball diamond",
+        "Different scenery and palette: purple/blue glossy court vs. green grass and orange clay",
+        "Both use similar low-poly human figures, a blurred background and a ring marker at the player's feet, which weakly suggests a shared engine or studio"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a tan dirt infield and dim gray outfield; Image B is a dark navy basketball court with neon-teal reflections",
+        "Different character models and sport: low-poly baseball players with caps versus basketball players with dark hair and colored shorts",
+        "Different ground markers and lighting: A has a ring cursor and flat lighting, B has orange rings under players and glossy reflective floor"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Different sports: street basketball court vs. night baseball stadium",
+        "Different lighting and palette: warm dusk with long shadows vs. dark, flat grey night lighting",
+        "Different character styling: stylized detailed faces and clothes vs. small, plain, uniform white-clad figures"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports and scene structure (street basketball court vs. stadium baseball diamond)",
+        "Image A has warm, dusky lighting with dark purple buildings; Image B has a teal field and a pink dirt infield",
+        "Both use similar low-poly stylized characters and lit-window city skylines, which suggests a shared engine or art pipeline"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with daylight and red rock formations; Image B is a basketball court at dusk with neon and reflective floor",
+        "Different lighting and palette: flat natural greens and oranges versus purple/blue glossy materials and blurred background",
+        "Different sports, scenery and character styling, with no shared HUD or environment"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports: baseball field in a lit dome vs. basketball court in a dark arena",
+        "Both use similar low-poly humanoid figures with reflective floors and ring markers under players",
+        "Different lighting and palette: bright green and gray vs. dark navy with cyan glow"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a dark night basketball court with neon-blue glow and orange ring markers, while Image B is a bright teal and pink baseball field with a city skyline backdrop",
+        "Both use similar low-poly humanoid characters with simple skin shading and orange accents, which suggests a shared engine or asset style",
+        "The lighting, palette and camera differ strongly: low-key, near-black scene against an elevated, evenly lit view"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a dark night sky and flat muted lighting, while Image B is a basketball court with tilt-shift blur and warm indoor light",
+        "The character models differ: A has small, distant figures in white uniforms with blue caps, B has larger, more detailed figures in casual clothes",
+        "The ground-ring markers differ: A has a yellow target ring, B has orange rings under players"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a blob-shaped orange dirt infield; Image B is an indoor basketball court",
+        "Different character models and rendering: small, distant white-uniform figures in A; close, tilted-lens blurred figures with stylized faces in B",
+        "Different HUD markers and palettes: yellow-orange ring in A; orange circles under players in B with a muted olive and green indoor palette"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "matching low-poly humanoid figures with similar proportions and faces",
+        "tilt-shift blurred indoor backdrop with the same soft lighting and glossy reflective floor",
+        "similar muted palette and thin white line markings with ring markers"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different sports (basketball court vs baseball field)",
+        "bright overcast daylight vs dark night stadium lighting",
+        "similar low-poly humanoid characters with dark hair and ground rings, which hints at a shared engine or studio"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar low-poly humanoid models with the same proportions and dark hair",
+        "orange ring markers on the ground in both frames",
+        "different sport and lighting (night court vs. daytime field), which weakens the match"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "baseball field vs basketball court, different sports and layouts",
+        "both share a glossy reflective floor and similar stylized low-poly humanoid figures",
+        "different camera framing and scenery: night stadium skyline vs dusk park with lamps"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a dusk urban basketball court with dark buildings and a warm, hazy sun glow. Image B is a bright, flat-lit baseball field.",
+        "The character models look similar in both (blocky, simple limbs, ground rings or markers), which points toward a shared engine or art pipeline.",
+        "The two sports, environments and camera setups differ, and the HUD styles differ (orange ring markers vs. a ring reticle and scoreboard)."
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night basketball court with neon blue floor and black void sky; Image B is a bright daylight baseball field with green grass and a cloudy sky",
+        "Different sports and environments, with different lighting and palette (cool navy/cyan vs warm orange/green)",
+        "Character models differ: Image A has darker, stylized players with orange ground rings; Image B has small, pale, uniformed figures with a ring marker at the batter"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "matching low-poly humanoid characters with similar proportions and faces",
+        "similar glossy reflective floor surfaces and muted, tinted color grading",
+        "shared sports-game style with ring markers and tilt-shift depth of field"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with an outdoor canyon setting; Image B is an indoor basketball gym",
+        "Different rendering: A is flat and sharply lit, B has tilt-shift blur, bloom and reflective floor",
+        "Both have orange ring markers under players, but the sports, characters and environments differ"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different sports: street basketball court vs baseball dome",
+        "different palette and lighting: warm dusk city vs green stadium with tilt-shift blur",
+        "different camera and ground treatment: ground-level view with ring markers vs elevated view with a grey dirt infield"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daylight baseball field and Image B is a dark neon basketball court",
+        "Different sports, lighting and palette, and the player models differ in proportions and detail",
+        "Both show orange ring markers under players, which could suggest a shared engine or series"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a flat, bright basketball court with boxy gray buildings and stylized characters with ground rings",
+        "Image B is a baseball stadium with a dark, blurred, depth-of-field background and glossy reflective surfaces",
+        "The lighting and rendering differ: A is flat and daylit, B is moody with strong shadows and post-processing"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "baseball field versus basketball court, different sports and scenery",
+        "dark stormy sky versus pale pink-peach haze",
+        "similar stylized humanoid figures and orange ground rings, suggesting a shared engine"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is baseball (diamond, bases, batter) and Image B is basketball (court, hoop, ball)",
+        "Different palettes and lighting: orange-and-green daylight in A, purple dusk with reflective court in B",
+        "Similar low-poly stylized figures, but A has a flat overcast sky and B has a blurred tree backdrop"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a warm orange and green palette, and Image B is a basketball court with cool gray buildings",
+        "Different character models: small distant white-uniformed players in A, larger detailed players with dreadlocks and casual clothes in B",
+        "Different ground-ring and HUD cues: a ball-target ring in A, orange foot rings under players in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: baseball field with dramatic dark sky and saturated orange dirt; Image B: basketball court under flat, pale daylight with gray buildings",
+        "Different character models and proportions: stylized white-uniform players vs. dark-skinned characters with textured hair and varied clothing",
+        "Different HUD markers: concentric orange ring target vs. orange ground rings under players"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a night baseball stadium with dark, flat lighting",
+        "Image B is a sunset basketball court with a pastel gradient sky and a palm tree",
+        "Different character models and ground-ring markers (white and yellow ring vs orange rings)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark neon-lit indoor basketball court, Image B is a bright daylit baseball field",
+        "Different character models and proportions: A has larger, detailed figures with orange ground rings, B has small uniform white-clad players",
+        "Different lighting and palette: A is dark navy with cyan glow and reflections, B is a muted overcast sky with green and orange tones"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-hoops-3d--athens--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a gray basketball court with flat-shaded boxy buildings and a bright, neutral sky, while Image B is a green and orange baseball field with a dusk-like warm tint",
+        "Character models differ: A has detailed dreadlocked figures with orange ground rings, B has tiny uniformed players in white with blue caps",
+        "Different sports and HUD cues: A has a hoop and ball cart, B has a scoreboard, stadium stands and a batting target ring"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports: baseball dome vs. streetball court",
+        "Similar low-poly stylized humanoid figures and soft lighting",
+        "Different environments and palettes: green/grey stadium vs. dusk purple/orange city"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a dusk urban basketball court with dark buildings, while Image B is a bright baseball field with green grass",
+        "Character models are similar low-poly stylized figures, but the lighting and palette differ strongly",
+        "Ground rendering differs: A has a smooth shadowed court, B has a rippled orange dirt texture"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-hoops-3d--shanghai--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a baseball stadium with a green field and a Typhoon Dome sign; Image B is a basketball court at dusk",
+        "Different sports, settings and palettes (grey and green with muted lighting vs purple and blue with a sunset)",
+        "Both use similar low-poly humanoid figures with glossy reflective floors, which suggests a shared engine but not necessarily the same game"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field and Image B is a basketball court, so the sports differ",
+        "Different character models and camera setups: small distant white-uniformed players versus close-up dark-skinned players in colored kits",
+        "Different lighting: Image A has a gray sky with saturated orange dirt, Image B has a pastel pink-beige dusk haze"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-hoops-3d--rucker--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Different sports (street basketball vs. stadium baseball)",
+        "Warm dusk lighting with city backdrop vs. dark night stadium with flat gray ground",
+        "Character models differ: stylized, detailed hair and faces vs. small, plain, low-detail figures"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-hoops-3d--venice--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "baseball dome with dim, muted lighting vs. basketball court in a warm sunset haze",
+        "different sports, scenery and palette (green and gray vs. sand and peach)",
+        "similar simple humanoid models, which suggests a shared engine rather than a shared game"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-hoops-3d--manila--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Different sports: indoor basketball court vs night baseball stadium",
+        "Both use similar low-poly humanoid figures with simple faces",
+        "Different lighting and palette: blurred warm tilt-shift interior vs dark flat stadium"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-hoops-3d--orbit--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "night indoor basketball court vs. daylight baseball field",
+        "very different lighting and palette: dark neon blue vs. bright green and orange",
+        "similar low-poly humanoid figures and orange ring markers, which keep this uncertain"
+      ]
+    }
+  ]
+}

@@ -131,7 +131,7 @@
       "label": "Skyline Runner",
       "path": "/apps/showcase-skyline-runner/",
       "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "skylineArcticRunnerHero",
@@ -153,15 +153,16 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:skyline-runner-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-skyline-runner/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain explicit user approval of the exact hash-bound Skyline Runner screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
-          "Resolve the visual-rebuild blocker recorded in apps/showcase-skyline-runner/route-health.json.",
+          "Resolve the visual-rebuild blocker previously recorded in apps/showcase-skyline-runner/route-health.json.",
           "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
         ],
         "evidence": [
-          "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json records five passing automated composition checks",
-          "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png is the current retained route-primary screenshot",
-          "docs/project/showcase-visual-review.json records independent human review as pending; automated route and gameplay evidence is retained separately",
-          "tests/reports/showcase-gameplay/showcase-skyline-runner.json proves the required platformer interactions and category floor"
+          "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json historically recorded five passing automated composition checks",
+          "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png was the historical route-primary screenshot before retirement",
+          "docs/project/showcase-visual-review.json records the historical independent review as pending; it is not approval of a current route",
+          "tests/reports/showcase-gameplay/showcase-skyline-runner.json historically recorded platformer interactions and the category floor"
         ]
       },
       "requiresAnimationSubjectDelta": true,
@@ -182,7 +183,7 @@
       "label": "Turbo Drift Circuit",
       "path": "/apps/showcase-turbo-drift-circuit/",
       "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "showcaseCc0FormulaRaceCar",
@@ -207,16 +208,17 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:turbo-drift-circuit-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-turbo-drift-circuit/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain explicit user approval of the exact hash-bound Turbo Drift Circuit screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
           "Retain the distinct typed blue/black Formula rival and prove its separation from the red player car in current action captures.",
           "Regenerate racing gameplay, route-health, deploy, and launch evidence from the final approved source.",
           "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
         ],
         "evidence": [
-          "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json records five passing automated composition checks",
-          "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png is the current retained route-primary screenshot",
-          "docs/project/showcase-visual-review.json records independent human review as pending; automated route and gameplay evidence is retained separately",
-          "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json proves the required racing interactions and category floor"
+          "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json historically recorded five passing automated composition checks",
+          "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png was the historical route-primary screenshot before retirement",
+          "docs/project/showcase-visual-review.json records the historical independent review as pending; it is not approval of a current route",
+          "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json historically recorded racing interactions and the category floor"
         ]
       }
     },
@@ -225,7 +227,7 @@
       "label": "Siege Golf",
       "path": "/apps/showcase-siege-golf/",
       "globalName": "__AURA3D_SHOWCASE_SIEGE_GOLF__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "siegeGolfCourseWorld",
@@ -256,15 +258,16 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:siege-golf-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-siege-golf/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound desktop, mobile, mechanic, and course-complete Siege Golf artifacts.",
           "Retain fresh route-primary, route-health, deploy, performance, and launch evidence after that approval.",
           "Promote a public showcase card only after the PRD execution ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/siege-golf/course-completion/ contains mounted all-nine-hole completion artifacts and evidence JSON",
-          "tests/reports/showcase-route-primary-probes/showcase-siege-golf.png is the current typed-ball route-primary artifact",
-          "apps/showcase-siege-golf/performance-report.json records the bounded route-local Rapier performance run",
-          "apps/showcase-siege-golf/route-health.json retains publicShowcase false and the pending-review blocker"
+          "Historical reference: tests/reports/siege-golf/course-completion/ recorded mounted nine-hole completion artifacts",
+          "Historical reference: tests/reports/showcase-route-primary-probes/showcase-siege-golf.png was the typed-ball route-primary artifact",
+          "Historical reference: apps/showcase-siege-golf/performance-report.json recorded a bounded route-local Rapier performance run",
+          "Historical reference: apps/showcase-siege-golf/route-health.json recorded publicShowcase false and a pending-review blocker"
         ]
       }
     },
@@ -312,7 +315,7 @@
       "label": "Neon Swarm",
       "path": "/apps/showcase-neon-swarm/",
       "globalName": "__AURA3D_SHOWCASE_NEON_SWARM__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "neonCourierAvatar",
@@ -337,15 +340,16 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:neon-swarm-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-neon-swarm/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound opening, density, burst, elite, upgrade, failure, mobile, reduced-motion, and completion artifacts.",
           "Retain fresh route-primary, route-health, deploy, performance, and launch evidence after that approval.",
           "Promote a public showcase card only after the Neon Swarm PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/neon-swarm/ contains the current source-bound gameplay, five-stage campaign, mobile, reduced-motion, and 320-instance artifacts",
-          "tests/reports/showcase-route-primary-probes/showcase-neon-swarm.png is the typed-courier route-primary artifact",
-          "apps/showcase-neon-swarm/performance-report.json records bounded 320-drone route-local simulation and renderer telemetry",
-          "apps/showcase-neon-swarm/route-health.json retains publicShowcase false and the pending-review blocker"
+          "Historical reference: tests/reports/neon-swarm/ recorded gameplay, five-stage campaign, mobile, reduced-motion, and 320-instance artifacts",
+          "Historical reference: tests/reports/showcase-route-primary-probes/showcase-neon-swarm.png was the typed-courier route-primary artifact",
+          "Historical reference: apps/showcase-neon-swarm/performance-report.json recorded 320-drone route-local simulation and renderer telemetry",
+          "Historical reference: apps/showcase-neon-swarm/route-health.json recorded publicShowcase false and a pending-review blocker"
         ]
       }
     },
@@ -354,7 +358,7 @@
       "label": "Gravity Post",
       "path": "/apps/showcase-gravity-post/",
       "globalName": "__AURA3D_SHOWCASE_GRAVITY_POST__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "gravityPostCourierSkiff",
@@ -376,14 +380,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:gravity-post-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-gravity-post/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound planning, assist, chain, dock, collision, final-route, mobile, and reduced-motion artifacts.",
           "Retain fresh route-primary, route-health, deploy, performance, asset, and launch evidence after that approval.",
           "Promote a public showcase card only after the Gravity Post PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/gravity-post/ contains current mounted gameplay and full four-delivery evidence",
-          "tests/reports/showcase-route-primary-probes/showcase-gravity-post.png is the required typed-pod route-primary artifact",
-          "apps/showcase-gravity-post/route-health.json must retain publicShowcase false and the pending-review blocker"
+          "Historical reference: tests/reports/gravity-post/ recorded mounted gameplay and four-delivery evidence",
+          "Historical reference: tests/reports/showcase-route-primary-probes/showcase-gravity-post.png was the typed-pod route-primary artifact",
+          "Historical reference: apps/showcase-gravity-post/route-health.json recorded publicShowcase false and a pending-review blocker"
         ]
       }
     },
@@ -392,7 +397,7 @@
       "label": "Courier Rush",
       "path": "/apps/showcase-courier-rush/",
       "globalName": "__AURA3D_SHOWCASE_COURIER_RUSH__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "courierVan",
@@ -414,14 +419,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:courier-rush-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-courier-rush/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound dispatch, pickup, parcel, traffic, drop, failure, completion, mobile, and reduced-motion artifacts.",
           "Retain fresh route-primary, route-health, deploy, performance, asset, and launch evidence after that approval.",
           "Promote a public showcase card only after the Courier Rush PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/showcase-courier-rush/ contains current source-bound gameplay, mobile, reduced-motion, and full-shift evidence",
-          "tests/reports/showcase-route-primary-probes/showcase-courier-rush.png is the required typed-van route-primary artifact",
-          "apps/showcase-courier-rush/route-health.json must retain publicShowcase false and the pending-review blocker"
+          "Historical reference: tests/reports/showcase-courier-rush/ recorded gameplay, mobile, reduced-motion, and full-shift evidence",
+          "Historical reference: tests/reports/showcase-route-primary-probes/showcase-courier-rush.png was the typed-van route-primary artifact",
+          "Historical reference: apps/showcase-courier-rush/route-health.json recorded publicShowcase false and a pending-review blocker"
         ]
       }
     },
@@ -430,7 +436,7 @@
       "label": "Pulse Tunnel",
       "path": "/apps/showcase-pulse-tunnel/",
       "globalName": "__AURA3D_SHOWCASE_PULSE_TUNNEL__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [],
       "primaryAssetRoles": {},
@@ -444,14 +450,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:pulse-tunnel-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-pulse-tunnel/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound telegraph, lane, jump, graze, drop, shield, finale, result, mobile, and reduced-motion artifacts.",
           "Retain fresh source-bound sync-spike, route-health, deploy, performance, typed-audio, and launch evidence after that approval.",
           "Promote a public showcase card only after the Pulse Tunnel PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/pulse-tunnel/ contains the current measured sync receipt, gameplay, mobile, reduced-motion, and full-run artifacts",
-          "apps/showcase-pulse-tunnel/route-health.json must retain publicShowcase false and the pending-review blocker",
-          "The route is deliberately abstract and claims typed audio, not a typed visual primary subject"
+          "Historical reference: tests/reports/pulse-tunnel/ recorded sync, gameplay, mobile, reduced-motion, and full-run artifacts",
+          "Historical reference: apps/showcase-pulse-tunnel/route-health.json recorded publicShowcase false and a pending-review blocker",
+          "Historical reference: the route was deliberately abstract and claimed typed audio, not a typed visual primary subject"
         ]
       }
     },
@@ -460,7 +467,7 @@
       "label": "Mech Hangar",
       "path": "/apps/showcase-mech-hangar/",
       "globalName": "__AURA3D_SHOWCASE_MECH_HANGAR__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "mechChassisA",
@@ -488,14 +495,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:mech-hangar-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-mech-hangar/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound hangar, all-slot swap, passport, arena, hit, KO, mobile, and reduced-motion artifacts.",
           "Retain fresh 16-part curation, root asset probes, route-primary, route-health, deploy, performance, and launch evidence after that approval.",
           "Promote a public showcase card only after the Mech Hangar PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "apps/showcase-mech-hangar/parts-curation-report.json proves the deterministic 16-part MH-2M family and must remain 16/16 compatible, release-proven, and unique.",
-          "tests/reports/mech-hangar/part-matrix.json binds all sixteen live selections to distinct rendered assembly hashes and owning gameplay stats.",
-          "apps/showcase-mech-hangar/route-health.json must retain publicShowcase false and the pending-review blocker."
+          "Historical reference: apps/showcase-mech-hangar/parts-curation-report.json recorded the 16-part MH-2M family.",
+          "Historical reference: tests/reports/mech-hangar/part-matrix.json recorded rendered assembly hashes and gameplay stats.",
+          "Historical reference: apps/showcase-mech-hangar/route-health.json recorded publicShowcase false and a pending-review blocker."
         ]
       }
     },
@@ -551,7 +559,7 @@
       "label": "Rooftop Buckets",
       "path": "/apps/showcase-rooftop-buckets/",
       "globalName": "__AURA3D_SHOWCASE_ROOFTOP_BUCKETS__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "rooftopCourt",
@@ -588,14 +596,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:rooftop-buckets-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-rooftop-buckets/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound opening, charge, release, swish, miss, contest, fire, buzzer, gold, mobile, touch-active, and reduced-motion artifacts.",
           "Retain fresh five-model asset probes, route-primary, route-health, deploy, performance, accessibility, and source-bound browser evidence after that approval.",
           "Promote a public showcase card only after the Rooftop Buckets PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/rooftop-buckets/browser-evidence.json binds the exact desktop, mobile, interaction, outcome, and reduced-motion artifact family to current route and producer source.",
-          "tests/reports/rooftop-buckets/playable/browser-evidence.json binds naturally driven keyboard/touch flight, five heat outcomes, pause, and reset to current route source.",
-          "apps/showcase-rooftop-buckets/route-health.json must retain publicShowcase false and the pending-review blocker."
+          "Historical reference: tests/reports/rooftop-buckets/browser-evidence.json recorded desktop, mobile, interaction, outcome, and reduced-motion artifacts.",
+          "Historical reference: tests/reports/rooftop-buckets/playable/browser-evidence.json recorded keyboard/touch flight, five heat outcomes, pause, and reset.",
+          "Historical reference: apps/showcase-rooftop-buckets/route-health.json recorded publicShowcase false and a pending-review blocker."
         ]
       }
     },
@@ -604,7 +613,7 @@
       "label": "Gallery Shift",
       "path": "/apps/showcase-gallery-shift/",
       "globalName": "__AURA3D_SHOWCASE_GALLERY_SHIFT__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "galleryShiftCutawayMuseumWorld",
@@ -638,14 +647,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:gallery-shift-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-gallery-shift/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound lobby, cover, detection, caught, exhibit, floor-transition, camera, alarm-return, exit, mobile, and reduced-motion artifacts.",
           "Retain fresh six-model probes, route-primary, route-health, strict deploy, performance, accessibility, and source-bound browser evidence after that approval.",
           "Promote a public showcase card only after the Gallery Shift PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/gallery-shift/browser-evidence.json binds the exact visual artifact family to current route and producer source.",
-          "tests/reports/gallery-shift/playable/browser-evidence.json binds movement, LOS/occlusion, caught/reset, the three-exhibit two-floor mission, alarm return, keyboard/touch, and pause to current route source.",
-          "apps/showcase-gallery-shift/route-health.json must retain publicShowcase false and the pending-review blocker."
+          "Historical reference: tests/reports/gallery-shift/browser-evidence.json recorded the visual artifact family.",
+          "Historical reference: tests/reports/gallery-shift/playable/browser-evidence.json recorded movement, LOS/occlusion, mission, alarm return, keyboard/touch, and pause.",
+          "Historical reference: apps/showcase-gallery-shift/route-health.json recorded publicShowcase false and a pending-review blocker."
         ]
       }
     },
@@ -654,7 +664,7 @@
       "label": "Deep Recovery",
       "path": "/apps/showcase-deep-recovery/",
       "globalName": "__AURA3D_SHOWCASE_DEEP_RECOVERY__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "deepRecoverySub",
@@ -685,14 +695,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:deep-recovery-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-deep-recovery/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound descent, sonar, wreck, grapple, heavy-tow, breach, low-oxygen, surface, blackout, mobile, and reduced-motion artifacts.",
           "Retain fresh five-model probes, route-primary, route-health, strict deploy, performance, accessibility, and source-bound browser evidence after that approval.",
           "Promote a public showcase card only after the Deep Recovery PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/deep-recovery/playable/browser-evidence.json binds the exact visual artifact family and full mission to current route and producer source.",
-          "tests/reports/deep-recovery/playable/mission-touch.json records movement, sonar, grapple/drop, standard/heavy bank, collision breach, explicit repair, oxygen warning, blackout, surface win, reset, touch, and reduced-motion truth.",
-          "apps/showcase-deep-recovery/route-health.json must retain publicShowcase false and the pending-review blocker."
+          "Historical reference: tests/reports/deep-recovery/playable/browser-evidence.json recorded visual artifacts and a full mission.",
+          "Historical reference: tests/reports/deep-recovery/playable/mission-touch.json recorded movement, sonar, grapple/drop, bank, breach, repair, oxygen, blackout, surface win, reset, touch, and reduced motion.",
+          "Historical reference: apps/showcase-deep-recovery/route-health.json recorded publicShowcase false and a pending-review blocker."
         ]
       }
     },
@@ -701,7 +712,7 @@
       "label": "Patrol Wing",
       "path": "/apps/showcase-patrol-wing/",
       "globalName": "__AURA3D_SHOWCASE_PATROL_WING__",
-      "published": true,
+      "published": false,
       "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "patrolAircraftMeshy",
@@ -729,14 +740,15 @@
         "publicTemplateReady": false,
         "blocker": "visual-review:patrol-wing-independent-review-pending",
         "requiredBeforePublic": [
+          "Restore the retired app source and apps/showcase-patrol-wing/route-health.json before evaluating public readiness; the marketing build currently emits an index redirect.",
           "Obtain independent approval of the exact hash-bound takeoff, ring, drone, hit, canyon, low-hull, approach, touchdown, mobile, and reduced-motion artifacts.",
           "Retain fresh four-model probes, route-primary, route-health, strict deploy, performance, accessibility, and source-bound browser evidence after that approval.",
           "Promote a public showcase card only after the Patrol Wing PRD ledger records the independent verdict."
         ],
         "evidence": [
-          "tests/reports/patrol-wing/playable/browser-evidence.json binds the exact visual artifact family and complete acceptance patrol to current route and producer source.",
-          "tests/reports/patrol-wing/playable/mission-touch.json records flight axes, ordered ring, drone wave, fire, hull failure, landing, reset, touch, pause, and reduced-motion truth.",
-          "apps/showcase-patrol-wing/route-health.json must retain publicShowcase false and the pending-review blocker."
+          "Historical reference: tests/reports/patrol-wing/playable/browser-evidence.json recorded visual artifacts and an acceptance patrol.",
+          "Historical reference: tests/reports/patrol-wing/playable/mission-touch.json recorded flight, ring, drone, fire, hull failure, landing, reset, touch, pause, and reduced motion.",
+          "Historical reference: apps/showcase-patrol-wing/route-health.json recorded publicShowcase false and a pending-review blocker."
         ]
       }
     },

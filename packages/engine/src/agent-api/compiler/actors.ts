@@ -22,6 +22,8 @@ interface ProductionRuntimeActorState {
   readonly animationPoseTime?: number;
   readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
   readonly morphTargets?: RuntimeNodeMorphTargetWeights;
+  /** Live runtime material (selective-bloom weight source), from the same snapshot; absent = authored. */
+  readonly runtimeMaterial?: AuraModelNode["material"];
 }
 
 export function resolveProductionActorRuntimeState(
@@ -33,6 +35,7 @@ export function resolveProductionActorRuntimeState(
   const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
     readonly instances?: AuraModelNode["instances"];
     readonly instanceColors?: AuraModelNode["instanceColors"];
+    readonly material?: AuraModelNode["material"];
   }) | undefined;
   if (!runtimeSnapshot) return { node: entry.node };
   const morphTargets = runtimeSnapshot.morphTargets ?? {};
@@ -69,7 +72,8 @@ export function resolveProductionActorRuntimeState(
     animationBinding: runtimeSnapshot.animationBinding,
     animationPose: runtimeSnapshot.animationPose,
     animationPoseTime: runtimeSnapshot.animationPoseBinding?.localTime ?? runtimeSnapshot.animationPoseBinding?.captureTime,
-    ...(Object.keys(morphTargets).length > 0 ? { morphTargets } : {})
+    ...(Object.keys(morphTargets).length > 0 ? { morphTargets } : {}),
+    ...(runtimeSnapshot.material !== undefined ? { runtimeMaterial: runtimeSnapshot.material } : {})
   };
 }
 

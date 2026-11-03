@@ -975,6 +975,8 @@ export class CompiledSceneImpl implements CompiledScene {
   private readonly removedAuthoredGroups = new WeakSet<object>();
   private readonly pendingGenerations = new WeakMap<object, CompiledSubtreeGeneration>();
   private readonly actorWrappers = new WeakMap<TypedGLBActor, CompiledActor>();
+  // GU47 g11 phase 10 (4.7.x `onPrimitiveEntriesAdded` field): subsumed by the mount
+  // context's `onPrimitiveEntriesAdded`, invoked once the added subtree is published.
 
   constructor(
     readonly snapshotVersion: number,
@@ -1557,7 +1559,11 @@ export class CompiledSceneImpl implements CompiledScene {
     for (const node of targets) if (node.kind === "scalar-volume") this.volumeFailures.delete(node);
 
     this.liveNodes = this.liveNodes.filter((candidate) => !targetSet.has(candidate));
-    this.primitiveEntries = this.primitiveEntries.filter((entry) => !targetSet.has(entry.node));
+    // In place (4.7.x): the mount aliases this array for its textured-upgrade
+    // bookkeeping and diagnostics, so a reassignment would strand removed entries.
+    const keepPrimitive = this.primitiveEntries.filter((entry) => !targetSet.has(entry.node));
+    this.primitiveEntries.length = 0;
+    for (const entry of keepPrimitive) this.primitiveEntries.push(entry);
     this.actorEntries = this.actorEntries.filter((entry) => !targetSet.has(entry.node));
     const removedWrappers = new Set(removedActors.map(({ actor }) => this.actorWrappers.get(actor)).filter((wrapper): wrapper is CompiledActor => wrapper !== undefined));
     this.actors = this.actors.filter((actor) => !removedWrappers.has(actor));

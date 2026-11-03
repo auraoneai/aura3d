@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 1,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Player craft sits at the bottom-right and fills a lot of the frame, so the composition is off-centre. Hard black slab on the far right edge. Blurry photo-like backdrop behind the buildings clashes with the low-poly style. Faint smeared reflection artifacts at the bottom centre of the road.",
+     "Identical to A. Flat grey untextured materials and a near-black empty sky. Large plain grey pillars at the edges. Low material detail and little atmosphere, but the player and track are readable.",
+     "Buildings and arch are flat, untextured brown silhouettes with one-tone orange lighting, so the frame looks muddy. The player craft is cropped at the right edge and partly blends into the orange scene. A dark shadow blob sits at the bottom of the road and the sky gradient is bland."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "This is the plain default scene: untextured grey materials, flat black sky, dull low-contrast road, no dust atmosphere.",
+     "Default scene: flat grey, untextured and dark, with a sparse empty black sky. Readable but plain, with little mood.",
+     "Strong sun glare washes over the player craft, and the warm sepia grade lowers contrast. The player is cropped at the right edge, and a dark smeared artifact sits at the bottom centre. The wet-road sunset still gives the strongest mood."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "This is the plain default scene: flat grey geometry, black sky, dark muddy road, minimal mood and material detail.",
+     "A strong sun glare and bloom beside the player ship washes out its right side and the road. The overall sepia/brown grade is muddy and low in colour separation. A red/green smeared artifact sits on the road at bottom centre. The player is large and cropped at the right edge.",
+     "Pixel-identical to A, so no visible vesper variant was rendered. Same flat grey materials and empty black sky."
+    ]
+   }
+  ]
+ }
+]

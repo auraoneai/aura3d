@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "teleoperator",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "fog",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight haze flattens the far distance, a few dark rectangular patches on the road, and some odd blotchy shadows on the asphalt. The pod, traffic and street are all readable.",
+     "The fog is mild and reads more like dusk haze. The left and top edges are a little dark and the road has some blotchy shadows, but the player, traffic and buildings are all easy to read. A thin red laser line from the pod crosses the road.",
+     "Fog is fairly heavy at the far end and the road shading is a bit muddy, with some dark blotchy shadow patches. Overhead wires and a pole cut across the sky. The truck on the right is cropped. Otherwise the city, the player and the lanes are readable."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cyan debug-like lines and a vertical beam float in the scene, the laser lines from the pod look slightly glitchy, and the road has some hard-edged shadow rectangles. Otherwise the warm sunset lighting, depth and pod materials are good.",
+     "The cyan holographic lines over the street and on the left building look like overlay artefacts. There is a bright ground-light hotspot next to the pod, and a red laser line crosses the road. Otherwise the warm sunset mood is strong and the depth and detail are good.",
+     "Odd cyan vertical light beam and horizontal cyan lines over the left buildings and the street. Thin red laser lines come from the player's tail lights. Shadow blocks on the road are hard-edged and look blocky. Otherwise warm sunset lighting, good depth, and a well-shaded player."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Building facades are lit too brightly for a night scene, so it reads more like dusk. There are cyan floating lines and a vertical beam, and an overly strong headlight bloom on the road.",
+     "It looks more like a dark dusk than night, with an orange-tinted sky. There is a strong blown-out lens glare on the road beside the pod and harsh glare in the bottom-right corner, and the cyan hologram lines are distracting. Still, the city, traffic and player are clearly readable, and the wet-road reflections add mood.",
+     "Hardly reads as night: buildings are brightly lit, almost like daytime, against a black sky. Cyan beam and line artifacts, a blown-out lens glow under the player, and red laser lines. Still readable, with wet-road reflections and depth."
+    ]
+   },
+   {
+    "variant": "noon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Checkerboard or blotchy shadow artifacts on the road behind the pod, cyan floating debug lines, and a slightly washed-out sky. The pod materials and lighting are clearly readable.",
+     "Visible stair-step shadow artefacts on the road around the pod, plus cyan hologram streaks and red laser lines. The sky near the horizon is a little washed out. The player pod has good detail, with tail lights and windows.",
+     "The sky is somewhat washed out toward the horizon. A checkered, tiled shadow pattern shows on the road around the player. A stray black horizontal line runs across the frame, along with cyan beam lines and red laser lines. Otherwise crisp, with good contrast and a well-shaded player car."
+    ]
+   }
+  ]
+ }
+]

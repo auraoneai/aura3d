@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:13:25.382Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "heatsink-port--default--settle-60s",
+      "heatsink-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.948,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.948,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunset city street with a car, minimap and speedometer HUD, while Image B is an alien mountain landscape with a drone",
+        "Different palettes: warm orange and brown in A, cool purple and teal in B",
+        "Different ground and materials: asphalt and boxy buildings in A, neon grid road and rocky terrain in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien planet with a drone on a neon grid road under a purple-teal sky",
+        "Image B: realistic-looking city street with a car, warm orange sunset light and a speedometer and minimap HUD",
+        "Different palettes, scenery, vehicles and HUD styles"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an alien teal canyon with a drone, Image B is a warm sepia city street with cars",
+        "Different palettes and lighting: cool teal and violet dusk versus orange-yellow haze",
+        "Image B has a speedometer, nitro bar, ticket panel and minimap; Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: alien planet with a drone on a neon grid road",
+        "Image B: realistic sunset city with a green car, traffic lights and a HUD with minimap",
+        "Different art style, palette and vehicle type"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, Image B is a sunset city street with a car",
+        "Different art styles: moody glowing sci-fi vs. flat blocky low-poly buildings",
+        "Different HUD: none in A, speedometer and minimap in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: alien teal canyon with a ringed moon and a drone",
+        "Image B: warm orange low-poly city street with a hatchback and HUD speedometer/minimap",
+        "Completely different palettes, scenery and vehicle types"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city street with a car, speedometer and minimap HUD",
+        "Image B is an alien sci-fi landscape with a drone, a giant planet and a neon grid road",
+        "The palettes, scenery and vehicles differ, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm sepia city street with a taxi and a teal car, plus a speedometer, minimap and ticket HUD",
+        "Image B is a cool purple alien landscape with a drone on a neon grid road and no HUD",
+        "The two frames use completely different palettes, scenery and vehicle types"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a warm sunset city street with a car and a HUD (speedometer, minimap, nitro bar)",
+        "Image B is a teal alien canyon with a drone, a ringed planet and no HUD",
+        "Different palettes, settings and vehicle types"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: night city street with a small car and a minimap/speedometer HUD",
+        "Image B: alien canyon with a ringed moon and a drone, no HUD",
+        "Different settings, vehicles and color palettes (warm city lights vs teal/purple alien)"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is an alien sci-fi landscape with a drone on a neon grid road, Image B is a realistic city street with a car",
+        "Different palettes: purple and teal in A, warm orange sunset in B",
+        "Image B has a HUD with timer, speedometer, nitro bar and minimap, and A shows none"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien sci-fi drone on a neon grid road under a purple planet sky",
+        "Image B is a warm orange-lit city street with a green hatchback car",
+        "Different HUDs and palettes: B has a speedometer and minimap, A has none"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a warm golden-hour city street with a car, speedometer and minimap HUD",
+        "Image B is a cool teal alien canyon with a drone, a ringed planet and glowing flora, with no HUD",
+        "Different palettes, scenery and vehicles, with no shared art style or UI"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, Image B is an orange-lit city street with a car",
+        "Different art styles: stylized sci-fi terrain vs. blocky low-poly buildings",
+        "Different HUDs: none in A, speedometer and minimap in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, ringed moon and glowing crystals",
+        "Image B is a dusk city street with a car, lit windows, a speedometer and a minimap",
+        "Different palette, setting, vehicle type and HUD style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunset city street with a green car and a minimap and speedometer HUD",
+        "Image B is an alien mountain landscape with a drone on a neon grid road",
+        "Different palettes, scenery and vehicles (warm orange vs. cool purple-teal)"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city street with a small car, speedometer gauge and grid minimap",
+        "Image B is an alien planet with a drone, neon grid track and teal mountains",
+        "Different settings, palettes and HUD styles"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm sepia city street with a taxi and HUD (speedometer, minimap, ticket)",
+        "Image B is an alien planet with a purple neon grid road, mountains and a drone",
+        "Different palettes, scenery and vehicle types, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm sepia city street with a taxi, a car and a racing HUD (speedometer, minimap, nitro bar)",
+        "Image B is a cool teal alien canyon with a drone, a large moon and glowing road lines, with no HUD",
+        "The two frames differ in setting, palette, vehicles and art style"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: alien teal landscape with a drone and a ringed moon",
+        "Image B: warm sunset city with a taxi-style car, traffic lights and a HUD with minimap",
+        "Different palettes, settings and vehicles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm orange city street with a car, speedometer and minimap HUD",
+        "Image B is a teal alien canyon with a ringed moon and an orange drone",
+        "Different palette, setting, vehicle type and HUD style"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: warm orange-lit city street with a green car, traffic lights and a HUD with speedometer and minimap",
+        "Image B: alien purple-teal landscape with a giant planet and a drone on a neon grid road",
+        "Different palettes, scenery and vehicles, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sunset city street with a car, a speedometer and a minimap; Image B is an alien mountain landscape with a drone on a neon grid road",
+        "Different palettes: warm orange and brown in A, cool purple and teal in B",
+        "Different art styles: flat low-poly buildings in A, painterly textured terrain with a giant planet in B"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: alien planet with a drone over a neon grid road",
+        "Image B: realistic night city street with a small car",
+        "Different HUDs: none in A, speedometer and minimap in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: alien teal landscape with a drone on a glowing track",
+        "Image B: orange-lit city street with a small green car, minimap and speedometer",
+        "Different vehicles, scenery, palettes and HUD styles"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien sci-fi landscape with a drone on a neon grid road under a purple sky",
+        "Image B is a warm orange city street with a green car, traffic lights and a minimap",
+        "Different palettes, scenery, vehicles and HUD styles"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: sunlit city with a green car and a HUD (speedometer, minimap, timer)",
+        "Image B: alien teal canyon with a drone, a ringed moon and no HUD",
+        "Different palettes, warm orange against cold teal, and different settings and vehicles"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a teal alien canyon with a drone, Image B is a warm sepia city street with cars",
+        "Different palettes: cool teal/purple vs. orange/yellow haze",
+        "Different HUDs: none in A, speedometer, nitro bar, minimap and ticket timer in B"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an alien sci-fi drone on a neon grid road under a purple ringed planet, while Image B is a sunlit city street with a taxi and a car",
+        "Different palettes: cool teal and purple versus warm amber and sepia",
+        "Different HUDs: B has a speedometer, nitro bar, ticket card and minimap, and A has no HUD"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a night city street with a car and a minimap HUD, Image B is an alien canyon with a drone",
+        "Different palettes: warm window lights and a dusk sky versus teal and purple alien tones",
+        "Different vehicles and scenery: urban buildings and traffic lights versus mountains, crystals and a giant moon"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an orange-sunset city street with a green car, speedometer and minimap HUD",
+        "Image B is a teal alien canyon with a drone, ringed moon and glowing crystals, and no HUD",
+        "Different palettes, scenery and vehicles with no shared assets or HUD style"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is an alien-planet drone scene with a purple and teal palette and a neon grid track",
+        "Image B is a realistic-style city with a warm sunset and a green car",
+        "Image B has a HUD with speedometer, nitro bar, minimap and ticket timer, none of which appear in Image A"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien sci-fi landscape with a drone on a neon grid road, purple and teal palette",
+        "Image B is a warm orange-lit city street with a car, low-poly buildings, and a speedometer and minimap HUD",
+        "Different vehicles, scenery, lighting and HUD styles"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien teal landscape with a drone, a ringed moon and glowing crystals",
+        "Image B is a dusk city street with a car, lit building windows, a speedometer and a minimap",
+        "Different scenery, palette and vehicle types, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "pickup-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an alien sci-fi drone on a neon grid road under a purple ringed planet",
+        "Image B is a warm sepia city street with a taxi and a car, plus a speedometer, minimap and ticket HUD",
+        "Different vehicles, palettes and scenery, with no shared HUD style"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm golden city street with a car and a speedometer/minimap HUD",
+        "Image B is a cool teal alien canyon with a drone and a ringed planet",
+        "Different palettes, scenery and vehicles, with no shared art style or HUD"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a warm orange sunset city with a car, speedometer and minimap HUD",
+        "Image B is an alien mountain landscape with a purple planet and a neon grid road",
+        "Image B has a drone vehicle and no HUD, and its palette and setting differ completely"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "pickup-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, sandy-orange city street with a taxi and car HUD (speedometer, minimap, ticket)",
+        "Image B is a cool teal alien canyon with a drone, ringed moon and glowing track lines",
+        "Different palettes, scenery and vehicle types, and no shared HUD style"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is an alien teal-and-purple landscape with a drone, Image B is a warm sunset city with a small car",
+        "Different HUD: Image B has timer, speedometer, nitro bar and minimap, Image A has none",
+        "Different palettes and art styles: dark stylized sci-fi vs. bright cartoon urban"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city street with a car, a speedometer gauge and a minimap",
+        "Image B is an alien planet with a drone, a neon grid road and stylized mountains",
+        "Different palettes, scenery and vehicles, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "drive-1280",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: alien teal/purple canyon with a drone and a ringed moon",
+        "Image B: warm sunset city with a small green car, traffic lights and a speedometer/minimap HUD",
+        "Different palettes, settings, vehicles and HUD styles"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "pickup-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a sunlit city street with taxis and a HUD with speedometer, minimap and ticket timer",
+        "Image B is an alien planet with a drone on a neon grid road and no matching HUD",
+        "Different palette and setting: warm orange haze versus cool purple and teal"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm golden-hour city street with a car, speedometer and minimap HUD",
+        "Image B is a cool purple alien landscape with a drone, neon grid track and giant planet",
+        "Palette, scenery, vehicle type and HUD differ completely"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic night city street with a small car, speedometer and minimap HUD",
+        "Image B is an alien planet with a drone, a neon grid road and a giant planet in the sky",
+        "Scenery, palette, vehicle type and HUD style differ completely"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm orange city street with a car and a HUD showing a speedometer and minimap",
+        "Image B is a teal alien canyon with a drone, a ringed moon and glowing crystals",
+        "Different palettes, scenery, vehicles and HUD (none visible in B)"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 4,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien planet with a drone on a neon grid road under a purple sky",
+        "Image B: realistic city street at sunset with a car, speedometer and minimap HUD",
+        "Different palette, scenery and vehicle type"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 4,
+      "a": "drive-1280",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is an alien sci-fi landscape with a drone on a neon grid road, while Image B is a realistic city with a car",
+        "Different palettes: purple/teal in A, warm orange sunset in B",
+        "Image B has a HUD (timer, speedometer, minimap, nitro bar) with a different art style from A"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 4,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a warm orange sunset city with a car, speedometer and minimap HUD",
+        "Image B is a teal alien canyon with a drone, ringed moon and no HUD",
+        "Different palettes, scenery and vehicles"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-hoops-3d/f48/aura-hoops-3d/frames/f48-aura-hoops-1/aura-hoops-3d--athens--settle-60s.jpg",
+      "sha256": "6d3abdf9ff5a1cc37d528e02557c6569b1d1706ef7d24630a0dcad37efd70ae1"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-hoops-3d/f48/aura-hoops-3d/frames/f48-aura-hoops-1/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "9ceb541040c74e9dfad0589cf5f6e2021ec98f7fbc5f18e1975ab111505d4f7b"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-hoops-3d/f48/aura-hoops-3d/frames/f48-hoops-venice-r2/aura-hoops-3d--venice--settle-60s.jpg",
+      "sha256": "6b2c446e485d96f4e30b8fa8455c281d590e8a8b55a8406eaf95934e2d9dcfb4"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-hoops-3d/f48/aura-hoops-3d/frames/f48-aura-hoops-2/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "2bde570a9b349c4cde85e753ab7c3776f7ccc441322de51354118a53cf711da3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 4,
+    "ibl_reflections": 5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 4.5,
+    "postprocessing": 5.5,
+    "animation_quality": 4.5,
+    "ui_hud": 3
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 is lit flat and grey with almost no key direction, so players read as cutouts. Frame 2 has a warm low sun with long shadows and the strongest mood. Frame 4 has an indoor ambient look but no clear overhead flood key on the court."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 2's long shadows have visible stair-step aliasing along the bleacher and court edges, which points to a low shadow-map resolution. Frames 1 and 3 show only faint blob contact shadows under the feet, so players look like they float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 4's glossy floor reflects the players and the red key, which works. Frames 1 to 3 have matte floors with no environment reflection, and the ball and skin show no specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Frames 1 and 2 use extruded box buildings with repeated window grids and no detail. Frame 3 has a palm tree floating unattached in the sky and a pale slab horizon. Frame 4 uses a blurred photo backplate that does not match the 3D court's perspective."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 3 has pink distance haze. Frame 4 has sparse dust particles near the hoop. Frames 1 and 2 have no haze or depth fade, and none of the frames shows the indoor haze over the court that the recipe expects."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Clothing, skin, and the court surface are flat colour with no roughness variation, fabric detail, or wear. Court lines in frame 1 are plain white strips, and the backboard art is the only textured surface."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Characters are low-poly with blocky hands and hair cards, and they are near-identical proportionally. The ball cart and the hoop with its net are the most detailed assets. The bleachers are plain stepped boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "The hoop is cropped at the top-right corner and one player is cut off at the right edge. The bottom third is empty floor, and the court fills about 70% of the frame, far above the 25–40% target."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low perspective three-quarter view, roughly 20–25° down, not the elevated 70° orthographic broadcast view. The same fixed framing repeats in every frame."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 4 has depth of field, bloom, and a vignette, which add polish. Frame 1 has no visible grading. Frame 2's warm grade works, but the treatment varies a lot from frame to frame."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The ball handler's dribble poses change across frames. Every other player holds the same stiff arms-out idle pose in every frame, and the white swoosh markers at their feet look like placeholder motion cues."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only UI is an orange selection ring under the ball handler and white arcs at the feet. There is no score, clock, or possession indicator. Pixel-font text is painted on the floor in frames 3 and 4."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

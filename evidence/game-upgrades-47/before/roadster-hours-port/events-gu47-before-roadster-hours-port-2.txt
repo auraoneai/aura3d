@@ -1,0 +1,5 @@
+run gu47-before-roadster-hours-port-2 acr ch5ux was successful after 5m52s playwrightExit 0
+GL_READY roadster-hours-port--halo 48726ms
+GL_DONE roadster-hours-port--halo
+1 passed (4.7m)
+[task-run] PLAYWRIGHT_EXIT=0

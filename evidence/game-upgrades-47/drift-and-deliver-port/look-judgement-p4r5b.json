@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r3/screens/drive-1280.jpg",
+      "sha256": "8eb79b6b06d15fdc37cc22d587bdac6db93f0e6a615e99f7dead8c9e0c0e02c2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r5/screens/pickup-1280.jpg",
+      "sha256": "c1cf261c065d87ddfd2bcf99e205437c80e87426c46447eca3e258458aefc6fa"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r5/drift-and-deliver-port/frames/g18p4-r5-3/drift-and-deliver-port--sunset--settle-60s.jpg",
+      "sha256": "93cbccb372e7479ce58a838b429b46984edee7d0485a17a2671e1c1b39dfe550"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r5/drift-and-deliver-port/frames/g18p4-r5-4/drift-and-deliver-port--bluehour--settle-60s.jpg",
+      "sha256": "5184db578fca4e667069fbe40eec0b8f1c4b8948db974d3d94c43e5b7af2f294"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1-3 read as golden hour, with a low sun down the avenue warming facades and sidewalks. Shaded areas get flat, uniform fill with no warm/cool split. In frame 4 (dusk/night) the street lamps emit no light pools and the scene goes uniformly gray."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 1 shows building shadows banding the road and facades, with hard stair-step edges on the right-hand buildings. The player car has only a faint contact shadow and looks slightly floating. Poles and traffic lights cast no visible shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car's rear glass shows a single blown-out white hotspot with jagged crack-like streaks, which looks like an environment-map artifact rather than a reflection of the sun. The mint paint and the building windows show almost no environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city is coherent: traffic lights, lamp posts, palms, crosswalks and arrow decals. The building facades repeat the same window tiles, and frame 2's background hills are untextured orange boxes."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1's distance haze toward the sun fits the brief. In frame 2 the fog is a heavy flat orange wash that erases depth. Frame 4 has no visible fog, so the street ends in a hard skyline."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The player car's texture looks dirty and noisy. The license plate is a blurred smear, and the rear bumper shows bright streak artifacts. Buildings and road are flat diffuse colors with no roughness variation or wet/dry asphalt response."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Buildings are simple boxes and the pedestrian in frames 3-4 is a blocky primitive. The detailed yellow van in frame 2 clashes stylistically with the low-poly world and shows aliased, noisy windshield detail."
+    },
+    {
+      "category": "composition",
+      "seen": "The symmetric street corridor gives a strong central vanishing point. The car's share of the frame swings from about 10% in frame 1 to about 30% in frames 3-4. The ticket card sits on top of the sun focal point in frames 1-2."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera and roughly 60-65° FOV suit the genre. In frames 3-4 the camera is pulled in tight and low, so the car blocks much of the road ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The warm grade fits a film look in frames 1 and 3. Bloom is minimal even on the sun, and poles and van edges show aliasing. Frame 4 has lifted, muddy blacks and no bloom on lit windows or lamps."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD in frames 1-2 is clean: timer, ticket card, score, speedometer, nitro bar and minimap. Frames 3-4 drop the timer, ticket, score, nitro bar and speed number, leaving an empty gauge. The 'Sound on (M)' text reads like debug output, and the minimap is a noisy grid of dots."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

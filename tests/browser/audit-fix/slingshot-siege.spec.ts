@@ -180,6 +180,9 @@ test.describe("slingshot-siege audit fix", () => {
       for (const prefix of ["v-block-", "v-crate-", "v-barrel-", "v-plank-"]) {
         for (let i = 0; i < 120; i++) { const h = app.nodes.get(`${prefix}${i}`); if (h && h.visible) visible++; }
       }
+      // GU47 phase 7: solid blocks are instances of one node per family (blockInstances.ts), counted per live instance.
+      const live = (window as any).__SS_DEBUG__?.liveBlocks?.() ?? {};
+      for (const n of Object.values(live) as number[]) visible += n;
       return { level: st.level, pieces: st.pieces, visiblePieceNodes: visible };
     });
     check("pool-gull-keep", pool);

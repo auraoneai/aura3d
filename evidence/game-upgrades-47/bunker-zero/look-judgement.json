@@ -3,76 +3,80 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-s1280/screens-1280--1280-03-action.jpg",
-      "sha256": "a8cbfafa7c0559d1c0db926a173fbd1b8f5b27d1323433e5c803d31069f4bfea"
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-s1280/screens-1280--1280-03-action.jpg",
+      "sha256": "4c25bf75b18ab15c60eb958e28a876f341d2e5fa77d3c07e033d25dbaa150c6e"
     },
     {
-      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-s1280/screens-1280--1280-04-mid.jpg",
-      "sha256": "74c7d026e5666e71f43c25725aecebd8753dda8f04d2aab3a99d7d1c92447a64"
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-s1280/screens-1280--1280-04-mid.jpg",
+      "sha256": "812e9072a87b0ab21b373b9319cb6bab1e8491fb887bcec9319c06ab43f6e003"
     },
     {
-      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor2/bunker-zero--floor2--settle-60s.jpg",
-      "sha256": "d6829580497b18849780f963c1f61f141dd85331104d0feb8f2556b6f4185cdd"
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-floor2/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "9e41e3a28e70a7c26f5c7fd6101851bf222314eecd8af458127720dbff5c5dac"
     },
     {
-      "path": "evidence/game-upgrades-47/bunker-zero/p3-r4/bunker-zero/frames/g11p3-r4-floor3/bunker-zero--floor3--settle-60s.jpg",
-      "sha256": "9cafa55c003d1dc9907fc1c0c2c4fa43be1c096f9bfb0ff0db302ad854bfdfdc"
+      "path": "evidence/game-upgrades-47/bunker-zero/p4-r5/bunker-zero/frames/g11p4-r5b-floor3/bunker-zero--floor3--settle-60s.jpg",
+      "sha256": "14007b54ac4686150e9970f15124f2c616214c0b64b92b7fb68b99a8acb2ab6f"
     }
   ],
   "references": [],
   "scores": {
     "lighting": 5,
     "shadows": 3,
-    "ibl_reflections": 3,
-    "environment_world": 4.5,
-    "atmospheric_effects": 4,
+    "ibl_reflections": 4,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
     "material_quality": 4.5,
     "modeling_assets": 4,
     "composition": 5,
-    "camera": 5.5,
-    "postprocessing": 5,
-    "ui_hud": 7
+    "camera": 5,
+    "postprocessing": 4.5,
+    "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Ceiling strip lights produce soft glows on the back walls and a warm pool on the floor in frame 4, but the walls are mostly flat-lit with weak falloff. Frame 3 is murky teal with low contrast."
+      "seen": "In frame 1 the floor in front of the treasure chest is blown out to near-white while the walls stay murky grey-brown. The ceiling strip lights cast soft pools but give no clear light direction. Frame 4 is lit by a uniform orange wash that flattens every surface."
     },
     {
       "category": "shadows",
-      "seen": "Wall-floor junctions have no contact shadows or AO, and the enemy statues cast no visible shadows. The corridors read as unshadowed boxes."
+      "seen": "There are almost no visible cast shadows. The chest in frame 1 and the pillar in frame 2 have no grounding contact shadow. Wall bases get only a faint dark gradient. The floating pistol in frames 3 and 4 casts nothing."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The water plane in the flooded cellars is a flat opaque teal slab with no reflection or refraction. The floors show only a faint highlight blob."
+      "seen": "The floors show a single smeared specular streak under each light (frames 2 and 3) but no environment detail. The flooded-cellar water in frames 2 and 3 is a flat opaque teal plane with no reflection or refraction."
     },
     {
       "category": "environment_world",
-      "seen": "Levels are long rectangular box corridors with yellow baseboard strips and no props, pipes, doors or bunker detail. The 'B-3 FORGE HALLS' floor decal is the only set dressing."
+      "seen": "The corridors are long boxes with repeated pipe runs and yellow kick strips. The round vault door at the end of frames 3 and 4 is the only landmark. There is no Cold-War set dressing such as signage clutter, crates, consoles or cabling, so the spaces read as greybox with textures applied."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is slight distance haze and bloom-like light glare, plus some sparkle particles in frame 2. There is no dust, steam, or volumetric light."
+      "seen": "A teal distance fog in frames 2 and 3 adds some depth. The four-point sparkle sprites in frame 2 float in the air like UI glyphs. The pickup glow is a hard-edged white ellipse rather than a volumetric bloom."
     },
     {
       "category": "material_quality",
-      "seen": "The stone wall texture in the cellars is decent but stretched and repeats. The concrete walls in frame 1 are low-frequency smudge with no normal detail, and the floors are blurry noise."
+      "seen": "The stone wall texture in frames 2 and 3 is stretched and uniformly tiled with no normal or parallax depth at the edges. The concrete walls in frames 1 and 4 are flat albedo with faint smudges. The chest in frame 1 is washed out and looks semi-transparent. The water reads as plastic."
     },
     {
       "category": "modeling_assets",
-      "seen": "The pistol viewmodel is detailed with emissive accents, but enemies are distant dark silhouettes. A white floor quad in frame 1 looks like a misplaced placeholder."
+      "seen": "Wall geometry is plain extruded blocks with cylinder pipes and sharp untrimmed corners. The pistol has decent detail but is shown with no hands or arms, and it floats beside the view pointing right and away from the crosshair."
     },
     {
       "category": "composition",
-      "seen": "Symmetric corridor framing gives a clear vanishing point, but frames lack focal interest. Frames 1 and 2 have no viewmodel at all."
+      "seen": "Frames 3 and 4 are centered one-point-perspective corridor shots with large empty floor areas filling the lower half. The pistol sits mid-right and blocks the sightline. Frame 1's focal chest is lost in the overexposed floor."
     },
     {
       "category": "camera",
-      "seen": "The FOV is reasonable. The weapon sits oddly low-right and floats detached from any hand, and the HUD frames lack a viewmodel entirely."
+      "seen": "The viewmodel placement in frames 3 and 4 is unnatural: the gun is mid-screen, rotated outward, and detached. FOV and eye height are reasonable, but the weapon framing breaks first-person presence."
     },
     {
       "category": "postprocessing",
-      "seen": "There is mild bloom on the lights and a light vignette. Grading is monochrome per level, and frame 3 looks crushed and muddy."
+      "seen": "Tone mapping clips highlights on the frame 1 floor and the frame 2 pickup. Bloom is heavy on the floor lights in frame 4. A dark vignette and color grade are visible, but there is no AA cleanup on the pipe silhouettes and no depth of field or grain cohesion."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The bottom stat bar with health, armor, ammo, score, kills and time is clean and legible. However, the pickup and kill log stacks six identical-style toasts, and a browser-style mode and floor tab bar sits on top of the game view. Frames 3 and 4 show no HUD at all."
     }
   ],
   "nextChange": {

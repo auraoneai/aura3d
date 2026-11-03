@@ -1,0 +1,232 @@
+[
+ {
+  "target": "screens-1280",
+  "id": "1280-01-title",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 24.14,
+  "p5": 10,
+  "p50": 19,
+  "p95": 40,
+  "darkFrac": 0.0851,
+  "clipFrac": 0,
+  "bands": [
+   23.7,
+   23.72,
+   24.98
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 120,
+   "triangles": 839943,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 1,
+   "time": 1.7,
+   "simSteps": 101,
+   "hp": 100,
+   "weapon": "pistol",
+   "mag": 8,
+   "kills": 0,
+   "enemiesAlive": 7,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 0,
+   "frameErrors": 0,
+   "drawCalls": 119
+  }
+ },
+ {
+  "target": "screens-1280",
+  "id": "1280-02-early",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 66.37,
+  "p5": 19,
+  "p50": 60,
+  "p95": 136,
+  "darkFrac": 0.0039,
+  "clipFrac": 0,
+  "bands": [
+   55.19,
+   79.04,
+   64.87
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 49,
+   "triangles": 357698,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 1,
+   "time": 7.7,
+   "simSteps": 576,
+   "hp": 100,
+   "weapon": "mg",
+   "mag": 3,
+   "kills": 5,
+   "enemiesAlive": 2,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 80,
+   "frameErrors": 0,
+   "drawCalls": 35
+  }
+ },
+ {
+  "target": "screens-1280",
+  "id": "1280-03-action",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 67.6,
+  "p5": 17,
+  "p50": 54,
+  "p95": 179,
+  "darkFrac": 0.0087,
+  "clipFrac": 0,
+  "bands": [
+   41.97,
+   85.97,
+   74.85
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 30,
+   "triangles": 175358,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 1,
+   "time": 23.2,
+   "simSteps": 1506,
+   "hp": 100,
+   "weapon": "mg",
+   "mag": 3,
+   "kills": 5,
+   "enemiesAlive": 2,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 117,
+   "frameErrors": 0,
+   "drawCalls": 30
+  }
+ },
+ {
+  "target": "screens-1280",
+  "id": "1280-04-mid",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 70.01,
+  "p5": 20,
+  "p50": 64,
+  "p95": 147,
+  "darkFrac": 0.0015,
+  "clipFrac": 0,
+  "bands": [
+   52.39,
+   80.69,
+   76.97
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 59,
+   "triangles": 232314,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 2,
+   "time": 17.4,
+   "simSteps": 2801,
+   "hp": 100,
+   "weapon": "mg",
+   "mag": 21,
+   "kills": 2,
+   "enemiesAlive": 2,
+   "paused": false,
+   "outcome": null,
+   "eventsDrained": 188,
+   "frameErrors": 0,
+   "drawCalls": 59
+  }
+ },
+ {
+  "target": "screens-1280",
+  "id": "1280-05-modes",
+  "hud": true,
+  "w": 1280,
+  "h": 720,
+  "mean": 18.55,
+  "p5": 8,
+  "p50": 14,
+  "p95": 28,
+  "darkFrac": 0.2333,
+  "clipFrac": 0.0001,
+  "bands": [
+   18.89,
+   20.44,
+   16.31
+  ],
+  "diag": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "drawCalls": 54,
+   "triangles": 232102,
+   "droppedPasses": null,
+   "warningCodes": [
+    "Scene has no interactions. Suggested fix",
+    "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix"
+   ],
+   "errors": 0
+  },
+  "game": {
+   "mode": "descent",
+   "floor": 2,
+   "time": 17.5,
+   "simSteps": 2810,
+   "hp": 100,
+   "weapon": "mg",
+   "mag": 21,
+   "kills": 2,
+   "enemiesAlive": 2,
+   "paused": true,
+   "outcome": null,
+   "eventsDrained": 189,
+   "frameErrors": 0,
+   "drawCalls": 54
+  }
+ }
+]

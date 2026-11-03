@@ -3,85 +3,76 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r8/aura-links-3d/frames/g10p3-r8-1/links-shots-play-1280x720--03-action-02-power.jpg",
-      "sha256": "e2bd24859148b6d3d92767760ea50214b24513adb10431b380bc001fd10f099e"
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-1/links-shots-play-1280x720--03-action-02-power.jpg",
+      "sha256": "bfaca67931a9d731c1972707dbd15852885ad1e1936716cfeb4398e52df56346"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r8/aura-links-3d/frames/g10p3-r8-3/aura-links-3d--mapleHollow--settle-60s.jpg",
-      "sha256": "03f71df9de18ce170231a059f09b80fc4b666e92680449f03635313e7ce63e0c"
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-3/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "0ea00dfae6de9740d2cbb3429298f60fa5675900fb80fe3997c11c19f9ea77f6"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r8/aura-links-3d/frames/g10p3-r8b-2/aura-links-3d--cinderRim--settle-60s.jpg",
-      "sha256": "b0dbf5721edf6813a3fcb993cc0736ecb99e67d676c69f9fb67b6cb3479135f1"
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-4/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "a25b644f56b7d689dfd5ce817f4054eba011c7206a4f9d47dddfc98337f1f45b"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-links-3d/p3-r9/aura-links-3d/frames/g10p3-r9-1/aura-links-3d--neonBay--settle-60s.jpg",
-      "sha256": "502605c073cdef5b8651012f5c9a1fceca5b9830895ecef41fc70d26087b04b5"
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-2/aura-links-3d--neonBay--settle-60s.jpg",
+      "sha256": "d98b0e0f0ce6ed99459800697df20fee932ae9fe2a7c213b44e53ec7868f6e7a"
     }
   ],
   "references": [],
   "scores": {
     "lighting": 5.5,
-    "shadows": 4.5,
+    "shadows": 5.5,
     "ibl_reflections": 3.5,
-    "environment_world": 4.5,
+    "environment_world": 4,
     "atmospheric_effects": 5,
-    "material_quality": 4.5,
-    "modeling_assets": 5,
+    "material_quality": 5,
+    "modeling_assets": 4.5,
     "composition": 4.5,
     "camera": 5,
     "postprocessing": 5,
-    "animation_quality": 4.5,
-    "ui_hud": 7
+    "ui_hud": 7.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "The key light is flat and mostly ambient. The golfer reads washed out in the daylight frames. Only the night frame has a coherent moonlit mood, and the dusk desert frame gets some warm horizon gradient."
+      "seen": "Frame 2 (autumn course) is lit almost flat, with little key/fill separation on the golfers. Frame 3 (cinder course) has a muddy brown cast that flattens the tee and fairway into one value range. Frame 1's overcast light reads best."
     },
     {
       "category": "shadows",
-      "seen": "Characters cast only soft blob/contact shadows under their feet. The trees cast faint, barely visible ground shadows, and the cart and tee markers have no grounding shadow."
+      "seen": "The night frame shows a crisp directional shadow from the golfer, and frame 1 has tree shadows on the fairway. In frames 2 and 3 the player contact shadows are faint soft blobs, and the trees cast no readable shadow."
     },
     {
       "category": "ibl_reflections",
-      "seen": "Nothing reflects the environment. The club shaft is a dull grey line, the white cart looks unlit and overexposed, and the turf has no sheen."
+      "seen": "No environment reflections are visible. The club shaft and the ball have only a weak specular highlight, and the cart and tee markers show no sky response."
     },
     {
       "category": "environment_world",
-      "seen": "The fairway is an endless flat plane meeting a hard horizon. The desert course is a featureless brown plain with scattered cone props. Tree lollipops line the edges, and no crowd, pin, hazards or course shaping are visible beyond one sand strip."
+      "seen": "The fairways are flat, empty planes running to a hard horizon line. No flag, green, hazard, or terrain undulation is visible in frames 2-4. Set dressing is limited to repeated blob trees and small cone shrubs. The cinder course is a flat hex-tile plane."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "Floating ember/dust motes appear in every frame, and there is mild horizon haze in the first and third shots. Distance fog is weak, so the horizon line stays hard."
+      "seen": "There is mild distance haze near the horizon in frames 1 and 3, and floating particles (embers, motes, stars) in all frames. The particles read as uniform noise and do not sit in the depth of the scene."
     },
     {
       "category": "material_quality",
-      "seen": "The grass texture tiles visibly in large repeating patches, especially on the desert cobble-like ground. The character cloth is flat-shaded, and the cart is a blown-out white material with no definition."
+      "seen": "The grass has a fine noise texture that tiles visibly on the fairway. The tee box is a plain rectangle with a dark border slab. The tee markers are untextured red boxes, and the clothing is flat diffuse."
     },
     {
       "category": "modeling_assets",
-      "seen": "The golfer and caddie are low-detail rigged humanoids with a rough cap and hands. The trees are stacked spheres. The tee markers are plain red boxes, and the cart is reasonably modeled but untextured."
+      "seen": "The golfer and caddie are low-poly with stiff, mannequin-like poses. The trees are stacked spheres on cylinders, and the shrubs are cones. The golf cart in frame 1 is the most detailed asset in the set."
     },
     {
       "category": "composition",
-      "seen": "The player is jammed into the left edge in frames 2–4 with the caddie cut off at the frame border. The large empty ground plane dominates the frame, and the aim line points at nothing, with no visible target or pin."
+      "seen": "In frames 2-4 the golfer is pushed to the far left edge, and the caddie is cut off by the frame. The centre and right of the frame are mostly empty fairway, with only the white aim line leading the eye."
     },
     {
       "category": "camera",
-      "seen": "The behind-the-shoulder tee camera is serviceable but placed so the golfer crops at the left. Frame 1 is tighter and better, yet the field of view shows mostly foreground turf."
+      "seen": "The camera is a low third-person view from behind and to the right, not the elevated broadcast angle the recipe calls for. The subject fills roughly 15-25% of the frame, and the horizon sits dead centre, which emphasises the emptiness."
     },
     {
       "category": "postprocessing",
-      "seen": "There is mild bloom on the aim line and some tone mapping. The highlights on the white cart clip, and there is no vignette or color grading that unifies the day frames."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "The address poses look stiff. The arm angles are awkward, with the elbow bent unnaturally away from the club, and the caddie stands in a rigid pose."
-    },
-    {
-      "category": "ui_hud",
-      "seen": "The HUD is clean and legible, with hole/strokes/score, wind/pin/club/lie, a power meter and a controls hint. The top mode bar crowds the frame, and the HUD is absent in frames 2–4."
+      "seen": "The aim line blooms lightly in the night frame. Tone mapping is acceptable, but the cinder frame is low-contrast and murky. No colour grading gives the courses a consistent identity."
     }
   ],
   "nextChange": {

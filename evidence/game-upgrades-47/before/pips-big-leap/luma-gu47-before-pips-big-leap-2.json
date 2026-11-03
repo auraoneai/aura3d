@@ -1,0 +1,118 @@
+[
+ {
+  "target": "pips-big-leap--w2",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w2",
+  "sinceReadyMs": 25002,
+  "mean": 177.43,
+  "p5": 122,
+  "p50": 201,
+  "p95": 243,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   235.3,
+   215.7,
+   217.7,
+   204.4,
+   151.9,
+   187,
+   128,
+   128,
+   128.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 461
+  }
+ },
+ {
+  "target": "pips-big-leap--w2",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w2",
+  "sinceReadyMs": 139061,
+  "mean": 177.31,
+  "p5": 122,
+  "p50": 201,
+  "p95": 243,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   235.3,
+   215.7,
+   217.7,
+   204.5,
+   151.7,
+   186.1,
+   128,
+   128,
+   128.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 461
+  }
+ },
+ {
+  "target": "pips-big-leap--w3",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w3",
+  "sinceReadyMs": 25002,
+  "mean": 207.59,
+  "p5": 152,
+  "p50": 212,
+  "p95": 235,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   208.9,
+   192.7,
+   197.6,
+   193.1,
+   199.1,
+   182.5,
+   230.5,
+   233.4,
+   230.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 458
+  }
+ },
+ {
+  "target": "pips-big-leap--w3",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w3",
+  "sinceReadyMs": 117624,
+  "mean": 207.63,
+  "p5": 152,
+  "p50": 212,
+  "p95": 235,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   208.9,
+   192.6,
+   197.6,
+   193.1,
+   199.4,
+   182.6,
+   230.5,
+   233.5,
+   230.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 458
+  }
+ }
+]

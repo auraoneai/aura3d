@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-02T21:44:10.917Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink-port--default--settle-60s"
+    ],
+    "framesB": [
+      "roadster-hours-port--halo--settle-60s",
+      "roadster-hours-port--halo-original--settle-60s",
+      "roadster-hours-port--redline--settle-60s",
+      "roadster-hours-port--redline-original--settle-60s",
+      "roadster-hours-port--sunbreak--settle-60s",
+      "roadster-hours-port--sunbreak-original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": true,
+  "same_game_confidence": 0.583,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 11,
+    "sameGameYes": 37,
+    "differentRate": 0.22916666666666666,
+    "ci95": [
+      0.13307691028989044,
+      0.36539535908451154
+    ],
+    "confidentDifferent": 10,
+    "confidentDifferentRate": 0.20833333333333334,
+    "same_game": true,
+    "same_game_confidence": 0.583,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "both show a straight track with side rails and a start/finish gate in the distance",
+        "similar soft stylized terrain with banded layered textures",
+        "similar third-person chase camera behind a vehicle, with matching lighting and post-processing"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: alien ringed planet, purple grid track and a drone vehicle",
+        "Image B: night city skyline with a realistic road and a car",
+        "Different palettes and vehicles, with no shared HUD or track style except the arch gate"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show a vehicle on a straight road with glowing edge lines and a gate in the distance",
+        "Similar guardrails and road-marking layout",
+        "Very different themes (realistic coast vs. alien planet) could mean separate levels or separate games"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "glowing edge lines along the track in both",
+        "distant checkpoint gate on a straight track",
+        "similar banded low-poly rock walls and chase-style camera"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "third-person chase camera behind a vehicle on a guardrailed road",
+        "overhead gantry or sign spanning the road in the distance",
+        "similar soft lighting and haze, with only the theme and vehicle differing"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar third-person chase camera with the vehicle low in frame",
+        "a gate or arch at the far end of the track in both frames",
+        "similar soft, hazy lighting and pink edge trim on the track barriers"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show a vehicle on a barrier-lined race track with a start/finish gate in the distance",
+        "Similar stylized low-poly terrain with soft, hazy rendering and a third-person chase camera",
+        "Different biomes (alien planet vs. desert canyon) could mean separate tracks or separate games"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night city highway with a car and lit skyscrapers",
+        "Image B is an alien planet with a ringed planet, rock formations and a drone",
+        "Different palette and art style: near-black navy vs pastel purple and teal"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same third-person camera with vehicle offset to the right on an elevated road",
+        "distant gate or arch over the road in both frames",
+        "similar rail and barrier edges with a tiled grid surface beside the road"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "rectangular checkpoint gate ahead on the track in both frames",
+        "glowing neon edge lines along the road",
+        "low-poly stylized rock terrain with the same behind-the-vehicle chase camera"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "glowing colored edge lines along the track in both",
+        "gate or arch structure at the far end of the road",
+        "similar guardrail and post styling with the same smooth, soft-lit render look"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both are third-person vehicle chase views on a road with a gantry ahead",
+        "similar soft filmic lighting and rendering style",
+        "different themed worlds and vehicles could also be separate games"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night city highway with a car and lit-window skyscrapers",
+        "Image B is a bright alien planet with a ringed moon, rock formations and a drone",
+        "Different palettes, materials and vehicles, though both have a road with a glowing edge and a gate in the distance"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "same low third-person chase camera behind the vehicle",
+        "distant start/finish gate over a barrier-lined track in both",
+        "similar stylized banded rock terrain and soft painterly lighting"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "gate frame at the end of the track in both",
+        "glowing colored edge lines along the track borders",
+        "similar layered, striated rock textures and rendering style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "similar gate structure at the end of the track in both",
+        "glowing edge lines along the track with guardrails",
+        "vehicle centered behind-view camera on a themed track"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien planet with a drone, magenta rails and neon violet tones",
+        "Image B is a realistic coastal highway with a vintage car and wind turbines",
+        "Different lighting and palette: stylized glow versus muted natural haze"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a vehicle on an elevated road with side rails and a distant gate or arch",
+        "Similar third-person chase camera behind the vehicle with no HUD",
+        "Same render look: soft volumetric haze and stylized low-poly scenery"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "distant checkpoint gate over a racing road in both",
+        "glowing edge lines along the track",
+        "similar soft low-poly terrain and bloom lighting"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: alien planet with ringed moon, drone vehicle, purple grid track",
+        "Image B: night city highway with a car and lit skyscrapers",
+        "Different scenery, palette and vehicles; only the checkpoint gate over the road is similar"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both are third-person races on a barriered track with a gate in the distance",
+        "similar smooth stylized terrain and soft post-processing",
+        "different biome and vehicle, which could be separate levels or separate games"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "glowing track-edge lines and guardrails in both",
+        "distant checkpoint gate over the track in both",
+        "vehicle racing on a themed track with similar rendering and haze"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "distant gantry/sign over the road in both frames",
+        "third-person chase camera behind a vehicle on a guardrailed road",
+        "similar soft bloom and stylized low-poly scenery despite different themed worlds"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a vehicle on an elevated road with side rails and a distant start gate",
+        "Similar third-person chase camera and vehicle placement",
+        "Same stylized low-poly rendering with a hazy atmosphere and a cool-toned palette"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person chase camera behind a vehicle on a guardrailed road",
+        "overhead gantry spanning the road in both frames",
+        "similar soft, filmic lighting and rendering style despite different themes"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night city highway with a car and lit-window skyscrapers",
+        "Image B is a bright alien planet with a ringed moon and a drone",
+        "Different road style, palette and scenery: cyan edge glow on asphalt vs magenta rails on a purple grid track"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a vehicle from a chase camera on a track with glowing edge lines",
+        "Both have a rectangular checkpoint gate far down the track",
+        "Similar low-poly layered rock terrain and soft, hazy rendering"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both are third-person racing tracks with edge barriers and a distant start gate",
+        "similar soft stylized rendering and painterly terrain textures",
+        "different vehicles and biomes could be separate tracks in one game"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a vehicle from behind on a wide road with a gate/arch at the far end",
+        "Glowing edge lines along the road and guardrails in both",
+        "Similar Unreal-style soft lighting and post-processing, with different themes (alien planet vs. coastal road)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both frames show a raised road with a gate or arch far ahead and guard rails along the edges",
+        "Same third-person chase camera behind a single vehicle",
+        "Similar render style with soft fog and a hazy horizon, though the palette and theme differ"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "same third-person chase camera with the vehicle right of center on a road",
+        "overhead gantry or sign at the road's far end in both frames",
+        "similar soft bloom and filmic shading despite very different themes"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Both show a wide road with a gate or arch at the far end",
+        "Pink/magenta edge stripe on Image A's barrier and the cyan edge glow on Image B's road, both with guardrails",
+        "Similar third-person rear camera and a vehicle centered on the road, with a purple-tinted road surface in both"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a vehicle on an elevated road with side rails and a gate or arch in the distance",
+        "Similar third-person chase camera and the same stylized, smooth-shaded rendering",
+        "Themes differ (alien planet vs night city), which could mean separate levels or separate games"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night city highway with a car and lit-window skyscrapers",
+        "Image B is a bright alien planet with a ringed moon, rocky terrain and a drone",
+        "Different palettes, scenery, vehicles and track styles (cyan edge glow vs. magenta barrier on a grid road)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "distant start/finish gate over a straight track in both",
+        "similar soft painterly terrain textures and hazy lighting",
+        "detailed vehicle model centered in a third-person chase view with guardrail edges"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "glowing neon edge lines along the road in both frames",
+        "distant rectangular checkpoint gate on the track",
+        "same low-poly terrain with soft, hazy lighting and a third-person chase camera"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both are third-person chase views of a vehicle on a marked track with side barriers",
+        "a gate structure spans the road in the distance in both",
+        "similar soft, hazy lighting and stylized low-poly scenery with textured surfaces"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: alien ringed planet, drone and purple grid track",
+        "Image B: night city skyline with a car on an asphalt highway",
+        "Different palette and setting: pastel teal/magenta vs dark navy with cyan edge lines"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "glowing track-edge lines with guardrails in both",
+        "rectangular gate structure at the far end of the road",
+        "similar third-person vehicle-on-track camera and rendering style"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "glowing neon edge lines along the track in both",
+        "distant rectangular checkpoint gate on the road",
+        "similar low-poly terrain with soft post-processed lighting"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "both are racing tracks with guard rails and a distant gate",
+        "similar soft, painterly terrain textures and hazy lighting",
+        "different themes and vehicles could be separate levels of one game"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is an alien planet with a drone, neon magenta rails and a purple grid road, while Image B is a realistic coastal highway with a vintage roadster",
+        "The two frames use different palettes: saturated purple and teal against muted beige and grey",
+        "Both show a road with a gantry or sign and similar low-poly terrain, so the engine may be shared, but the art direction differs"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien planet with a ringed moon, purple grid track and a drone; Image B is a realistic coastal highway with a vintage roadster",
+        "Different palettes: neon magenta and teal against muted gray sky and tan hills",
+        "Different lighting and materials: stylized glowing look against realistic, hazy daylight"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo-original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is an alien planet with a drone, ringed moon and purple grid track; Image B is a night city highway with a car",
+        "Different palettes: pastel teal/pink/purple vs dark navy with lit windows",
+        "Both have a gate at the track end and glowing edge lines, but vehicle type and scenery differ"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--sunbreak-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "gate structure at the far end of the road in both",
+        "glowing neon edge lines along the road",
+        "similar vehicle-on-road chase camera"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--halo--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a vehicle from a third-person chase camera on an elevated straight track with side rails",
+        "Both have a distant gate or arch at the end of the track",
+        "Both use a stylized, low-poly look with the same soft lighting and PBR vehicle materials"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline-original--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "rectangular checkpoint gate at the far end of the track in both",
+        "glowing neon edge lines along the road in both",
+        "similar smooth low-poly terrain with layered banding, different themed worlds and vehicles"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "roadster-hours-port--redline--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both show a road with edge barriers leading to a distant gate",
+        "similar soft, hazy lighting and rendering style",
+        "different themed worlds and vehicles that could be modes of one racing game"
+      ]
+    }
+  ]
+}

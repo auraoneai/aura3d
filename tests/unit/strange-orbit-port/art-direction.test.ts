@@ -3,7 +3,7 @@ import { auditArtDirection, snapshotForAudit } from "@aura3d/game/art";
 import type { AuraApp } from "@aura3d/engine";
 import direction from "../../../examples/strange-orbit-port/art/direction";
 import { LOOKS, SECTORS, lookFromSearch, sectorAt } from "../../../examples/strange-orbit-port/art/look";
-import { ORBIT_VFX_PRESETS, orbitVfxFor, registerOrbitVfx } from "../../../examples/strange-orbit-port/art/vfx";
+import { EXHAUST_FLAME, EXHAUST_SMOKE, ORBIT_VFX_PRESETS, orbitVfxFor, registerOrbitVfx } from "../../../examples/strange-orbit-port/art/vfx";
 import { GOUACHE_LIVERIES, buildWorld } from "../../../examples/strange-orbit-port/world";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
@@ -37,7 +37,8 @@ describe("strange-orbit-port art direction", () => {
   it("registers a preset per race event, halving emission under reduced motion", () => {
     const names: string[] = [];
     registerOrbitVfx({ registerPreset: (kind) => { names.push(kind); } });
-    expect(names).toEqual(ORBIT_VFX_PRESETS.map((p) => p.name));
+    // SO47-V2: the event pack first, then the two atlas exhaust sequences that replace the old point exhaust
+    expect(names).toEqual([...ORBIT_VFX_PRESETS.map((p) => p.name), EXHAUST_SMOKE, EXHAUST_FLAME]);
     for (const event of ["land", "hit", "dust", "gate", "sling"]) {
       const full = orbitVfxFor(event)!;
       const reduced = orbitVfxFor(event, true)!;

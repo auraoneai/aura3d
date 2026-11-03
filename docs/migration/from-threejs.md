@@ -1,6 +1,6 @@
 # Porting three.js code to Aura3D
 
-Version: 4.7.1
+Version: 4.7.10
 
 Status: `packages/aura3d-cli/src/migrate-three/mappings.ts` contains 245 rows: 48 exact, 155 approximate, 42 none, 0 pending. The benchmark notes below were recorded on 2026-10-24.
 

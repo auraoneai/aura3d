@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "rooftops",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Nearly identical to A, with the same flat ledges, stray green bar at the bottom and stretched navy roof ribbons. The only clear difference is that the roof behind the player on the left is a lighter grey, which neither helps nor hurts noticeably.",
+     "Almost identical to B. The roof just left of the player looks a bit flat and washed-out grey. A green bar floats in the bottom foreground. A dark blue sheet-like roof slab on the right looks stretched. The orange player is a little low-contrast against the tan parapet.",
+     "Almost identical to A, with the same flat orange robe, translucent halo, stretched dark-blue roof slabs on the right, and green bar along the bottom edge. A few roofs in the middle distance have a lighter stone texture, which separates the layers slightly better, but the difference is too small to call B clearly better."
+    ]
+   }
+  ]
+ }
+]

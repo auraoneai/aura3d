@@ -99,7 +99,17 @@
       "polyHavenId": "rooftop_night",
       "source": "fixtures/environment-corpus/hdri/rooftop_night_2k.hdr (LFS)",
       "sourceSha256": "8ace3b81da7659381998ea4423fb4c7ffc1310ac27c4baa7a32088bd093de82e",
-      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/rooftop_night_2k.hdr --out public/hdri/rooftop_night_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/rooftop_night_2k.hdr --out public/hdri/rooftop_night_1k.hdr --hdri 1k",
+      "budgetDisposition": {
+        "decided": "2026-11-02",
+        "status": "final exception: format floor, Poly Haven's own 1k size, accepted; shipped byte-for-byte unchanged",
+        "budgetBytes": 1572864,
+        "polyHaven1kBytes": 1624479,
+        "losslessOptimalBytes": 1619441,
+        "usedGains": "0.36 to 10.56 (IBL fills from 0.36; the drawn Aura Diamond skyline sky is the top at 2.2 x 2.4 x 2^1.0)",
+        "testedLadder": "69 gains from 0.3 to 12 (7% steps plus every used gain)",
+        "oneLevelBoundedBytes": 1619113
+      }
     },
     {
       "id": "cobblestone_street_night",
@@ -116,7 +126,17 @@
       "polyHavenId": "cobblestone_street_night",
       "source": "fixtures/environment-corpus/hdri/cobblestone_street_night_2k.hdr (LFS)",
       "sourceSha256": "e3c95d049ea26dc5d54b24a2904bfdd1929fac65d655e83328dfb958715e779a",
-      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/cobblestone_street_night_2k.hdr --out public/hdri/cobblestone_street_night_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/cobblestone_street_night_2k.hdr --out public/hdri/cobblestone_street_night_1k.hdr --hdri 1k",
+      "budgetDisposition": {
+        "decided": "2026-11-02",
+        "status": "final exception: format floor, Poly Haven's own 1k size, accepted; shipped byte-for-byte unchanged",
+        "budgetBytes": 1572864,
+        "polyHaven1kBytes": 1760191,
+        "losslessOptimalBytes": 1750976,
+        "usedGains": "0.53 to 1.3 (IBL fills 0.53 to 0.99; the drawn Aura Slam hard-court sky is the top at 1.3)",
+        "testedLadder": "23 gains from 0.5 to 1.5 (7% steps plus every used gain)",
+        "oneLevelBoundedBytes": 1750194
+      }
     },
     {
       "id": "hangar_interior",
@@ -133,7 +153,17 @@
       "polyHavenId": "hangar_interior",
       "source": "fixtures/environment-corpus/hdri/hangar_interior_2k.hdr (LFS)",
       "sourceSha256": "55e18cdbaca6e03ad99573829a8828744edf80d762ebfbc3714e674cd1604a4c",
-      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/hangar_interior_2k.hdr --out public/hdri/hangar_interior_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/hangar_interior_2k.hdr --out public/hdri/hangar_interior_1k.hdr --hdri 1k",
+      "budgetDisposition": {
+        "decided": "2026-11-02",
+        "status": "final exception: format floor, Poly Haven's own 1k size, accepted; shipped byte-for-byte unchanged",
+        "budgetBytes": 1572864,
+        "polyHaven1kBytes": 1755683,
+        "losslessOptimalBytes": 1747795,
+        "usedGains": "0.05 to 1.67 (Bunker Zero fill 0.05 to 0.12; fills 1.14 to 1.58; the drawn Aura Diamond dome sky is the top at 0.85 x 1.6 x 2^0.3)",
+        "testedLadder": "61 gains from 0.05 to 1.9 (7% steps plus every used gain)",
+        "oneLevelBoundedBytes": 1745214
+      }
     },
     {
       "id": "warm_bar",
@@ -184,13 +214,23 @@
       "polyHavenId": "kloppenheim_02",
       "source": "fixtures/environment-corpus/hdri/kloppenheim_02_2k.hdr (LFS)",
       "sourceSha256": "c119c42e55d1df602e820f1a0234ccab7714cdf56afc3ca9d44543ad58492767",
-      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/kloppenheim_02_2k.hdr --out public/hdri/kloppenheim_02_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/kloppenheim_02_2k.hdr --out public/hdri/kloppenheim_02_1k.hdr --hdri 1k",
+      "budgetDisposition": {
+        "decided": "2026-11-02",
+        "status": "final exception: format floor, Poly Haven's own 1k size, accepted; shipped byte-for-byte unchanged",
+        "budgetBytes": 1572864,
+        "polyHaven1kBytes": 1740414,
+        "losslessOptimalBytes": 1729280,
+        "usedGains": "0.885 to 1.52 (IBL fills 0.885 to 1.06; the drawn Aura Slam grass sky is 1.0 and the drawn Heatsink Grand sky is the top at 2^0.6)",
+        "testedLadder": "18 gains from 0.8 to 1.7 (7% steps plus every used gain)",
+        "oneLevelBoundedBytes": 1727089
+      }
     },
     {
       "id": "deep_space_starfield",
       "file": "/hdri/deep_space_starfield_1k.hdr",
-      "bytes": 1831733,
-      "sha256": "1239cd4504c18d1b7e60921531c572430bf3493e3070caf57ae5e64062118526",
+      "bytes": 1156882,
+      "sha256": "fe86526ea60bdd7354681209175ef1b09e5b83db29c5baa246b639e611b12443",
       "resolution": [
         1024,
         512
@@ -201,7 +241,14 @@
       "polyHavenId": null,
       "source": "fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr (LFS)",
       "sourceSha256": "99768ccad307fa4ff1ce6d1d745132fca5d29760beb49aa9c4495cda785eff40",
-      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr --out public/hdri/deep_space_starfield_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file fixtures/environment-corpus/hdri/deep_space_starfield_8k.hdr --out public/hdri/deep_space_starfield_1k.hdr --hdri 1k",
+      "requantized": {
+        "from": { "bytes": 1831733, "sha256": "1239cd4504c18d1b7e60921531c572430bf3493e3070caf57ae5e64062118526" },
+        "method": "tolerance-bounded run extension of the RGBE mantissa planes (exponent plane exact; smooth-gradient texels exact; texels at or above 1.0 move at most one mantissa unit)",
+        "exposures": "76 tone-map exposures from 0.2 to 12: a 65-step geometric ladder plus 0.26, 0.5, 0.65, 0.97, 1, 1.06, 1.46, 1.87, 4.1, 4.4, 8.8",
+        "bound": "ACES filmic + sRGB 8-bit value within 1 level of the 1831733-byte file at every texel at those exposures; at 104 unseen exposures none exceeds 1 level below 4.2 and at most 9 of 1572864 channel samples reach 2 levels between 4.2 and 12; banding loss 0.00%; diffuse irradiance change 0.014% (limit 0.25%); no texel at or above 1.0 changed",
+        "tool": "scratch script of the GU47 hdri unit (not in the repository); deterministic, byte-identical on re-run"
+      }
     },
     {
       "id": "outdoor-midday",
@@ -252,7 +299,17 @@
       "polyHavenId": "vintage_measuring_lab",
       "source": "assets/library/hdri/indoor-workshop-2k.hdr",
       "sourceSha256": "667e77d41c6f18cd778b32dee6a62a9b06580a67ef653a8813bc95bcf4ffd2fe",
-      "produced": "aura3d assets optimize --file assets/library/hdri/indoor-workshop-2k.hdr --out public/hdri/indoor-workshop_1k.hdr --hdri 1k"
+      "produced": "aura3d assets optimize --file assets/library/hdri/indoor-workshop-2k.hdr --out public/hdri/indoor-workshop_1k.hdr --hdri 1k",
+      "budgetDisposition": {
+        "decided": "2026-11-02",
+        "status": "final exception: format floor, Poly Haven's own 1k size, accepted; shipped byte-for-byte unchanged",
+        "budgetBytes": 1572864,
+        "polyHaven1kBytes": 1632977,
+        "losslessOptimalBytes": 1620987,
+        "usedGains": "0.35 to 1.62 (Dot Dash IBL fill 0.35 to 0.38; Aura Hoops Manila fill 0.97 and drawn sky 1.62 = 2^0.7)",
+        "testedLadder": "32 gains from 0.3 to 1.8 (7% steps plus every used gain)",
+        "oneLevelBoundedBytes": 1613268
+      }
     }
   ]
 }

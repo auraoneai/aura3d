@@ -23,6 +23,7 @@ import { createSlamVfx, registerSlamVfx, type SlamVfxController } from "./vfx";
 import { CROWD_SEAT_COUNT, createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { GRASS_STRIPE_NODE_IDS, rigMaterialRole, surfaceMaterial, upgradeRigMaterial, type RigMaterialRole } from "./surfaces";
 import { BOARD_IDS, createBoardsController, standLineText, type BoardsController } from "./boards";
+import { createNetCordMotion, NET_MESH_ID, NET_TAPE_ID } from "./net";
 
 /** TT-M2: forwards every write to the real handle, upgrading the materials the rig sets (kit fabric, racket clearcoat). */
 function materialUpgradeHandle(real: AuraRuntimeNodeHandle, role: Exclude<RigMaterialRole, null>): AuraRuntimeNodeHandle {
@@ -155,6 +156,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let venuePlan: VenueRuntimePlan | null = null;
   let venueChanges = 0;
   let vfx: SlamVfxController | null = null;
+  let netCord: ReturnType<typeof createNetCordMotion> | null = null;
   // TT-AN1: the World Tour crowd (heads follow the ball); `?look=original` keeps the 24 capsule spectators.
   const crowd: WorldTourCrowd | null = worldTour ? createWorldTourCrowd() : null;
   let spectatorHeads: AuraRuntimeNodeHandle | null = null;
@@ -391,6 +393,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       });
       ready = true;
       if (worldTour) {
+        netCord = createNetCordMotion(req(NET_MESH_ID), req(NET_TAPE_ID));
         // GU47 TT-V1 / TT-V2: the registered bounce bursts, the decal marks and the ball's trail ribbon.
         const effects = (app as { effects?: Parameters<typeof createSlamVfx>[0] & Parameters<typeof registerSlamVfx>[0] }).effects;
         registerSlamVfx(effects);
@@ -439,6 +442,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       lastBallWorld = updateBall(ball, state, { shadowDisc: !worldTour });
       const [bx, by, bz] = lastBallWorld;
       const b = state.ball;
+      netCord?.step(b, Number.isFinite(dt) ? dt! : 1 / 60, reducedMotion());
       stepCameraPan(bx, dt);
       stepDirector(state, dt);
 
@@ -537,6 +541,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       letterbox?.dispose();
       vfx?.dispose();
       vfx = null;
+      netCord = null;
       net?.dispose();
       net = null;
       ready = false;

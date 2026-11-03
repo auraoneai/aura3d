@@ -61,5 +61,126 @@
     "stage7": null,
     "stage8": null
   },
-  "after": null
+  "after": {
+    "phase": "GU47 phase 6 (4.7.4)",
+    "source": "GL_META of remote software-WebGL2 captures (SwiftShader, 1280x720, settle-60s shot): before = g17p5-r1b (4.7.3 build 4d9f3d7f4), after = g17p6-r1 (4dd97eb04). Per-draw breakdown of the before build: p6-d1/drawlist-4.7.3.json (g17p6-d1).",
+    "captureDrawCallsBudget": 95,
+    "views": {
+      "default": {
+        "before": {
+          "drawCalls": 124,
+          "triangles": 2030757,
+          "meanLuma": 138.86
+        },
+        "after": {
+          "drawCalls": 89,
+          "triangles": 1533103,
+          "meanLuma": 139.22
+        }
+      },
+      "stage1": {
+        "before": {
+          "drawCalls": 124,
+          "triangles": 2030751,
+          "meanLuma": 138.8
+        },
+        "after": {
+          "drawCalls": 89,
+          "triangles": 1533109,
+          "meanLuma": 139.22
+        }
+      },
+      "stage2": {
+        "before": {
+          "drawCalls": 123,
+          "triangles": 2030649,
+          "meanLuma": 136.55
+        },
+        "after": {
+          "drawCalls": 88,
+          "triangles": 1533001,
+          "meanLuma": 136.56
+        }
+      },
+      "stage3": {
+        "before": {
+          "drawCalls": 124,
+          "triangles": 2030733,
+          "meanLuma": 128.51
+        },
+        "after": {
+          "drawCalls": 89,
+          "triangles": 1533085,
+          "meanLuma": 128.41
+        }
+      },
+      "stage4": {
+        "before": {
+          "drawCalls": 112,
+          "triangles": 2030715,
+          "meanLuma": 81.49
+        },
+        "after": {
+          "drawCalls": 77,
+          "triangles": 1533073,
+          "meanLuma": 81.5
+        }
+      },
+      "stage5": {
+        "before": {
+          "drawCalls": 111,
+          "triangles": 2030625,
+          "meanLuma": 80.45
+        },
+        "after": {
+          "drawCalls": 76,
+          "triangles": 1532977,
+          "meanLuma": 80.29
+        }
+      },
+      "stage6": {
+        "before": {
+          "drawCalls": 112,
+          "triangles": 2031777,
+          "meanLuma": 70.83
+        },
+        "after": {
+          "drawCalls": 77,
+          "triangles": 1534129,
+          "meanLuma": 70.68
+        }
+      },
+      "stage7": {
+        "before": {
+          "drawCalls": 112,
+          "triangles": 2030713,
+          "meanLuma": 69.53
+        },
+        "after": {
+          "drawCalls": 77,
+          "triangles": 1533061,
+          "meanLuma": 69.61
+        }
+      },
+      "stage8": {
+        "before": {
+          "drawCalls": 124,
+          "triangles": 2030745,
+          "meanLuma": 131.43
+        },
+        "after": {
+          "drawCalls": 89,
+          "triangles": 1533085,
+          "meanLuma": 131.6
+        }
+      }
+    },
+    "worstDrawCalls": {
+      "before": 124,
+      "after": 89
+    },
+    "fix": "Meshy lanterns (10), islands (6) and the blob decal no longer cast the sun shadow under the colour script (castShadow false): each was one depth draw per sun cascade (2 cascades at the capture tier), -34 draws and about -497k triangles. They still write the contact-shadow depth and still receive. The sky dome stays a caster: it sets the legacy cascade fit, and dropping it would change the panel-won look.",
+    "phase3PlusNine": "Phase 3 (3b22bb312) added the prayer-flag posts and cords as extra instances of the verge-flags draw: 152 -> 342 instances (372 since the phase-4 gates). In the main pass that is still 1 draw, but the shadow-depth shader instances through a 64-entry uniform array (PRD02_DEPTH_MAX_INSTANCES), so the node went from 3 to 6 depth draws in each of the 3 depth passes (2 sun cascades + the contact-shadow depth): +9 draws, and +9,120 triangles (190 boxes x 12 x 4 draws including the main pass). Not changed in this phase: splitting it further would cost the gate and post shadows.",
+    "notLaneScope": "The 4 lens-flare sprites (High, stages 1, 2, 3, 8) are also drawn into both cascades (8 draws) by the engine's flare items; that is an engine fix (castShadow false on the flare render items), not made in a game lane."
+  }
 }

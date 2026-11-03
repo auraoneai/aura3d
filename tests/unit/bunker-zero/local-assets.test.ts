@@ -9,9 +9,9 @@ const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "ut
 const entries: Array<{ id: string; outputPath: string; url: string; hash: string; sizeBytes: number; provenance?: { license?: string; evidence?: string[] } }> = manifest.assets ?? manifest;
 
 describe("bunker zero local assets", () => {
-  it("ships the pistol and the lifted enemy and pickup models", () => {
+  it("ships the pistol, the lifted enemy and pickup models and the owned CC0 props (GU47 phase 9)", () => {
     const ids = entries.map((e) => e.id).sort();
-    expect(ids).toEqual(["bzArmorMeshy", "bzBarrelMeshy", "bzCrateMeshy", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzPistol", "bzWardenMeshy"]);
+    expect(ids).toEqual(["bzArmorMeshy", "bzBarrelMeshy", "bzBlastDoor", "bzBulkheadLamp", "bzCrateMeshy", "bzGuardMeshy", "bzGunnerMeshy", "bzHoundMeshy", "bzMachete", "bzMedicalBox", "bzMgViewmodel", "bzPistol", "bzShutterDoor", "bzWardenMeshy"]);
   });
 
   for (const entry of entries) {

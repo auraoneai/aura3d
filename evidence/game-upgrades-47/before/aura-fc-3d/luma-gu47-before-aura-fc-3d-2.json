@@ -1,0 +1,118 @@
+[
+ {
+  "target": "aura-fc-3d--lagos",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "lagos",
+  "sinceReadyMs": 25014,
+  "mean": 171.99,
+  "p5": 110,
+  "p50": 175,
+  "p95": 210,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   170.9,
+   160.1,
+   163.9,
+   173,
+   173.7,
+   171.2,
+   177.2,
+   180.1,
+   177.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 444
+  }
+ },
+ {
+  "target": "aura-fc-3d--lagos",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "lagos",
+  "sinceReadyMs": 182856,
+  "mean": 172,
+  "p5": 110,
+  "p50": 176,
+  "p95": 210,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   170.9,
+   160.2,
+   163.9,
+   173,
+   173.7,
+   171.3,
+   177.2,
+   180.1,
+   177.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 444
+  }
+ },
+ {
+  "target": "aura-fc-3d--kyoto",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "kyoto",
+  "sinceReadyMs": 25006,
+  "mean": 69.42,
+  "p5": 40,
+  "p50": 44,
+  "p95": 231,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   116.2,
+   107.3,
+   125.2,
+   49.9,
+   48,
+   49.2,
+   43.1,
+   44.4,
+   41.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 344
+  }
+ },
+ {
+  "target": "aura-fc-3d--kyoto",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "kyoto",
+  "sinceReadyMs": 222248,
+  "mean": 69.42,
+  "p5": 40,
+  "p50": 44,
+  "p95": 231,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   116.4,
+   107.1,
+   125.2,
+   49.9,
+   48,
+   49.2,
+   43.1,
+   44.4,
+   41.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 344
+  }
+ }
+]

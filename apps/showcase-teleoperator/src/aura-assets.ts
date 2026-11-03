@@ -9,12 +9,15 @@ import { defineAuraAssets } from "@aura3d/engine";
  * checked against the root manifest by tests/unit/teleoperator/assets.test.ts.
  */
 export const assets = defineAuraAssets({
+  // GU47 phase 4 (WP-36 dispatchPodPearl, GD-11/GD-12): the player pod is the Meshy retexture of this game's own robotaxi
+  // mesh (same 29.5k-triangle geometry, centred, longest side 2), route-local under apps/showcase-teleoperator/public
+  // (`aura3d assets import-meshy --into ... --prefix teleoperator`; rights and meta in public/aura-assets/meshy/provenance).
   gridCruiser: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
-    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
-    bounds: [0.8921, 1.4132, 1.9017]
+    url: "/aura-assets/meshy/models/teleoperator_dispatchPodPearl.glb",
+    hash: "sha256-99d368966e04d8160574d10eee242202d3c6134713e0fa7b573c665bff300ad9",
+    bounds: [0.9382, 1.4863, 2]
   },
   gridRivalCruiser: {
     type: "model",
@@ -100,12 +103,15 @@ export const assets = defineAuraAssets({
     hash: "sha256-de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
     bounds: [0.9023, 1.0833, 1.9004]
   },
+  // GU47 wave 1 (WP-36 dispatchFacadeVictorian, GD-12/GD-02): Meshy retexture of this game's own Victorian facade (blue-grey
+  // bay windows with lit panes; same 5,858 triangles, same aspect, centred and rescaled to longest side 2, so the position
+  // hash changed), route-local like the pod (rights and meta in public/aura-assets/meshy/provenance).
   gridBldgVictorian: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopBldg_victorian.39183fbd.glb",
-    hash: "sha256-39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
-    bounds: [0.912, 1.737, 1.918]
+    url: "/aura-assets/meshy/models/teleoperator_dispatchFacadeVictorian.glb",
+    hash: "sha256-594d4a197910c149f2a1c8e1f8397c00d3d66d8af31299449cbfa21c1798b5ac",
+    bounds: [0.951, 1.812, 2]
   },
   gridBldgMidrise: {
     type: "model",
@@ -133,9 +139,12 @@ export const assets = defineAuraAssets({
 
 export type GridAssetKey = keyof typeof assets;
 
-/** Root `aura.assets.json` id of every entry above (the production build copies files by these ids). */
-export const CATALOG_IDS: Readonly<Record<GridAssetKey, string>> = {
-  gridCruiser: "gridCruiser",
+/**
+ * Root `aura.assets.json` id of every entry above (the production build copies files by these ids). `null`: a route-local
+ * file under apps/showcase-teleoperator/public (the deploy flattens the app's public tree onto the origin root).
+ */
+export const CATALOG_IDS: Readonly<Record<GridAssetKey, string | null>> = {
+  gridCruiser: null,
   gridRivalCruiser: "gridRivalCruiser",
   gridCoupe: "gridCoupe",
   gridTruck: "gridTruck",
@@ -148,7 +157,7 @@ export const CATALOG_IDS: Readonly<Record<GridAssetKey, string>> = {
   gridVan: "gridVan",
   gridPickup: "gridPickup",
   gridBoxTruck: "gridBoxTruck",
-  gridBldgVictorian: "teleopBldg_victorian",
+  gridBldgVictorian: null,
   gridBldgMidrise: "teleopBldg_midrise",
   gridBldgGlassTower: "teleopBldg_glasstower",
   gridBldgArtDeco: "teleopBldg_artdeco"

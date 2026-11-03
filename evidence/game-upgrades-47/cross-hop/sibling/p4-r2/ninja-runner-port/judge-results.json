@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:25:24.106Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "cross-hop--theme0--settle-60s",
+      "cross-hop--theme1--settle-60s",
+      "cross-hop--theme2--settle-60s",
+      "cross-hop--theme3--settle-60s",
+      "cross-hop--theme4--settle-60s",
+      "cross-hop--theme5--settle-60s"
+    ],
+    "framesB": [
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--gate--settle-60s",
+      "ninja-runner-port--gate-cones-off--settle-60s",
+      "ninja-runner-port--gauntlet-run--settle-60s",
+      "ninja-runner-port--original--settle-60s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village-lanterns-off--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.907,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.907,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trains at sunset, with a road/arcade setting",
+        "Image B is a medieval village with a cobblestone path and ninja characters under a cloudy daytime sky",
+        "Different scenery, lighting and palette: dusk orange glow versus bright green daylight"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a top-down Frogger-style road with toy vehicles and a frog; Image B is a third-person cobblestone path with runners and a waterfall",
+        "Different scenery and palette: flat green lanes and a hazy gradient sky versus rocky islands, sea and a cloudy sky",
+        "Different characters and camera: low-poly cartoon vehicles and a frog versus blue ninja-like figures and a monk"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a Frogger-style game with a frog, traffic and trains on flat green lanes",
+        "Image B shows a cobblestone path, waterfall, rock formations and running ninja characters",
+        "The two frames differ in camera (top-down angled vs. third-person behind), sky, and terrain style"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing lanes of traffic with toy-like vehicles",
+        "Image B is a cobblestone path with ninja characters, waterfall and rocks",
+        "Different scene types, color treatment and camera setup"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a ninja character, Image B is a toy-like frog crossing game with trains and lanes",
+        "Different art direction: textured stone buildings and a cloudy sky vs flat pastel lanes and a plain gradient sky",
+        "Different camera and gameplay setup: third-person view down a road vs elevated view of a lane-crossing grid"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a fantasy bridge scene with a martial-arts character, low-poly mountains and a pastel dusk sky",
+        "Image B is a frogger-style road with a frog, pink cars, trucks and a night sky with magenta buildings",
+        "Different camera, palette and gameplay: A is third-person with warm and green tones, B is a high-angle view with dark teal and neon colours"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Crossy Road-style lane-hopping game with a frog, trains and cars on flat tracks",
+        "Image B is a fantasy third-person scene with a wooden bridge, low-poly mountains and a robed martial-arts character",
+        "Different palettes and settings: flat pastel greens and blue haze versus a purple-pink cloudy sky with teal rock cliffs"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a frogger-style game with toy vehicles, trains and a frog on flat green lanes",
+        "Image B is a village with a ninja character, a cobblestone path, a wooden gate and a cloudy sky",
+        "The two frames differ in scenery, character type, camera and art style"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: frog crossing a multi-lane road with toy-like cars, trains and a sunset sky",
+        "Image B: bright daylight cobblestone path with a waterfall, rocks and running blue-clad characters",
+        "Different characters, scenery, palette and lighting with no shared assets"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night-time frog road-crossing game with pink cars, trucks and trams",
+        "Image B is a daytime fantasy landscape with a cobblestone path, waterfall and ninja-like characters",
+        "Different palettes, camera views and scenery, with no shared assets"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a human character, while Image B is a Frogger-style road-crossing scene with a frog",
+        "Different art direction: A uses detailed stone and brick textures with a cloudy sky, B uses flat toy-like vehicles with a plain sky and sun",
+        "Different camera and gameplay setup: A is a third-person view down a path, B is a high side view of lanes"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Crossy Road-style lane game with trains, trams and a frog; Image B is a third-person runner on a cobblestone path with a waterfall and ninja characters",
+        "Different scenery and palette: flat pastel lanes against a hazy sky, versus a cloudy blue sky, rocks and sea",
+        "Different characters and camera: a frog seen from behind and above, versus a group of humanoid runners"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--rooftops--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: medieval rooftop runner with a hooded character and a purple dusk sky",
+        "Image B: a frog crossing lanes of toy vehicles on flat green ground with a pale blue sky",
+        "Different scenery, palette and character types, with no shared HUD or art assets"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a medieval village with ninja characters, Image B is a frogger-style road with vehicles and a frog",
+        "Different art styles: painterly textured trees and cobblestone vs clean flat toy-like models",
+        "Different camera and sky: third-person ground view with cloudy sky vs elevated side view with clear blue sky and sun"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a forest runner with a golden humanoid on a dirt path and a pink dusk sky, while Image B is a frog crossing lanes of traffic at night",
+        "Image A has low-poly teal pines, grass and boulders, while Image B has pink cars, trucks, trams and magenta city blocks",
+        "The two frames differ in camera and HUD: a third-person chase view versus a high-angle lane-crossing view with a coin"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: Crossy-Road-style frog with trucks, trains and coins on flat green lanes",
+        "Image B: cobblestone path with running ninja characters, waterfall, rocks and sea",
+        "Different camera, sky and scene style: warm hazy sunset vs. blue cloudy sky"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly pine forest with pink dusk sky and a glowing yellow runner on a log path",
+        "Image B: toy trains, cars and a green frog on flat pastel lanes under a gray-blue sky",
+        "Different art direction, palette and camera setup"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night-time frog crossing-lane game with pink cars, trucks and trains",
+        "Image B: daytime medieval village with cobblestone road and ninja characters",
+        "Different palettes and scenery: neon purple and teal against a bright green pastoral scene"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Crossy Road style lane-hopper with a frog, trains and a pastel palette",
+        "Image B is a medieval village with a cobblestone road and ninja characters",
+        "Different scenery, camera angle and art style (flat toy-like vs. textured low-poly)"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--rooftops--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat Crossy Road-style lanes with trains, a frog and coins",
+        "Image B: medieval rooftop parkour with a hooded runner and a cobblestone town",
+        "Different palettes and sky: pale gray-blue vs. purple sunset clouds with low-poly mountains"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime medieval village with a ninja character and cobblestone path, Image B is a night-time frogger-style road scene with a frog and cars",
+        "Different palettes: natural greens and browns versus dark teal and purple with neon pink",
+        "Different camera and gameplay style: third-person behind the character versus an elevated lane-crossing view"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night-time, neon-colored frogger-style road scene with cartoon cars and trains",
+        "Image B is a daytime medieval village with a stone path, cloudy blue sky and a realistic-style ninja character",
+        "Different art styles, palettes and lighting, with no shared characters or assets"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a Crossy Road-style frog hopping across lanes of trains, cars and coins",
+        "Image B is a third-person run along a cobblestone path with ninja characters, a waterfall and rocky islands",
+        "Different scenery, characters, camera and sky style, with no shared assets"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a human ninja character",
+        "Image B is a frog crossing lanes of toy-like traffic, with a sun glow and dark city blocks",
+        "Different scenery, characters and lighting; only the plain green grass is shared"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: fantasy bridge, low-poly mountains, purple dusk sky",
+        "Image B: frog crossing traffic lanes, flat green ground, blue-gray sky",
+        "Different settings, character types and lighting palettes"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime medieval village with a cobblestone path and a ninja-like character",
+        "Image B is a sunset road-crossing scene with a frog, toy vehicles and a coin",
+        "Different palettes, lighting and camera framing"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a medieval village with ninja characters on a cobblestone path under a cloudy sky; Image B is a frog crossing lanes of toy cars and trains at sunset",
+        "Different palettes and lighting: bright green and teal in A, dark orange dusk in B",
+        "Different camera and subject: third-person chase view in A, elevated lane-crossing view in B"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and a third-person human character",
+        "Image B is a Crossy Road-style frog hopping across lanes of trains and logs with coins",
+        "Different palettes and scenery: realistic stone houses and clouds versus flat pastel lanes and toy vehicles"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: medieval village with cobblestone road and ninja characters",
+        "Image B: Crossy Road-style lanes with a frog, trucks, trains and logs",
+        "Different camera and scene style: third-person chase view vs. high-angle lane-hopper view"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trains at sunset, with a coin pickup",
+        "Image B is a forest with a raised dirt path, low-poly pine trees and a glowing golden humanoid runner in a bubble",
+        "The two scenes differ in environment, character and gameplay, with no shared props or HUD"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: medieval village with cobblestone road and a ninja-like character under an overcast sky",
+        "Image B: frog crossing lanes of toy-like cars, trucks and trams under a clear blue sky with a sun glow",
+        "Different palettes and art styles: muted painterly stone and grass versus bright, flat, saturated vehicles"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night-time arcade frogger with magenta cars, trucks and lane strips",
+        "Image B is a daytime fantasy landscape with a cobblestone path, rocks, waterfall and blue ninja characters",
+        "Different palettes, sky, camera and art style; no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing multi-lane road with toy cars, trains and coins",
+        "Image B: fantasy bridge, low-poly teal mountains and a robed martial-arts character",
+        "Different scenery, characters and camera style: top-down road view vs. third-person landscape"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval village with a ninja on a cobblestone path under a cloudy sky; Image B is a frog crossing lanes of trucks and trains at sunset",
+        "Different lighting: soft overcast daylight in A, a warm orange sky with a low sun in B",
+        "Different gameplay and camera: third-person run toward a gate in A, an elevated lane-crossing view in B"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--rooftops--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a medieval rooftop runner with a hooded character, dusk sky and low-poly mountains",
+        "Image B is a Frogger-style road crossing with a frog, trucks, taxis and trains on flat green lanes",
+        "Different scenery, palette and gameplay: warm purple dusk vs bright flat daylight with a sun disc"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frogger-style crossing game with trucks, trains and a frog, Image B is a fantasy action scene with a bridge and a martial-arts character",
+        "Different scenery and palettes: flat green lanes with orange platforms and a warm hazy sky versus low-poly teal mountains, pine trees, a village and a purple cloudy sky",
+        "Different camera and art style: high-angle top-down view of simple stylized models versus a third-person view with detailed textured rocks and wood"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trains at sunset, with a coin pickup",
+        "Image B is a medieval village with a cobblestone road, an orange gate, and a ninja-like character under an overcast sky",
+        "The two frames differ in scenery, palette and lighting, and share no visible characters or props"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "ninja-runner-port--rooftops--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: frog crossing multi-lane road with cars and trains, orange curbs",
+        "Image B: medieval rooftop parkour with a hooded runner and half-timbered houses",
+        "Different scenery, characters and gameplay, with only a similar sunset-lit stylized look"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: medieval village with cobblestone path and ninja characters",
+        "Image B: frog crossing busy roads with toy-like vehicles and a coin",
+        "Different settings, sky and art style: overcast fantasy scene vs. clear hazy sky with flat modern city"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat, toy-like Crossy Road style scene with a frog, trucks, trains and coins",
+        "Image B is a forest with detailed low-poly pines, rocks, mountains and a golden runner in a shield bubble",
+        "Different art style, scenery and character types, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a medieval village with a ninja character and a stone path; Image B is a Frogger-style road scene with a frog and toy vehicles",
+        "Different scenery and palette: cloudy overcast sky with hand-painted-style trees vs clear gradient sky with a sun glow and flat grey city blocks",
+        "Different camera and art style: third-person behind-the-back view vs elevated side-on lane layout with glossy toy-like models"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog road-crossing game with toy-like trucks, taxis and trains on flat green lanes",
+        "Image B is a medieval village with a cobblestone road, stone houses and a ninja-like character",
+        "Different scenery, camera framing and art style: flat stylized lanes versus a detailed painted-texture village"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: third-person view of a cobblestone path, rocks, waterfall and blue-clad ninja characters",
+        "Image B: frog crossing lanes of trucks, trains and logs under a warm sunset sky",
+        "Different gameplay genre, palette and camera angle"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: fantasy scene with a cobblestone path, waterfall and running ninja-like characters",
+        "Image B: Frogger-style road with toy cars, trams and a frog",
+        "Different palettes and scenery: orange rocks and teal sea versus flat green lanes and gray city blocks"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime medieval village with a cobblestone road and a ninja-like character",
+        "Image B is a night-time frog road-crossing scene with neon pink cars, trucks and trams",
+        "The two frames differ in palette, scenery and character, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes with trucks and trains on a flat green plane at sunset",
+        "Image B is a medieval village with a cobblestone road, stone houses and a ninja-style character",
+        "Different gameplay genre, scenery, sky and lighting"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a forest runner with a dusky pink sky, low-poly teal pines and a golden humanoid on a dirt path",
+        "Image B is a Crossy Road–style frog crossing lanes of toy-like trucks, trams and cars under a pale blue sky",
+        "Different art styles and palettes: painterly, textured nature scene versus clean, flat-lit urban traffic scene"
+      ]
+    }
+  ]
+}

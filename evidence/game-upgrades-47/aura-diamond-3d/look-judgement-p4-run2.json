@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing-p4.jpg",
+      "sha256": "e0ef127f9943436843b69ec6d0cea5ca124c62decccff34607430382c43b36e7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p4-r5/aura-diamond-3d/frames/g08p4-r5-2/aura-diamond-3d--canyon--settle-60s.jpg",
+      "sha256": "0b7c750078193b36aaaafb368dfbaeba783ea6d675e87b061637b5ca4c9676c6"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p4-r5/aura-diamond-3d/frames/g08p4-r5-3/aura-diamond-3d--lunar--settle-60s.jpg",
+      "sha256": "d64fb227a2cff131b9ee391ffd24f22a91202cec0b68d236287d0f5a1711cb8f"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p4-r5/aura-diamond-3d/frames/g08p4-r5-1/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "63dd0d1471fd0c7287ce6b0eb4fb5d2991d7301ca4dc0a8b8b39e48b1a579203"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 4,
+    "ibl_reflections": 2.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 3,
+    "material_quality": 3.5,
+    "modeling_assets": 4,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Harbor has a warm hotspot centered on the infield and the mound glows orange, but the outfield grass is evenly lit. Canyon reads as flat overcast with almost no directional key. Lunar is a dim grey wash with one faint pool behind the mound, and players there lose definition."
+    },
+    {
+      "category": "shadows",
+      "seen": "Player shadows are faint, soft blobs at the feet with no clear direction. The batter and catcher cast a short dark smear in Harbor only. The mound and bases barely ground on the dirt, and stands and boulders cast no visible shadows on the field."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Every surface is matte. No specular response appears on helmets, bats, bases, or the scoreboard screen, and there are no environment reflections in any of the four venues."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stands are thin bleacher strips with tiny repeated crowd sprites. Canyon's boulders float as isolated props. Midtown's skyline is flat building cards with stretched, smeared window and facade textures. Harbor's backdrop props are blurry and cut off by the HUD. The infield is an odd lobed blob shape with polygonal edges rather than a regulation diamond cut."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Canyon has slight horizon fade and Midtown a mild teal haze, but there is no depth haze across the field, no stadium-light volumetrics, and no air in the Lunar night scene."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The infield dirt uses a large mottled noise texture that reads like water caustics. In Midtown the dirt turns pink and the grass teal with no blade or mow-stripe detail. Base plates and uniforms are flat untextured white."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Players are low-poly mannequins with simple caps and blocky gloves, all sharing one pose. The mound is a plain beveled disc and the bases are thin slabs. The batter's box lines are separate white strips."
+    },
+    {
+      "category": "composition",
+      "seen": "The infield fills roughly 55–65% of the frame, well above the 25–40% target. The catcher is cropped at the bottom edge, and the fielders sit in a readable symmetric layout."
+    },
+    {
+      "category": "camera",
+      "seen": "An elevated behind-home broadcast angle is used consistently, but it is a perspective view rather than a tight orthographic broadcast shot. The low position crowds the batter and catcher into the lower edge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Harbor has a warm grade with mild glow on the dirt. Lunar crushes blacks into mud grey. There is no visible bloom on stadium lights, no tone-mapping polish, and no arena contrast punch."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The line score, count, outs, bases and matchup panels in frame 1 are clean and readable, and the controls strip at the bottom is legible. The 'QUICK PLAY' label is low contrast, the panel overlaps and hides scenery text, and the top nav bar looks like a dev menu."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { basename, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CATALOG_IDS, assets } from "../../../apps/showcase-teleoperator/src/aura-assets";
 
@@ -14,6 +15,13 @@ describe("grid dispatch per-app asset manifest (RH-06, C6)", () => {
   it("every entry points at the same file and hash as its root manifest id, so the deploy copies it", () => {
     for (const [key, entry] of Object.entries(assets)) {
       const id = CATALOG_IDS[key as keyof typeof assets];
+      if (id === null) {
+        // Route-local (WP-36 Meshy admission): the file ships from the app's public tree; its bytes match the typed hash.
+        const file = join(root, "apps/showcase-teleoperator/public", entry.url);
+        expect(`sha256-${createHash("sha256").update(readFileSync(file)).digest("hex")}`, key).toBe(entry.hash);
+        expect(existsSync(join(root, "apps/showcase-teleoperator/public/aura-assets/meshy/provenance", `${basename(entry.url, ".glb")}.rights.json`)), `${key} rights`).toBe(true);
+        continue;
+      }
       const m = manifest.assets.find((a) => a.id === id);
       expect(m, `${key} -> ${id}`).toBeDefined();
       expect(m!.url, key).toBe(entry.url);

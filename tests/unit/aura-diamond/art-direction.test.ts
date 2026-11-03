@@ -15,7 +15,7 @@ const DIRECTION_FILE = "apps/showcase-aura-diamond-3d/art/direction.ts";
  * Triangle counts measured from the GLB index buffers (apps/showcase-aura-diamond-3d/route-health.json); the other models
  * have no count in the manifest yet, so their triangle floor is checked on the phase-2 capture.
  */
-const KNOWN_TRIANGLES = { assets: { diamondAthlete: { triangles: 31758 }, diamondCrowdAthlete: { triangles: 3809 } } };
+const KNOWN_TRIANGLES = { assets: { diamondAthlete: { triangles: 31758 }, diamondCrowdAthlete: { triangles: 3809 }, ballpark_fanA: { triangles: 625 }, ballpark_fanB: { triangles: 555 } } };
 
 /** Audit snapshot of one park's real GU47 scene (lights, environment, models and materials as `buildParkScene` emits them). */
 function parkSnapshot(park: ParkId): ArtDirectionSnapshot {
@@ -53,7 +53,7 @@ describe("aura-diamond art direction (DIA-X1)", () => {
     const keys = new Set<string>();
     for (const file of ["src/scene.ts", "src/main.ts"]) {
       const text = readFileSync(join(ROOT, "apps/showcase-aura-diamond-3d", file), "utf8");
-      for (const m of text.matchAll(/\bmodel\(\s*assets\.([A-Za-z0-9]+)/g)) keys.add(m[1]!);
+      for (const m of text.matchAll(/\bmodel\(\s*assets\.([A-Za-z0-9_]+)/g)) keys.add(m[1]!);
     }
     const contracted = new Set(direction.assets.map((a) => a.assetKey));
     expect([...keys].filter((k) => !contracted.has(k))).toEqual([]);

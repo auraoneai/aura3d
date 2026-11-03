@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g12/evidence/slingshot-siege/screens/final/1280x720/03-action-01-state-aiming-backend-webgl2-backgrou.jpg",
+      "sha256": "4dc4ff1546c4a83bfabd5692cf56fa6173b324fd9481eb48bdd5ba9f24ac2c96"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p3-r3/slingshot-siege/frames/g12p3-r3-2/slingshot-siege--ch0--settle-60s.jpg",
+      "sha256": "6ce99a5a839eff3a4682351acbbb4f0c77a502387c3c3c5e9d11887bb5746e1a"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p3-r3/slingshot-siege/frames/g12p3-r3-5/slingshot-siege--ch3--settle-60s.jpg",
+      "sha256": "225fe97772496774e2c231de1e10a1d4504874f5b6bb321086a2098b7842b547"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p3-r3/slingshot-siege/frames/g12p3-r3-7/slingshot-siege--ch5--settle-60s.jpg",
+      "sha256": "a729bc8fae738823d0b06b8f639208a20e612b83ed9ce0d2753b8c812f934e5a"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5.5,
+    "camera": 5,
+    "postprocessing": 4,
+    "animation_quality": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The day frames use flat, even lighting with weak key/fill separation. The dusk frame tints the sky but barely changes the ground. The night frame shows sharp moonlit contrast."
+    },
+    {
+      "category": "shadows",
+      "seen": "Day frames have almost no visible cast shadows under the crates, barrel, or windmill. The night frame has hard black shadows pooling in the craters, which look disconnected from the scene."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No reflections are visible on the water or stone. All materials read matte, with no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The floating island diorama has photoscanned boulders, a windmill, an arch, crates, and a flag. However, the grass is a flat green disc with primitive cone and stick foliage."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is only a mild horizon haze and dusk tint. The night frame shows a starfield, but there is no fog depth, particles, or volumetrics."
+    },
+    {
+      "category": "material_quality",
+      "seen": "High-detail photo-texture rocks clash with untextured flat-shaded grass and the plain yellow target tiles. The crate wood textures are decent."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The slingshot, windmill, and birds are readable. The grass cones and sticks are crude primitives, and the orange nugget-like rock looks out of scale."
+    },
+    {
+      "category": "composition",
+      "seen": "The slingshot sits left, the fortress right, and the arch at center. This reads clearly, but the large empty foreground grass takes about 40% of the frame."
+    },
+    {
+      "category": "camera",
+      "seen": "A low perspective side view rather than the expected top-down 60°. The subjects are small and the foreground dominates."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible bloom, color grading, or AO. The night frame looks crushed and the day frames look flat and grey."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Static frames show no projectile, motion trails, or destruction in progress. Only the time-of-day changes between shots."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean, with a tab bar, score card with stars, level banner, egg ammo slots, and a key-hint footer. The tutorial panel overlaps the play area."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

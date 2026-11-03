@@ -77,31 +77,35 @@ const WINDOW_NIGHT = 1.8 * 1.33;
 
 export const BANDS: Readonly<Record<BandId, BandRow>> = {
   A: {
-    id: "A", name: "Late afternoon", timeOfDay: "late afternoon, sun 28 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.62,
-    key: { name: "sun", elevationDeg: 28, azimuthDeg: 32, color: "#ffe3b8", intensity: 3.7 },
+    id: "A", name: "Late afternoon", timeOfDay: "late afternoon, sun 28 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.5,
+    // phase 4 (4.7.2): the key swings 32 -> 62 deg so it rakes the Mango Tide facades and throws the tram, folk and canopy
+    // shadows across the plaza in the docked view (rubric g21p4-r1: lighting 5.5 "flat and frontal", shadows 4.5)
+    key: { name: "sun", elevationDeg: 28, azimuthDeg: 62, color: "#ffe3b8", intensity: 4.3 },
     skySunElevationDeg: 28,
-    hemisphere: { sky: "#cfdcf2", ground: "#efd3cc", intensity: 0.24 },
+    hemisphere: { sky: "#cfdcf2", ground: "#efd3cc", intensity: 0.2 },
     fog: { color: "#f2dccb", density: 0.0016 },
     // phase 3 (4.7.1, software WebGL2): 1.0 read mean luma 99.6 under the 100..125 band once the fill dropped (capture g21p3-r1)
-    exposure: 1.08,
+    // phase 4 (4.7.2): with the raking key and the lower fill, 1.08 read 92.1 under 100..125 (g21p4-r2-1, software WebGL2)
+    exposure: 1.4,
     bloom: { intensity: 0.5, threshold: 0.8 },
     grade: { contrast: 1.12, saturation: 1.16, temperature: 0.14, tint: 0.02 },
-    vignette: 0.2,
+    vignette: 0.28,
     sky: { top: "#7cbce6", horizon: "#ffd9b4", afterglow: 0.15, stars: 0 },
     clouds: { lit: "#fff4e4", valley: "#bdb3dc", sunGain: 1.25 },
     practicals: { lampEmissive: 0.4, windowEmissive: 0, platformPoint: 0, headlamp: 0, tramBulbs: 1.2 },
     godRays: false, flare: true, lanternGlow: 1.6
   },
   B: {
-    id: "B", name: "Golden hour", timeOfDay: "golden hour, sun 12 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.5,
-    key: { name: "sun", elevationDeg: 12, azimuthDeg: 38, color: "#ffc489", intensity: 3.2 },
+    id: "B", name: "Golden hour", timeOfDay: "golden hour, sun 12 deg", hdri: "belfast_sunset_puresky", envIntensity: 0.4,
+    key: { name: "sun", elevationDeg: 12, azimuthDeg: 68, color: "#ffc489", intensity: 3.7 },
     skySunElevationDeg: 12,
-    hemisphere: { sky: "#c3c4ea", ground: "#f2c6b4", intensity: 0.22 },
+    hemisphere: { sky: "#c3c4ea", ground: "#f2c6b4", intensity: 0.19 },
     fog: { color: "#f6c9a6", density: 0.0018 },
-    exposure: 1.0,
+    // phase 4 (4.7.2): 1.0 read 76.7 under 85..110 with the raking key and lower fill (g21p4-r2-3, software WebGL2)
+    exposure: 1.45,
     bloom: { intensity: 0.55, threshold: 0.78 },
     grade: { contrast: 1.12, saturation: 1.16, temperature: 0.2, tint: 0.04 },
-    vignette: 0.22,
+    vignette: 0.3,
     sky: { top: "#8e9fd8", horizon: "#ffb57e", afterglow: 0.45, stars: 0 },
     clouds: { lit: "#ffe2bf", valley: "#ad9fd4", sunGain: 1.45 },
     practicals: { lampEmissive: 0.9, windowEmissive: 0.6, platformPoint: 0, headlamp: 0, tramBulbs: 1.6 },
@@ -145,7 +149,8 @@ export const BANDS: Readonly<Record<BandId, BandRow>> = {
     hemisphere: { sky: "#29336a", ground: "#3d3550", intensity: 0.22 },
     fog: { color: "#161d3e", density: 0.002 },
     // phase 2 (tone mapping none, software WebGL2): 1.0 read mean luma 23.9 (under the 28..40 band), 3.0 read 44.5; 2.0 ~35
-    exposure: 2.0,
+    // phase 4 (4.7.2): 2.0 read 40.9 (over 28..40) once the 4.3.0 shadow fit stopped the uniform 4.2.0-fit darkening (g21p4-r1-4)
+    exposure: 1.8,
     bloom: { intensity: 0.85, threshold: 0.6 },
     grade: { contrast: 1.1, saturation: 0.95, temperature: -0.22, tint: 0.0 },
     vignette: 0.34,

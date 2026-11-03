@@ -45,6 +45,8 @@ export default defineArtDirection({
   assets: [
     { role: "backdrop", assetKey: "islandTree", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
     { role: "backdrop", assetKey: "islandTower", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
+    { role: "backdrop", assetKey: "paintPotIsland", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
+    { role: "backdrop", assetKey: "paletteIsland", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
     { role: "backdrop", assetKey: "balloon", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
     { role: "prop", assetKey: "gemRainbow", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },
     { role: "prop", assetKey: "gemShield", maxTriangles: 30000, textureSet: "BC", maxTextureSize: 512 },

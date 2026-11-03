@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "dot-dash-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "garden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player (a small pale-cyan piece at lower centre) is hard to pick out against the bright white board; the dark chip-block walls are busy and somewhat repetitive; the light falls off unevenly so the bottom-left corner is hazy and the top corners are dim; the green pellets are small. Even so, it has a strong circuit-board theme, depth from the desk and pegboard backdrop, good material detail and better atmosphere.",
+     "The player (small cyan glint near the bottom centre) is hard to see. A bright spotlight hotspot washes out part of the centre of the board. The dark chip walls look much alike, so the maze paths are a little busy to read. The upper background (wall and table) is murky and underexposed.",
+     "The white PCB board is bright, so contrast between the dark chip walls and the floor is a little washed out in the lit centre. The player (a cyan glint at the centre) is small and partly lost in the glare. The corners are slightly hazy and dim. Even so, it has a strong theme, a real environment (desk, cutting mat, pegboard), warm spotlight mood, good depth and detailed materials."
+    ]
+   }
+  ]
+ }
+]

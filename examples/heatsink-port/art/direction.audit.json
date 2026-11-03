@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/heatsink-port/art/direction.ts",
-  "sourceSha256": "980966ae0de5dc62614f05cc4db7fd98dc04d84c241d2f9f7c880d580f8cf557",
+  "sourceSha256": "7ed55b4149a71944f6ccd15e0e09eaa2cb92f40b38864bc06e2cf9ba886b3952",
   "id": "heatsink-port",
   "genre": "racing",
   "signatureEffect": "ion-wake: a 60-segment cyan-to-violet ribbon trailing the drone's last 1.2 s, turning amber under the afterburner.",
@@ -211,6 +211,90 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "drone",
         "triangles": 0,
         "textures": 0,
@@ -300,7 +384,7 @@
       },
       {
         "role": "enemy",
-        "assetKey": "heatsinkSentry",
+        "assetKey": "ionSentryDrone",
         "maxTriangles": 15000,
         "minTriangles": 4000,
         "textureSet": "BC+N+ORM",
@@ -308,7 +392,7 @@
       },
       {
         "role": "enemy",
-        "assetKey": "heatsinkHeavy",
+        "assetKey": "ionHeavyDrone",
         "maxTriangles": 15000,
         "minTriangles": 4000,
         "textureSet": "BC+N+ORM",
@@ -435,10 +519,10 @@
     "signatureEffect": "ion-wake: a 60-segment cyan-to-violet ribbon trailing the drone's last 1.2 s, turning amber under the afterburner.",
     "standIns": [
       {
-        "feature": "sentry and heavy targets (primitive cores and rings)",
+        "feature": "heavy targets (primitive cube core and rings; sentries use the WP-36 ionSentryDrone GLB since GU47 phase 4)",
         "file": "examples/heatsink-port/world.ts",
         "request": "R-14-07",
-        "removeWhen": "WP-36 heatsinkSentry and heatsinkHeavy GLBs admitted"
+        "removeWhen": "WP-36 ionHeavyDrone GLB admitted"
       },
       {
         "feature": "crystal clusters, ribcage arch, cliff dwellings and needle spires",

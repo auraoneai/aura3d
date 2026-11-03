@@ -174,7 +174,8 @@ describe("GU47 pass-4 game-lane handoff targets", () => {
     expect(ninja).toMatch(/params\.get\("cones"\) !== "0"/);
     // Ninja Runner (G20, GU47 phase 3): the evening is the default (the gate view, `?at=` from 2260 m, keeps 4.6.2);
     // `?look=original` and `?look=evening` force a look.
-    expect(src("examples/ninja-runner-port/districtLook.ts")).toMatch(/const look = params\.get\("look"\);\s+if \(look === "original" \|\| look === "evening"\) return look;/);
+    // Phase 6: every view, the gate included, opens the evening; `?look=original` still names the 4.6.2 look.
+    expect(src("examples/ninja-runner-port/districtLook.ts")).toMatch(/const look = params\.get\("look"\);\s+return look === "original" \? "original" : "evening";/);
     expect(src("examples/roadster-hours-port/art/look.ts")).toMatch(/get\("look"\) === "original"/);
     // Duneglide (G24, PRD D11): `?look=original` / `?look=inked` force a look; without one the chapter picks it.
     expect(src("examples/silt-and-signal-port/art/look.ts")).toMatch(/const look = params\?\.get\("look"\);\s+if \(look === "original"\) return "original";/);

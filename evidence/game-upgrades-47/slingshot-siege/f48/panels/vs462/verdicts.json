@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky; the rocks are a bit dark and heavy; the ground is a saturated, toy-like flat green.",
+     "The overcast grey sky is dull; the left rock is heavily darkened; the slingshot and bird are small and blend into the dark rock behind them.",
+     "Overcast grey sky is a bit dull. The cone trees and fence posts look busy and repetitive."
+    ]
+   },
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dull grey sky; the rocks are slightly murky.",
+     "The grey sky is flat; the left rock is very dark; the slingshot and bird are small against the dark rock; the grey stone pedestal on the right looks a bit plain.",
+     "Grey sky is a bit dull. The ground props repeat a lot."
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey overcast sky reads slightly flat; the ice-block tower is a little pale.",
+     "Dull grey sky; dark left rock; the light-blue ice-block tower on the right is somewhat washed out; the slingshot subject is small.",
+     "Grey sky is a bit dull. The ice-block structure on the right is fairly low-contrast against the stone tiles."
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze makes the horizon slightly muddy; the left rock is quite dark.",
+     "The warm sunset haze slightly flattens the sky; the left rock is nearly black-brown; the slingshot is darkish against the rock.",
+     "Warm sunset haze slightly dulls the far horizon, and the near rocks fall into dark shadow. The red crate tower is a bit flat."
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The orange sunset tint is heavy and somewhat monochrome; the foreground grass is dark; a small debris piece floats near the windmill.",
+     "The orange grade tints everything heavily and the ground goes somewhat muddy and dark; a small object floats near the windmill and rock on the right; the left rock is very dark.",
+     "Orange tint covers everything and the left cliff is very dark. A small object near the windmill top looks like it is floating, which may be a projectile."
+    ]
+   },
+   {
+    "variant": "ch5",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The night rocks are near-black silhouettes with little detail; the crates and slingshot area are dim, though the play field is still readable.",
+     "Flat, shadowless, washed-out cyan-green default scene; overexposed props; low contrast and no atmosphere.",
+     "Night scene: the rocks are almost black and lose detail, and the left-side props are dim. The play area is still readable and the starry sky adds mood."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey overcast sky is a little dull; the rocks are slightly dark.",
+     "Dull grey overcast sky; the left rock is very dark; the slingshot and bird are small against the dark rock.",
+     "Overcast grey sky is somewhat dull, and the scattered cones and posts look cluttered."
+    ]
+   }
+  ]
+ }
+]

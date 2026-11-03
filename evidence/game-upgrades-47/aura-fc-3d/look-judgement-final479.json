@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-fc-3d/f48/aura-fc-3d/frames/f48-aura-fc-1/aura-fc-3d--favela--settle-60s.jpg",
+      "sha256": "8e37e0432fab6b500414206254012cc2c4370e1995f3caf28bc8d03c11cf9419"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-fc-3d/f48/aura-fc-3d/frames/f48-aura-fc-1/aura-fc-3d--lagos--settle-60s.jpg",
+      "sha256": "6e4271722244dd9f4fb5b5d9acfe46041197c0cd27c61bfb95fc23550fd16bb9"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-fc-3d/f48/aura-fc-3d/frames/f48-aura-fc-1/aura-fc-3d--munich--settle-60s.jpg",
+      "sha256": "e5f54db0868e005b4b2abcbe00ee56bf307556b32a9969ae40d5f33bec0fd7c1"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-fc-3d/f48/aura-fc-3d/frames/f48-aura-fc-2/aura-fc-3d--glacier--settle-60s.jpg",
+      "sha256": "a870863a16eaa82fd000b58f1ac32d3e3c300e2857109f397ec27843230d2cca"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5.5,
+    "ibl_reflections": 4,
+    "environment_world": 4,
+    "atmospheric_effects": 2.5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 5,
+    "postprocessing": 4,
+    "ui_hud": 1.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 is underexposed and muddy brown with a near-black background. The key light sits low, around 25-30°, so player shadows stretch two to three body lengths, not the 55° flood the recipe calls for. Frame 2 is a flat warm wash with little separation between the pitch and the players."
+    },
+    {
+      "category": "shadows",
+      "seen": "Every player has a cast shadow and a dark contact blob under the feet, which grounds them. The cast shadows are soft and smeary, almost invisible on the green turf in frame 3, and they streak inconsistently across the sand in frame 1."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The grass turf in frame 3 shows glossy horizontal reflection streaks that read as wet plastic. The blue court in frame 4 mirrors the players, which suits a futsal floor, but a blown-out specular hotspot sits in the lower-right quadrant away from any subject."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stands are flat tiered boxes filled with evenly spaced colored capsules standing in for a crowd. Frame 1 shows empty green seats over a black void. None of the frames show a roof, light rigs, or indoor-industrial structure, and an orange board strip clips at the top edge."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "None of the frames show indoor haze, volumetric light, or depth falloff toward the stands. The only depth cue is a corner vignette in frames 3 and 4."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The sand pitch in frame 1 uses a blotchy low-frequency noise texture. The frame 2 pitch is untextured flat beige. The frame 3 turf noise has no mowing pattern and carries the wrong gloss. The line paint is clean white across all variants."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly players have plausible proportions and readable red-vs-white kits. The crowd is identical rounded capsules with no silhouettes. The ball is a simple sphere with a basic panel texture."
+    },
+    {
+      "category": "composition",
+      "seen": "The kickoff layout is symmetric and readable, with the ball at the center spot. The pitch fills about 70% of the frame against the 25-40% target. Players are only about 5% of frame height, and the top fifth is spent on flat stand rows."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high broadcast perspective at roughly 40-50° elevation. The center circle is foreshortened into an ellipse, so the view is perspective rather than the orthographic 70° look. The framing is identical in all four frames, with no zoom on the action."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frames 3 and 4 have a heavy dark vignette. Frame 4 has a bloom blowout. Frame 1 is crushed and underexposed. Color grading is inconsistent between variants, and nothing resembles a coherent arena-fight post stack."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "None of the four frames shows a scoreboard, match timer, team names, player indicator, or minimap."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

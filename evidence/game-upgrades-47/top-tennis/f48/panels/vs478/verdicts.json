@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "beach",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dusty, low-contrast pink-beige surround and slightly flat lighting; faint ghost reflection under the far player",
+     "Muted, slightly flat sandy lighting. The near player is cut off at the bottom edge and the top signage is cropped. Pixel-identical in practice to A.",
+     "Hazy, low-contrast muted palette; faint ghost reflection of the far player on the court"
+    ]
+   },
+   {
+    "variant": "clay",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A; same faint ghost reflection of the signage and blurry background structure",
+     "Very monochrome orange palette with dark crushed surround. The 'AURA SLAM' sign is partly hidden by the far player. Faint mirrored scoreboard text on the court.",
+     "Practically identical to A, with the same ghost reflection and occluded sign"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark, murky edges around the stands; heavy vignette; small blobby shadow under the near player",
+     "Dark, desaturated teal surround. The near player is close to the bottom edge. Patchy stand lighting. Identical to A.",
+     "Dark teal surround with dim stands; flat, fairly plain lighting"
+    ]
+   },
+   {
+    "variant": "desert",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A; the reflection of the scoreboard text is slightly fainter; same flat palette",
+     "Low-contrast, somewhat washed-out beige and teal palette. Faint mirrored scoreboard text.",
+     "Practically identical to A, equally washed out"
+    ]
+   },
+   {
+    "variant": "grass",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dark, murky surround; ghost reflection of the signage on the court",
+     "Slightly flat green-on-green. The scoreboard reflection is slightly more visible than in A. Otherwise identical.",
+     "Monochrome green, somewhat flat; faint mirrored scoreboard text on the court"
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same reflection artifacts but noticeably fainter and fewer; very dark surroundings and a small floating moon sphere",
+     "Very dark surround that crushes the stands' edges. Mild mirrored 'THE MOON' text on the court.",
+     "Very dark frame with some leftover streaks and mirrored text, but noticeably cleaner than A"
+    ]
+   }
+  ]
+ }
+]

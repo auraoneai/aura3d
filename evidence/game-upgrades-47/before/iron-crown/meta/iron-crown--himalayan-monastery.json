@@ -1,0 +1,85 @@
+{
+ "target": "iron-crown--himalayan-monastery",
+ "slug": "iron-crown",
+ "variant": "himalayan-monastery",
+ "url": "/apps/showcase-iron-crown/",
+ "group": "g2",
+ "runId": "gu47-before-iron-crown-3",
+ "acrRunId": "ch5tb",
+ "readyMs": 58616,
+ "shots": {
+  "settle-25s": {
+   "target": "iron-crown--himalayan-monastery",
+   "id": "settle-25s",
+   "slug": "iron-crown",
+   "variant": "himalayan-monastery",
+   "sinceReadyMs": 25004,
+   "mean": 115.3,
+   "p5": 66,
+   "p50": 116,
+   "p95": 171,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    130.3,
+    148,
+    124.3,
+    119.9,
+    148.2,
+    107.5,
+    81,
+    98.2,
+    80.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 3731
+   }
+  },
+  "settle-60s": {
+   "target": "iron-crown--himalayan-monastery",
+   "id": "settle-60s",
+   "slug": "iron-crown",
+   "variant": "himalayan-monastery",
+   "sinceReadyMs": 636729,
+   "mean": 115.31,
+   "p5": 66,
+   "p50": 116,
+   "p95": 171,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    130.3,
+    148,
+    124.2,
+    120.2,
+    148.2,
+    107.4,
+    81,
+    98.2,
+    80.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 3731
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-iron-crown-3/iron-crown--himalayan-monastery--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-iron-crown-3/iron-crown--himalayan-monastery--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /apps/showcase-iron-crown/fonts/whitney-regular.woff2",
+  "404 /apps/showcase-iron-crown/fonts/fonts.css",
+  "404 /apps/showcase-iron-crown/fonts/whitney-medium.woff2"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

@@ -464,6 +464,23 @@ class ContributorTransparentPass extends BaseRenderPass {
   }
 }
 
+/** The renderer's per-frame selective-bloom state, as the contributor observation sees it. */
+interface SelectiveBloomObservedFrame {
+  valid: boolean;
+  invalidReason?: string;
+  readonly weights?: WeakMap<RenderItem, number>;
+  setSignalWrite?: (enabled: boolean) => void;
+}
+
+/**
+ * A contributor's id for a selective-bloom fallback reason. Reads only an own
+ * data property (never a getter); anything unusual reports as "unnamed".
+ */
+export function selectiveContributorTag(contributor: FrameContributor): string {
+  const id: unknown = Object.getOwnPropertyDescriptor(contributor, "id")?.value;
+  return typeof id === "string" && /^[\w.:-]{1,64}$/.test(id) ? id : "unnamed";
+}
+
 export class RendererFrameHooks {
   private readonly flags: QrFlags;
   private readonly blackboard = new Map<string, unknown>();
@@ -476,6 +493,10 @@ export class RendererFrameHooks {
   private readonly renderSource: RenderSource;
   private readonly rasterViewProjectionMatrix: Float32Array | undefined;
   private rasterViewportIsFull: boolean | undefined;
+  private selectiveObservation?: {
+    readonly frame: SelectiveBloomObservedFrame;
+    readonly contract: (contributor: FrameContributor) => "offscreen" | "empty-output" | null;
+  };
 
   constructor(private readonly input: RendererFrameHooksInput) {
     this.flags = input.flags ?? rendererQrFlags(input.device);
@@ -507,6 +528,47 @@ export class RendererFrameHooks {
     if (target !== this.forwardTarget) this.sceneDepthCoverage = null;
     this.forwardTarget = target;
     if (!target) this.blackboard.delete(PRD01_FORWARD_TARGET);
+  }
+
+  /** Observe the real callbacks once; never call them speculatively. */
+  observeSelectiveBloom(
+    frame: SelectiveBloomObservedFrame,
+    contract: (contributor: FrameContributor) => "offscreen" | "empty-output" | null
+  ): void {
+    this.selectiveObservation = { frame, contract };
+  }
+
+  /** The first reason is kept (reported as POST_SELECTIVE_BLOOM_UNAVAILABLE:<reason>). */
+  private invalidateSelective(reason: string): void {
+    const frame = this.selectiveObservation?.frame;
+    if (!frame) return;
+    if (frame.valid) {
+      frame.invalidReason = reason;
+      frame.setSignalWrite?.(false);
+    }
+    frame.valid = false;
+  }
+
+  private selectiveContract(contributor: FrameContributor): "offscreen" | "empty-output" | null {
+    const observation = this.selectiveObservation;
+    if (!observation) return null;
+    const contract = observation.contract(contributor);
+    if (!contract) this.invalidateSelective(`frame-contributor:${selectiveContributorTag(contributor)}`);
+    return contract;
+  }
+
+  /** Any emitted pass of an empty-output contributor, or any post-hdr pass, writes without the signal. */
+  private observePasses(contributor: FrameContributor, phase: AuraFramePhase, passes: unknown): void {
+    if (!this.selectiveObservation) return;
+    const contract = this.selectiveContract(contributor);
+    const emitted = !Array.isArray(passes) || passes.length > 0;
+    if (emitted && (phase === "post-hdr" || contract !== "offscreen")) this.invalidateSelective(`frame-contributor-output:${selectiveContributorTag(contributor)}`);
+  }
+
+  private observeQueue(contributor: FrameContributor, queue: unknown): void {
+    if (!this.selectiveObservation) return;
+    this.selectiveContract(contributor);
+    if (queue !== undefined && queue !== null && (!Array.isArray(queue) || queue.length > 0)) this.invalidateSelective(`frame-contributor-output:${selectiveContributorTag(contributor)}`);
   }
 
   private sceneDepthCopy: RenderTarget | null = null;
@@ -622,8 +684,25 @@ export class RendererFrameHooks {
     let out = items;
     for (const contributor of contributors) {
       if (!contributor.phases.includes("collect") || !contributor.collect) continue;
+      this.selectiveContract(contributor);
       const next = contributor.collect([...out], this.context(out));
-      if (next) out = next;
+      if (next) {
+        const observation = this.selectiveObservation;
+        if (observation) {
+          // Audited stock collects retain order and only probe assignment
+          // clones items. Carry the renderer's private batching weights along
+          // that exact correspondence; a changed cardinality is ambiguous.
+          if (next.length !== out.length) this.invalidateSelective(`frame-contributor-items:${selectiveContributorTag(contributor)}`);
+          else if (observation.frame.weights) {
+            for (let index = 0; index < out.length; index += 1) {
+              const weight = observation.frame.weights.get(out[index]!);
+              if (weight !== undefined) observation.frame.weights.set(next[index]!, weight);
+            }
+          }
+          this.selectiveContract(contributor);
+        }
+        out = next;
+      }
       validate?.(out);
     }
     return out;
@@ -646,7 +725,9 @@ export class RendererFrameHooks {
     const transparentQueue: TransparentQueueItem[] = [];
     for (const contributor of contributors) {
       if (!contributor.phases.includes(phase)) continue;
+      this.selectiveContract(contributor);
       const passes = contributor.passes?.(phase, ctx) ?? [];
+      if (this.selectiveObservation) this.observePasses(contributor, phase, passes);
       this.phasePassCounts.set(phase, (this.phasePassCounts.get(phase) ?? 0) + passes.length);
       if (passes.length && !benchmarkPassesAreNonScene(contributor, phase)) this.extraSceneGeometryPossible = true;
       for (const pass of passes) {
@@ -657,6 +738,7 @@ export class RendererFrameHooks {
       }
       if (phase === "transparent") {
         const queue = contributor.transparentItems?.(ctx);
+        if (this.selectiveObservation) this.observeQueue(contributor, queue);
         if (queue && queue.length > 0) { this.extraSceneGeometryPossible = true; this.contactGraphHasTransparentQueue = true; transparentQueue.push(...queue); }
       }
     }
@@ -679,7 +761,9 @@ export class RendererFrameHooks {
     const queues: TransparentQueueItem[] = [];
     for (const contributor of frameContributors(this.flags)) {
       if (!contributor.phases.includes("transparent")) continue;
+      this.selectiveContract(contributor);
       const queue = contributor.transparentItems?.(ctx);
+      if (this.selectiveObservation) this.observeQueue(contributor, queue);
       if (queue?.length) { this.extraSceneGeometryPossible = true; this.contactGraphHasTransparentQueue = true; queues.push(...queue); }
     }
     return { ctx, queues };
@@ -696,7 +780,9 @@ export class RendererFrameHooks {
     const ctx = this.context(items);
     for (const contributor of contributors) {
       if (!contributor.phases.includes("transparent")) continue;
+      this.selectiveContract(contributor);
       const passes = contributor.passes?.("transparent", ctx) ?? [];
+      if (this.selectiveObservation) this.observePasses(contributor, "transparent", passes);
       if (passes.length) this.extraSceneGeometryPossible = true;
       for (const pass of passes) {
         this.contactGraphContributorPasses.push(pass);
@@ -721,7 +807,9 @@ export class RendererFrameHooks {
         if (typeof console !== "undefined") console.warn(`FRAME_PHASE_SKIPPED:${phase}:${contributor.id}`);
         continue;
       }
+      this.selectiveContract(contributor);
       const passes = contributor.passes?.(phase, ctx) ?? [];
+      if (this.selectiveObservation) this.observePasses(contributor, phase, passes);
       if (passes.length && !benchmarkPassesAreNonScene(contributor, phase)) this.extraSceneGeometryPossible = true;
       for (const pass of passes) {
         assertPhaseSpace(phase, pass, contributor);
@@ -742,7 +830,10 @@ export class RendererFrameHooks {
         if (typeof console !== "undefined") console.warn(`FRAME_PHASE_SKIPPED:${phase}:${contributor.id}`);
         continue;
       }
+      // 4.7.x selective-bloom observation applies to the async phase runner too.
+      this.selectiveContract(contributor);
       const passes = withRendererQrFlags(this.input.device, () => contributor.passes?.(phase, ctx) ?? []);
+      if (this.selectiveObservation) this.observePasses(contributor, phase, passes);
       if (passes.length && !benchmarkPassesAreNonScene(contributor, phase)) this.extraSceneGeometryPossible = true;
       for (const pass of passes) {
         assertPhaseSpace(phase, pass, contributor);

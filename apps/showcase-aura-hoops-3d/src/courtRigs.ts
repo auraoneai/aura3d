@@ -198,10 +198,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "golden-hour",
     hdri: "belfast_sunset_puresky",
     hdri2k: true,
-    environmentIntensity: 0.55,
+    environmentIntensity: 0.45, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key")
     environmentRotationDeg: 250,
     sun: { elevationDeg: 7, azimuthDeg: 250 },
-    key: { color: "#ff9e64", intensity: 1.5 },
+    key: { color: "#ff9e64", intensity: 2.4 },
     // GU47 phase 2: +0.9 EV for H47-L1 p95 >= 215 (after-capture p95 151-165 under the height-fog wash).
     // GU47 phase 3: the haze is gone, so the extra stop would only lift the black point: 1.0 -> 0.6.
     exposureEv: 0.6,
@@ -235,13 +235,13 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "golden-hour",
     hdri: "venice_sunset",
     hdri2k: true,
-    environmentIntensity: 0.95,
+    environmentIntensity: 0.72, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key"); Venice also read washed out
     environmentRotationDeg: 185,
     // Behind the hoop: the court attacks -Z, so azimuth 185 puts the low sun over the backboard, facing the camera.
     sun: { elevationDeg: 5, azimuthDeg: 185 },
-    key: { color: "#ffad66", intensity: 2.6 },
+    key: { color: "#ffad66", intensity: 3.6 },
     // GU47 phase 2: +0.55 EV for p95 >= 215 (4.6 frame p95 180).
-    exposureEv: 0.6,
+    exposureEv: 0.42,
     fog: { color: "#d8a47c", near: 40, far: 260 },
     post: "daylight-outdoor",
     grade: { contrast: 1.06, saturation: 1.1, temperature: 0.18, tint: 0.01 },
@@ -267,10 +267,10 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "outdoor-day",
     hdri: "outdoor-midday",
     hdri2k: true,
-    environmentIntensity: 1.0,
+    environmentIntensity: 0.8, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key")
     environmentRotationDeg: 150,
     sun: { elevationDeg: 64, azimuthDeg: 150 },
-    key: { color: "#fff6ea", intensity: 4.2 },
+    key: { color: "#fff6ea", intensity: 5.2 },
     // GU47 phase 2: +0.5 EV for p95 >= 215 once the fog wash is gone (4.6 frame p95 178).
     exposureEv: 0.38,
     fog: { color: "#cbd8e2", near: 60, far: 320 },
@@ -302,11 +302,11 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
     look: "interior-warm",
     hdri: "indoor-workshop",
     hdri2k: true,
-    environmentIntensity: 0.7,
+    environmentIntensity: 0.6, // GU47 phase 4: key up, HDRI fill down so the key's cast shadows read (rubric shadows 4.5: "no directional key")
     environmentRotationDeg: 20,
     // Cool daylight through the roof gap (the god-ray source of H47-V2); the bulbs carry the warm side.
     sun: { elevationDeg: 62, azimuthDeg: 20 },
-    key: { color: "#c9d5e6", intensity: 1.4 },
+    key: { color: "#c9d5e6", intensity: 2.1 },
     // GU47 phase 2: +0.45 EV for p95 >= 215 (after-capture p95 182-192).
     exposureEv: 0.7,
     fog: { color: "#2b2620", near: 24, far: 140 },
@@ -412,8 +412,49 @@ export const COURT_RIGS: Readonly<Record<CourtId, CourtRig>> = {
 
 export const courtRig = (id: CourtId): CourtRig => COURT_RIGS[id];
 
-/** H47-L1 key shadow: PCSS, three cascades on High (the tier caps cascades and filter on Low: 1 cascade, PCF). */
-export const COURT_KEY_SHADOW = { cascades: 3, filter: "pcss", lightSize: 1.6, mapSize: 2048 } as const;
+/**
+ * H47-L1 key shadow. GU47 phase 4: PCF, two cascades out to 60 m (the court and its apron) at full strength. PCSS drew no
+ * readable cast shadow in the software WebGL2 captures (4.7.1: blob discs only; same finding in lane g21), and three
+ * cascades over the default far plane spread the 2048 map over 240 m.
+ */
+export const COURT_KEY_SHADOW = { cascades: 2, filter: "pcf", mapSize: 2048, maxDistance: 60, intensity: 1, normalBias: 0.02, softness: 1.2 } as const;
+
+/**
+ * GU47 phase 4: the shadow-casting key never sits below this elevation. Rucker (7) and Venice (5) threw every
+ * athlete's shadow 15-20 m off the court; at 12 the shadow is about 9 m long and lands on the court. The court's sky
+ * (Venice Preetham) keeps `rig.sun`.
+ */
+export const KEY_MIN_ELEVATION_DEG = 12;
+
+/**
+ * GU47 phase 4 (rubric ibl_reflections): the playing floor's finish per court. The 4.7.1 floor was roughness 0.86 on
+ * every court, so the HDRI never showed in it; `ssr` adds screen-space reflections where the floor is glossy enough
+ * (below the S3 0.5 cutoff): Manila's polished concrete, Shanghai's wet asphalt, Orbit's composite deck.
+ */
+export const COURT_FLOOR_FINISH: Readonly<Record<CourtId, { readonly roughness: number; readonly paintRoughness: number; readonly ssr: number }>> = {
+  rucker: { roughness: 0.74, paintRoughness: 0.66, ssr: 0 },
+  venice: { roughness: 0.56, paintRoughness: 0.5, ssr: 0 },
+  athens: { roughness: 0.5, paintRoughness: 0.44, ssr: 0 },
+  // phase 7: `ssr` is the S3 intensity at full gate (COURT_SSR_ROUGHNESS 0.3); phase 4's 0.45 / 0.42 / 0.5 ran at
+  // 26 % (roughness 0.45 was read as a cutoff, e6 SSR_ROUGHNESS_GATED), i.e. about 0.11-0.13 effective.
+  manila: { roughness: 0.36, paintRoughness: 0.32, ssr: 0.24 },
+  // round 5: SSR 0.6 -> 0.42 and a thicker hit (rubric: horizontal banding near the bottom of the Shanghai frame)
+  shanghai: { roughness: 0.16, paintRoughness: 0.2, ssr: 0.22 },
+  orbit: { roughness: 0.24, paintRoughness: 0.22, ssr: 0.28 }
+};
+
+/**
+ * GU47 phase 7 (e6 handoff): the S3 trace takes `roughness` as the surface roughness of every pixel (no per-pixel
+ * channel yet), full strength at 0.35 or less, zero at 0.5. 0.3 keeps the gate fully open on the three glossy courts.
+ */
+export const COURT_SSR_ROUGHNESS = 0.3;
+
+/** GU47 phase 4: screen-space reflections on the glossy courts (none on the matte outdoor ones). */
+export function courtReflectionNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  const ssr = COURT_FLOOR_FINISH[rig.id].ssr;
+  if (ssr <= 0) return [];
+  return [effects.screenSpaceReflections({ name: `${rig.id} floor reflections`, intensity: ssr, maxDistance: 24, roughness: COURT_SSR_ROUGHNESS, thickness: 0.6 }) as AuraNodeBuilder<AuraSceneNode>];
+}
 
 /** The look overrides of one court (E-A): catalogue HDRI, key, fog to the horizon, grade, post preset and bloom. */
 export function courtLookOverrides(rig: CourtRig): AuraLookOverrides {
@@ -423,7 +464,7 @@ export function courtLookOverrides(rig: CourtRig): AuraLookOverrides {
     environmentIntensity: rig.environmentIntensity,
     environmentRotationDeg: rig.environmentRotationDeg,
     exposureEv: rig.exposureEv,
-    sun: rig.sun,
+    sun: { azimuthDeg: rig.sun.azimuthDeg, elevationDeg: Math.max(rig.sun.elevationDeg, KEY_MIN_ELEVATION_DEG) },
     key: { color: rig.key.color, intensity: rig.key.intensity, shadow: COURT_KEY_SHADOW },
     rim: false,
     // GU47 phase 2: the look's own fog node is dropped (fogDensityScale 0) and courtFogNode authors it instead. With
@@ -455,7 +496,7 @@ export function courtLookNodes(rig: CourtRig, options: { readonly ao?: boolean }
   if (!rig.fogOff) nodes.push(courtFogNode(rig));
   if (options.ao !== false) nodes.push(effects.ambientOcclusion({ name: "court ambient occlusion", intensity: 0.85, radius: 0.55 }) as AuraNodeBuilder<AuraSceneNode>);
   nodes.push(effects.bloom({ name: "court bloom", intensity: rig.bloom.intensity, threshold: rig.bloom.threshold }) as AuraNodeBuilder<AuraSceneNode>);
-  if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.08 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
+  if (rig.grain) nodes.push(effects.filmGrain({ name: "court film grain", intensity: 0.045 } as Parameters<typeof effects.filmGrain>[0]) as AuraNodeBuilder<AuraSceneNode>);
   return nodes;
 }
 
@@ -742,4 +783,84 @@ export function courtRibNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
     scale: [p.width * 0.5, p.position[1] + p.height / 2, p.width * 0.5] as AuraVec3
   }));
   return [instances.box({ name: "orbit-ribs", transforms: ribs, castShadow: false, material: material.emissive({ color: "#0b1626", emissive: "#7dfcff", emissiveIntensity: 1.4, bloom: 1 }) }) as unknown as AuraNodeBuilder<AuraSceneNode>];
+}
+
+/**
+ * GU47 phase 4 (rubric environment_world / composition): the city around the street courts. Rucker's identity row is
+ * "brick walk-ups behind a 4 m chain-link fence" and Athens sits among pale apartment blocks, but both drew a flat
+ * HDRI sky over the top third of every chase frame (the 26 m skyline GLB at -56 m never showed in a capture). A ring of
+ * walk-up blocks 72-94 m out from the court centre (one instanced draw) and their windows (one instanced draw: lit
+ * tungsten at Rucker's blue hour, dark glass reflecting the noon sky at Athens). Presentation only: nothing collides.
+ */
+export const COURT_BACKDROP: Partial<Readonly<Record<CourtId, { readonly wall: AuraColor; readonly window: AuraColor; readonly lit: boolean; readonly litFraction: number; readonly seed: number }>>> = {
+  rucker: { wall: "#5b3428", window: "#ffc77a", lit: true, litFraction: 0.42, seed: 0x52c7 },
+  athens: { wall: "#d6c9b2", window: "#2b3644", lit: false, litFraction: 0.85, seed: 0xa7e5 }
+};
+
+type BackdropTransform = { position: AuraVec3; rotation: AuraVec3; scale: AuraVec3 };
+
+/** The walk-up blocks and their court-facing windows, deterministic per court. */
+export function courtBackdropLayout(id: CourtId): { readonly blocks: BackdropTransform[]; readonly windows: BackdropTransform[]; readonly darkWindows: BackdropTransform[] } {
+  const spec = COURT_BACKDROP[id];
+  if (!spec) return { blocks: [], windows: [], darkWindows: [] };
+  let state = spec.seed >>> 0;
+  const rnd = (): number => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+  const blocks: BackdropTransform[] = [];
+  const windows: BackdropTransform[] = [];
+  const darkWindows: BackdropTransform[] = [];
+  const sills: BackdropTransform[] = [];
+  const cz = 4;
+  let angle = 0;
+  while (angle < Math.PI * 2 - 0.05) {
+    // GU47 phase 4 round 3: 72-94 m out (at 46-60 m in g07p4-r2 the blocks filled the whole top of the chase frame and
+    // read as a walled yard), 4-9 storeys so the roofline steps and sky shows between, 1.5-5 m gaps, a cornice per block.
+    const radius = 72 + rnd() * 22;
+    const width = 12 + rnd() * 8;
+    const floors = 4 + Math.floor(rnd() * 6);
+    const height = floors * 3.2 + 1.2;
+    const depth = 14;
+    const gap = 1.5 + rnd() * 3.5;
+    const step = (width + gap) / radius;
+    const a = angle + step / 2;
+    // the block's front face points at the court centre
+    const dx = Math.sin(a), dz = Math.cos(a);
+    const yaw = a;
+    const cx = dx * (radius + depth / 2), czz = cz + dz * (radius + depth / 2);
+    blocks.push({ position: [cx, height / 2, czz], rotation: [0, yaw, 0], scale: [width, height, depth] });
+    blocks.push({ position: [dx * (radius + depth / 2 - 0.35), height + 0.3, cz + dz * (radius + depth / 2 - 0.35)], rotation: [0, yaw, 0], scale: [width + 0.7, 0.6, depth + 0.7] });
+    const cols = Math.max(3, Math.floor((width - 1.6) / 2));
+    for (let f = 0; f < floors; f++) {
+      for (let c = 0; c < cols; c++) {
+        const lit = rnd() <= spec.litFraction;
+        const u = (c - (cols - 1) / 2) * 2;
+        // along the face: the tangent is (cos a, -sin a)
+        const fx = dx * (radius - 0.06) + Math.cos(a) * u;
+        const fz = cz + dz * (radius - 0.06) - Math.sin(a) * u;
+        // round 5: every window slot is drawn (lit ones in `windows`, the rest dark glass with a sill in `darkWindows`), so a
+        // facade reads as a window grid instead of a box with pasted quads (rubric environment_world).
+        (lit ? windows : darkWindows).push({ position: [fx, 2.2 + f * 3.2, fz], rotation: [0, yaw, 0], scale: [0.95, 1.45, 0.1] });
+        sills.push({ position: [fx - dx * 0.08, 1.42 + f * 3.2, fz - dz * 0.08], rotation: [0, yaw, 0], scale: [1.25, 0.14, 0.3] });
+      }
+    }
+    angle += step;
+  }
+  // sills share the block draw (same wall material)
+  blocks.push(...sills);
+  return { blocks, windows, darkWindows };
+}
+
+export function courtBackdropNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode>[] {
+  const spec = COURT_BACKDROP[rig.id];
+  if (!spec) return [];
+  const { blocks, windows, darkWindows } = courtBackdropLayout(rig.id);
+  const glass = material.pbr({ color: spec.lit ? "#151a24" : spec.window, roughness: 0.12, metalness: 0.4 });
+  const nodes = [
+    instances.box({ name: `${rig.id}-walkups`, transforms: blocks, castShadow: false, material: material.pbr({ color: spec.wall, roughness: 0.92 }) }) as AuraNodeBuilder<AuraSceneNode>,
+    instances.box({ name: `${rig.id}-walkup-glass`, transforms: spec.lit ? darkWindows : [...windows, ...darkWindows], castShadow: false, material: glass }) as AuraNodeBuilder<AuraSceneNode>
+  ];
+  if (spec.lit) nodes.push(instances.box({ name: `${rig.id}-walkup-lit`, transforms: windows, castShadow: false, material: material.emissive({ color: "#3a2a14", emissive: spec.window, emissiveIntensity: 1.1 }) }) as AuraNodeBuilder<AuraSceneNode>);
+  return nodes;
 }

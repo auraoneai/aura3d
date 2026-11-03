@@ -27,6 +27,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "trainCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "tramCar": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "turtle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "xhopCoin": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -6115,6 +6116,133 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "sha256": "sha256-80f313edeae426738fcd868775768eaf71cc8fd851a22531b98da8d481baac51",
         "checkedAt": "2026-10-17T07:21:24.144Z"
       }
+    },
+  },
+  "xhopCoin": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/xhopCoin.bd96d0cf.glb",
+    hash: "sha256-bd96d0cf68ba63be7fb9ec5af48ebeef0fc8961c96c386b9c3a06d281ebc1cf8",
+    bounds: [
+      1.902,
+      1.902,
+      0.319
+    ],
+    sizeBytes: 798232,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "models/cross_hop_xhopCoin.glb",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "author": "AuraOne via Meshy (GU47 WP-36)",
+        "sourceFamily": "meshy",
+        "evidence": [
+          "provenance/cross_hop_xhopCoin.rights.json",
+          "provenance/cross_hop_xhopCoin.meta.json"
+        ],
+        "checkedAt": "2026-10-31T22:03:41.425Z"
+      },
+      "sourcePath": "models/cross_hop_xhopCoin.glb",
+      "outputPath": "public/aura-assets/xhopCoin.bd96d0cf.glb",
+      "author": "AuraOne via Meshy (GU47 WP-36)",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.952,
+          -0.16
+        ],
+        "max": [
+          0.951,
+          0.95,
+          0.159
+        ],
+        "size": [
+          1.902,
+          1.902,
+          0.319
+        ],
+        "center": [
+          0,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/xhopCoin.thumb.svg",
+      "quality": "candidate",
+      "role": "prop"
     },
   },
 } as const);

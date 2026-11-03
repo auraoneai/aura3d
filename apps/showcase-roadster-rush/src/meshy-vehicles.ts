@@ -7,7 +7,9 @@ import { defineModelAssets } from "@aura3d/engine";
  */
 export const meshyVehicles = defineModelAssets(
   {
-    hero: { url: new URL("./assets/meshy/hero.glb", import.meta.url).pathname, sha256: "d86f2746079c5d6ea11cb8e0e0041ccdb166357cd31c011b99718076b79dec8d", sizeBytes: 2645584 },
+    // GU47 WP-36 AO-M1 (apexHeroCobalt): the hero.glb mesh retextured cobalt with one tangerine stripe, fitted back onto the
+    // source bounds by tools/fit-retexture.mjs (same orientation, scale 0.9508, wheels on y = 0); ATTRIBUTION.md
+    hero: { url: new URL("./assets/meshy/hero-cobalt.glb", import.meta.url).pathname, sha256: "eed3261b9b77a65a1f9a762ae9113240e10e58b45ecfabf28961e860d3c0e651", sizeBytes: 3132568 },
     sedan: { url: new URL("./assets/meshy/sedan.glb", import.meta.url).pathname, sha256: "6e96dc59ee771164e29f57e030f94b1461194143f5b9c73bef0ff131a430fd62", sizeBytes: 2359704 },
     suv: { url: new URL("./assets/meshy/suv.glb", import.meta.url).pathname, sha256: "99855b844f5fc73a05c45fa42527f16ad07db8ca3eaa92eb893875dbe239cc5d", sizeBytes: 1008688 },
     hatch: { url: new URL("./assets/meshy/hatch.glb", import.meta.url).pathname, sha256: "0d6ed5307d216019f633f006f6e6fff339de985399d49c773297639deb6cffa0", sizeBytes: 1558908 },

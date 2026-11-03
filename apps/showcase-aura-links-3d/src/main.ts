@@ -98,8 +98,9 @@ import { IMPACT_FOV_KICK_DEG, cupCamPose, flyoverAllowed, flyoverShots, tracerCa
 import { linksQaCrops } from "./game/qaCrops";
 import { discOnTerrain, flatPad, ribbonAlongPath, terrainToMeshSpec, type SurfaceUvMode } from "./game/terrainMesh";
 import { MASK_COLOR_LIFT, TURF_SURFACES, type LinksSurfaceSlot } from "./game/turf";
-import { turfTexture } from "./game/turfTextures";
+import { surfaceMarkTexture, turfTexture } from "./game/turfTextures";
 import { coverWind, groundCover } from "./game/groundCover";
+import { HORIZON_SPECS, horizonRing } from "./game/horizon";
 import { lavaSpec, pondWaterOptions, reflectivePonds } from "./game/water";
 import { holeCardTransition, holeCardVisible, holeMap, holeMapSvg, holeSubtitle, holeTitle, shotStatsLabel } from "./game/holeCard";
 import { clubForShot, planShot, puttRange, type ShotPlan } from "./game/autopilot";
@@ -229,6 +230,16 @@ const DIFF_AI_SKILL: Record<DifficultyId, number> = { amateur: 0.55, pro: 0.72, 
 /** LINKS-05: the GU47 look tiles turf, sand, basalt and regolith in world metres; `?look=original` keeps 4.6.2 flat colour. */
 const turfOn = lookMode !== "original";
 const surfaceUv: SurfaceUvMode = turfOn ? "metres" : "legacy";
+
+/**
+ * GU47 phase 4 (shadows): the engine's default (4.2.0, "legacy") sun fit widens every cascade to every caster's bounds, and
+ * this course's instanced trees, rocks and marram span the whole 400 m hole, so each cascade covered the hole at 2048 px
+ * and the golfer's, the cart's and the trees' cast shadows fell to about one texel (no shadow shapes in any capture,
+ * although the map was rendered and sampled with 3 cascades: run g10p4-x1; docs/audits/lanes/e3.md). The 4.3.0 fit
+ * (`__A3D_SHADOW_FIT__ = "current"`, as Shadowstep Gauntlet) hugs each cascade to its frustum slice. GU47 look only;
+ * `?look=original` and `?shadowfit=legacy` keep the 4.2.0 fit (no real-GPU frame of the 4.3.0 fit for this game yet).
+ */
+if (turfOn) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 
 /**
  * A course surface's material: on the GU47 look the theme's mask (mow stripes or rough mottling, colour lifted to keep
@@ -369,12 +380,23 @@ function buildBleacherNodes(
       .position(...at(0, 0.22, -0.35))
       .rotate(0, yaw, 0)
   ];
-  for (let tier = 0; tier < 3; tier++) {
-    nodes.push(
-      primitives.box({ name: `gallery-stand-${id}-tier-${tier}`, size: [6.0, 0.34, 1.06], material: seatMat })
-        .position(...at(0, 0.55 + tier * 0.4, 0.95 - tier * 0.95))
-        .rotate(0, yaw, 0)
-    );
+  if (turfOn) {
+    // LINKS-15: retain the three seat tiers and their shadows in one draw.
+    nodes.push(instances.box({
+      name: `gallery-stand-${id}-tiers`, size: [6.0, 0.34, 1.06], material: seatMat,
+      transforms: Array.from({ length: 3 }, (_, tier) => ({
+        position: at(0, 0.55 + tier * 0.4, 0.95 - tier * 0.95),
+        rotation: [0, yaw, 0] as Vec3
+      }))
+    }));
+  } else {
+    for (let tier = 0; tier < 3; tier++) {
+      nodes.push(
+        primitives.box({ name: `gallery-stand-${id}-tier-${tier}`, size: [6.0, 0.34, 1.06], material: seatMat })
+          .position(...at(0, 0.55 + tier * 0.4, 0.95 - tier * 0.95))
+          .rotate(0, yaw, 0)
+      );
+    }
   }
   nodes.push(
     primitives.box({ name: `gallery-stand-${id}-back`, size: [6.2, 1.3, 0.18], material: frameMat })
@@ -514,7 +536,23 @@ function buildClubhouseNodes(
         .position(...at(side * 5.02, 2.05, 0)).rotate(0, yaw, 0)
     );
   }
-  for (const [sx, sz, ss] of [[-4.2, 7.4, 1.0], [4.2, 7.4, 1.0], [-6.2, 6.4, 0.8], [6.2, 6.4, 0.8]] as const) {
+  const shrubSpots = [[-4.2, 7.4, 1.0], [4.2, 7.4, 1.0], [-6.2, 6.4, 0.8], [6.2, 6.4, 0.8]] as const;
+  if (turfOn && course.dressing.theme === "dunes") {
+    // GU47 wave 1 (golfGorse, LINKS-07): on the dunes the four primitive porch shrubs are the Links-owned Meshy gorse
+    // (one instanced draw instead of four spheres), fitted to 0.9 m high so each stays inside the old 1.4 x 0.9 m sphere
+    nodes.push(
+      instances.model(assets.links_gorse, {
+        name: "clubhouse-gorse",
+        transforms: shrubSpots.map(([sx, sz, ss], i) => ({
+          position: at(sx, 0, sz),
+          rotation: [0, yaw + i * 1.7, 0] as [number, number, number],
+          scale: [ss, ss, ss] as [number, number, number]
+        })),
+        targetHeight: 0.9,
+        castShadow: true
+      })
+    );
+  } else for (const [sx, sz, ss] of shrubSpots) {
     nodes.push(
       primitives.sphere({ name: `clubhouse-shrub-${sx}`, size: [1.4 * ss, 0.9 * ss, 1.4 * ss], material: shrubMat })
         .position(...at(sx, 0.5 * ss, sz)).rotate(0, yaw, 0)
@@ -654,7 +692,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     const millX = midT[0] - fairHalf - 16;
     const millZ = midT[1] + 18;
     nodes.push(
-      model(assets.siegeWindmillTowerMeshy, { name: "landmark-windmill", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksDunesBeaconTower, { name: "landmark-windmill", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
         .position(millX, terrain.height(millX, millZ), millZ)
         .rotate(0, 0.55, 0)
     );
@@ -664,7 +702,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
       const brX = w.center[0] - w.radius * 0.8;
       const brZ = w.center[1];
       nodes.push(
-        model(assets.siegeStoneBridgeMeshy, { name: "landmark-bridge", targetHeight: 2.1, role: "setDressing", scaleMode: "fit" })
+        model(assets.linksBurnFootbridge, { name: "landmark-bridge", targetHeight: 2.1, role: "setDressing", scaleMode: "fit" })
           .position(brX, terrain.height(brX, brZ) + 0.14, brZ)
           .rotate(0, 0.2, 0)
       );
@@ -673,18 +711,26 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     if (clubSpot) nodes.push(...buildClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
   } else if (theme === "volcanic") {
     nodes.push(
-      model(assets.skylineCrystalShardMeshy, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksCraterCrystal, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1])
         .rotate(0, 0.4, 0)
     );
   } else if (theme === "alpine") {
+    // GU47 phase 9 (D2): the far treeline behind the green is this game's own CC0 snow pine, instanced in one draw; it
+    // stays inside the old backdrop card's 90 m span and 60 m height at the same distance
+    const alpTransforms = Array.from({ length: 15 }, (_, i) => {
+      const h = 20 + ((i * 7) % 5) * 3.5;
+      return {
+        position: [cx + 18 + i * 6, 0, cz + 140 + ((i % 3) - 1) * 0.5] as [number, number, number],
+        rotation: [0, i * 1.7, 0] as [number, number, number],
+        scale: [h / 2, h / 2, h / 2] as [number, number, number]
+      };
+    });
     nodes.push(
-      model(assets.turboAlpineVenueBackdrop, { name: "landmark-alps", targetHeight: 60, role: "setDressing", scaleMode: "fit" })
-        .position(cx + 60, 0, cz + 140)
-        .rotate(0, Math.PI, 0)
+      instances.model(assets.linksAlpineSnowPine, { name: "landmark-alps", transforms: alpTransforms, targetHeight: 2, castShadow: false })
     );
   } else if (theme === "nightCity") {
-    const buildings = [assets.showcaseModernBuildingOne, assets.showcaseModernOfficeBuilding, assets.showcaseVoxelBuilding];
+    const buildings = [assets.linksHarbourTowerA, assets.linksHarbourTowerB, assets.linksHarbourTowerC];
     buildings.forEach((b, i) => {
       const bx = terrain.bounds.minX + 30 + i * 46;
       nodes.push(
@@ -698,7 +744,7 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
       const x = cx + lx, z = cz + lz;
       nodes.push(
-        model(assets.neonStreetLampProp, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
+        model(assets.linksHarbourFloodlight, { name: `lamp-${lx}-${lz}`, targetHeight: 7.5, role: "setDressing", scaleMode: "fit" })
           .position(x, terrain.height(x, z), z)
       );
       if (lookMode === "original") {
@@ -707,14 +753,14 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     }
   } else if (theme === "lunar") {
     nodes.push(
-      model(assets.auroraHabitatDomeMeshy, { name: "landmark-dome", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksMareLander, { name: "landmark-dome", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 20, terrain.height(terrain.bounds.maxX - 20, midT[1]), midT[1])
         .rotate(0, -0.9, 0),
-      model(assets.lunarRoverMeshy, { name: "landmark-rover", targetHeight: 2.4, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksMareRover, { name: "landmark-rover", targetHeight: 1.65, role: "setDressing", scaleMode: "fit" })
         .position(tx + 12, terrain.height(tx + 12, tz + 8), tz + 8)
         .rotate(0, 0.5, 0)
         .runtime(game.runtimeNode("landmark-rover")),
-      model(assets.gravityOrbitalRelayMeshy, { name: "landmark-relay", targetHeight: 9, role: "setDressing", scaleMode: "fit" })
+      model(assets.linksMareRelay, { name: "landmark-relay", targetHeight: 9, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.minX + 16, terrain.height(terrain.bounds.minX + 16, cz + 30), cz + 30)
     );
   }
@@ -776,6 +822,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const lay = hole.layout;
   const rng = makeRng(hole.number * 7919 + course.id.length * 131);
   const isNight = course.look === "night-city" || course.look === "space";
+  // LINKS-15: thin surface overlays receive shadows but need not cast them
+  // into every cascade. The original-look scene keeps its authored settings.
+  const overlayShadow = turfOn ? { castShadow: false } : {};
 
   const nodes: any[] = [];
 
@@ -788,6 +837,18 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   nodes.push(
     primitives.plane({ name: "outer-ground", size: [terrain.bounds.maxX * 4, terrain.bounds.maxZ * 4, 1], material: material.pbr({ color: theme4(course) === "lunar" ? "#43454c" : theme4(course) === "volcanic" ? "#2e2a26" : pal.rough, roughness: 0.96 }) }).position(0, outerY, (terrain.bounds.minZ + terrain.bounds.maxZ) / 2)
   );
+
+  // --- GU47 phase 4: the distant landform ring (dune ridges, wooded rise, crater walls); one draw, GU47 look only ---
+  const horizon = turfOn ? HORIZON_SPECS[course.id] : undefined;
+  if (horizon) {
+    nodes.push(
+      geometry.custom(horizonRing(terrain, horizon), {
+        name: "horizon-landforms",
+        material: material.pbr({ color: horizon.color, roughness: horizon.roughness, doubleSided: true } as any),
+        castShadow: false
+      })
+    );
+  }
 
   // --- LINKS-09 ground cover (GU47 only): two instanced draws in the rough, the theme's tufts and its colour note ---
   if (turfOn) {
@@ -810,6 +871,51 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
           ...(wind ? { wind } : {})
         })
       );
+      // GU47 WP-36 (golfMarram, LINKS-07): St Auroras' rough carries real marram clumps, the Links-owned Meshy model
+      // (6,793 triangles, one draw), on every 40th tuft spot nearest the tee, at most 48 (24 on Low)
+      if (l.name === "tufts" && course.dressing.theme === "dunes") {
+        const tee = lay.path[0] ?? [0, 0];
+        const spots = plan.transforms
+          .filter((_, i) => i % 8 === 0)
+          .map((t) => ({ t, d: Math.hypot(t.position[0] - tee[0], t.position[2] - tee[1]) }))
+          .filter((s) => s.d > 6)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, presentationTier === "low" ? 24 : 48);
+        if (spots.length > 0) {
+          nodes.push(
+            instances.model(assets.links_marram, {
+              name: "dune-marram",
+              transforms: spots.map(({ t }, i) => {
+                const s = 0.75 + ((i * 37) % 10) * 0.06;
+                return { position: [t.position[0], t.position[1] - 0.05, t.position[2]] as [number, number, number], rotation: [0, t.rotation[1], 0] as [number, number, number], scale: [s, s, s] as [number, number, number] };
+              }),
+              targetHeight: 1.1,
+              castShadow: true
+            })
+          );
+        }
+        // GU47 wave 1 (golfGorse, LINKS-07): low gorse clumps (Links-owned Meshy model, one draw) on tuft spots the
+        // marram does not take (i % 8 === 4), nearest the tee first, at most 16 (8 on Low), 0.9-1.2 m high
+        const gorseSpots = plan.transforms
+          .filter((_, i) => i % 8 === 4)
+          .map((t) => ({ t, d: Math.hypot(t.position[0] - tee[0], t.position[2] - tee[1]) }))
+          .filter((s) => s.d > 8)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, presentationTier === "low" ? 8 : 16);
+        if (gorseSpots.length > 0) {
+          nodes.push(
+            instances.model(assets.links_gorse, {
+              name: "dune-gorse",
+              transforms: gorseSpots.map(({ t }, i) => {
+                const s = 0.9 + ((i * 53) % 7) * 0.05;
+                return { position: [t.position[0], t.position[1] - 0.04, t.position[2]] as [number, number, number], rotation: [0, t.rotation[1] + 0.9, 0] as [number, number, number], scale: [s, s, s] as [number, number, number] };
+              }),
+              targetHeight: 1,
+              castShadow: true
+            })
+          );
+        }
+      }
     }
   }
 
@@ -819,8 +925,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const fairEdge = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 + 1.7, 0.022, undefined, undefined, surfaceUv);
   const fairA = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2, 0.035, undefined, undefined, surfaceUv);
   nodes.push(
-    geometry.custom(fairEdge, { name: "fairway-first-cut", material: surfaceMaterial(course, "firstCut", shade(pal.fairway, 0.8), 0.9) }),
-    geometry.custom(fairA, { name: "fairway-a", material: surfaceMaterial(course, "fairway", pal.fairway, 0.84) })
+    geometry.custom(fairEdge, { name: "fairway-first-cut", material: surfaceMaterial(course, "firstCut", shade(pal.fairway, 0.8), 0.9), ...overlayShadow }),
+    geometry.custom(fairA, { name: "fairway-a", material: surfaceMaterial(course, "fairway", pal.fairway, 0.84), ...overlayShadow })
   );
   if (!turfOn) {
     const fairB = ribbonAlongPath(terrain, lay.path, lay.fairwayWidth / 2 - 3.2, 0.05);
@@ -833,9 +939,9 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   const green = discOnTerrain(terrain, gx, gz, lay.greenRadius, 0.065, 36, 0, surfaceUv);
   const fringe = discOnTerrain(terrain, gx, gz, lay.greenRadius + 2.5, 0.055, 36, lay.greenRadius * 0.96, surfaceUv);
   nodes.push(
-    geometry.custom(collar, { name: "green-collar", material: surfaceMaterial(course, "firstCut", shade(pal.fringe, 0.82), 0.88) }),
-    geometry.custom(fringe, { name: "fringe", material: surfaceMaterial(course, "fringe", pal.fringe, 0.85) }),
-    geometry.custom(green, { name: "green", material: surfaceMaterial(course, "green", pal.green, 0.74) })
+    geometry.custom(collar, { name: "green-collar", material: surfaceMaterial(course, "firstCut", shade(pal.fringe, 0.82), 0.88), ...overlayShadow }),
+    geometry.custom(fringe, { name: "fringe", material: surfaceMaterial(course, "fringe", pal.fringe, 0.85), ...overlayShadow }),
+    geometry.custom(green, { name: "green", material: surfaceMaterial(course, "green", pal.green, 0.74), ...overlayShadow })
   );
 
   // --- Tee box + surround + markers ---
@@ -846,15 +952,76 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   nodes.push(
     primitives.box({ name: "tee-surround", size: [9.3, 0.07, 7.3], material: teeEdgeMat }).position(terrain.tee[0], terrain.tee[1] - 0.025, terrain.tee[2]),
     primitives.box({ name: "tee-box", size: [8.4, 0.12, 6.4], material: teeMat }).position(terrain.tee[0], terrain.tee[1] - 0.03, terrain.tee[2]),
-    primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
-    primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
+    ...(turfOn
+      ? [instances.box({
+          name: "tee-markers", size: [0.3, 0.1, 0.12], material: markMat, castShadow: false,
+          transforms: [-3.2, 3.2].map((x) => ({ position: [terrain.tee[0] + x, terrain.tee[1] + 0.05, terrain.tee[2]] as Vec3 }))
+        })]
+      : [
+          primitives.box({ name: "tee-marker-l", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] - 3.2, terrain.tee[1] + 0.05, terrain.tee[2]),
+          primitives.box({ name: "tee-marker-r", size: [0.3, 0.1, 0.12], material: markMat }).position(terrain.tee[0] + 3.2, terrain.tee[1] + 0.05, terrain.tee[2])
+        ])
   );
   // GU47 phase 3 (rubric: the tee deck filled a third of every address frame as one flat colour): the deck carries the
   // course's tight-cut surface (mottle mask, blade normals; the fairway mow bands read as shadow-map striping at night)
   // on a quad just above the box top; `?look=original`
   // keeps the 4.6.2 slab.
   if (turfOn) {
-    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82) }));
+    nodes.push(geometry.custom(flatPad(terrain.tee[0], terrain.tee[1] + 0.032, terrain.tee[2], 8.3, 6.3), { name: "tee-deck", material: surfaceMaterial(course, "firstCut", pal.teeBox, 0.82), castShadow: false }));
+
+    // LINKS-09: one hole-specific SDF sign, outside the tee and facing back
+    // towards the approach camera. Board and post share a single draw.
+    const yaw = terrain.lineYaw + Math.PI;
+    const x = terrain.tee[0] + Math.cos(terrain.lineYaw) * 5.2 + Math.sin(terrain.lineYaw);
+    const z = terrain.tee[2] - Math.sin(terrain.lineYaw) * 5.2 + Math.cos(terrain.lineYaw);
+    const y = terrain.height(x, z);
+    nodes.push(
+      instances.box({
+        name: "tee-sign", size: [1, 1, 1], material: material.pbr({ color: "#273e31", roughness: 0.88 }),
+        castShadow: false,
+        transforms: [
+          { position: [x, y + 0.54, z], rotation: [0, yaw, 0], scale: [0.12, 1.08, 0.12] },
+          { position: [x, y + 1.1, z], rotation: [0, yaw, 0], scale: [2.5, 0.56, 0.12] }
+        ]
+      }),
+      text3D(`${hole.number}  PAR ${hole.par}  ${hole.lengthM} M`, {
+        name: "tee-sign-text", size: 0.18, backend: "sdf", castShadow: false,
+        material: material.emissive({ color: "#f4e7c8", emissive: "#e8d6ad", emissiveIntensity: 0.25 })
+      })
+        .position(x - Math.cos(yaw) * 1.02 + Math.sin(yaw) * 0.07, y + 1.01, z + Math.sin(yaw) * 1.02 + Math.cos(yaw) * 0.07)
+        .rotate(0, yaw, 0)
+    );
+
+    // LINKS-10: subtle static divots/footprints and bunker rake lines in one
+    // non-shadowing batch. They are presentation-only and never enter terrain.
+    const marks: { position: Vec3; rotation: Vec3; scale: Vec3 }[] = [];
+    const markColors: string[] = [];
+    const addMark = (mx: number, mz: number, width: number, length: number, heightOffset: number, color: string) => {
+      const [dx, dz] = terrain.slope(mx, mz);
+      marks.push({
+        position: [mx, terrain.height(mx, mz) + heightOffset, mz],
+        rotation: [-Math.atan(dz), 0, Math.atan(dx)],
+        scale: [width, 1, length]
+      });
+      markColors.push(color);
+    };
+    for (let i = 0; i < 3; i++) {
+      addMark(terrain.tee[0] + 1.2 + i * 0.22, terrain.tee[2] + 1.1 + i * 0.12, 0.08, 0.22, 0.04, shade(pal.teeBox, 0.7));
+    }
+    const bunker = lay.bunkers[0];
+    if (bunker) {
+      for (let i = -2; i <= 2; i++) {
+        addMark(bunker.center[0] + i * 0.17, bunker.center[1], 0.035, Math.min(1.1, bunker.radius * 0.4), 0.1, shade(pal.sand, 0.72));
+      }
+    }
+    const markTexture = surfaceMarkTexture();
+    if (markTexture) {
+      nodes.push(instances.plane({
+        name: "course-surface-marks", size: [1, 1, 1], transforms: marks, colors: markColors,
+        material: material.pbr({ color: "#ffffff", roughness: 1, opacity: 0.5, texture: markTexture as any }),
+        castShadow: false, receiveShadow: false
+      }));
+    }
   }
 
   // --- Bunkers (bright sand bowls + dark, crisp grass lip) ---
@@ -862,8 +1029,8 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
     const disc = discOnTerrain(terrain, b.center[0], b.center[1], b.radius, 0.09, 28, 0, surfaceUv);
     const lip = discOnTerrain(terrain, b.center[0], b.center[1], b.radius + 0.72, 0.075, 28, b.radius * 0.92);
     nodes.push(
-      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }) }),
-      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84) })
+      geometry.custom(lip, { name: `bunker-lip-${i}`, material: material.pbr({ color: shade(pal.sand, 0.64), roughness: 0.96 }), ...overlayShadow }),
+      geometry.custom(disc, { name: `bunker-${i}`, material: surfaceMaterial(course, "bunker", shade(pal.sand, 1.08), 0.84), ...overlayShadow })
     );
   });
 
@@ -912,7 +1079,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   // (the GU47 look draws the shot tracer as a runtime trail per shot, startTracer(); `?look=original` keeps the
   // authored ribbon node, which E-F now draws)
   nodes.push(
-    model(assets.siegeGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
+    model(assets.linksGolfBall, { name: "golf-ball", targetHeight: BALL_R * 2 }).runtime(game.runtimeNode("golf-ball")),
     primitives.cylinder({ name: "ball-shadow", size: [BALL_R * 2.4, 0.008, BALL_R * 2.4], material: material.pbr({ color: "#000000", opacity: 0.38, roughness: 1 }) }).runtime(game.runtimeNode("ball-shadow"))
   );
   if (lookMode === "original") {
@@ -957,7 +1124,7 @@ function buildHoleScene(course: CourseSpec, hole: HoleSpec, terrain: HoleTerrain
   }
 
   // --- Golfer ---
-  nodes.push(...buildGolferNodes(state.fit));
+  nodes.push(...buildGolferNodes(state.fit, turfOn));
 
   // --- Course dressing ---
   nodes.push(...buildDressingNodes(course, hole, terrain, rng));
@@ -1991,6 +2158,7 @@ function startRound(): void {
 }
 
 function startHole(idx: number): void {
+  clearLandingEffects();
   hideFinalCard();
   const hole = state.course.holes[idx]!;
   state.hole = hole;
@@ -2271,6 +2439,17 @@ function spawnTurfPuff(pos: Vec3, zone: LieKind): void {
   try { fxCtlRef?.spawn("ground-dust", pos, { radius: 0.35, color, intensity: 1 }); } catch { /* optional */ }
 }
 
+// LINKS-10: eight static marks plus at most 24 live divot decals per hole.
+// Retain the composite burst handles so evicting a mark removes its decal too.
+const landingEffects: { stop(options?: { immediate?: boolean }): void }[] = [];
+const MAX_LANDING_EFFECTS = 24;
+
+function clearLandingEffects(): void {
+  for (const handle of landingEffects.splice(0)) {
+    try { handle.stop(); } catch { /* optional effects surface */ }
+  }
+}
+
 /** One Links preset burst (LINKS-11). Divot and sand take the course's own turf and sand; the hole-out ring its accent. */
 function linksBurst(id: LinksVfxId, pos: Vec3): void {
   const pal = state.course.palette;
@@ -2279,7 +2458,13 @@ function linksBurst(id: LinksVfxId, pos: Vec3): void {
     : id === "links-holeout-ring" ? COURSE_LOOKS[state.courseId].accent
     : undefined;
   try {
-    (auraApp as any)?.effects?.burst?.(id, [pos[0], pos[1] + 0.02, pos[2]], { camera: false, ...(color ? { color } : {}) });
+    const handle = (auraApp as any)?.effects?.burst?.(id, [pos[0], pos[1] + 0.02, pos[2]], { camera: false, ...(color ? { color } : {}) });
+    if (id === "links-divot" && handle && typeof handle.stop === "function") {
+      if (landingEffects.length >= MAX_LANDING_EFFECTS) {
+        try { landingEffects.shift()?.stop(); } catch { /* optional effects surface */ }
+      }
+      landingEffects.push(handle);
+    }
   } catch { /* optional */ }
 }
 
@@ -2779,17 +2964,17 @@ function setupAudio(): void {
   audio = createGameAudio({
     browserContext: true,
     cues: {
-      drive:    { id: "drive", asset: { url: assets.siegeDriveHitSfx.url }, volume: 0.55 },
+      drive:    { id: "drive", asset: { url: assets.linksDriveStrikeSfx.url }, volume: 0.55 },
       putt:     { id: "putt", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[0]) }, volume: 0.5 },
       bounce:   { id: "bounce", asset: { url: sfxUrl(sfx.sports.ballBounceCourt[1]) }, volume: 0.4 },
-      cup:      { id: "cup", asset: { url: assets.siegeCupSinkSfx.url }, volume: 0.8 },
-      rattle:   { id: "rattle", asset: { url: assets.siegeMetalClangSfx.url }, volume: 0.45 },
+      cup:      { id: "cup", asset: { url: assets.linksCupDropSfx.url }, volume: 0.8 },
+      rattle:   { id: "rattle", asset: { url: assets.linksFlagstickRattleSfx.url }, volume: 0.45 },
       splash:   { id: "splash", asset: { url: sfxUrl(sfx.sports.ballBounceHard[1]) }, volume: 0.5 },
-      parChime: { id: "parChime", asset: { url: assets.siegeParChimeSfx.url }, volume: 0.7 },
-      bogey:    { id: "bogey", asset: { url: assets.siegeBogeyStingSfx.url }, volume: 0.5 },
+      parChime: { id: "parChime", asset: { url: assets.linksBirdieChimeSfx.url }, volume: 0.7 },
+      bogey:    { id: "bogey", asset: { url: assets.linksBogeyThudSfx.url }, volume: 0.5 },
       win:      { id: "win", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.85 },
-      ui:       { id: "ui", asset: { url: assets.siegeUiConfirmSfx.url }, volume: 0.4 },
-      wind:     { id: "wind", asset: { url: assets.siegeAmbientWindSfx.url }, volume: 0.25, loop: true }
+      ui:       { id: "ui", asset: { url: assets.linksMenuTickSfx.url }, volume: 0.4 },
+      wind:     { id: "wind", asset: { url: assets.linksCoastWindLoopSfx.url }, volume: 0.25, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any) as any;
@@ -2865,21 +3050,21 @@ const CATALOG_ASSETS: readonly string[] = [
   "linksGolferAthleteMeshy",
   "linksGolfCartMeshy",
   "linksPinFlagMeshy",
-  "siegeGolfBall",
+  "linksGolfBall",
   "propPineTree",
   "propRockA",
   "propRockB",
-  "siegeWindmillTowerMeshy",
-  "siegeStoneBridgeMeshy",
-  "skylineCrystalShardMeshy",
-  "turboAlpineVenueBackdrop",
-  "neonStreetLampProp",
-  "showcaseModernBuildingOne",
-  "showcaseModernOfficeBuilding",
-  "showcaseVoxelBuilding",
-  "auroraHabitatDomeMeshy",
-  "lunarRoverMeshy",
-  "gravityOrbitalRelayMeshy"
+  "linksDunesBeaconTower",
+  "linksBurnFootbridge",
+  "linksCraterCrystal",
+  "linksAlpineSnowPine",
+  "linksHarbourFloodlight",
+  "linksHarbourTowerA",
+  "linksHarbourTowerB",
+  "linksHarbourTowerC",
+  "linksMareLander",
+  "linksMareRover",
+  "linksMareRelay"
 ];
 
 function publishEvidence(): void {

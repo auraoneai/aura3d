@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "desert-airbase",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Nearly identical to A. The sky is flat and hazy and the lighting is low-contrast. The floor is dark and muddy. The far horizon is empty and the background has no depth. The jet looks like it floats slightly above the deck. The pose difference from A is minor.",
+     "Nearly identical to B; only the fighter poses differ. Dark, somewhat low-contrast deck in the foreground. The sky is hazy and plain, with an empty horizon and little sense of depth. The jet and tanks float slightly in the backdrop, and the scene has no desert mood.",
+     "Practically the same frame as A, differing only in small pose changes. It has the same hazy, flat sky, missing desert atmosphere, weak grounding for the jet, low contrast on the dark-red fighter, and dim foreground."
+    ]
+   }
+  ]
+ }
+]

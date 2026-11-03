@@ -21,3 +21,8 @@ A first drone candidate (sleek wedge hover-craft, preview 01a169cc-5fec-76b4-bd5
 ## Low-quality set (`models-lite/`, 2026-10-29)
 
 Derived from the files above by `provenance/make-lite.mjs` (glTF-Transform dedup, weld, meshopt simplify, 512 px JPEG maps): same prompts, same rights basis, same bounds (largest bounds change 0.0008 m on the drone). Drone 15,046 triangles (from 55,732), pickup-repair 20,380, plant-cap 14,476, plant-coral 18,750; the rest keep their triangles. 6.4 MB in total against 11 MB. Loaded only at `quality: "low"`.
+
+## GU47 WP-36 (2026-10-31)
+
+- `models/heatsink_port_ionSentryDrone.glb`: the strike sentry (IC-13). Meshy text-to-3d refine task `01a18c0c-f682-7213-86b2-e5932dbd101f` (10 credits), generated 2026-10-30 by the WP-36 pipeline through Kiro Prism from the plan prompt in `docs/prds/game-upgrades-47/lanes/wp36-plan.json` (key `ionSentryDrone`). Simplified 75,644 to 9,076 triangles with 1024 px JPEG maps (glTF-Transform weld, meshopt simplify, textureCompress), then admitted with `aura3d assets import-meshy --into examples/heatsink-port/assets --prefix heatsink-port --name ionSentryDrone --profile prop` (`provenance/heatsink_port_ionSentryDrone.{meta,rights}.json`). Rights are the same Meshy plan terms as above; not CC0, and no exclusivity is claimed.
+- `models-lite/heatsink_port_ionSentryDrone.glb`: the same source simplified to 6,004 triangles with 512 px maps, for `quality: "low"`.

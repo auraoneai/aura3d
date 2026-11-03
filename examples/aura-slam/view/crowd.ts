@@ -94,6 +94,84 @@ function pushBox(out: { p: number[]; n: number[]; c: number[]; i: number[] }, mi
   });
 }
 
+type Buffers = { p: number[]; n: number[]; c: number[]; i: number[] };
+
+/**
+ * GU47 phase 4 (sibling judge vs aura-diamond-3d: "the same blocky voxel crowd"): a low-poly ellipsoid (lat-long, smooth
+ * normals) centred at `c` with radii `r`; `colorAt(ny, nz)` colours each vertex from its unit normal (hair cap vs face).
+ */
+function pushEllipsoid(out: Buffers, c: Rgb, r: Rgb, colorAt: (ny: number, nz: number) => Rgb, seg = 10, rings = 7): void {
+  const base = out.p.length / 3;
+  for (let j = 0; j <= rings; j++) {
+    const v = (j / rings) * Math.PI;
+    for (let k = 0; k <= seg; k++) {
+      const u = (k / seg) * 2 * Math.PI;
+      const nx = Math.sin(v) * Math.sin(u);
+      const ny = Math.cos(v);
+      const nz = Math.sin(v) * Math.cos(u);
+      out.p.push(c[0] + nx * r[0], c[1] + ny * r[1], c[2] + nz * r[2]);
+      const ln = Math.hypot(nx / r[0], ny / r[1], nz / r[2]) || 1;
+      out.n.push(nx / r[0] / ln, ny / r[1] / ln, nz / r[2] / ln);
+      const col = colorAt(ny, nz);
+      out.c.push(col[0], col[1], col[2], 1);
+    }
+  }
+  for (let j = 0; j < rings; j++) {
+    for (let k = 0; k < seg; k++) {
+      const a = base + j * (seg + 1) + k;
+      const b = a + seg + 1;
+      out.i.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+}
+
+/**
+ * GU47 phase 4: a tapered octagonal prism (y from `y0` to `y1`, half-widths `w0`/`w1` in x and `d0`/`d1` in z) with smooth
+ * side normals and a capped top: the seated torso reads as shoulders over a waist instead of a box.
+ */
+function pushTaperedPrism(out: Buffers, cx: number, cz: number, y0: number, y1: number, w0: number, w1: number, d0: number, d1: number, color: Rgb, sides = 8): void {
+  const base = out.p.length / 3;
+  for (const [y, w, d] of [[y0, w0, d0], [y1, w1, d1]] as const) {
+    for (let k = 0; k <= sides; k++) {
+      const a = (k / sides) * 2 * Math.PI + Math.PI / sides;
+      const sx = Math.sin(a);
+      const sz = Math.cos(a);
+      out.p.push(cx + sx * w, y, cz + sz * d);
+      const ln = Math.hypot(sx / w, sz / d) || 1;
+      out.n.push(sx / w / ln, 0, sz / d / ln);
+      out.c.push(color[0], color[1], color[2], 1);
+    }
+  }
+  for (let k = 0; k < sides; k++) {
+    const a = base + k;
+    const b = base + sides + 1 + k;
+    out.i.push(a, a + 1, b, a + 1, b + 1, b);
+  }
+  // Top cap (shoulder line), a fan around its centre.
+  const centre = out.p.length / 3;
+  out.p.push(cx, y1, cz);
+  out.n.push(0, 1, 0);
+  out.c.push(color[0], color[1], color[2], 1);
+  const ring = out.p.length / 3;
+  for (let k = 0; k <= sides; k++) {
+    const a = (k / sides) * 2 * Math.PI + Math.PI / sides;
+    out.p.push(cx + Math.sin(a) * w1, y1, cz + Math.cos(a) * d1);
+    out.n.push(0, 1, 0);
+    out.c.push(color[0], color[1], color[2], 1);
+  }
+  for (let k = 0; k < sides; k++) out.i.push(centre, ring + k, ring + k + 1);
+}
+
+function finish(out: Buffers): AuraCustomGeometrySpec {
+  return {
+    kind: "aura-custom-geometry",
+    positions: new Float32Array(out.p),
+    normals: new Float32Array(out.n),
+    colors: new Float32Array(out.c),
+    indices: new Uint16Array(out.i)
+  } as unknown as AuraCustomGeometrySpec;
+}
+
 function geometry(boxes: readonly { min: Rgb; max: Rgb; faces: readonly Rgb[] }[]): AuraCustomGeometrySpec {
   const out = { p: [] as number[], n: [] as number[], c: [] as number[], i: [] as number[] };
   for (const b of boxes) pushBox(out, b.min, b.max, b.faces);
@@ -108,21 +186,35 @@ function geometry(boxes: readonly { min: Rgb; max: Rgb; faces: readonly Rgb[] }[
 
 const all = (c: Rgb): Rgb[] => [c, c, c, c, c, c];
 
-/** Seated body (origin on the seat surface, facing +Z): torso, thighs forward, shins down. White: the shirt is the instance colour. */
+/** Trousers (multiplied by the shirt instance colour, so a dark neutral). */
+const LEGS: Rgb = [0.4, 0.42, 0.48];
+
+/**
+ * Seated body (origin on the seat surface, facing +Z). White parts take the shirt (instance) colour. GU47 phase 4: a tapered
+ * octagonal torso (shoulders 0.2 m, waist 0.15 m), sleeves hanging at the sides and rounded thighs replace the three boxes,
+ * so the stands read as seated people instead of voxel blocks; the shins stay boxes (hidden by the tier in front).
+ */
 export const SPECTATOR_BODY_POSES: readonly AuraCustomGeometrySpec[] = [
-  geometry([
-    { min: [-0.17, 0.0, -0.12], max: [0.17, 0.5, 0.1], faces: all(WHITE) },
-    { min: [-0.16, 0.0, 0.08], max: [0.16, 0.13, 0.44], faces: all([0.42, 0.44, 0.5]) },
-    { min: [-0.15, -0.42, 0.36], max: [0.15, 0.0, 0.48], faces: all([0.36, 0.38, 0.44]) }
-  ])
+  (() => {
+    const out: Buffers = { p: [], n: [], c: [], i: [] };
+    pushTaperedPrism(out, 0, -0.01, 0, 0.5, 0.15, 0.2, 0.1, 0.11, WHITE);
+    for (const side of [-1, 1]) pushTaperedPrism(out, side * 0.235, 0.0, 0.14, 0.47, 0.045, 0.05, 0.05, 0.055, WHITE, 6);
+    for (const side of [-1, 1]) pushEllipsoid(out, [side * 0.085, 0.07, 0.26], [0.075, 0.07, 0.2], () => LEGS, 8, 5);
+    pushBox(out, [-0.15, -0.42, 0.36], [0.15, 0.0, 0.48], all([0.36, 0.38, 0.44]));
+    return finish(out);
+  })()
 ];
 
-/** Head (origin at its centre, facing +Z): face skin-white in front, hair on the back, top and upper sides. */
+/**
+ * Head (origin at its centre, facing +Z): skin-white face, hair over the top and back. GU47 phase 4: a low-poly ellipsoid
+ * (10 x 7, smooth normals) replaces the two boxes, so the head's yaw still reads (hair behind, face in front) without the voxel cube.
+ */
 export const SPECTATOR_HEAD_POSES: readonly AuraCustomGeometrySpec[] = [
-  geometry([
-    { min: [-0.105, -0.12, -0.1], max: [0.105, 0.12, 0.1], faces: [WHITE, WHITE, HAIR, WHITE, WHITE, HAIR] },
-    { min: [-0.112, 0.06, -0.108], max: [0.112, 0.135, 0.06], faces: all(HAIR) }
-  ])
+  (() => {
+    const out: Buffers = { p: [], n: [], c: [], i: [] };
+    pushEllipsoid(out, [0, 0, 0], [0.1, 0.125, 0.105], (ny, nz) => (ny > 0.45 || nz < -0.25 ? HAIR : WHITE));
+    return finish(out);
+  })()
 ];
 
 /** Yaw that faces from a seat to a point on the court (yaw 0 = +Z). */

@@ -1,0 +1,49 @@
+{
+  "capability": "crowd-kit",
+  "version": "4.6.2",
+  "gitSha": "5050f3cbc",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/crowd-kit-harness.ts standScene(): 12-row x 40-seat stepped stand, ground plane, hemisphere + shadowed sun, camera [0, 5.5, 17] -> [0, 2.6, -4] fov 45; crowd = CesiumMan (skinned, walk clip) baked into 4 poses at 1.7 m, 4 palette colours, per-seat clip phase",
+  "frames": [
+    {
+      "file": "evidence/receipts/crowd-kit/4.6.2/empty-stand.png",
+      "sha256": "667e3410f721a1ec819003dec82afa1a2075cee7d9445e889f2d46e7c7e9d93b",
+      "meanLuma": 26.06419366501377,
+      "label": "stand without the crowd"
+    },
+    {
+      "file": "evidence/receipts/crowd-kit/4.6.2/crowd.png",
+      "sha256": "123ce23235dca4a1b0a37cc4749412a2fa04618072ff5ce007efd38ecca5a7e9",
+      "meanLuma": 37.623078778539714,
+      "label": "480 spectators, 4 poses"
+    },
+    {
+      "file": "evidence/receipts/crowd-kit/4.6.2/crowd-later.png",
+      "sha256": "d023bd4862db99e103d2d2b3859fba6530766868174f4669c1aa9c1bf36b7433",
+      "meanLuma": 37.59429834260165,
+      "label": "one loop frame later"
+    }
+  ],
+  "tests": [
+    "tests/browser/gu47/crowd-kit.spec.ts",
+    "tests/unit/gu47/eh/crowd-kit.test.ts"
+  ],
+  "date": "2026-10-30T15:15:20.919Z",
+  "checks": {
+    "cleanRuntime": true,
+    "everyFrameDrew": true,
+    "kitPlans480SpectatorsIn4Draws": true,
+    "crowdAddsAtMost4Draws": true,
+    "crowdVisible": true,
+    "perInstanceColour": true,
+    "clipPhaseMotion": true,
+    "updateUnder1ms": true,
+    "crowdDrawCallDelta": 4,
+    "shadowedCrowdDrawCallDelta": 28,
+    "standChangedPixelFraction": 0.6082723107228503,
+    "motionStandChangedPixelFraction": 0.5887718396711202,
+    "paletteHuesPresent": 4,
+    "updateMs": 1,
+    "trianglesPerSpectator": 4672
+  }
+}

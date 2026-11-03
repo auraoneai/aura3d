@@ -55,7 +55,7 @@ Every acceptance line of PRD WP-11 with its phase-1 status. `unit` = asserted by
 | TT-H1 | HUD <= 9% of canvas; never over an athlete box; no unlicensed font requests | partial: chip + serve strip inside the scorebug box, licensed faces only; area and athlete-box checks phase 2 (crops published); chip art asset need |
 | TT-H2 | cap height >= 10 px; <= 3 draws | done (unit: cap >= 10 px under v2 and classic; 3 text nodes) |
 | TT-H3 | audit passes | done (unit: 0 violations on all six venue scenes; `art/direction.audit.json`) |
-| TT-H3 | same_game false >= 0.8 vs diamond, hoops and others; every category >= 7 | phase 2 (sibling judge, look judge) |
+| TT-H3 | same_game false >= 0.8 vs diamond, hoops and others; every category >= 7 | phase 4: sibling done (diamond 0.817, hoops 0.898, fc 0.853, links 0.890); rubric not met (min 2.5 ibl_reflections; SSR/clearcoat not visible on software WebGL2, engine handoff) |
 | TT-W1 | >= 8 distinct models per venue; <= 10 draws; grounding checks clean | blocked (WP-36 props) |
 | TT-PF1 | draws within budget per venue; venue download <= 18 MB; render spec passes | phase 2 (stripe boxes pending TT-M1; trail spheres removed; volumetric fog High+ only) |
 
@@ -72,3 +72,11 @@ Every acceptance line of PRD WP-11 with its phase-1 status. `unit` = asserted by
 | page-parity, look-identity, screens-fresh | fixed |
 | borrowed-asset (3) | waiting on WP-36 Meshy assets |
 | luma-band | round-3 rows; bands not widened (see lane report: default band predates the panel-verified HDRI swap) |
+
+## Phase 4 (4.7.2)
+
+- Distinctness vs all four sports neighbours: done (`distinct/vs-*-p4final.json`, all >= 0.8).
+- Blind panel `g01p4f1`: all six views better than 4.6.2 (4 at 3/0/0, 2 at 2/1/0).
+- Rubric >= 7 in every category: not met (`look-judgement.json`, `rubric/look-judgement-p4*.json`).
+- WP-36 swaps (TT-A1, TT-A2, TT-A3, TT-A4 poses, TT-W1): blocked: Meshy keys refuse API calls (moved to a later release). Only `tennisSegTorso` admitted (needs the full 11-segment set).
+- TT-L2 desert shadow: sun 52/160, athletes cast toward the camera (p4-r3 frame). TT-M2 net: see-through again (opacity 0.5).

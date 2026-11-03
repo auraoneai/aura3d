@@ -1,0 +1,77 @@
+{
+ "target": "drift-and-deliver-port--default",
+ "slug": "drift-and-deliver-port",
+ "variant": "default",
+ "url": "/apps/showcase-drift-and-deliver-port/",
+ "group": "g7",
+ "runId": "gu47-before-drift-and-deliver-port",
+ "acrRunId": "ch5ue",
+ "readyMs": 138501,
+ "shots": {
+  "settle-25s": {
+   "target": "drift-and-deliver-port--default",
+   "id": "settle-25s",
+   "slug": "drift-and-deliver-port",
+   "variant": "default",
+   "sinceReadyMs": 25007,
+   "mean": 110.9,
+   "p5": 59,
+   "p50": 107,
+   "p95": 169,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    103.6,
+    144.1,
+    114.5,
+    103.7,
+    137.3,
+    113.3,
+    89.1,
+    107.1,
+    85.3
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 84
+   }
+  },
+  "settle-60s": {
+   "target": "drift-and-deliver-port--default",
+   "id": "settle-60s",
+   "slug": "drift-and-deliver-port",
+   "variant": "default",
+   "sinceReadyMs": 319306,
+   "mean": 110.74,
+   "p5": 58,
+   "p50": 107,
+   "p95": 170,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    104,
+    144.3,
+    114.6,
+    103.2,
+    137.2,
+    112.5,
+    88.6,
+    107.2,
+    85.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 84
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-drift-and-deliver-port/drift-and-deliver-port--default--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-drift-and-deliver-port/drift-and-deliver-port--default--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

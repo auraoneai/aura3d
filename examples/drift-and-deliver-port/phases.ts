@@ -84,8 +84,14 @@ const SUN_AZ = 36;
  * GU47 phase 3: the shadowed key comes from behind the chase camera's left shoulder (as in the 4.6.2 rig), so the
  * facades and the courier face into warm light and the shadows fall ahead down the street. With the key under the
  * sky sun (ahead, down the canyon) every judged frame was backlit: grey facades, flat street, weak shadows.
+ * GU47 phase 4 (4.7.2): the golden and sunset key sits higher and further along the avenue axis (behind the chase
+ * camera), so it clears the canyon walls and lands on the street. At 12-15 deg from the side the whole canyon fell in
+ * building shadow: the courier, the poles and the props cast nothing the eye could see (rubric shadows 4.5). The sky
+ * sun (`sun`, 14 deg / 4 deg) and the HDRI keep the low golden and sunset sun. Round 2: straight down the start avenue
+ * (az -90, no sideways component) and higher (52 / 40 deg): at az -104 / 40 deg the 60 m towers still shaded the
+ * whole street in the g18p4-r1 frames.
  */
-const KEY_AZ = -150;
+export const KEY_LIFT = { azimuthDeg: -90, golden: 52, sunset: 40 } as const;
 
 export const PHASES: readonly PhaseRow[] = [
   {
@@ -93,7 +99,7 @@ export const PHASES: readonly PhaseRow[] = [
     at: 10,
     timeOfDay: "golden hour just after summer rain, sun 14 deg",
     sun: { azimuthDeg: SUN_AZ, elevationDeg: 14, color: "#ffc27a", intensity: 4.4 },
-    key: { azimuthDeg: KEY_AZ, elevationDeg: 15, color: "#ffb766", intensity: 7.0 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.golden, color: "#ffb766", intensity: 7.0 },
     hemisphere: { sky: "#cfe0ea", ground: "#6a5a52", intensity: 0.3 },
     // phase 3 round 3: key up, IBL fill down, so the buildings, poles and the courier throw shadows the eye can see
     // (rubric g18p3-r2: "no shadows despite a low sun"; the venice_sunset fill at 1.0 washed them out)
@@ -119,7 +125,7 @@ export const PHASES: readonly PhaseRow[] = [
     at: 120,
     timeOfDay: "sunset, sun 4 deg on the harbour line",
     sun: { azimuthDeg: SUN_AZ - 4, elevationDeg: 4, color: "#ff9a52", intensity: 3.3 },
-    key: { azimuthDeg: KEY_AZ + 4, elevationDeg: 12, color: "#ff9a52", intensity: 4.6 },
+    key: { azimuthDeg: KEY_LIFT.azimuthDeg, elevationDeg: KEY_LIFT.sunset, color: "#ff9a52", intensity: 4.6 },
     hemisphere: { sky: "#b8a6c4", ground: "#5a4446", intensity: 0.28 },
     environmentIntensity: 0.55,
     // blind-panel fix pass: same treatment as golden (thinner haze, more contrast and saturation, no grain)

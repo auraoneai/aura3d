@@ -143,6 +143,17 @@ void main() {
   outColor = vec4(baseColor, a);
 }`;
 
+/** GU47 phase 4: crisp cel gate shadow, a hard-edged strip (anti-aliased across its width) that fades a little towards its far end. */
+export const GATE_SHADOW_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float across = abs(vUv.x - 0.5) * 2.0;
+  float fw = fwidth(across) + 1e-3;
+  float a = alpha * (1.0 - smoothstep(0.8 - fw, 0.8 + fw, across)) * (1.0 - 0.3 * vUv.y);
+  outColor = vec4(baseColor, a);
+}`;
+
 /* ================================================================== GU47 WP-26 carnival look (`?look=carnival`)
  * The original programs above stay byte-for-byte for `?look=original`. The carnival programs read their light, sky and
  * haze from `cr*` uniforms written from the look table (`look.ts`), so the time of day is a uniform change, not a new
@@ -217,6 +228,61 @@ vec3 haze(vec3 c, vec3 world) {
 }`;
 
 /**
+ * GU47 phase 4: lacquered-deck planar reflection, traced analytically (no extra pass, no draw). The reflected view ray from
+ * the deck top is tested against the nearest eight gates (`crGateP0/1` columns: world x, world z, height scale, alive) as
+ * two posts and a bar in the gate's plane (the 0.32-scale gate: posts at x +-0.85, radius 0.15, bar at y 1.57), and against
+ * the ball (`crBall` = world centre, radius). `crMirror` = (gate/ball strength, dome strength, fade height m): the
+ * reflection softens with height above the deck like a glossy enamel coat. Off everywhere but the carnival deck.
+ */
+const MIRROR = /* glsl */ `
+float gateHit(vec3 P, vec3 R, vec4 g) {
+  if (g.w < 0.5 || abs(R.z) < 1e-4) return -1.0;
+  float t = (g.y - P.z) / R.z;
+  if (t < 0.02) return -1.0;
+  vec3 H = P + R * t;
+  float hx = H.x - g.x, hy = H.y / max(g.z, 1e-3);
+  bool post = abs(abs(hx) - 0.85) < 0.15 && hy > 0.0 && hy < 1.6;
+  bool bar = abs(hy - 1.57) < 0.17 && abs(hx) < 1.16;
+  return post || bar ? t : -1.0;
+}
+void nearestGate(vec3 P, vec3 R, vec4 g, vec3 tone, inout float best, inout vec3 col) {
+  float t = gateHit(P, R, g);
+  if (t > 0.0 && t < best) { best = t; col = tone; }
+}
+`;
+const MIRROR_APPLY = /* glsl */ `
+  if (N.y > 0.5) {
+    vec3 Dv = normalize(vWorld - cameraPosition);
+    vec3 Rm = vec3(Dv.x, -Dv.y, Dv.z);
+    Rm.x += 0.012 * sin(vLocal.z * 3.1 + vLocal.x * 0.7);
+    vec3 P = vec3(vWorld.x, 0.0, vWorld.z);
+    float best = 1e4;
+    vec3 col = vec3(0.0);
+    nearestGate(P, Rm, crGateP0[0], crGateT0[0].rgb, best, col);
+    nearestGate(P, Rm, crGateP0[1], crGateT0[1].rgb, best, col);
+    nearestGate(P, Rm, crGateP0[2], crGateT0[2].rgb, best, col);
+    nearestGate(P, Rm, crGateP0[3], crGateT0[3].rgb, best, col);
+    nearestGate(P, Rm, crGateP1[0], crGateT1[0].rgb, best, col);
+    nearestGate(P, Rm, crGateP1[1], crGateT1[1].rgb, best, col);
+    nearestGate(P, Rm, crGateP1[2], crGateT1[2].rgb, best, col);
+    nearestGate(P, Rm, crGateP1[3], crGateT1[3].rgb, best, col);
+    vec3 oc = P - crBall.xyz;
+    float bb = dot(oc, Rm), cc = dot(oc, oc) - crBall.w * crBall.w, disc = bb * bb - cc;
+    if (crBall.w > 0.0 && disc > 0.0) {
+      float t = -bb - sqrt(disc);
+      if (t > 0.0 && t < best) { best = t; col = crBallTone; }
+    }
+    float mirrorDome = crMirror.y * schlick * 2.5;
+    c = mix(c, dome * 1.1, clamp(mirrorDome, 0.0, 0.5));
+    if (best < 1e3) {
+      float h = (P + Rm * best).y;
+      vec3 refl = col * (crSkyFill * 0.9 + crSunColor * 0.75 + crBounce * 0.4);
+      c = mix(c, refl, crMirror.x * (1.0 - 0.35 * smoothstep(0.0, crMirror.z, h)));
+    }
+  }
+`;
+
+/**
  * Carnival toon (CR-L1 sun / sky fill / rose bounce, CR-L2 stepped warm rim, CR-M1 stepped wet-paint highlight that dries
  * with the splatter's age, CR-M2 painted-canvas weave and brush streaks, CR-S3 haze).
  * `crDry` = (ball z, road speed m/s, dry seconds); dry seconds 0 means "always wet" (the ball).
@@ -224,7 +290,7 @@ vec3 haze(vec3 c, vec3 world) {
  * GU47 phase 3: `crSkyReflect` adds a stepped sky reflection, hue-neutral so gate colours keep reading: a pale sky
  * window where the reflected ray points up and a thin horizon-colour line at grazing angles, scaled by `crGloss`; `crContact` = (fade height m, strength) darkens props where they meet the deck (strength 0 = off).
  */
-export const carnivalToonFragment = (withMap: boolean, withTone = false): string => /* glsl */ `
+export const carnivalToonFragment = (withMap: boolean, withTone = false, mirror = false): string => /* glsl */ `
 in vec3 vNormal;
 in vec3 vWorld;
 in vec3 vLocal;
@@ -235,6 +301,7 @@ ${SRGB}
 ${SHOULDER}
 ${BAND}
 ${HAZE}
+${mirror ? MIRROR : ""}
 void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
@@ -266,8 +333,13 @@ ${withMap ? "  base *= srgbToLinear(texture(map, vUv).rgb);" : ""}
   vec3 R = reflect(-V, N);
   float skyWin = band(R.y, 0.3) * (1.0 - band(fres, 0.78));
   float horizonLine = (band(R.y, -0.04) - band(R.y, 0.05)) * band(fres, 0.35);
-  vec3 skyRefl = mix(crFogColor * 0.7, vec3(0.78, 0.84, 1.0) * 0.7, band(R.y, 0.45));
+  vec3 skyRefl = mix(mix(crFogColor, crEnvRose, 0.6) * 0.75, mix(vec3(0.78, 0.84, 1.0), crEnvTop * 1.6, 0.35) * 0.7, band(R.y, 0.5));
   c += (skyRefl * skyWin + crFogColor * 0.9 * horizonLine) * crGloss * crSkyReflect * wet;
+  /* GU47 phase 4: enamel environment reflection, the painted dome (horizon to upper sky) by the reflected ray, Schlick fresnel */
+  float schlick = 0.04 + 0.96 * pow(fres, 5.0);
+  vec3 dome = mix(crFogColor, crEnvTop, smoothstep(-0.05, 0.5, R.y));
+  c += dome * schlick * crEnv;
+${mirror ? MIRROR_APPLY : ""}
   c *= 1.0 - crContact.y * (1.0 - smoothstep(0.0, crContact.x, vWorld.y));
   outColor = vec4(haze(shoulder(c), vWorld) + emissive, alpha);
 }`;

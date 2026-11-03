@@ -12,6 +12,7 @@ import { meatChunk } from "./creatures";
 import { createCameraClearance, createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
+import { appendGroundShadows, BOULDER_SHADOW, TREE_SHADOW } from "./groundShadows";
 import { ACTIVE, ballSpec, puddleSpec, glowSpec, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, waterfallSpec, warnSpec } from "./materials";
 import { ACTIVE_LOOK, sunPosition, type CumulusLookRow } from "./art/look";
 import { launchFovKick, titleFlyover, traumaFor } from "./art/camera";
@@ -22,6 +23,7 @@ import { LEG_CLIPS } from "./legcycle";
 import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
 import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
 import { MESHY } from "./models";
+import { assets as cumulusAssets } from "../../apps/showcase-cloud-runner-port/src/aura-assets";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
 import { buildPuddles } from "./puddles";
@@ -119,6 +121,17 @@ export function buildLog(): Mesh {
  *   vignette and contact shadows next to the look's single AO node (CD-10).
  * - original (`?look=original`): today's nodes, value for value.
  */
+/* dev toggles for remote shadow A/B frames (look-dev only): ?shf=pcf|pcss|hard &shd=<maxDistance> &shc=<cascades> &shm=<mapSize> &shs=<softness> */
+const SHADOW_DEV: Record<string, unknown> = ((): Record<string, unknown> => {
+  if (typeof location === "undefined") return {};
+  const q = new URLSearchParams(location.search), o: Record<string, unknown> = {};
+  const f = q.get("shf"); if (f === "pcf" || f === "pcss" || f === "hard") o.filter = f;
+  const d = Number(q.get("shd")); if (d > 0) o.maxDistance = d;
+  const c = Number(q.get("shc")); if (c >= 1 && c <= 4) o.cascades = c;
+  const m = Number(q.get("shm")); if ([512, 1024, 2048, 4096].includes(m)) o.mapSize = m;
+  const so = Number(q.get("shs")); if (so > 0) o.softness = so;
+  return o;
+})();
 export const SUN_FLARE_ID = "sun-flare";
 export function lookNodes(row: CumulusLookRow): unknown[] {
   const out: unknown[] = [];
@@ -141,7 +154,7 @@ export function lookNodes(row: CumulusLookRow): unknown[] {
     ...(row.environmentIntensity !== null ? { environmentIntensity: row.environmentIntensity } : {}),
     ...(row.environmentRotationDeg !== null ? { environmentRotationDeg: row.environmentRotationDeg } : {}),
     background: row.fog.color,
-    key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14 } },
+    key: { color: row.sun.color, intensity: row.sun.intensity, shadow: { cascades: row.sun.cascades, maxDistance: row.sun.maxDistance, filter: row.sun.filter, blend: 0.14, ...SHADOW_DEV } },
     rim: row.rim ? { color: row.rim.color, intensity: row.rim.intensity, azimuthDeg: row.rim.azimuthDeg } : false,
     fogDensityScale: row.fog.lookScale,
     fog: { color: row.fog.color, ...(gorge ? { height: { mode: "height", density: row.fog.density, ...gorge } } : {}) },
@@ -171,6 +184,12 @@ export interface World { readonly scene: ReturnType<typeof scene>; bind(app: Aur
 /* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
 const HERO_SET = typeof location === "undefined" || !/[?&]heroset=0/.test(location.search);
 const ORB_CAP = 72;
+/* storm-row alpha scale of the runner contact quad (phase 4) */
+const HERO_CONTACT_STORM = 0.85;
+/* peak alpha of the storm-row ground shadows (phase 4) */
+const GROUND_SHADOW_ALPHA = 0.42;
+/* the shades sit this far above the draped ground (m) */
+const GROUND_SHADOW_LIFT = 0.06;
 /* clips that play once and hold their last pose (end time in seconds) or a fixed pose (at) */
 const HERO_HOLD: Readonly<Record<string, { end: number; at?: number }>> = { jump: { end: 2.0 }, hit: { end: 1.5 }, dead: { end: 2.95 }, sit: { end: 8.3, at: 7.6 } };
 /* Meshy models face +Z in their own space; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
@@ -179,6 +198,15 @@ const REX_FACING = 1;
 export const SUN_POS: V3 = (ACTIVE_LOOK.authoredSunPos ?? sunPosition(ACTIVE_LOOK.scenery.sunDir, 100)) as V3;
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
+
+/** CD-06 storm towers: course distance, lateral offset, height (m) and yaw. The model is about 1.3x as wide as tall, so a
+ *  300 m offset keeps each 240 m tower's near edge about 145 m off the road; A sits in the sky gap left of the title view. */
+const STORM_TOWERS: readonly { s: number; lat: number; height: number; yaw: number }[] = [
+  { s: 900, lat: -300, height: 240, yaw: 0.6 },
+  { s: 1500, lat: 300, height: 240, yaw: 2.3 }
+];
+/** Share of a tower's height sunk below the valley plane: the bottom third of the Meshy model is a grassy rock base. */
+const STORM_TOWER_SINK = 0.34;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
   const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
@@ -225,7 +253,26 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, ...treeWind, transforms: place(scatter.pineTrees) }));
   if (HERO_SET && scatter.boulders.length) b.add(instances.model(MESHY.boulder, { name: "hero-rocks", ...heroSet, castShadow: false, transforms: place(scatter.boulders) }));
   if (HERO_SET && mesas.placements.length) b.add(instances.model(MESHY.mesa, { name: "hero-mesas", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true, transforms: mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 })) }));
+  /* GU47 phase 4: long soft ground shadows from the low storm sun under the hero trees and boulders (one merged draw) */
+  if (ACTIVE_LOOK.scenery.receiveShadow && HERO_SET) {
+    const shades = new Mesh();
+    const gf = { forwardXZ: (s: number): [number, number] => { const f = frameAt(s).forward; const l = Math.hypot(f[0], f[2]) || 1; return [f[0] / l, f[2] / l]; }, groundAt: (s: number, lat: number): V3 => at(s, lat, groundHeight(ch, s, lat) + GROUND_SHADOW_LIFT) };
+    appendGroundShadows(shades, [...scatter.roundTrees, ...scatter.pineTrees], ACTIVE_LOOK.scenery.sunDir, TREE_SHADOW, gf);
+    appendGroundShadows(shades, scatter.boulders, ACTIVE_LOOK.scenery.sunDir, BOULDER_SHADOW, gf);
+    if (shades.vertexCount) {
+      b.add(geometry.custom(plainGeometry(shades), { name: "ground-shadows", castShadow: false, material: material.custom({ ...shadowSpec(), uniforms: { shadowAlpha: { type: "f32", value: GROUND_SHADOW_ALPHA } } }) }).runtime({ id: "ground-shadows" }));
+      triangles += shades.indices.length / 3; chunks++; drawNodes++;
+    }
+  }
   buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
+  /* CD-06 (GU47 WP-36): two Meshy storm towers rising out of the cloud sea beyond the cloud banks, one instanced draw
+     (storm-washed row). Each stands on its rock base sunk below the valley plane, so only the cloud column shows. */
+  if (ACTIVE_LOOK.id === "storm-washed") {
+    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusTowerA, {
+      name: "storm-towers", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
+      transforms: STORM_TOWERS.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; })
+    }));
+  }
   buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
   addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
   addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
@@ -271,8 +318,9 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   if (ch.log) b.add(geometry.custom(meshGeometry(buildLog()), { name: "ride-log", material: material.custom(scenerySpec({ rim: 0.3, fill: ACTIVE_LOOK.id === "storm-washed" ? 2.4 : 1 })) }).runtime({ id: "ride-log" }));
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
-  /* CD-02: the fake contact quad only on rows whose scenery does not receive the sun shadow (the original look) */
-  if (!ACTIVE_LOOK.scenery.receiveShadow) b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
+  /* CD-02 / GU47 phase 4: the soft contact quad under the runner on both rows (the low storm sun throws the cast shadow
+     metres to the side, so the feet need their own contact; slightly lighter where the sun shadow is received) */
+  b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
   b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false }).runtime({ id: "sky-cloud" }));
   const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
@@ -507,7 +555,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         else view.log = null;
       }
 
-      if (!ACTIVE_LOOK.scenery.receiveShadow) {
+      {
         const hs = node("hero-shadow");
         const gp = at(s.s, s.lane, 0.07 + (ch.log && s.s < ch.log ? 0 : 0));
         hs.setVisible(phase !== "falling" && phase !== "finale");
@@ -515,7 +563,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
         hs.setRotation(0, yawOf(f.forward), 0);
         const hk = Math.max(0.35, 1.5 - s.jump * 0.12);
         hs.setScale([hk * 1.6, 1, hk * 1.6]);
-        hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05));
+        hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05) * (ACTIVE_LOOK.scenery.receiveShadow ? HERO_CONTACT_STORM : 1));
       }
 
       /* ---- sky cloud ---- */

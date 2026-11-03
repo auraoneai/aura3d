@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Building windows read as flat horizontal white stripes rather than lit windows; the road has a slightly milky moonlit sheen; the far distance is a little hazy. Otherwise the car is clearly readable, materials show detail, and the moonlit mood works.",
+     "The road is a bit flat and grey-blue with some haze near the horizon. The building windows are simple stripe patterns.",
+     "Mild bluish haze lifts the road and flattens contrast a little; the building window textures look plain and stripey; the car sits off-centre to the right"
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bright bluish specular wash in the middle of the road; the canyon wall textures are somewhat blotchy; the car is slightly cut off at the bottom right of the frame.",
+     "The car is placed off-centre to the right. There is mild sheen on the road surface. The canyon wall texture is slightly smeared.",
+     "Canyon wall textures are somewhat smeared and blurry; the road has a slight blue cast; the car is off-centre"
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is grey and slightly hazy, so the far distance looks a bit washed out; the road texture is a little grainy. Otherwise the warm lighting, cast shadows, wind turbines, and trees add good depth, and the car reads clearly.",
+     "The grey sky is hazy and the distance is somewhat washed out. The road is a little low in contrast, and the car's shadow edges are slightly aliased.",
+     "Sky is somewhat grey and hazy and the distance slightly washed out; the shadow under the car is a little dithered; otherwise warm light, good shadows, detailed set dressing (wind turbines, trees, buoys)"
+    ]
+   }
+  ]
+ }
+]

@@ -5,7 +5,12 @@
   "wp": "WP-21",
   "note": "before: newest committed evidence. floor1/floor6 desktop rows are evidence/showcase-bunker-zero/audit-2026-10-29/metrics.json run g11-final2-luma (4.5.0 lane final, 1280x720, software WebGL2, 60 s steady state); the default target on the GU47 base is WP-38's gu47-before-bunker-zero (gu47/wp38 c6b71095d, evidence/game-upgrades-47/before/bunker-zero/luma-before.json). Floors 2-5 and the Kill House were never captured before GU47 (null). after: phase 2 (remote captures plus the owner's real-GPU run).",
   "limits": {
-    "drawCalls": { "floor1": 200, "floor6": 120, "otherFloors": 200, "low": 160 },
+    "drawCalls": {
+      "floor1": 200,
+      "floor6": 120,
+      "otherFloors": 200,
+      "low": 160
+    },
     "punctualLights": 40,
     "shadowedLights": "2 spots at 1024 plus the F6 moon (phase 1: one shadowed key per floor, see the lane report)",
     "particles": 600,
@@ -17,25 +22,144 @@
   },
   "variants": {
     "default": {
-      "before": { "source": "gu47-before-bunker-zero", "drawCalls": 163, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "mean": 74.59, "p5": 31, "p95": 105, "darkFrac": 0.0222, "clipFrac": 0 },
+      "before": {
+        "source": "gu47-before-bunker-zero",
+        "drawCalls": 163,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 74.59,
+        "p5": 31,
+        "p95": 105,
+        "darkFrac": 0.0222,
+        "clipFrac": 0
+      },
       "after": null
     },
     "floor1": {
-      "before": { "source": "g11-final2-luma desktop-f1", "drawCalls": 165, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "mean": 74.95, "p5": 30, "p95": 102, "darkFrac": 0.029, "clipFrac": 0 },
+      "before": {
+        "source": "g11-final2-luma desktop-f1",
+        "drawCalls": 165,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 74.95,
+        "p5": 30,
+        "p95": 102,
+        "darkFrac": 0.029,
+        "clipFrac": 0
+      },
       "after": null
     },
-    "floor2": { "before": null, "after": null },
-    "floor3": { "before": null, "after": null },
-    "floor4": { "before": null, "after": null },
-    "floor5": { "before": null, "after": null },
+    "floor2": {
+      "before": null,
+      "after": null
+    },
+    "floor3": {
+      "before": null,
+      "after": null
+    },
+    "floor4": {
+      "before": null,
+      "after": null
+    },
+    "floor5": {
+      "before": null,
+      "after": null
+    },
     "floor6": {
-      "before": { "source": "g11-final2-luma desktop-f6", "drawCalls": 29, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "mean": 42.04, "p5": 5, "p95": 74, "darkFrac": 0.1255, "clipFrac": 0 },
+      "before": {
+        "source": "g11-final2-luma desktop-f6",
+        "drawCalls": 29,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 42.04,
+        "p5": 5,
+        "p95": 74,
+        "darkFrac": 0.1255,
+        "clipFrac": 0
+      },
       "after": null
     },
-    "killhouse": { "before": null, "after": null },
-    "phone-floor1": {
-      "before": { "source": "g11-after-9 phone-f1 (390x844)", "drawCalls": 90, "triangles": null, "textureBytes": null, "pageMB": null, "routeJsGzipDeltaKB": 0, "runnerFps": null, "mean": 88.84, "p5": 29, "p95": 118, "darkFrac": 0.0329, "clipFrac": 0 },
+    "killhouse": {
+      "before": null,
       "after": null
+    },
+    "phone-floor1": {
+      "before": {
+        "source": "g11-after-9 phone-f1 (390x844)",
+        "drawCalls": 90,
+        "triangles": null,
+        "textureBytes": null,
+        "pageMB": null,
+        "routeJsGzipDeltaKB": 0,
+        "runnerFps": null,
+        "mean": 88.84,
+        "p5": 29,
+        "p95": 118,
+        "darkFrac": 0.0329,
+        "clipFrac": 0
+      },
+      "after": null
+    }
+  },
+  "phase6": {
+    "note": "GU47 phase 6 (4.7.4): F6 draw fix without raising any limit (PRD D7). Numbers are the capture GL_META at 60 s, 1280x720, software WebGL2 on the remote runner. Fixes: contact blobs merged into one instanced draw per floor (runtime setInstanceMatrices), F6 props/doors/pickups more than two cells from the hatch and the F6 floor slab dropped from the moon shadow pass (the sealed ceiling already shades them), F6 wall contact shade three draws -> one, viewmodels cast no shadow.",
+    "floor6": {
+      "limit": 120,
+      "phase3": {
+        "run": "g11p3-r4",
+        "drawCalls": 143,
+        "triangles": 822652
+      },
+      "before": {
+        "run": "g11p4-r5b",
+        "drawCalls": 164,
+        "triangles": 985216,
+        "textureBytes": 247453696
+      },
+      "after": {
+        "run": "g11p6-r1",
+        "drawCalls": 92,
+        "triangles": 570808,
+        "textureBytes": 249550848
+      }
+    },
+    "floor5": {
+      "limit": 200,
+      "before": {
+        "run": "g11p4-r5b",
+        "drawCalls": 92,
+        "triangles": 569001
+      },
+      "after": {
+        "run": "g11p6-r1",
+        "drawCalls": 88,
+        "triangles": 552559
+      }
+    },
+    "floor1": {
+      "limit": 200,
+      "before": {
+        "run": "g11p4-r5b",
+        "drawCalls": 119,
+        "triangles": 825164,
+        "mean60": 83.26
+      },
+      "after": {
+        "run": "g11p6-r4",
+        "drawCalls": 106,
+        "triangles": 809296,
+        "mean60": 83.27,
+        "note": "contact blobs merged; viewmodels parked, not hidden (no extra draws)"
+      }
     }
   }
 }

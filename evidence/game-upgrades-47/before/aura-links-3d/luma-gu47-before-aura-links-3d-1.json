@@ -1,0 +1,118 @@
+[
+ {
+  "target": "aura-links-3d--stAuroras",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "stAuroras",
+  "sinceReadyMs": 25007,
+  "mean": 131.98,
+  "p5": 62,
+  "p50": 133,
+  "p95": 187,
+  "darkFrac": 0.0014,
+  "clipFrac": 0,
+  "grid": [
+   146.1,
+   176.7,
+   132.2,
+   116.7,
+   140.2,
+   114.9,
+   118.5,
+   134.4,
+   108
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 138
+  }
+ },
+ {
+  "target": "aura-links-3d--stAuroras",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "stAuroras",
+  "sinceReadyMs": 238397,
+  "mean": 132.27,
+  "p5": 62,
+  "p50": 134,
+  "p95": 187,
+  "darkFrac": 0.0014,
+  "clipFrac": 0,
+  "grid": [
+   146.3,
+   176.1,
+   132.3,
+   115.5,
+   141.5,
+   114.9,
+   119.9,
+   134.9,
+   109
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 138
+  }
+ },
+ {
+  "target": "aura-links-3d--neonBay",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "neonBay",
+  "sinceReadyMs": 25017,
+  "mean": 32.44,
+  "p5": 0,
+  "p50": 40,
+  "p95": 59,
+  "darkFrac": 0.3256,
+  "clipFrac": 0,
+  "grid": [
+   6.3,
+   1,
+   11.9,
+   40.6,
+   52.4,
+   37.6,
+   49.9,
+   53.4,
+   38.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 122
+  }
+ },
+ {
+  "target": "aura-links-3d--neonBay",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "neonBay",
+  "sinceReadyMs": 243709,
+  "mean": 32.31,
+  "p5": 0,
+  "p50": 40,
+  "p95": 59,
+  "darkFrac": 0.329,
+  "clipFrac": 0,
+  "grid": [
+   6.1,
+   0.9,
+   11.7,
+   40,
+   52,
+   37.5,
+   50.3,
+   53.4,
+   38.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 122
+  }
+ }
+]

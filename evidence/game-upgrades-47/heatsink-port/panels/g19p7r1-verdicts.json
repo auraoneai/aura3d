@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Drone sits off-centre to the right and partly crowds the frame edge; large rock overhang on the right is somewhat flat and hazy; floating purple diamond pickups read a little like debris; distance haze slightly softens the mountains",
+     "Drone sits off-centre to the right and partly overlaps the trackside; some mid-distance haze softens the grey mountains; the purple grid ground looks a little flat and synthetic; floating purple diamonds read as slightly unanchored",
+     "Drone sits off-centre to the right. Some haze washes out the right-side arch and cliffs. Floating purple crystals have no clear grounding. The track's grid and squiggle lines are a little busy."
+    ]
+   },
+   {
+    "variant": "original",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: same overhead beam, muted teal palette, empty dark foreground and bright patch on the road",
+     "Identical to B: dark overhead bar across the top, dark empty foreground, white stripe patch beside the drone, muted low-contrast lower half",
+     "Essentially identical to A: a dark overhead beam across the top, a muddy dark road, a bright white rectangular streak next to the drone, and a monotone teal palette."
+    ]
+   }
+  ]
+ }
+]

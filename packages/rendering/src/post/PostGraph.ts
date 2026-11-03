@@ -92,9 +92,8 @@ export interface BloomOptionsV2 {
   /** Mip count, C-27 `bloomMipLevels`: 3 | 5 | 6. */
   readonly mips: 3 | 5 | 6;
   /**
-   * GU47 E-C: selective bloom — a scene material declares a `bloom` weight
-   * other than 1, so the prefilter reads the per-material weight from HDR
-   * alpha (`NativeBloomPyramid.auraBloomWeight`). Omitted = today's bloom.
+   * Internal execution flag, enabled only after the renderer has produced a
+   * capability-checked separate signal attachment. Omitted = ordinary bloom.
    */
   readonly selective?: boolean;
 }

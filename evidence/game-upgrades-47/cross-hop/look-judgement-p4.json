@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/cross-hop/screens/final/1280-03-action.jpg",
+      "sha256": "ccdcf2faa7bcdb7acd17b5c56d1ec6acfdba2a0d2157fa6c6d38fd454e5d90dc"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p4-r2/screens/1280-vivid-theme1.jpg",
+      "sha256": "77192130398f4ea511e4e22d0e3c27ceae88bc287f214a44f1bbd2c45d921ea2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p4-r2/screens/1280-vivid-theme2.jpg",
+      "sha256": "809eabe4b48994d0b02857a09aa459af9862e3b0352598677845d6e8ef86bcdd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/cross-hop/p4-r2/screens/1280-vivid-theme3.jpg",
+      "sha256": "7b2be2fe0a467b23a4fde75cdc856b6e033c8d5515c20ad07b9f678302d67a4f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4,
+    "ibl_reflections": 4.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 5.5,
+    "modeling_assets": 6,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "animation_quality": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Meadow and Riverbend grass reads as flat, nearly uniform green with almost no key-light falloff. The pale sun disc does not visibly drive form shading on the ground planes. Emberline is underlit and murky, and the frog and road lanes sink into dark olive."
+    },
+    {
+      "category": "shadows",
+      "seen": "Contact shadows are faint or missing. Trucks and cars in Meadow barely ground on the asphalt. The frog gets only a soft blurry blob, offset to the right in Emberline. The plank logs show no cast shadow onto the water."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Car paint has some glossy highlights. The water strips are flat matte blue with no sky reflection or specular, and the logs and lily pads show no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world is a stack of flat colored bands: green slabs, blue water strips, gray asphalt. Lollipop trees sit only at the edges. Emberline buildings are untextured black boxes. Riverbend repeats identical rows of orange planks with little set dressing."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Light distance haze softens far lanes, and sun bloom appears in Downtown, Riverbend and Emberline. Beyond that, the frames show no depth fog layering, airborne particles or sky detail, only small sparkle puffs near the frog."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Logs are smooth orange slabs with a pale underside and no wood grain. Lily pads are plain green discs. Grass and water are untextured flat shading. These clash with the detailed, scanned-looking vehicles and trams."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Fidelity is mixed. The trams, trucks and cars are detailed toy-like models and the frog is sculpted, but the logs are beveled boxes, trees are sphere-on-stick primitives, and the Emberline skyline is blocky silhouettes."
+    },
+    {
+      "category": "composition",
+      "seen": "The frog occupies roughly 10–12% of the frame, below the 18–25% target. The upper half is a dense wall of traffic that competes for attention. Emberline's heavy vignette crushes the lower third."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high behind-the-player view, not the side-on follow the recipe calls for. Framing stays stable and readable across lanes, but the long view up the lanes compresses the traffic rows."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A strong vignette and warm grade turn Riverbend and Emberline muddy and desaturated. Sun bloom is soft. The daylight-outdoor look is only partly held in Meadow, which still reads gray-blue."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Stills show the frog in a stiff upright mid-hop pose and small dust or sparkle bursts at landing. Squash and stretch or anticipation cannot be judged from these frames."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The score panel, coin count, BEST pill, level badge and pause button are clean and consistent. A 'Quick Play' label floats over the play area at bottom center, the '+10 coin' popup sits in the traffic, and a dev level-selector bar crowds the top."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

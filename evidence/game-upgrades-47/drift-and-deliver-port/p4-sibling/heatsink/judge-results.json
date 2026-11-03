@@ -1,0 +1,722 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:10:34.688Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "1280-04-mid-b",
+      "1280-04-mid",
+      "1280-06-results"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.948,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.948,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a dark sci-fi drone racer with a menu bar, radar and a tunnel setting, while Image B is a sunny city taxi game with a green car",
+        "The HUDs differ: A uses dark panels with orange and cyan accents, B uses a ticket banner, a round speedometer and a grid minimap",
+        "The lighting and palettes differ: A is murky and gritty with desaturated tones, B is saturated golden-hour with cartoon-style buildings"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sunny city street with a small green car, a round speedometer and a grid minimap",
+        "Image B is a dark, foggy drone racer with a sci-fi HUD, radar and a track and drone selector bar",
+        "The two frames differ in vehicle type, lighting, palette and HUD design"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized low-poly city driving game with a small green car, orange sunset sky, and a round speedometer",
+        "Image B is a drone racing and combat game with a dark, dense sci-fi HUD, VICTORY panel, and top menu bar",
+        "The HUD styles differ: a round dial and grid minimap versus a condensed-font radar and bar gauges"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "1280-06-results",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm, sunny street driving game with a taxi and a mint car",
+        "Image B is a dark drone racing game with a VICTORY modal and a sci-fi HUD",
+        "The HUD styles differ: a ticket card, speedometer and minimap versus monospace panels, a radar and a top menu bar"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark, gritty sci-fi racer with a dense neon HUD and a hovering drone craft",
+        "Image B is a bright, saturated low-poly city street with a pastel green hatchback and a minimal speedometer and minimap HUD",
+        "Different lighting, palette, vehicle type and HUD style"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a futuristic drone racer with a dense HUD, Image B is a small teal city car with a minimal speedometer and minimap",
+        "Different art styles: dark gritty industrial tunnel in A, bright flat-shaded orange sunset city streets in B",
+        "Different HUD design and game type: sci-fi menu bars and radar vs. a round dial gauge and grid minimap"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a drone racer with a dense sci-fi HUD, Image B is a car in a bright low-poly city with a minimal HUD",
+        "Different palettes: dark teal and orange haze versus warm yellow sunset",
+        "Different art styles: moody rendering with a glowing ring versus flat toon-shaded blocky buildings"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a drone racing game with a victory dialog and a dark HUD showing a radar and speed in km/h",
+        "Image B is a third-person car driving game in a streetlit city with a round gauge and a grid minimap",
+        "The HUD styles differ: A uses condensed monospace text panels, B uses a minimal orange dial and a rounded minimap"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a low-poly city driving game with a green car and a warm orange sunset",
+        "Image B is a drone racing game with a dense sci-fi HUD, a dark moody palette and glossy water",
+        "The HUD styles differ: a circular speedometer and grid minimap versus a text-heavy panel with menus and a radar"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a warm, sunlit street driving game with a green car and a round speedometer",
+        "Image B is a dark drone racing game with a VICTORY panel, a radar and a track/mode menu bar",
+        "The HUD styles differ: A has a round gauge and a grid minimap, B has a monospace tech UI with orange accents"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a low-poly night city drive with a third-person car and a simple round speedometer",
+        "Image B is a drone racing game with a dense sci-fi HUD (menus, radar, heat/shield bars)",
+        "The two frames differ in lighting, vehicles and HUD style: dusk streetlamps versus a hazy industrial tunnel with a water-like surface"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "1280-04-mid-b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a drone racing game with a dark cyberpunk tunnel and a menu bar listing drones and tracks",
+        "Image B is a taxi-style driving game with a warm sepia city street and a ticket and nitro HUD",
+        "The HUD styles, vehicles, and palettes differ entirely"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "1280-06-results",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized daytime city driving game with a small green car and a round speedometer",
+        "Image B is a dark drone racing game with a victory modal and a menu bar of drones, tracks and modes",
+        "The HUD fonts and layouts differ: A is rounded and light, B is condensed, monospaced and dark"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a sci-fi drone racer HUD with a 'Thermal Drift' title bar and radar panel, Image B has a minimal round speedometer and grid minimap",
+        "Image A is a dusty industrial tunnel with orange glow and film grain, Image B is a clean dusk city street with lit windows",
+        "Image A's vehicle is a hovering orange fighter craft, Image B's is a small teal hatchback car"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, low-poly city street with a green hatchback and a minimal dial and minimap HUD",
+        "Image B is a dark, gritty industrial tunnel with a racing drone and a dense sci-fi HUD (Thermal Drift)",
+        "Different vehicles, lighting, palette and HUD styles"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a drone racing game with a dense sci-fi HUD (Thermal Drift menu bar, radar, speed readout)",
+        "Image B is a low-poly daytime city driving game with a small car, a minimal gauge and a grid minimap",
+        "Different palettes and lighting: dark teal dusk with fog and bloom versus warm golden low-sun with flat-shaded buildings"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a daytime city driving game with a taxi and a mint car, while Image B is a drone racer in a dark megacity",
+        "The HUDs differ: a ticket card, round speedometer and grid minimap against a Thermal Drift header, radar panel and weapon and heat gauges",
+        "The palettes differ: warm sepia-orange haze against a cold, dark teal scene with a wet reflective ground"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, stylized low-poly city driving scene with a car and minimal circular HUD, while Image B is a gritty, dark, realistic-leaning drone racing game",
+        "Different HUD styles: a round speedometer and grid minimap against a dense text-heavy panel UI (Thermal Drift)",
+        "Different lighting and palette: warm orange sunset with clean flat-shaded buildings against dim, hazy, industrial tunnel with film grain and metallic wet surfaces"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a sci-fi racing HUD with a drone selector bar, radar and speed readout, while Image B has a minimal round speedometer and grid minimap",
+        "Image A shows a hovering orange drone in an industrial tunnel with a gritty, hazy look, while Image B shows a teal hatchback on a clean dusk city street",
+        "Different lighting and palette: dark, smoky, orange-lit scene versus blue twilight with warm window lights"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark drone racing game with a sci-fi HUD, menus and a victory panel",
+        "Image B is a bright, warm-lit cartoon city driving scene with a green hatchback and a round speedometer",
+        "The HUD styles, palettes and vehicles are unrelated"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a low-poly city driving game with a car and warm sunset lighting; Image B is a drone racing game",
+        "Different HUD styles: a minimal circular speedometer and grid minimap vs a dense dark-panel HUD with menus and radar",
+        "Different rendering and palette: flat cartoon buildings vs dark, gritty, hazy post-processed scene"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, warm daytime city with a small green car, a round speedometer and a grid minimap",
+        "Image B is a dark, gritty industrial tunnel with an orange drone craft and a tech-style HUD (radar, heat, shield)",
+        "The lighting, palette, vehicle type and HUD design differ completely"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "1280-04-mid-b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a racing drone in a dark industrial megacity with a sci-fi HUD (radar, hull, heat gauges)",
+        "Image B is a taxi-style car in a bright, warm, cartoonish city with traffic lights and palm trees",
+        "HUD styles differ: condensed techno panels versus a ticket card, round speedometer and grid minimap"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a ground-level car in a dusk city street with a round orange speedometer and a grid minimap",
+        "Image B is a drone racing game with a dark sci-fi HUD, a condensed font, a track-outline radar and a Victory panel",
+        "The HUD styles and vehicle types are unrelated, and the only shared element is a city setting"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark drone-racing UI with a VICTORY modal, radar and menu bar; Image B is a bright car driving game",
+        "Image B has a warm sunset city with a teal car, analog speedometer and grid minimap, and no shared HUD style",
+        "Different art direction: A is murky and low-light with a dim blocky city, B is clean, saturated low-poly buildings"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a low-poly night city with a small car and a minimal gauge and minimap HUD",
+        "Image B is a drone racing game with a dense menu bar, race stats and weapon HUD",
+        "Different gameplay and visual style: ground-level driving on a street versus a flying drone over a wet track with a gate"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a sunny low-poly city driving game with a taxi and a small car; Image B is a dark sci-fi drone racer in an industrial tunnel",
+        "Image A's HUD is a round speedometer, nitro bar and grid minimap; Image B's HUD is a dark panel with a menu bar, radar and weapon heat gauges",
+        "Image A is warm, hazy and orange; Image B is dark, gritty and desaturated with neon accents"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a drone racing game with a dark sci-fi HUD (radar, heat/shield bars, victory panel); Image B is a daytime car driving game",
+        "Image B has a warm orange-lit town with a taxi, a mint car and a ticket/minimap HUD",
+        "The UI styles differ: a monospace menu bar in A, a rounded speedometer and paper ticket in B"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark drone-racing UI with a Victory panel and a 'Built with Aura3D' menu bar, in condensed monospace type",
+        "Image B is a bright, warm-lit city taxi game with a small green car, traffic lights, and a ticket/nitro HUD",
+        "The HUD styles, fonts, and gameplay (flying drone vs. street car) do not match"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a drone racing game with a dense sci-fi HUD, a radar and menu tabs, while Image B is a car driving game with a minimal speedometer and minimap",
+        "Image A is dark, hazy and gritty with a wet reflective track, while Image B is a bright, flat-shaded low-poly city in warm orange sunset light",
+        "Different vehicles and settings: a hovering drone on an industrial track versus a small teal hatchback on a city street"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a drone racing game with a dark sci-fi HUD (radar, heat and shield bars, Victory panel)",
+        "Image B is a sunny low-poly taxi/city driving game with a ticket, a speedometer dial and a minimap",
+        "The two frames differ in HUD style, vehicles and palette (dark orange/teal vs warm sepia daylight)"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark, gritty racing HUD with a drone craft in an industrial tunnel; Image B is a bright, stylized city driving scene with a small car",
+        "Different HUD styles: a dense text panel layout in A versus a minimal circular speedometer and grid minimap in B",
+        "Different art and lighting: grainy, desaturated, wet-road look in A versus flat, saturated orange sunset with simple building textures in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, warm daytime city street with a small green car, while Image B is a dark, gritty industrial tunnel with a hovering drone craft",
+        "Different HUD styles: a round speedometer, nitro bar and grid minimap versus a dark sci-fi panel layout with a drone/track/mode menu bar and a radar loop",
+        "Different art and lighting: saturated stylized cartoon buildings versus a muted, grainy, high-contrast render"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark drone racing UI with a VICTORY modal, a radar and a menu bar, while Image B is a sunset city driving scene with a car",
+        "Image A's HUD uses a condensed monospace font with a red/cyan palette, while Image B has a minimal round speedometer and a grid minimap",
+        "Different gameplay and visual style: dim, low-light megacity racing versus warm, saturated orange-lit streets with lampposts and traffic lights"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark drone-racing UI with a menu bar and Victory modal; Image B is a bright taxi-style city drive",
+        "Image B has a textured green car, traffic lights and a speedometer dial, with a different HUD font and layout",
+        "Different palettes: dark, desaturated and blocky in A versus warm golden-hour realistic city in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sunny stylized city car game with a mint hatchback, while Image B is a dark drone racer with a flying drone",
+        "Different HUD styles: Image A has a ticket card, analog speedometer and grid minimap; Image B has a menu bar, radar track map and heat/shield gauges",
+        "Different lighting and palette: warm golden-orange haze in A versus dim, desaturated blue-gray night in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dark drone-racing UI with a victory panel and a menu bar reading 'Built with Aura3D'",
+        "Image B is a bright, warm-lit cartoon city with a teal hatchback, lamp posts and traffic lights",
+        "HUD differs: A has a radar, text readouts and a condensed font; B has a round speedometer and a grid minimap"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a car driving down a night city street; Image B is a drone racing game with a dense sci-fi HUD",
+        "Different HUD styles: a minimal orange speedometer and grid minimap versus menu tabs, radar, and heat/shield bars",
+        "Different scenery and lighting: low-poly lit street with a clean sky versus hazy, dark industrial megacity with a hoop gate"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, stylized low-poly city with a teal car and a minimal circular gauge and minimap",
+        "Image B is a dark, gritty industrial tunnel with a flying drone and a dense sci-fi HUD (Thermal Drift)",
+        "Different vehicles, lighting and palette, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a low-poly city street with a car and a simple dial speedometer; Image B is a drone racer with a dense HUD",
+        "Different palettes: bright golden daylight in A, dark teal and gritty dusk in B",
+        "Different gameplay and camera: ground car in A, flying drone through gates in B"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "1280-04-mid-b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a drone racer with a dark neon cyberpunk tunnel and a dense sci-fi HUD (Thermal Drift)",
+        "Image B is a taxi/driving game with a warm orange daylight low-poly town and a ticket/minimap HUD",
+        "Different vehicles, palettes, and HUD styles"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-06-results",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a third-person car driving game on a dusk city street with a round speedometer and grid minimap",
+        "Image B is a drone racing game with a dark HUD, a Victory modal and a drone/track selector bar",
+        "The HUD styles and gameplay differ: orange dial gauge versus monospace condensed panels and a radar"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a sunny low-poly city taxi game with a speedometer dial, nitro bar and grid minimap",
+        "Image B is a dark sci-fi drone racer with a 'Thermal Drift' HUD and a radar track outline",
+        "The two use different HUD styles, palettes and vehicles"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dusk city street with a small blue car and a minimal gauge and minimap HUD",
+        "Image B is a hovering drone racer in an industrial tunnel with a dense, text-heavy HUD",
+        "Different palettes, lighting and camera setups (calm blue twilight vs. gritty orange-lit industrial)"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "1280-04-mid-b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a low-poly city driving game with a mint car and warm sunset lighting; Image B is a drone racing game with a dark, gritty look",
+        "Different HUD styles: a minimal dial speedometer and grid minimap versus dense panels, a top menu bar, a radar and ability readouts",
+        "Different art style: flat-shaded cartoon buildings versus dark, hazy, textured megacity ruins with a water-like surface"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright, low-poly daytime city drive with a teal hatchback and a round speedometer",
+        "Image B is a dark, gritty industrial tunnel with a racing drone and a dense text-heavy HUD (Thermal Drift)",
+        "The lighting, palette, vehicle type and HUD style are completely different"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "1280-04-mid",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a bright, warm sunset city driving game with a cartoon green car, while Image B is a dark, gritty industrial tunnel with a hovering drone craft",
+        "HUD styles differ: A has a ticket card, round speedometer and grid minimap; B has dark panels with a track/drone menu bar and a radar",
+        "Different gameplay and visual tone: A is stylized low-poly with saturated orange light, B has a desaturated, film-grain look"
+      ]
+    }
+  ]
+}

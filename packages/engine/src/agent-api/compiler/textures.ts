@@ -269,6 +269,22 @@ export function prepareProductionPrimitiveTextureWork(
   }
 }
 
+const textureClockMs = (): number => (typeof performance !== "undefined" ? performance.now() : Date.now());
+
+/**
+ * GU47 e6 (g09 handoff): the last step a textured upgrade reached, so a row stuck in `pending` names where it waits
+ * (diagnostics `texturedMaterials[].stage` / `pendingMs`). Bookkeeping only; no draw state changes.
+ */
+export function markTextureStage(resource: { textureStage?: string }, stage: string): void {
+  resource.textureStage = stage;
+}
+
+/** `pendingMs` for a diagnostics row: time since the upgrade started, only while it is still pending. */
+export function texturePendingMs(resource: { textureStatus: string; texturePendingSince?: number }): number | undefined {
+  if (resource.textureStatus !== "pending" || resource.texturePendingSince === undefined) return undefined;
+  return Math.round(textureClockMs() - resource.texturePendingSince);
+}
+
 export function blankProductionPrimitiveTextureState(): {
   texturedMaterial: TexturedPBRMaterial | null;
   textureStatus: "none" | "pending" | "textured" | "fallback";
@@ -284,6 +300,7 @@ export function blankProductionPrimitiveTextureState(): {
 export const ROOT_EXTENSION_TEXTURE_SLOTS = ["clearcoat", "clearcoatRoughness", "clearcoatNormal", "sheenColor", "sheenRoughness", "iridescence", "iridescenceThickness", "anisotropy", "diffuseRoughness", "bump"] as const;
 
 export type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[number];
+const ROOT_SCALAR_ATLAS_SLOTS: readonly RootExtensionTextureSlot[] = ["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"];
 
 function throwIfTextureAborted(signal?: AbortSignal): void {
   if (!signal?.aborted) return;
@@ -292,13 +309,390 @@ function throwIfTextureAborted(signal?: AbortSignal): void {
   throw error;
 }
 
-export async function loadProductionPrimitiveBitmap(url: string, signal?: AbortSignal): Promise<ImageBitmap> {
-  return startBitmapAssetLoad(prepareBitmapAssetLoad(url), signal).result;
+/**
+ * GU47 e6 phase 7: a decoded map. Normally an `ImageBitmap`; when `createImageBitmap` does not settle within
+ * `PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS`, a decoded `<img>` of the same blob (see `decodeProductionImageFallback`).
+ * Both carry `width`, `height` and `close()`, and both are a `TexImageSource`.
+ */
+export type ProductionTextureImage = ImageBitmap | (HTMLImageElement & { close(): void });
+
+// One CPU-pixel map for both transports: native `bitmapAsset.ts` fills it for PNGs it decodes
+// eagerly; the lazy path below fills it on the first CPU request.
+const productionTexturePixels = productionPrimitiveBitmapPixels as unknown as WeakMap<ProductionTextureImage, { readonly width: number; readonly height: number; readonly data: Uint8Array }>;
+
+interface PendingProductionTexturePixels {
+  readonly bytes: Uint8Array;
+  promise?: Promise<void>;
 }
 
-export function bitmapRgbaPixels(bitmap: ImageBitmap): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
-  const decoded = productionPrimitiveBitmapPixels.get(bitmap);
+// A shared image can be used first by a GPU-only slot and later by a scalar
+// slot. Retain its encoded PNG until the first CPU request (or last release),
+// rather than deciding from whichever user happened to acquire the URL first.
+const pendingProductionTexturePixels = new WeakMap<ProductionTextureImage, PendingProductionTexturePixels>();
+// Identity works for both the <img> fallback and bitmaps from another realm,
+// including non-PNG / unsupported PNG sources that need canvas readback.
+const productionTextureImageStates = new WeakMap<ProductionTextureImage, "live" | "released">();
+
+function trackProductionTextureImage(bitmap: ProductionTextureImage): void {
+  if (!productionTextureImageStates.has(bitmap)) productionTextureImageStates.set(bitmap, "live");
+}
+
+function isTrackedProductionTextureImage(source: TexImageSource): source is ProductionTextureImage {
+  const bitmap = source as ProductionTextureImage;
+  return productionTextureImageStates.has(bitmap) || productionTexturePixels.has(bitmap);
+}
+
+function assertProductionTextureImageLive(bitmap: ProductionTextureImage): void {
+  if (productionTextureImageStates.get(bitmap) === "released") throw new Error("shared texture image was released");
+}
+
+/**
+ * Prepare a shared image's exact PNG pixels before synchronous readback with
+ * `bitmapRgbaPixels` or `auraTextureRefPixels`. Direct loads already prepare
+ * them; GPU-only shared loads do not. Keep the shared handle held through the
+ * read. Failed preparation can be retried while the image is still held.
+ */
+export async function prepareProductionTexturePixels(bitmap: ProductionTextureImage): Promise<void> {
+  assertProductionTextureImageLive(bitmap);
+  const pending = pendingProductionTexturePixels.get(bitmap);
+  if (!pending) return;
+  if (!pending.promise) {
+    const decode = (async (): Promise<void> => {
+      const { decodePngTexturePixels } = await import("../PngTexturePixels.js");
+      const pixels = await decodePngTexturePixels(pending.bytes);
+      // The last holder may have released while the decode was in flight.
+      if (pendingProductionTexturePixels.get(bitmap) !== pending) throw new Error("texture PNG was released while preparing pixels");
+      if (pixels) productionTexturePixels.set(bitmap, pixels);
+      pendingProductionTexturePixels.delete(bitmap);
+    })();
+    pending.promise = decode;
+    // Failed CPU reads remain retryable, including while a GPU-only holder is
+    // still using the image. Every requesting consumer also observes the error.
+    void decode.catch(() => {
+      if (pending.promise === decode) delete pending.promise;
+    });
+  }
+  await pending.promise;
+}
+
+function closeSharedProductionTextureImage(bitmap: ProductionTextureImage): void {
+  productionTextureImageStates.set(bitmap, "released");
+  pendingProductionTexturePixels.delete(bitmap);
+  productionTexturePixels.delete(bitmap);
+  bitmap.close();
+}
+
+/**
+ * GU47 e6 phase 7 (g09 texPending): how long a map waits for `createImageBitmap` before it decodes through an
+ * `<img>` instead. On the loaded software-WebGL2 runner `createImageBitmap` was measured not settling for 20 s+ on a
+ * 121 KB JPG and a 191-byte PNG while `<img>.decode()` of the same blob finished, so textured upgrades sat pending and
+ * captures showed untextured surfaces. A healthy decode settles far inside this bound and keeps the bitmap path.
+ */
+export const PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS = 3000;
+
+const DECODE_TIMED_OUT = Symbol("decode-timed-out");
+
+/**
+ * Decodes `blob` through an `<img>`. The upload is equivalent to the bitmap path: the WebGL2 upload sets
+ * `UNPACK_PREMULTIPLY_ALPHA_WEBGL = false`, `UNPACK_COLORSPACE_CONVERSION_WEBGL = NONE` and `UNPACK_FLIP_Y_WEBGL =
+ * texture.flipY` (false here) before `texImage2D`; an `<img>` source honours those, an `ImageBitmap` source ignores them
+ * and carries `premultiplyAlpha: "none"`, `colorSpaceConversion: "none"`, no flip instead (the same three settings).
+ */
+export async function decodeProductionImageFallback(blob: Blob): Promise<HTMLImageElement & { close(): void }> {
+  if (typeof Image !== "function" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
+    throw new Error("texture decode fallback requires HTMLImageElement + URL.createObjectURL");
+  }
+  const objectUrl = URL.createObjectURL(blob);
+  const image = new Image() as HTMLImageElement & { close(): void };
+  image.decoding = "async";
+  image.src = objectUrl;
+  try {
+    await image.decode();
+  } catch (error) {
+    URL.revokeObjectURL(objectUrl);
+    throw error;
+  }
+  // `close()` mirrors ImageBitmap.close(): owners release the blob URL with the texture.
+  image.close = () => URL.revokeObjectURL(objectUrl);
+  return image;
+}
+
+async function decodeProductionTextureImage(blob: Blob, onFallback?: () => void): Promise<ProductionTextureImage> {
+  const bitmapDecode = createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<typeof DECODE_TIMED_OUT>((resolve) => { timer = setTimeout(() => resolve(DECODE_TIMED_OUT), PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS); });
+  try {
+    const first = await Promise.race([bitmapDecode, timeout]);
+    if (first !== DECODE_TIMED_OUT) return first;
+  } finally {
+    clearTimeout(timer);
+  }
+  // The bitmap decode is stalled: decode through an <img>. Whichever finishes first is used; a late loser is released.
+  onFallback?.();
+  const fallback = decodeProductionImageFallback(blob);
+  const winner = await new Promise<ProductionTextureImage>((resolve, reject) => {
+    let failures = 0;
+    const lose = (error: unknown): void => { failures += 1; if (failures === 2) reject(error); };
+    bitmapDecode.then(resolve, lose);
+    fallback.then(resolve, lose);
+  });
+  for (const decode of [bitmapDecode, fallback]) void decode.then((image) => { if (image !== winner) image.close(); }, () => undefined);
+  return winner;
+}
+
+async function loadProductionPrimitiveBitmapImpl(
+  url: string,
+  onStep: ((step: ProductionTextureLoadStep) => void) | undefined,
+  deferPixels: boolean
+): Promise<ProductionTextureImage> {
+  if (typeof fetch !== "function" || typeof createImageBitmap !== "function") {
+    throw new Error("texture fetch requires fetch + createImageBitmap (browser production mount)");
+  }
+  onStep?.("fetch");
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`texture fetch failed with status ${response.status} for ${url}`);
+  onStep?.("body");
+  // GU47 e6 phase 7: the body is read once. A Blob read (`response.blob()` then `blob.arrayBuffer()`) was measured at
+  // tens of seconds per map on the loaded software runner; the decode blob is built from the bytes already in memory.
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  const blob = new Blob([bytes], { type: response.headers.get("content-type") ?? "" });
+  onStep?.("decode");
+  const bitmap = await decodeProductionTextureImage(blob, () => onStep?.("decode-fallback"));
+  trackProductionTextureImage(bitmap);
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    pendingProductionTexturePixels.set(bitmap, { bytes });
+  }
+  if (deferPixels) return bitmap;
+  try {
+    onStep?.("pixels");
+    await prepareProductionTexturePixels(bitmap);
+    return bitmap;
+  } catch (error) { closeSharedProductionTextureImage(bitmap); throw error; }
+}
+
+/**
+ * Direct URL loads. Native 5.0: an `AbortSignal` selects the policy-enforcing, cancellable `bitmapAsset.ts`
+ * transport (size limits, redacted errors, eager PNG pixels). Otherwise (GU47 e6 phase 7) the direct path keeps the
+ * eager CPU-pixel contract with the `<img>` decode fallback and per-step reporting.
+ */
+export async function loadProductionPrimitiveBitmap(
+  url: string,
+  onStepOrSignal?: ((step: ProductionTextureLoadStep) => void) | AbortSignal
+): Promise<ProductionTextureImage> {
+  if (typeof AbortSignal !== "undefined" && onStepOrSignal instanceof AbortSignal) {
+    return startBitmapAssetLoad(prepareBitmapAssetLoad(url), onStepOrSignal).result;
+  }
+  return loadProductionPrimitiveBitmapImpl(url, onStepOrSignal as ((step: ProductionTextureLoadStep) => void) | undefined, false);
+}
+
+export type ProductionTextureLoadStep = "fetch" | "body" | "decode" | "decode-fallback" | "pixels";
+
+/**
+ * GU47 e6 phase 8 (shared decodes): one decoded image per map URL, shared by every material that references it.
+ * Bunker Zero builds 188 textured materials over ~20 URLs; each material used to fetch and decode its own copy, so on the
+ * loaded software runner the queue landed about one material every 30 s. Holders take a reference with
+ * `acquireSharedProductionTextureImage` and give it back with `release()`. The image is closed when the last holder
+ * releases, and the entry leaves the cache at that moment, so a later acquire decodes afresh and never receives a
+ * closed image. A failed decode leaves the cache too (the next acquire retries). Only the CPU-side decoded image is
+ * shared: every material still builds and disposes its own GPU `Texture`.
+ * A `TextureHandle` wrapping the image does not retain a cache reference; keep an explicit shared handle until every
+ * such use is finished. GPU-only acquisitions defer PNG pixels; await `prepareProductionTexturePixels` before readback.
+ *
+ * The key carries the decode options as well as the URL. Every map decodes with the same unpack settings today
+ * (`premultiplyAlpha: "none"`, `colorSpaceConversion: "none"`, no flip; the sRGB/linear choice is made per GPU texture),
+ * so the option suffix is constant, but a future option would get its own entry.
+ */
+const SHARED_DECODE_OPTIONS_KEY = "premultiplyAlpha=none;colorSpaceConversion=none;flipY=false";
+const sharedProductionTextureKey = (url: string): string => `${url}#${SHARED_DECODE_OPTIONS_KEY}`;
+
+interface SharedProductionTextureDecode {
+  readonly key: string;
+  readonly promise: Promise<ProductionTextureImage>;
+  refs: number;
+  image?: ProductionTextureImage;
+  step?: ProductionTextureLoadStep;
+  readonly listeners: Set<(step: ProductionTextureLoadStep) => void>;
+  /** Set when the last holder released: the image is (or will be, when it lands) closed. */
+  dead: boolean;
+}
+
+const sharedProductionTextureDecodes = new Map<string, SharedProductionTextureDecode>();
+
+/** Distinct decodes started through the shared cache (diagnostics and tests). */
+export const sharedProductionTextureDecodeStats = { decodes: 0, hits: 0 };
+
+export interface SharedProductionTextureImageHandle {
+  /** GPU-ready image; shared PNG CPU pixels may still need preparation. */
+  readonly image: Promise<ProductionTextureImage>;
+  /** Gives the reference back; idempotent. The last release closes the image. */
+  release(): void;
+}
+
+export function acquireSharedProductionTextureImage(
+  url: string,
+  onStep?: (step: ProductionTextureLoadStep) => void,
+  loader: (url: string, onStep: (step: ProductionTextureLoadStep) => void) => Promise<ProductionTextureImage> =
+    (source, report) => loadProductionPrimitiveBitmapImpl(source, report, true)
+): SharedProductionTextureImageHandle {
+  const key = sharedProductionTextureKey(url);
+  let entry = sharedProductionTextureDecodes.get(key);
+  if (entry) {
+    sharedProductionTextureDecodeStats.hits += 1;
+  } else {
+    sharedProductionTextureDecodeStats.decodes += 1;
+    const listeners = new Set<(step: ProductionTextureLoadStep) => void>();
+    let created: SharedProductionTextureDecode | undefined;
+    const promise = loader(url, (step) => {
+      if (created) created.step = step;
+      for (const listener of listeners) listener(step);
+    }).then((image) => {
+      trackProductionTextureImage(image);
+      created!.image = image;
+      listeners.clear();
+      if (created!.dead) closeSharedProductionTextureImage(image);
+      return image;
+    }, (error: unknown) => {
+      listeners.clear();
+      if (sharedProductionTextureDecodes.get(key) === created) sharedProductionTextureDecodes.delete(key);
+      throw error;
+    });
+    // Holders observe the promise; this keeps a decode whose holders all left from surfacing as unhandled.
+    promise.catch(() => undefined);
+    created = { key, promise, refs: 0, listeners, dead: false };
+    entry = created;
+    sharedProductionTextureDecodes.set(key, entry);
+  }
+  return retainSharedProductionTextureImage(url, entry, onStep);
+}
+
+/** Retain an existing entry without any code path that can start a load. */
+function retainSharedProductionTextureImage(
+  url: string,
+  held: SharedProductionTextureDecode,
+  onStep?: (step: ProductionTextureLoadStep) => void
+): SharedProductionTextureImageHandle {
+  held.refs += 1;
+  if (onStep && !held.image) {
+    held.listeners.add(onStep);
+    if (held.step) onStep(held.step);
+  }
+  let released = false;
+  const image = held.promise.then((value) => {
+    // Defensive: a holder's own reference keeps the entry alive, so its image cannot have been closed.
+    if (held.dead) throw new Error(`shared texture decode for ${url} was released before it was read`);
+    return value;
+  });
+  // A released holder may never observe its derived promise.
+  void image.catch(() => undefined);
+  return {
+    image,
+    release: () => {
+      if (released) return;
+      released = true;
+      if (onStep) held.listeners.delete(onStep);
+      held.refs -= 1;
+      if (held.refs > 0) return;
+      held.dead = true;
+      if (sharedProductionTextureDecodes.get(held.key) === held) sharedProductionTextureDecodes.delete(held.key);
+      if (held.image) closeSharedProductionTextureImage(held.image);
+    }
+  };
+}
+
+/** Tests: forget every shared decode (does not close images still held). */
+export function resetSharedProductionTextureDecodes(): void {
+  sharedProductionTextureDecodes.clear();
+  sharedProductionTextureDecodeStats.decodes = 0;
+  sharedProductionTextureDecodeStats.hits = 0;
+}
+
+
+/** A held decoded map: the image, the transport settlement and how to give it back (idempotent). */
+export interface HeldProductionTextureImage {
+  readonly image: Promise<ProductionTextureImage>;
+  /** Settles once the underlying transport and decode have finished (native queue-slot accounting). */
+  readonly settled: Promise<void>;
+  release(): void;
+}
+
+const sharedPlanSettlements = new Map<string, Promise<void>>();
+
+function abortableImage(image: Promise<ProductionTextureImage>, signal: AbortSignal | undefined, onAbort: () => void): Promise<ProductionTextureImage> {
+  if (!signal) return image;
+  return new Promise<ProductionTextureImage>((resolve, reject) => {
+    const abort = (): void => {
+      onAbort();
+      reject(signal.reason ?? new DOMException("Bitmap texture load aborted", "AbortError"));
+    };
+    if (signal.aborted) { abort(); return; }
+    signal.addEventListener("abort", abort, { once: true });
+    image.then((value) => { signal.removeEventListener("abort", abort); resolve(value); },
+      (error: unknown) => { signal.removeEventListener("abort", abort); reject(error); });
+  });
+}
+
+/**
+ * Native 5.0 x GU47 e6 phase 8: acquire a prepared bitmap. Decodes are shared across materials (refcounted, closed with
+ * the last holder) only inside one request identity from `identifyPreparedBitmapAssetLoad`, which partitions by URL,
+ * credentials, headers, cache mode, integrity and size limit, and only when that identity is reusable. Any other request
+ * loads privately through the same policy-enforcing transport. A holder's `signal` rejects its own view promptly and
+ * gives its reference back; a shared transport finishes for the remaining holders.
+ */
+export async function acquirePreparedProductionTextureImage(
+  plan: PreparedBitmapAssetLoad,
+  signal?: AbortSignal,
+  onStep?: (step: ProductionTextureLoadStep) => void
+): Promise<HeldProductionTextureImage> {
+  const identity = await identifyPreparedBitmapAssetLoad(plan);
+  throwIfTextureAborted(signal);
+  if (!identity.reusable) {
+    onStep?.("fetch");
+    const started = startBitmapAssetLoad(plan, signal);
+    let loaded: ProductionTextureImage | undefined;
+    let released = false;
+    const image = started.result.then((bitmap) => {
+      trackProductionTextureImage(bitmap);
+      loaded = bitmap;
+      if (released) closeSharedProductionTextureImage(bitmap);
+      return bitmap;
+    });
+    void image.catch(() => undefined);
+    return {
+      image,
+      settled: started.settled,
+      release: () => {
+        if (released) return;
+        released = true;
+        if (loaded) closeSharedProductionTextureImage(loaded);
+      }
+    };
+  }
+  const key = `bitmap-plan:${identity.key}`;
+  const cacheKey = sharedProductionTextureKey(key);
+  const handle = acquireSharedProductionTextureImage(key, onStep, (_key, report) => {
+    report("fetch");
+    // Shared: not bound to one holder's signal. Holders cancel their own view below.
+    const started = startBitmapAssetLoad(plan);
+    sharedPlanSettlements.set(cacheKey, started.settled);
+    void started.settled.then(() => {
+      if (sharedPlanSettlements.get(cacheKey) === started.settled) sharedPlanSettlements.delete(cacheKey);
+    });
+    return started.result;
+  });
+  const settled = sharedPlanSettlements.get(cacheKey) ?? Promise.resolve();
+  const image = abortableImage(handle.image, signal, () => handle.release());
+  void image.catch(() => undefined);
+  return { image, settled, release: () => handle.release() };
+}
+
+/** Synchronous readback: prepare a lazy shared PNG first and keep its cache handle held while reading. */
+export function bitmapRgbaPixels(bitmap: ProductionTextureImage): { readonly width: number; readonly height: number; readonly data: Uint8Array } {
+  assertProductionTextureImageLive(bitmap);
+  const decoded = productionTexturePixels.get(bitmap);
   if (decoded) return decoded;
+  // Canvas readback can destroy RGB under low/zero alpha. Never silently use
+  // it for a shared PNG whose exact decode was not awaited by the consumer.
+  if (pendingProductionTexturePixels.has(bitmap)) throw new Error("texture PNG pixels must be prepared before synchronous readback; await prepareProductionTexturePixels(image)");
   const context = textureReadbackContext(bitmap.width, bitmap.height);
   context.drawImage(bitmap, 0, 0);
   const image = context.getImageData(0, 0, bitmap.width, bitmap.height);
@@ -316,6 +710,110 @@ function textureReadbackContext(width: number, height: number): CanvasRenderingC
   return context;
 }
 
+/**
+ * GU47 e6 (g09 texPending handoff): textured upgrades in flight at once. The queue used to run one resource at a time,
+ * so one slow map fetch (tens of seconds on a busy software-WebGL2 runner) held every later resource back, and only the
+ * queue head ever read `pending` (the rest read `none`, like untextured materials), so `texPending` never exceeded 1.
+ */
+export const PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY = 4;
+
+function primitiveTextureIntentFor(
+  intent: ReturnType<typeof createProductionPrimitiveTextureIntent>,
+  qrMaterials: boolean
+): ReturnType<typeof createProductionPrimitiveTextureIntent> | null {
+  const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)].filter(
+    (url): url is string => typeof url === "string" && url.length > 0
+  );
+  // S7 (main GPU run 38144924567): a procedural-only spec (material.fabric,
+  // brushedMetal, blackRubber, frostedGlass: no URL maps) was skipped here, so
+  // flag-on never rasterized it and the frame equalled flag-off bit for bit.
+  // Flag-on, a procedural input alone is enough to run the textured upgrade.
+  const proceduralOnly = qrMaterials && intent.proceduralInputs.length > 0;
+  // threejs-parity ST-01 (L4): live `texture.*` handles carry no URL.
+  const hasTextureRef = Boolean(
+    intent.baseColorRef ?? intent.normalRef ?? intent.roughnessRef ?? intent.metalnessRef ?? intent.occlusionRef ?? intent.emissiveRef
+  ) || Object.keys(intent.extensionRefs ?? {}).length > 0;
+  return urls.length === 0 && !proceduralOnly && !hasTextureRef ? null : intent;
+}
+
+/** The map URLs a resource's textured upgrade loads, as one key (resources with the same key share every decode). */
+function mapSetKey(resource: ProductionRuntimePrimitiveResource, qrMaterials: boolean): string {
+  try {
+    const intent = primitiveTextureIntentFor(createProductionPrimitiveTextureIntent(resource.materialSpec), qrMaterials);
+    if (!intent) return "";
+    const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)]
+      .filter((url): url is string => typeof url === "string" && url.length > 0);
+    return urls.length > 0 ? JSON.stringify([...new Set(urls)].sort()) : "";
+  } catch {
+    // Keep invalid resources in their own group; their worker reports the error.
+    return "";
+  }
+}
+
+/**
+ * GU47 g11 phase 10: queue order. Decodes are shared per URL (e6 phase 8), so N resources over one map set cost one decode,
+ * but in authoring order they sat together in the queue and every worker waited on the same in-flight decode (Bunker Zero:
+ * 12 floor decals, 7 hazard stripes and 12 bullet holes over 4 PNGs decoded one PNG at a time). The queue is now taken
+ * round-robin over map sets in first-appearance order: each distinct set starts as soon as a worker is free, and the
+ * resources that share it follow and resolve from the shared decode. Resources with distinct maps keep their order.
+ */
+export function interleaveByMapSet(queue: readonly ProductionRuntimePrimitiveResource[], qrMaterials: boolean): ProductionRuntimePrimitiveResource[] {
+  const groups = new Map<string, ProductionRuntimePrimitiveResource[]>();
+  for (const resource of queue) {
+    const key = mapSetKey(resource, qrMaterials);
+    // No URL (procedural or live texture handle): its own group, so it keeps its place.
+    const group = key === "" ? undefined : groups.get(key);
+    if (group) group.push(resource);
+    else groups.set(key === "" ? `\u0000${groups.size}` : key, [resource]);
+  }
+  const out: ProductionRuntimePrimitiveResource[] = [];
+  let active = [...groups.values()].map((list) => ({ list, index: 0 }));
+  while (active.length > 0) {
+    const next: typeof active = [];
+    for (const group of active) {
+      out.push(group.list[group.index++]!);
+      if (group.index < group.list.length) next.push(group);
+    }
+    active = next;
+  }
+  return out;
+}
+
+/** Native 5.0 renderer jobs: resources waiting in the mount's own job queue (GU47 g09: the whole queue reads pending). */
+const schedulerQueuedTextures = new WeakSet<ProductionRuntimePrimitiveResource>();
+
+function intentNeedsTexturedUpgrade(intent: PrimitiveTextureIntent, qrMaterials: boolean): boolean {
+  return primitiveTextureIntentFor(intent, qrMaterials) !== null || Object.keys(intent.nativeAssets ?? {}).length > 0;
+}
+
+/**
+ * GU47 e6 (g09 texPending) for the native per-resource job queue: mark a resource `pending` / `queued` while its job
+ * waits for a slot, so diagnostics count the whole queue. Bookkeeping only; the job itself still validates everything.
+ */
+export function noteProductionPrimitiveTextureQueued(
+  resource: ProductionRuntimePrimitiveResource,
+  prepared: PreparedProductionPrimitiveTextureWork | undefined
+): void {
+  try {
+    if (resource.textureStatus !== "none" || resource.material.disposed) return;
+    const intent = prepared?.ok ? prepared.intent : prepared ? undefined : createProductionPrimitiveTextureIntent(resource.materialSpec);
+    if (intent && !intentNeedsTexturedUpgrade(intent, typedGLBActorQrFlags().on("A3D_QR_MATERIALS"))) return;
+    resource.textureStatus = "pending";
+    resource.texturePendingSince = textureClockMs();
+    markTextureStage(resource, "queued");
+    schedulerQueuedTextures.add(resource);
+  } catch { /* The job reports malformed specs when it runs. */ }
+}
+
+/** Undo `noteProductionPrimitiveTextureQueued` for a job that was cancelled before it started. */
+export function clearProductionPrimitiveTextureQueued(resource: ProductionRuntimePrimitiveResource): void {
+  if (!schedulerQueuedTextures.delete(resource)) return;
+  if (resource.textureStatus !== "pending" || resource.textureStage !== "queued") return;
+  resource.textureStatus = "none";
+  delete resource.texturePendingSince;
+  markTextureStage(resource, "cancelled");
+}
+
 export async function upgradeProductionPrimitiveTextures(
   entries: readonly ProductionRuntimePrimitiveEntry[],
   warn: (message: string) => void,
@@ -329,78 +827,135 @@ export async function upgradeProductionPrimitiveTextures(
 ): Promise<void> {
   throwIfTextureAborted(signal);
   const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
-  for (const entry of entries) {
-    for (const resource of entry.resources) {
-      throwIfTextureAborted(signal);
-      const spec = resource.materialSpec;
-      const expectedMaterial = resource.material;
-      const expectedSpec = resource.materialSpec;
-      const isCurrent = (): boolean => {
-        try { return resource.material === expectedMaterial && resource.materialSpec === expectedSpec &&
-          isPreparedProductionPrimitiveTextureWorkCurrent(preparedWork, resource.materialSpec) && (isCurrentGeneration?.() ?? true); }
-        catch { return false; }
-      };
-      if (!isCurrent()) continue;
-      if (resource.textureStatus !== "none") continue;
-      let intent: PrimitiveTextureIntent;
-      try {
-        if (preparedWork && !preparedWork.ok) throw preparedWork.error;
-        intent = preparedWork?.ok ? preparedWork.intent : createProductionPrimitiveTextureIntent(spec);
-      } catch (error) {
-        if (!isCurrent()) continue;
-        if (signal?.aborted) throwIfTextureAborted(signal);
-        resource.textureStatus = "fallback";
-        const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
-        resource.textureWarnings.push(message);
-        warn(message);
-        continue;
+  type QueuedTexture = {
+    readonly resource: ProductionRuntimePrimitiveResource;
+    readonly spec: AuraMaterialSpec | undefined;
+    readonly intent: PrimitiveTextureIntent;
+    readonly isCurrent: () => boolean;
+    started: boolean;
+  };
+  const seen = new Set<ProductionRuntimePrimitiveResource>();
+  const fallback = (resource: ProductionRuntimePrimitiveResource, error: unknown): void => {
+    resource.textureStatus = "fallback";
+    markTextureStage(resource, "failed");
+    const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
+    resource.textureWarnings.push(message);
+    warn(message);
+  };
+  // GU47 e6: collect every resource that needs an upgrade and mark it pending ("queued") before any work starts, so
+  // diagnostics count the whole queue. `entries` can be the compiled scene's live array (compacted / appended while a
+  // pass awaits), so each sweep walks a snapshot and the loop sweeps again for entries added meanwhile.
+  const sweep = (): QueuedTexture[] => {
+    const queued: QueuedTexture[] = [];
+    for (const entry of [...entries]) {
+      for (const resource of entry.resources) {
+        throwIfTextureAborted(signal);
+        if (seen.has(resource)) continue;
+        seen.add(resource);
+        const spec = resource.materialSpec;
+        const expectedMaterial = resource.material;
+        const isCurrent = (): boolean => {
+          try { return resource.material === expectedMaterial && resource.materialSpec === spec &&
+            isPreparedProductionPrimitiveTextureWorkCurrent(preparedWork, resource.materialSpec) && (isCurrentGeneration?.() ?? true); }
+          catch { return false; }
+        };
+        if (expectedMaterial.disposed || !isCurrent()) continue;
+        const schedulerQueued = schedulerQueuedTextures.delete(resource) &&
+          resource.textureStatus === "pending" && resource.textureStage === "queued";
+        if (resource.textureStatus !== "none" && !schedulerQueued) continue;
+        let intent: PrimitiveTextureIntent;
+        try {
+          if (preparedWork && !preparedWork.ok) throw preparedWork.error;
+          intent = preparedWork?.ok ? preparedWork.intent : createProductionPrimitiveTextureIntent(spec);
+        } catch (error) {
+          if (signal?.aborted) throwIfTextureAborted(signal);
+          fallback(resource, error);
+          continue;
+        }
+        for (const procedural of intent.proceduralInputs) {
+          // Flag-on (PRD-04 P2-9): procedural kinds rasterize via generateProceduralMaterialTexture
+          // inside upgradeProductionPrimitiveResource — no rasterizer warning.
+          if (qrMaterials) continue;
+          // Static channel (collectGeneratedCodeWarnings) already warns; record
+          // per-resource without duplicating into runtime warnings.
+          resource.textureWarnings.push(
+            `procedural texture ${procedural} on "${resource.name}" has no rasterizer; recorded only, scalar material retained`
+          );
+        }
+        if (!intentNeedsTexturedUpgrade(intent, qrMaterials)) {
+          if (schedulerQueued) { resource.textureStatus = "none"; delete resource.texturePendingSince; markTextureStage(resource, "cancelled"); }
+          continue;
+        }
+        resource.textureStatus = "pending";
+        if (!schedulerQueued) {
+          resource.texturePendingSince = textureClockMs();
+          markTextureStage(resource, "queued");
+        }
+        queued.push({ resource, spec, intent, isCurrent, started: false });
       }
-      for (const procedural of intent.proceduralInputs) {
-        // Flag-on (PRD-04 P2-9): procedural kinds rasterize via generateProceduralMaterialTexture
-        // inside upgradeProductionPrimitiveResource — no rasterizer warning.
-        if (qrMaterials) continue;
-        // Static channel (collectGeneratedCodeWarnings) already warns; record
-        // per-resource without duplicating into runtime warnings.
-        resource.textureWarnings.push(
-          `procedural texture ${procedural} on "${resource.name}" has no rasterizer; recorded only, scalar material retained`
-        );
+    }
+    return queued;
+  };
+  const revertQueued = (item: QueuedTexture): void => {
+    if (item.started || !item.isCurrent() || item.resource.textureStatus !== "pending") return;
+    item.resource.textureStatus = "none";
+    delete item.resource.texturePendingSince;
+    markTextureStage(item.resource, "cancelled");
+  };
+  const upgradeOne = async (item: QueuedTexture): Promise<void> => {
+    const { resource, spec, intent, isCurrent } = item;
+    item.started = true;
+    throwIfTextureAborted(signal);
+    // A superseded job must not change the status or diagnostics of the
+    // replacement resource, whose own load may already be in flight.
+    if (!isCurrent()) return;
+    if (resource.material.disposed) {
+      resource.textureStatus = "none";
+      delete resource.texturePendingSince;
+      markTextureStage(resource, "cancelled");
+      return;
+    }
+    markTextureStage(resource, "start");
+    let committed = false;
+    try {
+      await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext, signal, isCurrent,
+        preparedWork?.ok ? preparedWork.plans : undefined, nativeMaxTextureSize, preparedWork?.ok ? preparedWork.bitmapPlans : undefined);
+      committed = resource.texturedMaterial !== null;
+    } catch (error) {
+      if (!isCurrent()) return;
+      if (signal?.aborted || resource.material.disposed) {
+        resource.textureStatus = "none";
+        delete resource.texturePendingSince;
+        markTextureStage(resource, "cancelled");
+        if (signal?.aborted) throw error;
+        return;
       }
-      const urls = [intent.baseColorUrl, intent.normalUrl, intent.roughnessUrl, intent.metalnessUrl, intent.occlusionUrl, intent.emissiveUrl, ...Object.values(intent.extensionMaps ?? {}).map((map) => map.url)].filter(
-        (url): url is string => typeof url === "string" && url.length > 0
-      );
-      // S7 (main GPU run 38144924567): a procedural-only spec (material.fabric,
-      // brushedMetal, blackRubber, frostedGlass: no URL maps) was skipped here, so
-      // flag-on never rasterized it and the frame equalled flag-off bit for bit.
-      // Flag-on, a procedural input alone is enough to run the textured upgrade.
-      const proceduralOnly = qrMaterials && intent.proceduralInputs.length > 0;
-      // threejs-parity ST-01 (L4): live `texture.*` handles carry no URL.
-      const hasTextureRef = Boolean(
-        intent.baseColorRef ?? intent.normalRef ?? intent.roughnessRef ?? intent.metalnessRef ?? intent.occlusionRef ?? intent.emissiveRef
-      ) || Object.keys(intent.extensionRefs ?? {}).length > 0;
-      const hasNativeAsset = Object.keys(intent.nativeAssets ?? {}).length > 0;
-      if (urls.length === 0 && !proceduralOnly && !hasTextureRef && !hasNativeAsset) continue;
-      if (!isCurrent()) continue;
-      resource.textureStatus = "pending";
-      let committed = false;
-      try {
-        await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext, signal, isCurrent,
-          preparedWork?.ok ? preparedWork.plans : undefined, nativeMaxTextureSize, preparedWork?.ok ? preparedWork.bitmapPlans : undefined);
-        committed = resource.texturedMaterial !== null;
-      } catch (error) {
-        // A superseded job must not change the status or diagnostics of the
-        // replacement resource, whose own load may already be in flight.
-        if (!isCurrent()) continue;
-        if (signal?.aborted) { resource.textureStatus = "none"; throw error; }
-        resource.textureStatus = "fallback";
-        const message = `textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`;
-        resource.textureWarnings.push(message);
-        warn(message);
+      fallback(resource, error);
+    }
+    // A notification is advisory: it must not turn a completed texture swap
+    // into a failed upgrade if a subscriber misbehaves.
+    if (committed && isCurrent() && !signal?.aborted) {
+      try { onCommitted?.(); } catch { /* The installed material remains valid. */ }
+    }
+  };
+  for (let queued = sweep(); queued.length > 0; queued = sweep()) {
+    // GU47 g11 phase 10: round-robin over map sets, so distinct sets start first and the resources sharing a set
+    // follow and resolve from the shared decode. GU47 e6: up to PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY at once.
+    const byResource = new Map(queued.map((item) => [item.resource, item] as const));
+    const queue = interleaveByMapSet(queued.map((item) => item.resource), qrMaterials).map((resource) => byResource.get(resource)!);
+    let next = 0;
+    let failure: { readonly error: unknown } | undefined;
+    const worker = async (): Promise<void> => {
+      while (next < queue.length && !failure) {
+        const item = queue[next++]!;
+        try { await upgradeOne(item); }
+        catch (error) { failure ??= { error }; }
       }
-      // A notification is advisory: it must not turn a completed texture swap
-      // into a failed upgrade if a subscriber misbehaves.
-      if (committed && isCurrent() && !signal?.aborted) {
-        try { onCommitted?.(); } catch { /* The installed material remains valid. */ }
-      }
+    };
+    await Promise.all(Array.from({ length: Math.min(PRIMITIVE_TEXTURE_UPGRADE_CONCURRENCY, queue.length) }, worker));
+    if (failure) {
+      for (const item of queue) revertQueued(item);
+      throw failure.error;
     }
   }
 }
@@ -444,11 +999,19 @@ export async function upgradeProductionPrimitiveResource(
   if ((extensionEntries.some(([, map]) => map.texCoord === 1) || extensionRefs.some((slot) => spec?.texCoords?.[slot] === 1)) && !resource.geometry.vertexBuffer.format.hasAttribute("uv1")) {
     throw fail(`"${resource.name}" geometry carries no uv1 set requested by extension texture`);
   }
-  const ownedBitmaps: ImageBitmap[] = [];
+  // GU47 e6: maps read back on the CPU (metal-rough composite, scalar atlas) need exact PNG pixels.
+  const pixelUrls = new Set<string>();
+  if (intent.roughnessUrl) pixelUrls.add(intent.roughnessUrl);
+  if (intent.metalnessUrl) pixelUrls.add(intent.metalnessUrl);
+  if (needsScalarAtlas) {
+    for (const [slot, map] of extensionEntries) if (ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) pixelUrls.add(map.url);
+  }
+  // Held decoded maps (shared or private); each is given back with the resource's textures.
+  const ownedImages: HeldProductionTextureImage[] = [];
   const ownedTextures: Texture[] = [];
   const ownedNativeHandles = new Set<TextureHandle>();
   let retired = false;
-  const bitmapLoads = new Map<string, Promise<ImageBitmap>>();
+  const bitmapLoads = new Map<string, Promise<ProductionTextureImage>>();
   const bitmapSettlements: Promise<void>[] = [];
   const bitmapPlans = preparedBitmapPlans ?? prepareBitmapPlans(intent, undefined, nativeMaxTextureSize);
   // threejs-parity ST-01 (L4): resolved `texture.*` handles per slot — their
@@ -466,7 +1029,12 @@ export async function upgradeProductionPrimitiveResource(
     return binding;
   };
   const slotWarn = (w: string): void => { resource.textureWarnings.push(w); };
-  const load = async (slot: NativeTextureSlot, url: string): Promise<ImageBitmap> => {
+  // GU47 e6: the stage lists every unsettled map load with its step (`fetch|decode|pixels <url>`).
+  const loadSteps = new Map<string, string>();
+  const showLoadSteps = (): void => {
+    if (loadSteps.size > 0) markTextureStage(resource, [...loadSteps].map(([url, step]) => `${step} ${url}`).join("; "));
+  };
+  const load = async (slot: NativeTextureSlot, url: string): Promise<ProductionTextureImage> => {
     const plan = bitmapPlans[slot] ?? prepareBitmapAssetLoad(url, undefined, nativeMaxTextureSize);
     // Waiting for identity hashing is part of this resource job. Even if it
     // ignores cancellation, the queue retains the slot until it settles.
@@ -475,20 +1043,36 @@ export async function upgradeProductionPrimitiveResource(
     ensureCurrent();
     let pending = identity.reusable ? bitmapLoads.get(identity.key) : undefined;
     if (!pending) {
-      const started = startBitmapAssetLoad(plan, signal);
-      bitmapSettlements.push(started.settled);
-      pending = started.result.then((bitmap) => {
+      loadSteps.set(url, "fetch");
+      showLoadSteps();
+      const step = (value: string): void => { if (loadSteps.has(url)) { loadSteps.set(url, value); showLoadSteps(); } };
+      // GU47 e6 phase 8 within the native request identity: one decode per reusable identity across materials.
+      const held = await acquirePreparedProductionTextureImage(plan, signal, step);
+      bitmapSettlements.push(held.settled);
+      if (retired || signal?.aborted) {
+        held.release();
+        throwIfTextureAborted(signal);
+        throw fail("texture work was retired before bitmap acquisition completed");
+      }
+      ownedImages.push(held);
+      pending = held.image.then(async (bitmap) => {
         if (retired || signal?.aborted) {
-          try { bitmap.close(); }
-          catch (error) {
-            bitmapSettlements.push(new Promise<void>(() => {}));
-            throw error;
-          }
           throwIfTextureAborted(signal);
           throw fail("texture work was retired before bitmap acquisition completed");
         }
-        ownedBitmaps.push(bitmap);
+        if (pixelUrls.has(url)) {
+          step("pixels");
+          await prepareProductionTexturePixels(bitmap);
+        }
         return bitmap;
+      }).then((bitmap) => {
+        loadSteps.delete(url);
+        showLoadSteps();
+        return bitmap;
+      }, (error: unknown) => {
+        loadSteps.delete(url);
+        showLoadSteps();
+        throw error;
       });
       if (identity.reusable) bitmapLoads.set(identity.key, pending);
     }
@@ -505,8 +1089,8 @@ export async function upgradeProductionPrimitiveResource(
     const failures: unknown[] = [];
     const cleanup = (action: () => void): void => { try { action(); } catch (error) { failures.push(error); } };
     for (const texture of ownedTextures.splice(0)) cleanup(() => texture.dispose());
-    for (const bitmap of ownedBitmaps.splice(0)) {
-      try { bitmap.close(); }
+    for (const held of ownedImages.splice(0)) {
+      try { held.release(); }
       catch (error) {
         // A failed close cannot prove physical release. Retain the resource
         // admission slot rather than reporting an unsafe settlement.
@@ -520,6 +1104,13 @@ export async function upgradeProductionPrimitiveResource(
     if (failures.length) throw new AggregateError(failures, "Primitive texture cleanup failed");
   };
   const abortOwned = (): void => { try { disposeTextures(); } catch { /* Abort must finish retiring all owned resources. */ } };
+  // GU47 e6 phase 8: install the disposer before any map is held, chained after any earlier one, so a resource
+  // disposed while its upgrade is in flight gives its held maps back even if the job never resumes.
+  const previousDisposer = resource.textureDisposer;
+  const disposeUpgradeTextures = (): void => {
+    try { previousDisposer?.(); } finally { disposeTextures(); }
+  };
+  resource.textureDisposer = disposeUpgradeTextures;
   signal?.addEventListener("abort", abortOwned, { once: true });
   if (signal?.aborted) abortOwned();
   const nativeSettlements: Promise<void>[] = [];
@@ -546,6 +1137,9 @@ export async function upgradeProductionPrimitiveResource(
         });
       } catch (error) { return Promise.reject(error); }
     });
+    // GU47 e6 phase 8: every map of the resource (base slots and extension slots) starts loading at once.
+    const extensionLoads = extensionEntries.map(([slot, map]) => load(slot, map.url));
+    const extensionResults = Promise.allSettled(extensionLoads);
     const [baseResults, nativeResults] = await Promise.all([Promise.allSettled([
       intent.baseColorUrl ? load("baseColor", intent.baseColorUrl) : Promise.resolve(undefined),
       intent.normalUrl ? load("normal", intent.normalUrl) : Promise.resolve(undefined),
@@ -554,7 +1148,9 @@ export async function upgradeProductionPrimitiveResource(
       intent.occlusionUrl ? load("occlusion", intent.occlusionUrl) : Promise.resolve(undefined),
       intent.emissiveUrl ? load("emissive", intent.emissiveUrl) : Promise.resolve(undefined)
     ]), Promise.allSettled(nativeLoads)]);
-    const failure = [...baseResults, ...nativeResults].find((result) => result.status === "rejected");
+    const settledExtensions = await extensionResults;
+    markTextureStage(resource, "decoded");
+    const failure = [...baseResults, ...nativeResults, ...settledExtensions].find((result) => result.status === "rejected");
     if (failure?.status === "rejected") throw failure.reason;
     ensureCurrent();
     const [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource] = baseResults.map((result) => result.status === "fulfilled" ? result.value : undefined);
@@ -564,14 +1160,28 @@ export async function upgradeProductionPrimitiveResource(
     }
     const slots: string[] = [];
     const extensionOptions: Record<string, unknown> = {};
-    const extensionSources: ImageBitmap[] = [];
+    // A texture handle can wrap an image already held by a GPU-only resource.
+    // Its synchronous pixel reader needs the same exact PNG preparation.
+    const pixelRefs = [intent.roughnessRef, intent.metalnessRef, ...Object.entries(intent.extensionRefs ?? {})
+      .filter(([slot]) => needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot as RootExtensionTextureSlot))
+      .map(([, ref]) => ref)];
+    for (const ref of pixelRefs) {
+      if (!ref) continue;
+      const source = auraTextureRefTexture(ref)?.source;
+      if (source && isTrackedProductionTextureImage(source) && pendingProductionTexturePixels.has(source)) {
+        markTextureStage(resource, `pixels texture:${ref.id}`);
+        await prepareProductionTexturePixels(source);
+        ensureCurrent();
+      }
+    }
+    const extensionSources: ProductionTextureImage[] = [];
     let nativeScalarAtlasTexture: Texture | undefined;
     const atlasPixels: Record<string, { readonly width: number; readonly height: number; readonly data: Uint8Array | Uint8ClampedArray }> = {};
-    for (const [slot, map] of extensionEntries) {
-      const source = await load(slot, map.url);
+    for (const [index, [slot, map]] of extensionEntries.entries()) {
+      const source = await extensionLoads[index]!;
       ensureCurrent();
       extensionSources.push(source);
-      if (needsScalarAtlas && (["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"] as readonly string[]).includes(slot)) {
+      if (needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) {
         Object.assign(atlasPixels, { [slot]: bitmapRgbaPixels(source) });
       }
       extensionOptions[`${slot}Texture`] = own(new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` }));
@@ -584,7 +1194,7 @@ export async function upgradeProductionPrimitiveResource(
     for (const slot of nativeExtensionSlots) resolvedExtensionRefs[slot] = nativeHandles[slot];
     for (const [slot, ref] of Object.entries(resolvedExtensionRefs) as [RootExtensionTextureSlot, AuraTextureRef][]) {
       const binding = refBindingFor(`ext:${slot}`, ref)!;
-      if (needsScalarAtlas && (["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"] as readonly string[]).includes(slot)) {
+      if (needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) {
         const pixels = auraTextureRefPixels(ref);
         if (!pixels) throw fail(`"${resource.name}" extension slot ${slot}Map texture handle has no CPU-readable pixels for the scalar atlas`);
         Object.assign(atlasPixels, { [slot]: pixels });
@@ -595,6 +1205,7 @@ export async function upgradeProductionPrimitiveResource(
       slots.push(slot);
     }
     if (needsScalarAtlas) {
+      markTextureStage(resource, "scalar-atlas import");
       const { createExtensionScalarAtlas } = await import("@aura3d/rendering/extension-scalar-atlas");
       ensureCurrent();
       const atlas = createExtensionScalarAtlas(atlasPixels, maxTextureSize);
@@ -628,7 +1239,7 @@ export async function upgradeProductionPrimitiveResource(
       const base = roughnessSource ?? metalnessSource;
       const refSize = roughnessRefPixels ?? metalnessRefPixels;
       const size = base ? { width: base.width, height: base.height } : { width: refSize!.width, height: refSize!.height };
-      const readPixels = (bitmap: ImageBitmap | undefined): Uint8Array | undefined => {
+      const readPixels = (bitmap: ProductionTextureImage | undefined): Uint8Array | undefined => {
         if (!bitmap) return undefined;
         const decoded = bitmapRgbaPixels(bitmap);
         if (decoded.width !== size.width || decoded.height !== size.height) {
@@ -732,7 +1343,7 @@ export async function upgradeProductionPrimitiveResource(
     // M2 streaming table: resident bytes from the decoded sources (base +
     // full mip-chain estimate) with the chain keyed off the largest source.
     const loadedDims = [baseColorSource, normalSource, roughnessSource, metalnessSource, occlusionSource, emissiveSource, ...extensionSources]
-      .filter((source): source is ImageBitmap => source !== undefined)
+      .filter((source): source is ProductionTextureImage => source !== undefined)
       .map((source) => ({ width: source.width, height: source.height }));
     const loadedBaseBytes = loadedDims.reduce((total, dims) => total + dims.width * dims.height * 4, 0);
     const largestDims = loadedDims.reduce(
@@ -860,12 +1471,17 @@ export async function upgradeProductionPrimitiveResource(
       throw fail("primitive material changed or was disposed while texture upgrade was pending");
     }
     resource.texturedMaterial = upgradedMaterial;
-    resource.textureDisposer = disposeTextures;
+    resource.textureDisposer = disposeUpgradeTextures;
     resource.textureStatus = "textured";
+    markTextureStage(resource, "done");
     resource.textureSlots = slots;
     resource.textureBytes = textureBytes;
     resource.textureMipBytes = textureMipBytes;
   } catch (error) {
+    if (resource.textureDisposer === disposeUpgradeTextures) {
+      if (previousDisposer) resource.textureDisposer = previousDisposer;
+      else delete resource.textureDisposer;
+    }
     try { disposeTextures(); }
     catch (cleanupError) { throw new AggregateError([error, cleanupError], "Primitive texture upgrade and cleanup failed"); }
     throw error;
@@ -1287,6 +1903,9 @@ export function resolveAuraTextureRef(ref: AuraTextureRef): AuraTextureRefBindin
       `texture handle "${ref.id}" has no backing device texture (disposed or never uploaded)`
     );
   }
+  if (texture.source && productionTextureImageStates.get(texture.source as ProductionTextureImage) === "released") {
+    throw new AuraRuntimeError("unsupported-texture", `texture handle "${ref.id}" references a released shared texture image`);
+  }
   return { texture, sampler: auraTextureRefSampler(ref), transform: auraTextureRefTransform(ref) };
 }
 
@@ -1313,7 +1932,7 @@ export function auraTextureRefPixels(
   }
   const source = texture.source;
   if (!source) return undefined;
-  if (typeof ImageBitmap !== "undefined" && source instanceof ImageBitmap) {
+  if (isTrackedProductionTextureImage(source) || (typeof ImageBitmap !== "undefined" && source instanceof ImageBitmap)) {
     return bitmapRgbaPixels(source);
   }
   // Canvas sources can belong to either the DOM or a worker.

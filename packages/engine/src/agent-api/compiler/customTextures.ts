@@ -15,7 +15,8 @@ import type { AssetRequestOptions } from "@aura3d/assets/browser";
 import type { AuraAssetRef, AuraCustomMaterialSpec, AuraMaterialSpec, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
 import { sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
 import { customTextureUniformNames, customUniformNameFor } from "./customMaterial.js";
-import { matchesPreparedBitmapAssetLoad, prepareBitmapAssetLoad, startBitmapAssetLoad, type PreparedBitmapAssetLoad } from "./bitmapAsset.js";
+import { matchesPreparedBitmapAssetLoad, prepareBitmapAssetLoad, type PreparedBitmapAssetLoad } from "./bitmapAsset.js";
+import { acquirePreparedProductionTextureImage, type ProductionTextureImage } from "./textures.js";
 
 // A resource can outlive its material. Track the installed material identity so
 // a replacement is eligible for its own pass and an old abort cannot clear it.
@@ -25,7 +26,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 const isAssetTextureRef = (value: unknown): value is AuraAssetRef<"texture"> =>
   isRecord(value) && value.kind === "aura-asset-ref" && value.type === "texture";
 
-type BitmapLoader = (url: string, signal?: AbortSignal) => Promise<ImageBitmap>;
+type BitmapLoader = (url: string, signal?: AbortSignal) => Promise<ProductionTextureImage>;
+
+/** A loaded image plus how to give it back: `close()` for an injected loader, the shared-decode release otherwise. */
+type HeldImage = { readonly image: ProductionTextureImage; release(): void };
+type StartedImage = { readonly held: Promise<HeldImage>; readonly settled: Promise<void>; consumed: boolean };
 type CustomTextureResource = Pick<ProductionRuntimePrimitiveResource, "name" | "material" | "materialSpec" | "textureWarnings" | "textureDisposer">;
 
 export interface ModelCustomMaterialTextureWork {
@@ -103,14 +108,14 @@ async function bindResource(
     return;
   }
   const ownedTextures: Texture[] = [];
-  const ownedBitmaps: ImageBitmap[] = [];
+  const ownedImages: HeldImage[] = [];
   let cleanupUncertain = false;
   const disposeOwned = (): void => {
     const textures = ownedTextures.splice(0);
-    const bitmaps = ownedBitmaps.splice(0);
+    const images = ownedImages.splice(0);
     let failure: unknown;
     for (const texture of textures) { try { texture.dispose(); } catch (error) { cleanupUncertain = true; failure ??= error; } }
-    for (const bitmap of bitmaps) { try { bitmap.close(); } catch (error) { cleanupUncertain = true; failure ??= error; } }
+    for (const held of images) { try { held.release(); } catch (error) { cleanupUncertain = true; failure ??= error; } }
     if (failure !== undefined) throw failure;
   };
   const active = (): boolean => {
@@ -126,10 +131,10 @@ async function bindResource(
     resource.textureDisposer = () => { try { previous?.(); } finally { disposeOwned(); } };
     disposerAttached = true;
   };
-  const discard = (texture: Texture | undefined, bitmap: ImageBitmap | undefined, retained: boolean): void => {
+  const discard = (texture: Texture | undefined, bitmap: HeldImage | undefined, retained: boolean): void => {
     if (retained) {
       const textureIndex = texture ? ownedTextures.indexOf(texture) : -1;
-      const bitmapIndex = bitmap ? ownedBitmaps.indexOf(bitmap) : -1;
+      const bitmapIndex = bitmap ? ownedImages.indexOf(bitmap) : -1;
       // If disposal already drained the arrays, the resource was already freed.
       let failure: unknown;
       if (textureIndex >= 0) {
@@ -137,17 +142,56 @@ async function bindResource(
         try { texture!.dispose(); } catch (error) { cleanupUncertain = true; failure ??= error; }
       }
       if (bitmapIndex >= 0) {
-        ownedBitmaps.splice(bitmapIndex, 1);
-        try { bitmap!.close(); } catch (error) { cleanupUncertain = true; failure ??= error; }
+        ownedImages.splice(bitmapIndex, 1);
+        try { bitmap!.release(); } catch (error) { cleanupUncertain = true; failure ??= error; }
       }
       if (failure !== undefined) throw failure;
     } else {
       let failure: unknown;
       try { texture?.dispose(); } catch (error) { cleanupUncertain = true; failure ??= error; }
-      try { bitmap?.close(); } catch (error) { cleanupUncertain = true; failure ??= error; }
+      try { bitmap?.release(); } catch (error) { cleanupUncertain = true; failure ??= error; }
       if (failure !== undefined) throw failure;
     }
   };
+  // GU47 e6 phase 8: every asset texture of the material starts loading at once. Only uniforms the loop below
+  // would load anyway are started (same plan / url checks); results are consumed in uniform order with the same
+  // per-step validation, and an unconsumed result is given back.
+  const started = new Map<string, StartedImage>();
+  const startLoad = (value: AuraAssetRef<"texture">, slot: PreparedCustomSlot | undefined): StartedImage | undefined => {
+    if (loadBitmap) {
+      if (!value.url) return undefined;
+      const url = value.url;
+      const held = Promise.resolve().then(() => signal ? loadBitmap(url, signal) : loadBitmap(url)).then((image): HeldImage => {
+        let released = false;
+        return { image, release: () => { if (released) return; released = true; image.close(); } };
+      });
+      void held.catch(() => undefined);
+      return { held, settled: held.then(() => undefined, () => undefined), consumed: false };
+    }
+    if (slot?.kind !== "ready" || slot.asset !== value || !matchesPreparedBitmapAssetLoad(slot.plan, value)) return undefined;
+    const acquired = acquirePreparedProductionTextureImage(slot.plan, signal);
+    const held = acquired.then(async (handle): Promise<HeldImage> => {
+      try { return { image: await handle.image, release: () => handle.release() }; }
+      catch (error) { handle.release(); throw error; }
+    });
+    void held.catch(() => undefined);
+    return { held, settled: acquired.then((handle) => handle.settled, () => undefined), consumed: false };
+  };
+  const dropStarted = (entry: StartedImage): void => {
+    void entry.held.then((held) => {
+      try { held.release(); } catch { cleanupUncertain = true; }
+    }, () => undefined);
+  };
+  if (active()) {
+    for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
+      const value = isRecord(uniform) ? uniform.value : undefined;
+      if (!isAssetTextureRef(value)) continue;
+      try {
+        const entry = startLoad(value, preparedWork?.slots.get(publicName));
+        if (entry) started.set(publicName, entry);
+      } catch { /* The uniform's own turn below reports the failure. */ }
+    }
+  }
   const run = async (): Promise<void> => {
     for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
       if (!active()) { disposeOwned(); return; }
@@ -169,21 +213,30 @@ async function bindResource(
         warn(sanitizeDiagnosticText(`[CUSTOM_TEXTURE_ASSET_URL_MISSING] "${resource.name}" uniform "${publicName}": asset "${value.id}" has no url; sampling the white fallback`));
         continue;
       }
-      let bitmap: ImageBitmap | undefined;
+      let bitmap: HeldImage | undefined;
       let texture: Texture | undefined;
       let retained = false;
       let settled: Promise<void> | undefined;
+      const pre = started.get(publicName);
+      if (pre) { pre.consumed = true; settled = pre.settled; }
       try {
         if (loadBitmap) {
           // Preserve the legacy injected URL loader and its optional signal.
-          bitmap = signal ? await loadBitmap(value.url, signal) : await loadBitmap(value.url);
+          const entry = pre ?? startLoad(value, slot);
+          if (!entry) throw new Error("Custom texture asset has no url");
+          settled = entry.settled;
+          bitmap = await entry.held;
         } else {
           if (slot?.kind === "failed") throw slot.error;
           if (!slot || slot.kind !== "ready") throw new Error("Custom texture plan is unavailable");
-          if (!planCurrent()) throw new Error("Custom texture asset changed after preparation");
-          const started = startBitmapAssetLoad(slot.plan, signal);
-          settled = started.settled;
-          bitmap = await started.result;
+          if (!planCurrent()) {
+            if (pre) dropStarted(pre);
+            throw new Error("Custom texture asset changed after preparation");
+          }
+          const entry = pre ?? startLoad(value, slot);
+          if (!entry) throw new Error("Custom texture asset changed after preparation");
+          settled = entry.settled;
+          bitmap = await entry.held;
         }
         if (!active()) {
           const stale = bitmap; bitmap = undefined;
@@ -197,7 +250,7 @@ async function bindResource(
           continue;
         }
         if (!planCurrent()) throw new Error("Custom texture asset changed after preparation");
-        texture = new Texture({ width: bitmap.width, height: bitmap.height, source: bitmap, colorSpace: "linear", label: `${resource.name}-${publicName}` });
+        texture = new Texture({ width: bitmap.image.width, height: bitmap.image.height, source: bitmap.image, colorSpace: "linear", label: `${resource.name}-${publicName}` });
         if (!active()) {
           const staleTexture = texture, staleBitmap = bitmap; texture = undefined; bitmap = undefined;
           discard(staleTexture, staleBitmap, false);
@@ -210,7 +263,7 @@ async function bindResource(
           continue;
         }
         if (!planCurrent()) throw new Error("Custom texture asset changed after preparation");
-        ownedBitmaps.push(bitmap);
+        ownedImages.push(bitmap);
         ownedTextures.push(texture);
         retained = true;
         // Install ownership before publishing so reentrant disposal cannot
@@ -249,6 +302,11 @@ async function bindResource(
   };
   try { await run(); }
   finally {
+    // Results the loop never reached (early return, replaced uniform) are given back; their transports
+    // still hold the renderer's queue slot until they settle.
+    const unconsumed = [...started.values()].filter((entry) => !entry.consumed);
+    for (const entry of unconsumed) dropStarted(entry);
+    await Promise.all(unconsumed.map((entry) => entry.settled));
     // A thrown dispose/close leaves resource retirement unproven. The queue
     // must not reuse this slot as if the underlying work had fully settled.
     if (cleanupUncertain) await new Promise<void>(() => undefined);
@@ -309,16 +367,24 @@ export async function upgradeCustomMaterialTextures(
   isCurrentGeneration?: () => boolean,
   prepared?: PreparedCustomMaterialTextureWork
 ): Promise<void> {
-  for (const entry of entries) {
-    for (const resource of entry.resources) {
-      if (signal?.aborted) return;
-      const material = resource.material;
-      if (passed.get(resource) === material) continue;
-      passed.set(resource, material);
-      await bindResource(resource, warn, loadBitmap, signal, onCommitted, isCurrentGeneration, prepared);
-      if (signal?.aborted) {
-        if (passed.get(resource) === material) passed.delete(resource);
-        return;
+  // f2cf579ee: `entries` can be the compiled scene's live array: `removeSubtree` compacts it in place and `addSubtree`
+  // appends to it while this pass awaits an image. A live `for...of` then skips whichever entry shifted into a visited
+  // slot, so sweep a snapshot and sweep again while a sweep still found an unvisited resource (`passed` keeps each
+  // resource / material generation to one bind).
+  for (let found = true; found;) {
+    found = false;
+    for (const entry of [...entries]) {
+      for (const resource of entry.resources) {
+        if (signal?.aborted) return;
+        const material = resource.material;
+        if (passed.get(resource) === material) continue;
+        passed.set(resource, material);
+        found = true;
+        await bindResource(resource, warn, loadBitmap, signal, onCommitted, isCurrentGeneration, prepared);
+        if (signal?.aborted) {
+          if (passed.get(resource) === material) passed.delete(resource);
+          return;
+        }
       }
     }
   }

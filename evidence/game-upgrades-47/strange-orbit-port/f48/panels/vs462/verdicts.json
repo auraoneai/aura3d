@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The vehicle and rider look a little washed out and over-bright compared with the scene. The orange ground plane in the foreground is flat and featureless. The track posts look like loose sticks, and some read as floating or not attached to the ground. The mood is somewhat murky and dark overall. Still, it has a clear sense of depth: mountains, a lake, the planet and the track set up a readable play area.",
+     "Bike and rider look slightly washed out and over-bright; the foreground ground plane is flat and smeary with a blotchy reflection on the left; the mountain silhouettes are low-poly and flat-shaded; mild haze lowers contrast in the midground. Even so, the scene has layered depth (planet, ridge line, track on pylons, water band), a cohesive teal-and-orange palette and better atmosphere.",
+     "Bike and rider look somewhat washed out and glowy with low contrast. The large flat orange foreground plane is bland and has an odd reflective smear. The player sits off the track on an empty plane. The mountains are flat and low-poly. Overall the frame is slightly muddy, but it has good depth with layered planet, track, mountains and sky."
+    ]
+   }
+  ]
+ }
+]

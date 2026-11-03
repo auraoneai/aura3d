@@ -108,6 +108,15 @@ export function lutFields(g: VenueLook["grade"]): { lut?: string; lutIntensity: 
   return url ? { lut: url, lutIntensity: g.lutIntensity } : { lutIntensity: 0 };
 }
 
+/**
+ * GU47 phase 7: SSR strength per boot venue. The S3 trace has no per-pixel roughness, so the clearcoated acrylic courts
+ * (hard, desert, beach, moon; surfaces.ts) take a clear reflection and the matte turf and clay only a faint one.
+ */
+export function ssrFor(venueId?: string | null): { intensity: number; maxDistance: number } {
+  const key = venueId ?? "hard";
+  return key === "grass" || key === "clay" ? { intensity: 0.3, maxDistance: 14 } : { intensity: 0.55, maxDistance: 20 };
+}
+
 /** Runtime post effect names (E-C `app.post.setEffect`). */
 export const POST_EFFECT = { bloom: "bloom", grade: "colorGrade", vignette: "vignette", volumetricFog: "volumetricFog", depthOfField: "depthOfField" } as const;
 
@@ -128,6 +137,12 @@ export function postEffects(venueId?: string | null, rig: Pick<BroadcastCameraRi
     // TT-P3: the venue's authored .cube on top of the contrast / saturation / white-balance grade.
     effects.colorGrade({ contrast: g.contrast, saturation: g.saturation, temperature: g.temperature, tint: g.tint, ...lutFields(g) }),
     effects.contactShadows({ length: 0.35, thickness: 0.06, intensity: 0.9, lights: "sun" }),
+    // GU47 phase 4 (rubric shadows / ibl_reflections): GTAO grounds the stands, bench, chair and boards (High+ tiers), and the
+    // screen-space reflection stage traces the courts. GU47 phase 7: `roughness` is the frame-wide surface roughness the S3
+    // trace assumes (full strength at 0.35 or less, zero at 0.5; lane e6 section 1), so 0.5 zeroed every reflection
+    // (SSR_ROUGHNESS_GATED). 0.3 lets it run; the venue row sets how strong it reads (sealed acrylic vs turf and clay).
+    effects.ambientOcclusion({ intensity: 0.9, radius: 0.9, falloff: 1 }),
+    effects.screenSpaceReflections({ ...ssrFor(venueId), roughness: 0.3, thickness: 0.3 }),
     // TT-P2: long-lens DOF (the engine's tier resolution runs it at High / Ultra only; no stage on Medium or Low).
     effects.depthOfField({ focusDistance: dof.focusDistance, fStop: dof.fStop, focalLength: dof.focalLength })
   ];

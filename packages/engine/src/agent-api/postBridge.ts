@@ -417,7 +417,17 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
         ? plan.pixelBackedPassNames.map((name) => `POSTPROCESS_PASS_NOT_GPU:${name}`)
         : []),
       // §6.9: runtime record-and-skip reasons from the renderer / v2 drivers.
-      ...(authoredContext?.flags.post ? scopedViews ? [...new Set(scopedViews.flatMap(view => view.skipped))] : postSkippedReasons() : [])
+      // Selective bloom fallbacks are keyed per canvas (4.7.x) and reported
+      // even on the legacy post route; scoped per-view reasons (native 5.0)
+      // stay authoritative for everything else when the post flag is on.
+      ...(authoredContext?.flags.post
+        ? scopedViews
+          ? [...new Set([
+              ...scopedViews.flatMap(view => view.skipped),
+              ...postSkippedReasons(app.canvas).filter((reason) => reason.startsWith("POST_SELECTIVE_BLOOM_UNAVAILABLE:"))
+            ])]
+          : postSkippedReasons(app.canvas)
+        : postSkippedReasons(app.canvas).filter((reason) => reason.startsWith("POST_SELECTIVE_BLOOM_UNAVAILABLE:")))
     ],
     ...(authoredContext?.flags.post ? { stagesRan: scopedViews ? scopedViews.flatMap(view => view.stagesRan) : postStagesRan() } : {}),
     ...(scopedViews ? { views: scopedViews } : {}),
@@ -1109,19 +1119,22 @@ function dofTiltShiftOf(node: AuraEffectNode): AuraDofTiltShiftLocal | undefined
 
 /**
  * GU47 E-C (EC-7): every material `bloom` weight in the scene. `bloom` is
- * E-D's new `AuraMaterialSpec` field (0..2, default 1), read structurally
- * until that merges.
+ * E-D's `AuraMaterialSpec` field (0..2, default 1). Include LOD materials,
+ * whose effective material can differ from the primitive's parent.
  */
 function materialBloomWeights(nodes: readonly AuraSceneNode[]): unknown[] {
   const weights: unknown[] = [];
   for (const node of nodes) {
     const material = (node as { readonly material?: unknown }).material;
     if (material && typeof material === "object" && "bloom" in material) weights.push((material as { readonly bloom?: unknown }).bloom);
+    if (node.kind === "primitive") {
+      for (const level of node.lod?.levels ?? []) weights.push(level.material?.bloom);
+    }
   }
   return weights;
 }
 
-/** Mirrors `NativeBloomPyramid.selectiveBloomActive`: a weight that clamps to anything but 1 needs the prefilter's alpha weight. */
+/** Mirrors `NativeBloomPyramid.selectiveBloomActive`. */
 function selectiveBloomActive(weights: readonly unknown[]): boolean {
   return weights.some((weight) => typeof weight === "number" && Number.isFinite(weight) && Math.min(2, Math.max(0, weight)) !== 1);
 }
@@ -1380,24 +1393,14 @@ export function createRootPostPipeline(
 
   const bloom = bloomNode ? mapBloomOptionsV2(bloomNode, tierSettings.bloomMipLevels) : undefined;
   if (bloom) diagnostics.push(...bloom.diagnostics);
-  // GU47 E-C (EC-7): a material `bloom` weight other than 1 asks for the
-  // prefilter's alpha weight. Not stamped (GU47 phase 2): no forward program
-  // writes the weight, and on the generated path every opaque pixel's HDR
-  // alpha already carries the S2 indirect-fraction tag (2 + f_ind,
-  // `post/chunks/indirectFraction.glsl.ts`), which `auraBloomWeight` clamps
-  // to 2, doubling the bloom of every surface instead of masking one (receipt
-  // effects-selective-bloom: wall at weight 0 bloomed by 157). Until the
-  // forward write and a non-colliding encoding land, bloom stays unweighted
-  // and the scene is told so.
+  // This is only a request. The renderer checks the actual target, programs,
+  // producers and pre-bloom stages and reports an unavailable reason per frame.
   const selectiveBloomRequested = Boolean(bloom) && selectiveBloomActive(materialBloomWeights(nodes));
-  if (selectiveBloomRequested) {
-    diagnostics.push({
-      code: "POST_SELECTIVE_BLOOM_UNAVAILABLE",
-      effect: "bloom",
-      field: "material.bloom",
-      message: "material bloom weights are ignored: the forward pass does not write the weight yet, so bloom applies to every surface over the threshold."
-    });
-  }
+  const unsupportedBloomSource = Boolean(bloom) && nodes.some((node) => {
+    if (node.kind === "primitive" || node.kind === "model") return false;
+    const material = (node as { readonly material?: { readonly bloom?: unknown } }).material;
+    return selectiveBloomActive([material?.bloom]);
+  });
 
   const exposure = (effectiveOutput?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
   const toneMapping = effectiveOutput?.toneMapping ?? "aces";
@@ -1453,8 +1456,12 @@ export function createRootPostPipeline(
     // prd03-taa 1-px line moved ~1 px and spread over five rows, promote run
     // 38203056326) and armed the S12 RCAS sharpen on every frame.
     renderScale: 1,
-    // `selective: true` is not stamped (see POST_SELECTIVE_BLOOM_UNAVAILABLE above).
-    ...(bloom ? { bloom: bloom.options } : {}),
+    // A scene without a selective request keeps the exact bloom bag.
+    ...(bloom ? { bloom: selectiveBloomRequested || unsupportedBloomSource ? {
+      ...bloom.options,
+      ...(selectiveBloomRequested ? { selectiveRequested: true } : {}),
+      ...(unsupportedBloomSource ? { selectiveUnsupportedSource: true } : {})
+    } : bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
     outputColorSpace,

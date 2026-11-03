@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey haze washes out the left third of the frame; the mountain ring reads like a flat painted backdrop with a hard seam where the teal band meets the ground; overall contrast is a bit muddy; the bike looks slightly overexposed and floaty.",
+     "A grey haze bank washes out the left third of the frame. The overall contrast is a bit low and muddy, and the player's white bike is slightly overexposed and blooms into the background. The ground reflection is smeary. On the plus side, the scene has much richer depth: a mountain silhouette, the track on pylons, water, and a backlit planet.",
+     "Soft, slightly muddy image with haze on the left edge; lighting on the ground plane is fairly flat; the mountain ridge reads as a flat cutout backdrop; the reflections on the ground look smeary."
+    ]
+   },
+   {
+    "variant": "neutral-env",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks identical to the default A frame: haze on the left side, a backdrop seam at the teal band, mildly muddy contrast.",
+     "Identical to default-B: haze washes out the left side, overall contrast is somewhat low and muddy, and the player's white bike is slightly blown out. The layered environment gives it better depth and composition.",
+     "Looks almost identical to default-A: soft, mildly muddy, with haze on the left, flat lighting on the ground, and a cutout-looking mountain backdrop."
+    ]
+   }
+  ]
+ }
+]

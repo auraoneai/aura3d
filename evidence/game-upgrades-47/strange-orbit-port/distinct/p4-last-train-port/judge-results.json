@@ -1,0 +1,721 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:20:10.925Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "strange-orbit-port--default--settle-25s",
+      "strange-orbit-port--default--settle-60s"
+    ],
+    "framesB": [
+      "last-train-port--default--settle-25s",
+      "last-train-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.691,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 37,
+    "sameGameYes": 11,
+    "differentRate": 0.7708333333333334,
+    "ci95": [
+      0.6346046409154885,
+      0.8669230897101096
+    ],
+    "confidentDifferent": 11,
+    "confidentDifferentRate": 0.22916666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.691,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Different settings: daylight cobbled town with a tram versus a night alien planet with a motorbike and astronaut",
+        "Different art styles: painterly textured buildings and peg figures versus smooth glossy vehicle and glowing sky",
+        "Only the soft blur and vignette look the same, which suggests a shared engine rather than a shared game"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "A is a flat-shaded low-poly space scene with a giant moon and a purple starfield, while B is a textured, painterly European town",
+        "different vehicle and character styles: a glossy astronaut sidecar bike versus a detailed red tram with peg-like pedestrians",
+        "both have soft blur and a hazy look, but their scenery and material styles differ"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Tram in a European town versus an astronaut on a space bike on an alien planet",
+        "Different art styles: textured storybook buildings and peg figures versus a hazy purple space scene",
+        "Different lighting and palette: warm dusk versus a night sky with a large moon"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft, painterly rendering and hazy vignette",
+        "similar elevated track with posts and glowing dots/lights",
+        "both show a vehicle in a stylized, themed world"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a European town with a tram on rails, Image B is an astronaut on a space motorbike",
+        "Different settings and palettes: warm dusk cobblestone vs purple starry alien terrain",
+        "Different art styles: painterly textured buildings vs smooth low-poly terrain"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: tram on rails in a cobblestone European town at dusk",
+        "Image B: astronaut on a sidecar motorbike on a red alien planet with a moon and purple starry sky",
+        "Both share a soft painterly look with low-poly shapes and a blurred, vignetted camera"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a sci-fi astronaut motorbike on an alien night world with a huge moon and purple nebula sky",
+        "Image B is a European town with a red tram on tracks, cobblestones and a warm dusk sky",
+        "Different vehicles, scenery and palettes, with no shared HUD or asset style"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft, hazy post-processing and color grade",
+        "similar simple low-poly props with painterly textures",
+        "elevated ribbon-like track in both backgrounds"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft, hazy post-processing with edge blur and muted tones",
+        "elevated winding track with support posts in both scenes",
+        "low-poly primitive props mixed with painterly textured assets"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different themes: Victorian tram town vs. alien-planet motorbike",
+        "different vehicle and character styles: tram with a textured painterly town vs. glossy white astronaut bike",
+        "different palettes and lighting: warm dusk with cobblestones vs. purple night sky with a giant moon"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Different settings: European tram town at dusk vs. alien moonlit space scene",
+        "Different vehicles and characters: rail tram with peg figures vs. astronaut on a sidecar bike",
+        "Different materials and palette: painted textured buildings and cobblestones vs. glossy, smooth purple-and-orange terrain"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different art styles: low-poly alien terrain vs painterly textured buildings",
+        "different vehicles and themes: astronaut sidecar bike vs red tram on rails",
+        "similar soft haze and vignette, likely just the shared engine"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a daytime European town with a tram and brick-textured buildings, Image B is an alien night scene with an astronaut on a sidecar bike",
+        "Different palettes and lighting: warm sunset pastels against purple space and a red-orange ground",
+        "Different vehicles and tracks: rail tram on a track against a hovering bike on an elevated winding track"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different vehicle types: astronaut space bike vs. red tram on rails",
+        "alien moonlit sci-fi planet vs. warm European town at dusk",
+        "different rendering styles: smooth low-poly vs. painterly textured buildings"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Realistic painterly textured town and tram versus smooth stylized sci-fi bike and alien terrain",
+        "Different scenery and palette: warm dusk cobblestone street versus purple starfield with a giant moon",
+        "Different vehicle types and camera context: rail tram with peg figures versus astronaut on a hover bike on an elevated track"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a space setting with an astronaut on a sidecar bike, a giant moon and a purple starry sky",
+        "Image B is a daytime European town with a red tram, cobblestones and peg-doll pedestrians",
+        "Both frames share a soft, hazy, painterly rendering look, which leaves some chance of one game with varied themed tracks"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: sci-fi astronaut on a hover-bike, purple nebula sky, giant moon, floating track",
+        "Image B: European town with a red tram on rails, cobblestones, warm dusk sky",
+        "Different scenery, vehicles and palettes, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "both show a winding elevated track/rail line receding into the distance",
+        "similar soft, painterly low-poly rendering with hazy vignette and warm color grading",
+        "simple primitive-shaped props such as the cones, spheres and pegs, and the rock and pole shapes"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "astronaut motorbike on a sci-fi moonlit planet versus a tram in a European street",
+        "different art direction: dark purple low-poly alien scenery versus painterly textured buildings and cobblestones",
+        "different vehicle, track and prop styles (glowing dotted ribbon track versus rails, capsule pedestrians, cone trees)"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: European town with a tram on cobblestones; Image B: alien planet with a space-suited rider on a sci-fi motorcycle",
+        "Different palettes and lighting: warm sunset pastels vs. purple starry sky with a red-orange desert",
+        "Different scenery styles: detailed painterly buildings vs. low-poly dark mountains and a floating track"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "painterly town and tram scene versus smooth stylized space-moon scene",
+        "different vehicle and track types (rail tram vs. astronaut sidecar bike on dotted ribbon track)",
+        "different palettes and lighting (warm dusk pastels vs. purple night with large moon)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a European town with a red tram on cobblestones; Image B is an alien planet with an astronaut on a sidecar bike",
+        "Different palettes: warm dusk pastels vs purple starry space with a large moon",
+        "Different scenery and vehicles: peg-figure pedestrians and a tram line vs a rolling elevated track with dotted lights"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "matching edge blur and soft warm color grading",
+        "low-poly primitive props (cone trees, peg figures, rocks) in both",
+        "elevated winding track in the distance in both"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: sci-fi alien night scene with astronaut on a hover-bike and a giant moon",
+        "Image B: daytime European town with a tram on rails and peg-like pedestrians",
+        "Different palettes and scenery: purple/red space vs. warm sunset cobblestone town"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 6,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft hazy post-processing and vignette",
+        "detailed vehicle models against simple low-poly scenery",
+        "elevated rail/track with support posts in both"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 6,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different vehicle types and themes: astronaut motorbike vs. red tram",
+        "A is a dark alien night scene with a nebula sky, B is a warm daytime town",
+        "similar soft, hazy rendering, but the asset styles differ"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 6,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "A is a European town with a tram and brick-textured plaza, B is an alien moonscape with an astronaut motorbike",
+        "both share a soft painterly look with vignette and blur, which suggests a common engine or style",
+        "different palettes: warm sunset pastels vs purple starry sky and red terrain"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 6,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "tram on rails in a cobblestone town vs astronaut bike on an alien lake",
+        "different palettes: warm dusk pastels vs purple-red night space",
+        "different scenery styles: painterly buildings and peg figures vs dark silhouette mountains and moon"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 7,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different vehicles and themes: astronaut motorbike on an alien planet vs a red tram in a European town",
+        "different palettes: purple nebula sky with giant moon vs warm dusk sky with a cobblestone town",
+        "similar soft, painterly post-processing in both, which keeps confidence modest"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 7,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a European town with a red tram on rails and a cobblestone plaza",
+        "Image B is an alien planet with a giant moon, purple starry sky and an astronaut on a sidecar motorcycle",
+        "Different scenery, palette and vehicle types, with no shared HUD or asset style"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 7,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft, hazy painterly rendering with vignette and glow",
+        "elevated rail track with orange posts in both",
+        "stylized vehicle models with similar saturated warm and cool palette"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 7,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "shared soft blur and warm color grading",
+        "mixed low-poly and painterly assets in both",
+        "elevated winding track in the distance in both"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 8,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "different vehicle and art style: realistic textured tram vs glossy sci-fi motorcycle",
+        "warm dusk town with primitive-shape props vs purple alien night with giant moon",
+        "different world and track design: rails and cobblestones vs floating dotted ribbon track"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 8,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft, hazy low-poly rendering with painterly textures",
+        "similar elevated track with posts and light-bead markers (rail bridge vs. curvy track)",
+        "toy-like vehicles and simple capsule figures with a gradient sky and vignette"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 8,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a European town with a red tram on rails, Image B is a space scene with an astronaut on a sidecar bike",
+        "Different palettes: warm sunset yellows and cobblestone in A, purple starfield and red-orange alien terrain in B",
+        "Different scenery and vehicle types (tram track vs. elevated winding bead-lit track)"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 8,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: sci-fi astronaut on a hover bike, with a giant moon, purple nebula sky and an elevated track in an alien landscape",
+        "Image B: a red vintage tram on rails in a cobblestone European town at sunset",
+        "Different settings, vehicles and color palettes, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 9,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft depth-of-field blur and vignette",
+        "elevated rail-like track with posts in both",
+        "similar hazy, painterly color grading despite different themes"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 9,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "sci-fi astronaut sidecar bike on an alien planet vs a red vintage tram in a European town",
+        "different art direction: dark purple space sky and giant moon vs warm sunset painterly buildings",
+        "similar soft blur and grain post-processing, which suggests the same engine but not necessarily the same game"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 9,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "shared soft, hazy, painterly rendering and muted grading",
+        "elevated winding track on supports in both",
+        "simple stylized props with AI-texture look despite different themes"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 9,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: European town with a tram on rails and cobblestones",
+        "Image B: space setting with an astronaut on a hover bike and a large moon",
+        "Different palettes and scenery: warm dusk town vs. purple starfield with red rock"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 10,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "painterly textured buildings and peg figures vs smooth sci-fi shading",
+        "different vehicle types and themes (tram in a town vs astronaut sidecar bike on an alien world)",
+        "similar soft haze and blur, which suggests a shared engine only"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 10,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a daytime European town with a tram on rails and cobblestones",
+        "Image B is an alien night scene with a giant moon, astronaut and hover bike",
+        "Both share soft, painterly shading and simple rounded figures, which weakly suggests the same engine or style"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 10,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different vehicles and settings: astronaut sidecar bike on an alien planet vs. red tram in a European town",
+        "different art styles: low-poly rocks and nebula sky vs. painterly textured buildings and capsule people",
+        "shared soft blur and warm haze, which suggests a common engine but not a common game"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 10,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "sci-fi Mars scene vs. European town with a tram, very different art direction",
+        "A has a hazy cosmic sky and dotted elevated track; B has a warm dusk sky and primitive pill-shaped pedestrians",
+        "both share a soft, blurry look, which is consistent with the same engine rather than the same game"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 11,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: space setting with astronaut on sidecar bike, purple starry sky and giant moon",
+        "Image B: European town square with red tram, cobblestones and rails",
+        "Different vehicle types, scenery and palettes, though both show soft low-poly shading and a similar blurry post-process look"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 11,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a daytime European town with a red tram and cobblestones, Image B is an alien night scene with an astronaut on a sidecar bike",
+        "Both share a soft painterly look with low-poly primitives and a blurred vignette",
+        "The two frames differ in subject: a tram on rails in A, a rider on a winding elevated track in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 11,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Tram in a textured European town vs. astronaut on a space bike over an alien lake",
+        "Different rendering styles: painterly textured buildings and cobbles vs. smooth glossy vehicle and gradient sky",
+        "Different HUD-free camera setups and unrelated vehicle designs and palettes"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 11,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "alien night world with a hoverbike versus a daylight European town with a tram on rails",
+        "different art styles: smooth dark low-poly scenery versus painterly textured buildings and peg-figure people",
+        "different vehicle types and scene themes, with only the soft post-processing and third-person camera in common"
+      ]
+    }
+  ]
+}

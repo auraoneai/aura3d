@@ -1,0 +1,730 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-02T21:47:03.318Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "cross-hop--theme0--settle-60s",
+      "cross-hop--theme1--settle-60s",
+      "cross-hop--theme2--settle-60s",
+      "cross-hop--theme3--settle-60s",
+      "cross-hop--theme4--settle-60s",
+      "cross-hop--theme5--settle-60s"
+    ],
+    "framesB": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s",
+      "pips-big-leap--w4--settle-60s",
+      "pips-big-leap--w5--settle-60s",
+      "pips-big-leap--w6--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.771,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 41,
+    "sameGameYes": 7,
+    "differentRate": 0.8541666666666666,
+    "ci95": [
+      0.7283255295714138,
+      0.9275184258620602
+    ],
+    "confidentDifferent": 25,
+    "confidentDifferentRate": 0.5208333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.771,
+    "passes": false
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "bright pale-blue sky with floating platforms versus purple night city with traffic",
+        "different characters (acorn-capped creature versus frog) and pickups (acorn versus coin)",
+        "different palettes and materials, with soft matte lavender surfaces versus saturated magenta, orange and teal"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night-sky platformer with an acorn character and glowing crystal rings, Image B is a daytime Frogger-style road with a frog",
+        "Different palettes and lighting: deep blue and purple with metallic reflections versus bright green with a pale blue sky",
+        "Different scenery and props: floating platforms in space versus lanes of toy cars and trucks"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "dark rust-orange industrial scene with detailed metal scaffold towers vs bright green low-poly traffic world",
+        "different lighting: dim, hazy and ember-lit vs sunny sky with a sun glow",
+        "different characters and art detail: pumpkin-headed figure vs smooth green frog with simple toy-like vehicles"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: floating pale-lavender platforms over a hazy sky, with an acorn character",
+        "Image B: flat green Frogger-style road and river lanes with toy cars and a frog",
+        "Different palettes and scenery: muted blue-gray vs saturated green, orange and blue"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a frog crossing lanes of trams and cars on a flat green ground with a warm sunset sky",
+        "Image B is an acorn character on floating lavender platforms in a pale blue sky with distant towers and rocks",
+        "Different palettes, lighting and level structure: toy-like road and rail hazards vs. an airy sky-island platformer"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a small stylized creature seen from behind in a third-person camera",
+        "Warm orange and brown sunset palette with similar soft lighting and bloom",
+        "Orange glowing platform edges and a similar polished toy-like material look"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different protagonists: acorn character vs. frog, with different art direction",
+        "daytime low-poly forest platforms vs. night-time saturated pink/purple road-crossing scene",
+        "different scenery and gameplay setup: floating obstacle course with drones vs. traffic lanes with cars, trams and trains"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pumpkin-headed character in a dark red-brown industrial setting with metal scaffold towers",
+        "Image B: green frog crossing a bright green road and rail level with toy trams and cars",
+        "Different palettes and lighting: moody orange-brown against pastel green with a pale sun"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a sunset road with traffic and a frog character, Image B is a bright sky with floating platforms and an acorn character",
+        "different level themes and color palettes (dark orange dusk vs pale blue daylight)",
+        "similar stylized third-person collectible platformer rendering, so a shared engine is plausible"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: acorn character on floating wooden islands with a windmill, hazy overcast sky",
+        "Image B: frog crossing a road of toy vehicles on flat green lanes, clear blue sky with a sun glow",
+        "Different characters, scenery and lighting, with only a shared stylized look"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "Both show a small stylized creature (acorn, frog) in a third-person view on a floating, level-like course",
+        "Matching glossy toy-like materials and soft rendering, with collectible coins in both",
+        "Similar crossing/obstacle-course design (hopping across platforms and lanes)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime green road-crossing level with toy-like cars and a frog",
+        "Image B: night starfield with metallic floating platforms, crystal rings and an acorn character",
+        "Different palettes, lighting and character designs"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Same stylized low-poly look with smooth, saturated materials",
+        "Matching bright green grass platforms and soft sun-lit shading",
+        "Small animal-like character seen from behind in a third-person camera, hopping over obstacles toward a goal"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a frog crossing a road with toy-like cars; Image B is an acorn-capped character in an ornate tower hall",
+        "Both use a warm orange/brown lighting palette with soft shadows and a similar glossy 3D character style",
+        "The scenery and gameplay differ (traffic lanes with coins vs. a platforming temple with towers)"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "A is a night road-crossing scene with a purple sky, pink cars and trains; B is a monochrome brown industrial scene",
+        "different lighting and palette (saturated neon vs. muted orange-brown haze)",
+        "different characters: green frog with a toy-like look vs. pumpkin-headed figure, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a frog crossing lanes of traffic on flat green strips",
+        "Image B is an acorn character on a platform course with pine trees, drones and an ornate arch",
+        "Different scenery, characters and objectives, despite similar green ground and soft lighting"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night road-crossing scene with a frog, cars, trams and trains, while Image B is a daytime floating-island platformer with an acorn character",
+        "Different palettes: neon purple and pink against a dark teal ground in A, soft overcast sky with warm orange wood in B",
+        "Different characters and props: frog and vehicles in A, windmill, barrel, crate and acorns in B"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: bright green frog, toy trains and cars, pink platforms",
+        "Image B: dark brown interior with an acorn-capped character and ornate metal towers",
+        "Different palettes and settings: pastel outdoor vs dim warm indoor"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn character on a night-sky platformer course with glossy metallic rings",
+        "Image B: green frog crossing lanes of toy trams and cars in a daylight scene",
+        "Different palettes and lighting: deep blue starry night vs. muted green with a peach sky"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "different setting: floating sky platforms vs. grounded road-crossing level",
+        "different palette and lighting: pale hazy blue vs. saturated green with low sun",
+        "different protagonist and collectible: acorn creature with acorn vs. frog with coin"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dusk orange sky, dark flat road with traffic and a frog character",
+        "Image B: bright blue sky, low-poly pine trees, green grass and an acorn character",
+        "Different scene themes and palettes, though both have a similar glossy 3D toy-like rendering"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "floating gold coins in both frames",
+        "similar flat saturated green grass and stylized third-person characters",
+        "same soft-lit, polished 3D render look"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night road-crossing scene with a frog, cars, trams and trains",
+        "Image B is a daytime forest platformer with an acorn character and low-poly pine trees",
+        "Different palette and setting: dark purple/teal night vs bright green/blue daylight"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of traffic at sunset, a Frogger-style game",
+        "Image B has an acorn-headed character on floating platforms with a windmill and a cloudy overcast sky",
+        "Different settings, palettes and lighting: flat green with warm sunset versus brown wood tones with soft gray sky"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pumpkin-head character in a dark orange industrial or temple setting with metal scaffold towers",
+        "Image B: frog character on a bright green Frogger-style road with toy cars and a sunset sky",
+        "Different palettes and level themes, though both use a similar third-person camera and a 3D character with a soft shadow"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a frog crossing traffic lanes with toy trams and cars under a peach sky",
+        "Image B is an acorn character on floating platforms with low-poly pine trees and a blue sky",
+        "Different art direction: flat pastel traffic scene vs. forest obstacle course with drones"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Both show a small third-person character on a platform course with floating collectibles (coin, acorn)",
+        "Similar rounded, polished toy-like materials and orange-tan platform slabs",
+        "Palette and setting differ strongly (green traffic world vs. brown industrial interior), which could be separate levels or separate games"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "different protagonists: acorn character vs. frog",
+        "A has glossy metallic floating platforms in a starry void; B has a flat-shaded road with cars, trams and trains",
+        "different palettes and lighting: deep blue with chrome highlights vs. purple sky with a soft moon glow and teal ground"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "different protagonists (acorn-capped character vs green frog)",
+        "overcast cloudy sky vs clear sky with sun",
+        "floating farm-themed platforms vs traffic and tram road-crossing scene"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright green, toy-like frogger scene with a daylight sky and cartoon traffic",
+        "Image B is a dark, red-brown industrial or temple setting with detailed metal towers and orange particles",
+        "Different characters and level design: a frog crossing roads versus a pumpkin-headed figure on a platform path"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: acorn character on floating platforms with low-poly pine trees and a blue-sky daytime look",
+        "Image B: frog character crossing a multi-lane road of toy cars, with a warm sunset sky",
+        "Both have saturated green grass, but the scenery, character style and lighting differ"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: frog character on a crossing level with trams and cars at a hazy peach sunset",
+        "Image B: acorn character on a platformer course with low-poly pines and purple drones under a blue sky",
+        "Different art styles and lighting: flat pastel toy-like scene vs. a more detailed, high-contrast fantasy look"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "both show a small organic creature (acorn character, frog) with the same glossy, sculpted 3D look",
+        "floating collectible items (acorns and coins) hover over the play area",
+        "same bloom, soft lighting and hard-edged platform style"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: frog crossing a traffic road in a sunset-lit green field",
+        "Image B: acorn character on floating pale platforms in a blue sky",
+        "Different palettes, environments and character designs"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime green field with toy cars, trams and a frog character",
+        "Image B: night starfield with metallic floating platforms and an acorn character",
+        "Different settings, palettes and character designs"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a frog crossing lanes of traffic and trams, while Image B has an acorn character on floating platforms with drones",
+        "Different scenery: A is flat grass with a hazy sun and toy-like vehicles, B is low-poly pine trees with a dense, saturated look",
+        "Both use a green grass ground and a third-person rear camera, but the themes and collectibles differ"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A: acorn-headed character on floating platforms with a windmill, bright cloudy sky",
+        "Image B: green frog crossing a multi-lane road with toy-like cars, sunset lighting",
+        "Different settings and palettes, though both show a small stylized character and similar rendering"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A: acorn-capped character in a dark brown interior with steampunk scaffold towers",
+        "Image B: green frog in a bright outdoor traffic-crossing level with toy cars",
+        "Both share a stylized 3D look with soft shadows and a warm tint, but the settings and palettes differ"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a Frogger-style road crossing with a frog and toy vehicles, Image B has an acorn character on floating platforms with pine trees and drones",
+        "Different environments: flat bright green lanes with a hazy sun versus a forested sky-island with a stone archway",
+        "Different character models and gameplay objects (frog with coin versus acorn with drones and portals), though the green grass and soft lighting look similar"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: acorn-capped character on a floating orange platform with windmill and cloudy overcast sky",
+        "Image B: green frog crossing lanes of trams and cars under a warm sunset sky with flat green ground",
+        "Different palettes, characters and scenery themes"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a green frog on a night road with cars, trams and trains, in a purple/teal palette",
+        "Image B has an acorn-capped character in a brown, warm-lit temple with metal scaffold towers",
+        "The two frames differ in setting, color palette and scenery, with no shared assets"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "pips-big-leap--w5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark, brown indoor scene with an acorn-capped character and ornate scaffolding towers",
+        "Image B is a bright outdoor Frogger-style road with a blue sky, green grass, and toy vehicles",
+        "The palettes, lighting, and settings share nothing, and the character models differ"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "A is a bright, toy-like daylight scene with saturated cars and trams, B is a dark, monochrome brown scene with detailed metal scaffold towers",
+        "different protagonists and settings: green frog on a road crossing vs pumpkin-headed character on a gated platform path",
+        "different lighting and rendering: soft sunlit sky and haze vs orange fog, embers and heavy vignette"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Both show a small stylized animal/plant creature as the player character with similar glossy 3D materials",
+        "Collectible gold coins appear in both scenes",
+        "Both use a third-person camera over floating or segmented platform-style levels with a similar rendering look"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night-time frogger-style road with cars, trams and trains",
+        "Image B is a daytime floating-platform setting with an acorn character against a pale blue sky",
+        "The two frames differ in palette, lighting and level design"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "pips-big-leap--w6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime frog crossing traffic with toy cars and trams on green grass",
+        "Image B is a night-sky acorn character on floating metallic platforms with glowing rings",
+        "Different characters, palettes and lighting, with no shared scenery or HUD"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "pips-big-leap--w4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright green Frogger-style traffic scene with toy cars and a frog",
+        "Image B is a dark orange-brown industrial, temple-like setting with a pumpkin-headed character",
+        "Different palettes, scenery and character styles"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "different playable characters (acorn vs frog)",
+        "daytime low-poly forest vs night-time neon city with traffic",
+        "different art direction and palettes"
+      ]
+    }
+  ]
+}

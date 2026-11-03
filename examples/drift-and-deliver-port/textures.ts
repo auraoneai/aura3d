@@ -282,13 +282,24 @@ export interface FacadeLayout {
  * Paints the base-colour tile and a matching emissive tile (lit windows only). The wall is near white so a per-vertex
  * tint colours it; windows keep their own colours.
  */
-export function paintFacade(kind: FacadeKind, albedo: Ctx2D, emissive: Ctx2D, px: number, seed = 1, wallHex: string = WALL[kind]): FacadeLayout {
+/**
+ * GU47 phase 4 (4.7.2): the facade's metal-rough map (glTF channels: G roughness, B metalness), painted at the same
+ * layout as the albedo. Dry render 0.86 / 0; dark window glass 0.07 / 0.75, so the panes mirror the sky and the street
+ * (rubric ibl_reflections 3.5: "the blue glass on the buildings is flat"); lit panes stay matte (they glow instead).
+ */
+export const FACADE_ORM = { wall: "#ffdb00", glass: "#ff12bf", lit: "#ffc000" } as const;
+
+export function paintFacade(kind: FacadeKind, albedo: Ctx2D, emissive: Ctx2D, px: number, seed = 1, wallHex: string = WALL[kind], orm?: Ctx2D): FacadeLayout {
   const r = rng(0x7a11 + seed * 977 + kind.length * 131);
   const c = px / CELLS;
   albedo.fillStyle = wallHex;
   albedo.fillRect(0, 0, px, px);
   emissive.fillStyle = "#000000";
   emissive.fillRect(0, 0, px, px);
+  if (orm) {
+    orm.fillStyle = FACADE_ORM.wall;
+    orm.fillRect(0, 0, px, px);
+  }
   let lit = 0;
   for (let y = 0; y < CELLS; y++) {
     const floorLine = y * c;
@@ -316,6 +327,10 @@ export function paintFacade(kind: FacadeKind, albedo: Ctx2D, emissive: Ctx2D, px
         albedo.fillRect(wx - c * 0.035, wy - c * 0.035, ww + c * 0.07, wh + c * 0.07);
         albedo.fillStyle = litHere ? "#f4d9a4" : glass;
         albedo.fillRect(wx, wy, ww, wh);
+        if (orm) {
+          orm.fillStyle = litHere ? FACADE_ORM.lit : FACADE_ORM.glass;
+          orm.fillRect(wx, wy, ww, wh);
+        }
         if (!litHere) {
           const grad = albedo.createLinearGradient(wx, wy, wx + ww, wy + wh);
           grad.addColorStop(0, "rgba(180,205,235,0.45)");

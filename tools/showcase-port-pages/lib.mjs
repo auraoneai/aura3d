@@ -40,7 +40,7 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  * The Bellkeeper's Walk's joystick, so a tap could leave the game). The credit now
  *  1. takes the first corner whose box overlaps no visible control (buttons, links, inputs, `.no-steer`, touch and joystick
  *     layers) and no fixed or absolute HUD element (Duneglide's flight readout sat under it too), re-checked on resize
- *     and after the game mounts its controls, and
+ *     and when the game changes its HUD, including after the initial mount, and
  *  2. fades out on the first key press or pointer press outside it, so it never covers play, and
  *  3. carries `no-steer`, so a press on it does not also steer or start the game (Chroma Roll reads that class).
  * pickCreditSpot is pure so tests can drive it; the page runs the same source (read from this file).
@@ -104,11 +104,17 @@ const PICK_CREDIT_SPOT_SOURCE = (() => {
   const end = text.indexOf("\n}\n", start);
   return text.slice(start, end + 2);
 })();
-const creditScript = () => `(function(){var c=document.currentScript&&document.currentScript.parentElement;if(!c)return;var pick=${PICK_CREDIT_SPOT_SOURCE};` +
+// Coalesce even continuously animated HUD mutations into at most one layout scan per 200ms. Pause observation only
+// around our own writes (after draining pending game mutations), so style/data-spot cannot trigger a placement loop.
+// Wrap the host timer before passing it to forEach: some implementations require the window receiver.
+const creditScript = () => `(function(){var c=document.currentScript&&document.currentScript.parentElement;if(!c)return;var clearTimeout=function(id){window.clearTimeout(id);},pick=${PICK_CREDIT_SPOT_SOURCE};` +
+  `var observer=null,pending=null,checks=[],poll=null,stopped=false,options={subtree:true,childList:true,characterData:true,attributes:true};` +
   `function obstacles(){var out=[],vw=innerWidth,vh=innerHeight;document.querySelectorAll("body *").forEach(function(el){if(c.contains(el)||el.contains(c)||el.tagName==="CANVAS"||el.tagName==="SCRIPT"||el.tagName==="STYLE")return;var s=getComputedStyle(el);var control=el.matches(${JSON.stringify(CREDIT_CONTROLS)});if(!control&&s.position!=="fixed"&&s.position!=="absolute"&&s.position!=="sticky")return;if(s.visibility==="hidden"||s.display==="none"||+s.opacity===0)return;var r=el.getBoundingClientRect();if(r.width<1||r.height<1||r.width*r.height>vw*vh*0.5)return;out.push({x:r.left,y:r.top,w:r.width,h:r.height});});return out;}` +
-  `function place(){if(c.classList.contains("is-hidden"))return;var r=c.getBoundingClientRect(),p=pick({w:innerWidth,h:innerHeight},{w:r.width,h:r.height},obstacles(),8).spot;["left","right","top","bottom"].forEach(function(k){c.style[k]=p[k]==null?"auto":p[k]+"px";});c.dataset.spot=(p.top!=null?"top":"bottom")+"-"+(p.left!=null?"left":"right");}` +
-  `function hide(e){if(e&&e.type==="keydown"&&(e.key==="Tab"||e.key==="Shift"))return;if(e&&e.target&&e.target.nodeType===1&&c.contains(e.target))return;c.classList.add("is-hidden");removeEventListener("keydown",hide,true);removeEventListener("pointerdown",hide,true);}` +
-  `addEventListener("keydown",hide,true);addEventListener("pointerdown",hide,true);addEventListener("resize",place);[0,600,2000,5000].forEach(function(t){setTimeout(place,t);});})();`;
+  `function stop(){if(stopped)return;stopped=true;if(observer){observer.disconnect();observer=null;}if(pending!==null)clearTimeout(pending);checks.forEach(clearTimeout);if(poll!==null)clearInterval(poll);removeEventListener("resize",schedule);removeEventListener("keydown",hide,true);removeEventListener("pointerdown",hide,true);}` +
+  `function place(){if(stopped)return;if(c.classList.contains("is-hidden")||!document.body.contains(c)){stop();return;}var r=c.getBoundingClientRect(),p=pick({w:innerWidth,h:innerHeight},{w:r.width,h:r.height},obstacles(),8).spot,queued=observer&&observer.takeRecords().length;if(observer)observer.disconnect();["left","right","top","bottom"].forEach(function(k){var value=p[k]==null?"auto":p[k]+"px";if(c.style[k]!==value)c.style[k]=value;});var spot=(p.top!=null?"top":"bottom")+"-"+(p.left!=null?"left":"right");if(c.dataset.spot!==spot)c.dataset.spot=spot;if(observer){observer.observe(document.body,options);if(queued)schedule();}}` +
+  `function schedule(){if(stopped)return;if(c.classList.contains("is-hidden")||!document.body.contains(c)){stop();return;}if(pending===null)pending=setTimeout(function(){pending=null;place();},200);}` +
+  `function hide(e){if(e&&e.type==="keydown"&&(e.key==="Tab"||e.key==="Shift"))return;if(e&&e.target&&e.target.nodeType===1&&c.contains(e.target))return;stop();c.classList.add("is-hidden");}` +
+  `addEventListener("keydown",hide,true);addEventListener("pointerdown",hide,true);addEventListener("resize",schedule);if(typeof MutationObserver==="function"){try{observer=new MutationObserver(function(){schedule();});observer.observe(document.body,options);}catch(_){if(observer)observer.disconnect();observer=null;}}if(!observer)poll=setInterval(schedule,500);[0,600,2000,5000].forEach(function(t){checks.push(setTimeout(t===0?place:schedule,t));});})();`;
 
 /** One source for the credit markup; rename.mjs and composePortPage both write exactly these. */
 export const CREDIT_STYLE = '<style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none;transition:opacity .35s ease,visibility 0s linear 0s}.aura-credit.is-hidden{opacity:0;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit.is-hidden a{pointer-events:none}.aura-credit a:hover{text-decoration:underline}@media (max-width:560px){.aura-credit{font-size:11px;max-width:calc(100vw - 16px)}}</style>';
@@ -138,7 +144,10 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
   const found = extractAppExtras(appHtml);
   // The credit is always the canonical one, so a fix to its placement reaches every page on the next sync.
   const extras = { ...found, noteStyle: found.noteStyle ? CREDIT_STYLE : "", note: found.note ? CREDIT_NOTE : "" };
-  let html = exampleHtml;
+  // An example page reaches its app's public files through the dev path ../../apps/showcase-<slug>/public/<file>; the
+  // built app serves the same files from its own root, so the app page uses ./<file> (and the app's own link is not added
+  // a second time).
+  let html = exampleHtml.replace(/\b(href|src)="\.\.\/\.\.\/apps\/showcase-[^/"]+\/public\//g, '$1="./');
 
   const hasHref = (href) => html.includes(`href="${href}"`);
   const headAdditions = [

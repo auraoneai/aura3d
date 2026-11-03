@@ -4,6 +4,418 @@
 import { defineAuraAssets, type AuraAssetDefinition, type AuraAssetRef } from "@aura3d/engine";
 
 const definitions = {
+  // GU47 WP-36 (thermalArchIron): Meshy retexture of heatsinkArch (same mesh proportions), admitted with
+  // `aura3d assets import-meshy --prefix heatsink --name thermalArchIron` (rights row in aura-evidence/meshy).
+  "heatsink_thermalArchIron": {
+    type: "model",
+    format: "glb",
+    // Route-local (the shared root catalog is never written by an isolated Meshy import): lives in this app's
+    // public/aura-assets and ships through copyRouteLocalAuraAssets. The URL stays root-relative: an absolute
+    // `new URL(..., import.meta.url)` is a remote URL to the production bridge, and a model whose manifest path
+    // is not public/aura-assets/ is then `unsafe-url`, which blocks the whole scene (RENDERER_MOUNT_FAILED).
+    url: "/aura-assets/heatsink_thermalArchIron.7d727eff.glb",
+    hash: "sha256-7d727eff8025a6e9e549187ad06a7b13420fc2103da26f39d26606a881c8a083",
+    bounds: [
+      2,
+      1.913,
+      0.375
+    ],
+    sizeBytes: 425876,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "artifacts/meshy/heatsink_thermalArchIron/model.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-10-30 through the AuraOne Meshy account via Kiro Prism retextured from an original text style prompt on the game's existing mesh (public/aura-assets/heatsinkArch.9a90ebd4.glb) (GU47 WP-36, heatsink/thermalArchIron). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-10-30T08:59:38.033Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalArchIron.rights.c18b34e24299.json",
+          "aura-evidence/meshy/heatsink_thermalArchIron.metadata.0d5d5d44e14c.json",
+          "wp36:artifacts/gu47-meshy/heatsink/thermalArchIron/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-10-30T08:59:38.033Z"
+      },
+      "sourcePath": "artifacts/meshy/heatsink_thermalArchIron/model.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalArchIron.7d727eff.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -1,
+          -0.956,
+          -0.187
+        ],
+        "max": [
+          1,
+          0.956,
+          0.188
+        ],
+        "size": [
+          2,
+          1.913,
+          0.375
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/heatsink_thermalArchIron.thumb.svg",
+      "quality": "candidate",
+      "role": "prop",
+      "renderedProbe": {
+        "url": "/aura-assets/heatsink_thermalArchIron.meshy-candidate.20f2ed36.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-20f2ed36e70932f8d0b16cb1484f298d48e8eabe072f89ccf84f70199437b567",
+        "checkedAt": "2026-10-31T22:04:19.188Z"
+      }
+    },
+  },
+  // GU47 wave 1 (thermalTowerLIron): Meshy retexture pass over heatsinkTowerL (HS-08). The pipeline's geometry hash changed, so this
+  // is a new mesh with the same proportions, placed with the old prop's fit footprint; `import-meshy --prefix heatsink --name thermalTowerLIron`.
+  "heatsink_thermalTowerLIron": {
+    type: "model",
+    format: "glb",
+    // Route-local (the shared root catalog is never written by an isolated Meshy import): lives in this app's
+    // public/aura-assets and ships through copyRouteLocalAuraAssets. The URL stays root-relative: an absolute
+    // `new URL(..., import.meta.url)` is a remote URL to the production bridge, and a model whose manifest path
+    // is not public/aura-assets/ is then `unsafe-url`, which blocks the whole scene (RENDERER_MOUNT_FAILED).
+    url: "/aura-assets/heatsink_thermalTowerLIron.048d16d4.glb",
+    hash: "sha256-048d16d4a4c8070e58f2100b503f7ecf33fb64892b8e206f00661906d66bd63c",
+    bounds: [
+      0.394,
+      2,
+      0.394
+    ],
+    sizeBytes: 554344,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalTowerLIron.048d16d4.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-01 through the AuraOne Meshy account via Kiro Prism retextured from an original text style prompt on the game's existing mesh (public/aura-assets/heatsinkTowerL.48cef1cc.glb) (GU47 WP-36, heatsink/thermalTowerLIron). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-01T21:40:47.605Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalTowerLIron.rights.e99c0dba14d5.json",
+          "aura-evidence/meshy/heatsink_thermalTowerLIron.metadata.5c0614a7f578.json",
+          "wp36:artifacts/gu47-meshy/heatsink/thermalTowerLIron/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-01T21:40:47.605Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalTowerLIron.048d16d4.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalTowerLIron.048d16d4.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.197,
+          -1,
+          -0.197
+        ],
+        "max": [
+          0.197,
+          1,
+          0.197
+        ],
+        "size": [
+          0.394,
+          2,
+          0.394
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  // GU47 wave 1 (thermalTowerTIron): Meshy retexture pass over heatsinkTowerT (HS-08). The pipeline's geometry hash changed, so this
+  // is a new mesh with the same proportions, placed with the old prop's fit footprint; `import-meshy --prefix heatsink --name thermalTowerTIron`.
+  "heatsink_thermalTowerTIron": {
+    type: "model",
+    format: "glb",
+    // Route-local (the shared root catalog is never written by an isolated Meshy import): lives in this app's
+    // public/aura-assets and ships through copyRouteLocalAuraAssets. The URL stays root-relative: an absolute
+    // `new URL(..., import.meta.url)` is a remote URL to the production bridge, and a model whose manifest path
+    // is not public/aura-assets/ is then `unsafe-url`, which blocks the whole scene (RENDERER_MOUNT_FAILED).
+    url: "/aura-assets/heatsink_thermalTowerTIron.c7800e77.glb",
+    hash: "sha256-c7800e771d73377ec7b2a1bc915c5eaa7bfdad80bb7c86e78c3abb90b917d716",
+    bounds: [
+      0.575,
+      2,
+      0.218
+    ],
+    sizeBytes: 531004,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalTowerTIron.c7800e77.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-01 through the AuraOne Meshy account via Kiro Prism retextured from an original text style prompt on the game's existing mesh (public/aura-assets/heatsinkTowerT.3e5f0a0c.glb) (GU47 WP-36, heatsink/thermalTowerTIron). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-01T21:46:03.122Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalTowerTIron.rights.d322e18dfb9f.json",
+          "aura-evidence/meshy/heatsink_thermalTowerTIron.metadata.8fa568855752.json",
+          "wp36:artifacts/gu47-meshy/heatsink/thermalTowerTIron/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-01T21:46:03.122Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalTowerTIron.c7800e77.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalTowerTIron.c7800e77.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.287,
+          -1,
+          -0.109
+        ],
+        "max": [
+          0.287,
+          1,
+          0.109
+        ],
+        "size": [
+          0.575,
+          2,
+          0.218
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 2,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
   "heatsinkArch": {
     type: "model",
     format: "glb",

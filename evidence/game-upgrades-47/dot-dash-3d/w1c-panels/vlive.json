@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "dot-dash-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Enemies near the centre and top-right show up as small, fuzzy brown blobs that are hard to read. The board is quite dark with low contrast in the lower maze. The player is small.",
+     "(recovered by pattern)",
+     "Enemies near the top centre and upper right are tiny, dim, ghostly sprites that are hard to read. The player cube looks semi-transparent against the board. Otherwise the frame matches B: moody PCB lighting, but the far side of the board is dark."
+    ]
+   },
+   {
+    "variant": "spiral",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same washed-out white board. The enemies are tiny fuzzy specks at the centre and top-right that are nearly unreadable.",
+     "(recovered by pattern)",
+     "Same flat, washed-out white board. Enemies show only as tiny, faint sprites, barely visible near the top. The player is equally faint."
+    ]
+   },
+   {
+    "variant": "zerocore",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same dark, busy board. The enemies are small fuzzy blobs instead of clear shapes, so they are harder to read.",
+     "(recovered by pattern)",
+     "Same dark, busy board. Enemies are reduced to small, dim, hard-to-spot sprites, which hurts readability. The player is slightly brighter than in A."
+    ]
+   }
+  ]
+ }
+]

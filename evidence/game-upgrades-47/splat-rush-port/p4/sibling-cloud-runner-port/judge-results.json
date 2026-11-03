@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:14:57.085Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "desk--early-settled",
+      "desk--mid-action-settled",
+      "desk--results-settled",
+      "desk--roll-settled",
+      "desk--title-settled",
+      "splat-rush-port--default--settle-25s",
+      "splat-rush-port--default--settle-60s"
+    ],
+    "framesB": [
+      "cloud-runner-port--default--settle-25s",
+      "cloud-runner-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.927,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.927,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A has a pink sunset sky, floating islands and a red ball runner with a score HUD",
+        "Image B has a realistic grassy landscape with a human character and cracked boulders",
+        "Lighting and art styles differ: stylized candy palette versus muted, natural low-poly foliage"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic-ish low-poly forest with a human character on a path",
+        "Image B: stylized pastel sunset sky with floating islands, clouds and a red ball",
+        "Different palettes, materials and gameplay objects"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: green hills, cracked boulders and a boy on a log, with no HUD",
+        "Image B: pink sky with floating islands and a 'Chroma Roll' title menu with hearts and score HUD",
+        "Different palettes and art styles: muted realistic green and tan versus saturated pastel pink"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized pink-purple sunset sky with floating islands, glossy candy-like objects and a cartoon HUD (score, combo, hearts)",
+        "Image B: realistic blue overcast sky, low-poly trees, cracked boulders, and a human character on a dirt path",
+        "Different art style, palette and lighting, and Image B shows no HUD"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized candy-colored sky-island runner with a game-over HUD card",
+        "Image B is a realistic-leaning low-poly forest path with a human character and a rolling log",
+        "Different palettes and art direction: saturated red/purple versus natural green/tan"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized pastel sunset sky with floating islands and a glossy red ball runner, with a cartoon HUD",
+        "Image B: realistic-ish low-poly forest path with cracked boulders and a human child character, with no HUD",
+        "Different palettes and rendering: saturated candy colors vs muted natural tones"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic low-poly trees, cracked boulders and a humanoid character on a muted, hazy landscape",
+        "Image B: stylized candy-colored pink sunset sky with floating islands, a red ball and a bright cartoon HUD",
+        "Different gameplay and art direction (character on a path vs. ball runner with score/combo UI)"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic-ish low-poly forest with a human character on a dirt road",
+        "Image B: pastel sunset cloud world with a red ball and floating islands",
+        "Different palettes, lighting and art styles"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a pink-purple sky with floating islands and a cartoon HUD with hearts and a score",
+        "Image B is a realistic-style dirt road with trees, cracked boulders, a cliff and a child on a rolling log, with no HUD",
+        "The two frames differ in palette, scenery and art style"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic low-poly trees, cracked boulders and a dirt road with a small human character",
+        "Image B: stylized candy-colored floating islands and balloons with a cartoon 'SPLAT!' game-over HUD",
+        "Different palettes and art styles: muted natural tones vs saturated red/purple"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a humanoid character on a grassy path with trees and cracked boulders; Image B has a red ball on a floating sky track",
+        "Different palettes and lighting: muted realistic greens and tans in A, saturated pink and purple sunset clouds in B",
+        "Image B has a stylized HUD (hearts, score pill, buttons) and Image A has none"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic grassy path with a human character and cracked boulders",
+        "Image B: pastel pink cloud sea with a red ball and floating islands",
+        "Different palette, lighting and camera style"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pastel pink and purple cloud world with a red ball and floating islands",
+        "Image B is a realistic-leaning forest path with a human character, cracked boulders and orange cliff",
+        "Different palettes, lighting and art style: flat low-poly stylization vs. textured foliage and rock"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: pastel purple/pink cloud sky, floating islands, rolling red ball with HUD (score, hearts)",
+        "Image B: realistic blue sky, green meadow, low-poly trees, cracked boulders, human character, no HUD",
+        "Different art style, palette and lighting (stylized sunset glow vs. muted natural daylight)"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "desk--roll-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: muted, realistic-leaning low-poly scene with a humanoid character and cracked boulders",
+        "Image B: saturated pink and purple sunset sky with floating islands and a glossy red ball",
+        "Image B has a stylized HUD (score, combo, hearts) and A has none"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic low-poly forest with a human character and a muted sky; Image B is a stylized candy-colored sky world with a rolling red ball",
+        "Image B has a bright cartoon HUD (score, combo, balloon lives) that is absent in A",
+        "Different palette and lighting: soft hazy blue-green daylight in A versus saturated pink and orange sunset glow in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "desk--early-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a human character on a dirt road with low-poly trees and cracked boulders, while Image B has a red ball on a bridge above clouds",
+        "Different palettes: muted natural greens and browns in A, saturated pink, purple and yellow sunset in B",
+        "Image B has a stylized HUD (hearts, score, round buttons) that is absent in A"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized pastel sunset sky, cloud floor, floating islands and hot air balloons, red glossy ball",
+        "Image B: realistic daytime outdoor scene with low-poly trees, cracked boulders, dirt path and a humanoid character on a log",
+        "Different palettes, lighting and art direction: flat saturated pink and purple vs. natural muted blue, green and brown"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: realistic-ish low-poly nature scene with cracked boulders and pine trees",
+        "Image B: stylized candy-colored floating islands with a bridge and balloons",
+        "Image B: bold cartoon HUD with a Splat! game-over card, Image A has no matching UI"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized cartoon candy-pink world with floating islands and a game-over HUD",
+        "Image B: realistic textured trees, boulders and a human character on a dirt path",
+        "Completely different palettes and art styles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink pastel sky with floating islands and a Chroma Roll title menu",
+        "Image B: realistic dirt road with trees, cracked boulders, blue sky and a child standing on a rolling log",
+        "Different art style and palette: stylized candy look vs. earthy low-poly nature scene with no shared HUD"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink floating-island sky world with a Chroma Roll title menu and HUD",
+        "Image B: grassy road with cracked boulders, pine trees, and a human character on a log",
+        "Different palette and art style, with no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: low-poly trees, cracked boulders and a humanoid character on a muted, hazy landscape",
+        "Image B: saturated pink sunset sky, floating islands, red ball and candy-like hurdles with a score HUD",
+        "Different art style, palette and gameplay: running on a path with a log vs. a rolling-ball runner"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "desk--roll-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: realistic-ish low-poly forest path with a child character and cracked boulders, muted blue sky",
+        "Image B: stylized candy-colored runner with a red glossy ball, pink sunset sky and floating islands",
+        "Image B has a game HUD (score, combo, hearts) and a glossy toon look that doesn't match A's textures"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "desk--early-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pink-purple cloud sea with floating islands, a red ball and a score HUD",
+        "Image B: grounded green meadow with low-poly trees, cracked boulders and a humanoid character",
+        "Different palette, lighting and art style, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a pastel sunset sky world with floating islands, hot air balloons and a red ball",
+        "Image B is a grounded daytime landscape with a human character, low-poly trees, cracked boulders and a log",
+        "Different palettes and art styles: saturated pink/purple cartoon versus muted natural green/tan"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink and purple cloud sea with a red ball and floating islands",
+        "Image B: realistic forest path with a humanoid character, cracked boulders and orange cliff",
+        "Different art style and lighting: flat stylized sunset versus textured naturalistic daylight"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic textured terrain with a human character under a blue daytime sky",
+        "Image B: flat-shaded pastel clouds, a red ball and a pink sunset sky",
+        "Different art styles and gameplay: path-running platformer vs. floating-islands ball game"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "desk--roll-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: low-poly trees, cracked boulders and a humanoid character on a pale path under muted blue-grey sky",
+        "Image B: glossy red ball runner with pink sunset clouds, floating islands and a score/combo/lives HUD",
+        "Different palettes, art styles and gameplay (character platforming vs. ball-running)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized pastel sunset sky with floating islands, hot air balloons and a red ball",
+        "Image B: realistic daytime landscape with textured low-poly trees, cracked boulders and a child character on a dirt road",
+        "Different palette, lighting and art style (flat cartoon vs painterly textured)"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pink-purple floating-island scene behind a Chroma Roll title menu",
+        "Image B is a grassy road with a character on a log, cracked boulders, and an orange cliff",
+        "Different palettes and art styles, with no shared HUD or scenery"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "desk--roll-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized pink-purple sunset sky, floating islands, glossy red ball runner with score and combo HUD",
+        "Image B: realistic blue-gray sky, low-poly trees, cracked boulders, dirt path with a human character on a log",
+        "Different art style, palette and gameplay: candy-toned arcade vs. natural third-person scene"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic-ish green landscape with a human character and cracked boulders, while Image B is a pastel sky world with a red ball",
+        "Different palettes: natural greens and oranges versus pink, purple and yellow dusk",
+        "Different art styles and gameplay: third-person runner on a path versus a ball rolling over clouds with floating islands"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink-purple sky with floating islands and a Chroma Roll title menu",
+        "Image B: realistic dirt road, trees, cracked boulders and a child on a rolling log",
+        "Different palette and rendering: pastel stylized vs. natural earthy tones with no shared HUD"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized cartoon sky-island scene with a red-pink tint and a bold cartoon HUD overlay",
+        "Image B is a realistic-textured outdoor scene with low-poly trees, cracked boulders and a human character on a dirt path",
+        "Palette, materials and art style do not match, and there is no shared HUD style"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "desk--early-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic-leaning low-poly forest with a human character and cracked boulders",
+        "Image B: stylized pastel sky-island runner with a red ball and a score/lives HUD",
+        "Different palettes and lighting: muted overcast green and tan versus saturated pink and purple sunset"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic low-poly forest path with a human character",
+        "Image B is a stylized candy-colored floating-island runner with a bridge of orbs",
+        "Image B has a cartoon game-over HUD with a Splat! panel and score, with no matching UI in A"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized pastel candy look with a pink sunset sky, floating islands and a red ball, plus a cartoon HUD",
+        "Image B: naturalistic low-poly forest with a dirt path, cracked boulders, a human character and a muted blue sky, no HUD",
+        "Different art direction, palette and lighting, and a different protagonist and gameplay setup"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic textured terrain with a human character on a dirt path",
+        "Image B: pastel pink and purple cloud sea with a red ball and floating islands",
+        "Different palette, art style and camera: grounded daylight versus stylized sunset sky"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic-ish low-poly forest with cracked boulders and a humanoid character on a beige road",
+        "Image B: candy-colored pink sunset sky, floating islands, and a red ball runner with glossy materials",
+        "Image B has a styled HUD with score, combo and balloon lives, and Image A shows none"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink sunset sky, cloud sea and floating islands with hot air balloons",
+        "Image B: grounded forest path with a human character, cracked boulders and orange cliff",
+        "Different art style: stylized glossy red ball vs. low-poly textured trees with natural lighting"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "desk--early-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic daytime outdoor scene with a human character on a dirt road",
+        "Image B: pink and purple stylized floating islands with a title-screen HUD",
+        "Different palettes and rendering styles: textured low-poly nature vs. soft pastel clay look"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pink and yellow sunset sky with a cloud sea and a red ball, in flat stylized low-poly",
+        "Image B: realistic textured trees, cracked boulders and a cliff on a grassy path with a human character",
+        "Different palette, lighting and art style, and a different protagonist (ball vs. humanoid)"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: grounded path with realistic cracked boulders and a human character",
+        "Image B: stylized pastel sunset sky with floating islands, balloons and a red ball",
+        "Different art style and palette: muted naturalistic vs. saturated cartoon"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "desk--results-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized candy-colored floating-island runner with a red/pink game-over HUD",
+        "Image B is a realistic-ish low-poly forest path with a human character on a log and no HUD",
+        "Different palettes, art styles and lighting (saturated sunset vs. natural daylight)"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "desk--mid-action-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized pastel sunset sky with floating islands, a red ball and a score/combo HUD",
+        "Image B: realistic-leaning landscape with a human character, cracked boulders and low-poly trees, no HUD",
+        "Different palettes and lighting: saturated pink/purple vs muted blue-gray haze with green and orange terrain"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "desk--title-settled",
+      "b": "cloud-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pink-purple floating-island scene behind a Chroma Roll title menu",
+        "Image B is a realistic-style grass, trees, rocks and cliff scene with a dirt road and a character on a log",
+        "No shared HUD, palette or art style"
+      ]
+    }
+  ]
+}

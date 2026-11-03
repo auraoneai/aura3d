@@ -1,0 +1,77 @@
+{
+ "target": "teleoperator--night",
+ "slug": "teleoperator",
+ "variant": "night",
+ "url": "/apps/showcase-teleoperator/",
+ "group": "g1",
+ "runId": "gu47-before-teleoperator-2",
+ "acrRunId": "ch5u3",
+ "readyMs": 151648,
+ "shots": {
+  "settle-25s": {
+   "target": "teleoperator--night",
+   "id": "settle-25s",
+   "slug": "teleoperator",
+   "variant": "night",
+   "sinceReadyMs": 25014,
+   "mean": 27.98,
+   "p5": 0,
+   "p50": 14,
+   "p95": 165,
+   "darkFrac": 0.4719,
+   "clipFrac": 0,
+   "grid": [
+    0.1,
+    0.1,
+    8.9,
+    11.6,
+    62.3,
+    17.6,
+    39.9,
+    77.7,
+    33.6
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 401
+   }
+  },
+  "settle-60s": {
+   "target": "teleoperator--night",
+   "id": "settle-60s",
+   "slug": "teleoperator",
+   "variant": "night",
+   "sinceReadyMs": 347925,
+   "mean": 27.97,
+   "p5": 0,
+   "p50": 10,
+   "p95": 167,
+   "darkFrac": 0.4898,
+   "clipFrac": 0,
+   "grid": [
+    0.7,
+    0.3,
+    2,
+    8.5,
+    62.4,
+    16.4,
+    39.9,
+    77.9,
+    43.6
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 396
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-teleoperator-2/teleoperator--night--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-teleoperator-2/teleoperator--night--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

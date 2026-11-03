@@ -2,7 +2,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { GAME_CHECKS, GU47_CHECK_SEVERITY, resetGitCache, runChecks } from "../../../tools/game-checks/lib/index.mjs";
+import { GAME_CHECKS, GU47_CHECK_SEVERITY, GU47_SEVERITY_BY_CHECK, resetGitCache, runChecks } from "../../../tools/game-checks/lib/index.mjs";
 import { writeArtDirectionAudit } from "../../../tools/game-checks/lib/art-direction.mjs";
 
 // GU47 WP-9 (E-I): the five new game-checks, on throwaway fixture repos.
@@ -61,7 +61,14 @@ afterEach(() => {
 describe("GU47 game-checks registration", () => {
   it("registers the five checks at warn level until WP-38 flips them", () => {
     expect(GU47_CHECK_SEVERITY).toBe("warn");
-    for (const id of ["art-direction", "look-identity", "borrowed-asset", "prop-exclusivity", "luma-band"]) expect(typeof GAME_CHECKS[id]).toBe("function");
+    for (const id of ["art-direction", "look-identity", "borrowed-asset", "prop-exclusivity", "luma-band"]) {
+      expect(typeof GAME_CHECKS[id]).toBe("function");
+      expect(["warn", "error"]).toContain(GU47_SEVERITY_BY_CHECK[id as keyof typeof GU47_SEVERITY_BY_CHECK]);
+    }
+    // 4.7.6: every live game passes these, so they gate as errors; the WP-36 and band checks still warn.
+    expect(GU47_SEVERITY_BY_CHECK["art-direction"]).toBe("error");
+    expect(GU47_SEVERITY_BY_CHECK["look-identity"]).toBe("error");
+    expect(GU47_SEVERITY_BY_CHECK["prop-exclusivity"]).toBe("error");
   });
 });
 
@@ -70,7 +77,7 @@ describe("art-direction check", () => {
     const { root } = fixture({});
     const missing = run(root, ["art-direction"]);
     expect(missing).toHaveLength(1);
-    expect(missing[0]).toMatchObject({ check: "art-direction", severity: "warn", file: "apps/showcase-alpha/art/direction.ts" });
+    expect(missing[0]).toMatchObject({ check: "art-direction", severity: GU47_SEVERITY_BY_CHECK["art-direction"], file: "apps/showcase-alpha/art/direction.ts" });
     expect(missing[0]!.message).toContain("no art/direction.ts");
     withDirection(root, "showcase-alpha", direction());
     expect(run(root, ["art-direction"])).toEqual([]);
@@ -108,7 +115,7 @@ describe("look-identity check", () => {
       expect.stringContaining("palette.primary is shared with beta-hoops (#112233 #445566 #778899)")
     ]);
     expect(both.filter((f) => f.game === "beta-hoops")).toHaveLength(3);
-    expect(both.every((f) => f.severity === "warn")).toBe(true);
+    expect(both.every((f) => f.severity === GU47_SEVERITY_BY_CHECK["look-identity"])).toBe(true);
   });
 
   it("passes distinct looks, ignores IBL-only HDRIs and matches catalogue ids when no file is on disk", () => {
@@ -149,7 +156,7 @@ describe("borrowed-asset and prop-exclusivity checks", () => {
     ].join("\n"));
     const found = run(root, ["borrowed-asset"]);
     expect(found).toHaveLength(1);
-    expect(found[0]).toMatchObject({ check: "borrowed-asset", severity: "warn", file: "apps/showcase-alpha/src/main.ts", line: 1 });
+    expect(found[0]).toMatchObject({ check: "borrowed-asset", severity: GU47_SEVERITY_BY_CHECK["borrowed-asset"], file: "apps/showcase-alpha/src/main.ts", line: 1 });
     expect(found[0]!.message).toContain('"hoopsLamp" belongs to aura-hoops-3d (prefix hoops)');
   });
 
@@ -162,6 +169,77 @@ describe("borrowed-asset and prop-exclusivity checks", () => {
     expect(shared.map((f) => [f.game, f.message.split(":")[0]])).toEqual([
       ["alpha-port", 'asset key "corridorPulseRifleMeshy" is also used by beta-hoops'],
       ["beta-hoops", 'asset key "corridorPulseRifleMeshy" is also used by alpha-port']
+    ]);
+  });
+
+  it("borrowed-asset reports a later unmarked occurrence after an allowed occurrence", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      'const props = assets; model(props["hoopsLamp"]);'
+    ].join("\n"));
+    expect(run(root, ["borrowed-asset"])).toMatchObject([
+      { check: "borrowed-asset", severity: GU47_SEVERITY_BY_CHECK["borrowed-asset"], game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 2 }
+    ]);
+  });
+
+  it("prop-exclusivity reports a later unmarked occurrence after an allowed occurrence", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      'const props = assets; model(props["corridorPulseRifleMeshy"]);'
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", "model(assets.corridorPulseRifleMeshy);");
+    expect(run(root, ["prop-exclusivity"], ["alpha-port", "beta-hoops"])).toMatchObject([
+      { check: "prop-exclusivity", severity: "error", game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 2 },
+      { check: "prop-exclusivity", severity: "error", game: "beta-hoops", file: "apps/showcase-beta/src/main.ts", line: 1 }
+    ]);
+  });
+
+  it("honors each escape hatch when all occurrences are marked for that check", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok"
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", [
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok"
+    ].join("\n"));
+    expect(run(root, ["borrowed-asset", "prop-exclusivity"], ["alpha-port", "beta-hoops"])).toEqual([]);
+  });
+
+  it("evaluates borrowed-asset and prop-exclusivity markers independently", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/main.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.hoopsLamp); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok",
+      "model(assets.corridorPulseRifleMeshy); // borrowed-asset: ok"
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok");
+    expect(run(root, ["borrowed-asset", "prop-exclusivity"], ["alpha-port", "beta-hoops"])).toMatchObject([
+      { check: "borrowed-asset", game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 2 },
+      { check: "prop-exclusivity", game: "alpha-port", file: "apps/showcase-alpha/src/main.ts", line: 4 }
+    ]);
+  });
+
+  it("reports later unmarked occurrences in another source file", () => {
+    const { root, put } = fixture({ "aura.assets.json": manifest });
+    put("apps/showcase-alpha/src/a-first.ts", [
+      "model(assets.hoopsLamp); // borrowed-asset: ok",
+      "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok"
+    ].join("\n"));
+    put("apps/showcase-alpha/src/z-later.ts", [
+      "model(assets.hoopsLamp);",
+      "model(assets.corridorPulseRifleMeshy);"
+    ].join("\n"));
+    put("apps/showcase-beta/src/main.ts", "model(assets.corridorPulseRifleMeshy); // prop-exclusivity: ok");
+    expect(run(root, ["borrowed-asset", "prop-exclusivity"], ["alpha-port", "beta-hoops"])).toMatchObject([
+      { check: "borrowed-asset", game: "alpha-port", file: "apps/showcase-alpha/src/z-later.ts", line: 1 },
+      { check: "prop-exclusivity", game: "alpha-port", file: "apps/showcase-alpha/src/z-later.ts", line: 2 }
     ]);
   });
 });

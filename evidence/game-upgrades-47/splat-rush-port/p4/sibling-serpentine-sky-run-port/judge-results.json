@@ -1,0 +1,742 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:12:52.331Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "desk--early-settled",
+      "desk--mid-action-settled",
+      "desk--results-settled",
+      "desk--roll-settled",
+      "desk--title-settled",
+      "splat-rush-port--default--settle-25s",
+      "splat-rush-port--default--settle-60s"
+    ],
+    "framesB": [
+      "serpentine-sky-run-port--default--settle-25s",
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-25s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-25s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-25s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-25s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-25s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-25s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-25s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-25s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.85,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 46,
+    "sameGameYes": 2,
+    "differentRate": 0.9583333333333334,
+    "ci95": [
+      0.8602408885222853,
+      0.9884983479210344
+    ],
+    "confidentDifferent": 43,
+    "confidentDifferentRate": 0.8958333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.85,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage3--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic-style runner on a brick bridge with floating tree islands and a desert-cloud sky",
+        "Image B: cartoon UI with a 'SPLAT!' game-over card, candy-like spheres and balloons",
+        "Different art styles and palettes: warm tan and green versus red-pink and purple"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A has a humanoid character on a brick path, while Image B has a red ball over a cloud floor",
+        "Different palettes: muted sepia haze versus saturated pink and purple sunset",
+        "Shared floating grass islands and cloud seas, which could point to the same game"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized cartoon look with a red ball, flat-shaded clouds and a pink sunset sky; Image B is a realistic-leaning render with a detailed anime-style runner character",
+        "Image B has a purple night sky with stars, a tiled bridge path and lamp posts that do not appear in Image A",
+        "Floating islands appear in both, but their style differs (cartoon grass-topped islands with towers vs. rocky islands with trees)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "serpentine-sky-run-port--stage3--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic textured runner character on a brick road over a sand-colored cloud sea with a muted orange haze",
+        "Image B: stylized glossy red ball, candy-colored pink and purple sky, and a cartoon HUD with score and hearts",
+        "Different art direction and gameplay, despite both having floating islands and a winding path"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage1--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a third-person runner with a realistic anime character on a brick bridge; Image B is a Chroma Roll menu with a cartoon HUD",
+        "Both have pink-purple skies and floating islands, but the island styles and art differ",
+        "Image B has chunky rounded UI with hearts and score; Image A has no comparable HUD"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a realistic-style humanoid character on a brick path in a golden desert-like cloud sea, while Image B has a glossy red ball in a cartoony pastel candy world",
+        "Different art direction and lighting: warm orange haze with a single sun versus a pink-purple sunset with stylized clouds, balloons and towers",
+        "Image B shows a game HUD with score, combo, hearts, and pause button, and Image A has none"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night scene with a human character and blue tiled road; Image B is a cartoon pastel sunset with a red ball",
+        "Different HUD: B has hearts, score box and round buttons, A has none",
+        "Different materials and lighting: A uses dark blue fog and glossy tiles, B uses flat bright toon shading with outlines"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage3--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a human character running on a brick path through a sandy, hazy sky, while Image B has a red glossy ball in a candy-colored pink/purple sky",
+        "Different HUD: Image A has none, Image B has a score, combo and hearts display with round buttons",
+        "Different art style: Image A is muted and realistic with soft fog, Image B is stylized and saturated with a toy-like look"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized cartoon look with a red ball, a pink sunset sky and a bright HUD",
+        "Image B is a realistic night scene with a humanoid character, a moon and a blue palette",
+        "Both show floating islands above clouds on a winding path, but the rendering and art style differ"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "serpentine-sky-run-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is low-poly and flat-shaded with a red ball and wooden pillars, while Image B has a detailed anime character on a tiled bridge",
+        "Floating grass islands and cloud seas appear in both, but their rendering and geometry differ: stylized cartoon islands in A, textured rocky islands in B",
+        "Different palettes and lighting: pink-yellow sunset gradient in A, hazy purple sky with a bright sun glow in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a third-person runner with a human character on a brick path; Image B is a red ball rolling over striped spheres",
+        "Different palettes: orange-gold desert haze in A, pink-purple sunset in B",
+        "Floating islands appear in both, but A's are realistic rock with trees while B's are stylized with castles and balloons"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized pastel pink and purple scene with cartoon floating islands and a menu overlay titled Chroma Roll",
+        "Image B is a realistic red-orange sunset with a human runner on a brick road above a cloud sea",
+        "Different rendering styles: soft low-poly toon in A versus high-detail realistic lighting and PBR in B"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage3--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized pink/purple sky with chunky, cartoon floating islands behind a title menu, while Image B is a warm sepia desert-cloud scene with realistic textured rocky islands",
+        "Image B shows a human character running along a brick road, which is a different art style and gameplay setup than Image A's color-matching roller with a hearts and score HUD",
+        "The color palettes and lighting differ: A has soft pastel gradients, B has golden hazy sunset lighting"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a humanoid character on a pale pink brick path; Image B has a red glossy ball on a cream track with a bead rail",
+        "Different art styles: soft hazy pastel in A, saturated cartoon with outlined shapes in B",
+        "Image B has a score/lives/combo HUD, hot air balloons, pennant flags and candy-drip hurdles, none of which appear in A"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage1--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a stylized cartoon look with a red ball, hearts HUD, score and combo counters, and hurdle obstacles",
+        "Image B is a realistic-leaning look with an anime-style humanoid runner, a paved brick path, lanterns, and no HUD",
+        "Both share floating islands and a pink sky above clouds, but the art style, characters and track design differ"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a cartoon ball runner with a score and hearts HUD, Image B is a humanoid character runner with no HUD",
+        "Different art styles: A has bold outlines, cluttered floating islands and towers, B has soft realistic-looking shading and a clean cloud-sea horizon",
+        "Different paths and objects: A has a wooden plank track with bead rails and gates, B has a pink tiled bridge with lamp posts"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized low-poly pastel pink and yellow sky with a red ball and cartoon floating islands",
+        "Image B is a dark blue realistic night scene with a humanoid character on a tiled bridge",
+        "Different rendering style, palette, and gameplay perspective, with only floating islands and clouds in common"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic dark-blue night scene with a humanoid runner on a tiled bridge above cloud sea, while Image B is a stylized cartoon candy-pink world",
+        "Image B has a bright cartoony HUD with a Splat! game-over card, score, and hearts, which Image A lacks",
+        "Different art styles: A has realistic lighting and materials, B has soft flat pastel shapes, bunting, and balloons"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a cartoon game-over card with candy-like spheres and floating tower islands, in a red/purple palette",
+        "Image B has a realistic-style humanoid character on a brick path above sand-colored clouds with floating tree islands",
+        "The two frames differ in HUD and art style: A has a bold cartoon UI, B has no HUD and a hazy beige sunset"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "serpentine-sky-run-port--stage5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized cartoon with a red ball, dripping gate obstacles, and a pastel pink sunset with a cute HUD",
+        "Image B is a realistic-leaning render with a humanoid runner, a purple night sky, and a brick path over a cloud sea",
+        "Both have floating islands and a winding path, but the art style, lighting, and characters are very different"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic dark blue night lighting with a humanoid character",
+        "Image B: pastel stylized look with a red ball and a cartoon HUD",
+        "Different path design: blue stone tiles vs. a wooden plank bridge"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pastel pink/orange stylized clouds with a cartoon HUD (hearts, score, title card)",
+        "Image B: realistic dark blue night scene with a humanoid character running on a tiled path",
+        "Floating islands appear in both but are rendered in very different styles and palettes"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized, pastel pink cartoon scene with a Chroma Roll title card and chunky HUD",
+        "Image B is a realistic purple night scene with a humanoid runner on a brick bridge",
+        "Floating islands in both, but with different rendering styles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic night scene with a human character on a blue tiled path over clouds",
+        "Image B: cartoon candy-colored style with a red overlay and a bubbly 'SPLAT!' game-over HUD",
+        "Different scenery: dark floating tree islands vs. pastel towers, balloons and spheres along the track"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark blue night palette, realistic humanoid character, and a cloud sea",
+        "Image B: bright pink and orange sunset with a stylized cartoon red ball and a score/combo HUD",
+        "Floating islands appear in both but are rendered in different art styles"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-style humanoid character on a tiled bridge, while Image B has a glossy red ball in a stylized cartoon scene",
+        "Different art styles: A uses soft hazy pastel lighting with a red-lantern path, B uses flat cel-like clouds, wooden pillars and hot air balloons",
+        "Both show floating grassy islands above a cloud sea, but the island models, sky gradients and gameplay objects differ"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a stylized cartoon look with a red/pink palette and a cartoon HUD with a 'SPLAT!' game-over card",
+        "Image B has a realistic, painterly look with a purple night sky, cloud sea and a humanoid runner",
+        "Different path and scenery: bead-lined plank bridge with pillars and bunting vs. a tiled stone road with lanterns and floating islands"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-25s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "floating grassy rock islands with trees in both frames",
+        "sea of clouds as ground with a stylized sunset sky",
+        "similar soft, painterly cartoon rendering and grass-topped rock materials"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a realistic humanoid runner on a red brick road above a sand-colored cloud sea, while Image B has a glossy red ball rolling through jelly gates",
+        "Image A is a monochrome red sunset with dark, gritty lighting, while Image B is pastel pink and purple with a soft cartoon look",
+        "Image B has a score, combo and hearts HUD with rounded cream panels, and Image A shows no comparable HUD"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized cartoon sunset with a rolling red ball and a cartoon HUD (score, hearts)",
+        "Image B is a realistic dark blue night scene with a humanoid character and a tiled bridge",
+        "The floating islands appear in both, but the art style, palette and lighting differ completely"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "serpentine-sky-run-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a realistic-style anime character on a pale pink brick bridge, Image B has a glossy red ball on a wooden track",
+        "Different art styles: soft hazy rendering with a low sun in A, saturated cartoon look with dark outlines in B",
+        "Image B has a HUD with score, combo and hearts, plus candy-like obstacles and hot air balloons, none of which appear in A"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-25s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "floating grass-topped rock islands in both",
+        "sea of clouds below with a low sun on the horizon",
+        "similar soft stylized rendering with warm sunset lighting"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic night scene with a human character on a tiled bridge",
+        "Image B is a pastel pink, cartoony menu with a Chroma Roll title card",
+        "Floating islands appear in both, but the palette, style and HUD differ"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-style humanoid runner on a tiled sky bridge with floating tree islands",
+        "Image B has a cartoon UI with a SPLAT! game-over card, balloons, and candy-like orbs along the track",
+        "Different art styles and palettes: soft pink-cream clouds vs. saturated red-orange with castle islands"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized cartoon scene with a red glossy ball, brown pillars and toy-like clouds, while Image B has a realistic anime-style runner on a tiled bridge",
+        "Different palettes and lighting: pink/blue sunset with flat pastel clouds versus orange/purple glow with a bright sun and golden cloud sea",
+        "Floating islands appear in both, but they are rendered differently (cartoon grass-topped bowls versus rocky chunks with trees)"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A uses soft, clay-like stylized islands with a pastel pink cloud sea, while Image B has realistic textured grey rock islands and a golden cloud sea",
+        "Image B shows a realistic humanoid runner on a tiled path, whereas Image A is a ball-roller (Chroma Roll) with a cartoon HUD",
+        "Both share floating islands above clouds at sunset, but the rendering style differs"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "serpentine-sky-run-port--stage5--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized, pastel low-poly game with a cartoon menu overlay titled Chroma Roll",
+        "Image B is a realistic, dark purple scene with a humanoid runner on a brick bridge, with no HUD",
+        "Both show floating islands, but the islands, clouds, palette and rendering style differ"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "serpentine-sky-run-port--stage8--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-styled human character on a tiled bridge over golden clouds; Image B has a red ball on low-poly striped spheres",
+        "different palettes: purple-to-orange sunset with a white sun vs. pink-to-yellow sky with a lavender cloud floor",
+        "different scenery: A has lanterns and dark floating rock islands; B has wooden pillars, castle islands and hot air balloons"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "serpentine-sky-run-port--stage2--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a cartoon candy-style runner with a 2D HUD, a 'SPLAT!' game-over card, and floating islands holding towers and balloons",
+        "Image B is a realistic-looking third-person runner with an anime-style character on a brick path above golden clouds, and it has no HUD",
+        "The palettes and art styles differ: stylized red/pink with rounded UI in A, warm golden hazy realism in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses a stylized cartoon look with a red ball, candy-colored hurdles and a bold HUD, while Image B is a realistic-leaning render with a humanoid runner",
+        "Different track and scenery: Image A has cream track with bead rails, floating islands with towers and hot-air balloons, Image B has pink brick road with a blue edge, lamp posts and a golden cloud sea",
+        "Different lighting and palette: Image A is a pink-purple sunset with soft clouds, Image B has a purple-to-orange gradient with a bright sun glow"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic humanoid runner on a purple brick bridge, Image B has a red glossy ball on cloud ground",
+        "Different art styles: A is dark and moody with a night sky and moon, B is a bright cartoon sunset with hot air balloons and pillars",
+        "Both have floating islands and cloud seas, but the lighting, palette and character types differ"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a muted sepia desert-cloud sky with a humanoid character on a brick path, while Image B is a saturated pink-purple sunset with a red glossy ball",
+        "Different art style: realistic-ish character and lanterns in A versus a cartoon candy look with a score/combo HUD in B",
+        "Floating islands appear in both but are rendered differently, and the path and scenery differ (green-edged brick road vs bead-lined track with hurdles and coins)"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized cartoon look with a red ball, flat-shaded clouds and wooden pillars, while Image B has a realistic humanoid character on a tiled bridge",
+        "Different floating islands: A has castle towers on grassy discs, B has small rocky islands with single trees",
+        "Different sky and lighting: A has a saturated pink-yellow sunset, B has a hazy purple gradient with a bright sun glow and sandy cloud sea"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a humanoid runner on a pale tiled path above golden clouds, with a large sun and purple-to-orange gradient sky",
+        "Image B has a red ball on a wooden plank bridge with hurdles, a score/lives HUD, and pink-purple clouds",
+        "Different art styles: A is smooth and realistic with hazy glow, B is stylized and cartoonish with tall rock pillars and a blob splat"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a humanoid runner on a tiled bridge, Image B has a red ball over a cloud floor",
+        "Different palettes and sky: hazy orange desert-like clouds vs pink-purple sunset with stylized clouds",
+        "Both have floating islands, but they differ in art style and scenery: realistic rocky islands vs cartoony castle islands, balloons and pillars"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a realistic humanoid character on a brick path, Image B has a red ball on a plank bridge with a cartoon HUD",
+        "A uses a warm orange haze with sandy cloud sea, B uses pink-purple clouds with stylized rock pillars",
+        "Different art styles: A has painterly semi-realistic rendering, B has flat toon shading with outlines"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.77,
+      "tells": [
+        "Image A is a stylized low-poly ball game with pastel purple cloud floor, wooden pillars and hot air balloons",
+        "Image B is a third-person runner with a realistic textured humanoid on a brick road above golden clouds",
+        "Floating islands and cloud seas appear in both, but the rendering style, palette and camera differ"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic dark blue night scene with a humanoid character on a tiled path",
+        "Image B: bright pink and orange cartoon sky with a red ball, jelly obstacles and a score HUD",
+        "Both have floating islands and a path above clouds, but the art style and lighting differ completely"
+      ]
+    }
+  ]
+}

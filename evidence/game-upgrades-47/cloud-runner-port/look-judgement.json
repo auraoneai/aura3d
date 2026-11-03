@@ -3,16 +3,8 @@
   "round": 1,
   "shots": [
     {
-      "path": "../g25/evidence/game-upgrades-47/cloud-runner-port/p3-r1/rubric/default-title.jpg",
-      "sha256": "71a00e9fbf7cd8a1dd8b04ffff101ce48fae793d4adca823fcd7f7b4306685cb"
-    },
-    {
-      "path": "../g25/evidence/game-upgrades-47/cloud-runner-port/p3-r1/rubric/default-play-0060.jpg",
-      "sha256": "74e9d5f914c3772ba1613a4d0be5075175609dbb5e2b72635903b9975e59f5aa"
-    },
-    {
-      "path": "../g25/evidence/game-upgrades-47/cloud-runner-port/p3-r1/rubric/default-play-0520.jpg",
-      "sha256": "632e23359603d7f738c3aadcf23264594dddf54a1d20b474973e87f2ad0e1d12"
+      "path": "evidence/game-upgrades-47/cloud-runner-port/p4-r3/rubric/default-title.jpg",
+      "sha256": "d5b2903970b7be32c78d390b65ca0f5309c90820a4067926f957b4fc08ebd3f3"
     }
   ],
   "references": [],
@@ -24,60 +16,55 @@
     "atmospheric_effects": 6.5,
     "material_quality": 5.5,
     "modeling_assets": 5.5,
-    "composition": 6.5,
-    "camera": 6.5,
+    "composition": 6,
+    "camera": 5.5,
     "postprocessing": 6,
-    "animation_quality": 6,
     "ui_hud": 7.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Daylight reads well on the cliffs and grass. The rolling log is lit flat and muddy brown with no clear sun-side highlight. In frame 3 the path is washed out to a pale beige with a bright hot spot near the horizon."
+      "seen": "Warm, soft daylight reads correctly as outdoor-day. Key direction is weak: the boulders and trees show little form-defining light/shadow contrast, and the scene looks mostly ambient-lit."
     },
     {
       "category": "shadows",
-      "seen": "The character casts only a faint blob, barely visible on the path in frame 3. Trees, boulders and the log show no clear cast shadows on the ground, so objects float."
+      "seen": "There is almost no contact shadow under the character's feet on the log. The log casts no clear shadow on the dirt path. The boulders and trees sit on the grass with faint or missing grounding shadows."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The boulders and log show little environment response. The log's specular is a soft vertical sheen with no sky tint or rim. Foliage looks unlit-flat."
+      "seen": "All surfaces are matte. Nothing shows environment reflection or specular response, not even the character's clothing or the sandstone. There is no sky-tinted fill on upward faces."
     },
     {
       "category": "environment_world",
-      "seen": "Canyon walls, trees, boulders, distant mesas and the sky make a coherent ridge-run world. However, the far water/haze plane cuts in as a hard horizontal band in frame 1, and the bush clusters are repetitive."
+      "seen": "A dirt path leads to a sea horizon, with low-poly trees, cracked boulders and a textured sandstone cliff. The grass fields are flat, uniform green dotted with small purple tetrahedron pebbles, which reads as sparse placeholder scatter."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "Distance haze softens the background mesas and trees nicely. In frame 1 a grey haze strip sits unnaturally across the horizon. The cloud plume in frames 2–3 looks like a painted sprite."
+      "seen": "Distance haze softens the horizon and the far trees. A large dark storm cloud and a pale haze band sit in the sky. The fog is present but slightly heavy and grey, which mutes the sky blue."
     },
     {
       "category": "material_quality",
-      "seen": "The cracked boulder textures read well. The log is a plain gradient cylinder with seam lines and no bark detail. The frame 3 path has lost its texture and looks like flat beige plaster."
+      "seen": "The foreground log is a smooth brown gradient with no bark texture and visible vertical segment seams. The cliff and boulders have decent painted textures. The grass has no texture variation, so material fidelity is inconsistent."
     },
     {
       "category": "modeling_assets",
-      "seen": "The low-poly trees and pines are decent. The log is a low-segment cylinder with visible faceting on its ends. The bushes are simple blobs, and the ground triangles are scattered confetti."
+      "seen": "The log is a plain low-segment cylinder with faceted ends. The trees are low-poly with faceted canopy cards. The character is a reasonable stylized figure with sculpted curly hair. Asset fidelity is mixed across the scene."
     },
     {
       "category": "composition",
-      "seen": "The subject is small, roughly 8–10% of frame height, against a recipe of 18–25%. The log fills the lower third in frames 1–2 and dominates over the character."
+      "seen": "The path's leading lines converge well on the horizon. The large log fills most of the bottom third and is cut off, and the menu UI overlaps the left tree cluster. The character is small, about 15–20% of frame height."
     },
     {
       "category": "camera",
-      "seen": "The camera is a chase cam directly behind the player, not side-on. The long-run framing is readable, but in frame 2 the low log occludes the player's feet."
+      "seen": "The camera is a behind-and-above chase view looking down the path, not the side-on follow view the platformer recipe expects. The FOV looks close to 50. The subject occupies under the target 18–25% of the frame."
     },
     {
       "category": "postprocessing",
-      "seen": "There is mild bloom on the progress marker and the path hot spot. Frame 3 is overexposed on the path. Grading is warm but slightly hazy and low-contrast overall."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "The running pose reads in frames 2–3. In frame 1 the character stands stiffly on the log with feet slightly sunk or sliding."
+      "seen": "The tone mapping is soft and warm, but the overall image is slightly washed and low-contrast, with greens less saturated than the recipe calls for. No visible bloom, AO or sharpening adds depth."
     },
     {
       "category": "ui_hud",
-      "seen": "The HUD is clean: hearts, pearl counter, progress bar, score, a sky cloud meter and a tutorial banner. Menu buttons and the key legend are tidy. The 'Checkpoint' toast overlaps the play area near the player."
+      "seen": "The title typography is clean, with an orange kicker and a cream headline. The rounded buttons have clear hierarchy, and the gold Play button ties to the accent color. A readable keycap control strip runs along the bottom."
     }
   ],
   "nextChange": {

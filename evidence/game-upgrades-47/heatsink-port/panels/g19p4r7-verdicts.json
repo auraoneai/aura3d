@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "heatsink-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Drone sits off-centre to the right and is partly crowded by the overhanging rock slab. Purple diamonds float in mid-air, which could read as floating objects, though they are likely pickups. The sky and the distant mountains are a little hazy and pastel. The ground grid is somewhat flat.",
+     "The drone sits off-center to the right and its dark body partly blends into the purple track. There is mild haze in the far distance and the floating purple diamonds look a little arbitrary. Otherwise it has rich colour, a strong planet-and-aurora backdrop, detailed track grid and rock layering, and good depth.",
+     "Drone is off-centre to the right and slightly cut by the composition. The large overhanging rock slab on the right reads as a bit flat. Floating purple diamond shards could look like stray geometry. Mild purple haze in the midground."
+    ]
+   }
+  ]
+ }
+]

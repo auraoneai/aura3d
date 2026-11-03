@@ -1,0 +1,7 @@
+# GL_PROBE lines of rr-x-boost (tests/browser/audit-fix/roadster-rush.spec.ts), software WebGL2 on crmmeprodacr
+## g02p6-r1-boost
+GL_PROBE {"target":"boost","step":"manual-empty-air","steps":530,"emptyFromStep":230,"emptySteps":300,"mode":"playing","air":0.12,"boostEventsTotal":1,"boostEventsAtEmpty":0,"simBoostingFlipsAtEmpty":299,"boostVisualFlipsAtEmpty":0,"boostVisualOffStepsAtEmpty":0,"shakePulsesAtEmpty":0,"boosting":false,"boostVisual":true}
+GL_PROBE {"target":"boost","step":"live-empty-air","shakeWrites":0,"maxShake":0,"frames":1,"evBoostFlips":0,"evBoostOff":0,"simFlips":0,"linesStart":31,"linesEnd":31,"airMax":0.11666666666666667,"mode":"playing","air":0.12,"boostVisual":true,"simTime":9.93}
+## g02p6-r4-boost
+GL_PROBE {"target":"boost","step":"manual-empty-air","steps":530,"emptyFromStep":230,"emptySteps":300,"mode":"playing","air":0.12,"boostEventsTotal":1,"boostEventsAtEmpty":0,"simBoostingFlipsAtEmpty":299,"boostVisualFlipsAtEmpty":0,"boostVisualOffStepsAtEmpty":0,"shakePulsesAtEmpty":0,"boosting":false,"boostVisual":true}
+GL_PROBE {"target":"boost","step":"live-empty-air","shakeWrites":0,"maxShake":0,"frames":8,"evBoostFlips":0,"evBoostOff":0,"simFlips":0,"linesStart":31,"linesEnd":41,"airMax":0.11666666666666667,"simStart":9.833333333333401,"mode":"playing","air":0.12,"boostVisual":true,"simTime":11.33}

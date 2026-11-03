@@ -1,6 +1,6 @@
 # Editor Diagnostics Workflow
 
-Version: 4.7.1
+Version: 4.7.10
 
 Editor diagnostics should be treated as runtime evidence for specific editor state, command, selection, export, or route behavior.
 

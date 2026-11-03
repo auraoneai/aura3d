@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p4-r1/ninja-runner-port/frames/g20p4-r1s-1/desktop--run-1280-page.jpg",
+      "sha256": "7f3887a21ec442e1bd979ca460aebf8dfcb5fb8cbffa856c2c493d6f41a112c5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 6,
+    "ibl_reflections": 4,
+    "environment_world": 6.5,
+    "atmospheric_effects": 5,
+    "material_quality": 6,
+    "modeling_assets": 5.5,
+    "composition": 6.5,
+    "camera": 5,
+    "postprocessing": 5.5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm directional sun reads from front-left, but the grass field and the stone towers are evenly lit with little fill or sky contribution. The dark-clothed player and enemy lose form against the path because there is no rim or bounce light on them."
+    },
+    {
+      "category": "shadows",
+      "seen": "The player, the enemy, the gate and the trees cast directional shadows on the cobbles and grass. The tree shadows on the grass are soft and faint, and the bushes and tower bases show weak contact darkening, so the objects look pasted onto the ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No environment reflections are visible. The gate's lacquered orange wood has a flat specular, and the slate roofs and stones show no sky tint or reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The village is coherent: a cobblestone road to a pagoda-style gate, round stone towers with conical slate roofs, a half-timbered house, and low-poly mountains at the horizon. The grass is a single flat plane with a visibly repeating streaked texture, and an unidentified dark box intrudes at the bottom-left edge."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is only a slight haze on the distant mountains and the buildings past the gate. No light shafts, particles or foliage motion cues are visible, and the sky is a static cloud backdrop."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestones have convincing per-stone shading and darkened grout. The tower brick is a tiled diffuse texture, the grass texture repeats, and the gate's orange material is overly uniform and saturated."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The tree canopies are faceted low-poly clusters and the bushes are lumpy spheres. These clash with the higher-detail gate, the textured towers and the reasonably detailed character models."
+    },
+    {
+      "category": "composition",
+      "seen": "The symmetric road leads the eye through the gate, which works well. The player and enemy are small, dark and low in the frame, and the HUD panels crowd all four corners."
+    },
+    {
+      "category": "camera",
+      "seen": "This is a behind-the-back chase view at roughly 55 to 60 degrees FOV, not the side-on follow camera the recipe specifies. The player figure fills well under the 18 to 25% target in area."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Tone mapping is mild and the image stays clean, but there is no visible ambient occlusion, bloom or color grade. The greens look raw and slightly oversaturated rather than graded."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The parchment panels with serif italic text fit the theme. The top-right labels collide with their values ('DISTANCE45 m', 'DEFEATED00'), the disabled ability buttons are low contrast, and the top progress-bar letter markers are tiny."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

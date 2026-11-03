@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/heatsink-port/f49/heatsink-port/frames/f49-heatsink-default/heatsink-port--default--settle-60s.jpg",
+      "sha256": "c031facbb6a23c9b2964e67bba8ff8fd7baa0657a2cf95d8567c8f9f71de5c0f"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 2.5,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 4,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, ambient-dominated lighting with no readable key direction. There is no low warm sun. Mountains and track are lit evenly in cool teal and purple, far from the golden-hour recipe."
+    },
+    {
+      "category": "shadows",
+      "seen": "The drone casts no visible contact or ground shadow, so its legs appear to float above the track. The mountains and the rock overhang show almost no cast shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The drone canopy has a single orange highlight. The track and metal parts show no environment reflections of the bright sky or planet."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world has a ringed pink planet, an aurora sky, striated low-poly mountains, a rock arch with speckled lights, crystals and floating purple diamonds. The theme is coherent, but the props are sparse and repetitive."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the far mountains and the start gate. The fog is a uniform teal wash with little depth layering and no light scattering."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The track is a flat purple grid with unlit white crack lines. The mountains use a stretched contour-line texture. The drone materials read as plastic with weak roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The drone model is reasonably detailed, with rotors, cameras and canopy. The mountains are simple cone and blob forms, and the gate is a plain rectangular frame."
+    },
+    {
+      "category": "composition",
+      "seen": "The drone sits at the right edge, low in frame, and takes up roughly 10–12% of the image. The planet pulls focus upward, and the large empty track foreground dominates the lower half."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase view is low and offset, with the subject pushed off-center. The camera does not frame the vehicle on the racing line, and the FOV looks wider than 60°."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The image is low-contrast and washed out, with no visible tone curve, film grade, bloom on the glowing lines, or vignette. There is no cinematic-film treatment."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible: no speed, lap, position or timer readout appears in the frame."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

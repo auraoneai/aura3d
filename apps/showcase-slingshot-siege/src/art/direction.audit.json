@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-slingshot-siege/src/art/direction.ts",
-  "sourceSha256": "c030cccc3339b144be1a6172deb8f137d8342abe3a8c8012a5100b93a0642cdc",
+  "sourceSha256": "7544d1c2e016631b605e38bfc231bbd9435a7df66187504c17ffc2b755547795",
   "id": "showcase-slingshot-siege",
   "genre": "golf-physics",
   "signatureEffect": "Tilt-shift miniature focus band that keeps the toy fort crisp over a real sea horizon, through six times of one seaside day.",
@@ -26,7 +26,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 3
+        "intensity": 5.4
       }
     ],
     "hasAmbient": false,
@@ -36,9 +36,9 @@
     },
     "models": [
       {
-        "assetKey": "gullsiegeBridgeMeshy",
+        "assetKey": "sling_seaStackIsland",
         "triangles": 0,
-        "textures": 3,
+        "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
@@ -50,100 +50,30 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "propRockB",
+        "assetKey": "gullsiegeBridgeMeshy",
         "triangles": 0,
         "textures": 3,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "propRockB",
+        "assetKey": "sling_rocksB",
         "triangles": 0,
-        "textures": 3,
+        "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "propRockB",
+        "assetKey": "sling_rocksA",
         "triangles": 0,
-        "textures": 3,
+        "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "propRockB",
+        "assetKey": "sling_islandTrees",
         "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propRockB",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propRockA",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propRockA",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propRockA",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propRockA",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propPineTree",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propConifer",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propPineTree",
-        "triangles": 0,
-        "textures": 4,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propConifer",
-        "triangles": 0,
-        "textures": 1,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "propPineTree",
-        "triangles": 0,
-        "textures": 4,
+        "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
@@ -1051,35 +981,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "gullsiegeBridgeMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "gullsiegePlanksMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeCrateMeshy",
-        "triangles": 0,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gullsiegeBarrelMeshy",
         "triangles": 0,
         "textures": 3,
         "unlit": false,
@@ -1122,11 +1024,7 @@
         "practical": false
       },
       {
-        "node": "terrain-mounds",
-        "practical": false
-      },
-      {
-        "node": "grass-patches",
+        "node": "terrain-spheres",
         "practical": false
       },
       {
@@ -1135,14 +1033,6 @@
       },
       {
         "node": "grass-tufts",
-        "practical": false
-      },
-      {
-        "node": "foreground-pebbles",
-        "practical": false
-      },
-      {
-        "node": "distant-headlands",
         "practical": false
       },
       {
@@ -1198,18 +1088,6 @@
         "practical": false
       },
       {
-        "node": "sling-fork-l",
-        "practical": false
-      },
-      {
-        "node": "sling-fork-r",
-        "practical": false
-      },
-      {
-        "node": "sling-trunk",
-        "practical": false
-      },
-      {
         "node": "sling-band-l",
         "practical": false
       },
@@ -1218,323 +1096,23 @@
         "practical": false
       },
       {
-        "node": "v-block-0",
+        "node": "v-blocks-wood",
         "practical": false
       },
       {
-        "node": "v-block-1",
+        "node": "v-blocks-stone",
         "practical": false
       },
       {
-        "node": "v-block-2",
+        "node": "v-blocks-glass",
         "practical": false
       },
       {
-        "node": "v-block-3",
+        "node": "v-blocks-ice",
         "practical": false
       },
       {
-        "node": "v-block-4",
-        "practical": false
-      },
-      {
-        "node": "v-block-5",
-        "practical": false
-      },
-      {
-        "node": "v-block-6",
-        "practical": false
-      },
-      {
-        "node": "v-block-7",
-        "practical": false
-      },
-      {
-        "node": "v-block-8",
-        "practical": false
-      },
-      {
-        "node": "v-block-9",
-        "practical": false
-      },
-      {
-        "node": "v-block-10",
-        "practical": false
-      },
-      {
-        "node": "v-block-11",
-        "practical": false
-      },
-      {
-        "node": "v-block-12",
-        "practical": false
-      },
-      {
-        "node": "v-block-13",
-        "practical": false
-      },
-      {
-        "node": "v-block-14",
-        "practical": false
-      },
-      {
-        "node": "v-block-15",
-        "practical": false
-      },
-      {
-        "node": "v-block-16",
-        "practical": false
-      },
-      {
-        "node": "v-block-17",
-        "practical": false
-      },
-      {
-        "node": "v-block-18",
-        "practical": false
-      },
-      {
-        "node": "v-block-19",
-        "practical": false
-      },
-      {
-        "node": "v-block-20",
-        "practical": false
-      },
-      {
-        "node": "v-block-21",
-        "practical": false
-      },
-      {
-        "node": "v-block-22",
-        "practical": false
-      },
-      {
-        "node": "v-block-23",
-        "practical": false
-      },
-      {
-        "node": "v-block-24",
-        "practical": false
-      },
-      {
-        "node": "v-block-25",
-        "practical": false
-      },
-      {
-        "node": "v-block-26",
-        "practical": false
-      },
-      {
-        "node": "v-block-27",
-        "practical": false
-      },
-      {
-        "node": "v-block-28",
-        "practical": false
-      },
-      {
-        "node": "v-block-29",
-        "practical": false
-      },
-      {
-        "node": "v-block-30",
-        "practical": false
-      },
-      {
-        "node": "v-block-31",
-        "practical": false
-      },
-      {
-        "node": "v-block-32",
-        "practical": false
-      },
-      {
-        "node": "v-block-33",
-        "practical": false
-      },
-      {
-        "node": "v-block-34",
-        "practical": false
-      },
-      {
-        "node": "v-block-35",
-        "practical": false
-      },
-      {
-        "node": "v-block-36",
-        "practical": false
-      },
-      {
-        "node": "v-block-37",
-        "practical": false
-      },
-      {
-        "node": "v-block-38",
-        "practical": false
-      },
-      {
-        "node": "v-block-39",
-        "practical": false
-      },
-      {
-        "node": "v-block-40",
-        "practical": false
-      },
-      {
-        "node": "v-block-41",
-        "practical": false
-      },
-      {
-        "node": "v-block-42",
-        "practical": false
-      },
-      {
-        "node": "v-block-43",
-        "practical": false
-      },
-      {
-        "node": "v-block-44",
-        "practical": false
-      },
-      {
-        "node": "v-block-45",
-        "practical": false
-      },
-      {
-        "node": "v-block-46",
-        "practical": false
-      },
-      {
-        "node": "v-block-47",
-        "practical": false
-      },
-      {
-        "node": "v-block-48",
-        "practical": false
-      },
-      {
-        "node": "v-block-49",
-        "practical": false
-      },
-      {
-        "node": "v-block-50",
-        "practical": false
-      },
-      {
-        "node": "v-block-51",
-        "practical": false
-      },
-      {
-        "node": "v-block-52",
-        "practical": false
-      },
-      {
-        "node": "v-block-53",
-        "practical": false
-      },
-      {
-        "node": "v-block-54",
-        "practical": false
-      },
-      {
-        "node": "v-block-55",
-        "practical": false
-      },
-      {
-        "node": "v-block-56",
-        "practical": false
-      },
-      {
-        "node": "v-block-57",
-        "practical": false
-      },
-      {
-        "node": "v-block-58",
-        "practical": false
-      },
-      {
-        "node": "v-block-59",
-        "practical": false
-      },
-      {
-        "node": "v-block-60",
-        "practical": false
-      },
-      {
-        "node": "v-block-61",
-        "practical": false
-      },
-      {
-        "node": "v-block-62",
-        "practical": false
-      },
-      {
-        "node": "v-block-63",
-        "practical": false
-      },
-      {
-        "node": "v-block-64",
-        "practical": false
-      },
-      {
-        "node": "v-block-65",
-        "practical": false
-      },
-      {
-        "node": "v-block-66",
-        "practical": false
-      },
-      {
-        "node": "v-block-67",
-        "practical": false
-      },
-      {
-        "node": "v-block-68",
-        "practical": false
-      },
-      {
-        "node": "v-block-69",
-        "practical": false
-      },
-      {
-        "node": "v-block-70",
-        "practical": false
-      },
-      {
-        "node": "v-block-71",
-        "practical": false
-      },
-      {
-        "node": "v-block-72",
-        "practical": false
-      },
-      {
-        "node": "v-block-73",
-        "practical": false
-      },
-      {
-        "node": "v-block-74",
-        "practical": false
-      },
-      {
-        "node": "v-block-75",
-        "practical": false
-      },
-      {
-        "node": "v-block-76",
-        "practical": false
-      },
-      {
-        "node": "v-block-77",
-        "practical": false
-      },
-      {
-        "node": "v-block-78",
-        "practical": false
-      },
-      {
-        "node": "v-block-79",
+        "node": "v-blocks-obsidian",
         "practical": false
       },
       {
@@ -1618,19 +1196,15 @@
         "practical": true
       },
       {
-        "node": "fg-banner-pole",
+        "node": "flag-poles",
         "practical": false
       },
       {
-        "node": "fg-banner",
+        "node": "flag-cloths",
         "practical": false
       },
       {
-        "node": "fg-banner-trim",
-        "practical": false
-      },
-      {
-        "node": "fg-banner-finial",
+        "node": "flag-finials",
         "practical": false
       },
       {
@@ -1638,27 +1212,7 @@
         "practical": false
       },
       {
-        "node": "fortress-flag-plinth",
-        "practical": false
-      },
-      {
-        "node": "flag-pole",
-        "practical": false
-      },
-      {
-        "node": "flag-finial",
-        "practical": false
-      },
-      {
         "node": "flag-pennant",
-        "practical": false
-      },
-      {
-        "node": "flag-hoist-rope",
-        "practical": false
-      },
-      {
-        "node": "flag-ribbon",
         "practical": false
       }
     ],
@@ -1802,6 +1356,13 @@
       },
       {
         "role": "backdrop",
+        "assetKey": "sling_seaStackIsland",
+        "maxTriangles": 150000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
         "assetKey": "propRockA",
         "maxTriangles": 200000,
         "textureSet": "BC+N+ORM",
@@ -1827,6 +1388,27 @@
         "maxTriangles": 60000,
         "textureSet": "BC",
         "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_rocksA",
+        "maxTriangles": 200000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_rocksB",
+        "maxTriangles": 200000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "sling_islandTrees",
+        "maxTriangles": 200000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
       }
     ],
     "vfx": [

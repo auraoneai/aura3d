@@ -88,8 +88,10 @@ export const DISTRICT_LOOKS: readonly DistrictLookRow[] = [
     id: "gate", at: 2500, timeOfDay: "sunset afterglow",
     key: { kind: "sun", elevationDeg: 10, azimuthDeg: -90, color: "#ffa468", intensity: 3.3 },
     environmentIntensity: 1.35,
-    fog: { color: "#b897a0", density: 0.0018 },
-    sky: { zenith: "#39478c", horizon: "#f09a80", glow: "#ff8c5a", cloud: "#f6b8a4", stars: 0.12, moon: 0 },
+    // GU47 phase 6: a gold afterglow instead of the magenta-pink one (judges g20p6g2: "pink sky clashes with the
+    // orange rocks, garish").
+    fog: { color: "#cdb3a0", density: 0.0018 },
+    sky: { zenith: "#3d5aa8", horizon: "#f6c08a", glow: "#ffb066", cloud: "#fde0bc", stars: 0.12, moon: 0 },
     lanterns: 1, ink: 1
   }
 ];
@@ -115,17 +117,14 @@ export interface ResolvedLook {
 }
 
 /**
- * The GU47 evening is the default (also `?look=evening`); `?look=original` keeps the 4.6.2 midday look. Exception: a
- * page that boots into the Valley Gate (`?at=` in the gate band, from 2260 m) defaults to the 4.6.2 look, because the
- * gate view is the one view whose evening frame did not beat its 4.6.2 frame in the blind panel (GU47 phase 3, g20p3r4:
- * 1 of 3; a floating quad over the falls and a flat pink ground). `?look=evening&at=2500` still opts in.
+ * The GU47 evening is the default (also `?look=evening`); `?look=original` keeps the 4.6.2 midday look. GU47 phase 3
+ * booted `?at=` pages in the gate band to the 4.6.2 look (blind panel g20p3r4: a floating quad over the falls and a
+ * flat pink ground); phase 6 fixed those defects and every view, the gate included, opens the evening again.
  */
 export function lookMode(search: string | URLSearchParams): LookMode {
   const params = typeof search === "string" ? new URLSearchParams(search) : search;
   const look = params.get("look");
-  if (look === "original" || look === "evening") return look;
-  const at = Number(params.get("at"));
-  return params.has("at") && Number.isFinite(at) && at >= GATE_BAND_START ? "original" : "evening";
+  return look === "original" ? "original" : "evening";
 }
 
 /** Course distance (m) where the Valley Gate band starts (`districtIdAt`). */
@@ -231,9 +230,16 @@ export const ORIGINAL_SKY = {
  * against the 4.6.2 frame's 121, software WebGL2, g20p3-r1; 1.3 still lifted the blacks to 46 against 34 and halved the
  * saturation, and the blind panel called it a grey haze 3/0, g20p3r2). The key carries the frame, the fill stays low.
  */
-export const ENVIRONMENT_GAIN = 0.9;
+export const ENVIRONMENT_GAIN = 0.45;
 /** GU47 phase 2 (second pass): hemisphere fill under the HDRI, times the district's environment intensity. */
-export const EVENING_FILL = { sky: "#b4d0f0", ground: "#6c7a4a", intensity: 0.45 } as const;
+export const EVENING_FILL = { sky: "#b4d0f0", ground: "#6c7a4a", intensity: 0.22 } as const;
+/**
+ * GU47 phase 4: the sun's cascaded shadows render and are sampled, but under the phase-3 fill (IBL 0.9, hemisphere 0.45)
+ * a cast shadow took only ~15% off the ground (the oak's shadow on the cobbles 141 vs 151 luma, shadow-off A/B g20p4-pr,
+ * software WebGL2), so the judge saw no cast shadows (shadows 3/10). Half the fill and a 1.4x key: the same shadow reads
+ * 86 vs 112 and the grass under the houses' shadow 60 vs 160 (g20p4-pr `fill` / `combo`). The key gain applies to every row.
+ */
+export const KEY_GAIN = 1.4;
 /**
  * Output exposure of the evening look (aces). GU47 phase 3: back to 1, the 4.6.2 value; the light rig (a higher sun and
  * a stronger sky fill) carries the brightness instead, so the authored sky dome renders at its own values.

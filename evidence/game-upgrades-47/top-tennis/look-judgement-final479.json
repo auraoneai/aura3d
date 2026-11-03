@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/top-tennis/f48/top-tennis/frames/f48-top-tennis-1/top-tennis--default--settle-60s.jpg",
+      "sha256": "4279cb092aee0b55785278c63b6810a3604ce65e5a5446110127833a543ce178"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/top-tennis/f48/top-tennis/frames/f48-top-tennis-1/top-tennis--clay--settle-60s.jpg",
+      "sha256": "beab6e55966f648290d88950acfb775eb243e9429c1a85bac55af788b1003e3a"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/top-tennis/f48/top-tennis/frames/f48-top-tennis-1/top-tennis--grass--settle-60s.jpg",
+      "sha256": "8e5cd8bd5b3088a3cc94df832cc0a6b96eb3588b20fb6455e811504cb113ac99"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/top-tennis/f48/top-tennis/frames/f48-top-tennis-2/top-tennis--beach--settle-60s.jpg",
+      "sha256": "20b7ccfe2108fbf418187ac43cef475bd3ad055376f31e8f21457ef10f8514c5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 5.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 5,
+    "atmospheric_effects": 3,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The clay frame has a warm low key light with long readable shadows. The second blue-court frame is flat and washed out, with a pinkish-beige surround and almost no key-to-fill contrast. The night blue frame relies on soft spot pools on the teal apron instead of a 55°/45° flood key."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players and stands cast shadows on clay and grass, but a dark rectangular shadow floats mid-court in the clay and second blue frames with no visible caster. Player shadows in the night blue frame are faint and low-contrast."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Mirrored ghost copies of the 'PARIS 0-0 0-0' and 'LONDON' sign text appear on the clay and grass surfaces, and the players reflect on the matte blue hard court. These look like screen-space reflection artifacts on surfaces that should not be glossy."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Stands are bare boxes on large empty flat ground planes. The far background is a blurry photo backdrop with a scaffold structure and two thin poles, which reads as a placeholder. This is an outdoor setting, not the interior-industrial arena the recipe expects."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, light shafts or depth fog in any frame. Distant stands and the backdrop are as clear as the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are flat unlit-looking colors. The clay has no grain, the grass shows only stripe bands, and the hard court has a faint noise pattern. The crowd and stands have no material variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The crowd is one repeated low-poly figure tinted in random colors. The umpire chair and bench are plain blocks. The players are simple but readable chibi figures with rackets."
+    },
+    {
+      "category": "composition",
+      "seen": "In the two top-down blue frames the court fills about 70% of the frame, well past the 25–40% target. The 'AURA SLAM' and 'WORLD TOUR' signs are cropped at the top edge and the crowd is cut at the sides. The clay and grass frames sit close to the target framing."
+    },
+    {
+      "category": "camera",
+      "seen": "Camera framing is inconsistent across frames: two steep near-overhead views and two lower broadcast angles at a different distance. The views read as a perspective camera rather than the specified orthographic 70° broadcast."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a light vignette in the night frame and a visible exposure difference between sets. No bloom on the lights or white lines, no color grade tying the venues together, and the second blue frame looks overexposed and desaturated."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only score display is in-world signage reading 'PARIS 0-0 0-0', and it is partly hidden in the two top-down frames. There is no on-screen HUD. Gameplay cues are limited to a flat yellow service-box highlight and a pink target ring, and no ball accent is visible."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

@@ -5,6 +5,7 @@ import { RenderDeviceError, resolveGpuTargetOwner, type GpuTargetInventoryEntry,
 import type { TemporalGpuBindings } from "../TemporalHistory";
 import { temporalAccumulationWeight } from "../TemporalMath";
 import { WebGL2RenderTarget, type WebGL2BloomDiagnostics } from "../WebGL2Device";
+import { Texture } from "../Texture";
 import { BLOOM_WEIGHT_GLSL, normalizeBloomQualityPreset, resolveBloomPyramidBlurRadii, resolveBloomPyramidPlan, resolveBloomPyramidResponseGain, resolveBloomPyramidV2Response, type BloomPyramidPlan, type BloomQualityPreset } from "../postprocess/NativeBloomPyramid";
 import { BLOOM_BRIGHT_LUT_HEIGHT, BLOOM_BRIGHT_LUT_WIDTH, BLOOM_COMPOSITE_LUT_SIZE, OUTLINE_BLEND_LUT_WIDTH, OUTLINE_LIMB_RADIX, createBloomBrightThresholdLut, createBloomCompositeLut, createOutlineBlendLut, createOutlineGradientBound } from "../postprocess/NativeLdrEffectLuts";
 import type { WebGL2TextureUnit0Snapshot, WebGL2TextureUnitBindingSnapshot } from "./ContextLifecycle";
@@ -14,7 +15,7 @@ import { BLOOM_FUSED_BLUR_TAP_BUDGET, bloomLevelBlursIn2d } from "./BloomFusion"
 // split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
-import { recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
+import { recordPostSkipped, recordPostStage, setSelectiveBloomSkipped } from "../renderer/postSkipped";
 import { vignetteColorRgb } from "../post/vignetteColor";
 import type { PostPipelineOptions } from "../contracts/post";
 import type { AuraToneMappingOperatorLike, OutputVignetteUniforms } from "../contracts/output";
@@ -63,13 +64,11 @@ export interface NativeBloomOptions {
    */
   readonly spread?: number;
   /**
-   * GU47 E-C (EC-7, flag-on only): selective bloom. The HDR prefilter
-   * multiplies the soft-knee excess by the material bloom weight carried in
-   * the HDR alpha (`auraBloomWeight`, `NativeBloomPyramid.BLOOM_WEIGHT_GLSL`).
-   * Absent (no scene material declares a weight other than 1): the factor is
-   * exactly 1.0, so bloom is unchanged bit for bit.
+   * Selective bloom reads separately written, half-weighted linear radiance.
+   * Alpha retains its existing coverage/indirect-light meaning.
    */
   readonly selective?: true;
+  readonly signalTexture?: Texture;
 }
 
 export interface NativeDepthOfFieldOptions {
@@ -169,6 +168,9 @@ export class WebGL2LegacyPostPipeline {
   bloomFusedAccumulateProgram: WebGLProgram | null = null;
   bloomFusedCompositeProgram: WebGLProgram | null = null;
   bloomPrefilterDownsampleProgram: WebGLProgram | null = null;
+  /** Selective-bloom twins: compiled only after the renderer verified a frame's separate signal attachment. */
+  bloomPrefilterDownsampleSelectiveProgram: WebGLProgram | null = null;
+  bloomBrightExtractSelectiveProgram: WebGLProgram | null = null;
   /** True when the last `executeNativeBloomPyramidPasses` returned the level-0 accumulator (not a full-resolution copy). */
   lastPyramidFused = false;
 
@@ -966,20 +968,23 @@ export class WebGL2LegacyPostPipeline {
     const [textureA, textureB] = resources.textures;
     const [framebufferA, framebufferB] = resources.framebuffers;
 
-    const brightProgram = this.ensureBloomBrightExtractProgram();
+    const signal = this.selectiveBloomSignal(options);
+    const brightProgram = signal ? this.ensureBloomBrightExtractSelectiveProgram() : this.ensureBloomBrightExtractProgram();
     this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebufferA);
     this.host.gl.viewport(0, 0, resources.width, resources.height);
     this.host.gl.useProgram(brightProgram);
     this.host.gl.bindVertexArray(vertexArray);
     this.bindFullscreenTexture(0, sourceTexture);
     if (brightLut) this.bindFullscreenTexture(1, brightLut);
+    if (signal) this.bindFullscreenTexture(2, signal);
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_source"), 0);
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
+    if (signal) this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_bloomWeights"), 2);
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
-    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_bloomSelective"), options.selective === true ? 1 : 0);
+    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_bloomSelective"), signal ? 1 : 0);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
 
     const blurProgram = this.ensureBloomBlurProgram();
@@ -1039,6 +1044,8 @@ export class WebGL2LegacyPostPipeline {
     const blurProgram = this.ensureBloomBlurProgram();
     const accumulateProgram = this.ensureBloomAccumulateProgram();
     const brightLut = this.bloomBrightLutTexture;
+    // Verified selective frames only; ordinary bloom keeps the programs and bindings above.
+    const signal = this.selectiveBloomSignal(options);
 
     const mipTexture = (level: number, slot: 0 | 1): WebGLTexture => resources.textures[level * 2 + slot]!;
     const mipFramebuffer = (level: number, slot: 0 | 1): WebGLFramebuffer => resources.framebuffers[level * 2 + slot]!;
@@ -1156,32 +1163,37 @@ export class WebGL2LegacyPostPipeline {
     // result matches the two-pass chain without the full-resolution extract target or its pass.
     const extractFolded = fused && fusion.extract && level0.width * 2 === sourceWidth && level0.height * 2 === sourceHeight;
     if (extractFolded) {
-      const prefilter = this.ensureBloomPrefilterDownsampleProgram();
+      const prefilter = signal ? this.ensureBloomPrefilterDownsampleSelectiveProgram() : this.ensureBloomPrefilterDownsampleProgram();
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, mipFramebuffer(0, 0));
       this.host.gl.viewport(0, 0, level0.width, level0.height);
       this.host.gl.useProgram(prefilter);
       this.host.gl.bindVertexArray(vertexArray);
       this.bindFullscreenTexture(0, sourceTexture);
+      if (signal) this.bindFullscreenTexture(2, signal);
       this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_source"), 0);
+      if (signal) this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_bloomWeights"), 2);
       this.host.gl.uniform1f(this.host.gl.getUniformLocation(prefilter, "u_threshold"), options.threshold);
       this.host.gl.uniform1f(this.host.gl.getUniformLocation(prefilter, "u_softKnee"), options.softKnee);
       this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_excess"), options.excess === true ? 1 : 0);
-      this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_bloomSelective"), options.selective === true ? 1 : 0);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_bloomSelective"), signal ? 1 : 0);
       this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
     } else {
+      const extractProgram = signal ? this.ensureBloomBrightExtractSelectiveProgram() : brightProgram;
       this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, fullResStaging.framebufferA);
       this.host.gl.viewport(0, 0, sourceWidth, sourceHeight);
-      this.host.gl.useProgram(brightProgram);
+      this.host.gl.useProgram(extractProgram);
       this.host.gl.bindVertexArray(vertexArray);
       this.bindFullscreenTexture(0, sourceTexture);
       if (brightLut) this.bindFullscreenTexture(1, brightLut);
-      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_source"), 0);
-      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
-      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
-      this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
-      this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
-      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
-      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_bloomSelective"), options.selective === true ? 1 : 0);
+      if (signal) this.bindFullscreenTexture(2, signal);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(extractProgram, "u_source"), 0);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(extractProgram, "u_brightLut"), 1);
+      if (signal) this.host.gl.uniform1i(this.host.gl.getUniformLocation(extractProgram, "u_bloomWeights"), 2);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(extractProgram, "u_hdr"), hdr ? 1 : 0);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(extractProgram, "u_threshold"), options.threshold);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(extractProgram, "u_softKnee"), options.softKnee);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(extractProgram, "u_excess"), options.excess === true ? 1 : 0);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(extractProgram, "u_bloomSelective"), signal ? 1 : 0);
       this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
       drawDownsample(fullResStaging.textureA, sourceWidth, sourceHeight, mipFramebuffer(0, 0), level0.width, level0.height);
     }
@@ -1497,6 +1509,16 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.activeTexture(this.host.gl.TEXTURE0 + unit);
     this.host.gl.bindTexture(this.host.gl.TEXTURE_2D, texture);
     this.host.gl.bindSampler(unit, null);
+  }
+
+  /**
+   * The separate selective-bloom signal for a normalized, renderer-verified
+   * frame (`normalizeNativeBloomOptions` keeps `selective` only with a live
+   * signal texture); `null` keeps the ordinary programs and bindings.
+   */
+  private selectiveBloomSignal(options: NativeBloomOptions): WebGLTexture | null {
+    if (options.selective !== true || !options.signalTexture || options.signalTexture.disposed) return null;
+    return this.host.textureRegistry.getTextureHandle(options.signalTexture);
   }
 
   disposeBloomPingPongResources(): void {
@@ -1847,6 +1869,13 @@ void main() {
     return this.bloomBrightExtractProgram;
   }
 
+  /** Selective-bloom twin of `ensureBloomBrightExtractProgram`; compiled only on a verified signal frame. */
+  ensureBloomBrightExtractSelectiveProgram(): WebGLProgram {
+    if (this.bloomBrightExtractSelectiveProgram) return this.bloomBrightExtractSelectiveProgram;
+    this.bloomBrightExtractSelectiveProgram = this.createFullscreenProgram(BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL, "webgl2-bloom-bright-extract-selective");
+    return this.bloomBrightExtractSelectiveProgram;
+  }
+
   ensureBloomBlurProgram(): WebGLProgram {
     if (this.bloomBlurProgram) {
       return this.bloomBlurProgram;
@@ -2091,6 +2120,13 @@ void main() {
 }
 `, "webgl2-bloom-prefilter-downsample");
     return this.bloomPrefilterDownsampleProgram;
+  }
+
+  /** Selective-bloom twin of `ensureBloomPrefilterDownsampleProgram`; compiled only on a verified signal frame. */
+  ensureBloomPrefilterDownsampleSelectiveProgram(): WebGLProgram {
+    if (this.bloomPrefilterDownsampleSelectiveProgram) return this.bloomPrefilterDownsampleSelectiveProgram;
+    this.bloomPrefilterDownsampleSelectiveProgram = this.createFullscreenProgram(BLOOM_PREFILTER_DOWNSAMPLE_SELECTIVE_GLSL, "webgl2-bloom-prefilter-downsample-selective");
+    return this.bloomPrefilterDownsampleSelectiveProgram;
   }
 
   ensureBloomAccumulateProgram(): WebGLProgram {
@@ -2725,9 +2761,11 @@ export function normalizeNativeBloomOptions(options: Readonly<Record<string, unk
   if (v2 && (!(spread >= 0) || spread > 1)) {
     throw new RenderDeviceError("Bloom spread must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { spread });
   }
+  const signalTexture = options["signalTexture"] instanceof Texture && !options["signalTexture"].disposed
+    ? options["signalTexture"] : undefined;
   return {
     threshold, intensity, radius, quality, softKnee, shoulder,
-    ...(v2 ? { excess: true as const, spread, ...(options["selective"] === true ? { selective: true as const } : {}) } : {})
+    ...(v2 ? { excess: true as const, spread, ...(options["selective"] === true && signalTexture ? { selective: true as const, signalTexture } : {}) } : {})
   };
 }
 
@@ -3119,10 +3157,9 @@ export function executePostGraphWebGL2(
   if ((pipeline.alphaMode === undefined || pipeline.alphaMode === "opaque") && inputAlphaMode !== undefined) {
     throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED: opaque output uses the legacy coverage contract", "OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED");
   }
-  // GU47 E-C (EC-7): the bridge marks the bloom options `selective` when a
-  // scene material declares a bloom weight other than 1; the HDR prefilter
-  // then weights the excess by the alpha-carried weight.
-  const selectiveBloom = (pipeline.bloom as { readonly selective?: unknown } | undefined)?.selective === true;
+  // Only a renderer-validated signal may enable selective prefiltering.
+  const bloomSignal = pipeline.bloom as { readonly selective?: unknown; readonly signalTexture?: unknown } | undefined;
+  const selectiveRequested = bloomSignal?.selective === true;
   // Phase 3: real S1/S2/S4 + CA run on the HDR target before the fused
   // present; S10b/S11/S12 run as the LDR tail after it.
   let workSource = source;
@@ -3147,6 +3184,19 @@ export function executePostGraphWebGL2(
     afterBloomStage = hdrResult.afterBloom;
     exposureCompletion = hdrResult.exposureCompletion;
   }
+  const selectiveBloom = selectiveRequested && Boolean(v2) && workSource === source &&
+    (source.sampleCount === 1 || (source instanceof WebGL2RenderTarget && source.selectiveMultisampleAttachments)) &&
+    bloomSignal?.signalTexture instanceof Texture && bloomSignal.signalTexture === source.colorTextures?.[1] &&
+    bloomSignal.signalTexture.width === source.width && bloomSignal.signalTexture.height === source.height;
+  if (selectiveBloom) recordPostStage("S9:selective-bloom", request.frameContext?.diagnosticToken);
+  else if (selectiveRequested) setSelectiveBloomSkipped(host.lifecycle.canvas, "signal-source-transformed");
+  else if (request.passes.some((pass) => pass.name === "bloom" && pass.options["selective"] === true)) {
+    setSelectiveBloomSkipped(host.lifecycle.canvas, "external-signal-unsupported");
+  }
+  const verifiedBloomOptions = (options: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> => {
+    const { selective: _selective, signalTexture: _signalTexture, ...ordinary } = options;
+    return selectiveBloom ? { ...ordinary, selective: true, signalTexture: bloomSignal!.signalTexture } : ordinary;
+  };
   let ldrTailTarget: RenderTarget | undefined;
   let ldrTailLease: import("../post/PostResources").PostTargetLease | undefined;
   let encodedSurface: EncodedDisplaySurfaceLease | undefined;
@@ -3237,7 +3287,7 @@ export function executePostGraphWebGL2(
         const bloomLease = acquireV2TargetForPresent(host, v2, { width: source.width, height: source.height, format: "rgba16f" });
         const bloomed = bloomLease.target;
         owned.push(bloomLease);
-        host.post.presentHdrBloom(workSource, selectiveBloom ? { ...bloomPass.options, selective: true } : bloomPass.options, bloomed);
+        host.post.presentHdrBloom(workSource, verifiedBloomOptions(bloomPass.options), bloomed);
         current = bloomed;
         if (afterBloomStage) {
           afterBloomRan = true;
@@ -3287,7 +3337,7 @@ export function executePostGraphWebGL2(
       return createLegacyOutputPass(pipelineForOut, pass.options, vignetteInOut ? pipeline.vignette : undefined);
     }
     if (pass.name === ("bloom" as LdrPostprocessPassName)) {
-      return { name: pass.name, options: { ...pass.options, v2: true, ...(selectiveBloom ? { selective: true } : {}) } } as LdrPostprocessPassDescriptor;
+      return { name: pass.name, options: { ...verifiedBloomOptions(pass.options), v2: true } } as LdrPostprocessPassDescriptor;
     }
     return pass;
   });
@@ -3365,6 +3415,10 @@ export function executePostGraphWebGL2(
  * HDR sources: flag-on (`u_excess`) keeps the §6.6 soft-knee excess over
  * threshold; flag-off keeps the legacy full-colour gate. LDR sources use the
  * packed bright LUT.
+ *
+ * This ordinary program is unchanged by selective bloom and always runs with
+ * `u_bloomSelective = 0` (an HDR alpha weight is never enabled). A verified
+ * selective frame uses `BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL` instead.
  */
 export const BLOOM_BRIGHT_EXTRACT_GLSL = `#version 300 es
 precision highp float;
@@ -3428,5 +3482,110 @@ void main() {
         : packed.a;
   bool bright = ((packedByte >> (colorIndex & 7u)) & 1u) == 1u;
   outColor = bright ? vec4(source) / 255.0 : vec4(0.0);
+}
+`;
+
+/**
+ * Selective-bloom twin of `BLOOM_BRIGHT_EXTRACT_GLSL`, used only when the
+ * renderer verified this frame's separate signal attachment (`u_bloomWeights`:
+ * half-weighted linear radiance, resolved with the HDR colour). The soft-knee
+ * excess is still measured on the unweighted colour; only the extracted colour
+ * is weighted. HDR alpha keeps its coverage and indirect-light meanings.
+ */
+export const BLOOM_BRIGHT_EXTRACT_SELECTIVE_GLSL = `#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_brightLut;
+uniform sampler2D u_bloomWeights;
+uniform int u_hdr;
+uniform float u_threshold;
+uniform float u_softKnee;
+uniform int u_excess;
+uniform int u_bloomSelective;
+out vec4 outColor;
+uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
+  return uvec4(texelFetch(source, coordinate, 0) * 255.0 + 0.5);
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  if (u_hdr == 1) {
+    vec4 source = texelFetch(u_source, pixel, 0);
+    float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if (u_excess == 1) {
+      float knee = max(u_softKnee, 0.0);
+      float soft = clamp(luma - u_threshold + knee, 0.0, 2.0 * knee);
+      soft = soft * soft / (4.0 * knee + 1e-5);
+      vec3 bloomColor = u_bloomSelective == 1 ? 2.0 * texelFetch(u_bloomWeights, pixel, 0).rgb : source.rgb;
+      float excessWeight = max(soft, luma - u_threshold) / max(luma, 1e-5);
+      outColor = vec4(bloomColor * excessWeight, source.a);
+      return;
+    }
+    float kneeLow = max(u_threshold - u_softKnee, 0.0);
+    float kneeHigh = min(u_threshold + u_softKnee, 1.0);
+    float weight = u_softKnee <= 0.0
+      ? (luma >= u_threshold ? 1.0 : 0.0)
+      : smoothstep(kneeLow, kneeHigh, luma);
+    outColor = source * weight;
+    return;
+  }
+  uvec4 source = byteTexel(u_source, pixel);
+  uint colorIndex = (source.r << 16u) | (source.g << 8u) | source.b;
+  uint byteIndex = colorIndex >> 3u;
+  uint texelIndex = byteIndex >> 2u;
+  ivec2 lutCoordinate = ivec2(
+    int(texelIndex % ${BLOOM_BRIGHT_LUT_WIDTH}u),
+    int(texelIndex / ${BLOOM_BRIGHT_LUT_WIDTH}u)
+  );
+  uvec4 packed = byteTexel(u_brightLut, lutCoordinate);
+  uint component = byteIndex & 3u;
+  uint packedByte = component == 0u
+    ? packed.r
+    : component == 1u
+      ? packed.g
+      : component == 2u
+        ? packed.b
+        : packed.a;
+  bool bright = ((packedByte >> (colorIndex & 7u)) & 1u) == 1u;
+  outColor = bright ? vec4(source) / 255.0 : vec4(0.0);
+}
+`;
+
+/** Selective-bloom twin of the fused HDR prefilter + level-0 downsample (`ensureBloomPrefilterDownsampleProgram`). */
+export const BLOOM_PREFILTER_DOWNSAMPLE_SELECTIVE_GLSL = `#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_bloomWeights;
+uniform float u_threshold;
+uniform float u_softKnee;
+uniform int u_excess;
+uniform int u_bloomSelective;
+out vec4 outColor;
+vec4 a3dFinite(vec4 c) { return (any(isnan(c)) || any(isinf(c))) ? vec4(0.0) : c; }
+vec4 extractTexel(ivec2 pixel) {
+  vec4 source = texelFetch(u_source, pixel, 0);
+  float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
+  if (u_excess == 1) {
+    float knee = max(u_softKnee, 0.0);
+    float soft = clamp(luma - u_threshold + knee, 0.0, 2.0 * knee);
+    soft = soft * soft / (4.0 * knee + 1e-5);
+    vec3 bloomColor = u_bloomSelective == 1 ? 2.0 * texelFetch(u_bloomWeights, pixel, 0).rgb : source.rgb;
+    float excessWeight = max(soft, luma - u_threshold) / max(luma, 1e-5);
+    return vec4(bloomColor * excessWeight, source.a);
+  }
+  float kneeLow = max(u_threshold - u_softKnee, 0.0);
+  float kneeHigh = min(u_threshold + u_softKnee, 1.0);
+  float weight = u_softKnee <= 0.0
+    ? (luma >= u_threshold ? 1.0 : 0.0)
+    : smoothstep(kneeLow, kneeHigh, luma);
+  return source * weight;
+}
+void main() {
+  ivec2 base = ivec2(gl_FragCoord.xy) * 2;
+  vec4 sum = a3dFinite(extractTexel(base)) + a3dFinite(extractTexel(base + ivec2(1, 0)))
+    + a3dFinite(extractTexel(base + ivec2(0, 1))) + a3dFinite(extractTexel(base + ivec2(1, 1)));
+  outColor = sum * 0.25;
 }
 `;

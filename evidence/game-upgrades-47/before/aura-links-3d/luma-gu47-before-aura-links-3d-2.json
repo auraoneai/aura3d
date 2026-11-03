@@ -1,0 +1,118 @@
+[
+ {
+  "target": "aura-links-3d--cinderRim",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "cinderRim",
+  "sinceReadyMs": 25009,
+  "mean": 117.27,
+  "p5": 57,
+  "p50": 105,
+  "p95": 195,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   160.6,
+   189.8,
+   143.6,
+   107.4,
+   115.7,
+   80.8,
+   95.3,
+   97.9,
+   64.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 106
+  }
+ },
+ {
+  "target": "aura-links-3d--cinderRim",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "cinderRim",
+  "sinceReadyMs": 143614,
+  "mean": 117.57,
+  "p5": 57,
+  "p50": 105,
+  "p95": 195,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   160.6,
+   189.9,
+   144,
+   107.9,
+   116.4,
+   81.2,
+   95.5,
+   98.3,
+   64.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 106
+  }
+ },
+ {
+  "target": "aura-links-3d--cloudTerrace",
+  "id": "settle-25s",
+  "slug": "aura-links-3d",
+  "variant": "cloudTerrace",
+  "sinceReadyMs": 25001,
+  "mean": 151.7,
+  "p5": 93,
+  "p50": 158,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   158.5,
+   176.5,
+   134.8,
+   133,
+   177.1,
+   132.9,
+   146,
+   168.6,
+   137.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 218
+  }
+ },
+ {
+  "target": "aura-links-3d--cloudTerrace",
+  "id": "settle-60s",
+  "slug": "aura-links-3d",
+  "variant": "cloudTerrace",
+  "sinceReadyMs": 448778,
+  "mean": 151.8,
+  "p5": 91,
+  "p50": 158,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   158.7,
+   176.2,
+   134.2,
+   132.4,
+   177.9,
+   133.1,
+   146.8,
+   168.6,
+   138.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 218
+  }
+ }
+]

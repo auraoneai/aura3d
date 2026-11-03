@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-s1280/screens-1280--1280-03-action.jpg",
+      "sha256": "b2a14fd066be4b4988029a7b465953f688310a29224466f70a3fbae62e4f5305"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-s1280/screens-1280--1280-04-mid.jpg",
+      "sha256": "048ca7494740f14598b5f202b8f13af9acebd411be8f6e43b3fdaf1e781aeb78"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-floor2/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "d5ad79433056243dd1cc3f10cd7f7b9ad85fdae304ccce432712cc135a54ece2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-floor4/bunker-zero--floor4--settle-60s.jpg",
+      "sha256": "d77f161c26c998cbae523dafc7063e71f206603228466aa4169d0da8030268c3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 2.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4,
+    "modeling_assets": 4,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1's far floor section is blown out to near-white, and the treasure chest on it reads as a translucent yellow ghost. Ceiling strip lights glow but cast little shaped falloff onto walls."
+    },
+    {
+      "category": "shadows",
+      "seen": "No visible cast shadows from the chest, crates, round hatch box, or viewmodels. Wall-floor and wall-ceiling junctions lack contact darkening or AO, so geometry looks pasted together."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Frame 4 shows faint sheen on the concrete floor. Otherwise surfaces show no environment reflections, and the frame 3 water plane is a flat teal slab with no reflection or refraction."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The levels are long box corridors with repeated rails and yellow floor stripes. The flooded area in frame 3 is a hard-edged rectangle sunk into the floor, and the frame 1 ceiling has a dark, stretched, blotchy texture."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 2 has teal haze, glowing orbs, and sparkle particles that add mood, but the haze washes the near-camera rifle to grey-white instead of sitting in depth."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The floor texture in frames 3 and 4 is low resolution and smeared. Wall stone and concrete tile visibly. The 'B-4 OFFICERS ONLY' decal in frame 4 runs sideways and is unreadable."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The machine gun viewmodel has faceted low-poly shading with hard normals. Doors and the hatch box are flat textured cubes."
+    },
+    {
+      "category": "composition",
+      "seen": "Corridors center a vanishing point, but long empty walls and a bare foreground floor (frame 3) leave much of each frame with nothing to read."
+    },
+    {
+      "category": "camera",
+      "seen": "In frames 3 and 4 the pistol floats mid-right at small scale, detached from the bottom edge, so it reads as an object in the world rather than a held weapon. Viewmodel placement is inconsistent with frames 1 and 2."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Bloom and exposure clip the frame 1 floor and the frame 2 rifle. A mild grey grain/haze flattens contrast in frames 3 and 4."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

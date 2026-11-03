@@ -15,7 +15,7 @@
 //    pass, nothing published), so that path costs and renders what it always did.
 
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
-import type { FrameContributorContext, FrameContributor } from "../contracts/frameGraph";
+import { captureFrameContributor, matchesFrameContributor, type FrameContributorFingerprint, type FrameContributorContext, type FrameContributor } from "../contracts/frameGraph";
 import { ContactShadowPass, type ContactShadowOptions, type ContactShadowPassInput, CONTACT_MASK_BLACKBOARD_KEY } from "./ContactShadowPass";
 import { contactShadowMaskBelongsToView, contactShadowMaskDrawCounters, resolveContactShadowMask, setContactShadowMask, validContactShadowFrameIdentity } from "../forward/contactShadowMaskStore";
 import { RenderDeviceError, type RenderDevice } from "../RenderDevice";
@@ -420,8 +420,52 @@ function recordUnavailable(ctx: FrameContributorContext, reason: string, detail:
   warnOnce(detail);
 }
 
+const selectiveContributors = new WeakMap<FrameContributor, FrameContributorFingerprint>();
+const stockDepthFeatures = new WeakMap<object, { descriptors: PropertyDescriptorMap; arrays: Map<string, readonly unknown[]> }>();
+
+/** Snapshot the lane's built-ins at factory registration, before frame use. */
+function captureStockDepthFeatures(): void {
+  for (const feature of prd02DepthFeatures()) {
+    if (stockDepthFeatures.has(feature)) continue;
+    const descriptors = Object.getOwnPropertyDescriptors(feature);
+    const arrays = new Map<string, readonly unknown[]>();
+    for (const key of ["passes", "chunks", "hooks"] as const) {
+      const value = descriptors[key]?.value;
+      if (Array.isArray(value)) arrays.set(key, [...value]);
+    }
+    stockDepthFeatures.set(feature, { descriptors, arrays });
+  }
+}
+
+export function isStockPrd02DepthFeature(feature: object): boolean {
+  const snapshot = stockDepthFeatures.get(feature);
+  if (!snapshot || Object.getPrototypeOf(feature) !== Object.prototype) return false;
+  const current = Object.getOwnPropertyDescriptors(feature);
+  const keys = Reflect.ownKeys(snapshot.descriptors);
+  if (Reflect.ownKeys(current).length !== keys.length) return false;
+  for (const key of keys) {
+    const a = Reflect.get(current, key) as PropertyDescriptor | undefined;
+    const b = Reflect.get(snapshot.descriptors, key) as PropertyDescriptor | undefined;
+    if (!a || !b || a.value !== b.value || a.get !== undefined || a.set !== undefined ||
+        a.writable !== b.writable || a.configurable !== b.configurable || a.enumerable !== b.enumerable) return false;
+  }
+  for (const [key, expected] of snapshot.arrays) {
+    const actual = current[key]?.value;
+    if (!Array.isArray(actual) || Object.getPrototypeOf(actual) !== Array.prototype ||
+        actual.length !== expected.length || Reflect.ownKeys(actual).length !== expected.length + 1 ||
+        !expected.every((value, index) => Object.getOwnPropertyDescriptor(actual, index)?.value === value)) return false;
+  }
+  return true;
+}
+
+export function isStockPrd02ContactShadowsContributor(contributor: FrameContributor): boolean {
+  const fingerprint = selectiveContributors.get(contributor);
+  return fingerprint !== undefined && matchesFrameContributor(contributor, fingerprint);
+}
+
 export function createPrd02ContactShadowsContributor(): FrameContributor {
   prd02DepthFeatures();
+  captureStockDepthFeatures();
   // One reusable pass per device for this contributor, released on disposal or loss.
   let cache: ContactPassCache = { passes: new WeakMap(), refs: new Set() };
   const contributor: FrameContributor = {
@@ -475,5 +519,6 @@ export function createPrd02ContactShadowsContributor(): FrameContributor {
   // The shadows hook can only render depth and visibility to its own targets;
   // it restores the caller's target even on failure and never writes scene color.
   registerBenchmarkNonSceneContributor(contributor, ["shadows"]);
+  selectiveContributors.set(contributor, captureFrameContributor(contributor));
   return contributor;
 }

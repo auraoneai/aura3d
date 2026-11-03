@@ -1,0 +1,77 @@
+{
+ "target": "pips-big-leap--academy",
+ "slug": "pips-big-leap",
+ "variant": "academy",
+ "url": "/apps/showcase-pips-big-leap/",
+ "group": "g2",
+ "runId": "gu47-before-pips-big-leap-1",
+ "acrRunId": "ch5uh",
+ "readyMs": 23841,
+ "shots": {
+  "settle-25s": {
+   "target": "pips-big-leap--academy",
+   "id": "settle-25s",
+   "slug": "pips-big-leap",
+   "variant": "academy",
+   "sinceReadyMs": 25004,
+   "mean": 165.23,
+   "p5": 33,
+   "p50": 170,
+   "p95": 215,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    192.8,
+    182.6,
+    158.7,
+    177.1,
+    163.5,
+    132.7,
+    163.8,
+    166.9,
+    148.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 782
+   }
+  },
+  "settle-60s": {
+   "target": "pips-big-leap--academy",
+   "id": "settle-60s",
+   "slug": "pips-big-leap",
+   "variant": "academy",
+   "sinceReadyMs": 184578,
+   "mean": 165.18,
+   "p5": 33,
+   "p50": 170,
+   "p95": 215,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    192.8,
+    182.7,
+    158.7,
+    177.1,
+    163.2,
+    132.8,
+    163.8,
+    166.4,
+    148.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 782
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-pips-big-leap-1/pips-big-leap--academy--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-pips-big-leap-1/pips-big-leap--academy--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

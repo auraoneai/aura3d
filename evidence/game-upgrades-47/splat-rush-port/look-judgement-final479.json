@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/splat-rush-port/f48/splat-rush-port/frames/f48-splat-rush-default/splat-rush-port--default--settle-60s.jpg",
+      "sha256": "aed81ff5d4a8e7054665732e208f6a0fd97a1ecf206374d133645678b0b8df85"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 4.5,
+    "environment_world": 6,
+    "atmospheric_effects": 6,
+    "material_quality": 5.5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 5,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The scene is lit like a pink and purple sunset with a low sun on the left horizon, not the 48°/35° daylight key the recipe asks for. Pillars and clouds get flat toon shading with almost no directional modelling, and the scene has little contrast overall."
+    },
+    {
+      "category": "shadows",
+      "seen": "The only shadow is a dark navy blob under the ball, offset toward the camera. The pillars, clouds and islands cast no visible shadows onto the cloud floor, so objects lack grounding."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The ball's highlight is a painted white crescent with a thin outline. It shows no reflection of the sky or the scene, and no other surface shows environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The arena is a ring of plain brown wooden pillars on a lavender cloud floor, with floating grass islands, small towers and hot-air balloons in the background. It has a clear theme, but the play space is empty: no platforms, coins or path cues are visible near the ball."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Height haze and the pink horizon gradient give some depth, and the stylized clouds have warm rim tint. White dash streaks scattered across the upper sky look like debris or speed lines with no clear source, which adds noise."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The pillars are flat brown with a thin edge outline. The cloud floor has a soft noise texture. The glossy toon ball reads well, but the purple floating wreck objects have muddy, low-detail shading."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The pillars are simple boxes with pyramid caps. The islands, castles and balloons are low-poly but recognizable. The purple debris clusters read as indistinct blobs."
+    },
+    {
+      "category": "composition",
+      "seen": "The ball sits at the lower center and covers far less than the 18–25% of the frame the recipe targets. The large empty lavender floor fills the bottom half of the frame, and the pillar ring forms a busy horizontal band with no focal goal."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high third-person chase view from behind the ball, not the side-on follow the recipe specifies. The wide framing makes the ball small and puts the camera far from the action."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a faint glow around the sun but otherwise no visible bloom, color grading or tone mapping effect. The image looks slightly washed out and low in contrast, unlike a crisp daylight-outdoor grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible: no score, coin counter, timer or objective indicator."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

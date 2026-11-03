@@ -80,6 +80,7 @@ import { INTRO_SHOT_S, introEnabled, introShots, resultsDof } from "./intro";
 import { CATENARY, DISTRICTS, PARKED, SIGN, SIGN_SLOTS, districtAt, parkedLayout, signAssignments, signNodeId } from "./dressing";
 import { STATIC_CROPS, carCrop, type QaCrop } from "./qaCrops";
 import { FOV_KICK_HALFLIFE_S, FOV_KICK_MAX_DEG, ROLL_HALFLIFE_S, cameraFeel } from "./cameraFeel";
+import { createTailTrails, TAIL_TRAIL_ID } from "./tailTrails";
 
 export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
 
@@ -179,6 +180,7 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
     crowns: req("sf-tree-crowns"),
     ribbons: req("route-ribbons"),
     tailLamps: req("player-tail-lamps"),
+    tailTrails: req(TAIL_TRAIL_ID),
     sodium: sodiumPointIds(SKY_LOOKS[sky]).map((id) => app.nodes.require(id)),
     headlights: HEADLIGHT_IDS.map((id) => (app.nodes.has(id) ? app.nodes.require(id) : null)),
     buildings: Array.from({ length: BUILDING_PAIRS }, (_, i) => {
@@ -237,6 +239,7 @@ async function bootGridDispatch(): Promise<void> {
   // space, so a burst lands where the street is drawn this frame.
   installGridVfx(auraApp.effects);
   const vfx = createGridVfxQueue();
+  const tailTrails = createTailTrails();
   /** GD-15 looping headlight motes (one handle; `sky` and `lowTier` say which spec it was spawned with). */
   /** GD-17: the boot intro owns the camera; rival tags (projected with the scene camera) hide meanwhile. */
   let introPlaying = false;
@@ -825,6 +828,15 @@ async function bootGridDispatch(): Promise<void> {
     const lampY = ry(size.height * TAIL_LAMP.heightFrac);
     const rearZ = carZ + size.length / 2;
     N.tailLamps.setInstances([pos(carX - size.width * TAIL_LAMP.spreadFrac, lampY, rearZ), pos(carX + size.width * TAIL_LAMP.spreadFrac, lampY, rearZ)]);
+    // GD-14: world-anchored lamp history, transformed like the street; roof/bumper cameras do not see the rear.
+    const trailSegments = tailTrails.update({
+      x: pose.px, z: pose.pz + CAR_DRAW_Z + size.length / 2, time: S.time, speed: S.player.speed,
+      lampY: size.height * TAIL_LAMP.heightFrac, spread: size.width * TAIL_LAMP.spreadFrac,
+      enabled: S.phase === "driving" && camMode < 2 && auraApp.effects?.runtime !== "off",
+      motionOk: motionOk(), lowTier, rx, ry, rz
+    });
+    if (trailSegments.length) N.tailTrails.setInstances(trailSegments).setVisible(true);
+    else N.tailTrails.setVisible(false);
     if (S.brakeLamp !== lastBrakeLamp) {
       lastBrakeLamp = S.brakeLamp;
       N.tailLamps.setMaterial(tailLampMaterial(skyLook, S.brakeLamp));

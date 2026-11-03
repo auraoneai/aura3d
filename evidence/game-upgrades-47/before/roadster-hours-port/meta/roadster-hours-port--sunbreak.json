@@ -1,0 +1,77 @@
+{
+ "target": "roadster-hours-port--sunbreak",
+ "slug": "roadster-hours-port",
+ "variant": "sunbreak",
+ "url": "/apps/showcase-roadster-hours-port/?level=0&autostart=1&autopilot=1",
+ "group": "g7",
+ "runId": "gu47-before-roadster-hours-port-1",
+ "acrRunId": "ch5ud",
+ "readyMs": 85754,
+ "shots": {
+  "settle-25s": {
+   "target": "roadster-hours-port--sunbreak",
+   "id": "settle-25s",
+   "slug": "roadster-hours-port",
+   "variant": "sunbreak",
+   "sinceReadyMs": 25006,
+   "mean": 77.85,
+   "p5": 12,
+   "p50": 81,
+   "p95": 157,
+   "darkFrac": 0.0116,
+   "clipFrac": 0,
+   "grid": [
+    120.9,
+    138,
+    100.8,
+    102.4,
+    113.5,
+    49.7,
+    23.5,
+    32.1,
+    19.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 105
+   }
+  },
+  "settle-60s": {
+   "target": "roadster-hours-port--sunbreak",
+   "id": "settle-60s",
+   "slug": "roadster-hours-port",
+   "variant": "sunbreak",
+   "sinceReadyMs": 221372,
+   "mean": 77.24,
+   "p5": 12,
+   "p50": 81,
+   "p95": 161,
+   "darkFrac": 0.0116,
+   "clipFrac": 0,
+   "grid": [
+    116.8,
+    138.9,
+    99.1,
+    102.3,
+    113,
+    49.8,
+    23.4,
+    32,
+    19.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 105
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-roadster-hours-port-1/roadster-hours-port--sunbreak--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-roadster-hours-port-1/roadster-hours-port--sunbreak--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

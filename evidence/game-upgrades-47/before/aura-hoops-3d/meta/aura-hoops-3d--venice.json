@@ -1,0 +1,81 @@
+{
+ "target": "aura-hoops-3d--venice",
+ "slug": "aura-hoops-3d",
+ "variant": "venice",
+ "url": "/apps/showcase-aura-hoops-3d/index.html?court=venice",
+ "group": "g3",
+ "runId": "gu47-before-aura-hoops-3d-1",
+ "acrRunId": "ch5up",
+ "readyMs": 27752,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-hoops-3d--venice",
+   "id": "settle-25s",
+   "slug": "aura-hoops-3d",
+   "variant": "venice",
+   "sinceReadyMs": 25007,
+   "mean": 116.49,
+   "p5": 64,
+   "p50": 115,
+   "p95": 181,
+   "darkFrac": 0.0001,
+   "clipFrac": 0,
+   "grid": [
+    127.2,
+    162,
+    129.2,
+    95.2,
+    133,
+    120.6,
+    93.1,
+    109.2,
+    78.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 347
+   }
+  },
+  "settle-60s": {
+   "target": "aura-hoops-3d--venice",
+   "id": "settle-60s",
+   "slug": "aura-hoops-3d",
+   "variant": "venice",
+   "sinceReadyMs": 218877,
+   "mean": 122.29,
+   "p5": 66,
+   "p50": 124,
+   "p95": 180,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    133.6,
+    170.3,
+    139,
+    102.7,
+    131.2,
+    129.7,
+    107.7,
+    104.3,
+    82.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 347
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-hoops-3d-1/aura-hoops-3d--venice--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-hoops-3d-1/aura-hoops-3d--venice--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

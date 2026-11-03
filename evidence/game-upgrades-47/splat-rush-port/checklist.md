@@ -48,3 +48,19 @@ Status per acceptance line. "unit" = covered by `tests/unit/splat-rush-port/gu47
 | phone HUD | combo chip clear of the paint tube at 390 px | fixed in `59b8cded8` (both pages), verified in the r7 phone frames |
 | luma | default in 125-150, no band widened | r5 136.78; r7 in the lane report |
 | D8 | sim, replay, parity green | 14 files / 122 tests pass, one file at a time |
+
+## Phase 4 (4.7.2)
+
+| Item | Acceptance | Status |
+|---|---|---|
+| default view | changed look wins the blind panel | done: `g16p4r4d` better 3/0/0 (`p4/panel/`); `g16p4r4`/`b`/`c` invalid (judge text on the wrong image, see lane report) |
+| `?look=original` | equals the 4.6.2 frame | done: steady 183.91, clip 0.036 (r4) |
+| rubric | every category >= 7 | partial: weakest 6 -> 6.5; shadows 7 / 6.5, ibl_reflections 6.5 / 6.5 (r4 a/b); camera 6 (sim chase camera, D8) |
+| shadows | cast shadows that read | crisp gate shadow strips (alpha 0.78), ball shadow 0.75 |
+| ibl_reflections | environment that reflects | analytic deck reflection of gates and ball (+0 draws); enamel dome reflection on rails, gates, ball |
+| distinctness | same_game false at >= 0.8 vs 5 neighbours | done: 0.917 / 0.955 / 0.85 / 0.924 / 0.927 |
+| CR-A1 | WP-36 paint-world GLBs | 1 of 5: `chromaPaintPotIsland` in carnival slots 3 and 6; the other 4 blocked: Meshy keys refuse API calls |
+| CR-A2 / CR-AN2 | gem retextures, easel | blocked: Meshy keys refuse API calls |
+| screens | retaken on the current build | done from `g16p4-r4` (`p3/retake.py`) |
+| game-checks | 0 errors, no band widened | 0 errors, 0 warnings |
+| D8 | sim, replay, parity green | done: 14 files / 122 tests pass one file at a time (sim 19, reference-replay 6, policy-parity 1) |

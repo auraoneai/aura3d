@@ -29,7 +29,7 @@ interface FreshnessModule {
   createFreshnessBinding(options: Record<string, unknown>): {
     readonly schema: string;
     readonly dependencies: readonly { kind: string; id: string; hash: string }[];
-    readonly producer: { id: string; version: string };
+    readonly producer: { id: string; version: string; fingerprint?: string };
   };
   explainArtifactStaleness(options: Record<string, unknown>): {
     readonly fresh: boolean;
@@ -430,11 +430,14 @@ describe("producer ownership and ordering", () => {
   });
 });
 
-describe("the route-primary probe now binds the previously-unbound dimensions", () => {
-  it("records renderer fingerprint, producer identity and viewport contract", async () => {
-    const path = "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json";
-    expect(existsSync(path), path).toBe(true);
-    const probe = JSON.parse(readFileSync(path, "utf8")) as {
+describe("route-primary probe freshness bindings", () => {
+  // Blockfall remains a published probe target, but its shape alone does not prove freshness.
+  // The real-artifact audit below must still reject missing or stale production evidence.
+  const probePath = "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.json";
+
+  it("requires the real probe to record renderer, producer and viewport dependencies", () => {
+    expect(existsSync(probePath), probePath).toBe(true);
+    const probe = JSON.parse(readFileSync(probePath, "utf8")) as {
       readonly freshness?: {
         readonly producer?: { readonly id?: string; readonly version?: string; readonly fingerprint?: string };
         readonly dependencies?: readonly { readonly kind: string }[];
@@ -445,18 +448,82 @@ describe("the route-primary probe now binds the previously-unbound dimensions", 
       expect(kinds.has(kind), `probe must bind ${kind}`).toBe(true);
     }
     expect(probe.freshness?.producer?.id).toBe("route-primary-probes");
+    expect(probe.freshness?.producer?.version).toBeTruthy();
     expect(probe.freshness?.producer?.fingerprint).toMatch(/^sha256-[a-f0-9]{64}$/);
   });
 
-  it("binds the renderer fingerprint the current tree actually produces", async () => {
-    const { createRendererFingerprint } = await modulePromise;
-    const probe = JSON.parse(
-      readFileSync("tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json", "utf8")
-    ) as { readonly freshness?: { readonly dependencies?: readonly { kind: string; hash: string }[] } };
-    const recorded = (probe.freshness?.dependencies ?? []).find((dependency) => dependency.kind === "renderer-fingerprint");
-    // If this fails, the retained probe predates a renderer change and must be regenerated -- which is
-    // exactly the signal the binding exists to provide.
-    expect(recorded?.hash).toBe(createRendererFingerprint(process.cwd()));
+  it("validates an explicitly synthetic producer-shaped probe as its renderer changes", async () => {
+    const {
+      createConfigFingerprint, createFreshnessBinding, createProducerFingerprint,
+      createRendererFingerprint, explainArtifactStaleness, sha256
+    } = await modulePromise;
+    const root = mkdtempSync(join(tmpdir(), "aura3d-synthetic-probe-"));
+    try {
+      const rendererSource = "synthetic-renderer.ts";
+      const producerSource = "synthetic-producer.mjs";
+      writeFileSync(join(root, rendererSource), "export const renderer = 1;\n");
+      writeFileSync(join(root, producerSource), "// synthetic producer, not a browser capture\n");
+
+      // In memory only, under a non-report URI: this fixture is never production evidence.
+      const artifact = "synthetic://test-only/route-primary-probe.json";
+      const routeId = "synthetic-fixture";
+      const viewport = { width: 1280, height: 720, deviceScaleFactor: 1 };
+      const renderer = createRendererFingerprint(root, [rendererSource]);
+      const producerVersion = "synthetic-test-only";
+      const producerFingerprint = createProducerFingerprint(producerSource, producerVersion, root);
+      const dependencies = [
+        { kind: "route-source", id: routeId, hash: sha256("synthetic route") },
+        { kind: "route-gate-config", id: "route-gates.json", hash: sha256("synthetic gate") },
+        { kind: "route-health", id: `${routeId}/route-health.json`, hash: sha256("synthetic health") },
+        { kind: "primary-asset", id: "synthetic-hero", hash: sha256("synthetic asset") },
+        { kind: "renderer-fingerprint", id: "agent-api+assets", hash: renderer },
+        { kind: "producer-version", id: "route-primary-probes", hash: producerFingerprint },
+        { kind: "viewport-contract", id: routeId, hash: createConfigFingerprint(viewport) }
+      ];
+      const probe = {
+        synthetic: true,
+        schema: "aura3d-route-primary-probe/1.0",
+        routeId,
+        viewport,
+        freshness: createFreshnessBinding({
+          artifact,
+          producerId: "route-primary-probes",
+          producerVersion,
+          producerFingerprint,
+          generatedAt: "2026-01-01T00:00:00.000Z",
+          dependencies
+        })
+      };
+      expect(probe.freshness.producer).toEqual({
+        id: "route-primary-probes", version: producerVersion, fingerprint: producerFingerprint
+      });
+      expect(explainArtifactStaleness({
+        artifactPath: artifact, binding: probe.freshness, currentDependencies: dependencies
+      })).toMatchObject({ fresh: true, unbound: false, reasons: [] });
+
+      writeFileSync(join(root, rendererSource), "export const renderer = 2;\n");
+      const changedRenderer = createRendererFingerprint(root, [rendererSource]);
+      expect(changedRenderer).not.toBe(renderer);
+      const currentDependencies = dependencies.map((dependency) => dependency.kind === "renderer-fingerprint"
+        ? { ...dependency, hash: changedRenderer }
+        : dependency);
+      const stale = explainArtifactStaleness({
+        artifactPath: artifact, binding: probe.freshness, currentDependencies
+      });
+      expect(stale.fresh).toBe(false);
+      expect(stale.reasons).toEqual([expect.objectContaining({
+        kind: "renderer-fingerprint", id: "agent-api+assets", status: "mismatch",
+        expected: changedRenderer, actual: renderer
+      })]);
+      expect(explainArtifactStaleness({
+        artifactPath: artifact, binding: undefined, currentDependencies
+      })).toMatchObject({
+        fresh: false, unbound: true,
+        reasons: [{ kind: "producer-version", id: "freshness-binding", status: "missing" }]
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 
@@ -653,8 +720,10 @@ describe("the repository's retained evidence is provably current", () => {
    * Uses `execFileSync` on the real command so the assertion covers the same code path a developer runs.
    */
   function explainStaleness(): {
+    readonly rendererFingerprint: string;
     readonly staleArtifactCount: number;
     readonly frozenRoutes: readonly string[];
+    readonly retiredRoutes: readonly string[];
     readonly orderingCycles: readonly unknown[];
     readonly ownershipConflicts: readonly unknown[];
     readonly artifacts: readonly { readonly artifact: string; readonly fresh: boolean; readonly reasons: readonly { kind: string; status: string }[] }[];
@@ -675,13 +744,37 @@ describe("the repository's retained evidence is provably current", () => {
     expect(report.staleArtifactCount).toBe(0);
   });
 
-  it("audits a non-trivial number of artifacts, so a clean report is not vacuous", () => {
+  it("requires the retained audit to match current real evidence, not an earlier verdict", () => {
+    const auditPath = "tests/reports/evidence-freshness/staleness-audit.json";
+    expect(existsSync(auditPath), `${auditPath} must exist`).toBe(true);
+    const retained = JSON.parse(readFileSync(auditPath, "utf8")) as ReturnType<typeof explainStaleness>;
+    const current = explainStaleness();
+    expect(retained.rendererFingerprint).toBe(current.rendererFingerprint);
+    expect(retained.artifacts).toEqual(current.artifacts);
+    expect(retained.staleArtifactCount).toBe(current.staleArtifactCount);
+    expect(retained.frozenRoutes).toEqual(current.frozenRoutes);
+    expect(retained.retiredRoutes).toEqual(current.retiredRoutes);
+    expect(retained.ownershipConflicts).toEqual(current.ownershipConflicts);
+    expect(retained.orderingCycles).toEqual(current.orderingCycles);
+  });
+
+  it("audits every required route, so a clean report is not vacuous or partial", async () => {
     /*
      * Guards the way this check could rot: over-filtering routes would drive the stale count to zero by auditing
      * nothing. A clean report over an empty set proves nothing at all.
      */
+    const { routePrimaryProbeExpectedRouteIds } = await import(
+      pathToFileURL(join(process.cwd(), "tools/showcase-library/route-primary-probes.mjs")).href
+    ) as { routePrimaryProbeExpectedRouteIds(routes: readonly unknown[]): readonly string[] };
+    const gates = JSON.parse(readFileSync("tools/showcase-library/route-gates.json", "utf8")) as {
+      routes: readonly unknown[];
+    };
     const report = explainStaleness();
     expect(report.artifacts.length).toBeGreaterThanOrEqual(8);
+    expect(report.artifacts.map((artifact) => artifact.artifact)).toEqual(
+      routePrimaryProbeExpectedRouteIds(gates.routes)
+        .map((id) => `tests/reports/showcase-route-primary-probes/${id}.json`)
+    );
     for (const artifact of report.artifacts) {
       expect(artifact.artifact).toMatch(/^tests\/reports\/showcase-route-primary-probes\/.+\.json$/);
     }

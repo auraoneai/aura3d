@@ -9,6 +9,16 @@ import { postDiagnostics, type PostDiagnosticToken } from "./PostDiagnosticsScop
 // The no-token channel preserves the legacy helper API for direct callers.
 // Renderer-owned frames use only their explicit per-view token.
 const postSkippedReasonsSet = new Set<string>();
+let selectiveBloomByCanvas = new WeakMap<object, string>();
+let latestSelectiveBloomReason: string | undefined;
+
+/** Per-canvas transient outcome: one app's successful frame cannot hide another's fallback. */
+export function setSelectiveBloomSkipped(key: object, reason?: string): void {
+  const value = reason ? `POST_SELECTIVE_BLOOM_UNAVAILABLE:${reason}` : undefined;
+  if (value) selectiveBloomByCanvas.set(key, value);
+  else selectiveBloomByCanvas.delete(key);
+  latestSelectiveBloomReason = value;
+}
 
 export function recordPostSkipped(reason: string, token?: PostDiagnosticToken): void {
   if (token) postDiagnostics.recordSkipped(token, reason);
@@ -25,8 +35,15 @@ export function clearPostSkipped(reason: string, token?: PostDiagnosticToken): v
   else postSkippedReasonsSet.delete(reason);
 }
 
-export function postSkippedReasons(token?: PostDiagnosticToken): readonly string[] {
-  return token ? postDiagnostics.snapshotToken(token)?.skipped ?? [] : [...postSkippedReasonsSet];
+/**
+ * `canvas` (4.7.x) appends that canvas's selective-bloom outcome (or the most
+ * recent one when omitted); `token` (native 5.0) reads the per-view scoped
+ * registry instead of the legacy page-wide channel.
+ */
+export function postSkippedReasons(canvas?: object, token?: PostDiagnosticToken): readonly string[] {
+  const base = token ? postDiagnostics.snapshotToken(token)?.skipped ?? [] : [...postSkippedReasonsSet];
+  const bloom = canvas ? selectiveBloomByCanvas.get(canvas) : latestSelectiveBloomReason;
+  return bloom ? [...base, bloom] : [...base];
 }
 
 /**
@@ -236,6 +253,8 @@ export function disposeNativePostEffectsForHost(host: object): void {
 /** Test hook — clears the §6.9 skip registry. */
 export function resetPostSkipped(): void {
   postSkippedReasonsSet.clear();
+  selectiveBloomByCanvas = new WeakMap<object, string>();
+  latestSelectiveBloomReason = undefined;
 }
 
 /** `import.meta.env.PROD` / `process.env.NODE_ENV === "production"`. */

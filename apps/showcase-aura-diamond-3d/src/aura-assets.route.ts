@@ -40,12 +40,9 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "diamondTyphoonDome": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondWalkSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondWindSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
-  readonly "hoopsLamp": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
-  readonly "hoopsPalm": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
-  readonly "hoopsSkyline": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
-  readonly "hoopsTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; readonly requiredDecoders?: readonly ("meshopt" | "draco" | "ktx2")[]; readonly lods?: readonly { readonly level: number; readonly triangles: number; readonly screenCoverage: number }[]; readonly colliderUrl?: string; readonly budget?: { readonly triangles: number; readonly gpuBytesHigh: number }; readonly variants?: { readonly source?: string; readonly mobile?: string }; };
   readonly "diamondIvyWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
-  readonly "showcaseStadiumSeats": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "ballpark_fanA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ballpark_fanB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -339,38 +336,6 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     bounds: [0,0,0],
     sizeBytes: 308744,
   },
-  "hoopsLamp": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/hoopsLamp.6d8568c3.glb",
-    hash: "sha256-6d8568c3f79be2532b239aaac2717db4321ff533fa629ed7023262e16f116c5b",
-    bounds: [0.738,1.904,0.739],
-    sizeBytes: 4802496,
-  },
-  "hoopsPalm": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/hoopsPalm.4ea91680.glb",
-    hash: "sha256-4ea916806b0257820cf5236d4f83d8692ee7908a3f0cadc049c05d7ddde60233",
-    bounds: [1.184,1.911,1.187],
-    sizeBytes: 8460560,
-  },
-  "hoopsSkyline": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/hoopsSkyline.04431e09.glb",
-    hash: "sha256-04431e09cd465530dace8327642850f707b0f31ad49e516cdf2206455a8ee155",
-    bounds: [1.904,1.235,1.868],
-    sizeBytes: 20850740,
-  },
-  "hoopsTower": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/hoopsTower.f44ad781.glb",
-    hash: "sha256-f44ad781ac87dcf8b911bccc43d6fc84bf4a945734cde9b7c6726f0e9f9df70f",
-    bounds: [0.357,1.904,0.355],
-    sizeBytes: 5999428,
-  },
   "diamondIvyWall": {
     type: "model",
     format: "glb",
@@ -379,13 +344,28 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     bounds: [1.907,0.63,0.233],
     sizeBytes: 21796168,
   },
-  "showcaseStadiumSeats": {
+  // GU47 WP-36 (DIA-A2): Diamond-owned Meshy seated fan, admitted with `aura3d assets import-meshy --into
+  // apps/showcase-aura-diamond-3d/assets --prefix ballpark` (rights: assets/provenance/ballpark_fanA.rights.json);
+  // sloppy-simplified 16,874 -> 625 triangles, 256 px maps (scripts/optimize-fan.mjs). Served from this app's public/aura-assets.
+  "ballpark_fanA": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/showcaseStadiumSeats.afb44897.glb",
-    hash: "sha256-afb44897c52d32e90f42d86e64e541aec7307e09ba18da126f3e9de458cc0ebf",
-    bounds: [43.799,152.996,28.975],
-    sizeBytes: 194740,
+    url: "/aura-assets/ballpark_fanA.98745357.glb",
+    hash: "sha256-98745357514b73865fb520081ca3d1e837822d6e257e0042197186ba68b65e57",
+    bounds: [1.062, 1.903, 1.242],
+    sizeBytes: 46724,
+  },
+  // GU47 wave 1 (DIA-A2): the second Diamond-owned Meshy seated fan (cap, tee and shorts), admitted with `aura3d assets
+  // import-meshy --into apps/showcase-aura-diamond-3d/assets --prefix ballpark --name fanB --profile humanoid` (rights:
+  // assets/provenance/ballpark_fanB.rights.json); sloppy-simplified 19,552 -> 555 triangles, 256 px maps
+  // (scripts/optimize-fan.mjs, ratio 0.032, error 0.1). Served from this app's public/aura-assets.
+  "ballpark_fanB": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ballpark_fanB.ca3de84c.glb",
+    hash: "sha256-ca3de84cd75aa880f994904d5c75e497bf0a2dcf23f865c21d22fac5fbba1ecd",
+    bounds: [0.792, 1.894, 0.896],
+    sizeBytes: 48724,
   },
 } as const);
 

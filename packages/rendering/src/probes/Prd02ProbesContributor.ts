@@ -8,7 +8,7 @@
 // `prd02.probeRenderFace` (the frame host supplies the C-09 capture seam).
 
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
-import type { FrameContributorContext, FrameContributor } from "../contracts/frameGraph";
+import { captureFrameContributor, matchesFrameContributor, type FrameContributorFingerprint, type FrameContributorContext, type FrameContributor } from "../contracts/frameGraph";
 import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import type { RenderItem } from "../contracts/renderItem";
 import type { RenderSource } from "../contracts/renderSource";
@@ -620,8 +620,17 @@ class Prd02ProbesRenderPass extends BaseRenderPass {
   }
 }
 
+const selectiveContributors = new WeakMap<FrameContributor, FrameContributorFingerprint>();
+
+export function isStockPrd02ProbesContributor(contributor: FrameContributor, device: RenderDevice): boolean {
+  const fingerprint = selectiveContributors.get(contributor);
+  // A cached probe system can retain a scene-owned face renderer and probe
+  // objects from an earlier frame. Empty/default scenes have no such state.
+  return !systems.has(device) && fingerprint !== undefined && matchesFrameContributor(contributor, fingerprint);
+}
+
 export function createPrd02ProbesContributor(): FrameContributor {
-  return {
+  const contributor: FrameContributor = {
     id: "prd02.probes",
     owner: "prd02",
     flag: "A3D_QR_LIGHTING",
@@ -639,4 +648,6 @@ export function createPrd02ProbesContributor(): FrameContributor {
         ? [new Prd02ProbesRenderPass(ctx)]
         : []
   };
+  selectiveContributors.set(contributor, captureFrameContributor(contributor));
+  return contributor;
 }

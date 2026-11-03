@@ -5,6 +5,8 @@
 
 import type { RenderDevice, RenderTarget } from "../RenderDevice";
 import {
+  captureFrameContributor,
+  matchesFrameContributor,
   registerFrameContributor,
   type FrameContributor,
   type FrameContributorContext,
@@ -871,9 +873,55 @@ const volumetricContributor: FrameContributor = {
   }
 };
 
+const stockContributors = [
+  particlesContributor, lightsContributor, ribbonContributor, beamContributor,
+  meshContributor, gpuSimContributor, skyCaptureContributor, fogContributor,
+  wetnessContributor, skyContributor, decalsContributor, volumetricContributor
+] as const;
+const stockFingerprints = new Map(stockContributors.map((contributor) => [contributor, captureFrameContributor(contributor)]));
+const particleMethods = Object.getOwnPropertyDescriptors(ParticleBatchPass.prototype);
+const ribbonMethods = Object.getOwnPropertyDescriptors(RibbonPass.prototype);
+const beamMethods = Object.getOwnPropertyDescriptors(BeamPass.prototype);
+const meshMethods = Object.getOwnPropertyDescriptors(MeshParticlePass.prototype);
+
+function stockCachedPass(value: object | undefined, prototype: object, original: PropertyDescriptorMap): boolean {
+  if (!value) return true;
+  if (Object.getPrototypeOf(value) !== prototype || Reflect.ownKeys(prototype).length !== Reflect.ownKeys(original).length) return false;
+  for (const key of Reflect.ownKeys(original)) {
+    if (key === "constructor") continue;
+    const expected = Reflect.get(original, key) as PropertyDescriptor;
+    const actual = Object.getOwnPropertyDescriptor(prototype, key);
+    if (Object.getOwnPropertyDescriptor(value, key) || !actual || actual.value !== expected.value ||
+        actual.get !== expected.get || actual.set !== expected.set) return false;
+  }
+  return true;
+}
+
+/** Unmodified stock contributor and cached producer methods, never IDs alone. */
+export function isStockPrd07Contributor(contributor: FrameContributor, device: RenderDevice): boolean {
+  const fingerprint = stockFingerprints.get(contributor);
+  if (!fingerprint || !matchesFrameContributor(contributor, fingerprint) ||
+      !stockCachedPass(particlePasses.get(device), ParticleBatchPass.prototype, particleMethods) ||
+      !stockCachedPass(ribbonPasses.get(device), RibbonPass.prototype, ribbonMethods) ||
+      !stockCachedPass(beamPasses.get(device), BeamPass.prototype, beamMethods) ||
+      !stockCachedPass(meshPasses.get(device), MeshParticlePass.prototype, meshMethods)) return false;
+  // The particle pass is public and can outlive its producer. A nonempty
+  // batch map may contain externally installed objects/callbacks.
+  const particles = particlePasses.get(device);
+  if (particles) {
+    const batches = Object.getOwnPropertyDescriptor(particles, "batches")?.value;
+    if (!(batches instanceof Map) || Object.getPrototypeOf(batches) !== Map.prototype ||
+        Reflect.ownKeys(batches).length !== 0 ||
+        Object.getOwnPropertyDescriptor(Map.prototype, "size")!.get!.call(batches) !== 0) return false;
+  }
+  // These phases may call scene-owned decal callbacks or composite directly.
+  // They are not needed for the default empty VFX route.
+  return contributor !== decalsContributor && contributor !== volumetricContributor;
+}
+
 /** Idempotent lane registration (P1-T1): safe on repeated barrel imports. */
 export function registerPrd07Contributors(): void {
-  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, gpuSimContributor, skyCaptureContributor, fogContributor, wetnessContributor, skyContributor, decalsContributor, volumetricContributor]) {
+  for (const contributor of stockContributors) {
     try {
       registerFrameContributor(contributor);
     } catch (error) {

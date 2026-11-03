@@ -1,0 +1,742 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:13:58.817Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "desk--early-settled",
+      "desk--mid-action-settled",
+      "desk--results-settled",
+      "desk--roll-settled",
+      "desk--title-settled",
+      "splat-rush-port--default--settle-25s",
+      "splat-rush-port--default--settle-60s"
+    ],
+    "framesB": [
+      "ninja-runner-port--default--settle-25s",
+      "ninja-runner-port--default--settle-60s",
+      "ninja-runner-port--forest--settle-25s",
+      "ninja-runner-port--forest--settle-60s",
+      "ninja-runner-port--gate--settle-25s",
+      "ninja-runner-port--gate--settle-60s",
+      "ninja-runner-port--gate-cones-off--settle-25s",
+      "ninja-runner-port--gate-cones-off--settle-60s",
+      "ninja-runner-port--gauntlet-run--settle-25s",
+      "ninja-runner-port--gauntlet-run--settle-60s",
+      "ninja-runner-port--original--settle-25s",
+      "ninja-runner-port--original--settle-60s",
+      "ninja-runner-port--river--settle-25s",
+      "ninja-runner-port--river--settle-60s",
+      "ninja-runner-port--rooftops--settle-25s",
+      "ninja-runner-port--rooftops--settle-60s",
+      "ninja-runner-port--village-lanterns-off--settle-25s",
+      "ninja-runner-port--village-lanterns-off--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.924,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 0.9791666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.924,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--gate-cones-off--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic-ish low-poly landscape with a cobblestone path, waterfall and orange rocks",
+        "Image B is a stylized candy-colored runner with floating islands, balloons and a red game-over overlay",
+        "Image B uses a cartoon HUD (SCORE, SPLAT! panel) that Image A lacks"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic-stylized daytime landscape with cobblestone path, waterfall and humanoid runners",
+        "Image B: pastel sunset cloud-sea with floating islands, balloons and a red ball",
+        "Different palette, lighting and art style, with no shared characters or props"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--original--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized pastel sunset sky with floating islands and a red ball",
+        "Image B: realistic daytime medieval village with a cobblestone road and a humanoid ninja character",
+        "Different palettes, art styles, and gameplay setting"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "ninja-runner-port--gate-cones-off--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: realistic blue sky, cobblestone path, waterfall and ocean with running humanoid characters",
+        "Image B: pink sunset sky, floating islands and a glossy red ball on a candy-like track",
+        "Image B has a score/lives/combo HUD and a stylized glossy look, unlike Image A's matte low-poly look"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--forest--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image B title screen is Chroma Roll with floating islands, while Image A shows a grounded forest on a log path",
+        "Both share a pink/purple dusk sky palette and low-poly stylization",
+        "Image A has no matching HUD; B has hearts, score and shield-style UI"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: realistic-ish blue sky, cobblestone path, low-poly orange rocks, waterfall, running humanoid characters",
+        "Image B: stylized pink sunset sky, floating islands, red ball with glossy candy look, score/combo HUD",
+        "Different palette, lighting, and art style (muted natural vs saturated candy-toon)"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "ninja-runner-port--river--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a realistic-style character on a wooden bridge in a green valley, while Image B has a red ball on a path above clouds",
+        "Different art style: A uses faceted low-poly mountains and trees, B uses smooth stylized floating islands and pillars",
+        "Different HUD: B has hearts, a score box and round buttons, and A shows none"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--gate-cones-off--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: realistic-ish blue sky, cobblestone path, waterfall and orange rocks with running humanoid characters",
+        "Image B: pink-purple sunset sky with cloud sea, floating islands and a glossy red ball runner",
+        "Image B has a distinct cartoon HUD (score, combo, balloons) with a different art style from Image A"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--rooftops--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized candy-colored floating-island runner with a red ball, a score HUD and a pink sunset sky",
+        "Image B is a rooftop-parkour scene with a humanoid runner, a medieval town and realistic textured cobblestones, with no HUD",
+        "The art styles differ: A is glossy and cartoonish with flat shapes, B is muted and more painterly with detailed textures"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "ninja-runner-port--default--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: pastel pink and purple sky-island world with a red ball and cloud floor",
+        "Image B: realistic medieval village with a cobblestone road and a ninja character",
+        "Different art styles: flat low-poly stylized versus textured, detailed buildings"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime realistic-ish scene with a cobblestone path, ocean and waterfall, while Image B is a pink sunset cloud-sea with floating islands",
+        "Different gameplay and characters: running blue humanoids vs. a red ball rolling on striped spheres",
+        "Different palettes and lighting: blue/green/orange natural tones vs. saturated pink/purple/yellow stylized look"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a pastel pink sky with floating islands and a 'Chroma Roll' title menu",
+        "Image B is a realistic green village with a cobblestone path, ninja characters and a wooden gate",
+        "Different art styles and palettes: soft stylized HUD versus a naturalistic third-person scene"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--gate-cones-off--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pink-purple sky with floating islands and a stylized HUD menu (Chroma Roll)",
+        "Image B is a realistic-ish daytime blue sky with cobblestone path, waterfall and running characters",
+        "Different palette, scenery and art style with no shared HUD or elements"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic-style village with a stone cobbled road and a humanoid character, while Image B is a stylized candy-like runner with a rolling red ball",
+        "Image B has a score/combo/lives HUD and a pink sunset sky with floating islands, unlike A's overcast sky and green meadows",
+        "Different art styles and materials: textured stone and tile in A versus glossy, smooth, saturated surfaces in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--forest--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized candy-colored floating-island runner with a red ball and a cartoon HUD (score, combo, hearts)",
+        "Image B is a low-poly forest with green grassland, teal pine trees, and a humanoid runner on a dirt path, with no HUD",
+        "The art style, scenery and character types differ, and only the pink sky is shared"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized floating islands, red ball, and a cartoon HUD with hearts and score",
+        "Image B: realistic low-poly pine forest on green grass with a humanoid runner in a bubble and no HUD",
+        "Different art direction and gameplay: ball on a plank bridge above clouds vs. character on a dirt path across a meadow"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: a red ball over a pink cloud sea with floating islands and hot-air balloons",
+        "Image B: a third-person character on a wooden bridge in a low-poly fantasy valley with realistic rock textures",
+        "Different gameplay and art style: A is a flat pastel marble-style game, B is a textured character-action scene"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a realistic low-poly wooden bridge with a martial-arts character and a muted purple-pink sky, while Image B is a candy-colored whimsical world with floating islands and hot air balloons",
+        "Image B has a cartoon HUD with a 'SPLAT!' game-over card, a score counter and rounded buttons, a style Image A doesn't share",
+        "Image B has a red tint overlay and a bridge lined with glossy spheres, unlike the plain wooden railings in Image A"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized red-tinted game-over screen with a cartoon UI card and floating sky islands",
+        "Image B is a realistic-ish low-poly outdoor scene with a cobblestone path, waterfall and ninja characters",
+        "Different palettes, art styles and HUD presence (A has score and lives HUD, B has none)"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "ninja-runner-port--original--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized pink-purple sunset sky with floating islands and a red ball on an arcade runner track",
+        "Image B: realistic medieval village with a cobblestone road, blue sky, and a third-person ninja character",
+        "Different HUD and art style: A has a score/combo HUD with glossy candy shading, B has no HUD and uses textured stone and grass"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a grounded fantasy landscape with a humanoid character and low-poly rocks",
+        "Image B is an endless-runner in the sky with a red ball, floating islands and cloud sea",
+        "Image B has a distinct cartoon HUD (hearts, score pill) that Image A lacks"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a Chroma Roll menu with floating islands and a pink cloud sky, while Image B is a wooden bridge in a green valley with a character",
+        "Image A has a cartoon HUD (hearts, score, Play Now button), and Image B shows no HUD",
+        "Different scenery and rendering: soft pastel stylized islands vs. realistic low-poly mountains and a third-person fighter"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized pastel floating-island scene behind a Chroma Roll menu overlay",
+        "Image B is a realistic village with a cobblestone road and a ninja character",
+        "The palettes, art styles and HUDs differ: Image A has a score and hearts, Image B has none"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--river--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: realistic low-poly landscape with pine trees, village and rocks",
+        "Image B: stylized candy-colored floating islands with red overlay and cartoon HUD",
+        "Different bridge designs: wooden plank bridge with rails vs. bridge lined with glossy spheres"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a low-poly fantasy landscape with a martial-arts character on a wooden bridge, while Image B shows a glossy red ball on a candy-like track",
+        "Image B uses a bright pink-orange sky with floating islands, balloons and a score/combo HUD that Image A does not have",
+        "The two frames use different art styles and materials: muted matte textures in A, glossy saturated cartoon surfaces in B"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic stone village with a cobblestone road and a humanoid character",
+        "Image B: stylized pastel sunset sky with floating islands and a red ball avatar",
+        "Different art style, palette and lighting: muted overcast vs saturated pink-purple gradient"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--original--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a stylized candy-colored runner with a red-pink game-over overlay, floating islands and a cartoon HUD",
+        "Image B is a realistic-toned medieval village with a cobblestone road, green meadow and a ninja character in third person",
+        "The palettes, art styles and UI are unrelated: A has a bold cartoon UI, B has no HUD and natural lighting"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--gate--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: cobblestone path, waterfall and humanoid runners in daytime blue sky",
+        "Image B: red ball over pink cloud floor with floating islands and hot air balloons at sunset",
+        "Different palettes, scenery and playable subjects"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "ninja-runner-port--gauntlet-run--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a medieval village with a ninja character and a realistic-style cobblestone road",
+        "Image B is a stylized candy-colored sunset sky with floating islands and a red ball on a track",
+        "Image B has a score, combo and hearts HUD, while Image A shows no HUD"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "ninja-runner-port--river--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized candy-colored floating-island runner with a red ball and a score/combo HUD; Image B is a low-poly landscape with a humanoid character on a wooden bridge",
+        "Different palettes and materials: glossy pink/orange sunset and cloud sea in A versus matte green grass and teal faceted mountains in B",
+        "Different gameplay and camera: ball rolling past arch obstacles in A versus a martial-arts character facing enemies in B"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "ninja-runner-port--default--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a village with a cobblestone road and a ninja character; Image B is a candy-colored runner with a red ball and floating islands",
+        "Different palettes: muted green and gray daylight versus saturated pink and purple sunset",
+        "Image B has a score, combo and hearts HUD; Image A shows none"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--gate-cones-off--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic daytime sky, cobblestone path, waterfall and ocean with humanoid runners",
+        "Image B: stylized pink sunset cloud sea, floating islands, hot air balloons, red ball",
+        "Different palettes, materials and gameplay: character runner vs. rolling ball"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--rooftops--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a medieval rooftop parkour scene with a human runner and timber-frame houses",
+        "Image B is a pink floating-island scene with a 'Chroma Roll' title menu",
+        "HUD and art style differ: Image B has hearts, a score pill and a cartoon menu card, while Image A has none"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic low-poly forest with a dirt path and a golden humanoid runner",
+        "Image B is a stylized candy-colored world with floating islands, hot air balloons and glossy bead rails",
+        "Image B has a cartoon 'SPLAT!' game-over card and chunky HUD, and Image A shows no comparable HUD"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pastel sunset sky with floating islands and a red ball over a cloud floor",
+        "Image B: medieval village with a cobblestone road and ninja characters on grass",
+        "Different art styles: soft flat toon shading versus textured low-poly realism"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a pastel pink floating-island scene with a Chroma Roll title menu and heart HUD",
+        "Image B is a realistic medieval village with a cobblestone road and ninja characters",
+        "Different palettes, art styles and camera setups"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "desk--title-settled",
+      "b": "ninja-runner-port--original--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a pink-purple floating-island scene behind a 'Chroma Roll' title menu",
+        "Image B is a realistic village with a cobblestone road, blue sky and a ninja character",
+        "The two frames differ completely in palette, scenery, camera and HUD style"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-25s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a medieval village with a cobblestone road and ninja characters, Image B is a pink sky-island scene with a red ball",
+        "Different palettes: natural green and grey sky versus pastel pink and purple sunset",
+        "Different camera and subject: third-person runner with realistic textures versus a high-angle view of a rolling ball among clouds"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "desk--results-settled",
+      "b": "ninja-runner-port--gate--settle-25s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized candy-colored floating-island runner with a cartoon game-over card",
+        "Image B is a realistic-leaning landscape with a cobblestone path, waterfall, and blue ninja-like characters",
+        "No shared palette, art style, characters, or HUD design"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized pastel sunset sky, floating islands and a glossy red ball with a cartoon HUD",
+        "Image B: medieval village with cobblestone road, low-poly trees and ninja characters in a naturalistic overcast scene",
+        "Different palettes, art styles and gameplay: marble runner vs third-person character runner"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a grounded medieval village with a cobblestone road and a humanoid character",
+        "Image B is a stylized sunset sky world with floating islands, a red ball and pastel clouds",
+        "Different palettes, lighting and art styles"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "desk--mid-action-settled",
+      "b": "ninja-runner-port--gate-cones-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: realistic-leaning low-poly scene with cobblestone road, orange rocks, waterfall and humanoid runners",
+        "Image B: stylized candy-colored runner with pink sunset sky, floating islands and a red ball",
+        "Image B has a cartoon HUD (score, combo, hearts) that Image A lacks, and the two palettes and art styles differ"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--forest--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized pastel sky world with a red ball, floating islands and cloud floor; Image B is a forest with low-poly pine trees and green grass",
+        "Different characters: glossy red sphere vs. yellow humanoid runner in a bubble",
+        "Different art style and lighting: soft flat cartoon clouds vs. textured terrain with dappled shadows and rocky mountains"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a medieval village with ninja characters on a cobblestone road",
+        "Image B is a rolling red ball on a sky bridge above pink clouds with a balloon-life and score HUD",
+        "The palettes and art styles differ: realistic green meadow and overcast sky versus a pastel, stylized sunset"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-60s",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: realistic daytime sky, cobblestone path, and a waterfall with low-poly humanoid runners",
+        "Image B: stylized pink sunset sky, cloud floor, floating islands, and a red ball",
+        "Different palette, lighting, and gameplay style"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "desk--early-settled",
+      "b": "ninja-runner-port--gate--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic blue sky, cobblestone path, waterfall and ocean with humanoid runners",
+        "Image B: stylized pink-purple cloud sea with floating islands, red ball and balloon HUD",
+        "Different palettes, lighting and art styles, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "splat-rush-port--default--settle-25s",
+      "b": "ninja-runner-port--village-lanterns-off--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: abstract floating islands, pink sunset sky and a red ball",
+        "Image B: realistic medieval village with a cobblestone road and ninja characters",
+        "Different palettes, art styles and camera setups"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "desk--roll-settled",
+      "b": "ninja-runner-port--river--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly fantasy valley with a wooden bridge, pine trees and a humanoid character",
+        "Image B: glossy candy-colored runner with a red ball, floating islands and a score/combo HUD",
+        "Different art styles, scenery and gameplay: realistic-ish teal rocks versus stylized cloud-and-jelly world"
+      ]
+    }
+  ]
+}

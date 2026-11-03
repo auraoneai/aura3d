@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "cinderRim",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat, uniform brown ground plane with a repetitive tiled cobble texture. The tiny cone scatter at the horizon reads as placeholder art. The sky is somewhat grey and dull. It does have warmer ember particles, a textured tee and better contrast.",
+     "Ember particles are scattered over the player. The far terrain has repetitive cobble tiling, and the warm brown palette is a bit muddy.",
+     "Cobblestone ground texture repeats in a visible tile pattern; the white aim line looks flat and floats over the ground; the many small cone props look sparse and generic; the sky is a little hazy."
+    ]
+   },
+   {
+    "variant": "cloudTerrace",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The grass is fairly saturated and somewhat tiled, and the fairway is flat. Otherwise it is clear and well lit, with a textured lawn, a golfer shadow, a crisp tree line and a good sky.",
+     "Grass is a fairly saturated, uniform green, and the tee-box rim is flat. Otherwise the frame is crisp with good contrast and grounded shadows.",
+     "The green is a bit oversaturated and uniform; grass tiling is slightly visible; otherwise clear, with a good shadow and sky."
+    ]
+   },
+   {
+    "variant": "mapleHollow",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very saturated, slightly game-y green grass with visible tiling. The trees are simple stacked spheres. Otherwise the autumn colours are vivid, there are shadows and readability is good.",
+     "A small orange tree blob seems to float near the left tree group. The grass tiling is slightly visible.",
+     "Grass tiling is slightly visible; a small orange foliage blob floats between the trees; the trees are simple primitives."
+    ]
+   },
+   {
+    "variant": "mareCourse",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is pure black, and the crater texture tiles repetitively. Otherwise the regolith texture is convincing, and the strong long shadows and blue rim light read well.",
+     "The sky is completely black with no stars, which is stark. The long shadows dominate the foreground.",
+     "The top half of the frame is black sky; the crater texture tiles noticeably; otherwise readable, with strong shadows and good material detail."
+    ]
+   },
+   {
+    "variant": "neonBay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The teal grass is a bit uniform, and the 'neon' theme is weak. Otherwise the night sky has stars, there is textured turf with shadows and the golfer reads well.",
+     "The dusty particles and stars are a little noisy. Otherwise it has good night mood, textured grass and a grounded shadow.",
+     "The teal ground is fairly uniform; some bright particle dots look like noise; the trees are simple primitives."
+    ]
+   },
+   {
+    "variant": "stAuroras",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The grass is somewhat dark and tiled, and the shadow band across the tee is slightly odd. Otherwise it is rich and textured, with a nice cloudy sky, clear depth and a visible bunker.",
+     "The grass is slightly dark and saturated, and a long shadow band crosses the tee. Otherwise it is crisp, with clouds and good depth.",
+     "A dark shadow band runs across the tee; the grass is slightly dark and tiled; minor detail is lost in the distance."
+    ]
+   }
+  ]
+ }
+]

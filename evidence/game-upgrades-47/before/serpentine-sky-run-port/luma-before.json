@@ -1,0 +1,60 @@
+[
+ {
+  "target": "serpentine-sky-run-port--default",
+  "id": "settle-25s",
+  "slug": "serpentine-sky-run-port",
+  "variant": "default",
+  "sinceReadyMs": 25005,
+  "mean": 191.7,
+  "p5": 137,
+  "p50": 203,
+  "p95": 232,
+  "darkFrac": 0,
+  "clipFrac": 0.0005,
+  "grid": [
+   168.8,
+   158.9,
+   167,
+   208.3,
+   205.3,
+   208.6,
+   192.1,
+   211,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 39
+  }
+ },
+ {
+  "target": "serpentine-sky-run-port--default",
+  "id": "settle-60s",
+  "slug": "serpentine-sky-run-port",
+  "variant": "default",
+  "sinceReadyMs": 95076,
+  "mean": 191.66,
+  "p5": 137,
+  "p50": 203,
+  "p95": 232,
+  "darkFrac": 0,
+  "clipFrac": 0.0004,
+  "grid": [
+   168.8,
+   158.9,
+   166.8,
+   208.1,
+   205.2,
+   208.7,
+   192.2,
+   211,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 39
+  }
+ }
+]

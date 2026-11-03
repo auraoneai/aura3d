@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "colosseum-ruins",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat overcast grey sky. Lighting is somewhat flat overall. The arch pieces look blocky and untextured. The wooden towers are clipped at the frame edges. The marble busts are oversized and compete with the fighters. Some orange lines in the background look like stray floor lines.",
+     "The grey overcast sky is a bit dull, and the corners are slightly dark from vignetting. Clutter behind the fighters is still visible but less distracting. Overall the frame has warmer, richer contrast, the classical busts suit the colosseum theme, the materials read better, and the fighters stand out more clearly.",
+     "Flat overcast grey sky with little depth. Toon-like flat floor with simple markings. Background arena floor lines run off into a void. The two busts are oversized and feel arbitrarily placed. Lighting is a little flat overall, but contrast is solid and the warm wood tones read well. Both fighters are clear and saturated."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,77 @@
+{
+ "target": "ninja-runner-port--default",
+ "slug": "ninja-runner-port",
+ "variant": "default",
+ "url": "/apps/showcase-ninja-runner-port/",
+ "group": "g7",
+ "runId": "gu47-before-ninja-runner-port",
+ "acrRunId": "ch5uf",
+ "readyMs": 89782,
+ "shots": {
+  "settle-25s": {
+   "target": "ninja-runner-port--default",
+   "id": "settle-25s",
+   "slug": "ninja-runner-port",
+   "variant": "default",
+   "sinceReadyMs": 25007,
+   "mean": 121.49,
+   "p5": 52,
+   "p50": 124,
+   "p95": 174,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    109.3,
+    143.4,
+    115.3,
+    89.9,
+    159,
+    107.4,
+    113.9,
+    139.4,
+    115.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 93
+   }
+  },
+  "settle-60s": {
+   "target": "ninja-runner-port--default",
+   "id": "settle-60s",
+   "slug": "ninja-runner-port",
+   "variant": "default",
+   "sinceReadyMs": 1149398,
+   "mean": 121.59,
+   "p5": 52,
+   "p50": 124,
+   "p95": 174,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    109.3,
+    143.4,
+    115.3,
+    89.9,
+    158.9,
+    107.4,
+    113.9,
+    140.3,
+    115.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 93
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-ninja-runner-port/ninja-runner-port--default--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-ninja-runner-port/ninja-runner-port--default--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

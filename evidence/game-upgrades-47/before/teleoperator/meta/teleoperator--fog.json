@@ -1,0 +1,77 @@
+{
+ "target": "teleoperator--fog",
+ "slug": "teleoperator",
+ "variant": "fog",
+ "url": "/apps/showcase-teleoperator/",
+ "group": "g1",
+ "runId": "gu47-before-teleoperator-2",
+ "acrRunId": "ch5u3",
+ "readyMs": 153643,
+ "shots": {
+  "settle-25s": {
+   "target": "teleoperator--fog",
+   "id": "settle-25s",
+   "slug": "teleoperator",
+   "variant": "fog",
+   "sinceReadyMs": 25012,
+   "mean": 110.4,
+   "p5": 69,
+   "p50": 109,
+   "p95": 157,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    104.3,
+    127.7,
+    105.7,
+    111.3,
+    150.3,
+    111.2,
+    78.1,
+    118.6,
+    86.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 411
+   }
+  },
+  "settle-60s": {
+   "target": "teleoperator--fog",
+   "id": "settle-60s",
+   "slug": "teleoperator",
+   "variant": "fog",
+   "sinceReadyMs": 394920,
+   "mean": 111.21,
+   "p5": 70,
+   "p50": 110,
+   "p95": 158,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    104.2,
+    127.9,
+    105.8,
+    113.5,
+    150.5,
+    111.4,
+    81.8,
+    118.7,
+    87
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 404
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-teleoperator-2/teleoperator--fog--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-teleoperator-2/teleoperator--fog--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/pips-big-leap/f48/pips-big-leap/frames/f48-pips-big-leap-academy/pips-big-leap--academy--settle-60s.jpg",
+      "sha256": "723258af071bbfca50294bc2ac2cfcfc4356e135ee0068f42d0cdad7c9b210ca"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3,
+    "ibl_reflections": 4,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 5.5,
+    "camera": 4.5,
+    "postprocessing": 4.5,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sun sits behind and to the right of the scene, so shadows fall toward the camera and the character is seen from behind in partial shade. The recipe calls for a 3/4 front key. Tree faces are lit flat, with little ambient variation between the sun and shade sides."
+    },
+    {
+      "category": "shadows",
+      "seen": "Tree shadows on the grass have heavy stair-step aliasing, which points to a low-resolution or badly fitted shadow map. The diagonal pale streaks on the grass on the right read as shadow or banding artifacts. The character's contact shadow is weak, so Pip barely feels grounded."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No surface shows environment reflections or sky-tinted fill. The trees, grass, and platforms all read as matte with flat ambient, and the stone platform rims show no specular response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "A symmetric corridor of low-poly pines leads to floating platforms and a decorated gate, and the gold coins and purple drones give the space readable goals. The light-blue void at the left and right edges shows the world is a narrow strip, and the bare dead trees in the mid-ground look placed at random."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The distance has a mild haze toward the gate, but there is no visible depth fog gradient, particles, or ambient life. The light streaks on the grass look like artifacts rather than deliberate light shafts."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass is a smeared, low-detail green with blurry texture. The pines use flat-shaded single colors. The acorn cap has a believable rough brown material, which stands out against the untextured world."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The acorn hero and the floating acorn-cap object are fairly detailed organic models. The faceted primitive pines and boxy platforms around them don't match that level of detail, so the style is inconsistent."
+    },
+    {
+      "category": "composition",
+      "seen": "Pip is centered, and the symmetric tree corridor leads the eye to the gate, which reads clearly. The large foreground grass area takes about 40% of the frame and holds little interest. The subject fills roughly 10–12% of the frame, below the 18–25% target."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a chase view behind the character instead of the side-on follow the recipe specifies. The FOV looks wider than 50°, judging by how the near trees stretch at the frame edges."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible tone-mapping warmth, color grade, or bloom to match the daylight-outdoor preset. The image looks close to raw output, and the grass streak artifacts are left uncorrected."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible. The frame shows no coin counter, lives, or level progress, even though coins are on screen."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

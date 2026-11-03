@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/splat-rush-port/art/direction.ts",
-  "sourceSha256": "26568afcd99eb725e50583fda310eba519d91aed3e4766c225d0862a08b06a8e",
+  "sourceSha256": "57248c7c7039b64fa78753439d38dd26ce582b7112a92d6d0edcd6a279d110ef",
   "id": "splat-rush-port",
   "genre": "platformer",
   "signatureEffect": "Hand-inked cel paint carnival at sunset: plum-inked toon ribbon road under a golden-to-violet painted sky with gate-coloured paint splashes.",
@@ -55,6 +55,20 @@
       },
       {
         "assetKey": "balloon",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "paintPotIsland",
+        "triangles": 0,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "paletteIsland",
         "triangles": 0,
         "textures": 1,
         "unlit": false,
@@ -164,6 +178,20 @@
       {
         "role": "backdrop",
         "assetKey": "islandTower",
+        "maxTriangles": 30000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "paintPotIsland",
+        "maxTriangles": 30000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "paletteIsland",
         "maxTriangles": 30000,
         "textureSet": "BC",
         "maxTextureSize": 512

@@ -96,7 +96,7 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" != 1 ]; then
   for selector in $AURA3D_SPECS; do
     case "$selector" in */native-*|tests/browser/resource-soak-u1.spec.ts) AURA3D_NATIVE_ACCEPTANCE=1;; esac
     case "$selector" in
-      @headed-xvfb|--grep|--grep=*|@g[0-9]*) continue;;
+      @headed-xvfb|@env-GL_*|--grep|--grep=*|@g[0-9]*) continue;;
       tests/browser/*.spec.ts|tests/visual/*.spec.ts|tests/browser/*.spec.ts:[0-9]*|tests/visual/*.spec.ts:[0-9]*)
         LEGACY_SPEC_COUNT=$((LEGACY_SPEC_COUNT + 1))
         case "$selector" in *'*'*|*'?'*|*'['*)
@@ -104,7 +104,10 @@ if [ "$AURA3D_NATIVE_ACCEPTANCE" != 1 ]; then
             case "$match" in *'*'*|*'?'*|*'['*|*/native-*) AURA3D_NATIVE_ACCEPTANCE=1;; esac
           done;;
         esac;;
-      *) AURA3D_NATIVE_ACCEPTANCE=1;;
+      # The 4.x ACR path passed other Playwright selectors/args (for example a
+      # --grep value) straight through; only native-named inputs force native mode.
+      *native-*) AURA3D_NATIVE_ACCEPTANCE=1;;
+      *) continue;;
     esac
   done
   [ "$LEGACY_SPEC_COUNT" -gt 0 ] || AURA3D_NATIVE_ACCEPTANCE=1
@@ -201,6 +204,12 @@ else
       XVFB_PID=$!
       export DISPLAY=:99 AURA3D_HEADED_XVFB=1
       sleep 2
+      echo "[task-run] headed Chromium under Xvfb (pid ${XVFB_PID}, DISPLAY=${DISPLAY})"
+    elif [[ "$spec" =~ ^@env-(GL_[A-Z_]+)=([0-9][0-9,]*)$ ]]; then
+      # GU47 phase 7 (g09): capture knobs (GL_TEX_WAIT_S, GL_SETTLE, GL_PAIR_MS) ride in SPECS_CSV as `@env-NAME=digits`
+      # sentinels, because the task yaml passes no env. Only GL_* names and digit/comma values are accepted.
+      export "${BASH_REMATCH[1]}=${BASH_REMATCH[2]}"
+      echo "[task-run] env ${BASH_REMATCH[1]}=${BASH_REMATCH[2]}"
     else
       FILTERED_SPECS="${FILTERED_SPECS:+${FILTERED_SPECS} }${spec}"
     fi

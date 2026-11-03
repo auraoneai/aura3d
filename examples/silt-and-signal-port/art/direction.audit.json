@@ -396,6 +396,10 @@
         "node": "thruster-r",
         "emissiveIntensity": 2.4,
         "practical": true
+      },
+      {
+        "node": "rider-blob",
+        "practical": false
       }
     ],
     "drawCalls": 0

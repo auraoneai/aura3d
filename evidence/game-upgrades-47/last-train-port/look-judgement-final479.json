@@ -1,0 +1,71 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/last-train-port/f48/last-train-port/frames/f48-last-train-default/last-train-port--default--settle-60s.jpg",
+      "sha256": "31701c21601f4313faa977938b409f91a27d381b71ac725d6c088e4cbeec3f40"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 6,
+    "ibl_reflections": 4.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A low warm sun from the left rakes across the cobblestones and matches the golden-hour target. The white platform and the right-hand building facades are blown out close to pure white, and the shaded areas go muddy brown instead of a cool fill."
+    },
+    {
+      "category": "shadows",
+      "seen": "Long building shadows stretch across the plaza and read well. The capsule pedestrians and floating crate blocks have weak or no contact shadows, so they look pasted onto the ground. The tram's own shadow is soft and hard to read."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The tram's red paint has some glossy highlights. The rails, lamp posts and windows show no environment reflection, and the metal reads as flat grey with no sky or sun specular."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Detailed, texture-baked town houses sit next to primitive cone trees, sphere bushes, untextured brown boxes and a cyan slab floating at the left edge. The track loops up into a rollercoaster-like curve in the distance. The world reads as a mix of placeholder and final assets."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A light warm haze lifts the horizon, and the sky has a gradient from teal to yellow. Distance fog is barely visible over the 30–180 m range, and there is no volumetric light or dust in the sun rays."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone texture is tiled and readable but flat, with no normal or roughness variation. The capsules and boxes use plain single colors. The building facades have baked lighting that conflicts with the scene sun."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The tram, barrel, crates and the backpacker figure are well modeled. Pedestrians are bare capsule-and-sphere placeholders, trees are cones and spheres, and benches are plain boxes, so asset fidelity is badly mismatched."
+    },
+    {
+      "category": "composition",
+      "seen": "The tram sits center-right and covers about 10–12% of the frame, under the 15–25% target. The diagonal track gives good leading lines, but clutter on the left and the bright white platform pull the eye away from the subject."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high, elevated three-quarter chase view with an FOV of roughly 60°. It sits too high and far back for an energetic chase feel, and the horizon tilt is neutral."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy vignette and edge depth-of-field blur give a tilt-shift miniature look, and a warm grade is applied. The grade does not tame the blown highlights, and there is no film grain or bloom shaping, so the cinematic-film target is only partly met."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

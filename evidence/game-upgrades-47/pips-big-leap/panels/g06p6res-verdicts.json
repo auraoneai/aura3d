@@ -1,0 +1,39 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "results-1280",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background is heavily blurred and a little dim and muddy. The left HUD chips show as blurred, empty pills. The arena wall and grass edges are soft. Otherwise it is polished: the display serif title and the compact keycap-styled control hints look cohesive.",
+     "The scene is somewhat dark and murky at the edges, with a heavy vignette in the bottom-left corner. The background is still a fairly flat grey-blue haze. Otherwise it has a richer, framed arena, a styled display title and a cleaner controls hint built from key caps."
+    ]
+   },
+   {
+    "variant": "results-390",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background is darker and slightly muddy toward the bottom. The HUD chips are blurred, empty pills. Its stylized serif title, richer scene colour and visible set dressing give it more mood and polish.",
+     "The background is murky and dim, and there is little to read in the scene behind the panel. The 'Next' button text sits tight against the button edges."
+    ]
+   }
+  ],
+  "note": "tally.mjs parsed 2 of 3 judges: j0's JSON has an unescaped quote. j0 read by hand with the same swap rule ((j + len(variant)) % 2 == 1 -> A = new): results-1280 'B' (swap 0, B = new) and results-390 'A' (swap 1, A = new), so both votes go to the new build.",
+  "before": "2026-10-29 final frames (4.5.0 engine, 4.6.2 look)",
+  "after": "p6-r1 frames (g06p6-r1-1 a1280, g06p6-r1-2 p390), build 1e3e2489f"
+ }
+]

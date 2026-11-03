@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g01p4/screens-r1/1280-04-mid.jpg",
+      "sha256": "191ed5f77c8b21328a55c13afd9c00f229e860e86b770a0e0cc28cf14ed3737d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-r2/top-tennis/frames/g01p4-r2-6/top-tennis--moon--settle-60s.jpg",
+      "sha256": "4727e0f14a995a044518fcf68ee8a68c8caec6498cb44f963826768cc62c0d69"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-r2/top-tennis/frames/g01p4-r2-3/top-tennis--clay--settle-60s.jpg",
+      "sha256": "249f2a9fdab5eedde673c8f289f3558561bb778f24b12b0c9a98ea9b4b351037"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-r2/top-tennis/frames/g01p4-r2-2/top-tennis--grass--settle-60s.jpg",
+      "sha256": "6852d99ac34edbc2255bae15f5b84c38eec1c1f66e76e1b923afbec87c5c13bf"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 3,
+    "environment_world": 5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 has a blue spotlight hotspot burned into the court centre. Frame 2 (moon) lights only the court and leaves the surround nearly black. Frames 3 and 4 use one warm directional key with weak fill, so the stands read flat."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players and stands cast directional shadows that are hard-edged and long in frames 2 to 4. Frame 1 shows soft contact shadows under the players. Neither style shows ambient occlusion where the stands meet the floor."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No surface shows specular response or environment reflection. The net posts, umpire chair and court surfaces are all fully matte."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stands are boxes on a large empty floor plane that fills about a third of each frame. The venues differ through a moon sphere and blurred tower or scaffold backdrops, but the floor itself has no detail."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The only haze is whitish fog in the corners of frame 1. Frames 2 to 4 show no indoor haze or light shafts from the floodlight poles, which the indoor-haze recipe calls for."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Surfaces are flat-shaded solid colours. The exceptions are a procedural noise texture on the frame 1 hard court and mow stripes on the frame 4 grass. The clay has no grain or scuffing, and the lines show no wear."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Spectators are repeated capsule or voxel figures in random colours. Players are low-poly with simple heads. The bench and umpire chair are plain boxes, and the player in frame 2 clips through the AURA SLAM sign text."
+    },
+    {
+      "category": "composition",
+      "seen": "The court fills roughly 35 to 40% of the frame, which matches the 25 to 40% target. The large untextured floor at the bottom and sides dilutes the framing, and the yellow target box draws more attention than the ball."
+    },
+    {
+      "category": "camera",
+      "seen": "The elevated broadcast angle and narrow FOV stay consistent across frames 2 to 4, close to the 70° / FOV 40 recipe. Frame 1 is steeper and nearly top-down, and none of the frames use an orthographic projection."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No bloom on the floodlights or white lines and no visible colour grading. Only the backdrop is depth-blurred. The frame 1 vignette haze looks like a lighting artifact more than a deliberate grade."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

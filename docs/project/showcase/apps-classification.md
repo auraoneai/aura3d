@@ -14,7 +14,7 @@ still not be a public release candidate.
 | `library demo` | Demonstrates a package/API surface; visual quality claims stay scoped. |
 | `diagnostic` | Helps inspect assets, rendering, telemetry, or evidence. |
 | `prototype` | Explores an idea; not public release material. |
-| `release-ready candidate` | Passed current public showcase gates and visual review, but still keeps bounded claims. |
+| `release-ready candidate` | Legacy gate candidate; the label alone does not establish current public availability, fresh evidence, or visual approval. |
 | `internal diagnostic` | Useful retained evidence route; not public showcase material. |
 | `playable-showcase` | Useful prototype route with exact blockers; not public showcase material. |
 | `index route` | Showcase catalog/index route; not a deployable 3D showcase app. |
@@ -39,35 +39,55 @@ still not be a public release candidate.
 
 | Route directory | Classification | Public use |
 | --- | --- | --- |
-| `showcase-product-configurator` | release-ready candidate | Public product configurator example with bounded material/configuration claims. |
+| `showcase-product-configurator` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. Fresh evidence is required for any current public release claim. |
 | `showcase-material-asset-inspector` | removed-from-public-showcase | Retained typed-asset inspection tool; not promoted because Product Configurator already uses the same headphone hero. |
-| `showcase-smart-city-control` | release-ready candidate | Public visual operations demo; not a real city simulation claim. |
-| `showcase-cinematic-architecture` | release-ready candidate | Public architecture presentation with bounded rendering claims. |
-| `showcase-digital-twin-ops` | release-ready candidate | Public visual ops/dashboard demo; not a real digital-twin integration claim. |
-| `showcase-blockfall-reactor` | playable-showcase | Materially rebuilt typed-cabinet falling-block loop with hold/queue, line-clear, game-over, reset, progression, and current automated evidence; exact-artifact independent review is pending. |
+| `showcase-smart-city-control` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. No current public or real-city-simulation claim. |
+| `showcase-cinematic-architecture` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. No current public presentation claim. |
+| `showcase-digital-twin-ops` | release-ready candidate | Retained legacy gate candidate; its marketing URL redirects to the showcase index. No current public or real digital-twin integration claim. |
+| `showcase-blockfall-reactor` | prototype | Retained typed-cabinet falling-block source with hold/queue, line-clear, game-over, reset, and progression. Route health remains `prototype-blocked` and non-public, with exact-artifact independent review pending; the marketing build redirects this retired URL to the showcase index. |
 | `showcase-racing-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
-| `showcase-skyline-runner` | playable-showcase | Materially rebuilt five-act Level 1 (authored 95 seconds, 70–115 completion window) with typed character/world, mesh-derived surfaces, sentries, coins, ember volleys, checkpoints, respawn, and mounted finish evidence; exact-artifact independent review is pending. |
-| `showcase-turbo-drift-circuit` | playable-showcase | Materially rebuilt four-lap typed-car circuit with ordered gates, distinct typed rival, chase camera, drift feedback, per-wheel circuit contact, visual asphalt wide enough to pass on tarmac, and mounted race evidence; exact-artifact independent review is pending. Its handling claim remains arcade, not physical tyre simulation. |
-| `showcase-bank-shot` | playable-showcase | Authored 8-ball billiards simulation with bank targeting, cue stick controls, and 3D lounge environment. |
-| `showcase-deep-recovery` | playable-showcase | Oceanic abyss sub recovery exploration with multi-depth trench scenery and cargo grapple mechanics. |
-| `showcase-gallery-shift` | playable-showcase | Museum stealth heist route with guard LOS occlusion raycasting, light pools, and artifact pedestals. |
-| `showcase-gravity-post` | playable-showcase | Low-gravity platforming and postal delivery challenge across floating space outposts. |
-| `showcase-neon-swarm` | playable-showcase | Finite five-wave root-safe horde-survival prototype with typed courier/props, deterministic route-local steering and outcome hash, risky charge pickups, upgrade choices, and a current 320-live-instance finale; public promotion is held for independent exact-artifact review. |
-| `showcase-patrol-wing` | playable-showcase | Island flight patrol route with six ring gates, cannon firing, and landing pad. |
-| `showcase-rooftop-buckets` | playable-showcase | Rooftop dusk basketball three-point shootout with backboard/rim collision and audio cues. |
-| `showcase-siege-golf` | playable-showcase | Destructive physics castle mini-golf route with destructible battlements. |
-| `showcase-vault-breakers` | playable-showcase | Pinball arcade route with flippers, slingshots, pop bumpers, and vault drop targets. |
-| `showcase-courier-rush` | playable-showcase | Cyberpunk urban delivery route with traffic simulation, parcel drop zones, and engine audio. |
-| `showcase-aurora-lander` | playable-showcase | Three-site precision-landing campaign with typed probe/beacons, route-local deterministic arcade thrust/RCS/gust motion, bounded prediction, hull/fuel progression, Rapier-owned static contact detection, strongest-whiteout/mobile/reduced-motion evidence, and extraction; machine gates pass and independent exact-artifact review is pending. |
-| `showcase-pulse-tunnel` | playable-showcase | Rhythm neon tunnel glider with synchronized rhythm gate timings. |
-| `showcase-mech-hangar` | playable-showcase | Mech assembly hangar with tactical weapons systems. |
+| `showcase-skyline-runner` | prototype | Retired in 4.0.1: app source and route health are absent, and the marketing build redirects its URL to the showcase index. The retained `prototype-blocked` gate and platformer evidence are historical, not a current playable-route or approval claim. |
+| `showcase-turbo-drift-circuit` | prototype | Retired in 4.0.1: app source and route health are absent, and the marketing build redirects its URL to the showcase index. The retained `prototype-blocked` gate and arcade-racing evidence are historical, not a current playable-route or approval claim. |
+| `showcase-bank-shot` | prototype | Billiards source is retained, but route health remains `prototype-blocked` and non-public; marketing redirects its URL. |
+| `showcase-deep-recovery` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and submarine-salvage evidence are historical. |
+| `showcase-gallery-shift` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and stealth-heist evidence are historical. |
+| `showcase-gravity-post` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and delivery evidence are historical. |
+| `showcase-neon-swarm` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and survival evidence are historical. |
+| `showcase-patrol-wing` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and flight-patrol evidence are historical. |
+| `showcase-rooftop-buckets` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and basketball evidence are historical. |
+| `showcase-siege-golf` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and golf evidence are historical. |
+| `showcase-vault-breakers` | prototype | Pinball source is retained, but route health remains `prototype-blocked` and non-public; marketing redirects its URL. |
+| `showcase-courier-rush` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and courier evidence are historical. |
+| `showcase-aurora-lander` | prototype | Precision-landing source is retained, but route health remains `prototype-blocked` and non-public; marketing redirects its URL. Independent exact-artifact review remains pending. |
+| `showcase-pulse-tunnel` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and rhythm evidence are historical. |
+| `showcase-mech-hangar` | prototype | Retired source and route health are absent; marketing redirects the URL. The blocked gate and mech evidence are historical. |
 | `showcase-meshy-relic-pilot` | prototype | Meshy CLI asset-pipeline prototype with a typed relic collection loop; private-generation rights and collision claims remain unproven, so it is not public showcase material. |
 | `aura-clash-showcase` | development showcase | Development showcase multiplayer arena fighter. |
 | `neon-corridor-strike` | library demo | Neon corridor speed runner demo. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
+
+The retained `docs/project/showcase-launch-evidence.json` carries a 2026-09-08
+generation timestamp, predating these retirements, but was later edited in commit
+`fea96ea0f` without a new timestamp. Its declared gate hash differs from the
+gate-config fingerprint embedded in its route-primary freshness dependencies.
+These historical records do not establish a current route inventory, a verified
+current gate binding, or approval; a fresh run is required.
+
+## Example Diagnostics
+
+These retained examples are test harnesses, not public showcase or device-support claims.
+Their classification gives the route-tier inventory a source-backed signal.
+
+| Route | Classification | Public use |
+| --- | --- | --- |
+| `examples/compute-lab` | diagnostic | GPU compute read-back harness; no real-device result is claimed here. |
+| `examples/guard-canvas-lab` | diagnostic | Raw WebGL canvas and black-frame guard harness. |
+| `examples/instanced-texture-probe` | diagnostic | Compares textured primitive, instanced and batched render paths. |
+| `examples/selfheal-lab` | diagnostic | Black-frame guard behavior under dark, black and slow-load scenarios. |
+| `examples/webgpu-presentation-probe` | diagnostic | Isolates browser WebGPU presentation behavior; no Aura3D renderer parity claim. |
 
 ## Retained Engine Evidence
 

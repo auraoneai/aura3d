@@ -16,7 +16,7 @@ import {
   PITCH_HX, PITCH_HZ, GOAL_HALF_W, GOAL_H, GOAL_DEPTH, BOX_DEPTH, BOX_HALF_W,
   PEN_X, CIRCLE_R, BALL_R, BALL_VIS_R, CAGE_GOAL_GAP
 } from "./dims";
-import { athleteNodes } from "./rig";
+import { HYBRID_BLOB_OPACITY, athleteNodes } from "./rig";
 import { refereePatrol } from "./locomotion";
 import { HYBRID_LAYERS, MAIN_FLOOD_TOWER, ORIGINAL_LOOKS, VENUE_LOOKS, fcLookMode, type FcLookMode, type FcVenueLook } from "./look";
 import { scoreboardTextNodes } from "./scoreboard3d";
@@ -66,6 +66,10 @@ export function fcEngineGates(search: string = typeof location === "undefined" ?
 }
 
 const HIDDEN = 0.0001;
+/** GU47 phase 9: the team bench repainted storm navy (base-colour map dropped; the wood normal map stays). */
+const TEAM_BENCH_PAINT = { color: "#22344e", colorMode: "replace", replaceTextures: true, roughness: 0.72, metallic: 0 } as const;
+/** GU47 phase 9: the ball crate's grey plastic tinted toward the lime game accent (the scuffs in the map stay). */
+const BALL_CRATE_TINT = { color: "#c8f04a", colorMode: "multiply", roughness: 0.6 } as const;
 
 /** `?dome=off` hides the Glacier dome on any look path (QA A/B). */
 function domeOn(search: string = typeof location === "undefined" ? "" : location.search): boolean {
@@ -143,14 +147,26 @@ export function venueLookOverrides(vl: FcVenueLook, gates: FcEngineGates = fcEng
 export function hybridLookOverrides(venue: VenueId, gates: FcEngineGates = fcEngineGates()): AuraLookOverrides {
   const ol = ORIGINAL_LOOKS[venue];
   const hl = HYBRID_LAYERS[venue];
+  const k = hl.key;
   return {
-    fogDensityScale: ol.fog,
+    fogDensityScale: hl.fogScale ?? ol.fog,
     exposureEv: hl.exposureEv,
     ...(hl.background !== undefined ? { background: hl.background } : {}),
     grade: { ...hl.grade, ...(gates.lut ? { lut: VENUE_LUT_ASSETS[venue] } : {}) },
-    ...(hl.rim ? { rim: { ...hl.rim } } : {})
+    ...(hl.rim ? { rim: { ...hl.rim } } : {}),
+    ...(hl.environmentIntensity !== undefined ? { environmentIntensity: hl.environmentIntensity } : {}),
+    // phase 4: a shadowed key that reads, its cascades fitted to the bowl so every player and goal frame is covered
+    ...(k ? {
+      ...(k.elevationDeg !== undefined || k.azimuthDeg !== undefined
+        ? { sun: { ...(k.elevationDeg !== undefined ? { elevationDeg: k.elevationDeg } : {}), ...(k.azimuthDeg !== undefined ? { azimuthDeg: k.azimuthDeg } : {}) } }
+        : {}),
+      key: { intensity: k.intensity, shadow: { mapSize: 2048, filter: "pcf", softness: k.softness, intensity: 1, normalBias: 0.02, fit: { center: [0, 0, 0], extent: HYBRID_SHADOW_EXTENT } } }
+    } : {})
   };
 }
+
+/** Phase 4: half-size (m) of the hybrid key's fitted shadow box: the pitch, the goals and the first stand rows. */
+export const HYBRID_SHADOW_EXTENT = 34;
 
 export function venueLookNode(venue: VenueId, gates: FcEngineGates = fcEngineGates()): any {
   const vl = VENUE_LOOKS[venue];
@@ -575,20 +591,23 @@ export function centreCircleTransforms(): { position: [number, number, number]; 
 function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   const lineMat = lineMaterial(v);
   const surfaces = surfaceMaterials(v, mode);
+  const m = mode ?? fcLookMode(v.id);
+  // FC47-PF1: ground-flush paint and planes receive shadows but do not need
+  // to be redrawn into every shadow cascade. Keep the original look intact.
+  const groundShadow = m === "original" ? {} : { castShadow: false };
 
   // Horizontal XZ planes use size: [widthX, 1, depthZ]
   const nodes: any[] = [
-    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: surfaces.ground })
+    primitives.plane({ name: "fc-ground", size: [110, 1, 90], material: surfaces.ground, ...groundShadow })
       .position(0, -0.03, 0).runtime(gameRuntime("fc-ground")),
-    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: surfaces.apron })
+    primitives.plane({ name: "fc-apron", size: [PITCH_HX * 2 + 7, 1, PITCH_HZ * 2 + 7], material: surfaces.apron, ...groundShadow })
       .position(0, -0.012, 0).runtime(gameRuntime("fc-apron")),
-    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: surfaces.pitch })
+    primitives.plane({ name: "fc-pitch", size: [PITCH_HX * 2, 1, PITCH_HZ * 2], material: surfaces.pitch, ...groundShadow })
       .position(0, 0.002, 0).runtime(gameRuntime("fc-pitch"))
   ];
   // FC47-M3: Uyuni's mirror flat: a planar reflection over the pitch (thin water film tint), under the lines (y 0.014)
   // and above the pitch plane. Doubles the scene draws in its capture: `?mirror=off` is the QA fallback (phase 2
   // measures it against the 480-draw Uyuni budget and picks the probe fallback if it is over).
-  const m = mode ?? fcLookMode(v.id);
   const mirror = m === "hybrid" ? HYBRID_LAYERS[v.id].mirror : m === "gu47" ? VENUE_LOOKS[v.id].mirror : null;
   if (mirror && mirrorEnabled()) {
     nodes.push(engineSurfaces.mirror({ name: "fc-mirror", size: [PITCH_HX * 2, PITCH_HZ * 2], resolution: mirror.resolution, tint: mirror.tint, position: [0, 0.006, 0] }));
@@ -597,49 +616,66 @@ function pitchNodes(v: VenueSpec, mode?: FcLookMode): any[] {
   // 10 mow stripes across the length of the pitch (one instanced batch; hidden on venues without stripes)
   if (v.stripes) {
     const st = stripeInstances(v);
-    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v, mode) })
+    nodes.push((instances as any).plane({ name: "fc-stripes", size: [1, 1, 1], transforms: st.transforms, colors: st.colors, material: stripeMaterial(v, mode), ...groundShadow })
       .runtime(gameRuntime("fc-stripes")));
   }
 
   // touchlines, goal lines, centre line, boxes and six-yard boxes: one instanced batch
   nodes.push((instances as any).box({
-    name: "fc-lines", size: [1, 1, 1], material: lineMat,
+    name: "fc-lines", size: [1, 1, 1], material: lineMat, ...groundShadow,
     transforms: pitchLines().map(([w, l, x, z]) => ({ position: [x, 0.014, z], scale: [w, 0.018, l] }))
   }));
   // centre circle + spot. The unit torus scaled [R, 0.05, 0.05] drew a flat 9 m dash, not a ring (4.6.2); the hybrid
   // path draws the circle as CIRCLE_SEGMENTS thin chords in one instanced batch.
   nodes.push(
     m === "hybrid"
-      ? (instances as any).box({ name: "line-circle", size: [1, 1, 1], material: lineMat, transforms: centreCircleTransforms() })
-      : primitives.torus({ name: "line-circle", size: [CIRCLE_R, 0.05, 0.05], material: lineMat })
+      ? (instances as any).box({ name: "line-circle", size: [1, 1, 1], material: lineMat, transforms: centreCircleTransforms(), ...groundShadow })
+      : primitives.torus({ name: "line-circle", size: [CIRCLE_R, 0.05, 0.05], material: lineMat, ...groundShadow })
         .position(0, 0.02, 0).rotate(Math.PI / 2, 0, 0),
-    primitives.cylinder({ name: "line-spot-c", size: [0.22, 0.016, 0.22], material: lineMat }).position(0, 0.015, 0)
+    primitives.cylinder({ name: "line-spot-c", size: [0.22, 0.016, 0.22], material: lineMat, ...groundShadow }).position(0, 0.015, 0)
   );
 
   // penalty spots both ends
   for (const sx of [-1, 1] as const) {
     nodes.push(
-      primitives.cylinder({ name: `pen-spot-${sx}`, size: [0.2, 0.016, 0.2], material: lineMat }).position(sx * PEN_X, 0.015, 0)
+      primitives.cylinder({ name: `pen-spot-${sx}`, size: [0.2, 0.016, 0.2], material: lineMat, ...groundShadow }).position(sx * PEN_X, 0.015, 0)
     );
   }
 
   // corner flags + arc quarter-marks
   const flagMat = material.emissive({ color: v.accent, emissive: v.accent, emissiveIntensity: 0.9 });
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+  if (m === "original") {
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      nodes.push(
+        primitives.cylinder({ name: `flag-${sx}-${sz}`, size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }) })
+          .position(sx * (PITCH_HX - 0.15), 0.65, sz * (PITCH_HZ - 0.15)),
+        primitives.box({ name: `flagtip-${sx}-${sz}`, size: [0.22, 0.16, 0.02], material: flagMat })
+          .position(sx * (PITCH_HX - 0.15), 1.28, sz * (PITCH_HZ - 0.15))
+      );
+    }
+  } else {
+    const corners = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => [sx * (PITCH_HX - 0.15), sz * (PITCH_HZ - 0.15)] as const));
     nodes.push(
-      primitives.cylinder({ name: `flag-${sx}-${sz}`, size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }) })
-        .position(sx * (PITCH_HX - 0.15), 0.65, sz * (PITCH_HZ - 0.15)),
-      primitives.box({ name: `flagtip-${sx}-${sz}`, size: [0.22, 0.16, 0.02], material: flagMat })
-        .position(sx * (PITCH_HX - 0.15), 1.28, sz * (PITCH_HZ - 0.15))
+      (instances as any).cylinder({
+        name: "fc-corner-poles", size: [0.03, 1.3, 0.03], material: material.pbr({ color: "#f2f0e2", roughness: 0.6 }),
+        transforms: corners.map(([x, z]) => ({ position: [x, 0.65, z] }))
+      }),
+      (instances as any).box({
+        name: "fc-corner-flags", size: [0.22, 0.16, 0.02], material: flagMat,
+        transforms: corners.map(([x, z]) => ({ position: [x, 1.28, z] }))
+      })
     );
   }
   return nodes;
 }
 
-function goalNodes(sx: -1 | 1): any[] {
+function goalNodes(sx: -1 | 1, hybrid = false): any[] {
   const gx = sx * PITCH_HX;
   // Painted posts and the net catch the floods; a faint self-glow only (<= 0.1, the art-direction emissive-fill limit).
-  const postMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.08, roughness: 0.2, metalness: 0.1 });
+  // Phase 4 hybrid: powder-coated aluminium (metalness 0.6, roughness 0.14) so the posts carry the IBL and flood specular.
+  const postMat = hybrid
+    ? material.pbr({ color: "#f4f6f8", emissive: "#ffffff", emissiveIntensity: 0.04, roughness: 0.14, metalness: 0.6 })
+    : material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.08, roughness: 0.2, metalness: 0.1 });
   const netMat = material.pbr({ color: "#ffffff", emissive: "#e2e8f0", emissiveIntensity: 0.08, roughness: 0.85, opacity: 0.42 });
   const backX = gx + sx * GOAL_DEPTH;
   const goalScaleX = (GOAL_HALF_W * 2) / 1.897;
@@ -720,6 +756,18 @@ export function standTransforms(v: VenueSpec): { position: [number, number, numb
     }
   }
   return out;
+}
+
+/** WP-36 stand module (GLB 1.903 x 0.832 x 0.543 m, centred, seats facing +Z): scale and the four far-deck slots. */
+export const STAND_MODULE_SCALE = 10.5;
+export function standModuleTransforms(v: VenueSpec): { position: [number, number, number]; scale: [number, number, number] }[] {
+  const s = STAND_MODULE_SCALE;
+  const topTier = Math.max(0, v.standCount - 1);
+  // behind the venue's top far tier (no bowl: behind the hoardings), base just under that tier's top
+  const z = v.standCount > 0 ? -(PITCH_HZ + 4.6 + topTier * 2.2 + 1 + 0.272 * s) : -(PITCH_HZ + 6 + 0.272 * s);
+  const baseY = v.standCount > 0 ? 0.9 + topTier * 1.3 - 1.2 : -0.5;
+  const w = 1.9 * s;
+  return [-1.5, -0.5, 0.5, 1.5].map((i) => ({ position: [i * w, baseY + 0.42 * s, z], scale: [s, s, s] }));
 }
 
 function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode?: FcLookMode): any[] {
@@ -828,25 +876,26 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
       .runtime(gameRuntime("fc-dome"))
   );
 
-  /* ---- 3D Meshy dugouts, stadium bowl, ball cart & touchline referee ---- */
-  // Dugouts used to sit between the camera and the near touchline, filling
+  /* ---- team benches, stadium bowl, ball crate & touchline referee ---- */
+  // The benches used to sit between the camera and the near touchline, filling
   // the bottom HUD with brown boxes. Park them outside the goal lines so the
   // broadcast view keeps a clean run-up to the pitch.
+  // GU47 phase 9 (D2): the game's own CC0 team bench (Poly Haven painted_wooden_bench, repainted storm navy) and ball
+  // crate (Poly Haven plastic_crate_02, tinted to the lime accent) replace the borrowed diamond dugout and hoops ball
+  // cart, inside the old footprints (presentation only; nothing collides with them).
   nodes.push(
-    model(assets.diamondDugout, { name: "dugout-home", targetHeight: 2.1 })
+    model(assets.fcTeamBench, { name: "dugout-home", targetMaxDimension: 1.6, materialOverrides: [TEAM_BENCH_PAINT] } as any)
       .position(-35.5, 0, -8)
       .rotate(0, Math.PI / 2, 0),
-    model(assets.diamondDugout, { name: "dugout-away", targetHeight: 2.1 })
+    model(assets.fcTeamBench, { name: "dugout-away", targetMaxDimension: 1.6, materialOverrides: [TEAM_BENCH_PAINT] } as any)
       .position(35.5, 0, -8)
       .rotate(0, -Math.PI / 2, 0),
-    model(assets.hoopsBallCart, { name: "fc-ball-cart", targetHeight: 1.0 })
+    model(assets.fcBallCrate, { name: "fc-ball-cart", targetMaxDimension: 0.9, materialOverrides: [BALL_CRATE_TINT] } as any)
       .position(34.5, 0, -14.5),
-    // No soccer-specific stand exists in the Aura FC registry; the shared
-    // diamond stadium now sits low and far behind the authored bleacher bowl
-    // so its roof is a distant band instead of a lid on the frame.
-    model(assets.diamondStadium, { name: "fc-stadium-bowl", targetHeight: 8.5 })
-      .position(0, -2.6, -(PITCH_HZ + 40))
-      .scale([1.3, 1, 1.1]),
+    // GU47 phase 4 (WP-36 FC47-A1): the game's own football stand module, four instances in one draw as the upper
+    // deck behind the far stand (replaces the borrowed diamond stadium band).
+    (instances as any).model(assets.fcStandModuleMeshy, { name: "fc-stadium-bowl", transforms: standModuleTransforms(v) })
+      .runtime(gameRuntime("fc-stadium-bowl")),
     model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
       targetHeight: REFEREE_TARGET_HEIGHT,
@@ -943,13 +992,20 @@ export function buildFcScene(venue: VenueId = "munich", opts: FcSceneOptions = {
         ? looks.preset(ol.look, hybridLookOverrides(venue, fcEngineGates(undefined, opts.engineGates)))
         : venueLookNode(venue, fcEngineGates(undefined, opts.engineGates)))
     .addMany(pitchNodes(v, mode))
-    .addMany(goalNodes(-1))
-    .addMany(goalNodes(1))
+    .addMany(goalNodes(-1, hybrid))
+    .addMany(goalNodes(1, hybrid))
     .addMany(stadiumNodes(v, fcEngineGates(undefined, opts.engineGates), mode))
     .addMany(ballNodes());
-  for (const id of ATHLETE_IDS) s.addMany(athleteNodes(id));
+  // phase 4 hybrid: the fitted key casts the players' shadows, so the blob discs fade to a soft contact darkening
+  for (const id of ATHLETE_IDS) {
+    s.addMany(original ? athleteNodes(id) : athleteNodes(id, hybrid ? HYBRID_BLOB_OPACITY : undefined, false));
+  }
   s.addMany(atmosphereNodes(venue, opts))
-    .add(effects.contactShadows({ intensity: 0.85, length: 0.32 }));
+    // phase 4 hybrid: longer, full-strength contact shadows under the fitted key (feet and goal-frame grounding)
+    .add(effects.contactShadows(hybrid ? { intensity: 1, length: 0.5 } : { intensity: 0.85, length: 0.32 }));
+  // phase 4 hybrid: the wet / glazed / ice pitch reflects the floods, hoardings and stands at grazing angles (S3, High+)
+  const ssr = hybrid ? hl.ssr : null;
+  if (ssr) s.add(effects.screenSpaceReflections({ name: "fc-pitch-ssr", intensity: ssr.intensity, roughness: ssr.roughness, maxDistance: ssr.maxDistance } as any));
   // PRD 6.3: no motion blur under reduced motion
   if (opts.reducedMotion !== true) s.add(effects.motionBlur({ intensity: 0.1 }));
   return s

@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T05:23:58.864Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "default-play-0060",
+      "default-play-0520",
+      "default-play-1420",
+      "title-settle-60s"
+    ],
+    "framesB": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.82,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 42,
+    "sameGameYes": 6,
+    "differentRate": 0.875,
+    "ci95": [
+      0.7529927291394518,
+      0.9414302824959915
+    ],
+    "confidentDifferent": 36,
+    "confidentDifferentRate": 0.75,
+    "same_game": false,
+    "same_game_confidence": 0.82,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a green low-poly meadow with a blue river and a HUD with hearts and a checkpoint prompt",
+        "Image B has an orange sunset sky, a cloud sea of sand and floating islands with a brick bridge",
+        "The characters differ: a small chibi boy in green versus a realistic blue-clad warrior"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "different character models: topknot figure in teal vs curly-haired runner in green",
+        "A is a hazy sand-cloud sky with floating islands, B is a blue-sky canyon with low-poly trees",
+        "B has a game HUD (hearts, progress bar, Cliff Run prompt), none in A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a green daytime landscape with a blue river and a HUD with hearts and a timer; Image B is a pink sky above clouds with a tiled sky path",
+        "Different characters: a small child in a green outfit versus a taller stylized warrior with a topknot",
+        "Different art styles and palettes: low-poly stylized trees versus floating islands and lanterns in a pastel pink dusk"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a small stylized character on a long straight path",
+        "similar soft, painterly low-poly look with smooth gradient lighting",
+        "teal/green outfit and chibi-style character design in both frames"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a green low-poly meadow and river with a HUD of hearts, a progress bar and a timer; Image B has a pink cloud sea and a floating-island sky",
+        "Different characters: a small chibi runner in green versus a muscular, realistic-style warrior in teal",
+        "Different art style and lighting: bright daylight with a blue sky versus a magenta sunset haze and a tiled sky bridge"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Different character models: an adult in teal clothing in A, a small child in green in B",
+        "A is a warm hazy sky with floating islands and a cloud sea, while B is an overcast grounded landscape with a tornado cloud",
+        "Different environment style: A has a tiled brick path with lanterns, while B has a dirt road, low-poly trees and cracked boulders"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pink dreamy sky with floating islands and a cloud sea; Image B: realistic canyon with green low-poly trees",
+        "Different characters: a muscular blue-clad martial artist versus a small curly-haired kid in teal",
+        "Image B has a distinct HUD (hearts, progress bar, 'Cliff Run' banner) and a different palette and lighting"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pink-purple sky with floating islands and cloud sea; Image B: blue sky with a green canyon",
+        "different characters (topknot warrior in teal vs. curly-haired runner in green)",
+        "Image B has a distinct HUD (hearts, progress bar, ability bar) and a low-poly tree style not seen in A"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and a 'Ride the rolling log' prompt; Image B shows none",
+        "Different scenery: grassy cliffs, pines and a dirt path in A versus a brick road over a sea of clouds with floating islands in B",
+        "Different characters and art style: a stylized curly-haired runner in A versus a topknot character with a more anime look in B, though both wear teal"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a grassy trail with cliffs, pine trees and a HUD with hearts and a log obstacle; Image B has a tiled bridge over a sand-colored cloud sea with floating islands",
+        "The characters differ: a curly-haired kid in teal in A and a topknot warrior with a whip in B",
+        "The lighting and palette differ: blue daytime sky in A and a saturated orange sunset haze in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: sandy-orange sky with floating islands and a cloud sea",
+        "Image B: blue sky, green low-poly trees and a water river",
+        "Different characters and HUD (B has hearts, progress bar and checkpoint UI, A has none)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: a small stylized kid in a green outfit versus a realistic blue-clad warrior",
+        "Image A has a HUD with hearts, a progress bar and a 'Cliff Run' prompt, while Image B shows none",
+        "Different settings and palettes: green canyon with low-poly trees versus an orange sky above a cloud sea with floating islands and a tiled path"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Different settings: grassy canyon dirt trail with a rolling log vs. pink sky-bridge above clouds with floating islands",
+        "Different protagonists: kid in a green outfit vs. topknot warrior in a blue outfit with a different art style",
+        "Different palettes and HUD: Image A has hearts, a progress bar and a score; Image B shows no HUD and has a pastel magenta haze"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A has a dirt road with green meadow, cracked boulders and a storm cloud, while Image B has a pink brick bridge above clouds with floating islands",
+        "Different protagonists: a small child in green in A, a muscular topknot warrior in teal in B",
+        "Both use a third-person behind-the-runner camera on a path, which hints at a shared genre but not a shared game"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "third-person runner camera behind a small stylized character on a narrow path",
+        "similar soft painterly low-poly rendering and smooth tube/log shapes",
+        "very different palette and setting (pink sky world vs. green canyon), which argues against"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pink-purple dreamy sky with floating islands over a cloud sea",
+        "Image B: realistic blue sky, green meadow and orange cliffs with a HUD of hearts and score",
+        "Different characters and art styles: a topknot warrior in teal vs. a curly-haired kid in green"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: a curly-haired kid in a teal outfit vs. a topknot warrior in blue",
+        "Image A has a canyon with green trees and a HUD with hearts and a progress bar, while Image B has a pink sky over clouds, floating islands and no HUD",
+        "Different environments and art style: dirt path with low-poly trees vs. a tiled sky bridge with lanterns"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a canyon with green low-poly trees, cracked boulders and a HUD with hearts and a progress bar",
+        "Image B has a pink sky above a cloud sea, floating islands and a tiled sky bridge, with no HUD",
+        "The characters differ: a small teal-clad runner in A and a muscular blue-clad warrior in B"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a stylized green low-poly landscape with a blue river and a game HUD (hearts, timer, progress bar), while Image B has a hazy orange cloud sea with floating islands and no HUD",
+        "Different characters: a small chibi figure in a green outfit versus a taller anime-style figure in teal with a topknot",
+        "Different palette and lighting: bright blue daylight sky versus a warm sepia sunset haze with a brick road"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a grounded dirt path with green meadows and a storm cloud, while Image B is a pink sky-bridge above clouds with floating islands",
+        "Different characters: a small child in green in A, a muscular topknot warrior in teal in B",
+        "Both use a third-person behind-the-runner camera on a straight path, which is a weak point in favor of the same game"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a green low-poly meadow and river with a HUD showing hearts, a timer and a checkpoint prompt, while Image B has no such HUD",
+        "Image B is a pink-purple sky with a cloud sea, floating islands and a tiled sky bridge",
+        "The characters differ: a small cartoon kid in green in A and a realistic muscular warrior in teal in B"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pink-purple dusk sky, cloud sea and floating islands; Image B: blue daytime sky with grassy canyon",
+        "Different characters: topknot ninja in teal vs. curly-haired kid in green",
+        "Image B has a HUD with hearts, progress bar and score; Image A has none"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a 'Cliff Run' prompt, while Image B shows no HUD",
+        "A uses a low-poly green canyon with cliffs and boulders; B uses a brick road above a sea of clouds with floating islands",
+        "The characters differ: A is a small curly-haired figure in a teal suit, B is a topknot character in teal armor with a different art style and lighting"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: a teal-clad topknot fighter in A, a curly-haired kid in teal in B",
+        "A is a hazy orange sky with floating islands and a sea of sand clouds, B is a blue sky with a green low-poly canyon",
+        "A has no HUD, B has a hearts, progress bar, and 'Cliff Run' prompt UI"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a green low-poly meadow with a daytime blue sky and a HUD with hearts, a progress bar and a checkpoint label",
+        "Image B has a golden sunset sky, a cloud sea, floating islands and a brick bridge, with no HUD",
+        "The characters differ: a small chibi kid in green in A, a realistic teal-clad warrior in B"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A: golden desert-cloud sea with floating islands and a hazy orange sky; B: green meadow with cliffs, pines and a blue cloudy sky",
+        "different characters: A has a teal-clad topknot warrior, B has a curly-haired kid in green",
+        "B has a HUD (hearts, score, progress bar, prompts) and A has none"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a hazy orange cloud sea, floating islands and a brick path with a different character",
+        "Image B has a blue sky, green meadows, a cliff and a different curly-haired runner",
+        "Image B shows a HUD with hearts, a progress bar and a score, and Image A shows none"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a green low-poly daytime meadow with a river and a HUD with hearts and a timer; Image B is a pink dusk sky-path with no HUD",
+        "Different characters: a small chibi runner in green versus a realistic topknot warrior in teal",
+        "Different art style and palette: bright, stylized, saturated versus a hazy pastel pink cloud sea with floating islands and lanterns"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a pastel pink-purple sky with floating islands and a cloud sea; Image B is a naturalistic grassy canyon with a blue sky",
+        "Different characters: a teal-clad topknot warrior vs. a curly-haired kid in green",
+        "Image B has a game HUD (hearts, progress bar, score, prompts) and Image A has none"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "third-person runner camera behind a small character on a long straight path",
+        "similar stylized painterly materials and soft lighting",
+        "teal/green-clad characters with similar rendering style"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Different character models: teal-clad adult in A, small green-clothed child in B",
+        "Different settings and palettes: warm hazy sky with floating islands in A, grey stormy sky with grass and trees in B",
+        "Different art styles: smooth gradient brick path in A, low-poly trees and cracked boulders in B"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Similar third-person runner camera behind a small stylized character on a path",
+        "Matching soft painterly lighting and smooth low-poly shapes",
+        "Different palettes and scenery (pink sky-world vs green countryside), which could be separate levels"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink-purple dreamy sky with floating islands and a cloud sea",
+        "Image B: blue daytime sky with low-poly green trees and a river path",
+        "Different characters and HUD (A has no HUD; B has hearts, progress bar and ability bar)"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pink/purple dreamy sky with floating islands and cloud sea",
+        "Image B: low-poly green trees, orange canyon cliffs and a blue sky",
+        "Different characters and HUD (A has none, B has hearts, progress bar and prompts)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pink-purple sky with floating islands over a cloud sea; Image B: blue sky with green low-poly forest",
+        "Different characters: tall stylized warrior vs small chibi runner in green",
+        "Image B has a game HUD (hearts, progress bar, timer, ability bar) not seen in A's style"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "Both show a stylized third-person runner seen from behind on a path",
+        "Similar painterly, soft-shaded character models",
+        "Palette and scenery differ strongly, so they could be different levels or different games"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and 'Cliff Run' prompts, while Image B shows none",
+        "Different scenery: low-poly green trees and cracked boulders in a canyon vs. a brick road over a cloud sea with floating islands",
+        "Different characters and palette: curly-haired child in a teal suit on a beige path vs. a topknot character on an orange-toned brick road in hazy sunset light"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a grounded green meadow with a dirt path, cracked boulders and a storm cloud, while Image B is a floating-island brick road above a sea of clouds",
+        "Different palettes: cool blue-gray sky and green in A, warm hazy orange-tan in B",
+        "Different characters: a small child in green with a curly-haired stylized look in A, a taller anime-style teal-clad figure in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A: pink sky, cloud sea and floating islands",
+        "Image B: green meadow, dirt path and stormy sky",
+        "Different characters: teal adult fighter vs. small green-clad child"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: orange desert-cloud sky with floating islands and a stylized warrior on a brick path",
+        "Image B: blue sky with low-poly green trees, a river, and a chibi character",
+        "Image B has a distinct HUD (hearts, progress bar, checkpoint, ability bar) not seen in A"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: small dark-haired kid in teal vs. topknot warrior in blue",
+        "Image A has green low-poly trees, cliffs and a HUD; Image B has a golden cloud sea, floating islands and tiled bridge with no HUD",
+        "Different palettes and lighting: daytime blue sky vs. orange sunset haze"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A: pink-purple sky, cloud sea and floating islands; Image B: blue sky, grassy canyon and dirt path",
+        "Different characters: topknot figure in teal outfit versus curly-haired runner in green",
+        "Image B has a HUD with hearts, progress bar and score; Image A shows none"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A has a lush green low-poly landscape with a blue sky and a rounded-icon HUD, while Image B has a hazy orange sky over a sea of clouds",
+        "The characters differ: a chibi boy in green versus a taller anime-style figure in teal",
+        "Image B has floating islands and a brick sky-road with lanterns, with no HUD, and these appear nowhere in Image A"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different characters: a curly-haired kid in a teal outfit versus a topknot warrior in a blue outfit",
+        "Image A has a HUD with hearts, a progress bar and prompts, while Image B has none",
+        "Different settings: green canyon with rocks versus pink sky with floating islands and a tiled bridge"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and 'Ride the Rolling Log' text, while Image B shows none",
+        "Different environments: grassy canyon dirt path with pines vs. tiled brick road over a sand-colored cloud sea with floating islands",
+        "Different lighting and character rendering: A is a bright blue-sky daytime scene with a stylized curly-haired runner, B is a hazy sunset with a more realistic teal-clad character"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: hazy orange sky over a sea of sand-colored clouds with floating islands, different from B's blue sky with grassy terrain",
+        "Different characters: teal-clad topknot fighter vs. curly-haired kid in green",
+        "B has a HUD with hearts, progress bar and score, and a dirt path with a log; A has a tiled bridge with lanterns and no HUD"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.55,
+      "tells": [
+        "third-person runner camera behind a stylized character on a narrow path",
+        "similar painterly, soft-lit stylized materials",
+        "different palettes and environments (green tornado-sky vs orange cloud sea) suggest separate levels or separate games"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a daytime green meadow with a dirt path, cliffs and a HUD with hearts and a score, while B has a pink-purple sky above a cloud sea and no HUD",
+        "Different characters: a small stylized kid in teal in A versus a muscular ninja-like man in blue in B",
+        "Different art direction: A uses low-poly bushes and pine trees, B uses a tiled stone bridge, lanterns and floating islands"
+      ]
+    }
+  ]
+}

@@ -19,7 +19,7 @@ import { RenderDeviceError, type UniformValue } from "../RenderDevice";
 import { isTextureBinding, TextureBinding } from "../TextureBinding.js";
 import { Sampler } from "../Sampler.js";
 import { capturedTransmissionTarget } from "../forward/transmissionTargetStore.js";
-import { makeShaderFeatureReplayGuard } from "../program/FeatureSelect.js";
+import { makeShaderFeatureReplayGuard, stockFeatureVerifier } from "../program/FeatureSelect.js";
 
 /**
  * KHR_texture_transform matrix per PRD-04 §8.9: `T · R · S` with
@@ -304,6 +304,9 @@ export const rimFeature: ShaderFeature = {
 /** Stable built-in identities, used when a draw must be safe to replay. */
 export const PRD04_SHADER_FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature, rimFeature];
 export const isPrd04ReplaySafeFeature = makeShaderFeatureReplayGuard(PRD04_SHADER_FEATURES);
+
+/** Used only to decline unauthenticated producers during selective preflight. */
+export const isStockPrd04ShaderFeature = stockFeatureVerifier(PRD04_SHADER_FEATURES);
 
 let registered = false;
 

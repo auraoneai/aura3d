@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sun bloom and a slight haze in the sky. The far trams are still somewhat crowded. The ground texture is fairly plain. Otherwise it has a contact shadow under the frog, warmer lighting, clear vehicle silhouettes, a readable coin, better depth and a sun accent that gives it mood.",
+     "Traffic is very crowded and some trams and cars overlap or clip into each other. The road and rail lanes are cluttered and hard to read. The skybox is fairly flat and the green foreground is large and empty.",
+     "Some trams and cars overlap in the back rows. There is mild haze near the horizon. The logs are flat slabs, and the bottom of the frame is mostly empty grass. Otherwise it has better lighting with a visible sun, a soft frog shadow, clearer vehicle materials, a readable coin pickup and better depth."
+    ]
+   }
+  ]
+ }
+]

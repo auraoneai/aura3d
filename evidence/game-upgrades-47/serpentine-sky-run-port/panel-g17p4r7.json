@@ -1,0 +1,143 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pinkish haze lowers contrast a little near the horizon; the bridge foreground is slightly washed out",
+     "Pink haze makes the horizon and clouds a little milky; the path is fairly low-contrast near the sun; the dragon head floats detached at the end of the body tube.",
+     "Pink haze lowers contrast a little near the horizon; the path shading is slightly washed out"
+    ]
+   },
+   {
+    "variant": "stage1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild pink haze, slightly low contrast in the foreground",
+     "Mild pink haze lowers contrast near the horizon; the dragon head reads as disconnected from the tube body.",
+     "Pink haze softens the horizon slightly; otherwise fine, with torii gates, dragon, shadows and a sun glow"
+    ]
+   },
+   {
+    "variant": "stage2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy amber monochrome haze, a slightly greenish tint on the bridge edges, and the sky is a bit muddy",
+     "Heavy sepia/orange cast makes the image somewhat monochrome; the path edges pick up an odd greenish tint; the sky is a bit hazy.",
+     "The overall orange-yellow cast is somewhat monochrome; slight greenish tint on the path edges"
+    ]
+   },
+   {
+    "variant": "stage3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Brownish sepia haze makes the image somewhat muddy and low-contrast; olive tint on the bridge edges",
+     "Dusty brown haze flattens the sky and clouds; greenish-olive path edges look muddy; overall slightly low contrast.",
+     "Sepia haze makes the sky and clouds a bit muddy and low in contrast; greenish path edges"
+    ]
+   },
+   {
+    "variant": "stage4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very saturated red monochrome; the player's red outfit blends somewhat into the red scene",
+     "Almost everything is pushed into strong red-orange, which crushes colour separation (the red player sits on a red path); dark blotches in the clouds.",
+     "The heavy red cast reduces colour separation between the player and the path; still moody and readable"
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strongly purple-tinted throughout, but the mood and contrast are good; minor issues only",
+     "Violet palette is fairly monochrome; dark blotchy patches in the cloud sea; the dragon is a little dark against the sky.",
+     "Strong purple cast, but the moonlit mood, depth and player readability are good"
+    ]
+   },
+   {
+    "variant": "stage6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "White caustic-like squiggle patterns on the bridge tiles look noisy and somewhat glitchy; the sky is dark and a bit empty",
+     "Large white caustic/water-ripple squiggles on the path look like a texture glitch and clutter the play area; the scene is a bit dark and blue overall.",
+     "Bright white squiggles (caustics or reflections) on the path tiles look slightly noisy and glitch-like; the dark blue palette is a bit dim"
+    ]
+   },
+   {
+    "variant": "stage7",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cloud sea is a bit flat and bright for a night scene, with some dark blotches in the clouds",
+     "Mostly blue palette; dark blotches in the cloud sea; the near path is slightly flat; the dragon is dark against the night sky.",
+     "Monochrome blue night palette; clouds are slightly flat; otherwise strong moonlit atmosphere"
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bridge surface is somewhat washed out pale pink/white near the camera; the yellow clouds are slightly oversaturated",
+     "The path is quite bright and pale in the foreground, a little washed out; the sun glow behind the gates bleaches some detail.",
+     "The path is slightly washed out near the horizon glow; minor haze"
+    ]
+   }
+  ]
+ }
+]

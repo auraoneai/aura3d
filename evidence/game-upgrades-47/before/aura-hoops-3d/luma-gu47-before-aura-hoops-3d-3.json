@@ -1,0 +1,118 @@
+[
+ {
+  "target": "aura-hoops-3d--shanghai",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "shanghai",
+  "sinceReadyMs": 25005,
+  "mean": 56.12,
+  "p5": 1,
+  "p50": 46,
+  "p95": 151,
+  "darkFrac": 0.1528,
+  "clipFrac": 0,
+  "grid": [
+   34.4,
+   53.3,
+   46.3,
+   57.7,
+   88.9,
+   79.1,
+   46.3,
+   60.5,
+   38.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 341
+  }
+ },
+ {
+  "target": "aura-hoops-3d--shanghai",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "shanghai",
+  "sinceReadyMs": 200818,
+  "mean": 54.42,
+  "p5": 1,
+  "p50": 49,
+  "p95": 147,
+  "darkFrac": 0.2191,
+  "clipFrac": 0,
+  "grid": [
+   17.4,
+   47.4,
+   30.4,
+   66.3,
+   90,
+   86.7,
+   50.4,
+   56.4,
+   44.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 341
+  }
+ },
+ {
+  "target": "aura-hoops-3d--orbit",
+  "id": "settle-25s",
+  "slug": "aura-hoops-3d",
+  "variant": "orbit",
+  "sinceReadyMs": 25012,
+  "mean": 113.8,
+  "p5": 65,
+  "p50": 114,
+  "p95": 163,
+  "darkFrac": 0.0025,
+  "clipFrac": 0,
+  "grid": [
+   94.7,
+   116.5,
+   110.8,
+   102.1,
+   139.7,
+   128,
+   99.1,
+   106.5,
+   126.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 327
+  }
+ },
+ {
+  "target": "aura-hoops-3d--orbit",
+  "id": "settle-60s",
+  "slug": "aura-hoops-3d",
+  "variant": "orbit",
+  "sinceReadyMs": 242584,
+  "mean": 113.27,
+  "p5": 63,
+  "p50": 115,
+  "p95": 158,
+  "darkFrac": 0.0107,
+  "clipFrac": 0,
+  "grid": [
+   84.1,
+   115,
+   105.7,
+   97.9,
+   130.9,
+   131.3,
+   93,
+   131.4,
+   130.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 327
+  }
+ }
+]

@@ -158,116 +158,64 @@ export const assets = defineAuraAssets({
     hash: "sha256-011c9e65cc2a229025f233dc80015bb3e9d3405146b59182d1c8e07593273eb4",
     bounds: [1.897, 1.282, 0.8]
   },
-  rooftopShooterCleanMeshy: {
+  // GU47 phase 9 (D2: no borrowed keys): the game's own CC0 set dressing, replacing the borrowed baseball dugout and basketball ball cart.
+  fcTeamBench: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopShooterCleanMeshy.2be27d6a.glb",
-    hash: "sha256-fcf0841169f4c4add2d0fd64bf3addec20b810b46d237d89e070188a9aaff3b2",
-    bounds: [0.627, 1.874, 0.41]
+    url: "/aura-assets/fcTeamBench.f7d250b0.glb",
+    hash: "sha256-f7d250b00e73e43feb1921279798eda55d7a0a922b612b9fc5f71f8783319a34",
+    bounds: [1.165, 0.889, 0.497],
+    sizeBytes: 189180,
+    metadata: { license: "CC0-1.0 (Poly Haven)", author: "Kirill Sannikov", provenance: { sourceUrl: "https://polyhaven.com/a/painted_wooden_bench", downloadUrl: "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf", sourceId: "poly-haven:painted_wooden_bench", retrievedAt: "2026-11-01T16:45:00Z" }, sourcePath: "Poly Haven 1k glTF packed to GLB, maps downsized to 512 px JPEG q70 (sips); admitted with aura3d assets add" }
   },
-  rooftopDefenderMeshy: {
+  fcBallCrate: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopDefenderMeshyClean.1e9df651.glb",
-    hash: "sha256-1e9df6514b4a34f62b7f6f0eead31724252bd7d02a495e752e61668ed9473c55",
-    bounds: [0.831, 1.886, 0.646]
+    url: "/aura-assets/fcBallCrate.691a2e7b.glb",
+    hash: "sha256-691a2e7bccf270982efb7624c25eb6ab82765c99ea6fe999e02f497b777bfb78",
+    bounds: [0.506, 0.254, 0.406],
+    sizeBytes: 397516,
+    metadata: { license: "CC0-1.0 (Poly Haven)", author: "Fabi_G", provenance: { sourceUrl: "https://polyhaven.com/a/plastic_crate_02", downloadUrl: "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/plastic_crate_02/plastic_crate_02_1k.gltf", sourceId: "poly-haven:plastic_crate_02", retrievedAt: "2026-11-01T16:45:00Z" }, sourcePath: "Poly Haven 1k glTF packed to GLB, maps downsized to 512 px JPEG q70 (sips); admitted with aura3d assets add" }
   },
-  "hoopsAthleteGuard": {
+  // GU47 WP-36 (FC47-A1): the football stand module (plan key pitchStandModule, Meshy text-to-3d refine, task
+  // 01a18c0a-997e-7103-9690-bfdbd94aebc1), welded and simplified to 45.6k triangles with 1024 px maps. Rights and
+  // metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcStandModuleMeshy.{rights,metadata}.json.
+  fcStandModuleMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteGuardClean.b9f501b4.glb",
-    hash: "sha256-b9f501b40572bca9f132b2814ab8f930301b0b896778f3db0f353a1ec3d0c695",
-    bounds: [0.905, 1.903, 0.404],
-    sizeBytes: 1600572,
+    url: "/aura-assets/fcStandModuleMeshy.b34d0da4.glb",
+    hash: "sha256-b34d0da4051e4273db0ec44d748ec07026b6c243056e7c5d824c0c66d8c51220",
+    bounds: [1.903, 0.832, 0.543]
   },
-  "hoopsAthleteBig": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/hoopsAthleteBigClean.a53256dd.glb",
-    hash: "sha256-a53256ddcacf537775870136a8a112fb9ec208783d57298f365164b54555c910",
-    bounds: [0.878, 1.903, 0.429],
-    sizeBytes: 1325852,
-  },
-  diamondDugout: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/diamondDugout.bfacebd6.glb",
-    hash: "sha256-bfacebd60d24235f7ef06c8c21ec71f9e490a12efbfb64c991a45f55105d9ed3",
-    bounds: [1.903, 1.579, 1.176]
-  },
-  diamondStadium: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/diamondStadium.2aa65131.glb",
-    hash: "sha256-2aa65131072a1c4ae4d32d123994aa94e8650317975325782d9c9207513b155b",
-    bounds: [1.903, 0.562, 1.653]
-  },
-  hoopsBallCart: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/hoopsBallCart.046e8fde.glb",
-    hash: "sha256-046e8fde0aa8e6c9c4cb4e8a3a2ea5f060d6916ab8dfda5dc1c013be7671bfe8",
-    bounds: [1.906, 1.31, 1.459]
-  },
-  hoopsCheckSfx: {
+  // GU47 phase 9 (D2): referee whistle, keeper save, crowd bed and goal swell, synthesised by tools/aura-fc/synth-sfx.mjs
+  // (original, CC0-1.0), replacing the cues borrowed from the bank-shot, basketball and baseball games.
+  fcWhistleSfx: {
     type: "audio",
     format: "wav",
-    url: "/aura-assets/hoopsCheckSfx.405a831d.wav",
-    hash: "sha256-405a831d3b901ca15f9a628f96e3136be8a2da626660da946ccf18fd2f610ba3"
+    url: "/aura-assets/fcWhistleSfx.a96c9bbf.wav",
+    hash: "sha256-a96c9bbf787accd87df9a5dc377777ffe335f3408e8b85535ae6d464244e2d24",
+    metadata: { license: "CC0-1.0", author: "Aura FC 3D (original synthesis)", provenance: { sourcePath: "tools/aura-fc/synth-sfx.mjs" } }
   },
-  hoopsCrowdSfx: {
+  fcSaveSfx: {
     type: "audio",
     format: "wav",
-    url: "/aura-assets/hoopsCrowdSfx.3bfb8d46.wav",
-    hash: "sha256-3bfb8d4652078c59aa46f93957a24d2322bd86f2a60846f4fe6aea288c09be5e"
+    url: "/aura-assets/fcSaveSfx.eb3ec196.wav",
+    hash: "sha256-eb3ec196edabb6aa26f802162834c8dd7cec27cd8aed6cb62ceb3e2798224d42",
+    metadata: { license: "CC0-1.0", author: "Aura FC 3D (original synthesis)", provenance: { sourcePath: "tools/aura-fc/synth-sfx.mjs" } }
   },
-  hoopsFanfareSfx: {
+  fcCrowdBedSfx: {
     type: "audio",
     format: "wav",
-    url: "/aura-assets/hoopsFanfareSfx.0b88e74e.wav",
-    hash: "sha256-0b88e74e5c40057ced8b5a19140d2ad4f6f15bd7963668fcd44c4aaf719f0a33"
+    url: "/aura-assets/fcCrowdBedSfx.d09578c3.wav",
+    hash: "sha256-d09578c3911e455e2d790ccb6b7b84c47b0fe74bdea0c9c4941cd6378c6df435",
+    metadata: { license: "CC0-1.0", author: "Aura FC 3D (original synthesis)", provenance: { sourcePath: "tools/aura-fc/synth-sfx.mjs" } }
   },
-  hoopsBuzzerSfx: {
+  fcCrowdSwellSfx: {
     type: "audio",
     format: "wav",
-    url: "/aura-assets/hoopsBuzzerSfx.84d252a1.wav",
-    hash: "sha256-84d252a1e66e638ec7c9c0896348ab619f0279f60edc50ff2609ca1ab584625e"
-  },
-  hoopsBlockSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/hoopsBlockSfx.48c91229.wav",
-    hash: "sha256-48c91229537384ad140ffe2064dfbe5f798768e3b89549517761717187cc630e"
-  },
-  diamondClickSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/diamondClickSfx.6a970d1d.wav",
-    hash: "sha256-6a970d1d51543575e978c9735afa795d6eb6f086faa7cadfc19d9ee834fe39da"
-  },
-  diamondConfirmSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/diamondConfirmSfx.70982d28.wav",
-    hash: "sha256-70982d2827bd33a15e2ba174d40133aa21bea3b879bcf19e8da5714cb6693843"
-  },
-  bankShotFoulWhistleSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/bankShotFoulWhistleSfx.631d142b.wav",
-    hash: "sha256-631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869"
-  },
-  diamondCrowdSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/diamondCrowdSfx.d68cf36a.wav",
-    hash: "sha256-d68cf36aa84536dd799c3558c9c7196029dde79866c92da2a60b8b6f96686e85"
-  },
-  diamondCrowdSwelSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/diamondCrowdSwelSfx.6bb15fd5.wav",
-    hash: "sha256-6bb15fd56d8a2ebbd3cf495219366a09ccbdc0e41baedb355a99205d1bb4c4f1"
+    url: "/aura-assets/fcCrowdSwellSfx.55f1f7b2.wav",
+    hash: "sha256-55f1f7b25ade7f0c6f926bbf2cc48a09c8d05fc56af2c4d5b47a7c60cc8ff26f",
+    metadata: { license: "CC0-1.0", author: "Aura FC 3D (original synthesis)", provenance: { sourcePath: "tools/aura-fc/synth-sfx.mjs" } }
   },
   // FC-16: football SFX synthesised by tools/aura-fc/synth-sfx.mjs, served route-local from apps/showcase-aura-fc-3d/public/aura-assets
   fcKickSfx: {
@@ -287,12 +235,6 @@ export const assets = defineAuraAssets({
     format: "wav",
     url: "/aura-assets/fcPostSfx.8df2bd4f.wav",
     hash: "sha256-8df2bd4fa24e75f571e698ce48e99dc49b339e81b0e1ff40e078ba800101a309"
-  },
-  diamondHomerBigSfx: {
-    type: "audio",
-    format: "wav",
-    url: "/aura-assets/diamondHomerBigSfx.7d3a6654.wav",
-    hash: "sha256-7d3a66547131d29df72f20b49b11c258d55985550bb5004763eb25cf1979ee38"
   }
 } as const);
 

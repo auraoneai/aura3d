@@ -1,0 +1,64 @@
+[
+ {
+  "slug": "teleoperator",
+  "judges": 2,
+  "variants": [
+   {
+    "variant": "fog",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Puddle reflections on the road are blurry. There is a large dark shadow block to the right of the vehicle. The black horizontal lines near the bottom look like artifacts. Building textures are low-detail.",
+     "Slightly flat teal-grey sky with mild haze. The ground has some blotchy dark reflection patches. The truck on the right edge is cropped. Otherwise readable, with good depth and detail."
+    ]
+   },
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "There is a dark rectangular shadow block to the right of the vehicle. The cyan arc overlay crosses the scene. A black horizontal line artifact runs across the road. Building textures are slightly low-detail.",
+     "The cyan scan ring across the scene is a little distracting. There is a dark rectangular shadow patch on the road to the right. Some buildings show faceted texture smearing."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The buildings are lit too brightly for night, so it reads more like dusk. The cyan arc overlay and the bright ground light spot are somewhat distracting.",
+     "Buildings look too brightly lit for night, with an orange daylight-like tint. There is a strong headlight bloom spot on the road and the cyan scan ring. Otherwise it is rich, readable and has good reflections."
+    ]
+   },
+   {
+    "variant": "noon",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Blocky shadow artifacts sit on the road around and to the right of the vehicle. The sky is slightly blown out near the horizon. A thin black wire line crosses the road.",
+     "Checkerboard or dithered shadow artifacts appear on the road under and around the player. The sky is a bit blown out near the horizon. Overall lighting is slightly flat."
+    ]
+   }
+  ]
+ }
+]

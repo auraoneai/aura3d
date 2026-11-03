@@ -1,0 +1,728 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:33:53.466Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ],
+    "framesB": [
+      "splat-rush-port--default--settle-60s",
+      "splat-rush-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.876,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 0.9791666666666666,
+    "same_game": false,
+    "same_game_confidence": 0.876,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dark red sunset sky, torii gates and a dragon, with a humanoid character",
+        "Image B: bright cartoon blue sky, low-poly clouds, hot air balloons and a red ball",
+        "Both have floating islands, but the palette, lighting and art style differ completely"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized cartoon sunset with pastel pink clouds, hot air balloons and a red ball",
+        "Image B: realistic dark blue night scene with a torii-gate bridge, a dragon and a humanoid character",
+        "Different lighting, palette and rendering style, with only floating islands in common"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-style samurai character, dragon, and torii gates on a brick bridge",
+        "Image B has a stylized red ball, pillars, and hot air balloons on a pastel cloud floor",
+        "The palettes and art styles differ: muted sepia tones versus saturated pink and purple sunset"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is stylized low-poly with a red ball and hot air balloons; Image B is a realistic-style ninja character with a dragon and torii gates",
+        "Different lighting and palette: pink and yellow sunset versus deep purple night with stars",
+        "Different scenery: wooden pillars with floating islands and flat cloud floor versus a brick bridge with lanterns over a cloud sea"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a pink dusk palette with a torii-gate bridge, a dragon and a humanoid character; Image B has a bright blue sky with a red ball and hot air balloons",
+        "Different art styles: A uses realistic, moody lighting with a hazy cloud sea, B uses flat, cartoony low-poly clouds",
+        "Floating islands appear in both, but their designs differ (rocky with a single tree in A; grassy with towers in B)"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a realistic night scene with a humanoid warrior, torii gates and a dragon, while Image B has a bright cartoon sunset with a red ball and hot air balloons",
+        "Image A is rendered with realistic lighting and detailed materials, while Image B is flat and pastel with stylized low-poly clouds",
+        "Both show floating islands above clouds, but the art style, palette and gameplay (character runner vs rolling ball) differ"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a pink dusk sky, torii gates and a dragon, while Image B has a bright blue daytime sky",
+        "Image A has a humanoid character on a tiled bridge, while Image B has a red ball and cartoon clouds",
+        "Both show floating islands, but the palette, lighting and art style differ"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dusk purple palette with a realistic-styled ninja character and dragon",
+        "Image B: bright cartoon daytime sky with a plain red ball and low-poly clouds",
+        "Different art styles and rendering, despite both showing floating islands"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A has a realistic-style ninja character, a dragon and torii gates on a stone bridge, while Image B has a red ball in a cartoon setting",
+        "Different rendering styles: A uses a golden cloud sea with a purple sky and detailed textures, B uses flat pastel low-poly clouds and a pink sky",
+        "Different scenery: A has lanterns and a long bridge, B has wooden pillars, hot air balloons and castle islands"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright cartoon blue sky with a red ball and hot air balloons",
+        "Image B: realistic orange sunset with a humanoid runner, torii gates and a dragon",
+        "Different art style and lighting: flat low-poly vs. painterly realistic"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.58,
+      "tells": [
+        "different art style: realistic samurai and dragon vs flat cartoon ball and pastel clouds",
+        "different palette: orange haze vs pink-purple sunset",
+        "similar floating islands above a cloud sea, but that is the only shared element"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright cartoon blue sky with a red ball and hot air balloons",
+        "Image B: dusk purple-orange sky with a realistic dragon, torii gates and a ninja character",
+        "Different art style and lighting: flat low-poly vs. dramatic glowing PBR"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: stylized low-poly cartoon with a red ball, pastel pink and purple clouds, and hot air balloons",
+        "Image B: realistic rendering with a ninja character, torii gates, a dragon, and a saturated red-orange sunset",
+        "Different art style, character type and lighting, with no shared assets"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright cartoon blue sky with a red ball and hot air balloons",
+        "Image B: hazy sepia sunset, torii gate bridge, realistic dragon and humanoid character",
+        "Different art style and palette despite both having floating islands"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-style humanoid on a stone bridge with torii gates and a dragon, while Image B has a red glossy ball in a flat cartoon style",
+        "Different scenery: A has lanterns and an Asian theme, B has hot air balloons, wooden pillars and pastel towers",
+        "Both use floating islands above clouds with a pink sunset sky, but the art style and materials differ"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon daytime sky with a red ball and hot air balloons",
+        "Image B: dark moonlit night with realistic shading, a samurai character, torii gates and a dragon",
+        "Both have floating islands, but the art style and lighting are completely different"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright, cartoon daytime sky with a red ball and hot air balloons",
+        "Image B is a dark, realistic night scene with a ninja character, torii gates and a dragon",
+        "Different art style and lighting: flat low-poly clouds vs. detailed textured materials and dense fog"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: stylized cartoon red ball, low-poly pillars and hot air balloons",
+        "Image B: realistic humanoid character, torii gates, dragon and a tiled bridge",
+        "Both show floating islands above a cloud sea at sunset, but the art style and gameplay differ"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized low-poly cartoon with a red ball, pastel pink sky and hot air balloons",
+        "Image B is a more realistic render with a ninja character, torii gates, a dragon and a brick bridge",
+        "Different palette and material style: flat pastel against warm sepia with detailed textures"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright cartoon blue sky with a red ball, white puffy clouds and hot air balloons",
+        "Image B: hazy sepia sunset with a humanoid character, torii gates and a dragon",
+        "Floating islands appear in both, but the art style, lighting and palette differ completely"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A uses a stylized cartoon look with a red ball, balloons and pastel clouds, while Image B uses a more realistic look with a ninja character, dragon and torii gates",
+        "Different scenery: wooden pillars and floating islands with towers versus a stone bridge with lanterns over golden clouds",
+        "Different palette and lighting: soft pink and purple versus saturated orange and violet with a bright sun"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a ninja character on a stone bridge with torii gates and a dragon; Image B has a red ball rolling on clouds with wooden pillars and hot air balloons",
+        "Different art styles: A is a more realistic, detailed render, B is flat cartoon with cel-shaded clouds",
+        "Both use floating islands above a cloud sea at sunset, but the sky palettes and lighting differ"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright cartoon sky with a red ball, balloons and puffy low-poly clouds",
+        "Image B is a golden sunset scene with a humanoid runner, torii gates and a dragon",
+        "Different rendering styles: flat toon shading versus hazy realistic lighting and textures"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon daytime sky with a red ball and hot air balloons",
+        "Image B: dark moonlit night with realistic humanoid character, torii gates and dragon",
+        "Different art styles: flat low-poly clouds vs. detailed, realistic lighting and fog"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon daytime sky with a red ball and hot air balloons",
+        "Image B: dusk purple palette with a realistic humanoid character, dragon and torii gates",
+        "Different art styles: flat low-poly vs. detailed realistic lighting"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a pink dusk sky, a torii-gate bridge, a dragon and a humanoid runner, while Image B has a bright blue sky and a red ball",
+        "Different palettes and tone: muted purple/pink haze against saturated cartoon colors",
+        "Both show floating grass islands, but the island styles and surroundings differ (A: moody realistic, B: cute cartoon with balloons and towers)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dark red sunset with a ninja character, torii gates and a dragon",
+        "Image B: bright cartoon blue sky with a red ball, hot air balloons and puffy clouds",
+        "Floating islands appear in both, but the palette, art style and player object differ"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic ninja character, torii gate path and dark dragon in a saturated red-orange sunset",
+        "Image B: cartoon red ball, pastel pink-purple clouds, hot air balloons and pillars",
+        "Different art styles and palettes, with a humanoid on a brick bridge versus a ball on a cloud floor"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized low-poly cartoon with a red ball and pastel pink clouds, while Image B is a realistic humanoid runner with detailed textures",
+        "Image B has torii gates, a stone bridge and a dragon in an orange sunset, with no match to A's balloons and pillars",
+        "Different art style and lighting: flat soft pastel versus high-contrast glowing sun and detailed shading"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark blue night palette with a realistic ninja character, torii gates and a dragon",
+        "Image B: pastel pink sunset with a cartoon red ball, wooden pillars and hot air balloons",
+        "Floating islands and a cloud sea appear in both, but the art style and lighting differ completely"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a dusky pink/magenta sky, torii gates and a dragon, while Image B has a bright cartoon blue sky with balloons and a tower",
+        "Image A has a humanoid ninja character on a tiled bridge, while Image B has a red ball with speed lines",
+        "Both show floating islands, but they differ in palette, lighting and art style"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic ninja character on a purple stone bridge with a dragon and torii gates",
+        "Image B: stylized cartoon red ball with wooden pillars, hot air balloons and pastel clouds",
+        "Different art styles, lighting and palettes (dark violet night vs. bright pink-orange sunset)"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a stylized low-poly scene with a red ball, hot air balloons and flat cartoon clouds",
+        "Image B has a realistic-textured runner character, torii gates and a dragon on a stone bridge",
+        "Both show floating islands above a pink cloud sea, but the art style and gameplay differ"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage8--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: sunset palette with a torii gate path, a dragon and a ninja character",
+        "Image B: bright cartoon blue sky with low-poly clouds, hot air balloons and a red ball",
+        "Both show floating islands, but the lighting, palette and gameplay differ"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark blue night scene with a ninja character and torii gates, while Image B is a bright cartoon daytime sky with a red ball",
+        "Different art styles: realistic, moody lighting in A versus flat, low-poly pastel shading in B",
+        "Floating islands appear in both, but their rendering, palette and gameplay elements (character on a bridge vs. ball with speed lines) differ"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 1,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pastel pink sunset with a red ball and hot air balloons; Image B: dark blue night with a human character, torii gates and a dragon",
+        "Different art styles: flat cartoon low-poly in A, more realistic lighting and textures in B",
+        "Floating islands and a cloud sea appear in both, but the shared theme is generic"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright cartoon blue sky with a red ball and hot air balloons; Image B is a warm sepia sunset with a humanoid runner and a dragon",
+        "Different art styles: A uses flat low-poly clouds and islands, B uses realistic textured models and hazy cloud-sea lighting",
+        "Both have floating islands, but they differ in design and in the rest of the scene (torii-gate bridge vs. open sky)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon daytime sky with a red ball, balloons and low-poly clouds",
+        "Image B: dusk purple palette with a realistic humanoid runner, torii gates and a dragon",
+        "Different art style and rendering fidelity, with only floating islands in common"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon daytime sky with a red ball and hot air balloons",
+        "Image B: dark moonlit realistic-style scene with a humanoid runner, torii gates and a dragon",
+        "Different art style and lighting, though both show floating islands"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic ninja character, dragon and torii gates on a dark purple night bridge",
+        "Image B: cartoon red ball on a pastel sunset cloud floor with hot air balloons",
+        "Different art styles: detailed realistic rendering vs flat stylized low-poly"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dark, moody night scene with a ninja character and a torii-gate bridge; Image B is a bright, cartoon daytime sky with a red ball",
+        "Different palettes and lighting: deep blue and purple with glowing reflections versus saturated cyan sky and flat soft shading",
+        "Both have floating islands, but the art styles differ: realistic-stylized textures versus low-poly toy-like clouds, balloons and towers"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: dark red sunset, torii gates, dragon, and a humanoid ninja character",
+        "Image B: bright cartoon blue sky, low-poly clouds, a red ball, and hot air balloons",
+        "Different art style and lighting, though both use floating islands"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-style samurai runner, a dragon and torii gates; Image B has a red ball in a cartoon setting",
+        "Image A uses warm sepia tones with a sand-like cloud sea; Image B uses a pink-purple sunset with stylized flat clouds",
+        "Both have floating islands above a cloud sea, but the art style and gameplay objects differ"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: bright cartoon blue sky, red ball, hot air balloons, low-poly clouds",
+        "Image B: pink dusk sky, realistic stylized samurai character, torii gates, dragon",
+        "Different palettes, art styles and gameplay, despite floating islands in both"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage7--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized pastel sunset with a red ball, hot air balloons and wooden pillars",
+        "Image B: dark moonlit night with a realistic-style ninja character, torii gates and a dragon",
+        "Different art style and lighting, though both show floating islands above clouds"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage6--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark night palette with a realistic ninja character, dragon and torii gates on a stone bridge",
+        "Image B: bright pastel sunset with a cartoon red ball, hot air balloons and wooden pillars",
+        "Both have floating islands above a cloud sea, but the art style, lighting and gameplay differ"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--stage4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic red-orange sunset, torii gate bridge, ninja character and dragon",
+        "Image B: cartoon pastel pink/purple clouds, hot air balloons, red ball character",
+        "Different art style and gameplay: a brick runway path in A, an open cloud plain with wooden pillars in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "serpentine-sky-run-port--default--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic-style runner character, torii gates and a dragon; Image B has a red ball, wooden pillars and hot air balloons",
+        "Different art styles: A uses a muted painterly look with a pink haze, B uses flat cartoon shading with a saturated sunset gradient",
+        "Both have floating islands above a cloud sea, but the island designs and cloud rendering differ (A has soft cloud-sand, B has blobby lavender clouds)"
+      ]
+    }
+  ]
+}

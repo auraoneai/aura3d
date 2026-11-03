@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-hoops-3d/art/direction.ts",
-  "sourceSha256": "1bff7df0354e77c71eff8fc061391bb7cd657570162acfc0f29a4a689450233f",
+  "sourceSha256": "e5c0f9a28cece9badb0dfdf3d7d3f0c52cf107b91472bdf555dcb1f13cf0fba1",
   "id": "showcase-aura-hoops-3d",
   "genre": "basketball",
   "signatureEffect": "Spray-tag decal stencilled on the blacktop under the rim after a Jam dunk, fading over 20 s, at most 8 live, on every tier.",
@@ -24,7 +24,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 1.5
+        "intensity": 2.4
       },
       {
         "type": "spot",
@@ -180,9 +180,9 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "showcaseStadiumSeats",
+        "assetKey": "hoops_blacktopFloodlight",
         "triangles": 0,
-        "textures": 1,
+        "textures": 0,
         "unlit": false,
         "overridesTextures": false
       }
@@ -346,6 +346,13 @@
       },
       {
         "role": "set-dressing",
+        "assetKey": "hoops_blacktopFloodlight",
+        "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
         "assetKey": "hoopsBallCart",
         "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
@@ -377,13 +384,6 @@
         "assetKey": "hoopsCanopy",
         "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "showcaseStadiumSeats",
-        "maxTriangles": 30000,
-        "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {

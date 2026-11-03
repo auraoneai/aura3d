@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-rush",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overhead gantry signs at the top of the frame are blank black slabs and cut off by the frame edge. The sun glare on the asphalt is very bright and ends in a hard, visible edge on the right. The road texture is noisy and the city towers are repetitive boxes. The player car is readable but somewhat dark.",
+     "Sun glare on the road is strong and smeary, close to blown out on the right side. Large black overhead sign panels at the top edge are cropped and empty. Building window textures look tiled and repetitive. Even so, the mood, colour and readability of the player car are stronger.",
+     "Two large blank dark sign panels on the overhead gantry fill the top of the frame and look unfinished. The road texture is smeared with heavy streaking, and a harsh specular glare patch cuts off abruptly at its lower edge. The building window textures are repetitive. Otherwise the sunset mood, depth down the highway and readability of the blue roadster are strong."
+    ]
+   },
+   {
+    "variant": "dusk",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sunset reflection on the road is noisy and streaky. The towers are repetitive box buildings and the yellow billboard is blank. Minor: some sky clouds and the floating ring decorations look odd. Otherwise the mood is strong, the colour rich and the player readable.",
+     "Orange road reflection is smeary and noisy. Window textures repeat. The gold billboard on the right is blank. Otherwise the dusk sky, depth and player readability are strong.",
+     "The road texture is heavily streaked, and the orange specular smear on the right is somewhat noisy. The building windows repeat. Otherwise the purple and orange dusk sky looks rich, the depth is good, the player is clearly readable and the frame is polished."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overall dark: the player car is lit mostly by rim light and its body is somewhat underexposed. The road surface is noisy, the window textures repeat, and there are partly cut-off light objects at the top edge. Still atmospheric, with good contrast between the starry sky and the lit windows.",
+     "The frame is somewhat dark overall and the foreground road is murky. Window textures look tiled. Objects are partly cut off at the top edge. The player car stays readable and the night mood works.",
+     "The scene is fairly dark, and distant traffic is hard to read. Partial objects are cut off at the top edge of the frame. The lit window grids repeat. Even so, the night mood is good, the player car stands out with a rim light and the lane markings are readable."
+    ]
+   }
+  ]
+ }
+]

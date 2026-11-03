@@ -3,91 +3,91 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/hud-rucker-action.jpg",
-      "sha256": "584b46429bdf24f69220c837e379653ab9f18c7914828fa28a43c183027efdca"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-scr/screens-1280x720--03-action-03-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "f41647954218bc8d0b713a38f3e200fb9d00331d6590e2ea601e3e327093ec2c"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/manila-settle-60s.jpg",
-      "sha256": "36114335e3d729d8b4473a37547b5e14aa2d5db07bf8065d9a8053e0788a9575"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p7-r1/aura-hoops-3d/frames/g07p7-r1-manila/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "24fe8cfa9d85f5b40ea97cadf03ce8b16f2fbf7c65845d80a15d5849006d8bf9"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/venice-settle-60s.jpg",
-      "sha256": "48f95ff72c95ba977878f930be390009c7a45bceb54872479d88ce81ccf7c47b"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p7-r1/aura-hoops-3d/frames/g07p7-r1-rucker/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "9ceb541040c74e9dfad0589cf5f6e2021ec98f7fbc5f18e1975ab111505d4f7b"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-hoops-3d/look-shots/shanghai-settle-60s.jpg",
-      "sha256": "7c2af1b2e8ff158feb6295125f8df1f81b857e8aadfa9f9bb9d07b6725178687"
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p7-r1/aura-hoops-3d/frames/g07p7-r1-shanghai/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "2c60f805ed99f7a9afe2d643179c34f3f547afa74a62cdeb86e2dfd7f2b8fa90"
     }
   ],
   "references": [],
   "scores": {
     "lighting": 6,
-    "shadows": 4.5,
-    "ibl_reflections": 4,
-    "environment_world": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 6,
+    "environment_world": 5,
     "atmospheric_effects": 5,
-    "material_quality": 5,
-    "modeling_assets": 5,
+    "material_quality": 5.5,
+    "modeling_assets": 4.5,
     "composition": 5,
     "camera": 5,
-    "postprocessing": 5.5,
-    "animation_quality": 5,
+    "postprocessing": 6,
+    "animation_quality": 4.5,
     "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Frame 1 is a dim, blue-purple wash with no readable key direction despite the 'golden hour look' label. Frames 2 and 3 are flat and evenly lit. Frame 4 has the best night mood, with lamp posts, but the lamps cast little light onto the court."
+      "seen": "Frame 1 is labeled 'Golden Hour Look' but renders as a flat, dim purple-gray dusk with little warm key light. Frame 3 has a clear low sun behind the buildings casting long shadows, so the lighting quality varies widely between courts."
     },
     {
       "category": "shadows",
-      "seen": "Players get soft blob or contact shadows that are faint and mostly directionless. Frame 4 has some cast shadows near the bleachers, but there is no consistent sun or flood shadow direction across frames."
+      "seen": "In frame 3, the shadow of the bleachers on the left shows visible stair-stepped, low-resolution shadow-map edges. In frame 1, the players have weak contact shadows and barely read as grounded."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The court surfaces are matte with no sheen or reflections, even under the wet rain in frame 4. Only the trophy in frame 1 shows a metallic gold response."
+      "seen": "In frame 4, the glossy court shows screen-space reflections of the players and lamp posts, which work reasonably well. In frame 2, the floor sheen is uniform, and frames 1 and 3 show almost no reflective response."
     },
     {
       "category": "environment_world",
-      "seen": "The bleachers and ball cart are generic blocks. Backdrops are blurred photo-like planes (green interior, beige haze, treeline). The Venice palm floats unattached in the sky. Frame 1 has a giant pillar intersecting the court and the trophy oddly placed mid-court."
+      "seen": "In frames 1 and 3, the buildings are untextured boxes with grids of flat cream window quads. In frames 2 and 4, the backgrounds look like blurred photo backdrops that do not match the 3D court in style or perspective."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "Frame 4 has light rain streaks and frame 2 has dust particles near the hoop. Frame 3's beige haze is flat fog that washes out the far background rather than adding depth."
+      "seen": "Frame 3 has a light distance haze around the sun gaps, and frame 2 has a small sparse particle puff near the hoop. No volumetric light or meaningful fog is visible elsewhere."
     },
     {
       "category": "material_quality",
-      "seen": "Clothing is flat color with no fabric response. Skin is smooth unlit-looking. Court paint is uniform, with no wear or grain except a faint noise overlay."
+      "seen": "Player clothing and skin are flat diffuse colors with no fabric or skin detail. The court paint is plain color fills. The lamp posts in frame 4 and the gold trophy in frame 1 have more convincing material response than everything else."
     },
     {
       "category": "modeling_assets",
-      "seen": "The low-poly stylized characters are readable, but faces are simplistic and hands are mitten-like. The court line decals at the paint have broken white swoosh artifacts near the feet. The hoop and backboard are decent."
+      "seen": "The players are low-poly with blocky heads and near-identical faces, and they wear the same white, gray and orange outfits across all frames. Players' feet clip into the white shoe-like decals. Frame 4 shows a high-detail lamp post next to simple characters, so asset fidelity is inconsistent."
     },
     {
       "category": "composition",
-      "seen": "Frame 1 crops a player at the left edge and leaves a large empty foreground. Frames 2–4 cluster players mid-frame with the hoop cut off at the top right. The ball carrier is well emphasized by the orange ring."
+      "seen": "In frame 1, players are cropped at the left edge and the ball is cut off at the right edge. In frames 2 to 4, the figures are spread evenly across the frame with no clear focal emphasis on the ball handler."
     },
     {
       "category": "camera",
-      "seen": "Low perspective camera rather than the broadcast high angle. Frame 1 is very close and oblique with no clear court read. Frames 2–4 use a consistent shallow sideline angle that hides court layout depth."
+      "seen": "Frame 1 uses a low, close camera that crowds the HUD and cuts off players. The other frames use a mid-height side angle that is serviceable but flat. The near-identical framing across frames 2 to 4 suggests a fixed showcase camera."
     },
     {
       "category": "postprocessing",
-      "seen": "There is background depth-of-field blur and a film grain or noise layer. Frame 1 is crushed and desaturated. There is no meaningful bloom on the lamps in frame 4."
+      "seen": "Frame 2 has a strong depth-of-field blur that gives a tilt-shift look. Frame 4 has bloom on the lamps and a cyan glow streak on the floor. Mild film grain appears in frame 1. The effects are present but used inconsistently."
     },
     {
       "category": "animation_quality",
-      "seen": "The handler's dribble crouch varies across frames. Off-ball players stand in near-identical idle T-ish poses across all four shots. The players in frame 1 are mid-stride but stiff."
+      "seen": "Only the ball handler has an action pose, a crouched dribble. The other players stand stiffly in near A-poses with arms out, and frame 1 shows the same stiff idle poses."
     },
     {
       "category": "ui_hud",
-      "seen": "Frame 1 has a clean scoreboard, court tag, stamina bar and controls strip in a consistent orange/cyan style. The top mode bar is dense and debug-like, and frames 2–4 show no HUD at all."
+      "seen": "The scoreboard, stamina bar, court label and control-hint bar are clean and stylistically consistent. In frame 1, the top menu bar and the score panel take up a lot of space and cover part of the play area."
     }
   ],
   "nextChange": {
-    "category": "ibl_reflections",
-    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
-    "api": "environments.hdri(url) or the look's preset env"
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
   },
   "judge": "prism"
 }

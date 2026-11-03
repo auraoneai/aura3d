@@ -1,0 +1,350 @@
+[
+ {
+  "target": "aura-fc-3d--favela",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "favela",
+  "sinceReadyMs": 25011,
+  "mean": 135.87,
+  "p5": 92,
+  "p50": 123,
+  "p95": 234,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   159.4,
+   153.7,
+   167.5,
+   124.9,
+   124.4,
+   123.9,
+   122.6,
+   124.6,
+   121.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 310
+  }
+ },
+ {
+  "target": "aura-fc-3d--favela",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "favela",
+  "sinceReadyMs": 132026,
+  "mean": 135.86,
+  "p5": 92,
+  "p50": 123,
+  "p95": 234,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   159.4,
+   153.7,
+   167.5,
+   124.9,
+   124.4,
+   123.9,
+   122.6,
+   124.6,
+   121.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 310
+  }
+ },
+ {
+  "target": "aura-fc-3d--munich",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "munich",
+  "sinceReadyMs": 25002,
+  "mean": 104.72,
+  "p5": 45,
+  "p50": 94,
+  "p95": 229,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   118.5,
+   115.4,
+   128.3,
+   94.3,
+   98.4,
+   99.1,
+   93.1,
+   99.3,
+   96.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 351
+  }
+ },
+ {
+  "target": "aura-fc-3d--munich",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "munich",
+  "sinceReadyMs": 201713,
+  "mean": 104.73,
+  "p5": 45,
+  "p50": 94,
+  "p95": 229,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   118.5,
+   115.4,
+   128.2,
+   94.4,
+   98.4,
+   99.1,
+   93.1,
+   99.3,
+   96.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 351
+  }
+ },
+ {
+  "target": "aura-fc-3d--lagos",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "lagos",
+  "sinceReadyMs": 25014,
+  "mean": 171.99,
+  "p5": 110,
+  "p50": 175,
+  "p95": 210,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   170.9,
+   160.1,
+   163.9,
+   173,
+   173.7,
+   171.2,
+   177.2,
+   180.1,
+   177.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 444
+  }
+ },
+ {
+  "target": "aura-fc-3d--lagos",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "lagos",
+  "sinceReadyMs": 182856,
+  "mean": 172,
+  "p5": 110,
+  "p50": 176,
+  "p95": 210,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   170.9,
+   160.2,
+   163.9,
+   173,
+   173.7,
+   171.3,
+   177.2,
+   180.1,
+   177.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 444
+  }
+ },
+ {
+  "target": "aura-fc-3d--kyoto",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "kyoto",
+  "sinceReadyMs": 25006,
+  "mean": 69.42,
+  "p5": 40,
+  "p50": 44,
+  "p95": 231,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   116.2,
+   107.3,
+   125.2,
+   49.9,
+   48,
+   49.2,
+   43.1,
+   44.4,
+   41.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 344
+  }
+ },
+ {
+  "target": "aura-fc-3d--kyoto",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "kyoto",
+  "sinceReadyMs": 222248,
+  "mean": 69.42,
+  "p5": 40,
+  "p50": 44,
+  "p95": 231,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   116.4,
+   107.1,
+   125.2,
+   49.9,
+   48,
+   49.2,
+   43.1,
+   44.4,
+   41.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 344
+  }
+ },
+ {
+  "target": "aura-fc-3d--uyuni",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "uyuni",
+  "sinceReadyMs": 25005,
+  "mean": 227.68,
+  "p5": 170,
+  "p50": 239,
+  "p95": 243,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   205.9,
+   203.1,
+   201.3,
+   238.3,
+   238.1,
+   236.8,
+   241.9,
+   241.7,
+   241.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 312
+  }
+ },
+ {
+  "target": "aura-fc-3d--uyuni",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "uyuni",
+  "sinceReadyMs": 200320,
+  "mean": 227.68,
+  "p5": 170,
+  "p50": 239,
+  "p95": 243,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   205.9,
+   203.1,
+   201.3,
+   238.3,
+   238.2,
+   236.8,
+   241.9,
+   241.7,
+   241.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 312
+  }
+ },
+ {
+  "target": "aura-fc-3d--glacier",
+  "id": "settle-25s",
+  "slug": "aura-fc-3d",
+  "variant": "glacier",
+  "sinceReadyMs": 25003,
+  "mean": 95.4,
+  "p5": 47,
+  "p50": 68,
+  "p95": 228,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   140.6,
+   134.5,
+   151.4,
+   76.7,
+   73.3,
+   77.3,
+   68.4,
+   69.8,
+   66.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 384
+  }
+ },
+ {
+  "target": "aura-fc-3d--glacier",
+  "id": "settle-60s",
+  "slug": "aura-fc-3d",
+  "variant": "glacier",
+  "sinceReadyMs": 320971,
+  "mean": 95.42,
+  "p5": 47,
+  "p50": 68,
+  "p95": 228,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   140.6,
+   134.6,
+   151.5,
+   76.7,
+   73.3,
+   77.3,
+   68.4,
+   69.8,
+   66.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 384
+  }
+ }
+]

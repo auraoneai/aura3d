@@ -1,0 +1,21 @@
+{
+  "schema": "bunker-zero.cc0-source/1",
+  "key": "bzMedicalBox",
+  "sourceId": "poly-haven:medical_box",
+  "title": "medical_box",
+  "author": "Ulan Cabanilla",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sourcePage": "https://polyhaven.com/a/medical_box",
+  "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/medical_box/medical_box_1k.gltf",
+  "retrievedAt": "2026-11-01T17:00:00Z",
+  "tool": "tools/bunker-zero-lift/pack-polyhaven.mjs",
+  "derivation": [
+    "packed to one GLB with gltf-transform, scene wrapped in a root node that recentres X/Z and grounds Y (no vertex edits), unused resources pruned",
+    "1k glTF textures resized to 512 (sips -Z 512)"
+  ],
+  "sha256": "2ab52c7478b67893b6f9c04924a876f7ac131f10238019b13783118bb0439b4a",
+  "sizeBytes": 339728,
+  "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:medical_box bunker-zero",
+  "why": "GU47 phase 9 (PRD D2): replaces the medkit pickup shared with another live game (key named in docs/prds/game-upgrades-47/lanes/g11.md, phase 9)"
+}

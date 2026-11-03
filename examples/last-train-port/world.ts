@@ -1,7 +1,7 @@
 /**
  * Last Train to the Sea world on the public `@aura3d/engine` surface only: the six-town ring railway (track built from
  * the original's measured route: ballast ribbon, instanced sleepers, rails, trestle pylons and masts), cloud-top
- * islands dressed with catalog houses, trees, rocks, a windmill and a watchtower, a station platform per town, an
+ * islands dressed with catalog houses, trees, rocks, two stone landmark towers, a station platform per town, an
  * open-sided tram with twelve seats and seated passengers, a sky dome and cloud sea (`material.custom`), and rain / snow /
  * mote points. The look is image-based lighting (CC0 sky HDRI), a cascaded-shadow sun, a cool moon fill, exp2 fog,
  * bloom, colour grade and vignette (AO is opt-in with `?fx=ao`: the engine drops the pass on this path for a missing
@@ -15,7 +15,7 @@ import { RiderMotion, tramBob } from "./riderMotion";
 import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION } from "./lights";
 import { probes } from "@aura3d/engine/lanes";
-import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
+import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
@@ -81,18 +81,22 @@ const glow = (color: string, intensity = 1.2) => material.emissive({ color, emis
 
 const PAX_ASSET = { easy: MESHY_ASSETS.paxEasy, sightseer: MESHY_ASSETS.paxSightseer, rushed: MESHY_ASSETS.paxRushed, sleeper: MESHY_ASSETS.paxSleeper };
 const HOUSES = [MESHY_ASSETS.houseCream, MESHY_ASSETS.houseOchre, MESHY_ASSETS.houseBlue];
-const LICENSE_CATALOG = "Aura3D catalog (gullsiege Meshy set), licensed for use with the engine";
-/** The windmill and tower are the catalog GLBs with their 1024 px maps resized to 512 px (audit D-09: they are distant landmarks). */
+const LICENSE_KENNEY = "CC0-1.0 (Kenney Pirate Kit, kenney.nl), retinted for Lamplight Line";
+/**
+ * GU47 phase 9 (PRD D2: owned assets): the two distant landmarks are CC0 Kenney Pirate Kit towers this game owns (claimed in the
+ * GU47 CC0 ledger), their colormap retinted from blue-grey stone to cream stucco with terracotta roofs and the pivot centred like
+ * the GLBs they replace (sources and the retint in assets/ATTRIBUTION.md).
+ */
 const ASSETS = defineAuraAssets({
-  windmill: {
-    type: "model", format: "glb", url: new URL("./assets/windmill.glb", import.meta.url).href,
-    sha256: "612f5ff55b5c0d3544f3dfbf17f38b290ade0b58eb118f16b681d25572324fa7", sizeBytes: 866416,
-    metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWindmillMeshy.f4ebca18.glb" } }
+  lamplightKeep: {
+    type: "model", format: "glb", url: new URL("./assets/lamplight-keep.glb", import.meta.url).pathname,
+    sha256: "bfa55dfb12dfe0ca47d4f69e97c437ddf1c712595e4f5f44e4846af85f768b5c", sizeBytes: 63524,
+    metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-small" } }
   },
-  tower: {
-    type: "model", format: "glb", url: new URL("./assets/tower.glb", import.meta.url).href,
-    sha256: "f682cf1b45ee70e663eecd5cc84b58fbfa60f555e34450472ee91b5a57336006", sizeBytes: 803968,
-    metadata: { license: LICENSE_CATALOG, provenance: { sourcePath: "public/aura-assets/gullsiegeWatchtowerMeshy.546ee761.glb" } }
+  lamplightTower: {
+    type: "model", format: "glb", url: new URL("./assets/lamplight-tower.glb", import.meta.url).pathname,
+    sha256: "e2e98d8c6db7d0d2ee0decc264f4cd66b10a6d16c665962f598a4ae550282ca0", sizeBytes: 59776,
+    metadata: { license: LICENSE_KENNEY, provenance: { sourceId: "kenney:pirate-kit:tower-complete-large" } }
   },
   skyHdr: { type: "texture", format: "hdr", url: new URL("./assets/sky.hdr", import.meta.url).href, metadata: { license: "CC0 1.0, Poly Haven kloppenheim_06_puresky (1k)" } },
   /* GU47 LT-04: the band HDRIs from the E-A catalogue (served at /hdri/<id>_1k.hdr; CC0, Poly Haven, public/hdri/ATTRIBUTION.md) */
@@ -268,6 +272,13 @@ const FX = new Set((QUERY.get("fx") ?? "").split(","));
 /** GU47 LT-01: `?band=A..E` pins a band; `?look=original` keeps today's day / night look. */
 export const PINNED_BAND = parseBand(QUERY.get("band"));
 export const LOOK = parseLook(QUERY.get("look"));
+/**
+ * GU47 phase 4 (4.7.2): the band look uses the engine's 4.3.0 sun-shadow fit (`__A3D_SHADOW_FIT__ = "current"`). The default
+ * 4.2.0 fit widens every cascade to the bounds of every caster, and this route's merged facades, roofs, rails, sleepers and
+ * pylon beams span every town and leg, so each cascade covered the whole line and no shadow shape drew (rubric shadows 4.5:
+ * "only a soft smudge under the tram"). `?shadowfit=legacy` restores the 4.2.0 fit; `?look=original` never sets it.
+ */
+if (LOOK === "bands" && !FX.has("noshadow")) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 
 /** GU47 LT-07: the tilt-shift band (screen rows in focus) and the grain; DOF and god rays drop below High in the engine's post tiers. */
 export const TILT_SHIFT = { bandCenter: 0.56, bandWidth: 0.34, angleDeg: 0 } as const;
@@ -280,7 +291,7 @@ export const GOD_RAY_DENSITY = 0.015;
 function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   const row = BANDS[band];
   b.add(FX.has("nohdri") ? environments.neutral({ intensity: row.envIntensity }) : environments.hdri({ name: "env-sky", texture: BAND_HDRI[row.hdri], intensity: row.envIntensity, rotation: envRotationRad(row), background: false }));
-  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 130, blend: 0.12, filter: FX.has("pcss") ? "pcss" : "pcf", intensity: 1 } }));
+  b.add(lights.directional({ name: row.key.name, position: keyPosition(row), target: [0, 0, 0], intensity: row.key.intensity, color: row.key.color, shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 80, splitLambda: 0.8, mapSize: 2048, blend: 0.12, filter: FX.has("pcss") ? "pcss" : "pcf", intensity: 1 } }));
   b.add(lights.hemisphere({ name: BOUNCE_ID, skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: row.hemisphere.intensity }).runtime({ id: BOUNCE_ID }));
   if (row.practicals.platformPoint > 0) {
     const at = platformLightPositions(data, 0);
@@ -293,7 +304,7 @@ function addBandLighting(b: Scene, data: SimData, band: BandId): void {
   if (!FX.has("noprobes")) for (const p of stationProbes(data)) b.add(probes.reflection({ name: p.name, position: p.position, box: p.box, resolution: STATION_PROBE_RESOLUTION, update: "once", blendDistance: 2 }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
   // GU47 LT-03: screen-space contact shadows from the key (riders, benches, tram skirts); the engine skips them on Low.
-  if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.5, thickness: 0.08, intensity: 1, lights: "shadowed" }));
+  if (!FX.has("nocontact")) b.add(effects.contactShadows({ length: 0.8, thickness: 0.1, intensity: 1, lights: "shadowed" }));
   // GU47 LT-07: GTAO default-on in the band look (`?fx=noao` drops it); the engine drops it on the Low tier.
   if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: row.bloom.intensity, threshold: row.bloom.threshold }));
@@ -520,10 +531,10 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
     }
     const placed: [number, number][] = [];
     const free = (l: number, a: number, r: number): boolean => Math.hypot(l, a) < 74 && placed.every(([pl, pa]) => Math.hypot(pl - l, pa - a) > r);
-    const landmark = [ASSETS.windmill, ASSETS.windmill, ASSETS.tower, ASSETS.tower, ASSETS.tower, ASSETS.windmill][i]!;
+    const landmark = [ASSETS.lamplightKeep, ASSETS.lamplightKeep, ASSETS.lamplightTower, ASSETS.lamplightTower, ASSETS.lamplightTower, ASSETS.lamplightKeep][i]!;
     const lx = 36 * (i % 2 ? 1 : -1), la = -26 + (i % 3) * 18;
     placed.push([lx, la]);
-    const lh = landmark === ASSETS.windmill ? 30 : 34;
+    const lh = landmark === ASSETS.lamplightKeep ? 30 : 34;
     b.add(model(landmark, { name: `landmark-${i}`, position: [s0.x + sx * lx + fx * la, top + lh / 2 - 0.4, s0.z + sz * lx + fz * la], rotation: [0, yaw + i, 0], targetMaxDimension: lh, castShadow: false, receiveShadow: true }).runtime({ id: `landmark-${i}` }));
     if (MESHY_ENABLED) {
       for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
@@ -604,7 +615,8 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(primitives.sphere({ name: "stones", size: [3.2, 2.2, 2.8], instances: stoneAt, material: pbr("#8a867f", 0.95), castShadow: cast }));
 
   /* ---- tram and passengers (flat top-level nodes, moved from the runtime) ---- */
-  if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...TRAM.scale] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
+  // GU47 phase 4 (WP-36 lamplightTramEnamel, LT-11): the band look carries the enamel retexture; ?look=original keeps tram.glb.
+  if (MESHY_ENABLED) b.add(model(row ? MESHY_ASSETS.tramEnamel : MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...(row ? TRAM_ENAMEL_SCALE : TRAM.scale)] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
   else for (const gp of tramGroups()) b.add(geometry.custom(gp.mesh.toGeometry(), { name: gp.id, material: gp.mat, castShadow: gp.cast, receiveShadow: false }).runtime({ id: gp.id }));
   SEATS.forEach((_, i) => {
     if (MESHY_ENABLED) {

@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:52:04.743Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "strange-orbit-port--default--settle-25s",
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-25s"
+    ],
+    "framesB": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.932,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.932,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien planet with a giant moon",
+        "Image B: realistic night city highway with a spoilered racecar",
+        "Different palettes and environments: hazy orange and teal versus dark blue and amber"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sidecar hover bike over an alien Mars-like terrain with a giant moon",
+        "Image B: open-wheel car on a city highway with skyscrapers and sunset lighting",
+        "Different vehicle types, environments and palettes (teal and rust vs purple and orange)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night city highway with a rear-view formula-style car",
+        "Image B: alien desert with an astronaut on a sidecar bike and a giant moon",
+        "Different palettes, scenery, vehicles and camera setups"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city highway with skyscrapers, traffic and an exit sign; Image B is an alien planet with a moon and an astronaut on a hover bike",
+        "Different vehicles: a blue open-wheel car versus a white sidecar motorbike",
+        "Different palette and style: purple-orange dusk with a motion-blurred road versus a teal-and-rust space landscape"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sidecar bike over a Mars-like alien landscape with a giant moon",
+        "Image B: night city highway with a sports car and an exit sign",
+        "Different vehicles, scenery and lighting"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city highway at sunset with a blue open-wheel racer; Image B is an alien planet with an astronaut on a sidecar bike",
+        "Different scenery and palette: purple/orange skyscrapers vs. teal starry sky, giant moon and rust terrain",
+        "Different vehicles and camera: rear chase view with motion blur vs. side-on view of a rider"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: urban highway with skyscrapers and traffic at sunset",
+        "Image B: alien planet with an astronaut on a sidecar bike and a giant moon",
+        "Different vehicles, palettes and camera style"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien planet with a giant moon and a starry sky",
+        "Image B: a highway at sunset with city towers, an exit sign and a futuristic race car",
+        "Different vehicles, environments and palettes: muted teal and rust in A, saturated purple and orange in B"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien desert with a giant moon, starry sky and an astronaut on a sidecar bike",
+        "Image B: urban highway with skyscrapers, traffic and a purple-orange sunset",
+        "Different vehicles, scenery and palettes, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: astronaut on a sidecar bike over a Mars-like surface with a giant moon and a floating track",
+        "Image B: a city highway at sunset with a blue race car, skyscrapers and exit signs",
+        "Different settings, vehicles and art styles"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night city highway with a futuristic race car and lit skyscrapers",
+        "Image B is an alien planet with an astronaut on a sidecar bike and a giant moon",
+        "Different vehicles, palettes, scenery and rendering style"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: astronaut on a sci-fi sidecar bike over a Mars-like surface with a large moon",
+        "Image B: night city highway with lit skyscrapers and a formula-style car",
+        "Different palettes, scenery, vehicles and camera setups"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien space setting with astronaut on a sidecar bike, giant moon, and a floating track",
+        "Image B: urban highway at sunset with skyscrapers, traffic, and exit signs",
+        "Different vehicles and art style: pastel hazy look versus a saturated neon-synthwave look"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sci-fi sidecar bike on an alien planet with a giant moon",
+        "Image B: open-wheel car on a city highway with skyscrapers and a sunset",
+        "Different vehicles, environments, palettes and HUD/scene style"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city highway at sunset with a formula-style car; Image B is an alien planet with an astronaut on a sidecar motorcycle",
+        "Different settings and palettes: purple/orange urban dusk vs teal/rust space terrain",
+        "Different camera and vehicle style: rear chase view with speed blur vs side-angle view with a fogged moon"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night city highway with a futuristic race car",
+        "Image B: alien planet with an astronaut on a sidecar bike",
+        "Different scenery, palette and vehicle style"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien moonscape with an astronaut on a sidecar bike and a floating track",
+        "Image B: sunset city highway with an open-wheel racecar and road signage",
+        "Different settings, vehicles, palettes and camera styles"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is an urban highway at sunset with traffic and a sign gantry; Image B is an alien planet with a giant moon and an astronaut on a sidecar bike",
+        "Different vehicle styles: a blue open-wheel racer versus a teal and white sidecar motorbike",
+        "Different rendering and palettes: saturated purple and orange city dusk versus a hazy, desaturated teal and rust landscape"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien moonscape with an astronaut on a sidecar bike and a floating track",
+        "Image B: night city highway with a formula-style car and exit signs",
+        "Different art styles: foggy, muted, low-poly terrain vs. sharp, high-contrast buildings with a neon glow"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a hover sidecar bike, alien moonlit desert with a floating track",
+        "Image B: open-wheel car on a city highway at sunset with exit signs and traffic",
+        "Different settings, vehicles, palettes and camera styles"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on sidecar bike, alien moonlit planet with floating track",
+        "Image B: futuristic car on a city highway at sunset with signage and traffic",
+        "Different settings, vehicles and palettes: muted teal/orange space vs. saturated purple/gold urban"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: city highway with skyscrapers and traffic at sunset",
+        "Image B: alien planet with astronaut on a sidecar bike and a moon",
+        "Different vehicles, environments and art styles"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien desert with astronaut on sci-fi bike and a giant moon",
+        "Image B: night city highway with a race car and building-lined road",
+        "Different vehicles, scenery, palette and camera style"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien planet with a giant moon",
+        "Image B: open-wheel car on a city highway at sunset with road signs and traffic",
+        "Different vehicles, settings, palettes and camera framing"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night city highway with a futuristic car and window-grid skyscrapers",
+        "Image B: alien planet with a giant moon and an astronaut on a sidecar bike",
+        "Different vehicles, environments and rendering styles"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: city highway at sunset with a formula-style car and traffic",
+        "Image B: alien planet with an astronaut on a sidecar bike and a giant moon",
+        "Different settings, vehicles, palettes and rendering styles"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city highway at sunset with traffic and exit signs; Image B is an alien planet with a giant moon and a floating track",
+        "Different vehicles: an open-wheel blue racer versus an astronaut on a sidecar motorbike",
+        "Different palettes and rendering: saturated purple/orange with blocky buildings versus a hazy, muted teal and rust scene"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: city highway at sunset with a futuristic race car and traffic",
+        "Image B: alien planet with an astronaut on a hover bike and a giant moon",
+        "Different environments, vehicles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night city highway with a sports car and neon exhaust",
+        "Image B: alien desert with a giant moon and an astronaut on a hover bike",
+        "Different art style and palette: dark blue and orange urban versus soft teal and rust-brown"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien desert with astronaut on a sidecar bike, giant moon and starry sky",
+        "Image B: urban highway with skyscrapers, traffic and a sunset sky",
+        "Different vehicle and scenery styles, with no shared palette or props"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a city highway at sunset with a formula-style car and traffic",
+        "Image B is an alien planet with a moon, an astronaut on a sidecar bike and an elevated track",
+        "Different palettes, vehicles, scenery and rendering style"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien, moonlit, hazy landscape",
+        "Image B: night city highway with lit skyscrapers and a sports racer with thrusters",
+        "Different palettes, scenery, vehicle types and camera styles"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien desert with a giant moon and a floating track",
+        "Image B: urban highway at sunset with boxy skyscrapers, traffic and an exit sign",
+        "Different vehicles, settings, palettes and art styles"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 3,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on sidecar motorbike on a Mars-like planet with giant moon",
+        "Image B: night city highway with windowed skyscrapers and a sports car",
+        "Different vehicles, scenery and palette (hazy orange/teal vs dark blue/amber)"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 3,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a sunset city highway with a blue open-wheel car, Image B is an alien planet with an astronaut on a sidecar motorbike",
+        "different scenery and palette: purple/orange skyscrapers vs teal sky, giant moon and rust terrain",
+        "different vehicle design and camera: rear chase view with motion blur vs side-angled view with hazy fog"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien Mars-like setting with astronaut on a sidecar bike and a giant moon",
+        "Image B: urban highway at sunset with a sign and an open-wheel racer",
+        "Different palettes, vehicles and environments"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sidecar bike over an alien Mars-like landscape with a giant moon",
+        "Image B: city highway with skyscrapers, road signs and traffic at sunset",
+        "Different vehicles, scenery, palette and lighting"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien moonscape with astronaut on sidecar bike and giant moon",
+        "Image B: city highway with skyscrapers, traffic and exit sign at sunset",
+        "Different vehicle types, environments and lighting palettes"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien moonscape with astronaut sidecar bike and floating track",
+        "Image B: urban highway at sunset with a formula-style car and traffic",
+        "Different vehicle types, scenery and color palettes (teal and rust vs purple and orange)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night city highway with a futuristic open-wheel car and road signage",
+        "Image B: alien planet with a giant moon and an astronaut on a sidecar bike",
+        "Different art style, palette and camera: dark neon-lit city vs hazy pastel space scene"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien desert with astronaut on sidecar bike, giant moon, starry sky",
+        "Image B: urban highway at sunset with skyscrapers and a formula-style car",
+        "Different vehicle types, scenery, palettes and camera framing"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night city highway with a futuristic open-wheel car seen from behind",
+        "Image B: alien desert with a giant moon and an astronaut on a sidecar bike",
+        "Different vehicles, environments, palettes and camera framing"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city highway at sunset with traffic and a formula-style car, Image B is an alien desert with an astronaut on a motorbike",
+        "different vehicles, scenery and palette (purple/orange urban vs teal/rust space)",
+        "A has road signs and building blocks, B has a giant moon and an elevated track with dotted lights"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 4,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien planet with a giant moon",
+        "Image B: night city highway with a formula-style car and exit signs",
+        "Different palettes, scenery and vehicle styles"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a city highway at dusk with traffic and a race car",
+        "Image B is an alien planet with a giant moon and an astronaut on a sidecar bike",
+        "Different palette, scenery and vehicle types"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien desert with astronaut sidecar bike, giant moon and starry teal sky",
+        "Image B: city highway with skyscrapers, traffic and a purple-orange sunset",
+        "Different vehicles, scenery, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "strange-orbit-port--neutral-env--settle-25s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a sidecar bike on an alien planet with a giant moon",
+        "Image B: a night city highway with lit skyscrapers and a formula-style car",
+        "Different vehicles, scenery and palettes (hazy red-teal vs dark blue-orange)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: highway with city towers at sunset and a rear-view racecar",
+        "Image B: alien planet with a giant moon, an astronaut on a sidecar bike and an elevated track",
+        "Different vehicles, palettes and camera framing"
+      ]
+    }
+  ]
+}

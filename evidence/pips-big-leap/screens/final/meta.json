@@ -24,7 +24,25 @@
         "390-06-results.jpg",
         "card-1x.jpg",
         "card-2x.jpg"
-      ]
+      ],
+      "phase6": {
+        "runs": [
+          "g06p6-r1-1",
+          "g06p6-r1-2",
+          "g06p6-r1-3"
+        ],
+        "commit": "1e3e2489f",
+        "engine": "4.7.3",
+        "look": "4.7.2 (22ae79e75)",
+        "retaken": [
+          "1280-06-results.jpg",
+          "390-06-results.jpg",
+          "card-2x.jpg",
+          "card-1x.jpg"
+        ],
+        "results": "reached via qa.stepFrames autoplay (32.7 s sim, 4/6 seeds, 5 acorns) at 1280 and 390",
+        "panel": "g06p6res 3/0/0 both results views vs the 2026-10-29 frames"
+      }
     }
   },
   "incomplete": []

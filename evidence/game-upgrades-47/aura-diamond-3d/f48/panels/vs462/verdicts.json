@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-diamond-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "canyon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is slightly flat and grey, and the dirt ripple texture is a little noisy. Otherwise the frame reads well: green grass, warm rocks, filled stands and the outfield signage.",
+     "Sky is flat grey-blue and featureless. The stands in the distance are small. The dirt texture looks slightly noisy.",
+     "Slightly hazy horizon; infield noise texture a bit busy; otherwise clean"
+    ]
+   },
+   {
+    "variant": "dome",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background is a blurry, out-of-focus backdrop, the dark grey infield is somewhat muted and a long shadow band crosses the field. Otherwise the frame is clean and readable.",
+     "Background is a blurry, low-detail backdrop. A large diagonal dark shadow band cuts across the field, and the infield is a slightly flat grey.",
+     "Grey infield reads somewhat flat; blurry backdrop beyond the stands; dark shadow band across the field; mild mirror-like reflections on the turf"
+    ]
+   },
+   {
+    "variant": "ivy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The infield orange is very saturated and flat, with little texture. The sky is a dark, stormy smear, and the outfield grass is slightly blotchy.",
+     "The dark stormy sky is a bit heavy, and the infield orange is very saturated and flat. Otherwise the brick wall, ivy and lighting give strong mood and contrast.",
+     "Infield orange is very saturated and a little flat; stormy sky is slightly murky"
+    ]
+   },
+   {
+    "variant": "lunar",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The palette is muted beige and grey, so the outfield looks somewhat muddy, and the stands are very dark. Players and the field still read clearly, and the starry sky adds mood.",
+     "The frame is fairly dark and the outfield is a dull grey-brown. Still, the infield, players and sky with stars and stands read clearly.",
+     "Dark grey outfield is fairly drab; overall dim, but the infield and players read clearly and the stands have crowds"
+    ]
+   },
+   {
+    "variant": "sandlot",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The infield orange is slightly oversaturated and the sky is a flat grey. Otherwise it is well detailed, with a crowd, reflections and signage.",
+     "The sky is slightly hazy and pinkish, and the infield orange is somewhat oversaturated. Faint horizontal line artifacts show on the grass. Otherwise it has crowds, dirt texture and reflections.",
+     "Infield is a bit over-saturated orange; mild faint banding lines on the grass"
+    ]
+   },
+   {
+    "variant": "skyline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The teal and pink palette is a bit unusual and the pink dirt texture is noisy. Still, it has an atmospheric lit city backdrop, a crowd and wet reflections.",
+     "Cyan panels still float in the air, and the pink mottled infield texture is a bit noisy. Otherwise the skyline buildings, crowds and wet reflections add atmosphere.",
+     "Unusual teal outfield and pink infield are slightly unnatural; busy infield noise texture"
+    ]
+   }
+  ]
+ }
+]

@@ -20,9 +20,9 @@ import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintL
 import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
-import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
-import { ENVIRONMENT_GAIN, EVENING_FILL, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
-import { lanternPoolSize, lightRig } from "./lighting";
+import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
+import { ENVIRONMENT_GAIN, EVENING_FILL, KEY_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
+import { lanternPoolSize, lightRig, shadowTuneFromSearch } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
 import { DASH_KICK_DEG, DASH_KICK_HALFLIFE, ROLL_HALFLIFE, blendIntro, cinematicsOn, gateConeLanterns, laneRoll, winPose, type ShotPose } from "./cinematics";
 
@@ -98,9 +98,15 @@ const VERGE_TINT: Record<string, string> = {
   village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
 };
 
-function paintSurfaces() {
+/**
+ * GU47 phase 4: the evening's rooftop run is laid in indigo glazed tiles (PRD 6.1 G20 palette, indigo #2b3550). The
+ * 4.6.2 teal-green tile was a sibling tell against Serpentine Sky Run ("teal tile edges", judge g20p4 sibling, 0.593 same).
+ */
+const EVENING_ROOF_TILE = "#46598a";
+
+function paintSurfaces(evening = false) {
   return {
-    cobble: surface(paintCobble(512, 1), 2.4), dirt: surface(paintDirt(256, 2), 1.6), tiles: surface(paintTiles(256, 3, "#527c70"), 1.8, [0.5, 0.5]),
+    cobble: surface(paintCobble(512, 1), 2.4), dirt: surface(paintDirt(256, 2), 1.6), tiles: surface(paintTiles(256, 3, evening ? EVENING_ROOF_TILE : "#527c70"), 1.8, [0.5, 0.5]),
     planks: surface(paintPlanks(256, 4), 1.4), grass: surface(paintGrass(256, 5), 0.8)
   } as const;
 }
@@ -267,8 +273,33 @@ const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(loca
  * The 4.3.0 fit has no real-GPU frame for this game; `?shadowfit=legacy` restores the 4.2.0 fit for that check.
  */
 if (SUN_SHADOW) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
+/** GU47 phase 4 A/B: `?fillx=` scales the evening's IBL and hemisphere fill, `?keyx=` the key (presentation only). */
+const LOOK_AB = (() => {
+  const p = typeof location === "undefined" ? new URLSearchParams() : new URLSearchParams(location.search);
+  const n = (k: string) => { const v = Number(p.get(k)); return p.has(k) && Number.isFinite(v) && v >= 0 ? v : 1; };
+  return { fill: n("fillx"), key: n("keyx") };
+})();
 /** `?ibl=hdri`: light with the authored HDRI (a real asset ref) instead of the neutral room. */
 const IBL_HDRI = typeof location !== "undefined" && new URLSearchParams(location.search).get("ibl") === "hdri";
+
+/** GU47 phase 4: the evening's worn path stones take a soft sheen of the sky (IBL) at grazing angles; 4.6.2 keeps 0.92. */
+const EVENING_PATH_ROUGHNESS = 0.68;
+/** GU47 phase 6: evening valley falls bend (m). */
+const FALLS_BEND = 9;
+
+/**
+ * Rock behind the evening valley falls: rounded cliffB boulders (manifest size 1.778 x 1.393 x 1.896, centred origin),
+ * the same family as the valley's other rocks, whose tops sit just under the sheet's crest (end frame y + 23) so the
+ * water pours over them. The sheet stands 30 m right of and 30 m past the end frame (course distance 2550, heading -z);
+ * each rock keeps clear of the path centre line, or sits past the course end (z < -100), so none stands on the run.
+ */
+export function fallsCliff(end: { x: number; y: number; z: number }): { position: Vec3; yaw: number; scale: Vec3; tint: string }[] {
+  const rock = (x: number, z: number, height: number, yaw: number) => {
+    const k = height / 1.393;
+    return { position: [end.x + x, end.y + 22 - height / 2, end.z + z] as Vec3, yaw, scale: [k, k, k] as Vec3, tint: "#9c8a7a" };
+  };
+  return [rock(46, -70, 42, 0.5), rock(10, -140, 46, 2.6)];
+}
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
@@ -283,7 +314,7 @@ export function buildWorld(options: WorldOptions): World {
     .background(evening ? village.sky.horizon : "#8fb7c9");
   // GU47 NR-01/NR-02: the evening rig (real HDRI, one shadowed key, pooled lantern points); `?look=original` keeps
   // the pre-GU47 rig (see lighting.ts). The sky dome and the glow effects opt out of casting.
-  for (const node of lightRig({ mode: evening ? "evening" : "original", quality: high ? "high" : "low", shadow: SUN_SHADOW, originalHdri: IBL_HDRI, lanterns: options.lanterns !== false })) builder.add(node);
+  for (const node of lightRig({ mode: evening ? "evening" : "original", quality: high ? "high" : "low", shadow: SUN_SHADOW, originalHdri: IBL_HDRI, lanterns: options.lanterns !== false, shadowTune: typeof location === "undefined" ? undefined : shadowTuneFromSearch(location.search) })) builder.add(node);
   builder.add(effects.fog({ name: "haze", color: evening ? village.fog.color : "#b5c8c4", density: evening ? village.fog.density : 0.0028 }));
   // Screen-space AO stays on the 4.6.2 look only: in the evening the low sun's cascaded shadow carries the contact
   // shading, and AO was the largest single post cost of a ~40 s software-WebGL2 frame (GU47 phase 3).
@@ -310,7 +341,7 @@ export function buildWorld(options: WorldOptions): World {
       .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   }
 
-  const ground = paintSurfaces();
+  const ground = paintSurfaces(evening);
   /* ground groups that share a surface and tint become one mesh (one draw call) */
   const merged = new Map<string, { surf: Surface; tint: string; rough: number; positions: number[]; normals: number[]; uvs: number[]; indices: number[] }>();
   for (const g of buildRouteGroups(2)) {
@@ -322,7 +353,7 @@ export function buildWorld(options: WorldOptions): World {
     const tint = path ? (evening && kind === "cobble" && pathTint === "#ffffff" ? "#ddd2c2" : pathTint) : VERGE_TINT[g.biome]!;
     const key = `${path ? kind : g.biome === "rooftops" ? "tiles" : "grass"}|${tint}`;
     let m = merged.get(key);
-    if (!m) merged.set(key, m = { surf, tint, rough: path ? 0.92 : 1, positions: [], normals: [], uvs: [], indices: [] });
+    if (!m) merged.set(key, m = { surf, tint, rough: path ? (evening ? EVENING_PATH_ROUGHNESS : 0.92) : 1, positions: [], normals: [], uvs: [], indices: [] });
     const base = m.positions.length / 3;
     for (let i = 0; i < g.mesh.positions.length; i++) { m.positions.push(g.mesh.positions[i]!); m.normals.push(g.mesh.normals[i]!); }
     for (let i = 0; i < g.mesh.uvs.length; i++) m.uvs.push(g.mesh.uvs[i]!);
@@ -339,7 +370,7 @@ export function buildWorld(options: WorldOptions): World {
 
   const modelSink: ModelSink = {};
   const lanternSpots: Vec3[] = [];
-  for (const layer of buildScenery(modelSink)) {
+  for (const layer of buildScenery(modelSink, { paintedTrees: evening })) {
     if (layer.id === "lanterns") for (const p of layer.placements) lanternSpots.push([p.matrix[12]!, p.matrix[13]!, p.matrix[14]!]);
     const spec = LAYERS.find((l) => l.id === layer.id)!;
     // NR-11: in the evening the lantern layer splits into its three glow groups (day / dusk / night, +2 draws).
@@ -360,14 +391,20 @@ export function buildWorld(options: WorldOptions): World {
     }
   }
 
+  // GU47 phase 6: in the evening the valley falls pour from a rock cliff (two more cliffB instances in the existing
+  // layer: +0 draws, +2 x 3276 triangles) instead of hanging in the sky ("no visible source", blind panel g20p6g).
+  if (evening && modelSink.cliffB) modelSink.cliffB.push(...fallsCliff(groundFrame(COURSE_LENGTH - 90, 0, 0)));
   for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 0.8, p.position[2]]);
   for (const [id, list] of Object.entries(modelSink)) {
     if (list.length === 0) continue;
-    const asset = PROP_ASSETS[id as keyof typeof PROP_ASSETS];
+    // GU47 WP-36: the evening draws the admitted dusk retexture where one exists (presentation only, same bounds).
+    const duskId = evening && id in DUSK_PROP_ASSETS ? (id as keyof typeof DUSK_PROP_ASSETS) : null;
+    const asset = duskId ? DUSK_PROP_ASSETS[duskId] : PROP_ASSETS[id as keyof typeof PROP_ASSETS];
+    const k = duskId ? DUSK_PROP_SCALE[duskId] ?? 1 : 1;
     builder.add(instances.model(asset, {
       name: `model-${id}`,
       castShadow: SUN_SHADOW,
-      transforms: list.map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: p.scale })),
+      transforms: list.map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: [p.scale[0] * k, p.scale[1] * k, p.scale[2] * k] as [number, number, number] })),
       ...(list.some((p) => p.tint) ? { colors: list.map((p) => p.tint ?? "#ffffff") } : {})
     }));
   }
@@ -377,8 +414,10 @@ export function buildWorld(options: WorldOptions): World {
   // The 4000 m dome neither casts nor receives: as a caster it would stretch every cascade over the whole sky.
   builder.add(primitives.sphere({ name: "sky", size: 4000, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }).runtime({ id: "sky" }));
   const endFrame = groundFrame(COURSE_LENGTH - 90, 0, 0);
-  const sheet = buildSheet(56, 63);
-  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec()), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
+  // GU47 phase 6: the evening falls curve into a horseshoe with soft edges, a crest lip and a mist foot (the judges
+  // named the 4.6.2 card "a flat billboard"); same draw, same triangles.
+  const sheet = buildSheet(56, 63, 24, 12, evening ? FALLS_BEND : 0);
+  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec(evening ? 1 : 0)), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
 
   const crate = material.pbr({ color: "#8a5a35", roughness: 0.86 });
   const strap = material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
@@ -443,9 +482,8 @@ export function buildWorld(options: WorldOptions): World {
     if (options.cones !== false) gateConeLanterns(lanternIndex).forEach((l, i) => builder.add(effects.lightCone({
       name: `gate-cone-${i}`, color: LANTERN_POOL.amberColor, intensity: 0.7, position: [l.position[0], l.position[1] - 0.15, l.position[2]], direction: [0, -1, 0], length: 3.2, coneAngle: 0.42, softness: 0.55
     })));
-    // NR-16: a faint aurora over the gate, shown only on the win screen (+1 draw while visible).
-    const gate = groundFrame(COURSE_LENGTH - 20, 0, 34);
-    builder.add(effects.auroraRibbon({ name: "win-aurora", color: "#51dfff", colorTop: "#2b3550", intensity: 0.5, width: 90, height: 18, position: [gate.x, gate.y, gate.z] }).runtime({ id: "win-aurora" }));
+    // NR-16 win aurora: removed in GU47 phase 6. The beam pass ignores setVisible, so the ribbon showed in every gate
+    // frame as a floating translucent rectangle over the falls (blind panel g20p3r4); -1 draw.
   }
 
   return { scene: builder, bind: (app) => bindRuntime(app, options, pickups, lanternIndex) };
@@ -516,7 +554,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
   /** NR-17: the evening hero blends its looping clips (the original look keeps today's clip scrubbing). */
   const blendHero = (options.mode ?? "evening") === "evening";
   const mixerClip = new Array<string>(actors.length).fill("");
-  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false, auroraShown = true;
+  let introBlend: number | null = null, wonAt = -1, lastX = 0, lastRoll = 0, barsShown = false, kicking = false;
   const shake = options.shake;
   const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
   const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
@@ -562,15 +600,18 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     sky.setUniform?.("moonDirection", moonDir);
     const river = node("river");
     river.setUniform?.("waterSky", 1);
+    // GU47 phase 6: past the forest the valley lake turns deep teal with ripple glints (judges: "flat pink ground",
+    // then "flat grey plane" at a 0.4 sky share).
+    river.setUniform?.("waterLake", smooth(2200, 2300, s));
     river.setUniform?.("waterZenith", [...look.skyZenith]);
     river.setUniform?.("waterHorizon", [...look.skyHorizon]);
     river.setUniform?.("waterKey", [...look.toKey]);
     // Key, environment and fog: re-applied every 3 m with a short blend, so the light follows the distance smoothly.
     if (Math.abs(s - lastLookS) >= 3) {
       lastLookS = s;
-      node("sun").setLight?.({ color: linearToHex(look.keyColor), intensity: look.keyIntensity, direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]] }, { transitionSeconds: 0.3 });
-      app.lighting?.setEnvironmentIntensity(look.environmentIntensity * ENVIRONMENT_GAIN);
-      node("evening fill").setLight?.({ intensity: EVENING_FILL.intensity * look.environmentIntensity });
+      node("sun").setLight?.({ color: linearToHex(look.keyColor), intensity: look.keyIntensity * KEY_GAIN * LOOK_AB.key, direction: [-look.toKey[0], -look.toKey[1], -look.toKey[2]] }, { transitionSeconds: 0.3 });
+      app.lighting?.setEnvironmentIntensity(look.environmentIntensity * ENVIRONMENT_GAIN * LOOK_AB.fill);
+      node("evening fill").setLight?.({ intensity: EVENING_FILL.intensity * look.environmentIntensity * LOOK_AB.fill });
       app.atmosphere?.setFog({ color: linearToHex(look.fogColor), density: look.fogDensity }, { transitionSeconds: 0.5 });
       const rays = godRaysAuthored && godRaysAt(s);
       if (godRaysAuthored && rays !== godRaysOn) { godRaysOn = rays; app.post?.setEffectEnabled("volumetricFog", rays); }
@@ -995,9 +1036,6 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
       // NR-10: the dash kicks the FOV through the controller's fovKick layer (only while dashing; never with reduced motion).
       const kick = cinematic && state.phase === "running" && state.dash > 0;
       if (kick !== kicking) { kicking = kick; cameraController.fovKick.set("dash", kick ? DASH_KICK_DEG : 0, DASH_KICK_HALFLIFE); }
-      // NR-16: the aurora shows on the win screen only.
-      const aurora = state.phase === "won";
-      if (evening && aurora !== auroraShown) { auroraShown = aurora; node("win-aurora").setVisible(aurora); }
     },
     setIntro(k) { introBlend = k === null ? null : Math.max(0, Math.min(1, k)); },
     resetCamera() { chase.reset(); },

@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat lighting, no visible player shadow, low depth; foreground mostly empty grass",
+     "Flat, evenly lit scene with little depth. The background lanes are cluttered, the locomotives on the right crowd the frame, and the bright blue water strip at the bottom is distracting.",
+     "Heavy dark vignette in the corners and along the bottom edge; the far traffic is cramped; the sky gradient is slightly washed near the sun."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pastel washed palette, low contrast, no visible player shadow, repetitive truck rows",
+     "The sunset mood is attractive, but a strong dark vignette muddies the lower frame. The traffic is dense and several cars overlap or stack (the two blue beetles, the red cars on the right). The orange sky reads as washed out.",
+     "Large empty grass areas give weak composition and little depth; a coin appears to float mid-field; the lighting is flat."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale pastel ground and water look washed out, low contrast, repetitive trams/trucks",
+     "Flat lighting. A truck clips into the trees at the far left, and the background traffic is somewhat busy. Otherwise readable and clean.",
+     "Trams and far vehicles overlap and clip into each other; the background traffic is a heavily cluttered pile; the city blocks are plain dark slabs."
+    ]
+   },
+   {
+    "variant": "theme3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark ground slightly muddy, far lanes crowded",
+     "The ground is dark and murky in the lower half, and the far lanes are busy, with locomotives overlapping cars. The warm sunset sky and colourful vehicles still give it mood and contrast.",
+     "The ground is dark and murky; the tanker trains overlap cars in the mid lanes; the dark band at the bottom of the frame is muddy."
+    ]
+   },
+   {
+    "variant": "theme4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark brownish ground somewhat muddy, train overlaps truck in mid lane",
+     "The background rows are dense with overlapping trams and trucks, and the bottom half is a bit dark. The night neon mood is strong and the frog is clear.",
+     "The ground is a dark low-contrast teal; the far lanes are crowded; there is a slight glow bloom around the moon."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark muddy low-contrast ground, flat dull sky, no player shadow",
+     "The pastel palette is low in contrast and somewhat washed out, and the two trams on the left touch or overlap. The composition is otherwise clean, with the frog clearly readable.",
+     "Washed pastel palette with low contrast; slight haze; trams overlap each other at the left."
+    ]
+   }
+  ]
+ }
+]

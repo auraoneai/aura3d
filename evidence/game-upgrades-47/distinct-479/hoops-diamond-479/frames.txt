@@ -1,0 +1,14 @@
+hoops-diamond-479/a:
+aura-hoops-3d--athens
+aura-hoops-3d--manila
+aura-hoops-3d--orbit
+aura-hoops-3d--rucker
+aura-hoops-3d--shanghai
+aura-hoops-3d--venice
+hoops-diamond-479/b:
+aura-diamond-3d--canyon
+aura-diamond-3d--dome
+aura-diamond-3d--ivy
+aura-diamond-3d--lunar
+aura-diamond-3d--sandlot
+aura-diamond-3d--skyline

@@ -10,7 +10,7 @@
  * `a3d_prd10_world_light_fallback`) until a Path G item emitter exists — see
  * `worldDrawPath`.
  */
-import { registerFrameContributor } from "@aura3d/rendering/contracts";
+import { certifyEmptyStockContributor, registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { FrameContributor, QrFlags } from "@aura3d/rendering/contracts";
 import { programCacheSlot } from "@aura3d/rendering/contracts";
 import { optInWorldFeatures, publishWorldFeatureState } from "./WorldFeatureState.js";
@@ -54,7 +54,7 @@ export function worldDrawPath(_flags: QrFlags): "S" | "G" {
  * when no water body exists, so promoting the sub-flag leaves water-free
  * scenes without a pass. No `collect` phase: no per-frame item copy.
  */
-export const WATER_ONLY_CONTRIBUTOR: FrameContributor = {
+export const WATER_ONLY_CONTRIBUTOR: FrameContributor = certifyEmptyStockContributor({
   id: "prd10.waterOnly",
   owner: "prd10",
   flag: "A3D_QR_WORLD_WATER",
@@ -71,7 +71,7 @@ export const WATER_ONLY_CONTRIBUTOR: FrameContributor = {
     if (phase === "transparent") return [waterTransparentPass(ctx)];
     return [];
   }
-};
+});
 
 export function registerWorldFramePasses(): () => void {
   const releaseWaterOnly = registerFrameContributor(WATER_ONLY_CONTRIBUTOR);

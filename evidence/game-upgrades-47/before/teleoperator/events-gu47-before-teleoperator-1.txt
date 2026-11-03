@@ -1,0 +1,7 @@
+run gu47-before-teleoperator-1 acr ch5ta was successful after 29m22s playwrightExit 0
+GL_READY teleoperator--noon 86563ms
+GL_DONE teleoperator--noon
+GL_READY teleoperator--golden 157575ms
+GL_DONE teleoperator--golden
+2 passed (28.1m)
+[task-run] PLAYWRIGHT_EXIT=0

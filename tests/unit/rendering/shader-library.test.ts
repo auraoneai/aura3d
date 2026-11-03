@@ -845,6 +845,43 @@ describe("ShaderLibrary", () => {
     expect(result.sourceMap).toContainEqual(expect.objectContaining({ sourceName: "root", sourceLine: 4 }));
   });
 
+  it("honours in-source #define and #undef in later conditionals (g23 handoff)", () => {
+    const preprocessor = new ShaderPreprocessor();
+    const result = preprocessor.preprocess(
+      [
+        "#version 300 es",
+        "#define WIND_SUN_SHADOW 1",
+        "#define HERO_LEVEL 0 // off",
+        "#ifdef WIND_SUN_SHADOW",
+        "float sunShadow = a3dSunShadowAuto();",
+        "#endif",
+        "#if HERO_LEVEL",
+        "float hero = 1.0;",
+        "#endif",
+        "#undef WIND_SUN_SHADOW",
+        "#ifndef WIND_SUN_SHADOW",
+        "float afterUndef = 1.0;",
+        "#endif"
+      ].join("\n")
+    );
+    expect(result.source).toContain("#define WIND_SUN_SHADOW 1");
+    expect(result.source).toContain("float sunShadow = a3dSunShadowAuto();");
+    expect(result.source).not.toContain("float hero = 1.0;");
+    expect(result.source).toContain("float afterUndef = 1.0;");
+  });
+
+  it("sees an in-source #define from an include and ignores #define in an inactive branch", () => {
+    const preprocessor = new ShaderPreprocessor();
+    const includes = new Map([["flags", "#define USE_RIM"]]);
+    const result = preprocessor.preprocess(
+      ["#include <flags>", "#if 0", "#define USE_GLOW 1", "#endif", "#ifdef USE_RIM", "rim();", "#endif", "#ifdef USE_GLOW", "glow();", "#endif"].join("\n"),
+      { includes }
+    );
+    expect(result.source).toContain("rim();");
+    expect(result.source).not.toContain("glow();");
+    expect(result.source).not.toContain("#define USE_GLOW");
+  });
+
   it("rejects undefined and malformed shader variant conditionals", () => {
     const preprocessor = new ShaderPreprocessor();
 

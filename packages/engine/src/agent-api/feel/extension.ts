@@ -16,7 +16,7 @@ import { mediaMatches } from "../platform.js";
 import type { AuraScreenFeelUniforms } from "../../contracts/time.js";
 import { SCREEN_FEEL_BLACKBOARD_KEY } from "../../contracts/time.js";
 import type { FrameContributor, RenderItem } from "@aura3d/rendering/contracts";
-import { registerFrameContributor } from "@aura3d/rendering/contracts";
+import { certifyEmptyStockContributor, registerFrameContributor } from "@aura3d/rendering/contracts";
 import type { AuraFeelBusImpl } from "./FeelBus.js";
 import { createFeelBus } from "./FeelBus.js";
 import { createScreenOverlay, type AuraScreenOverlay } from "./ScreenOverlay.js";
@@ -26,7 +26,7 @@ import { bindFeelLintProbe } from "./lint/evidenceOnlyFeel.js";
 type ScreenFeelCollector = (ctx: Parameters<NonNullable<FrameContributor["collect"]>>[1]) => void;
 const screenFeelCollectors = new Set<ScreenFeelCollector>();
 let unregisterScreenFeel: (() => void) | null = null;
-const screenFeelContributor: FrameContributor = {
+const screenFeelContributor: FrameContributor = certifyEmptyStockContributor({
   id: "prd08.screenFeel",
   owner: "prd08",
   flag: "A3D_QR_CAMERA",
@@ -36,7 +36,7 @@ const screenFeelContributor: FrameContributor = {
     for (const collect of screenFeelCollectors) collect(ctx);
     return items;
   }
-};
+});
 /** Add one bus's per-frame publisher; the shared contributor lives while any bus does. */
 function addScreenFeelCollector(collect: ScreenFeelCollector): () => void {
   screenFeelCollectors.add(collect);

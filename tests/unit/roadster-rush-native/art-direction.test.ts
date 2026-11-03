@@ -82,7 +82,7 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
 
   it("has one look row per variant with the WP's numbers", () => {
     expect(APEX_LOOK.map((row) => row.id)).toEqual(["sunset", "dusk", "night"]);
-    expect(APEX_LOOK.map((row) => row.environmentIntensity)).toEqual([1, 0.55, 0.18]);
+    expect(APEX_LOOK.map((row) => row.environmentIntensity)).toEqual([0.8, 0.48, 0.18]);
     expect(APEX_SUN).toEqual({ elevationDeg: 7, azimuthDeg: 175 });
     expect(APEX_LOOK[0].sun.elevationDeg).toBe(APEX_SUN.elevationDeg);
     expect(Math.round(APEX_FOG_RANGE.near)).toBe(43);
@@ -107,7 +107,7 @@ describe("Apex Overdrive art direction (GU47 WP-12)", () => {
     expect(apexLookAt(0).variant).toBe("sunset");
     expect(apexLookAt(0.5).variant).toBe("dusk");
     expect(apexLookAt(1).variant).toBe("night");
-    expect(apexLookAt(0.25).environmentIntensity).toBeCloseTo((1 + 0.55) / 2, 6);
+    expect(apexLookAt(0.25).environmentIntensity).toBeCloseTo((0.8 + 0.48) / 2, 6);
     expect(apexLookAt(0.75).sun.color).toBe(mixHex(APEX_LOOK[1].sun.color, APEX_LOOK[2].sun.color, 0.5));
     const dir = apexLookAt(0).sunDir;
     expect(Math.hypot(...dir)).toBeCloseTo(1, 6);

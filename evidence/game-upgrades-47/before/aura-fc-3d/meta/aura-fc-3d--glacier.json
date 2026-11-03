@@ -1,0 +1,81 @@
+{
+ "target": "aura-fc-3d--glacier",
+ "slug": "aura-fc-3d",
+ "variant": "glacier",
+ "url": "/apps/showcase-aura-fc-3d/index.html?venue=glacier",
+ "group": "g5",
+ "runId": "gu47-before-aura-fc-3d-3",
+ "acrRunId": "ch5uk",
+ "readyMs": 36241,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-fc-3d--glacier",
+   "id": "settle-25s",
+   "slug": "aura-fc-3d",
+   "variant": "glacier",
+   "sinceReadyMs": 25003,
+   "mean": 95.4,
+   "p5": 47,
+   "p50": 68,
+   "p95": 228,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    140.6,
+    134.5,
+    151.4,
+    76.7,
+    73.3,
+    77.3,
+    68.4,
+    69.8,
+    66.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 384
+   }
+  },
+  "settle-60s": {
+   "target": "aura-fc-3d--glacier",
+   "id": "settle-60s",
+   "slug": "aura-fc-3d",
+   "variant": "glacier",
+   "sinceReadyMs": 320971,
+   "mean": 95.42,
+   "p5": 47,
+   "p50": 68,
+   "p95": 228,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    140.6,
+    134.6,
+    151.5,
+    76.7,
+    73.3,
+    77.3,
+    68.4,
+    69.8,
+    66.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 384
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-fc-3d-3/aura-fc-3d--glacier--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-fc-3d-3/aura-fc-3d--glacier--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

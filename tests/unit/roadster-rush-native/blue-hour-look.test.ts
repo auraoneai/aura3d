@@ -7,10 +7,10 @@ const to255 = (c: readonly number[]): number[] => c.map((v) => Math.round(v * 25
 describe("Apex Overdrive time-of-day light and fog (GU47 AO-L2, AO-E3)", () => {
   it("dims key, fill and IBL from sunset through dusk to night (spread target >= 30 luma)", () => {
     const [sunset, dusk, night] = [apexLookAt(0), apexLookAt(0.5), apexLookAt(1)];
-    expect([sunset.environmentIntensity, dusk.environmentIntensity, night.environmentIntensity]).toEqual([1, 0.55, 0.18]);
+    expect([sunset.environmentIntensity, dusk.environmentIntensity, night.environmentIntensity]).toEqual([0.8, 0.48, 0.18]);
     expect(sunset.sun.intensity).toBeGreaterThan(dusk.sun.intensity);
     expect(dusk.sun.intensity).toBeGreaterThan(night.sun.intensity);
-    expect(sunset.fill.intensity).toBe(0.6);
+    expect(sunset.fill.intensity).toBe(0.5);
     expect(night.fill.intensity).toBeLessThan(dusk.fill.intensity);
     // the key always points from the disc toward the camera side (+z): backlit traffic
     for (const f of [sunset, dusk, night]) expect(-f.sunDir[2]).toBeGreaterThan(0.98);
@@ -115,11 +115,11 @@ describe("Apex Overdrive materials palette (GU47 AO-M2)", () => {
 });
 
 describe("Apex Overdrive sun shadows (GU47 AO-L4)", () => {
-  it("casts 3 PCSS cascades to 140 m from the look key and drops the black contact disc", async () => {
+  it("casts 3 PCSS cascades to 90 m (the near traffic reach) from the look key and drops the black contact disc", async () => {
     const { readFileSync } = await import("node:fs");
     const { resolve } = await import("node:path");
     const main = readFileSync(resolve(__dirname, "../../../apps/showcase-roadster-rush/src/main.ts"), "utf8");
-    expect(main).toMatch(/shadow: \{ cascades: 3, maxDistance: 140, filter: "pcss"/);
+    expect(main).toMatch(/shadow: \{ cascades: 3, maxDistance: 90, filter: "pcss"/);
     expect(main).toContain("effects.contactShadows(");
     expect(main).not.toContain("player-contact-shadow");
     expect(main).not.toMatch(/lights\.ambient\(/);

@@ -224,6 +224,26 @@ test.describe("g24 duneglide", () => {
     await ctx.close();
   });
 
+  /* ------------------------------------------------- g24-t: lean title frames (GU47 phase 6, one screenshot each) */
+  // The g24-a probe takes 10+ screenshots plus settle renders; on the software-GL runner every one costs a presented
+  // frame of the inked title (minutes each), so g24-a ran out of its hour twice (phase 3 and phase 6). g24-t waits for
+  // the title to load and settle on its own clock, then takes one full-page JPEG (HUD and title card included).
+  for (const [label, vp, file] of [
+    ["desktop", { width: 1280, height: 720 }, "title.1280x720"],
+    ["phone", { width: 390, height: 844, touch: true }, "title.390x844"]
+  ] as const) {
+    test(`g24-t title ${label}`, async ({ browser }) => {
+      const { ctx, page, ok } = await openPage(browser, `title-${label}`, at(""), vp);
+      if (ok) {
+        await page.waitForTimeout(90_000);
+        const full = await page.screenshot({ type: "jpeg", quality: 90, timeout: 1_800_000 });
+        meta(file, { kind: "shot", lean: true, diag: await diag(page).catch(() => null) });
+        chunked("G24_JPG", file, full);
+      }
+      await ctx.close();
+    });
+  }
+
   /* ---------------------------------------------------------------- g24-b: play states (RH-05, C4, C10, C13, C14) */
 
   for (const [label, w, h, touch] of [["desktop", 1280, 720, false], ["phone", 390, 844, true]] as const) {
@@ -271,6 +291,38 @@ test.describe("g24 duneglide", () => {
       chunked("G24_JPG", "card.1x", Buffer.from(jpegB64, "base64"));
     }
     await ctx.close();
+  });
+
+  /* -------------------------------------- g24-p: GU47 phase 4 shadow probe (noon inked ch1, QA `siltshadow` knob) */
+
+  test("g24-p shadow probe", async ({ browser }) => {
+    const arms: readonly (readonly [string, string])[] = [
+      ["p-default", ""],
+      ["p-2048-1-160", "&siltshadow=2048,1,160"],
+      ["p-4096-2-120", "&siltshadow=4096,2,120"],
+      ["p-notoon", "&toon=0"]
+    ];
+    for (const [arm, q] of arms) {
+      const { ctx, page, ok } = await openPage(browser, arm, at(`?manual=1&start=1&chapter=1&look=inked${q}`), { width: 1280, height: 720 });
+      if (ok) {
+        await silt(page, "api.render();");
+        await settle(page, arm, 5 * 60_000);
+        await silt(page, "api.render(); api.render();");
+        const shadow = await silt<unknown>(page, `
+          const d = api.info ? api.info().diagnostics : null;
+          if (!d) return null;
+          const pick = (o) => { try { return JSON.parse(JSON.stringify(o, (k, v) => typeof v === "number" || typeof v === "string" || typeof v === "boolean" || v === null || typeof v === "object" ? v : undefined)); } catch { return String(o); } };
+          const keys = Object.keys(d);
+          const shadowKeys = keys.filter((k) => /shadow/i.test(k));
+          const r = d.renderer || {};
+          return { keys, shadow: shadowKeys.map((k) => [k, pick(d[k])]), rendererKeys: Object.keys(r), rendererShadow: Object.keys(r).filter((k) => /shadow/i.test(k)).map((k) => [k, pick(r[k])]),
+            tap: pick(globalThis.__A3D_SHADOW_TAP_TIER__ ?? null), dense: pick(globalThis.__A3D_DENSE_SHADOW_CAP__ ?? null) };
+        `).catch((e) => ({ error: String(e).slice(0, 200) }));
+        log(`G24_META ${JSON.stringify({ name: arm, kind: "shadow", shadow }).slice(0, 12000)}`);
+        await grab(page, arm);
+      }
+      await ctx.close();
+    }
   });
 
   test("g24-c render A/B", async ({ browser }) => {

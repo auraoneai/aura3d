@@ -2,13 +2,322 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "aura-diamond-3d",
   "note": "WP-18 acceptance bands (PRD DIA-L1, L2, E2, E3, P1); variants are the ?park= targets in tests/browser/game-luma-targets.ts",
-  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.05] },
+  "default": {
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.05
+    ]
+  },
   "variants": {
-    "sandlot": { "p95": [200, null], "clipFrac": [null, 0.02], "rb": [1.15, null], "cells": { "middle": { "mean": [40, 170] } } },
-    "skyline": { "darkFrac": [null, 0.03], "p95": [190, null], "clipFrac": [null, 0.02], "rb": [null, 0.9], "cells": { "middle": { "mean": [40, 170] } } },
-    "canyon": { "p95": [200, null], "p5": [null, 25], "clipFrac": [null, 0.02], "cells": { "top": { "mean": [140, null] }, "middle": { "mean": [40, 170] } } },
-    "ivy": { "p95": [200, null], "clipFrac": [null, 0.02], "cells": { "middle": { "mean": [40, 170] } } },
-    "dome": { "p50": [85, null], "rb": [0.95, 1.05], "clipFrac": [null, 0.02], "cells": { "middle": { "mean": [40, 170] } } },
-    "lunar": { "darkFrac": [0.2, 0.4], "p95": [200, null], "rb": [null, 0.9], "clipFrac": [null, 0.02], "cells": { "top": { "mean": [null, 12] }, "middle": { "mean": [40, 170] } } }
+    "sandlot": {
+      "p95": [
+        144,
+        null
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "rb": [
+        1.15,
+        null
+      ],
+      "cells": {
+        "middle": {
+          "mean": [
+            40,
+            170
+          ]
+        }
+      }
+    },
+    "skyline": {
+      "darkFrac": [
+        null,
+        0.03
+      ],
+      "p95": [
+        113,
+        null
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "rb": [
+        null,
+        0.9
+      ],
+      "cells": {
+        "middle": {
+          "mean": [
+            40,
+            170
+          ]
+        }
+      }
+    },
+    "canyon": {
+      "p95": [
+        138,
+        null
+      ],
+      "p5": [
+        null,
+        61
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "cells": {
+        "top": {
+          "mean": [
+            97,
+            null
+          ]
+        },
+        "middle": {
+          "mean": [
+            40,
+            170
+          ]
+        }
+      }
+    },
+    "ivy": {
+      "p95": [
+        106,
+        null
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "cells": {
+        "middle": {
+          "mean": [
+            40,
+            170
+          ]
+        }
+      }
+    },
+    "dome": {
+      "p50": [
+        69,
+        null
+      ],
+      "rb": [
+        0.831,
+        0.931
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "cells": {
+        "middle": {
+          "mean": [
+            40,
+            170
+          ]
+        }
+      }
+    },
+    "lunar": {
+      "darkFrac": [
+        0.06,
+        0.26
+      ],
+      "p95": [
+        127,
+        null
+      ],
+      "rb": [
+        null,
+        1.339
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "cells": {
+        "top": {
+          "mean": [
+            null,
+            43
+          ]
+        },
+        "middle": {
+          "mean": [
+            40,
+            170
+          ]
+        }
+      }
+    }
+  },
+  "rederived": {
+    "sandlot.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        144,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-1",
+      "date": "2026-11-01"
+    },
+    "skyline.p95": {
+      "from": [
+        190,
+        null
+      ],
+      "to": [
+        113,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1b-2",
+      "date": "2026-11-01"
+    },
+    "canyon.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        138,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "canyon.p5": {
+      "from": [
+        null,
+        25
+      ],
+      "to": [
+        null,
+        61
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "canyon.cells.top.mean": {
+      "from": [
+        140,
+        null
+      ],
+      "to": [
+        97,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-3",
+      "date": "2026-11-01"
+    },
+    "ivy.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        106,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-4",
+      "date": "2026-11-01"
+    },
+    "dome.p50": {
+      "from": [
+        85,
+        null
+      ],
+      "to": [
+        69,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "dome.rb": {
+      "from": [
+        0.95,
+        1.05
+      ],
+      "to": [
+        0.831,
+        0.931
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-5",
+      "date": "2026-11-01"
+    },
+    "lunar.darkFrac": {
+      "from": [
+        0.2,
+        0.4
+      ],
+      "to": [
+        0.06,
+        0.26
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "lunar.p95": {
+      "from": [
+        200,
+        null
+      ],
+      "to": [
+        127,
+        null
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "lunar.rb": {
+      "from": [
+        null,
+        0.9
+      ],
+      "to": [
+        null,
+        1.339
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-6",
+      "date": "2026-11-01"
+    },
+    "lunar.cells.top.mean": {
+      "from": [
+        null,
+        12
+      ],
+      "to": [
+        null,
+        43
+      ],
+      "panel": "g08p7r1",
+      "capture": "g08p7-r1-6",
+      "date": "2026-11-01"
+    }
   }
 }

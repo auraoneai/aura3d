@@ -1,14 +1,8 @@
 // Pip's Big Leap — engine platformer-helper certification.
 //
-// Every world is *also* lowered into the engine's public platformer surface
-// contract: `game.assetBoundPlatformerLevel` -> `game.platformerSceneBinding`
-// -> `game.publicPlatformerPresentation` -> `game.certifyPlatformerGeometry` /
-// `game.certifyPlatformerPresentation`, plus a `game.platformer` kit snapshot
-// stepped once at spawn. The pipeline runs for real — bindings bind to the
-// world's *actual* typed backdrop GLB (real sha-256 hashes), surfaces are the
-// course's authored geometry (compiler-authored overlay source, honestly
-// labelled) — and the only honest blockers are the retained-proof fields
-// (browser screenshots/hashes), which cannot exist until a captured run.
+// The authored course can be projected into the platformer surface contract,
+// but its referenced backdrop GLB is not mounted and the overlay is unverified.
+// Public asset-bound certification stays blocked until both are demonstrated.
 
 import { game } from "@aura3d/engine";
 
@@ -69,10 +63,11 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       : backdropKey === "readable" ? "showcaseReadablePlatformLevel"
       : backdropKey === "sidescroll" ? "showcaseSideScrollerPlatformLevel"
       : "showcasePlatformerBasicPack";
+    const unmountedBlocker = `world-asset-not-mounted:${worldAsset}`;
+    notes.push(`Backdrop ${worldAsset} is not mounted; the authored course has no validated asset overlay.`);
     // Shared-catalog `hash` widened to `string | undefined` in the current
     // typegen surface; backdrops always carry one — fall back explicitly.
     const worldAssetHash = backdropAsset.hash ?? "sha256-unavailable";
-    const overlay = `apps/showcase-pips-big-leap/src/game/worlds.ts#${spec.id}`;
 
     const walkable = spec.platforms.filter((p) => !p.ghost);
     const start = { x: gx(spec.spawn[2]), y: spec.spawn[1] };
@@ -120,7 +115,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
     const surfaceMap: GamePlatformerPlayableSurfaceMap = {
       assetId: worldAsset,
       assetHash: worldAssetHash,
-      source: "compiler-authored-overlay-validated",
+      source: "compiler-authored",
       surfaces: walkable.map((p) => ({
         id: p.id,
         x: gx(p.z),
@@ -134,7 +129,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       characterScaleRatio: Math.min(1.25, 0.95 / Math.max(1, spanY)),
       confidence: 0.72,
       modelAlignment: {
-        source: "compiler-authored-overlay-validated",
+        source: "compiler-authored",
         modelBounds: {
           min: [-backdropAsset.bounds[0] / 2, 0, -backdropAsset.bounds[2] / 2],
           max: [backdropAsset.bounds[0] / 2, backdropAsset.bounds[1], backdropAsset.bounds[2] / 2]
@@ -142,14 +137,12 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
         modelPoint: [0, backdropAsset.bounds[1] / 2, 0],
         gamePoint: start,
         evidence: {
-          routeOverlay: overlay,
-          notes: "Compiler-authored platform surfaces from the authored WorldSpec course; the backdrop GLB is scene dressing and its real sha-256 hash anchors the binding."
+          notes: `Candidate alignment only; ${worldAsset} is not mounted and no model-to-course overlay has been validated.`
         }
       },
       evidence: {
         sourceAsset: worldAsset,
-        routeOverlay: overlay,
-        notes: "Authored course overlay for Pip's Big Leap; retained browser proof pending."
+        notes: "Authored WorldSpec projection; the referenced backdrop is not mounted or verified as its source."
       }
     };
 
@@ -158,7 +151,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       worldAssetBindings: [{
         worldAsset,
         worldAssetHash,
-        surfaceSource: "compiler-authored-overlay-validated",
+        surfaceSource: "compiler-authored",
         confidence: 0.72,
         surfaceIds: walkable.map((p) => p.id)
       }],
@@ -166,6 +159,11 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       playableSurfaceMap: surfaceMap,
       motionTuning: "reported"
     });
+
+    const geometrySource = surfaceMap.source;
+    if (geometrySource === "compiler-authored" || geometrySource === "manifest-authored") {
+      throw new Error(`Unvalidated platformer geometry source: ${geometrySource}`);
+    }
 
     const binding: GamePlatformerSceneBinding = game.platformerSceneBinding({
       surfaceMap,
@@ -193,7 +191,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       characterAsset: "pipsPip",
       worldCertification: "candidate-needs-geometry",
       characterCertification: "certified-platformer-character",
-      geometrySource: "compiler-authored-overlay-validated",
+      geometrySource,
       spawn: start,
       surfaces: surfaceMap.surfaces.map((s) => ({ id: s.id, x: s.x, y: s.y, width: s.width, height: s.height, kind: s.kind })),
       hazards: spec.hazards.map((h) => ({ id: h.id, x: gx(h.z), y: gy(h.y), width: h.d, height: h.h ?? 0.5, respawn: h.respawn === true })),
@@ -202,7 +200,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       worldBounds: { minX, maxX, minY: Math.min(...ys), maxY: Math.max(...ys) + 3 },
       cameraBounds: { minX, maxX, minY: Math.min(...ys) - 1, maxY: Math.max(...ys) + 5 },
       characterScale: { width: 0.62, height: 0.95 },
-      retainedProof: { ...PENDING_PROOF, blockers: [...PENDING_PROOF.blockers] }
+      retainedProof: { ...PENDING_PROOF, blockers: [...PENDING_PROOF.blockers, unmountedBlocker] }
     };
 
     const geometry = game.certifyPlatformerGeometry(contract);
@@ -230,10 +228,9 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       score: snap.score
     };
 
-    notes.push(`scene-bound nodes generated: ${presentationNodes.length}`);
+    notes.push(`Helper nodes generated but not mounted: ${presentationNodes.length}`);
     return {
-      ok: true,
-      level: bound,
+      ok: false,
       kitSnapshot,
       surfaceCount: walkable.length,
       presentationCounts: {
@@ -254,7 +251,7 @@ export function certifyWorld(spec: WorldSpec, motion: WorldMotion): WorldCertifi
       presentationCounts: { groundMeshNodes: 0, platformMeshNodes: 0, hazardNodes: 0, checkpointNodes: 0, finishNodes: 0 },
       geometry: null,
       presentation: null,
-      error: error instanceof Error ? error.message : String(error),
+      error: [...notes, error instanceof Error ? error.message : String(error)].join(" "),
       notes
     };
   }

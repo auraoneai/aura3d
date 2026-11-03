@@ -1,0 +1,732 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:28:09.481Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "cross-hop--theme0--settle-60s",
+      "cross-hop--theme1--settle-60s",
+      "cross-hop--theme2--settle-60s",
+      "cross-hop--theme3--settle-60s",
+      "cross-hop--theme4--settle-60s",
+      "cross-hop--theme5--settle-60s"
+    ],
+    "framesB": [
+      "serpentine-sky-run-port--default--settle-60s",
+      "serpentine-sky-run-port--stage1--settle-60s",
+      "serpentine-sky-run-port--stage2--settle-60s",
+      "serpentine-sky-run-port--stage3--settle-60s",
+      "serpentine-sky-run-port--stage4--settle-60s",
+      "serpentine-sky-run-port--stage5--settle-60s",
+      "serpentine-sky-run-port--stage6--settle-60s",
+      "serpentine-sky-run-port--stage7--settle-60s",
+      "serpentine-sky-run-port--stage8--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.924,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.924,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: frog crossing multi-lane traffic with toy-like cars and trains",
+        "Image B: humanoid runner on a brick bridge above clouds with floating islands",
+        "Different scenery, characters and gameplay setting despite both having sunset orange lighting"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a green toy-like frogger scene with a blue sky and cars, Image B is a warm orange sky over a sand-cloud sea",
+        "Different characters and settings: a frog crossing roads versus a humanoid runner on a brick bridge with floating islands",
+        "Different lighting and palette: flat daylight with saturated primaries versus a hazy sunset glow"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: frog crossing roads with toy cars on a flat green lane layout",
+        "Image B: anime-style runner on a brick path above a sea of clouds with floating islands",
+        "Different palettes and lighting: bright blue sky and flat green vs. hazy orange sunset"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: frog character, trams and toy cars on flat green lanes, grey-blue sky",
+        "Image B: humanoid runner on a brick path above sand-colored clouds with floating islands",
+        "Different palettes and lighting: neutral daylight vs warm hazy sunset"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink dreamy sky with floating islands and a martial-artist character on a long path",
+        "Image B: flat-color Frogger-style lanes with trams, trucks and a frog",
+        "Different palette and lighting: pastel pink haze versus plain blue-grey sky and flat greens"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: realistic humanoid on a floating-island sky path above clouds",
+        "Image B: frog on a road-crossing lane layout with cartoon cars, trucks and trams",
+        "Different palettes and art styles: dark blue gradient haze vs. flat teal ground with magenta and orange"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: pastel Crossy-Road-style lanes with a frog, trams and trucks",
+        "Image B: dark blue night scene with a humanoid warrior on a tiled bridge above clouds and floating islands",
+        "Completely different palette, lighting and art style"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing roads with toy-like cars on a flat green field and blue sky",
+        "Image B: human runner on a brick bridge above red clouds with floating islands",
+        "Different palettes and art direction: bright flat daylight vs saturated red sunset glow"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trains, with a low-poly road layout",
+        "Image B is a character running on a brick path over a sea of clouds with floating islands",
+        "Different scenery, characters and art style, with only the sunset lighting in common"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: night purple sky with low-poly frog, cars and trains on road lanes",
+        "Image B: warm hazy desert-cloud sky with floating islands and a brick path",
+        "Different characters, palettes, and art styles"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pink sky, cloud sea, floating islands and a humanoid runner on a tiled bridge",
+        "Image B: flat green lanes, toy cars and a frog in a Frogger-style road crossing",
+        "Different palette, scenery and gameplay, with no shared characters or props"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: flat pastel lanes with trams, trucks and a frog (Crossy Road-style)",
+        "Image B: warm orange sunset sky, cloud sea, floating islands and a stone brick path",
+        "Different characters, palettes and lighting (cool blue-grey vs saturated amber glow)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night scene with a moonlit sky, floating islands and a blue stone bridge over clouds, while Image B is a bright daytime scene with green fields",
+        "The characters differ: a realistic humanoid warrior in A and a cartoon frog in B",
+        "Image B is a top-down crossy-road style game with trams and cars on tracks, which A has no sign of"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: surreal purple-orange sunset sky, cloud sea and floating islands with a runner on a brick bridge",
+        "Image B: flat green Frogger-style lanes with toy cars, logs and a frog under a plain blue-grey sky",
+        "Different art direction, palette and gameplay (endless runner vs. road-crossing)"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pink-peach sky-island runner with a humanoid character on a floating brick path; Image B is a night-time Frogger-style road with a frog",
+        "Different scenery and palettes: clouds, floating islands and lanterns vs. purple skyline, trucks, trains and pink cars",
+        "Different camera and character style: third-person behind-view runner vs. elevated top-down view of the frog"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of toy cars and trains on flat green terrain",
+        "Image B is a humanoid runner on a brick path above clouds with floating islands",
+        "The two scenes differ in scenery, characters and gameplay setup, though both have a warm low sun"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pink cloud-sea sky, floating islands, and a humanoid runner on a brick bridge",
+        "Image B: frog crossing lanes of trams and trucks, flat pastel lane colors on a blue-grey sky",
+        "Different gameplay, scenery, and palette"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of cars and trains at night; Image B is a runner on a sky bridge with floating islands",
+        "Different palettes: dark teal and magenta night versus golden and purple sunset",
+        "Different characters and environments: green frog on a flat road grid versus humanoid on a brick path above clouds"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: flat pastel Crossy-Road-style lanes with trams, trucks and a frog",
+        "Image B: sunset gradient sky, floating islands and a golden cloud sea",
+        "Different characters, camera setups and lighting"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: flat pastel lanes with a frog, trams and trucks in a Crossy Road style",
+        "Image B: night scene with a moon, floating islands, cloud sea and a humanoid runner on a tiled bridge",
+        "Different palettes and lighting: bright daylight pastels versus dark blue moonlit glow"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: runner on a brick bridge over red cloud sea with floating islands",
+        "Image B: frog crossing lanes of cars, trucks and trams in a Frogger-style layout",
+        "Different palette and camera: warm red sunset third-person vs. purple night high-angle view"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a Crossy Road-style frog on lanes of cars, trucks and trains; Image B is a humanoid runner on a brick path above clouds",
+        "Different scenery: magenta city blocks and flat teal ground versus floating islands, cloud sea and lanterns",
+        "Different art and lighting: low-poly toy vehicles versus a painterly purple gradient sky with a soft moon"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a Crossy Road-style frog hopping across lanes with trams and trucks under a flat blue-grey sky",
+        "Image B is a humanoid character on a brick path over a sea of clouds with floating islands and a warm hazy sunset",
+        "Very different palettes, lighting, characters and scenery"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: surreal purple dusk sky, cloud sea and floating islands",
+        "Image B: bright green fields with toy-like trams and cars in a Frogger-style layout",
+        "Different characters and camera: stylized ninja from behind vs. frog from an elevated angle"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night-time blue palette with floating islands and a cloud sea",
+        "Image B: bright daytime green fields with toy-like trams and cars",
+        "Different characters and camera: a humanoid in third person behind the back versus a frog seen from a high angle"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: purple dreamlike sky with floating islands and a humanoid runner",
+        "Image B: orange sunset over a toy-car highway with a frog character",
+        "Different palettes, scenery and art style"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a pastel floating-island runner with a humanoid character on a sky bridge",
+        "Image B is a dark, muted road-crossing scene with a green frog and toy-like vehicles",
+        "Different palettes, scenery and camera setups: A is a saturated purple/gold sky, B is a dim olive ground with an orange sunset band"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a purple night scene with a humanoid runner on a floating-island bridge above clouds",
+        "Image B is a daytime Frogger-style lane layout with a frog, trams and trucks on flat pastel strips",
+        "The two frames differ in palette, lighting, and art style"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a fantasy runner on a floating pink path with floating islands and a golden cloud sea",
+        "Image B is a frog crossing a toy-car road with grass, rail track and river lanes",
+        "Different palettes, scenery and character types (humanoid hero vs frog)"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog character with toy cars and trains on a multi-lane road at sunset",
+        "Image B: humanoid runner on a pastel brick sky bridge with floating islands",
+        "Different scenery, palette and art style: dark olive and orange vs pink and cream"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pink dreamy sky, floating islands and a cloud sea; Image B: flat green field with grey sky",
+        "Different characters: a stylized human runner versus a frog among toy-like trams and cars",
+        "Different scene type and lighting: pastel fantasy bridge versus a Frogger-style road with hard-edged, low-poly lanes"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night-time frogger-style lane crossing with a frog, pink cars and trucks",
+        "Image B is a golden-hour sky with floating islands and a human runner on a brick bridge",
+        "Different palettes, settings and character types, with no shared props or HUD"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog character crossing lanes of toy-like cars and trains at a sunset",
+        "Image B: humanoid warrior on a blue tiled road above clouds with floating islands",
+        "Different palettes and settings: warm orange dusk versus cool blue night"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: red-orange sunset sky with floating islands and a runner on a brick bridge",
+        "Image B: green grass lanes with toy-like cars, a frog and coins",
+        "Different palette, scenery and character types"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night scene with floating islands and a human runner on a tiled bridge, Image B is a daytime Frogger-style scene with a frog and toy cars",
+        "Different palettes: deep blue moonlit glow vs. bright flat green and sky blue",
+        "Different art styles and camera: third-person chase view vs. elevated top-down view with miniature cars and logs"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage6--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: frog crossing a multi-lane road with toy-like cars at a warm sunset",
+        "Image B: humanoid warrior on a blue tiled bridge above clouds with floating islands",
+        "Completely different palettes, settings, and character types"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog with toy cars, trains and a coin on dark road lanes at sunset",
+        "Image B: humanoid runner on a pink brick path above clouds with floating islands",
+        "Different palette and setting: dark orange-brown lanes versus pastel pink-cream sky"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "serpentine-sky-run-port--stage7--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: frog crossing multi-lane traffic with toy-style cars and trains at sunset",
+        "Image B: humanoid warrior on a tiled bridge above clouds under a moonlit night sky with floating islands",
+        "Different characters, scenery, palette (warm orange vs. cold blue) and gameplay setting"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage8--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: surreal purple-orange sunset sky with floating islands and a runner on a sky road",
+        "Image B: flat green field with toy trams and cars in a Frogger-style road crossing",
+        "Different characters, palettes and lighting (warm glow vs. overcast gray-blue)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: frog crossing multi-lane traffic on green ground",
+        "Image B: humanoid runner on a pink sky bridge with floating islands",
+        "Different palettes, scenery and character types"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage4--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: surreal red sunset sky with floating islands and a cloud sea, humanoid runner on a brick bridge",
+        "Image B: flat green lanes with trams, cars and a frog on a gray daytime sky, Crossy Road-style layout",
+        "Different art style, palette and lighting, with no shared scenery or character"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a green Frogger-style road crossing with toy cars and a frog",
+        "Image B is a purple dreamlike sky path with floating islands and a cloud sea",
+        "Completely different palettes, lighting and character styles"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating islands and a brick path above a cloud sea with a humanoid character",
+        "Image B: frog crossing traffic lanes with toy cars, coins, and a river",
+        "Different scenery, character type, and gameplay setting despite similar warm sunset tones"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a warm orange fantasy sky-bridge with floating islands; Image B is a flat green road-crossing scene with trams and cars",
+        "Different characters (runner in teal vs. frog) and camera setups (behind-the-back vs. elevated overview)",
+        "Different palettes and lighting (hazy golden glow vs. cool grey-blue sky and flat bright greens)"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: pastel pink sky, floating islands and a samurai-like character on a sky path",
+        "Image B: dark purple night sky with a frog crossing a road with cars, trucks and trams",
+        "Different palettes, camera angles and scenery"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--stage5--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: purple dusk with floating islands, cloud sea and a humanoid runner on a tiled bridge",
+        "Image B: green Crossy-Road-style field with toy cars, railway track and a frog",
+        "Different palettes, scenery and character types"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "serpentine-sky-run-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: green frog crossing roads with toy-like cars and a railway track",
+        "Image B: pink sky-bridge with floating islands and a humanoid character",
+        "Different scenery, palette and gameplay setting"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "serpentine-sky-run-port--stage1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pink sky with floating islands, cloud sea and a warrior on a tiled sky bridge",
+        "Image B: flat green field with trams, cars and a frog in a road-crossing layout",
+        "Different palettes, camera styles and characters"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+ "target": "aura-fc-3d--munich",
+ "slug": "aura-fc-3d",
+ "variant": "munich",
+ "url": "/apps/showcase-aura-fc-3d/index.html?venue=munich",
+ "group": "g4",
+ "runId": "gu47-before-aura-fc-3d-1",
+ "acrRunId": "ch5um",
+ "readyMs": 25377,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-fc-3d--munich",
+   "id": "settle-25s",
+   "slug": "aura-fc-3d",
+   "variant": "munich",
+   "sinceReadyMs": 25002,
+   "mean": 104.72,
+   "p5": 45,
+   "p50": 94,
+   "p95": 229,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    118.5,
+    115.4,
+    128.3,
+    94.3,
+    98.4,
+    99.1,
+    93.1,
+    99.3,
+    96.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 351
+   }
+  },
+  "settle-60s": {
+   "target": "aura-fc-3d--munich",
+   "id": "settle-60s",
+   "slug": "aura-fc-3d",
+   "variant": "munich",
+   "sinceReadyMs": 201713,
+   "mean": 104.73,
+   "p5": 45,
+   "p50": 94,
+   "p95": 229,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    118.5,
+    115.4,
+    128.2,
+    94.4,
+    98.4,
+    99.1,
+    93.1,
+    99.3,
+    96.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 351
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-fc-3d-1/aura-fc-3d--munich--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-fc-3d-1/aura-fc-3d--munich--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

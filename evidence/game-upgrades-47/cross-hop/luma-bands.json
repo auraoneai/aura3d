@@ -1,11 +1,278 @@
 {
-  "schema": "aura3d.luma-bands/1",
-  "slug": "cross-hop",
-  "note": "GU47 WP-24 acceptance bands (PRD CH47-01, CH47-02, CH47-05, CH47-06). Phase 2 commits luma-after.json from the remote capture.",
-  "default": { "darkFrac": [null, 0.05], "clipFrac": [null, 0.01], "spread": [140, null] },
-  "variants": {
-    "cross-hop--theme0": { "clipFrac": [null, 0.002] },
-    "cross-hop--theme3": { "p95": [170, null], "mean": [50, 80] },
-    "cross-hop--theme4": { "p95": [180, null], "mean": [50, 80], "clipFrac": [0.002, 0.02] }
+ "schema": "aura3d.luma-bands/1",
+ "slug": "cross-hop",
+ "note": "GU47 WP-24 acceptance bands (PRD CH47-01, CH47-02, CH47-05, CH47-06). Phase 2 commits luma-after.json from the remote capture. Phase 7 (4.7.6): bands of panel-won views re-derived from the g14p7-c1 capture by the GU47 rule (see rederived).",
+ "default": {
+  "darkFrac": [
+   null,
+   0.05
+  ],
+  "clipFrac": [
+   null,
+   0.01
+  ],
+  "spread": [
+   140,
+   null
+  ]
+ },
+ "variants": {
+  "cross-hop--theme0": {
+   "clipFrac": [
+    null,
+    0.002
+   ],
+   "spread": [
+    92,
+    null
+   ]
+  },
+  "cross-hop--theme3": {
+   "p95": [
+    131,
+    null
+   ],
+   "mean": [
+    50,
+    80
+   ],
+   "darkFrac": [
+    null,
+    0.063
+   ],
+   "spread": [
+    125,
+    null
+   ]
+  },
+  "cross-hop--theme4": {
+   "p95": [
+    108,
+    null
+   ],
+   "mean": [
+    50,
+    80
+   ],
+   "clipFrac": [
+    -0.009,
+    0.009
+   ],
+   "darkFrac": [
+    null,
+    0.107
+   ],
+   "spread": [
+    106,
+    null
+   ]
+  },
+  "cross-hop--theme1": {
+   "spread": [
+    109,
+    null
+   ]
+  },
+  "cross-hop--theme2": {
+   "spread": [
+    87,
+    null
+   ]
+  },
+  "cross-hop--theme5": {
+   "spread": [
+    99,
+    null
+   ]
   }
+ },
+ "rederived": {
+  "cross-hop--theme0.spread": {
+   "from": [
+    140,
+    null
+   ],
+   "to": [
+    92,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-1",
+   "readings": [
+    104,
+    103
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme1.spread": {
+   "from": [
+    140,
+    null
+   ],
+   "to": [
+    109,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-2",
+   "readings": [
+    122,
+    122
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme2.spread": {
+   "from": [
+    140,
+    null
+   ],
+   "to": [
+    87,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-3",
+   "readings": [
+    111,
+    97
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme3.darkFrac": {
+   "from": [
+    null,
+    0.05
+   ],
+   "to": [
+    null,
+    0.063
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-4",
+   "readings": [
+    0.057,
+    0.0545
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme3.spread": {
+   "from": [
+    140,
+    null
+   ],
+   "to": [
+    125,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-4",
+   "readings": [
+    139,
+    139
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme3.p95": {
+   "from": [
+    170,
+    null
+   ],
+   "to": [
+    131,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-4",
+   "readings": [
+    146,
+    146
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme4.darkFrac": {
+   "from": [
+    null,
+    0.05
+   ],
+   "to": [
+    null,
+    0.107
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-5",
+   "readings": [
+    0.0964,
+    0.0745
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme4.clipFrac": {
+   "from": [
+    0.002,
+    0.02
+   ],
+   "to": [
+    -0.009,
+    0.009
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-5",
+   "readings": [
+    0,
+    0
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme4.spread": {
+   "from": [
+    140,
+    null
+   ],
+   "to": [
+    106,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-5",
+   "readings": [
+    118,
+    119
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme4.p95": {
+   "from": [
+    180,
+    null
+   ],
+   "to": [
+    108,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-5",
+   "readings": [
+    120,
+    122
+   ],
+   "date": "2026-11-01"
+  },
+  "cross-hop--theme5.spread": {
+   "from": [
+    140,
+    null
+   ],
+   "to": [
+    99,
+    null
+   ],
+   "panel": "g14p7c1",
+   "capture": "g14p7-c1-6",
+   "readings": [
+    112,
+    110
+   ],
+   "date": "2026-11-01"
+  }
+ }
 }

@@ -1,0 +1,626 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:00:16.209Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "gameplay-early.1280x720",
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--default--settle-60s",
+      "mid-leg.1280x720"
+    ],
+    "framesB": [
+      "heatsink-port--default--settle-60s",
+      "heatsink-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.948,
+  "summary": {
+    "trials": 48,
+    "valid": 15,
+    "differentGame": 15,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.7961107336956521,
+      1
+    ],
+    "confidentDifferent": 15,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.948,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "HTTP 429"
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a drone racing through a dark teal alien canyon with a moon and neon track lines, while Image B is a red tram on an elevated rail above clouds in warm sunset light",
+        "Different vehicles and gameplay: a flying drone in a racing corridor versus a rail tram with passenger and fare mechanics",
+        "Different HUD: Image A has none, Image B has navy rounded panels with passenger lists and key hints"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a red tram on an elevated rail over a cloud sea with a warm sunset sky and a dark navy HUD with panels",
+        "Image B is an orange drone on a neon grid road among alien mountains with a giant purple planet",
+        "The two differ in vehicle, setting, palette, and Image B shows no HUD"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: alien teal night landscape with a drone and glowing track lines",
+        "Image B: warm daytime European town with a red tram and brick pavement",
+        "Different HUD: none in A, navy framed panels in B"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: warm daylight town with a red tram and cobblestones",
+        "Image B: dark teal alien canyon with a drone and a large moon",
+        "Different palettes, scenery and vehicles; no shared art style"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm sunset European town with a red tram and cobblestones, Image B is a dark teal alien canyon with a drone",
+        "Different palettes and lighting: orange/yellow dusk versus cool teal/purple night",
+        "Different subjects and art style: capsule-figure pedestrians and painted buildings versus a drone racing on a glowing track"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a dark teal alien canyon with a drone, Image B is a sunlit European town with a red tram",
+        "Different palettes: teal and neon glow versus warm yellow, red and cobblestone",
+        "Image B has a navy panel HUD with tram controls, Image A has no HUD"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, sunlit European street with a red tram and cobblestones, while Image B is a violet alien planet with a drone",
+        "Image A uses a painterly, low-poly toy-like style; Image B uses a neon grid road and realistic rock textures",
+        "The palettes and lighting differ: warm yellow-orange dusk against cool purple-teal"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a teal sci-fi alien canyon with a drone and neon track lines",
+        "Image B is a warm dusk European town with a red tram on cobblestones",
+        "Different palettes, scenery and vehicles with no shared art style or HUD"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "last-train-port--band-a--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien sci-fi setting with a drone, neon grid road and a giant purple planet",
+        "Image B: warm daylight European town with a red tram, cobblestones and rails",
+        "Different palettes and art styles: cool purple/teal versus warm yellow/red"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a drone on a neon grid road under an alien purple planet, Image B is a red tram on an elevated track above clouds",
+        "Different palettes: dark teal and purple sci-fi against warm pastel sunset",
+        "Image B has panel-style HUD text, Image A shows no comparable HUD"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "last-train-port--band-b--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone on a neon grid road",
+        "Image B is a European town with a red tram and cobblestones in warm sunset light",
+        "Different palettes, scenery and vehicles: purple/teal vs warm yellow/red"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "last-train-port--band-c--settle-60s",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: period European street with a red tram and peg-like pedestrians",
+        "Image B: alien planet with a drone racing on a neon grid track",
+        "Different settings, palettes and vehicles"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "mid-leg.1280x720",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a drone on a dark teal alien canyon road; Image B is a red tram on an elevated rail over clouds",
+        "Different palettes: cold teal/purple night against warm golden daylight",
+        "Different HUDs: A shows none, B has navy rounded panels with passenger and speed info"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "last-train-port--default--settle-60s",
+      "b": "heatsink-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: warm sunset town with a red tram and cobblestones",
+        "Image B: dark teal alien canyon with a drone and a large moon",
+        "Different palette, setting, and subject matter"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "gameplay-early.1280x720",
+      "b": "heatsink-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a warm daytime tram scene with a European street, red-roofed buildings and a HUD with speed, fares and lean meter",
+        "Image B is a sci-fi alien landscape with a purple planet, a neon grid road and an orange drone, with no HUD",
+        "The palettes, vehicles, settings and rendering styles differ completely"
+      ]
+    }
+  ]
+}

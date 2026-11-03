@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "silt-and-signal-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm sunset haze lowers contrast a little and the buildings are untextured white blocks. The player is clear in the foreground and the gate is framed well.",
+     "The warm haze lowers contrast a little and the buildings are plain white boxes, but the player is large and readable, the composition is strong and the mood is good.",
+     "Warm sepia haze flattens some midground contrast; white buildings look untextured; the mid-air ring cluster reads a little odd"
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The night scene is fairly dark and the terrain on the left is murky. The posterized sky blobs look a little blotchy. The player sits partly over the ring edge but is still readable.",
+     "The night scene is dark and the hillsides are muddy. The ring frames the shot but crowds it. The posterised sky shows banding. The player sits low in the frame but is readable.",
+     "Dark night scene with low-contrast hillsides; large foreground ring partly frames the player; posterized cloud bands in the sky"
+    ]
+   },
+   {
+    "variant": "ch3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A large plain white pillar blocks the centre of the composition, and the player is almost clipping into its base. The posterized dark band at the top of the sky looks banded. The ground has a teal colour cast. The mood and depth are otherwise good.",
+     "A large white pillar blocks the centre of the frame right next to the player. The water is overexposed and blown out. The sky shows hard posterised edges, and the arch is cut off at the bottom. Despite this, the player is readable and the scene has good depth.",
+     "Large white pillar sits in the centre right beside the player and blocks the view, so the camera is close to clipping it; dark, desaturated teal tones on the ground; arch base looks cut off"
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The grey overcast sky and green haze make the frame somewhat low in contrast and slightly washed out. The sky gradient is banded. A stray flat disc floats at the lower right. The player and track are still clearly readable.",
+     "The overcast sky is grey and somewhat flat, with posterised banding. The large ring dominates the frame. Rings float in the air, though this seems intended.",
+     "Overcast grey sky is a bit washed out; posterized banding in the sky and on the hills; foreground ring frames the player; small rings float in the air"
+    ]
+   },
+   {
+    "variant": "ch5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The purple dusk is a little dim on the left and the sky has posterized blobs. Otherwise the composition, depth and player readability are strong.",
+     "The purple night is somewhat murky and the left ground is dark, with some banding in the sky. Otherwise it reads well, with good depth and a readable player.",
+     "Purple night palette is somewhat low in contrast in the dark areas; mild posterization in the sky"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Warm haze softens contrast slightly and the buildings are untextured white blocks. The player is clear and the composition is strong.",
+     "The warm haze lowers contrast slightly and the buildings are plain white boxes, but the player is large and readable and the composition is strong.",
+     "Warm haze slightly flattens contrast; buildings are mostly untextured white blocks; the ring cluster floats somewhat ambiguously"
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p4-r7/shots/mid-action-1280.jpg",
+      "sha256": "fb890a71196bc4b1deb0afe5720c6a90bfa6384a08d6cecc19bf25626f4429bf"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p4-r7/serpentine-sky-run-port/frames/g17p4-r7-def/serpentine-sky-run-port--default--settle-60s.jpg",
+      "sha256": "99fa048f180b25288562201fa7b117600582352294ab046c15bea6ef5b92a8e4"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p4-r7/serpentine-sky-run-port/frames/g17p4-r7-s78/serpentine-sky-run-port--stage8--settle-60s.jpg",
+      "sha256": "d3645bdff2c54c51e9a8defde2172f43e6b02f2f2a9def7e9ad27560ab29033d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/serpentine-sky-run-port/p4-r7/serpentine-sky-run-port/frames/g17p4-r7-s78/serpentine-sky-run-port--stage7--settle-60s.jpg",
+      "sha256": "379d519d278bf3c22b94e91c18497fc8dd9ca67ab1f4de982166460ac1e10fd5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 5.5,
+    "ibl_reflections": 4,
+    "environment_world": 7,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 6.5,
+    "composition": 7,
+    "camera": 5.5,
+    "postprocessing": 6,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A sun or moon sits low behind the torii in every frame, so the runner is backlit. The front of the character is lit flat with no visible rim light. The night frame's lamp posts cast no light pool on the bridge."
+    },
+    {
+      "category": "shadows",
+      "seen": "The runner casts one long, soft shadow toward the camera. In frames 2 and 3 the yellow center line splits that shadow into two dark bands. The torii, lamp posts and flag poles cast no visible shadows on the bridge, and the feet have no contact darkening."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The bridge tiles and edge rails are fully matte in all four lighting setups. The sky color shows no specular response anywhere. Only the dragon scales and the island undersides show faint sheen."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The bridge surface is a flat color with thin procedural grout lines. Its edge bevel is a smeared gradient (green in frame 1, lavender in frames 2 and 3). Broad purple shading bands slide across the tiles in frame 3 and do not match any object."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The runner and dragon are detailed, textured models. The torii gates are simple box primitives, the floating islands are small low-poly cones with lollipop trees, and the dragon's body becomes a plain tube where it trails into the distance."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Horizon haze and sun glow read well. The cloud sea shows red blotches in the pink frame and dark, hole-like patches in the night frame. The frame 1 clouds carry visible noise and grain."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low chase cam centered behind the runner, not the side-on follow the recipe specifies. The field of view looks wider than 50. The runner stands at the center and blocks the path directly ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The sun bloom and per-time-of-day grading work. The pink frame is washed out with low contrast. Frame 1 shows grain in the clouds and a heavy warm overlay that flattens values."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The torii gate line, prayer flags, lanterns, floating islands and a large dragon over a cloud sea give a clear theme. The palette is gold, magenta, purple and night blue, not the recipe's saturated greens, sky blue and warm wood. No gold coin accents are visible."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "In frame 1, translucent dark-purple panels show the runner stats, distance bar, days left and score. A serif title card reads 'THE LONG ROAD'. The title sits over the playfield center, and the progress bar sits near the start even though it reports 58,501 km."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

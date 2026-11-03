@@ -1,0 +1,22 @@
+{
+  "schema": "bunker-zero.cc0-source/1",
+  "key": "bzMachete",
+  "sourceId": "poly-haven:machete",
+  "title": "machete",
+  "author": "Ulan Cabanilla",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sourcePage": "https://polyhaven.com/a/machete",
+  "downloadUrl": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/machete/machete_1k.gltf",
+  "retrievedAt": "2026-11-01T17:00:00Z",
+  "tool": "tools/bunker-zero-lift/pack-polyhaven.mjs",
+  "derivation": [
+    "packed to one GLB with gltf-transform, scene wrapped in a root node that recentres X/Z and grounds Y (no vertex edits), unused resources pruned",
+    "1k glTF as published",
+    "--rotx 90 (root node laid along +Z like the knife viewmodel it replaces; node transform only)"
+  ],
+  "sha256": "c43859856d933e6109ba29a0c96f144bc2cb4e53f96c22ab807acc6101fa4cea",
+  "sizeBytes": 2423644,
+  "claim": "/tmp/gu47-lanes/cc0-claims.tsv poly-haven:machete bunker-zero",
+  "why": "GU47 phase 9 (PRD D2): replaces the knife viewmodel borrowed from a retired app (lane report phase 9)"
+}

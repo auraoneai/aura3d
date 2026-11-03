@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Some vehicles overlap in the near lanes, for example the red car and the minivan on the left. The large, empty grass foreground looks plain. The lighting is still somewhat flat. Otherwise the road lanes read more clearly, the near vehicles are larger and more detailed, the vehicle mix (trains, taxis, trams) adds variety, and the layering gives better depth.",
+     "Vehicles packed tightly together; the trams and cars overlap and clip into each other in the middle rows (the centre tram cuts into the car lane, and the cars on the left overlap). The lower third is plain, empty grass. The buildings are flat grey blocks and the sky is a bland gradient.",
+     "Some trams and cars still overlap in the middle lanes, and the far rows of trains and trams are dense. The foreground grass is the same flat, empty area. Otherwise it reads more cleanly: the near cars are larger and well shaded with clear materials (taxis, SUVs), the depth falls off clearly from near to far, and there is more variety in the vehicles."
+    ]
+   }
+  ]
+ }
+]

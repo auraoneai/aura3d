@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "silt-and-signal-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale, slightly washed-out sky with blotchy cloud banding. The large white arc rings and the vertical beam clutter the centre of the frame. Grass is flat.",
+     "The sky is a little grey and flat, and the pale ring arcs lack contrast against it. The log pillars partly frame the player. Otherwise the player is clearly readable, the river leads the eye into the distance, and depth is good.",
+     "Some sky haze and banding; the gate ring and its vertical light bar block part of the view; the pillars partly frame the player"
+    ]
+   },
+   {
+    "variant": "ch2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The night scene is dark and fairly low-contrast at the edges. The bright ring overlay dominates the frame and partly covers the player. A post stands in the middle of the river, and the sky has blotchy cloud shapes.",
+     "The night palette is dark and blue-heavy, the side hills are murky and low in contrast, and the blotchy sky has visible banding. The glowing rings fill much of the frame and partly overlap the player. The player is still readable and the mood is strong.",
+     "Night scene is fairly dark with low-contrast blue hills; the gate rings and vertical bar take over the composition and overlap the player; sky blotches look banded"
+    ]
+   },
+   {
+    "variant": "ch4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A slight grey haze flattens the image. The large ring overlay covers most of the frame. Dark rings float in the sky, and there is a vignette/noise smudge on the left.",
+     "The sky is overcast grey with a blotchy, banded cloud edge, and the colours are slightly desaturated. Two dark rings float in the sky, and the large white rings dominate the frame. The player is clear and the river vista has good depth.",
+     "Gray overcast sky is a little washed out with visible banding; the large gate ring covers the centre and frames the player off-centre; rings float in the sky"
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A warm haze slightly lowers contrast in the background. The central beam splits the frame, and the ground is a bit muddy.",
+     "A warm sunset haze slightly lowers contrast in the distance, and the ground is a little monotone. The player has a clear silhouette, the arch and rings frame the scene well, and atmosphere, depth and material detail are good.",
+     "Warm haze lowers contrast a little; the cobblestone foreground is somewhat flat; slight banding in the sky"
+    ]
+   }
+  ]
+ }
+]

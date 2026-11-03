@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/screens/1280-04-mid.jpg",
+      "sha256": "62e7e5ebbd62c693113db8962943a67bbbc2895c5047bba375a7d2f7d2d24b68"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--moon--settle-60s.jpg",
+      "sha256": "4727e0f14a995a044518fcf68ee8a68c8caec6498cb44f963826768cc62c0d69"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r2/top-tennis--clay--settle-60s.jpg",
+      "sha256": "249f2a9fdab5eedde673c8f289f3558561bb778f24b12b0c9a98ea9b4b351037"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p4-final/top-tennis/frames/r3/top-tennis--desert--settle-60s.jpg",
+      "sha256": "923073d8fd8549910c62c2dbd265b08faa5dbe81efd587576dfa52d801fcc285"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5.5,
+    "ibl_reflections": 2.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 2,
+    "material_quality": 4,
+    "modeling_assets": 4.5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 3.5,
+    "animation_quality": 4,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "One directional key with flat fill. The Dubai frame is washed-out beige with almost no value contrast. The Paris frame is a near-monochrome orange wash. The Moon frame is a grey slab against pure black. Only the NY Hard frame adds side pool lights that shape the space."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players and the net cast shadows, which ground them. On the Moon court the shadows are hard and pitch-black with no ambient fill. The stand shadows on the Paris clay are long and lack contact darkening. No ambient occlusion appears under the benches, the umpire chair, or the crowd boxes."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No environment reflections on any surface. The court, players, and stands all read as unlit-diffuse. The moon sphere is matte. No specular response shows on the hard court or the net posts."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Every venue uses the same box arena of three bleacher blocks, two light poles, and an umpire chair. The venue is a floating platform with a hard edge into a black void on the Moon and a flat sky band elsewhere. The Paris and Dubai backdrops reuse the same blurred tower structure."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "No indoor haze, light shafts, or depth falloff in any frame. The only depth cue is the blurred background tower billboard in the Paris and Dubai frames."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Court surfaces are flat albedo. Only the NY Hard frame has a faint woven texture. Clay, sand, and concrete floors are untextured solid colour. The crowd and players are plain vertex-coloured primitives with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Crowd figures are capsule-and-sphere primitives repeated in rigid rows with rainbow shirts. Players are low-poly but readable, with racket and cap silhouettes. The bench, umpire chair, and signage boards are bare cubes."
+    },
+    {
+      "category": "composition",
+      "seen": "The court is centred and fills about 30–45% of the frame, which is on target. The far player's head occludes the 'AURA SLAM' board so it reads 'AURA SL'. The crowd is bright saturated rainbow rather than the dark crowd band the recipe calls for, so it competes with the court."
+    },
+    {
+      "category": "camera",
+      "seen": "High broadcast-style perspective at roughly 55–65° on three frames. The NY Hard frame is steeper and closer, so the stands crowd the edges. The angle reads as broadcast but not orthographic, and it does not match 70°."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible tonemapping consistency across frames. The Moon frame has crushed blacks, and the Dubai frame is low-contrast and milky. No bloom on the light poles, no colour grading tying the venues together, and no arena-fight style punch."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "From stills only: the serve pose with the racket overhead in the NY Hard frame and the ready stances are readable. The crowd is identical and static in every frame, with no variation in poses."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The NY Hard frame has a clean scoreboard, ball-speed gauge, power bar, mode chips, and a controls strip with good contrast. The other three frames show no HUD at all, only an in-world text banner. The mode chip bar crowds the top edge of the court view."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

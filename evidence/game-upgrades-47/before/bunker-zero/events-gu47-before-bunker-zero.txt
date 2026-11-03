@@ -1,0 +1,5 @@
+run gu47-before-bunker-zero acr ch5uw was successful after 7m46s playwrightExit 0
+GL_READY bunker-zero--default 12235ms
+GL_DONE bunker-zero--default
+1 passed (6.6m)
+[task-run] PLAYWRIGHT_EXIT=0

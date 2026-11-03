@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "silt-and-signal-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly flat, desaturated grey-green palette and a fairly plain overcast sky; the large foreground pillars crowd the frame; small rings float in the air behind the river",
+     "Sky is a bit hazy and washed out, with a hard-edged white cloud shape; the big grey pillars are flat with no texture; the floating ring and pillar markers look a little disconnected; the grass is mostly flat. Still, the player reads clearly, the river leads the eye well and the depth is good.",
+     "Slightly flat, washed-out sky with a hard-edged pale cloud blob; the gate pillars are plain untextured cylinders that fill much of the frame; terrain shading is a bit flat"
+    ]
+   },
+   {
+    "variant": "ch6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The pillars show a chromatic or iridescent banding artifact; the snow/ice on the right is somewhat blown out; the dark wooden ring floating mid-air reads as odd",
+     "Some bloom washes out the water in the middle and the right bank; the pillars show odd colour banding and posterization; the brown player blends into a dark silhouette; there are slight banding artifacts in the sky. Still, the sunset mood is strong, the leading lines are clear and the depth is good.",
+     "Overexposed, washed-out water and right-side ground; the pillars show odd iridescent banding; the player figure looks over-sharpened and bronze; some areas are harsh and posterized"
+    ]
+   }
+  ]
+ }
+]

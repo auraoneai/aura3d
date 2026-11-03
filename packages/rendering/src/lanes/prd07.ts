@@ -11,6 +11,8 @@ import { registerParticleChunks } from "../vfx/shaders/particle.glsl";
 import { registerSkyChunks } from "../atmosphere/sky.glsl";
 import { registerPrd07Chunks } from "../atmosphere/fogChunks";
 import { registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
+// The same objects: atmosphere/Prd07ShaderFeatures re-exports the native
+// replay-identity features under the selective-bloom names.
 import { PRD07_FOG_FEATURE, PRD07_WETNESS_FEATURE } from "../vfx/replayFeatureIdentity";
 
 // C-20 / C-21 provides — real implementations keyed by device.

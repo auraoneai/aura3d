@@ -1,0 +1,92 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r6/screens/key-walk.1280x720.jpg",
+      "sha256": "1f7ee73c602497550d9820830eba25aa86158561681d42288ab91726158ba234"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r6/screens/mid-walk.1280x720.jpg",
+      "sha256": "1ed441c813a58e5e813e979813eba2cf2cf5f97ccc6d430e11634feb54fa5008"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r6/where-the-wind-wanders-port/frames/g23p4-r6-4/where-the-wind-wanders-port--found3--settle-60s.jpg",
+      "sha256": "9a415ba4b619bfda188cc01cef45b21852d7d197ba7ec8b324f980fae69520bd"
+    },
+    {
+      "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p4-r5/where-the-wind-wanders-port/frames/g23p4-r5-1/where-the-wind-wanders-port--bell--settle-60s.jpg",
+      "sha256": "51eb4f8ec62dbdd229a575314cf12a2de8e787666a7114f9161731f180ba51df"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4,
+    "ibl_reflections": 3.5,
+    "environment_world": 7,
+    "atmospheric_effects": 5.5,
+    "material_quality": 6,
+    "modeling_assets": 6,
+    "composition": 6,
+    "camera": 5,
+    "postprocessing": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1-2 are evenly lit with almost no readable key direction. Bushes, house walls and the windmill get similar exposure on all sides, so the 3/4 front sun does not shape any form."
+    },
+    {
+      "category": "lighting",
+      "seen": "Frame 4 changes to a dusk grade with a pink sky and dull green foliage, and the hooded character goes nearly black against the meadow."
+    },
+    {
+      "category": "shadows",
+      "seen": "The character casts no readable shadow on the path. The cottage, windmill and trees have no clear cast shadows on the ground, and the only darkening is soft patches under the bush clumps."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The lake reads as flat light-blue bands with faint ripple streaks. It does not reflect the cottage, trees or sky, and no surface anywhere shows a specular or environment highlight."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The distant shore and tree line show only slight haze in frames 1-3. Frame 4 adds stronger desaturating haze and a few floating white motes, but there is no depth fog gradient into the midground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The bushes repeat one dotted pink/white flower decal pattern on every clump. The grass and foliage alpha shows a dithered, stippled screen-door pattern, most visibly around the character's legs."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The background trees are flat card-like cutouts on a painted strip. The near-camera canopy in the top-left corners is a low-poly untextured green blob. The character is a low-detail olive hooded figure with muddy shading."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The cottage is a strong hero asset with a tiled red roof, ivy, arched doors and a flower box. The windmill has textured wood planks and canvas sails."
+    },
+    {
+      "category": "composition",
+      "seen": "Dense flower bushes fill the lower half of every frame and compete with the subject. The character sits mid-frame, partly buried in grass, and the windmill is cropped hard at the right edge in frames 1, 3 and 4."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high third-person chase view from behind rather than the side-on follow view the recipe expects. The character is about 8-12% of frame height and partly occluded by foliage, well under the 18-25% target."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible bloom on the sky or water and only mild tone mapping. Frame 4's grade flattens contrast toward grey-pink, and the dither noise on alpha foliage reads as an artifact rather than grain."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD uses clean cream pill buttons: '0 / 3 discovered', a controls hint, 'Journal' and 'Sound on'. It is legible and unobtrusive in frames 1-2 but absent in frames 3-4, and no coin-gold accent appears anywhere."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

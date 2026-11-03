@@ -15,5 +15,6 @@ Every model here was generated on 2026-10-23 from an original text prompt (no im
 | `letter` | the three letters | a cream-coloured sealed envelope with a red wax seal and a faint golden edge, flat paper letter | preview+refine | 0.34 MB (was 0.91 MB) / 15,840 |
 | `boat` | the epilogue boat | a small wooden rowing boat with a single mast and a cream sail, steel-blue painted hull with cream trim | preview+refine | 0.96 MB (was 1.55 MB) / 25,988 |
 | `wisp` | companion wisp | a small friendly floating spirit companion, a glowing violet teardrop-shaped wisp with a soft translucent tail and two tiny bright eyes | preview+refine | 0.32 MB (was 0.84 MB) / 17,218 |
+| `kite` | paper kite (GU47 look; replaces the wisp, WW47-A1) | paper kite with a diamond frame and a ribbon tail (GU47 WP-36 row `bellKite`, Meshy task 01a18c0e-0a3c-73ca-8cb3-7389ab2a19e7, 2026-10-30; rights in provenance/kite.rights.json) | preview+refine (WP-36 pipeline) | 0.28 MB (was 0.80 MB; 512 px JPEG textures + meshopt) / 11,096 triangles |
 
 Also generated but not used: a jetty pier (the procedural jetty is tied to the simulation's walkable gaps), a windmill (the procedural windmill carries the animated sails), a post lantern, and probe animation clips (three run variants, 9 credits).

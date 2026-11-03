@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Moonlight haze flattens the contrast slightly and the sky and road are a bit grey-blue; the window textures on the buildings look like flat stripes; otherwise the car is clearly lit and detailed, and the road and skyline read well.",
+     "The road has a slightly flat blue-grey wash. The building window textures are simple stripes. The sky is a little hazy near the horizon. The car is clearly lit and easy to read.",
+     "The moonlit grading is slightly washed and flat, and the building windows look like repetitive stripes. The road has a hazy sheen. Otherwise the car is clearly readable with good material detail and the depth is solid."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The canyon wall textures are a little blotchy and low-detail, and there is slight haze at the far end of the road; otherwise the warm sunlit walls against the blue sky give good contrast, the car is clearly readable and the frame has good depth.",
+     "The road surface is a little too blue and glossy. The shadowed lower part of the right canyon wall is quite dark. Otherwise the frame has strong colour, clear sunlit rock and a well-read car.",
+     "The canyon wall textures are somewhat blurry and low-detail. The road reads a bit too blue against the warm walls. Otherwise contrast is strong, the light and shadow are warm, and the car is clearly readable."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is somewhat hazy and grey, and the distance washes out slightly; the near road is slightly noisy; otherwise warm lighting with clear shadows, a detailed car, windmills, trees and a buoy give it strong depth and composition.",
+     "The grey sky is hazy and somewhat washed out, and the horizon has low contrast. The road is a bit flat. The scene still has warm sand, detailed trees and wind turbines, shadows, buoys and a clearly lit car.",
+     "The grey sky is somewhat hazy and washed out, and the distance is soft. The road texture is a bit noisy. Otherwise the warm hills, trees with shadows, wind turbines and buoys give depth and detail, the car is well lit with a cast shadow, and the composition is good."
+    ]
+   }
+  ]
+ }
+]

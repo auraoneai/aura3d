@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "cinderRim",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overcast sky looks a bit flat for a volcanic theme. Ember particles are sparse and one large orange blob floats on the left. Tee box is fairly plain. Aim line is a flat white slab.",
+     "Terrain is a bit dark and muddy brown; the distant cone props are small and generic; one oversized glowing ember orb floats near the player; there are no clubs or player details to anchor the scene. Overall it has more texture, atmosphere and theme than A.",
+     "Overcast sky looks cool against the volcanic theme. The tee is a flat brown box with a hard edge. The aim line is a plain white bar."
+    ]
+   },
+   {
+    "variant": "cloudTerrace",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grass is very saturated and the textures tile. The empty fairway centre is a bit plain. Otherwise it's crisp, with good shadows, sky and trees.",
+     "Grass is quite saturated and flat; the tee box has a hard geometric edge; a few tiny particle specks.",
+     "The grass is a bit oversaturated and the tee border edge is hard. Otherwise it has good contrast, texture and shadows."
+    ]
+   },
+   {
+    "variant": "mapleHollow",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Fairway is fairly empty. Trees are simple stacked blobs and one small blob floats near the left tree group. Grass is slightly oversaturated.",
+     "A small floating orange blob in the left tree line; tree shapes are simple stacked spheres; the grass is slightly over-saturated. Otherwise it has clear colour, a readable player with a shadow and a strong autumn mood.",
+     "Minor issues: the blob trees are simple, and a small orange sphere floats among them."
+    ]
+   },
+   {
+    "variant": "mareCourse",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is pure black and the frame is dark overall. Shadows are long, but the lunar regolith texture, crater detail and blue-tinted player all read clearly.",
+     "The sky is pure black with no stars; the shadows are long and very dark. Otherwise the regolith texture is readable and the player is clear.",
+     "The black sky is large and empty. The player is somewhat dark, but the regolith texture, crater detail and strong cast shadows read well."
+    ]
+   },
+   {
+    "variant": "neonBay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The flat navy sky has no gradient, and the 'neon' theme is fairly subdued. Otherwise contrast is good, the player is readable, and grass texture and shadows are visible.",
+     "The deep blue sky is a bit flat; little actual neon glow. Otherwise the ground texture, the player shadow and the separation between trees and sky are all readable.",
+     "There's no neon accent despite the theme, and the trees are simple. The grass is textured, the shadows are visible and the blue night sky gives good separation."
+    ]
+   },
+   {
+    "variant": "stAuroras",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grass is slightly dark and the textures tile. The aim line is a bit faint.",
+     "Grass is slightly dark and saturated; the tree models are simple. Otherwise it has good shadows, detailed turf, a clear sky with clouds and a readable player.",
+     "The grass is slightly dark and a long shadow stripe crosses the tee. Otherwise it's well textured with good sky and depth."
+    ]
+   }
+  ]
+ }
+]

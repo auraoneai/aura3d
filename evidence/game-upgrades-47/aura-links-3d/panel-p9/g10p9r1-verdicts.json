@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "cinderRim",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large flat brown ground with a repetitive tiled texture; dark rim strip at the tee edge; the scattered cone props are sparse and simple",
+     "Ground is a fairly uniform brown; the distant cone props are small and repetitive; the sky is grey and a bit dull; otherwise it has textured cobble and grass, embers, and readable warm lighting",
+     "Tee grass reads somewhat flat and muddy brown. The second golfer is cut off at the left edge. The aim line is very bright."
+    ]
+   },
+   {
+    "variant": "cloudTerrace",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grass is quite saturated and the tiling repeats; the tee border strip is plain; otherwise clear and readable, with shadows and a cloudy sky",
+     "Grass is a bit saturated and flat-toned; the tee edge is a plain slab; minor floating white particles",
+     "Grass is slightly oversaturated and the tee edge is flat. The second golfer is cut off at the left edge."
+    ]
+   },
+   {
+    "variant": "mapleHollow",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Tee marker shows as a flat red plane rather than a block; grass is somewhat uniform; slight tiling",
+     "Grass is slightly oversaturated; the tee marker is flat; the small cone props are repetitive; one small canopy blob appears to float on the left",
+     "Minor: the tee marker looks flat, and the second golfer is cut off at the left edge."
+    ]
+   },
+   {
+    "variant": "mareCourse",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Plain black sky; repeated crater texture tiling; long dark shadows, though they suit the lunar look; overall readable",
+     "Pure black sky with no stars or earth feels empty; the players are dark against the ground; the shadows are very long but plausible",
+     "The sky is pure black and empty. Otherwise the regolith texture is good and the shadows are strong."
+    ]
+   },
+   {
+    "variant": "neonBay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat deep-blue sky with no gradient; repetitive grass texture; no real neon accents",
+     "Navy sky is a bit flat; there are no neon accents despite the name; the ground texture tiles slightly; otherwise it is readable, with shadows and night atmosphere",
+     "The night-blue sky is somewhat flat and the aim line is very bright, but readability is good."
+    ]
+   },
+   {
+    "variant": "stAuroras",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grass is slightly dark and the tiling repeats; minor banding in the shadows",
+     "Grass is a bit dark and uniform; repetitive small cone props; minor long shadow banding across the tee",
+     "A dark shadow band stripes across the tee. The second golfer is cut off at the left edge."
+    ]
+   }
+  ]
+ }
+]

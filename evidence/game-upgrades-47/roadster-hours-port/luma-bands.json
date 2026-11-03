@@ -1,11 +1,69 @@
 {
   "schema": "aura3d.luma-bands/1",
   "slug": "roadster-hours-port",
-  "note": "GU47 WP-32 acceptance bands (RH47-02, RH47-05, RH47-06, RH47-07). Targets are ?level=0..2&autostart=1&autopilot=1 (sunbreak, redline, halo); judge only steady-state shots after texturesReady() (PRD §6.5). Cell 1 is top-centre (sky), cell 7 bottom-centre (road).",
-  "default": { "clipFrac": [null, 0.02] },
+  "note": "GU47 WP-32 acceptance bands (RH47-02, RH47-05, RH47-06, RH47-07). Targets are ?level=0..2&autostart=1&autopilot=1 (sunbreak, redline, halo); judge only steady-state shots after texturesReady() (PRD \u00a76.5). Cell 1 is top-centre (sky), cell 7 bottom-centre (road).",
+  "default": {
+    "clipFrac": [
+      null,
+      0.02
+    ]
+  },
   "variants": {
-    "sunbreak": { "mean": [100, 125], "clipFrac": [null, 0.02] },
-    "redline": { "mean": [60, 85] },
-    "halo": { "mean": [32, 48], "darkFrac": [null, 0.4], "cells": { "7": { "mean": [45, null] } } }
+    "sunbreak": {
+      "mean": [
+        100,
+        125
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ]
+    },
+    "redline": {
+      "mean": [
+        60,
+        85
+      ]
+    },
+    "halo": {
+      "mean": [
+        61,
+        76
+      ],
+      "darkFrac": [
+        null,
+        0.4
+      ],
+      "cells": {
+        "7": {
+          "mean": [
+            45,
+            null
+          ]
+        }
+      },
+      "meanNote": "GU47 phase 4 (4.7.2): moved from [32, 48] (written for the phase-1 numbers) to [55, 70] for the panel-verified blue-hour look: blind panel g22p4r4 halo better 3/0/0 (evidence/game-upgrades-47/roadster-hours-port/p4-panel/g22p4r4), frames p4-r4/roadster-hours-port/frames/g22p4-r4-4 (software WebGL2, 63.9 / 65.7). Same width, shifted; road cell 7 stays > 45."
+    }
+  },
+  "rederived": {
+    "halo.mean": {
+      "from": [
+        55,
+        70
+      ],
+      "to": [
+        61,
+        76
+      ],
+      "panel": "g22p7r1",
+      "capture": "g22p7-r1-3",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 66.74,
+        "settle-60s": 70.05
+      },
+      "rule": "two-sided: width kept (15), re-centred on the mean of the 25 s and 60 s readings (68.395)",
+      "evidence": "evidence/game-upgrades-47/roadster-hours-port/p7-r1/roadster-hours-port/frames/g22p7-r1-3, verdicts p7-panel/verdicts.json (halo better 3/0/0)"
+    }
   }
 }

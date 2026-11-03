@@ -66,7 +66,10 @@ import {
   courtSurroundNodes,
   courtBleacherNodes,
   courtRibNodes,
-  lightningFlash
+  lightningFlash,
+  courtReflectionNodes,
+  courtBackdropNodes,
+  COURT_FLOOR_FINISH
 } from "./courtRigs";
 import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
 import "../../showcase-port-shared/quickbar.css";
@@ -603,6 +606,8 @@ function pushEvent(type: string, label: string, severity: "info" | "success" | "
  * ------------------------------------------------------------------ */
 function buildCourtSurfaces(v: VenueSpec): any[] {
   const nodes: any[] = [];
+  // GU47 phase 4: per-court floor finish (COURT_FLOOR_FINISH) on the new look; ?look=original keeps the 4.6 0.86 / 0.8.
+  const finish = LOOK_ORIGINAL ? { roughness: 0.86, paintRoughness: 0.8 } : COURT_FLOOR_FINISH[v.id];
   const lineMat = material.pbr({ color: v.line, roughness: 0.6, emissive: v.night ? v.line : "#000000", emissiveIntensity: v.night ? 0.5 : 0.06 });
   const line = (name: string, w: number, l: number, x: number, z: number) =>
     primitives.box({ name, size: [w, 0.02, l], material: lineMat }).position(x, 0.012, z);
@@ -610,8 +615,8 @@ function buildCourtSurfaces(v: VenueSpec): any[] {
   nodes.push(
     // Apron + playable floor + painted key + center disc (size = XYZ scale on unit geometry)
     primitives.plane({ name: "court-apron", size: [36, 1, 30], material: material.pbr({ color: v.apron, roughness: 0.94 }) }).position(0, -0.02, 4).runtime(game.runtimeNode("court-apron")),
-    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: material.pbr({ color: v.floor, roughness: 0.86 }) }).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
-    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: material.pbr({ color: v.paint, roughness: 0.8 }) }).position(0, 0.005, 1.05),
+    primitives.plane({ name: "court-floor", size: [COURT_X * 2 + 0.2, 1, COURT_Z1 - COURT_Z0 + 0.2], material: material.pbr({ color: v.floor, roughness: finish.roughness }) }).position(0, 0.0, (COURT_Z0 + COURT_Z1) / 2).runtime(game.runtimeNode("court-floor")),
+    primitives.plane({ name: "court-key", size: [4.9, 1, 5.8], material: material.pbr({ color: v.paint, roughness: finish.paintRoughness }) }).position(0, 0.005, 1.05),
     primitives.cylinder({ name: "court-logo", size: [3.6, 0.015, 3.6], material: material.pbr({ color: v.paint, roughness: 0.75, opacity: 0.85 }) }).position(0, 0.006, 6.4)
   );
 
@@ -754,8 +759,11 @@ function buildMarkerPoolNodes(): any[] {
   const pool = (kind: "cylinder" | "torus", name: string, capacity: number, opts: Record<string, unknown>) =>
     (instances as any)[kind]({ name, transforms: parkedTransforms(capacity), castShadow: false, ...opts }).runtime(game.runtimeNode(name));
   return [
-    pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.58, 0.008, 0.58], material: material.pbr({ color: "#000000", opacity: 0.24, roughness: 1 }) }),
-    pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.82, 0.82, 0.34], material: ringMat(home) }),
+    // GU47 phase 4: the key casts real shadows now, so the foot disc is a faint occlusion pad (0.24 read as a decal, rubric).
+    pool("cylinder", "marker-shadows", MARKER_ATHLETES, { size: [0.5, 0.008, 0.5], material: material.pbr({ color: "#000000", opacity: 0.1, roughness: 1 }) }),
+    // GU47 phase 4 (distinctness vs aura-diamond-3d, whose players stand on round rings): on the new look the home marker
+    // is a hexagon (six-segment torus); away stays square, so the colour-free shape cue holds.
+    pool("torus", "marker-rings-home", HOME_IDS.length, { size: [0.84, 0.84, 0.34], params: { tubularSegments: 6 }, material: ringMat(home) }),
     pool("torus", "marker-rings-away", AWAY_IDS.length, { size: [0.86, 0.86, 0.34], params: { tubularSegments: 4 }, material: ringMat(away) }),
     pool("cylinder", "marker-auras", MARKER_ATHLETES, { size: [0.9, 1.9, 0.9], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.9, opacity: 0.16 }) }),
     pool("cylinder", "marker-cones", CONE_COUNT, { size: [0.34, 0.5, 0.34], material: material.emissive({ color: "#ff7a1a", emissive: "#ff7a1a", emissiveIntensity: 0.5 }) }),
@@ -778,20 +786,9 @@ function buildAthlete(id: string, team: TeamId): any[] {
 }
 
 function buildCrowd(v: VenueSpec): any[] {
-  // GU47 phase 3: courts with grounded bleachers (courtRigs.ts) drop the borrowed seat GLB on the new look.
-  if (!LOOK_ORIGINAL && COURT_RIGS[v.id].bleachers) return courtBleacherNodes(COURT_RIGS[v.id]);
-  const nodes: any[] = [
-    // Real 3D stadium seating grandstands surrounding the outer court perimeter
-    model(assets.showcaseStadiumSeats, { name: "bleacher-north", targetMaxDimension: 12, scaleMode: "fit", castShadow: false, receiveShadow: true })
-      .position(0, 1.2, -18.5),
-    model(assets.showcaseStadiumSeats, { name: "bleacher-west", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
-      .position(-19.5, 1.1, 4.0)
-      .rotate(0, Math.PI / 2, 0),
-    model(assets.showcaseStadiumSeats, { name: "bleacher-east", targetMaxDimension: 11, scaleMode: "fit", castShadow: false, receiveShadow: true })
-      .position(19.5, 1.1, 4.0)
-      .rotate(0, -Math.PI / 2, 0)
-  ];
-  return nodes;
+  // GU47 phase 3: grounded bleachers (courtRigs.ts) replaced the borrowed seat GLB on the new look. Phase 9 (D2): the
+  // `?look=original` switch draws the same game-owned bleachers, so no court draws the showcase library's seat GLB.
+  return courtBleacherNodes(COURT_RIGS[v.id]);
 }
 
 function buildVenueDressing(v: VenueSpec): any[] {
@@ -805,7 +802,10 @@ function buildVenueDressing(v: VenueSpec): any[] {
   }
 
   // Skyline ring — tall silhouettes behind play, per-venue density/tint
-  if (v.id === "rucker" || v.id === "shanghai" || v.id === "athens") {
+  // GU47 phase 4: on the new look Rucker and Athens stand inside a ring of walk-up blocks (courtBackdropNodes); the
+  // skyline GLB (never visible in a capture) would sit inside it, so only Shanghai and ?look=original keep it.
+  if (!LOOK_ORIGINAL) nodes.push(...courtBackdropNodes(COURT_RIGS[v.id]));
+  if (v.id === "shanghai" || (LOOK_ORIGINAL && (v.id === "rucker" || v.id === "athens"))) {
     nodes.push(
       model(assets.hoopsSkyline, { name: "skyline", targetMaxDimension: 26, scaleMode: "fit", castShadow: false, receiveShadow: false })
         .position(0, -0.5, -56)
@@ -886,7 +886,8 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
   if (v.id === "rucker") {
     for (const [x, z] of [[-11, -7], [11, -7], [-11, 13], [11, 13]] as const) {
-      nodes.push(model(assets.hoopsFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
+      // GU47 phase 4 (WP-36 blacktopFloodlightRig): the Meshy galvanised-steel retexture on the new look, same fitted height.
+      nodes.push(model(LOOK_ORIGINAL ? assets.hoopsFloodlight : assets.hoops_blacktopFloodlight, { name: `flood-${x}-${z}`, targetHeight: 9.2 }).position(x, 0, z).rotate(0, Math.atan2(-x, 4 - z), 0));
       // H47-L2: four sodium spots, two shadowed, from courtRigs.ts; the 4.6 warm-white spots stay on ?look=original.
       if (LOOK_ORIGINAL) nodes.push(lights.spot({ name: `flood-s-${x}-${z}`, position: [x * 0.92, 9.0, z * 0.92], target: [0, 0, 4], angle: 0.55, penumbra: 0.5, intensity: 1.9, color: "#ffd9b0", distance: 55 }));
     }
@@ -964,9 +965,12 @@ function buildScene(v: VenueSpec): any {
     s.addMany(courtAtmosphereNodes(rig, BOOT_REDUCED_MOTION));
     // H47-E3: Venice surf and the Shanghai river as real water (replacing the 4.6 planes).
     if (realWater()) s.addMany(courtWaterNodes(rig, BOOT_REDUCED_MOTION));
+    // GU47 phase 4: screen-space reflections on the glossy floors (Manila, Shanghai, Orbit).
+    s.addMany(courtReflectionNodes(rig));
   }
   s
-    .add(effects.contactShadows({ intensity: 0.7, length: 0.28 }))
+    // GU47 phase 4: contact shadows along the shadowed key (feet and ball read grounded); ?look=original keeps 4.6's.
+    .add(LOOK_ORIGINAL ? effects.contactShadows({ intensity: 0.7, length: 0.28 }) : effects.contactShadows({ intensity: 0.9, length: 0.42, thickness: 0.06, lights: "shadowed" }))
     .add(effects.vignette({ intensity: 0.16, smoothness: 0.7 }))
     .camera(camera.perspective({ position: [0, 9.2, 17.4], target: [0, 1.4, 2.4], fov: 34, far: v.orbit ? 900 : 240 }))
     .addMany(buildCourtSurfaces(v))
@@ -3547,7 +3551,7 @@ function publishEvidence(force = false): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "showcaseStadiumSeats", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
+      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy", "hoops_blacktopFloodlight"
     ]
   };
   publishBeacon(evidence);

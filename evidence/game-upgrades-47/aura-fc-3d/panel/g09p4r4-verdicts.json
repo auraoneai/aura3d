@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-fc-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "favela",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Quite dark and moody overall; the black void above the stands; stands look sparse; some muddy texture on the dirt",
+     "Dark, mostly empty band at top of the stands; the stands are lit unevenly; dirt texture is a bit muddy in places",
+     "Quite dark overall with black void above the stands; the brown pitch is a little murky, though it has texture, dramatic shadows and a clear center circle"
+    ]
+   },
+   {
+    "variant": "glacier",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large blown-out specular hotspot bottom-right; slightly hazy, cool and low-contrast; vignette",
+     "Heavy vignette and a hot specular blob at the bottom right; slightly low contrast, with faint banding across the pitch",
+     "Somewhat dim, with a bluish vignette; a specular hotspot near the bottom-right of the pitch is slightly distracting"
+    ]
+   },
+   {
+    "variant": "kyoto",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark overall; grass texture noisy and patchy with brownish blotches",
+     "Grass texture is noisy and blotchy, with brown patches on the right; dark vignette; slightly dim",
+     "Quite dark, and the grass texture is a little noisy/muddy in places"
+    ]
+   },
+   {
+    "variant": "lagos",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Somewhat monochrome orange; stands a bit flat; mild haze",
+     "Pitch is a bit flat and untextured; heavy warm vignette; crowd reads as simple capsules",
+     "Mostly monochrome orange palette; slightly low contrast in the stands"
+    ]
+   },
+   {
+    "variant": "munich",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dark with a vignette; faint horizontal banding on the grass",
+     "Mild vignette; grass texture is slightly noisy, with faint stripe artifacts",
+     "A bit dark with a heavy vignette; grass texture slightly noisy"
+    ]
+   },
+   {
+    "variant": "uyuni",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pale, low-contrast salt flat; stands are simple blocky geometry; somewhat flat",
+     "Bright and fairly low in contrast; the pale pitch is somewhat flat; stands are cut off at the top",
+     "Low-saturation pale grey pitch; the bright stand-back wall is somewhat washed out"
+    ]
+   }
+  ]
+ }
+]

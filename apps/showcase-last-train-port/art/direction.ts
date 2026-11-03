@@ -57,13 +57,16 @@ export default defineArtDirection({
   framing: { rig: "chase", subjectHeightFraction: [0.12, 0.3], fovDeg: [52, 64], mobile: "both" },
   assets: [
     { role: "vehicle", assetKey: "tram", maxTriangles: 80000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    // GU47 phase 4 (WP-36 lamplightTramEnamel): the band look's tram body, a Meshy retexture of `tram` (32,917 triangles, 2k maps)
+    { role: "vehicle", assetKey: "tramEnamel", maxTriangles: 80000, minTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     rider("paxEasy"), rider("paxSightseer"), rider("paxRushed"), rider("paxSleeper"),
     world("houseCream"), world("houseOchre"), world("houseBlue"),
     world("clockTower"), world("lighthouse"),
     { role: "prop", assetKey: "crates", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "lamp", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "windmill", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "tower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
+    // GU47 phase 9 (D2): CC0 Kenney Pirate Kit towers this game owns (a 512 px colormap, base colour only)
+    { role: "backdrop", assetKey: "lamplightKeep", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 },
+    { role: "backdrop", assetKey: "lamplightTower", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 }
   ],
   vfx: [
     { event: "clean-arrival", kind: "sky-lanterns" },

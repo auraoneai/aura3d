@@ -15,7 +15,7 @@
 | EC-4 stage trace | M | done | 42fa9a48d (+6a75c8efe, a9bcb27a5) | `recordPostStage` for S1, S3 (new), S4, CA, S6 (incl. `S6:dof-tilt-shift-rings3`), S7, S8, S9, S10, S10b, S11, S12 in `v2Stages.ts`. The all-effects check is in `effects-god-rays.spec.ts` (phase 2). |
 | EC-5 runtime post control | M | done-interim (E-G) | e3fefb2ae | `app.post.setEffect` / `setEffectEnabled` for bloom, colorGrade, depthOfField, motionBlur, chromaticAberration, volumetricFog, vignette; per-app store applied by `createRootPostPipeline` on every derivation (the compiler derives each frame): no scene or shader rebuild. Grade, LUT, exposure, S4, S6, S7, CA, vignette, grain react today; bloom pass params and dropping the compiler-bag twins of bloom/DOF/MB need E-G's one-line hook (handoff 1). `tests/unit/gu47/ec/runtime-post-control.test.ts` (12 pass). |
 | EC-6 S3 SSR | M | done (per-pixel roughness: blocked (E-D)) | 6a75c8efe | NEW `post/shaders/ssr.glsl.ts`: half-res trace on the S1 linear depth (normal from depth, 16/24/32-step view-space march + 4 binary steps, thickness test), TAA history reprojected through prevViewProj·inv(view) when valid, confidence = fresnel × edge/distance/facing fades × roughness gate (cutoff 0.5); zero confidence leaves the forward result, which carries the nearest probe's IBL. Runs between S2 and S4 only for an authored `screenSpaceReflections` node on a tier with S3 (no live app authors one). The forward pass has no roughness output, so the node's `roughness` applies frame-wide until E-D writes an MRT channel (handoff 5). `tests/unit/gu47/ec/ssr.test.ts` (11 pass, incl. glslang). Receipt `effects-ssr`: phase 2. |
-| EC-7 selective bloom | M | partial; blocked (E-D) + unowned file | 3263f5684 | Done: weight math, `BLOOM_WEIGHT_GLSL` prefilter helper and CPU mirror in `NativeBloomPyramid.ts`; bridge sets `pipeline.bloom.selective` only when a material declares `bloom` ≠ 1 (all-default scenes unchanged). Not done: the HDR-alpha write (E-D forward shader, handoff 4) and the live prefilter read, which is `BLOOM_BRIGHT_EXTRACT_GLSL` in `webgl2/LegacyPost.ts`, a file no lane owns (PRD §4.1 placed the prefilter in `NativeBloomPyramid.ts`, which holds only planning math); handoff 6. `tests/unit/gu47/ec/selective-bloom.test.ts` (7 pass, incl. glslang). |
+| EC-7 selective bloom | M | partial; separate-signal path implemented at source level, activation not demonstrated (see "Follow-up 2026-11-02" below) | 3263f5684, 6e8a46152 | Done: weight math, `BLOOM_WEIGHT_GLSL` prefilter helper and CPU mirror in `NativeBloomPyramid.ts`; bridge sets `pipeline.bloom.selective` only when a material declares `bloom` ≠ 1 (all-default scenes unchanged). Not done: the HDR-alpha write (E-D forward shader, handoff 4) and the live prefilter read, which is `BLOOM_BRIGHT_EXTRACT_GLSL` in `webgl2/LegacyPost.ts`, a file no lane owns (PRD §4.1 placed the prefilter in `NativeBloomPyramid.ts`, which holds only planning math); handoff 6. `tests/unit/gu47/ec/selective-bloom.test.ts` (7 pass, incl. glslang). |
 | EC-8 tilt-shift DOF, godRayDensity | M | done-interim (E-F) | a9bcb27a5 | S6 screen-space band CoC (`u_tiltShift`, w = 0 keeps the thin-lens path), S4 `u_density` from `godRayDensity` only (the fog density no longer rides in `pipeline.godRays`; S4 never read it); bridge, allowlist and runtime patch (`tiltShift` as `[bandCenter, bandWidth, angleDeg]`). Factory forwarding of the two options is E-F's (handoff 2); `app.post.setEffect` drives both today. `tests/unit/gu47/ec/tilt-shift-god-ray-density.test.ts` (13 pass, incl. glslang). |
 | EC-9 tests, receipt specs, bundle delta | M | done (receipts: phase 2) | a5a7f425d | Unit tests per item (above). Receipt specs `tests/browser/gu47/effects-{white-balance,lut,god-rays,ssr,motion-blur,selective-bloom}.spec.ts` + harness `post-receipts.{html,ts}` + `post-receipts-lib.ts`, not run. Bundle delta below. |
 
@@ -125,3 +125,65 @@ Verdicts compare each frame with the 4.6.2 frame (`wp38/.../before`) and the int
 | bunker-zero default / floor1 / floor2 | distance wash | far corridor clear. The floor stays very bright (lighting, not fog) | fixed |
 
 Still open: selective bloom (needs E-D, above); ninja-runner darkness; drift missing player car (both outside post).
+
+## Follow-up 2026-11-02: EC-7 separate-signal selective bloom (preflight, draw buffer and prewarm fixed; activation NOT demonstrated: the software-WebGL2 runner has no `KHR_parallel_shader_compile`)
+
+Commit `6e8a46152` replaces the withheld alpha-weight path (HEAD's `auraBloomWeight(alpha)`, which read the S2 indirect-fraction tag as a weight) with a separate signal:
+when a frame qualifies, the forward pass writes half-weighted emissive radiance into a second HDR MRT attachment (MSAA-promoted with a per-format sample check,
+resolved per attachment), the executor verifies it is the source target's attachment 1, and twin extract/prefilter programs read it. The ordinary bloom programs,
+their GLSL (`BLOOM_WEIGHT_GLSL` included) and bindings are restored to HEAD's text and always run with `u_bloomSelective = 0`, so a scene that does not request
+selective bloom keeps its program keys, draw order, GL bindings and per-frame cost. A request (a material `bloom` weight other than 1 with bloom on) marks the
+bloom bag `selectiveRequested`; every frame that cannot take the path reports a stable `POST_SELECTIVE_BLOOM_UNAVAILABLE:<reason>` per canvas in
+`diagnostics().post.skipped` (`renderer/SelectiveBloom.ts`, `renderer/postSkipped.ts`). The default-scene blocker was real: any registered non-stock shader
+feature declined the path although `prd06.deform` selects nothing for rigid draws; the gate now looks only at features that apply to a draw.
+
+Remote result at the 4.7.9 SHA (software WebGL2, Azure ACR, `tests/browser/gu47/effects-selective-bloom.spec.ts`): **failing**, wall p95 delta 109 against a ceiling
+of 3 (lamp +37.7 mean luma). The reported reason was `pre-bloom-custom-pass:after-depth`: `packages/rendering/src/world/water/UnderwaterState.ts` registers
+`prd10.underwaterDistortion` globally at `after-depth`, enabled only when the camera is underwater (`enabled: (frame) => frame.blackboard.get(UNDERWATER_KEY) === true`),
+and the preflight in `renderer/SelectiveBloom.ts` counted every registered early pass without evaluating `enabled`. The other post receipts passed on the same image
+(`effects-god-rays`, `-lut`, `-motion-blur`, `-ssr`, `-white-balance`: 6 tests, 2.6 min). 4.7.9 therefore shipped the feature inert.
+
+Activation work after 4.7.9 (branch `gu47/sbloom`, not released):
+- Preflight (`c09484346`, narrowed in `f1388953f`; `renderer/SelectiveBloom.ts` `blockingEarlyPass`): a registered early pass that carries an `enabled` predicate no
+  longer declines; a registered early pass without one, and every early pass the caller supplies in `pipeline.customPasses`, still decline. The predicate is never
+  called at preflight. If such a pass does run, `runCustomPass` returns a pooled target, so `runV2HdrStages` returns a target other than the source; the executor
+  (`webgl2/LegacyPost.ts` `executePostGraphWebGL2`) requires `workSource === source`, reports `signal-source-transformed`, and `verifiedBloomOptions` strips
+  `selective` and `signalTexture` on both present routes, so ordinary bloom runs over the transformed colour. Attachment 0 is written by the exact ordinary GLSL
+  (the twin only adds a second output) and resolves on its own blit, so that frame's pixels are an ordinary frame's. Two earlier guards cover the underwater case:
+  a water body makes `prd10.waterOnly` emit passes, which invalidates the selective frame at graph build, before any draw (`prd10.world`, when its flag is on, is
+  unaudited and declines the preflight); and the predicate reads the post driver's own blackboard (`post/v2Stages.ts` `state.postBlackboard`), which nothing
+  writes, while `WaterRuntime` sets the key on the frame-graph blackboard. That last point means the underwater distortion never runs in shipped code (a separate,
+  older defect, not fixed here).
+- The data-only per-draw decline (instanced, skinned, morphed, transparent, non-stock) now runs before the second-attachment target is chosen (`c09484346`), so a
+  request that cannot be served (Hoops' instanced lamp heads) never pays for that target.
+- Run `sb479-r1` (preflight fix only) reached the MRT path for the first time and failed with `RenderDeviceError: WebGL2 LDR postprocess presentation failed: 0x502`:
+  a frame that declined after the target was chosen drew single-output programs with the signal draw buffer still enabled. The signal draw buffer is now on
+  only while a frame clears and writes the signal; a late decline, a contributor invalidation or the first draw that cannot write it turns it off (`46f233b97`).
+- `program/ProgramCache.ts` (`f1388953f`): the captured prewarm derives each twin (GLSL and key) once per base entry and source object (see the review table).
+
+Remote result after these fixes (software WebGL2: headless Chromium, ANGLE on SwiftShader; Azure ACR `crmmeprodacr`, run `sb479-r3`, ACR run `cc692`): **still failing**,
+with the 4.7.9 numbers because the frame still takes ordinary bloom: wall p95 delta 109 against the ceiling of 3 (wall mean luma +28.2), lamp +37.7 mean luma. The
+reason is now `POST_SELECTIVE_BLOOM_UNAVAILABLE:generated-programs-unavailable`. The preflight passes and the frame reaches `ForwardPass.prepareSelectiveBloom`, whose late
+decline turns the signal buffer off, and the frame renders cleanly (no GL error, no WebGL validation message; the 0x502 of `sb479-r1` is gone). A one-off diagnostic
+run (`sb479-r4`, ACR run `cc69t`; temporary sub-reasons in `ForwardPass.ts`, reverted, not committed) named the gate: generator on, `device.probe` present,
+`parallelShaderCompile` false. This runner's WebGL2 does not expose `KHR_parallel_shader_compile`, and the signal twins compile only on an asynchronous compiler by
+design (a twin must not consume the frame's synchronous compile budget; `ordinarySources` is kept only on async caches). The receipt therefore cannot pass on this
+runner without a design change (synchronous twin compiles, which would also keep the ordinary GLSL on every synchronous device). That change was not attempted. The five
+sibling post receipts pass in the same run (`effects-god-rays`, `-lut`, `-motion-blur`, `-ssr`, `-white-balance`: 6 tests, 2.6 min). Hoops, the only shipped scene
+with material `bloom` weights, still falls back on its instanced lamp heads (`draw-producer`), now before the target is chosen (not re-captured). Activation is not
+demonstrated anywhere; the feature stays inert and is not claimed as a visual improvement. Open, owner decision: a receipt runner whose WebGL2 exposes the extension
+(a GPU runner), or allowing synchronous twin compiles.
+
+### Pre-publish review 2026-11-02 (engine and rendering diff since v4.7.8, before the 4.7.9 publish)
+
+Method: five read-only reviewers, one per slice of the published-package diff (bloom/post, forward programs, rendering feeds, engine compiler, atlas assets), then three verifiers per finding (refute, reproduce from callers, regression against `v4.7.8`). Bloom/post, rendering feeds and atlas assets returned no findings. Four findings survived with majority votes, all rated low; one more was dismissed.
+
+| Finding | Votes (real-new / not-real) | Disposition |
+|---|---|---|
+| `compileScene.ts:350`: `removeSubtree` compacts `primitiveEntries` in place (`1982f1040`) while `upgradeCustomMaterialTextures` iterates that live array across image awaits, so a removal mid-load skips the next entry and its custom-shader texture keeps the white fallback, no warning | 3 / 0 | **Fixed** in `f2cf579ee`: the pass sweeps a snapshot and sweeps again while a sweep found an unvisited resource. One case added to `tests/unit/parity/custom-texture-assets.test.ts`; it fails without the change. `upgradeProductionPrimitiveTextures` already sweeps synchronously and was not affected. |
+| `ProgramCache.ts:189`: with an async-compile device the cache keeps the vertex and fragment GLSL (`entry.ordinarySources`) of every provenance-safe ordinary program for the life of the cache, also in scenes that never request selective bloom | 3 / 0 | **Kept, disclosed (re-reviewed with the activation work, `gu47/sbloom`).** Tens of KB of text per stock program (a few MB per app), no pixel effect. Not changed: the only way to drop it is to regenerate the ordinary source inside the captured prewarm, which would run the generator (registered feature selectors, defines callbacks and the degradation sink, which the optional prewarm must never invoke) and could produce text that differs from the compiled program after a feature registration change, so the twin would no longer be the compiled source plus one output. That is not behaviour-preserving. |
+| `ProgramCache.ts:300`: `[SELECTIVE_CAPTURED_PREWARM]` re-derives the selective GLSL and key for every candidate on every selective frame even when the derived entry is unchanged (measured by a verifier at about 0.2-1.5 ms and up to 76 MB/s of garbage for 3-20 programs) | 2 / 1 | **Fixed in `f1388953f` (`gu47/sbloom`).** Unreachable in 4.7.9 (the preflight declined every engine app with `pre-bloom-custom-pass:after-depth`, above); reachable once that preflight was relaxed. The twin GLSL and key are now derived once per base entry and `ordinarySources` object (a regenerated base re-derives) and reused on later selective frames; nothing on the ordinary acquire path changed. One case in `tests/unit/gu47/ec/selective-bloom.test.ts`: repeat prewarms return the same derived entry and source object and compile the twin once. |
+| `lanes/prd02.ts:19`: the exported `PRD02_CHUNKS` array lost its two `a3d_prd02_lighting_ibl` entries when their registration moved to `registerPrd02IblChunks()` | 2 / 1 | **Kept.** No consumer of the export exists in the repository; the chunks are still registered at import. |
+| `Renderer.ts:1134`: a frame that requests selective bloom commits to the two-attachment target before an item-level decline is known | 1 / 2 | Dismissed by the verifiers (the early declines run before the target is chosen for every shipped scene). |
+
+The pass has no `high` or `medium` finding. Verifier transcripts: `/Users/gurbakshchahal/.claude/projects/-Users-gurbakshchahal-platforms-aura3d/928020b3-1139-4d41-82b5-fa48b023cd78/subagents/workflows/wf_27a94f48-74c/journal.jsonl` (session scratch, may be gone).

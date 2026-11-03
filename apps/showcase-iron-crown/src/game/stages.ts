@@ -334,13 +334,13 @@ const NEO_TOKYO = makeStage(
     modelProp(stageAssets.showcaseModernOfficeBuilding, "nt-tower-r", [4.8, 0, -3.6], 6.0, -0.2),
     modelProp(stageAssets.heatsinkHoloBillboard, "nt-holo-sign-l", [-2.9, 1.8, -2.5], 2.2, 0.15),
     modelProp(stageAssets.heatsinkHoloBillboard, "nt-holo-sign-r", [2.9, 1.9, -2.5], 2.2, -0.15),
-    modelProp(stageAssets.neonCyberPylonMeshy, "nt-pylon-l", [-3.8, 0, -1.8], 2.4, 0.3),
-    modelProp(stageAssets.neonCyberPylonMeshy, "nt-pylon-r", [3.8, 0, -1.8], 2.4, -0.3),
-    modelProp(stageAssets.reactorFusionTurbineMeshy, "nt-vent-1", [-1.9, 0, -1.8], 1.3, 0.4),
-    modelProp(stageAssets.reactorFusionTurbineMeshy, "nt-vent-2", [1.9, 0, -1.8], 1.3, -0.4),
-    modelProp(stageAssets.neonStreetLampProp, "nt-lamp-l", [-3.2, 0, -1.4], 2.2, 0),
-    modelProp(stageAssets.neonStreetLampProp, "nt-lamp-r", [3.2, 0, -1.4], 2.2, Math.PI),
-    modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "nt-speaker-c", [0, 0, -2.9], 2.5, 0)
+    modelProp(assets.ironcrownRooftopPowerBox, "nt-pylon-l", [-3.8, 0, -1.8], 2.4, 0.3),
+    modelProp(assets.ironcrownRooftopPowerBox, "nt-pylon-r", [3.8, 0, -1.8], 2.4, -0.3),
+    modelProp(assets.ironcrownRooftopAircon, "nt-vent-1", [-1.9, 0, -1.8], 1.3, 0.4),
+    modelProp(assets.ironcrownRooftopAircon, "nt-vent-2", [1.9, 0, -1.8], 1.3, -0.4),
+    modelProp(assets.ironcrownStreetLamp, "nt-lamp-l", [-3.2, 0, -1.4], 2.2, 0),
+    modelProp(assets.ironcrownStreetLamp, "nt-lamp-r", [3.2, 0, -1.4], 2.2, Math.PI),
+    modelProp(assets.ironcrownSearchlight, "nt-speaker-c", [0, 0, -2.9], 2.5, 0)
   ]
 );
 
@@ -357,12 +357,12 @@ const BANGKOK = makeStage(
     modelProp(stageAssets.courierNeonStorefrontMeshy, "bk-stall-l", [-3.5, 0, -2.2], 2.8, 0.22),
     modelProp(stageAssets.courierNeonStorefrontMeshy, "bk-stall-r", [3.5, 0, -2.2], 2.8, -0.22),
     modelProp(stageAssets.showcaseTeaHouse, "bk-shrine", [0, 0, -3.5], 3.6, 0),
-    modelProp(stageAssets.courierDeliveryKioskMeshy, "bk-kiosk-l", [-2.1, 0, -1.8], 1.7, 0.3),
-    modelProp(stageAssets.courierDeliveryKioskMeshy, "bk-kiosk-r", [2.1, 0, -1.8], 1.7, -0.3),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "bk-lan-l", [-3.1, 0, -1.4], 1.9, 0),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
-    modelProp(stageAssets.gullsiegeCrateMeshy, "bk-crate-l", [-1.5, 0, -1.45], 0.85, 0.4),
-    modelProp(stageAssets.gullsiegeBarrelMeshy, "bk-barrel-r", [1.5, 0, -1.45], 0.8, -0.3)
+    modelProp(assets.ironcrownDockVendorCart, "bk-kiosk-l", [-2.1, 0, -1.8], 1.7, 0.3),
+    modelProp(assets.ironcrownDockVendorCart, "bk-kiosk-r", [2.1, 0, -1.8], 1.7, -0.3),
+    modelProp(assets.ironcrownBrazierPylon, "bk-lan-l", [-3.1, 0, -1.4], 1.9, 0),
+    modelProp(assets.ironcrownBrazierPylon, "bk-lan-r", [3.1, 0, -1.4], 1.9, 0),
+    modelProp(assets.ironcrownDockCrate, "bk-crate-l", [-1.5, 0, -1.45], 0.85, 0.4),
+    modelProp(assets.ironcrownDockBarrel, "bk-barrel-r", [1.5, 0, -1.45], 0.8, -0.3)
   ]
 );
 
@@ -381,8 +381,8 @@ const COLOSSEUM = makeStage(
     modelProp(stageAssets.gullsiegeWatchtowerMeshy, "co-tower-r", [3.9, 0, -2.5], 3.4, -0.2),
     modelProp(stageAssets.heatsinkArch, "co-arch-l", [-2.4, 0, -2.2], 2.6, 0.1),
     modelProp(stageAssets.heatsinkArch, "co-arch-r", [2.4, 0, -2.2], 2.6, -0.1),
-    modelProp(stageAssets.galleryMarbleBustExhibitMeshy, "co-bust-l", [-1.6, 0, -1.55], 1.45, 0.35),
-    modelProp(stageAssets.galleryMarbleBustExhibitMeshy, "co-bust-r", [1.6, 0, -1.55], 1.45, -0.35),
+    modelProp(assets.ironcrownColosseumBust, "co-bust-l", [-1.6, 0, -1.55], 1.45, 0.35),
+    modelProp(assets.ironcrownColosseumBust, "co-bust-r", [1.6, 0, -1.55], 1.45, -0.35),
     modelProp(stageAssets.propBoulder, "co-rubble-l", [-2.9, 0, -1.45], 1.1, 0.5),
     modelProp(stageAssets.propRockA, "co-rubble-r", [2.9, 0, -1.45], 1.0, -0.4)
   ]
@@ -422,8 +422,8 @@ const MONASTERY = makeStage(
     modelProp(stageAssets.showcaseTeaHouse, "mo-monastery", [0, 0, -3.4], 4.2, 0),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
+    modelProp(assets.ironcrownBrazierPylon, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
+    modelProp(assets.ironcrownBrazierPylon, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
     modelProp(stageAssets.propPineTree, "mo-pine-l", [-4.3, 0, -2.6], 3.2, 0.2),
     modelProp(stageAssets.propPineTree, "mo-pine-r", [4.3, 0, -2.6], 3.2, -0.2),
     modelProp(stageAssets.propBoulder, "mo-peak-l", [-3.5, 0, -4.4], 2.8, 0.3),
@@ -617,21 +617,21 @@ const CROWN = makeStage(
     // Throne plinth + club throne. The plinth is dark stone with a gold band and a velvet cap; it replaced a pale gallery
     // pedestal that read as a placeholder box and hid the crown's lower half (audit IC-16).
     ...buildThronePlinth(),
-    modelProp(stageAssets.billiardsClubChairMeshy, "cr-throne-chair", [0, 0, -3.2], 2.1, 0),
+    modelProp(assets.ironcrownThrone, "cr-throne-chair", [0, 0, -3.2], 2.1, 0),
     // The Iron Crown itself — bespoke Meshy prop (crown on velvet cushion), seated on the plinth's top.
     model(assets.ironcrownCrown, { name: "cr-iron-crown", targetMaxDimension: 1.05 })
       .position(0, PLINTH_TOP, -2.5)
       .toJSON(),
-    // Dragon guardians flanking the throne
-    modelProp(stageAssets.clashDragonStatueMeshy, "cr-dragon-l", [-2.2, 0, -2.1], 2.1, 0.45),
-    modelProp(stageAssets.clashDragonStatueMeshy, "cr-dragon-r", [2.2, 0, -2.1], 2.1, -0.45),
+    // Iron Crown king statues flanking the throne (Poly Haven CC0 gothic_statue)
+    modelProp(assets.ironcrownKingStatue, "cr-dragon-l", [-2.2, 0, -2.1], 2.1, 0.45),
+    modelProp(assets.ironcrownKingStatue, "cr-dragon-r", [2.2, 0, -2.1], 2.1, -0.45),
     // Corner fire braziers
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "cr-brazier-l", [-3.5, 0, -1.65], 2.2, 0.2),
-    modelProp(stageAssets.auraClashCornerBrazierPylonMeshy, "cr-brazier-r", [3.5, 0, -1.65], 2.2, -0.2),
-    // Trophy cabinets & speaker towers at the arena wings
+    modelProp(assets.ironcrownBrazierPylon, "cr-brazier-l", [-3.5, 0, -1.65], 2.2, 0.2),
+    modelProp(assets.ironcrownBrazierPylon, "cr-brazier-r", [3.5, 0, -1.65], 2.2, -0.2),
+    // Trophy cabinets & follow-spot searchlights at the arena wings
     ...buildTrophyCabinets(),
-    modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),
-    modelProp(stageAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-r", [4.9, 0, -2.2], 2.5, -0.35)
+    modelProp(assets.ironcrownSearchlight, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),
+    modelProp(assets.ironcrownSearchlight, "cr-speaker-r", [4.9, 0, -2.2], 2.5, -0.35)
   ]
 );
 

@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g04p4-r5/desk/desktop-02-early.jpg",
+      "sha256": "d6ad9f2ad92b3524b6f9d3bfd8afc36000e81d0d0d9a92f0597bfe1ea601fde2"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm dusk glow sits at the far end of the street, but the brick facades in the foreground are lit flat and evenly, with no low-sun raking light. The rear of the hero car is underlit and reads almost black."
+    },
+    {
+      "category": "shadows",
+      "seen": "Buildings cast no visible shadows across the street. The hero car and the parked beige car show only faint grounding, and the cable car has no clear contact shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The hero car's dark body shows no sky or environment reflection, only a dull, noisy surface. The road has slight sheen, but buildings and lights do not reflect in it."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The San Francisco street reads clearly through red-brick buildings with window detail, a cable car, tram lines, and a hill dropping toward the horizon. Building facades repeat their textures, and there is little street furniture or clutter."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the far end of the street in warm tones, which roughly matches the fog recipe. Foreground buildings have no depth falloff, and there are no volumetric light shafts."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The hero car surface shows grainy, noisy texturing with no clearcoat response. The taillights are flat red rectangles. Brick textures are acceptable but look low resolution up close on the right."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The tree on the right is a single dark-green sphere. The parked beige SUV is low-poly. The cable car is reasonably detailed. The hero pod car has a simple rounded shell with minimal detailing."
+    },
+    {
+      "category": "composition",
+      "seen": "The hero car fills about 20% of the frame, offset right of center. The fare panel, rival nameplates, and floating labels crowd the vanishing point and cover the warm horizon glow, which is the frame's focal light."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low behind the car with an FOV of about 60. The framing is functional, but the car partly blocks the road ahead."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A white bloom blob on the road left of the car looks like an artifact rather than a headlight pool. There is no visible color grading toward a cinematic-film look, no vignette beyond the HUD corner marks, and the tone mapping is flat."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and legible: speedometer, minimap, fare card, and earnings. The bottom fleet, camera, and sky selector bars plus the many floating labels add clutter to the play view."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

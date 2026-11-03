@@ -1,0 +1,7 @@
+run gu47-before-cross-hop-3 acr ch5u6 was successful after 27m56s playwrightExit 0
+GL_READY cross-hop--theme4 68862ms
+GL_DONE cross-hop--theme4
+GL_READY cross-hop--theme5 80768ms
+GL_DONE cross-hop--theme5
+2 passed (26.7m)
+[task-run] PLAYWRIGHT_EXIT=0

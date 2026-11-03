@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r4/splat-rush-port/frames/g16p4-r4-1/desk--roll-settled.jpg",
+      "sha256": "c55c9daf1a54c87c91de991fbf7d9a6381b696703c8f4420d520279ca487ccba"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r4/splat-rush-port/frames/g16p4-r4-1/desk--mid-action-settled.jpg",
+      "sha256": "937f5b2bbfb072fa3206f6f3ff016702159ad8eb08493a6b29d743a9ee1602a3"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r4/splat-rush-port/frames/g16p4-r4-1/desk--title-settled.jpg",
+      "sha256": "f20d828d7b6e60d3352df958e3d1bb2de7188f278ebdb3a99185e23d586fcb07"
+    },
+    {
+      "path": "evidence/game-upgrades-47/splat-rush-port/p4-r4/splat-rush-port/frames/g16p4-r4-1/desk--early-settled.jpg",
+      "sha256": "d57c38509cf8e1afae436f9579e1d8779e8ea9fddfc781c13bf6d93762c57ae5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6.5,
+    "shadows": 6.5,
+    "ibl_reflections": 6.5,
+    "environment_world": 8,
+    "atmospheric_effects": 7,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 6.5,
+    "camera": 6,
+    "postprocessing": 7,
+    "ui_hud": 8
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Warm pink-orange sunset key with a low sun disc behind the left spires. Shading on spires and islands is mostly flat toon bands with little 3/4 front modelling, so the scene reads as dusk rather than outdoor day."
+    },
+    {
+      "category": "shadows",
+      "seen": "The ball casts a soft dark contact blob and the gates cast readable shadows across the track in frames 1 and 2. Spires, islands and bead rails show no visible cast shadows, and the ball shadow is a smudge with no defined shape."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The red ball has a strong glossy highlight and rim, and the bead rails have small specular dots. The track shows mirrored ghost copies of the gates that look like a screen-space or planar reflection on a surface textured as wood, which conflicts with the material."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Floating grassy islands with towers, hot-air balloons, rows of wooden spires, pennant bunting and a cloud sea below. The world is dense and themed, with a winding track that stays readable into the distance."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far track and spires into pink. White speed-line streaks cross the sky. The haze density is much heavier than the 0.0025 recipe and is tinted magenta, not daylight blue."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Paint-drip gates, red paint splats on the track, a lightly textured wood plank surface and a glossy candy ball. The materials hold together stylistically, but the faceted clouds and spires are plain flat colour."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Assets are low-poly with clean silhouettes: drip-edged gates, beaded rails, lighthouse-like towers, balloons. Clouds are visibly faceted and the spires are simple extruded prisms."
+    },
+    {
+      "category": "composition",
+      "seen": "Centred one-point perspective with the vanishing point near the top third. In frames 1 and 2 the ball fills about 5–6% of the frame, and in frame 4 about 1%, well under the 18–25% target. The large paint splash and the speed lines add clutter at the bottom and top."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high behind-the-ball chase view looking down the track, not the side-on follow the recipe specifies. The FOV appears wider than 50°, judging by the strong rail convergence and the stretched near beads."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Dark outline pass on the ball, beads and HUD-adjacent objects, a soft glow on the track mid-ground, and a pink colour grade. Frame 3 uses a blurred, desaturated backdrop behind the menu card. The grade is sunset, not daylight-outdoor."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "Rounded cream pill panels for score and combo, heart balloons for lives, a colour orb with a meter, a 2x 5s timer pill under the ball, and a clean title card with Play button, accessibility toggles and control hints. All text is legible and consistent in style."
+    }
+  ],
+  "nextChange": {
+    "category": "camera",
+    "change": "switch to the recipe row's rig and fov",
+    "api": "camera.follow / camera.orbit / camera.dolly"
+  },
+  "judge": "prism"
+}

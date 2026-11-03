@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Nearly identical to B. A dark teal creature or prop is cut off at the right edge and looks a little murky against the pastel palette. The pillars float on the cloud floor with no visible bases. The large lavender ground plane in the foreground is fairly flat and low in contrast.",
+     "Nearly identical to A. It has the same soft, low-contrast cloud floor and haze. The dark teal object on the right edge is clipped and slightly murky, and it clashes a bit with the pastel palette. The ball is clear and readable with a grounded shadow.",
+     "Nearly identical to B. The dark teal and red creature or prop cut off at the right edge looks a bit muddy against the pastel palette. The large flat lavender cloud floor takes up the lower half of the frame and has little detail. Pillars and floating islands appear to hover with no visible support."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-10-31T22:32:49.991Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-fc-3d--favela--settle-60s",
+      "aura-fc-3d--glacier--settle-60s",
+      "aura-fc-3d--kyoto--settle-60s",
+      "aura-fc-3d--lagos--settle-60s",
+      "aura-fc-3d--munich--settle-60s",
+      "aura-fc-3d--uyuni--settle-60s"
+    ],
+    "framesB": [
+      "top-tennis--beach--settle-60s",
+      "top-tennis--clay--settle-60s",
+      "top-tennis--default--settle-60s",
+      "top-tennis--desert--settle-60s",
+      "top-tennis--grass--settle-60s",
+      "top-tennis--moon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.834,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 46,
+    "confidentDifferentRate": 0.9583333333333334,
+    "same_game": false,
+    "same_game_confidence": 0.834,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a soccer pitch with flat 2D-like figures and a textured sandy ground; Image B is a tennis court with blocky voxel-style crowds",
+        "Different art styles: A uses warm, brown, painterly textures; B uses cool blue and gray, clean low-poly geometry",
+        "Different sports and HUD: B has a scoreboard text and a moon in the sky, while A has none"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a tennis game with a blue court and blocky voxel crowd; Image B is a soccer game with a flat tan pitch",
+        "Different crowd rendering: colorful voxel seats versus small blurry orange-toned figures",
+        "Both share a warm, soft, low-poly look with long shadows, but the sports and scenery differ"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with blocky voxel-style crowds and a sandy beige surround",
+        "Image B is a gray futsal/soccer pitch with smooth low-poly players and a salmon wall",
+        "Different character styles, palettes and lighting: saturated teal and tan vs. muted gray and pink"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, flat-shaded tennis court on a beige ground with blocky voxel spectators",
+        "Image B is a dark, moody football pitch with a textured, reflective grass surface and a night stadium",
+        "The sport, lighting and rendering style differ completely, and the characters use different proportions and detail"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with blocky voxel crowd stands; Image B is a soccer pitch on a dirt-like textured ground",
+        "Different palettes: saturated blue and green in A, warm brown and orange in B",
+        "Different character and rendering styles: stylized blocky players in A, thin flat figures with blob shadows in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a tennis court with a net, voxel-style colorful crowd and warm beige surroundings",
+        "Image B is a soccer pitch with a center circle, pale grey-white ground and a muted pink wall",
+        "Different character styles and lighting: A has a saturated blue court with long shadows, B has soft, flat, desaturated lighting with round shadow discs under players"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a soccer pitch with red and blue team players on a pale gray field, while Image B is a tennis court",
+        "Different lighting: A is bright, flat daylight; B is a dark night scene with a moon and strong shadows",
+        "B has colorful blocky crowds and a scoreboard banner; A has a plain terracotta wall and no crowd"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: soccer pitch vs clay tennis court",
+        "Different art style: dark, textured realistic grass vs bright, blocky voxel crowd",
+        "Different palettes and lighting: dark green night vs orange clay with hard shadows"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer/futsal pitch, Image B is a tennis court, so the sports differ",
+        "A has a dark, vignetted, glossy blue floor with flat stylized crowd; B has voxel-block crowd seating and a green surround",
+        "Character rendering and HUD differ: B has 'AURA SLAM' and 'WORLD TOUR' banners, A has none"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch and Image B is a tennis court, so the sports differ",
+        "Image A has a dark, dusty, warm-brown scene with flat-shaded figures",
+        "Image B has a bright blue court with voxel-style crowd stands and a different character style"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis court with blocky voxel crowds and a cool blue/green palette; Image B is a soccer pitch with a warm orange/tan palette",
+        "Different character styles: A has small stylized players with HUD banners, B has low-poly footballers with soft long shadows",
+        "Different crowd and lighting treatment: A has colorful cubic seats under dark vignette, B has sunset-lit stands with egg-shaped spectators"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a green grass tennis court with blocky colorful crowd and dark green palette",
+        "Image B is a pale gray indoor futsal court with a salmon wall and soft low-contrast lighting",
+        "Different sports with different character styles and lighting (A has strong shadows, B is flat and washed out)"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a soccer pitch with pale gray floor; Image B is a tennis court with orange clay",
+        "Different palettes and lighting: washed-out, flat gray vs saturated orange with long dramatic shadows",
+        "Different character styles and scenery: small low-poly players with disc shadows vs voxel-style crowds and a scoreboard banner"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a soccer pitch with textured grass, Image B is a blue tennis court",
+        "Different art styles: A has thin low-poly figures, B has chunky voxel-like crowd blocks",
+        "Different branding and HUD: B shows 'AURA SLAM / WORLD TOUR' banners, A has none"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a bright, flat-shaded tennis court on a beige ground with blocky voxel spectators",
+        "Image B is a dark night football pitch with textured grass and dim, rain-like lighting",
+        "Different sports, art styles and lighting, with no shared HUD or UI"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer match with warm orange lighting and soft shadows; Image B is a tennis match with flat daylight",
+        "Different character styles: slim low-poly players with shadows vs blocky voxel-like spectators and chunky tennis players",
+        "Different scenery and palette: sandy pitch and blurred stands vs teal court with colorful block stands and HUD signage"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a soccer match on a warm sandy pitch; Image B is a tennis match on a blue court",
+        "Image A has warm orange dusk lighting and smooth stylized figures; Image B is a dark night scene with blocky voxel crowds",
+        "Different sports, scoreboard text, and camera framing (soccer center circle vs tennis court with net)"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "tennis court vs soccer pitch",
+        "voxel-style colorful crowd vs dark stands with sparse blobs",
+        "different lighting and palette (warm beige surround vs dark green night pitch)"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with blocky voxel crowd and orange clay court; Image B is a soccer game with a textured grass pitch",
+        "Different crowd rendering: voxel figures vs. small glowing oval dots in a dark stadium",
+        "Different lighting and palette: warm orange daylight vs. dark night with magenta ad boards"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with textured grass and a blurred, painterly look; Image B is a tennis court with flat blocky shading",
+        "Different crowd styles: A has small colored blobs in dark stands, B has voxel-like seated figures in bright colors",
+        "Different sports, character models, and camera setups, with a moon and black void in B but a pink-banded stadium in A"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a bright tennis court with blocky voxel-style crowd and a flat beige surround",
+        "Image B is a dark, reflective futsal/soccer arena with dramatic lighting, glare and a vignette",
+        "Different sports and distinct character modeling and rendering (smoother, more realistic figures in B)"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis court with blocky voxel-style crowd, green palette",
+        "Image B is a soccer/futsal pitch with a dark, blue-toned, glossy reflective floor and a bloom highlight",
+        "Different character styles and lighting: A is bright and flat, B is moody with a stadium-night look"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: futsal/soccer vs tennis",
+        "Cool blue night palette vs warm orange clay palette",
+        "Different crowd styles: small dim figures vs bright blocky voxel spectators"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer game with a dark, moody, textured sand pitch; Image B is a bright tennis court with flat pastel colors",
+        "Different character styles: thin low-poly soccer figures with dark blob shadows vs. chunky voxel crowd and tennis players",
+        "Different lighting and palette: dark sky with warm vignette vs. pale blue sky and flat beige ground"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer match on a grass pitch at night, Image B is a tennis match on a blue court",
+        "Different crowd rendering: small glowing blobs in A, voxel-block seating in B",
+        "Different lighting and palette: dark, moody and textured in A, bright and flat pastel in B"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with blocky voxel-style crowd and flat-shaded court; Image B is a soccer match with a textured grass pitch",
+        "Different rendering style: A has hard shadows and a dark void with a moon, B has a reflective, noisy turf texture and sparse crowd silhouettes",
+        "Different characters and camera: A has white figures with gold heads in a high angled view, B has small red and white kit players in a lower broadcast view"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soccer match on a warm orange-tan court, Image B is a tennis match on a green court",
+        "Different palettes and lighting: soft sunset glow vs. cool, dark green scene",
+        "Different crowd and character styles: smooth low-poly figures vs. blocky voxel spectators, plus a tennis scoreboard HUD"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch; Image B is a tennis court, so the sports differ",
+        "A has textured grass, a pink ad board and dotted crowd; B has flat blue court and blocky voxel stands",
+        "Different character and rendering styles, with a 'AURA SLAM' tennis HUD in B"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer/futsal match, Image B is a tennis match",
+        "Different art styles: smooth, soft-lit stylized figures versus blocky voxel-like crowd and characters",
+        "Different lighting and palette: blue glossy floor with bloom versus dark scene with a moon and flat grey ground"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "tells": [
+        "Image A is a tennis game with voxel-style crowd blocks and a warm beige surround",
+        "Image B is a futsal/soccer game with a dark stadium, glossy reflective floor and bloom",
+        "The two frames differ in rendering style, lighting and character models, though both use a high angled camera and a teal-blue court"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a soccer pitch with flat low-poly figures and a warm sandy palette",
+        "Image B is a clay tennis court with blocky voxel crowds, a scoreboard and a background tower",
+        "Different character and crowd styles, lighting and HUD text"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis court with bright green court and blocky voxel-style crowd; Image B is a soccer pitch with dark night lighting",
+        "Different rendering styles: A has clean flat shading with sharp shadows, B has textured, noisy grass with a moody, dark palette",
+        "Different crowd and character styles: A has colorful blocky spectators, B has small dot-like crowd and slim figurine players"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with flat 2D-style figures, Image B is a clay tennis court with blocky voxel crowd",
+        "Different character and material styles: thin, flat people versus chunky low-poly characters and colorful stands",
+        "Different scene setup and HUD: dark void above a sandy field versus an enclosed stadium with a 'PARIS 0-0' scoreboard"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with a blue court, voxel crowd stands and dark vignette lighting",
+        "Image B is a soccer pitch with a pale gray field, pink walls and soft flat lighting",
+        "The characters differ: A has sharper, more stylized figures, while B has small players with round shadow discs"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a tennis court with blocky voxel-style spectators and a HUD scoreboard; Image B is a soccer pitch",
+        "Image B has a dark stadium, a textured reflective grass surface and slim low-poly players",
+        "Different lighting and palette: flat bright green in A, dark moody blue-green in B"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a tennis game with a green grass court and a blocky multicolored crowd",
+        "Image B is a soccer game on a sandy brown pitch with dark, warm lighting",
+        "The character models and environments differ (A has voxel-like spectators and a scoreboard, B has flat-shaded players and a textured dirt field)"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: tennis court vs soccer pitch",
+        "Tennis has voxel-style crowd stands and a saturated blue/green palette; soccer has a brown textured dirt surface",
+        "Character models and lighting differ, with a warm dim tone in B and a cool tone in A"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with a teal court on a tan ground and blocky voxel-style crowds",
+        "Image B is a soccer game with a pale gray pitch, a red wall and small shadow discs under the players",
+        "Different palettes, character styles and sports"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night football pitch with textured grass and a dark crowd with pink boards; Image B is a daytime tennis court with flat green shading",
+        "Image A has small stylised figures and a gritty, noisy texture; Image B has blocky voxel-style crowd seats and clean flat lighting",
+        "Different sports, HUD and scoreboard styles (LONDON 0-0 and AURA SLAM text in B vs. none in A)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch on dark sandy ground; Image B is a green tennis court",
+        "Different lighting and palette: warm brown and dark vs bright green with colorful crowd",
+        "Different character styles: flat thin soccer figures vs blocky voxel crowd and tennis players"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with a clay court and blocky voxel crowd",
+        "Image B is a soccer game with a sand-toned pitch and smooth low-poly players",
+        "Different crowd styles and HUD: A shows a text scoreboard, B shows none"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a soccer pitch with a warm orange/sand palette, Image B is a green tennis court",
+        "Different art styles: soft low-poly figures with long shadows vs blocky voxel-style crowd and darker lighting",
+        "Different HUD and scenery: tennis scoreboard text and stage rig vs a plain stadium backdrop"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: clay tennis court vs. soccer pitch",
+        "Tennis has voxel-style blocky crowd and orange palette; soccer has dark stadium with sparse dot crowd and textured grass",
+        "Different character models and rendering style (chunky blocky vs. thin low-poly figures)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a green grass tennis court with colorful blocky crowd stands, while Image B is a gray indoor futsal-style floor",
+        "Different palettes: saturated greens and dark shadows versus washed-out gray, pink and pale blue",
+        "Different sports and character styles: tennis players with a net versus soccer players with ground marker discs"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer match with warm orange lighting, long shadows and small round-headed characters",
+        "Image B is a tennis court with teal surface, blocky voxel spectators and flat lighting",
+        "Different sports, scoreboard text and art style"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game on a saturated orange clay court with a voxel crowd; Image B is a soccer game on a pale gray pitch",
+        "Different lighting: warm dark vignette with long shadows in A, flat bright desaturated light in B",
+        "Different character style: blocky voxel spectators and tennis players in A, thin low-poly footballers with round ground shadows in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "A is a dark, moody indoor futsal arena with a glossy blue floor, bloom and a vignette",
+        "B is a bright, flat tan tennis venue with blocky voxel spectators and no bloom",
+        "Different sports and different character styles: A has slim, realistic low-poly players, B has chunky blocky figures"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a soccer match, Image B is a tennis match",
+        "A has a dark night stadium with a textured grass pitch, B has a bright, flat-shaded blue court",
+        "A has a crowd of tiny blobs, B has blocky voxel-style spectator seating"
+      ]
+    }
+  ]
+}

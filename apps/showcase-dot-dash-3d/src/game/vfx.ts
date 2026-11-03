@@ -96,23 +96,24 @@ export function registerVfxPack(effects: { registerPreset(kind: string, spec: Au
   return true;
 }
 
-/** DD47-V2: dust motes drifting in the lamp cone (authored emitter; <= 60 particles, 30 on reduced motion). */
+/** DD47-V2: dust motes drifting in the lamp cone (authored emitter; <= 96 particles, 30 on reduced motion). */
 export function dustMotesOptions(prefs: Pick<VfxPrefs, "reducedMotion">) {
   return {
     name: "lamp motes",
     position: [-5.5, 4.2, 2.5] as [number, number, number],
     shape: "box" as const,
     shapeSize: [11, 7, 9] as [number, number, number],
-    rate: prefs.reducedMotion ? 5 : 10,
-    maxParticles: prefs.reducedMotion ? 30 : 60,
+    rate: prefs.reducedMotion ? 5 : 16,
+    maxParticles: prefs.reducedMotion ? 30 : 96,
     lifetime: [5, 7] as [number, number],
     speed: [0.02, 0.07] as [number, number],
     // Phase 3 (4.7.1): 0.025-0.05 was sub-pixel from the play camera; the motes now read as dust in the cone.
-    size: [0.08, 0.16] as [number, number],
+    // Phase 4 (4.7.2): larger and brighter again (judge: "no visible dust"), still additive specks, not a haze.
+    size: [0.11, 0.22] as [number, number],
     gravity: -0.01,
     noise: { strength: prefs.reducedMotion ? 0.04 : 0.1, frequency: 0.35 },
     color: "#ffe2b8",
-    intensity: 1.1,
+    intensity: 1.7,
     sprite: "dust-mote" as const,
     blend: "additive" as const,
     seed: 1414,

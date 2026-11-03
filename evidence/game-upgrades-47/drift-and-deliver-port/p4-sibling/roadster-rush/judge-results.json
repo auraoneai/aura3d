@@ -1,0 +1,722 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:09:10.477Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "drift-and-deliver-port--bluehour--settle-60s",
+      "drift-and-deliver-port--default--settle-60s",
+      "drift-and-deliver-port--sunset--settle-60s",
+      "drive-1280",
+      "pickup-1280"
+    ],
+    "framesB": [
+      "dusk.b",
+      "night.b",
+      "sunset.b"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.873,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.873,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "night.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Different HUD: A has a glass score panel, AIR bar and BOLTS counter; B has a timer, ticket card, nitro bar and minimap",
+        "Different setting: A is a night highway with a futuristic race car and traffic; B is a sunset city street with traffic lights and a small green car",
+        "Different lighting and palette: A is dark navy with orange accents; B is warm golden daylight"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Different HUD: Image A has a ticket banner, round speedometer, nitro bar and minimap; Image B has a score panel with an air gauge and a bolts counter",
+        "Different setting: Image A is a daytime city street with traffic lights and palm trees; Image B is a purple dusk highway with traffic and gold rings",
+        "Different vehicles: Image A has a small mint-green hatchback; Image B has a blue open-wheel racer with a rear wing"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a daytime low-poly town with a sepia haze and a ticket/minimap HUD; Image B is a night neon highway with a dark glass-panel HUD",
+        "Different HUD styles: circular speedometer and nitro bar versus score panel, AIR meter and bolts counter",
+        "Different vehicles and scenery: a small mint car among shops and streets versus a open-wheel racer among skyscrapers on a multi-lane freeway"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different HUD: round orange speedometer and grid minimap vs. score panel, AIR meter and BOLTS counter",
+        "Different vehicles: small mint hatchback in a low-poly street vs. blue open-wheel racer on a highway with traffic",
+        "Different environments: flat-shaded city avenue with street lamps vs. elevated highway with textured towers, motion blur and 'SKYWAY CENTRAL' gantry"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "sunset.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a low-poly town with a ticket and minimap HUD; Image B is a highway lined with skyscrapers and a score panel",
+        "Different HUDs: round speedometer and nitro bar in A, dark score panel with air gauge and bolts counter in B",
+        "Different palettes: sepia-orange haze in A, purple dusk with motion blur in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "night.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway racer with a score/speed/air HUD and bolts counter, while Image B is a daytime city street with a minimap and a round gauge",
+        "Different lighting and palette: dark navy night with neon glow vs warm golden sunset",
+        "Different vehicles and scenery: open-wheel racer with traffic and overhead sign vs small green hatchback with street lamps, traffic lights and pedestrians"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "night.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night highway with a neon HUD panel (score, air bar, bolts), while Image B is a daytime city street with a round gauge and minimap",
+        "Different vehicles and camera setup: a winged racer on a multi-lane road versus a small teal hatchback in a street grid",
+        "Different palettes and building styles: dark navy with lit windows versus warm orange sunset with flat-shaded blocky buildings"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A: highway with purple sunset sky, traffic, bolt rings and a dark glass-panel HUD (score, speed gauge, air bar)",
+        "Image B: sunlit city street grid with street lamps, traffic lights and a minimap, in warm yellow-orange tones",
+        "HUD styles differ: modern dark panels vs a thin orange dial gauge and a grid minimap"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a highway racer with a futuristic car, traffic and a score/speed/bolts HUD, while Image B is a night city street with a small hatchback",
+        "Different HUD styles: a dark panel with a gauge and buttons in A, versus a round orange speedometer and a grid minimap in B",
+        "Different scenery and lighting: sunset highway with towers in A, dusk streets with lit windows and street lamps in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a low-poly city street at orange sunset with a round gauge and grid minimap, while Image B is a highway with a purple dusk sky and a panel HUD (score, km/h, air bar, bolts)",
+        "Different vehicles and scenery: a small mint hatchback among street lamps and traffic lights in A, a blue open-wheel racer with trucks, a van and floating rings on an elevated road in B",
+        "Different lighting and palette: warm amber and flat shading in A, saturated magenta-purple with motion blur and glow in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with a mint hatchback and a minimap and a thin dial speedometer, while Image B is a highway with a futuristic blue racer, traffic, and a score/AIR/BOLTS HUD",
+        "Different building styles: A has pale blocky towers with warm orange lighting, B has dark striped skyscrapers with a purple dusk sky",
+        "Different camera and effects: B has heavy motion blur, a sun disc and collectible rings, none of which appear in A"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dusk city street with a small car and an orange dial speedometer; Image B is a sunset highway with a racing car and traffic",
+        "HUD differs: round gauge and grid minimap versus score panel, air meter, bolts counter and pause buttons",
+        "Different lighting and world: dim blue street with lamp posts versus saturated purple-orange sky with motion blur and floating rings"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "pickup-1280",
+      "b": "dusk.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a purple-dusk elevated highway with a futuristic open-wheel car and a glassy dark HUD panel",
+        "Image B is a sepia-toned low-poly city street with a small green hatchback, a taxi van, and a minimap",
+        "HUD styles differ: A has a score/speed/air panel and Bolts counter, B has a ticket card, nitro bar, and round speedometer"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "drive-1280",
+      "b": "sunset.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different HUDs: ticket banner, round speedometer and minimap in A; score panel, AIR gauge and bolts counter in B",
+        "A is a low-poly city street with traffic lights and a small green car; B is an elevated highway with a blue futuristic racer and trucks",
+        "Different lighting: warm orange haze in A, purple dusk with a sun disc and motion blur in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "night.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: neon highway with a futuristic racer, a glass-panel HUD and floating gold rings",
+        "Image B: dusk city street with a small hatchback, a round orange gauge and a grid minimap",
+        "Different HUD styles, car designs and level layouts"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a warm daytime city street with a teal hatchback, Image B is a night highway with a futuristic racer and starry sky",
+        "Different HUD styles: thin-line speedometer and grid minimap in A, glass-panel score/speed/air gauge and bolts counter in B",
+        "Different building and road designs: low-poly colorful facades and street lamps in A, dense lit-window towers and multi-lane elevated highway in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a purple sunset sky, a highway with traffic and a futuristic racer, while Image B has a golden-hour city street with a small teal hatchback",
+        "Different HUD styles: A has a score panel, speed arc, air meter and bolts counter, B has a minimal orange dial and a grid minimap",
+        "Different building styles: A has dark, dense towers with small lit windows, B has blocky buildings with large windows, street lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: sepia daytime town with a ticket HUD, a minimap and a round speedometer",
+        "Image B: purple dusk highway with skyscrapers, a score panel, a bolts counter and an AIR gauge",
+        "Different HUD styles, lighting palettes and vehicle sets"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a sunset city street with a small teal car, a round speedometer and a grid minimap; Image B is a night highway with a futuristic racer, a panel HUD with score and an air gauge",
+        "The buildings differ: A has flat-shaded blocky towers with warm orange light, B has dense tiled window textures under a starry night sky",
+        "The vehicles and UI differ: A has a cracked, glossy compact car; B has a purple open-wheel racer, trucks and a van, plus a pause/music/bolts HUD"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "night.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: neon highway with a futuristic racer, a score/air HUD and floating gold rings",
+        "Image B: street-level city with a small hatchback, a round gauge and a minimap",
+        "Different HUD styles, car models and lighting (starry night with orange glow vs. dusk street lamps)"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a futuristic highway with a modern HUD (score, speed gauge, bolts) and a purple sunset sky, while Image B is a low-poly city street with a minimap and a single dial",
+        "Different vehicles: a blue hovering racer among trucks and vans versus a mint hatchback",
+        "Different palettes and building styles: dark blue-purple towers versus warm orange and tan blocky buildings"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a flat-shaded city street at orange sunset with a round dial speedometer and a grid minimap, while Image B is a multi-lane highway at purple dusk with a modern panel HUD showing score, km/h, and an air gauge",
+        "The vehicles and traffic differ: a small mint-green hatchback in A, and a blue open-wheel racer with a truck and van in B, with motion blur and ring pickups",
+        "The lighting and palette differ: warm orange low-contrast glow in A, and saturated magenta-purple sky with dark windowed towers in B"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golden-hour daytime city with traffic lights, palm trees, and a small green hatchback; Image B is a night highway with stars and a neon open-wheel racer",
+        "HUD differs: A has a ticket banner, round speedometer, nitro bar, and minimap; B has a glass panel with score, air gauge, and bolts counter",
+        "Different art style and lighting: A uses warm saturated cartoon buildings; B uses dark window-grid towers with cyan glow and speed blur"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "dusk.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: futuristic highway with a blue open-wheel racer, traffic and a dark glassy HUD panel",
+        "Image B: daytime city street with traffic lights, palm trees, a mint compact car and a minimap",
+        "Different HUD styles: score, speed dial and air gauge in A; timer, ticket banner, nitro bar and speedometer in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dusk city street with a small teal car, a round orange speedometer and a grid minimap; Image B is a sunset elevated highway with a futuristic racer",
+        "The HUDs differ: A has minimal gauges, B has a score panel, an air meter, bolts counter and pause/music buttons",
+        "The scenery and lighting differ: A has blocky buildings with lit windows and street lamps; B has dark tiled towers, motion blur, and warm sun glow"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a highway racer with a futuristic car, traffic and a score/speed/air-gauge HUD; Image B is a low-poly city street with a small teal car",
+        "Different HUD styles: dark panel with bolts counter vs. orange circular speedometer and grid minimap",
+        "Different scenery and art style: dusk purple towers and photoreal-textured vehicles vs. flat orange-lit blocky buildings with street lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dusk city street with a small hatchback, round orange speedometer and a grid minimap; Image B is a sunset highway with a futuristic race car, rectangular score panel and bolts counter",
+        "Different HUD styles and layouts",
+        "Different lighting and scenery: dim blue dusk with lamp posts versus a saturated purple-orange sunset with motion blur and floating rings"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a daytime hazy-orange town with a taxi and a ticket/minimap HUD, while Image B is a night neon highway with a score panel and bolts counter",
+        "Different HUD styles: round speedometer with nitro bar and map versus a translucent card with an air gauge and pause/music buttons",
+        "Different vehicles and settings: small mint car in low-rise streets versus a futuristic open-wheel racer among skyscrapers"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "pickup-1280",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a highway with a futuristic hover racer, a purple dusk sky and a dark glass-panel HUD",
+        "Image B is a low-rise town with a sandy orange haze, a taxi-ticket timer, a minimap and a round speedometer",
+        "The two frames differ in HUD layout and style, scenery and lighting palette"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "drive-1280",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Different HUD: Image A has a dark panel with a score, a gauge and an AIR bar; Image B has a timer, ticket banner, minimap and nitro bar",
+        "Different setting: A is an elevated highway with traffic and a futuristic blue car; B is a city street with traffic lights and a small green car",
+        "Different art and palette: A has dusk purple and pink with motion blur; B has warm orange daylight and detailed stylized buildings"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a futuristic elevated highway with a hover racer and a cyan/dark HUD panel",
+        "Image B is a low-poly city street with a taxi-style delivery game and a warm sepia haze",
+        "The HUDs differ: A has a score panel and a bolts counter, B has a ticket card, a nitro bar and a minimap"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "night.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different HUD: score panel, air meter and bolts counter vs. round speedometer and minimap",
+        "Night neon highway with an open-wheel racer vs. orange-sunset city street with a small teal hatchback",
+        "Different building style and lighting: dark blocky towers with lit windows vs. flat-shaded buildings with street lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A is a daytime sunset street with traffic lights, palm trees and a small green car; B is a night highway with a futuristic racer",
+        "Different HUD styles: A has a paper ticket, round speedometer, nitro bar and minimap; B has a dark glass score panel, AIR meter and bolts counter",
+        "Different scenery and lighting: A has warm, detailed, textured buildings; B has dark blue buildings with grid-like lit windows"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a highway racer with a futuristic blue car, traffic and a modern HUD panel",
+        "Image B is a city street with a small teal hatchback, lamp posts, traffic lights and a minimap",
+        "Different HUD styles (rectangular score panel vs round speedometer and grid minimap) and different building and road styles"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Different HUD styles: dark rounded panel with score and air gauge versus a taxi-ticket banner, nitro bar and minimap",
+        "Different vehicles: futuristic blue hover racer on a highway versus a small mint city car in a street grid",
+        "Different environments: dusky purple elevated highway with traffic versus golden-hour city streets with traffic lights and palm trees"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "drive-1280",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Different HUD: A has a round speedometer, nitro bar and minimap; B has a dark score panel with an air gauge and a bolts counter",
+        "Different setting: A is a warm, golden-hour city street with traffic lights and a small green car; B is a purple dusk highway with a blue racer and trucks",
+        "Different art style: A has flat cartoon buildings; B has dark, dense skyscrapers with heavy motion blur"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a futuristic racer, elevated highway and a score/speed/bolts HUD, while Image B has a small teal city car on a street with a minimap and a dial gauge",
+        "Different HUD styles: dark rounded panel with cyan accents versus a minimal orange dial and grid minimap",
+        "Different scenery: dusky purple sky with a sun and dense dark towers versus a warm yellow-orange street canyon with lamps and traffic lights"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a dusk city street with a small hatchback, streetlamps, a circular gauge and a grid minimap, while Image B is a sunset highway with a purple racer, traffic and ring pickups",
+        "The HUDs differ: A has a thin orange gauge and a minimap, B has a dark score panel with an AIR bar plus pause, music and BOLTS counters",
+        "Lighting and palette differ: A is cool blue night with warm window glow, B is saturated purple-orange sunset with heavy motion blur"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime low-poly city street with a teal hatchback, while Image B is a night highway with a futuristic open-wheel racer",
+        "Different HUD styles: a circular orange speedometer and minimap in A, versus a glass score panel, AIR meter and BOLTS counter in B",
+        "Different gameplay and lighting: sunset street with traffic lights in A, versus a starry sky with ring pickups and truck traffic in B"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different HUD: thin-line analog speedometer and grid minimap vs. dark panel with score, digital km/h, AIR bar and BOLTS counter",
+        "Different setting and lighting: warm golden-hour street with pastel low-poly buildings vs. purple dusk highway with dark glowing towers",
+        "Different gameplay and vehicles: small green hatchback in city streets vs. blue futuristic racer with traffic, rings and motion blur"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "dusk.b",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a purple-dusk elevated highway with a futuristic car and a glass-panel HUD (score, air gauge, bolts)",
+        "Image B is a sepia daytime low-poly town with a taxi-style mission HUD (ticket, nitro bar, minimap)",
+        "Different scenery, palette and HUD styling, with no shared assets or UI"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "sunset.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a low-poly night city street with a small teal hatchback and a round orange speedometer",
+        "Image B is a sunset elevated highway with a futuristic racecar, traffic, and motion blur",
+        "Different HUD styles: a minimap and gauge in A, a score panel with an air meter and bolts counter in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "pickup-1280",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.88,
+      "tells": [
+        "Image A is a daytime sepia street with a ticket/taxi HUD, minimap and nitro bar; Image B is a night neon highway with a score panel and bolts counter",
+        "Different HUD styles: circular speedometer and paper ticket versus a glass panel with AIR gauge",
+        "Different vehicles and settings: small mint car and taxi in a low-rise town versus an open-wheel racer on a skyscraper-lined freeway"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "drift-and-deliver-port--bluehour--settle-60s",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a low-poly city street at dusk with a small teal hatchback and minimap/gauge HUD, Image B is a neon highway racer with a futuristic open-wheel car",
+        "Different HUD styles: orange ring speedometer and grid minimap vs. glass score panel, AIR bar, bolts counter",
+        "Different scenery: street lamps, traffic lights and storefronts vs. starry sky, tiled-window towers and elevated highway with gold rings"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "drift-and-deliver-port--sunset--settle-60s",
+      "b": "dusk.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a street-level city with a mint hatchback, lamp posts and traffic lights; Image B is a multi-lane highway with a blue open-wheel racer, trucks and rings",
+        "Different HUD: a thin-outline speedometer dial and grid minimap in A, versus a score panel, air meter, bolts counter and pause/music buttons in B",
+        "Different lighting and palette: warm orange sunset with flat-shaded buildings in A, purple-pink dusk with dark windowed towers and motion blur in B"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "drift-and-deliver-port--default--settle-60s",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a daytime city street with a teal hatchback, a round dial speedometer and a grid minimap",
+        "Image B is a night highway with a futuristic racer, a glassy score panel, pause and music buttons and a bolts counter",
+        "The HUD styles, car models and lighting palettes differ (warm golden-hour tones versus dark blue night with neon)"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "drive-1280",
+      "b": "night.b",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: daytime golden-hour city with traffic lights, palm trees and a small green hatchback",
+        "Image B: night highway with starry sky, a futuristic open-wheel car and traffic vehicles",
+        "Different HUDs: A has a round speedometer, nitro bar and minimap; B has a translucent score panel, air meter and bolts counter"
+      ]
+    }
+  ]
+}

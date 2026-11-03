@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "dot-dash-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "zerocore",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The maze is busy, and the dark blocks against the dark board make the corridors harder to read than in A; light shafts at the upper left add slight haze; the small yellow player is not very prominent; the edges of the frame are a little dim.",
+     "Maze is crowded: the dense grid of dark chip blocks makes the paths and the small player/pickups harder to read; hard-edged light-shaft wedges on the left look a bit artificial; the top of the backdrop is a plain dark band.",
+     "The busy circuit-board texture and dense dark blocks lower maze-lane contrast somewhat, so the player is less prominent; a slightly hazy light spill at the bottom-left; otherwise rich lighting, a strong thematic environment, good depth and polish"
+    ]
+   }
+  ]
+ }
+]

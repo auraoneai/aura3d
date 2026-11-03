@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:23:30.903Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ],
+    "framesB": [
+      "roadster-rush--default--settle-60s",
+      "roadster-rush--dusk--settle-60s",
+      "roadster-rush--night--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.912,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.912,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: highway with a sunset sky and blocky, uniform towers, plus a purple open-wheel racer",
+        "Image B: dark night city with detailed orange and cream buildings, a rounded pod vehicle, and a circular minimap",
+        "Different lighting, building style and vehicle design"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a bright daytime city with a pale sky, realistic buildings and a minimap HUD, while Image B is a stylized dusk highway with a purple-orange sunset sky",
+        "Different vehicles and art style: a boxy autonomous pod and small cars versus a glowing open-wheel racer with motion blur",
+        "Different building and road materials: detailed textured facades and low-contrast gray asphalt versus dark blocky towers with lit windows and a wet, glowing road"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has detailed realistic buildings, a minimap HUD and a pod vehicle",
+        "Image B has blocky, flat-textured towers with ring markers and a stylized racer with motion blur",
+        "Different palettes and lighting: muted dusk city vs saturated purple-orange sunset"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: foggy gray-teal daytime city, realistic autonomous pod vehicle, minimap HUD",
+        "Image B: starry dusk sky, neon-lit stylized skyscrapers, futuristic racer with thruster glow",
+        "Different palettes, lighting and vehicle/building styles"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized night highway with blocky window-grid towers and a futuristic race car",
+        "Image B: realistic textured city streets with a pod vehicle, trees and minimap HUD",
+        "Different lighting and art style: flat neon dusk vs soft realistic sunset"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime city with detailed brick and stone buildings, lollipop trees, minimap HUD",
+        "Image B: night highway with a stylized racer, glowing window-grid skyscrapers, neon thrusters",
+        "Different lighting, palette and vehicle style, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky, flat-shaded towers with a purple-orange sunset sky and an open-wheel racer; Image B has detailed, textured classic buildings under a black sky with a rounded pod vehicle",
+        "Image A has a highway with exit gantry signs and motion blur; Image B has a city street with a circular minimap, green lollipop trees and a cyan horizon ring",
+        "The lighting and palettes differ: A uses a stylized synthwave gradient, B uses dark wet-road reflections with orange and cream facades"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized, blocky synthwave highway with a purple-orange sky and a sports racer, while Image B is a realistic-textured city street with a pod vehicle",
+        "Different building styles: flat-colored tower blocks with window grids in A, detailed brick and stone facades with trees and lamp posts in B",
+        "Different HUD and effects: A has motion blur and an exit sign gantry, B has a circular minimap and teal path-guide lines"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: foggy, desaturated teal city street with a minimap HUD and a boxy shuttle vehicle",
+        "B: saturated sunset highway with purple/orange sky, blocky tower buildings and a futuristic racer with motion blur",
+        "Different art style and lighting: realistic grey fog vs stylized warm glow"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized sunset highway with a purple-orange sky and a winged racer with motion blur",
+        "Image B: bright daytime city streets with detailed buildings, a pod vehicle and a circular minimap",
+        "Different palettes, lighting, camera framing and HUD style"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: flat-shaded blocky towers with grid windows and a highway exit sign, Image B: detailed textured facades with arched doorways and lollipop trees",
+        "Different vehicles: a futuristic open-wheel racer with thruster glow vs a rounded white-and-black pod car in traffic",
+        "Different HUD and lighting: no HUD and a dusk sky with stars vs a circular minimap and a cyan route ribbon over dark wet streets"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a foggy, desaturated teal city street with a pod-like vehicle and a minimap, while Image B is a saturated purple and orange sunset highway",
+        "Different vehicles: a small autonomous shuttle vs. a blue open-wheel racer with motion blur and teal boost trails",
+        "Different building styles: detailed brick and stone facades vs. blocky grid-windowed towers, plus different HUD and signage"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized synthwave highway with blocky towers, a purple sunset sky and a sports car",
+        "Image B is a realistic-textured city street with a pod vehicle, trolley wires and a circular minimap",
+        "The two frames differ in art style, vehicle type and HUD"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized dusk highway with a purple-orange sky, blocky towers and a racing car; Image B is a bright daytime city street with a pod vehicle",
+        "Different lighting and palette: saturated sunset glow and motion blur versus pale overcast haze with realistic textured buildings",
+        "Different HUD: none in A; circular minimap in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized night highway with a neon racing car and sunset glow",
+        "Image B: foggy, desaturated daytime city street with a realistic pod vehicle",
+        "Different HUD: B has a circular minimap, A has none, and the building and road styles differ"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has detailed realistic city buildings, a pod vehicle and a minimap HUD",
+        "Image B has stylized blocky skyscrapers with a purple sunset sky, a racing car and motion blur",
+        "Different road, lighting and vehicle styles: dim streetscape with lane lines versus a bright highway with an exit sign"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky, low-detail towers with grid windows under a purple-orange sunset, while Image B has detailed cream and orange buildings under a black sky",
+        "Image A shows a sleek blue open-wheel racer with motion blur and highway exit signs, while Image B shows a rounded white and black pod vehicle on a city street",
+        "Image B has a circular minimap and a cyan horizontal light streak, and Image A has no comparable HUD or effect"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark night city with a minimap, wet reflective road and a pod-shaped vehicle",
+        "Image B: sunset highway with a sports car, motion blur and gantry exit sign",
+        "Different building styles: detailed orange facades vs blocky windowed towers"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: foggy, muted teal-gray city street with a pod vehicle and a circular minimap",
+        "Image B: saturated purple and orange sunset highway with blocky lit-window towers and a racing car with motion blur",
+        "Different vehicles, lighting, palette and HUD style"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized night highway with flat window-grid towers and a futuristic race car with thruster glow",
+        "Image B: realistic daytime/dusk city street with detailed brick buildings, a pod vehicle, and a minimap",
+        "Different art style, lighting model, and HUD (highway exit sign vs. circular minimap with route line)"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized sunset highway racer with a futuristic race car and boxy glowing towers; Image B is a foggy, desaturated urban street with a delivery pod",
+        "Different palettes and lighting: warm purple/orange dusk vs cold gray-teal overcast haze",
+        "Different HUD and camera: A has no minimap and a low chase cam with motion blur; B has a circular minimap and a higher, realistic city view"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: low-poly orange and cream city street with a pod vehicle, minimap and cyan arc",
+        "B: dark highway with a starry sky, grid-window skyscrapers and an open-wheel racer with thruster glow",
+        "Different building styles, road layout, vehicles and HUD"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: daytime city with detailed brick and stone buildings, a minimap and a pod vehicle",
+        "Image B: night highway with a futuristic racecar, rain-slick road shader and emissive window-grid towers",
+        "Different art style, lighting and HUD (minimap vs. none)"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime city with detailed buildings, a minimap and a pod-like vehicle",
+        "Image B: sunset highway with blocky windowed towers, motion blur and a sports racer",
+        "Different palette, lighting, art style and HUD"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized low-poly highway with blocky towers and a purple/orange sunset sky",
+        "Image B: realistic city street with detailed brick and stone buildings and a pod-like vehicle",
+        "Different HUD and vehicles: highway exit sign and sports car vs. circular minimap and teal path lines"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a realistic city street with brick buildings, an autonomous pod vehicle and a circular minimap HUD",
+        "Image B has a stylized night highway with a blocky lit-window skyline, a futuristic racer with thruster glow and a motion-blurred road",
+        "Different lighting, palette and building style: warm dusk with textured facades versus dark navy with flat window patterns"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime city with a pod vehicle, minimap HUD and lollipop trees",
+        "Image B: sunset highway with a racing car, motion blur and gantry sign",
+        "Different palettes and building styles: detailed brick facades vs. blocky dark towers"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night city with orange and cream textured buildings, a pod vehicle and a circular minimap",
+        "Image B: sunset highway with blocky grid-window towers, an overhead exit sign and a blue open-wheel racer",
+        "Different art style, lighting and camera/HUD: A is a wet-street urban scene, B is a motion-blurred racing track"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a stylized sunset highway with a sci-fi racer, boxy towers and ring markers; Image B is a dark wet city street with detailed realistic buildings",
+        "Different HUD: A has an exit sign gantry and no minimap, B has a circular minimap",
+        "Different lighting and materials: A has a warm purple-orange dusk with motion blur, B has a black sky, orange-lit facades and glossy reflections"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A is a foggy, desaturated teal city with realistic buildings and a minimap HUD; B is a sunset purple/orange highway with blocky buildings",
+        "different vehicles: boxy autonomous pod vs. stylized open-wheel racer with boost trails and motion blur",
+        "different art styles and lighting: muted overcast realism vs. saturated stylized glow and road signage"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized futuristic racer on an elevated highway with blocky, uniform towers and a purple sunset sky",
+        "Image B: realistic-style city street with detailed brick and stone buildings, a pod vehicle and a minimap HUD",
+        "Different car models, building styles, lighting and HUD, so the art direction doesn't match"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses blocky buildings with flat window-grid textures and a sunset highway; Image B uses detailed, sculpted city buildings in an urban street",
+        "Different vehicles and camera: a futuristic open-wheel racer with neon thrusters in A, a rounded pod vehicle among small orange cars in B",
+        "Different HUD and lighting: A has a highway exit sign and no minimap; B has a circular minimap, a cyan guide line, and a dark, reflective, bloom-heavy look"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: foggy, desaturated teal-grey city with a rounded white autonomous pod and a minimap HUD",
+        "Image B: dusk starry sky with saturated blue and orange tiled skyscrapers and a futuristic racer with glowing thrusters",
+        "Different art styles, palettes, lighting and vehicle designs"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway with a neon racing car and a dusk sky; Image B is a daytime city street with a white pod vehicle",
+        "Different art styles: A uses window-grid towers with a glow palette, B uses detailed textured buildings and round green trees",
+        "Different HUD and camera setups: B has a circular minimap, while A has no HUD and a low chase camera"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime city with pale sky, realistic masonry buildings, lollipop trees and a circular minimap HUD",
+        "Image B: dusk purple-orange sky, dark blocky towers with lit windows, motion-blurred highway and a stylized racing car",
+        "Different art direction and vehicles: a pod-like autonomous vehicle in A, a open-wheel race car in B"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized sunset highway with a purple and orange palette and blocky towers",
+        "Image B: foggy, desaturated gray-teal city street with realistic buildings and a minimap HUD",
+        "Different vehicles and rendering style: a neon racer with motion blur versus a boxy pod in a mundane street"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has detailed realistic buildings, a minimap and a pod vehicle, while Image B has blocky stylized towers and a sports racer",
+        "Different lighting and palette: muted dusk with teal path lines versus a purple-orange sunset with motion blur",
+        "Different road and HUD style: city street with overhead wires versus an elevated highway with an exit sign and ring markers"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: realistic-style city with brick buildings, a pod vehicle, a minimap and teal route lines",
+        "Image B: stylized night highway with a blocky windowed skyline, a futuristic race car and thruster glow",
+        "Different vehicles, building textures, lighting and HUD (minimap vs. none)"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized sunset synthwave highway with blocky towers and a racing car",
+        "Image B: foggy, desaturated overcast city street with a pod-like vehicle and a circular minimap",
+        "Different lighting, palette, and HUD style (exit sign vs. minimap)"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly orange and cream city blocks with a minimap HUD and a pod-shaped vehicle",
+        "Image B: dark blue grid-window skyscrapers on a highway with an exit sign and a thruster race car",
+        "Different palettes, building styles and vehicle types"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has blocky, flat-shaded towers and a purple-orange sunset sky, while Image B has detailed textured buildings under a black sky",
+        "A shows a high-speed open-wheel racer with motion blur on a highway, B shows a rounded pod vehicle in a city street with a circular minimap",
+        "Different road and lighting styles: A has orange dashed lanes and a gantry exit sign, B has double yellow lines, wet reflections and a cyan arc"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized night synthwave highway with a neon racing car and glowing windows",
+        "Image B: foggy, desaturated daytime city street with a realistic-style pod vehicle and a minimap HUD",
+        "Different art style, lighting and palette, with no shared vehicle or HUD elements"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: stylized synthwave sunset, blocky dusk-lit towers, motion-blurred highway, sports car",
+        "Image B: bright daylight, realistic detailed buildings, round green trees, pod vehicle, circular minimap",
+        "Different art style, lighting, and HUD (highway sign vs minimap)"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "teleoperator--golden--settle-60s",
+      "b": "roadster-rush--dusk--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: stylized blocky towers, purple-orange sky, open-wheel sports car on a highway",
+        "Image B: realistic textured brick and stone buildings, pod-like autonomous vehicle on a city street, circular minimap",
+        "Different art style, vehicles, road layout and HUD"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "teleoperator--night--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: night city street with a pod vehicle, orange and cream buildings, and a minimap HUD",
+        "Image B: sunset highway with a futuristic racer, blocky windowed towers, and an exit sign overhead",
+        "Different palettes, building styles, road types, and vehicle designs"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night highway with a neon racing car and a dusk sky; Image B is a daytime city street with a pod vehicle and a minimap",
+        "Different art styles: A uses stylized glowing window grids and motion blur, B uses more detailed, realistic buildings with trees and traffic",
+        "Different HUD and lighting: A has an exit sign and no minimap; B has a circular route minimap and bright overcast daylight"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "teleoperator--noon--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: bright daytime city with a minimap HUD and a pod-like autonomous vehicle",
+        "B: sunset purple sky, a motion-blurred highway, and a racing car with thrusters",
+        "Different building styles: detailed brick and stone facades in A, blocky striped towers in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "teleoperator--fog--settle-60s",
+      "b": "roadster-rush--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "A: foggy, desaturated teal city street with a minimap HUD and realistic-style pod vehicle",
+        "B: stylized sunset highway with purple-orange sky, blocky towers, and motion blur",
+        "Different vehicles and scenery: a small white pod and traffic on a street vs a sleek blue racer with thrusters on an elevated highway"
+      ]
+    }
+  ]
+}

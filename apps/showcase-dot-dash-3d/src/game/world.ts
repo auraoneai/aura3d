@@ -4,8 +4,9 @@
 
 import {
   game, lights, effects, scene, camera, instances, environments, defineAuraAssets,
-  primitives, material, text3D, texture, type AuraApp
+  primitives, material, text3D, texture, model, type AuraApp, type AuraSceneNode
 } from "@aura3d/engine";
+import { assets } from "../aura-assets.js";
 import { idx, type ParsedMaze } from "./grid.js";
 import type { MazeId } from "./mazes.js";
 import {
@@ -15,13 +16,13 @@ import type { FruitKind } from "./grid.js";
 import { fitDistanceScale, projectNdc, scalePose, type CameraPose } from "./camera.js";
 import { hexToRgb, pylonLayout } from "./palette.js";
 import {
-  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, FRAME_PULL_BACK, LAMP, LAMP_HAZE, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
+  BASE_FOCUS_DISTANCE, BENCH, BOARD_LOOKS, BOARD_PARTS, BOARD_PROBE, BOUNCE, COURIER_POD, FRAME_PULL_BACK, GROUNDING, LAMP, LAMP_HAZE, LAMP_SHADOW, LENS, ROOM, LOOK_HDRI, MACRO_DOF,
   LUT_INTENSITY, PEDESTALS, PRACTICALS, focusDistance, type BoardLookRow
 } from "./look.js";
 import { TraceField } from "./traces.js";
 import { dustMotesOptions } from "./vfx.js";
 import {
-  CLEAR_LAMP_DIM, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
+  CLEAR_LAMP_DIM, REDUCED_AMPLITUDE, cinematicsAllowed, clearOrbitShot, introShots, stepCourierPose, waveLevel, WAVE_SECONDS,
   type CourierPose, type ShotPlan
 } from "./motion.js";
 import { boxReflectionProbe } from "./engineCompat.js";
@@ -53,8 +54,26 @@ function lampLight(look: BoardLookRow) {
     decay: LAMP.decay,
     intensity: look.lamp.intensity,
     color: look.lamp.color,
-    shadow: { filter: "pcss", mapSize: 2048, lightSize: 1.2, softness: 0.6, bias: 0.0004, normalBias: 0.02 }
+    shadow: { ...LAMP_SHADOW }
   }).runtime(game.runtimeNode("lamp"));
+}
+
+/** Phase 4 (4.7.2): SSR with the v2 fields (maxDistance, roughness, thickness) that the builder does not type yet. */
+function ssrNode(): AuraSceneNode {
+  const node = effects.screenSpaceReflections({ name: "mask reflections", intensity: GROUNDING.ssr.intensity }).toJSON();
+  return { ...node, maxDistance: GROUNDING.ssr.maxDistance, roughness: GROUNDING.ssr.roughness, thickness: GROUNDING.ssr.thickness } as AuraSceneNode;
+}
+
+/** Phase 4 (4.7.2) courier pod model node (DD47-A1): world scale, cyan rim over the Meshy textures. */
+function courierPod(name: string) {
+  return model(assets.dotdashCourierPod, {
+    name,
+    scaleMode: "world",
+    scale: [COURIER_POD.scale, COURIER_POD.scale, COURIER_POD.scale],
+    castShadow: true,
+    receiveShadow: true,
+    materialOverrides: [{ rim: { ...COURIER_POD.rim }, emissive: COURIER_POD.emissive, emissiveIntensity: COURIER_POD.emissiveIntensity, envMapIntensity: 1.4, clearcoat: 0.6, clearcoatRoughness: 0.2 }]
+  }).runtime(game.runtimeNode(name));
 }
 
 export const TILE = 1;
@@ -270,6 +289,10 @@ export function buildScene(): unknown {
     .add(effects.colorGrade(gradeOf(look)))
     // Phase 3 (4.7.1): FXAA over the thin traces and chip edges.
     .add(effects.antiAlias({ mode: "fxaa" }))
+    // Phase 4 (4.7.2) grounding and reflection (GROUNDING): lamp contact shadows, short AO, SSR in the glossy mask.
+    .add(effects.contactShadows({ ...GROUNDING.contact, lights: "shadowed" }))
+    .add(effects.ambientOcclusion({ name: "chip grounding", ...GROUNDING.ao }))
+    .add(ssrNode())
     // DD47-P1 signature macro DOF: metric lens focused on the board centre; the post tiers run it on High and Ultra
     // only (PostQualityTiers dof), so Medium and Low stay sharp. The focus follows the aspect pull-back (syncFocus).
     .add(effects.depthOfField({ name: "macro dof", focusDistance: BASE_FOCUS_DISTANCE, fStop: MACRO_DOF.fStop, focalLength: MACRO_DOF.focalLength, maxBlur: MACRO_DOF.maxBlur }))
@@ -331,7 +354,8 @@ export function buildScene(): unknown {
   // them readable in the lamp's shadow side without glowing.
   const sentryMat = material.pbr({ color: "#ffffff", roughness: 0.32, metalness: 0.35, rim: { color: "#cfe3ff", power: 2.6, intensity: 0.7 } });
   // Phase 3 (4.7.1): the gems are cut glass under a clearcoat so the workshop IBL and the probe catch their facets.
-  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.4, roughness: 0.08, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.05, practical: true });
+  // Round 4: less self-glow (0.4 -> 0.18) and more metal (0.1 -> 0.35) so the facets show the room instead of a flat tint.
+  const gemMat = material.pbr({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.18, roughness: 0.06, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.05, practical: true });
 
   s.addMany([
     // DD47-E2: walnut bench top and the anti-static mat under the board reach past every camera edge.
@@ -365,11 +389,14 @@ export function buildScene(): unknown {
 
     // courier core: a small bright sphere (also the trail anchor); shell, halo, sentries and gems are instanced pools above
     primitives.sphere({ name: "byte", size: [0.34, 0.34, 0.34], material: coreMat, castShadow: false })
-      .position(wx(st.maze.spawn.x), 0.36, wz(st.maze.spawn.y))
+      .position(wx(st.maze.spawn.x), COURIER_POD.coreHeight, wz(st.maze.spawn.y))
       .runtime(game.runtimeNode("byte")),
     primitives.sphere({ name: "byte-echo", size: [0.34, 0.34, 0.34], material: coreMat, castShadow: false })
       .position(0, -999, 0)
       .runtime(game.runtimeNode("byte-echo")),
+    // Phase 4 (4.7.2) DD47-A1: the Meshy courier pod under the core (and its wrap echo), driven in syncWorld.
+    courierPod("courier-pod").position(wx(st.maze.spawn.x), COURIER_POD.lift, wz(st.maze.spawn.y)),
+    courierPod("courier-pod-echo").position(0, -999, 0),
 
     // ghost house door slab + school beacon (both are light sources in the fiction: a gate LED bar and a beam)
     primitives.box({ name: "door", size: [1.02, 0.5, 0.12], material: material.pbr({ color: "#ffd9a0", emissive: "#ffb23e", emissiveIntensity: 0.65, roughness: 0.4, opacity: 0.78, practical: true }) })
@@ -430,12 +457,41 @@ function roomNodes() {
       .position(pb.x, benchTop + pb.y, faceZ + 0.1),
     instances.cylinder({ name: "pegboard holes", size: [1, 1, 1], material: material.pbr({ color: h.color, roughness: 0.95, metalness: 0 }), transforms: holes, castShadow: false }),
     instances.box({ name: "mat grid", size: [1, 1, 1], material: material.pbr({ color: g.color, roughness: 0.7, metalness: 0 }), transforms: grid, castShadow: false, receiveShadow: true }),
+    ...lampShaft(),
     primitives.box({ name: "wall shelf", size: [44, 0.35, sh.depth], material: material.pbr({ color: sh.color, roughness: sh.roughness, metalness: 0 }), castShadow: true, receiveShadow: true })
       .position(pb.x, benchTop + sh.y, faceZ + sh.depth / 2)
   ];
 }
 
 /** Unit vector from the desk lamp to its target (the lamp-haze cone axis). */
+/**
+ * Phase 4 round 2 lamp shaft (LAMP_HAZE.shaft): nested open additive cones, apex at the lamp head, opening along the
+ * lamp axis. The unit cone points +Y with its apex up, so each shell is rotated +Y -> (lamp - target).
+ */
+function lampShaft(): ReturnType<typeof primitives.cone>[] {
+  const a = lampAxis();
+  const up = [-a[0], -a[1], -a[2]] as const;
+  // quaternion taking +Y onto `up`: axis = Y x up, w = 1 + Y . up, normalised
+  const q = [up[2], 0, -up[0], 1 + up[1]] as const;
+  const ql = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  const quat: [number, number, number, number] = [q[0] / ql, q[1] / ql, q[2] / ql, q[3] / ql];
+  const sh = LAMP_HAZE.shaft;
+  const mid: [number, number, number] = [LAMP.position[0] + a[0] * sh.length / 2, LAMP.position[1] + a[1] * sh.length / 2, LAMP.position[2] + a[2] * sh.length / 2];
+  return sh.shells.map((shell, i) => {
+    const r = Math.tan(sh.halfAngle) * sh.length * shell.fraction;
+    return primitives.cone({
+      name: `lamp shaft ${i}`,
+      size: [2 * r, sh.length, 2 * r],
+      params: { radialSegments: 32, openEnded: true },
+      position: mid,
+      quaternion: quat,
+      castShadow: false,
+      receiveShadow: false,
+      material: material.pbr({ color: "#000000", emissive: sh.color, emissiveIntensity: 1, opacity: shell.opacity, blend: "additive", depthWrite: false, roughness: 1, metalness: 0, practical: true })
+    });
+  });
+}
+
 function lampAxis(): [number, number, number] {
   const d = [LAMP.target[0] - LAMP.position[0], LAMP.target[1] - LAMP.position[1], LAMP.target[2] - LAMP.position[2]] as const;
   const l = Math.hypot(d[0], d[1], d[2]) || 1;
@@ -736,7 +792,7 @@ export function syncVisuals(dt: number): void {
   for (const g of st.ghosts) {
     if (g.state !== "eyes") continue;
     const gp = normGhostPos(g);
-    const bob = 0.45 + Math.sin(st.time * 9 + g.px) * 0.05;
+    const bob = 0.45 + Math.sin(st.time * 9 + g.px) * 0.05 * (calmMotion ? REDUCED_AMPLITUDE : 1);
     inst("eyes", wx(gp.x), bob, wz(gp.y), 0.2, 0.2, 0.2, CORE_COLOR);
   }
 
@@ -744,47 +800,74 @@ export function syncVisuals(dt: number): void {
   try {
     const pp = normPos(m);
     const moving = st.autopilot || st.hasMoved;
+    const motionAmplitude = calmMotion ? REDUCED_AMPLITUDE : 1;
     const chomp = moving ? Math.abs(Math.sin(st.time * 14)) : Math.sin(st.time * 4) * 0.25;
-    const bob = moving ? chomp * 0.08 : Math.sin(st.time * 4) * 0.025;
-    const pitch = moving ? Math.sin(st.time * 14) * 0.16 : 0;
+    const bob = (moving ? chomp * 0.08 : Math.sin(st.time * 4) * 0.025) * motionAmplitude;
+    const pitch = moving ? Math.sin(st.time * 14) * 0.16 * motionAmplitude : 0;
     const dead = st.mode === "dying";
     const byte = nodes.require("byte");
-    byte.setPosition(wx(pp.x), 0.36 + (dead ? 0 : bob), wz(pp.y));
+    const pod = nodes.get("courier-pod");
+    const podEcho = nodes.get("courier-pod-echo");
+    // Phase 4 (4.7.2): the core hovers over the pod's dome; the pod carries the travel yaw and the bank.
+    const coreY = COURIER_POD.coreHeight;
+    byte.setPosition(wx(pp.x), coreY + (dead ? 0 : bob), wz(pp.y));
     // DD47-AN1: the drawn yaw eases toward the travel direction (90 ms) and the courier banks into the turn
     courierPose = stepCourierPose(courierPose, yawOf(st.player.dir) + Math.PI, dt, calmMotion);
     byte.setRotation(dead ? 0 : pitch, courierPose.yaw, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
+    let podK = 1;
     if (dead) {
       byte.setScale(Math.max(0.05, (st.deathT / 1.6) * 0.76)); // a steady shrink; the flicker below is skipped when calm
+      podK = Math.max(0.05, st.deathT / 1.6);
     } else if (st.player.dashT > 0) {
-      const ds = 0.82 + Math.sin(st.time * 40) * 0.05;
+      const ds = 0.82 + Math.sin(st.time * 40) * 0.05 * motionAmplitude;
       byte.setScale([ds * 1.06, ds * 0.94, ds * 1.06]);
     } else if (moving) {
-      byte.setScale([0.76 * (1 + chomp * 0.08), 0.76 * (1 - chomp * 0.06), 0.76 * (1 + chomp * 0.08)]);
+      byte.setScale([0.76 * (1 + chomp * 0.08 * motionAmplitude), 0.76 * (1 - chomp * 0.06 * motionAmplitude), 0.76 * (1 + chomp * 0.08 * motionAmplitude)]);
     } else {
       byte.setScale(0.76);
     }
     const flickerOn = !dead || calmMotion || calmFlash || Math.sin(st.time * 24) > -0.2;
     byte.setVisible(flickerOn);
+    const podS = COURIER_POD.scale * podK;
+    const podLean = dead ? 0 : pitch * 0.35;
+    if (pod) {
+      pod.setVisible(flickerOn);
+      pod.setPosition(wx(pp.x), COURIER_POD.lift - (1 - podK) * COURIER_POD.lift + (dead ? 0 : bob * 0.5), wz(pp.y));
+      pod.setRotation(podLean, courierPose.yaw - Math.PI, dead && !calmMotion ? Math.sin(st.time * 20) * 0.5 : courierPose.roll);
+      pod.setScale(podS);
+    }
     // wrap echo copy
     const ex = echoOffset(m, pp.x, pp.y);
     const echo = nodes.require("byte-echo");
     if (ex) {
       echo.setVisible(!dead);
-      echo.setPosition(wx(ex.x), 0.36 + bob, wz(ex.y));
+      echo.setPosition(wx(ex.x), coreY + bob, wz(ex.y));
       echo.setRotation(dead ? 0 : pitch, courierPose.yaw, courierPose.roll);
       echo.setScale(0.76);
     } else echo.setVisible(false);
+    if (podEcho) {
+      if (ex && !dead) {
+        podEcho.setVisible(true);
+        podEcho.setPosition(wx(ex.x), COURIER_POD.lift + bob * 0.5, wz(ex.y));
+        podEcho.setRotation(podLean, courierPose.yaw - Math.PI, courierPose.roll);
+        podEcho.setScale(COURIER_POD.scale);
+      } else {
+        podEcho.setVisible(false);
+        podEcho.setPosition(0, -999, 0);
+      }
+    }
 
-    // courier shell (faceted) and halo ring ride on the core node's position
+    // courier glass bubble (Courier Studio tint) and halo ring ride on the hovering core
     {
-      const hpos = [wx(pp.x), 0.4 + (dead ? 0 : bob), wz(pp.y)] as const;
-      const shell = dead ? Math.max(0.05, (st.deathT / 1.6) * 0.62) : st.player.dashT > 0 ? 0.72 : 0.6;
+      const hpos = [wx(pp.x), coreY + (dead ? 0 : bob), wz(pp.y)] as const;
+      const shell = dead ? Math.max(0.05, (st.deathT / 1.6) * COURIER_POD.shell) : st.player.dashT > 0 ? COURIER_POD.shell * 1.2 : COURIER_POD.shell;
       if (flickerOn) {
         inst("hero", hpos[0], hpos[1], hpos[2], shell, shell * 1.15, shell, st.profile.orbColor, st.time * (st.player.dashT > 0 ? 7 : 2.4));
-        inst("halo", hpos[0], hpos[1], hpos[2], shell * 1.35, shell * 1.35, shell * 1.35, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
+        const hk = dead ? Math.max(0.05, st.deathT / 1.6) : 1;
+        inst("halo", hpos[0], COURIER_POD.haloHeight + (dead ? 0 : bob * 0.5), hpos[2], COURIER_POD.halo * hk, COURIER_POD.halo * hk, COURIER_POD.halo * hk, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
         if (ex) {
-          inst("hero", wx(ex.x), 0.4 + bob, wz(ex.y), shell, shell * 1.15, shell, st.profile.orbColor, st.time * 2.4);
-          inst("halo", wx(ex.x), 0.4 + bob, wz(ex.y), shell * 1.35, shell * 1.35, shell * 1.35, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
+          inst("hero", wx(ex.x), coreY + bob, wz(ex.y), shell, shell * 1.15, shell, st.profile.orbColor, st.time * 2.4);
+          inst("halo", wx(ex.x), COURIER_POD.haloHeight + bob * 0.5, wz(ex.y), COURIER_POD.halo, COURIER_POD.halo, COURIER_POD.halo, "#ffb23e", yawOf(st.player.dir) + st.time * 3.2);
         }
       }
     }
@@ -792,7 +875,7 @@ export function syncVisuals(dt: number): void {
     // sentries — one silhouette each (cone, cube, ring, saucer); colour carries identity and the surge state
     for (const g of st.ghosts) {
       const gp = normGhostPos(g);
-      const wob = Math.sin(st.time * 7 + g.px) * 0.04;
+      const wob = Math.sin(st.time * 7 + g.px) * 0.04 * (calmMotion ? REDUCED_AMPLITUDE : 1);
       const frightened = st.fright > 0 && g.state === "active";
       // surge ending: a white strobe, or a slow 1 Hz pulse between slate and white when motion/flash is reduced
       const ending = frightened && st.fright < 1.8;
@@ -802,13 +885,16 @@ export function syncVisuals(dt: number): void {
       if (hidden) continue;
       const k = frightened ? 0.82 + (calmMotion ? 0 : Math.sin(st.time * 14) * 0.05) : g.state === "house" ? 0.86 : 0.94;
       const yaw = yawOf(g.dir);
+      // DD47-AN1: retain the per-sentry rotation styles at full motion, but
+      // replace continuous spins with a small bounded sway on reduced motion.
+      const turn = (speed: number): number => calmMotion ? yaw + Math.sin(st.time * speed) * REDUCED_AMPLITUDE : st.time * speed;
       const place = (x: number, z: number): void => {
         const y = 0.42 + wob;
         switch (g.id) {
           case "blitz": inst("shC", x, y + 0.08, z, 0.62 * k, 0.9 * k, 0.62 * k, col, yaw); break;
-          case "sly": inst("shB", x, y, z, 0.56 * k, 0.56 * k, 0.56 * k, col, st.time * 2.2); break;
-          case "flick": inst("shT", x, y, z, 0.78 * k, 0.78 * k, 0.78 * k, col, st.time * 3.1); break;
-          case "dim": inst("shY", x, y - 0.06, z, 0.8 * k, 0.26 * k, 0.8 * k, col, st.time * 1.4); break;
+          case "sly": inst("shB", x, y, z, 0.56 * k, 0.56 * k, 0.56 * k, col, turn(2.2)); break;
+          case "flick": inst("shT", x, y, z, 0.78 * k, 0.78 * k, 0.78 * k, col, turn(3.1)); break;
+          case "dim": inst("shY", x, y - 0.06, z, 0.8 * k, 0.26 * k, 0.8 * k, col, turn(1.4)); break;
         }
       };
       place(wx(gp.x), wz(gp.y));
@@ -945,4 +1031,3 @@ function echoOffset(m: ParsedMaze, x: number, y: number): { x: number; y: number
   if (ex === null && ey === null) return null;
   return { x: ex ?? x, y: ey ?? y };
 }
-

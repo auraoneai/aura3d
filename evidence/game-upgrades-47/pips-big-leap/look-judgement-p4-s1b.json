@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-8/d1280--03-action.jpg",
+      "sha256": "a2d6777dc2fe2e86ae4194e64f4a83c00d79a1033ec53d9a359baae2da7b7907"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-8/d1280--05-modes.jpg",
+      "sha256": "3ef61e6c9b486029c5badfd440cc2de571e037db7c40466dc38bda762f3a7456"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-3/pips-big-leap--w2--settle-60s.jpg",
+      "sha256": "887150614fdad026c55b7ecfff831939997077d489f5d681c2f4cd0667babf0c"
+    },
+    {
+      "path": "../aura3d-gu47/g06/evidence/game-upgrades-47/pips-big-leap/p4-r4/pips-big-leap/frames/g06p4-r4-5/pips-big-leap--w4--settle-60s.jpg",
+      "sha256": "f05bab0cdde615d40d4680c62cffd8977c37260a6075f8a807792ce51737d29b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5,
+    "ibl_reflections": 4,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 6,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The forest frame is evenly lit with little directional modeling on the trees. The Ember frame is a single muddy brown wash, and the cage towers and floor share the same value range, so nothing reads as a key light."
+    },
+    {
+      "category": "shadows",
+      "seen": "Pip casts a soft shadow on the Wharf deck and the Ember floor. In the forest frame Pip's contact shadow is barely visible on the grass, and the large pines cast no readable shadows on the ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The metal cage towers in Ember show almost no environment reflection or specular response. The blue orb and gate in the forest look flat, and no surface picks up sky color."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Platforms float as stepped slabs in an empty sky void in Forest and Wharf. The forest pines are faceted low-poly cones crowding the frame edges, and the playable ground is a bare green plane."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze softens the far platforms in Forest and Wharf. In Ember, heavy brown fog flattens the background into a solid wall, though orange ember particles add some life."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The forest grass shows coarse, pixelated low-resolution banding and a white diagonal streak artifact. The Wharf deck is a saturated orange with repetitive stripe texture. The crate, barrel, and Pip's glossy acorn cap are well shaded."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Pip, the windmill, pagoda, crate, and barrel are cleanly modeled. The faceted pines and the realistic, grimy metal towers in Ember clash with the toy-like character style. A stray blue-and-white slab floats beside Pip in the forest frame."
+    },
+    {
+      "category": "composition",
+      "seen": "In the forest frame a dark foreground pine blocks nearly the right third of the image. Every frame centers Pip in a symmetric corridor, and the empty deck foreground in Wharf takes up the lower half."
+    },
+    {
+      "category": "camera",
+      "seen": "All gameplay frames use a behind-the-back chase view rather than the side-on follow the recipe calls for. Pip fills roughly 12 to 18 percent of the frame, at or below the low end of the 18 to 25 percent target."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The Ember grade is low-contrast and monochrome orange-brown. The forest frame shows banding on the grass and a light streak artifact. Bloom on the gold seeds is weak, so the coin-gold accent does not pop."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The cream pill HUD and the Vale Atlas panel are clean and readable. The HUD is missing in the Wharf and Ember frames, a developer nav bar spans the top edge, and the checkpoint toast sits over the play area near Pip."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

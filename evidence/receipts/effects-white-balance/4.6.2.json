@@ -1,0 +1,31 @@
+{
+  "capability": "effects-white-balance",
+  "version": "4.6.2",
+  "gitSha": "5050f3cbc",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/gu47/post-receipts.ts body(): grey floor (glossy for SSR), emissive white wall (left), warm emissive lamp sphere (right), grey crate (runtime id mover), one shadow-casting sun, camera (0, 2.2, 5.2) -> (0, 0.8, 0), 480x270; colorGrade temperature 0 vs +0.2",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-white-balance/wb-neutral.png",
+      "sha256": "6388d60abbeb060122ae0ac3ed8cc0db9f27123cdce8076c83feb5bdb37c4019",
+      "meanLuma": 81.79916205234375,
+      "nonBlackRatio": 1,
+      "label": "wb-neutral"
+    },
+    {
+      "file": "evidence/receipts/effects-white-balance/wb-warm.png",
+      "sha256": "d2ad505bd903c7fb0e1ce3964e438c312db16d78ef32bc86a104d0d50db7e940",
+      "meanLuma": 81.6556770015625,
+      "nonBlackRatio": 1,
+      "label": "wb-warm"
+    }
+  ],
+  "tests": [
+    "tests/unit/gu47/ec/hdr-grade-and-stage-trace.test.ts"
+  ],
+  "date": "2026-10-30T15:16:05.018Z",
+  "checks": {
+    "meanRbShift": 0.09698066486161272,
+    "rbShiftAtLeast": 0.08
+  }
+}

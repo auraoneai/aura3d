@@ -2,6 +2,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statS
 import { basename, dirname, join, relative } from "node:path";
 import { assertWorkerPackageLayout } from "./worker-layout.mjs";
 import { emitPackagedWorker } from "./worker-bundle.mjs";
+// @ts-expect-error TS5097: the build runs this file with node --experimental-strip-types, which needs the .ts extension.
+import { findBareWorkspaceImports, specifierPattern } from "./specifiers.ts";
 
 const root = process.cwd();
 const packageRoot = join(root, "packages");
@@ -76,6 +78,7 @@ for (const packageName of packageNames) {
     rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   }
 }
+assertNoBareWorkspaceImports(rootDist, packageNames.map((name) => join(rootDist, name)).filter((dir) => existsSync(dir)));
 
 // Solver initialisation is selected through the package `imports` map so bundlers that cannot emit top-level
 // await can opt into the lazy variant with the `aura3d-no-tla` condition (docs/agents/lessons-learned.md).
@@ -181,6 +184,22 @@ function walkWorkerSources(dir: string, out: string[] = []): string[] {  if (!ex
   return out;
 }
 
+/**
+ * The root tarball ships every workspace package under dist/<package>/, so its JS may import another workspace package
+ * only through a relative path (or the public `@aura3d/engine` self-reference). A bare `@aura3d/<workspace>` import
+ * there cannot resolve for a consumer, who installs only `@aura3d/engine`: fail the build instead of publishing it.
+ */
+function assertNoBareWorkspaceImports(distRoot: string, shippedDirs: readonly string[]): void {
+  const bad: string[] = [];
+  // Only the per-package folders the root tarball ships (package.json "files"); dist/packages/ is tsc scratch output.
+  for (const file of shippedDirs.flatMap((dir) => walkFiles(dir))) {
+    if (!file.endsWith(".js")) continue;
+    const source = readFileSync(file, "utf8");
+    for (const found of findBareWorkspaceImports(source, packageNameSet)) bad.push(`${file.slice(distRoot.length + 1)}: ${found}`);
+  }
+  if (bad.length) throw new Error(`finalize-dist: bare workspace imports left in the root dist (consumers cannot resolve them):\n${bad.join("\n")}`);
+}
+
 function walkFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
@@ -210,11 +229,12 @@ function walkStaticRuntimeAssets(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+
 function rewriteJavaScriptSpecifiers(dir: string, distRoot: string, rewriteWorkspacePackages: boolean): void {
   for (const file of walkFiles(dir)) {
     const source = readFileSync(file, "utf8");
     const rewritten = source.replace(
-      /\b(from\s*["']|import\s*\(\s*["']|import\s*["'])([^"']+)(["'])/g,
+      specifierPattern(),
       (full, prefix: string, specifier: string, suffix: string) => {
         const nextSpecifier = rewriteSpecifier(file, distRoot, specifier, rewriteWorkspacePackages);
         return nextSpecifier === specifier ? full : `${prefix}${nextSpecifier}${suffix}`;

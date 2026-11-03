@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "slingshot-siege",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "ch5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Rock cliffs are crushed to near-black with almost no texture detail visible; pit holes read as flat black voids; slingshot and bird on left are small and partly lost against dark rock; some edge vignetting/blur",
+     "The night palette is fairly dark: the rocks are near-black silhouettes with lost texture, and the slingshot and player bird on the left are dim and hard to read. Grass is still flat green. Some crushed shadow areas around the holes look like black voids, and the platform rim is slightly clipped at the edge. On the plus side, it has stronger mood, a starfield, cast shadows, a 'MOON ROOST' sign, a distant flag, and more ground detail (cone shrubs), which give it better depth and atmosphere overall.",
+     "Large rock cliffs are almost black, so their surface detail is lost. The saturated green ground looks too bright for a moonlit night and clashes with the dark surroundings. Crater depressions read as black holes. The camera framing is the same as the default, with no rework for the night scene."
+    ]
+   }
+  ]
+ }
+]

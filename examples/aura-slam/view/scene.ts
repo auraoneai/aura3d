@@ -14,7 +14,7 @@ import { VENUE_PALETTES, venueKey } from "./venues";
 import { createWorldTourCrowd, type WorldTourCrowd } from "./crowd";
 import { LINE_COLOR, buildGrassStripesNodes, feltBallMaterial, surfaceMaterial } from "./surfaces";
 import { buildBoardNodes, standLineText } from "./boards";
-import { buildNetMeshNode } from "./net";
+import { buildNetMeshNode, netTapeParts, NET_TAPE_ID } from "./net";
 
 export interface TennisSceneOptions {
   /** Boot venue: the authored environment, fog, key and grade are this venue's, so the first frame needs no swap. */
@@ -52,7 +52,8 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   // TT-M1: World Tour line paint #fbfbf5 and per-surface court materials; `?look=original` keeps the 4.6.1 flat colours.
   const lineMat = material.pbr({ color: original ? "#f5f4e6" : LINE_COLOR, roughness: original ? 0.58 : 0.5 });
   const courtMat = (part: "court" | "alley" | "apron" | "ground", flat: () => ReturnType<typeof material.pbr>) => (original ? flat() : surfaceMaterial(boot, part));
-  const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
+  // GU47 phase 4 (ibl_reflections): World Tour posts, chair frame and masts are powder-coated steel that picks up the venue HDRI.
+  const netPostMat = original ? material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 }) : material.pbr({ color: "#24443b", metalness: 0.9, roughness: 0.24 });
   // C9: the net mesh is see-through (blended, no depth write, no shadow) so it no longer reads as a black slab; the tape stays opaque.
   const netMeshMat = material.pbr({ color: "#1c2a26", roughness: 0.88, opacity: 0.42, alphaMode: "blend", depthWrite: false, doubleSided: true });
   const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
@@ -206,7 +207,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .runtime(game.runtimeNode("net-fault-right"))
   ]);
 
-  statics.box("netTape", netTapeMat, [0.055, 0.914, 0.034], [0, 0.457, 0]);
+  for (const part of netTapeParts()) statics.box("netTape", netTapeMat, part.size, part.position);
   const netSegments = 9;
   const netHalfSpan = NET_POST_X;
   for (let i = 0; i < netSegments; i++) {
@@ -218,12 +219,11 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     const topH = 0.914 + (1.07 - 0.914) * tm * tm;
     // TT-M2: the World Tour net is one textured strip (view/net.ts); `?look=original` keeps the nine 4.6.1 boxes.
     if (original) statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0], false);
-    statics.box("netTape", netTapeMat, [segW + 0.015, 0.062, 0.036], [segX, topH - 0.02, 0]);
   }
   if (!original) s.add(buildNetMeshNode());
 
   const chairWood = material.pbr({ color: "#8c613c", roughness: 0.78 });
-  const chairFrame = material.pbr({ color: "#223b35", roughness: 0.65 });
+  const chairFrame = original ? material.pbr({ color: "#223b35", roughness: 0.65 }) : material.pbr({ color: "#2a463f", metalness: 0.85, roughness: 0.28 });
   const canopyMat = material.pbr({ color: "#ece4cf", roughness: 0.82 });
   statics.box("chairFrame", chairFrame, [0.85, 1.85, 0.92], [-6.76, 0.925, 0]);
   statics.box("wood", chairWood, [0.74, 0.12, 0.72], [-6.76, 1.92, 0]);
@@ -261,7 +261,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   // Typed Aura3D stadium dressing (view/assets.ts). C10: the seats GLB is 33.7 x 45.8 x 144.1 m with its length along Z, so it is
   // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB
   // is a 1.9 x 1.4 x 1.9 lamp head, so it sits on a 9 m mast instead of standing in for the whole tower.
-  const mastMat = material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 });
+  const mastMat = original ? material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 }) : material.pbr({ color: "#5d6a70", metalness: 0.95, roughness: 0.22 });
   for (const side of [-1, 1]) {
     s.add(primitives.cylinder({ name: `stadium-floodlight-mast-${side < 0 ? "left" : "right"}`, size: [0.28, FLOODLIGHT_MAST_H, 0.28], material: mastMat, castShadow: false })
       .position(side * 12.5, FLOODLIGHT_MAST_H * 0.5, -13.2));
@@ -283,7 +283,9 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       castShadow: false,
       scaleMode: "fit",
       targetMaxDimension: 6.2
-    }).position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION)),
+    })
+      .position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION))
+      .runtime(game.runtimeNode("stadium-scoreboard-gantry")),
     model(assets.rooftopFloodlightTowerMeshy, {
       name: "stadium-floodlight-left",
       role: "setDressing",
@@ -313,7 +315,7 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   }
 
   s.addMany(buildBleacherNodes(statics));
-  s.addMany(statics.build("static", STATIC_RUNTIME_IDS));
+  s.addMany(statics.build("static", original ? STATIC_RUNTIME_IDS : { ...STATIC_RUNTIME_IDS, netTape: NET_TAPE_ID }));
   if (original) {
     s.addMany(buildSpectatorNodes());
   } else {
@@ -338,8 +340,12 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
       .torus({
         name: "serve-aim-ring",
         // Owner feedback 2026-10-31: the pale cream ring vanished on the lime service-box highlight. A thicker hot-red
-        // ring reads against the lime box and the blue, green, clay and sand courts alike.
-        size: [0.5, 0.5, 0.09],
+        // ring reads against the lime box and the blue, green, clay and sand courts alike. The unit torus is radius 0.43,
+        // tube 0.045 and lies in XY before the quarter turn, so `size` z only sets its height on the court: the band
+        // width comes from `params.tube`. Radius ~0.5 m, band ~0.15 m (the 0.5 / 0.09 size drew a 4.5 cm hairline
+        // that the broadcast camera resolved to 1-2 px).
+        size: [1.15, 1.15, 0.12],
+        params: { tube: 0.13 },
         material: material.emissive({ color: "#ff2a5f", emissive: "#ff2a5f", emissiveIntensity: 0.9 })
       })
       .rotate(Math.PI * 0.5, 0, 0)

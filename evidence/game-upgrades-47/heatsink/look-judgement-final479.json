@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/heatsink/f50/heatsink/frames/f50-heatsink-default/heatsink--default--settle-60s.jpg",
+      "sha256": "64a03cea68fa8d73bbe8153f78a5a6b99daaa2522de66fe5df553095979d079e"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/heatsink/f50/heatsink/frames/f50-heatsink-3/heatsink--dustfall--settle-60s.jpg",
+      "sha256": "a7e57b34751434ac0e80491a55d8810ee736352d5c1b335acb03b196845770c6"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/heatsink/f50/heatsink/frames/f50-heatsink-3/heatsink--vesper--settle-60s.jpg",
+      "sha256": "01499e8640bf49c1d7ca7459f4bab64c25847a1f631850033747a52734e04488"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 5.5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 5,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 5.5,
+    "postprocessing": 6,
+    "ui_hud": 3.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 matches the recipe: a low sun sits between the right-hand towers and rim-lights the player craft in amber. Frame 2 is flat, sunless overcast with no key light, and the vehicles read as dull red-brown. Frame 3 is a cool blue-hour preset, so the three frames share no consistent lighting direction."
+    },
+    {
+      "category": "shadows",
+      "seen": "The hovering craft cast only soft elliptical blob shadows on the road. The towers, gate arch and roadside barriers cast no visible shadows across the asphalt, even under the low sun in frame 1, so nothing is grounded by light direction."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The wet asphalt in frames 1 and 3 shows a convincing sun streak and light-strip reflections. The vehicle bodies and the cylinder prop are matte with no environment reflection, and the frame 2 road has no specular response at all."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The skyline is extruded boxes with one tiled window texture repeated on every face. Frame 2 has sparse low blocks with large empty sky. In frame 3 a blurry photographic backplate (green field, trees) shows between the purple towers and clashes with the stylized city."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Sun haze and bloom in frame 1 and floating ember particles in frame 2 add some air. Distant towers barely fade with depth, so the 30–180 m fog band in the recipe is not visible, and the gate reads at the same contrast as the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt normal map works well in frames 1 and 3. The vehicles use flat albedo with small emissive trim strips, the cylinder prop is a plain untextured tube, and only the frame 3 gate has a stone texture."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The vehicles are kitbashed from cylinders and boxes: twin turbine pods, stub rotors, blocky cockpits. Silhouettes read, but bevels and secondary detail are minimal, and the gate is a chain of low-poly segments."
+    },
+    {
+      "category": "composition",
+      "seen": "The player craft fills about 20% of the frame on the right, inside the target range. The large cylinder prop in the left foreground competes for attention and fights it. The centered vanishing point and gate give good depth, but the frame is lopsided toward the props."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera sits very low, just above the road, and holds an identical pose in all three frames, which looks like a static start-grid view rather than a chase camera. FOV looks close to 60–70 degrees, but there is no motion blur, speed framing or lag."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Frame 1 has a warm filmic grade and strong bloom on the sun, close to cinematic-film. Frames 2 and 3 have weaker, mismatched grades. The bloom in frame 1 blows out the player's engine pods."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is only a top-right track minimap on a dark rectangular backing that is clipped against the screen edge. There is no speed, lap, position or boost readout."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

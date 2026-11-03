@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "last-train-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "band-c",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The dusk grade is a little dark and soft in the foreground. The capsule NPCs still look like placeholders. The overhead canopy beam runs straight through the building facades. Some window glow looks flat. Otherwise the tram sits properly on the rails, it reads clearly as the subject, the composition is strong, and the warm sunset gives the scene atmosphere and depth.",
+     "Dusk grade is slightly murky. The foreground cobbles are dark and the contrast is a bit low. The upper building rows are blurry, the window lights look washed out, and the pawn NPCs are crude. The flat canopy slab running across the frame cuts through the buildings.",
+     "The building row is a flat-looking backdrop with some lit windows, and a long thin awning beam cuts across the facades. The lower foreground is dark and slightly muddy. The bottom-left corner shows a small clipped object. Placeholder capsule NPCs are still visible. Strong dusk grading and a vignette work well, and the tram is a clear, well-lit focal point on proper rails."
+    ]
+   },
+   {
+    "variant": "band-d",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The night grade is fairly dark and the foreground paving looks muddy. The capsule NPCs are placeholders. The canopy beam crosses the building facades. A few lit windows are blown out. Even so, the tram on its rails is readable, the lit windows and starry dusk sky give a good mood, and the composition is coherent.",
+     "The night grade is dim, with low contrast in the foreground cobbles and the lower part of the frame. Some building facades look washed out pale against the dark sky. The pawn NPCs are crude and the long canopy slab intersects the facades.",
+     "The night grade makes the foreground cobbles fairly dark and low-contrast. The facades still read as a flat backdrop, and the awning beam cuts across them. Placeholder capsule NPCs remain, and the tram's red finish is a little noisy and speckled. Otherwise the night atmosphere, lit windows, stars and the tram as focal point are strong."
+    ]
+   }
+  ]
+ }
+]

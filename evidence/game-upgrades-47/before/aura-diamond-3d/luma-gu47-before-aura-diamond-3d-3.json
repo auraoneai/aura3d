@@ -1,0 +1,118 @@
+[
+ {
+  "target": "aura-diamond-3d--dome",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "dome",
+  "sinceReadyMs": 25006,
+  "mean": 64.63,
+  "p5": 16,
+  "p50": 53,
+  "p95": 158,
+  "darkFrac": 0.0016,
+  "clipFrac": 0,
+  "grid": [
+   91.5,
+   96.6,
+   95.8,
+   51.6,
+   68.6,
+   60.4,
+   27.4,
+   52.3,
+   37.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 339
+  }
+ },
+ {
+  "target": "aura-diamond-3d--dome",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "dome",
+  "sinceReadyMs": 366214,
+  "mean": 67.25,
+  "p5": 15,
+  "p50": 55,
+  "p95": 162,
+  "darkFrac": 0.0018,
+  "clipFrac": 0,
+  "grid": [
+   97.1,
+   104.1,
+   101.6,
+   50.8,
+   69.9,
+   61.2,
+   27.4,
+   55.9,
+   37.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 339
+  }
+ },
+ {
+  "target": "aura-diamond-3d--lunar",
+  "id": "settle-25s",
+  "slug": "aura-diamond-3d",
+  "variant": "lunar",
+  "sinceReadyMs": 25005,
+  "mean": 84.61,
+  "p5": 3,
+  "p50": 95,
+  "p95": 130,
+  "darkFrac": 0.1365,
+  "clipFrac": 0,
+  "grid": [
+   59.9,
+   64.3,
+   57.6,
+   94.9,
+   122,
+   92.9,
+   75.4,
+   117.4,
+   77
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 347
+  }
+ },
+ {
+  "target": "aura-diamond-3d--lunar",
+  "id": "settle-60s",
+  "slug": "aura-diamond-3d",
+  "variant": "lunar",
+  "sinceReadyMs": 285275,
+  "mean": 84.15,
+  "p5": 2,
+  "p50": 95,
+  "p95": 131,
+  "darkFrac": 0.1486,
+  "clipFrac": 0,
+  "grid": [
+   56.8,
+   61.3,
+   54.5,
+   95.9,
+   122.1,
+   93.7,
+   76.1,
+   118.6,
+   78.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 347
+  }
+ }
+]

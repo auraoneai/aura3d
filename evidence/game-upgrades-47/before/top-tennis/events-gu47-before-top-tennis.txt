@@ -1,0 +1,5 @@
+run gu47-before-top-tennis acr ch5t8 was successful after 5m27s playwrightExit 0
+GL_READY top-tennis--default 15746ms
+GL_DONE top-tennis--default
+1 passed (4.2m)
+[task-run] PLAYWRIGHT_EXIT=0

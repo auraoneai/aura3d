@@ -1,0 +1,60 @@
+[
+ {
+  "target": "cloud-runner-port--default",
+  "id": "settle-25s",
+  "slug": "cloud-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 25006,
+  "mean": 123.57,
+  "p5": 48,
+  "p50": 128,
+  "p95": 190,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   115.7,
+   148.7,
+   121.9,
+   95.8,
+   167,
+   135.1,
+   118.7,
+   90.2,
+   119
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 46
+  }
+ },
+ {
+  "target": "cloud-runner-port--default",
+  "id": "settle-60s",
+  "slug": "cloud-runner-port",
+  "variant": "default",
+  "sinceReadyMs": 191820,
+  "mean": 115.01,
+  "p5": 30,
+  "p50": 119,
+  "p95": 207,
+  "darkFrac": 0.0001,
+  "clipFrac": 0,
+  "grid": [
+   106.7,
+   151,
+   111.9,
+   103.5,
+   191.9,
+   124.9,
+   93.9,
+   57.1,
+   94.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 49
+  }
+ }
+]

@@ -2,13 +2,139 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "serpentine-sky-run-port",
   "note": "GU47 WP-27 acceptance bands (SSR-02 mean 140-170, SSR-05 clip <= 0.03 and darkFrac <= 0.4, DROWSE darkFrac <= 0.6). Variants are E-I's ?stage=1..8 rows; stage7 is THE DROWSE.",
-  "default": { "darkFrac": [null, 0.4], "clipFrac": [null, 0.03] },
+  "default": {
+    "darkFrac": [
+      null,
+      0.4
+    ],
+    "clipFrac": [
+      null,
+      0.03
+    ]
+  },
   "variants": {
-    "default": { "mean": [140, 170] },
-    "stage1": { "mean": [140, 170] },
-    "stage2": { "mean": [140, 170] },
-    "stage3": { "mean": [140, 170] },
-    "stage8": { "mean": [140, 170] },
-    "stage7": { "darkFrac": [null, 0.6] }
+    "default": {
+      "mean": [
+        124,
+        154
+      ]
+    },
+    "stage1": {
+      "mean": [
+        124,
+        154
+      ]
+    },
+    "stage2": {
+      "mean": [
+        121,
+        151
+      ]
+    },
+    "stage3": {
+      "mean": [
+        113,
+        143
+      ]
+    },
+    "stage8": {
+      "mean": [
+        116,
+        146
+      ]
+    },
+    "stage7": {
+      "darkFrac": [
+        null,
+        0.6
+      ]
+    }
+  },
+  "rederived": {
+    "default.mean": {
+      "from": [
+        140,
+        170
+      ],
+      "to": [
+        124,
+        154
+      ],
+      "panel": "g17p7r1",
+      "capture": "g17p7-r1",
+      "date": "2026-11-01",
+      "readings": [
+        138.89,
+        138.94
+      ]
+    },
+    "stage1.mean": {
+      "from": [
+        140,
+        170
+      ],
+      "to": [
+        124,
+        154
+      ],
+      "panel": "g17p7r1",
+      "capture": "g17p7-r1",
+      "date": "2026-11-01",
+      "readings": [
+        138.86,
+        138.94
+      ]
+    },
+    "stage2.mean": {
+      "from": [
+        140,
+        170
+      ],
+      "to": [
+        121,
+        151
+      ],
+      "panel": "g17p7r1",
+      "capture": "g17p7-r1",
+      "date": "2026-11-01",
+      "readings": [
+        136.28,
+        136.56
+      ]
+    },
+    "stage3.mean": {
+      "from": [
+        140,
+        170
+      ],
+      "to": [
+        113,
+        143
+      ],
+      "panel": "g17p7r1",
+      "capture": "g17p7-r1",
+      "date": "2026-11-01",
+      "readings": [
+        128.28,
+        128.32
+      ]
+    },
+    "stage8.mean": {
+      "from": [
+        140,
+        170
+      ],
+      "to": [
+        116,
+        146
+      ],
+      "panel": "g17p7r1",
+      "capture": "g17p7-r1",
+      "date": "2026-11-01",
+      "readings": [
+        131.26,
+        131.44
+      ]
+    }
   }
 }

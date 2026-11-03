@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/bunker-zero/f48/bunker-zero/frames/f48-bunker-zero-default/bunker-zero--default--settle-60s.jpg",
+      "sha256": "6f6e4995a33866d26b8f399b0c70e27600f010712ab7983b3b1094e66115091d"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/bunker-zero/f48/bunker-zero/frames/f48-bunker-zero-floor1/bunker-zero--floor1--settle-60s.jpg",
+      "sha256": "9ba0988037a7efc8937495d0d186f3ff944a2e6d86aa6220ba81061b55b8e0a2"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/bunker-zero/f48/bunker-zero/frames/f48-bunker-zero-floor2/bunker-zero--floor2--settle-60s.jpg",
+      "sha256": "385a42cf02937e9d67f316fa207f166db51cb538c9b23f5dcf2e28e64e08fb4c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/bunker-zero/f48/bunker-zero/frames/f48-bunker-zero-floor3/bunker-zero--floor3--settle-60s.jpg",
+      "sha256": "4273db42f4230ef061fdb558a5dbdc07195ae9be5d2f3cfcb5617b741e998190"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4,
+    "shadows": 2.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 3.5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 4,
+    "composition": 3.5,
+    "camera": 2,
+    "postprocessing": 3.5,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Rectangular ceiling strip lights with large soft glow sprites, but the walls and floor are lit by a flat ambient term with no directional falloff. There is no key/rim separation at 70°/210°, and enemies and props read as flat silhouettes."
+    },
+    {
+      "category": "shadows",
+      "seen": "Barrels, crates and enemy figures have no contact shadows or cast shadows on the floor. Only faint dark smudges appear at their bases, so objects look like they float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The floor has a blotchy, wet-looking noise texture that suggests reflectivity but mirrors nothing in the scene. The pistol shows faint specular highlights. No environment reflections are visible on metal surfaces."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Long, empty box corridors with one repeated wall texture, a pipe trim and yellow floor stripes. The props are a few red barrels, crates and a blue container. The circular vault door in frames 3 and 4 is the only landmark. The scene is an underground bunker, not a deep space blue arena."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Haze halos around the ceiling lights and a murky volume toward the ceiling, against a recipe of no atmosphere. The haze adds no depth cue to the gameplay space."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The plaster walls are a low-detail flat texture, the stone wall in frame 3 is stretched and repeats visibly, and the floor is a smeared noise pattern. The pistol has a noisy speckled grip texture and teal emissive strips that are its best material."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Room geometry is plain extruded boxes. Enemies are small, low-detail humanoids. The barrels and crates are simple primitives. The pistol with its underbarrel attachment is a reasonable mid-poly asset."
+    },
+    {
+      "category": "composition",
+      "seen": "The left half of frames 1, 2 and 4 is a blank wall. The enemies take up under 2% of the frame at the far end, and the weapon model takes the visual weight instead of the field of play."
+    },
+    {
+      "category": "camera",
+      "seen": "First-person perspective camera with a wide FOV. The recipe calls for an orthographic top-down 60° view with the field at 10–15% of the frame, so the camera does not match the genre."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy film grain, faint horizontal scanline banding across the ceiling, and a vignette. The color grade swings from neutral/warm to teal to strong orange between frames, which muddies contrast instead of producing a space grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "There is no health, ammo, score or wave readout. The only visible UI is a tiny crosshair marker and painted floor labels ('B-1 STONE GATEHOUSE', 'B-3 FORGE HALLS')."
+    }
+  ],
+  "nextChange": {
+    "category": "camera",
+    "change": "switch to the recipe row's rig and fov",
+    "api": "camera.follow / camera.orbit / camera.dolly"
+  },
+  "judge": "prism"
+}

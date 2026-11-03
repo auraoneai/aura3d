@@ -1,0 +1,722 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T05:23:57.635Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "default-play-0060",
+      "default-play-0520",
+      "default-play-1420",
+      "title-settle-60s"
+    ],
+    "framesB": [
+      "pips-big-leap--academy--settle-60s",
+      "pips-big-leap--w1--settle-60s",
+      "pips-big-leap--w2--settle-60s",
+      "pips-big-leap--w3--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.839,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.839,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a river valley with green low-poly trees and a HUD with hearts, a progress bar and a checkpoint prompt; Image B has no HUD",
+        "Image B shows floating brown platforms, a windmill and an acorn character against an overcast grey sky",
+        "Different characters and palettes: a boy in a green outfit versus an acorn-headed figure and a blocky red-shirted figure"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pale floating platforms in a hazy blue sky, with an acorn character and a blocky voxel character",
+        "Image B: grounded canyon run with green low-poly trees, cracked boulders and a stylized human runner",
+        "Different HUD: none in A, hearts, progress bar and objective text in B"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has rounded, soft low-poly trees, a river path and a HUD with hearts, a progress bar and a checkpoint label; Image B has sharp faceted conifers, floating platforms and no HUD",
+        "Different characters: a realistic-proportioned child in a green outfit versus an acorn creature and a blocky voxel figure",
+        "Different lighting and palette: A has a hazy, painterly cloudy sky; B has a clear pale-blue sky with flat grass and hard shadows"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a river path; Image B has no HUD",
+        "Different art styles: rounded low-poly trees and a stylized character in A, faceted pine trees and an acorn character with a blocky avatar in B",
+        "Different settings: a cloudy open landscape in A, floating platforms with an ornate gate and drones in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pale floating platforms in a hazy blue sky, with an acorn character and a blocky voxel character",
+        "Image B: grounded forest with a dirt path, low-poly trees, and a stormy sky",
+        "Different character styles and palettes: pastel and sparse in A, saturated green and brown in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has faceted low-poly pine trees, floating platforms and a blocky Minecraft-style character, while Image B has rounded canopy trees, canyon cliffs and a stylized humanoid runner",
+        "Different palettes: A is pale blue sky with flat green; B is warm orange cliffs with painterly textures",
+        "B has a distinct HUD (hearts, progress bar, 'Cliff Run' prompt) and A has no matching HUD style"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has flat-shaded low-poly pines, a blocky voxel character and an acorn character on floating platforms",
+        "Image B has smooth painterly rounded trees, cracked boulders and a canyon run with a stylized human runner",
+        "The HUDs differ: Image B has hearts, a progress bar and a cliff-run prompt, and Image A has none"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a runner game with a HUD (hearts, progress bar, score) on a dirt path with green hills and orange cliffs",
+        "Image B shows floating pale platforms in a hazy blue sky with an acorn character and a blocky voxel character",
+        "Different art styles and palettes: warm and saturated in A, cool and desaturated in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and a runner on a dirt path with a log; Image B has no HUD and shows floating platforms with an acorn character",
+        "Different characters and art styles: a stylized human runner versus an acorn character and a blocky Minecraft-like figure",
+        "Different environments and lighting: sunny grassy canyon with a blue sky versus an overcast gray sky and brown plowed platform"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating pale platforms in a hazy sky, with an acorn character and a blocky character",
+        "Image B: green low-poly forest, a river path, and a HUD with hearts, a progress bar and a checkpoint label",
+        "Different palettes and scenery: pale blue-lavender sky world against a saturated green landscape"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a 'Cliff Run' prompt, while Image B shows no HUD",
+        "Different characters and scenery: a realistic-proportioned runner in a canyon with low-poly trees versus an acorn character, blocky Minecraft-style figure and floating windmill platforms",
+        "Different palettes and lighting: warm canyon sunlight and green grass versus an overcast gray sky and brown striped ground"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a HUD with hearts, progress bar and a realistic sky and rock cliff, Image B has no HUD",
+        "Different art styles: A is a painterly semi-realistic dirt path with a human runner, B is faceted low-poly pines with an acorn character and blocky voxel figure",
+        "Different scenes and lighting: A is a warm sunset canyon, B is a flat green platform course in a pale blue sky"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a hazy realistic sky with a dark storm cloud, textured dirt road and cracked boulders",
+        "Image B has a bright blue sky, flat-shaded low-poly pine trees and floating platforms with drones",
+        "The characters differ: a green-clad boy with realistic proportions in A, an acorn-hat creature and a blocky voxel character in B"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has faceted low-poly cone pines, blocky Minecraft-style character and floating platforms",
+        "Image B has a painterly, textured, realistic style with cracked boulders, a tornado cloud and a dirt road",
+        "The characters and environment differ in art style, and the palette and lighting differ"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is flat-shaded low-poly pines with an acorn character and blocky Minecraft-style figure; Image B has painterly textured terrain and a realistic human runner",
+        "Image A has no HUD on a floating-platform course; Image B has hearts, progress bar and score with a dirt path and canyon cliffs",
+        "Different lighting and palette: A is clean pale-blue sky with saturated greens, B is warm orange cliffs with a cloudy photoreal-style sky"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a 'Cliff Run' prompt; Image B shows none",
+        "Different art styles: A has painterly canyon cliffs and cracked boulders, B has flat low-poly pines and floating platforms",
+        "Different characters: a realistic stylized kid in A, an acorn creature and a blocky voxel character in B"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a 'Cliff Run' prompt, while Image B has none",
+        "A has a canyon with cracked boulders and rounded trees, B has angular low-poly pines on floating platforms",
+        "Different characters: a realistic-proportioned runner in A, an acorn character and a blocky voxel figure in B"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a green low-poly landscape with a river, trees and a checkpoint HUD, while Image B has pale floating platforms in a hazy sky",
+        "Different characters: a stylized kid in green in A, an acorn creature and a blocky voxel figure in B",
+        "Different palette and mood: saturated greens and blue sky in A, washed-out lavender and grey-blue in B"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic stormy sky, cracked boulders and a dirt road, while Image B has a flat clear blue sky and a stylized platformer course",
+        "Different characters: a kid in a green outfit versus an acorn character and a blocky voxel figure",
+        "Different art styles: textured, painterly trees in A versus faceted low-poly pines in B"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a checkpoint prompt, while Image B shows no HUD",
+        "Image A uses rounded, soft low-poly trees and a water-like river path, while Image B uses faceted conifers and a flat green platform",
+        "The characters differ: a stylized kid in green in A, an acorn character and a blocky voxel character in B"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses flat low-poly pine trees and a floating-platform obstacle course, while Image B has a realistic sandstone cliff and textured terrain",
+        "different characters: acorn creature and blocky Minecraft-like figure versus a realistic stylized runner",
+        "Image B has a distinct HUD with hearts, progress bar and score, and a different sky and lighting style"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a grounded canyon run with a stylized human character and a game HUD (hearts, timer, objective text)",
+        "Image B is a pale floating-platform sky world with an acorn character, a blocky voxel character and no HUD",
+        "Different palettes and scenery: warm orange cliffs and green trees against muted lavender-blue sky and platforms"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: floating brown platforms, acorn character and blocky red-shirt figure under a flat grey sky",
+        "Image B: canyon run with low-poly trees, cracked boulders, a stylized human runner and a styled HUD",
+        "Different palettes, lighting and art style (muted flat brown vs saturated green and blue)"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a checkpoint prompt, and Image B has none",
+        "Image A shows a lush green river valley with low-poly trees, while Image B shows floating brown platforms, a windmill and a pale overcast sky",
+        "The characters differ: a human kid in a green outfit versus an acorn-headed creature and a blocky Minecraft-style figure"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a blocky Minecraft-style figure and an acorn character on floating brown platforms, while Image B has a realistic-proportioned runner on a dirt path",
+        "Image B has a HUD with hearts, a progress bar and score, and detailed pine trees and cliffs that differ from A's simple low-detail scenery",
+        "The sky and palette differ: A is a flat overcast gray with brown terrain, B is a vivid blue sky with green grass and orange rock"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pale lavender floating platforms in a hazy blue sky with an acorn character and a blocky voxel figure",
+        "Image B: grassy dirt path with cliffs, pine trees, a realistic human runner and a styled HUD with hearts and a score",
+        "Different art direction and palette: muted pastel sky-island versus saturated natural landscape"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 1,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a rounded, soft, painterly low-poly look with a HUD of hearts, a progress bar and an ability bar, while Image B has hard-edged faceted pine trees and floating obstacle-course platforms",
+        "Different characters: a realistic-proportioned kid in a green outfit versus an acorn character and a blocky voxel player",
+        "Different environment and mood: a river valley with dramatic clouds and warm light versus a flat pale-blue sky and a grass platform course with drones and an ornate gate"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 1,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: low-poly faceted pines, acorn character, blocky voxel NPC, floating platforms",
+        "Image B: painterly textured cliffs, realistic clouded sky, rounded bushes, runner on dirt path with log",
+        "Different HUD and art style: B has hearts, progress bar and banner text, A has none"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: floating platforms, windmill and acorn-headed character in a stylized toy-like world",
+        "Image B: low-poly trees, cracked boulders and a green-clad child on a dirt path, with a dark tornado-like cloud",
+        "Different art style, palette and character design"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: pale floating platforms in a hazy blue sky with an acorn character and a blocky voxel figure",
+        "Image B: grounded green meadow, dirt path, low-poly trees and cracked boulders under a stormy sky",
+        "Different character styles and palettes: pastel and sky-heavy versus earthy and saturated green"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 1,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has faceted low-poly pine trees and an acorn character on floating platforms; Image B has a realistic painterly landscape with a tornado sky",
+        "Different character styles: blocky voxel figure and acorn character vs. a stylized human boy in a green outfit",
+        "Different scenery and palette: bright green floating course with purple drones vs. dirt road, cracked boulders and orange cliff"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has faceted low-poly pine trees, floating platforms and a blocky Minecraft-style character, while Image B has rounded broadleaf trees and a realistic river",
+        "Image A has no HUD, while Image B has a rounded cream HUD with hearts, a progress bar and a skill bar",
+        "Different player characters: an acorn-headed figure in A, a small dark-haired kid in a green outfit in B"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has faceted low-poly pines, a blocky voxel character and an acorn hero on floating platforms, while B has smooth rounded trees and a realistic-proportioned runner on a cliff path",
+        "Different lighting and palette: A is flat and pale blue-sky, B is warm orange cliffs with a hazy glow",
+        "Different HUD and level style: B has hearts, a progress bar and 'Cliff Run' prompts, A has none visible"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has floating obstacle-course platforms, drones and an acorn character with a blocky avatar; Image B is a grounded river valley with a runner",
+        "Different tree styles: faceted conifers in A, rounded low-poly canopies in B",
+        "Different art and lighting: flat saturated lighting in A, painterly clouds and soft atmosphere in B, plus a distinct HUD with hearts, timer and ability bar"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has flat-shaded low-poly pines with an acorn character and blocky Minecraft-style figure; Image B has textured, painterly trees and boulders",
+        "Different scenes: A is a floating obstacle-course platformer with drones and an ornate gate; B is a dirt path with a storm cloud and a cliff",
+        "Different character styles: A's acorn and blocky human versus B's realistic-proportioned kid in green"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a grounded canyon run with green trees, cracked boulders and a HUD with hearts and a progress bar",
+        "Image B is a pale floating-platform sky world with an acorn character and a blocky voxel avatar, with no HUD",
+        "Different palettes and art styles: warm saturated orange and green against a muted pastel blue-lavender"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a grounded dirt-path landscape with trees and a stylized boy character, while Image B shows floating pale platforms in a hazy sky",
+        "Different protagonists: a green-clad boy in A, an acorn-headed creature plus a blocky voxel figure in B",
+        "Different palette and lighting: warm earthy greens and oranges in A, cool pale blue-lavender in B"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: faceted low-poly pines, floating platforms and a blocky Minecraft-style character",
+        "Image B: painterly textured trees, cracked boulders, dirt road and a stormy sky",
+        "Different character styles and lighting: A is bright and clean, B is hazy and textured"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: overcast grey sky, brown striped platforms, blocky Minecraft-style character next to an acorn character",
+        "Image B: blue sky with painterly clouds, low-poly green trees, water river path",
+        "Image B has a rounded-UI HUD with hearts, a progress bar and a checkpoint label, none of which appear in Image A"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and mission text, Image B shows none",
+        "Different characters: a realistic-proportioned teal-clad runner vs. an acorn-capped creature and a blocky red-shirt figure",
+        "Different settings and palettes: canyon with green low-poly trees vs. brown floating platforms, windmill and overcast sky"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A uses faceted low-poly pines, a blocky voxel character and an acorn hero on floating platforms",
+        "Image B has a realistic painted sky, orange cliffs, a textured dirt path and a stylized human runner",
+        "Image B has a distinct HUD (hearts, progress bar, score, quest banner) and a different art style and palette"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 2,
+      "a": "default-play-1420",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a green low-poly forest with a river and a HUD with hearts and a progress bar",
+        "Image B is a pale floating-platform sky course with an acorn character and a blocky voxel character",
+        "Different palettes, scenery and character styles, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 2,
+      "a": "default-play-0520",
+      "b": "pips-big-leap--academy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a canyon run with a stylized humanoid, a HUD with hearts and a progress bar; Image B has floating platforms, an acorn character and a blocky character",
+        "Different art style: A uses painterly rock textures and warm lighting, B uses flat low-poly pines and a pale blue sky",
+        "Different UI and objectives: A shows a prompt banner and ability bar, B shows no HUD"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w3--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "tells": [
+        "Image A is a stylized runner with a HUD showing hearts, a progress bar and score, on a grassy canyon trail",
+        "Image B shows a pale floating-platform sky world with an acorn character and a blocky voxel character",
+        "Different palettes and scenery: warm orange and green against cool pale blue and lavender"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A uses a blocky Minecraft-style character with a stylized acorn hero on floating brown platforms",
+        "Image B has a realistic-style runner with cliffs, pine trees and green hills",
+        "Image B has a distinct HUD (hearts, progress bar, score) that is absent from A"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 2,
+      "a": "title-settle-60s",
+      "b": "pips-big-leap--w2--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has a boy in a green outfit on a dirt path with low-poly trees and cracked boulders; Image B has an acorn-headed character on floating platforms with a windmill",
+        "Different environments: grassy path under a tornado cloud vs. a brown platform in a bright overcast sky",
+        "Image B contains a blocky Minecraft-style character and a wooden crate, with no matching art style in Image A"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 2,
+      "a": "default-play-0060",
+      "b": "pips-big-leap--w1--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A has a HUD with hearts, a progress bar and a score, plus a realistic textured canyon and sandy path; Image B has no HUD",
+        "Image B uses flat low-poly pine trees, floating platforms and an acorn-headed character in a stylized setting",
+        "The lighting and palette differ: A has warm orange cliffs and a cloudy sky, B has a clean pale blue sky and green flat shading"
+      ]
+    }
+  ]
+}

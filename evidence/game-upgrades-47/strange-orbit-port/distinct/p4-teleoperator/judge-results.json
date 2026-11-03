@@ -1,0 +1,723 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:16:53.002Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "strange-orbit-port--default--settle-25s",
+      "strange-orbit-port--default--settle-60s"
+    ],
+    "framesB": [
+      "teleoperator--fog--settle-60s",
+      "teleoperator--golden--settle-60s",
+      "teleoperator--night--settle-60s",
+      "teleoperator--noon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.925,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.925,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime city street with buildings, traffic and a minimap HUD",
+        "Image B is an alien night scene with a giant moon, purple starry sky and an astronaut on a hover-bike",
+        "Different palettes, lighting and camera style (chase cam vs. side-view with soft haze)"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized alien space setting with an astronaut on a hover-bike under a purple nebula sky",
+        "Image B is a realistic foggy city street with traffic and a minimap HUD",
+        "The art style, palette and vehicle types are completely different"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space setting with an astronaut on a sidecar bike and a floating track",
+        "Image B: realistic city street with a white pod car, traffic and a minimap",
+        "Different scenery, vehicles and HUD; no shared palette or art style"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien planet with an astronaut on a sidecar motorbike and a floating track",
+        "Image B: realistic night city street with buildings, traffic and a minimap",
+        "Different scenery, vehicles and HUD style"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime city street with realistic-style buildings, cars and a minimap",
+        "Image B is a stylized alien night scene with a giant moon, purple sky and an astronaut on a sidecar bike",
+        "Different palettes, lighting, vehicles and camera setups"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is an alien space setting with a giant moon, purple nebula sky and an astronaut on a hover bike",
+        "Image B is a realistic night city with buildings, traffic, a minimap HUD and a pod-like car",
+        "Different scenery, vehicles and camera style; only the warm orange palette is shared"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with traffic, buildings and a minimap HUD",
+        "Image B is an alien-planet scene with a huge moon, a floating track and an astronaut on a sidecar bike",
+        "Different settings, vehicles and palettes: warm orange urban dusk vs purple-pink sci-fi night"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a foggy realistic city street with cars and a minimap HUD",
+        "Image B is a stylized alien planet with a purple starry sky, a large moon, and an astronaut on a sidecar bike",
+        "Completely different palettes, scenery, and vehicle types"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space setting with an astronaut on a sidecar bike and a floating track over a purple starfield",
+        "Image B: realistic city street with buildings, traffic and a minimap",
+        "Different vehicles, scenery and palette (pastel alien vs. urban dusk)"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime city street with a minimap HUD, Image B is an alien night landscape with a large moon",
+        "Different vehicles: a white boxy pod car in traffic versus an astronaut on a sidecar motorcycle",
+        "Different palettes and lighting: bright pastel low-poly realism versus a dark purple and orange stylized glow"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized alien space setting with an astronaut on a hoverbike, a giant moon and a purple nebula sky",
+        "Image B is a realistic foggy city street with brick buildings, traffic and a minimap HUD",
+        "Different art style, palette and vehicle types"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city street with traffic, buildings and a minimap",
+        "Image B is an alien planet with a giant moon, starry sky and an astronaut on a hover bike",
+        "Different vehicles, scenery and HUD, with no shared art style or palette"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a foggy realistic city with traffic and a minimap HUD",
+        "Image B is a stylized alien planet with a moon, purple starry sky and an astronaut on a sidecar bike",
+        "Different palettes, scenery and vehicle styles"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic daytime city street with a minimap HUD",
+        "Image B is a stylized alien night scene with a giant moon and an astronaut on a sidecar bike",
+        "The two frames differ completely in palette, lighting, scenery and vehicle type"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a space setting with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic city street with buildings, a white pod vehicle and a circular minimap",
+        "The scenery, palette and vehicle types have nothing in common"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien space setting with an astronaut on a hoverbike, a giant moon and a floating ribbon track",
+        "Image B is a realistic night city with buildings, traffic and a minimap",
+        "Different vehicle types, scenery and HUD, with no shared art style or assets"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on sidecar motorbike, alien moon landscape with a floating track",
+        "Image B: realistic city street with buildings, traffic and a minimap",
+        "Different art style, setting and vehicle type"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a daytime realistic city street with traffic and a minimap HUD",
+        "Image B is a stylized alien night scene with a moon, a nebula sky and an astronaut on a sidecar bike",
+        "Completely different palettes, vehicles and scenery"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime city street with a minimap HUD and traffic",
+        "Image B is an alien night scene with a giant moon, purple starry sky and an astronaut on a hover bike",
+        "Different art style, lighting and palette, and no shared vehicles or HUD"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a foggy realistic city street with a minimap HUD",
+        "Image B is a stylized alien space setting with a giant moon and purple nebula sky",
+        "Different vehicles: boxy white van and cars vs astronaut on a sidecar motorbike"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien space setting with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic city street with buildings, traffic and a white pod vehicle, with a minimap HUD",
+        "The scenery, palette and vehicle types have nothing in common"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space setting with an astronaut on a sidecar bike, giant moon and purple starry sky",
+        "Image B: realistic city street with buildings, traffic and a white pod vehicle",
+        "Different HUD: Image B has a circular minimap, Image A has none, and the palettes differ (pink-purple vs orange-gray urban)"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien space setting with astronaut on a hover motorcycle, giant moon and floating track",
+        "Image B: realistic night city street with buildings, traffic and a minimap HUD",
+        "Different scenery, vehicles and HUD style"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 2,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a foggy realistic city street with cars and a minimap HUD",
+        "Image B is a stylized alien planet with a giant moon, purple starry sky and an astronaut on a hover bike",
+        "Different art styles, palettes and lighting"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space setting with an astronaut on a sidecar bike, a giant moon and a floating track",
+        "Image B: realistic city street with buildings, traffic and a white pod vehicle",
+        "Different HUD and style: B has a circular minimap, A has none"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A: stylized alien planet with a giant moon and an astronaut on a hover bike",
+        "Image B: realistic foggy city street with brick buildings, traffic and a minimap HUD",
+        "Different art styles, palettes and vehicle types"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a city street with traffic and a minimap HUD; Image B is an alien space track with an astronaut on a motorbike",
+        "Different scenery and palette: orange and white buildings vs purple nebula sky and red water",
+        "Different vehicles and camera: rear-chase view of a white pod vs a side view of a sidecar bike"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city street with traffic and a minimap HUD",
+        "Image B is an alien planet with a giant moon, starry sky and an astronaut on a hover bike",
+        "Different scenery, vehicles and camera style"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime city street with realistic buildings, traffic and a minimap HUD",
+        "Image B is an alien night scene with a giant moon, purple starry sky and an astronaut on a hover bike",
+        "Different art direction: A is a clean, bright, low-poly urban look, while B is a hazy, dark, stylized sci-fi look"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien night scene with a giant moon, purple nebula sky and an astronaut on a hover bike",
+        "Image B: daytime city street with buildings, traffic and a circular minimap HUD",
+        "Different vehicles, palettes and lighting (dark violet/orange vs bright white/blue/red)"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien space setting with a giant moon, purple nebula sky and an astronaut on a hover-bike",
+        "Image B is a realistic night city street with buildings, traffic and a minimap HUD",
+        "The two frames differ in scenery, vehicles and HUD style"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 3,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a realistic foggy city street with traffic and a minimap, Image B is a stylized space scene with an astronaut on a hover bike",
+        "Different palettes: desaturated gray-teal vs. purple-and-salmon with a giant moon",
+        "Different vehicles and camera: car-based chase view vs. sidecar bike on an elevated alien track"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien space setting with astronaut on a hover-bike, giant moon and purple nebula sky",
+        "Image B: realistic night city with buildings, traffic and a minimap HUD",
+        "Different vehicles, scenery and art style (stylized low-poly vs. urban street scene)"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a foggy realistic city street with cars and a minimap HUD",
+        "Image B is a stylized alien planet with a large moon, purple starry sky and an astronaut on a hover bike",
+        "Different palettes, art styles and vehicle designs"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city street with traffic and a minimap HUD",
+        "Image B is an alien planet with a giant moon, a purple starry sky and an astronaut on a sidecar bike",
+        "Different scenery, vehicles and art style"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien space setting with astronaut on a sidecar bike, purple starry sky and giant moon",
+        "Image B: realistic daytime city street with buildings, cars and a minimap HUD",
+        "Completely different palettes, scenery and vehicle types"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a space setting with an astronaut on a hover-bike, a giant moon and a purple nebula sky",
+        "Image B is a realistic city street with buildings, traffic and a white pod vehicle",
+        "Different HUD and art style: B has a circular minimap, A shows no HUD"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a foggy realistic city street with a minimap HUD, Image B is a stylized alien space setting with a giant moon",
+        "Different vehicles: boxy white pod and cars vs. an astronaut on a sidecar motorbike",
+        "Different palette and lighting: desaturated gray-teal haze vs. purple and orange glow"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a realistic daytime city street with a minimap HUD",
+        "Image B is a stylized alien night scene with an astronaut on a hover-bike",
+        "Different palette, lighting and art style"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 4,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: space setting with an astronaut on a sidecar bike, a giant moon and a floating track",
+        "Image B: realistic city street with buildings, traffic and a white pod vehicle",
+        "Different HUD and art style: B has a circular minimap, A has none"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime city street with realistic-style buildings, cars and a minimap",
+        "Image B is an alien night scene with a giant moon, purple nebula sky and an astronaut on a sidecar bike",
+        "Different palettes, vehicles and camera style, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien space setting with an astronaut on a sidecar bike, Image B is a city street with a white pod car",
+        "Different environments, palettes and vehicle designs",
+        "Image B has a circular minimap HUD and realistic traffic, with no counterpart in Image A"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--golden--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic city street with traffic and a minimap HUD, Image B is an alien moonlit landscape with a floating track",
+        "Image B has an astronaut on a sidecar motorbike, Image A has a white pod vehicle with orange cars",
+        "Different palettes and scenery: orange and gray urban daylight against purple space sky and pink ground"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien space setting with astronaut on a hover-bike, giant moon and nebula sky",
+        "Image B: realistic night city street with buildings, traffic and a minimap HUD",
+        "Different vehicles, scenery and rendering style, with no shared HUD or palette"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized space setting with astronaut on a sidecar bike, giant moon and purple starry sky",
+        "Image B: realistic foggy city street with traffic, buildings and a minimap HUD",
+        "Different art styles and vehicle types: low-poly alien track vs. realistic urban driving"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--night--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night city street with traffic and a minimap",
+        "Image B is an alien planet with a moon, astronaut rider and floating track",
+        "different scenery, vehicles and HUD (A has a minimap, B has none)"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-25s",
+      "b": "teleoperator--noon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daytime city street with a minimap HUD, Image B is an alien night landscape with a giant moon",
+        "Different vehicles: boxy white microcar with traffic vs. astronaut on a sidecar hoverbike",
+        "Different palettes and lighting: pale realistic daylight vs. purple/red space glow with no HUD"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 5,
+      "a": "strange-orbit-port--default--settle-60s",
+      "b": "teleoperator--fog--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized alien space setting with an astronaut on a hover bike, a giant moon and a floating track",
+        "Image B is a realistic foggy city with traffic, brick buildings and a minimap HUD",
+        "Completely different palettes, scenery and vehicle types"
+      ]
+    }
+  ]
+}

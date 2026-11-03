@@ -1,0 +1,83 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dull overcast sky; the player is fairly small and turned sideways; the far gate area is a bit soft",
+     "Cobblestones are slightly over-saturated and brown; there is a dark smudge on the path near the player; the player is small and off-centre; the mountains in the distance are a bit muddy",
+     "Grass is saturated and a bit flat. The sky is slightly grey. The player is small, but they read well against the cobblestones."
+    ]
+   },
+   {
+    "variant": "forest",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is drawn as a translucent flat-yellow silhouette inside a shield bubble, with little material detail; foreground pine foliage is dark and polygonal at the left edge; a small blocky obstacle and debris sit on the log path",
+     "Player is a translucent yellow ghost-like silhouette with a shield bubble, so it reads poorly as a character; a few blocky dark leaf clusters crowd the left edge; small cube debris on the log; the shadows are a little pixelated",
+     "The player is a translucent yellow ghost-like silhouette, so it lacks material detail. The foliage close to the camera on the left is dark and blocky. The grass texture shows pixelated shadows. The crate on the log path looks a little floaty."
+    ]
+   },
+   {
+    "variant": "river",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Low-poly cliffs look a bit faceted; the player's pose is partly covered by the shield ellipse and a floating orb; enemies on the far bridge are small",
+     "Large faceted cliff geometry looks low-poly; the shield bubble effect floats beside the player; a striped ball sits oddly on the player's head; the boulders sit a bit awkwardly",
+     "The cliff geometry is faceted and low-poly. The shield bubble partly overlaps the player. The plank textures are simple."
+    ]
+   },
+   {
+    "variant": "rooftops",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player is a fairly flat orange silhouette; a thin floating plank/rail crosses the foreground roof; the distant horizon is slightly hazy; the dense rooftop clutter is a little busy",
+     "Player is semi-transparent orange and partly overlaps the shield glow; a thin green rail strip floats across the bottom foreground; distant ground plane edges are visible; a slight haze sits at the horizon",
+     "The player is translucent and orange with little detail. The foreground is cluttered: a flat green strip near the bottom edge reads oddly, and there is a dark green slab stretching to the horizon. The cobbled ground plane reaches far out and looks empty. Some shading is muddy."
+    ]
+   },
+   {
+    "variant": "village",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Translucent pale-blue clone figures crowd the player and partly compete with them for attention; tree foliage is chunky and low-poly; the sky is slightly grey",
+     "Translucent light-blue clone figures crowd the foreground and partly compete with the player; the tree canopies are crumpled low-poly; a building is cut off at the right edge",
+     "Translucent pale-blue ghost clones around the player clutter the frame. The tree canopies are faceted and low-poly. A partial building is cropped at the right edge."
+    ]
+   }
+  ]
+ }
+]

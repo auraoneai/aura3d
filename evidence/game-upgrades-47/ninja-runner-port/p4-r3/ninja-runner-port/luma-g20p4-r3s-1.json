@@ -1,0 +1,269 @@
+[
+ {
+  "target": "desktop",
+  "shot": "title-1280",
+  "w": 1280,
+  "h": 720,
+  "mean": 114.2,
+  "lowerMean": 94.31,
+  "centreMean": 101.39,
+  "p5": 17,
+  "p50": 123,
+  "p95": 183,
+  "darkFrac": 0.0176,
+  "clipFrac": 0,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 104,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":1,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": null,
+   "phase": "intro",
+   "distance": 0,
+   "form": "base",
+   "kills": 0
+  },
+  "hud": {
+   "intro-card": [
+    410,
+    49,
+    460,
+    621
+   ]
+  }
+ },
+ {
+  "target": "desktop",
+  "shot": "early-1280",
+  "driveErr": "none",
+  "w": 1280,
+  "h": 720,
+  "mean": 113.19,
+  "lowerMean": 93.03,
+  "centreMean": 92.77,
+  "p5": 18,
+  "p50": 123,
+  "p95": 181,
+  "darkFrac": 0.0163,
+  "clipFrac": 0,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 103,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":1,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": null,
+   "phase": "running",
+   "distance": 9.013979166666665,
+   "form": "base",
+   "kills": 0
+  },
+  "hud": {
+   "stats": [
+    1128,
+    14,
+    138,
+    154
+   ],
+   "vitals": [
+    14,
+    14,
+    210,
+    154
+   ],
+   "forms": [
+    14,
+    640,
+    340,
+    66
+   ],
+   "abilities": [
+    986,
+    586,
+    280,
+    120
+   ],
+   "progress": [
+    360,
+    12,
+    560,
+    10
+   ],
+   "mute": [
+    1008,
+    6,
+    85,
+    44
+   ],
+   "pause-btn": [
+    936,
+    6,
+    66,
+    44
+   ]
+  }
+ },
+ {
+  "target": "desktop",
+  "shot": "run-1280",
+  "driveErr": "none",
+  "w": 1280,
+  "h": 720,
+  "mean": 79.43,
+  "lowerMean": 78.56,
+  "centreMean": 78.55,
+  "p5": 3,
+  "p50": 79,
+  "p95": 174,
+  "darkFrac": 0.1169,
+  "clipFrac": 0,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 112,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":1,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": {
+    "target": 0,
+    "from": 45.34,
+    "to": 51.76
+   },
+   "phase": "running",
+   "distance": 45.344895833333304,
+   "form": "base",
+   "kills": 0
+  },
+  "hud": {
+   "stats": [
+    1115,
+    14,
+    151,
+    154
+   ],
+   "vitals": [
+    14,
+    14,
+    210,
+    154
+   ],
+   "forms": [
+    14,
+    640,
+    340,
+    66
+   ],
+   "abilities": [
+    986,
+    586,
+    280,
+    120
+   ],
+   "progress": [
+    360,
+    12,
+    560,
+    10
+   ],
+   "mute": [
+    1008,
+    6,
+    85,
+    44
+   ],
+   "pause-btn": [
+    936,
+    6,
+    66,
+    44
+   ]
+  }
+ },
+ {
+  "target": "desktop",
+  "shot": "action-1280",
+  "driveErr": "none",
+  "w": 1280,
+  "h": 720,
+  "mean": 97.67,
+  "lowerMean": 71.47,
+  "centreMean": 70.16,
+  "p5": 6,
+  "p50": 107,
+  "p95": 173,
+  "darkFrac": 0.0599,
+  "clipFrac": 0,
+  "engine": {
+   "renderPath": "hdr-msaa",
+   "bloomFusion": "separable",
+   "droppedFeatures": null,
+   "drawCalls": 114,
+   "shadows": "{\"shadows\":[{\"light\":\"sun\",\"filter\":\"pcf\",\"casterVariants\":[\"sk0|ah\",\"sk0|ah|ds\",\"sk0|i|b|ds|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|ds|prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstanceAttr=1,prd02.depthInstancing=1\",\"sk0|i|b|prd02.depthInstancing=1\",\"sk4|ds|prd02.depthSkinning=4\"],\"sampled\":true,\"cascadeCount\":2,\"skippedCascades\":[]}],\"droppedFeatures\":[],\"contactShadows\":",
+   "warnings": [
+    "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+   ],
+   "environment": "{\"model\":\"physical\",\"environment\":{\"source\":\"prd02\",\"faceSize\":0,\"mipCount\":0,\"format\":\"rgba16f\",\"shBound\":false,\"backgroundDrawn\":false,\"pmremGpuMs\":null},\"lightsEvaluated\":1,\"lightsCulledByRange\":null,\"lightsDroppedByCap\":0,\"lights\":null,\"timings\":{\"pmrem\":null,\"shadowCascade\":[],\"shadowLocal\":nul",
+   "threat": null,
+   "phase": "running",
+   "distance": 52.96921874999998,
+   "form": "base",
+   "kills": 0
+  },
+  "hud": {
+   "stats": [
+    1116,
+    14,
+    150,
+    154
+   ],
+   "vitals": [
+    14,
+    14,
+    210,
+    154
+   ],
+   "forms": [
+    14,
+    640,
+    340,
+    66
+   ],
+   "abilities": [
+    986,
+    586,
+    280,
+    120
+   ],
+   "progress": [
+    360,
+    12,
+    560,
+    10
+   ],
+   "mute": [
+    1008,
+    6,
+    85,
+    44
+   ],
+   "pause-btn": [
+    936,
+    6,
+    66,
+    44
+   ]
+  }
+ }
+]

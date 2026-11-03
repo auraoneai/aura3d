@@ -21,7 +21,8 @@ export type SiltLookMode = "inked" | "original";
  * green orchard grass with dark ridges under a bright horizon gap; a closer title orbit and a cleaner dusk grade), so
  * they open in the inked look again (blind-panel tally in lanes/g24.md).
  */
-export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set([1, 6]);
+// GU47 phase 6 (4.7.4): ch1 noon and ch6 dawn reworked (green noon meadow, gold dawn without the pink haze) and inked again
+export const ORIGINAL_DEFAULT_CHAPTERS: ReadonlySet<number> = new Set<number>();
 
 /** The bare entry URL (no `chapter` param) opens the 4.6.2 look when true (blind-panel fallback). */
 export const BARE_ENTRY_ORIGINAL = false;
@@ -119,12 +120,13 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     key: { elevationDeg: 64, azimuthDeg: 160, color: "#fff3df", intensity: 2.8 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.45 },
     hdri: "outdoor-midday", environmentIntensity: 1.0, environmentRotationDeg: 160, practicals: 0, pcss: false,
-    sky: { top: "#5f9ad0", horizon: "#e6d2aa", discSize: 0.028, glow: 0.6, cirrus: 0.45, dust: 0.4, storm: 0, stars: 0 },
-    fog: { color: "#d9c39a", density: 0.0003, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.35 },
-    grade: { exposure: 0.85, contrast: 1.14, saturation: 1.06, temperature: 0.08 },
+    // phase 6: a clear blue noon over a green meadow (the orchard grass set) with light haze, not the beige-grey wash
+    sky: { top: "#3f86cc", horizon: "#cfe2ea", discSize: 0.028, glow: 0.5, cirrus: 0.45, dust: 0.12, storm: 0, stars: 0 },
+    fog: { color: "#c4d6dc", density: 0.0002, heightFalloff: 0.035, heightReference: 0, maxOpacity: 0.2 },
+    grade: { exposure: 0.99, contrast: 1.18, saturation: 1.16, temperature: 0.02 },
     bloom: { intensity: 0.3, threshold: 1 }, ink: DAY_INK,
-    wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "sand", color: "#f4e2c0" },
-    ground: "sand", rain: false, godRays: false, lensFlare: false
+    wake: { color: "#f1d6a8", rate: 160 }, motes: { kind: "pollen", color: "#f2e8a8" },
+    ground: "orchard", ridge: "#6f8a9a", rain: false, godRays: false, lensFlare: false
   },
   {
     chapter: 2, hour: "indigo moonlight under the roots (23:30)", night: true,
@@ -182,9 +184,10 @@ export const CHAPTER_LOOKS: readonly ChapterLook[] = [
     key: { elevationDeg: 6, azimuthDeg: 80, color: "#ffad9a", intensity: 2.3 },
     rim: { color: SILT_PALETTE.jadeWhite, intensity: 0.5 },
     hdri: "spruit_sunrise", environmentIntensity: 0.85, environmentRotationDeg: 80, practicals: 0, pcss: true,
-    sky: { top: "#7d8cc0", horizon: "#f0a090", discSize: 0.034, glow: 0.55, cirrus: 0.7, dust: 0.3, storm: 0, stars: 0 },
-    fog: { color: "#d9a08e", density: 0.0004, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.3 },
-    grade: { exposure: 0.94, contrast: 1.18, saturation: 1.15, temperature: 0.06 },
+    // phase 6: a gold dawn under a blue zenith with thin haze, so trees and ground keep their colour (no pink wash)
+    sky: { top: "#5d78b8", horizon: "#f4b47e", discSize: 0.034, glow: 0.45, cirrus: 0.7, dust: 0.15, storm: 0, stars: 0 },
+    fog: { color: "#c8a48e", density: 0.00024, heightFalloff: 0.045, heightReference: 0, maxOpacity: 0.18 },
+    grade: { exposure: 0.94, contrast: 1.2, saturation: 1.1, temperature: 0.03 },
     bloom: { intensity: 0.26, threshold: 1 }, ink: DAY_INK,
     wake: { color: "#eab69a", rate: 140 }, motes: { kind: "sand", color: "#f3c7b4" },
     ground: "sand", rain: false, godRays: false, lensFlare: true

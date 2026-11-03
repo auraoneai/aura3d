@@ -1,0 +1,719 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:13:14.773Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink--default--settle-60s",
+      "heatsink--dustfall--settle-60s",
+      "heatsink--vesper--settle-60s"
+    ],
+    "framesB": [
+      "strange-orbit-port--default--settle-60s",
+      "strange-orbit-port--neutral-env--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D racing game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.889,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 47,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.889,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: blocky low-poly hover drones on a city highway with a minimap HUD",
+        "Image B: astronaut on a white motorcycle on a Mars-like plain with a giant moon and purple nebula",
+        "Different art style and scenery: dark industrial skyline vs. soft, painterly space track"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: voxel-style hovercraft racing on an asphalt city road with a minimap HUD",
+        "Image B: astronaut on a motorbike with a sidecar in a purple space sky with a red desert",
+        "Different art direction: dark urban sunset versus pastel low-poly space scenery"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: smooth rounded astronaut motorbike on a Mars-like surface with a giant moon and purple nebula sky",
+        "Image B: blocky voxel-style hovercraft on an asphalt city road with dark skyscrapers and a minimap HUD",
+        "Different art styles and palettes: soft pastel orange and teal versus gritty dusk blue with neon glow"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark industrial cityscape with hovering drone-style racers on asphalt, plus a minimap HUD",
+        "Image B: space setting with a purple nebula sky, a large moon, and an astronaut on a sidecar bike",
+        "Different art style: blocky low-poly in A, soft painterly pastel with a floating dotted track in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: smooth, painterly Mars-like terrain with a giant moon and a nebula sky, with a realistic astronaut on a sidecar bike",
+        "Image B: blocky voxel-style neon city with tall dark towers and hovering drone-like racers",
+        "Image B has a minimap HUD and a paved road, while A has a floating dotted track and no HUD"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark cyberpunk highway with blocky hovering drones and a minimap HUD",
+        "Image B: astronaut on a white sidecar motorbike on a Mars-like plain under a giant moon and purple nebula sky",
+        "Different art direction, vehicles, environments and lighting"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a rounded white-teal space bike over a red alien plain with a giant moon and a purple nebula sky",
+        "Image B: blocky voxel hover-racers on an asphalt city highway with dark skyscrapers and a low sun",
+        "Different art style and HUD: A is smooth and low-poly with no HUD, B is chunky voxel with a minimap outline"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: voxel-style hovercraft racers on a city highway with a track minimap HUD",
+        "Image B: astronaut on a smooth, realistic-looking motorbike over a Martian plain with a giant moon",
+        "Different art styles, settings and camera framing"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark cyberpunk city highway with hovering drone-style racers and a minimap HUD",
+        "Image B: space scene with a moon, purple nebula sky and an astronaut on a sidecar motorbike",
+        "Different art styles and palettes: blocky orange/dusk look vs soft pastel, blurred sci-fi look"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: astronaut on a smooth rounded white and teal hover-bike, over a Mars-like red plain with a purple nebula sky and a giant moon",
+        "Image B: blocky voxel-style hover vehicles on an asphalt city road with dark skyscrapers at dusk",
+        "Different art styles, with soft organic shapes in A and chunky low-poly blocks in B, and a minimap HUD only in B"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: smooth, stylized astronaut on a hoverbike over a Mars-like plain with a giant moon and purple nebula sky",
+        "Image B: blocky voxel-style hovercraft racers on an asphalt city highway with dark skyscrapers",
+        "Different rendering and art style, and only B has a minimap HUD"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a white and teal sidecar bike, purple space sky with a large moon, red-orange alien ground",
+        "Image B: dark voxel-style city with lit windows, asphalt road with lane markings, low sun glare, blocky hover vehicles",
+        "Different art styles, palettes, and vehicle designs; only B has a minimap HUD"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: hovering drone-style racers on a dark city highway with a minimap HUD",
+        "Image B: astronaut on a white motorbike with a giant moon and a purple nebula sky",
+        "Different rendering styles: blocky low-poly city against a soft, painterly alien landscape"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a pastel sidecar bike in a purple space scene with a giant moon",
+        "Image B: dark city highway with blocky drone-style racers and a minimap HUD",
+        "Different palette and art style: soft dreamy glow versus gritty orange-brown dusk"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: astronaut on a rounded white-teal hover bike, with a purple space sky, giant moon, and a smooth orange desert ground",
+        "Image B: blocky voxel-style hover vehicles on a paved city highway with dark skyscrapers and a minimap HUD",
+        "Different art styles, with soft painterly shapes in A and hard-edged blocky geometry in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: night city with voxel-style hover vehicles and a minimap HUD",
+        "Image B: alien planet with a giant moon and an astronaut on a smooth white motorbike",
+        "Different art styles and palettes: blocky neon urban vs. soft purple and orange space"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "A: voxel-style hovering vehicles on a city highway with a minimap HUD",
+        "B: astronaut on a motorbike with a smooth, painterly alien landscape and giant moon",
+        "Different art styles, palettes and camera setups"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark cyberpunk city highway with hovering drone-style vehicles and a minimap HUD",
+        "Image B: astronaut on a sidecar motorbike on a Mars-like plain under a purple nebula sky",
+        "Different art styles: blocky hard-edged voxel look vs soft pastel space look with a ribbon track"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: voxel-style hovercraft racing through a sunset cyberpunk city with a minimap HUD",
+        "Image B: astronaut on a sidecar motorbike on a red planet under a purple nebula sky",
+        "Different vehicle design, palette and environment, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 3,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a hoverbike over a Mars-like surface, with a giant moon and purple nebula sky",
+        "Image B: dark city highway with orange skyscrapers, hovering drone-like racers and a minimap HUD",
+        "Different palettes and art styles: soft pastel low-poly versus dark, blocky, industrial"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a smooth, soft astronaut on a hover-bike in a space setting with a huge moon and a purple nebula sky",
+        "Image B is a voxel/blocky city highway with dark skyscrapers and orange hover-craft racers",
+        "Different art styles and vehicle designs, with a minimap HUD only in B"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 3,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: smooth, painterly alien desert with a giant moon and an astronaut on a motorbike",
+        "Image B: blocky voxel-style city, hovering vehicles and a minimap HUD",
+        "Different art styles, palettes and vehicle designs"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 3,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: voxel-style hovering vehicles on a city highway with a minimap HUD",
+        "Image B: astronaut on a motorbike with a sidecar, alien planet, giant moon and nebula sky",
+        "Different art style, setting and palette: dusk cityscape vs. purple space with a ribbon track"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: smooth, painterly Mars-like terrain with a space-astronaut motorbike and a giant moon",
+        "Image B: blocky voxel-style cyberpunk city with a rain-slick road, drone-like hover vehicles and a minimap HUD",
+        "Different palettes and art styles: soft purple and orange space vs. dark blue neon urban"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 4,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a hoverbike over a purple space sky with a giant moon and a floating track",
+        "Image B: blocky voxel vehicles on an asphalt city highway among dark skyscrapers at sunset",
+        "Different art styles and palettes: smooth, soft pastel (A) against hard-edged, gritty and high-contrast (B)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 4,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark cyberpunk city highway with hovering drone-style racers",
+        "Image B: space scene with an astronaut on a sidecar bike and a purple nebula sky",
+        "Different art style, palette and HUD (A has a track minimap, B has none)"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 4,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a hoverbike over a Martian plain with a giant moon and a floating track",
+        "Image B: dark industrial city highway with drone-like racers and a minimap HUD",
+        "Different palette, lighting and art style (soft, painterly pastel versus hard-edged, dark, blocky)"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 4,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night city with skyscrapers, asphalt road and voxel-style hover vehicles",
+        "Image B: alien red planet with a giant moon, purple nebula sky and an astronaut on a sidecar bike",
+        "Different HUD: minimap in A, none in B, and different art style and vehicle design"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 4,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: blocky voxel hover vehicles on a city highway with a minimap HUD",
+        "Image B: astronaut on a smooth white motorbike on a Mars-like surface with a huge moon and nebula sky",
+        "Different art style, setting, and vehicle types"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 5,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A: smooth, painterly alien desert with a giant moon and an astronaut on a bike",
+        "Image B: blocky voxel-style night city with hovering voxel vehicles and a minimap HUD",
+        "Different art styles, palettes and vehicle designs"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 5,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: night cityscape with towers and hovering voxel-style craft; Image B: astronaut on a sidecar motorbike on a red alien planet",
+        "Different environments and palettes: dark blue/orange urban vs. purple space with a giant moon",
+        "Image A has a minimap HUD with a loop track; Image B shows no HUD and a smooth, rounded vehicle style"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 5,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: voxel-style hover vehicles on a city highway with a minimap HUD",
+        "Image B: astronaut on a motorcycle on a Mars-like planet with a moon and nebula sky",
+        "different scenery, vehicle style and palette (orange sunset city vs purple space)"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 5,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a rounded white-teal sidecar bike over a Mars-like plain with a giant moon and a purple nebula sky",
+        "Image B: blocky voxel-style hover vehicles on an asphalt city highway with dense skyscrapers and a low sun",
+        "Image B has a minimap loop HUD and gritty realistic lighting; Image A has soft stylized shading with no HUD"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 5,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a white sidecar motorbike on an alien planet with a giant moon and purple nebula sky",
+        "Image B: hovering drone-style racers on a dark city highway with a minimap in the corner",
+        "Different art style and lighting: soft, painterly low-poly pastel vs. dark, blocky, orange-lit urban dusk"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 5,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark cyberpunk city with hovering drone-racers and a minimap HUD",
+        "Image B: space scene with an astronaut on a sidecar motorbike, purple nebula sky and a floating bead-lined track",
+        "Different art styles and palettes: blocky orange-brown industrial vs soft pastel, blurry sci-fi"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 6,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a sci-fi motorbike over a red alien plain with a giant moon and purple nebula sky",
+        "Image B: voxel-style hover vehicles on an asphalt city highway at sunset with skyscrapers",
+        "Different vehicle design, environment, lighting and HUD (a track minimap appears only in B)"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 6,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: voxel-style hovercraft racers in a night city with a minimap HUD",
+        "Image B: astronaut on a smooth sidecar motorbike on a Mars-like plain under a purple nebula sky",
+        "Different settings, vehicle art styles and lighting"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 6,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: smooth organic astronaut on a rounded hoverbike over a Mars-like plain with a giant moon and purple nebula sky",
+        "Image B: blocky voxel-style hovercraft on a paved city highway with dark skyscrapers and a minimap HUD",
+        "Different art styles and palettes: soft pastel space look versus hard-edged dusk cityscape"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 6,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: hovering drone racers on a dark city highway with a minimap HUD",
+        "Image B: astronaut on a white sidecar bike over a red planet surface under a purple space sky",
+        "Different art direction: blocky low-poly cityscape vs. soft space scene with a floating ribbon track"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 6,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a hoverbike over a Mars-like red plain with a giant moon and purple nebula sky",
+        "Image B: dark urban highway with skyscrapers, drone-style racers and a minimap HUD",
+        "Different art styles and palettes: soft painterly pastel versus gritty low-poly dusk"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 6,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: blocky voxel-style hovercraft on a night city highway with a minimap HUD",
+        "Image B: smooth astronaut on a motorbike on a red alien planet with a giant moon and a nebula sky",
+        "Different art styles, palettes and settings (neon city vs. desert space)"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 7,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: blocky voxel-style hover vehicles on a neon city highway with a minimap HUD",
+        "Image B: smooth astronaut on a white motorcycle, red alien desert with a giant moon and nebula sky",
+        "Different art styles, vehicle designs and palettes"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 7,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: voxel-style hovercraft in a sunset city with a minimap HUD",
+        "Image B: astronaut on a smooth sidecar bike on a purple-sky alien planet",
+        "Different vehicle styles, scenery, palettes and lighting"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 7,
+      "a": "heatsink--vesper--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: smooth, soft astronaut on a hoverbike in a purple space sky with a giant moon and a red desert floor",
+        "Image B: blocky voxel-style hovercraft on an asphalt city highway with skyscrapers and a minimap",
+        "Different art styles, materials and palettes: pastel low-poly versus dark, saturated voxel neon"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 7,
+      "a": "heatsink--default--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: voxel-style hovering vehicles on an asphalt city highway with a minimap HUD",
+        "Image B: astronaut on a smooth, realistic motorbike over a Mars-like plain with a purple nebula sky",
+        "Different art styles, environments and vehicle types"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 7,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--neutral-env--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: astronaut on a pastel sidecar bike, alien moon and purple nebula sky",
+        "Image B: dark industrial city with drones and hover racers on an asphalt highway",
+        "Different art style and palette, plus a minimap HUD only in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 7,
+      "a": "heatsink--dustfall--settle-60s",
+      "b": "strange-orbit-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: astronaut on a hoverbike over a red alien plain with a giant moon and a purple nebula sky",
+        "Image B: dark urban highway with silhouetted skyscrapers and multiple drone-like racers",
+        "Different art style and HUD: A is soft and painterly with no HUD, B is blocky low-poly with a minimap in the corner"
+      ]
+    }
+  ]
+}

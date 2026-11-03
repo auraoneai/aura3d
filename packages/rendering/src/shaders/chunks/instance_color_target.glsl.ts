@@ -16,7 +16,7 @@ import { registerShaderChunk, registerShaderFeature, shaderChunk, type ShaderFea
 import type { RenderItem } from "../../contracts/renderItem";
 import type { Material } from "../../Material";
 import { MaterialInstance } from "../../MaterialInstance";
-import { makeShaderFeatureReplayGuard } from "../../program/FeatureSelect";
+import { makeShaderFeatureReplayGuard, stockFeatureVerifier } from "../../program/FeatureSelect";
 
 export type InstanceColorTarget = "base" | "emissive" | "both";
 
@@ -95,6 +95,8 @@ const FEATURE: ShaderFeature = {
   hooks: ["vertex:pars", "vertex:end", "fragment:pars", "fragment:emissive"]
 };
 export const isInstanceColorReplaySafeFeature = makeShaderFeatureReplayGuard([FEATURE]);
+
+export const isStockInstanceColorTargetFeature = stockFeatureVerifier([FEATURE]);
 
 let registered = false;
 

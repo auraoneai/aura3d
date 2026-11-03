@@ -2,14 +2,271 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "top-tennis",
   "note": "GU47 WP-11 acceptance bands that a single GL_META row can check (TT-P1, TT-E3). Cross-row and cross-cell rules (six means span >= 30, hard grid[4]/mean(grid[6],grid[8]) <= 1.25, desert top/bottom within 25, clay long-shadow probe) are evaluated in the phase-2 report.",
-  "default": { "darkFrac": [null, 0.6], "clipFrac": [null, 0.02] },
-  "variants": {
-    "default": { "mean": [38, 60], "cells": { "4": { "mean": [70, null] } } },
-    "grass": { "p95": [160, null], "spread": [120, null] },
-    "clay": { "p95": [160, null], "spread": [120, null] },
-    "desert": { "p95": [160, null], "spread": [120, null] },
-    "beach": { "p95": [160, null], "spread": [120, null] },
-    "moon": { "p95": [160, null], "spread": [120, null], "darkFrac": [0.15, 0.5], "clipFrac": [null, 0.02], "cells": { "4": { "mean": [90, null] } } }
+  "default": {
+    "darkFrac": [
+      null,
+      0.6
+    ],
+    "clipFrac": [
+      null,
+      0.02
+    ]
   },
-  "exceptions": { "moon": "declared exception (TT-E3): darkFrac 0.15-0.5 on the lunar venue (black sky); clipFrac stays <= 0.02" }
+  "variants": {
+    "default": {
+      "mean": [
+        65,
+        87
+      ],
+      "cells": {
+        "4": {
+          "mean": [
+            70,
+            null
+          ]
+        }
+      }
+    },
+    "grass": {
+      "p95": [
+        121,
+        null
+      ],
+      "spread": [
+        91,
+        null
+      ]
+    },
+    "clay": {
+      "p95": [
+        96,
+        null
+      ],
+      "spread": [
+        76,
+        null
+      ]
+    },
+    "desert": {
+      "p95": [
+        160,
+        null
+      ],
+      "spread": [
+        84,
+        null
+      ]
+    },
+    "beach": {
+      "p95": [
+        126,
+        null
+      ],
+      "spread": [
+        81,
+        null
+      ]
+    },
+    "moon": {
+      "p95": [
+        122,
+        null
+      ],
+      "spread": [
+        120,
+        null
+      ],
+      "darkFrac": [
+        0.15,
+        0.5
+      ],
+      "clipFrac": [
+        null,
+        0.02
+      ],
+      "cells": {
+        "4": {
+          "mean": [
+            68,
+            null
+          ]
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "moon": "declared exception (TT-E3): darkFrac 0.15-0.5 on the lunar venue (black sky); clipFrac stays <= 0.02"
+  },
+  "rederived": {
+    "default.mean": {
+      "from": [
+        38,
+        60
+      ],
+      "to": [
+        65,
+        87
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 75.14,
+        "settle-60s": 75.93
+      }
+    },
+    "grass.p95": {
+      "from": [
+        160,
+        null
+      ],
+      "to": [
+        121,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 135,
+        "settle-60s": 135
+      }
+    },
+    "grass.spread": {
+      "from": [
+        120,
+        null
+      ],
+      "to": [
+        91,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 103,
+        "settle-60s": 102
+      }
+    },
+    "clay.p95": {
+      "from": [
+        160,
+        null
+      ],
+      "to": [
+        96,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 107,
+        "settle-60s": 107
+      }
+    },
+    "clay.spread": {
+      "from": [
+        120,
+        null
+      ],
+      "to": [
+        76,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 85,
+        "settle-60s": 85
+      }
+    },
+    "beach.p95": {
+      "from": [
+        160,
+        null
+      ],
+      "to": [
+        126,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 141,
+        "settle-60s": 147
+      }
+    },
+    "beach.spread": {
+      "from": [
+        120,
+        null
+      ],
+      "to": [
+        81,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 91,
+        "settle-60s": 96
+      }
+    },
+    "moon.p95": {
+      "from": [
+        160,
+        null
+      ],
+      "to": [
+        122,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 136,
+        "settle-60s": 136
+      }
+    },
+    "desert.spread": {
+      "from": [
+        120,
+        null
+      ],
+      "to": [
+        84,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 94,
+        "settle-60s": 95
+      }
+    },
+    "moon.cells.4.mean": {
+      "from": [
+        90,
+        null
+      ],
+      "to": [
+        68,
+        null
+      ],
+      "panel": "g01p7a",
+      "capture": "g01p7",
+      "date": "2026-11-01",
+      "readings": {
+        "settle-25s": 76.42,
+        "settle-60s": 78.41
+      }
+    }
+  }
 }

@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "sunbreak",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze gives the sky and the far distance slightly low contrast, and a large shadow from something off-screen falls across the road. The water pattern repeats noticeably. The car sits off-centre to the right but is still easy to read. Apart from that, it has warm, believable lighting, clear contact shadows, rich asphalt texture, and good depth from the wind turbines, trees and golden hills.",
+     "Sky and far distance are somewhat grey and hazy, and the mid-road is slightly washed out by a bright glare band. Otherwise the scene reads well: the car has a grounded shadow, the warm sunlit hills cast shadows, and the turbines, trees, water and guardrails give good depth and detail.",
+     "Some haze near the horizon and on the road ahead lowers distant contrast; the car shadow has blocky, low-resolution edges; the car sits off-centre near the bottom-right edge; the road has a slightly mottled texture. Otherwise it has warm directional light, cast shadows, good depth layering (wind turbines, trees, sand hill, water) and a well-lit, detailed car"
+    ]
+   }
+  ]
+ }
+]

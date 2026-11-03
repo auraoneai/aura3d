@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-1/top-tennis--default--settle-60s.jpg",
+      "sha256": "0282933b19bfea4a0056973db2038e4e3ef1378a59e83c79e44bd446996c5cd0"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-6/top-tennis--moon--settle-60s.jpg",
+      "sha256": "b90a1a08635237fc1fd4d74d631f345e23157eecf503605d7eeae09cb6e487d5"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-3/top-tennis--clay--settle-60s.jpg",
+      "sha256": "cde7fd64b733a4b25d23d3f02eaab5fda8895e2e0b41f0f28aedbcdf30492233"
+    },
+    {
+      "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-4/top-tennis--desert--settle-60s.jpg",
+      "sha256": "5189e9978cfae09f0c43ef9d57bab79cdf6ccaafa0c91e87d0cf1028fca38de3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 6,
+    "ibl_reflections": 4.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 6,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "ui_hud": 4
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Paris has a warm low sun with readable long shadows. Dubai is flat and washed out with almost no key/fill contrast. The Moon venue is a single hard key over a near-black surround that crushes the outer stands. Frame 1 is evenly lit with faint side hotspots and no clear flood direction."
+    },
+    {
+      "category": "shadows",
+      "seen": "Directional shadows exist. Player and net shadows are cast across the clay in Paris, and crowd blocks cast shadows on the floor. In frame 1 the player shadows are small soft blobs, and nothing grounds the umpire chair and bench well."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The Moon court mirrors the scoreboard text 'THE MOON 0-0 0-0' and the signs as a flipped planar or SSR reflection, which reads as a glitch. Everything else is matte with no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "Each venue is a court on a large untextured floor slab. The landmarks (a moon sphere, a tower-like structure at the back) are blurry backdrop props, the light poles are bare sticks, and the walls are flat color."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Dubai has heavy uniform haze that lifts the blacks and flattens the whole frame. No indoor haze or light shafts from floods appear. Moon and frame 1 show no atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Court surfaces are flat albedo with faint noise. Clay, hard court and surround share the same response, and players and crowd look like unlit plastic. The stands' wood boxes are untextured."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The crowd is one instanced capsule figure repeated with random colors. The bench and umpire chair are simple boxes. Players are low-poly but readable, and the astronaut helmets add some variety."
+    },
+    {
+      "category": "composition",
+      "seen": "Symmetric broadcast framing. In frames 2 to 4 the court fills about 30–35% of the frame, but a large empty floor wedge dominates the foreground and the top band is dead sky or wall. Frame 1 frames the court tightly at about 70%."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a mild vignette and background blur on the landmark, with little bloom or grading. Dubai is low-contrast and milky. Moon clips to black. Paris is monochrome orange with no tonal separation between court and surround."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "There is no screen-space score overlay. The score sits as small in-world text on the stand fascia, and the 'AURA SLAM' board is occluded by the far player. The serve target is a flat pale-yellow rectangle with a pink ring that clashes with each venue palette. No ball is clearly visible as an accent."
+    },
+    {
+      "category": "camera",
+      "seen": "critique: The camera is right for the genre: a stable elevated broadcast view, with the court at roughly a third of the frame in the venue shots. Paris shows the lighting can work, with a warm low key and long player and net shadows. Everything else "
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,77 @@
+{
+ "target": "roadster-hours-port--redline",
+ "slug": "roadster-hours-port",
+ "variant": "redline",
+ "url": "/apps/showcase-roadster-hours-port/?level=1&autostart=1&autopilot=1",
+ "group": "g8",
+ "runId": "gu47-before-roadster-hours-port-1",
+ "acrRunId": "ch5ud",
+ "readyMs": 59947,
+ "shots": {
+  "settle-25s": {
+   "target": "roadster-hours-port--redline",
+   "id": "settle-25s",
+   "slug": "roadster-hours-port",
+   "variant": "redline",
+   "sinceReadyMs": 25007,
+   "mean": 31.65,
+   "p5": 3,
+   "p50": 15,
+   "p95": 123,
+   "darkFrac": 0.2435,
+   "clipFrac": 0,
+   "grid": [
+    11.4,
+    87.6,
+    6.3,
+    27,
+    67.6,
+    21.5,
+    22.3,
+    25.7,
+    15.3
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 94
+   }
+  },
+  "settle-60s": {
+   "target": "roadster-hours-port--redline",
+   "id": "settle-60s",
+   "slug": "roadster-hours-port",
+   "variant": "redline",
+   "sinceReadyMs": 146136,
+   "mean": 30.7,
+   "p5": 3,
+   "p50": 15,
+   "p95": 116,
+   "darkFrac": 0.2434,
+   "clipFrac": 0,
+   "grid": [
+    11.2,
+    80.5,
+    5.5,
+    27.2,
+    66.9,
+    21.4,
+    22.5,
+    25.7,
+    15.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 94
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-roadster-hours-port-1/roadster-hours-port--redline--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-roadster-hours-port-1/roadster-hours-port--redline--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

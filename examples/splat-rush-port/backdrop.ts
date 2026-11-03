@@ -107,8 +107,19 @@ export function addBackdrop(builder: Scene, look: SplatLook = LOOKS.original): v
   const shadows = look.backdropLights === "from-toon";
   for (const p of PIECES) {
     const island = p.kind !== "balloon";
-    builder.add(model(MODELS[p.kind], { name: p.id, targetMaxDimension: p.size, castShadow: shadows && island, receiveShadow: shadows }).runtime({ id: p.id }));
+    builder.add(model(MODELS[pieceModel(look, p)], { name: p.id, targetMaxDimension: p.size, castShadow: shadows && island, receiveShadow: shadows }).runtime({ id: p.id }));
   }
+}
+
+/** GU47 WP-36 CR-A1: in the carnival look two of the tree islands (one per side) are the paint-pot island; same slot, size and motion. */
+export const PAINT_POT_PIECES: readonly number[] = [3, 6];
+/** GU47 wave 1 CR-A1: in the carnival look the right-hand tree island in slot 9 is the palette island (same slot, size
+ *  10, motion and shadow flags; the GLB's 1.65 x 1.90 x 1.67 bounds match the tree island's 1.59 x 1.89 x 1.58). */
+export const PALETTE_PIECES: readonly number[] = [9];
+export function pieceModel(look: SplatLook, piece: Piece): keyof typeof MODELS {
+  if (look.id === "carnival" && PAINT_POT_PIECES.includes(PIECES.indexOf(piece))) return "paintPotIsland";
+  if (look.id === "carnival" && PALETTE_PIECES.includes(PIECES.indexOf(piece))) return "paletteIsland";
+  return piece.kind;
 }
 
 /** CR-AN2: balloon sway and island rocking, pure functions of time (radians, within ±amplitude). */
@@ -126,17 +137,25 @@ const ramp = (t: number): number => {
   return x * x * (3 - 2 * x);
 };
 
+/** The shared backdrop pose also anchors presentation effects to the scrolling island. */
+export function backdropPose(p: Piece, distance: number, elapsed: number, look: SplatLook): {
+  readonly x: number; readonly y: number; readonly z: number; readonly fade: number;
+  readonly yaw: number; readonly sway: { readonly x: number; readonly z: number };
+} {
+  const z = ((((p.z0 + distance * 0.55) % SPAN) + SPAN) % SPAN) + FAR;
+  const x = p.side * p.offset + curve(-distance + z);
+  const fade = ramp((z - FAR) / 24) * ramp((NEAR - z) / 26);
+  const bob = Math.sin(elapsed * 0.8 + p.z0) * (p.kind === "balloon" ? 0.5 : 0.25);
+  return { x, y: p.y + bob, z, fade, yaw: elapsed * p.spin + p.z0, sway: backdropSway(look, p, elapsed) };
+}
+
 export function updateBackdrop(node: (id: string) => NodeHandle, distance: number, elapsed: number, look: SplatLook = LOOKS.original): void {
   for (const p of PIECES) {
-    const z = ((((p.z0 + distance * 0.55) % SPAN) + SPAN) % SPAN) + FAR;
-    const x = p.side * p.offset + curve(-distance + z);
-    const fade = ramp((z - FAR) / 24) * ramp((NEAR - z) / 26);
-    const bob = Math.sin(elapsed * 0.8 + p.z0) * (p.kind === "balloon" ? 0.5 : 0.25);
-    const sway = backdropSway(look, p, elapsed);
+    const pose = backdropPose(p, distance, elapsed, look);
     node(p.id)
-      .setVisible(fade > 0.02)
-      .setPosition(x, p.y + bob, z)
-      .setRotation(sway.x, elapsed * p.spin + p.z0, sway.z)
-      .setScale(Math.max(0.001, fade));
+      .setVisible(pose.fade > 0.02)
+      .setPosition(pose.x, pose.y, pose.z)
+      .setRotation(pose.sway.x, pose.yaw, pose.sway.z)
+      .setScale(Math.max(0.001, pose.fade));
   }
 }

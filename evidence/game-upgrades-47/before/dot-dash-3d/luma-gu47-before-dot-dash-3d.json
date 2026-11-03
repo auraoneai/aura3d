@@ -1,0 +1,60 @@
+[
+ {
+  "target": "dot-dash-3d--default",
+  "id": "settle-25s",
+  "slug": "dot-dash-3d",
+  "variant": "default",
+  "sinceReadyMs": 25006,
+  "mean": 25.49,
+  "p5": 0,
+  "p50": 19,
+  "p95": 100,
+  "darkFrac": 0.1515,
+  "clipFrac": 0,
+  "grid": [
+   15.1,
+   24.7,
+   12.5,
+   28,
+   45.4,
+   21,
+   25.2,
+   36,
+   21.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 49
+  }
+ },
+ {
+  "target": "dot-dash-3d--default",
+  "id": "settle-60s",
+  "slug": "dot-dash-3d",
+  "variant": "default",
+  "sinceReadyMs": 98733,
+  "mean": 25.49,
+  "p5": 0,
+  "p50": 19,
+  "p95": 100,
+  "darkFrac": 0.1513,
+  "clipFrac": 0,
+  "grid": [
+   15.1,
+   24.5,
+   12.6,
+   27.8,
+   45.5,
+   20.9,
+   25.2,
+   35.9,
+   21.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 49
+  }
+ }
+]

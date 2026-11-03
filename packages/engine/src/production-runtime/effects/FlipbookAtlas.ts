@@ -110,12 +110,10 @@ export interface VfxSpriteLayout {
 
 /**
  * Where each of the 18 built-in sequences sits on `packages/engine/assets/vfx/aura-vfx-2k.png`.
- * Mirrors `manifest.json` except for three sequences whose baked rows overlap: the bake tool advances one
- * cell row per layout row, so a two-row sequence is partly overwritten by the next row (`fireball` covers the
- * bottom-left cell of `smoke-a`, `flame-loop` covers the bottom row of `fireball`, `electric` and
- * `debris-chips` cover the bottom row of `flame-loop`). Those three sample only their clean top row here,
- * with the frame rate scaled so one cycle lasts as long as the baked sequence intends.
+ * The atlas baker can regenerate the marked table directly from the 2k manifest;
+ * install that table, the manifest and both PNG pages as one matching set.
  */
+// BEGIN VFX_SPRITE_LAYOUT
 export const VFX_SPRITE_LAYOUT: Readonly<Record<AuraVfxBuiltinSequence, VfxSpriteLayout>> = {
   "soft-dot": { rect: [4, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
   glow: { rect: [264, 4, 256, 256], columns: 1, rows: 1, frames: 1 },
@@ -127,18 +125,16 @@ export const VFX_SPRITE_LAYOUT: Readonly<Record<AuraVfxBuiltinSequence, VfxSprit
   bubble: { rect: [4, 264, 256, 256], columns: 1, rows: 1, frames: 1 },
   "rain-streak": { rect: [264, 264, 256, 256], columns: 1, rows: 1, frames: 1 },
   snowflake: { rect: [524, 264, 256, 256], columns: 1, rows: 1, frames: 1 },
-  // Baked 2×2 at 12 fps; its bottom-left cell is overwritten by `fireball`.
-  "smoke-a": { rect: [784, 264, 512, 256], columns: 2, rows: 1, frames: 2, fps: 6, loop: true },
+  "smoke-a": { rect: [784, 264, 512, 512], columns: 2, rows: 2, frames: 4, fps: 12, loop: true },
   "smoke-b": { rect: [1304, 264, 512, 512], columns: 2, rows: 2, frames: 4, fps: 12, loop: true },
-  // Baked 4×2; its bottom row is overwritten by `flame-loop`.
-  fireball: { rect: [4, 524, 1024, 256], columns: 4, rows: 1, frames: 4, fps: 24 },
-  // Baked 4×2 at 16 fps; its bottom row is overwritten by `electric` and `debris-chips`.
-  "flame-loop": { rect: [4, 784, 1024, 256], columns: 4, rows: 1, frames: 4, fps: 8, loop: true },
-  muzzle: { rect: [1044, 784, 256, 256], columns: 1, rows: 1, frames: 1 },
-  splash: { rect: [1304, 784, 512, 512], columns: 2, rows: 2, frames: 4, fps: 10 },
-  electric: { rect: [4, 1044, 512, 256], columns: 2, rows: 1, frames: 2, fps: 30, loop: true },
-  "debris-chips": { rect: [524, 1044, 512, 256], columns: 2, rows: 1, frames: 2, fps: 6 }
+  fireball: { rect: [4, 784, 1024, 512], columns: 4, rows: 2, frames: 8, fps: 24 },
+  "flame-loop": { rect: [4, 1304, 1024, 512], columns: 4, rows: 2, frames: 8, fps: 16, loop: true },
+  muzzle: { rect: [4, 524, 256, 256], columns: 1, rows: 1, frames: 1 },
+  splash: { rect: [1044, 784, 512, 512], columns: 2, rows: 2, frames: 4, fps: 10 },
+  electric: { rect: [264, 524, 512, 256], columns: 2, rows: 1, frames: 2, fps: 30, loop: true },
+  "debris-chips": { rect: [1044, 1304, 512, 256], columns: 2, rows: 1, frames: 2, fps: 6 }
 };
+// END VFX_SPRITE_LAYOUT
 
 /** True for the 18 built-in sequence names (`agent-api/vfx/atlas.ts`). */
 export function isVfxBuiltinSprite(name: unknown): name is AuraVfxBuiltinSequence {

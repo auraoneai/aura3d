@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/iron-crown/f48/iron-crown/frames/f48-iron-crown-desert-airbase/iron-crown--desert-airbase--settle-60s.jpg",
+      "sha256": "b056a30342c19d35e5f33e067c53a99c87bc5dafa7bfaa462433a3b01f145a23"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 5.5,
+    "environment_world": 5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 5.5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "ui_hud": 1
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, overcast daylight from a pale blue sky lights the whole scene evenly. There is no top-down spotlight at 60°, no rim light separating the fighters from the background, and no dark arena falloff. The fighters read about as bright as the props behind them."
+    },
+    {
+      "category": "shadows",
+      "seen": "Neither fighter casts a visible contact or cast shadow onto the deck. Their feet sit inside flat beige marker discs that look like decals, not shadows. The barrels and crate cast only faint, soft darkening, so everything appears to float slightly."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The jet's canopy and fuselage pick up glossy sky reflections, and the white spherical tanks show some environment shading. The deck shows a broad, smeared specular streak at the lower left. The fighters' cloth shows almost no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The setting is an aircraft-carrier deck with a control tower, oil barrels, a cargo crate, pressure tanks and a parked jet. The deck stripes and the central sun emblem give the stage a clear identity. The props are scattered at inconsistent scales: the jet is toy-sized next to the fighters, and the tower is small. The horizon is a plain flat plane meeting the sky."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A uniform distance haze washes the horizon and sky. There are no light shafts, no haze cone under a key light, and no particles, so the scene has no crowd-shadow or arena atmosphere."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The fighters' cloth and leather textures look like photo scans and are reasonably detailed. The deck is a flat, low-detail surface with painted lines. The barrels and crate have decent texture, but the materials vary between scanned-realistic and clean-stylized."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The fighter models are humanoid, roughly realistic scans with acceptable silhouettes. The props come from mixed sources and differ in fidelity and scale, which makes the set look assembled from a kitbash library."
+    },
+    {
+      "category": "composition",
+      "seen": "The two fighters sit at the left and right thirds, which suits a side-on fight. However, the glossy jet in the centre pulls the eye away from them, and the large empty foreground deck takes up the bottom third. Each fighter fills only about 10–12% of the frame."
+    },
+    {
+      "category": "camera",
+      "seen": "The side-on view sits slightly above the fighters with a moderate field of view, roughly 45°, which matches the follow-camera recipe. The camera is pulled back a little too far, leaving the pair small in frame."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A grey-blue wash and soft vignette lower the contrast. There is mild haze but no noticeable bloom on highlights. The grading does not match the expected dark, contrasty arena-fight look."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible: no health bars, timer, round indicator or fighter names, all of which a fighting game is expected to show."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

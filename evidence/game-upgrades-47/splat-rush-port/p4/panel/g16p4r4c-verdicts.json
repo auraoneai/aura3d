@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 1,
+    "afterDefects": [
+     "Lavender cloud floor is a bit soft and low in contrast near the camera; brown pillars are flat-shaded and repetitive; some floating islands and props look slightly purple and muddy against the sky.",
+     "No visible ground or play surface, so the ball and its shadow seem to float on empty blue sky and the play area can't be read; ball has a flat matte material with no highlights or definition; frame is mostly a single blue colour with little depth or lighting mood",
+     "No visible ground or track: the ball and its shadow sit on a flat blue void, so the ball looks like it is floating. Flat, uniform sky-blue lighting with no depth cues or atmosphere. The ball has a plain unshaded matte red look with no material detail. The play area cannot be read."
+    ]
+   }
+  ]
+ }
+]

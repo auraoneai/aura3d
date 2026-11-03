@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../g20/evidence/ninja-runner-port/screens/final/run-1280.jpg",
+      "sha256": "60a369223d546ec3925e15b3ef0e28533a6d92b0b88641e5452e610d69a00283"
+    },
+    {
+      "path": "../g20/evidence/ninja-runner-port/screens/final/mid-action-1280.jpg",
+      "sha256": "83a5d80bc50b2b1fd692745e071466cc3f0102af857ddb98a80e3ac5fc7d94e7"
+    },
+    {
+      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p3-r4/ninja-runner-port/frames/g20p3-r4-4/ninja-runner-port--rooftops--settle-60s.jpg",
+      "sha256": "963f53c7804d2f2345685cbf647a5b74a5223f687bae04dbb5275a1c5e3230ab"
+    },
+    {
+      "path": "../g20/evidence/game-upgrades-47/ninja-runner-port/p3-r4/ninja-runner-port/frames/g20p3-r4-6/ninja-runner-port--forest--settle-60s.jpg",
+      "sha256": "f35ddf8d4d44dd39a6357ade0234ecce93ae364c70c8e494ed0b987093241305"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 5,
+    "animation_quality": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Flat, mostly ambient-driven lighting. The gate, towers and houses show weak key/fill separation, the rooftop scene reads evenly lit with no clear sun direction, and the forest frame has washed-out yellow character shading."
+    },
+    {
+      "category": "shadows",
+      "seen": "Contact shadows are almost absent. The bushes and trees float on the grass, the buildings show no cast shadows on the ground, and the only ground marks under the runners are a faint blob/decal disc."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No visible environment reflection response. The stone, roof tiles and wood all read matte and identical, and the translucent shield bubble shows no reflection or fresnel detail from the sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The village is coherent, with a pagoda gate, round stone towers, timber houses and a market stall. However, the grass is a flat tiled plane, the background mountains are low-poly cards, and the forest is repetitive cloned pines on an empty lawn."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "There is some distance haze on the rooftop mountains and warm sunset skies in frames 3–4. The village frames show almost no aerial perspective, and the far hills are as crisp as the midground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone texture is decent. The grass is a noisy repeating texture, the tree bark and foliage are smeared low-res textures, the stone towers are stretched and blurry, and the orange chimney is a flat untextured box."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Assets are readable but mixed. The pagoda gate and timber houses are reasonable, the foliage is jagged low-poly cards, the boulders are blobby, and the hero mesh in frames 3–4 looks untextured yellow with a stiff silhouette."
+    },
+    {
+      "category": "composition",
+      "seen": "The central path leading lines work well, and the gate frames the opener nicely. However, the player sits low and small at about 10–15% of the frame, the area title banner covers the focal enemies, and the rooftop frame has a cluttered mid-ground."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is chase-cam from behind, not the side-on follow the recipe expects. The framing is consistent but places the hero low, and the rooftop frame shows a high vantage with good depth."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is no visible grading or bloom in the village frames. The forest has a pink/magenta sky cast, and the hero's yellow glow looks like a flat emissive tint rather than tuned bloom. There is mild aliasing on the foliage edges."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Running poses read in stills, and the echo clones appear mid-stride. The hero in frame 4 shows a stiff, upright pose on the log, and the clones are identical in pose."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The parchment-style panels are clean and legible, with distance, score, combo, a progress bar with markers and an ability grid. The layout is cohesive, but the panels are heavy and the top-left/top-right boxes crowd the frame."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

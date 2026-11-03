@@ -38,7 +38,7 @@ import { qrCoreGeneratorOn } from "../../../../rendering/src/renderer/qrSubFlags
 import { programCacheSlot } from "../../../../rendering/src/contracts/program.js";
 import { materialRoutesToGeneratedProgram } from "../../../../rendering/src/program/MaterialFeatures.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
-import { isPreparedProductionPrimitiveTextureWorkCurrent, prepareProductionPrimitiveTextureWork, upgradeProductionPrimitiveTextures, type PreparedProductionPrimitiveTextureWork } from "./textures.js";
+import { clearProductionPrimitiveTextureQueued, isPreparedProductionPrimitiveTextureWorkCurrent, noteProductionPrimitiveTextureQueued, texturePendingMs, prepareProductionPrimitiveTextureWork, upgradeProductionPrimitiveTextures, type PreparedProductionPrimitiveTextureWork } from "./textures.js";
 import { prepareCustomMaterialTextureWork, upgradeCustomMaterialTextures, type PreparedCustomMaterialTextureWork } from "./customTextures.js";
 import { createProductionRuntimeBackgroundImage } from "./backgroundImage.js";
 import { createProductionParitySurfaces } from "./paritySurfaces.js";
@@ -777,6 +777,8 @@ export async function createProductionRuntimeSceneRenderer(
     const finishTextureJob = (job: TextureJob): void => {
       if (job.finished) return;
       job.finished = true;
+      // GU47 g09: a job cancelled or dropped before it started no longer reads as queued.
+      if (!job.started) clearProductionPrimitiveTextureQueued(job.resource);
       if (job.started) activeTextureJobs -= 1;
       if (job.cancelled) cancelledTextureJobs -= 1;
       if (textureJobs.get(job.resource) === job) textureJobs.delete(job.resource);
@@ -844,6 +846,8 @@ export async function createProductionRuntimeSceneRenderer(
         controller: new AbortController(), started: false, finished: false, cancelled: false };
       textureJobs.set(resource, job);
       queuedTextureJobs.set(resource, job);
+      // GU47 e6 (g09 texPending): the whole job queue reads pending, not only the active slots.
+      noteProductionPrimitiveTextureQueued(resource, prepared);
       drainTextureJobs();
     };
     const trackPrimitiveEntry = (entry: ProductionRuntimePrimitiveEntry, captured?: ReadonlyMap<PrimitiveResource, CapturedTextureGeneration>): void => {
@@ -1078,7 +1082,10 @@ export async function createProductionRuntimeSceneRenderer(
       actorEntries = compiled.actorEntries as ProductionRuntimeActorEntry[];
       primitiveEntries = compiled.primitiveEntries as ProductionRuntimePrimitiveEntry[];
       // The compiled path creates its own resources after the initial legacy
-      // list. Each gets an independently cancellable mount-owned job.
+      // list. Each gets an independently cancellable mount-owned job (#1142:
+      // compiled primitives get their maps under A3D_QR_COMPILER). Primitives
+      // added later through `app.nodes.add` (GU47 g11 phase 10) are tracked via
+      // the compile context's `onPrimitiveEntriesAdded` (scheduleAddedPrimitiveEntries).
       for (const entry of primitiveEntries) trackPrimitiveEntry(entry);
       // C-37: bind the mounted compiled scene so registry add/remove can take the
       // subtree-compile path (no remount) under A3D_QR_COMPILER.
@@ -1206,7 +1213,9 @@ export async function createProductionRuntimeSceneRenderer(
             status: resource.textureStatus,
             slots: resource.textureSlots,
             pixelBacked: resource.textureStatus === "textured" && resource.texturedMaterial !== null,
-            warnings: resource.textureWarnings
+            warnings: resource.textureWarnings,
+            ...(resource.textureStage !== undefined ? { stage: resource.textureStage } : {}),
+            ...(texturePendingMs(resource) !== undefined ? { pendingMs: texturePendingMs(resource)! } : {})
           }))
         )
         },

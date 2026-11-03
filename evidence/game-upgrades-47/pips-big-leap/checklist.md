@@ -84,3 +84,18 @@ Status legend: **done** (code and unit test in this branch), **phase 2** (needs 
 | L1 luma bands | warn (14 rows); bands not widened, gaps explained in the lane report | `luma-after.json` (round-3 build) |
 | screens-fresh | done (results frames kept from 2026-10-29) | `evidence/pips-big-leap/screens/final/README.md` |
 | kits | done (`installQaHooks`) | `src/main.ts` |
+
+## Phase 4 (4.7.2, 2026-10-31)
+
+| Row | Status | Where |
+|---|---|---|
+| Default look per view (PRD 6.5) | done: all 7 views open in the phase-4 diorama; blind panel `g06p4r4` 3/0/0 in every view | `panels/g06p4r4-verdicts.json` |
+| Shadows (side key, PCSS 0.45-0.5, bias 0.0035/0.22, contact 1.0/0.42) | done; tree shadow edges stair-step on the lawn in software GL | `src/game/looks.ts`, `looks.test.ts` |
+| Reflections (glazed clay slab bodies, glossy Pip, w6 crystal) | done | `src/game/diorama.ts` |
+| Voxel NPCs out of the diorama (PBL-A3 interim) | done; camera obstacles kept | `shell.test.ts`, `diorama.test.ts` |
+| Controls chips (PBL-H1) | done | `index.html`, `src/styles.css` |
+| Rubric of every category >= 7 (PRD 1.2) | not met: minimum 4-4.5 over four runs (phase 3: 3.5-4.5); 11 of 12 categories scored (no animation_quality) | `look-judgement-p4-*.json` |
+| Distinctness >= 0.8 (PRD 1.2) | 4 of 5 pass; cloud-runner-port 0.794 (48/48 "different") | `distinct-p4/` |
+| WP-36 swap-in | blocked: Meshy keys refuse API calls | lane report |
+| L1 luma bands | warn (14 rows); bands not widened | `luma-after.json` (p4-r4) |
+| Final screens and card | retaken from `p4-r4` (results screens kept from 2026-10-29) | `evidence/pips-big-leap/screens/final/` |

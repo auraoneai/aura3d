@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2s/screens/1280x720/01-title.jpg",
+      "sha256": "9b225ccfaa673ae216ccaa8424701ec1c9ef4cb92b1297d1b59333ff61ef0af8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2s/screens/1280x720/03-action-02-route-showcase-aura-fc-3d-state-play.jpg",
+      "sha256": "ab8d6f22c8285a162ca2778fa66c3c8e25ca3f5e57eb4870e069c800a064d735"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2/aura-fc-3d/frames/g09p4-r2-2/aura-fc-3d--lagos--settle-60s.jpg",
+      "sha256": "9ea020daf04b0e71783eb73d660e3635e761564582b6706a17f9825512c24222"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-fc-3d/p4-r2/aura-fc-3d/frames/g09p4-r2-3/aura-fc-3d--glacier--settle-60s.jpg",
+      "sha256": "bf9f634a3f63f218c21143db11e458c9bad8e66b9b90c87ec069dbafd1a3b857"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 6.5,
+    "ibl_reflections": 5,
+    "environment_world": 5,
+    "atmospheric_effects": 3.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 6.5,
+    "camera": 6.5,
+    "postprocessing": 5,
+    "animation_quality": 5.5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The Munich night frames have a single cool key with no visible floodlight pools or falloff across the pitch. The orange arena in frame 3 is lit evenly with no contrast, so the players read flat against the sand."
+    },
+    {
+      "category": "shadows",
+      "seen": "Long directional shadows and dark contact blobs under every player ground them well. The blobs look like pasted discs that don't match the direction of the cast shadows, and the crowd casts no shadows."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Players reflect as mirrored ghosts in the grass in frames 1 and 2, which makes turf read as wet glass. The blue floor in frame 4 suits reflections, but the sun hotspot near the bottom right clips to a white blob."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The crowd is sparse rows of identical capsule primitives with large gaps on flat dark tiers. Apart from one floodlight truss in frame 2, there are no roof, signage, ad boards or tunnel to sell an arena."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "None of the frames show indoor haze, light shafts or depth fade. The far stands are as crisp and saturated as the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass is a high-frequency noisy texture with white specular sparkle, worst on the right of frame 2, where it reads as wet static. The sand and blue courts are untextured flat colour. The goal net is solid white with no mesh transparency."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly players have readable kits and skin tones but stiff blocky limbs and tiny heads. The goal frame and net are simple. The crowd uses primitives only."
+    },
+    {
+      "category": "composition",
+      "seen": "The kickoff frames are symmetrical around the centre circle, but players are small, about 10% of frame height. The crowd band takes the top third of the frame and adds little."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a high-angle perspective view, not the recipe's 70° orthographic broadcast. The angled shot in frame 2 frames the goal well but crops the attackers at the left edge."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A vignette and bloom are visible in frame 4. The grass noise suggests no temporal AA or mip filtering. There is no tonal grade unifying the arenas."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The running poses in frame 2 show a reasonable stride, but the idle kickoff stances are identical rigid T-legs across every player and arena."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The scoreboard, timer, possession bar, pass trail line and lime 'MOVE TO KICK OFF' prompt are clean and on-palette. The controls strip at the bottom is small and low-contrast."
+    }
+  ],
+  "nextChange": {
+    "category": "atmospheric_effects",
+    "change": "add the recipe row's atmosphere (fog scale, haze, shafts) at the look's intensity",
+    "api": "looks.preset(id, { fogDensityScale })"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Overcast sky is slightly grey and dull, and the distant mountains are a bit flat. Otherwise there is strong contrast, real shadows, rich cobblestone and grass, and the player is easy to read.",
+     "Saturation is slightly heavy and the red tree canopies have a blobby look. There is a dark smudge on the cobblestones to the right of the player. The player is small and placed off-centre.",
+     "Sky and horizon are a little dull and grey-purple. Distant mountains are low-poly. Otherwise strong contrast, rich cobblestone and grass, readable player, warm red trees framing the gate."
+    ]
+   },
+   {
+    "variant": "river",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The cliff faces have a faceted, low-poly look, the purple sky is somewhat muddy and the shield bubble ring looks slightly odd. Otherwise the depth, lighting, composition and player readability are strong.",
+     "The green rock wall on the right is faceted, low-poly and slightly muddy. The ellipse effect near the player is a little distracting. Distant enemies on the bridge are small. Overall the frame is strong, with warm dusk lighting, good depth and a readable player.",
+     "Cliff faces are faceted and low-poly with plain green shading. A translucent golden ring/shield effect next to the player is a little distracting, and a few small blue orbs float over the bridge (probably pickups). Otherwise vibrant, deep, and well composed, with a clear player on the bridge."
+    ]
+   },
+   {
+    "variant": "rooftops",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A flat green bar or plank floats across the bottom of the frame. The dark blue roof planes on the right look like stretched sheets, the player is a glowing orange blob that is hard to read, and the distant mountains are slightly hazy. Still, the frame has rich depth, a sunset mood and dense city detail.",
+     "Large dark-blue sheet planes stretch across the right midground like stray geometry. A thin green bar crosses the bottom of the frame. The player is semi-transparent behind a glowing shield, which hurts readability. The far horizon has some haze. Even so, the scene is rich and has strong depth and mood.",
+     "Some odd dark-blue stretched roof planes on the right-centre look like geometry artifacts. The player is a translucent glowing orange figure, so it reads a little poorly against the orange chimney block. A thin green bar crosses the bottom edge. Otherwise a dramatic sunset mood, rich roof materials, and strong depth across the town and mountains."
+    ]
+   },
+   {
+    "variant": "village",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The tree canopies are blobby with an odd brick-like texture, and the pale-blue ghost clones crowd the player a little. Otherwise the colour, shadows and depth are strong, and the player stays readable at the centre.",
+     "The tree canopies have a coarse, blocky, brick-like texture, and the pink tree looks muddy. The light-blue clone figures draw attention away from the player in the foreground. Otherwise it has strong colour, shadows and depth, and the player is easy to read.",
+     "Translucent blue clone figures crowd the foreground around the player (probably an intended clone effect, but busy). The big tree canopies have a blobby, stretched brick-like texture, and the pink tree looks a bit muddy. Otherwise vivid colour, strong shadows, good depth, and the player stays readable."
+    ]
+   }
+  ]
+ }
+]

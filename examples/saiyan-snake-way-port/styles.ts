@@ -1,3 +1,5 @@
+import type { LookMode } from "./art/colorScript";
+
 /**
  * Runner looks for the select card: colours only (suit, hair, belt, sash and the surge shell). The
  * simulation is identical for every runner, so replays and scores are comparable across them.
@@ -24,9 +26,9 @@ export interface RunnerStyle {
 
 export const RUNNER_STYLES: readonly RunnerStyle[] = [
   {
-    id: "tide", name: "TIDE", tagline: "Teal suit, cyan surge. Calm and quick.",
+    id: "tide", name: "TIDE", tagline: "Red lacquer robe, cyan surge. Calm and quick.",
     gi: 0x1f8a86, giDark: 0x14595a, skin: 0xf0c08a, hair: 0x1d1620, belt: 0xc9cfdb, boot: 0x1c2a3a, sash: 0x1a7471,
-    auraCore: 0xe6ffff, auraLit: 0x9be8f0, aura: 0x2bb8d8, tint: [0.9, 0.95, 0.95], wash: [0.05, 0.2, 0.22]
+    auraCore: 0xe6ffff, auraLit: 0x9be8f0, aura: 0x2bb8d8, tint: [1, 0.97, 0.95], wash: [0.12, 0.03, 0.02]
   },
   {
     id: "violet", name: "VIOLET", tagline: "Indigo suit, violet surge. Cool and sharp.",
@@ -39,5 +41,28 @@ export const RUNNER_STYLES: readonly RunnerStyle[] = [
     auraCore: 0xf6ffd8, auraLit: 0xbcf27e, aura: 0x5ed04a, tint: [0.8, 1.15, 0.7], wash: [0.08, 0.3, 0.1]
   }
 ];
+
+/** The pre-GU47 TIDE uses the teal atlas and its original card text and material wash. */
+export const ORIGINAL_RUNNER_STYLES: readonly RunnerStyle[] = [
+  {
+    ...RUNNER_STYLES[0]!,
+    tagline: "Teal suit, cyan surge. Calm and quick.",
+    tint: [0.9, 0.95, 0.95],
+    wash: [0.05, 0.2, 0.22]
+  },
+  ...RUNNER_STYLES.slice(1)
+];
+
+export function runnerStylesForLook(mode: LookMode): readonly RunnerStyle[] {
+  return mode === "original" ? ORIGINAL_RUNNER_STYLES : RUNNER_STYLES;
+}
+
+/** Stored selections win in either look; only a first visit uses the mode's default. */
+export function runnerIndexForLook(mode: LookMode, stored: string | null): number {
+  const styles = runnerStylesForLook(mode);
+  const fallback = mode === "script" ? Math.max(0, styles.findIndex((style) => style.id === "violet")) : 0;
+  if (stored === null || stored === "" || !Number.isFinite(Number(stored))) return fallback;
+  return Math.max(0, Math.min(styles.length - 1, Math.trunc(Number(stored))));
+}
 
 export const hexCss = (hex: number): string => `#${hex.toString(16).padStart(6, "0")}`;

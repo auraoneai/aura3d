@@ -72,18 +72,11 @@
       "provenance": "meshy-generated (artifacts/meshy/pips-sungate, model.glb)"
     },
     {
-      "typedRef": "assets.showcaseKenneyVerdantPlatformerWorld",
-      "role": "primaryWorld",
-      "status": "typed-secondary-asset",
-      "quality": "candidate",
-      "hash": "sha256-ac8f17eb"
-    },
-    {
-      "typedRef": "assets.showcaseRunnerRobot",
+      "typedRef": "assets.showcaseSidekickRunner",
       "role": "setDressing",
       "status": "typed-secondary-asset",
       "quality": "candidate",
-      "hash": "sha256-252b3a16"
+      "hash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616"
     }
   ],
   "claimStatus": {
@@ -91,14 +84,14 @@
     "label": "verified-showcase-port",
     "allowed": [
       "authored deterministic 3D mascot platformer physics",
-      "game.platformer / jumpAssist / kinematic helpers exercised per world",
-      "certified surface contract per world via certifyPlatformerPresentation",
+      "jumpAssist / kinematic helpers exercised per world",
       "six themed worlds plus Jump Academy and Starfall low-gravity",
       "Brambleback 3-hit pattern boss in Hollow Palace"
     ],
     "notAllowed": [
       "physics-engine parity or Rapier-backed character collider claims",
       "production rendering, PBR parity, HDR/IBL, or WebGPU claims",
+      "certified asset-bound world surfaces without a mounted world and validated overlay",
       "public showcase promotion before independent exact-artifact review"
     ]
   },

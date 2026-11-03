@@ -1,0 +1,11 @@
+{
+  "asset": "runner.glb",
+  "source": "v4.6.2:examples/saiyan-snake-way-port/assets/runner.glb",
+  "sourceCommit": "ba5713957146978af2db4a6e7c160a3c8d227cfb",
+  "sourceGitBlob": "9830c2f1497e315f956c43a2cfeae45f765678ee",
+  "sha256": "5e8a08af3b60c2a36aed4b0d3197c2d1846cf7cfc26a1322d366232cc035b9f4",
+  "rights": "runner.rights.json",
+  "generation": "runner.meta.json",
+  "recolorHistory": "runner.recolor.json (first step)",
+  "credits": 0
+}

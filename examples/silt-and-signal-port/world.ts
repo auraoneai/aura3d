@@ -101,7 +101,8 @@ export const waterSpec = (chapter: number, look: SiltLookMode = "original"): Cus
       inkLook: { type: "f32", value: inked ? 1 : 0 },
       sunDir: { type: "vec3", value: keyDirection(row) },
       sunColor: { type: "color3", value: linearOf(row.key.color) },
-      inkSky: { type: "color3", value: linearOf(row.sky.horizon) }
+      inkSky: { type: "color3", value: linearOf(row.sky.horizon) },
+      inkSkyTop: { type: "color3", value: linearOf(row.sky.top) }
     },
     transparent: true,
     depthWrite: false,
@@ -268,6 +269,23 @@ export function practicalPositions(chapter: number, count: number): [number, num
 }
 
 /**
+ * GU47 phase 4: the inked key's shadow. QA only, `?siltshadow=<mapSize>,<cascades>,<maxDistance>` overrides it so one
+ * remote probe can compare shadow setups (software WebGL2); without the param the defaults below apply.
+ */
+function keyShadow(options: BuildOptions): { mapSize: 512 | 1024 | 2048 | 4096; cascades: 1 | 2 | 3 | 4; maxDistance: number; bias: number } {
+  const base = { mapSize: options.shadowMapSize ?? 4096, cascades: (options.low ? 1 : 3) as 1 | 2 | 3 | 4, maxDistance: 360, bias: -0.0004 };
+  const raw = typeof location !== "undefined" ? new URLSearchParams(location.search).get("siltshadow") : null;
+  if (!raw) return base;
+  const [size, cascades, distance] = raw.split(",").map(Number);
+  return {
+    mapSize: ([512, 1024, 2048, 4096] as const).find((v) => v === size) ?? base.mapSize,
+    cascades: cascades && cascades >= 1 && cascades <= 4 ? (Math.trunc(cascades) as 1 | 2 | 3 | 4) : base.cascades,
+    maxDistance: distance && distance > 10 ? distance : base.maxDistance,
+    bias: base.bias
+  };
+}
+
+/**
  * GU47 inked rig (DG-L1, L2, L3, L4, L5, S3, P2, P3): one shadowed key on the table's elevation and azimuth, an
  * unshadowed jade-white rim opposite it, IBL from the chapter HDRI (neutral 0.35 at night), no hemisphere (the art
  * direction's fill is the environment), night practicals, height fog, bloom on HDR emissives only, grade, vignette 0.22
@@ -280,14 +298,19 @@ function addInkedRig(builder: Scene, chapter: number, options: BuildOptions): vo
   builder.add(hdri
     ? environments.hdri({ name: `silt ibl ${look.hdri}`, texture: hdri as unknown as Parameters<typeof environments.hdri>[0]["texture"], intensity: look.environmentIntensity, rotation: (look.environmentRotationDeg * Math.PI) / 180, background: false })
     : environments.neutral({ intensity: look.environmentIntensity }));
-  const pcss = look.pcss && !options.low;
+  // phase 4: PCSS only with `?siltpcss=1`. On the remote software WebGL2 runner the PCSS chapters (ch0, ch3, default)
+  // showed no cast shadow at light size 2.5 or 0.6 (p4-r2, p4-r3), while the PCF storm chapter drew every tree's, so
+  // the low-sun chapters use the tier PCF filter (DG-L5 PCSS waits on a real-GPU check)
+  const pcss = look.pcss && !options.low && PCSS_OPT_IN;
   builder.add(lights.directional({
     name: "silt key",
     position: [dir[0] * 240, dir[1] * 240, dir[2] * 240],
     target: [0, 0, 0],
     intensity: look.key.intensity,
     color: look.key.color,
-    shadow: { mapSize: options.shadowMapSize ?? 4096, cascades: options.low ? 1 : 3, maxDistance: 360, bias: -0.0004, ...(pcss ? { filter: "pcss" as const, lightSize: 2.5 } : {}) }
+    // phase 4: PCSS light size 2.5 -> 0.6. At a 6-14 deg sun the blocker-receiver gap is metres, and a 2.5 m light blurred
+    // the long dusk shadows away entirely (p4-r2 ch0: none visible while the PCF storm chapter showed every tree's)
+    shadow: { ...keyShadow(options), ...(pcss ? { filter: "pcss" as const, lightSize: PCSS_LIGHT_SIZE } : {}) }
   }).runtime({ id: "silt-key" }));
   // DG-L3: the rim sits opposite the key (mirrored azimuth, 25 deg up), never shadowed, always below the key
   builder.add(lights.directional({
@@ -393,6 +416,17 @@ const columnTransforms = (list: readonly Column[]) =>
 export const GATE_SHUT = { rimColor: "#ff6a3d", haloColor: "#ffb08a", bodyColor: "#1a0603" } as const;
 /** GU47: the open beacon in the inked look, the one jade signal accent. */
 export const SIGNAL_JADE = { rimColor: SILT_PALETTE.jade, haloColor: SILT_PALETTE.jadeWhite, bodyColor: "#06231b" } as const;
+const PCSS_OPT_IN = typeof location !== "undefined" && new URLSearchParams(location.search).get("siltpcss") === "1";
+/** GU47 phase 4: PCSS light size (metres) for the low-sun chapters' long shadows (DG-L5). */
+export const PCSS_LIGHT_SIZE = 0.6;
+/** GU47 phase 4: the rider's ground shadow shape (metres; opacity of the flat ink shape). */
+export const RIDER_BLOB = { width: 1.5, length: 2.3, opacity: 0.55, maxSlide: 0.6 } as const;
+/**
+ * GU47 phase 4 (inked look): the beacon drawn at the objective's real 24 m capture radius (48 m across instead of 66 m),
+ * its column at 45% width, and the waiting stone rings scaled by the same 48/66. Presentation only: the sim's radius
+ * and every collider are unchanged. `?look=original` keeps 66 m.
+ */
+export const INKED_BEACON = { diameter: 48, beamWidth: 0.45, waitingRingScale: 38 * (48 / 66) } as const;
 /** Parked instances of the waiting-ring pool (one instanced node instead of eight model nodes). */
 const PARKED = { position: [...FAR] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: 0.001 };
 
@@ -414,7 +448,15 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   const builder: Scene = scene()
     .background(inked ? look.sky.horizon : rig.background)
     .camera(camera.perspective({ position: [0, 14, 60], target: [0, 8, 0], fov: 62, near: 0.3, far: 2700 }));
-  if (inked) addInkedRig(builder, chapter, buildOptions);
+  if (inked) {
+    // GU47 phase 4: the 4.3.0 cascade fit for the inked look. The default 4.2.0 fit widens every cascade to the bounds of
+    // every caster, and here that is the 4200 m sky dome and the course-long terrain and wall meshes: the remote probe
+    // (p4-r1 g24-p, software WebGL2) logged a ~8400 m light ortho on all three cascades (2 m texels), so no cast shadow
+    // ever showed. The 4.3.0 fit sizes each cascade to its frustum slice (the first spans 14 m). Same switch as
+    // ninja-runner-port; `?shadowfit=legacy` restores the 4.2.0 fit, `?look=original` never sets it.
+    (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
+    addInkedRig(builder, chapter, buildOptions);
+  }
   else {
     builder
       .add(environments.neutral({ intensity: rig.night ? 0.4 : 0.95 }))
@@ -437,7 +479,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   // bind; frustum occlusion (the engine has no depth readback for flares). Reduced flash halves it. +4 sprite draws.
   const flare = inked && look.lensFlare && !buildOptions.low;
   if (flare) builder.add(lights.lensFlare({ name: "silt flare", position: [...FAR], elements: lensFlareElements(look.key.color), intensity: buildOptions.reducedMotion ? 0.3 : 0.6, runtime: { id: "silt-flare" } }));
-  builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "sky" }));
+  builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, ...(inked ? { castShadow: false, receiveShadow: false } : {}), material: material.custom(skySpec(chapter, inked ? "inked" : "original")) }).runtime({ id: "sky" }));
 
   const orchard = inked && look.ground === "orchard";
   builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: orchard ? orchardTerrainColors(terrainMesh.positions) : terrainColors(terrainMesh.positions, inked) }), {
@@ -607,9 +649,11 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   builder.add(instances.model(assets.ringclean, { name: "rings", transforms: Array.from({ length: MAX_RINGS }, () => PARKED), castShadow: false }).runtime({ id: "rings" }));
   // Active-ring beacon: the library objective marker (dark-teal ring body, cyan rim, expanding halo, light column), sized to the 66 m rings.
   // GU47 DG-M4/H1: the inked look reserves jade for the signal (no #19e6ff cyan); `?look=original` keeps the library colours
-  builder.addMany(prefabs.objectiveMarker({ id: "beacon", diameter: 66, hiddenPosition: [...FAR], ...(inked ? SIGNAL_JADE : {}) }));
+  // GU47 phase 4 (inked): the marker matches the 24 m capture radius (48 m, not the original 66 m)
+  const beaconDiameter = inked ? INKED_BEACON.diameter : 66;
+  builder.addMany(prefabs.objectiveMarker({ id: "beacon", diameter: beaconDiameter, hiddenPosition: [...FAR], ...(inked ? SIGNAL_JADE : {}) }));
   // The same marker in red, shown instead while a timed gate is shut.
-  builder.addMany(prefabs.objectiveMarker({ id: "gate", diameter: 66, hiddenPosition: [...FAR], ...GATE_SHUT }));
+  builder.addMany(prefabs.objectiveMarker({ id: "gate", diameter: beaconDiameter, hiddenPosition: [...FAR], ...GATE_SHUT }));
   // The shell a tow objective drags behind the board (parked until the rider latches on).
   builder.add(primitives.sphere({ name: "tow-shell", position: [...FAR], size: [3.2, 1.9, 3.2], castShadow: true, material: pbr({ color: "#e6d3ad", roughness: 0.55 }) }).runtime({ id: "tow-shell" }));
   builder.add(primitives.sphere({ name: "tow-glow", position: [...FAR], size: [1.1, 0.5, 1.1], material: material.emissive({ color: "#ffd38a", emissiveIntensity: 2.2 }) }).runtime({ id: "tow-glow" }));
@@ -623,6 +667,10 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
   }
   builder.add(model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
   builder.add(model(assets.courier, { name: "rider", position: [0, 4, 0], targetHeight: RIDER_HEIGHT, castShadow: true }).runtime({ id: "rider" }));
+  // GU47 phase 4 (inked, not on Low): an indigo-umber shadow shape on the ground under the board, so the rider reads as
+  // grounded at every altitude (rubric shadows; the poster's flat shadow shapes). +1 draw; bind moves it each frame.
+  const blob = inked && !buildOptions.low;
+  if (blob) builder.add(primitives.cylinder({ name: "rider-blob", position: [...FAR], size: [1, 1, 1], material: pbr({ color: look.night ? "#0b0d24" : "#2a1a10", roughness: 1, opacity: RIDER_BLOB.opacity }) }).runtime({ id: "rider-blob" }));
 
   if (usesOriginalTerrain(chapter) && chapter === 0) {
     const ground = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
@@ -762,6 +810,18 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             }
           }
 
+          if (blob) {
+            // under the board, slid a little along the key's shadow direction (capped), smaller as the board climbs
+            const floor = Math.max(sim.world.floor(state.x, state.z, state.y), overCanal(chapter, state.x, state.z) ? 0 : -Infinity);
+            const alt = Math.max(0, state.y - BOARD_DROP - floor);
+            const slide = Math.min(RIDER_BLOB.maxSlide, alt / Math.max(0.2, Math.tan(Math.asin(Math.min(0.99, keyDir[1])))));
+            const h = Math.hypot(keyDir[0], keyDir[2]) || 1;
+            const shrink = 1 - Math.min(0.55, alt / 18);
+            const b = node("rider-blob");
+            b.setPosition(state.x - (keyDir[0] / h) * slide, floor + 0.09, state.z - (keyDir[2] / h) * slide);
+            b.setRotation(0, state.yaw, 0);
+            b.setScale([RIDER_BLOB.width * shrink, 0.02, RIDER_BLOB.length * shrink]);
+          }
           lastRider = [state.x, state.y, state.z];
           applyPost(sequencePost({ boosting: flight.boosting, sequence, reducedMotion: !!options.reducedMotion }));
           if (siltFx) {
@@ -787,13 +847,17 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
           const target = !active || state.scene || state.completed || NO_BEACON ? null : [active.x, active.y, active.z] as [number, number, number];
           // timed gates: the cyan beacon while open, the red one while shut
           const shut = target !== null && o.kind === "timed" && !gateOpen(sim.time, o);
-          const open = prefabs.objectiveMarkerPoses(shut ? null : target, time, { diameter: 66, hiddenPosition: [...FAR] });
-          const closed = prefabs.objectiveMarkerPoses(shut ? target : null, time, { diameter: 66, hiddenPosition: [...FAR] });
+          const open = prefabs.objectiveMarkerPoses(shut ? null : target, time, { diameter: beaconDiameter, hiddenPosition: [...FAR] });
+          const closed = prefabs.objectiveMarkerPoses(shut ? target : null, time, { diameter: beaconDiameter, hiddenPosition: [...FAR] });
           for (const part of ["ring", "rim", "halo", "beam"] as const) {
             for (const [id, poses] of [["beacon", open], ["gate", closed]] as const) {
               const h = node(`${id}-${part}`);
-              h.setPosition(...poses[part]!.position);
-              h.setScale([...poses[part]!.scale]);
+              const pose = poses[part]!;
+              // GU47 phase 4 (inked): no heavy dark ring body (the thin jade rim and halo mark the gate) and a slimmer
+              // signal column, so neither fills or splits the chase frame (rubric composition)
+              if (inked && part === "ring") { h.setPosition(...FAR); continue; }
+              h.setPosition(...pose.position);
+              h.setScale(inked && part === "beam" ? [pose.scale[0] * INKED_BEACON.beamWidth, pose.scale[1], pose.scale[2] * INKED_BEACON.beamWidth] : [...pose.scale]);
             }
           }
           // waiting rings: rewrite the instanced pool only when the set of waiting rings changes
@@ -803,7 +867,7 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
             ringsKey = key;
             node("rings").setInstances(Array.from({ length: MAX_RINGS }, (_, i) => {
               const p = waiting[i];
-              return p ? { position: [p.x, p.y, p.z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: 38 } : PARKED;
+              return p ? { position: [p.x, p.y, p.z] as [number, number, number], rotation: [0, 0, 0] as [number, number, number], scale: inked ? INKED_BEACON.waitingRingScale : 38 } : PARKED;
             }));
           }
           // tow: the shell trails 9 m behind the board while towing

@@ -49,3 +49,22 @@ Remote run `g02p3-r5-1034` (software WebGL2). Details are in `docs/prds/game-upg
 | AO-P3 | motion blur shutter 0.35 -> 0.22, max 14 px |
 | AO-H2 / fonts | licensed Whitney, DIN Pro and Monument Grotesk Mono now load (they were declared nowhere before) |
 | Game checks | 0 errors, 6 warnings (luma-band only) |
+
+## Phase 4 (4.7.2), 2026-10-31
+
+Build `g02p4-r3-1649` (software WebGL2). Details are in `docs/prds/game-upgrades-47/lanes/g02.md` § Phase 4.
+
+| Item | Status |
+|---|---|
+| Blind panel vs 4.6.2 (`g02p4-r3`) | default, dusk and night all better 3/0/0; nothing reverted |
+| AO-M1 hero retexture (WP-36 `apexHeroCobalt`) | swapped in (`hero-cobalt.glb`, bounds fitted to `hero.glb`, rights and attribution committed); stripe now in the base map |
+| AO-L4 / shadows | shadow key at 21 deg above the 7 deg disc, IBL/fill/key rebalanced, cascades to 90 m, contact rays 0.7 m; traffic shadows now read in the steady-state frames |
+| AO-P3 | motion blur shutter 0.12, max 8 px |
+| AO-A1 interim | vertical-emphasis facade (fins, thin slab edges), more dome in the glass, stronger aerial perspective |
+| Carrier ramps | lit painted steel instead of a flat emissive slab |
+| Rubric (`look-judgement.json`, validated; six runs listed in the report) | min 4 (shadows); 7-in-every-category **not met** |
+| Sibling, 8 neighbours | 7 pass (0.81-0.92); roadster-hours-port fails (0.783 false / 0.648 true across two frame sets) |
+| Steady-state `luma-after.json` | retaken (g02p4-r3); the same 6 luma-band warnings as phase 3, no band widened |
+| Final screens | 1280x720 and 390x844 retaken except the desktop results shot and the card (the card shard hung twice) |
+| Budget afterPhase4 | desktop max 172 / 230, phone 161 / 190 draws |
+| WP-36 other 16 rows | blocked: Meshy keys refuse API calls |

@@ -1,0 +1,166 @@
+{
+ "note": "GU47 phase 7 (4.7.6) Task B: the static set-dressing placements the stage drew as one model() per placement before 4.7.6 (stage.ts trees cloud-0..4, rocks hill-0..8, fg crates/barrels). tools/bake-static-sets.mjs bakes them into the sling_* GLBs; the stage draws each baked GLB once at the origin.",
+ "sources": {
+  "pine": "public/aura-assets/propPineTree.12243e81.glb",
+  "conifer": "public/aura-assets/propConifer.ac8c8ab6.glb",
+  "rockA": "public/aura-assets/propRockA.52dd1f0f.glb",
+  "rockB": "public/aura-assets/propRockB.c94b2733.glb"
+ },
+ "sets": {
+  "sling_islandTrees": {
+   "was": "cloud-0..cloud-4",
+   "placements": [
+    {
+     "source": "pine",
+     "position": [
+      -10.2,
+      0,
+      -2.8
+     ],
+     "yaw": 0.0,
+     "scale": 0.24
+    },
+    {
+     "source": "conifer",
+     "position": [
+      -5.0,
+      0,
+      -3.6
+     ],
+     "yaw": 1.1,
+     "scale": 0.22
+    },
+    {
+     "source": "pine",
+     "position": [
+      3.8,
+      0,
+      -3.8
+     ],
+     "yaw": 2.2,
+     "scale": 0.25
+    },
+    {
+     "source": "conifer",
+     "position": [
+      10.8,
+      0,
+      -2.6
+     ],
+     "yaw": 3.3,
+     "scale": 0.26
+    },
+    {
+     "source": "pine",
+     "position": [
+      11.6,
+      0,
+      2.2
+     ],
+     "yaw": 4.4,
+     "scale": 0.22
+    }
+   ]
+  },
+  "sling_rocksA": {
+   "was": "hill-5..hill-8",
+   "placements": [
+    {
+     "source": "rockA",
+     "position": [
+      -6.0,
+      -0.08,
+      -5.4
+     ],
+     "yaw": 2.5,
+     "scale": 7.2
+    },
+    {
+     "source": "rockA",
+     "position": [
+      9.4,
+      -0.08,
+      -4.8
+     ],
+     "yaw": 0.9,
+     "scale": 7.8
+    },
+    {
+     "source": "rockA",
+     "position": [
+      -11.6,
+      -0.2,
+      -3.0
+     ],
+     "yaw": 0.6,
+     "scale": 3.4
+    },
+    {
+     "source": "rockA",
+     "position": [
+      8.1,
+      0,
+      2.9
+     ],
+     "yaw": 1.9,
+     "scale": 2.8
+    }
+   ]
+  },
+  "sling_rocksB": {
+   "was": "hill-0..hill-4",
+   "placements": [
+    {
+     "source": "rockB",
+     "position": [
+      -13.5,
+      -0.25,
+      -10.5
+     ],
+     "yaw": 0.4,
+     "scale": 2.4
+    },
+    {
+     "source": "rockB",
+     "position": [
+      -6.2,
+      -0.25,
+      -12.8
+     ],
+     "yaw": 1.2,
+     "scale": 2.8
+    },
+    {
+     "source": "rockB",
+     "position": [
+      1.5,
+      -0.25,
+      -13.4
+     ],
+     "yaw": 2.1,
+     "scale": 3.0
+    },
+    {
+     "source": "rockB",
+     "position": [
+      9.8,
+      -0.25,
+      -12.2
+     ],
+     "yaw": 0.8,
+     "scale": 2.7
+    },
+    {
+     "source": "rockB",
+     "position": [
+      15.2,
+      -0.25,
+      -9.6
+     ],
+     "yaw": 1.7,
+     "scale": 2.2
+    }
+   ]
+  }
+ }
+}

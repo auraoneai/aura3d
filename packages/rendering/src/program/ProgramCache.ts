@@ -16,8 +16,10 @@
 
 import type { QrFlags } from "../contracts/core";
 import type { ProgramFeatures, ProgramHandle, ProgramCacheLike } from "../contracts/program";
+import { programCacheSlot } from "../contracts/program";
 import { RenderDeviceError, type RenderDevice, type RenderShaderProgram, type ShaderSources } from "../RenderDevice";
-import { generateProgramImpl, GENERATED_PROGRAM_MARKER, isBuiltinGeneratedWgsl, programDegradationLog, type GenerateProgramOptions, type ProgramDegradation } from "./ProgramGenerator";
+import { SELECTIVE_BLOOM_FEATURE } from "../postprocess/NativeBloomPyramid";
+import { generateProgramImpl, generatedProgramSupportsSelectiveBloom, GENERATED_PROGRAM_MARKER, isBuiltinGeneratedWgsl, programDegradationLog, type GenerateProgramOptions, type ProgramDegradation } from "./ProgramGenerator";
 import { normalizeProgramFeatures } from "./ProgramFeatures";
 import { programKey } from "./ProgramKey";
 import { sanitizeShaderDiagnosticText } from "../ShaderFailures";
@@ -496,6 +498,71 @@ interface CacheEntry {
   /** A synchronous generator or compile is active; pending without this flag
    * or a promise is an entry deferred by the per-frame compile budget. */
   compiling?: boolean;
+  /** A speculative failure is reported only if an ordinary acquire asks for it. */
+  selectivePrewarmOnly?: boolean;
+  /** Exact ordinary source and its generation-time producer authentication. */
+  ordinarySources?: ShaderSources;
+  ordinarySelectiveSafe?: boolean;
+  selectiveBaseKey?: string;
+  /**
+   * The signal twin the captured prewarm derived from this entry's `ordinarySources` (`from`), with its key; both absent when
+   * that source cannot gain the output. Written only by the prewarm, so caches that never request selective bloom never set it.
+   */
+  selectiveDerived?: { readonly from: ShaderSources; readonly key?: string; readonly sources?: ShaderSources };
+}
+
+/*
+ * Let ForwardPass discover that this module is already loaded without
+ * importing the generator on a flag-off / custom-provider frame. The
+ * discovery set is not an authority: isBuiltinSelectiveBloomCache also checks
+ * the module-private set and the exact prototype. This property is
+ * non-enumerable and never changes normal cache or provider behavior.
+ *
+ * Keep this key in sync with ForwardPass. A missing/frozen slot simply makes
+ * the optional optimization unavailable.
+ */
+const SELECTIVE_CACHE_DISCOVERY = Symbol.for("aura3d.prd01.selectiveBloom.builtinCaches");
+const SELECTIVE_VERIFY = Symbol("selective-bloom-verify");
+const SELECTIVE_CAPTURED_PREWARM = Symbol("selective-bloom-captured-prewarm");
+const SELECTIVE_CAPTURED_VERIFY = Symbol("selective-bloom-captured-verify");
+const builtinCacheInstances = new WeakSet<object>();
+
+function markBuiltinCache(cache: object): void {
+  builtinCacheInstances.add(cache);
+  try {
+    let descriptor = Object.getOwnPropertyDescriptor(programCacheSlot, SELECTIVE_CACHE_DISCOVERY);
+    if (!descriptor) {
+      Object.defineProperty(programCacheSlot, SELECTIVE_CACHE_DISCOVERY, { value: new WeakSet<object>() });
+      descriptor = Object.getOwnPropertyDescriptor(programCacheSlot, SELECTIVE_CACHE_DISCOVERY);
+    }
+    WeakSet.prototype.add.call(descriptor?.value, cache);
+  } catch {
+    // Discovery is optional; ordinary ProgramCache construction must not fail.
+  }
+}
+
+export type CapturedSelectiveBloomPrewarm =
+  | { readonly reason: string; readonly handles?: never }
+  | { readonly reason?: never; readonly handles: readonly ProgramHandle[] };
+
+/** Add only a second output to the exact ordinary GLSL; never regenerate hooks. */
+function selectiveSources(sources: ShaderSources): ShaderSources | undefined {
+  const declaration = "layout(location = 0) out vec4 outColor;";
+  const write = "  outColor = vec4(a3dColor, a3dAlpha);";
+  // Native 5.0 widened the coverage guard to depth coverage; generated
+  // provenance already declines programs that define A3D_DEPTH_COVERAGE.
+  const coverage = "#if defined(BACKGROUND_COVERAGE) || defined(A3D_DEPTH_COVERAGE)\nlayout(location = 1) out vec4 outCoverage;\n#endif";
+  const fragment = sources.fragment;
+  if (fragment.includes("a3dBloomSignal") || fragment.indexOf(declaration) < 0 ||
+      fragment.indexOf(declaration) !== fragment.lastIndexOf(declaration) ||
+      fragment.indexOf(write) < 0 || fragment.indexOf(write) !== fragment.lastIndexOf(write) ||
+      /\blayout\s*\(\s*location\s*=\s*1\s*\)\s*out\b/.test(fragment.replace(coverage, ""))) return undefined;
+  return {
+    ...sources,
+    fragment: fragment
+      .replace(declaration, `${declaration}\nlayout(location = 1) out vec4 a3dBloomSignal;\nuniform float u_a3dBloomWeight;\nuniform float u_a3dBloomMaxRadiance;`)
+      .replace(write, `${write}\n  a3dBloomSignal = vec4(clamp(a3dColor, -u_a3dBloomMaxRadiance, u_a3dBloomMaxRadiance) * (0.5 * u_a3dBloomWeight), 1.0);`)
+  };
 }
 
 export interface ProgramCacheOptions {
@@ -516,6 +583,8 @@ export interface ProgramCacheOptions {
 
 export class ProgramCache implements ProgramCacheLike {
   private readonly entries = new Map<string, CacheEntry>();
+  private readonly frameOrdinaryKeys = new Set<string>();
+  private readonly previousOrdinaryKeys = new Set<string>();
   private readonly parallel: boolean;
   private readonly maxSyncCompilesPerFrame: number;
   private compileMsTotal = 0;
@@ -561,6 +630,7 @@ export class ProgramCache implements ProgramCacheLike {
       peekReady: (features) => programCachePeekIntrinsic.call(this, features),
       commitReadyReuse: (features, program, count) => programCacheCommitIntrinsic.call(this, features, program, count)
     });
+    if (new.target === ProgramCache) markBuiltinCache(this);
   }
 
   /**
@@ -605,6 +675,9 @@ export class ProgramCache implements ProgramCacheLike {
   /** T0-06: start of a frame's sync-compile budget. */
   beginFrame(): void {
     this.frameSyncCompiles = 0;
+    this.previousOrdinaryKeys.clear();
+    for (const key of this.frameOrdinaryKeys) this.previousOrdinaryKeys.add(key);
+    this.frameOrdinaryKeys.clear();
   }
 
   /** T0-06: mark the ready barrier — later compiles count `compiledSinceReady`. */
@@ -675,7 +748,19 @@ export class ProgramCache implements ProgramCacheLike {
     disposalState.lossObserved = false;
     const normalized = normalizeProgramFeatures(features);
     const key = programKey(normalized);
+    if (normalized.features[SELECTIVE_BLOOM_FEATURE] !== true) this.frameOrdinaryKeys.add(key);
     const existing = this.entries.get(key);
+    // Keep a successfully drawn selective program's observed ordinary base in
+    // the next frame's history as well. No selection or generation runs here.
+    if (normalized.features[SELECTIVE_BLOOM_FEATURE] === true && existing?.selectiveBaseKey) {
+      this.frameOrdinaryKeys.add(existing.selectiveBaseKey);
+    }
+    if (existing?.selectivePrewarmOnly) {
+      // Normal callers retain the normal one-time failure diagnostic, even
+      // when the optional prewarm failed before they requested this key.
+      existing.selectivePrewarmOnly = false;
+      if (existing.status === "failed") this.reportCompileFailure(existing);
+    }
     if (existing && (existing.status !== "pending" || existing.pending !== undefined || existing.compiling)) {
       this.reuseCount += 1;
       return existing;
@@ -732,6 +817,13 @@ export class ProgramCache implements ProgramCacheLike {
         fragment: reflectionSource.fragment,
         ...(generated.descriptor ? { generatedProgram: generated.descriptor } : {})
       };
+      if (normalized.features[SELECTIVE_BLOOM_FEATURE] !== true) {
+        // The signal twin edits GLSL: WebGPU (WGSL/descriptor) programs never qualify.
+        entry.ordinarySelectiveSafe = this.device.kind !== "webgpu" && generated.key === key && generatedProgramSupportsSelectiveBloom(generated);
+        // Only a provenance-safe base on an async-compile cache can ever gain
+        // the signal output; other programs keep no extra copy of their GLSL.
+        if (entry.ordinarySelectiveSafe && this.parallel) entry.ordinarySources = sources;
+      }
     } catch (error) {
       if (stale()) {
         retireStale();
@@ -881,6 +973,203 @@ export class ProgramCache implements ProgramCacheLike {
       this.compileMsTotal += Date.now() - started;
     }
     return entry;
+  }
+
+  /**
+   * Internal selective-bloom-only prewarm. The exported wrapper authenticates
+   * the exact cache before calling this captured implementation. Never invokes
+   * the app's degradation sink, feature selectors, or feature binders for an
+   * optional request; ordinary acquire keeps its existing reporting behavior.
+   */
+  [SELECTIVE_VERIFY](device: RenderDevice, flags: QrFlags): boolean {
+    return !this.disposed && this.device === device && this.options.flags === flags && this.parallel &&
+      // Native 5.0 lifecycle: a lost, disposed or not-yet-resynchronized
+      // device generation declines; the next ordinary acquire invalidates it.
+      device.kind !== "webgpu" && !device.disposed && !device.contextLost &&
+      device.generation === this.observedDeviceGeneration &&
+      programDisposalState(device).epoch === this.observedDeviceEpoch;
+  }
+
+  [SELECTIVE_CAPTURED_PREWARM](
+    device: RenderDevice,
+    flags: QrFlags,
+    compile: NonNullable<RenderDevice["compileAsync"]>
+  ): CapturedSelectiveBloomPrewarm {
+    if (!this[SELECTIVE_VERIFY](device, flags) || this.frameOrdinaryKeys.size === 0) {
+      return { reason: "signal-program-unavailable" };
+    }
+    const prepared: { readonly key: string; readonly base: CacheEntry; readonly sources: ShaderSources; readonly optional: boolean }[] = [];
+    const candidates = new Map<string, boolean>();
+    for (const key of this.frameOrdinaryKeys) candidates.set(key, false);
+    // Renderer warmup omits the legacy fog axis and per-item environment-cube
+    // override. Match previous ordinary *draw* variants ignoring only those
+    // axes; all other feature values must still match an ordinary warm key.
+    // Their exact draw-time keys are checked again before they can be used.
+    const warmShapes = new Set<string>();
+    for (const key of this.frameOrdinaryKeys) {
+      try {
+        const record = JSON.parse(key) as ProgramFeatures;
+        warmShapes.add(programKey({ ...record, fog: "none", environment: "none" }));
+      } catch {
+        // The required candidate below will decline an unusable record.
+      }
+    }
+    for (const key of this.previousOrdinaryKeys) {
+      if (candidates.has(key)) continue;
+      const entry = this.entries.get(key);
+      if (!entry || entry.status !== "ready" || !entry.ordinarySelectiveSafe) continue;
+      try {
+        const record = JSON.parse(key) as ProgramFeatures;
+        if (warmShapes.has(programKey({ ...record, fog: "none", environment: "none" }))) candidates.set(key, true);
+      } catch {
+        // Unusual ordinary records remain available normally, never here.
+      }
+    }
+    for (const [baseKey, optional] of candidates) {
+      const base = this.entries.get(baseKey);
+      if (!base || base.status === "pending") {
+        if (optional) continue;
+        return { reason: "signal-program-pending" };
+      }
+      if (base.status !== "ready" || !base.program || base.program.disposed) {
+        if (optional) continue;
+        return { reason: "signal-program-unavailable" };
+      }
+      if (!base.ordinarySources || !base.ordinarySelectiveSafe) {
+        if (optional) continue;
+        return { reason: "shader-feature" };
+      }
+      // The twin depends only on this entry's exact ordinary source and its
+      // key, so derive it once per source object, not on every selective frame.
+      let derived = base.selectiveDerived;
+      if (!derived || derived.from !== base.ordinarySources) {
+        const twin = selectiveSources(base.ordinarySources);
+        derived = { from: base.ordinarySources };
+        if (twin) {
+          // The cache key is already canonical JSON from the ordinary acquire:
+          // parsing it avoids inspecting material or user-owned feature objects.
+          const features = JSON.parse(baseKey) as ProgramFeatures;
+          derived = { ...derived, sources: twin, key: programKey({ ...features, features: { ...features.features, [SELECTIVE_BLOOM_FEATURE]: true } }) };
+        }
+        base.selectiveDerived = derived;
+      }
+      const source = derived.sources;
+      const key = derived.key;
+      if (!source || key === undefined) {
+        if (optional) continue;
+        return { reason: "shader-feature" };
+      }
+      const existing = this.entries.get(key);
+      if (existing && (existing.selectiveBaseKey !== baseKey ||
+          existing.ordinarySources?.vertex !== source.vertex || existing.ordinarySources?.fragment !== source.fragment)) {
+        if (optional) continue;
+        return { reason: "signal-program-unavailable" };
+      }
+      prepared.push({ key, base, sources: source, optional });
+    }
+    const handles: ProgramHandle[] = [];
+    for (const candidate of prepared) {
+      let entry = this.entries.get(candidate.key);
+      if (!entry) {
+        entry = {
+          key: candidate.key,
+          status: "pending",
+          selectivePrewarmOnly: true,
+          selectiveBaseKey: candidate.base.key,
+          ordinarySources: candidate.sources
+        };
+        this.entries.set(candidate.key, entry);
+      }
+      if (entry.status === "pending" && !entry.pending && !entry.compiling && entry.selectivePrewarmOnly) {
+        // Same ownership/staleness contract as the ordinary async path
+        // (native 5.0 lifecycle): the program is claimed for this cache and
+        // device epoch, a stale result is released, and the cache-owned
+        // promise always settles even when the driver promise never does.
+        const started = Date.now();
+        const current = entry;
+        const key = candidate.key;
+        const generation = this.generation;
+        const deviceGeneration = device.generation;
+        const disposalState = programDisposalState(device);
+        const deviceEpoch = disposalState.epoch;
+        const owner = { owner: this, key, deviceGeneration, deviceEpoch };
+        const stale = (): boolean => this.disposed || device.disposed || device.contextLost
+          || generation !== this.generation || device.generation !== deviceGeneration
+          || disposalState.epoch !== deviceEpoch || this.entries.get(key) !== current || current.status !== "pending";
+        const retireStale = (): void => {
+          if (current.status === "pending") {
+            current.status = "failed";
+            current.error = this.disposed || device.disposed ? "DISPOSED_PROGRAM_CACHE" : "DEVICE_LOST";
+          }
+          if (this.entries.get(key) === current) this.entries.delete(key);
+        };
+        current.pending = new Promise<void>((resolve) => { current.settle = resolve; });
+        const settle = (): void => {
+          current.settle?.();
+          current.settle = undefined;
+          current.pending = undefined;
+          if (!this.disposed) notifyProgramReadiness(device);
+        };
+        const finishCompilation = trackProgramCompilation(this, current);
+        let compilation: Promise<RenderShaderProgram>;
+        try {
+          compilation = Promise.resolve(compile.call(device, candidate.sources));
+        } catch (error) {
+          compilation = Promise.reject(error);
+        }
+        void compilation.then((program) => {
+          try {
+            if (stale()) {
+              retireStale();
+              try { releaseProgram(device, program, undefined, { ...owner, origin: "stale" }); } finally { settle(); }
+              return;
+            }
+            const claimed = claimProgram(device, program, current, owner);
+            if (stale() || !claimed) {
+              if (stale()) retireStale();
+              else { current.status = "failed"; current.error = "Compiled shader program is already retired"; }
+              try { releaseProgram(device, program, claimed ? current : undefined, { ...owner, origin: "stale" }); } finally { settle(); }
+              return;
+            }
+            current.status = "ready";
+            current.program = program;
+            this.compileMsTotal += Date.now() - started;
+            this.noteCompiled();
+            settle();
+          } finally {
+            finishCompilation();
+          }
+        }).catch((error: unknown) => {
+          try {
+            if (current.status !== "pending") { settle(); return; }
+            const code = compileErrorCode(error);
+            if (stale() || code === "DEVICE_LOST" || code === "CONTEXT_LOST" || code === "DISPOSED_DEVICE") {
+              retireStale();
+              settle();
+              return;
+            }
+            current.status = "failed";
+            current.error = describeCompileError(error);
+            this.compileMsTotal += Date.now() - started;
+            settle();
+            if (!current.selectivePrewarmOnly) this.reportCompileFailure(current);
+          } finally {
+            finishCompilation();
+          }
+        });
+      }
+      // An unused older draw must not block this frame; if it is still
+      // compiling, draw-time key validation safely falls back until ready.
+      if (!candidate.optional || entry.status === "ready") handles.push(entry);
+    }
+    return { handles };
+  }
+
+  [SELECTIVE_CAPTURED_VERIFY](key: string): boolean {
+    const entry = this.entries.get(key);
+    const base = entry?.selectiveBaseKey ? this.entries.get(entry.selectiveBaseKey) : undefined;
+    return !!entry && entry.status === "ready" && !!entry.program && !entry.program.disposed &&
+      !!base && base.status === "ready" && !!base.program && !base.program.disposed && base.ordinarySelectiveSafe === true;
   }
 
   async precompile(list: readonly ProgramFeatures[]): Promise<void> {
@@ -1092,6 +1381,34 @@ function compileErrorCode(error: unknown): unknown {
   } catch {
     return undefined;
   }
+}
+
+const builtinAcquire = ProgramCache.prototype.acquire;
+const builtinSelectiveVerify = ProgramCache.prototype[SELECTIVE_VERIFY];
+const builtinCapturedPrewarm = ProgramCache.prototype[SELECTIVE_CAPTURED_PREWARM];
+const builtinCapturedVerify = ProgramCache.prototype[SELECTIVE_CAPTURED_VERIFY];
+
+/** Authenticate a stock, device-bound cache with an asynchronous compiler. */
+export function isBuiltinSelectiveBloomCache(cache: ProgramCacheLike, device: RenderDevice, flags: QrFlags): boolean {
+  if (!builtinCacheInstances.has(cache) || Object.getPrototypeOf(cache) !== ProgramCache.prototype ||
+      Object.getOwnPropertyDescriptor(cache, "acquire") !== undefined ||
+      Object.getOwnPropertyDescriptor(ProgramCache.prototype, "acquire")?.value !== builtinAcquire) return false;
+  return builtinSelectiveVerify.call(cache as ProgramCache, device, flags);
+}
+
+/** Derive optional programs from captured ordinary warmup or matching previous draw sources. */
+export function prewarmCapturedSelectiveBloom(
+  cache: ProgramCacheLike,
+  device: RenderDevice,
+  flags: QrFlags,
+  compile: NonNullable<RenderDevice["compileAsync"]>
+): CapturedSelectiveBloomPrewarm {
+  if (!isBuiltinSelectiveBloomCache(cache, device, flags)) return { reason: "generated-programs-unavailable" };
+  return builtinCapturedPrewarm.call(cache as ProgramCache, device, flags, compile);
+}
+
+export function capturedSelectiveBloomReady(cache: ProgramCacheLike, device: RenderDevice, flags: QrFlags, key: string): boolean {
+  return isBuiltinSelectiveBloomCache(cache, device, flags) && builtinCapturedVerify.call(cache as ProgramCache, key);
 }
 
 /**

@@ -1,0 +1,81 @@
+{
+ "target": "aura-hoops-3d--orbit",
+ "slug": "aura-hoops-3d",
+ "variant": "orbit",
+ "url": "/apps/showcase-aura-hoops-3d/index.html?court=orbit",
+ "group": "g3",
+ "runId": "gu47-before-aura-hoops-3d-3",
+ "acrRunId": "ch5uq",
+ "readyMs": 29222,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-hoops-3d--orbit",
+   "id": "settle-25s",
+   "slug": "aura-hoops-3d",
+   "variant": "orbit",
+   "sinceReadyMs": 25012,
+   "mean": 113.8,
+   "p5": 65,
+   "p50": 114,
+   "p95": 163,
+   "darkFrac": 0.0025,
+   "clipFrac": 0,
+   "grid": [
+    94.7,
+    116.5,
+    110.8,
+    102.1,
+    139.7,
+    128,
+    99.1,
+    106.5,
+    126.9
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 327
+   }
+  },
+  "settle-60s": {
+   "target": "aura-hoops-3d--orbit",
+   "id": "settle-60s",
+   "slug": "aura-hoops-3d",
+   "variant": "orbit",
+   "sinceReadyMs": 242584,
+   "mean": 113.27,
+   "p5": 63,
+   "p50": 115,
+   "p95": 158,
+   "darkFrac": 0.0107,
+   "clipFrac": 0,
+   "grid": [
+    84.1,
+    115,
+    105.7,
+    97.9,
+    130.9,
+    131.3,
+    93,
+    131.4,
+    130.3
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 327
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-hoops-3d-3/aura-hoops-3d--orbit--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-hoops-3d-3/aura-hoops-3d--orbit--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

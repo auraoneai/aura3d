@@ -14,9 +14,9 @@ import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, gateDripMesh, mergeMeshe
 import { SYMBOL_FOR_COLOR, symbolMesh, type SymbolKind } from "./symbols";
 import { COLORS, CONFIG, POOL, curve, type Gate, type Segment, type SplatRushSim, type Splatter } from "./sim";
 import { gateSquash, gateMatched, type Shown } from "./presentation";
-import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, addBackdrop, updateBackdrop } from "./backdrop";
+import { BACKDROP_KEY_ID, BACKDROP_KEY_SCALE, PAINT_POT_PIECES, PIECES, addBackdrop, backdropPose, updateBackdrop } from "./backdrop";
 import { addPickups, hidePickups, pickupNodeIds, updatePickups } from "./pickups";
-import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
+import { CARNIVAL_CLOUD_FRAGMENT, CARNIVAL_GATE_VERTEX, CARNIVAL_SEA_FRAGMENT, CARNIVAL_SKY_FRAGMENT, CARNIVAL_TONE_VERTEX, CARNIVAL_VERTEX, FLAT_FRAGMENT, FLAT_TONE_FRAGMENT, FLAT_TONE_VERTEX, FLAT_VERTEX, GATE_SHADOW_FRAGMENT, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_TONE_VERTEX, TOON_VERTEX, carnivalToonFragment, toonFragment } from "./shaders";
 import { LOOKS, hexToLinear, sunDirection, timeOfDay, timeOfDayKey, type SplatLook, type TimeOfDay } from "./look";
 
 type Rgb = readonly [number, number, number];
@@ -98,7 +98,9 @@ export function carnivalLightUniforms(look: SplatLook, tod: TimeOfDay): Uniforms
     crRim: { type: "color3", value: scale3(hexToLinear(t.rim.color), t.rim.intensity) },
     crRimThreshold: { type: "f32", value: t.rim.threshold },
     crFogColor: { type: "color3", value: [...tod.horizon] },
-    crFogDensity: { type: "f32", value: t.fogDensity }
+    crFogDensity: { type: "f32", value: t.fogDensity },
+    crEnvTop: { type: "color3", value: [...tod.upper] },
+    crEnvRose: { type: "color3", value: [...tod.rose] }
   };
 }
 
@@ -118,15 +120,33 @@ export interface CarnivalSurface {
   readonly contact?: boolean;
   /** GU47 phase 3 sky reflection on (default); off on flat splatters, whose reflected ray hits the warm band and shifts the player colour. */
   readonly reflect?: boolean;
+  /** GU47 phase 4 enamel dome reflection strength (0 = none). */
+  readonly env?: number;
+  /** GU47 phase 4 lacquered-deck planar reflection of the gates and ball (deck only). */
+  readonly mirror?: boolean;
 }
+
+/** GU47 phase 4: initial (empty) planar-reflection uniforms of the deck; `update` writes the nearest gates and the ball. */
+const mirrorUniforms = (look: SplatLook) => {
+  const m = look.toon?.mirror;
+  const zero = new Array<number>(16).fill(0);
+  return {
+    crGateP0: { type: "mat4" as const, value: zero }, crGateP1: { type: "mat4" as const, value: zero },
+    crGateT0: { type: "mat4" as const, value: zero }, crGateT1: { type: "mat4" as const, value: zero },
+    crBall: { type: "vec4" as const, value: [0, 0, 0, 0] },
+    crBallTone: { type: "vec3" as const, value: [0, 0, 0] },
+    crMirror: { type: "vec3" as const, value: m ? [m.gates, m.sky, m.fadeHeight] : [0, 0, 1] }
+  };
+};
 
 export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSurface = {}): CustomSpec => {
   const tod = timeOfDay(look, 0);
   if (!tod || !look.toon) throw new Error("splat-rush-port: carnivalToonSpec needs the carnival look");
-  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true } = surface;
+  const { map, emissive = [0, 0, 0], tone = false, gloss = 0, drySeconds = 0, canvas = [0, 0], wobble = false, contact = false, reflect = true, env = 0, mirror = false } = surface;
+  const withMirror = mirror && look.toon.mirror !== null;
   const vertex = wobble && tone ? CARNIVAL_GATE_VERTEX : tone ? CARNIVAL_TONE_VERTEX : CARNIVAL_VERTEX;
   return {
-    glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone) },
+    glsl: { vertex, fragment: carnivalToonFragment(map !== undefined, tone, withMirror) },
     uniforms: {
       baseColor: { type: "color3", value: [...base] },
       emissive: { type: "color3", value: [...emissive] },
@@ -139,6 +159,8 @@ export const carnivalToonSpec = (look: SplatLook, base: Rgb, surface: CarnivalSu
       crCanvas: { type: "vec2", value: [canvas[0], canvas[1]] },
       crSkyReflect: { type: "f32", value: reflect ? look.toon.skyReflect : 0 },
       crContact: { type: "vec2", value: contact ? [look.toon.contact.height, look.toon.contact.strength] : [1, 0] },
+      crEnv: { type: "f32", value: env },
+      ...(withMirror ? mirrorUniforms(look) : {}),
       ...(wobble && tone ? { crWobble: { type: "vec3" as const, value: [0, 0, 0] } } : {})
     },
     side: "double"
@@ -719,7 +741,7 @@ export function buildWorld(options: WorldOptions): World {
   addBackdrop(builder, look);
 
   /* player ball: sphere r 0.55, painted map x player colour */
-  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true }));
+  add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toon(hexLinear(COLORS[0] as string), { map: ballTex, gloss: look.toon?.gloss.ball ?? 0, contact: true, env: look.toon?.env.ball ?? 0 }));
 
   /* soft contact shadow under the ball */
   add("ball-shadow", boxMesh(2, 0.002, 2), shadowSpec());
@@ -728,8 +750,8 @@ export function buildWorld(options: WorldOptions): World {
   const deck = new Batch(boxMesh(8, 0.3, 1), MAX_SEG);
   const rails = new Batch(sphereMesh(1, 8, 6), MAX_SEG * 2);
   const dashes = new Batch(boxMesh(0.15, 0.02, 1.2), DASH_MAX);
-  addBatch("deck", deck, toon([1, 1, 1], { map: rampTex, ...(look.toon ? { canvas: [look.toon.canvas.weave, look.toon.canvas.streak] as const } : {}) }));
-  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.4 : 0, contact: true }));
+  addBatch("deck", deck, toon([1, 1, 1], { map: rampTex, ...(look.toon ? { canvas: [look.toon.canvas.weave, look.toon.canvas.streak] as const, mirror: true } : {}) }));
+  addBatch("rails", rails, toon(hexLinear(carnival ? RAIL_PLUM : "#c3b1f0"), { gloss: carnival ? 0.4 : 0, contact: true, env: look.toon?.env.rails ?? 0 }));
   addBatch("dashes", dashes, toon(carnival ? hexLinear("#fff1dc") : [1, 1, 1]));
 
   /* gates: two posts + bar, merged, scaled 0.32 like the original group; colour per gate in `tone` */
@@ -740,12 +762,12 @@ export function buildWorld(options: WorldOptions): World {
   const gateMesh = transformMesh(mergeMeshes(look.gates?.drips ? [...gateParts, gateDripMesh()] : gateParts), { scale: 0.32 });
   gateVertexCount = gateMesh.positions.length / 3;
   const gates = new Batch(gateMesh, GATE_MAX, hexLinear(COLORS[0] as string));
-  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.25 : 0, wobble: look.gates !== null, contact: true }));
+  addBatch("gates", gates, toon([1, 1, 1], { tone: true, gloss: carnival ? 0.25 : 0, wobble: look.gates !== null, contact: true, env: look.toon?.env.gates ?? 0 }));
   /* GU47 phase 3: gate cel shadows on the deck (carnival only, +1 draw, same slots as the gates) */
   const gateShadows = look.gateShadow && look.toon
     ? new Batch(gateShadowMesh(look.gateShadow.length, -Math.tan((look.toon.sunAzimuthDeg * Math.PI) / 180)), GATE_MAX)
     : null;
-  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), uniforms: { baseColor: { type: "color3", value: [0.12, 0.04, 0.16] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
+  if (gateShadows && look.gateShadow) addBatch("gate-shadows", gateShadows, { ...shadowSpec(), glsl: { vertex: SHADOW_VERTEX, fragment: GATE_SHADOW_FRAGMENT }, uniforms: { baseColor: { type: "color3", value: [0.07, 0.02, 0.1] }, alpha: { type: "f32", value: look.gateShadow.alpha } } });
 
   /* C7 colour symbols: one per gate (same slots as the gates) plus one over the ball */
   const symbolMeshes = Object.fromEntries((["circle", "triangle", "square", "cross"] as const).map((k) => [k, symbolMesh(k)])) as Record<SymbolKind, ReturnType<typeof symbolMesh>>;
@@ -775,7 +797,11 @@ export function buildWorld(options: WorldOptions): World {
   addBatch("splats", splats, toon([1, 1, 1], { tone: true, gloss: look.toon?.gloss.fresh ?? 0, drySeconds: look.toon?.gloss.drySeconds ?? 0, reflect: false }));
 
   /* particles (world space, rewritten while any is alive), clouds (drift frame), streaks (rewritten per frame), shield */
-  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles, [1, 1, 1]);
+  // CR-V4: reserve a few visual-only paint-pot drops in the existing particle
+  // batch, rather than adding an emitter/draw for each island.
+  const dripsPerPot = 4;
+  const dripCount = carnival ? PAINT_POT_PIECES.length * dripsPerPot : 0;
+  const particles = new Batch(sphereMesh(0.13, 6, 6), POOL.particles + dripCount, [1, 1, 1]);
   addBatch("particles", particles, toon([1, 1, 1], { tone: true }));
   const puff = mergeMeshes([
     sphereMesh(2.5, 14, 10),
@@ -837,11 +863,14 @@ export function buildWorld(options: WorldOptions): World {
       const splatScale: number[] = Array.from({ length: POOL.splatters }, () => -1);
       const particleColor: string[] = Array.from({ length: POOL.particles }, () => "");
       const particleShown: boolean[] = Array.from({ length: POOL.particles }, () => false);
+      const dripShown: boolean[] = Array.from({ length: dripCount }, () => false);
+      for (let i = 0; i < dripCount; i++) particles.setTone(POOL.particles + i, hexLinear(i < dripsPerPot ? "#f3bac8" : "#c9b8ec"));
       const cloudLocal: number[] = Array.from({ length: CLOUDS }, () => Number.NaN);
       let ballColorKey = "";
       let ballSymbolKind: SymbolKind | "" = "";
       let symbolsOn = false;
       let todKey = -1;
+      const mirrorOn = carnival && (look.toon?.mirror ?? null) !== null;
       let phaseName = "";
       let phaseStart = 0;
       /* CR-P3: the authored DOF node starts enabled (the app opens on the title) */
@@ -899,7 +928,7 @@ export function buildWorld(options: WorldOptions): World {
         const lift = Math.max(0, p.y - CONFIG.BALL_RADIUS * p.scale);
         const shadow = node("ball-shadow");
         /* GU47 phase 3: in carnival the blob falls away from the low sun (towards the camera and right, like the gate shadows) */
-        const sh = look.gateShadow ? { dx: 0.45, dz: 0.65, alpha: 0.42 } : { dx: -0.5, dz: -0.5, alpha: 0.3 };
+        const sh = look.gateShadow ? { dx: 0.45, dz: 0.65, alpha: 0.75 } : { dx: -0.5, dz: -0.5, alpha: 0.3 };
         shadow.setVisible(p.visible).setPosition(p.x + sh.dx * p.y, 0.05, p.z + sh.dz * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
         shadow.setUniform?.("alpha", sh.alpha / (1 + 0.25 * lift));
         /* shield bubble */
@@ -996,6 +1025,30 @@ export function buildWorld(options: WorldOptions): World {
           guide.setUniform?.("alpha", 0.35 + 0.3 * pulse);
         }
 
+        /* GU47 phase 4: lacquered-deck reflection inputs, the eight nearest standing gates ahead of the camera and the ball */
+        if (mirrorOn) {
+          const near = simNow.gates
+            .map((g) => ({ g, z: g.z - back }))
+            .filter((e) => e.z < p.z + 3 && e.z > -60 && !(e.g.passed && gateMatched(o, e.g)))
+            .sort((a, b) => b.z - a.z)
+            .slice(0, 8);
+          const pos = [new Array<number>(16).fill(0), new Array<number>(16).fill(0)];
+          const tone = [new Array<number>(16).fill(0), new Array<number>(16).fill(0)];
+          near.forEach((e, k) => {
+            const m = k >> 2, o4 = (k & 3) * 4;
+            const c = hexLinear(COLORS[e.g.colorIndex] as string);
+            (pos[m] as number[]).splice(o4, 4, e.g.laneX + curve(-o.distance + e.g.z), e.z, 1, 1);
+            (tone[m] as number[]).splice(o4, 4, c[0], c[1], c[2], 1);
+          });
+          const deckNode = node("deck");
+          deckNode.setUniform?.("crGateP0", pos[0] as number[]);
+          deckNode.setUniform?.("crGateP1", pos[1] as number[]);
+          deckNode.setUniform?.("crGateT0", tone[0] as number[]);
+          deckNode.setUniform?.("crGateT1", tone[1] as number[]);
+          deckNode.setUniform?.("crBall", p.visible ? [p.x, p.y, p.z, CONFIG.BALL_RADIUS * p.scale] : [0, 0, 0, 0]);
+          deckNode.setUniform?.("crBallTone", [...rgb]);
+        }
+
         updatePickups(node, simNow.powerups, elapsed, back);
 
         /* splatters: written when they appear and while they grow */
@@ -1020,6 +1073,23 @@ export function buildWorld(options: WorldOptions): World {
           particles.place(i, pa.x, pa.y, pa.z, 0, pa.scale, pa.scale, pa.scale);
           particleShown[i] = true;
           if (particleColor[i] !== pa.color) { particles.setTone(i, hexLinear(pa.color)); particleColor[i] = pa.color; }
+        }
+        // Droplets fall from the two admitted paint-pot islands. They share
+        // their scrolling/fade pose and never consume or mutate sim particles.
+        for (let i = 0; i < dripCount; i++) {
+          const slot = POOL.particles + i;
+          const piece = PIECES[PAINT_POT_PIECES[Math.floor(i / dripsPerPot)]!]!;
+          const pose = backdropPose(piece, o.distance - back, elapsed, look);
+          if (view.reducedMotion || view.cameraLayers !== true || app.effects?.runtime === "off" || pose.fade <= 0.1) {
+            if (dripShown[i]) { particles.collapse(slot); dripShown[i] = false; }
+            continue;
+          }
+          const drop = i % dripsPerPot;
+          const phase = ((elapsed * 0.55 + drop / dripsPerPot + piece.z0 * 0.03) % 1 + 1) % 1;
+          const offset = (drop - 1.5) * 0.38 * pose.fade;
+          const size = pose.fade * (1.2 - 0.35 * phase);
+          particles.place(slot, pose.x + offset * Math.cos(pose.yaw), pose.y - (0.15 + phase * 2.8) * pose.fade, pose.z - offset * Math.sin(pose.yaw), 0, size, size * 1.35, size);
+          dripShown[i] = true;
         }
 
         /* clouds: rewritten only when one respawns; the node carries the shared drift */

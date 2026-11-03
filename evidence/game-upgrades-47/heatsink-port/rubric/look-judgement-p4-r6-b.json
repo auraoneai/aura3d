@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../../../../../tmp/g19p4/scr-r2/strike-card2x.jpg",
+      "sha256": "beb6ed1d0510819b80a60582a66f59217451e322323102c8ef3a5c3b71824e64"
+    },
+    {
+      "path": "../../../../../tmp/g19p4/scr-r2/mid-action-640.jpg",
+      "sha256": "dc2e755b99e30d9122eb2eb0d43df7266df65c946285199c0303f2d3193375a4"
+    },
+    {
+      "path": "../../../../../tmp/g19p4/scr-r2/results-640.jpg",
+      "sha256": "c46756cc8c1670b6ae22b194101691e121f1a61009eecce9db6cbcdd69a254c8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/heatsink-port/p4-r6/heatsink-port/frames/g19p4-r6-1/heatsink-port--default--settle-60s.jpg",
+      "sha256": "a7dff5e40a76092828185ef3fc2a2489f3a34018a3f507202d435894491f334b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 3,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 6,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4,
+    "animation_quality": 5.5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The scene reads as flat ambient light under a purple and teal night sky. There is no low warm key sun and no directional falloff across the mountains or the track, so the golden-hour recipe is not met."
+    },
+    {
+      "category": "shadows",
+      "seen": "The drone hovering in frame 4 has no contact shadow on the track. The black gate arch casts no visible shadow. Only a vague dark smear at the bottom of frames 1 and 2 could be a shadow."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The drone's glass dome and orange panels show a soft highlight. The track surface does not reflect the glowing cyan lines, and the metal parts look matte with no environment reflection."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The alien theme holds together: a ringed planet, aurora, mushroom trees, crystal spikes and a rock overpass in frame 4. The mountains are simple cone shapes, roadside props are sparse, and the world does not match the warm-asphalt racing palette."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 4 shows some distance haze toward the horizon, and the aurora adds sky interest. There is no layered depth fog in the 30 to 180 m range, and the mid-ground mountains keep full contrast."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The track is flat purple albedo with emissive line decals and no roughness variation. The mountain textures are stretched and striated, visible on the left peaks in frame 4. The drone material is the most convincing asset."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The drone has detailed rotors, landing legs and camera pods. The gate is a plain black box frame, and the crystals and mountains are low-poly primitives."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1 the drone sits centered and takes up about 10% of the frame, below the 15 to 25% target. In frame 4 the drone is pushed to the right edge while the empty gate holds the center."
+    },
+    {
+      "category": "camera",
+      "seen": "Frame 1 is a standard chase view and frame 2 is a low banked angle with good sense of speed. Frame 4 frames the drone from the side at the track edge, which reads like camera drift rather than an intentional shot."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The cyan lines have light bloom, and speed streaks appear in frames 1 and 2. There is no color grade, vignette or film treatment toward the cinematic-film target. Frame 3 blurs the background behind the results modal."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Frame 2 shows the drone banked with a red state tint and dense speed streaks, which suggests responsive motion. Still frames cannot show timing or easing."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The top bar is clean and readable at 1440 px. At 640 px it fills about 15% of the screen and the 'best --:--.---' text is cramped. The results modal in frame 3 is a run-on text dump with no layout hierarchy apart from the cyan button."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

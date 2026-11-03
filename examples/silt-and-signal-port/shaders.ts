@@ -146,9 +146,13 @@ void main() {
   if (inkLook > 0.5) {
     vec3 n = normalize(vec3((ripple - 0.5) * 0.35, 1.0, (fbm(flow * 5.0 + 1.3) - 0.5) * 0.35));
     vec3 r = reflect(-view, n);
-    float spec = pow(max(0.0, dot(r, normalize(sunDir))), 420.0);
-    c = mix(c, inkSky, fres * 0.3);
-    c += sunColor * spec * 1.2;
+    float sd = max(0.0, dot(r, normalize(sunDir)));
+    float spec = pow(sd, 420.0);
+    // phase 4: the canal mirrors the chapter sky (horizon to zenith along the reflected ray) and carries a broad glitter
+    // path under the sun or moon, so it reads as water reflecting the world rather than a flat tint
+    vec3 skyRef = mix(inkSky, inkSkyTop, smoothstep(0.02, 0.55, r.y));
+    c = mix(c, skyRef, 0.28 + fres * 0.5);
+    c += sunColor * (spec * 1.4 + pow(sd, 36.0) * 0.32 * (0.6 + 0.8 * ripple));
     float streak = smoothstep(0.62, 0.9, vnoise(vec2(vWorld.x * 0.6, vWorld.z * 0.02 + siltTime * 0.9)));
     c = mix(c, vec3(0.86, 0.78, 0.62), streak * 0.18 + foam * 0.12);
   }

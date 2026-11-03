@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The far lanes are crowded and some vehicles overlap or bunch near the train, which makes the background busy and harder to read. The sun glow is soft and washed out, and the bottom of the ground darkens slightly. Otherwise it has stronger saturation, a grounded frog with a contact shadow, better shaded log platforms and better depth.",
+     "Far lanes are crowded with stacked vehicles and look a bit cluttered; the horizon cuts off flat against the sky; the foreground grass is a large plain area.",
+     "The scene is a bit busy and cluttered with vehicles. The ground plane ends in a hard horizon line. Some cars overlap each other in the far lanes. Otherwise it has richer colour, a soft sun glow, a frog shadow and readable coin faces."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The background traffic is dense and somewhat cluttered, with slight overlaps. The pink sunset sky is hazy around the sun, and the grass colour is a bit muted. Otherwise it has a warm, atmospheric sunset mood, a grounded frog with a shadow, varied colourful vehicles and nicely shaded pink platforms.",
+     "The sunset sky haze is slightly washed and pinkish; the hard horizon line meets a flat green backdrop; the foreground grass is plain.",
+     "The pinkish sky haze is slightly washed out. The ground ends in a hard horizon edge. There is some vehicle clutter. Otherwise it has warmer mood lighting, a frog shadow, colourful varied traffic and better depth."
+    ]
+   }
+  ]
+ }
+]

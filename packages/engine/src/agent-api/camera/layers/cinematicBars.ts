@@ -14,6 +14,7 @@
  */
 import type { AuraCameraLayer } from "../../../contracts/camera.js";
 import type { FrameContributor, RenderItem } from "@aura3d/rendering/contracts";
+import { certifyEmptyStockContributor } from "@aura3d/rendering/contracts";
 import { ease } from "../ease.js";
 
 export interface AuraCinematicBarsOptions {
@@ -122,7 +123,7 @@ export function createCinematicBarsLayer(options: AuraCinematicBarsOptions = {})
  * no bars layer is active or the flag is off).
  */
 export function createLetterboxContributor(): FrameContributor {
-  return {
+  return certifyEmptyStockContributor({
     id: "prd08.letterbox",
     owner: "prd08",
     flag: "A3D_QR_CAMERA",
@@ -135,5 +136,5 @@ export function createLetterboxContributor(): FrameContributor {
       else ctx.blackboard.delete(LETTERBOX_BLACKBOARD_KEY);
       return items;
     }
-  };
+  }, () => activeBars.size === 0);
 }

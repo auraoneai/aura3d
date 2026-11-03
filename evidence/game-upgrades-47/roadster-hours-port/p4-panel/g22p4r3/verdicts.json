@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "halo",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Canyon walls crushed to near-black, flat and murky; hard-edged dark red rectangular patch on the road behind the car looks like a rendering artifact; car small and less lit",
+     "Mild haze toward the horizon and the finish gate is small, but the warm sunset canyon lighting reads well, the car is clear and well lit, and the rock walls show material detail.",
+     "The road surface is slightly hazy and blue-washed, and the building window textures are simple stripes. The car is well lit and readable, and the moon gives a clear focal point. Overall it is a polished moody night frame."
+    ]
+   },
+   {
+    "variant": "redline",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cold blue cast over everything; hard-edged purple/red rectangle on the road under the car; right hillside a flat dark mass; scene sparse and muddy",
+     "The player car is an almost black silhouette with its colour and stripes lost; a bright red rectangle on the road around the car looks like an artifact; the foreground road falls into crushed black; only the city windows and rails read.",
+     "Mild warm haze toward the horizon and soft canyon wall textures. Otherwise the lighting is warm and readable, the car is clear, and the depth is good."
+    ]
+   },
+   {
+    "variant": "sunbreak",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 1,
+    "afterDefects": [
+     "Player car is a near-black silhouette and barely readable; large hard-edged red rectangle glowing on the road under the car (artifact); lower third crushed to black",
+     "A purple/red rectangle on the road behind the car looks like an artifact; the right-side hill is a flat dark slab with little detail; the road has a blue cast with weak shading; the composition is plain.",
+     "The grey sky is somewhat hazy and the far distance is a little washed out. The road texture is noisy. The warm sunlit hills, wind turbines, trees with shadows, and a clear car with a contact shadow give it good depth and polish."
+    ]
+   }
+  ]
+ }
+]

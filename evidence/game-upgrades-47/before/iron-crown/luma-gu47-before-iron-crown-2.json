@@ -1,0 +1,118 @@
+[
+ {
+  "target": "iron-crown--bangkok-dock",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "bangkok-dock",
+  "sinceReadyMs": 25003,
+  "mean": 102.07,
+  "p5": 47,
+  "p50": 97,
+  "p95": 169,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   121.7,
+   152.9,
+   113,
+   98.4,
+   132.5,
+   83,
+   68.6,
+   83.6,
+   64.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 3503
+  }
+ },
+ {
+  "target": "iron-crown--bangkok-dock",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "bangkok-dock",
+  "sinceReadyMs": 433120,
+  "mean": 102.09,
+  "p5": 47,
+  "p50": 97,
+  "p95": 169,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   121.7,
+   152.9,
+   113.1,
+   98.4,
+   132.5,
+   83.1,
+   68.6,
+   83.6,
+   64.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 3503
+  }
+ },
+ {
+  "target": "iron-crown--colosseum-ruins",
+  "id": "settle-25s",
+  "slug": "iron-crown",
+  "variant": "colosseum-ruins",
+  "sinceReadyMs": 25009,
+  "mean": 114.99,
+  "p5": 57,
+  "p50": 113,
+  "p95": 179,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   125.5,
+   155.6,
+   115.1,
+   115.7,
+   149.6,
+   95.7,
+   87.1,
+   106,
+   84.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 207
+  }
+ },
+ {
+  "target": "iron-crown--colosseum-ruins",
+  "id": "settle-60s",
+  "slug": "iron-crown",
+  "variant": "colosseum-ruins",
+  "sinceReadyMs": 571412,
+  "mean": 114.97,
+  "p5": 57,
+  "p50": 113,
+  "p95": 179,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   125.5,
+   155.6,
+   115.1,
+   115.5,
+   149.6,
+   95.7,
+   87.1,
+   106,
+   84.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 207
+  }
+ }
+]

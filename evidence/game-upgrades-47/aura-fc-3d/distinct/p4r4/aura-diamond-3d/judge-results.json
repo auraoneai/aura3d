@@ -1,0 +1,726 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:39:22.720Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-fc-3d--favela--settle-60s",
+      "aura-fc-3d--glacier--settle-60s",
+      "aura-fc-3d--kyoto--settle-60s",
+      "aura-fc-3d--lagos--settle-60s",
+      "aura-fc-3d--munich--settle-60s",
+      "aura-fc-3d--uyuni--settle-60s"
+    ],
+    "framesB": [
+      "aura-diamond-3d--canyon--settle-60s",
+      "aura-diamond-3d--dome--settle-60s",
+      "aura-diamond-3d--ivy--settle-60s",
+      "aura-diamond-3d--lunar--settle-60s",
+      "aura-diamond-3d--sandlot--settle-60s",
+      "aura-diamond-3d--skyline--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.827,
+  "summary": {
+    "trials": 48,
+    "valid": 47,
+    "differentGame": 47,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9244398288016114,
+      1
+    ],
+    "confidentDifferent": 41,
+    "confidentDifferentRate": 0.8723404255319149,
+    "same_game": false,
+    "same_game_confidence": 0.827,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with a sandy brown ground and dark stadium; Image B is a baseball field with teal grass and a pink infield",
+        "Different palettes and lighting: warm dim brown vs. cool purple-teal night city skyline",
+        "Different sports, characters and field markings, though both use a similar flat-shaded stylized figure look"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with red rock boulders and a 'Canyon Rim' wall, Image B is a soccer pitch",
+        "Different rendering styles: A has green grass and a cool gray sky, B has a warm sandy-orange monochrome look with long soft shadows",
+        "Different character models and camera: A has stiff white-uniformed players with blue caps, B has smaller stylized players in red and white kits"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field at night with dark, dim lighting; Image B is a bright soccer pitch in daylight",
+        "Different sports, field markings, and character designs",
+        "Different palettes: tan dirt on a dark ground in A, pale grey court with red and blue kits in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with flat tan dirt and dark ground, while Image B is a soccer pitch with textured green grass",
+        "Different lighting and palette: dim, desaturated stadium in A versus bright, saturated pitch with a colorful crowd in B",
+        "Character models and camera framing differ: small figures with gloves and a bat in A, versus kit-wearing soccer players in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with an Ivy Classic outfield wall and a scoreboard, while Image B is a soccer pitch with a center circle",
+        "Different palette: saturated green grass and orange clay in A, a brown dusty textured field in B",
+        "Different character and camera styles: bulkier white-uniformed figures in A, slim stylized players with long shadows from a high camera in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with canyon rocks and a green and orange palette, while Image B is a soccer pitch with a pale grey floor",
+        "Different lighting and character styles: A has white uniforms with blue caps and warm sun, B has red and blue jerseys with cool, soft lighting",
+        "Different camera framing and scenery: A has a low perspective view with rock formations, B has a high-angle top-down view with stands"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.68,
+      "tells": [
+        "different sports (soccer vs baseball) with different field layouts",
+        "pale grey daylight palette vs saturated teal and pink night-city palette",
+        "similar low-poly figures and crinkled stand textures suggest only a shared engine or asset set"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer pitch with a dark stadium and a crowd of small colored capsule shapes, while Image B is a baseball field in a hangar-like dome",
+        "Different lighting and palette: A has dark, moody floodlit grass with a noisy texture, B has soft, bright, blurred-background lighting and a flat gray infield",
+        "Different character and camera style: A has small thin figures in a high-angle view, B has larger, smoother, more detailed figures with a low behind-the-batter camera"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is an indoor futsal court with flat, stylized figures and a cool blue palette; Image B is an outdoor baseball field with warm orange dirt and green grass",
+        "Different rendering styles: A has a flat, minimalist look with a lens-glow effect; B has textured, more realistic models with a stormy sky and ivy walls",
+        "Different sports, camera framing and scenery (stadium crowd vs. outfield wall and scoreboard)"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "tells": [
+        "Image A is a soccer pitch and Image B is a baseball field, so the sport and game mechanics differ",
+        "Both use the same low-poly figures with a similar dirt texture, which points to a shared engine or art style",
+        "The lighting differs: A is a dark, warm night stadium and B is a bright daytime canyon with a gray sky"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with green grass, orange dirt infield and ivy walls, while Image B is a soccer pitch on tan ground",
+        "Different art style: A has detailed, realistic textures and dramatic dark sky, B has flat, low-poly figures with soft warm lighting",
+        "Different sports, camera framing and player models (baseball players with gloves vs. soccer players in kits)"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with orange dirt, green grass and a Harbor Sandlot outfield wall",
+        "Image B is a gray indoor soccer or futsal court with a center circle and a ball",
+        "Different palettes, lighting and camera framing, though both use similar low-poly humanoid figures"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "soccer pitch vs baseball diamond",
+        "pale flat gray lighting vs darker, moodier stadium lighting",
+        "similar simple low-poly figures and teal-textured stands, likely the same engine"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch at night with a dark crowd stand, Image B is a baseball diamond in daylight",
+        "Different rendering style: A has flat, low-poly figures with a dark, moody grade, B has brighter, more detailed models with ivy walls and a stormy sky",
+        "Different camera and field layout: A is a centered elevated view of the center circle, B is a behind-the-batter view with an orange dirt infield"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field with flat tan dirt, gray ground and a dark, sparse stadium",
+        "Image B is a soccer pitch with textured grass, pink ad boards and colorful stands",
+        "Different character models, ground materials and lighting style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm orange-tan soccer scene with stylized low-poly figures and soft long shadows",
+        "Image B is a dark, desaturated night baseball field with a 'Lunar Park' sign and a scoreboard",
+        "The two frames use different character models, lighting and rendering styles, and different sports"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with warm orange-tan palette and simple low-poly players",
+        "Image B is a baseball field with teal grass, pink textured dirt and a city skyline backdrop",
+        "Different lighting and material style: flat warm dusk vs textured, cool, high-contrast night look"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball field in daylight with canyon rocks and a desert palette; Image B is a night soccer pitch",
+        "Different sports and different lighting: soft daylight and orange dirt versus dark, spotlit grass and a stadium stand",
+        "Different character and field styles: white-uniformed baseball players on flat-shaded dirt versus soccer players with dark skin tones on a textured pitch"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a gray dirt infield, batter, and a Typhoon Dome outfield wall",
+        "Image B is a soccer pitch with a center circle, red and white kits, and a ball",
+        "Image B has a dark night stadium with a pink ad board and a noisy textured grass, unlike the smooth green turf in A"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "Image A is a soccer pitch with a dark stadium and magenta ad boards, while Image B is a baseball diamond with a teal field and a pink dirt infield",
+        "Both use similar low-poly stylized human figures and a high-angle camera, which points toward a shared engine or studio",
+        "The palette and lighting differ: A is dark and night-like with muted green grass, B is bright with teal and pastel tones and a city skyline backdrop"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dim, muddy baseball field with flat beige dirt and a dark sky, while Image B is a bright blue glossy futsal court with a lens-flare glow",
+        "Different sports and character styles: A has stiff, grey-white baseball figures, B has stylized soccer players in red and white kits with cast shadows",
+        "Different crowd and lighting treatment: A has distant tiny stands under a black sky, B has a dense colorful crowd of pill-shaped spectators"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a baseball field with a daylight sky, green grass and orange dirt; Image B is an indoor futsal court with a dark blue palette and a lens-glare effect",
+        "Different sports, with different character models, lighting and crowd rendering",
+        "Different HUD and scenery: a stadium-wall sign and a scoreboard in A; a plain court with a dark stand in B"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a soccer/futsal court with a flat stylized look and a dark blue night palette",
+        "Image B is a baseball diamond with a daylight green field and more realistic shading",
+        "The characters and lighting differ: A uses bloom and a vignette, B uses a blurred background and a stadium sign"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: soccer pitch with red and white teams vs. baseball diamond with batter and fielders",
+        "Different character models: small flat-shaded players with colored kits vs. larger, more detailed, uniformly white-clad figures with gloves",
+        "Different environment and lighting: warm sandy field with green-seated stands vs. dark night stadium with a scoreboard and 'Lunar Park' signage"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Night soccer pitch with dark stands and magenta boards versus daytime baseball field with canyon rocks",
+        "Different lighting and palette: dark, moody, grainy turf versus bright, flat, saturated sky and clay",
+        "Different character models and scenery style: small stylized soccer figures versus whiter baseball players with gloves and bat"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a pink dirt infield and a city skyline backdrop, Image B is a soccer pitch with grass and dark stands",
+        "Different palettes: teal and pink in A, green and dark navy in B",
+        "Similar low-poly characters and camera angle, but different sports and environments"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with flat low-poly figures and warm orange dusk lighting; Image B is a baseball field with textured dirt and green grass",
+        "Different character models and rendering: smooth flat-shaded players vs. white-uniformed figures with detailed textures",
+        "Different HUD and scene style: stadium crowd of egg-shaped blobs vs. bleachers, scoreboard and outfield wall with signage"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night soccer pitch with a dark crowd stand and a magenta ad board, while Image B is a daytime baseball field with an ivy outfield wall",
+        "Different character models and art style: small flat-shaded soccer figures versus more detailed 3D baseball players with gloves",
+        "Different lighting and palette: dark moody night with a noisy grass texture versus a warm orange dirt infield and a stormy sky"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--skyline--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a futsal/soccer court with a blue floor and a bloom glow, Image B is a baseball field with textured pink dirt",
+        "Different character models and styling: flat stylized soccer players versus pale baseball players with blue caps",
+        "Different scenery and lighting: dark stadium crowd rows versus a city skyline backdrop with a teal field"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a daylight canyon setting, orange rocks and green grass",
+        "Image B is an indoor night soccer pitch with a blue glossy floor, dark stands and a lens glow",
+        "Different sports, lighting, palette and character models"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a warm orange soccer scene with flat stylized figures and egg-shaped crowd dots",
+        "Image B is a cooler baseball dome with realistic textures, depth blur and a scoreboard",
+        "Different sports, lighting and rendering style"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with a bright daytime sky and orange dirt infield, Image B is a soccer pitch at night under dark stands",
+        "Different grounds: A has smooth green turf, B has a noisy, textured grass look",
+        "Different crowds and boundaries: A has colorful bleachers with a gray wall, B has dark stands with a magenta ad board"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "tells": [
+        "soccer vs baseball with different arenas",
+        "dark sandy brown pitch vs bright green and gray dome field",
+        "different lighting and camera framing, though both use similar simple humanoid figures"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with orange dirt and green grass; Image B is a grey soccer pitch with a center circle",
+        "different lighting: dark stormy warm sky in A, flat pale overcast look in B",
+        "similar low-poly white-shaded humanoid figures, but sport, camera angle, and palette differ"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball diamond in daylight with orange dirt and a hazy sky; Image B is a soccer pitch at night with dark stands",
+        "Different lighting and palette: A is washed-out and bright, B is dark and high-contrast with textured grass",
+        "Different sports, field markings and HUD-free framing, so the setups don't match"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "tells": [
+        "Image A is a baseball field with a daylight sky; Image B is a soccer pitch at night",
+        "Different ground and scene: green grass with an orange dirt infield vs. a brown sandy pitch with a center circle",
+        "Different stadium and character styling: colorful stands, billboard and rocks vs. dark green stands, with soccer players in red and white kits"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--ivy--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with an Ivy Classic outfield wall and orange dirt infield; Image B is a soccer pitch",
+        "Different sport and setting: grass and ivy in A, a dusty brown pitch with a dark stadium in B",
+        "Different character rendering: white-uniformed figures with gloves in A, small red and white kit players in B"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a baseball diamond at night with dark, dim lighting, while Image B is a bright soccer pitch",
+        "Different sports, field layouts and ball/equipment (bat and glove vs. soccer ball)",
+        "Different palettes and stadium backdrops: dark brown/black vs. pale grey-lavender with salmon stands"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dark night soccer pitch with a magenta wall and stylized flat-shaded players, while Image B is a bright overcast baseball field with an orange dirt infield",
+        "Different lighting and palette: moody dark crowd with colored lights vs. soft daylight, pale gray sky",
+        "Different character and scenery style: slim stylized figures vs. white-uniformed players, with rock formations and a scoreboard in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-fc-3d--favela--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a dim, dusky soccer pitch with dark stadium stands, while Image B is a bright, hazy daytime baseball field",
+        "Different character rendering: small flat-shaded soccer figures in A versus larger white-uniformed baseball players with caps and gloves in B",
+        "Different scenery and HUD: A has green seating blocks and a sand-colored pitch, B has colorful crowd stands, a scoreboard, rock props and a 'Harbor Sandlot' wall"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Different sports: baseball diamond with a Typhoon Dome outfield wall vs. soccer pitch with a center circle",
+        "Different palettes and lighting: cool green and gray indoor dome vs. warm orange-tan sunset haze",
+        "Different character models and crowd styling: detailed baseball players with gloves and bat vs. simple low-poly soccer figures with blob-shaped spectators"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a soccer pitch with a warm, flat orange-tan palette and stylized low-poly figures",
+        "Image B is a baseball diamond with green grass, textured dirt and a pale overcast sky",
+        "Different rendering styles: soft long shadows and blob-like crowd in A, textured materials and detailed scoreboard stands in B"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-fc-3d--munich--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Different sports: baseball diamond with batter vs soccer center circle with ball",
+        "Different ground rendering: flat grey infield on smooth green vs detailed noisy grass texture",
+        "Different lighting and crowd: blurry daylit dome with scoreboard vs dark night stands with dotted spectators"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--sandlot--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a baseball field with saturated green grass and orange dirt, Image B is a soccer pitch on a pale grey surface",
+        "Different sports, with different HUD and scenery: a Harbor Sandlot outfield wall and scoreboard versus stands behind a pink track",
+        "Different camera and lighting: a low behind-the-batter view with warm haze versus a high top-down view with cool, flat light"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-fc-3d--lagos--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm orange soccer scene with flat stylized figures and soft shadows",
+        "Image B is a dark night baseball stadium with gray, desaturated lighting",
+        "Different sports, character proportions, and rendering styles"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-fc-3d--uyuni--settle-60s",
+      "b": "aura-diamond-3d--dome--settle-60s",
+      "gameIs": "B",
+      "sameGame": null,
+      "sameGameConfidence": null,
+      "tells": [],
+      "error": "unparseable model reply"
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-fc-3d--glacier--settle-60s",
+      "b": "aura-diamond-3d--lunar--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a stylized flat-shaded futsal court with a blue floor and glowing light bloom, Image B is a darker, muted baseball field",
+        "Different sports, character models and proportions (small stylized figures vs. grayer, more realistic low-poly players)",
+        "Different palettes and lighting: teal/blue with colorful crowd dots vs. dark brown/gray with a stadium scoreboard and a ring HUD marker"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-fc-3d--kyoto--settle-60s",
+      "b": "aura-diamond-3d--canyon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a night soccer match with dark stands and magenta boards, Image B is a daytime baseball field with a gray sky and desert rocks",
+        "Different sports, field textures and lighting: grainy, dim grass versus clean, bright, flat-shaded grass and dirt",
+        "Both use small stylized low-poly players from a high camera, but the rendering style and palette differ"
+      ]
+    }
+  ]
+}

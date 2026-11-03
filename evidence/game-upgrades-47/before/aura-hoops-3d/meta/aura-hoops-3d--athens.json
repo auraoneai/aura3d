@@ -1,0 +1,81 @@
+{
+ "target": "aura-hoops-3d--athens",
+ "slug": "aura-hoops-3d",
+ "variant": "athens",
+ "url": "/apps/showcase-aura-hoops-3d/index.html?court=athens",
+ "group": "g3",
+ "runId": "gu47-before-aura-hoops-3d-2",
+ "acrRunId": "ch5ur",
+ "readyMs": 27836,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-hoops-3d--athens",
+   "id": "settle-25s",
+   "slug": "aura-hoops-3d",
+   "variant": "athens",
+   "sinceReadyMs": 25005,
+   "mean": 104.39,
+   "p5": 54,
+   "p50": 89,
+   "p95": 170,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    117.6,
+    141.1,
+    117.7,
+    74.4,
+    126.2,
+    103.9,
+    77,
+    98.2,
+    83.5
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 328
+   }
+  },
+  "settle-60s": {
+   "target": "aura-hoops-3d--athens",
+   "id": "settle-60s",
+   "slug": "aura-hoops-3d",
+   "variant": "athens",
+   "sinceReadyMs": 198410,
+   "mean": 110.31,
+   "p5": 53,
+   "p50": 96,
+   "p95": 178,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    133.9,
+    162.5,
+    138.8,
+    82,
+    116.4,
+    107.4,
+    72.7,
+    94.1,
+    85.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 328
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-hoops-3d-2/aura-hoops-3d--athens--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-hoops-3d-2/aura-hoops-3d--athens--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

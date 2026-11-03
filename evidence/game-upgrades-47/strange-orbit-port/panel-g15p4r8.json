@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Foreground ground is somewhat hazy and muddy with a smeary reflection; the bike/rider is a bit washed out and low in contrast; the purple glow under the bike looks odd. Otherwise it has rich depth: a dark mountain ridge, a lit winding track with posts, a glowing gas giant and a teal sky give good layering and mood.",
+     "The image is somewhat muddy and low-contrast overall, and the dark brown mountains and rock mass in the middle distance lack detail. The bike's white and teal body looks slightly washed out under flat lighting. The ground has odd reflective smearing on the left. On the plus side, it has much better depth: layered mountains, a winding track on pylons, a banded planet and a teal nebula sky. The composition is more readable and the mood is stronger.",
+     "Somewhat muddy, low-contrast warm haze over the ground plane; player slightly soft and desaturated; foreground ground is a large flat featureless area; distant track and pillars a bit dark against the brown mountains"
+    ]
+   },
+   {
+    "variant": "neutral-env",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as default-A: slightly hazy, muddy foreground and a somewhat washed-out bike, but good depth from the mountains, the lit track, the planet and the teal sky.",
+     "Essentially identical to default B: a slightly muddy, low-contrast midground, dark mountains with little detail, a somewhat washed-out bike body, and reflective smearing on the left ground. The layered depth and atmosphere are clearly superior.",
+     "Looks the same as the default-A frame: warm haze makes the ground muddy and low-contrast, the player is slightly soft, and the foreground is empty"
+    ]
+   }
+  ]
+ }
+]

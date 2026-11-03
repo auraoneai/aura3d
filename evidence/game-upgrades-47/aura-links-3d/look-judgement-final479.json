@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-1/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "e825f86401bc4c62df89c78b29e24996405ab49df8e63eaf3841010131dec744"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-1/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "393da40bc3d1f884d5d2c6dfd351628dfdfd0205cccc93c7deed01430583bd60"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-1/aura-links-3d--stAuroras--settle-60s.jpg",
+      "sha256": "2345de6470440163387617db5bd0a7f96c481f1c90d87979d2e24d0ebba13409"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-2/aura-links-3d--cloudTerrace--settle-60s.jpg",
+      "sha256": "ac48bee3cf20df6378152ec00e0b800084ffb6e263c9257e730f3d6f8614bdef"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 3.5,
+    "camera": 4.5,
+    "postprocessing": 5,
+    "ui_hud": 1.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 is a murky brown cast with no clear key direction. Frames 2 and 4 read as flat midday fill, and only the golfer's shadow gives any hint of a sun angle. Frames 3 and 4 have no rim or bounce light separating the figures from the grass."
+    },
+    {
+      "category": "shadows",
+      "seen": "The golfer has a soft contact blob plus a cast shadow, crisp in frame 4 and soft in frame 2. Frame 3 shows long dark bands across the tee box cast by something off-screen. Trees in frame 2 cast faint distant shadows, but small props and the red tee marker barely ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "No reflective surfaces are visible. The club shaft and head render as flat grey with no environment reflection, and the grass shows no sky-tinted specular."
+    },
+    {
+      "category": "environment_world",
+      "seen": "An infinite flat plane runs to a hard horizon in every frame. Frame 1 is a barren hex-tiled brown ground dotted with tiny cone trees. Frames 2 and 3 use only two side clusters of stacked-sphere trees. The fairway itself has no features beyond a small bunker in frame 3."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Horizon haze is present. Floating orange specks appear in frames 1 and 2, and white specks in frame 4. A large blurred orange sphere floats left of the golfer in frame 1 and reads as an artifact."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass texture tiles visibly across the fairway, and the hex pavement repeats in frame 1. The tee-box border is an untextured flat green strip. The red marker is a plain unlit-looking box."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The golfers are low-poly but readable. Trees in frames 2 and 3 are stacked primitive spheres on sticks, and the grass tufts are small cones. The pines in frame 4 are a much more detailed asset, so the style is inconsistent between frames."
+    },
+    {
+      "category": "composition",
+      "seen": "The main golfer sits at the extreme left edge and a second golfer is cut in half by the frame border. The center and right of the frame are empty fairway. The aim line and tee marker are the only elements leading the eye."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low behind-and-beside view with the horizon near mid-frame, so half the image is sky or empty ground. The subject occupies well under 25% of the frame. The view does not match the orthographic broadcast angle the recipe expects."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Mild tonemapping and a slight haze grade are visible. Bloom is minimal, and the white aim line shows stair-stepping aliasing at its far end."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible in any frame: no power meter, distance, wind, hole number, or score."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

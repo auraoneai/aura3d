@@ -24,11 +24,14 @@ export class ShaderPreprocessor {
   preprocess(source: string, options: ShaderPreprocessOptions = {}): ShaderPreprocessResult {
     const included: string[] = [];
     const defines = normalizeDefines(options.defines ?? {});
+    // Spec defines are emitted at the top; in-source #define / #undef lines
+    // then update a working copy so later #if / #ifdef see them, as GLSL does.
+    const workingDefines = new Map(defines);
     const expanded = this.expandSource({
       source,
       sourceName: "root",
       includes: options.includes ?? new Map(),
-      defines,
+      defines: workingDefines,
       stack: [],
       included
     });
@@ -52,7 +55,7 @@ export class ShaderPreprocessor {
     readonly source: string;
     readonly sourceName: string;
     includes: ReadonlyMap<string, string>,
-    readonly defines: ReadonlyMap<string, string>;
+    readonly defines: Map<string, string>;
     stack: readonly string[],
     included: string[]
   }): ExpandedShaderSource {
@@ -106,6 +109,17 @@ export class ShaderPreprocessor {
       }
 
       if (!isActive()) {
+        return;
+      }
+
+      const defineDirective = parseDefineDirective(line);
+      if (defineDirective) {
+        if (defineDirective.kind === "define") {
+          defines.set(defineDirective.name, defineDirective.value);
+        } else {
+          defines.delete(defineDirective.name);
+        }
+        pushLine(line, sourceLine);
         return;
       }
 
@@ -215,6 +229,25 @@ function formatDefine(value: string | number | boolean): string {
 function parseInclude(line: string): string | null {
   const match = line.match(/^\s*#include\s+<([^>]+)>\s*$/);
   return match?.[1] ?? null;
+}
+
+function parseDefineDirective(line: string):
+  | { readonly kind: "define"; readonly name: string; readonly value: string }
+  | { readonly kind: "undef"; readonly name: string }
+  | null {
+  const define = line.match(/^\s*#\s*define\s+([A-Za-z_]\w*)(\([^)]*\))?(?:\s+(.*?))?\s*$/);
+  if (define) {
+    // A function-like macro is "defined" but has no value usable in #if.
+    const value = define[2] ? "1" : stripLineComment(define[3] ?? "");
+    return { kind: "define", name: define[1]!, value };
+  }
+  const undef = line.match(/^\s*#\s*undef\s+([A-Za-z_]\w*)\s*$/);
+  if (undef) return { kind: "undef", name: undef[1]! };
+  return null;
+}
+
+function stripLineComment(value: string): string {
+  return value.replace(/\s*\/\/.*$/, "").replace(/\s*\/\*.*?\*\/\s*$/, "").trim();
 }
 
 function parseConditionalDirective(line: string):

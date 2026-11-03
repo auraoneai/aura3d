@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-rush",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 1,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Two red cars hang at the top edge of the frame with nothing under them, which reads as floating objects and pulls the eye away from the road. Sun glare on the asphalt is a little blown out, and the road texture is noisy.",
+     "Two red flying cars are cut off at the top edge and look like they float over the road. Same glare streak on the road. Otherwise almost identical to A.",
+     "Two red cars float at the very top edge of the frame and are cut off by it, which is distracting. Heavy motion blur and smear on the road. The sun hotspot is slightly washed out."
+    ]
+   },
+   {
+    "variant": "dusk",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: hovering vehicles at the top edge, a dark lower frame, and the same glare streak. Only the lane-dash positions differ.",
+     "Red flying cars are cut off at the top edge. Reflection streak is somewhat noisy.",
+     "Almost identical to A. Floating red cars are cut off at the top edge, with the same road blur and dark foreground."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A dark overhead gantry cuts across the top of the frame, and red vehicles hang from it in a cluttered way. The lower half of the frame crushes to black, so the area around the car is unreadable and the lane markings near the car disappear. The car blends into the dark road.",
+     "The lower third of the frame is crushed to near-black, so the road is muddy and low-contrast. Lane markings fade early. Overhead gantry and floating red cars clutter the top of the frame.",
+     "The road in the foreground is crushed to black, and the near lane markings disappear, so the play area is hard to read. A cluttered overpass beam with red cars cuts across the top of the frame. The scene is muddy and low in contrast around the player."
+    ]
+   }
+  ]
+ }
+]

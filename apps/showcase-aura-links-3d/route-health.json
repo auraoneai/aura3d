@@ -37,7 +37,7 @@
       "role": "holeMarker"
     },
     {
-      "typedRef": "assets.siegeGolfBall",
+      "typedRef": "assets.linksGolfBall",
       "quality": "production",
       "role": "primaryBall"
     }

@@ -1,0 +1,81 @@
+{
+ "target": "aura-diamond-3d--sandlot",
+ "slug": "aura-diamond-3d",
+ "variant": "sandlot",
+ "url": "/apps/showcase-aura-diamond-3d/index.html?park=sandlot",
+ "group": "g3",
+ "runId": "gu47-before-aura-diamond-3d-1",
+ "acrRunId": "ch5u9",
+ "readyMs": 34663,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-diamond-3d--sandlot",
+   "id": "settle-25s",
+   "slug": "aura-diamond-3d",
+   "variant": "sandlot",
+   "sinceReadyMs": 25003,
+   "mean": 83.55,
+   "p5": 49,
+   "p50": 81,
+   "p95": 152,
+   "darkFrac": 0.002,
+   "clipFrac": 0,
+   "grid": [
+    89.1,
+    105.8,
+    92.7,
+    73.4,
+    98.8,
+    75,
+    59.6,
+    95,
+    62.6
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 496
+   }
+  },
+  "settle-60s": {
+   "target": "aura-diamond-3d--sandlot",
+   "id": "settle-60s",
+   "slug": "aura-diamond-3d",
+   "variant": "sandlot",
+   "sinceReadyMs": 244064,
+   "mean": 85.97,
+   "p5": 50,
+   "p50": 82,
+   "p95": 156,
+   "darkFrac": 0.0007,
+   "clipFrac": 0,
+   "grid": [
+    94.1,
+    111.7,
+    96.9,
+    74.9,
+    99.1,
+    76.3,
+    60.1,
+    96.9,
+    63.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 496
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-diamond-3d-1/aura-diamond-3d--sandlot--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-diamond-3d-1/aura-diamond-3d--sandlot--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

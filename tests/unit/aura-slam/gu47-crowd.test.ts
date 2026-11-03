@@ -3,7 +3,7 @@
  * the crowd stands on a cheer (not under reduced motion), and 240 spectators draw in 2 instanced calls.
  */
 import { describe, expect, it } from "vitest";
-import { CROWD_SEAT_COUNT, FOLLOW_LAG, NECK_LIMIT, createWorldTourCrowd, crowdSeats, wrapAngle, yawToward } from "../../../examples/aura-slam/view/crowd";
+import { CROWD_SEAT_COUNT, FOLLOW_LAG, NECK_LIMIT, SPECTATOR_BODY_POSES, SPECTATOR_HEAD_POSES, createWorldTourCrowd, crowdSeats, wrapAngle, yawToward } from "../../../examples/aura-slam/view/crowd";
 
 const DEG = 180 / Math.PI;
 const settle = (crowd: ReturnType<typeof createWorldTourCrowd>, x: number, z: number, seconds: number, cheering = false, reducedMotion = false): void => {
@@ -20,6 +20,24 @@ describe("GU47 TT-A4: 240 seated spectators in two instanced crowds", () => {
     expect(crowd.bodies.drawPlan().draws + crowd.heads.drawPlan().draws).toBe(2);
     expect(crowd.bodies.nodeIds).toEqual(["crowd-bodies:pose-0"]);
     expect(crowd.heads.nodeIds).toEqual(["crowd-heads:pose-0"]);
+  });
+
+  it("phase 4: rounded spectator meshes are well-formed (smooth normals, colours per vertex, indices in range, small budget)", () => {
+    for (const g of [...SPECTATOR_BODY_POSES, ...SPECTATOR_HEAD_POSES]) {
+      const x = g as unknown as { positions: Float32Array; normals: Float32Array; colors: Float32Array; indices: Uint16Array };
+      const verts = x.positions.length / 3;
+      expect(x.normals.length).toBe(x.positions.length);
+      expect(x.colors.length / 4).toBe(verts);
+      expect(x.indices.length % 3).toBe(0);
+      expect(Math.max(...x.indices)).toBeLessThan(verts);
+      expect(x.indices.length / 3).toBeLessThanOrEqual(400);
+      for (let i = 0; i < verts; i++) expect(Math.hypot(x.normals[i * 3]!, x.normals[i * 3 + 1]!, x.normals[i * 3 + 2]!)).toBeCloseTo(1, 4);
+    }
+    // The head keeps a hair back and a face front, so its yaw reads.
+    const head = SPECTATOR_HEAD_POSES[0] as unknown as { positions: Float32Array; colors: Float32Array };
+    const colourAt = (z: number): number => { let best = 0, bd = Infinity; for (let i = 0; i < head.positions.length / 3; i++) { const d = Math.hypot(head.positions[i * 3]!, head.positions[i * 3 + 1]!, head.positions[i * 3 + 2]! - z); if (d < bd) { bd = d; best = i; } } return head.colors[best * 4]!; };
+    expect(colourAt(0.105)).toBe(1);
+    expect(colourAt(-0.105)).toBeLessThan(0.5);
   });
 
   it("the layout is deterministic (no random seat or colour between loads)", () => {

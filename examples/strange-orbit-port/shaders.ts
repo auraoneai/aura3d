@@ -6,6 +6,7 @@
  * engine author chunks (`a3d_lights`, `a3d_scene`; GU47 SO47-L1).
  * Sources use GLSL 300 es varyings and GLSL1 `attribute` for author attributes.
  */
+import { GIANT_POSITION, LOOKS } from "./art/look";
 
 const NOISE = /* glsl */ `
 float hash21(vec2 p) {
@@ -88,12 +89,19 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
+/** GU47 phase 4: strength of the glazed racing line's sky / gas giant reflection (gouache). */
+export const TRACK_GLAZE = 0.9;
+/** Cosine of the gas giant's angular radius seen from the orbit ring (520 m across, about 890 m out). */
+const GIANT_COS = Math.cos(Math.atan(LOOKS.gouache.planet.size / 2 / Math.hypot(GIANT_POSITION[0], GIANT_POSITION[2])));
+
 /** Domain-warp strength of the track's paint marks (was 4.0, shared with the veins). */
 export const TRACK_MARK_WARP = 2.5;
 
 /** Track fragment; `gouache` adds the split tone, height mist and a deeper impasto relief (the signature brush texture). */
 export const trackFragment = (gouache: boolean): string => /* glsl */ `
 #define TRACK_MARK_WARP ${TRACK_MARK_WARP.toFixed(1)}
+#define GLAZE ${TRACK_GLAZE.toFixed(2)}
+#define GIANT_COS ${GIANT_COS.toFixed(4)}
 in vec3 vWorld;
 in vec3 vNormal;
 in vec2 vUv;
@@ -146,7 +154,23 @@ void main() {
   float det = dot(dpx, r1);
   N = normalize(abs(det) * N - ${gouache ? "0.09" : "0.05"} * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
   vec3 emissive = albedo * ${gouache ? "0.09" : "0.1"} + ${gouache ? "vec3(0.82, 0.52, 0.22)" : "vec3(0.18, 0.72, 0.66)"} * (1.0 - across) * 0.3;
-  outColor = vec4(haze(shade(albedo, N, emissive, vWorld), vWorld), 1.0);
+  vec3 lit = shade(albedo, N, emissive, vWorld);${gouache ? `
+  // GU47 phase 4 (rubric ibl_reflections 3: "fully matte, no environment reflection"): the racing line is glazed regolith,
+  // polished by the pack. It mirrors the painted sky (teal zenith, dark horizon), the banded peach gas giant as a disc
+  // and the low sun as a glint (shadowed), weighted by Schlick Fresnel, so the chase and grid views see the planet in the road.
+  vec3 Vg = normalize(cameraPosition - vWorld);
+  vec3 Rg = reflect(-Vg, N);
+  float fres = 0.04 + 0.96 * pow(1.0 - max(dot(N, Vg), 0.0), 5.0);
+  vec3 toGiant = normalize(vec3(${GIANT_POSITION.map((v) => v.toFixed(1)).join(", ")}) - vWorld);
+  float gd = dot(Rg, toGiant);
+  vec3 refl = mix(vec3(0.02, 0.05, 0.07), vec3(0.12, 0.33, 0.34), smoothstep(-0.05, 0.55, Rg.y));
+  float giantBands = 0.85 + 0.15 * sin(Rg.y * 90.0);
+  refl = mix(refl, vec3(0.98, 0.72, 0.54) * giantBands, smoothstep(GIANT_COS - 0.006, GIANT_COS + 0.006, gd));
+  refl += normalize(u_a3dSunColor + 1e-4) * pow(max(dot(Rg, normalize(u_a3dSunDirection)), 0.0), 260.0) * 5.0 * a3dSunShadowAuto(vWorld, N);
+  float line = smoothstep(0.16, 0.34, vUv.y) * smoothstep(0.84, 0.66, vUv.y);
+  float polish = line * mix(0.45, 1.0, smoothstep(0.42, 0.62, streak));
+  lit += refl * fres * polish * GLAZE;` : ""}
+  outColor = vec4(haze(lit, vWorld), 1.0);
 }`;
 export const TRACK_FRAGMENT = trackFragment(true);
 
@@ -282,7 +306,7 @@ void main() {
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
 }`;
 
-export const NEBULA_FRAGMENT = /* glsl */ `
+export const nebulaFragment = (gouache: boolean): string => /* glsl */ `
 in vec3 vDir;
 out vec4 outColor;
 float h31(vec3 p) {
@@ -305,18 +329,20 @@ float fbm3(vec3 p) {
 }
 void main() {
   vec3 d = normalize(vDir);
-  vec3 col = mix(vec3(0.012, 0.016, 0.045), vec3(0.035, 0.028, 0.085), d.y * 0.5 + 0.5);
+  // GU47 phase 4 (gouache, PRD 6.1 row G15 palette "terracotta, deep teal, chalk"): an ink-teal dome with jade and
+  // terracotta dust; the violet nebula was the sibling judge's main tell against Heatsink, Last Train and Silt and Signal.
+  vec3 col = ${gouache ? "mix(vec3(0.008, 0.022, 0.03), vec3(0.02, 0.055, 0.07), d.y * 0.5 + 0.5)" : "mix(vec3(0.012, 0.016, 0.045), vec3(0.035, 0.028, 0.085), d.y * 0.5 + 0.5)"};
   float band = exp(-pow(dot(d, normalize(vec3(0.28, 0.92, -0.26))) * 3.2, 2.0));
   float c1 = fbm3(d * 2.4 + vec3(1.7, 0.3, 4.1));
   float c2 = fbm3(d * 5.1 + c1 * 1.6 + vec3(9.2, 2.2, 0.7));
   float cloud = pow(clamp(c1 * 1.25, 0.0, 1.0), 2.2);
-  vec3 purple = vec3(0.30, 0.11, 0.46);
-  vec3 teal = vec3(0.04, 0.34, 0.42);
-  vec3 amber = vec3(0.66, 0.30, 0.11);
+  vec3 purple = ${gouache ? "vec3(0.05, 0.22, 0.27)" : "vec3(0.30, 0.11, 0.46)"};
+  vec3 teal = ${gouache ? "vec3(0.10, 0.40, 0.33)" : "vec3(0.04, 0.34, 0.42)"};
+  vec3 amber = ${gouache ? "vec3(0.70, 0.30, 0.13)" : "vec3(0.66, 0.30, 0.11)"};
   vec3 neb = mix(purple, teal, smoothstep(0.30, 0.75, c2));
   neb = mix(neb, amber, smoothstep(0.55, 0.9, fbm3(d * 1.7 + vec3(3.3, 8.8, 1.1))) * 0.7);
   col += neb * cloud * (0.10 + 0.55 * band);
-  col += vec3(0.20, 0.17, 0.30) * band * pow(c2, 1.7) * 0.5;
+  col += ${gouache ? "vec3(0.27, 0.22, 0.16)" : "vec3(0.20, 0.17, 0.30)"} * band * pow(c2, 1.7) * 0.5;
   float lane = smoothstep(0.52, 0.74, fbm3(d * 3.4 + vec3(5.5, 1.2, 7.7)));
   col *= 1.0 - 0.55 * lane * band;
   // SO47-E2: the nebula hue turns with the painted sector (nebulaShift in turns; 0 keeps the authored colours).
@@ -325,6 +351,8 @@ void main() {
   col = col * cos(a) + cross(k, col) * sin(a) + k * dot(k, col) * (1.0 - cos(a));
   outColor = vec4(max(col, vec3(0.0)), 1.0);
 }`;
+export const NEBULA_FRAGMENT = nebulaFragment(false);
+export const NEBULA_FRAGMENT_GOUACHE = nebulaFragment(true);
 
 /** Additive Fresnel shell around the planet (limb glow, brighter on the sun side). */
 export const ATMOS_VERTEX = /* glsl */ `

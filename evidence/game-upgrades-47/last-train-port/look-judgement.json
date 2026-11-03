@@ -3,91 +3,86 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/rubric/gameplay-early.1280x720.jpg",
-      "sha256": "3ceaecca26dd6111668a7386167e5077e1b3aa781b99c0cef48c0586f2e13a98"
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/gameplay-early.1280x720.jpg",
+      "sha256": "c64a410b66c7fd770021c38f30c9d30044efb7ebec6dae4954806a2587faa7f9"
     },
     {
-      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/rubric/key-depart.1280x720.jpg",
-      "sha256": "5e22b8a0f943c699270b900bf3abde64d9e0995182345961944da583b0e317cf"
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/key-depart.1280x720.jpg",
+      "sha256": "39b17b9ecee8313f6d281eff94a5a57a047757010693408fa5a598ab861456ee"
     },
     {
-      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/rubric/mid-leg.1280x720.jpg",
-      "sha256": "c25bd23b3704ff0407cb6379cf60835f9396088aac9001e3d75b7346fa5a5d00"
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/mid-leg.1280x720.jpg",
+      "sha256": "0bebc87142de751c897c339733670f905e5856adfe5f1476608148ed19603820"
     },
     {
-      "path": "evidence/game-upgrades-47/last-train-port/p3-r2/last-train-port/frames/g21p3-r2-4/last-train-port--band-e--settle-60s.jpg",
-      "sha256": "7193c32fd29a63d427d8cce252a40fcf3e0128db0bd6aaeb190e6c52c81d10f0"
+      "path": "evidence/game-upgrades-47/last-train-port/p4-r3/rubric/band-b-settle-60s.jpg",
+      "sha256": "47f77148d8c5e2fedc26263d2623934660a3424c11af01bfa62cda8fd90cba24"
     }
   ],
   "references": [],
   "scores": {
     "lighting": 6,
-    "shadows": 4.5,
-    "ibl_reflections": 4,
-    "environment_world": 6.5,
-    "atmospheric_effects": 5.5,
-    "material_quality": 5.5,
-    "modeling_assets": 6,
-    "composition": 6.5,
+    "shadows": 5,
+    "ibl_reflections": 4.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 4,
+    "composition": 6,
     "camera": 6.5,
     "postprocessing": 5.5,
-    "animation_quality": 5,
-    "ui_hud": 7.5
+    "ui_hud": 7
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "There is a warm golden-hour sky gradient, but the scene lighting stays flat and frontal. Building facades are evenly lit with no low-sun rim or directional falloff. The night frame is dim and murky. Lit windows are its only motivated light, and the tram has no headlight."
+      "seen": "A warm low sun sits near the horizon in frames 2 and 3 and reads as golden hour, but the building facades in frames 1 and 4 are lit almost flat and white with little falloff, so the key light gives no form to the town."
     },
     {
       "category": "shadows",
-      "seen": "The tram has only a soft dark smudge under it. Buildings, lamp posts and pawn-like passenger figures cast no readable shadows on the cobbles. There is no sun-angle shadow to sell a 12° key."
+      "seen": "The clock tower and buildings in frame 2 cast long, soft shadows across the cobbles. In frames 1 and 4 the tram has no clear contact shadow on the rails, and the capsule pedestrians look like they float."
     },
     {
       "category": "ibl_reflections",
-      "seen": "The tram's red lacquer and brass trolley pole show almost no environment reflection. The cobbles and rails are matte, and the rails lack the sky glint expected at golden hour."
+      "seen": "The tram's red roof has a glossy specular sheen, but it shows no environment reflection of the sky or buildings. The glass and the metal rails pick up nothing from the surroundings."
     },
     {
       "category": "environment_world",
-      "seen": "The colorful townhouse blocks, clock tower, arch and roller-coaster-like elevated track over a cloud sea are charming. Distant buildings are repetitive flat-textured boxes, though, and the plaza feels empty and sparse."
+      "seen": "Rows of box buildings with painted window textures, a tiled cobble ground, a stone arch and a floating town over a cloud sea. The facades are flat planes with stretched textures, and the orange platform canopy is an untextured slab."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "The cloud-sea frame has nice haze toward the horizon. The town frames have almost no depth fog: background buildings are as crisp as foreground ones. The night frame has a star field but no glow or volumetrics."
+      "seen": "Distance haze softens the arch and dome in frame 2, and the cloud sea in frame 3 has a sun glow. The haze is a uniform milky wash, and there is no visible light shafting or fog depth layering in the 30–180 m band."
     },
     {
       "category": "material_quality",
-      "seen": "The tram texture looks photoscanned and detailed but noisy, with baked lighting at odds with the scene. The cobble tiling is visibly repetitive. The passenger capsules are untextured flat-shaded primitives."
+      "seen": "The tram texture looks lumpy and smeared, like a baked photogrammetry or generated mesh. The pedestrians are plain matte capsules next to detailed figures, and the platform and canopy have flat colour with no roughness variation."
     },
     {
       "category": "modeling_assets",
-      "seen": "A detailed scanned tram and clock tower sit next to placeholder capsule people with sphere heads, low-poly box buildings and simple bushes. The fidelity is inconsistent."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "Stills only. The tram and passengers appear static, with no visible motion blur, wheel motion or pantograph cues at 22–27 km/h."
-    },
-    {
-      "category": "postprocessing",
-      "seen": "There is mild warm grading and some bloom on the cloud horizon. There is no filmic contrast, vignette or depth of field, and the night frame looks underexposed and gray rather than cinematic."
-    },
-    {
-      "category": "camera",
-      "seen": "The chase camera sits high behind the tram and keeps the track readable. Its field of view is close to 60. There is no speed sensation and no subtle camera roll for the lean mechanic."
+      "seen": "Asset fidelity is mixed. Detailed human figures stand beside peg-person capsules, the building silhouettes are simple extruded boxes, and the tram and clock tower have soft, noisy geometry with warped window detail."
     },
     {
       "category": "composition",
-      "seen": "The tram fills roughly 15–20% of the chase frames and is centered on the vanishing point, which is good. The station shot is cluttered by the HUD and stray capsule figures."
+      "seen": "The chase shots in frames 2 and 3 centre the tram at roughly 10–15% of the frame against a strong vanishing line. The station shots in frames 1 and 4 are flat side-on views, and HUD panels cover the lower-left and lower edge."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera in frames 2 and 3 sits high and close behind the tram at about the target FOV. The station views in frames 1 and 4 use an elevated three-quarter angle without any lens character."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A heavy vignette darkens all corners. Frame 4 adds strong edge blur like tilt-shift DOF and a darker grade, and there is mild bloom around the sun in frame 3. The grade lifts the blacks and washes out the image, and it does not land as cinematic film."
     },
     {
       "category": "ui_hud",
-      "seen": "The navy panels with cream borders are cohesive and legible. The lean gauge, passenger list and key hints are clear. Five panels at once crowd the edges and compete with the scene."
+      "seen": "The navy panels with cream outlines are consistent and readable, with speed, lean meter, passenger list and key hints. Together they cover a large share of the screen, and the bottom control bar crowds the track view."
     }
   ],
   "nextChange": {
-    "category": "ibl_reflections",
-    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
-    "api": "environments.hdri(url) or the look's preset env"
+    "category": "modeling_assets",
+    "change": "replace primitives with typed catalog models sized to the recipe",
+    "api": "model(assets.x) after assets resolve/add"
   },
   "judge": "prism"
 }

@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/roadster-hours-port/f48/roadster-hours-port/frames/f48-roadster-hours-halo/roadster-hours-port--halo--settle-60s.jpg",
+      "sha256": "3f37398c33d62c2d293298d5609df2c06d340a24666b15ca86efc674be407d54"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/roadster-hours-port/f48/roadster-hours-port/frames/f48-roadster-hours-redline/roadster-hours-port--redline--settle-60s.jpg",
+      "sha256": "a8d754ce1e0f878e3c677a03d113489f9bb699c6456308379bcf5a6bd9b12d41"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/roadster-hours-port/f48/roadster-hours-port/frames/f48-roadster-hours-sunbreak/roadster-hours-port--sunbreak--settle-60s.jpg",
+      "sha256": "b6ec17dec25b57198014b28cbd9b5287c68fadb83183d95494e875fc314a33cc"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 5,
+    "ibl_reflections": 5,
+    "environment_world": 5,
+    "atmospheric_effects": 6,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 5,
+    "ui_hud": 2
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "None of the three frames uses a golden-hour key. Frame 1 is a flat blue moonlit night. Frame 2 lights the canyon walls with a hard lit/unlit band and leaves the road a cold blue. Frame 3 is a grey overcast day. The roadster's tail lights and headlights show no amber emission, even in the night frame."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 3 shows a shadow under the car and tree shadows on the hill, but the car shadow's edge is soft and blocky. In frames 1 and 2 the car has almost no contact shadow, so it looks like it floats on the asphalt."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car paint has a basic specular sheen, and the road shows a wide glossy streak toward the horizon in frames 1 and 2. The body panels and chrome show no visible reflection of the environment."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The city in frame 1 is made of box towers with repeated white stripe windows. The canyon walls in frame 2 are smooth slopes textured with blurry noise and topped with low-poly orange rock clusters. The sea in frame 3 uses a striped tiling texture. The wind turbines, trees and finish gantries add some variety."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "All three frames have distance fog or haze that fades the far road and skyline, and the haze in frame 3 is the strongest. The fog has no warm tint, there are no light shafts, and the depth gradient does not change much across the 30 to 180 m range."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The asphalt has a fine grain that reads acceptably. The canyon rock is a soft, low-resolution noise texture, and the water is flat striped bands. The car's paint and white racing stripes are clean but plain."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The roadster model is solid, with fender curves, roll hoops, a cockpit interior and stripes. The surrounding assets are primitive: box buildings, cone-shaped buoys, and simple guardrails."
+    },
+    {
+      "category": "composition",
+      "seen": "The car fills only about 5 to 6% of each frame, against a target of 15 to 25%. It sits in the lower right with the vanishing point dead center. All three frames use the same framing, so the shots repeat each other."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera stays low and steady behind the car, and the field of view looks close to 60 to 70 degrees. The camera trails too far back for the subject size the recipe calls for."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "The moon in frame 1 has mild bloom. Frame 3 looks washed out and desaturated. No frame shows film-style color grading, warm tone mapping, grain, or motion blur that would read as cinematic."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD element appears in any frame. There is no speedometer, lap or time readout, position indicator, or minimap."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/heatsink-port/screens/final/card@2x.jpg",
+      "sha256": "10db756968f9975c6fecc6980cfeb62e4078e1ba4c0253509c9e91040afae7c0"
+    },
+    {
+      "path": "evidence/heatsink-port/screens/final/mid-action-640.jpg",
+      "sha256": "f62b54d3f5678e59ff147602c9aab34d3e526fceb2355f97897253ac7ade1624"
+    },
+    {
+      "path": "evidence/heatsink-port/screens/final/results-640.jpg",
+      "sha256": "918bfe7c71fe0c20743219c0ffea4f1e6642b91866bc6ba10285bbb25321d6f7"
+    },
+    {
+      "path": "evidence/game-upgrades-47/heatsink-port/p4-r7/heatsink-port/frames/g19p4-r7-1/heatsink-port--default--settle-60s.jpg",
+      "sha256": "7307e300708b28f51c3a2f9366bca749e5c67a6fe5d1f962a05627fc5c4bfba5"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4,
+    "shadows": 2.5,
+    "ibl_reflections": 4,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5.5,
+    "composition": 6,
+    "camera": 6,
+    "postprocessing": 4,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Scene is lit almost entirely by flat ambient light in a violet/teal night palette. No low warm key sun is readable, and mountains and road have little directional falloff. This misses the golden-hour, warm asphalt, burnt orange and charcoal recipe entirely."
+    },
+    {
+      "category": "shadows",
+      "seen": "The track gates, mountains, crystals and mushrooms cast no visible shadows. The only grounding under the craft is a soft dark blob (frame 2) or a cyan glow patch (frame 1)."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The drone canopy shows a faint specular highlight. The road, gates and hull plates show no environment reflection of the bright sky or ringed planet."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The ringed planet, aurora sky and a large overhanging rock slab give a strong silhouette. The track edges, however, repeat the same teal cones, red coral and occasional mushroom, and the gate is a plain black box frame."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 4 shows mild distance haze on the far mountains. Otherwise there is no fog depth along the track, no volumetric light, and no particles beyond the speed streaks."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The road is a flat purple grid with cyan emissive squiggle decals and no roughness variation. The mountains use visibly stretched striated textures. The gates are untextured matte black."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The player drone is reasonably detailed, with rotors, legs, canopy and orange trim. The crystals are bare octahedra, the gates are simple extruded boxes, and the guardrails are thin generic posts."
+    },
+    {
+      "category": "composition",
+      "seen": "In frame 1 the drone is centered at roughly 15–20% of the frame with a clear vanishing point. In frame 2 the craft is pushed off-axis under the gate and partly crowded by the HUD bar."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera sits low and close with an FOV that looks wider than 60. Frame 2 tilts sharply during the bank and the horizon reads awkwardly."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Radial speed lines and a small bloom on the muzzle flash are present. The image otherwise looks ungraded and low in contrast, with no filmic tonemapping, vignette or motion blur, so it does not read as cinematic-film."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The top stat panels and side gauges are clean and readable. The 'AFTERBURNER' label runs into its bar, and the 'Best' line under the timer is tiny. The finish modal dumps stats as one run-on paragraph with no layout hierarchy."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

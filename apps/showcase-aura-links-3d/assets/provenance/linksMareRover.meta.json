@@ -1,0 +1,16 @@
+{
+ "schema": "aura3d.cc0-admission/1.0",
+ "key": "linksMareRover",
+ "sourceId": "kenney:car-kit:race-future",
+ "sha256": "4f632143a57b4c92c54c81d5fcb4e91fb238c9378a2445d0c9ec5d98385b4305",
+ "sizeBytes": 86064,
+ "triangles": 1404,
+ "textures": [
+  "512x512"
+ ],
+ "bounds": [
+  1.2,
+  0.833,
+  2.66
+ ]
+}

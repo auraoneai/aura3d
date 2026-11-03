@@ -1,0 +1,546 @@
+[
+ {
+  "name": "top-tennis--default",
+  "slug": "top-tennis",
+  "variant": "default",
+  "url": "/apps/showcase-top-tennis/",
+  "group": "g1",
+  "prepare": false
+ },
+ {
+  "name": "roadster-rush--default",
+  "slug": "roadster-rush",
+  "variant": "default",
+  "url": "/apps/showcase-roadster-rush/?seed=42&capture=1",
+  "group": "g1",
+  "prepare": false
+ },
+ {
+  "name": "heatsink--default",
+  "slug": "heatsink",
+  "variant": "default",
+  "url": "/apps/showcase-heatsink/",
+  "group": "g1",
+  "prepare": false
+ },
+ {
+  "name": "teleoperator--noon",
+  "slug": "teleoperator",
+  "variant": "noon",
+  "url": "/apps/showcase-teleoperator/",
+  "group": "g1",
+  "prepare": false
+ },
+ {
+  "name": "teleoperator--golden",
+  "slug": "teleoperator",
+  "variant": "golden",
+  "url": "/apps/showcase-teleoperator/",
+  "group": "g1",
+  "prepare": true
+ },
+ {
+  "name": "teleoperator--fog",
+  "slug": "teleoperator",
+  "variant": "fog",
+  "url": "/apps/showcase-teleoperator/",
+  "group": "g1",
+  "prepare": true
+ },
+ {
+  "name": "teleoperator--night",
+  "slug": "teleoperator",
+  "variant": "night",
+  "url": "/apps/showcase-teleoperator/",
+  "group": "g1",
+  "prepare": true
+ },
+ {
+  "name": "iron-crown--crown-arena",
+  "slug": "iron-crown",
+  "variant": "crown-arena",
+  "url": "/apps/showcase-iron-crown/",
+  "group": "g1",
+  "prepare": false
+ },
+ {
+  "name": "iron-crown--neo-tokyo-rooftop",
+  "slug": "iron-crown",
+  "variant": "neo-tokyo-rooftop",
+  "url": "/apps/showcase-iron-crown/",
+  "group": "g1",
+  "prepare": true
+ },
+ {
+  "name": "iron-crown--bangkok-dock",
+  "slug": "iron-crown",
+  "variant": "bangkok-dock",
+  "url": "/apps/showcase-iron-crown/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "iron-crown--colosseum-ruins",
+  "slug": "iron-crown",
+  "variant": "colosseum-ruins",
+  "url": "/apps/showcase-iron-crown/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "iron-crown--desert-airbase",
+  "slug": "iron-crown",
+  "variant": "desert-airbase",
+  "url": "/apps/showcase-iron-crown/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "iron-crown--himalayan-monastery",
+  "slug": "iron-crown",
+  "variant": "himalayan-monastery",
+  "url": "/apps/showcase-iron-crown/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "pips-big-leap--academy",
+  "slug": "pips-big-leap",
+  "variant": "academy",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g2",
+  "prepare": false
+ },
+ {
+  "name": "pips-big-leap--w1",
+  "slug": "pips-big-leap",
+  "variant": "w1",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "pips-big-leap--w2",
+  "slug": "pips-big-leap",
+  "variant": "w2",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "pips-big-leap--w3",
+  "slug": "pips-big-leap",
+  "variant": "w3",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "pips-big-leap--w4",
+  "slug": "pips-big-leap",
+  "variant": "w4",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g2",
+  "prepare": true
+ },
+ {
+  "name": "pips-big-leap--w5",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g3",
+  "prepare": true
+ },
+ {
+  "name": "pips-big-leap--w6",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "url": "/apps/showcase-pips-big-leap/",
+  "group": "g3",
+  "prepare": true
+ },
+ {
+  "name": "aura-hoops-3d--rucker",
+  "slug": "aura-hoops-3d",
+  "variant": "rucker",
+  "url": "/apps/showcase-aura-hoops-3d/index.html?court=rucker",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-hoops-3d--venice",
+  "slug": "aura-hoops-3d",
+  "variant": "venice",
+  "url": "/apps/showcase-aura-hoops-3d/index.html?court=venice",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-hoops-3d--athens",
+  "slug": "aura-hoops-3d",
+  "variant": "athens",
+  "url": "/apps/showcase-aura-hoops-3d/index.html?court=athens",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-hoops-3d--manila",
+  "slug": "aura-hoops-3d",
+  "variant": "manila",
+  "url": "/apps/showcase-aura-hoops-3d/index.html?court=manila",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-hoops-3d--shanghai",
+  "slug": "aura-hoops-3d",
+  "variant": "shanghai",
+  "url": "/apps/showcase-aura-hoops-3d/index.html?court=shanghai",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-hoops-3d--orbit",
+  "slug": "aura-hoops-3d",
+  "variant": "orbit",
+  "url": "/apps/showcase-aura-hoops-3d/index.html?court=orbit",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-diamond-3d--sandlot",
+  "slug": "aura-diamond-3d",
+  "variant": "sandlot",
+  "url": "/apps/showcase-aura-diamond-3d/index.html?park=sandlot",
+  "group": "g3",
+  "prepare": false
+ },
+ {
+  "name": "aura-diamond-3d--skyline",
+  "slug": "aura-diamond-3d",
+  "variant": "skyline",
+  "url": "/apps/showcase-aura-diamond-3d/index.html?park=skyline",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-diamond-3d--canyon",
+  "slug": "aura-diamond-3d",
+  "variant": "canyon",
+  "url": "/apps/showcase-aura-diamond-3d/index.html?park=canyon",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-diamond-3d--ivy",
+  "slug": "aura-diamond-3d",
+  "variant": "ivy",
+  "url": "/apps/showcase-aura-diamond-3d/index.html?park=ivy",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-diamond-3d--dome",
+  "slug": "aura-diamond-3d",
+  "variant": "dome",
+  "url": "/apps/showcase-aura-diamond-3d/index.html?park=dome",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-diamond-3d--lunar",
+  "slug": "aura-diamond-3d",
+  "variant": "lunar",
+  "url": "/apps/showcase-aura-diamond-3d/index.html?park=lunar",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-fc-3d--favela",
+  "slug": "aura-fc-3d",
+  "variant": "favela",
+  "url": "/apps/showcase-aura-fc-3d/index.html?venue=favela",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-fc-3d--munich",
+  "slug": "aura-fc-3d",
+  "variant": "munich",
+  "url": "/apps/showcase-aura-fc-3d/index.html?venue=munich",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-fc-3d--lagos",
+  "slug": "aura-fc-3d",
+  "variant": "lagos",
+  "url": "/apps/showcase-aura-fc-3d/index.html?venue=lagos",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-fc-3d--kyoto",
+  "slug": "aura-fc-3d",
+  "variant": "kyoto",
+  "url": "/apps/showcase-aura-fc-3d/index.html?venue=kyoto",
+  "group": "g4",
+  "prepare": false
+ },
+ {
+  "name": "aura-fc-3d--uyuni",
+  "slug": "aura-fc-3d",
+  "variant": "uyuni",
+  "url": "/apps/showcase-aura-fc-3d/index.html?venue=uyuni",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-fc-3d--glacier",
+  "slug": "aura-fc-3d",
+  "variant": "glacier",
+  "url": "/apps/showcase-aura-fc-3d/index.html?venue=glacier",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-links-3d--stAuroras",
+  "slug": "aura-links-3d",
+  "variant": "stAuroras",
+  "url": "/apps/showcase-aura-links-3d/index.html?course=stAuroras",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-links-3d--mapleHollow",
+  "slug": "aura-links-3d",
+  "variant": "mapleHollow",
+  "url": "/apps/showcase-aura-links-3d/index.html?course=mapleHollow",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-links-3d--cinderRim",
+  "slug": "aura-links-3d",
+  "variant": "cinderRim",
+  "url": "/apps/showcase-aura-links-3d/index.html?course=cinderRim",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-links-3d--cloudTerrace",
+  "slug": "aura-links-3d",
+  "variant": "cloudTerrace",
+  "url": "/apps/showcase-aura-links-3d/index.html?course=cloudTerrace",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-links-3d--neonBay",
+  "slug": "aura-links-3d",
+  "variant": "neonBay",
+  "url": "/apps/showcase-aura-links-3d/index.html?course=neonBay",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "aura-links-3d--mareCourse",
+  "slug": "aura-links-3d",
+  "variant": "mareCourse",
+  "url": "/apps/showcase-aura-links-3d/index.html?course=mareCourse",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "bunker-zero--default",
+  "slug": "bunker-zero",
+  "variant": "default",
+  "url": "/apps/showcase-bunker-zero/",
+  "group": "g5",
+  "prepare": false
+ },
+ {
+  "name": "slingshot-siege--default",
+  "slug": "slingshot-siege",
+  "variant": "default",
+  "url": "/apps/showcase-slingshot-siege/",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "dot-dash-3d--default",
+  "slug": "dot-dash-3d",
+  "variant": "default",
+  "url": "/apps/showcase-dot-dash-3d/",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "cross-hop--theme0",
+  "slug": "cross-hop",
+  "variant": "theme0",
+  "url": "/apps/showcase-cross-hop/",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "cross-hop--theme1",
+  "slug": "cross-hop",
+  "variant": "theme1",
+  "url": "/apps/showcase-cross-hop/?theme=1",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "cross-hop--theme2",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "url": "/apps/showcase-cross-hop/?theme=2",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "cross-hop--theme3",
+  "slug": "cross-hop",
+  "variant": "theme3",
+  "url": "/apps/showcase-cross-hop/?theme=3",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "cross-hop--theme4",
+  "slug": "cross-hop",
+  "variant": "theme4",
+  "url": "/apps/showcase-cross-hop/?theme=4",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "cross-hop--theme5",
+  "slug": "cross-hop",
+  "variant": "theme5",
+  "url": "/apps/showcase-cross-hop/?theme=5",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "strange-orbit-port--default",
+  "slug": "strange-orbit-port",
+  "variant": "default",
+  "url": "/apps/showcase-strange-orbit-port/",
+  "group": "g6",
+  "prepare": false
+ },
+ {
+  "name": "splat-rush-port--default",
+  "slug": "splat-rush-port",
+  "variant": "default",
+  "url": "/apps/showcase-splat-rush-port/",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "serpentine-sky-run-port--default",
+  "slug": "serpentine-sky-run-port",
+  "variant": "default",
+  "url": "/apps/showcase-serpentine-sky-run-port/",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "drift-and-deliver-port--default",
+  "slug": "drift-and-deliver-port",
+  "variant": "default",
+  "url": "/apps/showcase-drift-and-deliver-port/",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "drift-and-deliver-port--noenv",
+  "slug": "drift-and-deliver-port",
+  "variant": "noenv",
+  "url": "/apps/showcase-drift-and-deliver-port/?env=0",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "heatsink-port--default",
+  "slug": "heatsink-port",
+  "variant": "default",
+  "url": "/apps/showcase-heatsink-port/",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "ninja-runner-port--default",
+  "slug": "ninja-runner-port",
+  "variant": "default",
+  "url": "/apps/showcase-ninja-runner-port/",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "ninja-runner-port--gauntlet-run",
+  "slug": "ninja-runner-port",
+  "variant": "gauntlet-run",
+  "url": "/apps/showcase-ninja-runner-port/?manual=1",
+  "group": "g7",
+  "prepare": true
+ },
+ {
+  "name": "last-train-port--default",
+  "slug": "last-train-port",
+  "variant": "default",
+  "url": "/apps/showcase-last-train-port/",
+  "group": "g7",
+  "prepare": false
+ },
+ {
+  "name": "roadster-hours-port--sunbreak",
+  "slug": "roadster-hours-port",
+  "variant": "sunbreak",
+  "url": "/apps/showcase-roadster-hours-port/?level=0&autostart=1&autopilot=1",
+  "group": "g7",
+  "prepare": true
+ },
+ {
+  "name": "roadster-hours-port--redline",
+  "slug": "roadster-hours-port",
+  "variant": "redline",
+  "url": "/apps/showcase-roadster-hours-port/?level=1&autostart=1&autopilot=1",
+  "group": "g8",
+  "prepare": true
+ },
+ {
+  "name": "roadster-hours-port--halo",
+  "slug": "roadster-hours-port",
+  "variant": "halo",
+  "url": "/apps/showcase-roadster-hours-port/?level=2&autostart=1&autopilot=1",
+  "group": "g8",
+  "prepare": true
+ },
+ {
+  "name": "where-the-wind-wanders-port--default",
+  "slug": "where-the-wind-wanders-port",
+  "variant": "default",
+  "url": "/apps/showcase-where-the-wind-wanders-port/",
+  "group": "g8",
+  "prepare": false
+ },
+ {
+  "name": "silt-and-signal-port--default",
+  "slug": "silt-and-signal-port",
+  "variant": "default",
+  "url": "/apps/showcase-silt-and-signal-port/",
+  "group": "g8",
+  "prepare": false
+ },
+ {
+  "name": "cloud-runner-port--default",
+  "slug": "cloud-runner-port",
+  "variant": "default",
+  "url": "/apps/showcase-cloud-runner-port/",
+  "group": "g8",
+  "prepare": false
+ }
+]

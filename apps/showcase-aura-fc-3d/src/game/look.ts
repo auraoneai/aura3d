@@ -244,17 +244,38 @@ export interface FcHybridLayer {
    * filled the space above the stands with jagged ice facets, so the hybrid frame drops it for the night sky.
    */
   readonly hideDome?: boolean;
+  /**
+   * Phase 4 (4.7.2): the look key as a readable shadowed key. elevation/azimuth move the look's key (night: the
+   * main-stand flood bank direction, back-right, so shadows fall toward the broadcast lens), intensity raises it over
+   * the IBL fill, and the cascades are fitted to the bowl (`fit`) so every player and goal frame casts a crisp shadow.
+   */
+  readonly key?: { readonly elevationDeg?: number; readonly azimuthDeg?: number; readonly intensity: number; readonly softness: number };
+  /** Phase 4: look fog density scale on this path (undefined = the 4.6.2 scale). */
+  readonly fogScale?: number;
+  /** Phase 4: look HDRI intensity (undefined = the preset's). */
+  readonly environmentIntensity?: number;
+  /** Phase 4: screen-space reflections on the wet / glazed / ice pitch (High+ tier; null = none). */
+  readonly ssr?: { readonly intensity: number; readonly roughness: number; readonly maxDistance: number } | null;
 }
+
+/** Phase 4: the night key (one direction for the four flood venues: the far-right main-stand bank). */
+// The interior-industrial key sits at azimuth 20 (camera side), so its shadows fell behind the players and never read;
+// azimuth 125 puts it on the far-right flood bank (look basis: x = sin az, z = cos az, camera on +z).
+const NIGHT_KEY = { elevationDeg: 32, azimuthDeg: 125, intensity: 3.2, softness: 1 } as const;
 
 export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   munich: {
+    // phase 4
+    key: NIGHT_KEY, fogScale: 1.1, ssr: { intensity: 0.6, roughness: 0.3, maxDistance: 30 },
     background: "#0a1422", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.12, saturation: 1.0, temperature: -0.02, tint: 0 },
     rim: { color: "#8fc8ff", intensity: 0.35, azimuthDeg: 200 }, flares: true, weather: "rain",
-    surface: "grass", turfRoughness: 0.4, pools: 0.16, coneIntensity: 0.55, mirror: null,
+    surface: "grass", turfRoughness: 0.58, pools: 0.16, coneIntensity: 0.55, mirror: null,
     bloom: { intensity: 0.3, threshold: 0.8 }, vignette: 0.28, grain: 0, chromaticAberration: 0
   },
   kyoto: {
+    // phase 4
+    key: NIGHT_KEY, fogScale: 1.1, ssr: { intensity: 0.5, roughness: 0.35, maxDistance: 30 },
     background: "#120814", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.08, saturation: 1.1, temperature: 0.05, tint: 0.12 },
     rim: { color: "#ff8fbd", intensity: 0.3, azimuthDeg: 160 }, flares: true, weather: "drizzle",
@@ -262,6 +283,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.32, threshold: 0.78 }, vignette: 0.28, grain: 0, chromaticAberration: 0.0015
   },
   favela: {
+    // phase 4
+    key: NIGHT_KEY, fogScale: 1.0, ssr: null,
     background: "#140d07", exposureEv: 0.08, floodScale: 1.3,
     grade: { contrast: 1.1, saturation: 1.05, temperature: 0.25, tint: -0.05 },
     rim: { color: "#ffc27a", intensity: 0.7, azimuthDeg: 190 }, flares: true, weather: "dust",
@@ -269,6 +292,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.28, threshold: 0.8 }, vignette: 0.28, grain: 0.05, chromaticAberration: 0
   },
   lagos: {
+    // phase 4
+    key: { intensity: 3.0, softness: 1 }, ssr: null,
     background: "#d08a55", exposureEv: -0.45, floodScale: 1,
     grade: { contrast: 1.26, saturation: 1.06, temperature: 0.12, tint: 0 },
     rim: null, flares: false, weather: "none",
@@ -278,7 +303,9 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
   // Round 1: the 1024 mirror drew a broken reflection (upside-down gantry, an oversized player at the wrong place, the
   // lower half of the frame only), so the hybrid Uyuni is a pale-dawn grade on the salt instead.
   uyuni: {
-    background: "#d9b8b8", exposureEv: -0.8, floodScale: 1,
+    // phase 4
+    key: { elevationDeg: 26, azimuthDeg: 115, intensity: 3.2, softness: 1 }, ssr: { intensity: 0.8, roughness: 0.25, maxDistance: 30 },
+    background: "#d9b8b8", exposureEv: -0.66, floodScale: 1,
     grade: { contrast: 1.3, saturation: 1.15, temperature: 0.16, tint: 0.04 },
     rim: null, flares: false, weather: "none",
     // phase 3: a glazed salt crust (clearcoat over a cool lilac-grey) so the dawn sky reflects in the flat, and the
@@ -287,6 +314,8 @@ export const HYBRID_LAYERS: Readonly<Record<VenueId, FcHybridLayer>> = {
     bloom: { intensity: 0.08, threshold: 0.95 }, vignette: 0.3, grain: 0, chromaticAberration: 0
   },
   glacier: {
+    // phase 4
+    key: NIGHT_KEY, fogScale: 1.0, ssr: { intensity: 0.7, roughness: 0.25, maxDistance: 30 },
     background: "#050b14", exposureEv: 0.08, floodScale: 1.1,
     grade: { contrast: 1.06, saturation: 0.98, temperature: -0.18, tint: -0.03 },
     rim: { color: "#7fe8c9", intensity: 0.8, azimuthDeg: 170 }, flares: true, weather: "snow",

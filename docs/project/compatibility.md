@@ -1,6 +1,9 @@
 # Compatibility Matrix
 
-Version: 4.7.1; matrix revision: `native-browser-support/1`.
+Version: 4.7.10; matrix revision: `native-browser-support/1`.
+
+Current release: Aura3D 4.7.10. The next release, carrying the
+native-capability work, will be Aura3D 5.0.0.
 
 The versioned cells and evidence requirements are defined in
 [Native browser and device support](../rendering/native-browser-support.md).

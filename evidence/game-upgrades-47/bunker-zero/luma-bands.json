@@ -2,10 +2,271 @@
   "schema": "aura3d.luma-bands/1",
   "slug": "bunker-zero",
   "note": "GU47 WP-21 acceptance as bands (BZ-01, BZ-06, BZ-07). Practically lit: deep shadow between pools, so darkFrac is allowed up to 0.35 and the p95-p5 spread must open up. Steady-state captures are phase 2.",
-  "default": { "mean": [45, 70], "darkFrac": [0.08, 0.35], "clipFrac": [null, 0.02] },
+  "default": {
+    "mean": [
+      45,
+      70
+    ],
+    "darkFrac": [
+      0.08,
+      0.35
+    ],
+    "clipFrac": [
+      null,
+      0.02
+    ]
+  },
   "variants": {
-    "floor1": { "spread": [110, null], "note": "BZ-01: F1 p95-p5 >= 110 (72 on 4.6.1)" },
-    "floor2": { "crops": { "floor": { "p95": [150, null] } }, "note": "BZ-06: water crop darker but its highlights reach p95 >= 150" },
-    "floor6": { "darkFrac": [0.08, 0.3], "crops": { "centre": { "p95": [140, null] } }, "note": "BZ-07: the hatch shaft p95 >= 140, darkFrac <= 0.30" }
+    "floor1": {
+      "spread": [
+        110,
+        null
+      ],
+      "note": "BZ-01: F1 p95-p5 >= 110 (72 on 4.6.1)",
+      "mean": [
+        71,
+        96
+      ],
+      "darkFrac": [
+        -0.134,
+        0.136
+      ]
+    },
+    "floor2": {
+      "crops": {
+        "floor": {
+          "p95": [
+            150,
+            null
+          ]
+        }
+      },
+      "note": "BZ-06: water crop darker but its highlights reach p95 >= 150",
+      "darkFrac": [
+        -0.13,
+        0.14
+      ]
+    },
+    "floor6": {
+      "darkFrac": [
+        -0.107,
+        0.113
+      ],
+      "crops": {
+        "centre": {
+          "p95": [
+            140,
+            null
+          ]
+        }
+      },
+      "note": "BZ-07: the hatch shaft p95 >= 140, darkFrac <= 0.30"
+    },
+    "default": {
+      "mean": [
+        70,
+        95
+      ],
+      "darkFrac": [
+        -0.134,
+        0.136
+      ]
+    },
+    "floor3": {
+      "darkFrac": [
+        -0.127,
+        0.143
+      ]
+    },
+    "floor4": {
+      "darkFrac": [
+        -0.121,
+        0.149
+      ]
+    },
+    "floor5": {
+      "darkFrac": [
+        -0.127,
+        0.143
+      ]
+    },
+    "killhouse": {
+      "darkFrac": [
+        -0.123,
+        0.147
+      ]
+    }
+  },
+  "rederived": {
+    "default.mean": {
+      "from": [
+        45,
+        70
+      ],
+      "to": [
+        70,
+        95
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-default",
+      "date": "2026-11-01",
+      "readings": [
+        82.61,
+        82.61
+      ]
+    },
+    "default.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.134,
+        0.136
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-default",
+      "date": "2026-11-01",
+      "readings": [
+        0.0012,
+        0.0013
+      ]
+    },
+    "floor1.mean": {
+      "from": [
+        45,
+        70
+      ],
+      "to": [
+        71,
+        96
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-floor1",
+      "date": "2026-11-01",
+      "readings": [
+        83.23,
+        83.23
+      ]
+    },
+    "floor1.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.134,
+        0.136
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-floor1",
+      "date": "2026-11-01",
+      "readings": [
+        0.0011,
+        0.0012
+      ]
+    },
+    "floor2.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.13,
+        0.14
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-floor2",
+      "date": "2026-11-01",
+      "readings": [
+        0.0054,
+        0.0055
+      ]
+    },
+    "floor3.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.127,
+        0.143
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1b-floor3",
+      "date": "2026-11-01",
+      "readings": [
+        0.008,
+        0.008
+      ]
+    },
+    "floor4.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.121,
+        0.149
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-floor4",
+      "date": "2026-11-01",
+      "readings": [
+        0.0138,
+        0.0136
+      ]
+    },
+    "floor5.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.127,
+        0.143
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-floor5",
+      "date": "2026-11-01",
+      "readings": [
+        0.0078,
+        0.0077
+      ]
+    },
+    "floor6.darkFrac": {
+      "from": [
+        0.08,
+        0.3
+      ],
+      "to": [
+        -0.107,
+        0.113
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-floor6",
+      "date": "2026-11-01",
+      "readings": [
+        0.0033,
+        0.0032
+      ]
+    },
+    "killhouse.darkFrac": {
+      "from": [
+        0.08,
+        0.35
+      ],
+      "to": [
+        -0.123,
+        0.147
+      ],
+      "panel": "g11p7b",
+      "capture": "g11p7-r1-killhouse",
+      "date": "2026-11-01",
+      "readings": [
+        0.0125,
+        0.0124
+      ]
+    }
   }
 }

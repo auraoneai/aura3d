@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-diamond-3d/f48/aura-diamond-3d/frames/f48-aura-diamond-1/aura-diamond-3d--canyon--settle-60s.jpg",
+      "sha256": "a72e7843bbcf1332bc63c12b19cbcbc4c0b75184f0ca046ea077915b182cc82c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-diamond-3d/f48/aura-diamond-3d/frames/f48-aura-diamond-1/aura-diamond-3d--sandlot--settle-60s.jpg",
+      "sha256": "7984f20a31cfd801dee96c3f28cae3f944119cff23747352cf597b4a0ada30b9"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-diamond-3d/f48/aura-diamond-3d/frames/f48-aura-diamond-1/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "45100a67c08a7f9240b5e247d10a176631afecea77b854a4f6646d3309e500ad"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/aura-diamond-3d/f48/aura-diamond-3d/frames/f48-aura-diamond-2/aura-diamond-3d--dome--settle-60s.jpg",
+      "sha256": "f067592504781be20cd2ac624b2778bda8c661af4da3353e68c29ae16817db1b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 4.5,
+    "shadows": 4,
+    "ibl_reflections": 4,
+    "environment_world": 4.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 3.5,
+    "modeling_assets": 3,
+    "composition": 5.5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 2.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 (Canyon Rim) is lit flat and evenly with no clear key direction. Frames 2 and 3 apply a global orange and pink/teal tint instead of separating key and fill, so the players read as uniformly bright white cutouts."
+    },
+    {
+      "category": "shadows",
+      "seen": "Players have only faint, small contact shadows. Frame 4 has long dark diagonal stripe shadows across the field from the roof beams, but the players and the mound cast almost nothing that grounds them."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "In frames 2–4 the grass and dirt act like a wet mirror. Fielders, the pitcher, and the outfield wall text ('HARBOR SANDLOT', 'TYPHOON DOME') reflect upside-down in the turf, which no grass surface would do. The players themselves show no environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The stadium surrounds are sparse: small flat bleacher strips, huge floating boulders in frame 1, a cracked-texture slab wall in frame 2, city towers with stretched, smeared textures in frame 3, and a blurry warehouse backdrop in frame 4. The crowd reads as color noise. Each venue swaps a theme but none feels like an enclosed arena."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 3 has faint rain streaks and frame 4 has background depth blur. No indoor haze or light-beam volume appears, and frames 1 and 2 show no distance falloff."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The infield dirt uses one tiled noise texture that looks like rippled sand or carpet in frame 1, shiny pink rubber in frame 3, and flat grey plastic in frame 4. The grass is a uniform flat green with faint banding. Uniforms are untextured white with no cloth shading."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The infield is a blobby scalloped shape that does not match a baseball diamond: bulbous cutouts, odd lobes at the bases, and circular home dirt. Every player is an identical low-detail figure in the same pose. Bases are plain slabs and the bat is a simple orange stick."
+    },
+    {
+      "category": "composition",
+      "seen": "The diamond fills roughly 60% of the frame, above the 25–40% target. The batter, catcher and pitcher align on the center axis and the field reads clearly, but the bottom corners show cropped dirt circles and the upper third is empty sky or backdrop."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a perspective view from behind home plate at a pitch of roughly 30–40°, not the orthographic broadcast 70° the recipe calls for. The framing is identical across all four frames and does vary per venue."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Heavy per-venue color grading: an orange cast in frame 2, a teal/magenta grade in frame 3, and desaturated grey with depth of field in frame 4. Faint horizontal banding lines run across the grass in frames 2 and 3. The grading changes the palette rather than polishing it."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The only screen element is a gold ring reticle beside the batter. There is no count, score, inning, or pitch info on screen. The in-world scoreboard is unreadable at this distance."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

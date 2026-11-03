@@ -8,7 +8,7 @@
   },
   "variants": {
     "default": {
-      "mean": [62, 75],
+      "mean": [78, 91],
       "p50": [50, null],
       "p95": [null, 235],
       "darkFrac": [null, 0.02],
@@ -22,5 +22,8 @@
         "8": { "mean": [40, null] }
       }
     }
+  },
+  "rederived": {
+    "default.mean": { "from": [62, 75], "to": [78, 91], "panel": "g19p7r1", "capture": "g19p7-r1", "date": "2026-11-01" }
   }
 }

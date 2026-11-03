@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "where-the-wind-wanders-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "bell",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: the same hazy, washed-out background, a low-contrast player, dither stipple around the player and companion, and the same top-left canopy intrusion. The companion glow is slightly weaker.",
+     "Dusk haze washes out the far shore and the water. The player's dark cloak is low-contrast against the grass. A tree canopy crops into the top-left corner.",
+     "Practically the same as A: the same milky haze on the lake and background, the dark player is hard to read against the grass, and the same dither artifacts."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The player blends into the grass, and dither stipple shows around the player. The foreground is a uniformly saturated wall of green that reads busy. A canopy chunk crops the top-left, and the windmill is cut off at the right edge.",
+     "Practically identical to A: the same saturated greens, the same aliased kite string and the same corner cropping.",
+     "The foreground grass is a very saturated green that is close to oversaturated. There is a stippled dither patch around the player, a tree trunk is cropped at the left edge, the windmill is cut off at the top right, and the kite string reads as a hard white line."
+    ]
+   },
+   {
+    "variant": "epilogue",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: a muddy dark foreground, blocky star sprites, and the same canopy blob.",
+     "The night foreground is dark and muddy. The square star particles look like pixels. The player is only just readable.",
+     "The same as A: a dark, muddy foreground, square star sprites, a black canopy blob at the top left, and low-contrast foliage."
+    ]
+   },
+   {
+    "variant": "found0",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A.",
+     "Very saturated greens with little sense of depth in the foreground. The kite string is aliased. Corner objects are cropped.",
+     "The same as A, with no visible differences."
+    ]
+   },
+   {
+    "variant": "found2",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A.",
+     "An overcast, slightly hazy sky gives a flat mood. The foreground is very saturated. The kite string is aliased.",
+     "The same as A: a washed-out overcast sky, dither around the player, and cropped edge props."
+    ]
+   },
+   {
+    "variant": "found3",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A.",
+     "Warm haze slightly washes out the water and the far shore. The foreground is very saturated. The kite string is aliased.",
+     "The same as A: warm haze with low background contrast, a dither patch around the player, and cropped props."
+    ]
+   }
+  ]
+ }
+]

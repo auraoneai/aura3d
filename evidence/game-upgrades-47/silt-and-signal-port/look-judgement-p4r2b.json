@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/screens/gameplay-early.1280x720.jpg",
+      "sha256": "ed0e9536ba4ba37b28752f5023f9e2edbd2c533d28edbcf4120cc121e62138b2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/silt-and-signal-port/frames/g24p4-r2-1/silt-and-signal-port--default--settle-60s.jpg",
+      "sha256": "b4a09509004d03d9497a6d80031110d20f187f0de03dc12cb148552008ac9359"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/silt-and-signal-port/frames/g24p4-r2-2/silt-and-signal-port--ch4--settle-60s.jpg",
+      "sha256": "768eef82f5b64bddfaea59128c386fd4e6ffcd257c564278f286b3f8e02d9a61"
+    },
+    {
+      "path": "evidence/game-upgrades-47/silt-and-signal-port/p4-r2/silt-and-signal-port/frames/g24p4-r2-5/silt-and-signal-port--ch2--settle-60s.jpg",
+      "sha256": "dd85490772fa7ed9ac9e7850f72038b7e97084bc0c49236c9b5bd787e58d8435"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3.5,
+    "ibl_reflections": 3,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 4,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "In the golden-hour plaza frames, the warm tone comes almost entirely from the orange sky gradient. The white buildings and arch read flat and washed out, with no visible low-sun key direction or rim light. The valley frame is evenly lit under an overcast grey sky, and the night frame is a uniform blue wash."
+    },
+    {
+      "category": "shadows",
+      "seen": "Buildings, the arch, and the gold cylinders cast no clear shadows on the plaza cobblestones. The hoverboard has no grounding shadow in the plaza frames. Only small, faint contact shadows appear under some trees in the valley frame."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The river carries a sky-blue tint with white streaks and the large ring looks slightly translucent at night. Otherwise no surface picks up environment reflections; the gold cylinders show a simple banded highlight only."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world has variety: a walled town with crenellated gates, then a green valley with a river, pillars, and scattered pines. The town buildings are blank white boxes with a few window decals, and the empty cobblestone plaza fills the lower half of both plaza frames."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance fade lightens the far hills in the valley frame and haze softens the far gate in the plaza. There is no visible fog layering, light shafts, or particles, and the night frame has almost no depth falloff."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The cobblestone ground pattern is the most detailed surface. Buildings are untextured flat white, the trees are single flat green tones with outlines, and the rust rings show only a noisy stripe texture."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The low-poly pines, hoverboard rider, and stepped wall tops are consistent but simple. The rings are plain tori, the pillars are plain cylinders, and the buildings are stacked boxes."
+    },
+    {
+      "category": "composition",
+      "seen": "The cyan vertical beam runs through the exact center of every frame and splits the image in half, competing with the rider. The rider sits low and small, at roughly 5–8% of the frame, below the 15–25% target."
+    },
+    {
+      "category": "camera",
+      "seen": "A low chase camera sits directly behind the rider at a moderate FOV near the 60° target. The framing is level and stable, but the subject sits too far from the camera."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A posterize/toon filter produces hard stair-stepped banding in the grey sky and hills of the valley frame and in the night sky clouds. Ink outlines are inconsistent, and the plaza frames look low-contrast and milky rather than cinematic-film graded."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD panels are themed in dark translucent brown with a serif mission title, a clear speed/altitude/mode readout, and a ringed compass, and they fit the warm palette. The controls block in the lower right is large and text-heavy."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

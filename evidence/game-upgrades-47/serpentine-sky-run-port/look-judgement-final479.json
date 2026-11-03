@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../integration/evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-1/serpentine-sky-run-port--default--settle-60s.jpg",
+      "sha256": "f4fd3e49f662cfc98e6b228523541c153afb196e29fc78dc36f5154871ddcd6c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-1/serpentine-sky-run-port--stage1--settle-60s.jpg",
+      "sha256": "d289bafbaa645875315938ffef33087763cdad30264b1c31fbde15dcc729ecae"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-1/serpentine-sky-run-port--stage2--settle-60s.jpg",
+      "sha256": "fc2c10659d1789c056664219d95827bee3760d6155bdbbbb34798533eb0ff31c"
+    },
+    {
+      "path": "../integration/evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-2/serpentine-sky-run-port--stage3--settle-60s.jpg",
+      "sha256": "89372d866a91d1c685cddedff1ba5c28ef615d4e5761538ac28aed4fbd1603f4"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 6,
+    "ibl_reflections": 4,
+    "environment_world": 6.5,
+    "atmospheric_effects": 6,
+    "material_quality": 4.5,
+    "modeling_assets": 6.5,
+    "composition": 6,
+    "camera": 5,
+    "postprocessing": 4,
+    "animation_quality": 3.5,
+    "ui_hud": 1.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The sun sits low near the horizon behind the gates, so the runner is back-lit with her shadow falling toward the camera. This is the opposite of the expected 48°/35° 3/4 front key. The path top is lit flat and near-white in frames 1 and 2, with almost no form shading across the tiles."
+    },
+    {
+      "category": "shadows",
+      "seen": "The runner, gate posts and lanterns cast long, soft-edged directional shadows down the path, consistent with the low sun. However, there is no contact darkening under the feet or at the base of the gates and rail, and the shadow edges smear into a blurry band on the near tiles."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The path stone and rail have no visible specular response or sky reflection. Only the dragon's scales show a faint sheen. The environment tint does not wrap convincingly onto the character, whose skin reads flat pink-white."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The scene has a cloud sea, floating islands with bonsai trees, a receding row of red torii gates, lanterns, a dragon and a serpent-body causeway. That is a coherent theme with good depth layering. The cloud floor reads as a flat textured plane, and the floating islands are small, low-detail props."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the far gates and the horizon. The haze is uniform and heavy, though, flattening contrast across the whole frame. There are no volumetric shafts or cloud depth around the sun glow."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The path is a flat tiled stone texture with drawn grout lines, no roughness or normal variation, and washed-out albedo. The rail is a smooth untextured gradient. In frames 3 and 4, the path and rail edges pick up an odd olive-green tint."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The dragon head and coiled body are detailed. The character model is decent but generic. The torii gates and lanterns are simple primitives, and the floating island undersides are blobby with stretched rock texture."
+    },
+    {
+      "category": "composition",
+      "seen": "The path and gate row form a strong leading line to the vanishing point, and the dragon anchors the right edge. The runner fills well under the 18–25% target and sits low-left of center. The dragon is cropped hard at the frame edge."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a third-person chase view directly behind the runner, not the side-on follow the platformer recipe expects. The field of view looks wider than 50, which stretches the near path tiles."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "A heavy full-frame color grade swings from magenta-pink (frames 1–2) to orange (frame 3) to sepia (frame 4). Highlights are lifted, blacks are crushed toward haze, and overall contrast is low. Bloom around the sun is broad and milky. None of this matches the daylight-outdoor post the recipe expects, and the palette has no saturated greens or sky blue."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "The runner holds the same mid-stride pose in all four frames, and frames 1 and 2 are pixel-identical. No motion, secondary animation or pose change is visible across the set."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "No HUD is visible in any frame: no score, coin counter, distance, lives or prompts. The coin gold accent the recipe calls for does not appear anywhere."
+    }
+  ],
+  "nextChange": {
+    "category": "ui_hud",
+    "change": "reduce HUD to genre-minimal elements over the look's palette",
+    "api": "HUD layer over the applied look"
+  },
+  "judge": "prism"
+}

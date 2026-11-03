@@ -111,6 +111,28 @@ const near = (a: Uniform | undefined, b: Uniform, eps: number): boolean => {
 const anyOf = (...flags: boolean[]): boolean => flags.includes(true);
 
 /** Ids of the runtime nodes the driver writes (look.ts gives them these ids). */
+/**
+ * GU47 phase 4 (4.7.2): the shadowed key follows the chase camera. The row's key is authored for heading 0 (the start
+ * avenue, +z); `keyFollow` turns it about the vertical by the smoothed car heading, so the key always comes from behind
+ * the camera and lands down the avenue the courier drives (g18p4-r1: a world-fixed key backlit every view heading into
+ * it and the towers shaded the street). The sky sun, the HDRI and the water glitter stay world-fixed. Presentation only.
+ */
+export const KEY_FOLLOW_SECONDS = 2.5;
+
+/** Rotates a light direction (x, y, z) about +y by `heading` (radians; heading 0 = +z forward). */
+export function turnKey(direction: Vec3, heading: number): Vec3 {
+  const s = Math.sin(heading);
+  const c = Math.cos(heading);
+  return [direction[0] * c + direction[2] * s, direction[1], -direction[0] * s + direction[2] * c];
+}
+
+/** One step of the smoothed follow heading toward `target` (shortest arc, time constant `KEY_FOLLOW_SECONDS`). */
+export function followHeading(current: number, target: number, dt: number): number {
+  const d = Math.atan2(Math.sin(target - current), Math.cos(target - current));
+  const k = 1 - Math.exp(-Math.max(0, dt) / KEY_FOLLOW_SECONDS);
+  return current + d * k;
+}
+
 export const DAYLIGHT_IDS = { key: "sun", hemisphere: "sky-fill", sky: "sky-dome", far: "far-city", water: "harbour" } as const;
 
 export interface Daylight {

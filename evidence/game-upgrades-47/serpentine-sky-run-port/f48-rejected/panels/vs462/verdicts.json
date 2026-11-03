@@ -1,0 +1,143 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Haze around the sun washes out the middle distance and the path surface. The path is low-contrast pink-on-pink. The dragon is cut off at the right edge.",
+     "Pink haze near the sun washes out the far end of the road and lowers contrast on the play surface. The dragon is cut off at the right edge of the frame.",
+     "Pink haze lowers contrast toward the horizon and the sun bloom washes out the centre a little. The dragon is cut off at the right edge."
+    ]
+   },
+   {
+    "variant": "stage1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sun haze washes out the centre of the frame and part of the path. The pink path has low contrast. The dragon is cropped at the frame edge.",
+     "Pink haze washes out the road near the horizon. The dragon is cropped at the right edge.",
+     "Pink haze lowers contrast near the horizon and the sun bloom washes out the centre a little. The dragon is cut off at the right edge."
+    ]
+   },
+   {
+    "variant": "stage2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavy orange haze over the whole frame makes it fairly monochrome, and the right side of the path blends into the sky glow. The dragon is cropped.",
+     "The sky and clouds are almost all orange, so there is little colour separation. Some haze glow sits around the sun, and the road edges look slightly washed out.",
+     "Heavy orange haze makes the frame nearly one colour, and the far scene is a little muddy."
+    ]
+   },
+   {
+    "variant": "stage3",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A sepia/beige haze lowers overall contrast and the sky is muddy. The palette is close to monochrome. The dragon is cropped.",
+     "Muddy sepia haze covers the whole frame. Sky, clouds and road all blend into one low-contrast brown, and the far scene looks washed out, though the shadows are dramatic.",
+     "Sepia haze is fairly heavy and makes the image low-contrast and somewhat muddy. The colour range is narrow."
+    ]
+   },
+   {
+    "variant": "stage4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "An intense red cast saturates everything, and the red player blends somewhat into the red path. Very monochrome.",
+     "An oversaturated, nearly single-colour red grade crushes colour variety. The player's red outfit blends into the red scene somewhat.",
+     "Heavy red grade is close to one colour, and the red player blends into the red path a little."
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mostly purple/blue monochrome palette, and the clouds are a bit noisy. The dragon is cropped. Otherwise good contrast and mood.",
+     "A strong purple tint over the whole frame. The dragon is cropped at the right edge.",
+     "Strong violet grade, though readability holds. Only minor issues."
+    ]
+   },
+   {
+    "variant": "stage6",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 1,
+    "afterDefects": [
+     "Large white blotchy decal/glyph patterns on the path look like a texture glitch and add clutter. The scene is fairly dark and blue overall, and the dragon is cropped.",
+     "Large bright white blotchy decals or artifacts are scattered across the road surface and read as a rendering glitch. They clutter the play area around the player. Otherwise a moody blue night scene.",
+     "Bright white blotchy decals on the path look like texture artifacts and pull focus. The sky is a fairly dark, plain gradient."
+    ]
+   },
+   {
+    "variant": "stage7",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Monochrome blue night palette, and the player is somewhat dim. The dragon is cropped. Otherwise strong atmosphere, with a moon and stars.",
+     "The dark blue grade slightly lowers the player's contrast. The dragon is cropped at the right edge.",
+     "Cool blue grade is fairly uniform, and the player is a little dark against the path. Only minor issues."
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The path surface is washed out near white by the sun glare, and the haze lowers contrast in the centre. The dragon is cropped.",
+     "Sun glare washes out the middle of the road and lowers its contrast. The dragon is cropped at the right edge.",
+     "The path surface is slightly blown out near the centre and the sun glow is somewhat hazy. The dragon is cut off at the right edge."
+    ]
+   }
+  ]
+ }
+]

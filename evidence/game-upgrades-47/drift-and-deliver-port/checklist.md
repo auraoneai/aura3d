@@ -48,3 +48,18 @@ Software WebGL2 (remote ACR). Detail: lane report "Phase 3 (4.7.1)".
 | Rubric >= 7 per category (PRD 1.2) | not reached: final minimum 3.5 (ibl_reflections), max 6.5 (`look-judgement.json`); material_quality 4.5 and modeling_assets 5.5 blocked on WP-36; shadows 4.5 / ibl 3.5 open for 4.7.2 |
 | Game-checks 0 errors | yes (warnings: luma-band, which I judge to be wrong for the panel-verified look and do not widen, plus screens-fresh if the card retake did not land) |
 | GC-L2 road in shadow / GC-L3 | key moved behind the camera (az -150) at 15 deg; the canyon falls into building shadow, cast shadows read on cross streets (card frame) only; open |
+
+## Phase 4 (4.7.2), 2026-10-31
+
+Software WebGL2 (remote ACR). Detail: lane report "Phase 4 (4.7.2)".
+
+| Line | Status |
+|---|---|
+| Views beat 4.6.2 (blind 3-judge panel) | default, golden, sunset, bluehour: better on the shipped round-5 build (g18p4r6 2/0/0, one judge malformed; round 4 g18p4r5 3/0/0); noenv and `?look=original` unchanged |
+| Rubric >= 7 per category (PRD 1.2 goal 1) | not met: shipped `look-judgement.json` (p4r6a) / p4r6b: shadows 4.5 / 5.5, ibl 4 / 4, material 4 / 4, ui_hud 7 / 6.5; material and modeling blocked on WP-36 |
+| Distinctness (PRD 1.2 goal 2) | met: same_game false vs all 8 racing neighbours, confidence 0.818-0.948 (`p4-sibling/`) |
+| GC-L2 / GC-L3 shadows | key lifted (52 / 40 deg) and following the chase heading; building and pole shadows on the lit street; contact shadow 0.6 / 1.0 |
+| GC-M2 glass, car paint (ibl) | facade metal-rough map (glass 0.07 / 0.75); courier and traffic paint overrides |
+| WP-36 Meshy rows | gridlockCourierTeal admitted, rejected on frames, reverted; 21 rows blocked: Meshy keys refuse API calls |
+| Game-checks | 0 errors, 6 luma-band warnings (bands not widened) |
+| Gates | typecheck NEW_ERRORS 0; vitest per file pass; eslint clean |

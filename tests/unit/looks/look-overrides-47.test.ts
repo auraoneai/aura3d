@@ -234,15 +234,17 @@ describe("HDRI catalogue (WP-1 item 2)", () => {
   /** "1.5 MB" read as 1.5 MiB (what `ls -lh` prints as 1.5M). */
   const MAX_1K_BYTES = 1.5 * 1024 * 1024;
   /**
-   * Lossless 1024x512 RGBE RLE of these noisy sources cannot reach 1.5 MiB: three incompressible mantissa bytes per
-   * texel are 1.5 MiB alone. Poly Haven's own 1k files are the same size (lanes/ea.md); guarded at their size here.
+   * Final exceptions (GU47 HDRI budget decision, lanes/ea.md and public/hdri/ATTRIBUTION.md): lossless 1024x512 RGBE RLE
+   * of these noisy sources cannot reach 1.5 MiB (three incompressible mantissa bytes per texel are 1.5 MiB alone), Poly
+   * Haven's own 1k files are the same size, and a copy held to within 1 tone-mapped level over each file's used exposures
+   * is still over budget. Shipped byte-for-byte; guarded at their size here.
+   * deep_space_starfield is requantised (public/hdri/ATTRIBUTION.md) and held to MAX_1K_BYTES.
    */
   const OVER_BUDGET: Partial<Record<AuraHdriId, number>> = {
     rooftop_night: 1_629_654,
     cobblestone_street_night: 1_766_411,
     hangar_interior: 1_761_250,
     kloppenheim_02: 1_744_238,
-    deep_space_starfield: 1_831_733,
     "indoor-workshop": 1_638_244
   };
   const NEW_IDS = lookHdriIds.filter((id) => !["autumn_field_puresky", "kloppenheim_06_puresky", "studio_small_08"].includes(id));

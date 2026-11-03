@@ -1,0 +1,11 @@
+run gu47-before-aura-hoops-3d-1 acr ch5up was successful after 16m5s playwrightExit 0
+GL_HTTP aura-hoops-3d--rucker 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-hoops-3d--rucker Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-hoops-3d--rucker 29041ms
+GL_DONE aura-hoops-3d--rucker
+GL_HTTP aura-hoops-3d--venice 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-hoops-3d--venice Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-hoops-3d--venice 27752ms
+GL_DONE aura-hoops-3d--venice
+2 passed (14.9m)
+[task-run] PLAYWRIGHT_EXIT=0

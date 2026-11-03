@@ -3,85 +3,80 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing.jpg",
-      "sha256": "d901f9277d0943a2b7dccc6d1a78c1bc78e747336613dda41ae01fc7a933e203"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/rubric-shots/harbor-hud-swing-p4.jpg",
+      "sha256": "e0ef127f9943436843b69ec6d0cea5ca124c62decccff34607430382c43b36e7"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-1/aura-diamond-3d--skyline--settle-60s.jpg",
-      "sha256": "dfce81f259956acf14d11108fcf66d00b872f44189b0b2ef109bac753b901fb9"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p7-r1/aura-diamond-3d/frames/g08p7-r1-1/aura-diamond-3d--sandlot--settle-60s.jpg",
+      "sha256": "63f53b2c27325b99dfccfa7ef9c54bd4f1a1975592d2ff42b90fcd0d33700eb3"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-3/aura-diamond-3d--lunar--settle-60s.jpg",
-      "sha256": "4057057a660836a10a486fb7d766c550cb41da698c7e9db1da3a0ab1afc52bb2"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p7-r1/aura-diamond-3d/frames/g08p7-r1b-2/aura-diamond-3d--skyline--settle-60s.jpg",
+      "sha256": "989fc8e58159906a9c9b6e6dc1276742f333307ae48cdcd9c71435db68c4ffa4"
     },
     {
-      "path": "evidence/game-upgrades-47/aura-diamond-3d/p3-r2/aura-diamond-3d/frames/g08p3-r2-2/aura-diamond-3d--canyon--settle-60s.jpg",
-      "sha256": "35d9cc00b9bd3e135de7edfa060e220d14dd4b4626027a0bc77f7c7c12b76fce"
+      "path": "evidence/game-upgrades-47/aura-diamond-3d/p7-r1/aura-diamond-3d/frames/g08p7-r1-5/aura-diamond-3d--dome--settle-60s.jpg",
+      "sha256": "46868fd0f5ec5d4d8e2fb56ceb6b878b4860d00fb186644613a29a35cdda68b2"
     }
   ],
   "references": [],
   "scores": {
     "lighting": 5,
-    "shadows": 3.5,
-    "ibl_reflections": 2.5,
-    "environment_world": 5,
-    "atmospheric_effects": 3,
+    "shadows": 4.5,
+    "ibl_reflections": 4,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
     "material_quality": 4,
     "modeling_assets": 4.5,
-    "composition": 6,
-    "camera": 6.5,
-    "postprocessing": 4,
-    "animation_quality": 4,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5.5,
     "ui_hud": 6
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "Lighting is mostly flat ambient. Harbor has a warm orange hotspot over the mound. Lunar is a dim grey wash with no flood-light pools. No 55°/45° key direction is readable on the players."
+      "seen": "Harbor frames use flat, even fill with one warm hotspot on the infield near the mound. Players have almost no key/fill separation, so the white uniforms read as flat cutouts. There is no sense of a flood key at an angle."
     },
     {
       "category": "shadows",
-      "seen": "There are only faint contact shadows under the fielders. No crisp cast shadows from the batter or catcher fall across the dirt. Lunar shows thin stray shadow lines across the infield, which suggests shadow-map artifacts."
+      "seen": "Player contact shadows are faint, soft smudges that barely anchor the figures, and fielders look like they float. Only the Typhoon Dome frame shows strong cast shadows: long dark diagonal bands from the roof structure across the field."
     },
     {
       "category": "ibl_reflections",
-      "seen": "Uniforms, bases and the mound all have the same matte response. There is no environment reflection or specular sheen even on the Midtown glass towers, which read as noisy textures."
+      "seen": "Dirt and grass act as planar mirrors. Every player, the outfield wall text ('HARBOR SANDLOT', 'TYPHOON DOME') and the stands reflect into the ground in frames 2–4. That is physically wrong for clay and turf, and the dry-weather frames have no wetness to justify it."
     },
     {
       "category": "environment_world",
-      "seen": "The arena themes are varied: harbor boats, Midtown skyline, Lunar night, Canyon boulders. However, the stands are tiny low-poly blocks of colored dots. The skyline buildings have a noisy, garbled texture. Large empty walls make the backgrounds feel sparse."
+      "seen": "The stands are small, separate bleacher blocks with sparse pixel crowds and large gaps between them. Background props are stretched-texture boxes and blobs: a gray rock slab, red bush lumps, tiled-texture pergolas. The Midtown skyline is flat boxes with grid windows and blank cyan panels."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "There is essentially no indoor haze or depth fog. Only Midtown has a slight teal tint. The distant outfield and stands are as sharp as the foreground."
+      "seen": "Midtown has thin rain streaks and a cool tint, which is the best atmospheric beat. The Dome has mild depth haze. Harbor has almost none, and the gray sky blends into the backdrop with no aerial perspective."
     },
     {
       "category": "material_quality",
-      "seen": "The infield dirt uses a large-scale smeared noise texture. It looks blotchy pink in Midtown and flat beige in Lunar. The turf is a uniform flat green or teal with no mowing pattern or grain."
+      "seen": "Infield dirt is a large-scale noise pattern with a glossy sheen, which reads like rubber or plastic, not clay. The Midtown infield is a mottled pink plastic. The Dome infield is untextured gray slate. Grass has faint mowing stripes but the same mirror gloss."
     },
     {
       "category": "modeling_assets",
-      "seen": "Player models are simple and identical, with basic proportions, a blocky glove and a stick-like bat. The outfield wall and scoreboard are simple boxes. The infield shape has angular polygonal edges."
+      "seen": "Players are low-poly figures with simple caps and gloves, readable but generic, and all share one pose set. The bat is oversized and blocky. The infield cutout is a lumpy clover or blob shape, not a proper diamond-and-arc layout. Bases are plain slabs."
     },
     {
       "category": "composition",
-      "seen": "Behind-home framing puts the batter, catcher and the whole infield in view, which is readable. The players occupy only a small part of the frame, and the top third is spent on the sparse stands and sky."
+      "seen": "The symmetric behind-the-plate framing is clear, but the infield fills roughly 60% of the frame against the 25–40% target. The batter and catcher crowd the bottom edge, and the catcher's head nearly touches the hitter zone box."
     },
     {
       "category": "camera",
-      "seen": "The elevated broadcast perspective works for gameplay, with all fielders visible. It uses perspective rather than the expected orthographic-like long-lens look."
+      "seen": "This is a high perspective broadcast view, not orthographic. It reads the field well, but the wide-ish lens stretches the near infield and shrinks the outfield players to specks."
     },
     {
       "category": "postprocessing",
-      "seen": "Harbor shows a heavy orange bloom and vignette blotch over the mound. The other frames have no grading or tonemapping character. Lunar looks underexposed and muddy."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "All fielders hold identical static poses across all frames. The batter stance is the only variation, seen in Harbor. Nothing conveys motion."
+      "seen": "The Dome frame applies heavy depth-of-field blur to the background and a dark vignette. The other frames show slight vignette and mild bloom on the hotspot, and Harbor's warm grade oversaturates the clay to near-solid orange."
     },
     {
       "category": "ui_hud",
-      "seen": "The Harbor HUD has a clean linescore, count, outs, bases and matchup panels in a dark broadcast style, plus a controls strip. The panels are low contrast, and a 'quick play' label overlaps text. The top nav bar is utilitarian."
+      "seen": "The line-score, count/outs/bases and matchup panels are tidy dark translucent cards and are readable. The orange 'QUICK PLAY' header is low contrast. The top bar of web-style pill buttons and the controls strip make the screen look like a debug page, not a broadcast overlay."
     }
   ],
   "nextChange": {

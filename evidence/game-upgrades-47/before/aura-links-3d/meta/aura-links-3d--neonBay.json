@@ -1,0 +1,81 @@
+{
+ "target": "aura-links-3d--neonBay",
+ "slug": "aura-links-3d",
+ "variant": "neonBay",
+ "url": "/apps/showcase-aura-links-3d/index.html?course=neonBay",
+ "group": "g5",
+ "runId": "gu47-before-aura-links-3d-1",
+ "acrRunId": "ch5ub",
+ "readyMs": 41287,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-links-3d--neonBay",
+   "id": "settle-25s",
+   "slug": "aura-links-3d",
+   "variant": "neonBay",
+   "sinceReadyMs": 25017,
+   "mean": 32.44,
+   "p5": 0,
+   "p50": 40,
+   "p95": 59,
+   "darkFrac": 0.3256,
+   "clipFrac": 0,
+   "grid": [
+    6.3,
+    1,
+    11.9,
+    40.6,
+    52.4,
+    37.6,
+    49.9,
+    53.4,
+    38.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 122
+   }
+  },
+  "settle-60s": {
+   "target": "aura-links-3d--neonBay",
+   "id": "settle-60s",
+   "slug": "aura-links-3d",
+   "variant": "neonBay",
+   "sinceReadyMs": 243709,
+   "mean": 32.31,
+   "p5": 0,
+   "p50": 40,
+   "p95": 59,
+   "darkFrac": 0.329,
+   "clipFrac": 0,
+   "grid": [
+    6.1,
+    0.9,
+    11.7,
+    40,
+    52,
+    37.5,
+    50.3,
+    53.4,
+    38.8
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 122
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-links-3d-1/aura-links-3d--neonBay--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-links-3d-1/aura-links-3d--neonBay--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

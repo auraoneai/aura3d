@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/cloud-runner-port/p4-r3/rubric/default-title.jpg",
+      "sha256": "d5b2903970b7be32c78d390b65ca0f5309c90820a4067926f957b4fc08ebd3f3"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5,
+    "shadows": 3,
+    "ibl_reflections": 3.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 5,
+    "postprocessing": 5,
+    "ui_hud": 7.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "The scene is warm and evenly lit, but there is no readable key direction. The trees, boulders and character show weak form shading, and the log is a flat brown gradient with no sun-side highlight."
+    },
+    {
+      "category": "shadows",
+      "seen": "The character has almost no visible contact shadow on the log. The trees and boulders cast no clear shadows onto the grass or path, so objects look pasted onto the ground."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Every surface is matte. The log, rocks and character skin show no environment-tinted specular or fresnel response, so the materials do not pick up the blue sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The dirt path, grass verges, low-poly trees, cracked boulders and sandstone cliff form a coherent set. The horizon is a flat grey band of water or plane with a hard edge, and small purple triangles are scattered evenly across the grass like debris."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze desaturates the far trees and horizon. The storm cloud is a dark, smeared blob that reads as a billboard, not a volume, and the rainbow promised in the copy is not visible."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The log cylinder has no bark texture and shows faint vertical seam lines and a smooth gradient. The boulders have a crack decal with plausible albedo. The grass is untextured flat green, and the cliff texture is smeared and stretched."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The log is a primitive cylinder with visible faceting on its end silhouette. The tree foliage is crumpled low-poly shards. The character is small and loosely modelled, and the green bushes are simple blobs."
+    },
+    {
+      "category": "composition",
+      "seen": "The character sits near the centre at roughly 20% of frame height but a much smaller share of the area. The large brown log fills the lower third and dominates the frame, and the title block on the left competes with the tree canopy."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a behind-and-above chase view looking down the path, not the side-on follow the recipe expects. The framing is acceptable for a title shot, but the log in the foreground crowds the lens."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild haze and warm grading but no visible bloom, tone-mapping punch or ambient occlusion. Overall contrast is muted and slightly washed out."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The title typography is clean, with an orange kicker, a large cream title and a drop shadow. The button row and the key-hint strip at the bottom are tidy and legible. The left-side text overlays busy foliage, which slightly hurts readability."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

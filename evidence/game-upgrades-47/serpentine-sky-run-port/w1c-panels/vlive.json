@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A pagoda hangs in mid-air with no island or base under it, next to the floating isle. It sits in the bright sun glow and clutters the focal point. The scene is otherwise the same as B: a pink, hazy look with low-contrast clouds, and the player is easy to read.",
+     "Same haze and low contrast as A. It also adds a pagoda that floats in mid-air beside the first torii gate with no visible support, reading as an unanchored object, and it clutters the focal point next to the gate and the small floating island.",
+     "A pagoda floats in mid-air near the horizon with nothing under it. It also overlaps the first torii gate, which clutters the focal point. As in B, the road surface is washed out pale pink and has low contrast, and the haze flattens the depth."
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The same unsupported pagoda floats in the sky and partly blocks the moon, which spoils the main focal point. Otherwise the same as A.",
+     "Strong purple cast across the whole frame flattens the material detail on the bridge. A pagoda floats unsupported in mid-air left of the gate and partly covers the moon, cluttering the main focal area.",
+     "A pagoda floats unsupported in mid-air and covers the moon and the left edge of the torii, which clutters the main view. Otherwise it is the same as A."
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same overexposed bridge as A, plus the pagoda floats with no support near the sun and adds clutter to the composition.",
+     "The near bridge surface is close to blown out under the sunset light. A pagoda floats in mid-air beside the torii gate with no base or support, cluttering the focal point.",
+     "It has the same washed-out road as A. It also has a pagoda floating in mid-air with nothing supporting it, overlapping the torii gate."
+    ]
+   }
+  ]
+ }
+]

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "02d16aa06e95396ea2da522e02391805bb431ff25baf4941646e7a11afabd313",
+  "sourceSha256": "fed455eb57ade9e9537ea85c65fb649061ea9c074e137037f90c8a3a21596e98",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",
@@ -25,7 +25,7 @@
       {
         "type": "directional",
         "shadow": true,
-        "intensity": 3.1
+        "intensity": 5.2
       },
       {
         "type": "directional",
@@ -61,14 +61,35 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "auroraHabitatDomeMeshy",
+        "assetKey": "linksAlpineSnowPine",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "gravityOrbitalRelayMeshy",
+        "assetKey": "linksBurnFootbridge",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksCraterCrystal",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksDunesBeaconTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksGolfBall",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -89,21 +110,56 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "linksHarbourFloodlight",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksHarbourTowerA",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksHarbourTowerB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksHarbourTowerC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksMareLander",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksMareRelay",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "linksMareRover",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "linksPinFlagMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "lunarRoverMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "neonStreetLampProp",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -118,62 +174,6 @@
       },
       {
         "assetKey": "propRockA",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "showcaseModernBuildingOne",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "showcaseModernOfficeBuilding",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "showcaseVoxelBuilding",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "siegeGolfBall",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "siegeStoneBridgeMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "siegeWindmillTowerMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "skylineCrystalShardMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "turboAlpineVenueBackdrop",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -276,8 +276,8 @@
       },
       {
         "role": "prop",
-        "assetKey": "siegeGolfBall",
-        "maxTriangles": 80000,
+        "assetKey": "linksGolfBall",
+        "maxTriangles": 2000,
         "textureSet": "BC",
         "maxTextureSize": 512
       },
@@ -297,80 +297,80 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "siegeWindmillTowerMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
+        "assetKey": "linksDunesBeaconTower",
+        "maxTriangles": 4000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
       },
       {
         "role": "set-dressing",
-        "assetKey": "siegeStoneBridgeMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "skylineCrystalShardMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "turboAlpineVenueBackdrop",
-        "maxTriangles": 120000,
+        "assetKey": "linksBurnFootbridge",
+        "maxTriangles": 2000,
         "textureSet": "BC",
-        "maxTextureSize": 2048
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksCraterCrystal",
+        "maxTriangles": 1000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksAlpineSnowPine",
+        "maxTriangles": 1000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
       },
       {
         "role": "prop",
-        "assetKey": "neonStreetLampProp",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 1024
+        "assetKey": "linksHarbourFloodlight",
+        "maxTriangles": 1000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
       },
       {
         "role": "backdrop",
-        "assetKey": "showcaseModernBuildingOne",
-        "maxTriangles": 60000,
+        "assetKey": "linksHarbourTowerA",
+        "maxTriangles": 4000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksHarbourTowerB",
+        "maxTriangles": 4000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "linksHarbourTowerC",
+        "maxTriangles": 4000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "linksMareLander",
+        "maxTriangles": 4000,
         "textureSet": "BC",
         "maxTextureSize": 1024
       },
       {
-        "role": "backdrop",
-        "assetKey": "showcaseModernOfficeBuilding",
-        "maxTriangles": 120000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048
-      },
-      {
-        "role": "backdrop",
-        "assetKey": "showcaseVoxelBuilding",
-        "maxTriangles": 60000,
-        "textureSet": "BC+N",
-        "maxTextureSize": 1024
+        "role": "set-dressing",
+        "assetKey": "linksMareRover",
+        "maxTriangles": 4000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
       },
       {
         "role": "set-dressing",
-        "assetKey": "auroraHabitatDomeMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "lunarRoverMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
-      },
-      {
-        "role": "set-dressing",
-        "assetKey": "gravityOrbitalRelayMeshy",
-        "maxTriangles": 40000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
+        "assetKey": "linksMareRelay",
+        "maxTriangles": 2000,
+        "textureSet": "BC",
+        "maxTextureSize": 512
       }
     ],
     "vfx": [

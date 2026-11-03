@@ -11,13 +11,13 @@ import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildSha
 import { beaconSpec, blobSpec, pointsSpec, roadSpec, setShading, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, wakeSpec, type Rgb } from "./materials";
 import { bankRoll, createIonWake, createSporeField, sporeField } from "./art/wake";
 import { districtFog, fogApproach } from "./art/look";
-import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, SWEEP, VIGNETTE_PULSE, vignettePulse } from "./art/director";
+import { afterburnerKick, directCamera, HEAT_STEPS, heatStep, ION_IDLE, SWEEP, VIGNETTE_PULSE, vignettePulse } from "./art/director";
 import { buildBeacons } from "./art/beacons";
 import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
-import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel } from "./models";
+import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel } from "./models";
 import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
@@ -117,6 +117,13 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   const high = quality === "high";
   const look = resolveLook(lookInput, quality);
   setShading(look);
+  /*
+   * GU47 phase 4: the sky dome (3000 m), the abyss plane and the additive strips defaulted to shadow casters, so from the
+   * key light the dome covered the whole course and every receiver read as fully shadowed (no cast shadow could show, and
+   * phase-4 round 2's glass-shadow term darkened the whole causeway). Twilight turns them off; `?look=original` keeps
+   * the 4.6.2 casters value for value.
+   */
+  const noCast = look.wake.enabled ? { castShadow: false } : {};
   const models = modelSet(quality);
   let minY = Infinity, maxY = -Infinity;
   for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
@@ -143,7 +150,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(props.rocks), { name: "rocks", material: material.custom(terrainSpec(snowLine)) }).runtime({ id: fogTracked("rocks", "rocks") }));
   b.add(geometry.custom(dynamicFrom(buildShoulders(track, high ? 6 : 10)), { name: "plains", material: material.custom(terrainSpec(1e6, [1.15, 1.2, 1.2])) }).runtime({ id: fogTracked("plains", "plains") }));
   const rails = buildRails(track);
-  b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08)) }).runtime({ id: fogTracked("rails", "rails") }));
+  /* GU47 phase 5 (sibling distinctness): twilight rails are dark magenta ion barriers, not pale highway guard pipes */
+  const railSpec = look.wake.enabled ? solidSpec(hexLinear("#3a1838"), hexLinear("#ff4fc8"), 0.55) : solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08);
+  b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(railSpec) }).runtime({ id: fogTracked("rails", "rails") }));
   b.add(geometry.custom(dynamicFrom(rails.posts), { name: "rail-posts", material: material.custom(solidSpec(hexLinear("#2a5a62"), hexLinear("#60f4ff"), 1.7)) }).runtime({ id: fogTracked("rail-posts", "rail-posts") }));
   const arches = buildArches(track);
   b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));
@@ -152,9 +161,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
   /* IC-24 lane beacons every 44 m on both edges, district-coloured, one merged draw (+1); twilight only */
   if (look.dressing.beacons) b.add(geometry.custom(dynamicFrom(buildBeacons(track)), { name: "beacons", material: material.custom(beaconSpec()), castShadow: false }).runtime({ id: fogTracked("beacons", "beacons") }));
-  b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
+  b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { ...noCast, name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
-  b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
+  b.add(primitives.sphere({ ...noCast, name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
   /* the Meshy models are lit surfaces: a sky fill and the key; the custom (unlit) road/sky/neon shaders evaluate their own `lit()` */
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: look.hemisphere.sky, groundColor: look.hemisphere.ground, intensity: look.hemisphere.intensity }));
@@ -176,7 +185,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
    * cascades off. Low tier: 1 cascade.
    */
   const shadowOff = typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0";
-  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance }) as never }));
+  b.add(lights.directional({ name: "key", position: [...look.key.position], target: [0, 0, 0], intensity: look.key.intensity, color: look.key.color, shadow: (shadowOff ? false : { cascades: look.key.cascades, maxDistance: look.key.maxDistance, ...(look.key.mapSize ? { mapSize: look.key.mapSize } : {}) }) as never }));
   /* IC-02: moving points for the lit GLBs (twilight only, 1 on Low): the drone's exhaust glow and the nearest pad / gate pool */
   if (look.glow.points > 0) b.add(lights.point({ name: "drone-glow", position: [0, -500, 0], intensity: 6, distance: 14, color: "#40e0ff" }).runtime({ id: "drone-glow" }));
   if (look.glow.points > 1) b.add(lights.point({ name: "pool-glow", position: [0, -500, 0], intensity: 7, distance: 20, color: "#ffb02e" }).runtime({ id: "pool-glow" }));
@@ -217,7 +226,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.6 : 2.2));
     b.add((heavy
       ? primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
-      : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
+      : look.assets.sentryModel
+        ? sentryModel(t.id, r * 2.1, models)
+        : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
     b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
     if (heavy) b.add(primitives.torus({ name: `target-ring2-${t.id}`, size: [r * 1.75, 0.3, 0.3], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear("#ff7a3a"), 2.6)), castShadow: false }).runtime({ id: `target-ring2-${t.id}` }));
     b.add(primitives.torus({ name: `target-hp-${t.id}`, size: [r * 1.3, 0.12, 0.12], material: material.custom(solidSpec(hexLinear("#0e2a16"), hexLinear("#6dffb0"), 2.4)), castShadow: false }).runtime({ id: `target-hp-${t.id}` }));
@@ -227,7 +238,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < BOLTS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { ...noCast, name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
   }
 
   /* the drone's contact shadow on the road (HP-08): a quad rebuilt under the drone every frame */
@@ -250,7 +261,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
   {
     const uv: number[] = [], idx: number[] = [];
     for (let k = 0; k < STREAKS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
-    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx), bounds: courseBounds }), { ...noCast, name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
   }
 
   /* exhaust / dust points */
@@ -264,7 +275,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
       tint: { itemSize: 3, data: f32(new Array<number>(POINTS * 3).fill(1)) },
       fade: { itemSize: 1, data: f32(new Array<number>(POINTS).fill(0)) }
     }
-  }), { name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
+  }), { ...noCast, name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
 
   /* IC-18 ion wake: one dynamic strip (+1 draw), rebuilt every frame from the drone's last 1.2 s; twilight look only */
   if (look.wake.enabled) {
@@ -290,7 +301,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
         tint: { itemSize: 3, data: f32(new Array<number>(n * 3).fill(1)) },
         fade: { itemSize: 1, data: f32(new Array<number>(n).fill(0)) }
       }
-    }), { name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
+    }), { ...noCast, name: "spores", material: material.custom(pointsSpec()) }).runtime({ id: "spores" }));
   }
 
   /* HP-19: no deprecated `radius`; threshold at HDR white and intensity under the noise-risk line */
@@ -390,11 +401,13 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
   const look = [0, 0, 0] as [number, number, number];
   const chaseIn = { wantEye: eye, wantLook: look, fovTarget: 0 };
   const blobGeo = new Float32Array(12);
+  const contactVec: [number, number, number, number] = [0, -1e4, 0, 0];
+  const contactDir: [number, number, number] = [0, 0, 1];
   let motion: MotionSettings = { reduced: false };
   let rollNow = 0;
   let finishedFor = 0;
   let vigEnv = 0;
-  let heatShown = 0;
+  let heatShown = row.wake.enabled ? -1 : 0; // twilight applies ION_IDLE on the first frame; original keeps the 4.6.2 start
   let chaseShown = -1;
   let vigShown = -1;
 
@@ -453,7 +466,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       if (part.model) {
         /* IC-12: heat glows on the hull in 8 steps (one setEmissive per step change, so no per-frame material churn) */
         const step = heatStep(row, heatGlow);
-        if (step !== heatShown) { heatShown = step; const [hex, k] = HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
+        if (step !== heatShown) { heatShown = step; const [hex, k] = step === 0 && row.wake.enabled ? ION_IDLE : HEAT_STEPS[step]!; try { (h as { materials?: { setEmissive(t: string, c: string, i: number): void } }).materials?.setEmissive("*", hex, k); } catch { /* materials runtime off */ } }
         continue;
       }
       h.setUniform?.("heat", heatGlow);
@@ -585,7 +598,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
           blobGeo[o++] = cx; blobGeo[o++] = fr.y + track.latY(p.s, lat) + 0.12; blobGeo[o++] = cz;
         }
         blob.updateAttribute?.("position", { array: blobGeo, offset: 0 });
-        blob.setUniform?.("blobAlpha", 0.6 * (0.25 + 0.75 * fade));
+        blob.setUniform?.("blobAlpha", row.shade.blob * (0.25 + 0.75 * fade));
       }
     }
 
@@ -613,8 +626,10 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         if (!t.alive) continue;
         const bob = Math.sin(time * 1.7 + t.id) * 0.35;
         core.setPosition(t.world.x, t.world.y + bob, t.world.z);
-        core.setUniform?.("flash", targetFlash[t.id] ?? 0);
+        if (t.kind === "heavy" || !row.assets.sentryModel) core.setUniform?.("flash", targetFlash[t.id] ?? 0);
         if (t.kind === "heavy") core.setRotation(time * 0.7 + t.id, Math.PI / 4 + time * 0.5, Math.PI / 4);
+        /* WP-36 sentry model: faces back down the track toward the oncoming drone, with a slow scan sway */
+        else if (row.assets.sentryModel) { const tf = track.frame(t.s, scratchFrame); core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0); }
         ring.setPosition(t.world.x, t.world.y + bob, t.world.z);
         ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.3, time * 2.2 + t.id, 0);
         if (ring2) {
@@ -660,6 +675,15 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
       node("rail-posts").setUniform?.("glowColor", glowNow);
       /* IC-10: the causeway's ion pulse runs at the drone's speed */
       node("road").setUniform?.("ionSpeed", motion.reduced ? 0 : p.v);
+      /* GU47 phase 4: contact shadow in the road shader under the drone (fainter the higher it hovers) */
+      if (row.shade.contact > 0) {
+        const ground = fr.y + track.latY(p.s, p.x);
+        const fadeC = p.crashed ? 0 : Math.max(0, Math.min(1, 1 - (p.position.y - ground - CFG.vehicle.hover) / 14));
+        contactVec[0] = p.position.x; contactVec[1] = ground; contactVec[2] = p.position.z; contactVec[3] = row.shade.contact * fadeC;
+        contactDir[0] = rig[0]!; contactDir[2] = rig[1]!;
+        node("road").setUniform?.("contact", contactVec);
+        node("road").setUniform?.("contactDir", contactDir);
+      }
     }
 
     /* IC-21 arch light chase (twilight, off on reduced motion): written only when it changes */

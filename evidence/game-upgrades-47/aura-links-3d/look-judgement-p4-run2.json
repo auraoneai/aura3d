@@ -1,0 +1,84 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-1/links-shots-play-1280x720--03-action-02-power.jpg",
+      "sha256": "bfaca67931a9d731c1972707dbd15852885ad1e1936716cfeb4398e52df56346"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-3/aura-links-3d--mapleHollow--settle-60s.jpg",
+      "sha256": "0ea00dfae6de9740d2cbb3429298f60fa5675900fb80fe3997c11c19f9ea77f6"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-4/aura-links-3d--cinderRim--settle-60s.jpg",
+      "sha256": "a25b644f56b7d689dfd5ce817f4054eba011c7206a4f9d47dddfc98337f1f45b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-links-3d/p4-r4/aura-links-3d/frames/g10p4-r4-2/aura-links-3d--neonBay--settle-60s.jpg",
+      "sha256": "d98b0e0f0ce6ed99459800697df20fee932ae9fe2a7c213b44e53ec7868f6e7a"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 5.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 4.5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 5,
+    "camera": 5.5,
+    "postprocessing": 5,
+    "ui_hud": 7
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single directional sun with flat ambient fill appears in every frame. The golfer and the caddie read evenly lit with little form shading. The night frame keeps daytime-level ground brightness under a navy sky, so the light does not match the sky."
+    },
+    {
+      "category": "shadows",
+      "seen": "The golfer casts a hard, crisp shadow in the night frame and a soft contact blob under the feet in the other frames. Trees cast long dark streaks across the fairway in frame 1. Frames 2 and 3 show no visible tree or prop shadows on the far ground, and there is no contact darkening where the tee box meets the grass."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The golf cart roof, the club shaft and the ball show no environment reflections or specular response. Every surface reads matte, and the sky color does not tint the materials."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The fairway is an endless flat plane running to a hard horizon line. Trees are repeated stacked-sphere shapes, with tiny cone props scattered at random. Frame 3 is a bare brown cobbled plane with no landmarks. There is no green, flagstick, rough, water or terrain undulation. Frame 1 has one sand strip and a few rocks."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 1 has mild distance haze toward the treeline. Floating particles appear in every frame: orange embers in frame 3 and white motes in frames 2 and 4. The particles look uniform and screen-like and do not interact with the light."
+    },
+    {
+      "category": "material_quality",
+      "seen": "The grass is a tiled noise texture with visible repetition and a uniform stripe pattern. The brown ground in frame 3 is a hex-cobble tile that repeats obviously. The tee box edge is a flat dark band. The tee markers are untextured red boxes. Clothing is plain flat-shaded cloth."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The characters are mid-poly with stiff hands and faces. The trees are three or four stacked spheres on a cylinder trunk. The tee markers are simple boxes and the ground scatter is cone primitives. The golf cart has the most detail of any asset."
+    },
+    {
+      "category": "composition",
+      "seen": "The golfer is pushed to the left edge and partly cropped in frames 2 to 4, and the caddie is clipped at the frame border. The center of the frame is empty grass with only the white aim line leading the eye. The horizon cuts the frame almost exactly in half."
+    },
+    {
+      "category": "camera",
+      "seen": "A low third-person perspective sits behind the golfer. This does not match the recipe's orthographic broadcast 70° view. The framing is functional for aiming, but there is no depth of field or lens character, and the subject takes up much less than 25% of the frame."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Tone mapping is mild and grading shifts per course: cool in frame 1, saturated in frame 2, warm desaturated in frame 3, teal in frame 4. Bloom on the white aim line is faint. There is no visible AO, vignette or grain, and the image reads slightly washed out."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

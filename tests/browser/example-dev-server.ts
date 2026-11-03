@@ -370,6 +370,16 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
   const auraResolvePlugin: esbuild.Plugin = {
     name: "aura3d-dev-server-resolve",
     setup: (build) => {
+      // Vite `import x from "./font.woff2?url"`: the default export is the asset's served URL path (apps self-host
+      // their licensed fonts this way). Without this, esbuild has no loader for the asset and the route never boots.
+      build.onResolve({ filter: /\?url$/ }, (args) => {
+        const file = resolve(args.resolveDir, args.path.slice(0, -"?url".length));
+        return existsSync(file) ? { path: file, namespace: "aura3d-asset-url" } : undefined;
+      });
+      build.onLoad({ filter: /.*/, namespace: "aura3d-asset-url" }, (args) => ({
+        loader: "js",
+        contents: `export default ${JSON.stringify(moduleUrlPath(root, args.path))};`,
+      }));
       const candidateResolveProbe = {};
       build.onResolve({ filter: /.*/ }, async (args) => {
         if (args.pluginData === candidateResolveProbe) return undefined;
@@ -557,6 +567,13 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         const output = bundled ?? transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));
         response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
         response.end(output);
+        return;
+      }
+
+      // Per-module path of the same Vite `?url` import: answer the module request with the asset's URL.
+      if (url.searchParams.has("url") && !/\.(m?js|tsx?)$/.test(file)) {
+        response.writeHead(200, { "content-type": "application/javascript; charset=utf-8" });
+        response.end(`export default ${JSON.stringify(pathname)};`);
         return;
       }
 

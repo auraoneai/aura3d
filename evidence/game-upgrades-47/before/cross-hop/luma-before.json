@@ -1,0 +1,350 @@
+[
+ {
+  "target": "cross-hop--theme0",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme0",
+  "sinceReadyMs": 25008,
+  "mean": 110.88,
+  "p5": 43,
+  "p50": 117,
+  "p95": 153,
+  "darkFrac": 0.0023,
+  "clipFrac": 0,
+  "grid": [
+   116.8,
+   138,
+   116.4,
+   94.6,
+   125.1,
+   93,
+   98.9,
+   116.3,
+   98.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 169
+  }
+ },
+ {
+  "target": "cross-hop--theme0",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme0",
+  "sinceReadyMs": 357600,
+  "mean": 111.23,
+  "p5": 46,
+  "p50": 117,
+  "p95": 152,
+  "darkFrac": 0.0015,
+  "clipFrac": 0,
+  "grid": [
+   117.5,
+   138.6,
+   116.6,
+   93.7,
+   125,
+   96.6,
+   98.5,
+   116.1,
+   98.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 175
+  }
+ },
+ {
+  "target": "cross-hop--theme1",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme1",
+  "sinceReadyMs": 25004,
+  "mean": 101.51,
+  "p5": 33,
+  "p50": 109,
+  "p95": 143,
+  "darkFrac": 0.0042,
+  "clipFrac": 0,
+  "grid": [
+   101.8,
+   126.5,
+   93.4,
+   88,
+   111,
+   89,
+   95.7,
+   112.5,
+   95.6
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 166
+  }
+ },
+ {
+  "target": "cross-hop--theme1",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme1",
+  "sinceReadyMs": 708827,
+  "mean": 102.99,
+  "p5": 36,
+  "p50": 109,
+  "p95": 150,
+  "darkFrac": 0.0022,
+  "clipFrac": 0,
+  "grid": [
+   101.9,
+   126.4,
+   93.7,
+   91.4,
+   123.1,
+   92.2,
+   93.9,
+   110.5,
+   93.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 168
+  }
+ },
+ {
+  "target": "cross-hop--theme2",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "sinceReadyMs": 25010,
+  "mean": 106.25,
+  "p5": 54,
+  "p50": 111,
+  "p95": 147,
+  "darkFrac": 0.0023,
+  "clipFrac": 0,
+  "grid": [
+   109.2,
+   134.1,
+   111.9,
+   92.9,
+   118.7,
+   91.6,
+   93.8,
+   110.3,
+   93.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 163
+  }
+ },
+ {
+  "target": "cross-hop--theme2",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme2",
+  "sinceReadyMs": 338740,
+  "mean": 104.79,
+  "p5": 45,
+  "p50": 111,
+  "p95": 147,
+  "darkFrac": 0.0047,
+  "clipFrac": 0,
+  "grid": [
+   113.9,
+   134.3,
+   107.8,
+   92.7,
+   118.3,
+   79.3,
+   93.4,
+   110,
+   93.3
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 165
+  }
+ },
+ {
+  "target": "cross-hop--theme3",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme3",
+  "sinceReadyMs": 25007,
+  "mean": 61.67,
+  "p5": 13,
+  "p50": 59,
+  "p95": 122,
+  "darkFrac": 0.0167,
+  "clipFrac": 0,
+  "grid": [
+   65.9,
+   82.3,
+   61.7,
+   55.1,
+   71.2,
+   53.1,
+   51.3,
+   63.2,
+   51.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 170
+  }
+ },
+ {
+  "target": "cross-hop--theme3",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme3",
+  "sinceReadyMs": 542380,
+  "mean": 62.58,
+  "p5": 13,
+  "p50": 62,
+  "p95": 121,
+  "darkFrac": 0.0185,
+  "clipFrac": 0,
+  "grid": [
+   68.5,
+   82.4,
+   63.6,
+   55.7,
+   71.6,
+   52.1,
+   52.6,
+   64,
+   52.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 170
+  }
+ },
+ {
+  "target": "cross-hop--theme4",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme4",
+  "sinceReadyMs": 25006,
+  "mean": 59.17,
+  "p5": 23,
+  "p50": 56,
+  "p95": 119,
+  "darkFrac": 0.0218,
+  "clipFrac": 0,
+  "grid": [
+   67.1,
+   69.4,
+   59.6,
+   51,
+   67.1,
+   51,
+   52,
+   63.5,
+   51.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 140
+  }
+ },
+ {
+  "target": "cross-hop--theme4",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme4",
+  "sinceReadyMs": 343337,
+  "mean": 59.31,
+  "p5": 24,
+  "p50": 56,
+  "p95": 118,
+  "darkFrac": 0.0232,
+  "clipFrac": 0,
+  "grid": [
+   66.9,
+   71.6,
+   59.7,
+   49.3,
+   66.2,
+   50.6,
+   52.6,
+   64.3,
+   52.5
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 145
+  }
+ },
+ {
+  "target": "cross-hop--theme5",
+  "id": "settle-25s",
+  "slug": "cross-hop",
+  "variant": "theme5",
+  "sinceReadyMs": 25002,
+  "mean": 125.99,
+  "p5": 62,
+  "p50": 132,
+  "p95": 177,
+  "darkFrac": 0.0011,
+  "clipFrac": 0,
+  "grid": [
+   119.1,
+   143.7,
+   120,
+   119.4,
+   153.4,
+   117.6,
+   114.1,
+   132.7,
+   114
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 168
+  }
+ },
+ {
+  "target": "cross-hop--theme5",
+  "id": "settle-60s",
+  "slug": "cross-hop",
+  "variant": "theme5",
+  "sinceReadyMs": 349729,
+  "mean": 125.77,
+  "p5": 61,
+  "p50": 132,
+  "p95": 175,
+  "darkFrac": 0.0009,
+  "clipFrac": 0,
+  "grid": [
+   122.1,
+   142.5,
+   119.7,
+   119.6,
+   149.8,
+   117.3,
+   114.2,
+   132.6,
+   114.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 175
+  }
+ }
+]

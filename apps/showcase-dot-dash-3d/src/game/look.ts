@@ -10,7 +10,10 @@ export const LOOK_HDRI = { id: "indoor-workshop", url: "/hdri/indoor-workshop_1k
 
 /** Desk-lamp key (DD47-L1): one shadowed PCSS spot from the upper left of the bench. */
 export const LAMP = {
-  position: [-13, 19, 9] as const,
+  /** Phase 4 (4.7.2): lower and further left (was [-13, 19, 9], 52 deg elevation; now ~38 deg) so the chip walls, gems
+   * and stubs throw raking shadows about 1.6x as long across the mask (rubric: shadows). The board centre and the
+   * right edge sit at the same lamp distance as before, so exposure holds. */
+  position: [-16, 13, 8] as const,
   target: [-1.5, 0, -0.5] as const,
   /** Half-angle in radians: the cone covers the board and falls off past its right third. */
   angle: 0.8,
@@ -20,6 +23,20 @@ export const LAMP = {
   /** Range window (world units); the lamp is ~24 units from the board centre, so the default 12 would cut it off. */
   distance: 90,
   decay: 2
+} as const;
+
+/** Phase 4 (4.7.2): a tighter PCSS penumbra (was lightSize 1.2, softness 0.6) so the contact edge reads. */
+export const LAMP_SHADOW = { filter: "pcss", mapSize: 2048, lightSize: 0.8, softness: 0.42, bias: 0.0004, normalBias: 0.02 } as const;
+
+/**
+ * Phase 4 (4.7.2) grounding and reflection: screen-space contact shadows from the lamp, a short-radius AO under the
+ * chips and pads, and screen-space reflections so the chips, gems and courier mirror in the glossy solder mask
+ * (rubric: shadows, ibl_reflections).
+ */
+export const GROUNDING = {
+  contact: { intensity: 0.8, length: 0.32, thickness: 0.06 },
+  ao: { radius: 0.36, intensity: 0.55, density: 0.62 },
+  ssr: { intensity: 0.55, maxDistance: 9, roughness: 0.42, thickness: 0.35 }
 } as const;
 
 /** Cool unshadowed bounce (DD47-L1): the old directional, now 0.25 from the far right of the room. */
@@ -45,7 +62,7 @@ export const BENCH = {
  * Unshadowed; the engine caps punctual lights per tier.
  */
 export const PRACTICALS = {
-  courier: { color: "#5ff3ff", intensity: 4, distance: 4.5, decay: 2, height: 1.1 },
+  courier: { color: "#5ff3ff", intensity: 4, distance: 4.5, decay: 2, height: 1.4 },
   surge: { color: "#ffb23e", intensity: 2.4, distance: 3.6, decay: 2, height: 0.9 },
   sentry: { color: "#8fa6b8", intensity: 1.6, distance: 3.2, decay: 2, height: 1.2 },
   pooled: 4
@@ -56,7 +73,29 @@ export const BOARD_PROBE = {
   position: [0, 2.5, 0] as const,
   box: { min: [-17.5, -0.5, -13.5] as const, max: [17.5, 6, 13.5] as const },
   resolution: 128 as const,
-  intensity: 1
+  intensity: 1.5
+} as const;
+
+/**
+ * Phase 4 (4.7.2) courier pod (DD47-A1, WP-36 Meshy key `dotdashCourierPod`): the robot body under the glowing core,
+ * presentation only (the courier still moves and collides as one tile). The GLB is 1.902 tall with its pivot at the
+ * bounds centre, so `scale` puts it 0.74 tall and `lift` stands it on the board top (-0.02). The core hovers over the
+ * dome; a cyan rim and a little emissive keep the dark-green shell readable on the green mask.
+ */
+// Round 2: 0.74 -> 0.92 tall and a stronger cyan rim and glow; at 0.74 with a faint rim the dark-green dome vanished
+// into the green mask in the round-1 frames.
+export const COURIER_POD = {
+  scale: 0.484,
+  lift: -0.02 + 0.951 * 0.484,
+  coreHeight: 1.04,
+  /** Round 4: the Courier Studio glass bubble grows 0.34 -> 0.5 (judge: "a tiny pale cube that is hard to pick out"). */
+  shell: 0.5,
+  /** Round 3: the amber halo rings the pod's waist (marker around the body) instead of the hovering core. */
+  haloHeight: 0.48,
+  halo: 0.9,
+  rim: { color: "#8ff8ff", power: 2, intensity: 1.2 },
+  emissive: "#2fc8d8",
+  emissiveIntensity: 0.22
 } as const;
 
 /** Signature macro DOF (DD47-P1): metric lens; the focus distance follows the camera to the board centre. */
@@ -66,8 +105,17 @@ export const BOARD_PROBE = {
  * and the HUD read through them.
  */
 export const LAMP_HAZE = {
-  fog: { density: 0.008, color: "#6a5238", intensity: 0.4, heightFalloff: 0.16, godRayDensity: 0.45 },
-  cone: { color: "#ffd9a8", intensity: 0.32, length: 24, softness: 0.85 }
+  // Phase 4 (4.7.2): inscatter 0.4 -> 0.6, god rays 0.45 -> 0.6, cone 0.32 -> 0.6: the judge saw no haze at all.
+  fog: { density: 0.008, color: "#6a5238", intensity: 0.6, heightFalloff: 0.16, godRayDensity: 0.6 },
+  cone: { color: "#ffd9a8", intensity: 0.6, length: 24, softness: 0.85 },
+  /**
+   * Phase 4 round 2: a visible lamp shaft. Neither the inscatter nor the effect cone showed in the round-1 frames, so
+   * three nested open additive cone meshes (depth write off) run from the lamp head toward the board; nested radii
+   * give a soft edge. `fraction` is each shell's radius as a share of the lamp cone's.
+   */
+  // Round 3: round 2's three shells (half-angle ~0.5 rad, 0.035-0.05) washed the whole frame and showed hard edges;
+  // now five thin shells inside a 0.3 rad half-angle, 0.01 each, so the core of the beam is densest.
+  shaft: { color: "#ffcf95", length: 19, halfAngle: 0.3, shells: [1, 0.8, 0.6, 0.4, 0.2].map((fraction) => ({ fraction, opacity: 0.01 })) }
 } as const;
 
 /**
@@ -137,6 +185,13 @@ export interface BoardLookRow {
 
 // Phase 3 (4.7.1): the dark-mask boards (classic, foundry, zerocore) take a brighter lamp (+25-35%) so their
 // steady-state frames reach the declared luma band (mean 42-60, p95 >= 200) instead of sitting at mean 32-40.
+// Phase 4 round 4: the pale boards' lamps 2600 -> 2200 (the raking lamp burned their left half to white, judge round 3);
+// chip epoxy is glossier (roughness 0.38 -> 0.24, clearcoat 0.6 -> 1) and the probe 1 -> 1.5 so tops and gems
+// reflect the room (rubric: ibl_reflections).
+// Phase 4 round 2: the HDRI fill drops 0.45 -> 0.38 so the lamp's shadow side reads darker than its lit side; the
+// dark-mask boards' lamps go +9% (classic 4700, foundry 4600, zerocore 5200) to hold their mean luma.
+// Phase 4 (4.7.2): the dark-mask boards' masks are glossier (classic 0.3 -> 0.22, foundry 0.34 -> 0.26, zerocore
+// 0.5 -> 0.36) so the screen-space reflections and the probe show in them; the pale boards keep their panel-judged sheen.
 const ROOM_FOG = "#1a120c";
 
 const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> & { readonly hdriIntensity?: number; readonly fogDensity?: number }): BoardLookRow => {
@@ -144,7 +199,7 @@ const row = (r: Omit<BoardLookRow, "timeOfDay" | "hdri" | "fog" | "background"> 
   return {
     ...rest,
     timeOfDay: "late night",
-    hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.45, rotationDeg: 205 },
+    hdri: { id: LOOK_HDRI.id, intensity: hdriIntensity ?? 0.38, rotationDeg: 205 },
     fog: { color: ROOM_FOG, density: fogDensity ?? 0.006 },
     background: ROOM_FOG
   };
@@ -155,8 +210,8 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
   classic: row({
     board: "classic",
     pcb: "green FR-4 relay board, bare copper, silver pads",
-    mask: "#1f4a38", maskRoughness: 0.3, copper: "#c8743a", silk: "#e9e6d6", led: "#5ff3ff", traceGlow: "#ffb070",
-    lamp: { color: "#ffc58a", intensity: 4300, temperatureK: 3000 },
+    mask: "#1f4a38", maskRoughness: 0.22, copper: "#c8743a", silk: "#e9e6d6", led: "#5ff3ff", traceGlow: "#ffb070",
+    lamp: { color: "#ffc58a", intensity: 4700, temperatureK: 3000 },
     grade: { contrast: 1.08, saturation: 1.06, temperature: 0.08, tint: 0, lut: "/luts/dot-dash-3d/classic.cube" }
   }),
   spiral: row({
@@ -165,7 +220,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     // Blind-panel fix pass: the deep purple mask read flat and dark around black chips; a pale lilac mask (garden's
     // white-mask recipe, which the panel preferred) lets the lamp model the board and the chips stand out.
     mask: "#c6b8e2", maskRoughness: 0.4, copper: "#c99a3e", silk: "#3a2856", led: "#ff6fd0", traceGlow: "#ffc24a",
-    lamp: { color: "#fff0dc", intensity: 2600, temperatureK: 3900 },
+    lamp: { color: "#fff0dc", intensity: 2200, temperatureK: 3900 },
     grade: { contrast: 1.1, saturation: 1.04, temperature: 0.04, tint: 0.06, lut: "/luts/dot-dash-3d/spiral.cube" }
   }),
   twin: row({
@@ -174,28 +229,30 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
     // Blind-panel fix pass: the navy mask read flat and dark; a pale blue-white mask (garden's recipe) with gold
     // traces gives the lamp something to model and makes the cyan courier read.
     mask: "#b9cbe4", maskRoughness: 0.4, copper: "#cda04a", silk: "#1c3058", led: "#2fd6ff", traceGlow: "#4fe3ff",
-    lamp: { color: "#fff2e0", intensity: 2600, temperatureK: 4100 },
+    lamp: { color: "#fff2e0", intensity: 2200, temperatureK: 4100 },
     grade: { contrast: 1.07, saturation: 1.02, temperature: -0.04, tint: -0.02, lut: "/luts/dot-dash-3d/twin.cube" }
   }),
   garden: row({
     board: "garden",
     pcb: "white-mask LED lighting board, ENIG gold",
-    mask: "#cfd5c4", maskRoughness: 0.42, copper: "#cfa24c", silk: "#3b4a2c", led: "#8dff6a", traceGlow: "#c4ff7a",
-    lamp: { color: "#fff0d8", intensity: 2600, temperatureK: 4000 },
+    // Phase 7 (4.7.6): blind panel g13p7a judged garden worse (1/2/0): the pale lime shard LEDs (#8dff6a, luma ~220)
+    // vanished on the white mask. A deeper LED green (luma ~157) keeps the hue and reads against the board.
+    mask: "#cfd5c4", maskRoughness: 0.42, copper: "#cfa24c", silk: "#3b4a2c", led: "#22c95a", traceGlow: "#c4ff7a",
+    lamp: { color: "#fff0d8", intensity: 2200, temperatureK: 4000 },
     grade: { contrast: 1.06, saturation: 1.08, temperature: 0, tint: -0.04, lut: "/luts/dot-dash-3d/garden.cube" }
   }),
   foundry: row({
     board: "foundry",
     pcb: "red heavy-copper power board",
-    mask: "#7a2018", maskRoughness: 0.34, copper: "#d4834a", silk: "#f6efe4", led: "#ffd27a", traceGlow: "#ff9a5a",
-    lamp: { color: "#ffbe80", intensity: 4200, temperatureK: 2800 },
+    mask: "#7a2018", maskRoughness: 0.26, copper: "#d4834a", silk: "#f6efe4", led: "#ffd27a", traceGlow: "#ff9a5a",
+    lamp: { color: "#ffbe80", intensity: 4600, temperatureK: 2800 },
     grade: { contrast: 1.1, saturation: 1.02, temperature: 0.1, tint: 0.02, lut: "/luts/dot-dash-3d/foundry.cube" }
   }),
   zerocore: row({
     board: "zerocore",
     pcb: "matte black reactor board, ENIG gold",
-    mask: "#1f1f28", maskRoughness: 0.5, copper: "#d7a74e", silk: "#d8d2e6", led: "#ff5fdc", traceGlow: "#ff9cf0",
-    lamp: { color: "#ffd9b0", intensity: 4800, temperatureK: 3400 },
+    mask: "#1f1f28", maskRoughness: 0.36, copper: "#d7a74e", silk: "#d8d2e6", led: "#ff5fdc", traceGlow: "#ff9cf0",
+    lamp: { color: "#ffd9b0", intensity: 5200, temperatureK: 3400 },
     grade: { contrast: 1.12, saturation: 1.05, temperature: 0.02, tint: 0.08, lut: "/luts/dot-dash-3d/zerocore.cube" }
   })
 };
@@ -203,7 +260,7 @@ export const BOARD_LOOKS: Readonly<Record<MazeId, BoardLookRow>> = {
 /** Fixed parts of the board, the same on every PCB type. */
 export const BOARD_PARTS = {
   /** Black epoxy chip walls (DD47-M2). */
-  epoxy: { color: "#141416", roughness: 0.38, clearcoat: 0.6 },
+  epoxy: { color: "#141416", roughness: 0.24, clearcoat: 1 },
   /** Gull-wing pins along every corridor face (DD47-M2). */
   pin: { color: "#c9ced6", roughness: 0.22, metalness: 1 },
   /** Walnut bench and anti-static mat (DD47-E2). */

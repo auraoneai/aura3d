@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "top-tennis",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "beach",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat, slightly dusty beige surroundings. Low saturation outside the court. The far-side net reflection looks a bit odd.",
+     "The image is muted and slightly washed out, with low contrast from a pinkish-beige haze. The court blue is desaturated. There is no clear beach character apart from the sand colour.",
+     "Slightly muted, dusty palette and low contrast on the sand surround. The court reads a bit flat. Otherwise there is a dense crowd and the players are readable."
+    ]
+   },
+   {
+    "variant": "clay",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Heavily saturated orange that is close to monochrome. The upper background is a blurry, dark skybox. The players are small in the frame. Otherwise strong warm lighting, a full crowd and good depth.",
+     "The frame is mostly orange with heavy shadows. The blurry background structure and dark sky are a bit muddy. The players are small but readable.",
+     "Faint ghost reflections of the signage on the court surface. The backdrop sky is blurry and low-res, and the camera is far enough back that the players look small. Otherwise the warm lighting is strong and the depth and crowd are good."
+    ]
+   },
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dark vignetted corners. Bright floodlight hotspots on the stands at the edges. Minor reflection artefacts under the players.",
+     "The surround is somewhat dark and teal, with soft light blotches at the edges. The player shadows are faint. Otherwise the crowd, signage and court texture are good.",
+     "Uneven lighting with dark corners and bright floor hotspots by the stands. The surround is a little murky. The crowd is dense and the court and players are clear."
+    ]
+   },
+   {
+    "variant": "desert",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dim, muddy default scene. Sparse cylinder crowd. Blank scoreboards. Black blob shadows. No desert theme.",
+     "The palette is pale and low contrast. The court teal and the sand both look slightly washed out. The background structure is blurry.",
+     "Somewhat washed out and low contrast: the beige ground, pale teal court and pale sky blend together. Small players and faint signage reflections on the court. Still readable, with a good crowd and stadium depth."
+    ]
+   },
+   {
+    "variant": "grass",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The surroundings are fairly uniform dark green. The background skybox is blurry. The players are small.",
+     "The surround green is a bit dark and murky. The background treeline is blurry. Otherwise it is readable, with good crowd detail.",
+     "Blurry backdrop, faint ghost reflections of the signage on the court, and small players at this camera distance. Otherwise the striped grass, crowd and shadows look good."
+    ]
+   },
+   {
+    "variant": "moon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Very dark surroundings with crushed blacks at the edges. The ghosted scoreboard reflection on the court is distracting. Still high contrast and readable, and the theme comes through clearly.",
+     "Large black areas surround the court. The background is very dark, though that suits the moon theme. The scoreboard text reflection on the court is slightly distracting.",
+     "Very dark surround that crushes the crowd's shadow side. Ghost reflections of the signage on the court, and a crowd on the moon is thematically odd. The court and the white astronaut players read clearly, and the moon backdrop adds atmosphere."
+    ]
+   }
+  ]
+ }
+]

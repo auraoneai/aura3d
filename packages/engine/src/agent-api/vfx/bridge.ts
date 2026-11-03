@@ -4,8 +4,73 @@
 // (Workaround for CCR-07-1: FrameContributorContext has no canvas/app pointer.)
 
 import { attachOwnedRootRenderSourceOverlay, attachRootRenderSourceOverlay } from "../RootRuntimeSupport";
-import type { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem";
-import type { AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere";
+import { registerStockFrameFeed } from "@aura3d/rendering/contracts";
+import { ProductionEffectSystem } from "../../production-runtime/effects/ProductionEffectSystem";
+import { LiveAtmosphere, type AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere";
+import { EffectDiagnostics } from "../../production-runtime/effects/EffectDiagnostics";
+import { TransientLightPool } from "../../production-runtime/effects/TransientLightPool";
+import { RibbonBatch } from "@aura3d/rendering";
+
+// These snapshots are captured from the actual built-ins, not from a source
+// supplied by an application. Instance overrides or later prototype changes
+// make the otherwise opaque bridge provenance ineligible.
+const systemMethods = Object.getOwnPropertyDescriptors(ProductionEffectSystem.prototype);
+const atmosphereMethods = Object.getOwnPropertyDescriptors(LiveAtmosphere.prototype);
+const diagnosticMethods = Object.getOwnPropertyDescriptors(EffectDiagnostics.prototype);
+const lightMethods = Object.getOwnPropertyDescriptors(TransientLightPool.prototype);
+const ribbonMethods = Object.getOwnPropertyDescriptors(RibbonBatch.prototype);
+
+function unmodifiedInstance(value: unknown, prototype: object, expected: PropertyDescriptorMap): boolean {
+  if (!value || typeof value !== "object" || Object.getPrototypeOf(value) !== prototype) return false;
+  for (const key of Reflect.ownKeys(expected)) {
+    if (key === "constructor") continue;
+    const original = Reflect.get(expected, key) as PropertyDescriptor;
+    const current = Object.getOwnPropertyDescriptor(prototype, key);
+    if (Object.getOwnPropertyDescriptor(value, key) || !current ||
+        current.value !== original.value || current.get !== original.get || current.set !== original.set) return false;
+  }
+  return Reflect.ownKeys(prototype).length === Reflect.ownKeys(expected).length;
+}
+
+function emptyOwnMap(value: object, name: string): boolean {
+  const map = Object.getOwnPropertyDescriptor(value, name)?.value;
+  return Boolean(map instanceof Map && Object.getPrototypeOf(map) === Map.prototype &&
+    Reflect.ownKeys(map).length === 0 && Object.getOwnPropertyDescriptor(Map.prototype, "size")!.get!.call(map) === 0);
+}
+
+function emptyOwnArray(value: object, name: string): boolean {
+  const array = Object.getOwnPropertyDescriptor(value, name)?.value;
+  return Array.isArray(array) && Object.getPrototypeOf(array) === Array.prototype && array.length === 0;
+}
+
+/** Only the empty stock system is certified; active VFX stays fail-closed. */
+function emptyStockSystem(system: ProductionEffectSystem): boolean {
+  // The system's `atmosphere` is a private field behind a prototype getter
+  // (native 5.0). Read it only after the instance and its prototype accessors
+  // are verified stock, so the getter cannot be an application substitute.
+  if (!unmodifiedInstance(system, ProductionEffectSystem.prototype, systemMethods)) return false;
+  // The captured built-in getter brand-checks `#atmosphere`, so a proxy or
+  // lookalike throws here (validate callers treat a throw as ineligible).
+  const stockGetter = (systemMethods as Record<string, PropertyDescriptor | undefined>)["atmosphere"]?.get;
+  const atmosphere = (stockGetter ? stockGetter.call(system) : Object.getOwnPropertyDescriptor(system, "atmosphere")?.value) as LiveAtmosphere | undefined;
+  if (!atmosphere) return false;
+  const diagnostics = Object.getOwnPropertyDescriptor(system, "diagnostics")?.value;
+  const lights = Object.getOwnPropertyDescriptor(system, "transientLights")?.value;
+  const ribbons = Object.getOwnPropertyDescriptor(system, "ribbons")?.value;
+  if (!unmodifiedInstance(atmosphere, LiveAtmosphere.prototype, atmosphereMethods) ||
+      !unmodifiedInstance(diagnostics, EffectDiagnostics.prototype, diagnosticMethods) ||
+      !unmodifiedInstance(lights, TransientLightPool.prototype, lightMethods) ||
+      !unmodifiedInstance(ribbons, RibbonBatch.prototype, ribbonMethods)) return false;
+  for (const name of ["emitters", "volumes", "beams", "meshBatches", "batchHandles", "frameBatchMembers", "decalNodes"]) {
+    if (!emptyOwnMap(system, name)) return false;
+  }
+  if (!emptyOwnMap(ribbons, "trails")) return false;
+  return Object.getOwnPropertyDescriptor(atmosphere, "sky")?.value === null &&
+    Object.getOwnPropertyDescriptor(atmosphere, "fog")?.value === null &&
+    Object.getOwnPropertyDescriptor(atmosphere, "fogTransition")?.value === null &&
+    Object.getOwnPropertyDescriptor(atmosphere, "wetness")?.value === 0 &&
+    emptyOwnArray(atmosphere, "fogNodes") && emptyOwnArray(atmosphere, "fogVolumeNodes");
+}
 
 export interface VfxBridge {
   readonly detach: () => void;
@@ -145,8 +210,11 @@ function createVfxBridge(canvas: HTMLCanvasElement, system: ProductionEffectSyst
     subscriptions.add(unsubscribe);
     return unsubscribe;
   };
-  const atmosphere = {
-    get sky() { return closed ? null : system.atmosphere.state().sky as Record<string, unknown> | null; },
+  // 4.7.x selective bloom: the feeds are registered as stock bridge
+  // provenance; certification holds only while the system is stock and empty.
+  const provenance = {};
+  const validate = (): boolean => !closed && emptyStockSystem(system);
+  const atmosphereMembers = {
     // Existing live accessors continue to serve the legacy contributors.
     resolveFog: (t: number) => closed ? null : system.atmosphere.resolveFog(t),
     fogVolumes: () => closed ? [] : system.atmosphere.fogVolumes(),
@@ -171,12 +239,24 @@ function createVfxBridge(canvas: HTMLCanvasElement, system: ProductionEffectSyst
       writer.setWetness(wet.wetness, wet.puddleThreshold, wet.rainRipples, wet.snowCover, null);
     }
   };
+  // Stock feeds must be plain data descriptors (no accessors), so `sky` is a
+  // value. The registered object keeps its identity until the live sky
+  // changes (or the bridge closes), then a fresh one is registered.
+  type AtmosphereFeed = typeof atmosphereMembers & { readonly sky: Record<string, unknown> | null };
+  let atmosphereFeed: AtmosphereFeed | undefined;
+  const currentAtmosphere = (): AtmosphereFeed => {
+    const sky = closed ? null : system.atmosphere.state().sky as Record<string, unknown> | null;
+    if (!atmosphereFeed || atmosphereFeed.sky !== sky) {
+      atmosphereFeed = registerStockFrameFeed({ sky, ...atmosphereMembers }, "atmosphere", provenance, validate);
+    }
+    return atmosphereFeed;
+  };
   const source = {
     get vfx() {
       if (closed) return null;
       // Read once per renderer frame (the frame's render-input spread).
       system.noteRenderFrame();
-      return {
+      return registerStockFrameFeed({
         feed: (hook: Parameters<ProductionEffectSystem["feed"]>[0]) => { if (!closed) system.feed(hook); },
         afterDraw: (diag: Parameters<ProductionEffectSystem["afterDraw"]>[0]) => { if (!closed) system.afterDraw(diag); },
         lightsFeed: () => closed ? [] : system.collectedLights(),
@@ -185,14 +265,16 @@ function createVfxBridge(canvas: HTMLCanvasElement, system: ProductionEffectSyst
         meshFeed: () => closed ? [] : system.meshFeed(),
         decalFeed: () => closed ? undefined : system.decalFeed(),
         gpuSimFeed: () => closed ? [] : system.gpuSimFeed()
-      };
+      }, "vfx", provenance, validate);
     },
     // P2-T7: transient pool lights flow into the compiled collectedLights
     // merge (renderInput.ts) — fresh each frame because the getter re-reads.
     get collectedLights() {
       return closed ? [] : system.collectedLights();
     },
-    atmosphere
+    get atmosphere() {
+      return currentAtmosphere();
+    }
   };
   try {
     if (appOwned) {

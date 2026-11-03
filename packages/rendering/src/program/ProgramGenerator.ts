@@ -42,7 +42,7 @@
  */
 
 import type { QrFlags } from "../contracts/core";
-import type { ShaderFeature, ShaderHookPoint, ProgramFeatures, GeneratedProgram } from "../contracts/program";
+import type { ShaderChunk, ShaderFeature, ShaderHookPoint, ProgramFeatures, GeneratedProgram } from "../contracts/program";
 import { shaderChunk, shaderFeaturesFor, installProgramGenerator } from "../contracts/program";
 import { snapshotOf } from "../contracts/structuralMemo";
 import { PHYSICAL_GEOMETRY_TANGENT_FEATURE, PHYSICAL_LOBE_MAP_BITS } from "./MaterialFeatures";
@@ -85,6 +85,35 @@ uniform vec2 u_projectedSpotOffset;
 uniform vec2 u_projectedSpotScale;
 uniform float u_projectedSpotRotation;
 `;
+import { SELECTIVE_BLOOM_FEATURE } from "../postprocess/NativeBloomPyramid";
+import { indirectFractionFeature, indirectFractionParsChunk, indirectFractionWriteChunk } from "../post/chunks/indirectFraction.glsl";
+import { PRD02_SHADOW_FILTER_FEATURE } from "../shadows/Prd02ShadowFilter";
+import { isStockPrd02IblBloomChunk, isStockPrd02IblBloomFeature } from "../environment/Prd02IblShaderFeature";
+import { isStockPrd07BloomChunk } from "../atmosphere/fogChunks";
+import { isStockPrd07BloomFeature } from "../atmosphere/Prd07ShaderFeatures";
+import { isStockCameraFadeBloomChunk, isStockCameraFadeBloomFeature } from "../shaders/camera-fade.glsl";
+import { isStockPrd04Lobe } from "../materials/lobes";
+import { A3D_PRD04_EMISSIVE_STRENGTH } from "../shaders/physical/emissive_strength.glsl";
+import { A3D_PRD04_EMISSIVE_STRENGTH_CALL } from "../shaders/physical/lobe_calls.glsl";
+import { stockChunkVerifier, stockFeatureVerifier } from "./FeatureSelect";
+
+// This is recorded while the ordinary generator is already running. Optional
+// bloom compilation consumes it without calling a producer a second time.
+const selectiveProvenance = new WeakMap<GeneratedProgram, boolean>();
+const stockSelectedFeature = stockFeatureVerifier([indirectFractionFeature, PRD02_SHADOW_FILTER_FEATURE]);
+const stockBaseSignalChunk = stockChunkVerifier([
+  indirectFractionParsChunk, indirectFractionWriteChunk, A3D_PRD04_EMISSIVE_STRENGTH, A3D_PRD04_EMISSIVE_STRENGTH_CALL
+]);
+
+/** Whether the normal generated source was assembled only from audited producers. */
+export function generatedProgramSupportsSelectiveBloom(program: GeneratedProgram): boolean {
+  return selectiveProvenance.get(program) === true;
+}
+
+function stockSignalChunk(chunk: ShaderChunk): boolean {
+  return stockBaseSignalChunk(chunk) || isStockPrd02IblBloomChunk(chunk) ||
+    isStockPrd07BloomChunk(chunk) || isStockCameraFadeBloomChunk(chunk);
+}
 
 /**
  * The same presentation curve used by OutputPass, followed by the sRGB OETF.
@@ -264,12 +293,13 @@ const DECLARATION_HOOKS: ReadonlySet<ShaderHookPoint> = new Set<ShaderHookPoint>
 interface SpliceState {
   readonly seen: Set<string>;
   readonly decls: string[];
+  selectiveChunksSafe: boolean;
   /** Built-in chunk names some spliced chunk required. */
   readonly builtins: Set<string>;
 }
 
 function newSpliceState(): SpliceState {
-  return { seen: new Set(), decls: [], builtins: new Set() };
+  return { seen: new Set(), decls: [], builtins: new Set(), selectiveChunksSafe: true };
 }
 
 function requireChunk(name: string, requiredBy: string | undefined): NonNullable<ReturnType<typeof shaderChunk>> {
@@ -287,6 +317,7 @@ function emitDeclaration(state: SpliceState, name: string, path: readonly string
   if (state.seen.has(name)) return;
   if (path.includes(name)) throw new Error(`SHADER_CHUNK_CYCLE:${[...path, name].join(" > ")}`);
   const chunk = requireChunk(name, path[path.length - 1]);
+  if (!stockSignalChunk(chunk)) state.selectiveChunksSafe = false;
   for (const req of chunk.requires ?? []) emitDeclaration(state, req, [...path, name]);
   state.seen.add(name);
   state.decls.push(chunk.glsl);
@@ -295,6 +326,7 @@ function emitDeclaration(state: SpliceState, name: string, path: readonly string
 /** A call chunk: its `requires` go to global scope; its own GLSL is returned for `main`. */
 function emitCall(state: SpliceState, name: string): string {
   const chunk = requireChunk(name, undefined);
+  if (!stockSignalChunk(chunk)) state.selectiveChunksSafe = false;
   for (const req of chunk.requires ?? []) emitDeclaration(state, req, [name]);
   return chunk.glsl;
 }
@@ -1156,6 +1188,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   if (weighted === "accumulation") body.push("  outColor = a3dWeightedAccumulation(a3dColor, a3dAlpha, a3dFragmentDepth);");
   else if (weighted === "revealage") body.push("  outColor = vec4(0.0, 0.0, 0.0, clamp(a3dAlpha, 0.0, 1.0));");
   else body.push("  outColor = vec4(a3dColor, a3dAlpha);");
+  if (f.features[SELECTIVE_BLOOM_FEATURE] === true) body.push("  a3dBloomSignal = vec4(clamp(a3dColor, -u_a3dBloomMaxRadiance, u_a3dBloomMaxRadiance) * (0.5 * u_a3dBloomWeight), 1.0);");
   body.push("#if defined(BACKGROUND_COVERAGE) || defined(A3D_DEPTH_COVERAGE)\n  outCoverage = vec4(1.0, 1.0, 1.0, 1.0);\n#endif");
   body.push("}");
 
@@ -1216,6 +1249,11 @@ vec3 a3dLobeEnvironment(vec3 direction, float roughness) {
 }`] : []),
     "layout(location = 0) out vec4 outColor;",
     "#if defined(BACKGROUND_COVERAGE) || defined(A3D_DEPTH_COVERAGE)\nlayout(location = 1) out vec4 outCoverage;\n#endif",
+    ...(f.features[SELECTIVE_BLOOM_FEATURE] === true ? [
+      "layout(location = 1) out vec4 a3dBloomSignal;",
+      "uniform float u_a3dBloomWeight;",
+      "uniform float u_a3dBloomMaxRadiance;"
+    ] : []),
     ...body
   ].join("\n");
 }
@@ -1263,6 +1301,7 @@ interface LobeCalls {
   readonly ibl: string[];
   readonly active: ProgramFeatures["extensions"][number][];
   readonly mapDeclarations: string[];
+  readonly selectiveProducers: boolean[];
   /** Per-light call chunks, spliced inside every light loop iteration. */
   readonly direct: string[];
 }
@@ -1279,7 +1318,7 @@ function defineToken(id: string): string {
  * `defines`. Unmatched extensions report `extension-lobe-pending`.
  */
 function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, state: SpliceState, defines: Record<string, string | number | true>, report: (d: ProgramDegradation) => void): LobeCalls {
-  const out: LobeCalls = { fragment: [], ibl: [], direct: [], active: [], mapDeclarations: [] };
+  const out: LobeCalls = { fragment: [], ibl: [], direct: [], active: [], mapDeclarations: [], selectiveProducers: [] };
   if (f.extensions.length === 0) return out;
   const lobes = flags ? materialLobes(flags) : [];
   const matches = (ext: { readonly lobe: string }, lobe: (typeof lobes)[number]) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension);
@@ -1301,6 +1340,7 @@ function extensionLobeChunks(f: ProgramFeatures, flags: QrFlags | undefined, sta
     const ext = f.extensions.find((e) => matches(e, lobe));
     if (!ext) continue;
     out.active.push(ext);
+    out.selectiveProducers.push(isStockPrd04Lobe(lobe) && lobe.id === "emissive-strength");
     const token = `A3D_LOBE_${defineToken(lobe.id)}`;
     defines[token] = true;
     const mapBits = PHYSICAL_LOBE_MAP_BITS[lobe.id] ?? {};
@@ -1614,10 +1654,36 @@ function generateProgramInternal(features: ProgramFeatures, options: GeneratePro
     f.pass === "forward"
       ? forwardFragmentSource(f, contributions, defines, marker, fragmentState, lobes, prd02IblReplacesIndirect, e3Conjunction)
       : depthFragmentSource(f, defines, marker);
-  return {
-    key, vertex, fragment, defines,
-    descriptor
-  };
+  const generated: GeneratedProgram = { key, vertex, fragment, defines, descriptor };
+  // 4.7.x selective bloom: record producer provenance while the ordinary
+  // generator runs. An application can supply unusual feature records for
+  // ordinary programs; a non-JSON key or malformed record merely declines.
+  const selectiveFeaturesSafe = contributions.every(({ feature }) =>
+    stockSelectedFeature(feature) || isStockPrd02IblBloomFeature(feature) ||
+    isStockPrd07BloomFeature(feature) || isStockCameraFadeBloomFeature(feature));
+  let keysSafe = false;
+  let extensionsSafe = false;
+  try {
+    const recorded = JSON.parse(key) as ProgramFeatures;
+    if (recorded && recorded.features && typeof recorded.features === "object" && Array.isArray(recorded.extensions)) {
+      keysSafe = Object.keys(recorded.features).every((name) =>
+        name === "prd03.indirectFraction" || name === "prd02.shadowFilter" || name === PRD02_IBL_FEATURE ||
+        name === "prd07.fog" || name === "prd07.wetness" || name === "prd08.cameraFade");
+      const extension = recorded.extensions[0];
+      extensionsSafe = recorded.extensions.length === 0 ||
+        (recorded.lighting === "lit" && recorded.extensions.length === 1 && extension !== null && typeof extension === "object" &&
+         (extension.lobe === "emissive-strength" || extension.lobe === "KHR_materials_emissive_strength") &&
+         lobes.selectiveProducers.length === 1 && lobes.selectiveProducers[0] === true);
+    }
+  } catch {
+    // The ordinary generated shader is unaffected.
+  }
+  // Native 5.0 axes that own location 1 or change the colour write
+  // (depth coverage, weighted transparency) never gain the signal output.
+  selectiveProvenance.set(generated, f.pass === "forward" && !f.backgroundCoverage && f.alphaMode !== "blend" &&
+    f.features[DEPTH_COVERAGE_FEATURE] !== true && f.features[PROGRAM_TRANSPARENCY_FEATURE] === undefined &&
+    keysSafe && extensionsSafe && selectiveFeaturesSafe && fragmentState.selectiveChunksSafe);
+  return generated;
 }
 
 // Lane 01 installs the real C-02 generator into the contract surface on import.

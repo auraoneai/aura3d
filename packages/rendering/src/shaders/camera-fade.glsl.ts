@@ -19,6 +19,7 @@ import type { RenderItem } from "../contracts/renderItem";
 import type { ShaderChunk, ShaderFeature } from "../contracts/program";
 import type { FrameContributor } from "../contracts/frameGraph";
 import { registeredPostPasses } from "../contracts/post";
+import { stockArrayMatches, stockChunkVerifier, stockFeatureVerifier } from "../program/FeatureSelect";
 
 const BAYER_GLSL = `float a3dBayer4(vec2 p) {
   ivec2 i = ivec2(mod(floor(p), 4.0));
@@ -62,6 +63,8 @@ export const cameraFadeDiscardChunk: ShaderChunk = {
   glsl: `a3dCameraFadeDiscard();`,
   wgsl: `a3dCameraFadeDiscard(a3dFragCoord, a3dCameraFadeParams);`
 };
+
+export const isStockCameraFadeBloomChunk = stockChunkVerifier([cameraFadeParsChunk, cameraFadeDiscardChunk]);
 
 /**
  * The legacy offset channel remains available to unscoped callers. Renderer
@@ -144,6 +147,18 @@ export const cameraFadeFeature: ShaderFeature = {
     set("u_cameraFadeOffset", [offset[0], offset[1]]);
   }
 };
+
+const stockCameraFadeFeature = stockFeatureVerifier([cameraFadeFeature]);
+
+/** Check the built-in producer and its mutable frame offset without invoking getters. */
+export function isStockCameraFadeBloomFeature(feature: ShaderFeature): boolean {
+  if (!stockCameraFadeFeature(feature)) return false;
+  const x = Object.getOwnPropertyDescriptor(cameraFadeOffset, "0");
+  const y = Object.getOwnPropertyDescriptor(cameraFadeOffset, "1");
+  return !!x && "value" in x && typeof x.value === "number" && Number.isFinite(x.value) &&
+    !!y && "value" in y && typeof y.value === "number" && Number.isFinite(y.value) &&
+    stockArrayMatches(cameraFadeOffset, [x.value, y.value]);
+}
 
 export function registerCameraFadeShader(registerChunk: (c: ShaderChunk) => void, registerFeature: (f: ShaderFeature) => () => void): () => void {
   registerChunk(cameraFadeParsChunk);

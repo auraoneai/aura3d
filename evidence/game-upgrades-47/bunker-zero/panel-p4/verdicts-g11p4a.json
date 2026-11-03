@@ -1,0 +1,83 @@
+[
+ {
+  "slug": "bunker-zero",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slight warm haze makes the far end low-contrast; viewmodel pistol sits high, near frame centre, and looks detached; enemies are small and greyish against the floor.",
+     "Slightly hazy and desaturated overall; enemies are small and somewhat greyed out; the floor decal text lies at an awkward angle; the gun overlaps the gold pickup",
+     "Slightly hazy, beige look with fairly low contrast. The far end of the hall fades into murk. The gold pickup floats just above the gun."
+    ]
+   },
+   {
+    "variant": "floor1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Mild warm haze and a blown-out light near the top centre; floor texture tiles visibly; pistol floats at mid-right and covers the play area.",
+     "Mild sepia haze lowers contrast; the floor noise texture looks blotchy; enemies are small and greyish",
+     "Somewhat hazy, sepia-washed overall. The floor texture shows a blotchy noise pattern. Enemies far down the hall are small and low-contrast."
+    ]
+   },
+   {
+    "variant": "floor2",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "This is the other build's default scene: flat untextured surfaces, plain orange ceiling, crushed black background, low material detail.",
+     "The grey foreground floor is washed out and featureless; the teal raised slab has a hard, unnatural edge that looks pasted on; no enemies or subjects are visible; the strong teal tint is murky; the gun appears to float with no hand",
+     "The empty grey foreground floor is washed out and looks like a separate slab, with a hard seam where it meets the dark teal raised area. No enemies or props are visible, so the play area feels empty. The overall teal tone is fairly murky."
+    ]
+   },
+   {
+    "variant": "floor3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong orange-brown monochrome cast; a light hotspot on the floor is blown out; pistol picks up an odd orange tint and floats mid-frame; scene is empty, with no enemies or props.",
+     "Heavy orange monochrome tint; the floor is washed out by bloom or haze near the bottom; the gun is tinted orange; no enemies are visible, so the play area looks empty",
+     "Strong orange/sepia tint spreads over everything, including the gun. There is a bright flare hotspot on the floor near the bottom. No enemies are visible, so the room feels sparse."
+    ]
+   },
+   {
+    "variant": "floor4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "A dark block with a vault-door face stands oddly in the middle of the floor and looks misplaced; slightly murky, yellowish haze; floor texture is noisy and blotchy; pistol floats mid-frame.",
+     "The vault door is a blocky cube that looks dropped into the room; the floor texture is blotchy; the frame is somewhat dim and murky on the right; no enemies are visible",
+     "Murky yellow-grey grading with fairly low contrast. The floor has a blotchy noise texture. The vault-door block looks dropped into the middle of the corridor, and no enemies are visible."
+    ]
+   }
+  ]
+ }
+]

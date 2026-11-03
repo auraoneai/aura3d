@@ -1,0 +1,5 @@
+run gu47-before-slingshot-siege acr ch5us was successful after 16m35s playwrightExit 0
+GL_READY slingshot-siege--default 38569ms
+GL_DONE slingshot-siege--default
+1 passed (15.4m)
+[task-run] PLAYWRIGHT_EXIT=0

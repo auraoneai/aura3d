@@ -1,0 +1,76 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/teleoperator/p4-r4/teleoperator/frames/g04p4-r4-3/desktop--02-early.jpg",
+      "sha256": "17bfe65e87c973238ba7f6f37daeea008424f204ed98b35615bf9e2f75130196"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 4,
+    "ibl_reflections": 3,
+    "environment_world": 6,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A warm dusk glow sits at the far end of the street, but the foreground is lit flat. The player vehicle's rear reads almost pure black, with no sun-driven key or rim light. A single headlight-like hotspot on the road behind the car looks disconnected from any source."
+    },
+    {
+      "category": "shadows",
+      "seen": "There are no clear cast shadows from the vehicle, cable car, trees or buildings onto the asphalt. Contact grounding under the player car is weak, so objects float."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The dark glossy rear of the player cab shows no environment reflection of the street or sky. Building windows are flat textures with no reflection response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The San Francisco-style street has brick facades, a cable car, wires, lane markings and street trees, and reads as a coherent place. Buildings repeat a single window texture, and the left curb and sidewalk are sparse."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Mild distance haze appears toward the horizon. There is no visible depth fog between 30 and 180 m to separate building layers, and no light shafts despite the low sun direction."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Brick and window textures look low-resolution and tiled. The player car body is a near-black, undifferentiated material with a noisy, speckled texture. The asphalt is uniform with no roughness variation."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The cable car is reasonably detailed. The player pod vehicle is a simple rounded box with flat red tail-light rectangles. Buildings are extruded boxes with texture-only detail."
+    },
+    {
+      "category": "composition",
+      "seen": "The player vehicle takes about 25–30% of the frame and is offset right, so it blocks the road ahead. A large central fare panel and stacked rival name tags clutter the vanishing point."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase cam sits low behind the vehicle with a moderate FOV close to 60. The horizon is level and the framing is serviceable, but the camera sits too close for the road to read clearly."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "No visible bloom on the tail lights or sun, no film grade, vignette or grain. The image looks close to untonemapped and lacks the burnt-orange/charcoal cinematic grade."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The panels are clean and consistent, with a good speedometer, minimap and fare card. There are too many simultaneous panels, and the center-top fare card plus the bottom debug-like toggles cover large play areas."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "colosseum-ruins",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Flat grey overcast sky; the arena floor looks plain and a bit flat; the circles under the fighters are pale and fade into the floor; the wooden houses crowd both edges of the frame.",
+     "Grey, overcast sky is a bit dull and the edges are vignetted somewhat heavily; the floor is slightly muddy in places. Otherwise the warm directional light gives better shading and material detail on the fighters, busts and wood, the spawn rings read clearly, and the frame has more contrast and depth.",
+     "Overcast grey sky looks a bit flat; arches are plain untextured grey blocks; mixing wooden houses with a stone castle looks pasted together; mild vignette darkens the edges"
+    ]
+   }
+  ]
+ }
+]

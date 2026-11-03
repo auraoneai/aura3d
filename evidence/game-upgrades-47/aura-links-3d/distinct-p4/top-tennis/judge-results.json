@@ -1,0 +1,729 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T01:38:56.935Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "aura-links-3d--cinderRim--settle-60s",
+      "aura-links-3d--cloudTerrace--settle-60s",
+      "aura-links-3d--mapleHollow--settle-60s",
+      "aura-links-3d--mareCourse--settle-60s",
+      "aura-links-3d--neonBay--settle-60s",
+      "aura-links-3d--stAuroras--settle-60s"
+    ],
+    "framesB": [
+      "top-tennis--beach--settle-60s",
+      "top-tennis--clay--settle-60s",
+      "top-tennis--default--settle-60s",
+      "top-tennis--desert--settle-60s",
+      "top-tennis--grass--settle-60s",
+      "top-tennis--moon--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.902,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.902,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with a brown textured plain and a cloudy dusk sky; Image B is a tennis court in a dark arena with a moon",
+        "Different character models: Image A has realistic-proportioned golfers with caps, Image B has white faceless humanoids with gold heads",
+        "Different art direction: Image A uses warm, gritty terrain with floating embers; Image B uses a flat-shaded blue court with blocky voxel crowds"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized low-poly tennis court with a voxel crowd and a bright, saturated palette",
+        "Image B is a dark lunar golf scene with realistic textured terrain and a black sky",
+        "Different art styles, lighting, and characters (blocky tennis players vs. a realistic golfer)"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat-shaded blocky tennis scene with voxel-style crowds; Image B is a textured golf course with a realistic sky",
+        "Different lighting and rendering: A has flat matte colors and no shadows, B has soft shadows, grass texture and clouds",
+        "Different sports, character models and camera: A is a high isometric view of low-poly figures, B is a low third-person view of a detailed golfer"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a daytime tennis court with blocky voxel crowds and a flat beige ground",
+        "Image B is a night golf scene with smooth rounded trees and realistic-style characters",
+        "Different rendering and lighting styles: flat light pastel vs dark, glowing teal"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a stylized voxel-style tennis court with a dark arena and a HUD banner",
+        "Image B is a realistic-textured golf scene with a cloudy sky and a brown terrain",
+        "Different art style, camera and lighting"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with an overhead camera, voxel-style crowds and a flat, muted palette",
+        "Image B is a golf game with a low third-person camera, textured grass and a soft cloudy sky",
+        "The character models and lighting differ: blocky figures in A, smoother realistic figures in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf game with a daytime outdoor course and stylized round trees",
+        "Image B is a tennis game with a night-time moon arena and blocky crowd figures",
+        "Different character styles and lighting: realistic-ish golfers vs. blocky white tennis players"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night golf scene with stylized round trees and a green field, Image B is a clay tennis court with a crowd",
+        "Different sports, palettes (teal/navy vs orange/red) and character styles",
+        "Image B has a tennis scoreboard HUD ('PARIS 0-0', 'AURA SLAM') and voxel-style spectators not seen in A"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a golf game with a daytime outdoor course, pine trees and a bright sky; Image B is an indoor tennis arena at night",
+        "Image A uses realistic textured grass and detailed characters; Image B uses blocky voxel crowds and flat-shaded low-poly players",
+        "Different camera setups and branding: a low third-person view in A versus a high overhead view with 'AURA SLAM' and 'WORLD TOUR' banners in B"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a golf scene with a first-person view over a barren brown plain, dusk sky and floating ember particles",
+        "Image B is a tennis court seen from a high isometric angle, with blocky voxel crowds and a 'World Tour' banner",
+        "Different art direction: A has realistic clouds and textured ground, B has flat, saturated, stylized colors"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized voxel-style tennis court with colorful crowd stands and a bright HUD banner",
+        "Image B is a realistic dark lunar-surface scene with a golfer, textured footprints and a black sky",
+        "The two frames differ completely in art style, lighting, materials and camera"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A is a tennis game with a high overhead camera and blocky voxel-style crowd",
+        "Image B is a golf game with a low third-person camera, rounded low-poly trees and a cloudy sky",
+        "Different character models, scoreboard HUD text only in A, and different environment and lighting"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is golf with stylized round trees and a naturalistic cloudy sky; Image B is a tennis court",
+        "Different character models: realistic-proportioned golfers vs. blocky voxel-style crowd and small tennis players",
+        "Different lighting and palette: cool green daylight vs. saturated orange clay with a dark arena surround"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene with rounded low-poly trees and a night sky; Image B is a tennis court with voxel-style crowd seats and HUD banners",
+        "Different camera and subject: ground-level third-person golf versus top-down tennis arena",
+        "Both share a similar teal-green ground and dark ambient lighting, but the character models and scenery styles differ"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a tennis game with a blocky voxel crowd, flat shading and a beige arena",
+        "Image B is a golf game with textured grass, rounded stylized trees and a realistic sky gradient",
+        "The two frames use different character models, lighting and camera style"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: dark lunar scene with a black sky and realistic textured ground",
+        "Image B: bright, flat-shaded low-poly tennis court with blocky crowd figures",
+        "Different character styles and lighting: realistic golfer in A, stylized voxel-like players in B"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A has realistic textured lunar ground and a detailed human golfer, while Image B has flat low-poly voxel crowds and a tennis court",
+        "Different rendering styles: A uses a realistic PBR look, B uses simple blocky shapes with a HUD scoreboard",
+        "Both have a black sky and moon-like setting, but the sports and art styles differ"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis game with voxel-style crowd and an overhead camera",
+        "Image B is a night golf scene with rounded low-poly trees and a dark navy sky",
+        "Different character models, palettes and lighting, with no shared HUD or art style"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis game on a clay court with blocky voxel crowd and dark dusk lighting",
+        "Image B is a golf game with bright daylight, grass fields and rounded autumn trees",
+        "Different character styles and camera setups, with a stylized HUD only in A"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf tee on bright grass with autumn trees under a daytime sky",
+        "Image B is a tennis court at night with a moon, stands and a scoreboard",
+        "Different characters, camera angle and palette"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a low-poly blocky tennis court with flat colors and voxel-style crowd",
+        "Image B is a realistic-textured golf scene with detailed pine trees and a skybox with clouds",
+        "Different character styles: blocky figures vs. smooth humanoid models with cap and shirt"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis court with blocky voxel crowd and a scoreboard HUD",
+        "Image B is a golf course with realistic pine trees, a cloudy sky and detailed textured grass",
+        "Different character styles: simple low-poly tennis players versus more realistic golfers"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a golf scene with pine trees and a bright green course under a daylight sky",
+        "Image B is a tennis match on a clay court with a voxel-style crowd and a dark stadium",
+        "Different art styles and lighting: realistic humanoid golfers versus blocky stylized spectators and a warm orange palette"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a moody, dusky golf scene with textured brown terrain, a cloudy sky and floating ember particles",
+        "Image B is a bright, flat-shaded tennis court with blocky voxel spectators and a scoreboard",
+        "The character models and lighting differ: realistic proportions with a warm haze in A, simple low-poly figures under flat daylight in B"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a golf scene with autumn trees and a grass fairway, Image B is a tennis court with banner text 'AURA SLAM' and 'WORLD TOUR'",
+        "Different camera and style: low third-person view with soft realistic lighting vs. fixed high-angle view with blocky voxel crowd",
+        "Different palettes and character models: green/orange natural palette vs. blue court with multicolored stands"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis stadium with blocky crowd figures and a dark gray surround",
+        "Image B is a golf course with rounded trees, teal grass and a navy sky",
+        "Different character styles and camera setups: blocky white figures from a high angle vs. a detailed golfer from a low third-person view"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark lunar-style golf scene with realistic characters and a black sky",
+        "Image B is a bright green tennis court with blocky voxel spectators and a clean stylized look",
+        "Different art style, lighting, palette and HUD (tennis scoreboard vs. none)"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a daylight golf scene with autumn trees and a grass tee box",
+        "Image B is a night tennis court with voxel crowd stands and 'AURA SLAM' signage",
+        "Different camera and art style: low-angle third-person vs high-angle overhead, smooth stylized vs blocky voxel"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--moon--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a golf game on a daytime grass course with pine trees and a cloudy sky; Image B is a tennis game on a night court with a moon",
+        "Image A has realistic-looking humanoid golfers; Image B has blocky voxel-style spectators and simple white player figures",
+        "Different camera and lighting: Image A uses a low third-person view with soft daylight; Image B uses a high overhead view with dark, dramatic lighting and a scoreboard HUD"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 0,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized voxel-block tennis court with an overhead camera and a muted pastel palette",
+        "Image B is a realistic-textured golf scene with pine trees and a cloudy sky",
+        "Character models and rendering styles differ: blocky low-poly figures vs. smoother realistic humans"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 0,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: dark moonlike terrain with a black sky and a realistic golfer",
+        "Image B: orange clay tennis court with blocky voxel crowd and a stylized HUD",
+        "Different art styles and palettes: grey-blue realistic versus saturated low-poly"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 0,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis game with an overhead camera, blocky voxel crowd and a scoreboard HUD",
+        "Image B is a golf game with a low third-person camera, stylized round trees and a blue sky",
+        "The art styles and environments differ: a dark stadium at night versus a bright outdoor daytime course"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with a golfer on a barren brown field and cone-shaped scenery under a cloudy sky; Image B is a tennis match on a clay court with a voxel crowd",
+        "Different character styles: smooth low-poly golfers with caps vs. small tennis players",
+        "Image B has a score HUD and stadium props; Image A has no stadium or HUD"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 0,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with a voxel-style crowd and an overhead camera",
+        "Image B is a golf game with a low-poly tree line and a cloudy daytime sky",
+        "Different sports, lighting, and camera perspective"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 0,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis court with blocky voxel crowd stands and a scoreboard HUD, while Image B is a golf tee box at night",
+        "Image B uses smooth, rounded low-poly trees and more realistic characters, a different art style from A's blocky figures",
+        "Lighting differs: A has bright daytime lighting with a dark olive backdrop, B has a deep navy night sky with teal ground"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 0,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis court with blocky voxel-style crowd and a scoreboard HUD, Image B is a golf scene with a golfer on a tee",
+        "Image A has flat, bright green stylized lighting, Image B has a cloudy realistic sky with a warm dusk glow and floating embers",
+        "Image B has detailed textured terrain and a smoother humanoid golfer model, unlike the simple low-poly players in Image A"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 1,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a tennis game with voxel-style crowds and a dark, flat-shaded arena",
+        "Image B is a golf scene with a cloudy sky, textured terrain and realistic lighting",
+        "Different character models and camera: top-down court view versus a low third-person view"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a flat-shaded tennis court with blocky voxel crowds and a high overhead camera",
+        "Image B is a golf scene with textured grass, soft cloudy sky and a low third-person camera",
+        "Different art styles: toy-like flat colors versus realistic lighting and shadows"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 1,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with stylized autumn trees and a bright open sky",
+        "Image B is a tennis court with blocky voxel spectators and a dark, enclosed stadium",
+        "Different art style, lighting and camera: A uses a low third-person view, B an elevated broadcast view with a scoreboard"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 1,
+      "a": "aura-links-3d--cinderRim--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a golf scene with a barren brown cobbled plain, orange floating particles and an overcast sky; Image B is a tennis court with a green palette",
+        "Different character styles: A has a realistic-proportioned golfer in a white cap; B has small blocky stylized players and crowd",
+        "Different HUD and setting: B has a scoreboard and stands, while A has no HUD and an open wasteland"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "tells": [
+        "Image A is a stylized tennis game with an orange clay court and blocky crowd; Image B is a realistic moonlike golf scene on a black sky",
+        "Different art styles: low-poly toon characters versus detailed realistic human model and textured terrain",
+        "Different lighting and palette: warm orange daylight versus cold gray-blue lunar lighting"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a dark lunar golf scene with a black sky and gray textured ground",
+        "Image B is a bright green tennis court with blocky voxel spectators and a tennis HUD",
+        "Different character models, palette and lighting"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 1,
+      "a": "aura-links-3d--neonBay--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "tells": [
+        "Image A is a tennis game with a clay court and voxel-style crowd; Image B is a golf game on a night course",
+        "Different palettes: orange-red clay in A, teal green and navy sky in B",
+        "Different character styles: small blocky tennis players versus larger realistic-proportioned golfers in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--grass--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis court with blocky voxel crowd and scoreboard HUD",
+        "Image B is a golf tee with textured grass, rounded trees and a cloudy sky",
+        "Different genre, character models and art style"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 1,
+      "a": "aura-links-3d--mareCourse--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "tells": [
+        "Image A: dark moonlike terrain with a black sky and realistic textured characters",
+        "Image B: bright, flat-shaded low-poly tennis court with blocky colorful spectators",
+        "Different art style, lighting and palette (night grey-blue vs. daylight beige and teal)"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 1,
+      "a": "aura-links-3d--stAuroras--settle-60s",
+      "b": "top-tennis--clay--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a tennis game with blocky voxel crowds and a warm orange clay palette",
+        "Image B is a golf game with a green course, low-poly trees and a cloudy daylight sky",
+        "Image A's characters are small and stylized, while Image B's golfers are more realistic"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 1,
+      "a": "aura-links-3d--cloudTerrace--settle-60s",
+      "b": "top-tennis--desert--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a golf scene with realistic pine trees, a cloudy sky and textured grass, while Image B is a tennis court with blocky voxel spectators on a flat tan ground",
+        "Different character styles: smooth humanoid golfers in A and low-poly figures in B",
+        "Different camera and lighting: ground-level perspective with soft sky in A, elevated fixed view with flat shading in B"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 1,
+      "a": "aura-links-3d--mapleHollow--settle-60s",
+      "b": "top-tennis--beach--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a golf scene with autumn trees and a grass fairway, Image B is a tennis court in an arena",
+        "Different camera and art style: A is a low first-person view with smooth, rounded trees, B is a high-angle view with voxel crowd blocks",
+        "B has tennis HUD signage ('AURA SLAM', 'WORLD TOUR') and a blue court palette that doesn't appear in A"
+      ]
+    }
+  ]
+}

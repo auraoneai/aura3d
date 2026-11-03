@@ -1,0 +1,11 @@
+run gu47-before-aura-hoops-3d-3 acr ch5uq was successful after 15m50s playwrightExit 0
+GL_HTTP aura-hoops-3d--shanghai 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-hoops-3d--shanghai Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-hoops-3d--shanghai 28034ms
+GL_DONE aura-hoops-3d--shanghai
+GL_HTTP aura-hoops-3d--orbit 404 /fonts/aura-fonts.css
+GL_CONSOLE aura-hoops-3d--orbit Failed to load resource: the server responded with a status of 404 (Not Found)
+GL_READY aura-hoops-3d--orbit 29222ms
+GL_DONE aura-hoops-3d--orbit
+2 passed (14.7m)
+[task-run] PLAYWRIGHT_EXIT=0

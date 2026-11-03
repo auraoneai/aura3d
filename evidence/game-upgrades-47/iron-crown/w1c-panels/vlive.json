@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "colosseum-ruins",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 2,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark cart/cannon props sit directly behind both fighters, which muddies their silhouettes, especially the teal fighter. The lighting is flat and grey-tinted, the sky is overcast and dull, the floor is a bit low-contrast, and the layout is very symmetric and staged.",
+     "Nearly identical to A. Dark, cluttered props (a weapon rack or cart) sit right behind both fighters. Their silhouettes merge with the dark-clad right fighter and the left fighter's legs, which makes the fighters harder to read. Same flat overcast sky and flat lighting as A.",
+     "Flat, desaturated overcast lighting and a hazy grey sky. Low contrast overall, with a muddy brown floor. The dark cart/weapon-rack props right behind both fighters muddy their silhouettes. The stone arches look like flat cardboard, and the composition is very symmetrical and static."
+    ]
+   }
+  ]
+ }
+]

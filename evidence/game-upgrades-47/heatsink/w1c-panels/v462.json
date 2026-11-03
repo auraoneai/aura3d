@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong sun bloom and lens glare wash out the right side around the player craft. The player sits large and off-centre, partly lost in the glare. Some dark red smear artifacts on the road in the bottom foreground.",
+     "Player craft sits very close to the camera on the right and partly blocks the view; strong sun bloom washes out the right side; overall warm brown cast; a dark smudge artifact at the bottom centre; still much richer, with a detailed lit city, reflective wet road and depth",
+     "Strong sun glare and bloom wash out the right side of the frame around the player craft. The player drone is very large in the foreground and crowds the right half. A faint red/green smeared artifact sits at the bottom centre. Buildings are mostly dark silhouettes with little material definition."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The brown/orange monochrome silhouettes of the arch and buildings look flat and low in detail. The foreground road is fairly dark and muddy. A soft dark shadow blob sits at the bottom of the frame.",
+     "Arch and spires read as flat, unlit brown silhouettes with little shading; foreground road is dark and somewhat muddy; player craft is large and close on the right; otherwise good dusk mood, cloudy sky and good depth",
+     "Buildings and the arch are rendered as flat, unshaded orange-brown silhouettes, so their shapes read poorly and the image looks somewhat monochrome and muddy. The road is dark with little detail. The player craft is large and crowds the right side. Overall it has much better atmosphere and sky."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The blurry photographic-looking backdrop of green fields and trees behind the buildings on the right clashes with the stylised city. Minor red smear artifacts on the road at the bottom. The player is large and off-centre to the right.",
+     "Player craft is large and cropped close on the right; a blurry low-res backdrop shows behind the towers on the right; minor bloom; otherwise strong blue-dusk palette, a lit city, wet road reflections and good contrast",
+     "A blurry green landscape backdrop is visible behind the towers and clashes with the dusk city. A faint red smear artifact sits at the bottom centre. The player craft is large and crowds the right side. Otherwise it has rich dusk lighting, wet-road reflections and good depth."
+    ]
+   }
+  ]
+ }
+]

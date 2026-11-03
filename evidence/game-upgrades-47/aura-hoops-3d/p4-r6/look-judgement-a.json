@@ -1,0 +1,93 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-scr/screens-1280x720--03-action-03-route-showcase-aura-hoops-3d-state-p.jpg",
+      "sha256": "f41647954218bc8d0b713a38f3e200fb9d00331d6590e2ea601e3e327093ec2c"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-1/aura-hoops-3d--manila--settle-60s.jpg",
+      "sha256": "02f7a934de1e1a3ecbb7519de509e3d89188944d220cfda14d85128f0c5ddbd8"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-2/aura-hoops-3d--rucker--settle-60s.jpg",
+      "sha256": "9ceb541040c74e9dfad0589cf5f6e2021ec98f7fbc5f18e1975ab111505d4f7b"
+    },
+    {
+      "path": "evidence/game-upgrades-47/aura-hoops-3d/p4-r6/aura-hoops-3d/frames/g07p4-r6-6/aura-hoops-3d--shanghai--settle-60s.jpg",
+      "sha256": "6275cd29ee1aaeca0f0c1e20d738c75cfa41521aa3579c21ef56b89f2cf72a55"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 5.5,
+    "shadows": 3.5,
+    "ibl_reflections": 5,
+    "environment_world": 5,
+    "atmospheric_effects": 5,
+    "material_quality": 4.5,
+    "modeling_assets": 4.5,
+    "composition": 4.5,
+    "camera": 4,
+    "postprocessing": 5.5,
+    "animation_quality": 4.5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frame 1 is labeled 'Golden Hour Look' but renders as a murky purple dusk with flat fill and no readable key direction. Frame 3 has a convincing low warm sun, so the lighting presets are inconsistent in quality."
+    },
+    {
+      "category": "shadows",
+      "seen": "Frame 3 shadows have heavy stair-step aliasing along the bleacher and left court edges. Frame 2 shows dark rectangular patches on the floor that read as broken blob shadows. In frame 1 the players have almost no contact shadow under their feet."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Only frame 4 shows meaningful reflection: a blue specular streak and lamp glints on the wet-looking court. The other frames have matte surfaces with little environment response."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The buildings in frames 1 and 3 are flat boxes with a uniform grid of emissive window squares. The bleachers are plain untextured steps. The blue tower in frame 4 has a smeared, stretched texture, and the ornate lamps are the only detailed set dressing."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Frame 2 has indoor bloom and haze, but the depth of field blurs the gym into an unreadable smear. Frame 3's sky is blown out to white behind the buildings. Frame 4 has faint rain specks."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Clothing and skin use flat albedo with no fabric or skin response. The court reads as matte plastic in frames 1 to 3. The floor glyph in the bottom left of frames 2 and 4 is pixelated."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The characters are low-poly with near-identical faces and white goggle-like eyes. White curved arc artifacts protrude from players' ankles in every frame. The ball cart and backboard are reasonable."
+    },
+    {
+      "category": "composition",
+      "seen": "Frame 1 crops a player at the left edge and the ball at the right edge, and the HUD panel covers players. Frames 2 to 4 cut off the hoop at the top right and a player at the right edge."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low perspective at roughly 20 to 30 degrees of elevation, not the specified 70-degree orthographic broadcast view. Frame 1 sits so close that the court becomes a fragment rather than the 25 to 40 percent subject."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "Grain, vignette, bloom and DOF are present. The DOF in frame 2 is overdone and frame 3 clips its highlights."
+    },
+    {
+      "category": "animation_quality",
+      "seen": "Most players stand in stiff A-poses with arms straight down. Only the dribbler shows a dynamic crouch."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The frame 1 scoreboard, stamina bar and control strip share a consistent style. The top mode and court bar is a dense developer-style menu, and the score panel overlaps gameplay."
+    }
+  ],
+  "nextChange": {
+    "category": "shadows",
+    "change": "raise shadow strength toward the look target and pull the key light to an angle that throws visible contact shadows",
+    "api": "looks.preset(id, { sun: { azimuthDeg, elevationDeg } })"
+  },
+  "judge": "prism"
+}

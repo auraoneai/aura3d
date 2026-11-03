@@ -1,5 +1,7 @@
 # Apex Overdrive: final screenshots
 
+**Results and card retaken 2026-11-01 for GU47 phase 6 (4.7.4):** `results.1280x720`, `card.2x.1440x900` and `card.1x` come from remote runs `g02p6-r1-results` and `g02p6-r1-card` (image `g02p6-r1-0024`, branch `gu47/g02` with origin/main merged; one state per shard, software WebGL2). They now show the 4.7.2 look (retextured cobalt hero, lit tangerine ramps, 21° key shadows); the other files are the phase-4 retakes (`g02p4-r3`). Draw calls: results 176, card 164.
+
 **Retaken 2026-10-31 for GU47 phase 3 (4.7.1):** branch `gu47/g02` at e0fd6dc0b (the build of remote runs `g02p3-r5-1` desktop, `g02p3-r5-6` phone and `g02p3-r5c-1` card, image `g02p3-r5-1034`), same spec, states and file names as below. Software WebGL2 (SwiftShader), not a GPU. Decoded frames and meta lines are in `evidence/game-upgrades-47/roadster-rush/p3-r5/screens-*`. Changes since the set described below: blue-hour glass towers, tangerine lane dashes and trims, a closer chase camera, contact shadows, and the licensed HUD faces actually loading. The Start/Retry buttons in these frames still use the fallback face (fixed in 19655724b, after this build).
 
 Earlier set (2026-10-29 audit fixes):

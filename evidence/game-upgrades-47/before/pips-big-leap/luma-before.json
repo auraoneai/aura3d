@@ -1,0 +1,408 @@
+[
+ {
+  "target": "pips-big-leap--academy",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "academy",
+  "sinceReadyMs": 25004,
+  "mean": 165.23,
+  "p5": 33,
+  "p50": 170,
+  "p95": 215,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   192.8,
+   182.6,
+   158.7,
+   177.1,
+   163.5,
+   132.7,
+   163.8,
+   166.9,
+   148.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 782
+  }
+ },
+ {
+  "target": "pips-big-leap--academy",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "academy",
+  "sinceReadyMs": 184578,
+  "mean": 165.18,
+  "p5": 33,
+  "p50": 170,
+  "p95": 215,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   192.8,
+   182.7,
+   158.7,
+   177.1,
+   163.2,
+   132.8,
+   163.8,
+   166.4,
+   148.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 782
+  }
+ },
+ {
+  "target": "pips-big-leap--w1",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w1",
+  "sinceReadyMs": 25006,
+  "mean": 165.22,
+  "p5": 33,
+  "p50": 170,
+  "p95": 215,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   192.8,
+   182.6,
+   158.7,
+   177.1,
+   163.3,
+   132.9,
+   163.8,
+   166.8,
+   148.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 782
+  }
+ },
+ {
+  "target": "pips-big-leap--w1",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w1",
+  "sinceReadyMs": 166219,
+  "mean": 165.32,
+  "p5": 33,
+  "p50": 170,
+  "p95": 215,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   192.8,
+   182.6,
+   158.7,
+   177.1,
+   164,
+   132.7,
+   163.8,
+   167.1,
+   148.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 782
+  }
+ },
+ {
+  "target": "pips-big-leap--w2",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w2",
+  "sinceReadyMs": 25002,
+  "mean": 177.43,
+  "p5": 122,
+  "p50": 201,
+  "p95": 243,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   235.3,
+   215.7,
+   217.7,
+   204.4,
+   151.9,
+   187,
+   128,
+   128,
+   128.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 461
+  }
+ },
+ {
+  "target": "pips-big-leap--w2",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w2",
+  "sinceReadyMs": 139061,
+  "mean": 177.31,
+  "p5": 122,
+  "p50": 201,
+  "p95": 243,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   235.3,
+   215.7,
+   217.7,
+   204.5,
+   151.7,
+   186.1,
+   128,
+   128,
+   128.8
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 461
+  }
+ },
+ {
+  "target": "pips-big-leap--w3",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w3",
+  "sinceReadyMs": 25002,
+  "mean": 207.59,
+  "p5": 152,
+  "p50": 212,
+  "p95": 235,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   208.9,
+   192.7,
+   197.6,
+   193.1,
+   199.1,
+   182.5,
+   230.5,
+   233.4,
+   230.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 458
+  }
+ },
+ {
+  "target": "pips-big-leap--w3",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w3",
+  "sinceReadyMs": 117624,
+  "mean": 207.63,
+  "p5": 152,
+  "p50": 212,
+  "p95": 235,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   208.9,
+   192.6,
+   197.6,
+   193.1,
+   199.4,
+   182.6,
+   230.5,
+   233.5,
+   230.4
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 458
+  }
+ },
+ {
+  "target": "pips-big-leap--w4",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w4",
+  "sinceReadyMs": 25005,
+  "mean": 146.5,
+  "p5": 46,
+  "p50": 118,
+  "p95": 237,
+  "darkFrac": 0.0025,
+  "clipFrac": 0,
+  "grid": [
+   157.9,
+   201.7,
+   173.2,
+   141.4,
+   140.5,
+   150.2,
+   117.6,
+   116.3,
+   119.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 620
+  }
+ },
+ {
+  "target": "pips-big-leap--w4",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w4",
+  "sinceReadyMs": 306999,
+  "mean": 146.51,
+  "p5": 46,
+  "p50": 118,
+  "p95": 237,
+  "darkFrac": 0.0025,
+  "clipFrac": 0,
+  "grid": [
+   157.9,
+   201.8,
+   173.2,
+   141.4,
+   140.7,
+   149.7,
+   117.6,
+   116.6,
+   119.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 620
+  }
+ },
+ {
+  "target": "pips-big-leap--w5",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "sinceReadyMs": 25008,
+  "mean": 181.52,
+  "p5": 48,
+  "p50": 213,
+  "p95": 233,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   155,
+   192.2,
+   169.4,
+   140.8,
+   205.5,
+   149.7,
+   203.8,
+   212,
+   205.1
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 652
+  }
+ },
+ {
+  "target": "pips-big-leap--w5",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w5",
+  "sinceReadyMs": 271617,
+  "mean": 181.62,
+  "p5": 48,
+  "p50": 213,
+  "p95": 233,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   155,
+   192.1,
+   169.4,
+   140.8,
+   206.3,
+   149.7,
+   203.9,
+   212.1,
+   205.2
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 652
+  }
+ },
+ {
+  "target": "pips-big-leap--w6",
+  "id": "settle-25s",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "sinceReadyMs": 25002,
+  "mean": 109.04,
+  "p5": 23,
+  "p50": 131,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   41.7,
+   36.8,
+   24.3,
+   136.1,
+   104.4,
+   95.3,
+   176.1,
+   185.9,
+   180.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 484
+  }
+ },
+ {
+  "target": "pips-big-leap--w6",
+  "id": "settle-60s",
+  "slug": "pips-big-leap",
+  "variant": "w6",
+  "sinceReadyMs": 152610,
+  "mean": 109.21,
+  "p5": 23,
+  "p50": 134,
+  "p95": 188,
+  "darkFrac": 0,
+  "clipFrac": 0,
+  "grid": [
+   41.7,
+   36.9,
+   24.3,
+   136.1,
+   105.9,
+   95.3,
+   176,
+   185.9,
+   180.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 484
+  }
+ }
+]

@@ -1,0 +1,77 @@
+{
+ "target": "splat-rush-port--default",
+ "slug": "splat-rush-port",
+ "variant": "default",
+ "url": "/apps/showcase-splat-rush-port/",
+ "group": "g7",
+ "runId": "gu47-before-splat-rush-port",
+ "acrRunId": "ch5v7",
+ "readyMs": 26287,
+ "shots": {
+  "settle-25s": {
+   "target": "splat-rush-port--default",
+   "id": "settle-25s",
+   "slug": "splat-rush-port",
+   "variant": "default",
+   "sinceReadyMs": 25015,
+   "mean": 185.68,
+   "p5": 155,
+   "p50": 186,
+   "p95": 249,
+   "darkFrac": 0,
+   "clipFrac": 0.0415,
+   "grid": [
+    166.6,
+    159.6,
+    171.9,
+    189.6,
+    193.3,
+    200.4,
+    196.2,
+    189.4,
+    204.2
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 20
+   }
+  },
+  "settle-60s": {
+   "target": "splat-rush-port--default",
+   "id": "settle-60s",
+   "slug": "splat-rush-port",
+   "variant": "default",
+   "sinceReadyMs": 66033,
+   "mean": 183.99,
+   "p5": 155,
+   "p50": 186,
+   "p95": 248,
+   "darkFrac": 0,
+   "clipFrac": 0.0366,
+   "grid": [
+    168,
+    162.6,
+    173.1,
+    186.9,
+    200.2,
+    196.3,
+    193.7,
+    185.4,
+    189.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 20
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-splat-rush-port/splat-rush-port--default--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-splat-rush-port/splat-rush-port--default--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

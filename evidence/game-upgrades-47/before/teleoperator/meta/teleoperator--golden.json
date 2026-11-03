@@ -1,0 +1,77 @@
+{
+ "target": "teleoperator--golden",
+ "slug": "teleoperator",
+ "variant": "golden",
+ "url": "/apps/showcase-teleoperator/",
+ "group": "g1",
+ "runId": "gu47-before-teleoperator-1",
+ "acrRunId": "ch5ta",
+ "readyMs": 157575,
+ "shots": {
+  "settle-25s": {
+   "target": "teleoperator--golden",
+   "id": "settle-25s",
+   "slug": "teleoperator",
+   "variant": "golden",
+   "sinceReadyMs": 25005,
+   "mean": 87.36,
+   "p5": 29,
+   "p50": 93,
+   "p95": 162,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    107,
+    123.2,
+    91.8,
+    92.8,
+    125.6,
+    88.7,
+    39.1,
+    74.5,
+    43.5
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 409
+   }
+  },
+  "settle-60s": {
+   "target": "teleoperator--golden",
+   "id": "settle-60s",
+   "slug": "teleoperator",
+   "variant": "golden",
+   "sinceReadyMs": 483953,
+   "mean": 86.05,
+   "p5": 26,
+   "p50": 95,
+   "p95": 161,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    102.5,
+    123.3,
+    101.3,
+    84.3,
+    121.7,
+    84.8,
+    38.7,
+    71.7,
+    46.1
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 392
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-teleoperator-1/teleoperator--golden--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-teleoperator-1/teleoperator--golden--settle-60s.jpg"
+ },
+ "http4xx": [],
+ "errors": [],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

@@ -12,7 +12,7 @@ import { buildWorld } from "../../../examples/where-the-wind-wanders-port/world"
 
 const GLB_TRIANGLES: Readonly<Record<string, number>> = {
   // measured from the committed GLBs (index count / 3), 2026-10-30
-  bell: 1074, belltower: 26014, boat: 27958, cottage: 52686, hero: 12345, letter: 22374, oak: 1324, pine: 849, shrub: 498, stones: 22516, wisp: 21304
+  bell: 1074, belltower: 26014, boat: 27958, cottage: 52686, hero: 12345, letter: 22374, oak: 1324, pine: 849, shrub: 498, stones: 22516, wisp: 21304, kite: 11096
 };
 const KEY_OF_FILE: Readonly<Record<string, string>> = { "belltower-bell.glb": "bell" };
 

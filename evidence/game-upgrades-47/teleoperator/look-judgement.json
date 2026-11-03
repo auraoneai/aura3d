@@ -3,81 +3,68 @@
   "round": 1,
   "shots": [
     {
-      "path": "evidence/teleoperator/screens/final/1280-02-early.jpg",
-      "sha256": "efc1b0ff591c6af80e0d3a614ee76971b34655d7d7dd740d74794de9f6320194"
-    },
-    {
-      "path": "evidence/game-upgrades-47/teleoperator/p3-r3/teleoperator/frames/g04p3-r3-2/teleoperator--noon--settle-60s.jpg",
-      "sha256": "fd0799fd1a9a056b312b38e6bcaa460292bc7d6686fe5d358894dccc644e7736"
-    },
-    {
-      "path": "evidence/game-upgrades-47/teleoperator/p3-r4/teleoperator/frames/g04p3-r4-1/teleoperator--fog--settle-25s.jpg",
-      "sha256": "3a1f47623464748662b510bd14fc86e748dafc575e64c9d24d2d512c517febf0"
-    },
-    {
-      "path": "evidence/game-upgrades-47/teleoperator/p3-r3/teleoperator/frames/g04p3-r3-7/teleoperator--night--settle-60s.jpg",
-      "sha256": "67baa1a7f884f428fe154abd0dd75bec166fdc7316ce34bb0021ba0ac3e6a576"
+      "path": "../../../../../tmp/g04p4-r5/desk/desktop-02-early.jpg",
+      "sha256": "d6ad9f2ad92b3524b6f9d3bfd8afc36000e81d0d0d9a92f0597bfe1ea601fde2"
     }
   ],
   "references": [],
   "scores": {
-    "lighting": 5,
+    "lighting": 6,
     "shadows": 4.5,
     "ibl_reflections": 4,
-    "environment_world": 6,
-    "atmospheric_effects": 5.5,
-    "material_quality": 4,
-    "modeling_assets": 4.5,
-    "composition": 6,
-    "camera": 6.5,
-    "postprocessing": 5,
-    "animation_quality": 5,
-    "ui_hud": 7.5
+    "environment_world": 6.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 5,
+    "modeling_assets": 5.5,
+    "composition": 5,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "ui_hud": 6.5
   },
   "observations": [
     {
       "category": "lighting",
-      "seen": "The Marine Dusk and Sodium Night presets give some warm grading, but the key light is mostly flat. The Noon frame is washed out and nearly shadowless. The Sodium Night frame tints everything orange and does not create real light pools. Overall it does not match the golden-hour low-sun recipe."
+      "seen": "A warm low sun glows at the end of the street (Marine Dusk preset), but the player car's rear faces the camera almost pure black. Only the taillights and a small floor light pool lift it, so the hero subject reads as a silhouette with no key or rim light."
     },
     {
       "category": "shadows",
-      "seen": "Contact shadows under the player car are soft blobs. Building shadows are hard-edged dark rectangles on the road, with no cascade softness. The Noon frame has almost no grounding shadows."
+      "seen": "The cars have weak contact shadows and look like they float slightly on the asphalt. The buildings cast no clear long shadows across the street, even with a low sun. The foreground road darkens as a uniform gradient instead of showing shaped shadows."
     },
     {
       "category": "ibl_reflections",
-      "seen": "Wet-road reflections appear only in the night frame, as bright headlight hotspots. Glass towers have no environment reflection. The player car's body and windows show almost no specular response."
+      "seen": "The player car's dark body shows no environment or sky reflection and no specular highlight from the sunset. The road has no wet or sheen response. The beige parked car's surfaces look matte and flat."
     },
     {
       "category": "environment_world",
-      "seen": "The SF-like boulevard reads well, with a cable car, overhead wires, brick and Victorian facades, and a skyline. However, facade textures are smeared photogrammetry-style projections, and the trees are primitive lollipop spheres."
+      "seen": "The San Francisco street has brick facades, bay windows, a cable car (Line 59), lane markings and a downhill vanishing point, so the place is readable. The right-hand tree is a dark untextured sphere that breaks the realism."
     },
     {
       "category": "atmospheric_effects",
-      "seen": "The Fog preset fades the skyline convincingly. Distance haze exists in the other presets but feels like a uniform overlay, not depth-graded fog in the 30–180 m range. There are no volumetric shafts or particulates."
+      "seen": "Warm haze builds toward the horizon and the distant facades fade, which matches the golden-hour fog brief. Teal translucent route/lidar beams hang mid-air, and they read as HUD artifacts more than atmosphere."
     },
     {
       "category": "material_quality",
-      "seen": "The player cruiser has lumpy, blotchy shading and a black, unlit window region. Building textures stretch and smear, especially the right-side facades. The asphalt is flat untextured grey with no grit or roughness variation."
+      "seen": "The building textures look smeared and low resolution at close range. The player car surface shows speckled noise, like shadow-map acne or dithering, across the black panels. The tree has a flat unlit green material."
     },
     {
       "category": "modeling_assets",
-      "seen": "The cruiser mesh looks like a rough scan with wobbly silhouette edges. Traffic cars are low-poly orange pods, and the trees are a sphere on a stick. The cable car is the most detailed asset."
+      "seen": "The pod-shaped player car has a clean silhouette, and the cable car carries reasonable detail. The parked beige car is low-poly with simple wheels, and the tree is a primitive sphere."
     },
     {
       "category": "composition",
-      "seen": "The car sits centered at roughly 18–22% of the frame and the road leads the eye to the vanishing point, which is decent. The large white subject dominates and blocks the read of the road ahead."
-    },
-    {
-      "category": "postprocessing",
-      "seen": "There is some color grading per sky preset and a bloom hotspot on wet asphalt at night. No film grain, vignette, or filmic tonemapping is evident. The Noon frame is clipped and low-contrast."
-    },
-    {
-      "category": "animation_quality",
-      "seen": "Still frames show no motion blur or speed cues at 21 mph. Traffic and the cable car are placed plausibly, but motion cannot be fully judged."
+      "seen": "The hero car takes about 25-30% of the frame, center-right, which is at or above the 15-25% target. The top-center fare panel covers the sky and vanishing point. Stacked rival name tags (Kaya, Elena, Marcus, Devon) clutter the road ahead."
     },
     {
       "category": "camera",
-      "seen": "critique: Grid Dispatch has a strong UI layer and a recognizable San Francisco setting. The HUD is clean, legible and well organized, and the chase camera framing roughly meets the 15–25% subject target. The rendering underneath falls short of the ci"
+      "seen": "The chase camera sits close and low, with an FOV that looks near 60. The car's size blocks much of the road ahead, so the view gives a weak read of the upcoming track."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild bloom around the horizon sun. The shadows are crushed to black on the car and in the foreground. No filmic grade, vignette or grain is visible, so the cinematic-film target is not met."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The individual widgets are polished: circular speedometer, round minimap, location card, fare panel. Together with two rows of fleet/cam/sky buttons they take up a large share of the screen, and the name-tag stack overlaps the gameplay view."
     }
   ],
   "nextChange": {

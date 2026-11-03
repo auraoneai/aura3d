@@ -542,11 +542,13 @@ async function opTextTo3d(st, row) {
 async function opRetexture(st, row) {
   const source = sourcePath(row.source);
   if (!existsSync(source)) throw new StepError("usage", `source GLB missing: ${row.source}`);
-  const args = ["--model-url", source, "--text-style-prompt", row.prompt, "--enable-original-uv", String(row.sourceInfo?.uv !== false), "--enable-pbr", "true", "--texture-resolution", row.textureRes ?? "2k"];
+  const { prepareRetextureSource } = await import(pathToFileURL(join(ROOT, "docs/prds/game-upgrades-47/lanes/wp36-source.mjs")).href);
+  const prepared = await prepareRetextureSource(source, join(rowDir(row), "source"));
+  const args = ["--model-url", prepared, "--text-style-prompt", row.prompt, "--enable-original-uv", String(row.sourceInfo?.uv !== false), "--enable-pbr", "true", "--texture-resolution", row.textureRes ?? "2k"];
   await paidTask(st, row, "retexture", { resource: "retexture", op: "retexture", args, pinned: false });
   const raw = await download(row, "retexture", st.tasks.retexture.taskId, "raw");
   if (!st.geometry) {
-    const r = await run(process.execPath, [GEOMETRY_HASH, source, join(raw, "model.glb")]);
+    const r = await run(process.execPath, [GEOMETRY_HASH, prepared, join(raw, "model.glb")]);
     const j = parseJson(r.stdout);
     st.geometry = j ? { untouched: j.geometryUntouched, before: j.before, after: j.after, primitives: j.primitiveCount } : { error: short(r.stderr || r.stdout, 200) };
     saveState(st);

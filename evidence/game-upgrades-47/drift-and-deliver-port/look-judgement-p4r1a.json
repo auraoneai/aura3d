@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r3/screens/drive-1280.jpg",
+      "sha256": "8eb79b6b06d15fdc37cc22d587bdac6db93f0e6a615e99f7dead8c9e0c0e02c2"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r3/screens/pickup-1280.jpg",
+      "sha256": "c936d307e69e7dc9ca3f40828dd32053069da24205456fd8e638189881c3f37d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r2/drift-and-deliver-port/frames/g18p4-r2-3/drift-and-deliver-port--sunset--settle-60s.jpg",
+      "sha256": "f81edc5116b79233e346a1502153f35021cee58673001b441d4ebe23f8e1323d"
+    },
+    {
+      "path": "evidence/game-upgrades-47/drift-and-deliver-port/p4-r2/drift-and-deliver-port/frames/g18p4-r2-4/drift-and-deliver-port--bluehour--settle-60s.jpg",
+      "sha256": "a28b2ee4c1ea04652e9d82f20eebfbf6966770241dc77a5e28873f2e31e4875b"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 4.5,
+    "ibl_reflections": 3.5,
+    "environment_world": 6,
+    "atmospheric_effects": 5.5,
+    "material_quality": 4,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 6,
+    "postprocessing": 5.5,
+    "ui_hud": 6
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "Frames 1 and 3 get the golden-hour read. A low sun sits at the vanishing point of the street, and the facades facing it are washed warm. The fill is flat, though. Building faces and the car body have almost no form shading, and the car stays bright and evenly lit in the night frame 4 as if it were self-illuminated."
+    },
+    {
+      "category": "shadows",
+      "seen": "The car's contact shadow is a faint, soft smudge, so the car looks like it floats on the asphalt. Frame 3 shows a few dark bands across the road, but the buildings and the traffic-light poles cast no clear long low-sun shadows, even though the sun angle calls for them."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The car's rear window shows a hot specular spot with jagged lightning-like streaks that read as cracked glass. The same streak noise appears on the dark rear bumper panel. The car paint shows no environment reflection of the street or sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The world has a dense downtown canyon with traffic lights, lamps and palms, plus a low-rise residential district in frame 2. Facades are repeated box towers with the same window texture. In frame 1 the far-right building shows a ghosted, semi-transparent double layer."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "Distance haze fades the street toward the sun in frames 1 and 3. In frame 2 the background skyline is flat beige silhouette cards with speckle noise. Frame 4 has a dotted grid artifact at the vanishing point, and the headlight beam is a flat, pale translucent slab rather than a lit pool."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Asphalt is a uniform brown with no roughness variation. Crosswalk and lane paint glow almost emissively bright. Car paint is matte mint with a noisy texture, and the license plates are blank grey patches."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "Buildings and the pedestrian are low-poly blocks. The yellow taxi van in frame 2 has photoreal textures and detailing, which clashes with the stylized houses beside it. The traffic-light models are decent, but all three lamps on each light are lit at the same time."
+    },
+    {
+      "category": "composition",
+      "seen": "The one-point street perspective is strong. The player car fills only about 2% of the frame in frames 1 and 2 and about 9% in frames 3 and 4, well under the 15–25% target. The car sits low in the frame with large areas of empty road around it."
+    },
+    {
+      "category": "camera",
+      "seen": "The chase camera's FOV looks close to 60°. The follow distance changes between frames, with a far camera in frames 1–2 and a much closer one in 3–4, so the framing is inconsistent."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is a warm grade and some bloom around the sun. Highlights on the road paint clip toward white. There is no visible film grain, vignette or lens treatment to sell the cinematic-film target, and frame 2's haze carries dithering noise."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The HUD is clean and readable in frames 1–2, with timer, ticket card, speedometer, nitro bar and minimap. In frames 3–4 the speed number, timer, ticket card and nitro bar are missing, leaving an empty gauge. The minimap is a noisy colored grid with no readable route."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

@@ -1,0 +1,724 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T02:18:52.247Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "heatsink-port--default--settle-60s"
+    ],
+    "framesB": [
+      "last-train-port--band-a--settle-60s",
+      "last-train-port--band-b--settle-60s",
+      "last-train-port--band-c--settle-60s",
+      "last-train-port--band-d--settle-60s",
+      "last-train-port--band-e--settle-60s",
+      "last-train-port--default--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.924,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.924,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien sci-fi racetrack with a ringed planet and a drone; Image B is a European street with a vintage tram",
+        "Different palettes: neon purple/teal glow versus warm dusk brick and cobblestone tones",
+        "Different scenery and art style: stylized rock formations versus realistic buildings and simple peg-figure people"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: alien sci-fi planet with ringed moon, purple neon grid track and a drone",
+        "Image B: warm sunset European town with a red tram, cobblestones and capsule-shaped people",
+        "Different palettes, art styles and subject matter, with no shared HUD or assets"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: a daytime European town with a tram and low-poly peg figures; Image B: an alien planet with a drone",
+        "Different palettes: warm ochre and orange in A, purple and teal sci-fi glow in B",
+        "Different art styles: painterly, cobbled textures in A versus glossy neon-grid racing track in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien ringed planet, purple neon grid road, and a drone",
+        "Image B: European town with a red tram and cobblestones at dusk",
+        "Different art direction, palette, and scenery with no shared assets"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night-time European street with a red tram and lit building windows",
+        "Image B is an alien planet with a ringed moon, a drone and a neon grid road",
+        "Different palettes, scenery and vehicles; no shared art style or HUD"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a period European street with a red tram and cobblestones, while Image B is an alien planet with a ringed moon and a drone",
+        "Image A has flat, painterly textures and peg-like figures, while Image B has a neon sci-fi palette and a glowing grid track",
+        "The lighting and color palettes differ: a warm dusk sky in A, a violet and teal aurora sky in B"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien sci-fi racetrack with a ringed planet and a drone, while Image B is a European town with a vintage tram",
+        "Different palettes: neon purple and teal against warm dusk with cobblestones",
+        "Different art styles: stylized glowing grid track against detailed textured buildings and peg-like people"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, sunset-lit period town with a tram and cobblestones",
+        "Image B is an alien planet with a drone, neon grid road and a ringed moon",
+        "Different palettes, scenery and subjects, with no shared HUD or character style"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone and neon grid road",
+        "Image B is a period European town with a red tram and cobblestones",
+        "Different palettes, lighting and art style (purple/teal glow vs warm sunset painterly)"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien sci-fi setting with a ringed planet, a drone and a neon grid road",
+        "Image B is a European street at dusk with a vintage tram and cobblestones",
+        "The scene content, palette and art style differ completely"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: European-style town with a red tram, warm sunset palette and low-poly peg figures",
+        "Image B: alien ringed-planet sky, purple neon grid road and a drone",
+        "Different settings, color palettes and rendering styles"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night European town with a vintage tram and peg-like figures, Image B is an alien planet with a drone",
+        "Different palettes and lighting: dark navy with warm window glow versus pastel purple and teal with an aurora sky",
+        "Different scenery, materials and subjects: cobblestone and brick buildings versus smooth rock formations and a glowing grid track"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, sunset-lit European street with a red tram and cobblestones",
+        "Image B is a sci-fi alien planet with a drone, a ringed planet and a neon grid track",
+        "The palettes and art styles differ: painterly earth tones vs. violet and teal glow"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien sci-fi scene with a ringed planet, aurora sky and a drone on a neon grid track",
+        "Image B is a realistic European town at dusk with a vintage tram, cobblestones and simple peg-like people",
+        "Palette, lighting and art style differ: A is saturated purple/teal and glowing, B is muted warm dusk with textured buildings"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a dusk European street with a tram and capsule-shaped people",
+        "Image B is an alien planet with a ringed moon and a drone on a neon track",
+        "Different art style, palette and world setting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime European town with a tram, cobblestones and a painterly low-poly style; Image B is an alien planet with a ringed moon and a drone",
+        "Different palettes: warm yellow, orange and red against purple, teal and neon",
+        "Different rendering: flat stylized models with a tilt-shift look against glossy sci-fi materials with glowing lines"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone and neon grid road",
+        "Image B is a realistic European night street with a vintage tram",
+        "Different palettes, scenery and vehicles, with no shared art style"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 2,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone and neon grid road, Image B is a period European town with a red tram",
+        "Different palettes: purple/teal glow versus warm yellow, red and cream tones",
+        "Different art styles: stylized low-poly alien terrain versus painted textures and capsule-shaped people"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A: alien ringed planet, purple neon grid road, drone vehicle",
+        "Image B: realistic European street at dusk with a red tram and cobblestones",
+        "Different art style, palette and setting"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone, neon-grid road and purple aurora sky",
+        "Image B is a warm, sunset-lit European street with a red tram and cobblestones",
+        "Different palettes, art styles and scenery with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a realistic European street with a tram at dusk; Image B is an alien planet with a drone on a neon grid track",
+        "Different palettes: warm orange and brick in A, purple and teal in B",
+        "Different art styles: peg-figure pedestrians and a cobblestone texture in A, glowing sci-fi terrain with a ringed planet in B"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a warm, painterly European tram street with low-poly peg figures; Image B is an alien purple planet with a drone",
+        "Completely different palettes and settings: earthy yellow/red daylight versus teal/violet neon sci-fi glow",
+        "Different art styles and materials: flat stylized textures in A versus detailed glossy rendering in B"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night European city street with a red tram and peg-like figures, Image B is an alien planet with a ringed moon and a drone",
+        "Different palettes: dark blue night with warm window lights vs saturated purple/teal sci-fi glow",
+        "Different scenery and vehicles: cobblestone streets and brick buildings vs a neon grid track and rock formations"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 3,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien sci-fi scene with a ringed planet, a drone and a neon grid road",
+        "Image B is a European street with a red tram, cobblestones and capsule-shaped people",
+        "Different palettes and art styles: purple and teal glow versus warm, painterly daylight"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic night European street scene with a red tram, cobblestones and lit windows",
+        "Image B is a stylized alien sci-fi setting with a ringed planet, a drone and a glowing grid road",
+        "The palettes and art styles differ: dark, muted blues and warm lights versus saturated purple and teal"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, sunset-lit European street with a red tram and cobblestones, Image B is an alien planet with a ringed moon and a drone on a neon grid track",
+        "Different art styles: A has flat-textured buildings and capsule-shaped people, B has glowing sci-fi materials and stylized rock formations",
+        "Unrelated palettes and subject matter: A is orange, yellow and red, B is purple and teal"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sci-fi alien planet with a ringed moon, a drone and a neon grid road",
+        "Image B is a European street at dusk with a red tram, cobblestones and people figures",
+        "Different palettes, scenery and subject matter, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European-style town with a tram and peg-like pedestrians; Image B is an alien planet with a drone",
+        "Different palettes: dusk orange and grey against purple and teal sci-fi glow",
+        "Different art styles: grounded, muted rendering against stylized neon surfaces"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien sci-fi setting with a ringed planet, a drone and a neon grid road",
+        "Image B is a European town scene with a red tram, cobblestones and warm sunset light",
+        "The palettes and art styles differ: purple/teal glow against warm painterly yellows and reds"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 4,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien sci-fi world with a ringed planet, a drone and a neon grid road",
+        "Image B is a realistic-style European town with a red tram, cobblestones and capsule-shaped people",
+        "The palette, lighting and subject matter differ completely, with a purple/teal night sky versus warm sunset tones"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a night European city street with a red tram and lit windows, Image B is an alien planet with a ringed moon and a drone",
+        "Different scenery, palette and art style (muted dark realism vs saturated purple/teal sci-fi)",
+        "Different subjects: tram and peg-like pedestrians vs racing drone on a neon grid track"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is an alien sci-fi scene with a ringed planet, a drone and a glowing grid road",
+        "Image B is a European town with a red tram, cobblestones and a warm sunset sky",
+        "The palettes (purple/teal neon versus warm yellow/orange) and the art styles (stylized sci-fi versus painterly toy-like town) are unrelated"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is an alien sci-fi landscape with a ringed planet, a drone and a neon grid road",
+        "Image B is a European street with a red tram, cobblestones and capsule-shaped people",
+        "The palettes, art styles and subject matter do not match"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a warm, sunset-lit European street with a red tram and cobblestones, while Image B is an alien planet with a ringed moon and a drone",
+        "Different art styles: painterly, textured buildings with peg-like figures versus a neon grid track with glowing line decals and stylized rocks",
+        "Different color palettes and lighting: orange and brown dusk versus purple and teal aurora sky"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European street with a streetcar and peg-doll pedestrians at dusk",
+        "Image B is an alien planet with a ringed moon, a drone and a neon grid road",
+        "The two frames differ in setting, palette and art style"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 5,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone on a neon grid road",
+        "Image B is a realistic European town with a vintage tram and cobblestones",
+        "Different palettes, scenery and art styles"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a period European street with a red tram and cobblestones; Image B is an alien planet with a drone on a neon grid track",
+        "Different palettes: warm hand-painted yellows and reds versus cool purple and teal sci-fi glow",
+        "Different art styles: flat painted textures with peg-like figures versus detailed, moody sci-fi lighting"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sci-fi alien planet with a ringed moon, a drone and a neon grid road",
+        "Image B is a warm sunset European town with a red tram and cobblestones",
+        "Palette, setting and art style differ completely: cool purple/teal versus warm earthy tones"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: European town with a red tram and a warm sunset palette",
+        "Image B: alien planet with a ringed moon, a drone and neon grid ground",
+        "Different art styles: painterly low-poly vs. glowing sci-fi"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sci-fi alien planet with a ringed moon, a neon grid road and a drone",
+        "Image B is a realistic European town at dusk with a red tram and peg-like pedestrians",
+        "Different palettes, scenery and art styles with no shared assets"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a dusk European town with a red tram and cobblestones, Image B is an alien planet with a drone",
+        "Different art styles: peg-like figures and period buildings versus a glowing sci-fi palette with a ringed planet",
+        "Different scenery, lighting and vehicles with no shared assets"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 6,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone on a neon grid road",
+        "Image B is a realistic night-time European street with a tram and townhouses",
+        "Different palettes and scenery: purple/teal fantasy versus dark blue/red/warm window lights"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-e--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a sci-fi alien planet with a drone on a neon grid road",
+        "Image B is a realistic European night street with a vintage red tram and peg-like people",
+        "Different palettes and scenery: purple/teal fantasy versus dark blue cobblestone town"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-b--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a sci-fi alien planet with a ringed moon, neon grid road and a drone",
+        "Image B is a warm sunset European town with a red tram and cobblestones",
+        "Different palettes, scenery and art styles with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A is a daytime European street with a tram, low-poly trees and painterly buildings",
+        "Image B is an alien planet with a ringed moon, a drone and a neon grid road",
+        "Palette, setting and rendering style differ completely: warm pastel versus cool purple and teal sci-fi"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-a--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: alien ringed-planet sky with a sci-fi drone on a neon grid road",
+        "Image B: realistic European town with a red tram on cobblestones",
+        "Different palettes and themes: purple/teal glow vs warm earthy daylight"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-d--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a realistic European tram street at dusk with cobblestones, Image B is an alien planet with a ringed moon",
+        "Different scenery and props: brick row houses and a tram versus a drone, crystals and a neon-grid track",
+        "Different palettes and lighting: warm window glow on muted dusk tones versus saturated purple and teal aurora"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 7,
+      "a": "heatsink-port--default--settle-60s",
+      "b": "last-train-port--band-c--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a European-style town with a red tram and cobblestones; Image B is an alien planet with a drone on a neon grid road",
+        "Different palettes: dusky orange and brick tones versus purple and teal sci-fi glow",
+        "Different art styles: simple peg-like figures and detailed buildings versus stylized rock formations and glowing line effects"
+      ]
+    }
+  ]
+}

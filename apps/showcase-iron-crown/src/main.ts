@@ -86,6 +86,7 @@ import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { fightCrops, type QaCrop } from "./game/qaCrops";
 import { KO_SCORCH_ID, SCORCH_PARKED, scorchAt } from "./game/flareScorch";
+import { AIRSTRIP_HAZE_PASS, airstripHazePass } from "./game/airstripHaze";
 
 installBlackFrameGuard();
 
@@ -338,6 +339,8 @@ const fightingGame = createGame({
 });
 
 const app = fightingGame.app;
+let releaseAirstripHaze: (() => void) | undefined;
+let airstripHazeRequest = 0;
 // IC47-V1: runtime VFX back on with the Iron Crown preset pack (the floating-dot cause is fixed in the engine, E-F);
 // `?vfx=off` turns them off. Reduced motion halves the counts, reduced flash drops the flash lights (game/vfx.ts).
 const vfxComfort = { reducedMotion, reducedFlash, lowTier };
@@ -695,9 +698,19 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   ambientVfx = createAmbientVfx(ambientEmittersFor(config.stage.id), vfxComfort);
   studioSelection.fighter = config.p1.id;
   const sig = arenaSignature(config);
+  // The shimmer belongs to this arena only; remove it before a remount or an original-look bout.
+  const hazeRequest = ++airstripHazeRequest;
+  releaseAirstripHaze?.();
+  releaseAirstripHaze = undefined;
   if (sig !== mountedArenaSig) {
     mountedArenaSig = sig;
     await fightingGame.setScene(buildArena(config).toJSON());
+  }
+  // `lowTier` is `?tier=low`; `app.quality.tier` follows the engine tier once the tiers lane or a renderer quality is set.
+  if (hazeRequest === airstripHazeRequest && config.stage.id === "desert-airbase" &&
+      venueLookMode(config.stage.id, params) !== "original" && !reducedMotion && !lowTier &&
+      app.quality?.tier !== "low" && !mediaMatches("(pointer: coarse)") && params.get("vfx") !== "off") {
+    releaseAirstripHaze = app.addPostPass?.(airstripHazePass());
   }
   resetStageLights();
   // IC47-V3: a re-bout on the mounted scene parks the last bout's scorch again.
@@ -1683,6 +1696,11 @@ app.onFrame(({ dt }) => {
   }
   frameCount += 1;
   elapsedMs += dt * 1000;
+  if (releaseAirstripHaze) {
+    const time = (elapsedMs / 1000) % 600;
+    if (app.setPassUniform) app.setPassUniform(AIRSTRIP_HAZE_PASS, "u_icTime", time);
+    else app.post?.setPassUniform?.(AIRSTRIP_HAZE_PASS, "u_icTime", time);
+  }
   ambientVfx.step(dt, (kind, at) => fxBurst(kind, at));
   if (currentStageId === "crown-arena" && !reducedMotion) {
     const now = performance.now() / 1000;
@@ -2141,4 +2159,3 @@ if (debugHooks) {
     }
   };
 }
-

@@ -433,7 +433,7 @@ function watchModelLoads(): () => void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const stopWatching = watchModelLoads();
-  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches, look: originalLook ? "original" : "gu47", daylightKey, quality: lowQuality ? "low" : "high", sequences: !started });
+  const world = buildWorld({ density: lowQuality ? 0.5 : 1, reducedMotion: () => reducedMotion.matches, look: originalLook ? "original" : "gu47", daylightKey, quality: lowQuality ? "low" : "high", sequences: !started, titleVisible: () => ui.titleVisible });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

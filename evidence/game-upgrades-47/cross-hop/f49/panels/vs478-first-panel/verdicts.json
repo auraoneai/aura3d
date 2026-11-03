@@ -1,0 +1,68 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cleaner foreground but the background is still busy. The middle ground has some flat empty grass, and the frame is slightly less punchy than A.",
+     "Traffic is crowded and the background clutters into a wall of vehicles. Grass is flat and untextured. The coin is seen edge-on and is thin.",
+     "The far lanes are still crowded and the horizon is slightly hazy. Otherwise the layout is cleaner and the near-lane trucks read well."
+    ]
+   },
+   {
+    "variant": "theme1",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 1,
+    "afterDefects": [
+     "Blue locomotives overlap the white trucks in the front lanes, which reads as clipping and a jumble of vehicles. The background is heavily cluttered and the towers are untextured.",
+     "Steam locomotives seem to overlap or clip into box trucks in the same lane, around the middle-right of the frame. The scene is very busy and hard to read. Grass is flat.",
+     "Box trucks clip into the blue steam locomotives in the front lanes, and locomotives overlap each other on the right. This is broken geometry, and the clutter makes the frame hard to read."
+    ]
+   },
+   {
+    "variant": "theme2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Slightly dim sunset grade with some clutter in the far lanes. The frog's face reads well, the near lane is clean, and colours are better.",
+     "A heavy vignette darkens the edges and corners. Grass is flat. The far lanes are cluttered.",
+     "There is a heavy dark vignette and the sunset sky is somewhat flat. The vehicles are spaced clearly and the frog reads well."
+    ]
+   },
+   {
+    "variant": "theme5",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 0,
+     "same": 1
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Also pastel and somewhat hazy with low contrast. The trams and track composition is cleaner, though the background is still crowded.",
+     "A pastel, washed-out haze gives low contrast. A large empty band of grass sits in the foreground. Grass is flat.",
+     "The pastel palette is also washed out, with locomotives crowded at the far left. The foreground is cleaner and the trams line up neatly."
+    ]
+   }
+  ]
+ }
+]

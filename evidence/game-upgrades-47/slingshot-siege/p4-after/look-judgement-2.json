@@ -1,0 +1,88 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 1,
+  "shots": [
+    {
+      "path": "../aura3d-gu47/g12/evidence/slingshot-siege/screens/final/1280x720/03-action-01-state-aiming-backend-webgl2-backgrou.jpg",
+      "sha256": "4dc4ff1546c4a83bfabd5692cf56fa6173b324fd9481eb48bdd5ba9f24ac2c96"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p4-r9/slingshot-siege/frames/g12p4-r9-2/slingshot-siege--ch0--settle-60s.jpg",
+      "sha256": "28952a32d8ef2409e508d0240ed330479e33568e4b4e7a9b80a30ae7b050aa54"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p4-r9/slingshot-siege/frames/g12p4-r9-5/slingshot-siege--ch3--settle-60s.jpg",
+      "sha256": "178ff8d77df6d1fe529b84a6415dfd23fc3f7c4eb4c2128608436645da16eb4d"
+    },
+    {
+      "path": "../aura3d-gu47/g12/evidence/game-upgrades-47/slingshot-siege/p4-r9/slingshot-siege/frames/g12p4-r9-6/slingshot-siege--ch4--settle-60s.jpg",
+      "sha256": "2f3bead4b8d259114b4087b405c5acfa095c5a1c5b306f2abe960181df0ab832"
+    }
+  ],
+  "references": [],
+  "scores": {
+    "lighting": 6,
+    "shadows": 6,
+    "ibl_reflections": 3.5,
+    "environment_world": 5.5,
+    "atmospheric_effects": 4.5,
+    "material_quality": 4.5,
+    "modeling_assets": 5,
+    "composition": 5.5,
+    "camera": 4.5,
+    "postprocessing": 5,
+    "ui_hud": 6.5
+  },
+  "observations": [
+    {
+      "category": "lighting",
+      "seen": "A single directional sun changes between frames (neutral grey, golden, orange dusk). The grass field still reads as one flat green with almost no shading falloff, and there are no rim lights separating props from the ground."
+    },
+    {
+      "category": "shadows",
+      "seen": "The cone trees and fence posts cast shadows across the grass and the windmill shadows the field. The crates and barrel have weak contact darkening, and the rocks show no visible self-shadow from the sun."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "The water around the island is a flat untextured blue with no sky or prop reflections. The barrel bands and stone show no specular response that changes with the dusk sky."
+    },
+    {
+      "category": "environment_world",
+      "seen": "The arena is a floating disc island with a hard brown rim, ringed by an empty flat sea plane. Two large rock masses frame it, and the space between is filled with repeated cone trees and plain green craters."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "The sky is a plain vertical gradient with a hard horizon line. There is no haze, fog depth, or volumetric light even in the sunset frames, and the distant dome and flag read as sharp as the foreground."
+    },
+    {
+      "category": "material_quality",
+      "seen": "Photoscanned high-detail rock textures sit next to untextured flat-color grass, cones, and yellow path tiles. The two levels of material detail clash strongly. The windmill and arch have a sculpted stylized texture that matches neither."
+    },
+    {
+      "category": "modeling_assets",
+      "seen": "The slingshot, crates, barrel, windmill, and stone arch are reasonable stylized props. The trees are primitive cones, the bushes are thin green bars, and the craters are simple dished circles, so the fidelity varies across the scene."
+    },
+    {
+      "category": "composition",
+      "seen": "The low camera puts the empty sky in the top third. The targets sit small in the middle band, and the foreground is mostly empty grass. The right rock partly crowds the target fortress."
+    },
+    {
+      "category": "camera",
+      "seen": "The camera is a low-angle perspective view at roughly 20°, not the orthographic 60° top-down the recipe specifies. It also frames the whole island instead of a 10–15% subject."
+    },
+    {
+      "category": "postprocessing",
+      "seen": "There is mild tone mapping and a warm grade in the dusk frames. No bloom is visible on the sun at the horizon. Edges are aliased on the fence posts and the windmill blades."
+    },
+    {
+      "category": "ui_hud",
+      "seen": "The wood-plaque score panel, level title, and egg ammo slots are cohesive. However, the control instructions are duplicated between the center hint box and the bottom bar, the 'Yolk Drop' button is low contrast, and the hint box covers the playfield."
+    }
+  ],
+  "nextChange": {
+    "category": "ibl_reflections",
+    "change": "set the look's environment so metals/glossy materials pick up image-based reflections",
+    "api": "environments.hdri(url) or the look's preset env"
+  },
+  "judge": "prism"
+}

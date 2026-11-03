@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sky is a bit flat and grey-lilac. The far hills are slightly hazy. Grass is very saturated and uniform. Otherwise good contrast, warm cobblestones, readable player and strong red focal trees and gate.",
+     "Colour, contrast and shadows are much stronger, with distant mountains and red trees framing the gate. The near-left building is cut off at the frame edge, the grass is a slightly over-saturated flat green, and there is a dark smudge on the cobbles near the centre.",
+     "Foliage on the red trees looks blocky and like a texture, with a stone-brick pattern. The grass is a little over-saturated and flat. The player is small and placed off-centre."
+    ]
+   },
+   {
+    "variant": "rooftops",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large dark-blue curved sheets sweep across the right side and look like stray or broken geometry. The player is a glowing translucent orange blob with little detail. A thin green bar floats at the bottom. The roof tiles have an oversaturated blue sheen. Still, it has strong dusk mood, depth and an interesting composition.",
+     "Strong sunset mood with good depth across the rooftops and mountains. The player is a translucent, glowing orange figure with little definition. Large flat dark-blue roof sheets on the right look stretched and unfinished, and the roof steps are blocky, untextured boxes. A green bar floats across the bottom of the frame and part of the left mountains is clipped. Busy and a bit cluttered, but the frame is clearly readable.",
+     "The player is a translucent orange figure inside a glow or shield effect, so the character silhouette is hard to read. Dark-blue roof planes stretch oddly across the middle-right, which looks like stretched or broken geometry. A thin green bar floats at the bottom of the frame. The blue roof tiles look somewhat over-saturated. Even so, it has strong depth, a sunset mood and rich detail."
+    ]
+   },
+   {
+    "variant": "village",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The tree canopies have a lumpy, brick-like texture. Translucent pale-blue ghost clones crowd the player, which adds visual noise but leaves the player readable. The grass is very saturated. Lighting, contrast and depth are good.",
+     "Vivid and full of depth, with strong shadows and lively composition. The tree canopies are lumpy blobs with a texture that looks like stone or brick rather than leaves, and the large near-camera trees crowd the frame. Pale-blue ghost ninja clones partly surround the player and compete with them for attention. The building at the right edge is cut off.",
+     "The tree canopies use a lumpy texture that looks like brick, and the large foreground trees feel heavy. The pale-blue ghost NPCs are bright and draw attention away from the player. Otherwise the lighting, contrast, shadows and depth are good, and the player is easy to read in the centre."
+    ]
+   }
+  ]
+ }
+]

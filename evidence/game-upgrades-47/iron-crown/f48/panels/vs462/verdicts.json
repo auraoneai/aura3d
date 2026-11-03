@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "desert-airbase",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Some glossy reflection streaks on the floor at lower left look a little artificial; the fighters' faces and the dark-red fighter are slightly dark; the spawn-ring fills look washed out. Otherwise contrast and depth are better, the sky has more atmosphere, and the jet and props show richer specular detail.",
+     "Mostly well done: it has strong contrast, saturated character colours, glossy materials on the jet and barrels, and a clear sky gradient. Minor issues: the fighter's player-marker discs are flat beige, the jet looks like it is floating slightly above the deck, a shiny reflection streak in the lower-left floor looks odd, and the scene reads as an ocean platform, not a desert.",
+     "The bottom corners have a heavy dark vignette. The light-filled spawn discs look a little flat and odd. The fighters are slightly dark against the busy background. Otherwise contrast is stronger, the jet and props have glossy reflective materials, and the sky has more depth."
+    ]
+   }
+  ]
+ }
+]

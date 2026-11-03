@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/strange-orbit-port/art/direction.ts",
-  "sourceSha256": "cd71e4990cd9ba94cc206b402f1df2d5590a4c72d7ea97a66dedbfdf299d17b9",
+  "sourceSha256": "6e55c32fcf9b0028c0c39593889e64d5b04b369da4a540508654de4ac67acef4",
   "id": "strange-orbit-port",
   "genre": "racing",
   "signatureEffect": "Brush-textured moving gouache painting: impasto road relief raked by a low white sun into long shadows, under a banded peach gas giant.",
@@ -254,56 +254,56 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
       },
       {
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -379,10 +379,6 @@
       },
       {
         "node": "planet-atmosphere",
-        "practical": false
-      },
-      {
-        "node": "second-moon",
         "practical": false
       },
       {
@@ -528,10 +524,6 @@
       },
       {
         "node": "stardust",
-        "practical": false
-      },
-      {
-        "node": "exhaust",
         "practical": false
       },
       {
@@ -689,9 +681,9 @@
       },
       {
         "role": "prop",
-        "assetKey": "moonRock",
+        "assetKey": "craterlineMoonRock",
         "maxTriangles": 40000,
-        "textureSet": "BC+N",
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
       }
     ],

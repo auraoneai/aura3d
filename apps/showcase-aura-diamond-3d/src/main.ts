@@ -142,6 +142,7 @@ import {
   TRAIL_COUNT,
   HIDDEN_SCALE,
   FIELDER_IDS,
+  CAP_ROUGHNESS,
   GLOVE_OWNERS,
   KIT_OWNERS,
   CAP_ATTACH_POS,
@@ -1387,7 +1388,7 @@ function boot(): void {
   function uniformMaterial(color: string): any {
     let m = uniformCache.get(color);
     if (!m) {
-      m = material.pbr({ color, roughness: 0.5 });
+      m = material.pbr({ color, roughness: CAP_ROUGHNESS });
       uniformCache.set(color, m);
     }
     return m;
@@ -3412,7 +3413,11 @@ function boot(): void {
     });
     const hr = homeRunPhase(now - boardHrAt, reducedFlash);
     if (!boardThrottle.due(now, model.key, hr)) return;
-    board.paint(model, { accent: PARK_LOOKS[G.park].accent, font: '"DIN Pro", "Whitney", sans-serif' }, hr);
+    board.paint(model, {
+      accent: PARK_LOOKS[G.park].accent,
+      font: '"DIN Pro", "Whitney", sans-serif',
+      ...(G.park === "ivy" ? { background: "#173e2a" } : {})
+    }, hr);
     boardThrottle.painted(now, model.key, hr);
   }
 

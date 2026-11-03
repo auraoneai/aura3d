@@ -35,7 +35,7 @@ export const roadSpec = (look: Look, line: Rgb, glow: Rgb): CustomSpec => ({
     asphalt: c3(look.asphalt), lineColor: c3(line), glowColor: c3(glow), roadGloss: f32(look.roadGloss),
     carPos: v3([0, -1000, 0]), carDir: { type: "vec2" as const, value: [0, -1] as [number, number] }, beamAmt: f32(look.beam),
     neonPaint: f32(look.row ? 1 : 0.35), neonGain: f32(look.row ? 0.12 : 2.6),
-    lampPool: f32(look.row?.surfaces.lampPool ?? 0),
+    lampPool: f32(look.row?.surfaces.lampPool ?? 0), roadSheen: f32(look.row?.surfaces.sheen ?? 0),
     tailAmt: f32(look.row ? look.row.surfaces.tail : 0.25), tailSoft: f32(look.row ? 1 : 0),
     roadDetail: { type: "texture2d" as const, value: DETAIL_ASSETS.asphalt }, detailAmt: f32(detailAmount(look)), detailTiles: v2(DETAIL_TILES.road),
     ...atmosphereUniforms(look)
@@ -146,12 +146,12 @@ export const plumeSpec = (style: PlumeStyle): CustomSpec => ({
   ...(style.additive ? { blending: "additive" as const } : {})
 });
 
-/** `spangle` (0..1, GU47 RH47-10) adds the galvanised crystal pattern; the guardrails use it on the GU47 look. */
-export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0, spangle = 0): CustomSpec => ({
+/** `spangle` adds galvanised crystals; `gantryPulse` gives GU47 relay frames a coherent, reduced-motion-aware pulse. */
+export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0, spangle = 0, gantryPulse = 0): CustomSpec => ({
   receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
-    baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal), spangle: f32(spangle),
+    baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal), spangle: f32(spangle), gantryPulse: f32(gantryPulse),
     ...atmosphereUniforms(look)
   },
   side: "double"

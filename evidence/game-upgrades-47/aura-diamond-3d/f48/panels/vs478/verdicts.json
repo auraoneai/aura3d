@@ -1,0 +1,98 @@
+[
+ {
+  "slug": "aura-diamond-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "canyon",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A. The sky is flat and hazy grey-blue, the turf is plain with little texture, the boulders look like they float above the outfield wall, and the frame lacks contrast overall.",
+     "Flat, overcast lighting with a hazy grey sky. Boulders and stands look like they float above the outfield wall. Outfield grass has no texture. Not much depth.",
+     "Frames look identical. The huge boulders behind the outfield wall seem to float or sit on thin poles. The sky is flat and grey with little depth, and the infield dirt texture is noisy."
+    ]
+   },
+   {
+    "variant": "dome",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks almost the same as A. The infield is a flat grey slab with no dirt material, the background is blurry and muddy, the wall text is mirrored in a reflection, and the frame is dark and low in contrast.",
+     "The dark grey infield is low in contrast and makes the area around the batter look muddy. The background is blurry, washed-out photo-like geometry. The mirrored wall text reflection looks odd.",
+     "Frames look identical. The 'TYPHOON DOME' wall text is mirrored on the floor. The infield is a flat grey slab with no material detail. A heavy diagonal shadow band crosses the field, and the dark, moody background is blurred."
+    ]
+   },
+   {
+    "variant": "ivy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The infield dirt is a flat, oversaturated orange with no texture, and the sky is a little murky.",
+     "The brick texture makes the 'IVY CLASSIC' wall sign a little harder to read. The infield is an oversaturated flat orange. The sky is dark and muddy.",
+     "The infield is a flat, saturated orange with no dirt texture."
+    ]
+   },
+   {
+    "variant": "lunar",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The palette is drab grey-beige with no colour, the outfield is a dull grey plane, the lighting is flat and dim, and the infield has no material detail.",
+     "Looks the same as A: dark, muddy and low in contrast, with a flat outfield and a black sky.",
+     "Frames look identical. The outfield is a dull grey-brown with low contrast and no texture. The sky is black and the palette muddy overall."
+    ]
+   },
+   {
+    "variant": "sandlot",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks almost the same as B. The sky is a hazy washed-out grey, the rock wall is a flat textured slab, the infield is an oversaturated orange, and the wall text is mirrored in a reflection.",
+     "Looks the same as A: hazy sky, odd backdrop props, mirrored sign reflection, oversaturated orange infield.",
+     "The 'HARBOR SANDLOT' wall text is mirrored on the grass. The infield orange is oversaturated."
+    ]
+   },
+   {
+    "variant": "skyline",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as B. The pink infield and teal outfield clash and look unnatural, the infield texture is blotchy, the building textures look noisy, and the colour is a little washed out.",
+     "Looks the same as A: noisy building textures, low-contrast pink and teal palette, blotchy infield.",
+     "Frames look identical. The pink infield looks like a noisy blotchy texture against the teal field, an odd colour pairing. The 'MIDTOWN SKYLINE' text is mirrored, and the building textures are noisy."
+    ]
+   }
+  ]
+ }
+]

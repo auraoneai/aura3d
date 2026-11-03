@@ -109,6 +109,25 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     expect(flat("sandlot", ORIGINAL).nodes.find((n) => n.name === "ball")?.material).toMatchObject({ color: "#f4f1e8" });
   });
 
+  it("phase 6 draw budget: instances Ivy's and Harbor's repeated dressing and keeps flat slabs out of the shadow pass", () => {
+    const ivy = flat("ivy").nodes;
+    expect(ivy.find((n) => n.name === "ivy-vines")?.instances).toHaveLength(7);
+    expect(ivy.filter((n) => n.name === "ivy-trophy" || n.name === "ivy-statue")).toHaveLength(2);
+    expect(ivy.some((n) => /^ivy-vine-\d$/.test(String(n.name)))).toBe(false);
+    const harbor = flat("sandlot").nodes;
+    expect(harbor.find((n) => n.name === "harbor-rocks")?.instances).toHaveLength(2);
+    for (const park of PARK_ORDER) {
+      const nodes = flat(park).nodes;
+      expect(nodes.find((n) => n.name === "ondeck-mats")?.instances).toHaveLength(2);
+      for (const name of ["ondeck-mats", "field-basepaths", "field-plates", "field-chalk", "warning-track", "pitcher-belt", "ball-shadow"]) {
+        expect(nodes.find((n) => n.name === name)?.castShadow, name).toBe(false);
+      }
+    }
+    // ?look=original keeps the 4.6.2 nodes.
+    expect(flat("ivy", ORIGINAL).nodes.filter((n) => /^ivy-vine-\d$/.test(String(n.name)))).toHaveLength(7);
+    expect(flat("sandlot", ORIGINAL).nodes.some((n) => n.name === "pine-a")).toBe(true);
+  });
+
   it("lights the night parks with their DIA-L2 rigs and keeps the key the only shadow caster", () => {
     const count = (park: ParkId, pred: (n: Node) => boolean, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT) => flat(park, ctx).nodes.filter(pred).length;
     const spot = (n: Node) => n.kind === "light" && n.light === "spot";
@@ -120,7 +139,9 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
     expect([count("lunar", spot), count("lunar", flare), count("lunar", cone)]).toEqual([4, 0, 4]);
     for (const park of ["sandlot", "canyon", "ivy"] as const) expect(count(park, (n) => spot(n) || rect(n))).toBe(0);
     // Ivy keeps its four light towers as dressing; the day has no lamps on.
-    expect(count("ivy", (n) => n.kind === "model" && /^flood-\d$/.test(String(n.name)))).toBe(4);
+    // Phase 6 (draw budget): the four towers are one instanced draw.
+    expect(flat("ivy").nodes.find((n) => n.name === "flood-towers-far")?.instances).toHaveLength(2);
+    expect(count("ivy", (n) => n.kind === "model" && /^flood-\d$/.test(String(n.name)))).toBe(2);
     const low = { ...DEFAULT_SCENE_CONTEXT, tier: "low" as const };
     expect([count("skyline", spot, low), count("skyline", flare, low)]).toEqual([4, 0]);
     for (const park of PARK_ORDER) {
@@ -181,5 +202,24 @@ describe("aura-diamond GU47 scene (DIA-L1, E1, E2, E3, P1)", () => {
   it("has removed the three backdrop hexes copied from Hoops from the whole app folder (DIA-E1)", () => {
     const text = filesUnder(join(ROOT, "apps/showcase-aura-diamond-3d")).map((f) => readFileSync(f, "utf8").toLowerCase()).join("\n");
     for (const h of ["#c98a5a", "#070a12", "#9db8cf"]) expect(text.includes(h)).toBe(false);
+  });
+});
+
+describe("aura-diamond phase-7 SSR (S3 roughness gate, lane e6)", () => {
+  it("authors SSR at full gate strength on the glossy parks and nowhere else", async () => {
+    const { renderer } = await import("../../../packages/engine/src");
+    const { ssrRoughnessGate } = await import("../../../packages/engine/src/agent-api/rendererDiagnostics");
+    const withSsr: string[] = [];
+    for (const park of PARK_ORDER) {
+      const ssr = flat(park).nodes.find((n) => n.effect === "screen-space-reflections");
+      if (!ssr) continue;
+      withSsr.push(park);
+      expect(ssrRoughnessGate(ssr.roughness)).toBe(1);
+      expect(ssr.intensity).toBe(PARK_LOOKS[park].ssr);
+      const report = renderer.diagnostics(buildParkScene(PARKS[park], DEFAULT_SCENE_CONTEXT));
+      expect(report.warnings.some((w: string) => w.startsWith("SSR_ROUGHNESS_GATED"))).toBe(false);
+    }
+    expect(withSsr.sort()).toEqual(["dome", "sandlot", "skyline"]);
+    expect(flat("skyline", { ...DEFAULT_SCENE_CONTEXT, tier: "low" }).nodes.some((n) => n.effect === "screen-space-reflections")).toBe(false);
   });
 });

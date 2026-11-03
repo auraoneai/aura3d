@@ -1,0 +1,725 @@
+{
+  "schema": "a3d-evidence-judge/1",
+  "mode": "sibling",
+  "generatedAt": "2026-11-01T00:27:28.640Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "trials": 48,
+    "order": "every (a, b) pair once per pass, shuffled with a seeded mulberry32; this game's frame as Image A in half of each pass",
+    "framesA": [
+      "cross-hop--theme0--settle-60s",
+      "cross-hop--theme1--settle-60s",
+      "cross-hop--theme2--settle-60s",
+      "cross-hop--theme3--settle-60s",
+      "cross-hop--theme4--settle-60s",
+      "cross-hop--theme5--settle-60s"
+    ],
+    "framesB": [
+      "splat-rush-port--default--settle-60s",
+      "splat-rush-port--original--settle-60s"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots, labelled Image A and Image B; each is from a browser 3D game. They may come from the same game or from two different games made with the same engine, with any on-screen HUD hidden or kept. Judge only what is visible: sky, ground, scenery, lighting, palette, glow, materials, characters or vehicles, camera and HUD style. Question: are these two frames from the same game?",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if both frames come from the same game, false if they come from two different games; \"same_game_confidence\": a number from 0 to 1, how sure you are of your same_game answer; \"tells\": up to three short phrases naming the visible cues that drove your answer."
+  },
+  "acceptance": {
+    "same_game": false,
+    "same_game_confidence_min": 0.8
+  },
+  "same_game": false,
+  "same_game_confidence": 0.94,
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "differentGame": 48,
+    "sameGameYes": 0,
+    "differentRate": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "confidentDifferent": 48,
+    "confidentDifferentRate": 1,
+    "same_game": false,
+    "same_game_confidence": 0.94,
+    "passes": true
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized pastel sky with a red ball, floating islands and hot air balloons",
+        "Image B: realistic toy cars, trains and a green frog on a highway",
+        "Different palettes and rendering: soft pink and purple versus dark orange and olive with detailed vehicle models"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing lanes of trams and trucks, with flat pastel ground and a pale sky",
+        "Image B is a red glossy ball on a purple cloud floor under a pink sunset sky with floating islands and balloons",
+        "Different gameplay, scenery and lighting, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing tram tracks and roads on flat green ground with a gray hazy sky",
+        "Image B is a red ball in a bright blue sky with floating islands, clouds and hot air balloons",
+        "The two frames have different palettes, subjects and lighting, with no shared characters or scenery"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog character on a flat green road-crossing level with trams and cars",
+        "Image B: red glossy ball over a pink cloud floor with floating islands and hot air balloons",
+        "Different palettes and lighting: gray-blue daytime sky versus a pink and yellow sunset"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright daytime sky with floating islands and hot air balloons",
+        "Image B: warm sunset lighting with a frog crossing a road with traffic",
+        "Different characters and scenery (red ball vs frog, cars and rails)"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of trams and trucks under a hazy dusk sky",
+        "Image B is a red ball flying among floating islands, clouds and hot air balloons in bright saturated blue",
+        "Different gameplay, camera and palette"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright daytime sky with floating islands, hot air balloons and a red ball",
+        "Image B: dusk orange sunset sky with a frog crossing a traffic road with cars and trains",
+        "Different scenery, palette and lighting: flat cartoon pastel vs. darker realistic shaded vehicles"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel pink and purple cloud sea with floating islands and balloons, red ball character",
+        "Image B: green road-crossing scene with traffic, rail track, and a frog character",
+        "Different art style and palette: soft stylized pastel vs. realistic toy-like vehicles and grass"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing roads with toy cars on flat green ground",
+        "Image B is a red ball over a pink cloud sea with floating islands and hot air balloons",
+        "Different palettes and lighting: daytime blue sky vs. pink sunset"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright daytime sky with floating islands, clouds and a red ball",
+        "Image B: night scene with a frog on a road crossing lanes of cars, trucks and trams",
+        "Different palettes and lighting: pastel cartoon vs dark purple/teal with a moon glow"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel sunset sky with floating islands, balloons and a red ball on a cloud floor",
+        "Image B: night sky with a glowing moon, a green frog and road lanes with pink cars, trucks and trams",
+        "Different palettes and subjects: soft pink-purple versus dark teal and navy with neon accents"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frogger-style road crossing with toy cars and a frog, Image B is a red ball flying through a sky of floating islands",
+        "Different palettes and lighting: muted green ground and hazy sky vs bright saturated cyan sky with soft clouds",
+        "Different scenery and camera: top-down-ish lane view vs low-angle chase view with speed lines"
+      ]
+    },
+    {
+      "step": 12,
+      "pass": 1,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: red ball on a pink-purple cloud sea with floating islands and hot air balloons",
+        "Image B: green frog crossing a road with toy-like cars, rails and a river",
+        "Different palettes and scenery: pastel sunset fantasy vs. green lowland with an orange haze"
+      ]
+    },
+    {
+      "step": 13,
+      "pass": 1,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a pastel sunset sky with a red ball rolling over clouds and floating islands, while Image B is a frogger-style lane game with a frog, trams and trucks",
+        "Different palettes and lighting: A has a pink and purple stylized sunset, B has flat daylight with a muted blue sky and green lanes",
+        "Different art styles: A has soft cartoon shapes, B has textured realistic vehicle models on flat colored strips"
+      ]
+    },
+    {
+      "step": 14,
+      "pass": 1,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a pastel sunset sky with a red ball on clouds and floating islands",
+        "Image B is a daylight green field with trams, cars and a frog character",
+        "Different palettes, lighting and gameplay setting"
+      ]
+    },
+    {
+      "step": 15,
+      "pass": 1,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing tram and car lanes on flat green ground under a hazy grey sky",
+        "Image B: red ball flying among floating islands, clouds and hot air balloons in a saturated blue sky",
+        "Different scenery, palette and gameplay (lane-crossing vs. sky flight with speed lines)"
+      ]
+    },
+    {
+      "step": 16,
+      "pass": 1,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright daytime sky with floating islands, clouds and hot air balloons",
+        "Image B: dusk sunset lighting over a multi-lane road with cars, trains and a frog",
+        "Different art styles: flat cartoon shading vs. darker, more realistic lit toy vehicles"
+      ]
+    },
+    {
+      "step": 17,
+      "pass": 1,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog character in a dark road and traffic scene with toy-like vehicles",
+        "Image B: red glossy ball on a pastel cloud floor with floating islands and balloons",
+        "Different palettes, scenery and gameplay objects"
+      ]
+    },
+    {
+      "step": 18,
+      "pass": 1,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog-crossing game with flat green lanes, roads and toy cars",
+        "Image B is a sky scene with floating islands, balloons and a red ball",
+        "Different palettes and lighting: muted hazy greens vs bright saturated cyan sky"
+      ]
+    },
+    {
+      "step": 19,
+      "pass": 1,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: bright blue sky with floating islands, balloons and a red ball",
+        "Image B: frog crossing a road with traffic, sunset lighting and a coin",
+        "Different palette and lighting, with flat cartoon clouds in A and a warm, darker, vignetted scene in B"
+      ]
+    },
+    {
+      "step": 20,
+      "pass": 1,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: red ball rolling on a pink sunset cloud sea with floating islands and hot air balloons",
+        "Image B: frog crossing roads and logs with toy cars on flat green terrain under a blue sky",
+        "Different gameplay, palette and scenery: pastel dreamy style versus bright realistic-textured crossing game"
+      ]
+    },
+    {
+      "step": 21,
+      "pass": 1,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night road-crossing scene with a frog, cars, trucks and trains",
+        "Image B is a pastel sunset sky with floating islands, hot air balloons and a red ball",
+        "Different palettes, scenery and player characters"
+      ]
+    },
+    {
+      "step": 22,
+      "pass": 1,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "tells": [
+        "Image A is a frog crossing lanes of trams and trucks in a muted, hazy palette",
+        "Image B is a red ball flying among floating sky islands and balloons under a saturated blue sky",
+        "Different gameplay, camera and art style"
+      ]
+    },
+    {
+      "step": 23,
+      "pass": 1,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a night road-crossing scene with a frog, cars and trains; Image B is a bright daytime sky with floating islands and balloons",
+        "Different art direction: dark teal and magenta palette versus pastel blue with soft white clouds",
+        "Different gameplay and camera: top-down lane hopper versus a red ball moving through the sky with speed lines"
+      ]
+    },
+    {
+      "step": 24,
+      "pass": 2,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: pastel pink and purple cloud world with floating islands and hot air balloons, red glossy ball",
+        "Image B: green frog crossing lanes of toy cars, roads, and a railway track",
+        "Different characters, scenery, palette, and lighting (pink sunset vs. warm orange sky over green fields)"
+      ]
+    },
+    {
+      "step": 25,
+      "pass": 2,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing traffic lanes at sunset, with a hazy warm sky",
+        "Image B is a red ball in a bright blue sky with floating islands and balloons",
+        "Different gameplay, camera and palette (muted orange-green vs saturated blue and white)"
+      ]
+    },
+    {
+      "step": 26,
+      "pass": 2,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: night-time frog crossing road with cars, trucks and trains",
+        "Image B: bright daytime sky with floating islands, clouds and hot air balloons",
+        "Different characters (green frog vs red ball), camera and palette"
+      ]
+    },
+    {
+      "step": 27,
+      "pass": 2,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: dusk sunset sky with a frog crossing traffic lanes and trains",
+        "Image B: bright blue sky with floating islands, hot air balloons and a red ball",
+        "Different palettes, lighting and character: dark orange-lit road scene vs. cartoon pastel clouds"
+      ]
+    },
+    {
+      "step": 28,
+      "pass": 2,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: stylized pastel sky with a red ball, floating islands and hot air balloons",
+        "Image B: dark road lanes with realistic toy vehicles and a green frog",
+        "Different palettes and rendering: soft pink and purple versus a gritty orange sunset"
+      ]
+    },
+    {
+      "step": 29,
+      "pass": 2,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing roads with toy cars on flat green terrain",
+        "Image B: red ball on a pink cloud floor with floating islands and hot air balloons",
+        "Different palettes and scenery: daytime green and blue versus a pink sunset"
+      ]
+    },
+    {
+      "step": 30,
+      "pass": 2,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a bright cartoon sky with floating islands, clouds and hot air balloons, and a red ball as the player",
+        "Image B is a ground-level road and tram-track scene with a frog character, hazy gray sky and dark city blocks",
+        "Different palette and lighting: saturated blue and white against muted green and gray, with different object styles"
+      ]
+    },
+    {
+      "step": 31,
+      "pass": 2,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: pastel sunset sky with floating islands, hot air balloons and a red ball",
+        "Image B: night sky with traffic lanes, pink cars, trucks, trams and a green frog",
+        "Different scenery, palette and gameplay setting"
+      ]
+    },
+    {
+      "step": 32,
+      "pass": 2,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog character, trams and cars on a flat green road-crossing map",
+        "Image B: red glossy ball over a pink cloud sea with floating islands and balloons",
+        "Different palettes and lighting: grey-blue daylight vs. pink sunset"
+      ]
+    },
+    {
+      "step": 33,
+      "pass": 2,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, balloons and a red ball",
+        "Image B: muted grey-blue sky with a frog, trams and trucks on flat lane stripes",
+        "Different palette and lighting: saturated and soft vs. desaturated with darker shading"
+      ]
+    },
+    {
+      "step": 34,
+      "pass": 2,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A is a frog crossing lanes of trams and trucks, Image B is a red ball over a cloud floor with floating islands",
+        "A has flat pastel lanes under a pale blue sky, B has a pink-yellow sunset with soft clouds",
+        "Different characters, scenery and camera setups with no shared assets"
+      ]
+    },
+    {
+      "step": 35,
+      "pass": 2,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and hot air balloons around a red ball",
+        "Image B: Frogger-style road with cars, a log, a frog and coins on flat green ground",
+        "Different lighting and palette: saturated soft blue gradient vs. muted grey-blue sky with a pale sun"
+      ]
+    },
+    {
+      "step": 36,
+      "pass": 3,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing trams and cars on a grassy ground with a hazy gray sky",
+        "Image B: red ball among floating sky islands, balloons and clouds on a bright blue sky",
+        "Different scenery, palette and gameplay setup"
+      ]
+    },
+    {
+      "step": 37,
+      "pass": 3,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing a traffic road with trains and coins, warm sunset lighting",
+        "Image B: red ball flying through a bright blue sky with floating islands and balloons",
+        "Different scenery, palette and gameplay; only the cartoon low-poly style is shared"
+      ]
+    },
+    {
+      "step": 38,
+      "pass": 3,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, clouds and hot air balloons around a red ball",
+        "Image B: Frogger-style road with cars, logs, a frog and coins on flat green ground under a hazy sky",
+        "Different lighting and palette: saturated flat blue sky in A versus muted grey-blue sky with a pale sun in B"
+      ]
+    },
+    {
+      "step": 39,
+      "pass": 3,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night-time road-crossing scene with a frog, cars, trucks and trains",
+        "Image B is a sunset sky world with a red ball, floating islands and hot air balloons",
+        "Different palettes, scenery and characters, with no shared assets"
+      ]
+    },
+    {
+      "step": 40,
+      "pass": 3,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "tells": [
+        "Image A: bright daytime sky with floating islands, balloons and a red ball",
+        "Image B: dusk lighting with a sunset glow, a frog character and a multi-lane traffic scene",
+        "Different palette and lighting: flat pastel cartoon style against dark, moody, shaded realism"
+      ]
+    },
+    {
+      "step": 41,
+      "pass": 3,
+      "a": "cross-hop--theme1--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a pink sunset cloud world with a red ball and floating islands",
+        "Image B is a green traffic-crossing scene with a frog, trams and cars",
+        "Different palettes, lighting, characters and camera setups"
+      ]
+    },
+    {
+      "step": 42,
+      "pass": 3,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: red ball on a pink-purple cloud sea with floating islands and hot air balloons at sunset",
+        "Image B: green frog on flat lanes with trams, trucks, logs and lily pads under a pale blue sky",
+        "Different art styles: soft stylized gradients in A, flat color lanes with detailed vehicle models in B"
+      ]
+    },
+    {
+      "step": 43,
+      "pass": 3,
+      "a": "cross-hop--theme2--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: red ball in a pastel pink-purple cloud sky with floating islands and hot air balloons",
+        "Image B: green frog crossing a road with cars, a railway track and a coin",
+        "Different palette and art style: soft pastel dusk versus saturated green grass and realistic toy-like vehicles"
+      ]
+    },
+    {
+      "step": 44,
+      "pass": 3,
+      "a": "cross-hop--theme3--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog character on dark road lanes with toy cars, trains and coins",
+        "Image B: red glossy ball on a pink cloud floor with floating islands and balloons",
+        "Different art style and scenery: gritty dark traffic scene vs. pastel sky fantasy"
+      ]
+    },
+    {
+      "step": 45,
+      "pass": 3,
+      "a": "cross-hop--theme5--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A: bright cartoon sky with floating islands, hot air balloons and a red ball",
+        "Image B: muted hazy palette with a frog, trams and trucks on lane strips",
+        "Different art style, lighting and gameplay setting"
+      ]
+    },
+    {
+      "step": 46,
+      "pass": 3,
+      "a": "cross-hop--theme4--settle-60s",
+      "b": "splat-rush-port--original--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "tells": [
+        "Image A is a night-time frog road-crossing scene with traffic lanes and a dark teal ground",
+        "Image B is a bright daytime sky with floating islands, clouds and hot air balloons around a red ball",
+        "Different palettes, camera setups and subjects, with no shared assets or HUD"
+      ]
+    },
+    {
+      "step": 47,
+      "pass": 3,
+      "a": "cross-hop--theme0--settle-60s",
+      "b": "splat-rush-port--default--settle-60s",
+      "gameIs": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "tells": [
+        "Image A: frog crossing roads with toy cars on a flat green field",
+        "Image B: red ball over a purple cloud floor with floating islands and balloons",
+        "Different palettes and scenery: daytime blue sky and green ground vs pink sunset sky and purple clouds"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+[
+ {
+  "target": "where-the-wind-wanders-port--default",
+  "id": "settle-25s",
+  "slug": "where-the-wind-wanders-port",
+  "variant": "default",
+  "sinceReadyMs": 25005,
+  "mean": 164.79,
+  "p5": 82,
+  "p50": 175,
+  "p95": 211,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   151,
+   181.3,
+   161,
+   159.9,
+   181.2,
+   152,
+   156.7,
+   177.1,
+   162.9
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 17
+  }
+ },
+ {
+  "target": "where-the-wind-wanders-port--default",
+  "id": "settle-60s",
+  "slug": "where-the-wind-wanders-port",
+  "variant": "default",
+  "sinceReadyMs": 225992,
+  "mean": 164.94,
+  "p5": 84,
+  "p50": 175,
+  "p95": 211,
+  "darkFrac": 0.0007,
+  "clipFrac": 0,
+  "grid": [
+   150.7,
+   181.5,
+   163.4,
+   159.9,
+   181.1,
+   152.2,
+   156.3,
+   176.6,
+   162.7
+  ],
+  "info": {
+   "app": true,
+   "renderPath": "hdr-msaa",
+   "drawCalls": 17
+  }
+ }
+]

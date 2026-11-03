@@ -1,0 +1,81 @@
+{
+ "target": "aura-fc-3d--lagos",
+ "slug": "aura-fc-3d",
+ "variant": "lagos",
+ "url": "/apps/showcase-aura-fc-3d/index.html?venue=lagos",
+ "group": "g4",
+ "runId": "gu47-before-aura-fc-3d-2",
+ "acrRunId": "ch5un",
+ "readyMs": 29321,
+ "shots": {
+  "settle-25s": {
+   "target": "aura-fc-3d--lagos",
+   "id": "settle-25s",
+   "slug": "aura-fc-3d",
+   "variant": "lagos",
+   "sinceReadyMs": 25014,
+   "mean": 171.99,
+   "p5": 110,
+   "p50": 175,
+   "p95": 210,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    170.9,
+    160.1,
+    163.9,
+    173,
+    173.7,
+    171.2,
+    177.2,
+    180.1,
+    177.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 444
+   }
+  },
+  "settle-60s": {
+   "target": "aura-fc-3d--lagos",
+   "id": "settle-60s",
+   "slug": "aura-fc-3d",
+   "variant": "lagos",
+   "sinceReadyMs": 182856,
+   "mean": 172,
+   "p5": 110,
+   "p50": 176,
+   "p95": 210,
+   "darkFrac": 0,
+   "clipFrac": 0,
+   "grid": [
+    170.9,
+    160.2,
+    163.9,
+    173,
+    173.7,
+    171.3,
+    177.2,
+    180.1,
+    177.7
+   ],
+   "info": {
+    "app": true,
+    "renderPath": "hdr-msaa",
+    "drawCalls": 444
+   }
+  }
+ },
+ "frames": {
+  "settle-25s": "frames/gu47-before-aura-fc-3d-2/aura-fc-3d--lagos--settle-25s.jpg",
+  "settle-60s": "frames/gu47-before-aura-fc-3d-2/aura-fc-3d--lagos--settle-60s.jpg"
+ },
+ "http4xx": [
+  "404 /fonts/aura-fonts.css"
+ ],
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "label": "software WebGL2 (SwiftShader), 1280x720, base 232570e41"
+}

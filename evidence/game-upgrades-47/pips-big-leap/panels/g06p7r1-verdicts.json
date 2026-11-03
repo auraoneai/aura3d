@@ -1,0 +1,113 @@
+[
+ {
+  "slug": "pips-big-leap",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "academy",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large brown log/blob seems to float beside the path. The foreground grass shadows are slightly blocky and pixelated.",
+     "Pixelated, blurry shadow banding on the foreground grass. A brown acorn-pile mesh to the right looks like it is floating. The foreground is slightly oversharpened and streaky.",
+     "Ground texture is blocky and pixelated near the camera; large dark foreground area; the brown rock blob on the right looks like it is floating"
+    ]
+   },
+   {
+    "variant": "w1",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Brown log/blob floats beside the path. Foreground grass shadows are slightly pixelated.",
+     "Low-res, blocky shadow artifacts on the foreground grass. A brown mesh on the right looks like it is floating.",
+     "Pixelated, blurry ground texture in the foreground; heavy dark shading at the bottom of the frame"
+    ]
+   },
+   {
+    "variant": "w2",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Ground is a slightly oversaturated orange. The background is a little hazy. Shadow edges are a little soft and blocky.",
+     "The foreground floor is a large, fairly flat orange expanse. The sky is somewhat hazy and grey.",
+     "Foreground orange is overly saturated and a bit muddy; distant floating island still somewhat hazy"
+    ]
+   },
+   {
+    "variant": "w3",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Floor is pale and fairly low-contrast. Player shadow is pixelated. Rocks float. Bright bloom at the bottom edge.",
+     "Pale, washed-out foreground surface. Heavily pixelated player shadow. A dark band at the bottom edge looks like a near-plane or vignette artifact. Overall low contrast.",
+     "Ground still pale and low contrast; blocky pixelated shadow; blurry foreground edge at the bottom; somewhat hazy"
+    ]
+   },
+   {
+    "variant": "w4",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Monochrome brown/orange cast makes it a bit muddy. The ground is fairly dark.",
+     "The monochrome brown-orange palette is a bit muddy in the midground. The floor is somewhat plain.",
+     "Heavy monochrome brown tint lowers contrast a little; background somewhat muddy"
+    ]
+   },
+   {
+    "variant": "w5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Strong single-hue amber tint flattens colour variety. The dark brown background is a bit muddy.",
+     "The single-hue sepia palette is slightly muddy. The background is a flat dark brown.",
+     "Strong sepia/orange monochrome cast; dark flat backdrop; player blends into the warm palette a bit"
+    ]
+   },
+   {
+    "variant": "w6",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Bright bloom and reflections on the floor slightly wash out the player's lower body. The glowing platform edge is a bit overblown.",
+     "Strong bloom and glare on the reflective floor partly wash out the player's lower body. Slight overexposure in the centre.",
+     "Bloom glare behind the player slightly hurts readability; reflective floor is a bit busy; player is lower contrast against the bright floor"
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "iron-crown",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "himalayan-monastery",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Temple roof is translucent/ghosted with pink bleed. The sky is flat grey-white. Lighting is somewhat flat. Prayer flags are clipped at the top edge. Overall the contrast, colour saturation and character readability are good.",
+     "The temple still looks semi-transparent or ghosted, and the roof top smears into a pink blur. The sky is a flat grey-white overcast. The red fighter is dark against the dark floor. There is some bright speckle (snow or particles) floating near the temple. Even so, contrast and saturation are clearly better, and the prayer flags and lit braziers add theme and depth.",
+     "The shrine roof is ghostly and semi-transparent, with pink alpha bleeding through it. The banner text is distorted. Several props look like they float in front of the shrine, and some small white particles are scattered around. Even so, the fighters stand out clearly with good contrast, the colours are rich, and the prayer flags and fire braziers add atmosphere."
+    ]
+   }
+  ]
+ }
+]

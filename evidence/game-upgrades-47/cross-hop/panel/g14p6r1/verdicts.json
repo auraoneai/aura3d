@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "cross-hop",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "theme0-p6g",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The sky is a washed-out beige haze wall with no depth; traffic is so dense it reads as gridlock, and vehicles overlap or clip in the back lanes (right side), which makes the play area hard to read; the green ground is oversaturated and flat; the coin is seen edge-on. It does have a frog shadow and richer materials.",
+     "Flat beige sky with a hazy, washed-out horizon. Traffic is very dense and vehicles overlap, so the lanes are hard to read. Large flat green areas with little material detail. Frog seen from behind, with weak contrast against the green ground.",
+     "The sky is a flat beige/grey band that looks hazy, and the horizon ends at a hard edge. Traffic is overcrowded and cluttered, with vehicles bunched together, which hurts lane readability. The coin is barely visible. Still, it has better saturation, contact shadows and richer vehicle materials."
+    ]
+   },
+   {
+    "variant": "theme0-p6v",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Back lanes are crowded with heavy traffic and getting busy; the foreground grass is a little flat and oversaturated; there is mild haze at the horizon. Otherwise it has good contact shadows, a sky gradient with a sun glow, readable coins, and the frog's face is visible.",
+     "Background traffic is very dense and overlapping, which clutters the far lanes. Large flat green foreground. Slight sun bloom haze.",
+     "The background traffic is very dense and cluttered, and the far rows merge into visual noise. The sun glow is slightly washed out. Otherwise it has strong saturation, a well-grounded frog with a shadow, readable coins and good depth."
+    ]
+   },
+   {
+    "variant": "theme5-p6d",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The salmon-coloured sky haze is a bit heavy, and the pink logs are oversaturated against the pale green; the far rail lanes look busy. Otherwise it has a clear frog shadow, a readable coin, a warm sunset mood and better depth.",
+     "Warm pinkish haze slightly washes out the sky and horizon. Flat green foreground. The many repeated trams look somewhat busy.",
+     "The warm haze on the sunset sky slightly washes out the upper frame, and the horizon is a hard edge. The repeated tram rows are a bit monotonous. Otherwise the mood is cohesive, the pink platforms have clear contrast, the frog is grounded with a shadow, and the coin is readable."
+    ]
+   }
+  ]
+ }
+]
