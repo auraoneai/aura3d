@@ -79,8 +79,11 @@ function resolveSource(from: string, specifier: string): string | undefined {
   return path;
 }
 
-/** Find the first eagerly evaluated path from a source entry to the optional backend. */
-function backendPath(entry: string): string[] | undefined {
+/**
+ * Find the first eagerly evaluated path from a source entry to the optional backend.
+ * Modules listed in `blocked` (repo-relative) are not traversed.
+ */
+function backendPath(entry: string, blocked: ReadonlySet<string> = new Set()): string[] | undefined {
   const first = resolve(root, entry);
   if (!isAbsolute(first) || !existsSync(first)) throw new Error(`Missing public source entry: ${entry}`);
   const queue: Array<{ path: string; chain: string[] }> = [{ path: first, chain: [entry] }];
@@ -92,6 +95,7 @@ function backendPath(entry: string): string[] | undefined {
     for (const specifier of eagerImports(readFileSync(path, "utf8"), path)) {
       if (backend(specifier)) return [...chain, specifier];
       const target = resolveSource(path, specifier);
+      if (target && blocked.has(relative(root, target))) continue;
       if (target && !visited.has(target)) queue.push({ path: target, chain: [...chain, relative(root, target)] });
     }
   }
@@ -119,10 +123,33 @@ describe("optional physical simulation boundary", () => {
   it.each([
     "packages/core/src/index.ts",
     "packages/physics/src/solverless.ts",
-    "packages/engine/src/public/index.ts"
+    "packages/engine/src/public/v5.ts"
   ])("keeps the optional backend out of the eager runtime graph for %s", (entry) => {
     const path = backendPath(entry);
     expect(path, path ? `Optional backend eagerly reached: ${path.join(" -> ")}` : "").toBeUndefined();
+  });
+
+  // The 4.x-compatible root keeps synchronous physics (docs/migration/4-to-5.md, "Staged v5
+  // entry"; tests/unit/agent-api/lazy-physics-world.test.ts constructs app.physics
+  // synchronously from the root), so the root reaches the backend on purpose. The staged
+  // lazy entry (packages/engine/src/public/v5.ts) is checked in the case above. This case
+  // allowlists exactly the documented synchronous chain: the root's eager path must be this
+  // one, and with the legacy gateway removed the root must not reach the backend at all.
+  const legacyGateway = "packages/engine/src/public/legacy-physics-access.ts";
+  const rootSynchronousChain = [
+    "packages/engine/src/public/index.ts",
+    "packages/engine/src/agent-api/index.ts",
+    "packages/engine/src/agent-api/nodes/physics.ts",
+    legacyGateway,
+    "packages/physics/src/world.ts",
+    "packages/physics/src/PhysicsWorld.ts",
+    "@aura3d/physics-rapier"
+  ];
+
+  it("allows the root entry to reach the backend only through its documented synchronous chain", () => {
+    expect(backendPath("packages/engine/src/public/index.ts")).toEqual(rootSynchronousChain);
+    const bypass = backendPath("packages/engine/src/public/index.ts", new Set([legacyGateway]));
+    expect(bypass, bypass ? `Root reaches the backend outside the legacy gateway: ${bypass.join(" -> ")}` : "").toBeUndefined();
   });
 
   it("keeps the camera collider probe independent of the optional backend", () => {

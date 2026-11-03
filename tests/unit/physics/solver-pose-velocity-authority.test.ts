@@ -19,13 +19,26 @@ import { PhysicsWorld } from "@aura3d/physics";
  *   failure mode.
  * - POSE is re-mirrored every step regardless of `poseOverridden`.
  *
- * The knock-down scene below is a faithful port of the authored "Open Fairway" hole
- * (felt, rails, stacked shells, ceiling, 2-crate stack, pedestal, pin, cup sensor, ball)
- * onto the public physics surface. The pin toppling is a large, robust signal: gated-pose
- * leaves the pin standing; the fix drives it flat.
+ * The knock-down scene below is a port of the authored "Open Fairway" hole (felt, rails,
+ * stacked shells, ceiling, 2-crate stack, pedestal, pin, cup sensor, ball) onto the public
+ * physics surface, re-authored for this test (the shipped game is unchanged). In the
+ * authored layout the struck crate stops flush against the static pedestal (front face
+ * z -7.40) 0.15 m short of the pin face (z -7.55), so the old single-power pass was a
+ * fluke: at most 1 of 9 nearby powers toppled the pin in any sub-step mode. Here the pin
+ * stands 0.02 m proud of the pedestal edge (center z -7.43, centre of mass still 0.03 m
+ * over the pedestal, so it stands on its own), which puts it in the crate path. The test
+ * then checks the topple across forced sub-step counts and a band of drive powers.
+ * See docs/project/status/retired-tests.md.
  */
 
-function openFairwayWorld() {
+/** Pin centre z: front face at -7.38, 0.02 m proud of the pedestal front face (-7.40). */
+const PIN_Z = -7.43;
+/** Drive powers around the canonical Open Fairway power 1.9. */
+const DRIVE_POWERS = [1.84, 1.855, 1.87, 1.885, 1.9, 1.915, 1.93, 1.945, 1.96] as const;
+/** Forced solver sub-step counts per public step (undefined = the adaptive planner). */
+const SUB_STEP_MODES = [undefined, 4, 7, 8, 12] as const;
+
+function openFairwayWorld(forcedSubSteps?: number) {
   const world = new PhysicsWorld({
     gravity: [0, -9.81, 0],
     fixedDelta: 1 / 60,
@@ -33,7 +46,11 @@ function openFairwayWorld() {
     enableSleeping: true,
     sleepVelocityThreshold: 0.06,
     sleepDelay: 0.45,
-    continuousCollision: { mode: "adaptive-substeps", maxSubSteps: 256, motionThreshold: 0.35 }
+    // A forced count uses the public planner: a vanishing motion threshold always asks for
+    // more sub-steps than the cap, and "clamp" runs exactly the cap while anything moves.
+    continuousCollision: forcedSubSteps === undefined
+      ? { mode: "adaptive-substeps", maxSubSteps: 256, motionThreshold: 0.35 }
+      : { mode: "adaptive-substeps", maxSubSteps: forcedSubSteps, motionThreshold: 1e-9, onSubstepLimit: "clamp" }
   });
   const stat = (pos: readonly number[], he: readonly number[], fr = 0.8, rest = 0.2, sensor = false) => {
     const b = world.createRigidBody({ type: "static", position: [...pos] as [number, number, number] });
@@ -58,7 +75,7 @@ function openFairwayWorld() {
   crate(0.31);
   crate(0.93);
   stat([0, 0.09, -7.6], [0.2, 0.09, 0.2]);
-  const pin = world.createRigidBody({ type: "dynamic", position: [0, 0.73, -7.6], mass: 0.32, linearDamping: 0.04, angularDamping: 0.1 });
+  const pin = world.createRigidBody({ type: "dynamic", position: [0, 0.73, PIN_Z], mass: 0.32, linearDamping: 0.04, angularDamping: 0.1 });
   world.createCollider(pin, { shape: { kind: "box", halfExtents: [0.24, 0.55, 0.05] }, material: { friction: 0.6, restitution: 0.14 } });
   stat([0, 0.16, -8.4], [0.697, 0.16, 0.697], 0.9, 0, true);
   const ball = world.createRigidBody({ type: "dynamic", position: [0, 0.18, 3.2], mass: 0.5, linearDamping: 0.12, angularDamping: 0.2 });
@@ -90,14 +107,29 @@ describe("solver/velocity/pose ownership in syncRapierFromAura", () => {
     expect(Math.abs(body.angularVelocity[1])).toBeGreaterThan(1);
   });
 
-  it("mirrors the solver pose every step so a drive topples the pin (not a ~1m shortfall)", () => {
-    const { world, ball, pin } = openFairwayWorld();
-    for (let i = 0; i < 30; i += 1) world.step(1 / 60); // stacking transient
-    ball.wake();
-    ball.setVelocity([0, 0, -(1.9 * 0.32) / 0.045]); // canonical Open Fairway power 1.9
-    for (let i = 0; i < 320; i += 1) world.step(1 / 60);
-    // The top crate must carry enough momentum to knock the standing pin flat. A standing
-    // pin (center ~0.73 high) is the gated-pose regression; the fix drives it onto the felt.
-    expect(pin.position[1]).toBeLessThan(0.45);
+  it("the re-authored pin stands on its own when nothing hits it", () => {
+    const { world, pin } = openFairwayWorld();
+    for (let i = 0; i < 1200; i += 1) world.step(1 / 60);
+    expect(pin.position[1]).toBeGreaterThan(0.7);
   });
+
+  it("mirrors the solver pose every step so a drive topples the pin (not a ~1m shortfall)", () => {
+    const misses: string[] = [];
+    for (const forced of SUB_STEP_MODES) {
+      for (const power of DRIVE_POWERS) {
+        const { world, ball, pin } = openFairwayWorld(forced);
+        for (let i = 0; i < 30; i += 1) world.step(1 / 60); // stacking transient
+        expect(pin.position[1]).toBeGreaterThan(0.7);
+        ball.wake();
+        ball.setVelocity([0, 0, -(power * 0.32) / 0.045]);
+        world.step(1 / 60);
+        if (forced !== undefined) expect(world.snapshot().backend.continuousCollision.lastSubSteps).toBe(forced);
+        for (let i = 1; i < 320; i += 1) world.step(1 / 60);
+        // The top crate must carry enough momentum to knock the standing pin flat. A standing
+        // pin (center ~0.73 high) is the gated-pose regression; the fix drives it onto the felt.
+        if (!(pin.position[1] < 0.45)) misses.push(`subSteps=${forced ?? "adaptive"} power=${power} pinY=${pin.position[1].toFixed(3)}`);
+      }
+    }
+    expect(misses).toEqual([]);
+  }, 120_000);
 });

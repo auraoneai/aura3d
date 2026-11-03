@@ -525,3 +525,63 @@ relative to the creation pose, `5590b6840`, §8).
 - `tests/unit/engine/instance-matrices-dense.test.ts` › 18,000 instances ≤ 2 ms per frame: 1.2 ms median locally,
   5.2 ms on the ACR shard (2 workers on a shared host). The budget was not changed; it needs an owner decision
   (dedicated perf stage, or a machine-calibrated budget).
+
+## 12. Parent decisions on two open unit cases (2026-11-02, branch `native/5.0` after `d9b2962e1`)
+
+Both cases are rewritten onto the current contract. No product code changed.
+
+### 12a. `tests/unit/physics/solver-pose-velocity-authority.test.ts` › "a drive topples the pin" (re-authored scenario)
+
+Closes the §10e open item. The parent analysis showed that stepping does not depend on the sub-step count at
+convergence. In the authored Open Fairway layout the struck crate stops flush against the static pedestal (front face
+z −7.40, crate half-size 0.31), 0.15 m short of the pin face (z −7.55). The old pass at power 1.9 was a fluke: in any
+sub-step mode, at most 1 of 9 nearby powers toppled the pin. Measured on the original layout (pin centre z −7.60), with
+pin final y for powers 1.84…1.96 in 0.015 steps: adaptive 0/9 topple; forced 4 sub-steps 1/9; 7 0/9; 8 0/9; 12 3/9.
+
+The fix changes only the test's own scene. The scene is an inline port in the test file; the shipped Aura Links / Open
+Fairway game is unchanged. The pin centre moves from z −7.60 to z −7.43 (`PIN_Z`). Its front face, at −7.38, now
+stands 0.02 m proud of the pedestal edge, so it is in the crate path. Its centre of mass is still 0.03 m over the
+pedestal, so it stands on its own. Variants that were measured and rejected:
+
+- pin at −7.45 (flush): 40/45 topple;
+- −7.42: 44/45;
+- −7.41: some pins left leaning at y 0.41–0.44;
+- −7.40: falls over with no impact;
+- pedestal lowered to 2 cm or 4 cm half-height: 26–38/45.
+
+The case now asserts the topple (pin y < 0.45; standing is 0.73) for every combination of:
+
+- sub-step modes: the adaptive planner plus forced counts 4, 7, 8 and 12;
+- drive powers: 1.84, 1.855, …, 1.96 (9 values).
+
+That is 45 runs, and all 45 topple. The forced counts use the public planner, not a private hook. `continuousCollision`
+is set to `{ maxSubSteps: N, motionThreshold: 1e-9, onSubstepLimit: "clamp" }`, which always asks for more than N
+sub-steps, so the world runs exactly N while anything moves. Each run asserts
+`snapshot().backend.continuousCollision.lastSubSteps === N` on the drive step. A new control case checks that the moved
+pin stays standing (y > 0.7) through 1,200 steps with no drive. The other two cases (linear and angular impulse reach
+the solver) are unchanged.
+
+A wider local sweep also passed 143/143 topples, with worst pin y 0.37 and every pin tilted at least 53°. It used the
+adaptive planner plus forced counts 2, 3, 4, 5, 6, 7, 8, 10, 12 and 16, and powers 1.7 to 2.1.
+
+Known limit, not changed (separate work): when `syncRapierFromAura` was temporarily mutated to gate the pose write
+behind `poseOverridden`, the topple case still passed. This matches the parent analysis that the pose write for a free
+body is the solver's own last output. The case therefore guards the knock-down chain, not that specific gating
+regression.
+
+### 12b. `tests/unit/physics-rapier/optional-boundary.test.ts` › root entry (retargeted + explicit allowlist)
+
+The case "keeps the optional backend out of the eager runtime graph" listed `packages/engine/src/public/index.ts`.
+That entry reaches the backend on purpose. `docs/migration/4-to-5.md` ("Staged v5 entry") says "The 4.x-compatible
+root keeps synchronous physics", and `tests/unit/agent-api/lazy-physics-world.test.ts` builds `app.physics`
+synchronously from the root. The case now checks the staged lazy entry `packages/engine/src/public/v5.ts`, which passes.
+
+A new case, "allows the root entry to reach the backend only through its documented synchronous chain", checks two
+things:
+
+- The root's eager path is exactly `public/index.ts → agent-api/index.ts → agent-api/nodes/physics.ts →
+  public/legacy-physics-access.ts → physics/src/world.ts → physics/src/PhysicsWorld.ts → @aura3d/physics-rapier`.
+- When `public/legacy-physics-access.ts` (the 4.x synchronous gateway) is not traversed, the root no longer reaches
+  the backend. Any other eager route therefore fails the case.
+
+`backendPath` gained an optional `blocked` module set for this. All 13 cases pass.
