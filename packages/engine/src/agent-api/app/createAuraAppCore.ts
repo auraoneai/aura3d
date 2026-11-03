@@ -74,6 +74,25 @@ function managedCanvasInUse(): RenderDeviceError {
 }
 
 /** The synchronous and idle paths can report the same nested cleanup error. */
+/** True when `error` (or, for an aggregate, each of its members) is already
+ * one of `failures` or nested in a reported aggregate. */
+function cleanupFailureReported(failures: readonly unknown[], error: unknown): boolean {
+  const reported = (target: unknown): boolean => {
+    const visited = new Set<unknown>();
+    const contains = (candidate: unknown): boolean => {
+      if (Object.is(candidate, target)) return true;
+      if (visited.has(candidate)) return false;
+      visited.add(candidate);
+      try { return candidate instanceof AggregateError && candidate.errors.some(contains); } catch { return false; }
+    };
+    return failures.some(contains);
+  };
+  if (reported(error)) return true;
+  try {
+    return error instanceof AggregateError && error.errors.length > 0 && error.errors.every(reported);
+  } catch { return false; }
+}
+
 function distinctCleanupFailures(failures: readonly unknown[]): unknown[] {
   const seen = new Set<unknown>();
   const active = new Set<unknown>();
@@ -2138,7 +2157,11 @@ export function createAuraAppWithPhysicsWorldAccess(
         if (formatRegistry || canvasAdmissionExclusive) {
           const { awaitTypedGLBActorDisposals } = await import("../../production-runtime/TypedGLBActor.js");
           try { await awaitTypedGLBActorDisposals(runtimeOwner); }
-          catch (error) { failures.push(new Error(productionRenderErrorMessage(error), { cause: error })); }
+          catch (error) {
+            // A retried disposal can surface the same actor failure through
+            // its retirement and this drain; report that failure only once.
+            if (!cleanupFailureReported(failures, error)) failures.push(new Error(productionRenderErrorMessage(error), { cause: error }));
+          }
         }
         releaseCanvasIfRetired();
         if (canvasAdmissionDrain) {

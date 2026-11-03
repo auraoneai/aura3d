@@ -380,7 +380,7 @@ player
   .setPosition(-1, 0, 0)
   .setRotation(0, Math.PI / 2, 0)
   .setScale(0.8)
-  .setMaterial(material.metallic({ color: "#f8d96a" }))
+  .setMaterial(material.metal({ color: "#f8d96a" }))
   .setMorphTarget("Mouth_AA", 0)
   .play("idle", { loop: true, speed: 1 });
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   assetEventScopeForApp,
   bindAppAssetEventScope,
@@ -28,6 +28,7 @@ import { createAuraApp } from "../../../packages/engine/src/agent-api/app/create
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { setTextureAssetManager, texture } from "../../../packages/engine/src/agent-api/nodes/texture";
 import type { AssetManager } from "../../../packages/assets/src/AssetManager";
+import { createTypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
 import { createProductionRuntimeRendererInput, setPrd01ModelMatrixCache } from "../../../packages/engine/src/agent-api/compiler/renderInput";
 import {
   bindShaderFailureStore,
@@ -69,7 +70,9 @@ describe("app-owned runtime isolation", () => {
       const lateA = texture.load("late.png", { app: appA });
       const firstB = texture.load("b.png", { app: appB });
       const rejectA = expect(firstA).rejects.toThrow("a failed");
-      const rejectLate = expect(lateA).rejects.toThrow("late failed");
+      // 5.0: disposing the owner settles its pending load as an AbortError at
+      // once; the loader's later failure is suppressed and never reaches app A.
+      const rejectLate = expect(lateA).rejects.toMatchObject({ name: "AbortError", message: expect.stringMatching(/app is closed/) });
       const rejectB = expect(firstB).rejects.toThrow("b failed");
       pending.get("b.png")!.progress({ loadedBytes: 1, totalBytes: 2 });
       pending.get("a.png")!.progress({ loadedBytes: 2, totalBytes: 2 });
@@ -80,15 +83,77 @@ describe("app-owned runtime isolation", () => {
       expect(errorsA).toEqual(["a.png"]);
       expect(errorsB).toEqual([]);
       appA.dispose();
+      await rejectLate;
       pending.get("late.png")!.progress({ loadedBytes: 1, totalBytes: 1 });
       pending.get("late.png")!.reject(new Error("late failed"));
       pending.get("b.png")!.reject(new Error("b failed"));
-      await Promise.all([rejectLate, rejectB]);
+      await rejectB;
+      await Promise.resolve();
       expect(progressA).toEqual(["a.png"]);
       expect(errorsA).toEqual(["a.png"]);
       expect(errorsB).toEqual(["b.png"]);
     } finally {
       appA.dispose(); appB.dispose(); setTextureAssetManager(null);
+    }
+  });
+
+  it("cancels every loader kind owned by a closed app while a non-strict second app keeps its own events", async () => {
+    // Model requests: app A's stays pending until aborted; app B's fails with a signed URL.
+    const modelSignals = new Map<string, AbortSignal | undefined>();
+    vi.stubGlobal("fetch", vi.fn((input: unknown, init?: RequestInit) => {
+      const url = String(input);
+      modelSignals.set(url, init?.signal ?? undefined);
+      if (url.includes("b.gltf")) return Promise.reject(new Error("fetch https://cdn.test/b.gltf?X-Amz-Signature=secret failed"));
+      return new Promise((_resolve, reject) => {
+        const abort = () => reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+        if (init?.signal?.aborted) abort();
+        init?.signal?.addEventListener("abort", abort, { once: true });
+      });
+    }));
+    type Pending = { reject: (error: Error) => void };
+    const pending = new Map<string, Pending>();
+    setTextureAssetManager({
+      load: (url: string) => new Promise((_resolve, reject: (error: Error) => void) => { pending.set(url, { reject }); })
+    } as unknown as AssetManager);
+    const errorsA: string[] = [], errorsB: string[] = [], messagesB: string[] = [];
+    const appA = createAuraApp(null, { scene: scene(), autoStart: false, strict: true, onAssetError: (event) => errorsA.push(event.url ?? "") });
+    const appB = createAuraApp(null, {
+      scene: scene(), autoStart: false, strict: false,
+      onAssetError: (event) => { errorsB.push(event.url ?? ""); messagesB.push(event.message ?? ""); }
+    });
+    const actor = (app: object, url: string, id: string) => createTypedGLBActor({ asset: { url, format: "gltf" }, id, width: 8, height: 8, runtimeOwner: app });
+    try {
+      const modelA = actor(appA, "https://cdn.test/a.gltf", "model-a");
+      const textureA = texture.load("a.png", { app: appA });
+      const modelB = actor(appB, "https://cdn.test/b.gltf", "model-b");
+      const textureB = texture.load("b.png", { app: appB });
+      const settledA = Promise.allSettled([modelA, textureA]);
+      await expect(modelB).rejects.toThrow();
+      expect(errorsB).toEqual(["https://cdn.test/b.gltf"]);
+      expect(messagesB.join(" ")).not.toContain("secret");
+      await vi.waitFor(() => expect(modelSignals.has("https://cdn.test/a.gltf")).toBe(true));
+      // The model request carries an owner-linked signal even though the caller passed none.
+      const signalA = modelSignals.get("https://cdn.test/a.gltf");
+      expect(signalA?.aborted).toBe(false);
+      appA.dispose();
+      expect(signalA?.aborted).toBe(true);
+      const [modelOutcome, textureOutcome] = await settledA;
+      expect(modelOutcome).toMatchObject({ status: "rejected", reason: { name: "AbortError" } });
+      expect(textureOutcome).toMatchObject({ status: "rejected", reason: { name: "AbortError" } });
+      pending.get("a.png")!.reject(new Error("late a failed"));
+      pending.get("b.png")!.reject(new Error("b texture failed"));
+      await expect(textureB).rejects.toThrow("b texture failed");
+      await Promise.resolve();
+      // Nothing from the closed app's loaders reaches it, nothing crosses apps,
+      // and a closed owner rejects new requests of every kind up front.
+      expect(errorsA).toEqual([]);
+      expect(errorsB).toEqual(["https://cdn.test/b.gltf", "b.png"]);
+      await expect(actor(appA, "https://cdn.test/a2.gltf", "model-a2")).rejects.toMatchObject({ name: "AbortError" });
+      await expect(texture.load("a2.png", { app: appA })).rejects.toMatchObject({ name: "AbortError" });
+      expect(modelSignals.has("https://cdn.test/a2.gltf")).toBe(false);
+      expect(pending.has("a2.png")).toBe(false);
+    } finally {
+      appA.dispose(); appB.dispose(); setTextureAssetManager(null); vi.unstubAllGlobals();
     }
   });
 

@@ -16,7 +16,8 @@ mistakes behind it are in [`lessons-learned.md`](lessons-learned.md), and
 A public game starts from the library shell, not from hand-written glue:
 
 - `createGame` from `@aura3d/engine/game` for lifecycle, pause, HUD, touch
-  controls, sound and juice (the `@aura3d/engine` export is a headless stub);
+  controls, sound and juice (the `@aura3d/engine` export throws a
+  `CREATE_GAME_ROOT_UNAVAILABLE_V1` migration error);
 - `createFixedStepLoop`, `installQaHooks`, `readQaParams` and
   `createCountedRng` for a deterministic, scriptable simulation;
 - `createCueBank` or `sfxUrl` for sound, bound to simulation events;

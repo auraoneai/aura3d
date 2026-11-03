@@ -13,7 +13,7 @@ import { createGame, sfxUrl } from "@aura3d/engine/game";
 | Import | What you get |
 | --- | --- |
 | `@aura3d/engine/game` | The real kit: HUD, touch, juice, session, sound, evidence beacon. Use this one. |
-| `@aura3d/engine` | A headless stub. It mounts the app and nothing else, and its first call logs `CREATE_GAME_STUB` pointing here. |
+| `@aura3d/engine` | No game runtime. It throws `AuraGameMigrationError` (`code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`, message prefix `CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything, pointing here. |
 
 Importing `createGame` from `@aura3d/engine/game` is itself the opt-in: the `game` quality-rebuild lane defaults on for this entry point (`A3D_QR_GAME`). An explicit setting still wins, in this order:
 

@@ -265,7 +265,7 @@ describe("typed VOX models through app mounts", () => {
       const firstReadiness = app.readiness();
       app.setScene(scene().add(model(typedVoxel(bytes, "/models/second.vox"))));
       expect(signal.aborted).toBe(true);
-      await expect(firstReadiness).resolves.toEqual({ state: "cancelled" });
+      await expect(firstReadiness).resolves.toEqual({ state: "superseded" });
       await app.readyStrict();
       await app.ready();
       resolveFirst(lateResponse);

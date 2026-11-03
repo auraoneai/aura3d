@@ -80,7 +80,14 @@ describe("mount request ownership", () => {
     expect(mounts.signals).toHaveLength(2);
     expect(mounts.signals[0]!.aborted).toBe(true);
     expect(mounts.signals[1]!.aborted).toBe(false);
-    await expect(firstReady).resolves.toMatchObject({ state: "cancelled" });
+    await expect(firstReady).resolves.toMatchObject({ state: "superseded" });
+    // Caller cancellation is distinct from supersession and leaves the mount running.
+    const caller = new AbortController();
+    const cancelledReady = app.readiness({ signal: caller.signal });
+    caller.abort();
+    await expect(cancelledReady).resolves.toEqual({ state: "cancelled" });
+    await expect(app.readiness({ signal: caller.signal })).resolves.toEqual({ state: "cancelled" });
+    expect(mounts.signals[1]!.aborted).toBe(false);
     const secondReady = app.readiness();
     app.dispose();
     expect(mounts.signals[1]!.aborted).toBe(true);
@@ -100,7 +107,7 @@ describe("mount request ownership", () => {
     expect(mounts.options.map((options) => (options as { assets: { securityContext: string } }).assets.securityContext))
       .toEqual(["account-a-session-1", "account-a-session-1"]);
     expect(mounts.signals[0]?.aborted).toBe(true);
-    await expect(firstReady).resolves.toMatchObject({ state: "cancelled" });
+    await expect(firstReady).resolves.toMatchObject({ state: "superseded" });
     app.dispose();
     expect(mounts.signals[1]?.aborted).toBe(true);
   });

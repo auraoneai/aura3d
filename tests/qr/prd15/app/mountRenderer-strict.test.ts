@@ -106,6 +106,20 @@ describe("T4.3 errorOverlay", () => {
     expect(details.stackLines[0]).toContain("root cause");
   });
 
+  it("bounds and redacts DOM-visible details and survives hostile thrown values", () => {
+    const cause = new Error("fetch https://user:password@cdn.test/a.glb?X-Amz-Signature=secret failed");
+    const err = new AuraRuntimeError("renderer-mount-failed", `Authorization: Bearer secret ${"x".repeat(20000)}`, { cause });
+    const details = errorOverlayDetails(err);
+    expect(JSON.stringify(details)).not.toMatch(/secret|password/);
+    expect(details.message.length).toBeLessThanOrEqual(2049);
+    expect(details.stackLines[0]).toContain("[redacted]");
+    const revoked = Proxy.revocable({}, {}); revoked.revoke();
+    expect(errorOverlayDetails(revoked.proxy)).toMatchObject({ code: "error", stackLines: [] });
+    const hostile = Object.defineProperty({}, "message", { get() { throw new Error("getter ran"); } });
+    expect(() => errorOverlayDetails(hostile)).not.toThrow();
+    expect(errorOverlayDetails(42n).message).toBe("42n");
+  });
+
   it("attaches a role=alert overlay with a focusable copy button", () => {
     const elements: FakeElement[] = [];
     const fakeDoc = {

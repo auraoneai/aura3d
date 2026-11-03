@@ -226,9 +226,13 @@ describe("app-owned PRD07 mount plumbing", () => {
       authority!.onRevoke(revoked);
       authority!.onRevoke(cancelledRevoke)();
       authority!.onChange(scopedChange);
-      // A second app could not attach its own overlay to this canvas. It must
-      // not borrow the first app's authority merely because the canvas matches.
-      expect(secondHooks.getPrd07MountAuthority()).toBeNull();
+      // Overlays are keyed by app runtime owner on a shared canvas. The second
+      // app gets only its own authority, never the first app's merely because
+      // the canvas matches.
+      const secondAuthority = secondHooks.getPrd07MountAuthority();
+      expect(secondAuthority).toMatchObject({ owner: secondOwner, canvas });
+      expect(secondAuthority).not.toBe(authority);
+      expect(secondAuthority!.overlay).not.toBe(authority!.overlay);
 
       const firstChange = vi.fn(), secondChange = vi.fn();
       const offFirst = firstHooks.subscribePrd07Atmosphere(firstChange);
@@ -272,6 +276,11 @@ describe("app-owned PRD07 mount plumbing", () => {
       expect(revoked).toHaveBeenCalledTimes(1);
       expect(replacement!.isLive()).toBe(false);
       expect(replacementHooks.getPrd07MountAuthority()).toBeNull();
+      // Disposing the first app never revokes or resets the second app's authority.
+      expect(secondAuthority!.isLive()).toBe(true);
+      expect(secondHooks.getPrd07MountAuthority()).toBe(secondAuthority);
+      second.dispose();
+      expect(secondAuthority!.isLive()).toBe(false);
       expect(secondHooks.getPrd07MountAuthority()).toBeNull();
     } finally { first.dispose(); second.dispose(); }
   });

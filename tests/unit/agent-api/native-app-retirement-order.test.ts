@@ -242,6 +242,57 @@ describe("app controller retirement ordering", () => {
     expect(dispose).toHaveBeenCalledTimes(1);
   });
 
+  it("survives a restore remount racing device loss, a late mount and disposal, then retries the failed resource", async () => {
+    const restoreListeners = new Set<() => void>();
+    const lossListeners = new Set<() => void>();
+    const firstDispose = vi.fn();
+    const first: WebGLRenderController = {
+      ...controller(firstDispose, () => Promise.resolve()),
+      onDeviceRestored: (listener: () => void) => { restoreListeners.add(listener); return () => restoreListeners.delete(listener); },
+      onDeviceLost: (listener: () => void) => { lossListeners.add(listener); return () => lossListeners.delete(listener); }
+    } as WebGLRenderController;
+    const app = makeApp(first);
+    await app.readyStrict();
+    const appLoss = vi.fn();
+    app.onDeviceLost(appLoss);
+    const appRestored = vi.fn();
+    app.onDeviceRestored(appRestored);
+    expect(restoreListeners.size).toBeGreaterThan(0);
+    // The restored context remounts through a mount that is still pending...
+    const error = new Error("replacement cleanup failed");
+    let attempt = 0;
+    const replacementDispose = vi.fn(() => { if (++attempt === 1) throw error; });
+    const replacement = controller(replacementDispose, () => attempt === 1 ? Promise.reject(error) : Promise.resolve());
+    const replacementMount = deferred<WebGLRenderController>();
+    harness.queue.push({ controller: replacement, mount: replacementMount.promise });
+    for (const listener of [...restoreListeners]) listener();
+    expect(harness.hooks).toHaveLength(2);
+    expect(appRestored).toHaveBeenCalledTimes(1);
+    const staleHooks = harness.hooks[0]!;
+    // ...while the old mount reports a loss and the app is disposed.
+    staleHooks.onDeviceLossDetected?.();
+    for (const listener of [...lossListeners]) listener();
+    expect(app.renderTermination?.()?.state).not.toBe("device-lost");
+    const readiness = app.readiness({ stage: "first-frame" });
+    const pending = rejected(app.disposeAsync());
+    await expect(readiness).resolves.toMatchObject({ state: expect.stringMatching(/^(ready|disposed)$/) });
+    expect(restoreListeners.size).toBe(0);
+    // A restore or mount completion after disposal never remounts or resurrects.
+    for (const listener of [...restoreListeners]) listener();
+    replacementMount.resolve(replacement);
+    expect(contains(await pending, error)).toBe(true);
+    expect(harness.hooks).toHaveLength(2);
+    expect(firstDispose).toHaveBeenCalledTimes(1);
+    expect(replacementDispose).toHaveBeenCalledTimes(1);
+    await expect(app.readiness()).resolves.toEqual({ state: "disposed" });
+    // The failed resource stays owned and is retried exactly once more.
+    await app.disposeAsync();
+    expect(replacementDispose).toHaveBeenCalledTimes(2);
+    await app.disposeAsync();
+    expect(replacementDispose).toHaveBeenCalledTimes(2);
+    expect(firstDispose).toHaveBeenCalledTimes(1);
+  });
+
   it("does not lose a failed controller when a pending mount resolves after disposal", async () => {
     const error = new Error("late mount cleanup");
     let attempt = 0;

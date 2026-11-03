@@ -423,7 +423,7 @@ describe("createAuraApp worker integration", () => {
     const oldFrame = app.readiness({ stage: "first-frame" });
     app.resume();
     app.setScene(makeScene("second"));
-    await expect(oldFrame).resolves.toEqual({ state: "cancelled" });
+    await expect(oldFrame).resolves.toEqual({ state: "superseded" });
     const newFrame = app.readiness({ stage: "first-frame" });
     app.pause();
     const step = app.stepAsync(0.5);
@@ -436,6 +436,43 @@ describe("createAuraApp worker integration", () => {
     await expect(image).resolves.toMatchObject({ width: 8, height: 4 });
     expect(f.render.mock.calls.map(([time]) => time)).toEqual([500, 500]);
     expect(f.host.sent.map((message) => message.type)).toEqual(expect.arrayContaining(["scene", "pause", "frame", "screenshot"]));
+    await app.disposeAsync();
+  });
+
+  it("mounts the indexed worker-render capability scenario in the render worker without main-thread fallback", async () => {
+    const { mountNativeCapabilityScenario } = await import("../../../examples/native-capabilities/index.js");
+    const mounted: AuraSceneSnapshot[] = [];
+    let f!: ReturnType<typeof fixture>;
+    f = fixture(async (snapshot) => { mounted.push(snapshot); return f.renderer; });
+    const asset = { kind: "model", url: "/aura-assets/subject.glb", format: "glb", hash: `sha256-${"a".repeat(64)}` } as never;
+    const app = await mountNativeCapabilityScenario("worker-render", {
+      target: f.canvas as unknown as HTMLCanvasElement, asset, autoStart: false, createWorker: f.createWorker
+    });
+    try {
+      expect(f.createWorker).toHaveBeenCalledOnce();
+      expect(app.execution).toMatchObject({ requested: "worker", active: "worker" });
+      expect(mainMount).not.toHaveBeenCalled();
+      expect(JSON.stringify(mounted[0]?.nodes)).toContain("\"subject\"");
+    } finally { await app.disposeAsync(); }
+  });
+
+  it("publishes a replacement snapshot only after the worker acknowledges it", async () => {
+    const next = deferred<WebGLSceneRenderer>();
+    const f = fixture(async (snapshot) => snapshot.nodes.some((node) => "name" in node && node.name === "second") ? next.promise : f.renderer);
+    const app = createAuraApp(f.canvas as unknown as HTMLCanvasElement, {
+      scene: makeScene("first"), autoStart: false, worker: { createWorker: f.createWorker }
+    });
+    await app.readyStrict();
+    const named = () => app.scene.nodes.flatMap((node) => "name" in node && node.name ? [node.name] : []);
+    expect(named()).toContain("first");
+    app.setScene(makeScene("second"));
+    await flush();
+    expect(named()).toContain("first");
+    expect(named()).not.toContain("second");
+    next.resolve(f.renderer);
+    await app.readyStrict();
+    expect(named()).toContain("second");
+    expect(named()).not.toContain("first");
     await app.disposeAsync();
   });
 
@@ -460,7 +497,7 @@ describe("createAuraApp worker integration", () => {
       }
     });
     app.setScene(makeScene("intermediate"));
-    await expect(oldFrame).resolves.toEqual({ state: "cancelled" });
+    await expect(oldFrame).resolves.toEqual({ state: "superseded" });
     await app.readyStrict();
     await app.stepAsync(0);
     expect(mounted).toEqual(["first", "latest"]);

@@ -14,7 +14,7 @@ Rule of thumb: the kit owns the physics and rules; you own the art, the level, t
 | `game.fighting(options)` (also `games.createFightingGameKit`) | Input mapping, moves with frame data, hit and hurt boxes, kinematic bodies, combat world, camera director, hit effects, a basic opponent AI | Roster, move sets beyond the defaults, characters and animation, stages, round and match flow, netcode |
 | `game.racketSports()` | Scoring state machine (game, match, tiebreak), exact event-time ball flight, athlete rig solver, ball stepping | Court and character art, shot selection, opponent AI, line calls, serve flow, camera, HUD |
 
-What this does not prove: that a kit-based game is playable, balanced or good-looking. A game claim still needs input that changes state, an objective, reset and a pixel check ([claims-and-boundaries.md](claims-and-boundaries.md) section 6). The root `createGame` is a headless stub; the lifecycle, HUD and touch kit is `@aura3d/engine/game`.
+What this does not prove: that a kit-based game is playable, balanced or good-looking. A game claim still needs input that changes state, an objective, reset and a pixel check ([claims-and-boundaries.md](claims-and-boundaries.md) section 6). The root `createGame` throws `AuraGameMigrationError` (`code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`, message prefix `CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything; the lifecycle, HUD and touch kit is `@aura3d/engine/game`.
 
 ## Platformer
 

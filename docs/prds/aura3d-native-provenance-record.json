@@ -217,7 +217,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -253,7 +253,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -271,7 +271,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -307,7 +307,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -379,7 +379,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -397,7 +397,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {
@@ -415,7 +415,7 @@
     "replacementStatus": "third-party-licensed",
     "reviewEvidence": [
       "Reference-following mutable compatibility entry (@aura3d/math/three). Notice kept per WP-29: not yet independently replaced; independent candidates live in packages/math/src/independent/mutable/ pending compatibility review.",
-      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against values generated from three@0.185.1 (reference-generated; replacement tracked under S5-WP29-05)."
+      "Goldens: tests/unit/math/three-compat-parity.test.ts compares against tests/support/independent-math-reference.mjs, an independently authored textbook reference (no compat or other-engine import; S5-WP29-05, 2026-11-02)."
     ],
     "candidateReviews": [
       {

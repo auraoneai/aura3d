@@ -6,7 +6,7 @@ For a scene or product viewer, use `docs/agents/prompt-to-3d-workflow.md`. This 
 
 These are library surface (API pages in `docs/api/`):
 
-- **Lifecycle, pause, results, DOM HUD, touch, juice, game sound:** `createGame` from `@aura3d/engine/game` (`game-kit.md`). The root `createGame` is a headless stub that logs `CREATE_GAME_STUB`.
+- **Lifecycle, pause, results, DOM HUD, touch, juice, game sound:** `createGame` from `@aura3d/engine/game` (`game-kit.md`). The root `createGame` throws `AuraGameMigrationError` (`code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`, message prefix `CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything.
 - **Deterministic simulation and automated checks:** `createFixedStepLoop`, `installQaHooks`, `readQaParams`, `createCountedRng` (`qa-kit.md`).
 - **Sound:** `createCueBank`, `createStepSequencer`, `createToneLoop`, `createSampleSlices` from `@aura3d/engine/audio` (`audio-synth.md`).
 - **Production models:** `defineModelAssets` (`model-loader.md`): same-origin URL, `sha256`, license, `?models=0` procedural fallback.

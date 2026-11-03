@@ -1,45 +1,34 @@
 /**
- * r185-oracle.test.ts — replays the GPU-rendered r185 golden grid
- * (fixtures/bsdf/r185-golden.json, produced by oracles/generate-r185-golden.py
- * evaluating three r185's own GLSL on a real GLES3 context) through the JS
- * oracle in ../oracles/physical-bsdf-reference.ts.
+ * r185-oracle.test.ts — checks the PRD-04 CPU BSDF oracle
+ * (../oracles/physical-bsdf-reference.ts) against independently derived
+ * expectations (../oracles/independent-bsdf-goldens.ts: each value re-derived
+ * from the cited publication or Khronos specification, in a different
+ * algebraic form where one exists). S5-WP29-05 replaced the former golden,
+ * which had been produced by evaluating another engine's GLSL on a GPU; no
+ * value here comes from running or reading another 3D engine.
  *
- * PRD-04 P1-3: oracle vs golden ≤ 1e-4.
+ * The file keeps its historical name because the oracle (and the r185-named
+ * split-sum table it samples) keep theirs. The 16x16 split-sum table is input
+ * data to the oracle; it is bounded separately against an independent
+ * quadrature of the same integral (last describe block).
+ *
+ * PRD-04 P1-3 tolerance: <= 1e-4. Both sides are now CPU binary64, so every
+ * case, including the table-backed ones (same table, independently written
+ * sampler), is held to 1e-6; the former GPU half-float filtering floor
+ * (2e-3 on table-backed cases) no longer applies.
  */
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
 import * as ref from "../oracles/physical-bsdf-reference";
+import { DFG_LUT_R185, DFG_LUT_SIZE } from "../oracles/dfg-lut-r185";
+import {
+	INDEPENDENT_BSDF_CASES,
+	bilinearRG,
+	independentExpected,
+	independentSplitSumTexel,
+	type IndependentCase
+} from "../oracles/independent-bsdf-goldens";
 
-const here = dirname(fileURLToPath(import.meta.url));
-
-interface GoldenCase {
-	fn: string;
-	desc: string;
-	out: 1 | 3;
-	argorder: string[];
-	axes: Record<string, number[]>;
-	fixed: Record<string, number | number[]>;
-	values: (number | null)[];
-}
-
-interface Golden {
-	meta: Record<string, unknown>;
-	cases: GoldenCase[];
-}
-
-const golden = JSON.parse(
-	readFileSync(join(here, "../fixtures/bsdf/r185-golden.json"), "utf8")
-) as Golden;
-
-/** Cases whose math samples the half-float DFG LUT (filtering floor, see below). */
-const DFG_LUT_CASES = new Set([
-	"environmentBRDF",
-	"multiscatteringSingle",
-	"multiscatteringMulti",
-	"brdfGGXMultiscatter"
-]);
+type GoldenCase = IndependentCase;
 
 function vec3(v: number | number[]): ref.Vec3 {
 	return Array.isArray(v) ? [v[0], v[1], v[2]] : [v, v, v];
@@ -56,7 +45,7 @@ function palIdx(x: number): number {
 	return Math.max(0, Math.min(3, Math.floor(x)));
 }
 
-/** Dispatch one golden case to the JS oracle; returns per-sample values. */
+/** Dispatch one case to the JS oracle under test; returns per-sample values. */
 function evaluate(c: GoldenCase, args: Record<string, number>): number[] {
 	const fx = (n: string) => c.fixed[n] as number;
 	switch (c.fn) {
@@ -124,76 +113,84 @@ function evaluate(c: GoldenCase, args: Record<string, number>): number[] {
 	}
 }
 
-describe("r185 golden vs JS oracle (PRD-04 P1-3)", () => {
-	it("golden file is complete and well-formed", () => {
-		expect(golden.meta.threeVersion).toBeDefined();
-		expect(golden.cases.length).toBeGreaterThanOrEqual(19);
-		for (const c of golden.cases) {
-			const n = c.argorder.reduce((acc, k) => acc * c.axes[k].length, 1);
-			expect(c.values.length, `${c.fn} sample count`).toBe(n * c.out);
+const tableLookup = (roughness: number, nv: number) => bilinearRG(DFG_LUT_R185, DFG_LUT_SIZE, roughness, nv);
+
+describe("BSDF oracle vs independently derived values (PRD-04 P1-3, S5-WP29-05)", () => {
+	it("case grid is complete and every case has an oracle dispatch", () => {
+		expect(INDEPENDENT_BSDF_CASES.length).toBeGreaterThanOrEqual(19);
+		expect(new Set(INDEPENDENT_BSDF_CASES.map((c) => c.fn)).size).toBe(INDEPENDENT_BSDF_CASES.length);
+		for (const c of INDEPENDENT_BSDF_CASES) {
+			for (const name of c.argorder) expect(c.axes[name]?.length, `${c.fn}.${name}`).toBeGreaterThan(0);
 		}
 	});
 
-	for (const c of golden.cases) {
+	for (const c of INDEPENDENT_BSDF_CASES) {
 		it(`${c.fn}: ${c.desc}`, () => {
-			// Reconstruct the row-major decode from make_shader: argorder[0] is
-			// the fastest axis.
-			const total = c.argorder.reduce((acc, k) => acc * c.axes[k].length, 1);
-			const dfgCase = DFG_LUT_CASES.has(c.fn);
-			let worstAbs = 0;
-			let worstRel = 0;
-			const dfgFailures: { idx: number; k: number; abs: number; rel: number }[] = [];
+			// argorder[0] is the fastest axis.
+			const total = c.argorder.reduce((acc, k) => acc * c.axes[k]!.length, 1);
+			let worst = 0;
+			let worstAt = "";
+			let nonFinite = 0;
 			for (let idx = 0; idx < total; idx++) {
 				const args: Record<string, number> = {};
 				let stride = 1;
 				for (const name of c.argorder) {
-					const axis = c.axes[name];
-					const ai = Math.floor(idx / stride) % axis.length;
-					args[name] = axis[ai];
+					const axis = c.axes[name]!;
+					args[name] = axis[Math.floor(idx / stride) % axis.length]!;
 					stride *= axis.length;
 				}
 				const got = evaluate(c, args);
+				const expected = independentExpected(c, args, tableLookup);
+				expect(got.length, `${c.fn} output arity`).toBe(c.out);
+				expect(expected.length, `${c.fn} expected arity`).toBe(c.out);
 				for (let k = 0; k < c.out; k++) {
-					const expected = c.values[idx * c.out + k];
-					if (expected === null) {
-						// GPU result was non-finite (NaN/Inf — e.g. the
-						// roughness=0 invAlpha blow-up); the oracle must be
-						// non-finite there too, skip numeric compare.
-						expect(Number.isFinite(got[k]), `${c.fn}@${idx} finite where GPU NaN`).toBe(false);
+					if (!Number.isFinite(expected[k]!)) {
+						// e.g. roughness = 0 in the Charlie NDF (1/alpha blow-up): the
+						// oracle must be non-finite there too.
+						expect(Number.isFinite(got[k]!), `${c.fn}@${idx}.${k} finite where the derivation is not`).toBe(false);
+						nonFinite += 1;
 						continue;
 					}
-					const abs = Math.abs(got[k] - expected);
-					const rel = abs / Math.max(Math.abs(expected), 1e-6);
-					if (dfgCase && abs > 2e-3 && rel > 5e-4) {
-						dfgFailures.push({ idx, k, abs, rel });
+					expect(Number.isFinite(got[k]!), `${c.fn}@${idx}.${k} non-finite (expected ${expected[k]})`).toBe(true);
+					const abs = Math.abs(got[k]! - expected[k]!);
+					const rel = abs / Math.max(Math.abs(expected[k]!), 1e-6);
+					const err = Math.min(abs, rel);
+					if (err > worst) {
+						worst = err;
+						worstAt = `@${idx}.${k} ${JSON.stringify(args)} got=${got[k]} expected=${expected[k]}`;
 					}
-					worstAbs = Math.max(worstAbs, abs);
-					worstRel = Math.max(worstRel, rel);
 				}
 			}
-			// PRD tolerance: 1e-4; an absolute floor covers outputs that
-			// saturate at ~0 (sheen energies, anisotropy tails). Cases that
-			// sample the RG16F DFG LUT get a 2e-3 absolute bound instead: the
-			// GPU filters half-float texels in hardware while the oracle
-			// bilinear-interpolates the same texels in float64 — the ~6.5e-4
-			// residual is the filtering floor, not formula error (verified:
-			// non-LUT cases all land ≤1e-4).
-			if (dfgCase) {
-				// Per-sample: abs ≤2e-3 covers the half-float filtering
-				// residual; rel ≤5e-4 covers fp32 rounding on D_GGX spikes
-				// (~1.4e5, where 2e-3 abs is tighter than fp32 can do).
-				expect(
-					dfgFailures.length,
-					`${dfgFailures.length}/${total * c.out} samples out of bounds; worst ` +
-						`${dfgFailures.slice(0, 3).map((w) => `@${w.idx}.${w.k} rel=${w.rel.toExponential(2)} abs=${w.abs.toExponential(2)}`).join("; ")}`
-				).toBe(0);
-			} else {
-				expect(
-					worstRel <= 1e-4 || worstAbs <= 1e-4,
-					`rel=${worstRel.toExponential(3)} abs=${worstAbs.toExponential(3)}`
-				).toBe(true);
-				expect(worstAbs, "absolute sanity cap").toBeLessThanOrEqual(1e-2);
-			}
+			expect(nonFinite, `${c.fn}: every sample non-finite`).toBeLessThan(total * c.out);
+			// Per sample, relative-or-absolute: min(abs, rel) <= 1e-6. Binary64 on both
+			// sides; the only systematic difference is the oracle's (and the shader
+			// chunks') six-digit 1/21 = 0.047619 in Favg, worth up to ~7e-9 relative.
+			expect(worst, `${c.fn} worst min(abs,rel)=${worst.toExponential(3)} ${worstAt}`).toBeLessThanOrEqual(1e-6);
 		});
 	}
+});
+
+describe("split-sum table sampled by the oracle vs an independent quadrature", () => {
+	// dfg-lut-r185.ts is input data (16x16 RG, texel centres). Each texel is
+	// re-integrated independently (Heitz height-correlated G2, Schlick (1-VH)^5,
+	// 256 x 256 Gauss-Legendre/midpoint quadrature; native-reference-environment-clean.ts).
+	// Measured agreement: <= 2e-3 for N.V >= 0.28 (rows 4..15); the four
+	// grazing rows (N.V <= 0.22) differ by up to 1.44e-2 in A, where the
+	// table's own estimator is least accurate. The bounds below are those
+	// measurements, not a claim about which estimator a renderer should use.
+	it("every texel agrees with the independent integral within the measured bounds", () => {
+		const n = DFG_LUT_SIZE;
+		const failures: string[] = [];
+		for (let j = 0; j < n; j++) {
+			const bound = j >= 4 ? 2e-3 : 1.5e-2;
+			for (let i = 0; i < n; i++) {
+				const [a, b] = independentSplitSumTexel(i, j, n);
+				const t = (j * n + i) * 2;
+				const da = Math.abs(a - DFG_LUT_R185[t]!);
+				const db = Math.abs(b - DFG_LUT_R185[t + 1]!);
+				if (da > bound || db > bound) failures.push(`texel(${i},${j}) dA=${da.toExponential(2)} dB=${db.toExponential(2)} bound=${bound}`);
+			}
+		}
+		expect(failures).toEqual([]);
+	});
 });

@@ -139,6 +139,49 @@ describe("native backend negotiation", () => {
     expect(b.destroy).not.toHaveBeenCalled();
   });
 
+  it("gives an exclusive canvas and its native device to one managed app at a time", async () => {
+    const context = { configure: vi.fn(), unconfigure: vi.fn(), getCurrentTexture: () => ({ createView: () => ({}), destroy() {} }) };
+    const canvas = { getContext: () => context } as never;
+    const otherContext = { configure: vi.fn(), unconfigure: vi.fn(), getCurrentTexture: () => ({ createView: () => ({}), destroy() {} }) };
+    const otherCanvas = { getContext: () => otherContext } as never;
+    const a = fakeNative().native; const b = fakeNative().native;
+    const appA = await WebGPUDevice.create({ adapter: { requestDevice: async () => a as WebGPUDeviceLike }, canvas, canvasOwnership: "exclusive" });
+    // A second managed app on the same canvas, or a legacy wrapper on it, is rejected
+    // before it configures anything; the owner's canvas and device are untouched.
+    await expect(WebGPUDevice.create({ adapter: { requestDevice: async () => b as WebGPUDeviceLike }, canvas, canvasOwnership: "exclusive" }))
+      .rejects.toMatchObject({ code: "WEBGPU_CANVAS_IN_USE" });
+    await expect(WebGPUDevice.create({ adapter: { requestDevice: async () => b as WebGPUDeviceLike }, canvas }))
+      .rejects.toMatchObject({ code: "WEBGPU_CANVAS_IN_USE" });
+    // A different canvas whose adapter hands back the owner's native device is rejected
+    // without destroying that device.
+    await expect(WebGPUDevice.create({ adapter: { requestDevice: async () => a as WebGPUDeviceLike }, canvas: otherCanvas, canvasOwnership: "exclusive" }))
+      .rejects.toMatchObject({ code: "WEBGPU_DEVICE_IN_USE" });
+    expect(context.configure).toHaveBeenCalledTimes(1);
+    expect(otherContext.configure).not.toHaveBeenCalled();
+    expect(a.destroy).not.toHaveBeenCalled();
+    expect(b.destroy).not.toHaveBeenCalled();
+    expect(appA.disposed).toBe(false);
+    appA.beginFrame(8, 8); appA.endFrame();
+    // Retirement releases the reservation; only then can the next app claim the canvas.
+    appA.dispose();
+    await appA.whenDisposed();
+    expect(context.unconfigure).toHaveBeenCalledTimes(1);
+    expect(a.destroy).toHaveBeenCalledTimes(1);
+    const appB = await WebGPUDevice.create({ adapter: { requestDevice: async () => b as WebGPUDeviceLike }, canvas, canvasOwnership: "exclusive" });
+    try {
+      expect(context.configure).toHaveBeenCalledTimes(2);
+      expect(context.configure.mock.calls[1]![0]).toMatchObject({ device: b });
+      appA.dispose();
+      expect(context.unconfigure).toHaveBeenCalledTimes(1);
+      expect(b.destroy).not.toHaveBeenCalled();
+    } finally {
+      appB.dispose();
+      await appB.whenDisposed();
+    }
+    expect(context.unconfigure).toHaveBeenCalledTimes(2);
+    expect(b.destroy).toHaveBeenCalledTimes(1);
+  });
+
   it("falls back to sRGB when the canvas cannot verify its configured color space", async () => {
     const { native } = fakeNative();
     const configure = vi.fn();

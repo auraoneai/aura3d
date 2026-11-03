@@ -18,7 +18,7 @@ store, a fixed-step loop, QA hooks or a synth. Every name here is verified again
 | Racket and ball sports | `game.racketSports()`: `ballFlight`, `scoring`, `athleteRig` | `@aura3d/engine` |
 | A black-frame safety net and a GPU diagnostics panel | `installSafetyNet` | `@aura3d/debug` |
 
-`createGame` from `@aura3d/engine` is a headless stub that logs `CREATE_GAME_STUB`.
+`createGame` from `@aura3d/engine` throws `AuraGameMigrationError` (`CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything.
 The real kit is the `@aura3d/engine/game` entry, and importing it turns the `game`
 quality-rebuild lane on by default. Do not add a `qualityRebuild` flag list by hand.
 

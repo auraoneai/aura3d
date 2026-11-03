@@ -719,11 +719,16 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   const onProgress = options.request?.onProgress;
   const assetId = options.asset.id ?? options.id;
   const url = options.asset.url;
+  if (scope.signal.aborted) throw actorLoadCancelled();
+  // The owning app's closure cancels this model and its dependencies even when
+  // the caller's request carries no signal or a signal the app does not own.
+  const owned = linkOwnerAbortSignal(signal, scope.signal);
   try {
     return await createTypedGLBActorOwned({
       ...options,
       request: {
         ...options.request,
+        signal: owned.signal,
         onProgress: (event) => {
           if (signal?.aborted || scope.signal.aborted) return;
           try { onProgress?.(event); } catch { /* Observers do not own the request. */ }
@@ -740,8 +745,27 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     });
   } catch (error) {
     if (!signal?.aborted && !scope.signal.aborted) scope.emitError({ url, assetId, error });
+    // A failure that settles after the owner closed belongs to no caller.
+    if (scope.signal.aborted && !signal?.aborted) throw actorLoadCancelled();
     throw error;
+  } finally {
+    owned.dispose();
   }
+}
+
+/** Link the caller and owner signals without retaining listeners afterwards. */
+function linkOwnerAbortSignal(caller: AbortSignal | undefined, owner: AbortSignal): { readonly signal: AbortSignal; dispose(): void } {
+  if (!caller || caller === owner) return { signal: owner, dispose() {} };
+  const controller = new AbortController();
+  const sources = [caller, owner];
+  const abort = (event?: Event): void => {
+    const source = (event?.target as AbortSignal | undefined) ?? sources.find((item) => item.aborted);
+    for (const item of sources) item.removeEventListener("abort", abort);
+    if (!controller.signal.aborted) controller.abort(source?.reason);
+  };
+  if (sources.some((item) => item.aborted)) abort();
+  else for (const item of sources) item.addEventListener("abort", abort, { once: true });
+  return { signal: controller.signal, dispose: () => { for (const item of sources) item.removeEventListener("abort", abort); } };
 }
 
 async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<TypedGLBActor> {

@@ -51,7 +51,7 @@ Members of each namespace (for example `effects.bloom`, `camera.orbit`, `ui.slid
 
 | Do not use | Use instead |
 |---|---|
-| `createGame` from `@aura3d/engine` | It is a headless root stub (logs `CREATE_GAME_STUB` once; `touch` is `null`, `sound` is `undefined`, HUD and menus do nothing). Import `createGame` from `@aura3d/engine/game` |
+| `createGame` from `@aura3d/engine` | The root export throws `AuraGameMigrationError` (`code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`, message prefix `CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything. Import `createGame` from `@aura3d/engine/game` |
 | `compilePromptPlan` | `compilePromptPlanV2` |
 | `collectAuraSceneEvidence`, `captureAuraAppScreenshot`, `createAssetCompatibilityReport` | `@aura3d/engine/devtools` |
 | `character.*` | `characters`, `AnimationController`, `prefabs.lowPolyHumanoid` |

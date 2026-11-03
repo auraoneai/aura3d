@@ -23,7 +23,7 @@ Do not hand-roll a HUD, a touch layer, a fixed-step loop, QA hooks, a synth or a
 
 ## 1. Pick the kit entry
 
-Import `createGame` from `@aura3d/engine/game` (the real kit). The `createGame` on `@aura3d/engine` is a headless stub that logs `CREATE_GAME_STUB`. Importing the `/game` entry turns the `game` lane on; do not add a `qualityRebuild` flag list. See `docs/api/game-kit.md`.
+Import `createGame` from `@aura3d/engine/game` (the real kit). The `createGame` on `@aura3d/engine` throws `AuraGameMigrationError` (`code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`, message prefix `CREATE_GAME_ROOT_UNAVAILABLE_V1`) before mounting anything. Importing the `/game` entry turns the `game` lane on; do not add a `qualityRebuild` flag list. See `docs/api/game-kit.md`.
 
 ## 2. The simulation (pure, deterministic)
 

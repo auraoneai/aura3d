@@ -123,6 +123,51 @@ describe("public physical vehicle and character controllers", () => {
     character.dispose();
   });
 
+  it("keeps a held character controller working across reset()", () => {
+    const world = buildWorld();
+    const body = world.createBody({
+      type: "kinematic",
+      position: [0, 2, 0],
+      shape: { kind: "capsule", radius: 0.3, halfHeight: 0.5 },
+    });
+    const character = world.createCharacterController(body, { offset: 0.01, maxSlopeClimbAngle: Math.PI / 4 });
+    // A setter applied before reset must be carried onto the rebuilt controller.
+    character.setSnapToGround(0.5);
+    const bodyId = character.bodyId;
+
+    const settle = () => {
+      let grounded = false;
+      for (let i = 0; i < 240 && !grounded; i += 1) {
+        const movement = character.move([0, -0.05, 0]);
+        world.step(1 / 60);
+        grounded = movement.grounded;
+        expect(movement.position[1]).toBeGreaterThan(-0.2);
+      }
+      return grounded;
+    };
+
+    expect(settle()).toBe(true);
+    const groundedHeight = character.position()[1];
+    expect(groundedHeight).toBeLessThan(1.5);
+
+    world.reset();
+
+    // Same held object, same public body id, re-attached to the rebuilt body at its authored spawn.
+    expect(character.bodyId).toBe(bodyId);
+    expect(character.position()[1]).toBeCloseTo(2, 5);
+    expect(settle()).toBe(true);
+    expect(character.grounded()).toBe(true);
+    expect(character.position()[1]).toBeCloseTo(groundedHeight, 2);
+
+    // It still drives the rebuilt body horizontally.
+    const before = character.position();
+    for (let i = 0; i < 30; i += 1) { character.move([0.05, -0.01, 0]); world.step(1 / 60); }
+    expect(character.position()[0] - before[0]).toBeGreaterThan(1);
+
+    character.dispose();
+    expect(() => character.position()).toThrow(/disposed/);
+  });
+
   it("exposes the controller types through the engine barrel without naming a solver", async () => {
     const source = await import("@aura3d/engine").then((m) => Object.keys(m.physics));
     expect(source).toContain("world");

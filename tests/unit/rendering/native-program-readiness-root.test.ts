@@ -53,7 +53,9 @@ describe("root static-frame program readiness", () => {
         onDeviceLost: () => () => {}, onDeviceRestored: () => () => {},
         invalidateBenchmarkMaskFrame: () => { entry.invalidations++; }, resetTemporalHistory() {}, resize() {},
         postDiagnosticViews: () => undefined, postScopeId: () => undefined,
-        render, renderAsync: async () => render(), dispose: () => entry.device.dispose()
+        render, renderAsync: async () => render(), dispose: () => entry.device.dispose(),
+        // 5.0 renderer contract: owned-device retirement receipt (mock device retires synchronously).
+        whenOwnedDeviceDisposed: async () => undefined
       } as unknown as Renderer;
     });
     const options = { autoStart: true, resize: false, diagnostics: false, frameMode: "async" as const,
@@ -129,7 +131,8 @@ describe("root static-frame program readiness", () => {
       isDeviceLost: () => device.contextLost, onDeviceLost: () => () => {}, onDeviceRestored: () => () => {},
       invalidateBenchmarkMaskFrame: () => { invalidations++; }, resetTemporalHistory() {}, resize() {},
       postDiagnosticViews: () => undefined, postScopeId: () => undefined,
-      render, renderAsync: async () => render(), dispose: () => device.dispose()
+      render, renderAsync: async () => render(), dispose: () => device.dispose(),
+      whenOwnedDeviceDisposed: async () => undefined
     } as unknown as Renderer);
     const app = createAuraApp(new FakeCanvas() as unknown as HTMLCanvasElement, {
       scene: scene().add(primitives.box()), autoStart: false, resize: false, diagnostics: false,

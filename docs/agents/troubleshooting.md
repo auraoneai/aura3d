@@ -55,8 +55,8 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 
 **`compute-requires-webgpu`**, **`invalid-compute-spec`** - `compute.*` needs a bound WebGPU device and WGSL; GLSL input is rejected. **`invalid-tsl-graph`**, **`tsl-*`** - the TSL subset covers a limited set of node names; see `docs/api/root-exports.md` (`tsl` members).
 
-**`CREATE_GAME_STUB`** (console warning) - you imported `createGame` from `@aura3d/engine`, which is a headless stub: no HUD, touch, juice or sound, and `game.sound` is `undefined`.
-- Fix: `import { createGame } from "@aura3d/engine/game"` (`docs/api/game-kit.md`).
+**`CREATE_GAME_ROOT_UNAVAILABLE_V1`** (thrown `AuraGameMigrationError`, `code: "CREATE_GAME_ROOT_UNAVAILABLE"`, `version: 1`) - you called `createGame` from `@aura3d/engine` (or the staged `@aura3d/engine/v5` root). Since 5.0 the root has no game runtime and fails before mounting a scene; the 4.x headless stub and its `CREATE_GAME_STUB` warning are gone.
+- Fix: `import { createGame } from "@aura3d/engine/game"` (`docs/api/game-kit.md`; `@aura3d/engine/v5/game` with the staged entry). If the game subpath reports the same code, remove any `-game` / `none` quality-rebuild opt-out and enable `A3D_QR_GAME` (`docs/migration/4-to-5.md`, B1).
 
 ## 3. Diagnostics codes you will see in the console or `diagnostics().warnings`
 

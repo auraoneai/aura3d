@@ -422,6 +422,39 @@ function observeUncertainProgram(state: ProgramDisposalState, program: RenderSha
   }
 }
 
+/**
+ * 5.0 retirement contract: a disposer that threw without an explicit pending
+ * receipt leaves its program uncertain, still owned and still reported. The
+ * owning cache's next explicit `dispose()` is the retry: the disposer runs
+ * again and the program retires only when that call returns normally (or a
+ * receipt proves completion). A further failure stays uncertain and reported.
+ */
+function retryUncertainProgramDisposal(device: RenderDevice, state: ProgramDisposalState, program: RenderShaderProgram, retirement: ProgramRetirement): void {
+  if (retirement.phase !== "uncertain" || retirement.claims.size) return;
+  if (retirement.foreign) {
+    observeUncertainProgram(state, program, retirement);
+    return;
+  }
+  retirement.phase = "retiring";
+  try {
+    const status = programDisposalStatus(program);
+    if (status.disposed === true && status.pending === false) {
+      finishProgramDisposal(state, program, retirement);
+    } else if (status.pending === true) {
+      // The wrapper now carries a receipt; the receipt-based retry owns it.
+      recordProgramFailure(state, retirement, retirement.incompleteError ??= new Error("Shader program disposal did not complete"));
+      retirement.retryGeneration = device.generation;
+      retirement.retryEpoch = state.epoch;
+      retirement.phase = "retryable";
+    } else {
+      program.dispose();
+      completeProgramDisposalAttempt(state, program, retirement);
+    }
+  } catch (error) {
+    handleProgramDisposalError(state, program, retirement, error);
+  }
+}
+
 function detachCacheEntries(
   entries: Map<string, CacheEntry>, state: ProgramDisposalState, owner: ProgramCache, deviceGeneration: number | undefined, reason: string
 ): { readonly entry: CacheEntry; readonly program: RenderShaderProgram; readonly owner: ProgramOwner }[] {
@@ -1227,12 +1260,16 @@ export class ProgramCache implements ProgramCacheLike {
         }
       }
       // Only a later explicit cache disposal may retry a native pending
-      // contract. A newly observed alias never repeats this pass's attempt.
+      // contract or an uncertain (receipt-less) failed disposer. A newly
+      // observed alias never repeats this pass's attempt.
       for (const [program, retirement] of pending) {
         if (retirement.phase === "retiring") reportProgramDisposalInProgress(state, retirement, this);
         else if (retirement.phase === "retryable" && (wasDisposed || retirement.retryOwner === this)) {
           retryProgramDisposal(this.device, state, program, retirement);
-        } else if (retirement.phase === "uncertain") observeUncertainProgram(state, program, retirement);
+        } else if (retirement.phase === "uncertain") {
+          if (wasDisposed || retirement.retryOwner === this) retryUncertainProgramDisposal(this.device, state, program, retirement);
+          else observeUncertainProgram(state, program, retirement);
+        }
       }
     } finally {
       disposingCaches.delete(this);

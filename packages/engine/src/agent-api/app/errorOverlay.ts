@@ -9,6 +9,8 @@
  * copies the full report.
  */
 
+import { formatDiagnosticError, sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
+
 export interface AuraErrorOverlayDetails {
   readonly code: string;
   readonly message: string;
@@ -16,13 +18,24 @@ export interface AuraErrorOverlayDetails {
   readonly stackLines: readonly string[];
 }
 
+function readField(value: unknown, key: string): unknown {
+  if (value === null || (typeof value !== "object" && typeof value !== "function")) return undefined;
+  try { return Reflect.get(value, key); } catch { return undefined; }
+}
+
+/** The overlay is DOM- and clipboard-visible: every field is bounded and redacted,
+ * and hostile thrown values (throwing getters, revoked proxies) cannot escape. */
 export function errorOverlayDetails(error: unknown): AuraErrorOverlayDetails {
-  const err = error instanceof Error ? error : new Error(String(error));
-  const code = typeof (err as { code?: unknown }).code === "string" ? (err as unknown as { code: string }).code : "error";
-  const cause = (err as { cause?: unknown }).cause;
-  const causeStack = cause instanceof Error ? cause.stack : typeof cause === "string" ? cause : undefined;
-  const stackLines = (causeStack ?? err.stack ?? "").split("\n").slice(0, 5).map((line) => line.trim()).filter(Boolean);
-  return { code, message: err.message, stackLines };
+  const rawCode = readField(error, "code");
+  const code = typeof rawCode === "string" ? sanitizeDiagnosticText(rawCode).slice(0, 128) : "error";
+  const rawMessage = readField(error, "message");
+  const message = typeof rawMessage === "string" ? sanitizeDiagnosticText(rawMessage) : formatDiagnosticError(error);
+  const cause = readField(error, "cause");
+  const causeStack = typeof cause === "string" ? cause : readField(cause, "stack");
+  const ownStack = readField(error, "stack");
+  const stack = typeof causeStack === "string" ? causeStack : typeof ownStack === "string" ? ownStack : "";
+  const stackLines = stack.slice(0, 16384).split("\n").slice(0, 5).map((line) => sanitizeDiagnosticText(line.trim())).filter(Boolean);
+  return { code, message, stackLines };
 }
 
 export function attachErrorOverlay(

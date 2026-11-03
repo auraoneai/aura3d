@@ -137,7 +137,45 @@ describe("program cache lifecycle", () => {
     expect(broken.dispose).toHaveBeenCalledTimes(1);
     expect(other.dispose).toHaveBeenCalledTimes(1);
     expect(first.status).toBe("failed");
+    // 5.0 retirement contract: the receipt-less failed program stays owned and
+    // reported; each explicit dispose() retries it until its disposer returns.
+    expect(() => cache.dispose()).toThrowError(/shader programs/i);
+    expect(broken.dispose).toHaveBeenCalledTimes(2);
+    broken.dispose.mockImplementation(() => undefined);
     expect(() => cache.dispose()).not.toThrow();
+    expect(broken.dispose).toHaveBeenCalledTimes(3);
+    expect(() => cache.dispose()).not.toThrow();
+    expect(broken.dispose).toHaveBeenCalledTimes(3);
+    expect(other.dispose).toHaveBeenCalledTimes(1);
+    expect(ProgramCache.disposalFailures(device).every((failure) => failure.resolved)).toBe(true);
+  });
+
+  it("retains and retries a late program whose disposer throws after the cache was disposed", async () => {
+    const device = new DeferredDevice();
+    const cache = new ProgramCache(device, { parallelCompile: true });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const handle = cache.acquire(features(0));
+    cache.dispose();
+    const late = program();
+    late.dispose.mockImplementation(() => { throw new Error("late release failed"); });
+    device.jobs[0]!.resolve(late);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(late.dispose).toHaveBeenCalledTimes(1);
+    expect(handle).toMatchObject({ status: "failed", error: "DISPOSED_PROGRAM_CACHE" });
+    expect(ProgramCache.staleDisposalFailures(device)).toHaveLength(1);
+    expect(ProgramCache.disposalFailures(device)).toEqual([expect.objectContaining({ origin: "stale", resolved: false })]);
+    expect(() => cache.dispose()).toThrowError(/shader programs/i);
+    expect(late.dispose).toHaveBeenCalledTimes(2);
+    late.dispose.mockImplementation(() => undefined);
+    expect(() => cache.dispose()).not.toThrow();
+    expect(late.dispose).toHaveBeenCalledTimes(3);
+    // History keeps both thrown errors, now resolved by the confirmed retry.
+    expect(ProgramCache.disposalFailures(device)).toEqual([
+      expect.objectContaining({ origin: "stale", resolved: true }), expect.objectContaining({ origin: "stale", resolved: true })
+    ]);
+    expect(() => cache.dispose()).not.toThrow();
+    expect(late.dispose).toHaveBeenCalledTimes(3);
   });
 
   it("reports actual compile failures and compiles all synchronous warmup entries despite the frame budget", async () => {

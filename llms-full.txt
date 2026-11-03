@@ -209,7 +209,7 @@ Mandatory 3D game & scene anti-failure guardrails:
 
 Kits (build the shell from these, do not hand-roll it):
 
-- `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound); the root `createGame` is a headless stub.
+- `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound); the root `createGame` throws a `CREATE_GAME_ROOT_UNAVAILABLE_V1` migration error.
 - `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks` (`window.__AURA_<NAME>__`), `readQaParams`, `createCountedRng` for deterministic replay and automated checks; `defineModelAssets` for hashed same-origin models with a `?models=0` procedural fallback; `scatterAlongPath`, `scatterInArea`, `splitScatterByDistance`, `mergeStatic` for draw-call budgets; `game.racketSports()` with `ballFlight`, `scoring`, `athleteRig`.
 - `@aura3d/engine/audio`: `createCueBank`, `createStepSequencer`, `createToneLoop`, `createSampleSlices` on the single `AudioContextManager` (never `new AudioContext(`).
 - `@aura3d/debug`: `installSafetyNet` (`?diag=1`, quality switches `?post=0 ?shadow=0 ?env=0 ?sky=0 ?quality=low`, black-frame self-heal).
