@@ -5,6 +5,7 @@ import { Renderer } from "../../../packages/rendering/src/Renderer";
 import type { DrawCommand, RecursiveUniformValue } from "../../../packages/rendering/src/RenderDevice";
 import { Texture } from "../../../packages/rendering/src/Texture";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
+import { declaresZeroToOneProjectionOverride, rasterClipDepthWgsl, ZERO_TO_ONE_PROJECTION_OVERRIDE } from "../../../packages/rendering/src/webgpu/ProjectionClip";
 import {
   WebGPUDevice,
   type WebGPUCanvasConfigurationLike,
@@ -160,7 +161,13 @@ function expectClipContract(draw: Draw) {
   expect(draw.count).toBeGreaterThan(0);
   expect(draw.indexed).toBe(true);
   expect(vertex(draw)).toMatch(/aura\.u_modelViewProjection\s*\*\s*vec4<f32>\(position,\s*1\.0\)/);
-  expect(vertex(draw)).toMatch(/\(clip\.z\s*\+\s*clip\.w\)\s*\*\s*0\.5/);
+  // 5.0 native reversed depth (webgpu/ProjectionClip.ts): the (z + w) / 2 remap is written through the
+  // a3dZeroToOneProjection override, which a standard frame leaves at its false default.
+  expect(declaresZeroToOneProjectionOverride(vertex(draw))).toBe(true);
+  expect(vertex(draw)).toContain(rasterClipDepthWgsl("clip"));
+  expect(rasterClipDepthWgsl("clip")).toMatch(/clip\.z \* 0\.5 \+ clip\.w \* 0\.5/);
+  const constants = (draw.pipeline.descriptor.vertex as { readonly constants?: Record<string, unknown> }).constants;
+  expect(constants?.[ZERO_TO_ONE_PROJECTION_OVERRIDE] ?? false).toBeFalsy();
   expect(vertex(draw)).toMatch(/@location\(0\)\s+position:\s*vec3<f32>/);
 }
 function expectRenderState(draw: Draw, transparent: boolean) {

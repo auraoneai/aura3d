@@ -134,17 +134,25 @@ describe("package/dist root gate parity", () => {
     const engine = importEnginePackageViaNode(repoRoot);
     expect(engine["createAuraApp"]).toBe("function");
     expect(engine["model"]).toBe("function");
-    expect(engine["resolved"]).toContain("/dist/engine/agent-api/index.js");
+    // QR-15 T5 public surface collapse (bf1789b06): the root `.` export is dist/engine/public/index.js.
+    expect(engine["resolved"]).toContain("/dist/engine/public/index.js");
   });
 
   test("built CLI bin exposes the public root-gate command surface", () => {
     const rootHelp = runCli("--help");
     const addHelp = runCli("assets", "add", "--help");
 
+    // The role vocabulary grew after QR-05 (hero, enemy, backdrop, proxy, hdri, ...); the built help
+    // must print the current source list (packages/aura3d-cli/src/cli-help.ts assetRoleUsage).
+    const roleUsage = /export const assetRoleUsage =\s*"([^"]+)"/.exec(readFileSync(join(repoRoot, "packages/aura3d-cli/src/cli-help.ts"), "utf8"))?.[1];
+    expect(roleUsage).toBeDefined();
+    for (const role of ["character", "vehicle", "world", "environment", "track", "product", "weapon", "prop", "set-dressing", "debug", "abstract", "unknown"]) {
+      expect(roleUsage!.split("|")).toContain(role);
+    }
     expect(rootHelp).toContain("--rendered-probe-json");
-    expect(rootHelp).toContain("--role character|vehicle|world|environment|track|product|weapon|prop|set-dressing|debug|abstract|unknown");
+    expect(rootHelp).toContain(`--role ${roleUsage}`);
     expect(addHelp).toContain("--rendered-probe-json");
-    expect(addHelp).toContain("--role character|vehicle|world|environment|track|product|weapon|prop|set-dressing|debug|abstract|unknown");
+    expect(addHelp).toContain(`--role ${roleUsage}`);
   });
 });
 

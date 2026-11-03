@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CELL, FLOORS, KILL_HOUSE, isSolid } from "../../../apps/showcase-bunker-zero/src/maps";
@@ -64,8 +64,12 @@ describe("Bunker Zero wear decals (BZ-10)", () => {
       const buf = readFileSync(path.join(DIR, file));
       expect(buf.subarray(1, 4).toString("ascii"), file).toBe("PNG");
       expect(buf[25], `${file} colour type RGBA`).toBe(6);
-      // *.png is git-ignored repo-wide: the files are force-added and must stay tracked
-      expect(execFileSync("git", ["ls-files", "--", path.join(DIR, file)], { encoding: "utf8" }).trim(), `${file} tracked`).not.toBe("");
+      // *.png is git-ignored repo-wide: the files are force-added and must stay tracked. The source pass
+      // stages only `git ls-files --cached --others --exclude-standard` and has no .git, so there an
+      // ignored PNG exists only if it is tracked, and the read above is the proof.
+      if (existsSync(".git")) {
+        expect(execFileSync("git", ["ls-files", "--", path.join(DIR, file)], { encoding: "utf8" }).trim(), `${file} tracked`).not.toBe("");
+      }
     }
     for (const kind of ["scorch", "crack", "bullet"] as const) expect(decalPixel(kind, 0.01, 0.01)[3], kind).toBe(0);
   });

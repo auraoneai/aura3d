@@ -215,3 +215,107 @@ registers on import per the S19 rig registry), and
 for ~250 sequential `glslangValidator` spawns; the check still runs whenever
 the tool is on PATH and all variants compile).
 
+
+## 6. `tests/unit` tools/docs/package-dist cases (source pass 2026-11-02, tools lane)
+
+### 6a. Retired (three.js-derived data, S5-WP19-07)
+
+| Retired case | Reason | Current coverage |
+|---|---|---|
+| `tests/unit/tools/muse3jsparity-decoder-alignment.test.ts` › rejects changed vendored or installed content despite a claimed version | Read three's vendored `node_modules/three/examples/jsm/libs/ktx-parse.module.js`; S5-WP19-07 removed three from the workspace install graph, so the reference bytes no longer exist in a clean install. | Version gating cases in the same file (`assertDecoderVersion`, versionless-reference rejection) |
+| same file › verifies actual loader-resolved KTX upstream content and compressed fixture behavior | Compared the installed ktx-parse against the same three-vendored copy. | same; KTX2 decode behavior: `tests/unit/assets/native-ktx2-worker.test.ts`, `tests/unit/assets/ktx2-target-format.test.ts` |
+
+### 6b. Rewritten onto the documented contract (no live-behavior assertion weakened)
+
+| File › case | Old assertion | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/unit/docs/converted-feature-docs.test.ts` › production renderer how-to | `export type AuraRendererMode` exists | CCR-15-1, QR-15 T8.1 (`90e6de309`) removed the alias | alias absent; `mode?: "safe-basic" \| "production"` is the inline option type; doc sentence corrected |
+| `tests/unit/tools/root-motion-locomotion-301-contract.test.ts` › advances renderer-owned actor state… | `preparedFrame = { time, input: buildFrame(time) }` | 5.0 frame retention (`26eae82e2`) adds the retained-resource release | `update()` builds + retains without presenting; `render()` consumes the prepared frame for the same time |
+| `tests/unit/tools/capture-flags.test.ts` › exact `route.bank_shot` | `A3D_QR_CAMERA` off | `A3D_QR_CAMERA` promoted `default-on` (`1e0871749`, §5.3) | flag list is exactly `["route.bank_shot"]`; GAME/WORLD off; CAMERA equals its registry default |
+| `tests/unit/tools/marketing-showcase-build.test.ts` › 3 cases | Turbo Drift Circuit / Skyline Runner call the presentation helpers and are published; `showcase-orbital-defense` in games.json | Routes retired in 4.0.1 (`46bca99f1`, `apps-classification.md`) and redirected | helpers stay exported; retired routes have no source, are in `retiredPrototypeRoutes`, not built live; every games.json route is built or redirected |
+| `tests/unit/tools/migration-matrix.test.ts` › 3 cases | `@aura3d/lean` exists; version `3.0.x`; only `./three-compat` removed since v1.5.2 | QR-15 T8.1 deleted `packages/lean` and 18 root subpaths; 5.0 decision record item 4 (version 5.0.0); `docs/migration/4-to-5.md` B15 | lean absent; `5.0.x`; exact removed-subpath set split 2.0 / QR-15 / 5.0 B15 (5.0 ones must be in the B15 table). v1.5.2 facts recorded in the test and re-verified against the tag when Git exists; the `c9d6044a^:QuickFixes.md` retrieval runs only with Git history |
+| `tests/unit/tools/native-browser-source-inventory.test.ts` › required roots | `tools/bench-vs-threejs/full-game/three/src/*` are checked roots | S5-WP19-07 decision: the bench is external, never typechecked | those files exist and are not roots. `tests/qr/prd04/browser/native-physical-numeric{,.spec}.ts` (roadmap paths) were added to `tsconfig.browser-tests.json` (focused tsc clean) |
+| `tests/unit/tools/current-threejs-baseline.test.ts` + `tools/current-threejs-baseline/index.mjs` | root `three@0.185.1` devDependency, `@types/three`, three in the lock | S5-WP19-07 (no other engine in install/lock graph) | root/lock have no three; external harness inputs still agree on 0.185.1 |
+| `tests/unit/package-dist/root-gates.test.ts` › 2 cases | root resolves to `dist/engine/agent-api/index.js`; fixed 12-role help string | QR-15 T5 (`bf1789b06`) root export is `dist/engine/public/index.js`; CLI role list grew (`cli-help.ts` `assetRoleUsage`) | current entry; help prints the source role list, which still contains the 12 roles |
+
+### 6c. Source-pass environment fixes (no assertion change)
+
+- No `.git` on ACR: `tools/remote-acr/source5-files.mjs` lists candidate files from Git or the staged `tools/remote-acr/.source5-manifest.txt`; used by `tools/agent-eval/lib/sandbox.mjs` (bench authors sandbox leak check) and `lfs-fixture-attributes.test.ts`. The LFS clean-filter cases need the `git-lfs` binary (absent in the image) and skip without it; the attribute cases still run.
+- `tools/agent-examples` no longer treats the staged manifest as route references (it made every `examples/*` dir "documented", e.g. `examples/shadow-lab`).
+- `run-source5.sh` stages tracked `tests/reports/**` (e.g. `final-competitive-baseline`); untracked reports stay out.
+- `tests/unit/package-dist/**` imports built dist: excluded from the pre-build unit shards, run in `packed-a` after `pnpm build`.
+- Native custody guard tests kept: `sqlite_stat4` tamper only where SQLite has STAT4; the workspace fixture lives in a private parent (Linux `/tmp` is world-writable).
+- `tests/fixtures/native-examples-catalog/expectations.json` source pins re-pinned to current bytes (12 files changed by later commits); re-pin again at freeze if pinned sources change.
+
+## 7. `tests/unit` rendering/gu47/contracts/physics/rework-kit cases (source pass 2026-11-02, render lane)
+
+### 7a. Retired (deleted feature)
+
+| Test / case | Reason | Replacement coverage |
+|---|---|---|
+| `tests/unit/rendering/webgpu-skinning-parity.test.ts` › skins a vertex bound to joint #80; › a high joint index produces the same result as the equivalent low index | Both rendered through the WebGPU CPU emulation rasterizer and read back with synchronous WebGPU `readPixels`, deleted by QR-11 Phase 1 (`d7de114d3`; see §1). They failed with `Synchronous WebGPU readPixels is unsupported`. | The 96-joint capacity case in the same file; native WebGPU skinning through the generated bone-texture skin4/skin8 programs in `tests/unit/rendering/native-generated-pbr.test.ts` |
+| `tests/unit/rendering/environment-lighting-reflection-platform.test.ts` › named environment preset reports (preset-content assertions) | `createNamedEnvironmentPreset` was removed by QR-10/PRD-10 (`864ccaa89`, "planner removal") and is a throwing `removed-world-planner` stub; a pre-existing 4.x failure. | Same case now asserts the stub throws with the replacement hint; `listNamedEnvironmentPresets()` ids still asserted |
+
+### 7b. Rewritten onto the current contract (no live-behavior assertion weakened)
+
+| File › case | Old assertion | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/unit/rendering/deform-cpu-morph-scratch.test.ts` › same count-mismatch error as legacy | plain `Error` text with a trailing period | `resolveRenderGeometry` validates both flag arms up front with the structured `RenderDeviceError` `MORPH_TARGET_CONTRACT` (`activeDirectionMorphs`, `forward/Deform.ts`) | flag on and flag off throw the same message and code `MORPH_TARGET_CONTRACT` |
+| `tests/unit/rendering/environment-lighting-reflection-platform.test.ts` › cube capture | read `first.texture.cubeFaces` after the next capture retired it | `Texture.dispose()` releases CPU content references (doc comment, 26eae82e2) | face order asserted while `first` is the live capture; all other assertions unchanged |
+| `tests/unit/contracts/impl/prd02-sampler-c12.test.ts` › flag off | explicit `addressW` ignored with the flag off (R falls back to `addressV`) | 26eae82e2 / S5-WP05-02 (3D/array/cube resources): an explicit third-axis mode is honoured in every mode (also `native-dynamic-textures` "third-axis address modes distinct") | explicit `addressW` → `TEXTURE_WRAP_R` REPEAT; a sampler without `addressW` still falls back to `addressV`; compare/mirror inert and no filter downgrade unchanged |
+| `tests/unit/contracts/impl/prd02-cascade-fitter-oversize.test.ts` › shadow system skips an oversize caster | read diagnostics after a deliberately throwing `update` on a fake device | `Prd02ShadowSystem.update` clears fits and diagnostics of a frame that throws mid-submission (5.0) | the frame completes on `MockRenderDevice` with real cube casters; sky reported, house not, 2 cascade fits |
+| `tests/unit/gu47/eint/ldr-tail-depth.test.ts` › 3 cases | linearise draw found by the old `linearizeDepth(d, u_near, u_far, u_ortho)` text; without scene depth the custom samples a 1×1 blank | depth-convention linearisation (`auraLinearDepth`, inverse projection; decision record item 3 reversed/log depth); `docs/rendering/postprocess.md` "Effect input audit": missing inputs report `POSTPROCESS_INPUT_UNAVAILABLE:<pass>:<input>` instead of a blank | linearise draw matched on the new program, same unit/uniform assertions; missing scene depth throws `POSTPROCESS_INPUT_UNAVAILABLE:eint.ink-none:depth` with no linearise or custom draw |
+| `tests/unit/gu47/eh/crowd-kit.test.ts` › loadCrowdPoses | `hash: "sha256-cesium"` label | a typed asset `hash` is the expected document SHA-256 (`TypedGLBActor` `actorRequest`) | the fixture's real SHA-256 |
+| `tests/unit/rendering/deferred-pipeline-adapter-contract.test.ts` › DFG upload | two pinned r185 table values | independent GGX split-sum table (`program/DFGLutData.ts`, 26eae82e2; 5.0 independence rule) | three texels equal `integrateGgxDfg` at their texel centres within binary16 precision |
+| `tests/unit/rendering/native-pbr-detail-shaders.test.ts` › one-sided rectangle | `max(dot(a3dRectNormal, -L), 0.0)` literal | `RectAreaLight.twoSided` (5.0) packs into up.w | facing is `dot(a3dRectNormal, -L)` and the one-sided arm still clamps with `max(…, 0.0)` |
+| `tests/unit/rendering/native-specialized-objects-webgpu.test.ts` › 5 cases | literal `(clip.z + clip.w) * 0.5` | native reversed depth (`webgpu/ProjectionClip.ts`): the remap is written through the `a3dZeroToOneProjection` override | the vertex declares the override and contains `rasterClipDepthWgsl("clip")`; a standard frame leaves the override false |
+| `tests/unit/rework-kit/two-hand-grip.test.ts` › reproduces the Diamond batter solver | replayed the golden through the app's `solveBatterPose` | the Diamond batter stance was re-authored after capture (`8edba1957`, 4.3.x: stance key, poles, yaw, lower body), changing the app's calibrated socket; `twoHandGrip.ts` is unchanged since capture | the kit is driven with the rig as captured (`027b0eb6c` constants) and matches every golden row at 1e-12 |
+
+### 7c. Product fix and harness-only fixes
+
+- **Product fix:** `SceneRasterParticipantLease.ts` read `disposed` as an own data property of `VertexBuffer`/`IndexBuffer`; 5.0 made it a getter that turns true only after device retirement, so every participant buffer was rejected. It now rejects a buffer whose dispose was requested (`closed`) or completed (`disposalComplete`). `native-scene-raster-participant-lease.test.ts` (5 cases) passes unchanged.
+- `primitive-submission-audit.test.ts`: passes a real `LoadContext` to `GLTFLoader.load` instead of a partial mock without `requestOptionsFor`.
+- `native-entry-runtime-binding.test.ts` › no-TLA readiness: the three entry imports run sequentially. Concurrent dynamic imports of entries that share the agent-api node graph (it contains import cycles, e.g. through `nodes/scene.ts`) deadlocked vitest's module runner after `resetModules` (240 s timeout locally). Assertions unchanged.
+- `native-physics-entry-graph.test.ts` › staged entry graph rows: explicit 60 s budget; the first row parses the whole source graph cold and exceeded the 5 s default on ACR (`STACK_TRACE_ERROR`).
+
+## 6. Apps / CLI / create-aura3d / agent-api unit cases (source pass 2026-11-02)
+
+### 6a. Retired (deleted feature)
+
+| Test | Reason | Replacement coverage |
+|---|---|---|
+| `tests/unit/apps/skyline-challenge-feedback.test.ts` (whole file; deleted) | `showcase-skyline-runner` was retired in 4.0.1 (`docs/project/showcase/apps-classification.md`); the file read `apps/showcase-skyline-runner/src/main.ts`, which no longer exists, and failed at collection. Same route as section 3b. | none (route deleted) |
+| `tests/unit/apps/smart-city-scene-update.test.ts` › "enlarges its bounds-derived command vehicle for the compact composition probe" — the `extent: [0.35, 0.1, 0.35]` assertion only | `72945ca70` (4.0.1 studio upgrade) removed the compact-only vehicle enlargement and fixed the command vehicle at a realistic 0.34-unit scale (pre-existing 4.x failure). | Same case, renamed: asserts the enlargement stays gone and `vehicleTargetMaxDimension()` returns 0.34; compact camera distance and FOV assertions unchanged. |
+
+### 6b. Rewritten onto the current contract
+
+| File › case | Old assertion / input | Contract that changed it | Current assertion |
+|---|---|---|---|
+| `tests/unit/engine/phase2-root-bridge.test.ts` › spot cone defaults | default spot `intensity: 8` | QR PRD-02 Phase 2 (`8e6f298dd`) raised the default to 30; `tests/unit/agent-api/prd02-builders.test.ts` pins 30 (pre-existing 4.x conflict) | `intensity: 30`; angle, penumbra, distance unchanged |
+| `tests/unit/agent-api/paused-render-clock.test.ts` › pause cancels automatic submissions | four literal `if (… !isPaused() && (sceneWantsFrames …` guards | 5.0 frame loop (`app/frameLoop.ts`, 26eae82e2) routes every automatic reschedule through one `canSchedule()` guard that includes `!isPaused()` | the guard and the paused early return in `scheduleFrame` exist, and every `= requestAnimationFrame(scheduleFrame)` site in `frameLoop.ts` is guarded by `canSchedule()` (stricter: all sites, not four). Behavioral pause coverage: `native-onframe-wake.test.ts`, `native-orbit-camera-frame-loop.test.ts` |
+| `tests/unit/asset-index/cli-pull-bridge-quality.test.ts` › refuses the 792-triangle shell and falls through | the shell (resolver score 100) is attempted first, refused, and the reason appears in the success messages | the resolve scorer's G1 triangle band ranks the in-band 32k-triangle hero (52) above the shell (39), so the default path never attempts the shell | default path: hero admitted, shell never downloaded; forcing the shell with `candidateId` rejects before download with `catalog:shell-792` and the structural-floor / distant-prop reason |
+| `tests/unit/create-aura3d/showcase-{non-game,platformer}-spec.test.ts` › 4 replacement-selection cases | the live `aura.assets.json` supplies a `quality: "release"` replacement candidate | QR-05 release-gate honesty (`2d8f721f9`, 2026-10-06) demoted every hand-authored release grade; release quality is granted only by `aura3d assets admit`, and the live manifest holds none (pre-existing 4.x failure) | the expected candidate (`showcaseVoxelBuilding`, `showcaseRoboticWeldingWorkcell`, `showcaseParticleCore`, `showcaseSideScrollerWorld`) is presented as admitted via a `readManifestAssets` wrapper; every other manifest field, all evidence and every assertion unchanged |
+
+Product fix in this pass: `apps/showcase-vault-breakers/src/gameplay/table.ts`. 5.0 measures hinge limits from the
+creation pose (the Rapier path sets frame B from the bodies' relative rotation, `PhysicsWorld.jointAxisFrames`, matching
+the native solver's `twist: 0` at creation). The table still passed 4.x absolute-yaw limits, so the flippers stopped at
+rest + 0.5 rad and balls did not drain (3 cases in `vault-breakers-table.test.ts`). The limits are now `[0, up - rest]`
+on both sides; assertions unchanged. `tests/unit/apps/vault-breakers-flipper-spike.test.ts` builds its own rig with the
+same 4.x limits and had the same failure; its limit inputs were corrected the same way, assertions unchanged.
+
+Harness-only fixes (assertions unchanged): `tests/unit/agent-api/e1-wave3-setscene-in-frame.test.ts` (the fake
+production renderer returned `diagnostics: undefined`, violating the required
+`WebGLSceneRenderer.diagnostics: AuraRendererDiagnosticReport`; it now carries an initial report),
+`tests/unit/apps/blockfall-beat-occlusion.test.ts` (read the T1.10 path shim; now reads
+`src/gameplay/reactor-scene.ts`, as the shim requests), `tests/unit/aura-links-3d/turf.test.ts` (one `expect()` per
+texel took 2.3 s and timed out on a loaded shard; it now asserts the worst texel of every tile once, 0.19 s),
+`tests/unit/aura3d-cli/legacy-model-admission.test.ts` (explicit 60 s budget for two cold `tsx cli.ts` spawns),
+`tests/unit/aura3d-cli/admission-geometry-fixtures.test.ts` + `tools/asset-geometry-audit/wheel-detect.mjs` (the
+auditor imported `packages/aura3d-cli/dist/`, which the unbuilt unit stage lacks; with type stripping it now loads the
+import-free `src/asset-role-admission.ts`), `tests/unit/bunker-zero/decals.test.ts` (the `git ls-files` tracked check
+runs only where `.git` exists; the source pass stages tracked files only, so an ignored PNG there exists only if it is
+tracked), and `tests/unit/create-aura3d/showcase-racing-spec.test.ts` + `showcase-non-game-spec.test.ts` (their fixture
+specs read three release probes from ignored `tests/reports/`; `turboFormulaCircuit` and
+`showcaseRoboticWeldingWorkcell` probes were copied, paths rewritten, into the un-ignored
+`tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/`, and `turbo-drift-circuit.json` now points at the
+existing `showcaseTsukubaCircuit` fixture probe, as `turbo-drift-racing.json` already did).

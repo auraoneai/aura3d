@@ -520,3 +520,7 @@ evidence/look-reference-frames/
 # tools/site and tests/unit/site are source (the site/ rule above targets build output)
 !tools/site/
 !tests/unit/site/
+
+# Written into the ACR staging context by tools/remote-acr/run-source5.sh; never source.
+/tools/remote-acr/.source5-manifest.txt
+/tools/remote-acr/.source5-commit

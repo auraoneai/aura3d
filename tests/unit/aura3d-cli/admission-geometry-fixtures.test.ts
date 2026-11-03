@@ -37,7 +37,9 @@ const MULTI_MATERIAL = "tests/fixtures/gltf-multipart/multi-material-wheels.glb"
  */
 function audit(fixture: string): string {
   try {
-    return execFileSync("node", [AUDITOR, fixture], { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
+    // Type stripping lets the auditor load the CLI source, so it does not depend on a prior `pnpm build`
+    // (the source-pass unit stage runs without one).
+    return execFileSync("node", ["--experimental-strip-types", "--no-warnings", AUDITOR, fixture], { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
   } catch (error) {
     const stdout = (error as { stdout?: string | Buffer }).stdout;
     if (stdout === undefined) throw error;

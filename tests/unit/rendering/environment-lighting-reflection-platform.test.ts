@@ -35,7 +35,7 @@ describe("named environment preset reports", () => {
     ]);
 
     // The named-preset factory was deleted by QR-10/PRD-10 (864ccaa89): it is a
-    // throwing stub now (docs/project/status/retired-tests.md §6). The
+    // throwing stub now (docs/project/status/retired-tests.md §7). The
     // descriptor list above stays public.
     expect(() => createNamedEnvironmentPreset("studio", { size: 6 })).toThrow(/^removed-world-planner:/);
     expect(() => createNamedEnvironmentPreset("ocean", { requestedFeatures: ["fft-webgpu-water"] })).toThrow(

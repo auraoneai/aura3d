@@ -1,0 +1,22 @@
+{
+  "orientation": {
+    "source": "manifest-override",
+    "forwardAxis": "+Z",
+    "upAxis": "+Y",
+    "view": "hash-bound-readable-prop-view",
+    "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+    "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
+    "checkedAt": "2026-09-01T00:08:31.020Z",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit",
+    "renderedProbe": {
+      "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/turboFormulaCircuit.png",
+      "sha256": "sha256-864078113ea1e5bba1f8573d7422aaa2e48178a4383967a5b1e3ea3cdb07a32f",
+      "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+      "checkedAt": "2026-09-01T00:08:31.020Z",
+      "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit"
+    },
+    "messages": [
+      "The authored circuit declares +Y up and its isolated root probe validates the typed track presentation."
+    ]
+  }
+}

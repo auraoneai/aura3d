@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-09-01T00:08:31.020Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/turboFormulaCircuit.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/turboFormulaCircuit.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-09-01T00:08:31.020Z",
+    "sha256": "sha256-864078113ea1e5bba1f8573d7422aaa2e48178a4383967a5b1e3ea3cdb07a32f",
+    "assetHash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 28,
+    "foregroundBounds": {
+      "x": 140,
+      "y": 117,
+      "width": 500,
+      "height": 292
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboFormulaCircuit",
+    "asset": {
+      "id": "turboFormulaCircuit",
+      "typed": "assets.turboFormulaCircuit",
+      "url": "/aura-assets/turboFormulaCircuit.533df3b3.glb",
+      "hash": "sha256-533df3b3344431fa7b3b7a95f97171a83a0bcb4867c54c176cc3c68bfec98d9a"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 18,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 74815,
+      "colorBuckets": 63,
+      "foregroundBounds": {
+        "x": 140,
+        "y": 117,
+        "width": 500,
+        "height": 292
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

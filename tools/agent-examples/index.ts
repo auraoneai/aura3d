@@ -208,6 +208,9 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
     for (const file of existsSync(source) && lstatSync(source).isFile() ? [source] : walkFiles(source)) {
       if (!/\.(?:md|txt|ts|tsx|js|mjs|cjs|json)$/.test(file)) continue;
       if (base === "packages" && !/\.md$/.test(file)) continue;
+      // The ACR source pass writes its staged-file list (every path in the
+      // candidate) here; it is a file inventory, not a reference to a route.
+      if (portable(relative(root, file)) === "tools/remote-acr/.source5-manifest.txt") continue;
       const text = readFileSync(file, "utf8");
       const isDocument = base === "docs" || base === "packages" || base === "README.md" || base === "llms.txt";
       // Docs and retained specs also use root-relative and ../ links. Preserve

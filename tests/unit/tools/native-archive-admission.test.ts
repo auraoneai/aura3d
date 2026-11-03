@@ -391,9 +391,16 @@ describe("digest-bound archive admission", () => {
     const tampered = new DatabaseSync(join(storeDir, "v11", "index.db"));
     try { tampered.exec("UPDATE sqlite_stat1 SET stat = '999999 1'"); } finally { tampered.close(); }
     expect(() => api.verifyPnpmNativeStore(input)).toThrow(/index statistics differ/);
+    // sqlite_stat4 exists only in SQLite builds with SQLITE_ENABLE_STAT4 (the ACR image's Node lacks it);
+    // verifyPnpmNativeStore checks it only when present, so the sample tamper runs only where it exists.
     const samples = new DatabaseSync(join(storeDir, "v11", "index.db"));
-    try { samples.exec("ANALYZE; UPDATE sqlite_stat4 SET sample = X'00'"); } finally { samples.close(); }
-    expect(() => api.verifyPnpmNativeStore(input)).toThrow(/index statistics differ/);
+    let hasStat4 = false;
+    try {
+      samples.exec("ANALYZE");
+      hasStat4 = samples.prepare("SELECT 1 FROM sqlite_master WHERE name = 'sqlite_stat4'").get() !== undefined;
+      if (hasStat4) samples.exec("UPDATE sqlite_stat4 SET sample = X'00'");
+    } finally { samples.close(); }
+    if (hasStat4) expect(() => api.verifyPnpmNativeStore(input)).toThrow(/index statistics differ/);
     const row = new DatabaseSync(join(storeDir, "v11", "index.db"));
     try { row.exec("ANALYZE; UPDATE package_index SET data = X'00' WHERE key = (SELECT key FROM package_index LIMIT 1)"); }
     finally { row.close(); }

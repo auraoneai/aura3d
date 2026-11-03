@@ -126,11 +126,13 @@ describe("per-entry physics runtime bindings", () => {
     vi.resetModules();
     vi.doMock("@aura3d/physics/world", () => ({ PhysicsWorld: DeferredWorld, ensurePhysics: ensure }));
     try {
-      const [{ physics }, game, providers] = await Promise.all([
-        import("../../../packages/engine/src/agent-api/nodes/physics.js"),
-        import("../../../packages/engine/src/agent-api/GameRuntime.js"),
-        import("../../../packages/engine/src/agent-api/physics/PhysicsWorldProvider.js")
-      ]);
+      // Sequential: concurrent dynamic imports of two entries that share the
+      // agent-api node graph (it contains import cycles, e.g. nodes/scene.ts)
+      // deadlock vitest's module runner after resetModules. Native ESM is
+      // unaffected, and no import awaits the backend (ensure stays uncalled).
+      const { physics } = await import("../../../packages/engine/src/agent-api/nodes/physics.js");
+      const game = await import("../../../packages/engine/src/agent-api/GameRuntime.js");
+      const providers = await import("../../../packages/engine/src/agent-api/physics/PhysicsWorldProvider.js");
       const isolated = providers.createPhysicsWorldProvider(async () => ({
         PhysicsWorld: DeferredWorld,
         ensurePhysics: ensure

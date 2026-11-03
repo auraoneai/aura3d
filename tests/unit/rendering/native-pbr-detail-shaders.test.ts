@@ -442,7 +442,9 @@ describe("PBR detail shader integration", () => {
         const sample = program.fragment.slice(start, program.fragment.indexOf("continue;", start));
         expect(sample).toContain("0.28867513459");
         expect(program.fragment).toContain("a3dRectDimensions.x * a3dRectDimensions.y * 0.25");
-        expect(sample).toContain("max(dot(a3dRectNormal, -L), 0.0)");
+        // RectAreaLight.twoSided (5.0) packs into up.w: the one-sided arm still clamps the emitter cosine.
+        expect(sample).toContain("float a3dRectFacing = dot(a3dRectNormal, -L);");
+        expect(sample).toContain("a3dRectUpData.w > 0.5 ? abs(a3dRectFacing) : max(a3dRectFacing, 0.0)");
         expect(sample).toContain("a3dGetDistanceAttenuation(a3dRectDistance, a3dRectPosition.w, 2.0)");
         expect(sample).toContain("a3dDirectLight(L, radiance, V, N, material");
         expect(sample).toContain("a3dPrd04CoatDirect += radiance");

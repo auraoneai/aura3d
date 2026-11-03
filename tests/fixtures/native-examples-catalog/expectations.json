@@ -17,7 +17,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "c5d773da246724b4640130a96086058db8b979c45ad150912994341fa00179d3" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "ab77e1aaf61c35d9b511764567f649343550653593ffd01222bd9c235f9bed9c" }
       ],
       "regions": [
         {
@@ -50,7 +50,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "c5d773da246724b4640130a96086058db8b979c45ad150912994341fa00179d3" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "ab77e1aaf61c35d9b511764567f649343550653593ffd01222bd9c235f9bed9c" }
       ],
       "regions": [
         {
@@ -83,7 +83,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "c5d773da246724b4640130a96086058db8b979c45ad150912994341fa00179d3" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "ab77e1aaf61c35d9b511764567f649343550653593ffd01222bd9c235f9bed9c" }
       ],
       "regions": [
         {
@@ -116,7 +116,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "c5d773da246724b4640130a96086058db8b979c45ad150912994341fa00179d3" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "ab77e1aaf61c35d9b511764567f649343550653593ffd01222bd9c235f9bed9c" }
       ],
       "regions": [
         {
@@ -149,9 +149,9 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "c5d773da246724b4640130a96086058db8b979c45ad150912994341fa00179d3" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "ab77e1aaf61c35d9b511764567f649343550653593ffd01222bd9c235f9bed9c" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "94909d3b5df357b8b497f4e4a8a99ad187132e23b31ced071f978413128f74dc" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "ca16c33801350e840efb9ef14bc526e95b6caf982db4935e6768e3eaf13421f8" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -613,7 +613,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "c5d773da246724b4640130a96086058db8b979c45ad150912994341fa00179d3" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "ab77e1aaf61c35d9b511764567f649343550653593ffd01222bd9c235f9bed9c" }
       ],
       "regions": [
         {
@@ -1030,7 +1030,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
-          "sha256": "f7e4dec31c3745a9c7dfe5d5de5689071102d228069e4d057cbe344b5d0f354f"
+          "sha256": "35b112b3dfc45ba7204737cb332e62763541894dcb8a6675969c33e838dd28a3"
         },
         {
           "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
@@ -1066,7 +1066,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/primitives.ts",
-          "sha256": "cb0ccc4a74d772aace561406cf37e29a99c7315fcdb05a541952f1aa95c6db18"
+          "sha256": "1e04444d7d50f7e81a58614c26efefd7ac80b048c3d27c55d82dcece670ef600"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
@@ -1078,15 +1078,15 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "f6618d83389f2bb364622c8067b997abb2bdd434ee94f03660a946766eb67962"
+          "sha256": "63084afb2308826e762f369d677252f5dec3acb3eefa86d7058b65efc0fd75e6"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
-          "sha256": "74a4b73b6589a9409d1be42491ae454ec6f947596565d94754aa899191551969"
+          "sha256": "f2380492fb9da2bcd7a31bc87c8e345d5282f71d6009484508902df83a2b17d7"
         },
         {
           "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
-          "sha256": "fbcf9185d34e01fb78eeab222cf2aba97a32c7098b3b964748d6cb9a15838509"
+          "sha256": "7d4757bbe2d2fb7b84ea496fb1746a0591bc966d3106567e65ed182ed9381c5b"
         },
         {
           "path": "packages/engine/src/production-runtime/actor/extensions.ts",
@@ -1094,7 +1094,7 @@
         },
         {
           "path": "packages/assets/src/GLTFRenderResources.ts",
-          "sha256": "332d8472354c18749cd082b6a8522fa169aeeb720ac27681876392e6f966f807"
+          "sha256": "02366b1bdbed05fb265d1cb732d1d3e48af31f5f605e793fb86c1502f94f4115"
         },
         {
           "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
@@ -1816,7 +1816,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/animation-studio/src/render-live-route.ts",
-        "sha256": "44169af629e53a9167706dfc1d4756d54923323dc3fecf6dd217428d27c69f4f"
+        "sha256": "8c68684ccd6cf954a46b4b72c11f9c00327bd2430529b5e541c3fee19426b16f"
       },
       "sourceDependencies": [
         {
@@ -1825,7 +1825,7 @@
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/src/scene-player.ts",
-          "sha256": "c39586fd75004a71e0b40cc010537ad4fa725c76f599ba375d7445d4d045e68f"
+          "sha256": "34d28b71e9bea81e3b5b33d865e2102ade3ea98138ee1b6ba1d264acd15b6324"
         },
         {
           "path": "packages/create-aura3d/templates/animation-studio/index.html",
@@ -1894,7 +1894,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
         }
       ],
       "regions": [
@@ -2641,7 +2641,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/geometry.ts",
@@ -3180,7 +3180,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
         }
       ],
       "regions": [
@@ -3308,7 +3308,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
         }
       ],
       "regions": [
@@ -3374,7 +3374,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
         },
         {
           "path": "src/aura-assets.ts",
@@ -3580,7 +3580,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/nodes/primitives.ts",
-          "sha256": "3739ffea85ee5db396f534b10bad57d3f92b2d4f959e6d0e9463e91740781737"
+          "sha256": "4540af2d5d9b8883bbff3bf8dc88e2126348a8a6b8c3ae3bdbd21d0ff6829856"
         },
         {
           "path": "packages/engine/src/agent-api/xr/xrButton.ts",
@@ -7935,7 +7935,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/postBridge.ts",
-          "sha256": "66d0cd970e9a18d1da7c1d0caa701991a4d8c79a240f693e65f63d82ff770d44"
+          "sha256": "573d152e6fc16b275704a32cd35e106d392c5c2fee186b6fd7f73efbcc7bff71"
         }
       ],
       "regions": [

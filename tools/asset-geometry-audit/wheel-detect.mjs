@@ -62,9 +62,12 @@ export const MIN_WHEEL_CORNERS = 3;
  *
  * `--role` selects the requirement; the default `hero-vehicle` preserves this script's previous strictness.
  */
-// Loaded from built output: this is a plain `.mjs` script and cannot import the TypeScript source. Run
-// `pnpm build` first if the import fails.
-const { admitAssetForRole } = await import("../../packages/aura3d-cli/dist/asset-role-admission.js");
+// `asset-role-admission.ts` has no imports, so when Node can strip types (`process.features.typescript`,
+// default on Node >= 23.6, or `--experimental-strip-types` on 22.x) the script loads the source and needs
+// no build. Otherwise it loads the built output: run `pnpm build` first if that import fails.
+const { admitAssetForRole } = await import(process.features?.typescript
+  ? "../../packages/aura3d-cli/src/asset-role-admission.ts"
+  : "../../packages/aura3d-cli/dist/asset-role-admission.js");
 
 const roleFlagIndex = args.indexOf("--role");
 const requestedRole = roleFlagIndex >= 0 ? args[roleFlagIndex + 1] : "hero-vehicle";

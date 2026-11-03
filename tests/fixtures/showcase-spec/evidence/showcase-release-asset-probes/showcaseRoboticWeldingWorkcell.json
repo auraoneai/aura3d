@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-08-03T23:20:45.775Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-08-03T23:20:45.775Z",
+    "sha256": "sha256-cd8c8b5a0d8edc0f7b8339613eafa83c01d791c4cbced167e936e1e54dbf0b98",
+    "assetHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 94,
+    "foregroundBounds": {
+      "x": 127,
+      "y": 175,
+      "width": 480,
+      "height": 269
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell",
+    "asset": {
+      "id": "showcaseRoboticWeldingWorkcell",
+      "typed": "assets.showcaseRoboticWeldingWorkcell",
+      "url": "/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
+      "hash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 361,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 85001,
+      "colorBuckets": 295,
+      "foregroundBounds": {
+        "x": 127,
+        "y": 175,
+        "width": 480,
+        "height": 269
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

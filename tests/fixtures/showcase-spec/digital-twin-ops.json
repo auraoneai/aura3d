@@ -69,7 +69,8 @@
     "deployPassed": false,
     "routePrimaryPassed": false,
     "releaseAssetProbes": {
-      "showcaseOrangeIndustrialRobot": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.json"
+      "showcaseOrangeIndustrialRobot": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.json",
+      "showcaseRoboticWeldingWorkcell": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.json"
     }
   },
   "capabilities": [

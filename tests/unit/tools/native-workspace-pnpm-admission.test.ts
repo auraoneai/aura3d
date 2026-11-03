@@ -73,7 +73,10 @@ type FixtureOptions = {
 
 /** Only the isolated synthetic copy receives a synthetic test policy pin. */
 async function fixture(options: FixtureOptions = {}) {
-  const root = mkdtempSync(join(tmpdir(), 'aura-workspace-admission-')); roots.push(root);
+  // A private (0700) parent: the post-use store check requires the project and its sibling store in a
+  // private parent (portable-pnpm-lock.mjs), and tmpdir is world-writable /tmp on Linux runners.
+  const parent = mkdtempSync(join(tmpdir(), 'aura-workspace-admission-')); roots.push(parent);
+  const root = join(parent, 'repo'); mkdirSync(root, { mode: 0o700 });
   // The key exists only in this disposable synthetic fixture, as in the
   // existing candidate-review tests. It never becomes a production root.
   const { publicKey, privateKey } = generateKeyPairSync('ed25519');

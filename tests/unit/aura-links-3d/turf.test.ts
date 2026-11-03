@@ -94,13 +94,17 @@ describe("LINKS-05 texels", () => {
   it("normal tiles are unit-length and visibly tilted; masks are grey with real variation", () => {
     for (const kind of NORMALS) {
       const { size, data } = normalTexels(kind);
-      let tilt = 0;
+      // Every texel is checked; the worst one is asserted once (a per-texel expect() made this case
+      // about 2.3 s locally and timed it out on a loaded source-pass shard).
+      let tilt = 0, worstLength = 0, minZ = Infinity;
       for (let i = 0; i < size * size; i++) {
         const x = data[i * 4]! / 127.5 - 1, y = data[i * 4 + 1]! / 127.5 - 1, z = data[i * 4 + 2]! / 127.5 - 1;
-        expect(Math.abs(Math.hypot(x, y, z) - 1), kind).toBeLessThan(0.03);
-        expect(z, kind).toBeGreaterThan(0);
+        worstLength = Math.max(worstLength, Math.abs(Math.hypot(x, y, z) - 1));
+        minZ = Math.min(minZ, z);
         tilt += Math.hypot(x, y);
       }
+      expect(worstLength, kind).toBeLessThan(0.03);
+      expect(minZ, kind).toBeGreaterThan(0);
       const mean = tilt / (size * size);
       expect(mean, kind).toBeGreaterThan(0.15);
       expect(mean, kind).toBeLessThan(0.5);

@@ -197,7 +197,9 @@ describe("staged legacy and isolated physics entry graphs", () => {
       .filter((specifier) => /^@aura3d\/physics-rapier(?:\/|$)/u.test(specifier) ||
         /^@dimforge\/rapier3d(?:[-/]|$)/u.test(specifier));
     expect(optionalEdges).toEqual([]);
-  });
+    // The first row parses the whole agent-api source graph cold (later rows hit
+    // sourceEdgeCache); it exceeded vitest's 5 s default on the ACR runner.
+  }, 60_000);
 
   it("evaluates the shared game bridge without evaluating the world or optional backend", async () => {
     const worldEvaluated = vi.fn();

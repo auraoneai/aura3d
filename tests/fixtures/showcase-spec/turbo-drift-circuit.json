@@ -361,7 +361,8 @@
     "releaseAssetProbes": {
       "showcaseCc0FormulaRaceCar": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseCc0FormulaRaceCar.json",
       "showcaseCcByFormulaOpponent": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseCcByFormulaOpponent.json",
-      "turboFormulaCircuit": "tests/reports/showcase-release-asset-probes/turboFormulaCircuit.json"
+      "turboFormulaCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/turboFormulaCircuit.json",
+      "showcaseTsukubaCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.json"
     },
     "assetPairCompositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
     "visualReviewPassed": true

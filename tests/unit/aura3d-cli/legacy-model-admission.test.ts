@@ -171,7 +171,8 @@ describe("compatible model inspection migration", () => {
     expect(() => readAssetManifest(root)).toThrow(/stale model parser inspection/);
   });
 
-  it("accepts strict mode through the real CLI and reports an invalid policy", () => {
+  // Two cold `tsx cli.ts` spawns (about 2 s locally) exceed the 5 s default on a loaded source-pass shard.
+  it("accepts strict mode through the real CLI and reports an invalid policy", { timeout: 60_000 }, () => {
     const root = project(); writeObj(root);
     const run = (args: string[]) => execFileSync(join(repo, "node_modules/.bin/tsx"), ["--tsconfig", join(repo, "tsconfig.base.json"), join(repo, "packages/aura3d-cli/src/cli.ts"), "assets", "add", "assets/model.obj", "--name", "model", ...args], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
     expect(run(["--model-inspection", "strict"])).toContain('"status": "parser-inspected"');

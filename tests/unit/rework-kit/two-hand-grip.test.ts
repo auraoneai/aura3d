@@ -27,6 +27,7 @@ import {
 } from "../../../packages/game/src/motion/twoHandGrip";
 import {
   ACTOR_FIT,
+  BAT_LEN,
   BATTER_YAW,
   FIT_GROUND_N,
   RIG,
@@ -64,6 +65,30 @@ function compareDeep(a: unknown, b: unknown, path: string, tol: number, bad: str
   if (a !== b) bad.push(`${path}: ${String(a)} vs ${String(b)}`);
 }
 
+/**
+ * The Diamond batter rig as it was when the golden file was captured (027b0eb6c). The batter stance was
+ * re-authored afterwards (8edba1957: new stance key, poles and yaw, plus a lower-body layer), which
+ * changed the app's calibrated socket but not the kit. The golden case therefore drives the kit itself
+ * with the captured rig, so it still proves the kit reproduces the pre-refactor solver exactly.
+ */
+const CAPTURED_BODY: TwoHandGripBodyRig = { ...RIG, poleL: gripUnit([0.3, -1, -0.3]) };
+const CAPTURED_SOCKET = calibrateGripSocket(CAPTURED_BODY, {
+  K: [-0.08, 0.58, 0.4], D: gripUnit([0.2, 0.5, -0.84]), phi: 0.2, pole: gripUnit([-0.3, -1, -0.3])
+});
+const CAPTURED_GRIP_RIG: TwoHandGripRig = {
+  ...CAPTURED_BODY, socketRot: CAPTURED_SOCKET.socketRot, coneCos: CAPTURED_SOCKET.coneCos,
+  gripSpread: 0.09, objectLength: BAT_LEN, sweetSpot: 0.72 * BAT_LEN
+};
+function solveCapturedBatterPose(K: GripVec3, D: GripVec3, phi: number, hip: GripVec3, pole: GripVec3, tau: number, tauL: number, gamma: number) {
+  const p = solveTwoHandGrip(CAPTURED_GRIP_RIG, { K, D, phi, hip, pole }, { tau, tauL, gamma });
+  return {
+    bones: p.bones, tau: p.tau, qFa: p.qFa, elbow: p.elbow, chestActor: p.chest, shoulderActor: p.shoulder,
+    shoulderLActor: p.shoulderL, elbowL: p.elbowL, palmLActor: p.palmL, targetL: p.targetL, tauL: p.tauL,
+    gamma: p.gamma, flexR: p.flexR, flexL: p.flexL, batDir: p.objectDir, palmActor: p.palm,
+    sweetActor: p.sweetPoint, tipActor: p.tipPoint
+  };
+}
+
 describe("two-hand grip kit", () => {
   it("reproduces the Diamond batter solver exactly (golden outputs captured before the refactor)", () => {
     const rows = JSON.parse(readFileSync(resolve(process.cwd(), "tests/unit/rework-kit/golden/diamond-grip-golden.json"), "utf8")) as Array<{
@@ -77,7 +102,7 @@ describe("two-hand grip kit", () => {
     rows.forEach((r, i) => {
       if (r.kind === "swing" && prevKind !== "swing" && prevKind !== "recover") { tau = 0; tauL = 0; gamma = 0; }
       if (r.kind === "swing" && prevKind === "recover") { tau = 0; tauL = 0; gamma = 0; }
-      const p = solveBatterPose(r.K, r.D, r.phi, r.hip, r.pole, tau, tauL, gamma);
+      const p = solveCapturedBatterPose(r.K, r.D, r.phi, r.hip, r.pole, tau, tauL, gamma);
       tau = p.tau; tauL = p.tauL; gamma = p.gamma;
       compareDeep(p, r.out, `row${i}`, 1e-12, bad);
       prevKind = r.kind;

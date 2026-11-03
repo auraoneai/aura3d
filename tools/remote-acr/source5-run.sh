@@ -48,7 +48,9 @@ case "$STAGE" in
     ;;
   unit-*)
     SHARD="${STAGE#unit-}"; SHARD="${SHARD/-of-//}"
-    EXCLUDES=""
+    # tests/unit/package-dist imports built packages/*/dist; the unit shards run
+    # before any build, so it runs in packed-a right after `pnpm build`.
+    EXCLUDES=" --exclude 'tests/unit/package-dist/**'"
     while IFS= read -r t; do case "$t" in ''|'#'*) ;; *) EXCLUDES="$EXCLUDES --exclude $t";; esac; done < tools/remote-acr/acceptance-evidence-tests.txt
     UJSON="$NATIVE_REPORT_DIR/unit-${SHARD/\//-of-}.json"
     run "unit-${SHARD/\//-of-}" "pnpm exec vitest run tests/unit --maxWorkers=2 --shard=$SHARD$EXCLUDES --reporter=default --reporter=json --outputFile=$UJSON"
@@ -67,6 +69,7 @@ case "$STAGE" in
     ;;
   packed-a)
     pack_candidate
+    run package-dist-unit    'pnpm exec vitest run tests/unit/package-dist --maxWorkers=2'
     run api-baseline         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/prepare-baseline.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/baseline-manifest.json"'
     run integration          'pnpm test:integration'
     run packages-dist        'pnpm test:packages:dist'
