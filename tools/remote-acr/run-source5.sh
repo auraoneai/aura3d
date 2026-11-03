@@ -99,6 +99,11 @@ rsync -a --from0 --files-from="$CTX.list" ./ "$CTX/"
 # and every AURA3D_SOURCE_MANIFEST consumer), verified here before any build.
 node tools/remote-acr/source5-manifest.mjs write "$CTX" "$CTX.list" "$COMMIT" "$TREE"
 cp "$CTX/.native-source-manifest.json" "$OUT_DIR/source-manifest.json"
+# `az acr build` silently drops every file named .gitignore ("default ignore rules").
+# They are part of the source identity, so ship them as .gitignore.a3d-staged; the
+# image restores the names right after COPY (Dockerfile.playwright). Done after the
+# manifest is written/verified, so the manifest keeps the real names and digests.
+find "$CTX" -name .gitignore -not -path '*/node_modules/*' -print0 | while IFS= read -r -d '' g; do mv "$g" "$(dirname "$g")/.gitignore.a3d-staged"; done
 MANIFEST_SHA="$(shasum -a 256 "$OUT_DIR/source-manifest.json" | cut -d' ' -f1)"
 LOCK_SHA="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).lockfileSha256' "$OUT_DIR/source-manifest.json")"
 INPUT_DIGEST="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).inputDigest' "$OUT_DIR/source-manifest.json")"
