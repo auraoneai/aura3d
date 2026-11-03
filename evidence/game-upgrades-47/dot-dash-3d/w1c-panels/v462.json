@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "dot-dash-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Busy maze: the dark wall blocks blend into the dark green board, so the corridors are harder to read. The player sprite is small and low contrast. The upper backdrop is dim.",
+     "The maze is busier and less readable: dark chip-blocks sit on a dark green board, and the many small tiles break up the wall shapes; the player is small and only slightly highlighted; a strong warm vignette darkens the lower-left corner. Otherwise the lighting, PCB materials, backdrop and depth are rich and polished.",
+     "The board is busy, and the small player sprite near the bottom centre is hard to pick out among the dense chip-blocks. A dim pegboard backdrop crops the top edge, and the corners are vignetted dark."
+    ]
+   },
+   {
+    "variant": "spiral",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The white board is somewhat overexposed and flat in the centre. The player is small. The pink path markers are faint against the pale board. Overall it still has strong mood, depth and environment.",
+     "The white board leans toward overexposed, with a bright hotspot in the lower-left and a flat glare across the centre; the small player and pellets lose some contrast against the pale surface. Still, the dark walls on the light board give a clear, high-contrast maze with good scene depth and staging.",
+     "The white board is bright and somewhat hot in the centre, close to washed out. The pink path pips are faint against the white, and the player is small and low-contrast near the bottom centre."
+    ]
+   },
+   {
+    "variant": "zerocore",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Dark board with dark wall blocks gives low contrast, so the maze is dense and hard to read. The player is small. Parts of the scene are dim and a bit muddy, though the warm lighting and environment add atmosphere.",
+     "Dense dark blocks on a dark board make the maze walls blend together; the many little chip blocks clutter the play area; the player is small. The gold traces, pink pellets, warm lamps and backdrop still give strong mood, contrast and polish.",
+     "The dark chips on a dark board give low contrast. The maze is dense and slightly muddy, so the walls are harder to read than the paths. The player is small near the bottom centre, and the corners are heavily vignetted."
+    ]
+   }
+  ]
+ }
+]

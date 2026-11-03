@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "teleoperator",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "golden",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large rectangular dark shadow patches on the road look blocky. A bright headlight spot sits oddly on the road to the left of the pod. Debug-looking red laser lines come from the pod. Some aliasing on the overhead wires.",
+     "Slightly dim, low-contrast foreground road. One large dark shadow patch on the right lane looks a bit flat. Cyan guide lines float across the street. Otherwise the depth, sunset horizon, materials and player pod all read clearly.",
+     "A large dark rectangular shadow patch on the road to the right of the pod looks like a shadow-map artifact. A thin cyan light beam and a horizontal cyan bar float in the sky. The red laser/sensor lines from the pod look slightly odd. Otherwise good sunset mood, clear depth, a detailed glossy pod and a readable street."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The bloom from the headlight spot and lamps is a little strong. Faint red debug lines come from the pod. The buildings look somewhat flat and evenly lit for a night scene, though the wet-road reflections and the readable city give it good mood.",
+     "Bright bloom blob on the road at the left of the player, and the image is somewhat noisy. Buildings look a bit flat and unlit-orange for night. The wet-road reflections and neon lines work well, and the player and city are both clearly readable.",
+     "Building facades are lit very bright and warm for a night scene, so it reads more like dusk. A strong lens-flare blob sits on the road beside the pod. There is a dark rectangular shadow patch on the right and a floating cyan beam in the sky. Still atmospheric, with wet reflections, a detailed pod and good depth."
+    ]
+   },
+   {
+    "variant": "noon",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The road is a flat grey with odd checkered shadow patches. A green translucent column on the left building looks like a glitch. The distant sky is a bit hazy. Faint red debug lines come from the pod.",
+     "Slightly greyish, desaturated road. The checker-like shadow patches on the ground are a bit blocky. A translucent green light column on the left looks odd. Clear shadows, crisp player pod with detail, and good depth overall.",
+     "Blocky, checkered shadow-cascade patches on the road around the pod and ambulance. A translucent green vertical column on the left building and a floating cyan beam. The sky is slightly hazy near the horizon. The pod has good material contrast and the shadows ground the vehicles."
+    ]
+   }
+  ]
+ }
+]

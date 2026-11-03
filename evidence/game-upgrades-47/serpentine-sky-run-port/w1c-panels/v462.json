@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "serpentine-sky-run-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The pink haze is heavy and washes out the distant clouds and sky. The path near the sun is a little blown out. Otherwise it has torii gates, a pagoda, a dragon, shadows and good depth.",
+     "Warm haze lowers contrast near the horizon and the sky gets a little washed out around the sun; the dragon is cropped at the right edge. Otherwise it has much stronger mood, cast shadows, torii gates and a temple landmark, a yellow guide line, and better depth.",
+     "The pink haze washes out the sky and clouds a little, the left side of the road is overexposed, and there is a hard shadow band across the foreground."
+    ]
+   },
+   {
+    "variant": "stage5",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The overall purple tint is fairly monochrome and the player's red reads a little dim. The cloud sea is grainy. Otherwise the night mood, landmarks and depth are good.",
+     "The scene is a strong purple monochrome, so the path and the clouds blend together somewhat; the dragon is cropped at the right edge. It has good night mood, a moon, landmarks, and the player reads clearly.",
+     "The purple tint is heavy on the road and the player. The far horizon is slightly crushed and dark, and the moon is half hidden behind the pagoda."
+    ]
+   },
+   {
+    "variant": "stage8",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Around the sun the path and horizon are slightly blown out, and the orange haze softens the distance. Otherwise it is a strong sunset with landmarks, shadows and a dragon.",
+     "The bright sun glow washes out the middle of the path a little, and the near path is somewhat overexposed; the dragon is cropped at the right edge. It has a rich sunset gradient, strong shadows, landmarks, and good depth.",
+     "Bloom overexposes the road surface in the middle distance, and there is a hard shadow band across the foreground. The rendering of the pipe railing on the right is a little noisy."
+    ]
+   }
+  ]
+ }
+]

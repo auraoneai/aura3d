@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "splat-rush-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The cloud floor is a little low-contrast and hazy. The pillar shading is flat. A few creature models on the right are cut off at the frame edge.",
+     "The pink-purple haze softens the far part of the scene somewhat. The cloud floor is a bit muddy and low in contrast. The purple blob-like objects (middle left, and the large one cut off at the right edge) read as strange or poorly textured. Some pillars look like simple untextured shapes. Even so, it has a clear ground plane, a glossy, outlined and very readable ball with a grounded shadow, a strong sunset mood, and good depth.",
+     "The pink/purple cloud-floor haze lowers contrast a little in the lower half. Some background islands and props are partly cut off at the right edge. There are speed-line streaks across the sky. Overall it has a strong sunset mood, the glossy outlined ball reads clearly, the pillars give the play area a defined edge, and there's good depth."
+    ]
+   }
+  ]
+ }
+]

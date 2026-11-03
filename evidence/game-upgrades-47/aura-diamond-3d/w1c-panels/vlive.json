@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "aura-diamond-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "dome",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Looks the same as A: flat grey infield, odd diagonal shadow bands, smeared background, muted contrast.",
+     "Infield is a flat slate-grey blob with odd lobed edges, so it reads like asphalt rather than dirt. The grass has a glossy, mirror-like finish with fake reflections of players and the mirrored 'TYPHOON DOME' wall text. A hard diagonal shadow band cuts across the field. The background is very blurry and dull, and overall contrast is muddy. Players look like simple mannequins. A dark circle is clipped at the bottom-left corner.",
+     "(recovered by pattern)"
+    ]
+   },
+   {
+    "variant": "sandlot",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sky is flat grey and dull. Backdrop props (rock wall, red boulders) look crude. Orange infield is oversaturated and has little texture. Mood is fairly flat.",
+     "Almost identical to A: same flat grey sky, placeholder-looking props, lobed orange infield and reflective grass. It is marginally lighter and flatter, but not meaningfully different.",
+     "(recovered by pattern)"
+    ]
+   },
+   {
+    "variant": "skyline",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Pink infield has a noisy, blotchy texture. Building facades show chaotic noise. Teal outfield is low-contrast. Light rain streaks are barely visible.",
+     "Practically the same as A: clashing teal and pink, blotchy infield texture, flat stretched-texture buildings, mirror-like reflections. Faint rain streaks are slightly more visible, but the overall look is the same.",
+     "(recovered by pattern)"
+    ]
+   }
+  ]
+ }
+]

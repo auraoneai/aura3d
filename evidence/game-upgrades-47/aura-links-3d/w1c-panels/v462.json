@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "stAuroras",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Low-poly lollipop trees look somewhat generic. A second golfer is cut off at the left edge. The white aim line floats a little abstractly. The grass is slightly dark and uniform in the foreground. Otherwise the grass texture, mowing stripes, shadows, cloudy sky, sand bunker and scattered foliage give good depth and contrast.",
+     "Grass texture repeats noticeably and looks a little busy; long dark shadow band crosses the tee box; second figure cut off at the left edge; small cone-like props scattered on the horizon look slightly odd",
+     "The white aim line looks like it is floating over the fairway. The left-hand player is cut off by the frame edge. The 'aurora' setting looks like a plain daytime sky, and the sky is a little flat."
+    ]
+   }
+  ]
+ }
+]

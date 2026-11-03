@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "aura-diamond-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "dome",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The infield is a flat slate-grey that looks a bit dull for dirt, the background hangar is heavily blurred, and a large diagonal shadow band crosses the field. Otherwise the frame is clean and readable, with green turf, a lit scoreboard, filled stands and good reflections.",
+     "Infield is a flat grey that looks like concrete rather than dirt; the background is blurry and indistinct; some fielders' reflections show up on a matte-looking surface",
+     "Infield is a flat grey that looks unfinished, the blurred backdrop behind the stands is a little muddy and lighting is fairly dim, but the geometry is clean and the players and field are easy to read."
+    ]
+   },
+   {
+    "variant": "sandlot",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The infield orange is quite saturated and close to clay-red overkill, the sky is flat grey, and the rock-wall prop on the left is a bit blocky. Lighting is warm and moody, the stands are filled, the scoreboard is lit, the infield has dune texture, and the reflections give depth.",
+     "Infield orange is slightly oversaturated; fielders show mild mirror-like reflections on the dirt; otherwise warm lighting, crowds, a working scoreboard and a stadium name sign",
+     "Orange infield is slightly oversaturated and the sky is a plain grey haze. The rock-wall billboard texture looks noisy. Otherwise warm lighting, filled crowds, a working scoreboard, contact shadows and textured dirt."
+    ]
+   },
+   {
+    "variant": "skyline",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The teal outfield and pink infield are an unusual, slightly unnatural palette, the building textures are a little noisy, and the rain sheen adds mild haze. Still, the city backdrop has lit windows, the stands are filled, the reflections are wet and atmospheric, and the depth is good.",
+     "Pink infield and teal outfield look unnatural; cyan panels still float; the reflective wet-looking surfaces are slightly noisy; but the city skyline, crowds, scoreboard and mood are much richer",
+     "Pink/magenta infield colour is unnatural and the outfield is a heavy teal tint. The building facades have noisy textures. Strong mood otherwise, with lit city windows, crowds, wet reflections and rain."
+    ]
+   }
+  ]
+ }
+]

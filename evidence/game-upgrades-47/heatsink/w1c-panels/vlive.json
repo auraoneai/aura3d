@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "heatsink",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Sun glare blows out the right side of the player vehicle and the road reflection under it; the sky is flat grey; the brown arch and buildings look muddy and monochrome; the dark smudge at bottom centre looks like a stray artifact.",
+     "Almost identical to A. Slightly hazier, with marginally less contrast on the player craft. The same sun-bloom wash, muddy road and bottom-centre smear.",
+     "Nearly identical to B. Strong sun bloom washes out the area around the player craft on the right side. The player craft is large and covers much of the right lane. The arch and nearby buildings are a flat brown silhouette with little material detail. The dark box behind the minimap is visible. The foreground is slightly muddy and dark."
+    ]
+   },
+   {
+    "variant": "dustfall",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: same muddy flat brown architecture, dark empty foreground road and low overall contrast.",
+     "Flat, matte lighting. The city and arch are a single flat orange-brown silhouette with no depth layering. The road is a large dark, featureless area. Only a few dust particles are visible.",
+     "Essentially identical to A. It has the same flat orange silhouettes, the same dark and murky foreground road, the same black slab on the right edge and the same dark box behind the minimap."
+    ]
+   },
+   {
+    "variant": "vesper",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically identical to A: same blurry backdrop on the right and dark lower foreground.",
+     "The backdrop behind the right-hand buildings is a blurry photographic image that clashes with the stylised geometry. The skyscraper columns look sparse and pasted-on. Both pictures are otherwise good, with clear wet-road reflections.",
+     "Essentially identical to A. It has the same blurry photo-like background patch, the same black slab on the right edge and the same dark box behind the minimap."
+    ]
+   }
+  ]
+ }
+]

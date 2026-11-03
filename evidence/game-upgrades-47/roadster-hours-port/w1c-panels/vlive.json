@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "roadster-hours-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "sunbreak",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 1,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Almost identical to A. The road has slightly more haze and glare near the horizon, and the water is a little less saturated. Same flat grey sky, stripey water tiling, blocky shadow edges and unreadable distant sign.",
+     "Haze is heavy and the overcast sky looks flat and grey, so the distant road and horizon are low-contrast. The water texture shows repeating tiling. The car is a little soft but easy to read. A has slightly warmer, more saturated hills than B, but the gap is very small.",
+     "Almost the same frame as A, but the water is greyer and washed out with less blue saturation and contrast; a slightly stronger milky haze over the horizon and road centre flattens the depth; the same flat sky, blob shadow, stripy water and plastic dunes."
+    ]
+   }
+  ]
+ }
+]

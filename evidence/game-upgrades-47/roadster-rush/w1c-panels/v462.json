@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "roadster-rush",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Two red cars hang at the top edge of the frame and look like they are floating, cut off by the frame. The road texture is noisy and smeared by motion blur, and the sun glare on the road is a bit blown out. Otherwise the sunset sky gives the city strong depth and mood, and the player car reads clearly.",
+     "Two red cars float at the top edge of the sky with no visible support. The sun-glare streak on the road is somewhat smeared and over-bright. The skyscraper window textures repeat noticeably. Otherwise the sunset mood, depth and colour are strong, and the player car is clear.",
+     "Two red cars float at the top edge of the frame and are cut off. They are probably meant to be flying cars, but they read as floating objects. The road texture is smeared and streaky with heavy blur, and the sun glare on the road is a bit overblown. Otherwise the sunset mood, city depth and readable blue player car are strong."
+    ]
+   },
+   {
+    "variant": "dusk",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Red cars float at the top edge, cut off by the frame. The road shimmer is noisy and the reflection is heavily smeared. Otherwise it has a rich purple-orange dusk palette, good depth, and the player car stands out well.",
+     "Two red cars float at the top of the frame. The road reflection is a little noisy and smeared. Otherwise the purple and orange dusk mood is rich, the player car is clear and the composition is good.",
+     "Two red cars float at the top edge and are cropped. The road texture is streaky and smeared. The purple-orange dusk palette has a rich mood with good depth and a readable player car."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "The lower part of the frame is very dark and the player car body is dim and low-contrast. An overhead gantry bar and the red flying cars crowd the top edge. The road texture is noisy. Even so, the lit windows, blue reflections and cyan exhaust give a convincing night mood.",
+     "The lower part of the frame is quite dark and the road loses detail in the shadows. Red cars float at the top, and a dark overhead beam cuts across the top edge. Building windows repeat noticeably. The player car is still readable thanks to the orange rim light and the cyan exhaust glow, and the night atmosphere is good.",
+     "The lower third is very dark and the road is crushed toward black. The player car is tinted orange and its details are muddy. An overhead beam cuts across the top of the frame, and red cars hang beneath it. The lit building windows and the blue sheen on the road still give it a convincing night mood."
+    ]
+   }
+  ]
+ }
+]

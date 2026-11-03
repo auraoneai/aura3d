@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "ninja-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "rooftops",
+    "verdict": "worse",
+    "tally": {
+     "after": 1,
+     "before": 2,
+     "same": 0
+    },
+    "brokenAfter": 2,
+    "afterDefects": [
+     "Large dark-blue roof sheets on the right look broken: they stretch and warp across the city like rippling planes. A long green bar floats at the bottom of the frame, and the player's runway sits on odd blocky orange parapets. The player is a flat, washed-out orange shape inside a glowing shield halo and reads poorly. The purple sky and mountains give good depth and mood, but the city looks cluttered and the scale between buildings is inconsistent.",
+     "The player is a flat orange figure inside a glowing shield bubble, so the character model and its silhouette are hard to read. On the right, large dark-blue roof planes look stretched and warped. A green bar floats across the bottom edge and looks disconnected from the scene. The cobblestone ground texture tiles visibly into the distance. The mountains are low-poly and some areas look a little muddy. Otherwise the dusk lighting is strong, the sky is warm, depth is good and the rooftop layout reads clearly.",
+     "Large dark-blue roof slabs on the right look stretched and run unbroken across the town behind the houses, which reads as broken geometry. The player is a flat orange silhouette wrapped in a glowing translucent shell, so the character is hard to read. A green bar floats across the bottom edge. The orange parapet walls are untextured flat colour. The tiled ground at a distance is muddy. The mountains are spiky and low-poly. Mood, sunset lighting, depth and density are clearly richer than A."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,38 @@
+[
+ {
+  "slug": "strange-orbit-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Grey fog or haze patch over the left third of the frame washes out the mountains, the planet's lower edge and the near ground, so that area looks low-contrast and muddy. The track supports appear to float above the water and the ground surface is flat and plain.",
+     "A grey haze or vignette smears the left third of the frame, lowering contrast on the planet, track and ground. The bike is a little softer and more washed out. It shares A's floating track and flat ground.",
+     "A grey haze or fog smear covers the left third of the frame. It washes out the planet base, the left end of the track and the foreground ground, so contrast and depth are lower there. The vehicle is slightly softer."
+    ]
+   },
+   {
+    "variant": "neutral-env",
+    "verdict": "worse",
+    "tally": {
+     "after": 0,
+     "before": 3,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Same grey haze patch on the left side washes out the planet's edge, the mountains and the foreground, lowering contrast. The ground is flat and the track supports look like they float.",
+     "A grey haze smudges the left side of the frame and washes out the planet and the start of the track. Overall contrast is lower. It shares A's floating track and flat ground.",
+     "The same grey haze patch sits on the left side and washes out the planet, the track and the ground. The frame looks muddier and less readable on that side."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,53 @@
+[
+ {
+  "slug": "teleoperator",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "golden",
+    "verdict": "mixed",
+    "tally": {
+     "after": 1,
+     "before": 0,
+     "same": 2
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Thin dark horizontal line across the bottom of the frame. Same flat black shadow rectangle on the right. Buildings on the right are darker and slightly flatter, and the road is a bit muddy.",
+     "(recovered by pattern)",
+     "The same black rectangular shadow patches on the road. A thin dark horizontal band runs along the bottom edge of the frame. The facades are a bit flatter and more muddy, and the right-side ambulance is mostly cut off. Otherwise almost identical to A."
+    ]
+   },
+   {
+    "variant": "night",
+    "verdict": "better",
+    "tally": {
+     "after": 2,
+     "before": 1,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Headlight glow on the road is bright and blown out. Cutoff of the ambulance on the right edge. Building facades are a little flat.",
+     "(recovered by pattern)",
+     "A dark horizontal band runs along the bottom edge. The road is very dark, with black shadow blocks and red/white light streak artifacts at the right. The ambulance is mostly cropped out. The lighting reads more like a dim orange dusk than night."
+    ]
+   },
+   {
+    "variant": "noon",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Cyan pillar artifact on the left building. Same washed-out sky haze and flat dark shadow on the road. The dark Victorian building reads slightly muddy.",
+     "(recovered by pattern)",
+     "The same checkerboard shadow aliasing and grey, flat road. The mid-right building is rendered very dark and muddy, and there is a cyan ghost streak on the left facade. The sky is equally hazy."
+    ]
+   }
+  ]
+ }
+]

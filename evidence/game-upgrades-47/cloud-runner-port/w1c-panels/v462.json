@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "cloud-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "better",
+    "tally": {
+     "after": 3,
+     "before": 0,
+     "same": 0
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large dark smudge-like storm cloud at top centre looks a bit odd; foreground log is plain and untextured with visible seam lines; grass and rocks look slightly flat.",
+     "A dark, smudgy storm cloud sits oddly in the sky, and its odd shape draws the eye. The foreground log is still large and plain. Otherwise the dirt path is warm and textured, the player is clearly readable against it, contrast is good and the colours of the trees, cliff and boulders work together.",
+     "The log in the foreground is large and plain, with a faint seam line, and it covers the bottom third of the frame. The dark storm-cloud shape in the sky looks a bit odd. The distant horizon has mild haze. Otherwise the earthy path has good contrast with the player, and the lighting is warm and balanced."
+    ]
+   }
+  ]
+ }
+]

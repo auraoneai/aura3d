@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "aura-links-3d",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "stAuroras",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Practically the same frame as B. A second golfer is cut off at the left edge and the player is pushed to the far left. The aim line floats as a flat white streak. The fairway is a large, flat green area with little detail, and the far horizon is plain. The bush on the far left looks slightly brown and muddy.",
+     "Nearly identical to A. A second golfer is cut off at the left edge. The aim line floats above the fairway. Lighting is flat with a hazy horizon. The distant bush on the left is a brown clump, a small difference that doesn't really change the frame.",
+     "Almost identical to B. The player is cropped at the left edge of the frame, and a second golfer is cut off at the far edge. The big tee box is flat and empty, and the aim line floats without being grounded. The trees are simple and look alike, and the distant fairway has little detail or depth. One small difference: there is a brown shrub on the left horizon."
+    ]
+   }
+  ]
+ }
+]

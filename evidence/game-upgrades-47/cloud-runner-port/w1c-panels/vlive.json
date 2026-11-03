@@ -1,0 +1,23 @@
+[
+ {
+  "slug": "cloud-runner-port",
+  "judges": 3,
+  "variants": [
+   {
+    "variant": "default",
+    "verdict": "mixed",
+    "tally": {
+     "after": 0,
+     "before": 0,
+     "same": 3
+    },
+    "brokenAfter": 0,
+    "afterDefects": [
+     "Large untextured brown log fills the lower third of the frame and blocks the foreground. Faint seam lines run across the log. Mild haze toward the horizon.",
+     "Nearly identical to A: the same dominant flat log with faceting seams, the same soft cliff and hazy horizon, and the same small player. Tone is marginally flatter, but the difference is too small to call.",
+     "A large untextured log fills the bottom third of the frame and blocks much of the play area. The log shows faint vertical seam lines. Distant haze is slightly flat."
+    ]
+   }
+  ]
+ }
+]
