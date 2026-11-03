@@ -2,6 +2,7 @@
   "name": "@aura3d/input",
   "version": "5.0.0",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

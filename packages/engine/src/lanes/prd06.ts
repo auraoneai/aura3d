@@ -37,7 +37,7 @@ type RenderingLaneApi = Pick<
 let renderingLane: RenderingLaneApi | undefined;
 let renderingLaneLoading: Promise<unknown> | undefined;
 const ensureRenderingLane = (): void => {
-  renderingLaneLoading ??= import("@aura3d/rendering").then(
+  renderingLaneLoading ??= import("../agent-api/lazy/renderingLazy.js").then(
     ({ releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf }) => {
       renderingLane = { releaseMorphScratchGeometry, releaseMorphTargetTexture, skinningPaletteCache, paletteKeyOf };
     }
@@ -259,7 +259,7 @@ export function installPrd06ShaderWarmup(options: Prd06ShaderWarmupOptions): voi
   let loading: Promise<unknown> | undefined;
   setPrd06ShaderWarmupCompiler((items) => {
     if (!warmup) {
-      loading ??= import("@aura3d/rendering").then(({ createPrd06ProgramCacheWarmup }) => {
+      loading ??= import("../agent-api/lazy/renderingLazy.js").then(({ createPrd06ProgramCacheWarmup }) => {
         warmup = createPrd06ProgramCacheWarmup(options);
       });
       return loading.then(() => warmup!(items));

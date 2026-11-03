@@ -3,9 +3,10 @@ import {
   mergeAssetRequestOptions,
   requestIdentityDetails,
   type AssetIntegrity,
-  type AssetRequestOptions
+  type AssetRequestOptions,
+  createAssetTransportTracker,
+  type AssetTransportTracker
 } from "@aura3d/assets/browser";
-import { createAssetTransportTracker, type AssetTransportTracker } from "@aura3d/assets/importers";
 import type { AuraAssetRef } from "../nodes/types.js";
 
 const MAX_FILE_BYTES = 128 * 1024 * 1024;

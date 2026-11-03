@@ -164,3 +164,25 @@ export function scalarVolumeTransparentItems(
   });
   return queue;
 }
+
+/** Frame ownership checks the WebGPU volume pass receives from the renderer. */
+export type ScalarVolumeWebGPUFrame = { readonly deviceGeneration: number; assertCurrent(): void };
+type ScalarVolumeWebGPUDraw = (context: FrameContributorContext, record: ScalarVolumeDrawRecord, frame: ScalarVolumeWebGPUFrame) => void;
+let webgpuScalarVolumeDraw: ScalarVolumeWebGPUDraw | undefined;
+
+/**
+ * `webgpu/ScalarVolumePass` registers its draw here when it is loaded. The renderer dispatches
+ * through this slot instead of importing the pass (and `VolumeRenderer` behind it) statically, which
+ * kept the whole WebGPU volume stack on the critical path of every WebGL2 scene. A WebGPU volume
+ * record can only exist once a `WebGPUScalarVolumeRenderer` was constructed from that module.
+ */
+export function installScalarVolumeWebGPUDraw(draw: ScalarVolumeWebGPUDraw): void {
+  webgpuScalarVolumeDraw = draw;
+}
+
+export function drawScalarVolumeOnWebGPU(context: FrameContributorContext, record: ScalarVolumeDrawRecord, frame: ScalarVolumeWebGPUFrame): void {
+  if (!webgpuScalarVolumeDraw) {
+    throw new RenderDeviceError("Scalar volume WebGPU pass is not loaded", "SCALAR_VOLUME_BACKEND_UNSUPPORTED");
+  }
+  webgpuScalarVolumeDraw(context, record, frame);
+}

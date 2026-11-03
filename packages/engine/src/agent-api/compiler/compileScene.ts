@@ -214,7 +214,7 @@ function createSplatLease(node: AuraGaussianSplatNode, ctx: MountSceneCompileCon
     const request = splatRequest(node, ctx, controller.signal);
     const device = (ctx.renderer as { readonly device?: RenderDevice } | undefined)?.device;
     if (!device || !["webgl2", "webgpu", "mock"].includes(device.kind)) throw new Error("Gaussian splats require a supported render device");
-    const [{ GaussianSplatLoader }, { GaussianSplatRenderer, gaussianSplatGpuInstanceBytes, GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES, GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS }] = await Promise.all([import("@aura3d/assets/browser"), import("@aura3d/rendering")]);
+    const [{ GaussianSplatLoader }, { GaussianSplatRenderer, gaussianSplatGpuInstanceBytes, GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES, GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS }] = await Promise.all([import("../lazy/assetsBrowserLazy.js"), import("../lazy/renderingLazy.js")]);
     if (controller.signal.aborted) throw controller.signal.reason ?? new Error("Splat load cancelled");
     const loaded = await new GaussianSplatLoader().load(node.asset.url, {
       ...request,
@@ -484,7 +484,7 @@ function createVolumeLease(node: AuraScalarVolumeNode, ctx: MountSceneCompileCon
     const device = (ctx.renderer as { readonly device?: RenderDevice } | undefined)?.device;
     if (!device || (device.kind !== "webgl2" && device.kind !== "webgpu")) throw new Error("SCALAR_VOLUME_BACKEND_UNSUPPORTED: WebGL2 or WebGPU is required");
     const [{ ScalarVolumeLoader }, { VolumeRenderer, WebGPUScalarVolumeRenderer }] = await Promise.all([
-      import("@aura3d/assets/importers"), import("@aura3d/rendering/volumetrics")
+      import("../lazy/assetsImportersLazy.js"), import("@aura3d/rendering/volumetrics")
     ]);
     if (controller.signal.aborted || disposed) throw controller.signal.reason ?? new Error("Scalar volume load cancelled");
     const context = new LoadContext({ signal: controller.signal, ...mergeAssetRequestOptions({}, request) });

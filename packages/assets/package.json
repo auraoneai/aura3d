@@ -4,8 +4,11 @@
   "type": "module",
   "exports": {
     ".": {
+      "browser": {
+        "types": "./dist/browser-index.d.ts",
+        "default": "./dist/browser-index.js"
+      },
       "types": "./dist/index.d.ts",
-      "browser": "./dist/browser-index.js",
       "import": "./dist/index.js"
     },
     "./browser": {

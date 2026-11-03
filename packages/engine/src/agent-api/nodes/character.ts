@@ -467,7 +467,7 @@ export const character = lazyNamespace(() => ({
   importedRigRuntime: async (options: GLTFSceneAnimationRuntimeOptions): Promise<GLTFSceneAnimationRuntime> => {
     markAuraLazySystemRequested("character-rig", "character.importedRigRuntime");
     const started = performanceNow();
-    const assets = await import("@aura3d/assets/browser");
+    const assets = await import("../lazy/assetsBrowserLazy.js");
     markAuraLazySystemLoaded("character-rig", performanceNow() - started);
     return assets.createGLTFSceneAnimationRuntime(options);
   },

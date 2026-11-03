@@ -1,5 +1,6 @@
 import {
   AssetManager,
+  createAssetTransportTracker,
   mergeAssetRequestOptions,
   type AssetIntegrity,
   type AssetLoadProgress,
@@ -254,7 +255,7 @@ export function startNativeTextureLoad<T extends { dispose(): void }>(
   const result = (async (): Promise<T> => {
     let input: NativeTextureRequestSnapshot | undefined;
     let linked: ReturnType<typeof linkedAbortSignal> | undefined;
-    let importer: Promise<typeof import("@aura3d/assets/importers")> | undefined;
+    let importer: Promise<typeof import("../lazy/assetsImportersLazy.js")> | undefined;
     let tracker: AssetTransportTracker | undefined;
     let execution: Promise<T> | undefined;
     let delivering = true;
@@ -263,10 +264,10 @@ export function startNativeTextureLoad<T extends { dispose(): void }>(
       if (!input) throw new TypeError("Invalid prepared native texture request");
       linked = linkedAbortSignal(input.signal, input.requestSignal, signal, input.eventScope?.signal);
       throwIfAborted(linked.signal);
-      importer = import("@aura3d/assets/importers");
+      importer = import("../lazy/assetsImportersLazy.js");
       const module = await awaitWithAbort(importer, linked.signal);
       throwIfAborted(linked.signal);
-      tracker = module.createAssetTransportTracker();
+      tracker = createAssetTransportTracker();
       const scope = input.eventScope;
       const currentSignal = linked.signal;
       const snapshot = input;

@@ -654,7 +654,7 @@ function productionEnvironmentFormat(buffer: ArrayBuffer, format?: string): "exr
 /** Decode Radiance or EXR into top-down, linear equirectangular RGBA pixels. */
 export async function decodeProductionEnvironmentImage(buffer: ArrayBuffer, format?: string): Promise<LinearHdrEnvironmentMapSource> {
   if (productionEnvironmentFormat(buffer, format) === "exr") {
-    const { parseEXR } = await import("@aura3d/assets/browser");
+    const { parseEXR } = await import("../lazy/assetsBrowserLazy.js");
     const image = await parseEXR(buffer, { type: "float", outputFormat: "rgba" });
     if (!(image.data instanceof Float32Array)) throw new Error("EXR decoder did not return float RGBA pixels");
     // EXR texture output is device-row ordered. The equirectangular prefilter

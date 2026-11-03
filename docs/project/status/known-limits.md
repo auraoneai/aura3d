@@ -211,6 +211,45 @@ candidate. Final release claims require regeneration and source-bound receipts.
   scripts were removed: the four `external-parity-*` scripts whose tools are
   quarantined are still invoked by `.github/workflows/public-demo-deploy.yml`
   and `tools/public-demo-deployment-artifacts`, so they are not dead.
+- **Bundle-size critical paths** (`core-agent-api`, `template-product-viewer`,
+  `template-cinematic-scene`, `template-mini-game` in `tools/bundle-size/index.ts`):
+  re-baselined 2026-11-03 for 5.0 (owner-delegated) from 190,000 / 250,000 /
+  400,000 / 480,000 B to 2,056,000 / 1,796,000 / 1,804,000 / 1,910,000 B gzip
+  (measured 1,868,919 / 1,632,392 / 1,639,097 / 1,735,649 B + 10%, rounded up
+  to the next 1 KB). The 190/250/400/480 KB targets were never met on 4.x
+  (`BUNDLE_SIZES.md`, 2026-10-22: core 1,141,998 B gzip). Before any fix 5.0
+  measured 2,222,881 / 2,008,833 / 2,014,106 / 2,111,783 B (about double 4.x).
+  Recovered 354 KB (-16%) on the core path without changing behavior or public
+  API: (1) `compiler/bitmapAsset.ts` took `createAssetTransportTracker` from the
+  `@aura3d/assets/importers` barrel, whose modules (all native loaders, the
+  format catalog, material/scientific/vector/voxel loaders) are not
+  tree-shakeable, so every loader landed on the static path (-117 KB); that
+  helper is now also exported from `@aura3d/assets/browser` (additive).
+  (2) `import("@aura3d/rendering")`, `import("@aura3d/assets/browser")` and
+  `import("@aura3d/assets/importers")` in the engine made each barrel
+  namespace live; they now import narrow facades under
+  `packages/engine/src/agent-api/lazy/` that re-export only the destructured
+  names (-205 KB). (3) `Renderer` no longer statically imports the WebGPU scalar
+  volume pass (and `VolumeRenderer` behind it); the pass registers its draw in
+  `renderer/ScalarVolumeFrame.ts` when `@aura3d/rendering/volumetrics` loads,
+  which is the only way a WebGPU volume record can exist (-15 KB). (4)
+  `sideEffects: false` on seven audited-pure packages (audio, math, scripting,
+  input, editor-runtime, debug, core) (-6 KB).
+  **Remaining (5.x debt), measured on the core path:** the WebGL2 renderer and
+  the engine authoring API are statically reachable by design and account for
+  most of the 6.3 MB raw: `agent-api` 1.8 MB raw, `Renderer`/`ForwardPass`/
+  `WebGL2Device` plus `ShaderLibrary` (about 0.7 MB raw), `webgl2/LegacyPost`
+  (100 KB raw, about 26 KB gzip), `ShaderGraphCompiler` via sync `tsl` and
+  compute (120 KB raw, about 29 KB gzip), the WGSL twin templates reached from
+  `ProgramGenerator` (about 45 KB gzip; deferring them needs a registration
+  slot plus about 12 tests that call `generateProgram` with `target: "wgsl"`
+  to import it), GLB loader and animation runtime (about 0.3 MB raw),
+  `GaussianSplatLoader` and `EXRLoader` (about 16 KB gzip; they stay eager
+  because esbuild keeps any module that is live through a lazy facade in the
+  shared chunk when a statically imported barrel also re-exports it), and
+  sync physics root semantics (`PhysicsWorld` plus `physics-rapier`, 56 KB raw).
+  `check:bundle-size` still reports the `.` entry with every export as an entry
+  point; the one-cube observation (1,631,581 B gzip) is the user-facing floor.
 
 ## 5.x architecture-gate debt
 

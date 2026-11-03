@@ -9,7 +9,7 @@ import { VertexFormat } from "../VertexFormat";
 import type { WebGPUNativePointViewport } from "../WebGPUDevice";
 import { FRAME_RESOURCES, type FrameContributorContext } from "../contracts/frameGraph";
 import { PRD01_FORWARD_TARGET } from "../renderer/FrameGraph";
-import type { ScalarVolumeDrawRecord } from "../renderer/ScalarVolumeFrame";
+import { installScalarVolumeWebGPUDraw, type ScalarVolumeDrawRecord } from "../renderer/ScalarVolumeFrame";
 import type { RenderTarget } from "../RenderDevice";
 import { buildVolumeTransferTable, type ScalarVolumeData, type VolumeDimensions, type VolumeFrameLease, type VolumePlane, type VolumeRendererOptions, type VolumeRenderMode, type VolumeSamples, type VolumeTransferStop } from "../VolumeRenderer";
 
@@ -292,6 +292,8 @@ export function drawScalarVolumeOnWebGPU(
   record.renderer.drawWebGPU({ viewProjectionMatrix: context.rasterViewProjectionMatrix, modelMatrix: record.modelMatrix,
     depthTexture: copy.depthTexture, width: target.width, height: target.height, mode: record.mode });
 }
+
+installScalarVolumeWebGPUDraw(drawScalarVolumeOnWebGPU);
 
 /** WebGPU-owned scalar volume; the caller owns the source arrays and depth. */
 export class WebGPUScalarVolumeRenderer {

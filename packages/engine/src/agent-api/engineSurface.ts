@@ -80,7 +80,7 @@ export async function loadProductAssetLazy(options: ProductAssetLoadOptions): Pr
 export async function createPostProcessComposerLazy(options: PostProcessComposerOptions): Promise<PostProcessComposer> {
   markAuraLazySystemRequested("postprocess", "createPostProcessComposerLazy");
   const started = Date.now();
-  const rendering = await import("@aura3d/rendering");
+  const rendering = await import("./lazy/renderingLazy.js");
   markAuraLazySystemLoaded("postprocess", Date.now() - started);
   return new rendering.PostProcessComposer(options);
 }

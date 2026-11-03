@@ -590,7 +590,7 @@ export function installWorkerRenderer(endpoint: AuraWorkerEndpoint<AuraWorkerReq
     const [{ createProductionRuntimeSceneRenderer }, { analyzeProductionBridgeEligibility }, { groups }, { normalizeCreateAppRendererOptions }, { resolveQrFlags }, actorAnimation, actorFlags, colorPolicy, shaderFailures] = await Promise.all([
       import("../compiler/renderer.js"), import("../compiler/observations.js"), import("../nodes/groups.js"), import("./rendererOptions.js"),
       import("../../contracts/flags.js"), import("./actorAnimationHandle.js"), import("../../production-runtime/actor/extensions.js"),
-      import("../compiler/color.js"), import("@aura3d/rendering")
+      import("../compiler/color.js"), import("../lazy/renderingLazy.js")
     ]);
     if (signal.aborted) throw cancelled();
     // Keep the scene admission checks applied by the DOM mount wrapper; GPU
