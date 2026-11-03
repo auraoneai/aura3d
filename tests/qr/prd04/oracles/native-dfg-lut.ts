@@ -2,7 +2,7 @@
  * Native Aura3D directional-albedo fixture adapter.
  *
  * Provenance: `packages/rendering/src/program/DFGLutData.ts` integrates an
- * isotropic GGX distribution using 4096 Hammersley samples per texel,
+ * isotropic GGX distribution using 65536 Hammersley samples per texel,
  * height-correlated Smith masking and Schlick's fifth-power Fresnel factor.
  * `generateDfgLut()` reproduces the baked `DFG_LUT_RG16F` used here; this
  * adapter neither embeds a second table nor reads a comparison fixture.
@@ -18,7 +18,7 @@
  * Reproduction digest: SHA-256 of all 512 RG words serialized in row-major
  * order, each word least-significant byte first (1024 bytes total), regardless
  * of host endianness. Regenerate with `generateDfgLut()` before hashing.
- * SHA-256: e7f0fdf09f28844b3dd819852a2cfcd1ea9336f8274722a519ca4ce2325647e4
+ * SHA-256: 99849ad3e80ccc5ee6ee4343c55de42a75493bfa94a498148dca5006eae58362
  *
  * The CPU sampler below uses binary16 decoding and floating-point bilinear
  * arithmetic; it is a reference for the stated layout and sampler behavior,
@@ -32,7 +32,7 @@ import {
 
 export const NATIVE_DFG_LUT_SIZE = DFG_LUT_SIZE;
 export const NATIVE_DFG_LUT_SAMPLES = DFG_LUT_SAMPLES;
-export const NATIVE_DFG_LUT_SHA256 = "e7f0fdf09f28844b3dd819852a2cfcd1ea9336f8274722a519ca4ce2325647e4";
+export const NATIVE_DFG_LUT_SHA256 = "99849ad3e80ccc5ee6ee4343c55de42a75493bfa94a498148dca5006eae58362";
 
 // Keep the snapshot private: neither callers nor the renderer's exported
 // mutable typed array can mutate this module's subsequent sampling results.

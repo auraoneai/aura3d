@@ -615,8 +615,8 @@
     "owner": "WP-04 (S5-WP04-05)",
     "replacementStatus": "independent",
     "reviewEvidence": [
-      "Replaces tests/qr/prd04/oracles/dfg-lut-r185.ts (decoded copy of another engine's DFG table, deleted 2026-11-02). Values are Aura3D's own split-sum integration: generateDfgLut() in packages/rendering/src/program/DFGLutData.ts (GGX NDF alpha=r^2, height-correlated Smith G2, Schlick (1-VH)^5, 4096 Hammersley points, binary16), decoded with native-dfg-lut.ts; the same table the renderer binds.",
-      "Tests: tests/qr/prd04/unit/r185-oracle.test.ts (every texel vs an independent Gauss-Legendre quadrature: <= 2.07e-3 for N.V >= 0.28, <= 1.17e-2 on the four grazing rows), tests/unit/rendering/native-lighting-luts.test.ts (baked table = generator)."
+      "Replaces tests/qr/prd04/oracles/dfg-lut-r185.ts (decoded copy of another engine's DFG table, deleted 2026-11-02). Values are Aura3D's own split-sum integration: generateDfgLut() in packages/rendering/src/program/DFGLutData.ts (GGX NDF alpha=r^2, height-correlated Smith G2, Schlick (1-VH)^5, 65536 Hammersley points, binary16; raised from 4096 on 2026-11-02 so the table, not the test bound, meets the precision target), decoded with native-dfg-lut.ts; the same table the renderer binds.",
+      "Tests: tests/qr/prd04/unit/r185-oracle.test.ts (every texel vs an independent Gauss-Legendre quadrature: <= 3.13e-4 for N.V >= 0.28, <= 2.31e-3 on the four grazing rows), tests/unit/rendering/native-lighting-luts.test.ts (baked table = generator)."
     ]
   }
 }

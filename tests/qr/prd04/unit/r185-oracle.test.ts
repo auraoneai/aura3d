@@ -173,19 +173,19 @@ describe("BSDF oracle vs independently derived values (PRD-04 P1-3, S5-WP29-05)"
 
 describe("split-sum table sampled by the oracle vs an independent quadrature", () => {
 	// dfg-lut.ts is input data (16x16 RG binary16, texel centres; Aura's
-	// 4096-point Hammersley integration). Each texel is re-integrated
-	// independently (Heitz height-correlated G2, Schlick (1-VH)^5, 256 x 256
-	// Gauss-Legendre/midpoint quadrature; native-reference-environment-clean.ts).
-	// Measured agreement (2026-11-02): <= 2.07e-3 for N.V >= 0.28 (rows 4..15,
-	// <= 1.55e-3 from row 5; binary16 half-ulp near 1 is 2.4e-4); the four
-	// grazing rows (N.V <= 0.22) differ by up to 1.17e-2, where Monte Carlo
-	// estimators are least accurate. The bounds below are those measurements,
-	// not a claim about which estimator a renderer should use.
+	// 65536-point Hammersley integration, DFG_LUT_SAMPLES). Each texel is
+	// re-integrated independently (Heitz height-correlated G2, Schlick (1-VH)^5,
+	// 256 x 256 Gauss-Legendre/midpoint quadrature;
+	// native-reference-environment-clean.ts). Measured agreement (2026-11-02):
+	// <= 3.13e-4 for N.V >= 0.28 (rows 4..15; binary16 half-ulp near 1 is
+	// 2.4e-4); the four grazing rows (N.V <= 0.22) differ by up to 2.31e-3, where
+	// sampled estimators are least accurate. The bounds below are those
+	// measurements, not a claim about which estimator a renderer should use.
 	it("every texel agrees with the independent integral within the measured bounds", () => {
 		const n = DFG_LUT_SIZE;
 		const failures: string[] = [];
 		for (let j = 0; j < n; j++) {
-			const bound = j >= 4 ? 2.1e-3 : 1.2e-2;
+			const bound = j >= 4 ? 3.2e-4 : 2.4e-3;
 			for (let i = 0; i < n; i++) {
 				const [a, b] = independentSplitSumTexel(i, j, n);
 				const t = (j * n + i) * 2;

@@ -66,7 +66,7 @@ function hemisphereIntegral(roughness: number, nv: number): readonly [number, nu
 describe("Aura3D independent native DFG fixture", () => {
   it("reproduces the generator, native RG words and endian-defined digest", () => {
     expect(NATIVE_DFG_LUT_SIZE).toBe(16);
-    expect(NATIVE_DFG_LUT_SAMPLES).toBe(4096);
+    expect(NATIVE_DFG_LUT_SAMPLES).toBe(65536);
     const words = nativeDfgLutRg16f();
     expect(words).toHaveLength(16 * 16 * 2);
     expect(words).toEqual(DFG_LUT_RG16F);
@@ -118,7 +118,7 @@ describe("Aura3D independent native DFG fixture", () => {
   it("keeps roughness on X, N·V on Y, and A and B in their respective channels", () => {
     // These asymmetric centers distinguish transposition as well as RG swaps.
     const size = NATIVE_DFG_LUT_SIZE;
-    expect(sampleNativeDfgLut(2.5 / size, 11.5 / size)).toEqual([0.99755859375, 0.0019369125366210938]);
+    expect(sampleNativeDfgLut(2.5 / size, 11.5 / size)).toEqual([0.9970703125, 0.001934051513671875]);
     expect(sampleNativeDfgLut(11.5 / size, 2.5 / size)).toEqual([0.765625, 0.046844482421875]);
   });
 
