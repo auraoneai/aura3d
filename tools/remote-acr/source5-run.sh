@@ -6,10 +6,12 @@
 # packed-a also uploads the tested plan, archives and packed reports to
 # source5/<run>/artifacts/ in the run container (artifacts-upload below), and
 # packed-b uploads its consumer source reports with the projects, logs and
-# archives they reference to source5/<run>/consumers/ (consumers-upload), and
-# packed-c its packed example report and projects to source5/<run>/examples/
-# (examples-upload); the
-# container SAS arrives only as AURA3D_ARTIFACTS_SAS from the launcher's 0600
+# archives they reference to source5/<run>/consumers/ (consumers-upload). The packed
+# examples run as SOURCE5_EXAMPLE_SHARDS shards, one stage each (packed-c1..packed-cN):
+# shard I installs and builds its deterministic, cost-balanced slice of the catalog
+# (`agent-examples --packed --shard I/N`, 2 projects at a time, one npm cache) and uploads its
+# shard report and projects to source5/<run>/examples-<I>/ (examples-upload); the
+# launcher merges the shards. The container SAS arrives only as AURA3D_ARTIFACTS_SAS from the launcher's 0600
 # --values file and is handed to upload-artifacts.mjs alone.
 set -uo pipefail
 cd /repo
@@ -47,10 +49,10 @@ run() {
 }
 
 # Stages (each ACR run executes one stage; <= 30 min each per the ACR policy).
-# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b | packed-c
+# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b | packed-c<i> (example shard i of SOURCE5_EXAMPLE_SHARDS)
 STAGE="${SOURCE5_STAGE:?SOURCE5_STAGE required}"
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=6144}"
-# All three packed stages pack the same commit; the launcher's pinned plan time
+# Every packed stage packs the same commit; the launcher's pinned plan time
 # (frozen commit's UTC committer time) makes their plans byte-identical.
 case "${A3D_PLAN_GENERATED_AT:-}" in none) unset A3D_PLAN_GENERATED_AT;; *) [ -z "${A3D_PLAN_GENERATED_AT:-}" ] || export A3D_PLAN_GENERATED_AT;; esac
 pack_candidate() {
@@ -120,16 +122,19 @@ case "$STAGE" in
     # failure fails this command and therefore the stage.
     run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
-  packed-c)
+  packed-c[1-9]*)
+    # Example shard I of N: every catalog example of the shard installed from the packed
+    # candidate (A3D_RELEASE_PLAN archives, lock pinned to the plan's SHA-512 integrity) and
+    # built; no custody lock input (decision record item 1). Each shard has its own stage so
+    # no stage nears the 1800 s ACR limit. Gate check: clean-install (needs every shard).
+    SHARD_I="${STAGE#packed-c}"; SHARD_N="${SOURCE5_EXAMPLE_SHARDS:-}"
+    case "$SHARD_I$SHARD_N" in *[!0-9]*|'') echo "invalid example shard $STAGE of ${SHARD_N:-?}" >&2; exit 2;; esac
+    [ "$SHARD_N" -ge 1 ] && [ "$SHARD_I" -ge 1 ] && [ "$SHARD_I" -le "$SHARD_N" ] || { echo "invalid example shard $SHARD_I/$SHARD_N" >&2; exit 2; }
     pack_candidate
-    # Every catalog example installed from the packed candidate (A3D_RELEASE_PLAN
-    # archives, lock pinned to the plan's SHA-512 integrity) and built; no custody
-    # lock input (decision record item 1). Its own stage so packed-b keeps its
-    # 1800 s budget. Gate check: clean-install.
-    run examples-source      'pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-examples/index.ts --phase source --packed --run-id "$NATIVE_RUN_ID" --candidate-plan "$A3D_RELEASE_PLAN"'
-    # The example report, retained wrappers, builds and logs back to the Mac
-    # (source5/<run>/examples/), one upload per <= 128 MiB chunk.
-    run examples-upload      'rm -rf /tmp/source5-examples && mkdir -p /tmp/source5-examples && node tools/remote-acr/source5-artifacts.mjs stage-examples "$NATIVE_RUN_ID" /tmp/source5-examples/examples; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-examples/examples/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "examples/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
+    run examples-source      "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-examples/index.ts --phase source --packed --shard $SHARD_I/$SHARD_N --concurrency 2 --run-id \"\$NATIVE_RUN_ID\" --candidate-plan \"\$A3D_RELEASE_PLAN\""
+    # The shard report, retained wrappers, builds and logs back to the Mac
+    # (source5/<run>/examples-<I>/), one upload per <= 128 MiB chunk.
+    run examples-upload      "rm -rf /tmp/source5-examples && mkdir -p /tmp/source5-examples && node tools/remote-acr/source5-artifacts.mjs stage-examples \"\$NATIVE_RUN_ID\" /tmp/source5-examples/examples $SHARD_I/$SHARD_N; s=\$?; u=1; if [ \"\$s\" = 0 ]; then u=0; for f in /tmp/source5-examples/examples/*; do AURA3D_ARTIFACTS_SAS=\"\$SOURCE5_SAS\" node tools/remote-acr/upload-artifacts.mjs --prefix \"source5/\$NATIVE_RUN_ID\" --copy \"\$f\" \"examples-$SHARD_I/\${f##*/}\" || { u=1; break; }; done; fi; [ \"\$s\" = 0 ] && [ \"\$u\" = 0 ]"
     ;;
   *) echo "unknown SOURCE5_STAGE $STAGE" >&2; exit 2 ;;
 esac

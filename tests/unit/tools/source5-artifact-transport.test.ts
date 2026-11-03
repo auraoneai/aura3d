@@ -11,7 +11,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { gitSourceInputDigest, sourceIdentity, stagedSourceIdentity } from '../../../tools/release/source-identity.mjs';
 import { buildSource5Manifest, SOURCE5_MANIFEST_NAME, writeSource5Manifest } from '../../../tools/remote-acr/source5-manifest.mjs';
 import { readSource5Manifest } from '../../../tools/remote-acr/source5-files.mjs';
-import { CONSUMER_INDEX_NAME, planArchives, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumers } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { CONSUMER_INDEX_NAME, planArchives, shardDownloadDir, shardIndexName, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumers, verifyDownloadedExamples } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { exampleShardRecord, exampleShardReportName } from '../../../tools/agent-examples/shard.mjs';
 
 const REPO = resolve(__dirname, '../../..');
 const temps: string[] = [];
@@ -282,5 +283,129 @@ describe('source5 packed-b consumer report retention (stage-consumers -> verify-
     root = job();
     expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('o'), 'c'), maxBytes: 64 })).toThrow(/exceed 64 bytes/);
     expect(() => stageConsumers({ root, runId: '../x', outDir: join(temp('o'), 'c') })).toThrow(/invalid run id/);
+  });
+});
+
+describe('source5 packed example shard bundles (stage-examples I/N -> verify-examples union)', () => {
+  const RUN = 'run-1', COUNT = 3;
+  const catalog = Array.from({ length: 8 }, (_, i) => ({ id: `documented-example:apps/ex-${i}`, cost: 100 + i * 40 }));
+  const suffix = (id: string) => id.replace(/[^a-z0-9-]+/gi, '-');
+  const common = { schema: 'aura3d.native-consumers/1', phase: 'source', install: 'packed-v1', runId: RUN, candidateSha256: 'a'.repeat(64), candidatePlan: `tests/reports/native-5/${RUN}/candidate-plan.json`,
+    source: { commit: 'c'.repeat(40) }, stagedSourceSha256: 'd'.repeat(64), lockfileSha256: 'e'.repeat(64), packages: [], toolVersions: { node: 'v24', npm: '11' }, exemptions: [], browser: 'not-run' };
+  /** One shard job: its own report, projects and logs under the shared run directory. */
+  function shardJob(index: number, patch: (report: Record<string, any>) => Record<string, any> = report => report) {
+    const root = temp(`shard-${index}`), shard = exampleShardRecord(catalog, index, COUNT);
+    for (const id of shard.ids) {
+      put(root, `tests/reports/native-examples-catalog/${RUN}/projects/${suffix(id)}/package.json`, `{"name":"${id}"}\n`);
+      put(root, `tests/reports/native-examples-catalog/${RUN}/logs/${suffix(id)}/install.log`, `installed ${id}\n`);
+    }
+    const report = patch({ ...common, generatedAt: `2026-11-03T00:0${index}:00.000Z`, pass: true, failures: [], shard,
+      cases: shard.ids.map(id => ({ id, kind: 'documented-example', status: 'passed', checks: [] })), projects: shard.ids.map(id => ({ id, path: `p/${id}` })) });
+    put(root, `tests/reports/native-examples-catalog/${RUN}/${exampleShardReportName(index, COUNT)}`, `${JSON.stringify(report)}\n`);
+    return { root, shard };
+  }
+  /** All shards staged, then laid out like the launcher's download (`<shards dir>/examples-<I>/`). */
+  function downloaded(skip: number[] = [], jobPatch: Record<number, (report: Record<string, any>) => Record<string, any>> = {}) {
+    const shardsDir = temp('downloads');
+    for (let i = 1; i <= COUNT; i += 1) {
+      if (skip.includes(i)) continue;
+      const { root } = shardJob(i, jobPatch[i]);
+      stageConsumers({ root, runId: RUN, outDir: join(shardsDir, shardDownloadDir(i)), kind: 'examples', shard: { index: i, count: COUNT }, chunkBytes: 65536 });
+    }
+    return shardsDir;
+  }
+  const mac = () => { const root = temp('mac'); return { root, dest: join(root, `tests/reports/native-5/${RUN}/artifacts/examples`) }; };
+
+  it('a shard bundle carries only its own report, projects and logs and is tagged with its shard', () => {
+    const { root, shard } = shardJob(2);
+    const index = stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'e'), kind: 'examples', shard: { index: 2, count: COUNT } });
+    expect(index).toMatchObject({ kind: 'examples', shard: { index: 2, count: COUNT }, reports: { examplesShardReport: { path: `tests/reports/native-examples-catalog/${RUN}/examples-source.shard-2-of-3.json` } } });
+    expect(index.files).toHaveLength(1 + 2 * shard.ids.length);
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'x'), kind: 'consumers', shard: { index: 1, count: 2 } })).toThrow(/only the examples bundle is sharded/);
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'y'), kind: 'examples', shard: { index: 4, count: 3 } })).toThrow(/invalid shard/);
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'z'), kind: 'examples', shard: { index: 1, count: COUNT } })).toThrow(/examplesShardReport was not produced/);
+  });
+
+  it('extracts the union of all shards under one tree, merges one examples-source.json and writes one merged index', () => {
+    const m = mac();
+    const result = verifyDownloadedExamples({ shardsDir: downloaded(), dest: m.dest, root: m.root, runId: RUN, count: COUNT });
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+    const merged = JSON.parse(readFileSync(join(m.dest, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`), 'utf8'));
+    expect(merged.cases.map((c: { id: string }) => c.id)).toEqual(catalog.map(c => c.id).sort());
+    expect(merged.projects).toHaveLength(catalog.length);
+    expect(merged.shards).toHaveLength(COUNT);
+    expect(result.examplesSourceReport).toMatchObject({ jobPath: `tests/reports/native-examples-catalog/${RUN}/examples-source.json`, sha256: sha256(readFileSync(join(m.dest, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`))) });
+    const index = JSON.parse(readFileSync(join(m.dest, CONSUMER_INDEX_NAME), 'utf8'));
+    expect(index).toMatchObject({ kind: 'examples', merged: true, shardCount: COUNT });
+    expect(index.shards.map((s: { shard: number; indexFile: { path: string } }) => [s.shard, s.indexFile.path])).toEqual([1, 2, 3].map(i => [i, shardIndexName(i, COUNT)]));
+    // Every catalog project and log is in the union exactly once, and every indexed file is on disk with its hash.
+    for (const item of catalog) for (const path of [`projects/${suffix(item.id)}/package.json`, `logs/${suffix(item.id)}/install.log`]) {
+      expect(index.files.filter((f: { path: string }) => f.path === `tests/reports/native-examples-catalog/${RUN}/${path}`)).toHaveLength(1);
+    }
+    for (const file of index.files) expect(sha256(readFileSync(join(m.dest, file.path)))).toBe(file.sha256);
+    expect(index.files.map((f: { path: string }) => f.path)).toContain(`tests/reports/native-examples-catalog/${RUN}/examples-source.shard-3-of-3.json`);
+  });
+
+  it('refuses a missing shard (nothing merged), an unexpected shard directory and a non-empty destination', () => {
+    let m = mac();
+    let result = verifyDownloadedExamples({ shardsDir: downloaded([2]), dest: m.dest, root: m.root, runId: RUN, count: COUNT });
+    expect(result.ok).toBe(false);
+    expect(result.problems).toEqual(['example shard 2/3 was not downloaded']);
+    expect(existsSync(join(m.dest, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`))).toBe(false);
+    const extra = downloaded();
+    mkdirSync(join(extra, 'examples-9'));
+    m = mac();
+    expect(verifyDownloadedExamples({ shardsDir: extra, dest: m.dest, root: m.root, runId: RUN, count: COUNT }).problems).toEqual(['unexpected downloaded example shard directory: examples-9']);
+    m = mac();
+    put(m.dest, 'leftover.txt', 'x');
+    expect(verifyDownloadedExamples({ shardsDir: downloaded(), dest: m.dest, root: m.root, runId: RUN, count: COUNT }).problems[0]).toMatch(/not empty/);
+    expect(verifyDownloadedExamples({ shardsDir: join(temp('none'), 'missing'), dest: mac().dest, root: m.root, runId: RUN, count: COUNT }).problems).toEqual([
+      'example shard 1/3 was not downloaded', 'example shard 2/3 was not downloaded', 'example shard 3/3 was not downloaded']);
+  });
+
+  it('refuses a shard bundle that is the wrong shard, a tampered chunk, an overlapping shard or an inconsistent union', () => {
+    // shard 2's bundle downloaded where shard 1's belongs
+    let dir = downloaded();
+    const swapped = temp('swap');
+    cpSync(join(dir, shardDownloadDir(2)), join(swapped, shardDownloadDir(1)), { recursive: true });
+    cpSync(join(dir, shardDownloadDir(1)), join(swapped, shardDownloadDir(2)), { recursive: true });
+    cpSync(join(dir, shardDownloadDir(3)), join(swapped, shardDownloadDir(3)), { recursive: true });
+    let m = mac();
+    expect(verifyDownloadedExamples({ shardsDir: swapped, dest: m.dest, root: m.root, runId: RUN, count: COUNT }).problems.join('\n')).toMatch(/shard 1\/3: consumer index is shard 2\/3, expected shard 1\/3/);
+    // a tampered chunk
+    dir = downloaded();
+    writeFileSync(join(dir, shardDownloadDir(3), readdirSync(join(dir, shardDownloadDir(3))).find(name => name.endsWith('.bin'))!), 'tampered');
+    m = mac();
+    expect(verifyDownloadedExamples({ shardsDir: dir, dest: m.dest, root: m.root, runId: RUN, count: COUNT }).problems.join('\n')).toMatch(/shard 3\/3: chunk bytes differ from the index/);
+    // a shard report that dropped one of its cases
+    m = mac();
+    const dropped = verifyDownloadedExamples({ shardsDir: downloaded([], { 2: report => ({ ...report, cases: report.cases.slice(1) }) }), dest: m.dest, root: m.root, runId: RUN, count: COUNT });
+    expect(dropped.ok).toBe(false);
+    expect(dropped.problems.join('\n')).toMatch(/shard 2\/3: cases are not exactly the shard's \d+ examples/);
+    // a shard report from another run, one claiming another shard number, and one disagreeing on the candidate
+    m = mac();
+    expect(verifyDownloadedExamples({ shardsDir: downloaded([], { 1: report => ({ ...report, runId: 'other' }) }), dest: m.dest, root: m.root, runId: RUN, count: COUNT }).problems.join('\n')).toMatch(/shard 1\/3: report is for run other/);
+    m = mac();
+    expect(verifyDownloadedExamples({ shardsDir: downloaded([], { 3: report => ({ ...report, candidateSha256: 'b'.repeat(64) }) }), dest: m.dest, root: m.root, runId: RUN, count: COUNT }).problems).toEqual(['shard 3/3: candidateSha256 differs from shard 1/3']);
+    // nothing is merged on any refusal
+    expect(existsSync(join(m.dest, `tests/reports/native-examples-catalog/${RUN}/examples-source.json`))).toBe(false);
+    // the unsharded verifier refuses a shard bundle and a shard verifier refuses an unsharded one
+    dir = downloaded();
+    m = mac();
+    expect(verifyDownloadedConsumers({ dir: join(dir, shardDownloadDir(1)), dest: m.dest, root: m.root, runId: RUN, kind: 'examples' }).problems[0]).toMatch(/is shard 1\/3, expected an unsharded bundle/);
+    expect(verifyDownloadedConsumers({ dir: join(dir, shardDownloadDir(1)), dest: m.dest, root: m.root, runId: RUN, kind: 'examples', shard: { index: 2, count: COUNT } }).problems[0]).toMatch(/is shard 1\/3, expected shard 2\/3/);
+  });
+
+  it('a shard bundle cannot smuggle the merged report path or a file another shard already extracted', () => {
+    const dir = downloaded();
+    const m = mac();
+    expect(verifyDownloadedConsumers({ dir: join(dir, shardDownloadDir(1)), dest: m.dest, root: m.root, runId: RUN, kind: 'examples', shard: { index: 1, count: COUNT } }).ok).toBe(true);
+    // the same bundle a second time (overlapping files)
+    expect(verifyDownloadedConsumers({ dir: join(dir, shardDownloadDir(1)), dest: m.dest, root: m.root, runId: RUN, kind: 'examples', shard: { index: 1, count: COUNT } }).problems).toEqual(['shard 1/3 was already extracted']);
+    const forged = JSON.parse(readFileSync(join(dir, shardDownloadDir(2), CONSUMER_INDEX_NAME), 'utf8'));
+    forged.files[0].path = `tests/reports/native-examples-catalog/${RUN}/examples-source.json`;
+    writeFileSync(join(dir, shardDownloadDir(2), CONSUMER_INDEX_NAME), JSON.stringify(forged));
+    expect(verifyDownloadedConsumers({ dir: join(dir, shardDownloadDir(2)), dest: m.dest, root: m.root, runId: RUN, kind: 'examples', shard: { index: 2, count: COUNT } }).problems[0]).toMatch(/unsafe or duplicate consumer path/);
   });
 });

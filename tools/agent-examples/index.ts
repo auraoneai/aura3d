@@ -6,11 +6,13 @@
  * manifest and every capability example's added source files are retained as explicit harness work;
  * a capability project is otherwise an untouched create-aura3d scaffold.
  */
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { emptyNpmConfigs } from "../release/npm-empty-config.mjs";
+import { exampleCostUnits, exampleShardRecord, exampleShardRecordProblems, exampleShardReportName, parseExampleShard } from "./shard.mjs";
+import type { ExampleCostItem, ExampleShardRecord } from "./shard.mjs";
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
@@ -530,6 +532,46 @@ function internalPassed(root: string, logDir: string, id: string, command: strin
   const log = resolve(logDir, `${id}.log`);
   writeFileSync(log, `${message}\n`);
   return { id, status: "passed", command, exitCode: 0, logPath: portable(relative(root, log)), logSha256: hash(readFileSync(log)) };
+}
+/** Async twin of `run` for the packed producer's bounded-concurrency pool (same log format and redaction). */
+function runAsync(root: string, project: string, logDir: string, id: string, command: string, args: string[], env: NodeJS.ProcessEnv): Promise<RunCheck> {
+  mkdirSync(logDir, { recursive: true });
+  const limit = 16 * 1024 * 1024;
+  return new Promise((resolveRun) => {
+    let stdout = "", stderr = "", error: unknown, status: number | null = null, settled = false;
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      const log = resolve(logDir, `${id}.log`);
+      writeFileSync(log, safeLogText(`${stdout}${stderr}${error ? `\n${String(error)}\n` : ""}`));
+      resolveRun({ id, status: status === 0 ? "passed" : "failed", command: [command, ...args], exitCode: status, logPath: portable(relative(root, log)), logSha256: hash(readFileSync(log)) });
+    };
+    let child;
+    try { child = spawn(command, args, { cwd: project, env, stdio: ["ignore", "pipe", "pipe"] }); } catch (spawnError) { error = spawnError; finish(); return; }
+    const collect = (kind: "out" | "err") => (chunk: Buffer): void => {
+      if (stdout.length + stderr.length > limit) { if (!error) { error = new Error("output exceeded 16 MiB"); child.kill("SIGKILL"); } return; }
+      if (kind === "out") stdout += chunk.toString("utf8"); else stderr += chunk.toString("utf8");
+    };
+    // One hung install or build must not consume the whole stage: it fails (and is reported) after 10 minutes.
+    const timer = setTimeout(() => { if (!error) error = new Error("command timed out after 600 s"); child.kill("SIGKILL"); setTimeout(finish, 5_000); }, 600_000);
+    child.stdout.on("data", collect("out"));
+    child.stderr.on("data", collect("err"));
+    child.on("error", (spawnError) => { clearTimeout(timer); error = spawnError; finish(); });
+    child.on("close", (code) => { clearTimeout(timer); status = code; finish(); });
+  });
+}
+async function runSequenceAsync(root: string, project: string, wrapper: string, logDir: string, id: string, commands: string[][], env: NodeJS.ProcessEnv): Promise<RunCheck> {
+  const steps: RunCheck[] = [];
+  for (const [index, argv] of commands.entries()) {
+    const step = await runAsync(root, project, logDir, `${id}-${index + 1}`, resolve(wrapper, "node_modules/.bin", argv[0]!), argv.slice(1), env);
+    steps.push(step);
+    if (step.status !== "passed") break;
+  }
+  const log = resolve(logDir, `${id}.log`);
+  writeFileSync(log, steps.map((step) => `${step.command.join(" ")}\n${readFileSync(resolve(root, step.logPath), "utf8")}`).join("\n"));
+  for (const step of steps) unlinkSync(resolve(root, step.logPath));
+  const failure = steps.find((step) => step.status !== "passed");
+  return { id, status: !failure && steps.length === commands.length && commands.length > 0 ? "passed" : "failed", command: commands.flatMap((command, index) => index ? ["&&", ...command] : command), exitCode: failure ? failure.exitCode : 0, logPath: portable(relative(root, log)), logSha256: hash(readFileSync(log)) };
 }
 function copyProject(source: string, target: string): void {
   cpSync(source, target, { recursive: true, filter: (path) => {
@@ -1324,8 +1366,18 @@ export function packedExampleReportErrors(root: string, report: any, candidatePl
       JSON.stringify(report.source) !== JSON.stringify(plan.source) || JSON.stringify(report.packages) !== JSON.stringify(plan.packages) ||
       report.lockfileSha256 !== plan.source.lockfileSha256) return ["Packed example source report is malformed or for another candidate"];
   if (!Array.isArray(report.cases) || !Array.isArray(report.projects) || typeof report.runId !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(report.runId)) return ["Packed example source report lacks cases or projects"];
-  const catalog = [...collectSupportedExampleCatalog(root), ...collectCapabilityCatalog(root)];
-  const errors = validateExampleChecks(catalog, report.cases);
+  const fullCatalog = [...collectSupportedExampleCatalog(root), ...collectCapabilityCatalog(root)];
+  // A shard report (`--shard I/N`) covers its own slice of the catalog; the merged report (no `shard`) covers all of it.
+  const shardErrors: string[] = [];
+  let catalog = fullCatalog;
+  if (report.shard !== undefined) {
+    shardErrors.push(...exampleShardRecordProblems(report.shard, "shard"));
+    const sorted = fullCatalog.map((entry) => entry.id).sort();
+    if (JSON.stringify((report.shard?.catalog ?? []).map((item: { id: string }) => item.id)) !== JSON.stringify(sorted)) shardErrors.push("shard catalog is not the current example catalog");
+    const mine = new Set<string>(Array.isArray(report.shard?.ids) ? report.shard.ids : []);
+    catalog = fullCatalog.filter((entry) => mine.has(entry.id));
+  }
+  const errors = [...shardErrors, ...validateExampleChecks(catalog, report.cases)];
   const projects = new Map<string, any>();
   for (const project of report.projects) {
     if (!project || projects.has(project.id)) { errors.push(`Duplicate or invalid project: ${project?.id}`); continue; }
@@ -1362,7 +1414,49 @@ function retainPackedWrapper(wrapper: string, retainedWrapper: string): void {
   collectExampleRetainedFiles(retainedWrapper, { rejectNodeModules: true, rejectEmptyDirectories: true });
 }
 
-export async function producePackedSource(root: string, runId: string, candidatePath: string): Promise<{ pass: boolean; out: string }> {
+/**
+ * Estimated work per catalog example for shard balancing: the source directory's file count and bytes
+ * (public assets included), taken from the staged source manifest when the job has one (tracked files
+ * only, so build output created in one job can never move an example to another shard) and otherwise from
+ * the directory itself. The same inputs give the same costs in every shard job, hence the same partition.
+ */
+export function exampleCatalogCosts(root: string, entries: readonly ExampleSourceEntry[]): ExampleCostItem[] {
+  root = resolve(root);
+  let tracked: string[] | undefined;
+  const manifestFile = resolve(root, process.env.AURA3D_SOURCE_MANIFEST || ".native-source-manifest.json");
+  if (existsSync(manifestFile)) {
+    try {
+      const files = readJson(manifestFile).files;
+      if (Array.isArray(files)) tracked = files.map((file: { path?: unknown }) => file?.path).filter((path: unknown): path is string => typeof path === "string").sort();
+    } catch { tracked = undefined; }
+  }
+  return entries.map((entry) => {
+    const directory = resolve(root, entry.sourcePath);
+    let files = 0, bytes = 0;
+    if (existsSync(directory) && lstatSync(directory).isDirectory()) {
+      const prefix = `${portable(entry.sourcePath).replace(/\/+$/, "")}/`;
+      const paths = tracked
+        ? tracked.filter((path) => path.startsWith(prefix) && !path.slice(prefix.length).split("/").some((part) => ignored.has(part)))
+        : walkFiles(directory).map((file) => portable(relative(root, file)));
+      for (const path of paths) {
+        const file = resolve(root, path);
+        if (!existsSync(file)) continue;
+        const stat = lstatSync(file);
+        if (stat.isFile()) { files += 1; bytes += stat.size; }
+      }
+    }
+    return { id: entry.id, cost: exampleCostUnits({ files, bytes }) };
+  });
+}
+
+export interface PackedSourceOptions {
+  /** Produce only this slice of the catalog (`--shard I/N`); the report is `examples-source.shard-I-of-N.json`. */
+  readonly shard?: { readonly index: number; readonly count: number };
+  /** Projects installed and built at once (default 2). */
+  readonly concurrency?: number;
+}
+
+export async function producePackedSource(root: string, runId: string, candidatePath: string, options: PackedSourceOptions = {}): Promise<{ pass: boolean; out: string }> {
   root = resolve(root);
   const plan = loadValidatedReleasePlan(root, candidatePath);
   if (!plan) throw new Error("A validated --candidate-plan is required");
@@ -1370,98 +1464,134 @@ export async function producePackedSource(root: string, runId: string, candidate
   const candidateSha256 = hash(readFileSync(planPath));
   const relativePlanPath = portable(relative(root, planPath));
   const catalog = discoverExampleCatalog(root);
-  const entries = [...catalog.entries, ...collectCapabilityCatalog(root)];
+  const allEntries = [...catalog.entries, ...collectCapabilityCatalog(root)];
+  let shardRecord: ExampleShardRecord | undefined;
+  let entries = allEntries;
+  if (options.shard) {
+    shardRecord = exampleShardRecord(exampleCatalogCosts(root, allEntries), options.shard.index, options.shard.count);
+    const mine = new Set(shardRecord.ids);
+    entries = allEntries.filter((entry) => mine.has(entry.id)).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    if (entries.length !== shardRecord.ids.length) throw new Error("Shard partition names an example outside the catalog");
+  }
+  const concurrency = Math.max(1, Math.min(options.concurrency ?? 2, 4));
   const outputDir = safePath(root, `tests/reports/native-examples-catalog/${runId}`);
-  if (existsSync(outputDir)) throw new Error("Example source run ID already exists");
+  const reportName = options.shard ? exampleShardReportName(options.shard.index, options.shard.count) : "examples-source.json";
+  // A shard job writes only its own report, projects and logs: the shard directories merge by union.
+  if (existsSync(outputDir) && (!options.shard || existsSync(resolve(outputDir, reportName)))) throw new Error("Example source run ID already exists");
   mkdirSync(outputDir, { recursive: true });
-  // One private npm cache and home for every example: registry dependencies are
-  // fetched once; candidate archives are always the staged plan bytes.
+  // One private npm cache and home for every example of this job: registry dependencies are
+  // fetched once; candidate archives are always the staged plan bytes. npm's cache is safe to share
+  // between the concurrent installs.
   const scratch = realpathSync(mkdtempSync(resolve(tmpdir(), "aura3d-packed-examples-")));
   const cache = resolve(scratch, ".npm-cache"), home = resolve(scratch, ".home");
   mkdirSync(cache); mkdirSync(home);
   const installEnv = packedConsumerEnvironment(cache, home);
   const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig];
-  const projects: any[] = [], cases: any[] = [];
+  const results: { record: any; item: any }[] = new Array(entries.length);
   let npmVersion = "";
+  const jobStarted = Date.now();
+  const label = options.shard ? `shard ${options.shard.index}/${options.shard.count}` : "catalog";
+  console.log(`[examples] ${label}: ${entries.length} examples, concurrency ${concurrency}${shardRecord ? `, estimated cost ${shardRecord.cost} of ${shardRecord.catalog.reduce((sum, item) => sum + item.cost, 0)}` : ""}`);
+  const processEntry = async (entry: ExampleSourceEntry, position: number): Promise<void> => {
+    const started = Date.now();
+    const phases: Record<string, number> = {};
+    const timed = async <T,>(name: string, work: () => Promise<T>): Promise<T> => { const at = Date.now(); try { return await work(); } finally { phases[name] = (Date.now() - at) / 1000; } };
+    const suffix = entry.id.replace(/[^a-z0-9-]+/gi, "-");
+    const retainedWrapper = resolve(outputDir, "projects", suffix), logs = resolve(outputDir, "logs", suffix);
+    if (existsSync(retainedWrapper)) throw new Error(`Run ID already has a project: ${retainedWrapper}`);
+    // Outside the checkout so an undeclared dependency cannot resolve through its node_modules.
+    const wrapper = mkdtempSync(resolve(tmpdir(), "aura3d-example-"));
+    const project = exampleProjectPath(wrapper, entry);
+    const retainedProject = resolve(retainedWrapper, relative(wrapper, project));
+    const checks: RunCheck[] = [];
+    let record: any;
+    try {
+      const { harness, manifest, isStandalone, standalone, scripts, buildCommands, typeCommands } = prepareExampleHarness(root, wrapper, project, entry);
+      const { wrapper: wrapperManifest, closure, substitutions } = packedExampleWrapper(manifest, plan);
+      writeFileSync(resolve(wrapper, "package.json"), `${JSON.stringify(wrapperManifest, null, 2)}\n`);
+      stagePackedArchives(root, wrapper, closure as never);
+      const before = contentIdentity(project);
+      const install = await timed("install", () => runAsync(root, wrapper, logs, "install", "npm", npmInstall, installEnv));
+      checks.push(install);
+      const installed = install.status === "passed" ? assertPackedInstall(root, wrapper, plan as never, closure as never) : undefined;
+      const env = exampleEnvironment(wrapper);
+      const wrapperBeforeBuild = contentIdentity(wrapper);
+      if (installed && isStandalone) {
+        checks.push(await timed("typecheck", () => runAsync(root, wrapper, logs, "typecheck", resolve(wrapper, "node_modules/.bin/tsc"), ["--project", resolve(wrapper, "aura-example.tsconfig.json"), "--noEmit"], env)));
+        checks.push(await timed("build", () => runAsync(root, wrapper, logs, "build", resolve(wrapper, "node_modules/.bin/vite"), ["build", "--config", resolve(wrapper, "aura-example.vite.mjs")], env)));
+      } else if (installed) checks.push(await timed("build", () => runSequenceAsync(root, project, wrapper, logs, "build", buildCommands, env)));
+      else checks.push(failed(root, logs, "build", "Build not run because install failed"));
+      if (!isStandalone && installed && typeCommands.length && !buildCommands.some((command) => command[0] === "tsc")) checks.push(await timed("typecheck", () => runSequenceAsync(root, project, wrapper, logs, "typecheck", typeCommands, env)));
+      else if (!isStandalone && !buildCommands.some((command) => command[0] === "tsc")) checks.push(failed(root, logs, "typecheck", "Missing explicit typecheck script or TypeScript build step"));
+      if (contentIdentity(project) !== before) checks.push(failed(root, logs, "unmodified", "Build changed consumer source files"));
+      if (contentIdentity(wrapper) !== wrapperBeforeBuild) checks.push(failed(root, logs, "harness-unmodified", "Build changed the harness, lockfile, staged archives or shared source files"));
+      if (installed && JSON.stringify(assertPackedInstall(root, wrapper, plan as never, closure as never)) !== JSON.stringify(installed)) checks.push(failed(root, logs, "installed-unmodified", "Installed candidate changed during build"));
+      const dist = resolve(project, "dist");
+      const nestedEntry = standalone?.outputEntry ?? `${portable(relative(wrapper, project))}/index.html`;
+      const outputEntry = ["index.html", nestedEntry].find((name) => existsSync(resolve(dist, name)));
+      if (!outputEntry) checks.push(failed(root, logs, "output", "Build did not produce the expected index.html in dist"));
+      const lockFile = resolve(wrapper, "package-lock.json");
+      const lock = existsSync(lockFile) ? readJson(lockFile) : undefined;
+      record = { id: entry.id, retention: PACKED_EXAMPLES_INSTALL, path: portable(relative(root, retainedProject)), wrapperPath: portable(relative(root, retainedWrapper)),
+        manifestSha256: hash(readFileSync(resolve(wrapper, "package.json"))), lockSha256: lock ? hash(readFileSync(lockFile)) : null, outputEntry: outputEntry ?? null,
+        substitutions, installedPackages: installed ?? [], toolVersions: { typescript: lock?.packages?.["node_modules/typescript"]?.version ?? null, vite: lock?.packages?.["node_modules/vite"]?.version ?? null },
+        harness: { wrapperManifest: portable(relative(root, resolve(retainedWrapper, "package.json"))), generatedFiles: harness, stagedArchives: closure.map((pkg) => basename(pkg.tarball)) }, declaredScripts: scripts };
+    } catch (error) {
+      if (!checks.some((check) => check.id === "install")) checks.push(failed(root, logs, "install", String(error)));
+      if (!checks.some((check) => check.id === "build")) checks.push(failed(root, logs, "build", "Build not run due to preparation failure"));
+      else checks.push(failed(root, logs, "identity", String(error)));
+    } finally {
+      try { retainPackedWrapper(wrapper, retainedWrapper); } catch {
+        rmSync(retainedWrapper, { recursive: true, force: true });
+        record = undefined;
+        checks.push(failed(root, logs, "retained-identity", "Retained example could not be safely staged"));
+      } finally { rmSync(wrapper, { recursive: true, force: true }); }
+    }
+    if (record) {
+      try {
+        const retainedFiles = collectExampleRetainedFiles(retainedWrapper, { rejectNodeModules: true, rejectEmptyDirectories: true });
+        const dist = resolve(retainedProject, "dist");
+        const outputFiles = existsSync(dist) ? collectExampleRetainedFiles(dist, { rejectNodeModules: true, rejectEmptyDirectories: true }) : [];
+        Object.assign(record, { retainedFiles, retainedSha256: exampleRetainedFilesDigest(retainedFiles), outputFiles, outputSha256: existsSync(dist) ? exampleRetainedFilesDigest(outputFiles) : null });
+        if (checks.every((check) => check.status === "passed")) validatePackedExampleProject(root, record, plan, runId);
+      } catch (error) { checks.push(failed(root, logs, "retained-identity", String(error))); }
+    }
+    const status = checks.every((check) => check.status === "passed") ? "passed" : "failed";
+    const seconds = Math.round((Date.now() - started) / 100) / 10;
+    results[position] = { record, item: { id: entry.id, kind: entry.kind, sourcePath: entry.sourcePath, project: record?.path ?? null, status, seconds, checks } };
+    const done = results.filter(Boolean).length;
+    console.log(`[examples] ${done}/${entries.length} ${entry.id} ${status} in ${seconds}s (${Object.entries(phases).map(([name, value]) => `${name} ${value.toFixed(1)}s`).join(", ") || "no commands"}); elapsed ${Math.round((Date.now() - jobStarted) / 1000)}s`);
+  };
   try {
     const version = spawnSync("npm", ["--version"], { cwd: scratch, env: installEnv, encoding: "utf8" });
     npmVersion = version.status === 0 ? String(version.stdout ?? "").trim() : "";
     if (!npmVersion) throw new Error("Cannot determine npm version for source-consumer report");
-    for (const entry of entries) {
-      const suffix = entry.id.replace(/[^a-z0-9-]+/gi, "-");
-      const retainedWrapper = resolve(outputDir, "projects", suffix), logs = resolve(outputDir, "logs", suffix);
-      if (existsSync(retainedWrapper)) throw new Error(`Run ID already has a project: ${retainedWrapper}`);
-      // Outside the checkout so an undeclared dependency cannot resolve through its node_modules.
-      const wrapper = mkdtempSync(resolve(tmpdir(), "aura3d-example-"));
-      const project = exampleProjectPath(wrapper, entry);
-      const retainedProject = resolve(retainedWrapper, relative(wrapper, project));
-      const checks: RunCheck[] = [];
-      let record: any;
-      try {
-        const { harness, manifest, isStandalone, standalone, scripts, buildCommands, typeCommands } = prepareExampleHarness(root, wrapper, project, entry);
-        const { wrapper: wrapperManifest, closure, substitutions } = packedExampleWrapper(manifest, plan);
-        writeFileSync(resolve(wrapper, "package.json"), `${JSON.stringify(wrapperManifest, null, 2)}\n`);
-        stagePackedArchives(root, wrapper, closure as never);
-        const before = contentIdentity(project);
-        const install = run(root, wrapper, logs, "install", "npm", npmInstall, installEnv);
-        checks.push(install);
-        const installed = install.status === "passed" ? assertPackedInstall(root, wrapper, plan as never, closure as never) : undefined;
-        const env = exampleEnvironment(wrapper);
-        const wrapperBeforeBuild = contentIdentity(wrapper);
-        if (installed && isStandalone) {
-          checks.push(run(root, wrapper, logs, "typecheck", resolve(wrapper, "node_modules/.bin/tsc"), ["--project", resolve(wrapper, "aura-example.tsconfig.json"), "--noEmit"], env));
-          checks.push(run(root, wrapper, logs, "build", resolve(wrapper, "node_modules/.bin/vite"), ["build", "--config", resolve(wrapper, "aura-example.vite.mjs")], env));
-        } else if (installed) checks.push(runSequence(root, project, wrapper, logs, "build", buildCommands, env));
-        else checks.push(failed(root, logs, "build", "Build not run because install failed"));
-        if (!isStandalone && installed && typeCommands.length && !buildCommands.some((command) => command[0] === "tsc")) checks.push(runSequence(root, project, wrapper, logs, "typecheck", typeCommands, env));
-        else if (!isStandalone && !buildCommands.some((command) => command[0] === "tsc")) checks.push(failed(root, logs, "typecheck", "Missing explicit typecheck script or TypeScript build step"));
-        if (contentIdentity(project) !== before) checks.push(failed(root, logs, "unmodified", "Build changed consumer source files"));
-        if (contentIdentity(wrapper) !== wrapperBeforeBuild) checks.push(failed(root, logs, "harness-unmodified", "Build changed the harness, lockfile, staged archives or shared source files"));
-        if (installed && JSON.stringify(assertPackedInstall(root, wrapper, plan as never, closure as never)) !== JSON.stringify(installed)) checks.push(failed(root, logs, "installed-unmodified", "Installed candidate changed during build"));
-        const dist = resolve(project, "dist");
-        const nestedEntry = standalone?.outputEntry ?? `${portable(relative(wrapper, project))}/index.html`;
-        const outputEntry = ["index.html", nestedEntry].find((name) => existsSync(resolve(dist, name)));
-        if (!outputEntry) checks.push(failed(root, logs, "output", "Build did not produce the expected index.html in dist"));
-        const lockFile = resolve(wrapper, "package-lock.json");
-        const lock = existsSync(lockFile) ? readJson(lockFile) : undefined;
-        record = { id: entry.id, retention: PACKED_EXAMPLES_INSTALL, path: portable(relative(root, retainedProject)), wrapperPath: portable(relative(root, retainedWrapper)),
-          manifestSha256: hash(readFileSync(resolve(wrapper, "package.json"))), lockSha256: lock ? hash(readFileSync(lockFile)) : null, outputEntry: outputEntry ?? null,
-          substitutions, installedPackages: installed ?? [], toolVersions: { typescript: lock?.packages?.["node_modules/typescript"]?.version ?? null, vite: lock?.packages?.["node_modules/vite"]?.version ?? null },
-          harness: { wrapperManifest: portable(relative(root, resolve(retainedWrapper, "package.json"))), generatedFiles: harness, stagedArchives: closure.map((pkg) => basename(pkg.tarball)) }, declaredScripts: scripts };
-      } catch (error) {
-        if (!checks.some((check) => check.id === "install")) checks.push(failed(root, logs, "install", String(error)));
-        if (!checks.some((check) => check.id === "build")) checks.push(failed(root, logs, "build", "Build not run due to preparation failure"));
-        else checks.push(failed(root, logs, "identity", String(error)));
-      } finally {
-        try { retainPackedWrapper(wrapper, retainedWrapper); } catch {
-          rmSync(retainedWrapper, { recursive: true, force: true });
-          record = undefined;
-          checks.push(failed(root, logs, "retained-identity", "Retained example could not be safely staged"));
-        } finally { rmSync(wrapper, { recursive: true, force: true }); }
+    // Bounded pool: entries are taken in order, results land at their position, so the report order is fixed.
+    let next = 0;
+    const workers = Array.from({ length: Math.min(concurrency, entries.length) }, async () => {
+      for (;;) {
+        const position = next++;
+        if (position >= entries.length) return;
+        await processEntry(entries[position]!, position);
       }
-      if (record) {
-        try {
-          const retainedFiles = collectExampleRetainedFiles(retainedWrapper, { rejectNodeModules: true, rejectEmptyDirectories: true });
-          const dist = resolve(retainedProject, "dist");
-          const outputFiles = existsSync(dist) ? collectExampleRetainedFiles(dist, { rejectNodeModules: true, rejectEmptyDirectories: true }) : [];
-          Object.assign(record, { retainedFiles, retainedSha256: exampleRetainedFilesDigest(retainedFiles), outputFiles, outputSha256: existsSync(dist) ? exampleRetainedFilesDigest(outputFiles) : null });
-          if (checks.every((check) => check.status === "passed")) validatePackedExampleProject(root, record, plan, runId);
-        } catch (error) { checks.push(failed(root, logs, "retained-identity", String(error))); }
-        projects.push(record);
-      }
-      cases.push({ id: entry.id, kind: entry.kind, sourcePath: entry.sourcePath, project: record?.path ?? null, status: checks.every((check) => check.status === "passed") ? "passed" : "failed", checks });
-    }
+    });
+    const settled = await Promise.allSettled(workers);
+    const rejected = settled.find((outcome): outcome is PromiseRejectedResult => outcome.status === "rejected");
+    if (rejected) throw rejected.reason;
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
+  const projects = results.flatMap((result) => (result.record ? [result.record] : [])), cases = results.map((result) => result.item);
   const report: any = { schema: "aura3d.native-consumers/1", phase: "source", install: PACKED_EXAMPLES_INSTALL, runId, candidateSha256, candidatePlan: relativePlanPath, source: plan.source,
     stagedSourceSha256: plan.source?.inputDigest ?? plan.source?.fingerprint, lockfileSha256: plan.source.lockfileSha256, packages: plan.packages,
     toolVersions: { node: process.version, npm: npmVersion }, generatedAt: new Date().toISOString(), pass: false, failures: [] as string[], cases, projects, exemptions: catalog.exemptions, browser: "not-run" };
+  if (shardRecord) report.shard = shardRecord;
   report.failures = validateExampleChecks(entries, cases);
   if (!report.failures.length) report.failures = packedExampleReportErrors(root, report, candidatePath);
   report.pass = report.failures.length === 0;
-  const out = resolve(outputDir, "examples-source.json");
+  const out = resolve(outputDir, reportName);
   writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
+  console.log(`[examples] ${label}: ${cases.filter((item) => item.status === "passed").length}/${cases.length} passed in ${Math.round((Date.now() - jobStarted) / 1000)}s`);
   return { pass: report.pass, out: portable(relative(root, out)) };
 }
 
@@ -1479,11 +1609,17 @@ async function main(): Promise<void> {
   const lockInput = option("--lock-input") ?? process.env.NATIVE_EXAMPLE_LOCK_INPUT;
   // --packed (ACR source5 path): install each example from the packed candidate; no custody lock input.
   const packed = args.includes("--packed");
+  // --shard I/N (packed only): install and build one deterministic, cost-balanced slice of the catalog.
+  const shardOption = option("--shard");
+  const concurrencyOption = option("--concurrency");
+  if ((shardOption !== undefined || concurrencyOption !== undefined) && !packed) throw new Error("--shard and --concurrency apply to --packed only");
+  const concurrency = concurrencyOption === undefined ? undefined : Number(concurrencyOption);
+  if (concurrency !== undefined && (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 4)) throw new Error("--concurrency must be an integer from 1 to 4");
   if (phase !== "source") throw new Error("This source producer accepts --phase source only; browser acceptance uses its own gated spec");
-  if (!runId || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(runId) || !candidate) throw new Error("Provide --phase source --run-id <id> --candidate-plan <validated-plan> [--packed]");
+  if (!runId || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(runId) || !candidate) throw new Error("Provide --phase source --run-id <id> --candidate-plan <validated-plan> [--packed [--shard I/N] [--concurrency 1-4]]");
   if (packed) {
     if (lockInput) throw new Error("--packed installs the packed candidate and takes no custody lock input");
-    const result = await producePackedSource(process.cwd(), runId, candidate);
+    const result = await producePackedSource(process.cwd(), runId, candidate, { shard: shardOption === undefined ? undefined : parseExampleShard(shardOption), concurrency });
     if (!result.pass) { console.error(JSON.parse(readFileSync(resolve(process.cwd(), result.out), "utf8")).failures.join("\n")); process.exitCode = 1; }
     console.log(`Example source report: ${result.out}`);
     return;

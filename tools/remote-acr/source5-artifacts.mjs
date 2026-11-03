@@ -19,10 +19,19 @@
 // report and its retained projects. On the Mac `verify-consumers` /
 // `verify-examples` re-hash and extract them into <run>/artifacts/consumers/ and
 // <run>/artifacts/examples/ (recorded as `artifacts.consumers` / `artifacts.examples`).
+//
+// The packed examples run as N shards (stages packed-c1..packed-cN, `agent-examples
+// --shard I/N`). `stage-examples <run-id> <out-dir> I/N` packs one shard's slice (its
+// `examples-source.shard-I-of-N.json`, projects and logs); on the Mac
+// `verify-examples <download-dir> <dest> <repo-root> <run-id> <out-json> <N>` verifies every
+// shard bundle, extracts the union under one tree, proves it is exactly one complete
+// partition of the catalog (tools/agent-examples/shard.mjs) and writes the single merged
+// `examples-source.json` plus a merged `consumer-index.json` that the gate adapter binds.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { exampleShardReportName, mergeExampleShardReports, parseExampleShard } from '../agent-examples/shard.mjs';
 
 export const ARTIFACT_INDEX_SCHEMA = 'aura3d.source5-artifacts/1';
 export const ARTIFACT_INDEX_NAME = 'artifact-index.json';
@@ -167,19 +176,30 @@ const kindOf = kind => { if (!BUNDLE_KINDS.includes(kind)) throw new Error(`unkn
 export const consumerRoots = (runId, kind = 'consumers') => (kindOf(kind) === 'examples'
   ? [`tests/reports/native-examples-catalog/${runId}`]
   : [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`]);
-/** The source reports a bundle kind carries and the gate binds (field name -> job path). */
-export const consumerReportPaths = (runId, kind = 'consumers') => (kindOf(kind) === 'examples'
-  ? { examplesSourceReport: `tests/reports/native-examples-catalog/${runId}/examples-source.json` }
-  : { sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`, matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json` });
+/**
+ * The source reports a bundle kind carries and the gate binds (field name -> job path). A shard bundle
+ * (`examples` with `shard`) carries only its own `examplesShardReport`; the merged report is built on the Mac.
+ */
+export const consumerReportPaths = (runId, kind = 'consumers', shard = null) => {
+  if (kindOf(kind) === 'consumers') return { sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`, matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json` };
+  return shard
+    ? { examplesShardReport: `tests/reports/native-examples-catalog/${runId}/${exampleShardReportName(shard.index, shard.count)}` }
+    : { examplesSourceReport: `tests/reports/native-examples-catalog/${runId}/examples-source.json` };
+};
+const shardOf = shard => (shard ? parseExampleShard(`${shard.index}/${shard.count}`) : null);
+/** Name of a shard's index file beside the merged `consumer-index.json` on the Mac. */
+export const shardIndexName = (index, count) => `consumer-index.shard-${index}-of-${count}.json`;
 
 const safeJobPath = (path, runId, kind) => typeof path === 'string' && !path.includes('\\') && !/[\x00-\x1f\x7f]/.test(path)
   && path.split('/').every(part => part && part !== '.' && part !== '..')
   && consumerRoots(runId, kind).some(root => path.startsWith(`${root}/`));
 
 /** In-image: pack one bundle kind's run directories into chunks + index under `outDir`. */
-export function stageConsumers({ root, runId, outDir, kind = 'consumers', chunkBytes = CONSUMER_CHUNK_BYTES, maxBytes = CONSUMER_MAX_BYTES }) {
+export function stageConsumers({ root, runId, outDir, kind = 'consumers', shard = null, chunkBytes = CONSUMER_CHUNK_BYTES, maxBytes = CONSUMER_MAX_BYTES }) {
   if (!RUN_ID.test(runId ?? '')) throw new Error('invalid run id');
-  const reports = consumerReportPaths(runId, kind);
+  if (shard && kind !== 'examples') throw new Error('only the examples bundle is sharded');
+  shard = shardOf(shard);
+  const reports = consumerReportPaths(runId, kind, shard);
   for (const [field, path] of Object.entries(reports)) if (!regularFile(join(root, path))) throw new Error(`${field} was not produced: ${path}`);
   const files = [];
   for (const dir of consumerRoots(runId, kind)) {
@@ -214,7 +234,7 @@ export function stageConsumers({ root, runId, outDir, kind = 'consumers', chunkB
   closeChunk();
   const byPath = new Map(entries.map(entry => [entry.path, entry]));
   const index = {
-    schema: CONSUMERS_SCHEMA, kind, runId, roots: consumerRoots(runId, kind),
+    schema: CONSUMERS_SCHEMA, kind, runId, ...(shard ? { shard } : {}), roots: consumerRoots(runId, kind),
     reports: Object.fromEntries(Object.entries(reports).map(([field, path]) => [field, { path, sha256: byPath.get(path).sha256 }])),
     chunks, files: entries, totalBytes: total
   };
@@ -239,18 +259,30 @@ function listEntries(root, dir) {
  * Mac side: verify the downloaded consumer chunks in `dir` and extract every
  * indexed file to `dest/<job path>` (plus `dest/consumer-index.json`). Returns
  * the record merged into source-report.json as `artifacts.consumers`.
+ *
+ * With `shard` ({ index, count }, examples only) the bundle is one shard of the
+ * packed examples: `dest` may already hold the other shards' files (every path
+ * is written exclusively, so an overlap is refused), the index is kept as
+ * `consumer-index.shard-I-of-N.json` and the result carries `examplesShardReport`
+ * instead of a bound report. The union is finished by `verifyDownloadedExamples`.
  */
-export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId, kind = 'consumers' }) {
+export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId, kind = 'consumers', shard = null }) {
   const problems = [], rel = path => relative(root, path).split(sep).join('/');
   kindOf(kind);
-  const result = { schema: CONSUMERS_SCHEMA, kind, ok: false, runId, dir: rel(dest), index: null,
-    ...Object.fromEntries(Object.keys(consumerReportPaths('x', kind)).map(field => [field, null])),
+  const wanted = kind === 'examples' ? shardOf(shard) : null;
+  if (shard && !wanted) problems.push('only the examples bundle is sharded');
+  const indexName = wanted ? shardIndexName(wanted.index, wanted.count) : CONSUMER_INDEX_NAME;
+  const result = { schema: CONSUMERS_SCHEMA, kind, ...(wanted ? { shard: wanted } : {}), ok: false, runId, dir: rel(dest), index: null,
+    ...Object.fromEntries(Object.keys(consumerReportPaths('x', kind, wanted)).map(field => [field, null])),
     files: 0, bytes: 0, problems };
+  if (problems.length) return result;
   if (!RUN_ID.test(runId ?? '')) { problems.push('invalid run id'); return result; }
   let indexBytes, index;
   try { indexBytes = readFileSync(join(dir, CONSUMER_INDEX_NAME)); index = JSON.parse(indexBytes); } catch { problems.push(`${CONSUMER_INDEX_NAME} missing or unreadable`); return result; }
   if (index?.schema !== CONSUMERS_SCHEMA || index.kind !== kind || index.runId !== runId || !Array.isArray(index.chunks) || !Array.isArray(index.files)) { problems.push('consumer index has an unknown schema, another kind or another run id'); return result; }
-  if (existsSync(dest) && readdirSync(dest).length) { problems.push(`extraction directory is not empty: ${rel(dest)}`); return result; }
+  if (canonicalJson(index.shard ?? null) !== canonicalJson(wanted)) { problems.push(`consumer index is ${index.shard ? `shard ${index.shard.index}/${index.shard.count}` : 'not a shard'}, expected ${wanted ? `shard ${wanted.index}/${wanted.count}` : 'an unsharded bundle'}`); return result; }
+  if (!wanted && existsSync(dest) && readdirSync(dest).length) { problems.push(`extraction directory is not empty: ${rel(dest)}`); return result; }
+  if (wanted && existsSync(join(dest, indexName))) { problems.push(`shard ${wanted.index}/${wanted.count} was already extracted`); return result; }
   const chunks = new Map();
   for (const chunk of index.chunks) {
     if (!CHUNK_NAME.test(chunk?.path ?? '') || chunks.has(chunk.path)) { problems.push(`invalid chunk entry ${JSON.stringify(chunk?.path)}`); continue; }
@@ -262,9 +294,10 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
   const expected = new Set([CONSUMER_INDEX_NAME, ...index.chunks.map(chunk => chunk?.path)]);
   for (const path of existsSync(dir) ? listFiles(dir) : []) if (!expected.has(path)) problems.push(`unexpected downloaded file: ${path}`);
   if (problems.length) return result;
+  const merged = consumerReportPaths(runId, 'examples').examplesSourceReport;
   const seen = new Set(), extracted = [];
   for (const file of index.files) {
-    if (!safeJobPath(file?.path, runId, kind) || seen.has(file.path)) { problems.push(`unsafe or duplicate consumer path ${JSON.stringify(file?.path)}`); continue; }
+    if (!safeJobPath(file?.path, runId, kind) || seen.has(file.path) || (wanted && file.path === merged)) { problems.push(`unsafe or duplicate consumer path ${JSON.stringify(file?.path)}`); continue; }
     seen.add(file.path);
     const bytes = chunks.get(file.chunk);
     if (!bytes || !Number.isSafeInteger(file.offset) || !Number.isSafeInteger(file.size) || file.offset < 0 || file.size < 0 || file.offset + file.size > bytes.length) { problems.push(`consumer file is outside its chunk: ${file.path}`); continue; }
@@ -272,10 +305,12 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
     if (sha256(data) !== file.sha256) { problems.push(`consumer file bytes differ from the index: ${file.path}`); continue; }
     extracted.push({ path: file.path, data });
   }
-  for (const [field, path] of Object.entries(consumerReportPaths(runId, kind))) {
+  for (const [field, path] of Object.entries(consumerReportPaths(runId, kind, wanted))) {
     const entry = index.files.find(file => file?.path === path);
     if (!entry || index.reports?.[field]?.path !== path || index.reports[field].sha256 !== entry.sha256) problems.push(`${field} is not retained: ${path}`);
   }
+  if (problems.length) return result;
+  if (wanted) for (const { path } of extracted) if (existsSync(join(dest, path))) problems.push(`shard ${wanted.index}/${wanted.count} overlaps an already extracted file: ${path}`);
   if (problems.length) return result;
   mkdirSync(dest, { recursive: true });
   for (const { path, data } of extracted) {
@@ -283,13 +318,83 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
     mkdirSync(dirname(local), { recursive: true });
     writeFileSync(local, data, { flag: 'wx' });
   }
-  writeFileSync(join(dest, CONSUMER_INDEX_NAME), indexBytes, { flag: 'wx' });
-  result.index = { localPath: rel(join(dest, CONSUMER_INDEX_NAME)), sha256: sha256(indexBytes) };
-  for (const [field, path] of Object.entries(consumerReportPaths(runId, kind))) {
+  writeFileSync(join(dest, indexName), indexBytes, { flag: 'wx' });
+  result.index = { localPath: rel(join(dest, indexName)), sha256: sha256(indexBytes) };
+  for (const [field, path] of Object.entries(consumerReportPaths(runId, kind, wanted))) {
     result[field] = { localPath: rel(join(dest, path)), jobPath: path, sha256: index.reports[field].sha256 };
   }
   result.files = extracted.length;
   result.bytes = extracted.reduce((sum, file) => sum + file.data.length, 0);
+  result.ok = true;
+  return result;
+}
+
+const canonicalJson = value => (value === null || typeof value !== 'object' ? JSON.stringify(value)
+  : Array.isArray(value) ? `[${value.map(canonicalJson).join(',')}]`
+    : `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`);
+/** Download directory name of one examples shard bundle (`source5/<run>/examples-<I>/` in the run container). */
+export const shardDownloadDir = index => `examples-${index}`;
+
+/**
+ * Mac side: verify every downloaded examples shard bundle (`shardsDir/examples-<I>/`), extract the union
+ * under `dest`, prove the shard reports are exactly one complete partition of the catalog and write the
+ * merged `examples-source.json` (the report the gate and the acceptance spec bind) with a merged
+ * `consumer-index.json` listing every retained file and the per-shard indexes. A missing, duplicate,
+ * overlapping or inconsistent shard fails (`ok: false`, nothing merged). Returns the record merged into
+ * source-report.json as `artifacts.examples`.
+ */
+export function verifyDownloadedExamples({ shardsDir, dest, root = process.cwd(), runId, count }) {
+  const problems = [], rel = path => relative(root, path).split(sep).join('/');
+  const result = { schema: CONSUMERS_SCHEMA, kind: 'examples', ok: false, runId, dir: rel(dest), index: null, examplesSourceReport: null, shards: [], files: 0, bytes: 0, problems };
+  if (!RUN_ID.test(runId ?? '')) { problems.push('invalid run id'); return result; }
+  if (!Number.isInteger(count) || count < 1) { problems.push(`invalid example shard count ${count}`); return result; }
+  if (existsSync(dest) && readdirSync(dest).length) { problems.push(`extraction directory is not empty: ${rel(dest)}`); return result; }
+  const present = existsSync(shardsDir) ? readdirSync(shardsDir) : [];
+  const names = new Set(Array.from({ length: count }, (_, i) => shardDownloadDir(i + 1)));
+  for (const name of present) if (!names.has(name)) problems.push(`unexpected downloaded example shard directory: ${name}`);
+  const shardResults = [];
+  for (let i = 1; i <= count; i += 1) {
+    const dir = join(shardsDir, shardDownloadDir(i));
+    if (!existsSync(dir)) { problems.push(`example shard ${i}/${count} was not downloaded`); continue; }
+    const shard = verifyDownloadedConsumers({ dir, dest, root, runId, kind: 'examples', shard: { index: i, count } });
+    problems.push(...shard.problems.map(problem => `shard ${i}/${count}: ${problem}`));
+    if (shard.ok) shardResults.push(shard);
+  }
+  if (problems.length) return result;
+  const reports = [];
+  for (const shard of shardResults) {
+    try { reports.push(JSON.parse(readFileSync(join(dest, shard.examplesShardReport.jobPath)))); } catch { problems.push(`shard ${shard.shard.index}/${count}: report is not JSON`); }
+  }
+  if (problems.length) return result;
+  reports.forEach((report, i) => {
+    if (report?.runId !== runId) problems.push(`shard ${shardResults[i].shard.index}/${count}: report is for run ${report?.runId}, not ${runId}`);
+    if (report?.shard?.index !== shardResults[i].shard.index || report.shard.count !== count) problems.push(`shard ${shardResults[i].shard.index}/${count}: report says it is shard ${report?.shard?.index}/${report?.shard?.count}`);
+  });
+  const union = mergeExampleShardReports(reports, count);
+  problems.push(...union.problems);
+  if (problems.length) return result;
+  const mergedPath = consumerReportPaths(runId, 'examples').examplesSourceReport;
+  const mergedBytes = Buffer.from(`${JSON.stringify(union.merged, null, 2)}\n`);
+  const mergedLocal = join(dest, mergedPath);
+  mkdirSync(dirname(mergedLocal), { recursive: true });
+  writeFileSync(mergedLocal, mergedBytes, { flag: 'wx' });
+  const files = [], shards = [];
+  for (const shard of shardResults) {
+    const shardIndexBytes = readFileSync(join(dest, shardIndexName(shard.shard.index, count)));
+    for (const file of JSON.parse(shardIndexBytes).files) files.push({ path: file.path, sha256: file.sha256, size: file.size });
+    shards.push({ shard: shard.shard.index, count, indexFile: { path: shardIndexName(shard.shard.index, count), sha256: shard.index.sha256 }, report: { path: shard.examplesShardReport.jobPath, sha256: shard.examplesShardReport.sha256 } });
+  }
+  files.push({ path: mergedPath, sha256: sha256(mergedBytes), size: mergedBytes.length });
+  files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  const index = { schema: CONSUMERS_SCHEMA, kind: 'examples', runId, merged: true, shardCount: count, roots: consumerRoots(runId, 'examples'),
+    reports: { examplesSourceReport: { path: mergedPath, sha256: sha256(mergedBytes) } }, shards, files, totalBytes: files.reduce((sum, file) => sum + file.size, 0) };
+  const indexBytes = Buffer.from(`${JSON.stringify(index, null, 2)}\n`);
+  writeFileSync(join(dest, CONSUMER_INDEX_NAME), indexBytes, { flag: 'wx' });
+  result.index = { localPath: rel(join(dest, CONSUMER_INDEX_NAME)), sha256: sha256(indexBytes) };
+  result.examplesSourceReport = { localPath: rel(mergedLocal), jobPath: mergedPath, sha256: sha256(mergedBytes) };
+  result.shards = shards;
+  result.files = files.length;
+  result.bytes = files.reduce((sum, file) => sum + file.size, 0);
   result.ok = true;
   return result;
 }
@@ -311,19 +416,26 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       console.log(`   artifacts  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.archives.filter(a => a.verified).length}/${result.archives.length} archives)`);
       for (const p of result.problems) console.log(`   artifact problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
-    } else if ((command === 'stage-consumers' || command === 'stage-examples') && args.length === 2) {
-      const [runId, outDir] = args, kind = command === 'stage-examples' ? 'examples' : 'consumers';
-      const index = stageConsumers({ root: process.cwd(), runId, outDir, kind });
-      console.log(`[${kind}] staged ${index.files.length} files (${index.totalBytes} bytes) in ${index.chunks.length} chunks`);
-    } else if ((command === 'verify-consumers' || command === 'verify-examples') && args.length === 5) {
-      const [dir, dest, root, runId, outJson] = args, kind = command === 'verify-examples' ? 'examples' : 'consumers';
-      const result = verifyDownloadedConsumers({ dir: resolve(dir), dest: resolve(dest), root: resolve(root), runId, kind });
+    } else if ((command === 'stage-consumers' && args.length === 2) || (command === 'stage-examples' && args.length === 3)) {
+      const [runId, outDir, shardSpec] = args, kind = command === 'stage-examples' ? 'examples' : 'consumers';
+      const index = stageConsumers({ root: process.cwd(), runId, outDir, kind, shard: shardSpec ? parseExampleShard(shardSpec) : null });
+      console.log(`[${kind}${shardSpec ? ` ${shardSpec}` : ''}] staged ${index.files.length} files (${index.totalBytes} bytes) in ${index.chunks.length} chunks`);
+    } else if (command === 'verify-consumers' && args.length === 5) {
+      const [dir, dest, root, runId, outJson] = args;
+      const result = verifyDownloadedConsumers({ dir: resolve(dir), dest: resolve(dest), root: resolve(root), runId, kind: 'consumers' });
       writeFileSync(outJson, `${JSON.stringify(result, null, 2)}\n`);
-      console.log(`   ${kind.padEnd(10)} : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.files} files)`);
-      for (const p of result.problems) console.log(`   ${kind} problem: ${p}`);
+      console.log(`   consumers  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.files} files)`);
+      for (const p of result.problems) console.log(`   consumers problem: ${p}`);
+      if (!result.ok) process.exitCode = 1;
+    } else if (command === 'verify-examples' && args.length === 6) {
+      const [shardsDir, dest, root, runId, outJson, count] = args;
+      const result = verifyDownloadedExamples({ shardsDir: resolve(shardsDir), dest: resolve(dest), root: resolve(root), runId, count: Number(count) });
+      writeFileSync(outJson, `${JSON.stringify(result, null, 2)}\n`);
+      console.log(`   examples   : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.shards.length}/${count} shards, ${result.files} files)`);
+      for (const p of result.problems) console.log(`   examples problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
     } else {
-      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers|stage-examples <run-id> <out-dir> | verify-consumers|verify-examples <download-dir> <dest-dir> <repo-root> <run-id> <out-json>');
+      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers <run-id> <out-dir> | stage-examples <run-id> <out-dir> <I/N> | verify-consumers <download-dir> <dest-dir> <repo-root> <run-id> <out-json> | verify-examples <shards-download-dir> <dest-dir> <repo-root> <run-id> <out-json> <N>');
     }
   } catch (error) {
     console.error(`[artifacts] ${error.message}`);

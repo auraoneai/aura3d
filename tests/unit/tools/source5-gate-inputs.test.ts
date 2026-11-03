@@ -5,8 +5,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseScopeOutcomes, validateAcceptanceGate } from '../../../tools/native-capability-gate/index.mjs';
-import { buildGateInputs, deriveCompletion, EXPECTED_CHECKS, rowIsDone, STAGE_COMMANDS, VERIFY_ONLY_ROWS } from '../../../tools/remote-acr/source5-gate-inputs.mjs';
-import { stageConsumers, verifyDownloadedConsumers } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { buildGateInputs, deriveCompletion, EXAMPLE_SHARD_COMMANDS, EXPECTED_CHECKS, rowIsDone, stageCommandIds, STAGE_COMMANDS, VERIFY_ONLY_ROWS } from '../../../tools/remote-acr/source5-gate-inputs.mjs';
+import { shardDownloadDir, stageConsumers, verifyDownloadedConsumers, verifyDownloadedExamples } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { exampleShardRecord, exampleShardReportName } from '../../../tools/agent-examples/shard.mjs';
 import { checkGateBinding } from '../../../tools/remote-acr/acceptance5.mjs';
 import { jobPathPlacements, placeJobPaths } from '../../../tools/remote-acr/acceptance-staging.mjs';
 import { validateGateMatchesSource } from '../../../tools/native-consumer-matrix/index.ts';
@@ -22,8 +23,20 @@ const canonical = (value: unknown): string => value === null || typeof value !==
     : `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical((value as Record<string, unknown>)[k])}`).join(',')}}`;
 const sha512 = (data: Buffer) => `sha512-${createHash('sha512').update(data).digest('base64')}`;
 const SHARDS = 2;
-const ALL_STAGES = ['static', 'suites', 'packed-a', 'packed-b', 'packed-c', ...Array.from({ length: SHARDS }, (_, i) => `unit-${i + 1}-of-${SHARDS}`)];
-const stageIds = (stage: string) => (stage.startsWith('unit-') ? [stage] : (STAGE_COMMANDS as Readonly<Record<string, readonly string[]>>)[stage]);
+const EXAMPLE_SHARDS = 2;
+const EXAMPLE_STAGES = Array.from({ length: EXAMPLE_SHARDS }, (_, i) => `packed-c${i + 1}`);
+const ALL_STAGES = ['static', 'suites', 'packed-a', 'packed-b', ...EXAMPLE_STAGES, ...Array.from({ length: SHARDS }, (_, i) => `unit-${i + 1}-of-${SHARDS}`)];
+const stageIds = (stage: string) => stageCommandIds(stage)!;
+/** The shard stage's recorded commands, as source5-run.sh writes them (literal I/N). */
+const stageCommand = (stage: string, id: string) => {
+  const shard = /^packed-c(\d+)$/.exec(stage)?.[1];
+  if (shard && id === 'examples-source') return `pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-examples/index.ts --phase source --packed --shard ${shard}/${EXAMPLE_SHARDS} --concurrency 2 --run-id "$NATIVE_RUN_ID"`;
+  if (shard && id === 'examples-upload') return `node tools/remote-acr/source5-artifacts.mjs stage-examples "$NATIVE_RUN_ID" /tmp/source5-examples/examples ${shard}/${EXAMPLE_SHARDS}`;
+  return stage.startsWith('unit-') ? `pnpm exec vitest run tests/unit --maxWorkers=2 --shard=${stage.slice(5).replace('-of-', '/')}` : `synthetic ${id}`;
+};
+/** The synthetic example catalog every shard report partitions. */
+const EXAMPLE_CATALOG = ['starter-example:camera-path', 'starter-example:orbit', 'documented-example:apps/chroma-roll', 'documented-example:apps/lab', 'capability-example:ibl'].map((id, i) => ({ id, cost: 100 + i * 25 }));
+const exampleSuffix = (id: string) => id.replace(/[^a-z0-9-]+/gi, '-');
 
 const scopeHeader = '| ID | Task | Label | Remaining work |\n| --- | --- | --- | --- |\n';
 function scopeDoc(extraRows = '') {
@@ -77,7 +90,9 @@ function fixture() {
   const planSha256 = hash(`${JSON.stringify(plan, null, 2)}\n`);
 
   type RunOptions = { stages?: string[]; failing?: string[]; commit?: string; fullPass?: boolean; artifacts?: boolean; consumers?: boolean; dropStageReport?: string[];
-    consumerPlanSha256?: string; examplesPlanSha256?: string; packedPlans?: Record<string, Record<string, unknown>> };
+    consumerPlanSha256?: string; examplesPlanSha256?: string; packedPlans?: Record<string, Record<string, unknown>>;
+    /** Rewrite the retained examples union so every recorded hash is consistent but the union itself is not (a hostile launcher output). */
+    forgeUnion?: (merged: Record<string, any>, index: Record<string, any>) => void };
   /**
    * Retained bundles through the real stage (job) -> verify/extract (Mac) round trip: packed-b `consumers`
    * (clean-install, matrix) or packed-c `examples` (packed example report + projects).
@@ -88,19 +103,35 @@ function fixture() {
     const jobPut = (path: string, text: string) => { mkdirSync(dirname(join(job, path)), { recursive: true }); writeFileSync(join(job, path), text); };
     // Each report names the plan it ran against at its in-job path (the stage's NATIVE_REPORT_DIR).
     const candidate = { path: `tests/reports/native-5/${runId}/candidate-plan.json`, sha256: planSha };
+    if (kind === 'examples') {
+      // Each example shard job stages its own slice; the launcher downloads them and merges the union.
+      const shardsDir = mkdtempSync(join(tmpdir(), 'aura3d-source5-shards-'));
+      roots.push(shardsDir);
+      for (let i = 1; i <= EXAMPLE_SHARDS; i += 1) {
+        const shardJob = mkdtempSync(join(tmpdir(), 'aura3d-source5-shard-job-'));
+        roots.push(shardJob);
+        const shard = exampleShardRecord(EXAMPLE_CATALOG, i, EXAMPLE_SHARDS);
+        const at = (path: string, text: string) => { mkdirSync(dirname(join(shardJob, path)), { recursive: true }); writeFileSync(join(shardJob, path), text); };
+        for (const id of shard.ids) at(`tests/reports/native-examples-catalog/${runId}/projects/${exampleSuffix(id)}/package.json`, '{"name":"aura3d-example-install-wrapper"}\n');
+        at(`tests/reports/native-examples-catalog/${runId}/${exampleShardReportName(i, EXAMPLE_SHARDS)}`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', install: 'packed-v1', runId, pass: true, failures: [],
+          candidatePlan: candidate.path, candidateSha256: candidate.sha256, source: { commit }, packages: [], toolVersions: { node: 'v24' }, exemptions: [], browser: 'not-run', generatedAt: `2026-11-02T00:00:0${i}.000Z`,
+          shard, cases: shard.ids.map(id => ({ id, status: 'passed' })), projects: shard.ids.map(id => ({ id })) })}\n`);
+        stageConsumers({ root: shardJob, runId, outDir: join(shardsDir, shardDownloadDir(i)), kind: 'examples', shard: { index: i, count: EXAMPLE_SHARDS }, chunkBytes: 65536 });
+      }
+      const result = verifyDownloadedExamples({ shardsDir, dest: join(root, dir, 'artifacts/examples'), root, runId, count: EXAMPLE_SHARDS });
+      expect(result.problems).toEqual([]);
+      return result;
+    }
     if (kind === 'consumers') {
       jobPut(`tests/reports/native-consumers/${runId}/source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', candidate })}\n`);
       jobPut(`tests/reports/native-consumers/${runId}/matrix-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', runId, status: 'pass', matrix: true, candidate })}\n`);
       jobPut(`tests/reports/native-consumers/${runId}/projects/react-import/package.json`, '{"name":"react-import"}\n');
       jobPut(`tests/reports/native-consumer-matrix/${runId}/projects/npm-react19-peer-present/package.json`, '{"name":"cell"}\n');
       jobPut(`tests/reports/native-consumer-matrix/${runId}/logs/npm-react19-peer-present-install.log`, 'installed\n');
-    } else {
-      jobPut(`tests/reports/native-examples-catalog/${runId}/examples-source.json`, `${JSON.stringify({ schema: 'aura3d.native-consumers/1', phase: 'source', install: 'packed-v1', runId, pass: true, candidatePlan: candidate.path, candidateSha256: candidate.sha256 })}\n`);
-      jobPut(`tests/reports/native-examples-catalog/${runId}/projects/starter-example-camera-path/package.json`, '{"name":"aura3d-example-install-wrapper"}\n');
     }
-    const upload = join(job, `upload/${kind}`);
-    stageConsumers({ root: job, runId, outDir: upload, kind, chunkBytes: 512 });
-    const result = verifyDownloadedConsumers({ dir: upload, dest: join(root, dir, `artifacts/${kind}`), root, runId, kind });
+    const upload = join(job, 'upload/consumers');
+    stageConsumers({ root: job, runId, outDir: upload, kind: 'consumers', chunkBytes: 512 });
+    const result = verifyDownloadedConsumers({ dir: upload, dest: join(root, dir, 'artifacts/consumers'), root, runId, kind: 'consumers' });
     expect(result.problems).toEqual([]);
     return result;
   };
@@ -110,12 +141,12 @@ function fixture() {
     const commands: Array<Record<string, unknown>> = [];
     for (const stage of stages) {
       const rows = stageIds(stage).map(id => ({ id, exitCode: failing.has(`${stage}:${id}`) ? 1 : 0, seconds: 3,
-        command: stage.startsWith('unit-') ? `pnpm exec vitest run tests/unit --maxWorkers=2 --shard=${stage.slice(5).replace('-of-', '/')}` : `synthetic ${id}` }));
+        command: stageCommand(stage, id) }));
       put(`${dir}/stage-${stage}.rc`, '0\n');
       put(`${dir}/acr-run-${stage}.log`, `log for ${stage}\n`);
       if (!options.dropStageReport?.includes(stage)) {
         putJson(`${dir}/stage-${stage}.json`, { schema: 'aura3d.source5-report/1', runId, releaseKind: 'major', finishedUtc: '2026-11-02T00:00:00.000Z',
-          candidatePlan: options.packedPlans?.[stage] ?? (stage.startsWith('packed-') ? plan : null), commands: rows, passed: rows.filter(r => r.exitCode === 0).map(r => r.id),
+          candidatePlan: options.packedPlans?.[stage] ?? (/^packed-/.test(stage) ? plan : null), commands: rows, passed: rows.filter(r => r.exitCode === 0).map(r => r.id),
           failed: rows.filter(r => r.exitCode !== 0).map(r => r.id), stage, deferredToAcceptance: evidence, browserAcceptance: 'not-run', generatedApiReference: null });
       }
       commands.push(...rows.map(row => ({ stage, ...row })));
@@ -131,7 +162,19 @@ function fixture() {
     }
     const consumers = stages.includes('packed-b') && options.consumers !== false ? retainBundle(dir, runId, 'consumers', options.consumerPlanSha256) : null;
     if (consumers) artifacts = { ...(artifacts as object ?? {}), consumers };
-    const examples = stages.includes('packed-c') && options.consumers !== false ? retainBundle(dir, runId, 'examples', options.examplesPlanSha256) : null;
+    const examples = stages.includes('packed-c1') && options.consumers !== false ? retainBundle(dir, runId, 'examples', options.examplesPlanSha256) : null;
+    if (examples && options.forgeUnion) {
+      const base = join(root, dir, 'artifacts/examples'), mergedPath = `tests/reports/native-examples-catalog/${runId}/examples-source.json`;
+      const merged = JSON.parse(readFileSync(join(base, mergedPath), 'utf8')), index = JSON.parse(readFileSync(join(base, 'consumer-index.json'), 'utf8'));
+      options.forgeUnion(merged, index);
+      const mergedBytes = `${JSON.stringify(merged, null, 2)}\n`;
+      writeFileSync(join(base, mergedPath), mergedBytes);
+      for (const file of index.files) if (file.path === mergedPath) file.sha256 = hash(mergedBytes);
+      index.reports.examplesSourceReport.sha256 = hash(mergedBytes);
+      const indexBytes = `${JSON.stringify(index, null, 2)}\n`;
+      writeFileSync(join(base, 'consumer-index.json'), indexBytes);
+      Object.assign(examples, { index: { ...examples.index, sha256: hash(indexBytes) }, examplesSourceReport: { ...examples.examplesSourceReport, sha256: hash(mergedBytes) } });
+    }
     if (examples) artifacts = { ...(artifacts as object ?? {}), examples };
     putJson(`${dir}/source-report.json`, {
       schema: 'aura3d.source5-report/2',
@@ -179,15 +222,23 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(record.sourceConsumerReport).toEqual({ path: `${consumerBase}/native-consumers/full/source.json`, jobPath: 'tests/reports/native-consumers/full/source.json', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
     expect(record.matrixSourceReport.path).toBe(`${consumerBase}/native-consumers/full/matrix-source.json`);
     expect(record.examplesSourceReport).toEqual({ path: `${full}/artifacts/examples/tests/reports/native-examples-catalog/full/examples-source.json`, jobPath: 'tests/reports/native-examples-catalog/full/examples-source.json', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
-    expect(record.consumerReports.files).toHaveLength(7);
-    expect(record.consumerReports.examples).toEqual({ runId: 'full', index: { path: `${full}/artifacts/examples/consumer-index.json`, sha256: expect.stringMatching(/^[a-f0-9]{64}$/) } });
+    // 5 consumer files + the examples union: every shard's report and projects plus the merged examples-source.json.
+    expect(record.consumerReports.files).toHaveLength(5 + EXAMPLE_SHARDS + EXAMPLE_CATALOG.length + 1);
+    expect(record.consumerReports.examples).toEqual({ runId: 'full', index: { path: `${full}/artifacts/examples/consumer-index.json`, sha256: expect.stringMatching(/^[a-f0-9]{64}$/) }, shards: EXAMPLE_SHARDS,
+      shardIndexes: EXAMPLE_STAGES.map((_, i) => ({ shard: i + 1, path: `${full}/artifacts/examples/consumer-index.shard-${i + 1}-of-${EXAMPLE_SHARDS}.json`, sha256: expect.stringMatching(/^[a-f0-9]{64}$/) })) });
+    const mergedExamples = JSON.parse(readFileSync(join(f.root, record.examplesSourceReport.path), 'utf8'));
+    expect(mergedExamples.cases.map((item: { id: string }) => item.id)).toEqual(EXAMPLE_CATALOG.map(item => item.id).sort());
+    expect(mergedExamples).not.toHaveProperty('shard');
     expect(record.consumerReports.files.every((file: { path: string; jobPath: string }) => file.path === `${full}/artifacts/${file.jobPath.includes('native-examples-catalog') ? 'examples' : 'consumers'}/${file.jobPath}`)).toBe(true);
-    expect(reports.checks.find(check => check.id === 'clean-install')?.commands.map(c => `${c.stage}:${c.id}`)).toEqual(['packed-b:clean-install', 'packed-c:examples-source']);
-    expect(reports.checks.find(check => check.id === 'build')?.commands.map(c => c.stage)).toEqual(['packed-a', 'packed-b', 'packed-c']);
+    expect(reports.checks.find(check => check.id === 'clean-install')?.commands.map(c => `${c.stage}:${c.id}`)).toEqual(['packed-b:clean-install', 'packed-c1:examples-source', 'packed-c2:examples-source']);
+    expect(reports.checks.find(check => check.id === 'build')?.commands.map(c => c.stage)).toEqual(['packed-a', 'packed-b', 'packed-c1', 'packed-c2']);
+    expect(reports.checks.find(check => check.id === 'artifacts-upload')?.commands.map(c => `${c.stage}:${c.id}`)).toEqual(['packed-a:artifacts-upload', 'packed-b:consumers-upload', 'packed-c1:examples-upload', 'packed-c2:examples-upload']);
+    expect(reports.consumerReports.examples.shards).toBe(EXAMPLE_SHARDS);
     // In-job identities: the reports' plan path (bytes = the retained packed-a plan) and the plan's archive paths.
     expect(record.candidatePlan).toEqual({ path: `${full}/artifacts/candidate-plan.json`, sha256: f.planSha256, jobPath: 'tests/reports/native-5/full/candidate-plan.json' });
     expect(record.archives.map((a: { jobPath: string }) => a.jobPath)).toEqual(f.tarballs.map(t => `tests/reports/release-tarballs/${t.file}`));
-    expect(record.inputs).toEqual(expect.arrayContaining([`${full}/artifacts/consumers/consumer-index.json`, `${full}/artifacts/examples/consumer-index.json`, record.sourceConsumerReport.path, record.examplesSourceReport.path,
+    expect(record.inputs).toEqual(expect.arrayContaining([`${full}/artifacts/consumers/consumer-index.json`, `${full}/artifacts/examples/consumer-index.json`, `${full}/artifacts/examples/consumer-index.shard-1-of-${EXAMPLE_SHARDS}.json`,
+      `${full}/artifacts/examples/consumer-index.shard-${EXAMPLE_SHARDS}-of-${EXAMPLE_SHARDS}.json`, record.sourceConsumerReport.path, record.examplesSourceReport.path,
       `${consumerBase}/native-consumer-matrix/full/logs/npm-react19-peer-present-install.log`]));
     for (const sourceReport of [record.matrixSourceReport.path, record.matrixSourceReport.jobPath, record.examplesSourceReport.jobPath]) {
       expect(validateAcceptanceGate({ root: f.root, gatePath: 'tests/reports/native-capabilities/code-complete-go.json', sourceReport }).status).toBe('CODE_COMPLETE_GO');
@@ -220,12 +271,12 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     const tampered = f.makeRun('tampered');
     f.put(`${tampered}/artifacts/consumers/tests/reports/native-consumers/tampered/source.json`, '{}\n');
     expect(() => f.build([tampered])).toThrow(/native-consumers\/tampered\/source\.json does not match the consumer index[\s\S]*retained sourceConsumerReport/);
-    // packed-b and packed-c reruns with retained reports supersede a full pass whose packed stages retained none;
-    // the packed-c report names its own run's plan path (bound by SHA-256), the plan's jobPath is packed-b's.
+    // packed-b and packed-c1..cN reruns with retained reports supersede a full pass whose packed stages retained none;
+    // the example report names its own run's plan path (bound by SHA-256), the plan's jobPath is packed-b's.
     const noConsumers = f.makeRun('full-noconsumers', { consumers: false });
     const packedB = f.makeRun('packedb-rerun', { stages: ['packed-b'], fullPass: false });
     expect(() => f.build([noConsumers, packedB])).toThrow(/full-noconsumers: source-report\.json has no retained examples reports/);
-    const packedC = f.makeRun('packedc-rerun', { stages: ['packed-c'], fullPass: false });
+    const packedC = f.makeRun('packedc-rerun', { stages: EXAMPLE_STAGES, fullPass: false });
     const superseded = f.build([noConsumers, packedB, packedC]).reports;
     expect(superseded.consumerReports.runId).toBe('packedb-rerun');
     expect(superseded.consumerReports.examples.runId).toBe('packedc-rerun');
@@ -235,8 +286,19 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(() => f.build([f.makeRun('otherplanc', { examplesPlanSha256: 'b'.repeat(64) })])).toThrow(/examples reports were produced against plan/);
     const laterPlan = { ...f.plan, generatedAt: '2026-11-02T00:00:01.000Z' };
     expect(() => f.build([f.makeRun('unpinned', { packedPlans: { 'packed-b': laterPlan } })])).toThrow(/candidate plans differ between packed-a and packed-b \(plan time not pinned/);
-    expect(() => f.build([f.makeRun('unpinnedc', { packedPlans: { 'packed-c': laterPlan } })])).toThrow(/candidate plans differ between packed-a and packed-c \(plan time not pinned/);
-    expect(() => f.build([f.makeRun('nopackc', { stages: ALL_STAGES.filter(stage => stage !== 'packed-c') })])).toThrow(/stage packed-c never ran[\s\S]*check clean-install: no result for packed-c:examples-source/);
+    expect(() => f.build([f.makeRun('unpinnedc', { packedPlans: { 'packed-c2': laterPlan } })])).toThrow(/candidate plans differ between packed-a and packed-c2 \(plan time not pinned/);
+    expect(() => f.build([f.makeRun('nopackc', { stages: ALL_STAGES.filter(stage => !EXAMPLE_STAGES.includes(stage)) })])).toThrow(/example shards: expected one shard count[\s\S]*check clean-install: no result for packed-c1:examples-source/);
+    // One example shard missing (never ran), and one rerun alone in a later run (the shards merge per run).
+    expect(() => f.build([f.makeRun('onlyc1', { stages: ALL_STAGES.filter(stage => stage !== 'packed-c2') })])).toThrow(/stage packed-c2 never ran[\s\S]*check clean-install: no result for packed-c2:examples-source/);
+    const fullC = f.makeRun('fullc');
+    const lonelyShard = f.makeRun('lonely-c2', { stages: ['packed-c2'], fullPass: false });
+    expect(() => f.build([fullC, lonelyShard])).toThrow(/packed-c2 ran in tests\/reports\/native-5\/lonely-c2 but packed-c1 in tests\/reports\/native-5\/fullc: the example shards merge into one report per run, so rerun all 2 together \(STAGES="packed-c1 packed-c2"\)/);
+    // A shard stage whose examples-source did not run its own packed slice.
+    const wrongShard = f.makeRun('wrongshard');
+    const stageFile = `${wrongShard}/stage-packed-c2.json`;
+    const stageReport = JSON.parse(readFileSync(join(f.root, stageFile), 'utf8'));
+    f.put(stageFile, JSON.stringify({ ...stageReport, commands: stageReport.commands.map((c: { id: string; command: string }) => (c.id === 'examples-source' ? { ...c, command: c.command.replace('--shard 2/2', '--shard 1/2') } : c)) }));
+    expect(() => f.build([wrongShard])).toThrow(/stage packed-c2: examples-source does not run packed example shard 2\/2/);
     const good = f.makeRun('good');
     const later = f.makeRun('later', { stages: ['static'], failing: ['static:typecheck'], fullPass: false });
     expect(() => f.build([good, later])).toThrow(/check typecheck: FAILED static:typecheck exit 1 \(run later\)/);
@@ -244,6 +306,21 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(() => f.build([good, other])).toThrow(/runs mix candidate commits/);
     f.put(`${good}/artifacts/tarballs/aura3d-react-5.0.0.tgz`, 'tampered');
     expect(() => f.build([good])).toThrow(/aura3d-react-5.0.0.tgz does not match its recorded SHA-256/);
+  });
+
+  it('re-proves the retained examples union: a union missing an example, listing an unaccounted file or without its shards is refused even with consistent hashes', () => {
+    const f = fixture();
+    expect(f.build([f.makeRun('ok-union')]).reports.passingCheckIds).toHaveLength(27);
+    const dropped = (merged: Record<string, any>) => { merged.cases = merged.cases.slice(1); merged.projects = merged.projects.slice(1); };
+    expect(() => f.build([f.makeRun('dropped', { forgeUnion: dropped })])).toThrow(/retained examples-source\.json is not the union of the retained shard reports/);
+    const extra = (_merged: Record<string, any>, index: Record<string, any>) => { index.files.push({ path: 'tests/reports/native-examples-catalog/extra/projects/x/package.json', sha256: 'a'.repeat(64), size: 1 }); };
+    expect(() => f.build([f.makeRun('extra', { forgeUnion: extra })])).toThrow(/retained consumer file missing|unsafe path/);
+    const noShards = (_merged: Record<string, any>, index: Record<string, any>) => { delete index.shards; };
+    expect(() => f.build([f.makeRun('noshards', { forgeUnion: noShards })])).toThrow(/retained examples index is not a merged shard union/);
+    const lostShard = (_merged: Record<string, any>, index: Record<string, any>) => { index.shards = index.shards.slice(0, 1); index.shardCount = 1; };
+    expect(() => f.build([f.makeRun('lostshard', { forgeUnion: lostShard })])).toThrow(/retained examples shard list differs from the launcher record/);
+    const fewer = (_merged: Record<string, any>, index: Record<string, any>) => { index.shards = index.shards.slice(0, 1); };
+    expect(() => f.build([f.makeRun('fewer', { forgeUnion: fewer })])).toThrow(/retained examples index is not a merged shard union/);
   });
 
   it('refuses unmapped required rows and verify-only rows whose mapped checks did not pass', () => {
@@ -343,6 +420,12 @@ describe('source5 gate inputs tables', () => {
       const body = caseBody(stage);
       expect([...(body.includes('pack_candidate') ? pack : []), ...ids(body)], stage).toEqual(STAGE_COMMANDS[stage]);
     }
+    // The example shard stages packed-c<I> share one command list, defined in one case arm.
+    const shardBody = new RegExp('^  packed-c\\[1-9\\]\\*\\)\\n([\\s\\S]*?)^    ;;', 'm').exec(script)?.[1] ?? '';
+    expect([...(shardBody.includes('pack_candidate') ? pack : []), ...ids(shardBody)]).toEqual([...EXAMPLE_SHARD_COMMANDS]);
+    expect(stageCommandIds('packed-c3')).toEqual([...EXAMPLE_SHARD_COMMANDS]);
+    expect(stageCommandIds('packed-c')).toBeNull();
+    expect(stageCommandIds('unit-2-of-6')).toEqual(['unit-2-of-6']);
   });
 
   it('the reviewed verify-only table is exactly the required rows of the real scope list without a **DONE** marker', () => {
