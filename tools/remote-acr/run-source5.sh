@@ -23,14 +23,18 @@ for i in $(seq 1 "$UNIT_SHARDS"); do DEFAULT_STAGES="$DEFAULT_STAGES unit-$i-of-
 STAGES="${STAGES:-$DEFAULT_STAGES}"
 MAX_PARALLEL=2
 [[ "$RUN_ID" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$ ]] || { echo 'invalid RUN_ID' >&2; exit 2; }
-if [ -n "$(git status --porcelain --untracked-files=no -- . ':!AGENTS.md')" ]; then
+if [ "${BUILD:-1}" = 0 ]; then
+  COMMIT="${IMAGE_COMMIT:?BUILD=0 requires IMAGE_COMMIT (the commit the reused image was built from)}"
+elif [ -n "$(git status --porcelain --untracked-files=no -- . ':!AGENTS.md')" ]; then
   echo 'FATAL: tracked changes present; the source pass runs only a committed candidate' >&2; exit 2
+else
+  COMMIT="$(git rev-parse HEAD)"
 fi
-COMMIT="$(git rev-parse HEAD)"
 OUT_DIR="tests/reports/native-5/$RUN_ID"
 [ -e "$OUT_DIR" ] && { echo "FATAL: $OUT_DIR exists" >&2; exit 2; }
 mkdir -p "$OUT_DIR"
-IMAGE_TAG="run-$RUN_ID"
+IMAGE_TAG="${IMAGE_TAG:-run-$RUN_ID}"
+BUILD="${BUILD:-1}"
 CTX="$(mktemp -d /tmp/aura3d-source5.XXXXXX)"
 PUSHED=0
 cleanup() {
@@ -47,6 +51,7 @@ trap cleanup EXIT INT TERM
 SUB="$("$AZ_WRAPPER" account show --query id -o tsv)"
 [ "$SUB" = "$EXPECTED_SUB" ] || { echo "FATAL: subscription $SUB" >&2; exit 2; }
 
+if [ "${BUILD:-1}" = 0 ]; then MANIFEST_SHA=reused-image; LOCK_SHA=reused-image; else
 echo "== staging committed candidate $COMMIT"
 git ls-files -z --cached --others --exclude-standard \
   | grep -zv -e '^tests/reports/' -e '/node_modules/' -e '^node_modules/' \
@@ -58,10 +63,15 @@ cp "$CTX/tools/remote-acr/.source5-manifest.txt" "$OUT_DIR/source-manifest.txt"
 MANIFEST_SHA="$(shasum -a 256 "$OUT_DIR/source-manifest.txt" | cut -d' ' -f1)"
 LOCK_SHA="$(shasum -a 256 pnpm-lock.yaml | cut -d' ' -f1)"
 du -sh "$CTX" | awk '{print "   context: "$1}'
+fi
 
 LOGIN_SERVER="$("$AZ_WRAPPER" acr show -n "$ACR_NAME" -g "$ACR_RG" --query loginServer -o tsv)"
-echo "== az acr build $IMAGE_REPO:$IMAGE_TAG"
 PUSHED=1
+if [ "$BUILD" = 0 ]; then
+  echo "== BUILD=0: reusing $IMAGE_REPO:$IMAGE_TAG (built from the same commit)"
+  "$AZ_WRAPPER" acr repository show-tags -n "$ACR_NAME" --repository "$IMAGE_REPO" -o tsv | grep -qx "$IMAGE_TAG" || { echo "FATAL: image tag $IMAGE_TAG not found" >&2; exit 3; }
+else
+echo "== az acr build $IMAGE_REPO:$IMAGE_TAG"
 set +e
 "$AZ_WRAPPER" acr build -r "$ACR_NAME" -g "$ACR_RG" -t "$IMAGE_REPO:$IMAGE_TAG" \
   --build-arg AURA3D_NATIVE_ACCEPTANCE=0 -f tools/remote-acr/Dockerfile.playwright --timeout 1800 \
@@ -70,6 +80,7 @@ BUILD_RC=$?
 set -e
 tail -15 "$OUT_DIR/acr-build.log"
 [ "$BUILD_RC" = 0 ] || { echo "FATAL: build failed ($OUT_DIR/acr-build.log)" >&2; exit 3; }
+fi
 
 run_stage() {
   set +e
