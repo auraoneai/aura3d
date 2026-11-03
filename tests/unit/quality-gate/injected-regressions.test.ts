@@ -27,6 +27,13 @@ const BRANCH = "refs/heads/qr/injected-regressions";
 /** ls-remote and a possible depth-3 fetch are network round trips. */
 const GIT_TIMEOUT_MS = 90_000;
 const VERDICTS_REQUIRED = process.env.QR_INJECTED_VERDICTS_REQUIRED === "1";
+/**
+ * The branch proof needs a Git checkout with an `origin` remote. The 5.0 ACR source pass stages
+ * `git ls-files` output without `.git` (tools/remote-acr/run-source5.sh); there these cases are
+ * skipped (reported, never passed). The injected-regressions gate run (VERDICTS_REQUIRED) never skips.
+ */
+const HAS_GIT_CHECKOUT = existsSync(join(root, ".git"));
+const SKIP_WITHOUT_GIT = !HAS_GIT_CHECKOUT && !VERDICTS_REQUIRED;
 
 /** Injection id → the field its commit subject names on the branch. */
 const INJECTIONS: Readonly<Record<string, RegExp>> = {
@@ -63,7 +70,7 @@ function injectionSubjects(): readonly string[] {
 }
 
 describe("injected regressions (T3.6)", () => {
-  it("branch qr/injected-regressions exists on origin with the three injection commits", () => {
+  it.skipIf(SKIP_WITHOUT_GIT)("branch qr/injected-regressions exists on origin with the three injection commits", () => {
     const subjects = injectionSubjects();
     expect(subjects).toHaveLength(3);
     for (const [id, subject] of Object.entries(INJECTIONS)) {
@@ -72,7 +79,7 @@ describe("injected regressions (T3.6)", () => {
   }, GIT_TIMEOUT_MS);
 
   for (const [id, subject] of Object.entries(INJECTIONS)) {
-    it(`injection ${id}: commit exists and recorded gate output blocks it`, () => {
+    it.skipIf(SKIP_WITHOUT_GIT)(`injection ${id}: commit exists and recorded gate output blocks it`, () => {
       expect(injectionSubjects().some((s) => subject.test(s)), `${id} commit on ${BRANCH}`).toBe(true);
       const file = join(injectedDir, `injected-${id}`, "verdicts.json");
       if (VERDICTS_REQUIRED) {

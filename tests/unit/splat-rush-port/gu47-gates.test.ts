@@ -133,5 +133,7 @@ describe("GU47 CR-AN1 drip wobble and match squash", () => {
     const reduced = run(LOOKS.carnival, true);
     expect(reduced.mismatches).toBe(0);
     expect(reduced.wobble.every((w) => w[1] === 0)).toBe(true);
-  });
+    // Two deterministic 1,500-step sim runs (~1.3 s locally) exceeded vitest's default 5 s on the
+    // slower ACR unit stage. Nothing here is timed; the limit only bounds a hung run.
+  }, 60_000);
 });

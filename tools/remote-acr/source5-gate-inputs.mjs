@@ -299,6 +299,7 @@ export function mergeRuns(runs) {
   for (const run of runs) for (const problem of Array.isArray(run.report?.problems) ? run.report.problems : []) {
     const stage = /^stage (\S+): report missing/.exec(problem)?.[1];
     if (stage && winners.get(stage) !== run) continue; // superseded by a later attempt of that stage
+    if (/^artifacts: /.test(problem) && winners.get('packed-a') !== run) continue; // packed-a artifacts superseded by a later packed-a run
     if (/^candidate archive digests differ/.test(problem)) continue; // recomputed below from the winning packed stages
     problems.push(`${run.dir}: ${problem}`);
   }

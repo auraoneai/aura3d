@@ -23,6 +23,12 @@ afterEach(() => { vi.unstubAllGlobals(); });
 function allocatedBytes(): number {
   return (v8.getHeapStatistics() as unknown as { total_allocated_bytes: number }).total_allocated_bytes;
 }
+/**
+ * `total_allocated_bytes` exists only on newer Node releases; the ACR source image's Node returns
+ * `undefined` (the per-frame figure was NaN there). Without it there is no monotonic allocation
+ * counter, so the allocation case is skipped (reported, never passed) rather than measured wrong.
+ */
+const HAS_ALLOCATION_COUNTER = typeof (v8.getHeapStatistics() as unknown as { total_allocated_bytes?: unknown }).total_allocated_bytes === "number";
 
 /** A browser has no `process.env` to scan for flags; an empty one makes the node run match it. */
 async function withEmptyEnv<T>(run: () => Promise<T>): Promise<T> {
@@ -64,7 +70,7 @@ describe("frame submission budget (cube, direct path, fake WebGL2)", { timeout: 
     });
   });
 
-  it("allocates a bounded amount of JS memory per steady frame", async () => {
+  it.skipIf(!HAS_ALLOCATION_COUNTER)("allocates a bounded amount of JS memory per steady frame", async () => {
     await withEmptyEnv(async () => {
       const { frame } = await mountFakeCube("auto");
       for (let i = 0; i < SETTLE_FRAMES; i += 1) frame();

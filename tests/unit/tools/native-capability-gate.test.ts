@@ -1396,7 +1396,7 @@ const ACCEPTANCE_ENTRYPOINTS: ReadonlyArray<{ file: string; after?: string; gate
   { file: 'tests/unit/tools/release-metrics-rollup.test.ts', gate: 'validateAcceptanceGate({ gatePath: acceptanceGate })', execution: 'describe(' }
 ];
 // Files that reference the gate only to test or describe it.
-const NON_ENTRYPOINT_GATE_REFERENCES = new Set(['tests/unit/tools/native-capability-gate.test.ts', 'tests/unit/tools/native-external-codec-launcher.test.ts']);
+const NON_ENTRYPOINT_GATE_REFERENCES = new Set(['tests/unit/tools/native-capability-gate.test.ts', 'tests/unit/tools/native-external-codec-launcher.test.ts', 'tests/unit/tools/source5-gate-inputs.test.ts']);
 
 describe('acceptance entrypoint gate coverage', () => {
   const repo = new URL('../../../', import.meta.url);

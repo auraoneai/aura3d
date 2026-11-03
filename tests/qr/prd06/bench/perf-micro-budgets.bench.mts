@@ -2,7 +2,11 @@
  * PRD-06 §13 CPU micro-budget bench — runs under plain `node --import tsx`
  * (the PRD's "unit benchmarks, Node" wording; vitest's worker/transform layer
  * inflates the same code ~40%, so the gate measures the subprocess's medians).
- * Prints a single JSON line: { case: median-µs, ... }.
+ * Prints a single JSON line: { case: median-µs, ..., calibration: { case: median-µs } }.
+ *
+ * Machine calibration (pattern: tests/unit/engine/instance-matrices-dense.test.ts): immediately before each
+ * case the bench times a fixed, engine-free calibration workload (`calibrate()`) with the same sampler, so
+ * the spec can translate each §13 budget (set on the reference Mac) to the current machine.
  *
  * Cases (linear synthetic skeletons — the §13 budget shapes):
  *   mixer65x2       PoseMixer.evaluate, 65 bones × 2 clips          (≤ 25 µs)
@@ -51,20 +55,56 @@ function makeClip(name: string, jointNames: readonly string[], duration = 1.6, k
   return new AnimationClip({ name, duration, tracks });
 }
 
-/** Median wall time of `fn` in µs after `warm` untimed iterations. */
-function medianMicros(fn: () => void, warm = 4000, iters = 20000): number {
-  for (let i = 0; i < warm; i += 1) fn();
-  const samples = new Float64Array(iters);
-  for (let i = 0; i < iters; i += 1) {
-    const t0 = performance.now();
-    fn();
-    samples[i] = performance.now() - t0;
+const results: Record<string, number> = {};
+const calibration: Record<string, number> = {};
+
+/**
+ * Fixed, deterministic calibration workload: 32 column-major 4x4 Float64 matrix products (constant inputs,
+ * never changes) folded into a checksum so the work is observable. Same µs scale and timer overhead as the
+ * §13 cases, no engine code involved.
+ */
+const CALIBRATION_MATRICES = 32;
+const calibrationInput = new Float64Array(CALIBRATION_MATRICES * 16).map((_, i) => ((i * 7919) % 1000) / 500 - 1);
+const calibrationMatrix = new Float64Array(16).map((_, i) => ((i * 104729) % 1000) / 500 - 1);
+const calibrationOutput = new Float64Array(CALIBRATION_MATRICES * 16);
+let calibrationChecksum = 0;
+function calibrate(): void {
+  for (let k = 0; k < CALIBRATION_MATRICES; k += 1) {
+    const o = k * 16;
+    for (let col = 0; col < 4; col += 1) {
+      const b0 = calibrationInput[o + col * 4]!, b1 = calibrationInput[o + col * 4 + 1]!;
+      const b2 = calibrationInput[o + col * 4 + 2]!, b3 = calibrationInput[o + col * 4 + 3]!;
+      for (let row = 0; row < 4; row += 1) {
+        calibrationOutput[o + col * 4 + row] = calibrationMatrix[row]! * b0 + calibrationMatrix[4 + row]! * b1 +
+          calibrationMatrix[8 + row]! * b2 + calibrationMatrix[12 + row]! * b3;
+      }
+    }
   }
-  samples.sort();
-  return samples[iters >> 1]! * 1000;
+  calibrationChecksum += calibrationOutput[(calibrationChecksum >>> 0) % calibrationOutput.length]!;
 }
 
-const results: Record<string, number> = {};
+/**
+ * Median µs of `fn` and of the calibration workload, sampled interleaved (one calibration sample immediately
+ * before every case sample) so both medians see the same core, clock and load.
+ */
+function measure(name: string, fn: () => void, warm = 4000, iters = 20000): void {
+  for (let i = 0; i < warm; i += 1) { calibrate(); fn(); }
+  const calibrationSamples = new Float64Array(iters);
+  const samples = new Float64Array(iters);
+  for (let i = 0; i < iters; i += 1) {
+    const c0 = performance.now();
+    calibrate();
+    const t0 = performance.now();
+    fn();
+    const t1 = performance.now();
+    calibrationSamples[i] = t0 - c0;
+    samples[i] = t1 - t0;
+  }
+  calibrationSamples.sort();
+  samples.sort();
+  calibration[name] = calibrationSamples[iters >> 1]! * 1000;
+  results[name] = samples[iters >> 1]! * 1000;
+}
 
 // mixer65x2 — 65 bones × 2 clips
 {
@@ -76,7 +116,7 @@ const results: Record<string, number> = {};
   mixer.play("walk", { weight: 0.5 });
   mixer.update(1 / 60);
   const out = createPoseBuffer(65);
-  results.mixer65x2 = medianMicros(() => mixer.evaluate(out));
+  measure("mixer65x2", () => mixer.evaluate(out));
 }
 
 // mixer191x3mask — 191 bones × 3 clips with an override mask layer
@@ -92,7 +132,7 @@ const results: Record<string, number> = {};
   mixer.playLayer("override", "c", { mask, weight: 0.8 });
   mixer.update(1 / 60);
   const out = createPoseBuffer(191);
-  results.mixer191x3mask = medianMicros(() => mixer.evaluate(out));
+  measure("mixer191x3mask", () => mixer.evaluate(out));
 }
 
 // palette65 — one inverse world per binding, then (invWorld×jointWorld)×IBM
@@ -103,7 +143,7 @@ const results: Record<string, number> = {};
   const inverseWorld = new Float32Array(16);
   const scratch = new Float32Array(16);
   const matrices = new Float32Array(65 * 16);
-  results.palette65 = medianMicros(() => {
+  measure("palette65", () => {
     invertMat4Into(inverseWorld, world);
     for (let joint = 0; joint < 65; joint += 1) {
       multiplyMat4Into(scratch, 0, inverseWorld, world);
@@ -121,7 +161,7 @@ const results: Record<string, number> = {};
   const target: [number, number, number] = [0.2, 0.5, 0.1];
   const model = new Float32Array(16);
   model[0] = model[5] = model[10] = model[15] = 1;
-  results.ik2bone = medianMicros(() => {
+  measure("ik2bone", () => {
     solveTwoBoneIkRotations(pose, skeleton, model, spec, target);
   });
 }
@@ -137,7 +177,8 @@ const results: Record<string, number> = {};
   });
   const bound = bindSpringChainToSkeleton(chain, skeleton, ["bone20", "bone21", "bone22", "bone23", "bone24"]);
   bound.step(pose, 1 / 60);
-  results.spring5b1s = medianMicros(() => bound.step(pose, 1 / 60));
+  measure("spring5b1s", () => bound.step(pose, 1 / 60));
 }
 
-console.log(JSON.stringify(results));
+if (!Number.isFinite(calibrationChecksum)) throw new Error("calibration checksum is not finite");
+console.log(JSON.stringify({ ...results, calibration }));
