@@ -216,7 +216,6 @@ COMMIT="$COMMIT" TREE="$TREE" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" 
     if (!r) { problems.push(`stage ${s}: report missing (acr rc=${rc})`); continue; }
     for (const c of r.commands) commands.push({ stage: s, ...c });
     if (r.candidatePlan) plans[s] = r.candidatePlan;
-    if (r.generatedApiReference) fs.writeFileSync(`${out}/public-api.generated.md`, r.generatedApiReference.text);
   }
   const digestsOf = (p) => JSON.stringify((p.packages || p.archives || p.entries || []).map((e) => [e.name, e.version, e.sha256 || e.integrity || e.digest]));
   const planStages = Object.keys(plans);

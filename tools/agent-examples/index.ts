@@ -9,7 +9,8 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
-import { devNull, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
+import { emptyNpmConfigs } from "../release/npm-empty-config.mjs";
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
@@ -1379,7 +1380,7 @@ export async function producePackedSource(root: string, runId: string, candidate
   const cache = resolve(scratch, ".npm-cache"), home = resolve(scratch, ".home");
   mkdirSync(cache); mkdirSync(home);
   const installEnv = packedConsumerEnvironment(cache, home);
-  const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull];
+  const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig];
   const projects: any[] = [], cases: any[] = [];
   let npmVersion = "";
   try {

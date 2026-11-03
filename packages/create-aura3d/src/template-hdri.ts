@@ -40,7 +40,7 @@ const ATTRIBUTION_SHA256 = "cba7b6d9600b131ef9df39bd93e0c60decb3b31a44a64f3f1797
 export const TEMPLATE_ENVIRONMENT_DIR = "aura-environments";
 export const TEMPLATE_ENVIRONMENT_PRESETS = ["studio", "outdoor", "sunset", "night", "indoor"] as const;
 
-// V2 prompt-plan compilation also adds a look, even without a direct looks call.
+// prompt-plan v2 compilation also adds a look, even without a direct looks call.
 const LOOK_AUTHORING = /\b(?:looks\.(?:preset|nodes)|compilePromptPlanV2|promptPlanToSceneV2)\s*\(/;
 const SOURCE_FILE = /\.(ts|tsx|js|mjs)$/;
 

@@ -68,8 +68,19 @@ if (uninventoried.length) throw new Error(`Public workspace packages are missing
 const disallowedPathPatterns = [/^archive\//, /V[234]PRD\.md$/, /TestV4PlanPRD\.md$/, /\.(png|jpe?g|csv)$/i];
 // GU47 E-F (eint EF-1): the engine's built-in VFX sprite pages are runtime assets, not screenshots or evidence:
 // the emitted FlipbookAtlas.js resolves them from dist/assets/vfx/ (tools/finalize-dist copies exactly these two).
-const allowedPathPatterns = [/^dist\/assets\/vfx\/aura-vfx-(1k|2k)\.png$/];
+const allowedPathPatterns = [
+  /^dist\/assets\/vfx\/aura-vfx-(1k|2k)\.png$/,
+  // 5.0: the render-worker asset folder ships the same two runtime sprite pages next to the worker bundle.
+  /^dist\/engine\/agent-api\/app\/worker-assets\/aura-vfx-(1k|2k)\.png$/,
+  // 5.0: Kenney kit texture sidecars (CC0) that template GLBs reference; integrity requires them next to the GLB.
+  /^templates\/[a-z0-9-]+\/public\/aura-assets\/Textures\/colormap\.png$/
+];
 const disallowedTextPatterns = [/AuraSceneIR/, /MockProvider/, /prompt-to-scene/, /@aura3d\/ai-scene/, /\bV[234]\b/, /Path A/, /Path B/];
+// Legitimate "V2"/"V3" text that is not archived release-cycle text, by file (each with its reason):
+//  - VRML V2.0: the file-format version name (LegacySceneLoaders parses "#VRML V2.0 utf8"), also bundled into the render worker
+//  - UNICODE LICENSE V3: the license name in the required notice of the generated Unicode bidi data (also bundled)
+//  - MESHY_BASE_URL_V1/V2: Meshy API environment variable names in the meshy-cli skill
+const allowedVersionTextFiles = [/(^|\/)LegacySceneLoaders\.(js|d\.ts)$/, /(^|\/)UnicodeBidiData\.(js|d\.ts)$/, /(^|\/)render\.worker\.bundle\.js$/, /(^|\/)skills\/meshy-cli\/SKILL\.md$/];
 const extracted = new Map<string,string>();
 const temporary: string[] = [];
 const results: Record<string, unknown>[] = [];
@@ -188,6 +199,7 @@ function findTextHits(dir: string, files: readonly PackFile[]): string[] {
     if (!existsSync(fullPath)) continue;
     const text = readFileSync(fullPath, "utf8");
     for (const pattern of disallowedTextPatterns) {
+      if (pattern.source === "\\bV[234]\\b" && allowedVersionTextFiles.some((allowed) => allowed.test(file.path))) continue;
       if (pattern.test(text)) hits.push(`${dir}:${file.path}:${pattern.source}`);
     }
   }

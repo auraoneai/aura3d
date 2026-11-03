@@ -56,7 +56,9 @@ interface BundleResult {
  * instead of being quietly excused. `tools/browser-entry-purity` asserts the same property directly.
  */
 const BROWSER_EXTERNAL_NODE_BUILTINS = [] as const;
-const reportDirectory = process.env.NATIVE_REPORT_DIR ?? "tests/reports";
+// The source pass exports an absolute in-repo path (/repo/tests/reports/...); accept it as the same relative path.
+const rawReportDirectory = process.env.NATIVE_REPORT_DIR ?? "tests/reports";
+const reportDirectory = rawReportDirectory.startsWith(`${process.cwd()}/`) ? rawReportDirectory.slice(process.cwd().length + 1) : rawReportDirectory;
 if (!/^tests\/reports(?:\/[A-Za-z0-9][A-Za-z0-9._-]*)*$/u.test(reportDirectory) || reportDirectory.split("/").some(part => part === "." || part === "..")) {
   throw new Error("NATIVE_REPORT_DIR must be a path under tests/reports");
 }

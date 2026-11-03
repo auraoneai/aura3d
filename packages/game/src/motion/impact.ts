@@ -1,4 +1,4 @@
-export type V3 = [number, number, number];
+export type ImpactVec3 = [number, number, number];
 
 export interface ImpactBoxCollider {
   readonly kind: "box";
@@ -25,17 +25,17 @@ export interface ImpactSphereCollider {
 export type ImpactCollider = ImpactBoxCollider | ImpactSphereCollider;
 
 export interface ImpactBody {
-  position: V3;
-  velocity: V3;
+  position: ImpactVec3;
+  velocity: ImpactVec3;
   radius: number;
 }
 
 export interface Impact {
   readonly colliderId: string;
   readonly tag: string | undefined;
-  readonly point: V3;
+  readonly point: ImpactVec3;
   /** Unit normal pointing out of the collider, towards the body. */
-  readonly normal: V3;
+  readonly normal: ImpactVec3;
   /** Approach speed along the normal before the response, m/s. */
   readonly speed: number;
   readonly impulse: number;
@@ -59,24 +59,24 @@ export interface ImpactWorld {
 
 interface Hit {
   readonly t: number;
-  readonly normal: V3;
+  readonly normal: ImpactVec3;
   readonly collider: ImpactCollider;
 }
 
 const EPS = 1e-9;
 
-function rotY(v: readonly [number, number, number], yaw: number): V3 {
+function rotY(v: readonly [number, number, number], yaw: number): ImpactVec3 {
   const c = Math.cos(yaw);
   const s = Math.sin(yaw);
   return [c * v[0] + s * v[2], v[1], -s * v[0] + c * v[2]];
 }
 
-function sweepBox(p: V3, d: V3, radius: number, box: ImpactBoxCollider): Hit | undefined {
+function sweepBox(p: ImpactVec3, d: ImpactVec3, radius: number, box: ImpactBoxCollider): Hit | undefined {
   const yaw = box.yaw ?? 0;
-  const rel: V3 = [p[0] - box.center[0], p[1] - box.center[1], p[2] - box.center[2]];
+  const rel: ImpactVec3 = [p[0] - box.center[0], p[1] - box.center[1], p[2] - box.center[2]];
   const lp = rotY(rel, -yaw);
   const ld = rotY(d, -yaw);
-  const h: V3 = [box.half[0] + radius, box.half[1] + radius, box.half[2] + radius];
+  const h: ImpactVec3 = [box.half[0] + radius, box.half[1] + radius, box.half[2] + radius];
   const inside = Math.abs(lp[0]) < h[0] && Math.abs(lp[1]) < h[1] && Math.abs(lp[2]) < h[2];
   if (inside) {
     let axis = 0;
@@ -88,7 +88,7 @@ function sweepBox(p: V3, d: V3, radius: number, box: ImpactBoxCollider): Hit | u
         axis = i;
       }
     }
-    const n: V3 = [0, 0, 0];
+    const n: ImpactVec3 = [0, 0, 0];
     n[axis] = lp[axis]! >= 0 ? 1 : -1;
     return { t: 0, normal: rotY(n, yaw), collider: box };
   }
@@ -119,14 +119,14 @@ function sweepBox(p: V3, d: V3, radius: number, box: ImpactBoxCollider): Hit | u
     if (tmin > tmax) return undefined;
   }
   if (axisHit < 0) return undefined;
-  const n: V3 = [0, 0, 0];
+  const n: ImpactVec3 = [0, 0, 0];
   n[axisHit] = sign;
   return { t: tmin, normal: rotY(n, yaw), collider: box };
 }
 
-function sweepSphere(p: V3, d: V3, radius: number, s: ImpactSphereCollider): Hit | undefined {
+function sweepSphere(p: ImpactVec3, d: ImpactVec3, radius: number, s: ImpactSphereCollider): Hit | undefined {
   const R = radius + s.radius;
-  const m: V3 = [p[0] - s.center[0], p[1] - s.center[1], p[2] - s.center[2]];
+  const m: ImpactVec3 = [p[0] - s.center[0], p[1] - s.center[1], p[2] - s.center[2]];
   const a = d[0] * d[0] + d[1] * d[1] + d[2] * d[2];
   const c = m[0] * m[0] + m[1] * m[1] + m[2] * m[2] - R * R;
   if (c < 0) {
@@ -140,7 +140,7 @@ function sweepSphere(p: V3, d: V3, radius: number, s: ImpactSphereCollider): Hit
   if (disc < 0) return undefined;
   const t = (-b - Math.sqrt(disc)) / a;
   if (t < 0 || t > 1) return undefined;
-  const hit: V3 = [m[0] + d[0] * t, m[1] + d[1] * t, m[2] + d[2] * t];
+  const hit: ImpactVec3 = [m[0] + d[0] * t, m[1] + d[1] * t, m[2] + d[2] * t];
   const len = Math.hypot(hit[0], hit[1], hit[2]) || 1;
   return { t, normal: [hit[0] / len, hit[1] / len, hit[2] / len], collider: s };
 }
@@ -174,7 +174,7 @@ export function createImpactWorld(options: ImpactWorldOptions): ImpactWorld {
       const now = new Set<string>();
       let remaining = dt;
       for (let iter = 0; iter < 4 && remaining > 0; iter += 1) {
-        const d: V3 = [body.velocity[0] * remaining, body.velocity[1] * remaining, body.velocity[2] * remaining];
+        const d: ImpactVec3 = [body.velocity[0] * remaining, body.velocity[1] * remaining, body.velocity[2] * remaining];
         let best: Hit | undefined;
         for (const c of colliders.values()) {
           const hit = c.kind === "box" ? sweepBox(body.position, d, body.radius, c) : sweepSphere(body.position, d, body.radius, c);
@@ -209,7 +209,7 @@ export function createImpactWorld(options: ImpactWorldOptions): ImpactWorld {
         const id = best.collider.id;
         now.add(id);
         if (!touching.has(id) && approach >= eventMin) {
-          const point: V3 = [body.position[0] - n[0] * body.radius, body.position[1] - n[1] * body.radius, body.position[2] - n[2] * body.radius];
+          const point: ImpactVec3 = [body.position[0] - n[0] * body.radius, body.position[1] - n[1] * body.radius, body.position[2] - n[2] * body.radius];
           const impact: Impact = { colliderId: id, tag: best.collider.tag, point, normal: [n[0], n[1], n[2]], speed: approach, impulse: approach * (1 + e) };
           impacts.push(impact);
           options.onImpact?.(impact);
@@ -283,8 +283,8 @@ export function createCameraShake(options: { readonly decayPerSecond?: number; r
 }
 
 export interface ParticleBurst {
-  readonly point: V3;
-  readonly normal: V3;
+  readonly point: ImpactVec3;
+  readonly normal: ImpactVec3;
   readonly count: number;
   readonly speed: number;
 }

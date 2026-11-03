@@ -41,7 +41,7 @@ run() {
   fi
   rc=$?
   ended=$(date +%s)
-  if [ "$rc" = 0 ]; then tail -n 20 "$log"; else tail -n "${SOURCE5_FAIL_LINES:-400}" "$log"; fi | sed "s/^/[${id}] /"
+  if [ "$rc" = 0 ]; then tail -n 20 "$log"; else tail -n "${SOURCE5_FAIL_LINES:-2000}" "$log"; fi | sed "s/^/[${id}] /"
   echo "::: SOURCE5_END ${id} rc=${rc} secs=$((ended - started))"
   printf '%s\t%s\t%s\t%s\n' "$id" "$rc" "$((ended - started))" "$*" >> "$RESULTS"
 }
@@ -100,7 +100,7 @@ case "$STAGE" in
     run api-diff             'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts --baseline-manifest "$NATIVE_REPORT_DIR/baseline-manifest.json" --candidate-plan "$A3D_RELEASE_PLAN" --release-kind "$NATIVE_RELEASE_KIND" --out "$NATIVE_REPORT_DIR/api-diff.json"'
     run api-contract         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
     # Public reference from the packed candidate's declarations (S5-WP24-03).
-    run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/public-api.md" --write'
+    run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "tests/reports/native-5/$NATIVE_RUN_ID/public-api.md" --write'
     run api-docs             'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
     # Tested plan + archives + packed reports back to the Mac (packed-a only;
     # packed-b's archives are compared byte-for-byte by the launcher). An upload
@@ -158,8 +158,9 @@ RESULTS="$RESULTS" SOURCE5_STAGE="$STAGE" A3D_RELEASE_PLAN="${A3D_RELEASE_PLAN:-
     generatedApiReference: (() => {
       const file = `${process.env.NATIVE_REPORT_DIR}/public-api.md`;
       if (!fs.existsSync(file)) return null;
-      const text = fs.readFileSync(file, "utf8");
-      return { path: "docs/api/public-api.md", sha256: require("crypto").createHash("sha256").update(text).digest("hex"), text };
+      // The ~35 MB text itself comes back through artifacts-upload; the report carries only its identity.
+      const bytes = fs.readFileSync(file);
+      return { path: "docs/api/public-api.md", sha256: require("crypto").createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length };
     })()
   };
   process.stdout.write(Buffer.from(JSON.stringify(out)).toString("base64").replace(/(.{76})/g, "$1\n") + "\n");

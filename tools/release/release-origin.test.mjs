@@ -8,15 +8,20 @@ test('versioned inventories retain historical names and require the complete nat
  assert.equal(expectedPublicPackageCount('3.0.1'), 29);
  assert.equal(expectedPublicPackageCount('4.7.1'), 24);
  assert.equal(expectedPublicPackageCount('4.7.1', 'native-1'), 25);
- assert.equal(releaseInventoryId('4.7.2'), 'native-1');
+ // Every 4.x release (through 4.7.10) shipped the historical 24-package set; 5.0.0 is the first release of the native set (+ @aura3d/addons).
+ assert.equal(releaseInventoryId('4.7.10'), 'historical-4');
+ assert.equal(expectedPublicPackageCount('4.7.10'), 24);
+ assert.ok(!publicPackageNames('4.7.10').includes('@aura3d/addons'));
+ assert.equal(releaseInventoryId('5.0.0'), 'native-1');
  assert.ok(publicPackageNames('3.0.1').includes('@aura3d/three-compat'));
- assert.ok(publicPackageNames('4.7.2').includes('@aura3d/addons'));
- const names = [...publicPackageNames('4.7.2')];
- assert.deepEqual(assertReleaseInventory('4.7.2', names), names);
- assert.throws(() => assertReleaseInventory('4.7.2', names.slice(1)), /missing/);
- assert.throws(() => assertReleaseInventory('4.7.2', [...names, names[0]]), /unique/);
- assert.throws(() => assertReleaseInventory('4.7.2', [...names.slice(1), '@aura3d/unexpected']), /unexpected/);
- assert.throws(() => releaseInventoryId('4.7.2', 'historical-4'), /invalid/);
+ assert.ok(publicPackageNames('5.0.0').includes('@aura3d/addons'));
+ const names = [...publicPackageNames('5.0.0')];
+ assert.equal(names.length, 25);
+ assert.deepEqual(assertReleaseInventory('5.0.0', names), names);
+ assert.throws(() => assertReleaseInventory('5.0.0', names.slice(1)), /missing/);
+ assert.throws(() => assertReleaseInventory('5.0.0', [...names, names[0]]), /unique/);
+ assert.throws(() => assertReleaseInventory('5.0.0', [...names.slice(1), '@aura3d/unexpected']), /unexpected/);
+ assert.throws(() => releaseInventoryId('5.0.0', 'historical-4'), /invalid/);
 });
 const observation=()=>({status:200,markerStatus:200,marker:{version:plan.version,source:{...plan.source},releasePlanSha256:'plan'},text:'Aura3D3.0.1',renderedPages:[{url:'https://aura3d.example/',installBlocks:[{text:'npm install @aura3d/engine@3.0.1; npx create-aura3d@3.0.1',scope:'current',context:''}]}],links:[{url:'https://aura3d.example/docs',status:200,ok:true}],browserErrors:[]});
 test('origin requires exact deployed marker and visible pins/link observations',()=>assert.deepEqual(validateOriginObservation(observation(),plan),[]));

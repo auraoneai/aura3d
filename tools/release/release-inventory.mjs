@@ -73,14 +73,15 @@ function parseVersion(version) {
 }
 export function releaseInventoryId(version, requested) {
   const [major, minor, patch] = parseVersion(version);
-  const historical4Version = major === 4 && (minor < 7 || (minor === 7 && patch <= 1));
+  // Every 4.x release (through 4.7.10) shipped the historical package set; 5.0.0 is the first release of the native set (adds @aura3d/addons).
+  const historical4Version = major === 4;
   if (requested !== undefined) {
     if (!Object.hasOwn(RELEASE_INVENTORIES, requested)) throw new Error(`Unknown release inventory: ${requested}`);
     if ((major < 4 && requested !== 'historical-3') || (major >= 4 && requested === 'historical-3') || (requested === 'historical-4' && !historical4Version)) throw new Error(`Inventory ${requested} is invalid for ${version}`);
     return requested;
   }
   if (major < 4) return 'historical-3';
-  // Releases through the currently published 4.7.1 retain their old set.
+  // 4.x releases retain their old set.
   return historical4Version ? 'historical-4' : 'native-1';
 }
 export function publicPackageNames(version, inventoryId) {

@@ -364,7 +364,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * PRD-07 §6.2 emitter surface: accepts `AuraParticleEmitterOptions` plus the
    * legacy fields; every defined option rides the node to lowering.
    */
-  // GU47 pass 4 (g13 DD47-V2): the node's `speed: number` no longer narrows the emitter's `speed: AuraRange`.
+  // GU47 pass 4 (g13 DD47-v2): the node's `speed: number` no longer narrows the emitter's `speed: AuraRange`.
   particles: (options: AuraParticleEmitterOptions & AuraLegacyParticleFields & Omit<AuraEffectNode, "kind" | "effect" | "speed"> = {}) =>
     new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
       kind: "effect",
