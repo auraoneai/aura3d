@@ -1604,7 +1604,12 @@ function generateProgramInternal(features: ProgramFeatures, options: GeneratePro
     activeFeatures: contributions.map(({ feature, value }) => ({ id: feature.id, value })),
     activeExtensions: lobes.active,
     defines: { ...defines },
-    lighting: { compilerLightingConjunction: e3Conjunction, iblReplacesIndirect: prd02IblReplacesIndirect }
+    lighting: { compilerLightingConjunction: e3Conjunction, iblReplacesIndirect: prd02IblReplacesIndirect },
+    // Native WGSL replaces the wetness GLSL chunk with its own template, so it
+    // admits that contributor only when this is the unchanged built-in object.
+    verifiedFeatures: contributions
+      .filter(({ feature }) => feature.id === "prd07.wetness" && isStockPrd07BloomFeature(feature))
+      .map(({ feature }) => feature.id)
   };
   // Native templates also depend on resolved flags/providers, not just the
   // feature record. A source preview must not reuse a different shader under

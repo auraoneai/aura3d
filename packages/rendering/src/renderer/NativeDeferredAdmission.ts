@@ -4,11 +4,15 @@ import { PRD04_MATERIAL_LOBES } from "../materials/lobes";
 import { indirectFractionFeature, INDIRECT_FRACTION_BIT } from "../post/chunks/indirectFraction.glsl";
 import { PRD02_SHADOW_FILTER_FEATURE } from "../shadows/Prd02ShadowFilter";
 import { PRD02_IBL_SHADER_FEATURE } from "../shaders/Prd02IblFeature";
+import { isStockPrd07BloomFeature, PRD07_WETNESS_SHADER_FEATURE } from "../atmosphere/Prd07ShaderFeatures";
 
-const trustedFeatures = new Map<string, { readonly feature: ShaderFeature; accepts(value: string | number | boolean): boolean }>([
+const trustedFeatures = new Map<string, { readonly feature: ShaderFeature; accepts(value: string | number | boolean): boolean; readonly unchanged?: (feature: ShaderFeature) => boolean }>([
   [PRD02_IBL_SHADER_FEATURE.id, { feature: PRD02_IBL_SHADER_FEATURE, accepts: value => value === true }],
   [PRD02_SHADOW_FILTER_FEATURE.id, { feature: PRD02_SHADOW_FILTER_FEATURE, accepts: value => value === 1 || value === 2 || value === 3 }],
-  [indirectFractionFeature.id, { feature: indirectFractionFeature, accepts: value => value === INDIRECT_FRACTION_BIT }]
+  [indirectFractionFeature.id, { feature: indirectFractionFeature, accepts: value => value === INDIRECT_FRACTION_BIT }],
+  // The renderer applies the uniform (noise-free) wetness response to the
+  // native materials on the CPU; see deferredWetnessMaterials.
+  [PRD07_WETNESS_SHADER_FEATURE.id, { feature: PRD07_WETNESS_SHADER_FEATURE, accepts: value => value === true, unchanged: isStockPrd07BloomFeature }]
 ]);
 const trustedLobes = new Set(PRD04_MATERIAL_LOBES.filter(lobe => lobe.id === "sheen" || lobe.id === "emissive-strength"));
 
@@ -16,6 +20,8 @@ export interface NativeDeferredFeatureAdmission {
   readonly reason?: string;
   readonly indirectFraction: boolean;
   readonly ibl: boolean;
+  /** Present (true) only when the stock PRD-07 wetness feature is selected for this item. */
+  readonly wetness?: true;
 }
 
 /**
@@ -32,7 +38,8 @@ export function admitNativeDeferredFeatures(
   const reject = (reason: string): NativeDeferredFeatureAdmission => ({ reason, indirectFraction: false, ibl: false });
   for (const [id, value] of Object.entries(selected)) {
     const trusted = trustedFeatures.get(id);
-    if (!trusted || features.find(feature => feature.id === id) !== trusted.feature || !trusted.accepts(value)) {
+    if (!trusted || features.find(feature => feature.id === id) !== trusted.feature || !trusted.accepts(value) ||
+        (trusted.unchanged && !trusted.unchanged(trusted.feature))) {
       return reject(`shader feature ${id} requires the full forward renderer`);
     }
   }
@@ -44,6 +51,7 @@ export function admitNativeDeferredFeatures(
   }
   return {
     indirectFraction: selected[indirectFractionFeature.id] === INDIRECT_FRACTION_BIT,
-    ibl: selected[PRD02_IBL_SHADER_FEATURE.id] === true
+    ibl: selected[PRD02_IBL_SHADER_FEATURE.id] === true,
+    ...(selected[PRD07_WETNESS_SHADER_FEATURE.id] === true ? { wetness: true } : {})
   };
 }

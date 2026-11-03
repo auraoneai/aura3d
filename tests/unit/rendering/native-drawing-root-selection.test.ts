@@ -7,9 +7,10 @@ import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { packEnvSH } from "../../../packages/rendering/src/environment/EnvUniforms";
 import { NativeLightProbeGrid } from "../../../packages/rendering/src/lighting/NativeLightProbeGrid";
 import { stampAdvancedLightingBinding } from "../../../packages/rendering/src/lighting/AdvancedLightingBindings";
-import { GENERATED_PBR_MATERIAL_OFFSETS } from "../../../packages/rendering/src/webgpu/GeneratedPbrProgram";
+import { GENERATED_PBR_MATERIAL_LAYOUT, GENERATED_PBR_MATERIAL_OFFSETS } from "../../../packages/rendering/src/webgpu/GeneratedPbrProgram";
 import type { WebGPUResourceInterop } from "../../../packages/rendering/src/webgpu/ResourceInterop";
 import type { WebGPUDevice } from "../../../packages/rendering/src/WebGPUDevice";
+import { DeferredPipeline, type NativeDrawingScene } from "../../../packages/rendering/src/webgpu/DeferredPipeline";
 
 type MockBindGroup = { entries?: { binding: number; resource: unknown }[] };
 type MockDraw = { readonly pipeline?: string; readonly count: number; readonly indexed: boolean; readonly groups: readonly MockBindGroup[] };
@@ -226,6 +227,55 @@ describe("root-app native drawing selection", () => {
       expect(nativeProbe.destroy).toHaveBeenCalledOnce();
       submit.mockRestore();
     } finally { app.dispose(); renderSpy.mockRestore(); }
+  });
+
+  it("applies live PRD-07 wetness to native deferred materials without a forward fallback", async () => {
+    const fixture = rootDevice();
+    const app = createAuraApp(fixture.canvas, {
+      scene: scene().add(primitives.box({ name: "box" })),
+      renderer: { backend: "webgpu", drawingPath: { mode: "deferred", allowFallback: false }, shaderFailures: "throw" },
+      qualityRebuild: { flags: ["vfx"] },
+      autoStart: false, resize: false, diagnostics: false, pixelRatio: 1, strict: false
+    });
+    const render = vi.spyOn(DeferredPipeline.prototype, "render");
+    const material = () => (render.mock.calls.at(-1)![0] as { scene: NativeDrawingScene }).scene.materials[0]!;
+    try {
+      await app.ready();
+      await app.stepAsync(0);
+      const dry = material();
+      expect(dry.shading).toBe("physical");
+      app.atmosphere!.setWetness(1);
+      await app.stepAsync(0);
+      const renderer = (app as unknown as Record<symbol, { drawingPathDiagnostics: unknown }>)[Symbol.for("a3d.prd01.renderer")];
+      expect(renderer.drawingPathDiagnostics).toMatchObject({ requested: "deferred", active: "deferred" });
+      const wet = material();
+      // wet = 1, porosity 1: albedo * 0.55; neutral puddle noise: roughness -> 0.06.
+      for (let index = 0; index < 3; index += 1) expect(wet.baseColor[index]).toBeCloseTo(dry.baseColor[index]! * 0.55, 6);
+      expect(wet.baseColor[3]).toBe(1);
+      expect(wet.roughness).toBeCloseTo(0.06, 6);
+      expect(wet.metallic).toBe(dry.metallic);
+    } finally { app.dispose(); render.mockRestore(); }
+  });
+
+  it("submits the live wetness packet to the native forward PBR material", async () => {
+    const fixture = rootDevice();
+    const app = createAuraApp(fixture.canvas, {
+      scene: scene().add(primitives.box({ name: "box" })),
+      renderer: { backend: "webgpu", shaderFailures: "throw" },
+      qualityRebuild: { flags: ["vfx"] },
+      autoStart: false, resize: false, diagnostics: false, pixelRatio: 1, strict: false
+    });
+    try {
+      await app.ready();
+      expect(app.diagnostics().errors.join(" ")).toBe("");
+      app.atmosphere!.setWetness(0.6);
+      await app.stepAsync(0);
+      const offset = GENERATED_PBR_MATERIAL_OFFSETS.wetness!;
+      const wetness = fixture.uploads.filter((upload) => upload.data.byteLength === GENERATED_PBR_MATERIAL_LAYOUT.size)
+        .map((upload) => new DataView(upload.data.buffer, upload.data.byteOffset, upload.data.byteLength).getFloat32(offset, true));
+      expect(wetness.length).toBeGreaterThan(0);
+      expect(wetness.at(-1)).toBeCloseTo(0.6, 6);
+    } finally { app.dispose(); }
   });
 
   it.each([true, false])("reports the per-item cube probe as unsupported (fallback=%s)", async (allowFallback) => {

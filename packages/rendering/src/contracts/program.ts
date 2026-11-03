@@ -163,6 +163,8 @@ export interface GeneratedProgramDescriptor {
   readonly activeExtensions: readonly MaterialExtensionFeature[];
   readonly defines: Readonly<Record<string, string | number | true>>;
   readonly lighting: { readonly compilerLightingConjunction: boolean; readonly iblReplacesIndirect: boolean };
+  /** Contributor IDs the generator authenticated as unchanged built-in objects. */
+  readonly verifiedFeatures?: readonly string[];
 }
 export interface GeneratedProgram { readonly key: string; readonly vertex: string; readonly fragment: string; readonly defines: Readonly<Record<string, string | number | true>>; readonly descriptor?: GeneratedProgramDescriptor; }
 export type ProgramGeneratorImpl = (features: ProgramFeatures) => GeneratedProgram;

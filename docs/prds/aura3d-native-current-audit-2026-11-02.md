@@ -200,11 +200,17 @@ are not claims of complete behavior or passing tests.
   pass, including its bounded directional-light support. Visibility and
   unsupported meshlet features still fall back to the full forward route, or
   fail when fallback is disabled.
-  Native WebGPU wetness remains unsupported: the generated PBR feature
-  allowlist excludes it and deferred live wetness routes to forward only when
-  fallback is allowed, otherwise it fails. See
-  `packages/rendering/src/Renderer.ts:2544,2634,2644,2756,2896` and
-  `packages/rendering/src/webgpu/GeneratedPbrProgram.ts:243`.
+  **Update 2026-11-02 (S5-DEF-02):** Native WebGPU wetness is now
+  implemented, labeled experimental (source and CPU-reference parity only; no
+  real-GPU evidence yet). The generated WGSL PBR program admits the unchanged
+  stock `prd07.wetness` feature (`webgpu/GeneratedPbrProgram.ts`,
+  `atmosphere/shaders/wetness.wgsl.ts`), and the deferred, meshlet and
+  visibility paths apply the same response to their native materials
+  (`Renderer.ts` `deferredWetnessScene`). Remaining explicit limits: a
+  caller-supplied puddle-noise texture (legacy global state only; the 5.0
+  frame packet forbids it) keeps the deferred frame on the forward route and
+  is rejected by the native forward program with
+  `WEBGPU_WETNESS_PUDDLE_TEXTURE_UNSUPPORTED`.
 - **Production camera depth:** Valid reversed or logarithmic requests can
   explicitly fall back to a rebuilt standard-depth projection when
   `allowFallback: true`; otherwise they are rejected. Native production
