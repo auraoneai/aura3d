@@ -1,10 +1,39 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraColor, AuraLightNode, AuraVec3 } from "./types.js";
-import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
+import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions, AuraPhotometricProfile, AuraProjectedLightImage } from "../../contracts/lighting.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { distance } from "../SpatialAnchoring.js";
 import { createLensFlareNode } from "./lensFlare.js";
+
+function validateProfile(profile: AuraPhotometricProfile | undefined): void {
+  if (!profile) return;
+  if (profile.profile?.format !== "ies-lm63" || profile.profile.photometricType !== "C") throw new TypeError("photometricProfile requires a parsed Type-C IES profile");
+  if (profile.scale !== undefined && (!Number.isFinite(profile.scale) || profile.scale < 0)) throw new RangeError("photometricProfile scale must be finite and non-negative");
+  if (profile.rotation !== undefined && !Number.isFinite(profile.rotation)) throw new RangeError("photometricProfile rotation must be finite");
+  const { verticalAngles, horizontalAngles, candela, symmetry } = profile.profile;
+  if (!Array.isArray(verticalAngles) || !Array.isArray(horizontalAngles) || !Array.isArray(candela) || verticalAngles.length < 1 || horizontalAngles.length < 1 || verticalAngles.length > 4096 || horizontalAngles.length > 4096 || verticalAngles.length * horizontalAngles.length > 1048576 || candela.length !== verticalAngles.length * horizontalAngles.length) throw new RangeError("photometricProfile has invalid table dimensions");
+  for (const [angles, max] of [[verticalAngles, 180], [horizontalAngles, 360]] as const) {
+    for (let i = 0; i < angles.length; i++) {
+      if (!Number.isFinite(angles[i]) || angles[i]! < 0 || angles[i]! > max || (i > 0 && angles[i]! <= angles[i - 1]!)) throw new RangeError("photometricProfile angles must be finite and strictly increasing");
+    }
+  }
+  const end = horizontalAngles[horizontalAngles.length - 1];
+  const expected = horizontalAngles.length === 1 ? "rotational" : end === 90 ? "quadrant" : end === 180 ? "bilateral" : end === 360 ? "none" : undefined;
+  if (horizontalAngles[0] !== 0 || symmetry !== expected || candela.some((v) => !Number.isFinite(v) || v < 0)) throw new RangeError("photometricProfile has invalid symmetry or candela values");
+}
+
+function validateProjection(projection: AuraProjectedLightImage | undefined): void {
+  if (!projection) return;
+  if (projection.texture?.kind !== "aura-asset-ref" || projection.texture.type !== "texture") throw new TypeError("projectedImage requires an admitted texture asset");
+  if (projection.rotation !== undefined && !Number.isFinite(projection.rotation)) throw new RangeError("projectedImage rotation must be finite");
+  if (projection.offset && (!Array.isArray(projection.offset) || projection.offset.length !== 2 || projection.offset.some((n) => !Number.isFinite(n)))) throw new RangeError("projectedImage offset must contain two finite values");
+  if (projection.scale && (!Array.isArray(projection.scale) || projection.scale.length !== 2 || projection.scale.some((n) => !Number.isFinite(n) || n === 0))) throw new RangeError("projectedImage scale must contain two finite non-zero values");
+}
+
+function validateTwoSided(value: boolean | undefined): void {
+  if (value !== undefined && typeof value !== "boolean") throw new TypeError("twoSided must be a boolean");
+}
 
 export const lights = {
   /**
@@ -59,21 +88,27 @@ export const lights = {
       color: options.color ?? "#ffffff",
       shadow: options.shadow
     }),
-  point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly intensity?: number; readonly power?: number; readonly distance?: number; readonly decay?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions } = {}) =>
-    new AuraNodeBuilder<AuraLightNode>({
+  point: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly power?: number; readonly distance?: number; readonly decay?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; readonly photometricProfile?: AuraPhotometricProfile } = {}) => {
+    validateProfile(options.photometricProfile);
+    return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "point",
       name: options.name,
       position: options.position ?? [2, 2.5, 1.5],
+      ...(options.target !== undefined ? { target: options.target } : {}),
       intensity: options.intensity ?? 8,
       ...(options.power !== undefined ? { power: options.power } : {}),
       ...(options.distance !== undefined ? { distance: options.distance } : {}),
       ...(options.decay !== undefined ? { decay: options.decay } : {}),
       ...(options.shadow !== undefined ? { shadow: options.shadow } : {}),
+      ...(options.photometricProfile !== undefined ? { photometricProfile: options.photometricProfile } : {}),
       color: options.color ?? "#ffffff"
-    }),
-  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly power?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions } = {}) =>
-    new AuraNodeBuilder<AuraLightNode>({
+    });
+  },
+  spot: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly angle?: number; readonly penumbra?: number; readonly distance?: number; readonly decay?: number; readonly intensity?: number; readonly power?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraLocalShadowOptions; readonly photometricProfile?: AuraPhotometricProfile; readonly projectedImage?: AuraProjectedLightImage } = {}) => {
+    validateProfile(options.photometricProfile);
+    validateProjection(options.projectedImage);
+    return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "spot",
       name: options.name ?? "spot light",
@@ -85,9 +120,12 @@ export const lights = {
       decay: options.decay,
       intensity: options.intensity ?? 30,
       ...(options.power !== undefined ? { power: options.power } : {}),
+      ...(options.photometricProfile !== undefined ? { photometricProfile: options.photometricProfile } : {}),
+      ...(options.projectedImage !== undefined ? { projectedImage: options.projectedImage } : {}),
       color: options.color ?? "#ffffff",
       shadow: options.shadow
-    }),
+    });
+  },
   studio: (options: { readonly intensity?: number } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
@@ -97,8 +135,9 @@ export const lights = {
       color: "#ffffff",
       position: [0, 3, 4]
     }),
-  rect: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
-    new AuraNodeBuilder<AuraLightNode>({
+  rect: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) => {
+    validateTwoSided(options.twoSided);
+    return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "rect",
       name: options.name ?? "rect area light",
@@ -108,26 +147,30 @@ export const lights = {
       color: options.color ?? "#ffffff",
       width: options.width ?? 2.2,
       height: options.height ?? 1.2,
-      // CCR-02-2 additive field.
       ...(options.twoSided !== undefined ? { twoSided: options.twoSided } : {})
-    } as AuraLightNode),
+    });
+  },
   /**
    * threejs-parity L7/AD-16 (P2): three's `RectAreaLight` — an alias over the
    * `rect` area light (width × height, position + target, twoSided).
    */
   rectArea: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
     lights.rect(options),
-  softbox: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) =>
-    new AuraNodeBuilder<AuraLightNode>({
+  softbox: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly width?: number; readonly height?: number; readonly twoSided?: boolean } = {}) => {
+    validateTwoSided(options.twoSided);
+    return new AuraNodeBuilder<AuraLightNode>({
       kind: "light",
       light: "softbox",
       name: options.name ?? "large softbox light",
       position: options.position ?? [-2.2, 2.4, 2.2],
+      ...(options.target !== undefined ? { target: options.target } : {}),
       intensity: options.intensity ?? 1.75,
       color: options.color ?? "#f7fbff",
       width: options.width ?? 2.4,
-      height: options.height ?? 1.6
-    }),
+      height: options.height ?? 1.6,
+      ...(options.twoSided !== undefined ? { twoSided: options.twoSided } : {})
+    });
+  },
   productStudio: (options: { readonly intensity?: number } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",

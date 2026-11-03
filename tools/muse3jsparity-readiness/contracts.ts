@@ -10,6 +10,7 @@ export interface GateResult {
   readonly receipt: string | null;
   readonly receiptHash?: string;
   readonly receiptValid?: boolean;
+  readonly behaviorOnlySuccessors?: readonly BehaviorOnlySuccessor[];
 }
 export const ARCHIVE_REQUIREMENT = '3.0.1:FINAL.archive';
 export const FINAL_DERIVATIONS = new Set(['3.0.1:L02.check.5','3.0.1:FINAL.check.25','3.0.1:FINAL.check.26']);
@@ -108,6 +109,60 @@ export function removedAssertions(
     remaining.set(successor, successorCount - 1);
     return false;
   });
+}
+
+export interface AssertionObservation { readonly id: string; readonly status: string }
+export type AssertionExecutionStatus = 'passed' | 'not-passed' | 'missing' | 'duplicate';
+export interface BehaviorOnlySuccessor {
+  readonly predecessor: string;
+  readonly successor: string;
+  readonly reason: string;
+  readonly comparisonCoverage: 'retired';
+  readonly historicalAssertionStatus: AssertionExecutionStatus;
+  readonly behaviorStatus: AssertionExecutionStatus;
+}
+
+/** Behavioral successors are diagnostics, never proof that a comparison was preserved. */
+export function assessAssertionLineage(baseline: readonly string[], current: readonly AssertionObservation[], value: unknown): {
+  removed: string[]; behaviorOnly: BehaviorOnlySuccessor[];
+} {
+  const isRecord = (item: unknown): item is Record<string, unknown> =>
+    typeof item === 'object' && item !== null && !Array.isArray(item);
+  if (!isRecord(value) || value.schema !== 'muse3jsparity-baseline-assertion-lineage/v1' || !isRecord(value.replacements)
+    || (value.behaviorOnlySuccessors !== undefined && !isRecord(value.behaviorOnlySuccessors))) {
+    throw new Error('baseline assertion lineage malformed');
+  }
+
+  const historical = new Set(baseline);
+  const predecessors = new Set<string>();
+  const successors = new Set<string>();
+  const replacements: Record<string, string> = {};
+  const validate = (predecessor: string, successor: unknown): string => {
+    if (!historical.has(predecessor) || predecessors.has(predecessor) || typeof successor !== 'string'
+      || !successor.trim() || predecessor === successor) throw new Error('baseline assertion lineage contains an invalid predecessor or successor');
+    if (successors.has(successor)) throw new Error('baseline assertion lineage reuses a successor');
+    predecessors.add(predecessor);
+    successors.add(successor);
+    return successor;
+  };
+  for (const [predecessor, successor] of Object.entries(value.replacements)) {
+    replacements[predecessor] = validate(predecessor, successor);
+  }
+
+  const status = (id: string): AssertionExecutionStatus => {
+    const matches = current.filter(observation => observation.id === id);
+    if (!matches.length) return 'missing';
+    if (matches.length > 1) return 'duplicate';
+    return matches[0].status === 'passed' ? 'passed' : 'not-passed';
+  };
+  const behaviorOnly: BehaviorOnlySuccessor[] = [];
+  for (const [predecessor, entry] of Object.entries(value.behaviorOnlySuccessors ?? {})) {
+    if (!isRecord(entry) || typeof entry.reason !== 'string' || !entry.reason.trim()) throw new Error('behavior-only assertion lineage malformed');
+    const successor = validate(predecessor, entry.successor);
+    behaviorOnly.push({ predecessor, successor, reason: entry.reason, comparisonCoverage: 'retired', historicalAssertionStatus: status(predecessor), behaviorStatus: status(successor) });
+  }
+
+  return { removed: removedAssertions(baseline, current.map(observation => observation.id), replacements), behaviorOnly };
 }
 
 /** Explicit capture prerequisites only; work-order dependencies may describe phases. */

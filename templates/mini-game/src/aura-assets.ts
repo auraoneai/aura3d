@@ -120,7 +120,13 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/kenneyPlatformerKitStar.a102a1b9.glb",
     bounds: [0.365, 0.363, 0.239],
     hash: "sha256-a102a1b961fe0932c98ca29200ee6becae711b42437f14d58703388114eeff3c",
-    metadata: { materials: ["colormap"], animations: [], textures: [], thumbnailUrl: "" }
+    metadata: {
+      materials: ["colormap"],
+      animations: [],
+      textures: ["Textures/colormap.png"],
+      dependencies: ["Textures/colormap.png"],
+      thumbnailUrl: ""
+    }
   },
   quaterniusCubeCrate: {
     type: "model",
@@ -146,6 +152,12 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/kenneyPlatformerKitKey.2e930961.glb",
     bounds: [0.382, 0.218, 0.068],
     hash: "sha256-2e9309616c56536495d96fee85e75def26b63354139d19533773f23900984986",
-    metadata: { materials: ["colormap"], animations: [], textures: [], thumbnailUrl: "" }
+    metadata: {
+      materials: ["colormap"],
+      animations: [],
+      textures: ["Textures/colormap.png"],
+      dependencies: ["Textures/colormap.png"],
+      thumbnailUrl: ""
+    }
   }
 } as const);

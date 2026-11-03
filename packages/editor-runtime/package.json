@@ -13,7 +13,8 @@
   "dependencies": {
     "@aura3d/animation": "workspace:*",
     "@aura3d/math": "workspace:*",
-    "@aura3d/scene": "workspace:*"
+    "@aura3d/scene": "workspace:*",
+    "@aura3d/rendering": "workspace:*"
   },
   "devDependencies": {
     "@aura3d/engine": "workspace:*"

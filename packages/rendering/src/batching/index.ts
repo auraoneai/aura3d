@@ -4,6 +4,7 @@ export {
   materialKeyExcludesParameter
 } from "./ContentKeys";
 export {
+  BatchPlanBuildError,
   MAX_GPU_INSTANCES,
   REASONS_NOT_BATCHED,
   planBatches,

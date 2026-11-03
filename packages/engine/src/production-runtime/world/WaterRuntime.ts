@@ -29,7 +29,7 @@ import {
   underwaterShaderSources,
   type ReflectionRequest
 } from "@aura3d/rendering/world";
-import { colorToRgba } from "../../agent-api/index.js";
+import { colorToRgba } from "../../agent-api/colorUtils.js";
 import { resolveTierValue, terrainRecordIds } from "../../agent-api/world/terrain.js";
 import { drawTerrainsForReflection } from "./TerrainRuntime.js";
 import { tierForSettings } from "./WorldFramePasses.js";

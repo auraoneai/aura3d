@@ -2,7 +2,8 @@
  * C-22 — CameraRig live API (CONTRACTS.md). Provider: PRD 08. Flag: A3D_QR_CAMERA.
  */
 
-import type { AuraVec3, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraVec3 } from "../agent-api/nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "../agent-api/nodes/types/runtime.js";
 // GU47 E-H (WP-8): the rail factory below is the real controller rail. Every
 // value import of rail.ts is cycle-safe (its contract imports are type-only),
 // and the S19 "typical game" fixture never value-imports this module, so the
@@ -61,11 +62,11 @@ export interface AuraCameraController {
 }
 export interface AuraCameraRailOptions { readonly points: readonly AuraVec3[]; readonly lookAt: string | AuraVec3 | readonly AuraVec3[]; readonly fov?: number | readonly number[]; readonly duration: number; readonly ease?: AuraEaseName; readonly loop?: "none" | "loop" | "pingpong"; readonly alpha?: number; }
 export interface AuraCameraRigFactories {
-  chase(o: Readonly<Record<string, unknown>> & { target: string }): AuraCameraRig;
-  flight(o: Readonly<Record<string, unknown>> & { target: string; horizonLock?: number; followPitch?: number }): AuraCameraRig;
+  chase(o: Readonly<Record<string, unknown>> & { target: string | AuraRuntimeNodeHandle }): AuraCameraRig;
+  flight(o: Readonly<Record<string, unknown>> & { target: string | AuraRuntimeNodeHandle; horizonLock?: number; followPitch?: number }): AuraCameraRig;
   follow2d(o: Readonly<Record<string, unknown>> & { target: string }): AuraCameraRig;
   fighting(o: Readonly<Record<string, unknown>> & { fighters: readonly [string, string] }): AuraCameraRig;
-  shoulder(o: Readonly<Record<string, unknown>> & { target: string }): AuraCameraRig;
+  shoulder(o: Readonly<Record<string, unknown>> & { target: string | AuraRuntimeNodeHandle }): AuraCameraRig;
   orbit(o: Readonly<Record<string, unknown>>): AuraCameraRig;
   topDown(o: Readonly<Record<string, unknown>> & { target?: string; pitchDeg?: number }): AuraCameraRig;
   altitude(o: Readonly<Record<string, unknown>> & { target: string }): AuraCameraRig;

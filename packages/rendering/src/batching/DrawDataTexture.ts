@@ -13,25 +13,35 @@
 
 import { Texture, type TextureDescriptor } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
-import type { UniformValue } from "../RenderDevice";
+import { Sampler } from "../Sampler";
+import type { RenderDevice, UniformValue } from "../RenderDevice";
+import type { ResourceRegistryRegistration } from "../contracts/rendererFactory";
 
 export const DRAW_DATA_TEXELS_PER_DRAW = 6;
 
 const drawDataBindings = new WeakMap<Texture, TextureBinding>();
+const drawDataInstances = new WeakSet<object>();
+
+/** Internal identity check; proxies and objects with a forged prototype are not instances. */
+export function isDrawDataTexture(value: unknown): value is DrawDataTexture {
+  return (typeof value === "object" && value !== null) && drawDataInstances.has(value);
+}
 
 /** One shared `u_a3dDrawData` binding per draw-data texture: multi-draw merging compares uniform values by identity. */
 export function drawDataBindingFor(texture: Texture): TextureBinding {
   let binding = drawDataBindings.get(texture);
-  if (!binding) drawDataBindings.set(texture, binding = new TextureBinding({ name: "u_a3dDrawData", texture, required: false }));
+  if (!binding) drawDataBindings.set(texture, binding = new TextureBinding({ name: "u_a3dDrawData", texture, required: false,
+    // RGBA32F remains complete without optional float-linear filtering.
+    sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest" }) }));
   return binding;
 }
 
 /**
  * Meta texel `.w` bit layout (parity-L5 / SG-02): bit 0 = visible, bits 1+
  * = packed `PackedGeometryEntry.geometryId`. Shaders read
- * `(floatBitsToUint(meta.w) & 1u) != 0u` for visibility and `meta.w >> 1`
- * for the geometry id; `baseVertex`/`firstIndex`/`indexCount` stay in
- * `meta.xyz` as floats.
+ * `(uint(meta.w + 0.5) & 1u) != 0u` for visibility and
+ * `uint(meta.w + 0.5) >> 1` for the geometry id; values are stored as numeric
+ * floats, and `baseVertex`/`firstIndex`/`indexCount` stay in `meta.xyz`.
  */
 export const DRAW_DATA_VISIBLE_BIT = 1;
 export const DRAW_DATA_GEOMETRY_ID_SHIFT = 1;
@@ -60,15 +70,24 @@ export class DrawDataTexture {
   private texture: Texture | null = null;
   private dirty = true;
   private restoreRegistered = false;
+  private restoreRegistry: ResourceRegistryRegistration | null = null;
+  private restoreHandle: object | null = null;
+  private restoreToken: { active: boolean } | null = null;
+  private readonly pendingUnregistrations = new Map<ResourceRegistryRegistration, Set<object>>();
+  private readonly pendingTextures = new Set<Texture>();
+  private registering = false;
+  private disposing = false;
 
   constructor(readonly maxDraws: number) {
     if (!Number.isInteger(maxDraws) || maxDraws <= 0) {
       throw new RangeError("DrawDataTexture maxDraws must be a positive integer");
     }
     this.data = new Float32Array(maxDraws * DRAW_DATA_TEXELS_PER_DRAW * 4);
+    drawDataInstances.add(this);
   }
 
   setDraw(drawIndex: number, entry: DrawDataEntry): void {
+    this.assertMutable();
     if (drawIndex < 0 || drawIndex >= this.maxDraws) {
       throw new RangeError(`Draw index ${drawIndex} outside DrawDataTexture capacity ${this.maxDraws}`);
     }
@@ -101,7 +120,8 @@ export class DrawDataTexture {
       colorSpace: "linear",
       label: "a3d-prd11-draw-data",
       data: this.data,
-      dynamic: true // rows rewrite per frame — `update()`-driven re-upload (L5)
+      dynamic: true, // rows rewrite per frame — `update()`-driven re-upload (L5)
+      generateMipmaps: false // texelFetch uses level zero; no float-linear extension is required
     };
   }
 
@@ -109,8 +129,9 @@ export class DrawDataTexture {
    * Materializes once, then `update()`s in place on dirty rows — the returned
    * `Texture` object is STABLE across row rewrites (markers/uniforms hold it
    * by identity; the device re-uploads on `revision`).
-   */
+  */
   upload(): Texture {
+    this.assertMutable();
     if (!this.texture) {
       this.texture = new Texture(this.descriptor());
       this.dirty = false;
@@ -121,31 +142,118 @@ export class DrawDataTexture {
     return this.texture;
   }
 
+  private assertMutable(): void {
+    if (this.disposing) throw new Error("DrawDataTexture cannot mutate during disposal");
+    if (this.registering) throw new Error("DrawDataTexture cannot mutate during restore registration");
+  }
+
+  private unregisterRestoreHandle(registry: ResourceRegistryRegistration, handle: object): void {
+    const pending = this.pendingUnregistrations.get(registry);
+    const retrying = pending?.has(handle) === true;
+    pending?.delete(handle);
+    if (pending?.size === 0) this.pendingUnregistrations.delete(registry);
+    try {
+      const unregister = registry.unregister;
+      if (unregister) unregister.call(registry, handle);
+      else if (retrying) throw new Error("DrawDataTexture unregister retry is unavailable");
+    } catch (error) {
+      let handles = this.pendingUnregistrations.get(registry);
+      if (!handles) this.pendingUnregistrations.set(registry, handles = new Set());
+      handles.add(handle);
+      throw error;
+    }
+  }
+
   /**
    * PRD 11 Phase 5 (§6.9): register with the C-29 `ResourceRegistry` once.
    * The CPU-side `data` array IS the retained source — the restore rebuild
    * marks the texture dirty and re-uploads it.
    */
-  registerForRestore(registry: { register<T extends object>(handle: T, descriptor: { kind: string; rebuild: () => Promise<void> | void }): T }): void {
+  registerForRestore(registry: ResourceRegistryRegistration, device?: RenderDevice | (() => RenderDevice | undefined)): void {
+    this.assertMutable();
     if (this.restoreRegistered) return;
-    this.restoreRegistered = true;
-    registry.register(this, {
-      kind: "a3d-prd11-draw-data",
-      rebuild: () => {
-        this.texture?.dispose();
-        this.texture = null;
-        this.upload();
+    this.registering = true;
+    try {
+      // A pending old registration may still occupy this instance's key. A
+      // fresh key prevents its eventual retry from removing the new callback.
+      if (this.pendingUnregistrations.get(registry)?.has(this)) {
+        try { this.unregisterRestoreHandle(registry, this); } catch { /* keep the old callback inert */ }
       }
-    });
+      const handle = this.pendingUnregistrations.get(registry)?.has(this) ? {} : this;
+      const token = { active: true };
+      try {
+        registry.register(handle, {
+          kind: "a3d-prd11-draw-data",
+          get device() { return typeof device === "function" ? device() : device; },
+          rebuild: () => {
+            if (!token.active) return;
+            // Existing markers retain this Texture by identity. The device's
+            // restore lifecycle invalidates native handles; refreshing the CPU
+            // texture in place lets those markers bind the recreated resource.
+            this.dirty = true;
+            this.upload();
+          }
+        });
+      } catch (error) {
+        token.active = false;
+        // A registry may throw after accepting the handle.
+        try { this.unregisterRestoreHandle(registry, handle); } catch { /* preserve registration error */ }
+        throw error;
+      }
+      this.restoreRegistry = registry;
+      this.restoreRegistered = true;
+      this.restoreHandle = handle;
+      this.restoreToken = token;
+    } finally {
+      this.registering = false;
+    }
   }
 
   /** `sampler2D` binding ready for `uniforms.set("u_a3dDrawData", ...)`. */
   asUniform(): UniformValue {
-    return new TextureBinding({ name: "u_a3dDrawData", texture: this.upload(), required: false });
+    return drawDataBindingFor(this.upload());
   }
 
   dispose(): void {
-    this.texture?.dispose();
-    this.texture = null;
+    if (this.disposing) return;
+    if (this.registering) throw new Error("DrawDataTexture cannot dispose during restore registration");
+    this.disposing = true;
+    try {
+      const registry = this.restoreRegistry;
+      const handle = this.restoreHandle;
+      if (this.restoreToken) this.restoreToken.active = false;
+      this.restoreRegistry = null;
+      this.restoreRegistered = false;
+      this.restoreHandle = null;
+      this.restoreToken = null;
+      if (this.texture) this.pendingTextures.add(this.texture);
+      this.texture = null;
+
+      const unregisterWork = new Map<ResourceRegistryRegistration, Set<object>>();
+      for (const [pendingRegistry, pendingHandles] of this.pendingUnregistrations) {
+        unregisterWork.set(pendingRegistry, new Set(pendingHandles));
+      }
+      if (registry && handle) {
+        const handles = unregisterWork.get(registry) ?? new Set<object>();
+        handles.add(handle);
+        unregisterWork.set(registry, handles);
+      }
+      const errors: unknown[] = [];
+      for (const [pendingRegistry, handles] of unregisterWork) {
+        for (const pendingHandle of handles) {
+          try { this.unregisterRestoreHandle(pendingRegistry, pendingHandle); } catch (error) { errors.push(error); }
+        }
+      }
+      for (const texture of [...this.pendingTextures]) {
+        if (!this.pendingTextures.delete(texture) || texture.disposed) continue;
+        try { texture.dispose(); } catch (error) {
+          if (!texture.disposed) this.pendingTextures.add(texture);
+          errors.push(error);
+        }
+      }
+      if (errors.length) throw new AggregateError(errors, "DrawDataTexture disposal failed");
+    } finally {
+      this.disposing = false;
+    }
   }
 }

@@ -6,6 +6,7 @@ import { SceneNode } from "./SceneNode.js";
 
 export interface SceneQueryOptions {
   name?: string | RegExp;
+  /** Match the node's own flag without pruning invisible subtrees. */
   visible?: boolean;
   layerMask?: number;
   type?: "camera" | "light" | "node";
@@ -29,11 +30,26 @@ export function queryScene(root: SceneNode, options: SceneQueryOptions): SceneNo
   return result;
 }
 
+/**
+ * Collect renderables whose entire ancestry through `root` is visible, in the
+ * order provided by `traverse`. Transforms are not updated.
+ */
 export function collectRenderables(root: SceneNode): { node: SceneNode; renderable: Renderable }[] {
   const result: { node: SceneNode; renderable: Renderable }[] = [];
+  const visibility = new Map<SceneNode, boolean>();
+  // Custom traversals may visit a child before its parent.
+  const isVisible = (node: SceneNode): boolean => {
+    const cached = visibility.get(node);
+    if (cached !== undefined) return cached;
+    const parent = node.parent;
+    const visible = node.visible && (node === root || parent === null || isVisible(parent));
+    visibility.set(node, visible);
+    return visible;
+  };
   root.traverse((node) => {
-    const maybe = node.renderable;
-    if (maybe && node.visible) result.push({ node, renderable: maybe });
+    if (!isVisible(node)) return;
+    const renderable = node.renderable;
+    if (renderable) result.push({ node, renderable });
   });
   return result;
 }

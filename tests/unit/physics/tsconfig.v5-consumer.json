@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": false
+  },
+  "files": [
+    "native-v5-public-contract.typecheck.ts",
+    "native-v5-declaration-consumer.fixture.ts"
+  ],
+  "include": []
+}

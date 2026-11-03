@@ -58,7 +58,7 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
     : null;
   const exactSmoke = installSmoke?.exactPackages as ExactPackageSmoke | undefined;
   const violations = [
-    ...(exactPlan && (!exactSmoke?.ok || exactSmoke.packageCount !== 29 || exactSmoke.packages.length !== 29 || new Set(exactSmoke.packages.map(p=>p.name)).size !== 29 || JSON.stringify(exactSmoke.releasePlan)!==JSON.stringify(exactPlan.reference)) ? ["All29 exact candidate smoke proofs are required."] : []),
+    ...(exactPlan && (!exactSmoke?.ok || exactSmoke.packageCount !== exactPlan.packages.length || exactSmoke.packages.length !== exactPlan.packages.length || new Set(exactSmoke.packages.map(p=>p.name)).size !== exactPlan.packages.length || exactPlan.packages.some(candidate => !exactSmoke.packages.some(p => p.name === candidate.name)) || JSON.stringify(exactSmoke.releasePlan)!==JSON.stringify(exactPlan.reference)) ? ["Every exact candidate package must have a matching smoke proof."] : []),
     ...(installSmoke?.ok === true ? [] : ["External package install smoke report is missing or failing."]),
     ...(exactPlan
       ? (installSmoke?.packMode === "validated-release-plan" && JSON.stringify(installSmoke?.releasePlan) === JSON.stringify(exactPlan.reference) && installSmoke?.installedIdentity ? [] : ["Install smoke is not bound to the validated exact plan and observed installed identity."])

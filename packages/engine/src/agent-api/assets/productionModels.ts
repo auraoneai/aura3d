@@ -1,16 +1,21 @@
-import type { AuraAssetRef, AuraAssetDefinition, AuraModelOptions, AuraVec3 } from "../nodes/types.js";
+import type { AuraAssetRef, AuraAssetDefinition, AuraModelFormat, AuraModelOptions, AuraVec3 } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import { defineAuraAssets } from "../nodes/assets.js";
 import { model } from "../nodes/model.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
+import { redactAssetUrl } from "@aura3d/assets/browser";
 
-/** One generated or bundled GLB, described the way the production bridge needs it. */
+/** One generated or bundled model, described the way the production bridge needs it. */
 export interface AuraModelAssetEntry {
   /** Same-origin URL or pathname (for example `new URL("./hero.glb", import.meta.url).pathname`). */
   readonly url: string;
   /** SHA-256 of the file: 64 hex characters, with or without a `sha256-` prefix. */
   readonly sha256: string;
-  readonly format?: "glb" | "gltf";
+  /** Required for an extensionless non-glTF model; other formats need an app adapter. */
+  readonly format?: AuraModelFormat;
+  readonly formatMetadata?: AuraAssetDefinition["formatMetadata"];
+  readonly integrity?: AuraAssetDefinition["integrity"];
+  readonly request?: AuraAssetDefinition["request"];
   readonly bounds?: AuraVec3;
   readonly sizeBytes?: number;
   /** Clip names inside the file, so `AnimationController` and docs can list them. */
@@ -72,14 +77,14 @@ function normalizeSha256(id: string, raw: unknown): string {
   const text = typeof raw === "string" ? raw.trim() : "";
   const hex = text.toLowerCase().startsWith("sha256-") ? text.slice(7) : text;
   if (!HEX64.test(hex)) {
-    throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: "${id}" needs a 64-character hex sha256 (got ${text ? `"${text.slice(0, 16)}..."` : "nothing"}). Suggested fix: run \`aura3d assets add\` or \`shasum -a 256 <file>\` and pass the digest.`);
+    throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: "${redactAssetUrl(id)}" needs a 64-character hex sha256 (got ${text ? `"${redactAssetUrl(text).slice(0, 16)}..."` : "nothing"}). Suggested fix: run \`aura3d assets add\` or \`shasum -a 256 <file>\` and pass the digest.`);
   }
   return `sha256-${hex.toLowerCase()}`;
 }
 
 function resolveUrl(id: string, entry: AuraModelAssetEntry, baseUrl: string | undefined): string {
   if (typeof entry.url !== "string" || entry.url.length === 0) {
-    throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: "${id}" has no url.`);
+    throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: "${redactAssetUrl(id)}" has no url.`);
   }
   const remote = /^https?:\/\//i.test(entry.url);
   if (remote) {
@@ -90,11 +95,14 @@ function resolveUrl(id: string, entry: AuraModelAssetEntry, baseUrl: string | un
     } catch {
       sameOrigin = false;
     }
-    // A same-origin absolute URL is just a pathname: normalise it so the bridge treats it as bundled.
-    if (sameOrigin) return new URL(entry.url).pathname;
+    // Preserve the request query: it can select different content at the same path.
+    if (sameOrigin) {
+      const parsed = new URL(entry.url);
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
     const sourcePath = (entry.sourcePath ?? "").replaceAll("\\", "/");
     if (!sourcePath.startsWith("public/aura-assets/")) {
-      throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: "${id}" points at another origin (${entry.url}) without sourcePath under public/aura-assets/. The production bridge would refuse it and the scene would draw nothing. Suggested fix: serve the GLB from your own origin or add the manifest sourcePath.`);
+      throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: "${redactAssetUrl(id)}" points at another origin (${redactAssetUrl(entry.url)}) without sourcePath under public/aura-assets/. The production bridge would refuse it and the scene would draw nothing. Suggested fix: serve the GLB from your own origin or add the manifest sourcePath.`);
     }
     return entry.url;
   }
@@ -117,9 +125,15 @@ export function defineModelAssets<const T extends Record<string, AuraModelAssetE
     declaredBytes += entry.sizeBytes ?? 0;
     definitions[id] = {
       type: "model",
-      format: entry.format ?? (url.toLowerCase().endsWith(".gltf") ? "gltf" : "glb"),
+      // Legacy extensionless model URLs continue to default to GLB. A named
+      // native extension must reach adapter selection instead of masquerading
+      // as a GLB; search and fragment are not part of the extension.
+      format: entry.format ?? /\.([a-z0-9][a-z0-9_-]*)$/i.exec(url.split(/[?#]/, 1)[0] ?? "")?.[1]?.toLowerCase() ?? "glb",
       url,
       hash,
+      ...(entry.formatMetadata ? { formatMetadata: entry.formatMetadata } : {}),
+      ...(entry.integrity ? { integrity: entry.integrity } : {}),
+      ...(entry.request ? { request: entry.request } : {}),
       ...(entry.bounds ? { bounds: entry.bounds } : {}),
       ...(entry.sizeBytes !== undefined ? { sizeBytes: entry.sizeBytes } : {}),
       metadata: {
@@ -142,7 +156,7 @@ export function defineModelAssets<const T extends Record<string, AuraModelAssetE
     declaredBytes,
     node(id, nodeOptions = {}, fallback) {
       const ref = (refs as Record<string, AuraAssetRef<"model">>)[id];
-      if (!ref) throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: unknown model id "${id}". Known ids: ${ids.join(", ") || "none"}.`);
+      if (!ref) throw new AuraRuntimeError("invalid-model-assets", `defineModelAssets: unknown model id "${redactAssetUrl(id)}". Known ids: ${ids.map(redactAssetUrl).join(", ") || "none"}.`);
       if (enabled) return model(ref, nodeOptions);
       return fallback ? fallback() : model(ref, { ...nodeOptions, visible: false });
     }

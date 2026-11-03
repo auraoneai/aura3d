@@ -21,6 +21,8 @@ export interface AuraSceneDegradationOptions {
 export interface AuraCanvasContextOptions {
   /** Keep the drawing buffer after presentation (capture/evidence runs). Default false. */
   readonly preserveDrawingBuffer?: boolean;
+  /** The app's merged output policy; root output fields take precedence. */
+  readonly output?: import("../../contracts/output.js").AuraOutputOptions;
 }
 
 export async function createProductionSceneRenderer(
@@ -30,7 +32,8 @@ export async function createProductionSceneRenderer(
   runtimeNodes?: AuraRuntimeNodeRegistry,
   qrFlags?: QrFlags,
   degradation?: AuraSceneDegradationOptions,
-  canvasContext?: AuraCanvasContextOptions
+  canvasContext?: AuraCanvasContextOptions,
+  mountContext?: import("../compiler/renderer.js").ProductionRuntimeMountContext
 ): Promise<WebGLSceneRenderer> {
   const rendererSelection = normalizeCreateAppRendererOptions(rendererOptions);
   // 4.0 Live Fix E1: there is no fallback renderer. The former non-strict
@@ -55,8 +58,10 @@ export async function createProductionSceneRenderer(
   }
 
   try {
-    return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes, qrFlags, degradation, canvasContext);
+    return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes, qrFlags, degradation, canvasContext, mountContext);
   } catch (error) {
+    const code = (error as { readonly code?: unknown } | null)?.code;
+    if (code === "WEBGPU_CANVAS_IN_USE" || code === "WEBGPU_DEVICE_IN_USE" || code === "WEBGPU_OWNERSHIP_CLEANUP_FAILED") throw error;
     throw new AuraRuntimeError(
       "renderer-mount-failed",
       `Aura3D production renderer failed to mount: ${productionRenderErrorMessage(error)}`,

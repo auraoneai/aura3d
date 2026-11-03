@@ -297,6 +297,7 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     ELEMENT_ARRAY_BUFFER: 0x8893,
     ELEMENT_ARRAY_BUFFER_BINDING: 0x8895,
     FLOAT: 0x1406,
+    FLOAT_MAT4: 0x8b5c,
     FRAGMENT_SHADER: 0x8b30,
     FRAMEBUFFER: 0x8d40,
     FRAMEBUFFER_BINDING: 0x8ca6,
@@ -306,6 +307,7 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     EQUAL: 0x0202,
     INCR: 0x1e02,
     INCR_WRAP: 0x8507,
+    INVALID_INDEX: 0xffffffff,
     INVERT: 0x150a,
     KEEP: 0x1e00,
     LESS: 0x0201,
@@ -316,6 +318,9 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     LINES: 0x0001,
     LINK_STATUS: 0x8b82,
     MAX_VERTEX_ATTRIBS: 0x8869,
+    MAX_VERTEX_TEXTURE_IMAGE_UNITS: 0x8b4c,
+    MAX_TEXTURE_IMAGE_UNITS: 0x8872,
+    MAX_COMBINED_TEXTURE_IMAGE_UNITS: 0x8b4d,
     MIRRORED_REPEAT: 0x8370,
     NEAREST: 0x2600,
     NEAREST_MIPMAP_LINEAR: 0x2702,
@@ -332,6 +337,7 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     POLYGON_OFFSET_FILL: 0x8037,
     REPLACE: 0x1e01,
     SCISSOR_TEST: 0x0c11,
+    SAMPLER_2D: 0x8b5e,
     SRC_ALPHA: 0x0302,
     STENCIL_TEST: 0x0b90,
     TEXTURE0: 0x84c0,
@@ -355,6 +361,8 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     state,
     getParameter(parameter: number) {
       if (parameter === this.MAX_VERTEX_ATTRIBS) return 8;
+      if (parameter === this.MAX_VERTEX_TEXTURE_IMAGE_UNITS || parameter === this.MAX_TEXTURE_IMAGE_UNITS) return 16;
+      if (parameter === this.MAX_COMBINED_TEXTURE_IMAGE_UNITS) return 32;
       if (parameter === this.VENDOR) return "aura3d";
       if (parameter === this.RENDERER) return "fake-webgl2";
       if (parameter === this.CURRENT_PROGRAM) return state.currentProgram;
@@ -414,6 +422,10 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     getProgramInfoLog() {
       return "";
     },
+    getUniformBlockIndex() {
+      return this.INVALID_INDEX;
+    },
+    uniformBlockBinding() {},
     getActiveAttrib(program: CountingProgram, index: number) {
       const name = program.attributes[index];
       return name ? { name, type: this.FLOAT, size: 1 } : null;
@@ -423,7 +435,11 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     },
     getActiveUniform(program: CountingProgram, index: number) {
       const name = program.uniforms[index];
-      return name ? { name, type: this.FLOAT, size: 1 } : null;
+      if (!name) return null;
+      const source = program.shaders.map((shader) => shader.source).join("\n");
+      const declared = new RegExp(`\\buniform\\s+(\\w+)\\s+${name}\\b`).exec(source)?.[1];
+      const type = declared === "mat4" ? this.FLOAT_MAT4 : declared === "sampler2D" ? this.SAMPLER_2D : this.FLOAT;
+      return { name, type, size: 1 };
     },
     getUniformLocation(program: CountingProgram, name: string) {
       const normalizedName = name.replace(/\[0\]$/, "");

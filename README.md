@@ -88,6 +88,12 @@ Public packages (all at the same version; `@aura3d/engine` is the root of this r
 
 `@aura3d/engine/production-runtime`, `/advanced-runtime`, `/rendering` and `/contracts` are deprecated subpaths; new code uses the root.
 
+## What is still not resolved
+
+- **WebGPU and XR — `prototype`.** Browser and physical-device support for the new rendering paths and physical XR sessions still needs candidate-specific verification. Mock devices and injected sessions do not establish hardware support.
+- **Additional asset formats — `prototype`.** Supported variants, codecs and device formats are limited. A parser or recognized extension alone does not prove that a typed asset renders; see [native asset formats](./docs/api/native-formats.md).
+- **Capability breadth and release checks — `roadmap`.** Renderer, asset, animation, interaction and distribution work remains open in the [native capability roadmap](./docs/prds/aura3d-native-capability-roadmap.md). Source tests do not replace packed-consumer, browser, visual or device checks, and evidence from an earlier candidate does not certify a changed build.
+
 ## Claims and verification
 
 Every public claim follows [`docs/agents/claims-and-boundaries.md`](./docs/agents/claims-and-boundaries.md): label the capability, and claim only what a judged capture or retained evidence shows. Published gates include route health, typed provenance, public-API surface checks, package-size checks and `check-deploy`. Release notes are in [`CHANGELOG.md`](./CHANGELOG.md).
@@ -100,6 +106,23 @@ Every public claim follows [`docs/agents/claims-and-boundaries.md`](./docs/agent
 - [`docs/aura3d-vs-threejs.md`](./docs/aura3d-vs-threejs.md) and [`docs/migration/from-threejs.md`](./docs/migration/from-threejs.md): why Aura3D over three.js, and how to port
 - [`docs/workflows/game-conversion-playbook.md`](./docs/workflows/game-conversion-playbook.md): turning a browser game into an Aura3D game
 - Site: https://aura3d.auraone.ai
+
+## Production Deployment (Cloudflare Pages)
+
+**Cloudflare Pages is the canonical production host (prefer Cloudflare over Vercel; do not deploy to Vercel).**
+
+- **`aura3d` (`https://aura3d.auraone.ai` / `https://aura3d.pages.dev`):**
+  ```bash
+  source ~/.config/auraone/cloudflare-env.sh
+  pnpm build && pnpm --dir marketing build
+  wrangler pages deploy marketing/dist --project-name aura3d --branch main
+  ```
+- **`aura3d-wonder-world` (`https://veer.auraone.ai` / `https://aura3d-wonder-world.pages.dev`):**
+  ```bash
+  source ~/.config/auraone/cloudflare-env.sh
+  bash apps/veer-wonder-world/tools/deploy-build.sh
+  wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main
+  ```
 
 ## Contributing
 

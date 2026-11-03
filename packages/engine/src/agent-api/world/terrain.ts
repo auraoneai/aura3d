@@ -296,7 +296,7 @@ export function createTerrainHandle(record: TerrainRecord): AuraTerrainHandle {
       const uv = toUv(x, z);
       const grid = gridOf();
       if (!uv || !grid) return 0;
-      return terrainHeightBilinear(grid, uv, heightScale);
+      return origin[1] + terrainHeightBilinear(grid, uv, heightScale);
     },
     normalAt(x, z) {
       const uv = toUv(x, z);
@@ -328,7 +328,7 @@ export function createTerrainHandle(record: TerrainRecord): AuraTerrainHandle {
         const pz = rayOrigin[2] + dir[2] * t;
         const uv = toUv(px, pz);
         if (uv) {
-          const delta = py - terrainHeightBilinear(grid, uv, heightScale);
+          const delta = py - (origin[1] + terrainHeightBilinear(grid, uv, heightScale));
           if (delta <= 0) {
             // bisect between prevT and t
             let lo = prevT;
@@ -339,7 +339,7 @@ export function createTerrainHandle(record: TerrainRecord): AuraTerrainHandle {
               const my = rayOrigin[1] + dir[1] * mid;
               const mz = rayOrigin[2] + dir[2] * mid;
               const muv = toUv(mx, mz);
-              if (muv && my - terrainHeightBilinear(grid, muv, heightScale) <= 0) hi = mid;
+              if (muv && my - (origin[1] + terrainHeightBilinear(grid, muv, heightScale)) <= 0) hi = mid;
               else lo = mid;
             }
             const hx = rayOrigin[0] + dir[0] * hi;

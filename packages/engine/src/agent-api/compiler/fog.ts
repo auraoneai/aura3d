@@ -11,24 +11,36 @@ import { clampNumber } from "./observations.js";
 import { resolveVolumetricFog, type CollectedLight, type ForwardEnvironmentFogOptions } from "@aura3d/rendering";
 import { packLegacy, parseFogColor, resolvePrd07FogSpec, skyHorizonRadiance, type Prd07FogSpec } from "@aura3d/rendering";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import type { LiveAtmosphere } from "../../production-runtime/effects/LiveAtmosphere";
+import type { AtmosphereRenderSnapshot, LiveAtmosphere } from "../../production-runtime/effects/LiveAtmosphere";
 import { lights } from "../nodes/lights.js";
 
 /**
- * P4-T3/P4-T4 binding — the atmosphere extension registers the app's resolved
- * flags + LiveAtmosphere here so the per-frame compile can read live fog
- * without a signature change to the PRD-15 call site (renderInput.ts).
- * Flag-off / unbound: the legacy path below is byte-identical.
+ * P4-T3/P4-T4 binding — an app's live atmosphere belongs to its app/runtime
+ * owner, not its canvas (which may be shared or reused). The ownerless binding
+ * remains for standalone compiler users; an owned lookup never consults it.
  */
-let prd07FogRuntime: { readonly flags: QrFlags; readonly atmosphere: LiveAtmosphere } | null = null;
+export type Prd07FogRuntime = { readonly flags: QrFlags; readonly atmosphere: LiveAtmosphere };
+let prd07FogRuntime: Prd07FogRuntime | null = null;
+const ownedFogRuntimes = new WeakMap<object, { runtime: Prd07FogRuntime }>();
 
-export function bindPrd07FogRuntime(runtime: { flags: QrFlags; atmosphere: LiveAtmosphere } | null): void {
+export function bindPrd07FogRuntime(runtime: Prd07FogRuntime | null): void;
+export function bindPrd07FogRuntime(runtime: Prd07FogRuntime | null, owner: object): () => void;
+export function bindPrd07FogRuntime(runtime: Prd07FogRuntime | null, owner?: object): (() => void) | void {
+  if (owner) {
+    if (!runtime) {
+      ownedFogRuntimes.delete(owner);
+      return () => {};
+    }
+    const registration = { runtime };
+    ownedFogRuntimes.set(owner, registration);
+    return () => { if (ownedFogRuntimes.get(owner) === registration) ownedFogRuntimes.delete(owner); };
+  }
   prd07FogRuntime = runtime;
 }
 
 /** Exported for tests. */
-export function prd07FogRuntimeState(): { readonly flags: QrFlags; readonly atmosphere: LiveAtmosphere } | null {
-  return prd07FogRuntime;
+export function prd07FogRuntimeState(owner?: object): Prd07FogRuntime | null {
+  return owner ? ownedFogRuntimes.get(owner)?.runtime ?? null : prd07FogRuntime;
 }
 
 /** `color: "sky"` → horizon radiance at the view azimuth (§6.6, shared 8-sample table). */
@@ -70,13 +82,44 @@ function createPrd07EnvironmentFog(live: LiveAtmosphere): ForwardEnvironmentFogO
   };
 }
 
+/**
+ * Staged renderer seam: derive the legacy fog uniforms from the same
+ * app-owned value snapshot and resolved camera used by the managed frame.
+ * The caller must authenticate the snapshot's app/frame authority first.
+ */
+export function createPrd07EnvironmentFogFromSnapshot(
+  snapshot: AtmosphereRenderSnapshot,
+  cameraY: number,
+  forwardX: number,
+  forwardZ: number
+): ForwardEnvironmentFogOptions | false {
+  if (!snapshot.fog) return false;
+  const spec = resolvePrd07FogSpec(snapshot.fog as Prd07FogSpec);
+  const packed = packLegacy(spec, cameraY);
+  const color = spec.color === "sky"
+    ? skyHorizonRadiance(snapshot.skyForFog, Math.atan2(forwardX, forwardZ)) ?? [0.663, 0.737, 0.812]
+    : parseFogColor(spec.color, [0.663, 0.737, 0.812]);
+  return {
+    mode: packed.mode,
+    color: [color[0], color[1], color[2]],
+    near: packed.near,
+    far: packed.far,
+    density: packed.density,
+    heightFalloff: packed.heightFalloff,
+    heightReference: packed.heightReference,
+    maxOpacity: packed.maxOpacity
+  };
+}
+
 export function createProductionRuntimeEnvironmentFog(
   snapshot: AuraSceneSnapshot,
   lights: readonly CollectedLight[] = [],
   renderWidth = 1280,
-  renderHeight = 720
+  renderHeight = 720,
+  owner?: object
 ): ForwardEnvironmentFogOptions | false {
-  const prd07 = prd07FogRuntime?.flags.on("A3D_QR_VFX_FOG") ? prd07FogRuntime : null;
+  const runtime = prd07FogRuntimeState(owner);
+  const prd07 = runtime?.flags.on("A3D_QR_VFX_FOG") ? runtime : null;
   if (prd07) {
     return createPrd07EnvironmentFog(prd07.atmosphere);
   }

@@ -49,7 +49,7 @@ describe("GU47 ED-4 castShadow on material.custom", () => {
     expect(pair.vertex).toContain("sin(uTime * 2.0 + p.y) * uSway * p.y");
     expect(pair.vertex).toContain(`@aura3d-portable:${key}`);
     expect(pair.fragment).toContain(`@aura3d-portable:${key}`);
-    expect(pair.fragment).toContain("a3dDepthColor = vec4(1.0);");
+    expect(pair.fragment).toContain("a3dDepthColor = vec4(vec3(gl_FragCoord.z), 1.0);");
     expect(customDepthShaderKeyOf(material)).toBe(key);
     material.dispose();
     expect(globalShaderSource(key)).toBeUndefined();

@@ -1,9 +1,10 @@
 import type { ExtensionScalarAtlas } from "./ExtensionScalarAtlas";
 import type { MaterialFeatureContext } from "./contracts/materialLobes";
-import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import { legacyPhysicalDescriptor, physicalFeatureSet, withLivePhysicalMapFeatures } from "./materials/PhysicalFeatures";
 import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
+import { PBR_SURFACE_DETAIL_UNIFORM_SCHEMA, pbrSurfaceDetailParameters } from "./PBRMaterial";
 import { Sampler } from "./Sampler";
 import { createDefaultShaderLibrary } from "./ShaderLibrary";
 import {
@@ -24,6 +25,8 @@ import { TextureBinding } from "./TextureBinding";
 
 export type TexturedPBRTextureSlot =
   | "baseColor"
+  | "diffuseRoughness"
+  | "bump"
   | "normal"
   | "metallicRoughness"
   | "occlusion"
@@ -74,6 +77,15 @@ export interface TexturedPBRMaterialOptions {
   readonly emissiveColor?: readonly [number, number, number];
   readonly emissiveStrength?: number;
   readonly textureTexCoords?: Readonly<Partial<Record<TexturedPBRTextureSlot, number>>>;
+  readonly diffuseRoughness?: number;
+  readonly retroreflection?: number;
+  readonly diffuseRoughnessTexture?: Texture;
+  readonly diffuseRoughnessSampler?: Sampler;
+  readonly diffuseRoughnessTextureTransform?: { readonly offset?: readonly [number, number]; readonly scale?: readonly [number, number]; readonly rotation?: number };
+  readonly bumpFactor?: number;
+  readonly bumpTexture?: Texture;
+  readonly bumpSampler?: Sampler;
+  readonly bumpTextureTransform?: { readonly offset?: readonly [number, number]; readonly scale?: readonly [number, number]; readonly rotation?: number };
   readonly baseColorTexture?: Texture;
   readonly baseColorSampler?: Sampler;
   readonly baseColorTextureTransform?: {
@@ -414,9 +426,6 @@ export class TexturedPBRMaterial extends Material {
     const iridescenceThicknessMaximum = options.iridescenceThicknessMaximum ?? 400;
     validateNonNegative(iridescenceThicknessMinimum, "iridescenceThicknessMinimum");
     validateNonNegative(iridescenceThicknessMaximum, "iridescenceThicknessMaximum");
-    if (iridescenceThicknessMaximum < iridescenceThicknessMinimum) {
-      throw new RangeError("TexturedPBRMaterial iridescenceThicknessMaximum must be greater than or equal to iridescenceThicknessMinimum");
-    }
     validateNonNegative(options.dispersion ?? 0, "dispersion");
     validateIOR(options.ior ?? 1.5);
     validateNonNegative(options.emissiveStrength ?? 1, "emissiveStrength");
@@ -438,6 +447,15 @@ export class TexturedPBRMaterial extends Material {
       shaderVariant,
       renderState: options.renderState,
       parameters: {
+        ...pbrSurfaceDetailParameters({
+          diffuseRoughness: options.diffuseRoughness,
+          retroreflection: options.retroreflection,
+          diffuseRoughnessTexture: options.diffuseRoughnessTexture ? new TextureBinding({ name: "u_diffuseRoughnessTexture", texture: options.diffuseRoughnessTexture, sampler: options.diffuseRoughnessSampler, transform: options.diffuseRoughnessTextureTransform }) : undefined,
+          diffuseRoughnessTextureTexCoord: textureTexCoord(options.textureTexCoords, "diffuseRoughness"),
+          bumpFactor: options.bumpFactor,
+          bumpTexture: options.bumpTexture ? new TextureBinding({ name: "u_bumpTexture", texture: options.bumpTexture, sampler: options.bumpSampler, transform: options.bumpTextureTransform }) : undefined,
+          bumpTextureTexCoord: textureTexCoord(options.textureTexCoords, "bump")
+        }),
         ...(options.extensionScalarAtlas ? {
           u_extensionScalarAtlas: new TextureBinding({ name: "u_extensionScalarAtlas", texture: options.extensionScalarAtlas.texture }),
           u_clearcoatAtlasRect: options.extensionScalarAtlas.clearcoat,
@@ -519,7 +537,8 @@ export class TexturedPBRMaterial extends Material {
           texture: options.baseColorTexture ?? defaultWhiteTexture(),
           sampler: options.baseColorSampler,
           required: true,
-          expectedColorSpace: "srgb",
+          // GPU texture formats decode sRGB; linear storage textures stay linear.
+          expectedDimension: "2d",
           transform: options.baseColorTextureTransform
         }),
         u_baseColorTextureEnabled: options.baseColorTexture ? 1 : 0,
@@ -577,7 +596,7 @@ export class TexturedPBRMaterial extends Material {
           texture: options.emissiveTexture ?? defaultWhiteTexture(),
           sampler: options.emissiveSampler,
           required: true,
-          expectedColorSpace: "srgb",
+          expectedDimension: "2d",
           transform: options.emissiveTextureTransform
         }),
         u_emissiveTextureEnabled: options.emissiveTexture ? 1 : 0,
@@ -662,7 +681,7 @@ export class TexturedPBRMaterial extends Material {
           texture: options.diffuseTransmissionColorTexture ?? defaultWhiteTexture("default-diffuse-transmission-color"),
           sampler: options.diffuseTransmissionColorSampler,
           required: true,
-          expectedColorSpace: "srgb",
+          expectedDimension: "2d",
           transform: options.diffuseTransmissionColorTextureTransform
         }),
         u_diffuseTransmissionColorTextureEnabled: options.diffuseTransmissionColorTexture ? 1 : 0,
@@ -704,7 +723,7 @@ export class TexturedPBRMaterial extends Material {
           texture: options.specularColorTexture ?? defaultWhiteTexture("default-specular-color"),
           sampler: options.specularColorSampler,
           required: true,
-          expectedColorSpace: "srgb",
+          expectedDimension: "2d",
           transform: options.specularColorTextureTransform
         }),
         u_specularColorTextureEnabled: options.specularColorTexture ? 1 : 0,
@@ -718,7 +737,7 @@ export class TexturedPBRMaterial extends Material {
           texture: options.sheenColorTexture ?? defaultWhiteTexture("default-sheen-color"),
           sampler: options.sheenColorSampler,
           required: true,
-          expectedColorSpace: "srgb",
+          expectedDimension: "2d",
           transform: options.sheenColorTextureTransform
         }),
         u_sheenColorTextureEnabled: options.sheenColorTexture ? 1 : 0,
@@ -800,6 +819,7 @@ export class TexturedPBRMaterial extends Material {
         ...(usesSecondaryTexCoord(options.textureTexCoords) ? ["a_uv1"] : [])
       ],
       uniformSchema: [
+        ...PBR_SURFACE_DETAIL_UNIFORM_SCHEMA,
         { name: "u_extensionScalarAtlas", kind: "texture2d", required: false },
         { name: "u_clearcoatAtlasRect", kind: "vec4", required: false },
         { name: "u_clearcoatAtlasY", kind: "float", required: false },
@@ -1024,7 +1044,7 @@ export class TexturedPBRMaterial extends Material {
    * Pure — the legacy shader path never reads it.
    */
   programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
-    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx);
+    return withLivePhysicalMapFeatures(physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx), this, ctx);
   }
 }
 
@@ -1215,8 +1235,8 @@ function validateIOR(value: number): void {
 }
 
 function validateIridescenceIOR(value: number): void {
-  if (!Number.isFinite(value) || value < 1 || value > 3) {
-    throw new RangeError("TexturedPBRMaterial iridescenceIor must be finite and within [1, 3]");
+  if (!Number.isFinite(value) || value < 1) {
+    throw new RangeError("TexturedPBRMaterial iridescenceIor must be finite and at least 1");
   }
 }
 

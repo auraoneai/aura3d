@@ -10,7 +10,7 @@ import type { UniformValue } from "../RenderDevice";
 import type { Texture } from "../Texture";
 
 export type MaterialLobeId =
-  | "base" | "clearcoat" | "sheen" | "iridescence" | "anisotropy" | "transmission" | "volume"
+  | "base" | "clearcoat" | "sheen" | "iridescence" | "anisotropy" | "transmission" | "diffuse-transmission" | "volume"
   | "specular" | "ior" | "dispersion" | "emissive-strength" | "unlit" | `${"prd04" | "prd10" | "prd07"}.${string}`;
 export interface MaterialLobe extends RegistryEntry {
   readonly id: MaterialLobeId;
@@ -39,4 +39,14 @@ export function registerMaterialLobe(lobe: MaterialLobe): () => void {
 }
 export function materialLobes(flags: QrFlags): readonly MaterialLobe[] {
   return materialLobeRegistry.active(flags);
+}
+
+/** Enumerate registrations without evaluating their flags or sorting their metadata. */
+export function allMaterialLobes(): readonly MaterialLobe[] {
+  return materialLobeRegistry.all();
+}
+
+/** Unsorted potentially active identities, without reading lobe metadata. */
+export function potentiallyActiveMaterialLobes(flags: QrFlags): readonly MaterialLobe[] {
+  return materialLobeRegistry.potentiallyActiveEntries(flags);
 }

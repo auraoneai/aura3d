@@ -3,7 +3,8 @@
  * Provider: PRD 04. Flag: A3D_QR_MATERIALS.
  */
 
-import type { AuraColor, AuraAssetRef, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraColor, AuraAssetRef, AuraMaterialSpec } from "../agent-api/nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "../agent-api/nodes/types/runtime.js";
 import type { AuraMaterialRimSpec } from "../agent-api/nodes/types";
 
 // AuraMaterialSpec additions (PR 0a; owner tags in JSDoc):
@@ -14,14 +15,26 @@ import type { AuraMaterialRimSpec } from "../agent-api/nodes/types";
 //   sampling?: AuraTextureSampling (C-12); slotSampling?: Partial<Record<AuraMaterialTextureSlot, AuraTextureSampling>>
 //   practical?: boolean (PRD 10: emissive practical light scale)
 export type AuraMaterialTextureSlot =
-  | "baseColor" | "normal" | "metallicRoughness" | "occlusion" | "emissive"
+  | "baseColor" | "normal" | "metallicRoughness" | "diffuseRoughness" | "bump" | "occlusion" | "emissive"
   | "clearcoat" | "clearcoatRoughness" | "clearcoatNormal"
   | "sheenColor" | "sheenRoughness" | "specularIntensity" | "specularColor"
   | "transmission" | "thickness" | "iridescence" | "iridescenceThickness" | "anisotropy";
 
 export interface AuraModelMaterialOverride {
   readonly target?: string | RegExp | readonly (string | RegExp)[];
-  readonly color?: AuraColor; readonly colorMode?: "multiply" | "replace"; readonly replaceTextures?: boolean;
+  /**
+   * Replace the named imported material slots with a custom shader. A target is
+   * required; matches follow the currently selected glTF material variant.
+   * Runtime handle updates cannot install shaders (which may load textures).
+   */
+  readonly material?: AuraMaterialSpec;
+  /**
+   * With `material`, explicitly replace authored base-color and
+   * metallic-roughness maps rather than retaining them. Other imported maps and
+   * alpha coverage cannot currently be transferred to a custom shader.
+   */
+  readonly replaceTextures?: boolean;
+  readonly color?: AuraColor; readonly colorMode?: "multiply" | "replace";
   readonly roughness?: number; readonly metallic?: number; readonly emissive?: AuraColor; readonly emissiveIntensity?: number;
   readonly clearcoat?: number; readonly clearcoatRoughness?: number; readonly envMapIntensity?: number; readonly opacity?: number;
   // GU47 E-D (PRD §3.1). Each applies only to materials that carry the matching parameter, except `rim`, which any

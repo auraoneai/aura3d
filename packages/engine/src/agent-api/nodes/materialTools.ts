@@ -27,7 +27,8 @@ export function proceduralTexture(texture: AuraProceduralTextureKind, options: P
 export const PHYSICAL_SPEC_KEYS = [
   "color", "roughness", "metallic", "metalness", "clearcoat", "clearcoatRoughness",
   "sheen", "sheenColor", "sheenRoughness", "iridescence", "iridescenceIOR",
-  "iridescenceThicknessRange", "anisotropy", "anisotropyRotation", "transmission",
+  "iridescenceThicknessRange", "iridescenceThicknessMinimum", "iridescenceThicknessMaximum",
+  "anisotropy", "anisotropyRotation", "transmission",
   "thickness", "attenuationColor", "attenuationDistance", "ior", "specularIntensity",
   "specularColor"
 ] as const;

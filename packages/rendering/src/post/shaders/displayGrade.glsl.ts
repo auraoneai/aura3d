@@ -4,8 +4,8 @@
  * Runs after the OutputPass boundary on display-referred RGBA8: one
  * trilinear `texture(u_lut3d, disp)` fetch applies contrast / saturation /
  * vibrance / the user `.cube`, then vignette (roundness-aspect corrected).
- * Output alpha carries `luma(disp)` so the S11 FXAA pass reads luminance
- * from `.a` instead of recomputing it per tap.
+ * Output alpha remains the input opacity. Antialiasing obtains its luminance
+ * from RGB, so grading must not overwrite coverage with temporary data.
  */
 
 /**
@@ -48,10 +48,10 @@ uniform vec2 u_resolution;
 in vec2 v_uv;
 out vec4 outColor;
 
-float luma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 ${DISPLAY_LUT_FETCH_GLSL}
 void main() {
-  vec3 disp = texture(u_source, v_uv).rgb;
+  vec4 source = texture(u_source, v_uv);
+  vec3 disp = source.rgb;
   if (u_hasLut != 0) {
     disp = a3dDisplayLut(disp);
   }
@@ -62,7 +62,7 @@ void main() {
     float len = length(p) * u_vignetteIntensity;
     disp *= mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignetteSmoothness));
   }
-  outColor = vec4(disp, luma(disp));
+  outColor = vec4(disp, source.a);
 }
 `;
 

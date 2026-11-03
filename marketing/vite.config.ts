@@ -158,6 +158,7 @@ function copyMarketingPublicFiles() {
         for (const file of ["draco_decoder_nodejs.js", "draco_decoder.wasm"]) {
           copyFileSync(resolve(dracoDir, file), resolve(targetDir, file));
         }
+        copyFileSync(resolve(marketingDir, "public/assets/draco/LICENSE.txt"), resolve(targetDir, "LICENSE.txt"));
       }
     }
   };
@@ -272,6 +273,7 @@ function mirrorMarketingHtmlOutput(outDir: string): void {
 
 function resolveDracoDir(): string | undefined {
   const directCandidates = [
+    resolve(marketingDir, "public/assets/draco"),
     resolve(repoRoot, "node_modules/draco3d"),
     resolve(marketingDir, "node_modules/draco3d")
   ];

@@ -33,6 +33,11 @@ export function unregisterAuraApp(app: AuraApp): void {
   liveAuraApps.delete(app);
 }
 
+/** Ownerless builder compatibility is valid only while one app is registered. */
+export function soleLiveAuraApp(): AuraApp | undefined {
+  return liveAuraApps.size === 1 ? liveAuraApps.values().next().value : undefined;
+}
+
 export const auraAppRegistry: AuraAppRegistry = {
   kind: "aura3d-live-app-registry",
   count() {
@@ -47,7 +52,18 @@ export const auraAppRegistry: AuraAppRegistry = {
     return liveAuraApps.size;
   },
   settle(steps = 30, dt = 1 / 60) {
-    for (const app of liveAuraApps) {
+    // A worker has neither a synchronous step nor the clock-reset seam used
+    // for named-frame captures. Check the whole cohort before mutating any app.
+    // Snapshot it as callbacks may register another app while stepping.
+    const apps = [...liveAuraApps];
+    if (apps.some((app) => app.execution?.active === "worker")) {
+      throw new Error(
+        "auraAppRegistry.settle() cannot rewind or synchronously step worker-backed apps; settle made no changes. Use app.pause() and await app.stepAsync(dt) for individual worker frames, or use a main-thread app for clock-reset settling."
+      );
+    }
+    for (const app of apps) {
+      // Preserve Set iteration's behavior when an earlier callback disposes an app.
+      if (!liveAuraApps.has(app)) continue;
       app.pause();
       /*
        * Rewind before stepping.

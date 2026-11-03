@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  createCollisionLayers
+  AURA_SPEC_CONSTRUCTIBLE_SHAPES,
+  createCollisionLayers,
+  createPhysicsRuntime
 } from "@aura3d/engine";
-import { createPhysicsRuntime, AURA_SPEC_CONSTRUCTIBLE_SHAPES } from "../../../packages/engine/src/agent-api/PhysicsRuntime.js";
 import { PhysicsWorld } from "@aura3d/physics";
 
 /**
@@ -16,8 +17,9 @@ import { PhysicsWorld } from "@aura3d/physics";
  * through a deep `packages/physics/src` import, which is precisely the deep import the
  * public surface is supposed to make unnecessary.
  *
- * Every test in this file imports from `@aura3d/engine` only. If the runtime regresses to
- * declaration-only, these fail at import time rather than passing on helpers.
+ * The runtime adapter and helpers are imported from the engine root; the supplied world
+ * comes from the public physics package. If the runtime regresses to declaration-only,
+ * these fail at import time rather than passing on helpers.
  */
 describe("public physics runtime reachability", () => {
   function runtime(options: Parameters<typeof createPhysicsRuntime>[1] = {}) {

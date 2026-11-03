@@ -1,3 +1,6 @@
+import { redactAssetUrl } from "@aura3d/assets/browser";
+import { sanitizeDiagnosticText } from "../agent-api/sanitizeDiagnostics.js";
+
 export type AuraResourceKind = "gltf" | "glb" | "texture" | "audio" | "json" | "binary" | "other";
 
 export type AuraResourceStatus = "idle" | "loading" | "ready" | "error" | "disposed";
@@ -99,10 +102,11 @@ export function createResourceManager(): AuraResourceManager {
   };
 
   const loadDefault = async <TResource>(descriptor: AuraResourceDescriptor<TResource>, signal: AbortSignal): Promise<TResource> => {
-    if (!descriptor.url) throw new Error(`Resource "${descriptor.id}" requires either a url or custom load() function.`);
-    if (typeof fetch !== "function") throw new Error(`Resource "${descriptor.id}" cannot load because fetch is unavailable.`);
+    const safeId = redactAssetUrl(descriptor.id);
+    if (!descriptor.url) throw new Error(`Resource "${safeId}" requires either a url or custom load() function.`);
+    if (typeof fetch !== "function") throw new Error(`Resource "${safeId}" cannot load because fetch is unavailable.`);
     const response = await fetch(descriptor.url, { signal });
-    if (!response.ok) throw new Error(`Resource "${descriptor.id}" failed to load ${descriptor.url}: HTTP ${response.status}.`);
+    if (!response.ok) throw new Error(`Resource "${safeId}" failed to load ${redactAssetUrl(descriptor.url)}: HTTP ${response.status}.`);
     if (descriptor.kind === "json") return await response.json() as TResource;
     return await response.arrayBuffer() as TResource;
   };
@@ -166,7 +170,10 @@ export function createResourceManager(): AuraResourceManager {
         })
         .catch((error: unknown) => {
           record.status = "error";
-          record.error = error instanceof Error ? error.message : String(error);
+          const message = error instanceof Error ? error.message : String(error);
+          record.error = sanitizeDiagnosticText(descriptor.url
+            ? message.split(descriptor.url).join(redactAssetUrl(descriptor.url))
+            : message);
           record.pending = undefined;
           throw error;
         });

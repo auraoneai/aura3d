@@ -34,27 +34,107 @@ import {
   type AuraResolvedClipInfo
 } from "../../contracts/animation.js";
 import type { AuraQuat } from "../../contracts/sceneGraph.js";
-import type { AuraApp, AuraRuntimeNodeHandle } from "../index.js";
+import type { AuraApp, AuraRuntimeNodeHandle } from "../nodes/types/runtime.js";
 import type { TypedGLBActor } from "../../production-runtime/TypedGLBActor.js";
 
-let overrideQrAnimationFlags: QrFlags | undefined;
-let lazyQrAnimationFlags: QrFlags | undefined;
-
 const EMPTY_QR_FLAGS: QrFlags = { values: {}, on: () => false };
+
+/** Mutable animation state belongs to one app, including actors loaded later. */
+export interface ActorAnimationContext {
+  readonly state: ActorAnimationState;
+}
+
+interface ActorAnimationState {
+  flags?: QrFlags;
+  lazyFlags?: QrFlags;
+  disposed: boolean;
+  readonly emptyPoseWarned: Set<string>;
+  readonly emptyPosePending: Set<string>;
+  readonly clipSources: Map<string, ActorClipInfoSource>;
+  readonly clipWaiters: Map<string, ActorClipInfoWaiter[]>;
+  readonly applySources: Map<string, ActorAnimationApplySource>;
+  readonly boneSources: Map<string, ActorBoneMatrixSource>;
+  readonly bindSources: Map<string, ActorBindMatrixSource>;
+  readonly socketWarned: Set<string>;
+  readonly attachments: Map<string, Set<RegisteredBoneAttachment>>;
+  readonly actors: Map<string, TypedGLBActor>;
+  readonly poseOverrides: Map<string, PoseOverrideState>;
+  readonly poseWarned: Set<string>;
+}
+
+const contexts = new WeakMap<object, ActorAnimationContext>();
+
+export function createActorAnimationContext(flags?: QrFlags): ActorAnimationContext {
+  const context: ActorAnimationContext = { state: {
+    flags, disposed: false,
+    emptyPoseWarned: new Set(), emptyPosePending: new Set(),
+    clipSources: new Map(), clipWaiters: new Map(), applySources: new Map(),
+    boneSources: new Map(), bindSources: new Map(), socketWarned: new Set(),
+    attachments: new Map(), actors: new Map(), poseOverrides: new Map(), poseWarned: new Set()
+  } };
+  contexts.set(context, context);
+  return context;
+}
+
+// Compatibility for standalone calls without an app. Apps must bind their own
+// context and pass it through their asynchronous actor and render paths.
+const legacyContext = createActorAnimationContext();
+
+/** Bind an app, actor, or other runtime object to the same explicit owner. */
+export function bindActorAnimationContext(owner: object, context: ActorAnimationContext): void {
+  contexts.set(owner, context);
+}
+
+/** Retrieve the context for a runtime owner to pass to asynchronously created actors. */
+export function actorAnimationContextFor(owner?: object): ActorAnimationContext {
+  if (owner === undefined) return legacyContext;
+  let context = contexts.get(owner);
+  if (!context) {
+    context = createActorAnimationContext();
+    contexts.set(owner, context);
+  }
+  return context;
+}
+
+export function isActorAnimationContextDisposed(context: ActorAnimationContext): boolean {
+  return context.state.disposed;
+}
+
+function animationState(owner?: object): ActorAnimationState {
+  return owner === undefined ? legacyContext.state : actorAnimationContextFor(owner).state;
+}
+
+/** Settle pending lookups, release all constraints, and return cleanup errors. */
+export function disposeActorAnimationContext(context: ActorAnimationContext): readonly unknown[] {
+  const state = context.state;
+  if (state.disposed) return [];
+  state.disposed = true;
+  const errors: unknown[] = [];
+  for (const waiters of state.clipWaiters.values()) for (const waiter of waiters) waiter.resolve([]);
+  for (const override of state.poseOverrides.values()) {
+    try { override.dispose?.(); } catch (error) { errors.push(error); }
+  }
+  state.emptyPoseWarned.clear(); state.emptyPosePending.clear();
+  state.clipSources.clear(); state.clipWaiters.clear(); state.applySources.clear();
+  state.boneSources.clear(); state.bindSources.clear(); state.socketWarned.clear();
+  state.attachments.clear(); state.actors.clear(); state.poseOverrides.clear(); state.poseWarned.clear();
+  return errors;
+}
 
 /**
  * Install the app's resolved flags (CONTRACTS.md §5.2 source 1). Called by the
  * app-side wiring (PRD-15 seam) once it exists, and by tests. `undefined`
  * restores the lazy URL/env resolution.
  */
-export function setQrAnimationFlags(flags: QrFlags | undefined): void {
-  overrideQrAnimationFlags = flags;
+export function setQrAnimationFlags(flags: QrFlags | undefined, owner?: object): void {
+  animationState(owner).flags = flags;
 }
 
 /** Reset both the installed flags and the lazily resolved cache (tests). */
-export function resetQrAnimationFlags(): void {
-  overrideQrAnimationFlags = undefined;
-  lazyQrAnimationFlags = undefined;
+export function resetQrAnimationFlags(owner?: object): void {
+  const state = animationState(owner);
+  state.flags = undefined;
+  state.lazyFlags = undefined;
 }
 
 /**
@@ -62,13 +142,15 @@ export function resetQrAnimationFlags(): void {
  * `?a3d-qr=` then the `A3D_QR`/`A3D_QR_ANIMATION` environment — sources 3–4 of
  * the §5.2 chain, the highest sources reachable without the app seam.
  */
-export function qrAnimationFlags(): QrFlags {
-  if (overrideQrAnimationFlags) return overrideQrAnimationFlags;
-  lazyQrAnimationFlags ??= resolveQrFlags({
+export function qrAnimationFlags(owner?: object): QrFlags {
+  const state = animationState(owner);
+  if (state.disposed) return EMPTY_QR_FLAGS;
+  if (state.flags) return state.flags;
+  state.lazyFlags ??= resolveQrFlags({
     url: typeof location !== "undefined" ? location.href : undefined,
     env: typeof process !== "undefined" ? process.env : undefined
   });
-  return lazyQrAnimationFlags;
+  return state.lazyFlags;
 }
 
 /** Error code `addClipsFrom` rejects with when a node-handle source has no loaded actor. */
@@ -99,25 +181,24 @@ export function rejectEmptyAnimationPose(pose: AnimationPose | undefined | null)
 // Warn-once-per-node bookkeeping for rejected poses (T0.2). `emptyPoseWarned`
 // is the dedup set; `emptyPosePending` holds rejections not yet consumed by a
 // render pass, which `dispatchActorAnimation` drains into `runtimeWarnings`.
-const emptyPoseWarned = new Set<string>();
-const emptyPosePending = new Set<string>();
-
 /**
  * True (once) when {@link setActorRuntimeAnimationPose} rejected an empty pose
  * for this node since the last render pass consumed it. Dispatch checks this so
  * the `ANIMATION_EMPTY_POSE` warning lands in `runtimeWarnings` — the channel
  * callers and the C-36 degradation report read.
  */
-export function consumePendingEmptyPoseRejection(nodeId: string | undefined): boolean {
-  if (nodeId === undefined || !emptyPosePending.has(nodeId)) return false;
-  emptyPosePending.delete(nodeId);
+export function consumePendingEmptyPoseRejection(nodeId: string | undefined, owner?: object): boolean {
+  const pending = animationState(owner).emptyPosePending;
+  if (nodeId === undefined || !pending.has(nodeId)) return false;
+  pending.delete(nodeId);
   return true;
 }
 
 /** Test seam: clears warn-once state between runs. */
-export function resetEmptyPoseRejections(): void {
-  emptyPoseWarned.clear();
-  emptyPosePending.clear();
+export function resetEmptyPoseRejections(owner?: object): void {
+  const state = animationState(owner);
+  state.emptyPoseWarned.clear();
+  state.emptyPosePending.clear();
 }
 
 export interface RuntimeAnimationPoseHandleLike {
@@ -125,6 +206,8 @@ export interface RuntimeAnimationPoseHandleLike {
 }
 
 export interface SetActorRuntimeAnimationPoseOptions {
+  /** The app, node handle, or actor bound to the app's animation context. */
+  readonly owner?: object;
   /** Runtime node id — keys the warn-once `ANIMATION_EMPTY_POSE` report. */
   readonly nodeId?: string;
   /** Strict mode (C-19 `animation.strict`, else `A3D_QR_STRICT`): throws instead of clearing. */
@@ -151,7 +234,7 @@ export function setActorRuntimeAnimationPose(
   metadata?: AuraRuntimeNodeAnimationPoseBindingMetadata,
   options: SetActorRuntimeAnimationPoseOptions = {}
 ): boolean {
-  if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) {
+  if (!qrAnimationFlags(options.owner).on("A3D_QR_ANIMATION")) {
     handle.setAnimationPose(pose, metadata);
     return true;
   }
@@ -160,16 +243,17 @@ export function setActorRuntimeAnimationPose(
     handle.setAnimationPose(accepted, accepted ? metadata : undefined);
     return accepted !== undefined;
   }
-  const strict = options.strict ?? qrAnimationFlags().on("A3D_QR_STRICT");
+  const strict = options.strict ?? qrAnimationFlags(options.owner).on("A3D_QR_STRICT");
   if (strict) {
     const error = new Error(`ANIMATION_EMPTY_POSE: runtime node "${options.nodeId ?? "unknown"}" rejected an animation pose with 0 bones and 0 morph targets.`);
     error.name = ANIMATION_EMPTY_POSE;
     throw error;
   }
   handle.setAnimationPose(undefined, undefined);
-  if (options.nodeId !== undefined && !emptyPoseWarned.has(options.nodeId)) {
-    emptyPoseWarned.add(options.nodeId);
-    emptyPosePending.add(options.nodeId);
+  const state = animationState(options.owner);
+  if (options.nodeId !== undefined && !state.emptyPoseWarned.has(options.nodeId)) {
+    state.emptyPoseWarned.add(options.nodeId);
+    state.emptyPosePending.add(options.nodeId);
     options.onRejected?.(options.nodeId);
   }
   return false;
@@ -192,28 +276,31 @@ interface ActorClipInfoWaiter {
   readonly reject: (error: unknown) => void;
 }
 
-const actorClipInfoSources = new Map<string, ActorClipInfoSource>();
-const actorClipInfoWaiters = new Map<string, ActorClipInfoWaiter[]>();
-
 /**
  * Called by the `prd06.animation` TypedGLBActor extension's `onLoad`
  * (`packages/engine/src/lanes/prd06.ts`) with the loaded actor's clip source.
  * Returns the disposer invoked from the extension's `dispose`.
  */
-export function registerActorClipInfoSource(actorId: string, source: ActorClipInfoSource): () => void {
+export function registerActorClipInfoSource(actorId: string, source: ActorClipInfoSource, owner?: object): () => void {
+  const state = animationState(owner);
+  if (state.disposed) return () => {};
+  const actorClipInfoSources = state.clipSources;
+  const actorClipInfoWaiters = state.clipWaiters;
   actorClipInfoSources.set(actorId, source);
   const waiters = actorClipInfoWaiters.get(actorId);
   if (waiters) {
     actorClipInfoWaiters.delete(actorId);
     let infos: readonly AuraResolvedClipInfo[] = [];
     let error: unknown;
+    let failed = false;
     try {
       infos = source();
     } catch (caught) {
       error = caught;
+      failed = true;
     }
     for (const waiter of waiters) {
-      if (error !== undefined) waiter.reject(error);
+      if (failed) waiter.reject(error);
       else waiter.resolve(infos);
     }
   }
@@ -225,7 +312,11 @@ export function registerActorClipInfoSource(actorId: string, source: ActorClipIn
 }
 
 /** Resolves the loaded actor's clip infos; stays pending until it loads. */
-export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly AuraResolvedClipInfo[]> {
+export function resolveAnimationClipsForNode(nodeId: string, owner?: object): Promise<readonly AuraResolvedClipInfo[]> {
+  const state = animationState(owner);
+  if (state.disposed) return Promise.resolve([]);
+  const actorClipInfoSources = state.clipSources;
+  const actorClipInfoWaiters = state.clipWaiters;
   const source = actorClipInfoSources.get(nodeId);
   if (source) {
     try {
@@ -244,8 +335,8 @@ export function resolveAnimationClipsForNode(nodeId: string): Promise<readonly A
 /** 06-HANG — drops every queued clip-info waiter for the node after a bounded
  * wait expires; the callers' promises are left unsettled (and unreferenced).
  */
-export function dropPendingClipInfoWaiters(nodeId: string): void {
-  actorClipInfoWaiters.delete(nodeId);
+export function dropPendingClipInfoWaiters(nodeId: string, owner?: object): void {
+  animationState(owner).clipWaiters.delete(nodeId);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -271,13 +362,8 @@ export type ActorBoneMatrixSource = (bone: string) => readonly number[] | Float3
  */
 export type ActorBindMatrixSource = ActorBoneMatrixSource;
 
-const actorAnimationApplySources = new Map<string, ActorAnimationApplySource>();
-const actorBoneMatrixSources = new Map<string, ActorBoneMatrixSource>();
-const actorBindMatrixSources = new Map<string, ActorBindMatrixSource>();
-
 /** T3.6 — C-19 code, warn-once per (nodeId, bone) when the actor is loaded. */
 export const ANIMATION_SOCKET_UNKNOWN_BONE = "ANIMATION_SOCKET_UNKNOWN_BONE";
-const socketUnknownBoneWarned = new Set<string>();
 
 function registerSource<T>(map: Map<string, T>, actorId: string, source: T): () => void {
   map.set(actorId, source);
@@ -287,32 +373,36 @@ function registerSource<T>(map: Map<string, T>, actorId: string, source: T): () 
 }
 
 /** Registered from the `prd06.animation` actor extension's `onLoad`. */
-export function registerActorAnimationApplySource(actorId: string, source: ActorAnimationApplySource): () => void {
-  return registerSource(actorAnimationApplySources, actorId, source);
+export function registerActorAnimationApplySource(actorId: string, source: ActorAnimationApplySource, owner?: object): () => void {
+  const state = animationState(owner);
+  return state.disposed ? () => {} : registerSource(state.applySources, actorId, source);
 }
 
 /** Registered from the `prd06.animation` actor extension's `onLoad`. */
-export function registerActorBoneMatrixSource(actorId: string, source: ActorBoneMatrixSource): () => void {
-  return registerSource(actorBoneMatrixSources, actorId, source);
+export function registerActorBoneMatrixSource(actorId: string, source: ActorBoneMatrixSource, owner?: object): () => void {
+  const state = animationState(owner);
+  return state.disposed ? () => {} : registerSource(state.boneSources, actorId, source);
 }
 
 /** Registered from the `prd06.animation` actor extension's `onLoad` (bind-pose snapshot). */
-export function registerActorBindMatrixSource(actorId: string, source: ActorBindMatrixSource): () => void {
-  return registerSource(actorBindMatrixSources, actorId, source);
+export function registerActorBindMatrixSource(actorId: string, source: ActorBindMatrixSource, owner?: object): () => void {
+  const state = animationState(owner);
+  return state.disposed ? () => {} : registerSource(state.bindSources, actorId, source);
 }
 
 /** The bone's frozen bind-pose world matrix for a loaded actor, else null. */
-export function actorBindMatrixFor(actorId: string, bone: string): Float32Array | null {
-  const value = actorBindMatrixSources.get(actorId)?.(bone);
+export function actorBindMatrixFor(actorId: string, bone: string, owner?: object): Float32Array | null {
+  const value = animationState(owner).bindSources.get(actorId)?.(bone);
   return value ? Float32Array.from(value).subarray(0, 16) : null;
 }
 
 /** Test seam: drop every state source between specs. */
-export function resetActorAnimationStateSources(): void {
-  actorAnimationApplySources.clear();
-  actorBoneMatrixSources.clear();
-  actorBindMatrixSources.clear();
-  socketUnknownBoneWarned.clear();
+export function resetActorAnimationStateSources(owner?: object): void {
+  const state = animationState(owner);
+  state.applySources.clear();
+  state.boneSources.clear();
+  state.bindSources.clear();
+  state.socketWarned.clear();
 }
 
 /* ------------------------------------------------------------------------ */
@@ -330,8 +420,6 @@ export interface RegisteredBoneAttachment {
   readonly scale: number;
 }
 
-const actorBoneAttachments = new Map<string, Set<RegisteredBoneAttachment>>();
-
 /**
  * Register one bone attachment for `actorId`. The render pass composes
  * `modelMatrix × boneWorldMatrix × offset` and writes the decomposed
@@ -339,8 +427,12 @@ const actorBoneAttachments = new Map<string, Set<RegisteredBoneAttachment>>();
  */
 export function registerActorBoneAttachment(
   actorId: string,
-  attachment: RegisteredBoneAttachment
+  attachment: RegisteredBoneAttachment,
+  owner?: object
 ): () => void {
+  const state = animationState(owner);
+  if (state.disposed) return () => {};
+  const actorBoneAttachments = state.attachments;
   let set = actorBoneAttachments.get(actorId);
   if (set === undefined) {
     set = new Set();
@@ -349,18 +441,18 @@ export function registerActorBoneAttachment(
   set.add(attachment);
   return () => {
     set!.delete(attachment);
-    if (set!.size === 0) actorBoneAttachments.delete(actorId);
+    if (set!.size === 0 && actorBoneAttachments.get(actorId) === set) actorBoneAttachments.delete(actorId);
   };
 }
 
 /** Drop every bone attachment registered for `actorId`. */
-export function clearActorBoneAttachments(actorId: string): void {
-  actorBoneAttachments.delete(actorId);
+export function clearActorBoneAttachments(actorId: string, owner?: object): void {
+  animationState(owner).attachments.delete(actorId);
 }
 
 /** Test seam: drop all attachments. */
-export function resetActorBoneAttachments(): void {
-  actorBoneAttachments.clear();
+export function resetActorBoneAttachments(owner?: object): void {
+  animationState(owner).attachments.clear();
 }
 
 /**
@@ -375,14 +467,16 @@ export function resetActorBoneAttachments(): void {
 export function resolveActorBoneAttachments(
   actorId: string,
   modelMatrix: ArrayLike<number>,
-  runtimeNodes: { get(id: string): { setPosition(x: number, y: number, z: number): unknown; setRotation(x: number, y: number, z: number): unknown; setScale(scale: number): unknown } | undefined } | undefined
+  runtimeNodes: { get(id: string): { setPosition(x: number, y: number, z: number): unknown; setRotation(x: number, y: number, z: number): unknown; setScale(scale: number): unknown } | undefined } | undefined,
+  owner?: object
 ): number {
-  const attachments = actorBoneAttachments.get(actorId);
+  const state = animationState(owner);
+  const attachments = state.attachments.get(actorId);
   if (attachments === undefined || runtimeNodes === undefined) return 0;
   let resolved = 0;
   const model = Array.from(modelMatrix) as unknown as Mat4;
   for (const attachment of attachments) {
-    const boneMatrix = actorBoneMatrixSources.get(actorId)?.(attachment.bone);
+    const boneMatrix = state.boneSources.get(actorId)?.(attachment.bone);
     const target = runtimeNodes.get(attachment.targetId);
     if (boneMatrix === null || boneMatrix === undefined || target === undefined) continue;
     const world = multiplyMat4(model, multiplyMat4(boneMatrix as Mat4, attachment.offset as Mat4));
@@ -402,8 +496,8 @@ export function resolveActorBoneAttachments(
  * `applyClips`/`applyPoseMixer` instrument mixer, constraint, spring, palette
  * and whole-call cpuMs; legacy applies report 0.
  */
-export function collectPrd06AnimationDiagnostics(): AuraAnimationDiagnostics {
-  const actors = [...actorAnimationApplySources.entries()].map(([id, source]) => {
+export function collectPrd06AnimationDiagnostics(owner?: object): AuraAnimationDiagnostics {
+  const actors = [...animationState(owner).applySources.entries()].map(([id, source]) => {
     const apply = source() ?? null;
     const timings = apply?.phaseTimings;
     return {
@@ -442,20 +536,20 @@ interface RuntimeNodeHandleAnimationSnapshot {
  * unpublishes on dispose. T0.18's apply/bone-matrix source registries (above)
  * feed `animationState()`/`socket()` reads on the same api.
  */
-const prd06AnimationActors = new Map<string, TypedGLBActor>();
-
-export function registerPrd06AnimationActor(actor: TypedGLBActor): () => void {
-  prd06AnimationActors.set(actor.id, actor);
+export function registerPrd06AnimationActor(actor: TypedGLBActor, owner?: object): () => void {
+  const state = animationState(owner);
+  if (state.disposed) return () => {};
+  state.actors.set(actor.id, actor);
   // GU47 E-H: overrides set before the actor loaded attach now.
-  syncPoseOverrides(actor.id);
+  syncPoseOverrides(actor.id, state);
   return () => {
     // A replacement actor that registered under the same id (scene swap order)
     // keeps its entry and its overrides.
-    if (prd06AnimationActors.get(actor.id) !== actor) return;
-    prd06AnimationActors.delete(actor.id);
+    if (state.actors.get(actor.id) !== actor) return;
+    state.actors.delete(actor.id);
     // The runtime (and its constraint list) dies with the actor; overrides
     // last for the loaded actor's lifetime, so a new scene starts clean.
-    poseOverrideStates.delete(actor.id);
+    state.poseOverrides.delete(actor.id);
   };
 }
 
@@ -480,9 +574,6 @@ interface PoseOverrideState {
   dispose?: () => void;
 }
 
-const poseOverrideStates = new Map<string, PoseOverrideState>();
-const poseUnknownBoneWarned = new Set<string>();
-
 interface PoseOverrideRuntime {
   skeletons(): readonly { readonly jointIndicesByName: ReadonlyMap<string, readonly number[]> }[];
   addPoseConstraint(constraint: {
@@ -504,10 +595,10 @@ function poseOverrideRuntime(actor: TypedGLBActor | undefined): PoseOverrideRunt
  * evaluates after the mixer, IK and spring constraints: the final pose-space
  * write before skinning. Unknown bones warn once and are dropped.
  */
-function syncPoseOverrides(nodeId: string, forceReregister = false): void {
-  const state = poseOverrideStates.get(nodeId);
+function syncPoseOverrides(nodeId: string, context: ActorAnimationState, forceReregister = false): void {
+  const state = context.poseOverrides.get(nodeId);
   if (state === undefined) return;
-  const runtime = poseOverrideRuntime(prd06AnimationActors.get(nodeId));
+  const runtime = poseOverrideRuntime(context.actors.get(nodeId));
   if (runtime === undefined) return;
   const binding = runtime.skeletons()[0];
   if (binding === undefined) return;
@@ -518,8 +609,8 @@ function syncPoseOverrides(nodeId: string, forceReregister = false): void {
     if (joint === undefined) {
       state.byName.delete(bone);
       const key = `${nodeId}:${bone}`;
-      if (!poseUnknownBoneWarned.has(key)) {
-        poseUnknownBoneWarned.add(key);
+      if (!context.poseWarned.has(key)) {
+        context.poseWarned.add(key);
         if (typeof console !== "undefined") console.warn(`${ANIMATION_POSE_UNKNOWN_BONE}: node "${nodeId}" has no bone "${bone}".`);
       }
       continue;
@@ -547,15 +638,15 @@ function syncPoseOverrides(nodeId: string, forceReregister = false): void {
 }
 
 /** Re-append the node's pose override after another constraint was added or the list was cleared. */
-function keepPoseOverridesLast(nodeId: string, listCleared = false): void {
-  const state = poseOverrideStates.get(nodeId);
+function keepPoseOverridesLast(nodeId: string, context: ActorAnimationState, listCleared = false): void {
+  const state = context.poseOverrides.get(nodeId);
   if (state === undefined || state.dispose === undefined) return;
   if (listCleared) {
     // `clearPoseConstraints` already dropped it; the stale disposer would no-op.
     state.dispose = undefined;
     state.runtime = undefined;
   }
-  syncPoseOverrides(nodeId, true);
+  syncPoseOverrides(nodeId, context, true);
 }
 
 function normalisedQuat(quat: readonly number[]): PoseQuat | undefined {
@@ -583,12 +674,16 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     super(nodeHandle);
   }
 
+  private get context(): ActorAnimationState {
+    return animationState(this.app);
+  }
+
   private get actor(): TypedGLBActor | undefined {
-    return prd06AnimationActors.get(this.nodeId);
+    return this.context.actors.get(this.nodeId);
   }
 
   private mixer() {
-    if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) return undefined;
+    if (!qrAnimationFlags(this.app).on("A3D_QR_ANIMATION")) return undefined;
     const runtime = this.actor?.animation;
     return runtime !== undefined && typeof runtime.mixer === "function" ? runtime.mixer() : undefined;
   }
@@ -641,7 +736,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     if (this.nodeHandle.kind !== "model") {
       return Promise.resolve([]);
     }
-    return resolveAnimationClipsForNode(this.nodeId);
+    return resolveAnimationClipsForNode(this.nodeId, this.app);
   }
 
   override animationState(): AuraActorAnimationStateSnapshot | undefined {
@@ -652,7 +747,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       if (typeof this.nodeHandle.snapshot !== "function") return super.animationState();
       const snapshot = this.nodeHandle.snapshot() as RuntimeNodeHandleAnimationSnapshot | undefined;
       const binding = snapshot?.animationBinding;
-      const lastApply = actorAnimationApplySources.get(this.nodeId)?.() ?? null;
+      const lastApply = this.context.applySources.get(this.nodeId)?.() ?? null;
       const activeActions = (binding?.clipSamples ?? []).map((sample) => ({
         clip: sample.clipName,
         layer: sample.layer ?? "base",
@@ -709,20 +804,20 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
   override readonly ik = {
     add: (spec: unknown): (() => void) => {
       const actor = this.actor;
-      if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
+      if (!qrAnimationFlags(this.app).on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
         return () => { /* stub no-op */ };
       }
       const dispose = addPrd06ActorConstraint(actor, spec as Prd06ConstraintSpec, (ref) =>
-        prd06ConstraintTargetPosition(actor, ref, this.app)
+        prd06ConstraintTargetPosition(actor, ref, this.app, this.context)
       );
-      keepPoseOverridesLast(this.nodeId);
+      keepPoseOverridesLast(this.nodeId, this.context);
       return dispose;
     },
     clear: (): void => {
       const actor = this.actor;
       if (actor === undefined) return;
       clearPrd06ActorConstraints(actor);
-      keepPoseOverridesLast(this.nodeId, true);
+      keepPoseOverridesLast(this.nodeId, this.context, true);
     }
   };
 
@@ -735,13 +830,13 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
    */
   override readonly pose: AuraActorPoseApi = {
     setLocalRotation: (bone: string, quat: AuraQuat): void => {
-      if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) return;
+      if (!qrAnimationFlags(this.app).on("A3D_QR_ANIMATION")) return;
       const normalised = normalisedQuat(quat);
       if (normalised === undefined) return;
-      let state = poseOverrideStates.get(this.nodeId);
+      let state = this.context.poseOverrides.get(this.nodeId);
       if (state === undefined) {
         state = { byName: new Map(), byJoint: new Map(), jointByName: new Map(), bones: [] };
-        poseOverrideStates.set(this.nodeId, state);
+        this.context.poseOverrides.set(this.nodeId, state);
       }
       state.byName.set(bone, normalised);
       const joint = state.jointByName.get(bone);
@@ -751,19 +846,19 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
         state.byJoint.set(joint, normalised);
         return;
       }
-      syncPoseOverrides(this.nodeId);
+      syncPoseOverrides(this.nodeId, this.context);
     },
     clear: (bone?: string): void => {
-      const state = poseOverrideStates.get(this.nodeId);
+      const state = this.context.poseOverrides.get(this.nodeId);
       if (state === undefined) return;
       if (bone === undefined) state.byName.clear();
       else state.byName.delete(bone);
       if (state.byName.size > 0) {
-        syncPoseOverrides(this.nodeId);
+        syncPoseOverrides(this.nodeId, this.context);
         return;
       }
       state.dispose?.();
-      poseOverrideStates.delete(this.nodeId);
+      this.context.poseOverrides.delete(this.nodeId);
     }
   };
 
@@ -777,11 +872,11 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
   override readonly springBones = {
     add: (spec: unknown): (() => void) => {
       const actor = this.actor;
-      if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
+      if (!qrAnimationFlags(this.app).on("A3D_QR_ANIMATION") || actor === undefined || actor.animation === undefined) {
         return () => { /* stub no-op */ };
       }
       const dispose = addPrd06ActorSpringBones(actor, spec as Prd06SpringBonesSpec);
-      keepPoseOverridesLast(this.nodeId);
+      keepPoseOverridesLast(this.nodeId, this.context);
       return dispose;
     },
     clear: (): void => {
@@ -803,7 +898,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
   ): Promise<readonly string[]> {
     const actor = this.actor;
     const runtime = actor?.animation;
-    if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || runtime === undefined || typeof runtime.addClipsFrom !== "function") {
+    if (!qrAnimationFlags(this.app).on("A3D_QR_ANIMATION") || runtime === undefined || typeof runtime.addClipsFrom !== "function") {
       return Promise.resolve([]);
     }
     // Root reach: a route only holds runtime-node handles, never the loaded actor's
@@ -817,7 +912,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
         ? (source as { id: string }).id
         : undefined;
     if (sourceNodeId !== undefined) {
-      const sourceRuntime = prd06AnimationActors.get(sourceNodeId)?.animation;
+      const sourceRuntime = this.context.actors.get(sourceNodeId)?.animation;
       if (sourceRuntime === undefined) {
         return Promise.reject(new Error(
           `${ANIMATION_RETARGET_SOURCE_NOT_LOADED}: model node "${sourceNodeId}" has no loaded actor animation runtime. Await app.ready() (and step once) before addClipsFrom.`
@@ -836,11 +931,11 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     // T0.18 — live `transform.worldMatrix` reads through the actor extension's
     // bone-matrix source (lanes/prd06.ts); `valid: false` until it loads.
     const matrix = (): Float32Array | null => {
-      const value = actorBoneMatrixSources.get(this.nodeId)?.(bone);
+      const value = this.context.boneSources.get(this.nodeId)?.(bone);
       return value ? Float32Array.from(value).subarray(0, 16) : null;
     };
     const bindMatrix = (): Float32Array | null => {
-      const value = actorBindMatrixSources.get(this.nodeId)?.(bone);
+      const value = this.context.bindSources.get(this.nodeId)?.(bone);
       return value ? Float32Array.from(value).subarray(0, 16) : null;
     };
     // T3.6 — `valid: false` + `ANIMATION_SOCKET_UNKNOWN_BONE` once per
@@ -849,8 +944,8 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     const warnUnknownOnce = (): void => {
       if (this.actor === undefined) return;
       const key = `${this.nodeId}:${bone}`;
-      if (socketUnknownBoneWarned.has(key)) return;
-      socketUnknownBoneWarned.add(key);
+      if (this.context.socketWarned.has(key)) return;
+      this.context.socketWarned.add(key);
       if (typeof console !== "undefined") {
         console.warn(`${ANIMATION_SOCKET_UNKNOWN_BONE}: node "${this.nodeId}" has no bone "${bone}".`);
       }
@@ -889,7 +984,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
   override attach(spec: AuraBoneAttachSpec): () => void {
     // Degrade to a no-op disposer while the flag is off — the attachment
     // registry is only read by the flag-on render path.
-    if (!qrAnimationFlags().on("A3D_QR_ANIMATION")) return () => { /* stub no-op */ };
+    if (!qrAnimationFlags(this.app).on("A3D_QR_ANIMATION")) return () => { /* stub no-op */ };
     const targetId = typeof spec.target === "string" ? spec.target : spec.target.id;
     const rotation = spec.rotation ?? [0, 0, 0];
     const offset = composeMat4(
@@ -902,7 +997,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
       bone: spec.socket,
       offset,
       scale: spec.scale ?? 1
-    });
+    }, this.app);
   }
 }
 
@@ -914,10 +1009,11 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
 function prd06ConstraintTargetPosition(
   actor: TypedGLBActor,
   ref: string | { readonly socket: string },
-  app: AuraApp | undefined
+  app: AuraApp | undefined,
+  context: ActorAnimationState
 ): readonly [number, number, number] | null {
   if (typeof ref !== "string") {
-    const matrix = actorBoneMatrixSources.get(actor.id)?.(ref.socket) ?? null;
+    const matrix = context.boneSources.get(actor.id)?.(ref.socket) ?? null;
     return matrix === null ? null : [matrix[12]!, matrix[13]!, matrix[14]!];
   }
   // App-level runtime nodes first: constraint targets live outside the
@@ -951,10 +1047,11 @@ export function createPrd06ActorAnimationApi(handle: AuraRuntimeNodeHandle, app?
 }
 
 /** Test seam: drop every resolver/waiter/actor between specs. */
-export function resetActorClipInfoSources(): void {
-  actorClipInfoSources.clear();
-  actorClipInfoWaiters.clear();
-  prd06AnimationActors.clear();
-  poseOverrideStates.clear();
-  poseUnknownBoneWarned.clear();
+export function resetActorClipInfoSources(owner?: object): void {
+  const state = animationState(owner);
+  state.clipSources.clear();
+  state.clipWaiters.clear();
+  state.actors.clear();
+  state.poseOverrides.clear();
+  state.poseWarned.clear();
 }

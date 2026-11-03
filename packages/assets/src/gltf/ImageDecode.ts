@@ -1,17 +1,19 @@
-// PR 0b-3 carve-out (CONTRACTS.md §3.6) — verbatim move from GLTFRenderResources.ts; 0 changed logic lines.
+// PR 0b-3 carve-out (CONTRACTS.md §3.6) from GLTFRenderResources.ts.
 // File: packages/assets/src/gltf/ImageDecode.ts — owner lane 05.
 //
 // Contents: `decodeImageInBrowser` plus its sole dependencies (`readImageBytes`,
-// `fetchImageBlob`, `isKTX2BasisImage`, `resolveImageUrl`, `resolveAbsoluteAssetBase`).
+// `isKTX2BasisImage`, `resolveImageUrl`, `resolveAbsoluteAssetBase`).
 // GLTFRenderResources.ts imports `decodeImageInBrowser` back for the default
 // `options.imageDecoder` path; the type edge back is import-type only.
 
-import type { GLTFAsset, GLTFImageAsset } from "../GLTFLoader";
-import { ktx2TargetToTextureFormat, transcodeKTX2BasisTexture } from "../KTX2BasisTextureTranscoder";
-import type { DecodedGLTFImage, GLTFRenderResourceOptions } from "../GLTFRenderResources";
+import { fetchGltfBytesShared, gltfImageRequestOptions, gltfImageRequestProgress, type GLTFAsset, type GLTFImageAsset } from "../GLTFLoader";
+import { MAX_KTX2_INPUT_BYTES, ktx2TargetToTextureFormat, transcodeKTX2BasisTexture } from "../KTX2BasisTextureTranscoder";
+import { MAX_BROWSER_IMAGE_BYTES, assertBrowserImageDimensions, inspectBrowserImageDimensions } from "../BrowserImageDimensions";
+import { AssetSizeError, verifyAssetBytes } from "../LoaderFetch";
+import { LoadContext } from "../LoadContext";
+import { redactAssetUrl, validateAssetMaxBytes } from "../AssetLoader";
+import type { DecodedGLTFImage, GLTFImageDecodeContext, GLTFRenderResourceOptions } from "../GLTFRenderResources";
 import { assetPhaseMark } from "../assetPhaseMarks";
-
-const decodedImageCache = new WeakMap<GLTFAsset, Map<string, Promise<DecodedGLTFImage>>>();
 
 export async function decodeImageInBrowser(
   image: GLTFImageAsset,
@@ -20,21 +22,9 @@ export async function decodeImageInBrowser(
   options: GLTFRenderResourceOptions = {}
 ): Promise<DecodedGLTFImage> {
   assetPhaseMark(`image-decode:start:${_imageIndex}`);
-  const cacheKey = `${_imageIndex}:${options.qrAssets ? 1 : 0}:${options.maxTextureSize ?? ""}:${options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat ?? ""}:${options.ktx2BasisTranscoderOptions?.colorSpace ?? ""}`;
-  let assetCache = decodedImageCache.get(asset);
-  if (!assetCache) {
-    assetCache = new Map<string, Promise<DecodedGLTFImage>>();
-    decodedImageCache.set(asset, assetCache);
-  }
-  let pending = assetCache.get(cacheKey);
-  if (!pending) {
-    pending = decodeImageInBrowserUnmarked(image, _imageIndex, asset, options).catch((error) => {
-      assetCache?.delete(cacheKey);
-      throw error;
-    });
-    assetCache.set(cacheKey, pending);
-  }
-  const decoded = await pending;
+  // Each render-resource creation owns its decoded image. Sharing a promise
+  // would couple independent abort signals and reuse a closeable bitmap.
+  const decoded = await decodeImageInBrowserUnmarked(image, _imageIndex, asset, options);
   assetPhaseMark(`image-decode:end:${_imageIndex}`);
   return decoded;
 }
@@ -45,26 +35,44 @@ async function decodeImageInBrowserUnmarked(
   asset: GLTFAsset,
   options: GLTFRenderResourceOptions
 ): Promise<DecodedGLTFImage> {
+  const signal = new LoadContext({ signal: options.signal }).signalFor(options.request?.signal);
+  throwIfAborted(signal);
   if (isKTX2BasisImage(image)) {
-    const bytes = new Uint8Array(await readImageBytes(asset, image));
+    const bytes = new Uint8Array(await readImageBytes(asset, image, { signal, request: options.request }, MAX_KTX2_INPUT_BYTES));
     const decoded = await transcodeKTX2BasisTexture(bytes, {
       ...options.ktx2BasisTranscoderOptions,
+      signal: new LoadContext({ signal }).signalFor(options.ktx2BasisTranscoderOptions?.signal),
       // Without capability input the only safe transcode target is the
       // uncompressed path; registry-provided decoders always pass a target.
       targetFormat: options.ktx2BasisTargetFormat ?? options.ktx2BasisTranscoderOptions?.targetFormat ?? "rgba8",
       // C-16: skip mip levels above the C-27 texture-size ceiling when present.
       maxDimension: options.maxTextureSize ?? options.ktx2BasisTranscoderOptions?.maxDimension
     });
+    throwIfAborted(signal);
     return { ...decoded, format: ktx2TargetToTextureFormat(decoded.format) };
   }
-  if (typeof createImageBitmap === "function") {
-    const blob = image.data
-      ? new Blob([image.data], { type: image.mimeType ?? "application/octet-stream" })
-      : await fetchImageBlob(asset, image);
+  const useBitmap = typeof createImageBitmap === "function";
+  const ImageCtor = useBitmap ? undefined : globalThis.Image;
+  if (!useBitmap && (!ImageCtor || typeof URL.createObjectURL !== "function" || typeof URL.revokeObjectURL !== "function")) {
+    throw new Error("glTF image decoding requires createImageBitmap, HTMLImageElement, or a custom imageDecoder");
+  }
+  const imageUrl = image.uri ?? image.name;
+  const bytes = await readImageBytesWithLimit(asset, image, { signal, request: options.request }, MAX_BROWSER_IMAGE_BYTES);
+  throwIfAborted(signal);
+  inspectBrowserImageDimensions(bytes, imageUrl);
+  const blob = new Blob([bytes], { type: image.mimeType ?? "application/octet-stream" });
+  if (useBitmap) {
     let bitmap = await createImageBitmap(blob, {
       colorSpaceConversion: "none",
       premultiplyAlpha: "none"
     });
+    try {
+      throwIfAborted(signal);
+      assertBrowserImageDimensions(bitmap.width, bitmap.height, imageUrl);
+    } catch (error) {
+      closeBitmap(bitmap);
+      throw error;
+    }
     // PRD-05 Phase 1 (A3D_QR_ASSETS): downscale oversized PNG/JPEG sources at
     // decode time so they honour the C-27 maxTextureSize ceiling instead of
     // uploading at full res. Flag-off passes no resize options.
@@ -72,50 +80,117 @@ async function decodeImageInBrowserUnmarked(
       const largest = Math.max(bitmap.width, bitmap.height);
       if (largest > options.maxTextureSize) {
         const scale = options.maxTextureSize / largest;
-        const resized = await createImageBitmap(blob, {
-          colorSpaceConversion: "none",
-          premultiplyAlpha: "none",
-          resizeWidth: Math.max(1, Math.round(bitmap.width * scale)),
-          resizeHeight: Math.max(1, Math.round(bitmap.height * scale)),
-          resizeQuality: "high"
-        });
-        bitmap.close();
+        let resized: ImageBitmap | undefined;
+        try {
+          resized = await createImageBitmap(blob, {
+            colorSpaceConversion: "none",
+            premultiplyAlpha: "none",
+            resizeWidth: Math.max(1, Math.round(bitmap.width * scale)),
+            resizeHeight: Math.max(1, Math.round(bitmap.height * scale)),
+            resizeQuality: "high"
+          });
+          throwIfAborted(signal);
+          assertBrowserImageDimensions(resized.width, resized.height, imageUrl);
+        } catch (error) {
+          closeBitmap(resized);
+          closeBitmap(bitmap);
+          throw error;
+        }
+        try { bitmap.close(); } catch (error) { closeBitmap(resized); throw error; }
         bitmap = resized;
       }
     }
     return { width: bitmap.width, height: bitmap.height, source: bitmap, colorSpace: "srgb" };
   }
-  const ImageCtor = globalThis.Image;
-  if (!ImageCtor || !image.uri) {
-    throw new Error("glTF image decoding requires createImageBitmap, HTMLImageElement, or a custom imageDecoder");
-  }
-  const imageElement = new ImageCtor();
-  const url = resolveImageUrl(asset.url, image.uri);
+  const imageElement = new ImageCtor!();
+  const url = URL.createObjectURL(blob);
   return new Promise((resolve, reject) => {
-    imageElement.onload = () => resolve({ width: imageElement.width, height: imageElement.height, source: imageElement, colorSpace: "srgb" });
-    imageElement.onerror = () => reject(new Error(`glTF image decode failed for ${url}`));
-    imageElement.src = url;
+    const cleanup = () => {
+      signal?.removeEventListener("abort", abort);
+      imageElement.onload = null;
+      imageElement.onerror = null;
+      try { URL.revokeObjectURL(url); } catch { /* Preserve the load result. */ }
+    };
+    const clearSource = () => { try { imageElement.src = ""; } catch { /* Preserve the load result. */ } };
+    const abort = () => { cleanup(); clearSource(); reject(signal?.reason ?? new DOMException("Image decode aborted", "AbortError")); };
+    imageElement.onload = () => {
+      try {
+        assertBrowserImageDimensions(imageElement.width, imageElement.height, imageUrl);
+        if (imageElement.naturalWidth || imageElement.naturalHeight) {
+          assertBrowserImageDimensions(imageElement.naturalWidth, imageElement.naturalHeight, imageUrl);
+        }
+        cleanup();
+        resolve({ width: imageElement.width, height: imageElement.height, source: imageElement, colorSpace: "srgb" });
+      } catch (error) {
+        cleanup();
+        clearSource();
+        reject(error);
+      }
+    };
+    imageElement.onerror = () => { cleanup(); reject(new Error(`glTF image decode failed for ${image.name}`)); };
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) { abort(); return; }
+    try { imageElement.src = url; } catch (error) { cleanup(); reject(error); }
   });
 }
 
-export async function readImageBytes(asset: GLTFAsset, image: GLTFImageAsset): Promise<ArrayBuffer> {
-  if (image.data) return image.data.slice(0);
-  const blob = await fetchImageBlob(asset, image);
-  return blob.arrayBuffer();
+export async function readImageBytes(asset: GLTFAsset, image: GLTFImageAsset, context: GLTFImageDecodeContext = {}, maxBytes?: number): Promise<ArrayBuffer> {
+  validateAssetMaxBytes(maxBytes);
+  return readImageBytesWithLimit(asset, image, context, maxBytes);
 }
 
-async function fetchImageBlob(asset: GLTFAsset, image: GLTFImageAsset): Promise<Blob> {
+/** The document, caller and decoder may each impose a stricter input limit. */
+export function gltfImageByteLimit(asset: GLTFAsset, requestMaxBytes?: number, decoderMaxBytes?: number): number | undefined {
+  const inheritedMaxBytes = gltfImageRequestOptions(asset, asset.url).maxBytes;
+  for (const value of [inheritedMaxBytes, requestMaxBytes, decoderMaxBytes]) validateAssetMaxBytes(value);
+  const limits = [inheritedMaxBytes, requestMaxBytes, decoderMaxBytes].filter((value): value is number => value !== undefined);
+  return limits.length ? Math.min(...limits) : undefined;
+}
+
+async function readImageBytesWithLimit(asset: GLTFAsset, image: GLTFImageAsset, context: GLTFImageDecodeContext, limit?: number): Promise<ArrayBuffer> {
+  const signal = new LoadContext({ signal: context.signal }).signalFor(context.request?.signal);
+  throwIfAborted(signal);
+  if (image.data) {
+    const request = image.uri && !image.uri.startsWith("data:")
+      ? gltfImageRequestOptions(asset, image.uri, context.request)
+      : context.request;
+    const maxBytes = gltfImageByteLimit(asset, request?.maxBytes, limit);
+    if (maxBytes !== undefined && image.data.byteLength > maxBytes) {
+      throw new AssetSizeError(`glTF image ${redactAssetUrl(image.uri ?? image.name)} exceeds maxBytes (${maxBytes})`);
+    }
+    const bytes = image.data.slice(0);
+    if (maxBytes !== undefined && bytes.byteLength > maxBytes) {
+      throw new AssetSizeError(`glTF image ${redactAssetUrl(image.uri ?? image.name)} exceeds maxBytes (${maxBytes})`);
+    }
+    if (image.uri && !image.uri.startsWith("data:")) {
+      await verifyAssetBytes(bytes, request?.integrity, image.uri);
+    }
+    throwIfAborted(signal);
+    return bytes;
+  }
+  const bytes = await fetchImageBytes(asset, image, { ...context, signal }, limit);
+  throwIfAborted(signal);
+  return bytes;
+}
+
+async function fetchImageBytes(asset: GLTFAsset, image: GLTFImageAsset, context: GLTFImageDecodeContext, limit?: number): Promise<ArrayBuffer> {
   if (!image.uri) {
     throw new Error("glTF image has no uri or embedded data");
   }
-  if (typeof fetch !== "function") {
-    throw new Error("glTF image fetch requires fetch or a custom imageDecoder");
-  }
-  const response = await fetch(resolveImageUrl(asset.url, image.uri));
-  if (!response.ok) {
-    throw new Error(`glTF image request failed with ${response.status}`);
-  }
-  return response.blob();
+  const url = resolveImageUrl(asset.url, image.uri);
+  const { signal: requestSignal, onProgress, ...overrides } = context.request ?? {};
+  const signal = new LoadContext({ signal: context.signal }).signalFor(requestSignal);
+  const request = gltfImageRequestOptions(asset, image.uri, overrides);
+  const maxBytes = gltfImageByteLimit(asset, request.maxBytes, limit);
+  return fetchGltfBytesShared(url, "buffer", { ...request, ...(maxBytes === undefined ? {} : { maxBytes }), url, signal, onProgress: onProgress ?? gltfImageRequestProgress(asset) }, (status) => `glTF image request failed with ${status}`);
+}
+
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  if (signal?.aborted) throw signal.reason ?? new DOMException("Image load aborted", "AbortError");
+}
+
+function closeBitmap(bitmap: ImageBitmap | undefined): void {
+  try { bitmap?.close(); } catch { /* Preserve the failure that required cleanup. */ }
 }
 
 export function isKTX2BasisImage(image: GLTFImageAsset): boolean {

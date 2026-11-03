@@ -7,49 +7,56 @@ import { Vector3 } from "./Vector3.js";
 /** Clip-space depth convention for {@link Frustum.setFromProjectionMatrix}. */
 export type FrustumCoordinateSystem = "webgl" | "webgpu";
 
-/**
- * View frustum as six clipping planes — three.js `Frustum` parity.
- * Plane order matches three: `[right, left, bottom, top, far, near]`.
- */
+/** View frustum, ordered `[right, left, bottom, top, far, near]`. */
 export class Frustum {
-  constructor(readonly planes: readonly [Plane, Plane, Plane, Plane, Plane, Plane]) {}
+  readonly activePlanes: readonly Plane[];
 
-  static fromMatrix(matrix: Matrix4): Frustum {
-    return Frustum.setFromProjectionMatrix(matrix);
+  /** The far slot remains present for API compatibility when it is unbounded. */
+  constructor(readonly planes: readonly [Plane, Plane, Plane, Plane, Plane, Plane], readonly infiniteFar = false) {
+    this.activePlanes = infiniteFar ? planes.filter((_, index) => index !== 4) : planes;
+  }
+
+  static fromMatrix(matrix: Matrix4, coordinateSystem: FrustumCoordinateSystem = "webgl", reversedDepth = false, infiniteFar = false): Frustum {
+    return Frustum.setFromProjectionMatrix(matrix, coordinateSystem, reversedDepth, infiniteFar);
   }
 
   /**
-   * Extracts the six frustum planes from a projection matrix —
-   * three.js `Frustum.setFromProjectionMatrix`. `coordinateSystem` selects
-   * the near-plane convention (`"webgl"`: NDC z ∈ [−1,1], `"webgpu"`:
-   * [0,1]); `reversedDepth` swaps near/far.
+   * Extracts inward-facing planes from a view-projection matrix.
+   * `coordinateSystem` selects NDC z ∈ [−1, 1] or [0, 1], and
+   * `reversedDepth` identifies which of the two z boundaries is near.
+   * Infinite far projections have no finite far plane; its tuple slot is an
+   * inactive sentinel and `activePlanes` omits it.
    */
   static setFromProjectionMatrix(
     matrix: Matrix4,
     coordinateSystem: FrustumCoordinateSystem = "webgl",
-    reversedDepth = false
+    reversedDepth = false,
+    infiniteFar = false
   ): Frustum {
+    if (coordinateSystem !== "webgl" && coordinateSystem !== "webgpu") {
+      throw new RangeError(`Invalid coordinate system: ${coordinateSystem}`);
+    }
     const me = matrix.elements;
     const me0 = me[0]!, me1 = me[1]!, me2 = me[2]!, me3 = me[3]!;
     const me4 = me[4]!, me5 = me[5]!, me6 = me[6]!, me7 = me[7]!;
     const me8 = me[8]!, me9 = me[9]!, me10 = me[10]!, me11 = me[11]!;
     const me12 = me[12]!, me13 = me[13]!, me14 = me[14]!, me15 = me[15]!;
 
-    let far: Plane;
-    let near: Plane;
-    if (reversedDepth) {
-      far = new Plane(new Vector3(me2, me6, me10), me14);
-      near = new Plane(new Vector3(me3 - me2, me7 - me6, me11 - me10), me15 - me14);
-    } else {
-      far = new Plane(new Vector3(me3 - me2, me7 - me6, me11 - me10), me15 - me14);
-      if (coordinateSystem === "webgl") {
-        near = new Plane(new Vector3(me3 + me2, me7 + me6, me11 + me10), me15 + me14);
-      } else if (coordinateSystem === "webgpu") {
-        near = new Plane(new Vector3(me2, me6, me10), me14);
-      } else {
-        throw new RangeError(`Invalid coordinate system: ${coordinateSystem}`);
-      }
-    }
+    const lower = coordinateSystem === "webgl"
+      ? [me3 + me2, me7 + me6, me11 + me10, me15 + me14] as const
+      : [me2, me6, me10, me14] as const;
+    const upper = [me3 - me2, me7 - me6, me11 - me10, me15 - me14] as const;
+    const nearCoefficients = reversedDepth ? upper : lower;
+    const farCoefficients = reversedDepth ? lower : upper;
+    const near = new Plane(new Vector3(nearCoefficients[0], nearCoefficients[1], nearCoefficients[2]), nearCoefficients[3]);
+    const farNormalLength = Math.hypot(farCoefficients[0], farCoefficients[1], farCoefficients[2]);
+    // A zero normal with a positive constant is an always-true half-space,
+    // including when floating-point precision rounds a very distant far bound
+    // to infinity. Other degenerate clip planes describe an invalid matrix.
+    const unbounded = infiniteFar || (farNormalLength === 0 && farCoefficients[3] > 0);
+    const far = unbounded
+      ? new Plane(new Vector3(0, 0, 1), Infinity)
+      : new Plane(new Vector3(farCoefficients[0], farCoefficients[1], farCoefficients[2]), farCoefficients[3]);
 
     return new Frustum([
       new Plane(new Vector3(me3 - me0, me7 - me4, me11 - me8), me15 - me12), // right
@@ -58,7 +65,7 @@ export class Frustum {
       new Plane(new Vector3(me3 - me1, me7 - me5, me11 - me9), me15 - me13), // top
       far,
       near
-    ]);
+    ], unbounded);
   }
 
   set(p0: Plane, p1: Plane, p2: Plane, p3: Plane, p4: Plane, p5: Plane): Frustum {
@@ -66,7 +73,7 @@ export class Frustum {
   }
 
   clone(): Frustum {
-    return new Frustum([...this.planes] as [Plane, Plane, Plane, Plane, Plane, Plane]);
+    return new Frustum([...this.planes] as [Plane, Plane, Plane, Plane, Plane, Plane], this.infiniteFar);
   }
 
   copy(frustum: Frustum): Frustum {
@@ -74,17 +81,17 @@ export class Frustum {
   }
 
   containsPoint(point: Vector3): boolean {
-    return this.planes.every((plane) => plane.distanceToPoint(point) >= 0);
+    return this.activePlanes.every((plane) => plane.distanceToPoint(point) >= 0);
   }
 
   intersectsSphere(sphere: Sphere): boolean {
     const negRadius = -sphere.radius;
-    return this.planes.every((plane) => plane.distanceToPoint(sphere.center) >= negRadius);
+    return this.activePlanes.every((plane) => plane.distanceToPoint(sphere.center) >= negRadius);
   }
 
   intersectsBox(box: Box3): boolean {
     if (box.isEmpty()) return false;
-    for (const plane of this.planes) {
+    for (const plane of this.activePlanes) {
       // corner at max distance along the plane normal
       const p = new Vector3(
         plane.normal.x > 0 ? box.max.x : box.min.x,

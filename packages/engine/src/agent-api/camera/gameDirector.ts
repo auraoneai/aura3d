@@ -6,7 +6,7 @@
  * Reached only via `createGameCameraDirector` under `A3D_QR_CAMERA`
  * (`{ legacySpec: true }` opts out).
  */
-import type { AuraVec3 } from "../index.js";
+import type { AuraVec3 } from "../nodes/types.js";
 import type {
   AuraCameraPose,
   AuraCameraSubject,

@@ -3,12 +3,12 @@
 
 import { CascadedShadowMaps, CascadedShadowPass, shadowCameraFitViewProjectionMatrix } from "../CascadedShadowMaps";
 import type { ForwardShadowMapOptions, RenderItem } from "../ForwardPass";
-import type { CollectedLight } from "../LightCollector";
+import { isLightVisibleInHierarchy, type CollectedLight } from "../LightCollector";
 import { type RenderDevice, RenderDeviceError, type RenderTarget } from "../RenderDevice";
 import { type RendererShadowOptions, cameraWorldPosition } from "../Renderer";
 import { Sampler } from "../Sampler";
 import { ShadowMap } from "../ShadowMap";
-import { ShadowPass } from "../ShadowPass";
+import { ShadowPass, assertStableMultiTargetShadowClipping } from "../ShadowPass";
 import { TextureBinding } from "../TextureBinding";
 import type { RenderSource } from "../contracts/renderSource";
 import { collectItemBounds, isIterable, sceneFromSource, toMat4 } from "./RenderShared";
@@ -30,14 +30,15 @@ export function collectRendererShadowOptions(source: RenderSource | Iterable<Ren
 }
 
 function firstShadowCastingLight(source: RenderSource | Iterable<RenderItem> | Scene, lights: readonly CollectedLight[]): Light | null {
-  const explicit = lights.find((light) => light.castsShadow && light.source.visible)?.source;
-  if (explicit) return explicit;
   const scene = sceneFromSource(source);
-  return scene?.collectLights().find((light) => light.visible && light.castsShadow) ?? null;
+  const explicit = lights.find((light) => light.castsShadow && isLightVisibleInHierarchy(light.source, scene?.root))?.source;
+  if (explicit) return explicit;
+  return scene?.collectLights().find((light) => isLightVisibleInHierarchy(light, scene.root) && light.castsShadow) ?? null;
 }
 
-function firstShadowCastingCollectedLight(lights: readonly CollectedLight[]): CollectedLight | undefined {
-  return lights.find((light) => light.castsShadow && light.source.visible);
+function firstShadowCastingCollectedLight(source: RenderSource | Iterable<RenderItem> | Scene, lights: readonly CollectedLight[]): CollectedLight | undefined {
+  const root = sceneFromSource(source)?.root;
+  return lights.find((light) => light.castsShadow && isLightVisibleInHierarchy(light.source, root));
 }
 
 function lightDirectionFromLight(light: Light | null): Vec3 {
@@ -52,7 +53,7 @@ function lightDirectionFromLight(light: Light | null): Vec3 {
 
 function createRendererOwnedShadowMatrix(light: Light | null, items: readonly RenderItem[], collectedLight: CollectedLight | undefined): Mat4 {
   if (light instanceof SpotLight) {
-    light.transform.updateWorld(undefined, true);
+    light.transform.updateWorld(light.parent?.transform.worldMatrix);
     const near = 0.01;
     const far = Math.max(near + 0.01, light.range);
     const projectionMatrix = perspectiveMat4(light.angle * 2, 1, near, far);
@@ -62,7 +63,7 @@ function createRendererOwnedShadowMatrix(light: Light | null, items: readonly Re
 }
 
 function createPointShadowFaceMatrices(light: PointLight): Float32Array {
-  light.transform.updateWorld(undefined, true);
+  light.transform.updateWorld(light.parent?.transform.worldMatrix);
   const position: Vec3 = [
     light.transform.worldMatrix[12],
     light.transform.worldMatrix[13],
@@ -290,6 +291,10 @@ export class RendererShadowOrchestrator {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
+    /** The eye the forward pass uses, including an explicit source override. */
+    readonly cameraPosition?: readonly [number, number, number];
+    /** Time sampled once for this frame and shared by forward and depth draws. */
+    readonly timeSeconds?: number;
     /** #1141: VP + eye of the frame's (possibly structural) camera, for the prd02 bridge. */
     readonly frameCamera?: Prd02BridgeFrameCamera;
     /** Every visible item of the frame (shadow receivers); lets the sun cascades skip a cascade no item selects. */
@@ -310,6 +315,9 @@ export class RendererShadowOrchestrator {
         source: options.source,
         items: options.items,
         camera: options.camera,
+        cameraPosition: options.cameraPosition ?? options.frameCamera?.eye
+          ?? (options.camera ? cameraWorldPosition(options.camera) : undefined),
+        timeSeconds: options.timeSeconds,
         ...(options.frameCamera ? { frameCamera: options.frameCamera } : {}),
         ...(options.receivers ? { receivers: options.receivers } : {}),
         // PRD 11: the app's live C-27 tier sizes the bridged cascades (undefined → high).
@@ -323,12 +331,21 @@ export class RendererShadowOrchestrator {
       });
     }
     const light = options.shadowOptions.light ?? firstShadowCastingLight(options.source, options.lights);
+    if (light && !isLightVisibleInHierarchy(light, sceneFromSource(options.source)?.root)) {
+      throw new RenderDeviceError("Renderer-owned shadows require an enabled shadow-casting light.", "SHADOW_LIGHT_REQUIRED", {
+        reason: "light-disabled"
+      });
+    }
+    const cameraPosition = options.cameraPosition ?? options.frameCamera?.eye
+      ?? (options.camera ? cameraWorldPosition(options.camera) : undefined);
     if (light instanceof PointLight) {
       return this.executeRendererPointShadowMap({
         shadowOptions: options.shadowOptions,
         items: options.items,
         ownedTargets: options.ownedTargets,
         ownedShadowPasses: options.ownedShadowPasses,
+        cameraPosition,
+        timeSeconds: options.timeSeconds,
         light
       });
     }
@@ -348,12 +365,14 @@ export class RendererShadowOrchestrator {
         items: options.items,
         ownedShadowPasses: options.ownedShadowPasses,
         light,
-        camera: options.camera
+        camera: options.camera,
+        cameraPosition,
+        timeSeconds: options.timeSeconds
       });
     }
     const lightMatrix = options.shadowOptions.lightMatrix
       ? toMat4(options.shadowOptions.lightMatrix, "shadow.lightMatrix")
-      : createRendererOwnedShadowMatrix(light, options.items, firstShadowCastingCollectedLight(options.lights));
+      : createRendererOwnedShadowMatrix(light, options.items, firstShadowCastingCollectedLight(options.source, options.lights));
     const shadowMap = new ShadowMap({
       size: options.shadowOptions.size,
       bias: options.shadowOptions.bias,
@@ -368,6 +387,8 @@ export class RendererShadowOrchestrator {
       casters: options.items,
       shadowMap,
       viewProjectionMatrix: lightMatrix,
+      cameraPosition,
+      timeSeconds: options.timeSeconds,
       shaderLibrary: this.host.shaderLibrary,
       renderTarget: this.ensureShadowDepthTarget(shadowMap.size)
     });
@@ -397,6 +418,8 @@ export class RendererShadowOrchestrator {
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly light: DirectionalLight;
     readonly camera: PerspectiveCamera;
+    readonly cameraPosition?: readonly [number, number, number];
+    readonly timeSeconds?: number;
   }): ForwardShadowMapOptions | undefined {
     const cascadeCount = options.shadowOptions.cascadeCount ?? 4;
     if (!Number.isInteger(cascadeCount) || cascadeCount < 2 || cascadeCount > 4) {
@@ -441,10 +464,12 @@ export class RendererShadowOrchestrator {
       casters: options.items,
       cascades,
       viewProjectionMatrices: lightMatrices,
+      cameraPosition: options.cameraPosition,
+      timeSeconds: options.timeSeconds,
       shaderLibrary: this.host.shaderLibrary
     });
-    const result = cascadePass.execute({ device: this.host.device, width: this.host.width, height: this.host.height });
     options.ownedShadowPasses.push(cascadePass);
+    const result = cascadePass.execute({ device: this.host.device, width: this.host.width, height: this.host.height });
     if (!result.rendered) return undefined;
     const maps = cascadePass.getForwardShadowMaps({
       lightMatrices,
@@ -473,13 +498,23 @@ export class RendererShadowOrchestrator {
     readonly ownedTargets: RenderTarget[];
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly light: PointLight;
+    readonly cameraPosition?: readonly [number, number, number];
+    readonly timeSeconds?: number;
   }): ForwardShadowMapOptions | undefined {
-    if (!this.host.device.writeRenderTargetPixels) {
-      throw new RenderDeviceError("Renderer-owned point shadows require render-target pixel upload for the point-light atlas.", "POINT_SHADOW_ATLAS_UPLOAD_UNSUPPORTED", {
-        backend: this.host.device.kind
+    const device = this.host.device;
+    const copyColorRegion = device.kind === "webgpu" ? device.copyRenderTargetColorRegion : undefined;
+    if (device.kind === "webgpu" && !copyColorRegion) {
+      throw new RenderDeviceError("WebGPU point shadows require an ordered GPU color-region copy.", "POINT_SHADOW_ATLAS_COPY_UNSUPPORTED", {
+        backend: device.kind
       });
     }
-    options.light.transform.updateWorld(undefined, true);
+    if (!copyColorRegion && !device.writeRenderTargetPixels) {
+      throw new RenderDeviceError("Renderer-owned point shadows require render-target pixel upload for the point-light atlas.", "POINT_SHADOW_ATLAS_UPLOAD_UNSUPPORTED", {
+        backend: device.kind
+      });
+    }
+    const checkClipping = options.light.visible && options.light.castsShadow;
+    if (checkClipping) assertStableMultiTargetShadowClipping(options.items);
     const size = options.shadowOptions.size ?? 512;
     const faceMatrices = createPointShadowFaceMatrices(options.light);
     const faceRects = createPointShadowFaceRects();
@@ -491,18 +526,34 @@ export class RendererShadowOrchestrator {
       pcfSamples: options.shadowOptions.pcfSamples,
       pcfDistribution: options.shadowOptions.pcfDistribution
     };
-    const atlasPixels = new Uint8Array(size * 3 * size * 2 * 4);
+    const atlasPixels = copyColorRegion ? null : new Uint8Array(size * 3 * size * 2 * 4);
+    let atlasTarget: RenderTarget | undefined;
+    const ensureAtlasTarget = (): RenderTarget => {
+      if (atlasTarget) return atlasTarget;
+      atlasTarget = device.createRenderTarget({
+        width: size * 3,
+        height: size * 2,
+        label: `${options.shadowOptions.label ?? "renderer-point-shadow"}-atlas`,
+        format: "rgba8",
+        depth: false
+      });
+      options.ownedTargets.push(atlasTarget);
+      return atlasTarget;
+    };
     for (let face = 0; face < 6; face += 1) {
+      if (checkClipping && face > 0) assertStableMultiTargetShadowClipping(options.items);
       const faceMatrix = faceMatrices.slice(face * 16, face * 16 + 16);
       const shadowPass = new ShadowPass({
         light: options.light,
         casters: options.items,
         shadowMap: new ShadowMap({ ...shadowMapOptions, label: `${options.shadowOptions.label ?? "renderer-point-shadow"}-face-${face}` }),
         viewProjectionMatrix: faceMatrix,
+        cameraPosition: options.cameraPosition,
+        timeSeconds: options.timeSeconds,
         shaderLibrary: this.host.shaderLibrary
       });
       options.ownedShadowPasses.push(shadowPass);
-      const result = shadowPass.execute({ device: this.host.device, width: this.host.width, height: this.host.height });
+      const result = shadowPass.execute({ device, width: this.host.width, height: this.host.height });
       if (!result.rendered) {
         return undefined;
       }
@@ -510,28 +561,34 @@ export class RendererShadowOrchestrator {
       if (!target) {
         throw new RenderDeviceError("Renderer-owned point shadow face did not expose a render target.", "POINT_SHADOW_FACE_TARGET_MISSING", { face });
       }
-      const facePixels = readShadowFacePixels(this.host.device, target);
-      blitPointShadowFace(atlasPixels, size * 3, size * 2, facePixels, size, faceRects, face);
+      if (copyColorRegion) {
+        // DepthPass writes window depth into RGBA. Copy the rendered face on
+        // the GPU, preserving the existing bottom-left 3x2 atlas convention.
+        copyColorRegion.call(device, target, ensureAtlasTarget(), {
+          sourceX: 0,
+          sourceY: 0,
+          destinationX: (face % 3) * size,
+          destinationY: Math.floor(face / 3) * size,
+          width: size,
+          height: size
+        });
+      } else {
+        const facePixels = readShadowFacePixels(device, target);
+        blitPointShadowFace(atlasPixels!, size * 3, size * 2, facePixels, size, faceRects, face);
+      }
     }
-    const atlasTarget = this.host.device.createRenderTarget({
-      width: size * 3,
-      height: size * 2,
-      label: `${options.shadowOptions.label ?? "renderer-point-shadow"}-atlas`,
-      format: "rgba8",
-      depth: false
-    });
-    options.ownedTargets.push(atlasTarget);
-    this.host.device.writeRenderTargetPixels(atlasTarget, atlasPixels);
+    const completedAtlas = ensureAtlasTarget();
+    if (atlasPixels) device.writeRenderTargetPixels!(completedAtlas, atlasPixels);
     const texture = new TextureBinding({
       name: "u_pointShadowMapTexture",
-      texture: atlasTarget.colorTexture,
+      texture: completedAtlas.colorTexture,
       sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
       required: true
     });
     return {
       texture: new TextureBinding({
         name: "u_shadowMapTexture",
-        texture: atlasTarget.colorTexture,
+        texture: completedAtlas.colorTexture,
         sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
         required: true
       }),

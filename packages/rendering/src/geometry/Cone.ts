@@ -1,16 +1,3 @@
-/**
- * threejs-parity (docs/workflows/threejs-parity-gaps.md §5.2, lane L2-01) —
- * `Cone` / `CylinderGeometry` ported verbatim from three.js 0.185.1
- * (`src/geometries/CylinderGeometry.js`): identical vertex order
- * (torso rows top→bottom, × radial segments), identical index order,
- * identical UV layout and group order (torso 0, top cap 1, bottom cap 2).
- *
- * `coneParityMesh` is `CylinderGeometry(0, radius, ...)` — the PRD requires
- * the cone to flow through the existing `radiusTop`/`radiusBottom` plumbing
- * (`Geometry.ts` CylinderGeometryOptions), so both cone and cylinder params
- * land on this one port.
- */
-
 import type { ParityMesh } from "./Support";
 
 export interface CylinderParityParams {
@@ -24,119 +11,90 @@ export interface CylinderParityParams {
   readonly thetaLength?: number;
 }
 
-/** three `CylinderGeometry` → ParityMesh (vertex/index/uv order identical). */
+/** Build a tapered cylinder, with independent planar caps and material groups. */
 export function cylinderParityMesh(params: CylinderParityParams = {}): ParityMesh {
-  const radiusTop = params.radiusTop ?? 1;
-  const radiusBottom = params.radiusBottom ?? 1;
+  const top = params.radiusTop ?? 1;
+  const bottom = params.radiusBottom ?? 1;
   const height = params.height ?? 1;
-  const radialSegments = Math.floor(params.radialSegments ?? 32);
-  const heightSegments = Math.floor(params.heightSegments ?? 1);
-  const openEnded = params.openEnded ?? false;
-  const thetaStart = params.thetaStart ?? 0;
-  const thetaLength = params.thetaLength ?? Math.PI * 2;
-
-  const indices: number[] = [];
-  const vertices: number[] = [];
+  const requestedAround = params.radialSegments ?? 32;
+  const requestedHeight = params.heightSegments ?? 1;
+  const start = params.thetaStart ?? 0;
+  const sweep = params.thetaLength ?? 2 * Math.PI;
+  if (![top, bottom, height, requestedAround, requestedHeight, start, sweep].every(Number.isFinite)) {
+    throw new RangeError("cylinderParityMesh requires finite parameters");
+  }
+  const around = Math.max(3, Math.floor(requestedAround));
+  const along = Math.max(1, Math.floor(requestedHeight));
+  const stride = around + 1;
+  const positions: number[] = [];
   const normals: number[] = [];
   const uvs: number[] = [];
-  const groups: { start: number; count: number; materialIndex?: number }[] = [];
+  const indices: number[] = [];
+  const groups: { start: number; count: number; materialIndex: number }[] = [];
 
-  let index = 0;
-  const indexArray: number[][] = [];
-  const halfHeight = height / 2;
-  let groupStart = 0;
-
-  const generateTorso = (): void => {
-    let groupCount = 0;
-    const slope = (radiusBottom - radiusTop) / height;
-
-    for (let y = 0; y <= heightSegments; y += 1) {
-      const indexRow: number[] = [];
-      const v = y / heightSegments;
-      const radius = v * (radiusBottom - radiusTop) + radiusTop;
-      for (let x = 0; x <= radialSegments; x += 1) {
-        const u = x / radialSegments;
-        const theta = u * thetaLength + thetaStart;
-        const sinTheta = Math.sin(theta);
-        const cosTheta = Math.cos(theta);
-        vertices.push(radius * sinTheta, -v * height + halfHeight, radius * cosTheta);
-        const invLen = 1 / Math.hypot(sinTheta, slope, cosTheta);
-        normals.push(sinTheta * invLen, slope * invLen, cosTheta * invLen);
-        uvs.push(u, 1 - v);
-        indexRow.push(index);
-        index += 1;
-      }
-      indexArray.push(indexRow);
+  // The radial derivative and the height derivative give a side normal with
+  // radial component 1 and vertical component (bottom-top)/height.
+  const rise = height === 0 ? 0 : (bottom - top) / height;
+  const sideLength = Math.hypot(1, rise);
+  const sideRadial = 1 / sideLength;
+  const sideY = rise / sideLength;
+  for (let row = 0; row <= along; row += 1) {
+    const v = row / along;
+    const radius = top * (1 - v) + bottom * v;
+    for (let col = 0; col <= around; col += 1) {
+      const u = col / around;
+      const angle = start + sweep * u;
+      const x = Math.sin(angle);
+      const z = Math.cos(angle);
+      positions.push(radius * x, height * (0.5 - v), radius * z);
+      normals.push(sideRadial * x, sideY, sideRadial * z);
+      uvs.push(u, 1 - v);
     }
-
-    for (let x = 0; x < radialSegments; x += 1) {
-      for (let y = 0; y < heightSegments; y += 1) {
-        const a = indexArray[y]![x]!;
-        const b = indexArray[y + 1]![x]!;
-        const c = indexArray[y + 1]![x + 1]!;
-        const d = indexArray[y]![x + 1]!;
-        if (radiusTop > 0 || y !== 0) {
-          indices.push(a, b, d);
-          groupCount += 3;
-        }
-        if (radiusBottom > 0 || y !== heightSegments - 1) {
-          indices.push(b, c, d);
-          groupCount += 3;
-        }
-      }
-    }
-
-    groups.push({ start: groupStart, count: groupCount, materialIndex: 0 });
-    groupStart += groupCount;
-  };
-
-  const generateCap = (top: boolean): void => {
-    const centerIndexStart = index;
-    let groupCount = 0;
-    const radius = top === true ? radiusTop : radiusBottom;
-    const sign = top === true ? 1 : -1;
-
-    for (let x = 1; x <= radialSegments; x += 1) {
-      vertices.push(0, halfHeight * sign, 0);
-      normals.push(0, sign, 0);
-      uvs.push(0.5, 0.5);
-      index += 1;
-    }
-
-    const centerIndexEnd = index;
-
-    for (let x = 0; x <= radialSegments; x += 1) {
-      const u = x / radialSegments;
-      const theta = u * thetaLength + thetaStart;
-      const cosTheta = Math.cos(theta);
-      const sinTheta = Math.sin(theta);
-      vertices.push(radius * sinTheta, halfHeight * sign, radius * cosTheta);
-      normals.push(0, sign, 0);
-      uvs.push(cosTheta * 0.5 + 0.5, sinTheta * 0.5 * sign + 0.5);
-      index += 1;
-    }
-
-    for (let x = 0; x < radialSegments; x += 1) {
-      const c = centerIndexStart + x;
-      const i = centerIndexEnd + x;
-      if (top === true) {
-        indices.push(i, i + 1, c);
-      } else {
-        indices.push(i + 1, i, c);
-      }
-      groupCount += 3;
-    }
-
-    groups.push({ start: groupStart, count: groupCount, materialIndex: top === true ? 1 : 2 });
-  };
-
-  generateTorso();
-  if (openEnded === false) {
-    if (radiusTop > 0) generateCap(true);
-    if (radiusBottom > 0) generateCap(false);
   }
+  for (let col = 0; col < around; col += 1) {
+    for (let row = 0; row < along; row += 1) {
+      const a = row * stride + col;
+      const b = a + stride;
+      // Omit the zero-area half of the first or last row at a pointed end.
+      if (top > 0 || row > 0) indices.push(a, b, a + 1);
+      if (bottom > 0 || row < along - 1) indices.push(b, b + 1, a + 1);
+    }
+  }
+  groups.push({ start: 0, count: indices.length, materialIndex: 0 });
 
-  return { positions: vertices, normals, uvs, indices, groups };
+  const appendCap = (radius: number, side: 1 | -1): void => {
+    if (radius <= 0) return;
+    const indexStart = indices.length;
+    const centerStart = positions.length / 3;
+    const y = side * height / 2;
+    // A center per triangle keeps every cap sector's vertex attributes distinct.
+    for (let col = 0; col < around; col += 1) {
+      positions.push(0, y, 0);
+      normals.push(0, side, 0);
+      uvs.push(0.5, 0.5);
+    }
+    const edgeStart = positions.length / 3;
+    for (let col = 0; col <= around; col += 1) {
+      const angle = start + sweep * col / around;
+      const x = Math.sin(angle);
+      const z = Math.cos(angle);
+      positions.push(radius * x, y, radius * z);
+      normals.push(0, side, 0);
+      uvs.push(0.5 + z / 2, 0.5 + side * x / 2);
+      if (col > 0) {
+        const center = centerStart + col - 1;
+        const edge = edgeStart + col - 1;
+        if (side === 1) indices.push(edge, edge + 1, center);
+        else indices.push(edge + 1, edge, center);
+      }
+    }
+    groups.push({ start: indexStart, count: indices.length - indexStart, materialIndex: side === 1 ? 1 : 2 });
+  };
+  if (!(params.openEnded ?? false)) {
+    appendCap(top, 1);
+    appendCap(bottom, -1);
+  }
+  return { positions, normals, uvs, indices, groups };
 }
 
 export interface ConeParityParams {
@@ -149,12 +107,12 @@ export interface ConeParityParams {
   readonly thetaLength?: number;
 }
 
-/** three `ConeGeometry(radius, height, …)` = `CylinderGeometry(0, radius, …)`. */
+/** A cone is a tapered cylinder whose upper radius is zero. */
 export function coneParityMesh(params: ConeParityParams = {}): ParityMesh {
   return cylinderParityMesh({
     radiusTop: 0,
-    radiusBottom: params.radius ?? 1,
-    height: params.height ?? 1,
+    radiusBottom: params.radius,
+    height: params.height,
     radialSegments: params.radialSegments,
     heightSegments: params.heightSegments,
     openEnded: params.openEnded,

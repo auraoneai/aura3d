@@ -1,3 +1,28 @@
-export type ColorSpaceProduction = 'linear' | 'srgb' | 'display-p3';
-export function srgbToLinear(value: number): number { return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4; }
-export function linearToSrgb(value: number): number { return value <= 0.0031308 ? value * 12.92 : 1.055 * value ** (1 / 2.4) - 0.055; }
+import {
+  convertManagedColor,
+  decodeColorTransfer,
+  encodeColorTransfer,
+  type A3DManagedColorConversionOptions,
+  type A3DManagedColorSpace
+} from "../../ColorManagement";
+
+/** `linear` remains an alias of linear-sRGB for existing production consumers. */
+export type ColorSpaceProduction = "linear" | A3DManagedColorSpace;
+
+export function srgbToLinear(value: number): number {
+  return decodeColorTransfer(value, "srgb");
+}
+
+export function linearToSrgb(value: number): number {
+  return encodeColorTransfer(value, "srgb");
+}
+
+/** All declared production spaces go through the shared primary/transfer path. */
+export function convertProductionColorSpace(
+  color: readonly [number, number, number, number],
+  from: ColorSpaceProduction,
+  to: ColorSpaceProduction,
+  options: A3DManagedColorConversionOptions = {}
+): [number, number, number, number] {
+  return convertManagedColor(color, from === "linear" ? "linear-srgb" : from, to === "linear" ? "linear-srgb" : to, options);
+}

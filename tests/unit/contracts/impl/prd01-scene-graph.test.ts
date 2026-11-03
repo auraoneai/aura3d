@@ -5,14 +5,13 @@
  * (a) rotated parent [0, π/2, 0] with child at [1,0,0] gives world [0,0,−1]
  * (b) parent scale 6 with child at [1,0,0] gives [6,0,0]
  * (c) translation-only groups identical to the PR 0a stub
- * (d) a three-level nest matches three.js Object3D to 1e-5
+ * (d) a three-level nest matches independent elementary matrix multiplication
  * (e) shear flags SCENE_GRAPH_SHEAR
  * (f) "ZYX" default reproduces legacy rotationXYZ for 100 random Eulers
  * (g) 1,000-node static scene: 1,000 composes on frame 1, 0 on frame 2
  */
 
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
 
 import * as stub from "../../../../packages/engine/src/contracts/sceneGraph";
 import {
@@ -23,16 +22,23 @@ import {
   createWorldMatrixCache,
   decomposeMatrix,
   eulerToQuaternion,
-  lookAtWorldQuaternion,
-  multiplyMat4Into
+  lookAtWorldQuaternion
 } from "../../../../packages/engine/src/agent-api/sceneGraph";
 import { createModelMatrix } from "../../../../packages/engine/src/agent-api/index";
 import type { AuraPrimitiveNode } from "../../../../packages/engine/src/agent-api/index";
 
-const I = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+// Independent row-by-column oracle, retaining column-major storage.
+function product(a: ArrayLike<number>, b: ArrayLike<number>): number[] {
+  return Array.from({ length: 16 }, (_, i) => {
+    const row = i % 4;
+    const col = Math.floor(i / 4);
+    let sum = 0;
+    for (let k = 0; k < 4; k += 1) sum += a[k * 4 + row]! * b[col * 4 + k]!;
+    return sum;
+  });
+}
 
-/** Legacy index.ts rotationXYZ: Rz·Ry·Rx (column-major). */
-function rotationXYZ(rotation: readonly [number, number, number]): Float32Array {
+function rotationByOrder(rotation: readonly [number, number, number], order: string): number[] {
   const [x, y, z] = rotation;
   const cx = Math.cos(x);
   const sx = Math.sin(x);
@@ -40,12 +46,17 @@ function rotationXYZ(rotation: readonly [number, number, number]): Float32Array 
   const sy = Math.sin(y);
   const cz = Math.cos(z);
   const sz = Math.sin(z);
-  const rx = new Float32Array([1, 0, 0, 0, 0, cx, sx, 0, 0, -sx, cx, 0, 0, 0, 0, 1]);
-  const ry = new Float32Array([cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1]);
-  const rz = new Float32Array([cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-  const out = new Float32Array(16);
-  multiplyMat4Into(out, rz, (() => { const t = new Float32Array(16); multiplyMat4Into(t, ry, rx); return t; })());
-  return out;
+  const axes: Record<string, number[]> = {
+    X: [1, 0, 0, 0, 0, cx, sx, 0, 0, -sx, cx, 0, 0, 0, 0, 1],
+    Y: [cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1],
+    Z: [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+  };
+  return product(product(axes[order[0]!]!, axes[order[1]!]!), axes[order[2]!]!);
+}
+
+/** Legacy rotationXYZ: Rz·Ry·Rx (column-major). */
+function rotationXYZ(rotation: readonly [number, number, number]): number[] {
+  return rotationByOrder(rotation, "ZYX");
 }
 
 function quatToMatrix(q: readonly [number, number, number, number]): Float32Array {
@@ -59,6 +70,11 @@ function expectClose(actual: ArrayLike<number>, expected: ArrayLike<number>, eps
   for (let i = 0; i < actual.length; i += 1) {
     expect(Math.abs((actual[i] ?? 0) - (expected[i] ?? 0))).toBeLessThan(eps);
   }
+}
+
+function point(matrix: ArrayLike<number>, position: readonly [number, number, number]): number[] {
+  const [x, y, z] = position;
+  return [0, 1, 2].map((row) => matrix[row]! * x + matrix[4 + row]! * y + matrix[8 + row]! * z + matrix[12 + row]!);
 }
 
 describe("prd01 C-06 composeWorldMatrix", () => {
@@ -82,32 +98,67 @@ describe("prd01 C-06 composeWorldMatrix", () => {
     expectClose(real, stubM, 1e-7);
   });
 
-  it("(d) three-level nest matches three.js Object3D within 1e-5", () => {
+  it("contract accepts a local pivot and leaves that point fixed under rotation and scale", () => {
+    const identity = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    const result = stub.composeWorldMatrix(identity, { pivot: [1, 0, 0], rotation: [0, 0, Math.PI / 2], scale: [2, 1, 1] }, new Float32Array(16));
+    expectClose([result[12]!, result[13]!, result[14]!], [1, -2, 0]);
+    expectClose([result[0]! + result[12]!, result[1]! + result[13]!, result[2]! + result[14]!], [1, 0, 0]);
+  });
+
+  it("root composition applies pivot before parent transforms and defaults to the origin", () => {
+    const parent = composeWorldMatrix(null, { position: [10, 0, 0] }, new Float32Array(16));
+    const spec = { position: [3, 4, 0] as const, pivot: [1, 0, 0] as const, rotation: [0, 0, Math.PI / 2] as const, scale: [2, 1, 1] as const };
+    const result = composeWorldMatrix(parent, spec, new Float32Array(16));
+    expectClose(point(result, [1, 0, 0]), [14, 4, 0]);
+    expectClose(point(result, [2, 0, 0]), [14, 6, 0]);
+    const implicit = composeWorldMatrix(parent, { ...spec, pivot: undefined }, new Float32Array(16));
+    const explicit = composeWorldMatrix(parent, { ...spec, pivot: [0, 0, 0] }, new Float32Array(16));
+    expectClose(implicit, explicit);
+  });
+
+  it("invalidates cached world matrices when a pivot changes in place", () => {
+    const cache = createWorldMatrixCache();
+    const spec = { rotation: [0, 0, Math.PI / 2] as const, scale: [2, 1, 1] as const, pivot: [1, 0, 0] as [number, number, number] };
+    const result = new Float32Array(16);
+    cache.beginFrame();
+    cache.world(spec, null, result);
+    expectClose(point(result, [0, 0, 0]), [1, -2, 0]);
+    expect(cache.composed).toBe(1);
+    cache.beginFrame();
+    cache.world(spec, null, result);
+    expect(cache.composed).toBe(0);
+    spec.pivot[0] = 2;
+    cache.world(spec, null, result);
+    expect(cache.composed).toBe(1);
+    expectClose(point(result, [0, 0, 0]), [2, -4, 0]);
+  });
+
+  it("lookAt aims from the translated pivot and keeps the pivot fixed", () => {
+    const result = composeWorldMatrixWithLookAt(null, {
+      position: [3, 4, 0], pivot: [1, 0, 0], scale: [2, 1, 1], lookAt: [4, 4, -1]
+    }, new Float32Array(16));
+    expectClose(point(result, [1, 0, 0]), [4, 4, 0]);
+    expectClose(point(result, [2, 0, 0]), [6, 4, 0]);
+    expectClose([result[8]!, result[9]!, result[10]!], [0, 0, 1]);
+  });
+
+  it("(d) three-level nest matches elementary matrix composition", () => {
     const specs = [
       { position: [1, 2, -3] as const, rotation: [0.3, -0.7, 0.9] as const, scale: [2, 1, 0.5] as const },
       { position: [-1, 0.5, 2] as const, rotation: [-1.1, 0.4, 0.2] as const, scale: [0.5, 3, 1] as const },
       { position: [0.25, -4, 1] as const, rotation: [0.9, 0.9, -1.3] as const, scale: [1, 1, 4] as const }
     ];
-    // Aura path (ZYX == three.js "ZYX").
     let world = composeWorldMatrix(null, specs[0], new Float32Array(16));
     world = composeWorldMatrix(world, specs[1], new Float32Array(16));
     world = composeWorldMatrix(world, specs[2], new Float32Array(16));
-    // three.js path.
-    const root = new THREE.Object3D();
-    const mid = new THREE.Object3D();
-    const leaf = new THREE.Object3D();
-    [root, mid, leaf].forEach((node, i) => {
-      node.position.set(specs[i]!.position[0], specs[i]!.position[1], specs[i]!.position[2]);
-      node.rotation.set(specs[i]!.rotation[0], specs[i]!.rotation[1], specs[i]!.rotation[2], "ZYX");
-      node.scale.set(specs[i]!.scale[0], specs[i]!.scale[1], specs[i]!.scale[2]);
-    });
-    root.add(mid);
-    mid.add(leaf);
-    root.updateMatrixWorld(true);
-    expectClose(Array.from(world), leaf.matrixWorld.elements, 1e-5);
+    const local = specs.map(({ position: [x, y, z], rotation, scale: [sx, sy, sz] }) => product(
+      product([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1], rotationByOrder(rotation, "ZYX")),
+      [sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1]
+    ));
+    expectClose(world, product(product(local[0]!, local[1]!), local[2]!), 1e-5);
   });
 
-  it("(d') every Euler order matches three.js setFromEuler", () => {
+  it("(d') every Euler order matches elementary axis rotations", () => {
     const orders = ["XYZ", "XZY", "YXZ", "YZX", "ZXY", "ZYX"] as const;
     const eulers = [
       [0.3, -0.7, 0.9],
@@ -116,13 +167,9 @@ describe("prd01 C-06 composeWorldMatrix", () => {
       [0.01, 0.02, 3.1]
     ] as const;
     for (const order of orders) {
-      const te = new THREE.Euler();
-      const tq = new THREE.Quaternion();
       for (const e of eulers) {
-        te.set(e[0], e[1], e[2], order);
-        tq.setFromEuler(te);
         const q = eulerToQuaternion(e, order);
-        expectClose(q, [tq.x, tq.y, tq.z, tq.w], 1e-6);
+        expectClose(quatToMatrix(q), rotationByOrder(e, order), 1e-6);
       }
     }
   });

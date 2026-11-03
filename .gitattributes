@@ -50,3 +50,19 @@ public/hdri/kloppenheim_02_1k.hdr filter=lfs diff=lfs merge=lfs -text
 public/hdri/deep_space_starfield_1k.hdr filter=lfs diff=lfs merge=lfs -text
 public/hdri/sunset-dramatic_1k.hdr filter=lfs diff=lfs merge=lfs -text
 public/hdri/indoor-workshop_1k.hdr filter=lfs diff=lfs merge=lfs -text
+
+# Scaffold copies of the LFS-tracked catalogue. Existing originals and the
+# outdoor-midday duplicate stay regular blobs, matching public/hdri.
+packages/create-aura3d/hdri/belfast_sunset_puresky_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/industrial_sunset_puresky_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/spruit_sunrise_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/venice_sunset_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/rooftop_night_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/cobblestone_street_night_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/hangar_interior_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/warm_bar_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/museum_of_history_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/kloppenheim_02_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/deep_space_starfield_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/sunset-dramatic_1k.hdr filter=lfs diff=lfs merge=lfs -text
+packages/create-aura3d/hdri/indoor-workshop_1k.hdr filter=lfs diff=lfs merge=lfs -text

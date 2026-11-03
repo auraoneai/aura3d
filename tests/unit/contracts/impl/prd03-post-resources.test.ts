@@ -15,13 +15,13 @@ let disposed = 0;
 
 function fakeDevice(): RenderDevice {
   return {
-    createRenderTarget(desc: { width: number; height: number; format: string; samples?: number; depth?: boolean }) {
+    createRenderTarget(desc: { width: number; height: number; format: string; sampleCount?: number; depth?: boolean }) {
       created += 1;
       return {
         id: `rt-${created}`,
         width: desc.width,
         height: desc.height,
-        sampleCount: desc.samples ?? 1,
+        sampleCount: desc.sampleCount ?? 1,
         colorTexture: { format: desc.format },
         disposed: false,
         dispose() { disposed += 1; }
@@ -58,6 +58,16 @@ describe("post/PostResources (PRD-03 Phase 2, C-28)", () => {
     const a2 = resources.acquire({ width: 640, height: 360, format: "rgba16f", samples: 1, depth: false });
     expect(a2).toBe(a);
     expect(created).toBe(2);
+    resources.dispose();
+  });
+
+  it("preserves the requested multisample count through the stub device contract", () => {
+    const resources = new PostResources(fakeDevice(), flags);
+    const key = { width: 8, height: 8, format: "rgba8", samples: 4 as const, depth: false };
+    const target = resources.acquire(key);
+    expect(target.sampleCount).toBe(4);
+    resources.release(target);
+    expect(resources.acquire(key)).toBe(target);
     resources.dispose();
   });
 

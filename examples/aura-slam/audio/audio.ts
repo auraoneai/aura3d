@@ -139,7 +139,7 @@ export interface TennisAudioOptions {
   readonly random?: () => number;
   /** URLs of the two sprite sheets. Defaults to the copies under `examples/aura-slam/assets/audio/`. */
   readonly assets?: { readonly hit: string; readonly bounce: string };
-  readonly fetch?: (url: string) => Promise<{ readonly ok: boolean; arrayBuffer(): Promise<ArrayBuffer> }>;
+  readonly fetch?: (url: string, init?: { readonly signal?: AbortSignal }) => Promise<{ readonly ok: boolean; arrayBuffer(): Promise<ArrayBuffer> }>;
   /** Inject a context (tests, offline rendering). Production uses the manager's own context. */
   readonly context?: SynthContext;
   /** `KeyboardEvent.code` for the kit's mute key. Default `false`: the original game has no mute key (its sound button
@@ -201,6 +201,7 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
   // Fetch while the menu is open; creating/resuming the context stays inside a user gesture.
   void slices.preload();
   let enabled = true;
+  let disposed = false;
   let venue = "hard";
   const ambience = options.ambience === true;
   const speak = !ambience ? null : options.speak === undefined ? browserSpeaker : options.speak;
@@ -208,12 +209,12 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
   const crowd = (): void => { if (crowdOn()) bank.play("crowd", {}); };
 
   const init = (): void => {
-    if (!enabled) return;
+    if (!enabled || disposed) return;
     bank.setMuted(false);
     // The graph exists as soon as unlock() starts, so the fallback impacts are ready for the very first contact.
     const unlocking = bank.unlock();
     slices.buildFallbacks();
-    void unlocking.then((ok) => { if (ok) { crowd(); return slices.prepare(); } return undefined; });
+    void unlocking.then((ok) => { if (ok && !disposed) { crowd(); return slices.prepare(); } return undefined; });
   };
 
   const impact = (kind: ImpactKind, pitch: unknown, contact: ContactLike = {}): void => {
@@ -285,7 +286,9 @@ export function createTennisAudio(options: TennisAudioOptions = {}): TennisAudio
     bank,
     slices,
     dispose(): void {
-      slices.stopAll();
+      if (disposed) return;
+      disposed = true;
+      slices.dispose();
       bank.dispose();
     }
   };

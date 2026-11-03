@@ -349,8 +349,12 @@ describe("ST-07 texture.load (real async path)", () => {
   });
 
   test("namespace members stay enumerable (lazyNamespace proxy)", () => {
-    expect(Object.keys(textureNamespace).sort()).toEqual(
-      ["canvas", "compressed", "cube", "data", "dataArray", "depth", "load", "video"].sort()
-    );
+    const expectedKeys = [
+      "canvas", "compressed", "compressedCube", "cube", "data", "data3d", "dataArray",
+      "depth", "fromNativeImage", "load", "loadNativeAsset", "storage", "video"
+    ].sort();
+    expect(Object.keys(textureNamespace).sort()).toEqual(expectedKeys);
+    expect(Object.keys(texture).sort()).toEqual(expectedKeys);
+    expect(texture.loadNativeAsset).toBeTypeOf("function");
   });
 });

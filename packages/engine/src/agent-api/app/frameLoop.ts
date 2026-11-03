@@ -4,9 +4,7 @@ import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRe
 import { createParentFit } from "./parentFit.js";
 import { bindLazyFrameDiagnostics, deviceFrameCounters, rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
-import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
-import { animation } from "../nodes/animation.js";
-import { camera } from "../nodes/camera.js";
+import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, getRootRenderSource, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
@@ -16,18 +14,33 @@ import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { groups } from "../nodes/groups.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
-import { labels } from "../nodes/labels.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
+import { snapshotAuraAssetsOption } from "../../contracts/assets.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { renderer } from "../rendererDiagnostics.js";
 import { resolveCameraFrame } from "../compiler/camera.js";
 import { updateRouteDiagnostics } from "./routeState.js";
-import { text3D } from "../nodes/text3d.js";
-import { timeline } from "../nodes/timeline.js";
 import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusionTest } from "../compiler/labels.js";
-import { round } from "../GameRuntime.js";
 import { authoredBackingResize, canvasContentBox, noteEngineCanvasSize, ownSizedCanvasAxes, refreshOwnSizedAxes } from "./canvas.js";
+import { setAdvancedLightingInvalidator } from "./advancedLightingState.js";
+import type { Prd07MountAuthority } from "../vfx/bridge.js";
+import { isPrd07DeviceLeaseBusy } from "../../../../rendering/src/vfx/Prd07FrameAdapter.js";
+import { RenderDeviceError } from "@aura3d/rendering";
+
+function frameSetupCleanupFailure(error: unknown, failures: readonly unknown[]): RenderDeviceError {
+  const failure = new RenderDeviceError(
+    "WEBGPU_OWNERSHIP_CLEANUP_FAILED: Renderer mount failed and WebGPU cleanup could not be confirmed",
+    "WEBGPU_OWNERSHIP_CLEANUP_FAILED"
+  );
+  failure.cause = new AggregateError([error, ...failures], "Renderer mount and cleanup failed", { cause: error });
+  return failure;
+}
+
+/** App-owned hooks; internal direct frame-loop callers may omit them. */
+interface Prd07AppMountHooks {
+  readonly getPrd07MountAuthority?: () => Prd07MountAuthority | null | undefined;
+  readonly subscribePrd07Atmosphere?: (listener: () => void) => () => void;
+}
 
 export async function startProductionRender(
   canvas: HTMLCanvasElement,
@@ -55,12 +68,27 @@ export async function startProductionRender(
   /** T0-28: the app's flags, resolved once in `createAuraApp`; absent → resolved here (legacy callers). */
   appQrFlags?: QrFlags,
   /** True when a newer `setScene()` or `dispose()` superseded this mount while awaiting asset/renderer setup. */
-  isCancelled: () => boolean = () => false
+  isCancelled: () => boolean = () => false,
+  /** Mount lifecycle milestones; only a real, still-owned GPU submission is a first frame. */
+  readiness?: {
+    onRendererReady(backend: "webgl2" | "webgpu", controller: WebGLRenderController): void;
+    onFirstFrame(backend: "webgl2" | "webgpu"): void;
+    onFirstFrameFailed?(error: unknown): void;
+    /** Reports a genuine current-mount frame failure even after a blank first frame. */
+    onTerminalFrameFailure?(error: unknown): void;
+    /** Reports loss observed by a frame before a device event has arrived. */
+    onDeviceLossDetected?(): void;
+  },
+  mountSignal?: AbortSignal,
+  /** Unique app owner; legacy direct callers default to the canvas. */
+  runtimeOwner?: object,
+  prd07?: Prd07AppMountHooks
 ): Promise<WebGLRenderController> {
+  const assetOptions = snapshotAuraAssetsOption(options.assets);
   // Use the same ownership rule as initial mount and setScene. A compatibility
   // source continues supplying arena/fighter geometry when public nodes are
   // temporarily absent (for example the crowd-hidden negative control).
-  if (!hasRootRenderableContent(canvas, declaresWebGLContent(snapshot.nodes))) {
+  if (!hasRootRenderableContent(canvas, declaresWebGLContent(snapshot.nodes), runtimeOwner ?? canvas)) {
     throw new AuraRuntimeError(
       "missing-asset",
       "Aura3D production rendering requires at least one typed model asset or primitive. Suggested fix: add model(assets.product), primitives.box(), primitives.sphere(), primitives.cylinder(), or primitives.plane()."
@@ -94,9 +122,27 @@ export async function startProductionRender(
     runtimeNodes,
     renderPath.flags,
     { strict: options.strict, onDegradation: options.onDegradation },
-    { preserveDrawingBuffer: wantsPreservedDrawingBuffer(options) }
+    {
+      preserveDrawingBuffer: wantsPreservedDrawingBuffer(options),
+      ...(options.output !== undefined || options.renderer?.output !== undefined
+        ? { output: { ...options.renderer?.output, ...options.output } }
+        : {})
+    },
+    {
+      runtimeOwner,
+      request: {
+        ...(assetOptions?.securityContext === undefined ? {} : { securityContext: assetOptions.securityContext }),
+        signal: mountSignal
+      },
+      assetOptions,
+      formatRegistry: options.formatRegistry,
+      ...(prd07?.getPrd07MountAuthority ? { getPrd07MountAuthority: prd07.getPrd07MountAuthority } : {})
+    }
   );
   let renderer = await mountRenderer();
+  let rawRetirement: "not-started" | "pending" | "done" = "not-started";
+  let controllerOwnsCleanup = false;
+  try {
   /*
    * RP-01: the direct-path decision reads the authored snapshot, which cannot show a GLB's own BLEND or transmission materials.
    * The mount records them once the GLBs are decoded; if there are any, mount again on the HDR target before the first frame,
@@ -104,16 +150,18 @@ export async function startProductionRender(
    */
   const decoded = renderPath.direct && !isCancelled() ? takeDecodedDirectPathBlockers(canvas) : [];
   if (decoded.length > 0) {
+    rawRetirement = "pending";
     renderer.dispose();
+    await renderer.whenDisposed?.();
+    rawRetirement = "done";
     renderPath = resolveAppRenderPath(snapshot, options, qrFlags, { extraBlockers: [...directPathVetoReasons(canvas), ...decoded] });
     diagnosticsState.renderPath = renderPath.report;
     pushWarnings(diagnosticsState, [`DIRECT_PATH_REDECIDED: ${decoded.join("; ")}; mounted on the HDR target instead of the direct path.`]);
     applyRenderPathToCanvas(canvas, renderPath);
     renderer = await mountRenderer();
+    rawRetirement = "not-started";
   }
-  if (isCancelled()) {
-    renderer.dispose();
-    return {
+  const cancelledController = (): WebGLRenderController => ({
       update() { /* cancelled mount */ },
       render() { /* cancelled mount */ },
       setPerformanceQuality() { /* cancelled mount */ },
@@ -125,8 +173,15 @@ export async function startProductionRender(
       pause() { /* cancelled mount */ },
       resume() { /* cancelled mount */ },
       dispose() { /* already disposed */ }
-    };
+    });
+  if (isCancelled()) {
+    rawRetirement = "pending";
+    renderer.dispose();
+    await renderer.whenDisposed?.();
+    rawRetirement = "done";
+    return cancelledController();
   }
+  const backend = renderer.backend === "webgl2" || renderer.backend === "webgpu" ? renderer.backend : undefined;
   diagnosticsState.renderer = renderer.diagnostics;
   const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);
@@ -148,9 +203,13 @@ export async function startProductionRender(
   let disposed = false;
   let animationHandle = 0;
   let lastTime = 0;
+  let pageHidden = typeof document !== "undefined" && document.hidden;
   // ENG-FPS: measured over the presented rAF frames of the last second, not a 60 placeholder.
   const frameRate = createFrameRateMeter();
   let pendingFrames = 0;
+  let activeSynchronousFrames = 0;
+  let disposeAfterSynchronousFrames = false;
+  let frameInvalidated = false;
   let frameTail: Promise<void> = Promise.resolve();
   const lazyFrameDiagnostics = bindLazyFrameDiagnostics(diagnosticsState, {
     renderer: () => renderer.diagnostics,
@@ -162,24 +221,97 @@ export async function startProductionRender(
   const baseBackingSize = getRootPerformanceBaseSize(canvas);
   let syncedWidth = canvas.width;
   let syncedHeight = canvas.height;
-  let resourcesReleased = false;
+  type CleanupFailure = { readonly error: unknown };
+  interface RendererRetirement {
+    readonly completion: Promise<CleanupFailure | undefined>;
+    readonly synchronousFailures: unknown[];
+    pending: boolean;
+    failure?: CleanupFailure;
+  }
+  let initialResourceReleaseStarted = false;
+  let releasingResources = false;
+  let disposingController = false;
+  let disposingRenderer = false;
+  const resourceReleaseFailures: unknown[] = [];
+  let firstRendererFailure: CleanupFailure | undefined;
+  let rendererRetirement: RendererRetirement | undefined;
+  let queuedRendererRetry: Promise<RendererRetirement> | undefined;
+  let resolveFirstRetirement!: (retirement: RendererRetirement) => void;
+  const firstRetirement = new Promise<RendererRetirement>((resolve) => { resolveFirstRetirement = resolve; });
+  const cleanupError = (failures: readonly unknown[], message: string): unknown =>
+    failures.length === 1 ? failures[0] : new AggregateError(failures, message, { cause: failures[0] });
+  const appendFailure = (failures: unknown[], error: unknown): void => {
+    if (!failures.some((failure) => Object.is(failure, error))) failures.push(error);
+  };
+  const startRendererRetirement = (): RendererRetirement => {
+    let resolveCompletion!: (failure: CleanupFailure | undefined) => void;
+    const retirement: RendererRetirement = {
+      completion: new Promise<CleanupFailure | undefined>((resolve) => { resolveCompletion = resolve; }),
+      synchronousFailures: [],
+      pending: true
+    };
+    // Publish before calling user-provided cleanup: it can reenter dispose() or
+    // whenIdle(), and the latter must wait for this very retirement.
+    if (!rendererRetirement) resolveFirstRetirement(retirement);
+    rendererRetirement = retirement;
+    const rememberSynchronousFailure = (error: unknown): void => {
+      retirement.synchronousFailures.push(error);
+      firstRendererFailure ??= { error };
+    };
+    const finish = (asynchronousFailure?: CleanupFailure): void => {
+      const failures = [...retirement.synchronousFailures];
+      if (asynchronousFailure) appendFailure(failures, asynchronousFailure.error);
+      if (failures.length) {
+        firstRendererFailure ??= { error: failures[0] };
+        const reported = [firstRendererFailure.error];
+        for (const error of failures) appendFailure(reported, error);
+        retirement.failure = { error: cleanupError(reported, "Renderer retirement failed") };
+      } else {
+        // A completed retry discharges only renderer custody. Unrelated
+        // diagnostics/label failures remain visible to whenIdle().
+        firstRendererFailure = undefined;
+      }
+      retirement.pending = false;
+      resolveCompletion(retirement.failure);
+    };
+    disposingRenderer = true;
+    try {
+      try { renderer.dispose(); } catch (error) { rememberSynchronousFailure(error); }
+      let retirementPromise: Promise<void> | undefined;
+      try { retirementPromise = renderer.whenDisposed?.(); } catch (error) { rememberSynchronousFailure(error); }
+      if (retirementPromise) {
+        void Promise.resolve(retirementPromise).then(() => finish(), (error: unknown) => finish({ error }));
+      } else finish();
+    } finally {
+      disposingRenderer = false;
+    }
+    return retirement;
+  };
+  const currentRendererRetirement = (): Promise<RendererRetirement> =>
+    queuedRendererRetry ?? (rendererRetirement ? Promise.resolve(rendererRetirement) : firstRetirement);
   const releaseResources = (): void => {
-    if (resourcesReleased) return;
-    resourcesReleased = true;
-    lazyFrameDiagnostics.freeze();
-    labelLayer?.dispose();
-    renderer.dispose();
+    if (initialResourceReleaseStarted) return;
+    initialResourceReleaseStarted = true;
+    releasingResources = true;
+    try {
+      try { lazyFrameDiagnostics.freeze(); } catch (error) { resourceReleaseFailures.push(error); }
+      try { labelLayer?.dispose(); } catch (error) { resourceReleaseFailures.push(error); }
+      // The deferred owner can release from a frame's finally block. Record
+      // failures instead of replacing that frame's original result.
+      startRendererRetirement();
+    } finally {
+      releasingResources = false;
+    }
   };
   const ownAxes = ownSizedCanvasAxes(canvas);
-  const parentFit = createParentFit(canvas, {
+  const parentFit = options.resize === false ? undefined : createParentFit(canvas, {
     get width() { return ownAxes.width; },
     get height() { return ownAxes.height; },
     box: () => canvasContentBox(canvas)
   });
   const resizeRenderer = (): void => {
-    if (disposed) return;
+    if (disposed || !parentFit) return;
     if (pendingFrames > 0) { resourceOwner.requestResize(); return; }
-    if (options.resize === false) return;
     refreshOwnSizedAxes(canvas);
     const { cssWidth, cssHeight, ownWidth, ownHeight } = parentFit.measure(
       (typeof window !== "undefined" ? window.innerWidth : 960) || 960,
@@ -209,18 +341,72 @@ export async function startProductionRender(
   resizeObserver?.observe(canvas as unknown as Element);
   if (options.resize !== false && typeof window !== "undefined") window.addEventListener("resize", resizeRenderer);
 
-  let firstFrameEndMarked = false;
-  const renderFrame = (time = performanceNow(), submittedDrawCalls?: number, explicit = false) => {
+  const resetHistory = (reason: string): void => {
     if (disposed) return;
+    if (pendingFrames > 0) frameTail = frameTail.then(() => { if (!disposed) renderer.resetTemporalHistory?.(reason); });
+    else renderer.resetTemporalHistory?.(reason);
+  };
+  const canSchedule = (): boolean => !disposed && !pageHidden && !isPaused() && options.autoStart !== false && typeof requestAnimationFrame !== "undefined";
+  const onVisibilityChange = (): void => {
+    if (disposed || typeof document === "undefined") return;
+    const hidden = document.hidden;
+    if (hidden === pageHidden) return;
+    pageHidden = hidden;
+    lastTime = 0;
+    if (hidden) {
+      if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      animationHandle = 0;
+    } else {
+      // Re-read layout and DPR, including changes made while the page was hidden.
+      resizeRenderer();
+      resetHistory("visibility-resume");
+      // A single refresh also presents a static scene after a hidden resize.
+      if (canSchedule() && !animationHandle) animationHandle = requestAnimationFrame(scheduleFrame);
+    }
+  };
+  if (typeof document !== "undefined") document.addEventListener("visibilitychange", onVisibilityChange);
+
+  let firstFrameEndMarked = false;
+  let firstPresentationReported = false;
+  let firstFrameFailureReported = false;
+  let firstSubmissionStarted = false;
+  let deviceLossReported = false;
+  const reportDetectedDeviceLoss = (): void => {
+    if (deviceLossReported || !firstSubmissionStarted || disposed || isCancelled()) return;
+    deviceLossReported = true;
+    try { readiness?.onDeviceLossDetected?.(); } catch { /* lifecycle observers cannot mask rendering */ }
+  };
+  const reportFirstFrameFailure = (error: unknown): void => {
+    if (!firstSubmissionStarted || disposed || isCancelled() || firstPresentationReported || firstFrameFailureReported) return;
+    firstFrameFailureReported = true;
+    try { readiness?.onFirstFrameFailed?.(error); } catch { /* do not mask the submission failure */ }
+  };
+  const reportFrameFailure = (error: unknown): void => {
+    if (!firstSubmissionStarted || disposed || isCancelled()) return;
+    // A device loss has its own scoped lifecycle event. Do not misclassify its
+    // submission rejection as a renderer failure, or mask the original error if
+    // an injected device's loss predicate itself throws.
+    try { if (renderer.deviceLost?.()) { reportDetectedDeviceLoss(); return; } } catch { /* retain the original failure */ }
+    // Preserve the existing one-shot first-frame outcome, but do not use it as
+    // the lifetime signal: a submitted blank frame can precede a later failure.
+    reportFirstFrameFailure(error);
+    if (disposed || isCancelled()) return;
+    // A first-frame observer can synchronously trigger loss or replace the mount.
+    try { if (renderer.deviceLost?.()) { reportDetectedDeviceLoss(); return; } } catch { /* retain the original failure */ }
+    try { readiness?.onTerminalFrameFailure?.(error); } catch { /* do not mask the submission failure */ }
+  };
+  const renderFrameBody = (time = performanceNow(), submittedDrawCalls?: number, explicit = false, submittedPresented = submittedDrawCalls !== undefined) => {
+    if (disposed || isCancelled()) return;
     // T0-12: first real frame — closes the mount-timing window the bench
     // harness reads from payload.extra.mountTiming.
     if (lastTime === 0) markTiming("a3d:mount:first-renderFrame");
-    const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
+    // Automatic simulation cannot consume an unbounded wall-clock gap after a stall.
+    const delta = lastTime > 0 ? Math.min(100, Math.max(1, time - lastTime)) : 16.67;
     lastTime = time;
     // Explicit renders (`app.step()` loops, which most games drive themselves) are sampled on the wall clock, since `time` is then
     // simulated time; the meter counts one frame per task, so several steps inside one rAF callback count once.
     frameRate.sample(explicit ? performanceNow() : time);
-    if (!explicit && !isPaused()) beforeRender?.(delta / 1000, "raf");
+    if (!explicit && !pageHidden && !isPaused()) beforeRender?.(delta / 1000, "raf");
     // An onFrame callback can call `setScene()` or `dispose()`, which disposes this controller and its renderer. Submitting the
     // frame after that drew released materials ("Material a3d-production-sdf-text-label is disposed", g10 handoff, Aura Links
     // hole changes). The async path has the same check; the new mount presents its own first frame.
@@ -248,15 +434,36 @@ export async function startProductionRender(
       }
     }
     let drawCalls: number;
+    let presented = submittedDrawCalls === undefined ? !renderer.deviceLost?.() : submittedPresented;
+    if (!presented) {
+      reportDetectedDeviceLoss();
+      if (disposed || isCancelled()) return;
+    }
     try {
       // top-tennis C8: while the WebGL context is lost nothing can be presented; skip the frame instead of throwing, keep the
       // loop alive, and let the app's onDeviceRestored handler remount (the documented recovery contract).
-      drawCalls = submittedDrawCalls === undefined && renderer.deviceLost?.() ? 0 : submittedDrawCalls ?? renderer.render(renderTime);
+      if (submittedDrawCalls === undefined && renderer.deviceLost?.()) {
+        reportDetectedDeviceLoss();
+        drawCalls = 0;
+        presented = false;
+      } else {
+        drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
+      }
     } catch (error) {
       // A loss in the middle of a frame (the context goes before the webglcontextlost event arrives) is not a render failure.
-      if (renderer.deviceLost?.()) drawCalls = 0;
+      if (renderer.deviceLost?.()) { reportDetectedDeviceLoss(); drawCalls = 0; presented = false; }
       else rethrowShaderFailure(error);
     }
+    if (presented && !disposed && !isCancelled()) {
+      // Loss can begin after submission returns and before the native event is
+      // delivered, including on frames after the first one was reported.
+      if (renderer.deviceLost?.()) reportDetectedDeviceLoss();
+      else if (!firstPresentationReported && !firstFrameFailureReported && backend) {
+        firstPresentationReported = true;
+        readiness?.onFirstFrame(backend);
+      }
+    }
+    if (disposed || isCancelled()) return;
     diagnosticsState.backend = renderer.backend;
     diagnosticsState.fps = frameRate.fps();
     diagnosticsState.drawCalls = drawCalls;
@@ -295,8 +502,20 @@ export async function startProductionRender(
     }
     overlay?.update();
     if (lastTime !== 0 && !firstFrameEndMarked) { firstFrameEndMarked = true; markTiming("a3d:mount:first-renderFrame:end"); }
-    if (!explicit && !isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+    if (!explicit && canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
       animationHandle = requestAnimationFrame(scheduleFrame);
+    }
+  };
+  const renderFrame = (time?: number, submittedDrawCalls?: number, explicit?: boolean, submittedPresented?: boolean): void => {
+    activeSynchronousFrames += 1;
+    try {
+      renderFrameBody(time, submittedDrawCalls, explicit, submittedPresented);
+    } finally {
+      activeSynchronousFrames -= 1;
+      if (activeSynchronousFrames === 0 && disposeAfterSynchronousFrames) {
+        disposeAfterSynchronousFrames = false;
+        resourceOwner.dispose();
+      }
     }
   };
 
@@ -306,9 +525,10 @@ export async function startProductionRender(
     pendingFrames += 1;
     const submitted = resourceOwner.run(() => frameTail.then(async () => {
       if (disposed) throw new Error("Aura3D renderer is disposed.");
+      if (automatic && pageHidden) return;
       const time = clock();
       if (automatic) {
-        const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
+        const delta = lastTime > 0 ? Math.min(100, Math.max(1, time - lastTime)) : 16.67;
         lastTime = time;
         if (!isPaused()) beforeRender?.(delta / 1000, "raf");
       }
@@ -316,54 +536,68 @@ export async function startProductionRender(
       // that callback; pending ownership still defers cleanup until this settles.
       if (disposed) throw new Error("Aura3D renderer is disposed.");
       const renderTime = resolveRootRenderTime(time, !automatic, isPaused, pausedRenderTime);
-      const drawCalls = renderer.deviceLost?.() ? 0 : await renderer.renderAsync!(renderTime).catch((error: unknown) => {
-        if (renderer.deviceLost?.()) return 0;
+      let presented = !renderer.deviceLost?.();
+      if (!presented) {
+        reportDetectedDeviceLoss();
+        if (disposed || isCancelled()) return;
+      }
+      const drawCalls = !presented ? 0 : await renderer.renderAsync!(renderTime).catch((error: unknown) => {
+        if (renderer.deviceLost?.()) { reportDetectedDeviceLoss(); presented = false; return 0; }
         throw error;
       });
       if (!disposed) {
         const previousLastTime = lastTime;
-        renderFrame(renderTime, drawCalls, true);
+        renderFrame(renderTime, drawCalls, true, presented);
         lastTime = previousLastTime;
       }
-    }).finally(() => { pendingFrames -= 1; }));
+    }).finally(() => {
+      pendingFrames -= 1;
+      // Coalesce invalidations that arrived while a frame owned the renderer;
+      // do not enqueue a second draw until the first one has settled.
+      if (pendingFrames === 0 && canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
+        animationHandle = requestAnimationFrame(scheduleFrame);
+      }
+    }));
     frameTail = submitted.catch(() => undefined);
     return submitted;
   };
   const scheduleFrame = (time: number): void => {
     animationHandle = 0;
-    if (disposed) return;
+    if (disposed || pageHidden || isPaused()) return;
+    if (pendingFrames > 0) return;
     if (options.frameMode === "async") {
+      frameInvalidated = false;
       void submitAsync(() => time, true).then(() => {
-        if (!disposed && !isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+        if (canSchedule() && !animationHandle && (frameInvalidated || sceneWantsFrames || requiresFrames())) {
           animationHandle = requestAnimationFrame(scheduleFrame);
         }
       }).catch((error: unknown) => {
-        diagnosticsState.errors.push(productionRenderErrorMessage(error));
-        overlay?.update();
+        if (!disposed) {
+          reportFrameFailure(error);
+          if (!disposed) { recordFrameError(diagnosticsState, error); overlay?.update(); }
+        }
       });
-    } else if (pendingFrames > 0) {
-      // A manual async frame owns the resources. Retry without advancing simulation.
-      // A pause cancels automatic retries; the explicit owner completes independently.
-      if (!isPaused()) animationHandle = requestAnimationFrame(scheduleFrame);
-    } else renderFrame(time);
-  };
-  try {
-    if (options.frameMode === "async") {
-      await submitAsync(() => performanceNow(), true);
-      if (!isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
-        animationHandle = requestAnimationFrame(scheduleFrame);
+    } else {
+      frameInvalidated = false;
+      try { renderFrame(time); } catch (error) {
+        if (!disposed) {
+          if (isPrd07DeviceLeaseBusy(error)) {
+            // A peer sharing this canvas is still submitting. Skip this
+            // automatic frame and retry instead of terminating this app.
+            frameInvalidated = true;
+            if (canSchedule() && !animationHandle) animationHandle = requestAnimationFrame(scheduleFrame);
+          } else {
+            reportFrameFailure(error);
+            if (!disposed) { recordFrameError(diagnosticsState, error); overlay?.update(); }
+          }
+        }
       }
-    } else renderFrame();
-  } catch (error) {
-    // A failed first submission has no returned controller to dispose its resources.
-    disposed = true;
-    resizeObserver?.disconnect();
-    if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
-    releaseResources();
-    throw error;
-  }
-
-  return {
+    }
+  };
+  let unregisterAtmosphereInvalidator: (() => void) | undefined;
+  let unregisterLightingInvalidator: (() => void) | undefined;
+  let unregisterResourceInvalidator: (() => void) | undefined;
+  const controller: WebGLRenderController = {
     update(time) {
       if (disposed) throw new Error("Aura3D renderer is disposed.");
       if (pendingFrames > 0) throw new Error("Aura3D async frame is pending; await it before advancing renderer state.");
@@ -381,8 +615,11 @@ export async function startProductionRender(
        */
       if (pendingFrames > 0) throw new Error("Aura3D async frame is pending; await it before synchronous rendering.");
       const previousLastTime = lastTime;
-      renderFrame(time, undefined, true);
-      lastTime = previousLastTime;
+      try { renderFrame(time, undefined, true); } catch (error) {
+        if (!isPrd07DeviceLeaseBusy(error)) reportFrameFailure(error);
+        throw error;
+      }
+      finally { lastTime = previousLastTime; }
     },
     setPerformanceQuality(settings) {
       if (disposed || pendingFrames > 0) throw new Error("PERFORMANCE_QUALITY_BUSY: await the active frame before changing quality.");
@@ -398,21 +635,42 @@ export async function startProductionRender(
       renderer.resetTemporalHistory?.("performance-quality");
     },
     diagnostics: () => disposed || pendingFrames > 0 ? undefined : renderer.diagnostics,
-    renderAsync: (clock) => submitAsync(clock),
+    renderAsync: (clock) => submitAsync(clock).catch((error: unknown) => {
+      if (!isPrd07DeviceLeaseBusy(error)) reportFrameFailure(error);
+      throw error;
+    }),
     busy: () => pendingFrames > 0,
-    whenIdle: () => frameTail,
+    whenIdle: async () => {
+      // Snapshot the requested attempt before awaiting a frame or another
+      // cleanup. A later retry must not erase this waiter's original failure.
+      const retirement = currentRendererRetirement();
+      await frameTail;
+      if (disposed) {
+        const rendererFailure = await (await retirement).completion;
+        const failures = [...resourceReleaseFailures];
+        if (rendererFailure) failures.push(rendererFailure.error);
+        if (failures.length) throw cleanupError(failures, "Renderer retirement failed");
+      }
+    },
+    invalidate() {
+      if (disposed) return;
+      frameInvalidated = true;
+      if (canSchedule() && !animationHandle) animationHandle = requestAnimationFrame(scheduleFrame);
+    },
     resetTemporalHistory(reason) {
       // Reset after the active submission, before the next one can consume history.
-      if (pendingFrames > 0) frameTail = frameTail.then(() => { if (!disposed) renderer.resetTemporalHistory?.(reason); });
-      else renderer.resetTemporalHistory?.(reason);
+      resetHistory(reason);
     },
     pause() {
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       animationHandle = 0;
+      lastTime = 0;
     },
     resume() {
-      if (disposed || animationHandle || options.autoStart === false || typeof requestAnimationFrame === "undefined") return;
-      if (sceneWantsFrames || requiresFrames()) animationHandle = requestAnimationFrame(scheduleFrame);
+      if (!canSchedule() || animationHandle) return;
+      lastTime = 0;
+      resetHistory("resume");
+      if (frameInvalidated || sceneWantsFrames || requiresFrames()) animationHandle = requestAnimationFrame(scheduleFrame);
     },
     // threejs-parity L7/SR-07: forward the backing renderer's program warm-up.
     precompile: renderer.precompile ? (time?: number) => renderer.precompile!(time) : undefined,
@@ -426,18 +684,140 @@ export async function startProductionRender(
     // tone mapping + exposure never applied).
     get auraRenderer() { return renderer.auraRenderer; },
     dispose() {
+      if (disposingController || releasingResources || disposingRenderer) return;
+      if (disposed) {
+        const previous = rendererRetirement;
+        // The first release is still waiting for an in-flight frame, or an
+        // asynchronous retirement has not failed. Never overlap either one.
+        if (!previous || queuedRendererRetry || (!previous.failure && !previous.synchronousFailures.length)) return;
+        if (previous.pending) {
+          // A synchronous failure can coexist with asynchronous retirement.
+          // Coalesce retries until that retirement has actually settled.
+          queuedRendererRetry = previous.completion.then(() => {
+            queuedRendererRetry = undefined;
+            return startRendererRetirement();
+          });
+          return;
+        }
+        disposingController = true;
+        try {
+          const retry = startRendererRetirement();
+          if (retry.synchronousFailures.length) {
+            const failures: unknown[] = [];
+            if (firstRendererFailure) appendFailure(failures, firstRendererFailure.error);
+            for (const error of retry.synchronousFailures) appendFailure(failures, error);
+            throw cleanupError(failures, "Renderer retirement failed");
+          }
+        } finally {
+          disposingController = false;
+        }
+        return;
+      }
       disposed = true;
-      if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
-      resizeObserver?.disconnect();
-      if (typeof window !== "undefined") window.removeEventListener("resize", resizeRenderer);
-      resourceOwner.dispose();
+      disposingController = true;
+      const failures: unknown[] = [];
+      const cleanup = (fn: (() => void) | undefined): void => {
+        if (!fn) return;
+        try { fn(); } catch (error) { failures.push(error); }
+      };
+      try {
+        cleanup(unregisterLightingInvalidator);
+        cleanup(unregisterResourceInvalidator);
+        cleanup(unregisterAtmosphereInvalidator);
+        if (animationHandle && typeof cancelAnimationFrame !== "undefined") cleanup(() => cancelAnimationFrame(animationHandle));
+        cleanup(() => resizeObserver?.disconnect());
+        if (typeof window !== "undefined") cleanup(() => window.removeEventListener("resize", resizeRenderer));
+        if (typeof document !== "undefined") cleanup(() => document.removeEventListener("visibilitychange", onVisibilityChange));
+        if (activeSynchronousFrames > 0) disposeAfterSynchronousFrames = true;
+        else cleanup(() => resourceOwner.dispose());
+        const resourceFailures = [...resourceReleaseFailures, ...(rendererRetirement?.synchronousFailures ?? [])];
+        if (resourceFailures.length) failures.push(cleanupError(resourceFailures, "Renderer resource cleanup failed"));
+        if (failures.length) throw cleanupError(failures, "Renderer controller cleanup failed");
+      } finally {
+        disposingController = false;
+      }
     }
   };
+  controllerOwnsCleanup = true;
+  try {
+    unregisterLightingInvalidator = runtimeNodes && controller.invalidate
+      ? setAdvancedLightingInvalidator(runtimeNodes, () => controller.invalidate?.()) : undefined;
+    unregisterResourceInvalidator = renderer.onResourceChange?.(() => controller.invalidate?.());
+    // App mounts subscribe through their owner, never through a canvas-global
+    // source which could belong to a different app sharing that canvas.
+    if (prd07?.subscribePrd07Atmosphere) {
+      unregisterAtmosphereInvalidator = prd07.subscribePrd07Atmosphere(() => controller.invalidate?.());
+    } else {
+      // Preserve the existing standalone frame-loop compatibility path.
+      const source = getRootRenderSource(canvas, runtimeOwner ?? canvas)?.source as
+        | { readonly atmosphere?: { onRenderChange?(listener: () => void): () => void } | null }
+        | undefined;
+      unregisterAtmosphereInvalidator = source?.atmosphere?.onRenderChange?.(() => controller.invalidate?.());
+    }
+    // Publish the controller before the first submission can stall. Callers may
+    // subscribe to device events and dispose it while the first frame is pending.
+    if (backend) readiness?.onRendererReady(backend, controller);
+    if (disposed || isCancelled()) {
+      controller.dispose();
+      await controller.whenIdle?.();
+      return cancelledController();
+    }
+    firstSubmissionStarted = true;
+    if (options.frameMode === "async") {
+      await submitAsync(() => performanceNow(), true);
+      if (canSchedule() && (sceneWantsFrames || requiresFrames())) {
+        animationHandle = requestAnimationFrame(scheduleFrame);
+      }
+    } else {
+      try { renderFrame(); }
+      catch (error) {
+        if (!isPrd07DeviceLeaseBusy(error) || !renderer.renderAsync) throw error;
+        // The synchronous first attempt already ran the simulation callback.
+        // Await a queued presentation without advancing it a second time.
+        await submitAsync(() => performanceNow());
+      }
+    }
+  } catch (error) {
+    reportFrameFailure(error);
+    const failures: unknown[] = [error];
+    try { controller.dispose(); } catch (cleanupFailure) { failures.push(cleanupFailure); }
+    try { await controller.whenIdle?.(); } catch (cleanupFailure) {
+      if (!failures.some(failure => failure === cleanupFailure
+        || (failure instanceof AggregateError && failure.errors.includes(cleanupFailure)))) failures.push(cleanupFailure);
+    }
+    if (failures.length > 1) {
+      if (backend === "webgpu") throw frameSetupCleanupFailure(error, failures.slice(1));
+      throw new AggregateError(failures, "Renderer mount and cleanup failed", { cause: error });
+    }
+    throw error;
+  }
+  return controller;
+  } catch (error) {
+    if (controllerOwnsCleanup || renderer.backend !== "webgpu" || rawRetirement === "done") throw error;
+    // Setup before the controller is published can have installed callbacks or
+    // labels. Retire the renderer if possible, but quarantine this canvas
+    // because those partially installed owners have no complete receipt.
+    const failures: unknown[] = [new Error("Frame-loop setup did not complete")];
+    if (rawRetirement === "not-started") {
+      try { renderer.dispose(); await renderer.whenDisposed?.(); } catch (cleanupError) { failures.push(cleanupError); }
+    }
+    throw frameSetupCleanupFailure(error, failures);
+  }
 }
 
 function pushWarnings(state: MutableDiagnostics, warnings: readonly string[]): void {
   for (const warning of warnings) if (!state.warnings.includes(warning)) state.warnings.push(warning);
 }
+
+function recordFrameError(state: MutableDiagnostics, error: unknown): void {
+  // productionRenderErrorMessage redacts credentials; bound and deduplicate history.
+  const message = `RENDER_FRAME_TERMINAL: ${productionRenderErrorMessage(error)}`;
+  if (state.errors.includes(message)) return;
+  while (state.errors.length >= 128) state.errors.shift();
+  state.errors.push(message);
+}
+
+export { createWorkerFrameScheduler, type WorkerFrameFailureKind, type WorkerScheduledFrame, type WorkerFrameSchedulerOptions, type WorkerFrameScheduler } from "./workerFrameLoop.js";
 
 export interface FrameRateMeter {
   /** Record one presented frame at `time` (ms, the rAF timestamp). */
@@ -491,6 +871,7 @@ export function createFrameRateMeter(windowMs = 1000): FrameRateMeter {
  */
 function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
   if (snapshot.timeline?.mode === "loop") return true;
+  if (snapshot.camera.mode === "orbit" && snapshot.camera.autoRotate && snapshot.camera.captureTime === undefined) return true;
   if (snapshot.camera.mode === "dolly" || snapshot.camera.mode === "follow" || snapshot.camera.mode === "path" || snapshot.camera.mode === "flythrough") return true;
   return snapshot.nodes.some((node) => {
     if ("runtime" in node && node.runtime?.mutable !== false) return true;

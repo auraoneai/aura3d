@@ -25,6 +25,7 @@ export interface EvidenceChannelContract {
   readonly sections?:
     | (() => Promise<Readonly<Record<string, EvidenceSectionCollect>>>)
     | Readonly<Record<string, EvidenceSectionCollect>>;
+  /** Legacy window aliases must not use the game beacon or evidence globals. */
   readonly legacyGlobals?: readonly string[];
 }
 
@@ -34,7 +35,9 @@ export interface EvidenceChannelInstall {
   readonly builtins: Readonly<Record<string, EvidenceSectionCollect>>;
   /** Route-provided lazy loader (from `createGame({ evidence })`). */
   readonly loader?: () => Promise<Readonly<Record<string, EvidenceSectionCollect>>>;
-  /** Aliases (e.g. "__BANK_SHOT_EVIDENCE__") bound to the same evidence object. */
+  /** Aliases (e.g. "__BANK_SHOT_EVIDENCE__") bound to the same evidence object.
+   * `__AURA3D_GAME__`, `__AURA3D_GAME_EVIDENCE__`, and `__AURA3D_EVIDENCE_OPT_IN__`
+   * are reserved for explicit and ambient window targets. Without one the channel is inert. */
   readonly legacyGlobals?: readonly string[];
   readonly win?: Record<string, unknown>;
 }
@@ -77,12 +80,74 @@ export function createPerfRing(capacity = 240): { record(ms: number): void; summ
   };
 }
 
+interface EvidencePropertyOwner {
+  readonly target: Record<string, unknown>;
+  readonly name: string;
+  readonly descriptor: PropertyDescriptor & { get: () => unknown; set: (value: unknown) => void };
+  readonly previous: PropertyDescriptor | undefined;
+  active: boolean;
+}
+
+const evidencePropertyOwners = new WeakMap<() => unknown, EvidencePropertyOwner>();
+
+function installEvidenceProperty(
+  target: Record<string, unknown>,
+  name: string,
+  descriptor: EvidencePropertyOwner["descriptor"]
+): () => void {
+  const owner: EvidencePropertyOwner = {
+    target,
+    name,
+    descriptor,
+    previous: Object.getOwnPropertyDescriptor(target, name),
+    active: true
+  };
+  Object.defineProperty(target, name, descriptor);
+  evidencePropertyOwners.set(descriptor.get, owner);
+  return () => {
+    if (!owner.active) return;
+    owner.active = false;
+    const current = Object.getOwnPropertyDescriptor(target, name);
+    if (
+      current?.get !== descriptor.get ||
+      current.set !== descriptor.set ||
+      current.enumerable !== descriptor.enumerable ||
+      current.configurable !== descriptor.configurable
+    ) return;
+    let previous = owner.previous;
+    while (previous?.get !== undefined) {
+      const earlier = evidencePropertyOwners.get(previous.get);
+      if (
+        earlier === undefined || earlier.active || earlier.target !== target || earlier.name !== name ||
+        earlier.descriptor.set !== previous.set ||
+        earlier.descriptor.enumerable !== previous.enumerable ||
+        earlier.descriptor.configurable !== previous.configurable
+      ) break;
+      previous = earlier.previous;
+    }
+    if (previous === undefined) delete target[name];
+    else Object.defineProperty(target, name, previous);
+  };
+}
+
 export function installEvidenceChannel(options: EvidenceChannelInstall): { dispose(): void } {
   const win = (options.win ??
     (typeof window !== "undefined" ? (window as unknown as Record<string, unknown>) : undefined)) as
     | (Record<string, unknown> & EvidenceGlobal)
     | undefined;
   if (win === undefined) return { dispose() {} };
+
+  const aliases = new Set(options.legacyGlobals ?? []);
+  for (const alias of aliases) {
+    // Beacon and channel ownership are independent; shadowing the beacon can
+    // resurrect a disposed session when this channel restores its descriptor.
+    if (alias === "__AURA3D_GAME__") {
+      throw new Error('EVIDENCE_CHANNEL_RESERVED_ALIAS_V1: "__AURA3D_GAME__" is reserved for the game beacon.');
+    }
+    if (alias === "__AURA3D_GAME_EVIDENCE__" || alias === "__AURA3D_EVIDENCE_OPT_IN__") {
+      throw new Error(`EVIDENCE_CHANNEL_RESERVED_ALIAS_V1: "${alias}" is reserved for the evidence channel.`);
+    }
+  }
 
   win.__AURA3D_GAME_EVIDENCE__ = (win.__AURA3D_GAME_EVIDENCE__ ?? {}) as Record<string, unknown>;
   const registry = win.__AURA3D_GAME_EVIDENCE__;
@@ -136,42 +201,46 @@ export function installEvidenceChannel(options: EvidenceChannelInstall): { dispo
     return value;
   };
 
-  Object.defineProperty(registry, options.id, {
-    configurable: true,
-    enumerable: true,
-    get: build,
+  const setRouteOwned = (value: unknown): void => {
+    routeOwned = value !== null && typeof value === "object" ? (value as Record<string, unknown>) : null;
+    memo = null;
+  };
+  const releases: Array<() => void> = [];
+  try {
+    releases.push(installEvidenceProperty(registry, options.id, {
+      configurable: true,
+      enumerable: true,
+      get: () => build(),
     // Strict-mode `window.x = ...` writes must not throw. An assigned object
     // is the route's own evidence: every later collect layers id/collectedAt/
     // optIn (and the shell sections) over its properties instead of dropping it.
-    set: (v: unknown) => {
-      routeOwned = v !== null && typeof v === "object" ? (v as Record<string, unknown>) : null;
-      memo = null;
-    }
-  });
+      set: setRouteOwned
+    }));
 
-  for (const alias of options.legacyGlobals ?? []) {
-    Object.defineProperty(win, alias, {
-      configurable: true,
-      enumerable: false,
-      get: build,
+    for (const alias of aliases) {
+      releases.push(installEvidenceProperty(win, alias, {
+        configurable: true,
+        enumerable: false,
+        get: () => build(),
       // Legacy code assigns `window.x = ...` before the channel is read; a
       // getter-only property throws in strict mode. Forward the assignment to
       // the underlying registry slot and flag the write path.
-      set: (value: unknown) => {
-        if (typeof console !== "undefined") {
-          console.warn(`[aura3d] legacy global "${alias}" assigned — route it through the evidence channel instead.`);
+        set: (value: unknown) => {
+          if (typeof console !== "undefined") {
+            console.warn(`[aura3d] legacy global "${alias}" assigned — route it through the evidence channel instead.`);
+          }
+          setRouteOwned(value);
         }
-        (registry as Record<string, unknown>)[options.id] = value;
-      }
-    });
+      }));
+    }
+  } catch (error) {
+    for (let i = releases.length - 1; i >= 0; i -= 1) releases[i]!();
+    throw error;
   }
 
   return {
     dispose() {
-      delete registry[options.id];
-      for (const alias of options.legacyGlobals ?? []) {
-        delete win[alias];
-      }
+      for (let i = releases.length - 1; i >= 0; i -= 1) releases[i]!();
     }
   };
 }

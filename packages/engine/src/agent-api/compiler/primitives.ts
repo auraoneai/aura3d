@@ -1,45 +1,226 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; the only logic change is the
 // flag-gated Q-15-2 `qr` option (A3D_QR_CORE primitives via @aura3d/rendering); omitted = unchanged.
 
-import type { AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneNode, AuraTransformSpec, AuraVec3, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState } from "../nodes/types.js";
+import type { AuraAssetRef, AuraColor, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneNode, AuraTransformSpec, AuraVec3, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState } from "../nodes/types.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { animation } from "../nodes/animation.js";
 import { geometry } from "../nodes/geometry.js";
 import { primitive } from "../nodes/primitives.js";
 import { createModelMatrix, primitiveSize, shouldNormalizeModelNode } from "../sceneMath.js";
+import { assertValidPivot, hasNonzeroPivot } from "../pivotGuard.js";
+import { lodMarkerOf } from "../lodMarkers.js";
+import { createModelMatrixV2, parentTransformOf } from "./sceneGraph.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
-import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
-import { createPrimitiveGeometry, PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import { evaluateDistancePrioritizedMipResidency, fetchBytes, type AssetIntegrity, type AssetRequestOptions, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
+import { createPrimitiveGeometry, DepthPreviewMaterial, PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import { createProductionPbrHdrPipelineFromLinear, createProductionPbrHdrPipelineFromRadiance, parseProductionRadianceHDR } from "../../../../rendering/src/production-runtime/PBRHDRPipeline.js";
+import { decodeRgbeEnvironmentMap, type LinearHdrEnvironmentMapSource } from "../../../../rendering/src/EnvironmentMapResources.js";
 import type { AuraParityPrimitiveParams } from "@aura3d/rendering";
 import { applyCustomUniformWrites, createCustomShaderMaterial, customUniformWritesFor, syncCustomTextureRefs } from "./customMaterial.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { AuraRuntimeError } from "./errors.js";
-import { blankProductionPrimitiveTextureState, createSdfTextPrimitiveResource } from "./textures.js";
+import { blankProductionPrimitiveTextureState, createSdfTextPrimitiveResource, retireSdfTextPrimitiveResource } from "./textures.js";
+import { retireBuiltinGlyphResource, type BuiltinGlyphAtlasScope } from "./BuiltinGlyphAtlas.js";
+import { createLiveBuiltinTextFallbackGeometry } from "../nodes/text3d.js";
 import { material } from "../nodes/material.js";
+import { resolveIridescenceThickness } from "../../material-physical/PhysicalMaterialSpec.js";
+import { runtimeMaterialRevision } from "../app/runtimeNodes.js";
+
+/** Internal mount-owned hooks; standalone primitive callers need no observer. */
+export interface PrimitiveMaterialObserver {
+  beforeReplace(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource): void;
+  afterApply(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode, revision: number): void;
+}
+
+const primitiveMaterialObservers = new WeakMap<ProductionRuntimePrimitiveEntry, Set<PrimitiveMaterialObserver>>();
+const appliedMaterialRevisions = new WeakMap<ProductionRuntimePrimitiveResource, number>();
+const resolvedMaterialRevisions = new WeakMap<AuraPrimitiveNode, number>();
+const resolvedMaterialCurrent = new WeakMap<AuraPrimitiveNode, () => boolean>();
+const activeSdfReplacements = new WeakSet<ProductionRuntimePrimitiveResource>();
+const primitiveGlyphScopes = new WeakMap<ProductionRuntimePrimitiveEntry, BuiltinGlyphAtlasScope>();
+const primitiveQrOptions = new WeakMap<ProductionRuntimePrimitiveEntry, QrPrimitiveGeometryOptions>();
+
+/** Validate raw and live inputs before constructing or mutating resources. */
+export function assertPrimitivePivotSupported(node: AuraPrimitiveNode, inheritedPivot = false): void {
+  assertValidPivot(node.pivot);
+  let pivoted = inheritedPivot || parentTransformOf(node)?.hasPivot === true || hasNonzeroPivot(node.pivot);
+  for (const transform of node.instances ?? []) {
+    assertValidPivot(transform.pivot);
+    pivoted ||= hasNonzeroPivot(transform.pivot);
+  }
+  if (!pivoted) return;
+  if (node.lookAt !== undefined || node.instances?.some((transform) => transform.lookAt !== undefined)) {
+    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted primitive transforms cannot use lookAt.");
+  }
+  if (node.lod?.levels.length || lodMarkerOf(node)) {
+    throw new Error("PIVOT_UNSUPPORTED_LOD: pivoted primitives cannot use distance LOD.");
+  }
+}
+
+function sdfResourceAlive(resource: ProductionRuntimePrimitiveResource): boolean {
+  if (resource.material.disposed || (resource.sdfText && (!resource.texturedMaterial || resource.texturedMaterial.disposed))) return false;
+  try { resource.geometry.vertexBuffer.readBytes(0, 0); return true; } catch { return false; }
+}
+
+/** Revision already installed on this resource, for mount-owned job admission. */
+export function primitiveMaterialAppliedRevision(resource: ProductionRuntimePrimitiveResource): number {
+  return appliedMaterialRevisions.get(resource) ?? 0;
+}
+
+export function observePrimitiveMaterial(entry: ProductionRuntimePrimitiveEntry, observer: PrimitiveMaterialObserver): () => void {
+  let observers = primitiveMaterialObservers.get(entry);
+  if (!observers) { observers = new Set(); primitiveMaterialObservers.set(entry, observers); }
+  observers.add(observer);
+  return () => {
+    observers!.delete(observer);
+    if (observers!.size === 0 && primitiveMaterialObservers.get(entry) === observers) primitiveMaterialObservers.delete(entry);
+  };
+}
+
+function notifyMaterialObservers(entry: ProductionRuntimePrimitiveEntry, invoke: (observer: PrimitiveMaterialObserver) => void): void {
+  const observers = primitiveMaterialObservers.get(entry);
+  if (!observers) return;
+  for (const observer of [...observers]) if (observers.has(observer)) invoke(observer);
+}
+
+function currentMaterialNode(node: AuraPrimitiveNode): boolean {
+  return resolvedMaterialCurrent.get(node)?.() ?? true;
+}
+
+function assertCurrentPrimitiveMaterial(entry: ProductionRuntimePrimitiveEntry, resource: ProductionRuntimePrimitiveResource, node: AuraPrimitiveNode): void {
+  if (!currentMaterialNode(node) || resource.material.disposed || !entry.resources.includes(resource)) {
+    throw new Error("PRIMITIVE_MATERIAL_SUPERSEDED: primitive material changed or was removed during frame preparation");
+  }
+}
+
+function applyPrimitiveMaterial(
+  entry: ProductionRuntimePrimitiveEntry,
+  resource: ProductionRuntimePrimitiveResource,
+  node: AuraPrimitiveNode,
+  revision: number
+): void {
+  const staged = createProductionPrimitiveMaterial(node);
+  try {
+    if (staged instanceof PortableShaderMaterial && node.runtime?.id) {
+      const writes = customUniformWritesFor(node.runtime.id);
+      if (writes?.size) applyCustomUniformWrites(staged, writes);
+      syncCustomTextureRefs(staged);
+    }
+    if (!currentMaterialNode(node) || resource.material.disposed || !entry.resources.includes(resource)) return;
+    notifyMaterialObservers(entry, (observer) => observer.beforeReplace(entry, resource));
+    if (!currentMaterialNode(node) || resource.material.disposed || !entry.resources.includes(resource)) return;
+
+    const oldMaterial = resource.material;
+    const oldTextured = resource.texturedMaterial;
+    const oldDisposer = resource.textureDisposer;
+    const mutable = resource as { material: ProductionRuntimePrimitiveResource["material"]; materialSpec: AuraPrimitiveNode["material"]; sourceNode: AuraPrimitiveNode };
+    mutable.material = staged;
+    mutable.materialSpec = node.material;
+    mutable.sourceNode = node;
+    resource.texturedMaterial = null;
+    resource.textureDisposer = undefined;
+    resource.textureStatus = "none";
+    resource.textureSlots = [];
+    resource.textureWarnings = [];
+    resource.textureBytes = 0;
+    resource.textureMipBytes = [];
+    appliedMaterialRevisions.set(resource, revision);
+
+    const failures: unknown[] = [];
+    const cleanup = (work: () => void): void => { try { work(); } catch (error) { failures.push(error); } };
+    cleanup(() => oldDisposer?.());
+    if (oldTextured && !Object.is(oldTextured, oldMaterial)) cleanup(() => oldTextured.dispose());
+    cleanup(() => oldMaterial.dispose());
+    if (resource.material === staged && !staged.disposed && entry.resources.includes(resource) && currentMaterialNode(node)) {
+      cleanup(() => notifyMaterialObservers(entry, (observer) => observer.afterApply(entry, resource, node, revision)));
+    }
+    if (failures.length) throw new AggregateError(failures, "Primitive material replacement cleanup failed");
+  } finally {
+    // A stale/reentrant replacement must not leak the staged material. Once
+    // installed, ownership belongs to the resource even if cleanup reports.
+    if (resource.material !== staged) staged.dispose();
+  }
+}
+
+/** Release every staged allocation if a later construction step fails. */
+function withPrimitiveConstruction<T>(construct: (own: (cleanup: () => void) => void) => T): T {
+  const cleanups: (() => void)[] = [];
+  try {
+    return construct((cleanup) => cleanups.push(cleanup));
+  } catch (error) {
+    const failures: unknown[] = [];
+    for (let index = cleanups.length - 1; index >= 0; index -= 1) {
+      try { cleanups[index]!(); } catch (failure) { failures.push(failure); }
+    }
+    if (failures.length) {
+      throw new AggregateError([error, ...failures], "Primitive construction and rollback failed", { cause: error });
+    }
+    throw error;
+  }
+}
+
+/** Retire everything owned by a completed, not-yet-published resource. */
+function disposeUnpublishedPrimitiveResource(resource: ProductionRuntimePrimitiveResource): void {
+  if (retireBuiltinGlyphResource(resource)) return;
+  const failures: unknown[] = [];
+  const cleanup = (work: () => void): void => { try { work(); } catch (error) { failures.push(error); } };
+  cleanup(() => resource.textureDisposer?.());
+  cleanup(() => resource.geometry.dispose());
+  if (resource.shadowGeometry && resource.shadowGeometry !== resource.geometry) cleanup(() => resource.shadowGeometry!.dispose());
+  cleanup(() => resource.material.dispose());
+  if (resource.texturedMaterial && !Object.is(resource.texturedMaterial, resource.material)) cleanup(() => resource.texturedMaterial!.dispose());
+  if (failures.length) throw new AggregateError(failures, "Primitive resource rollback failed");
+}
 
 /**
  * Q-15-2: `qr` (from `qrPrimitiveGeometryOptions(flags, quality)`) routes the
  * builtin primitives through @aura3d/rendering `createPrimitiveGeometry` under
  * A3D_QR_CORE. Omitted / undefined = the legacy generators, unchanged.
  */
-export function createProductionRuntimePrimitiveEntries(nodes: readonly AuraSceneNode[], qr?: QrPrimitiveGeometryOptions): ProductionRuntimePrimitiveEntry[] {
-  return nodes
+export function createProductionRuntimePrimitiveEntries(nodes: readonly AuraSceneNode[], qr?: QrPrimitiveGeometryOptions, scope?: BuiltinGlyphAtlasScope): ProductionRuntimePrimitiveEntry[] {
+  // Validate the whole batch before allocating the first resource.
+  for (const node of nodes) if (node.kind === "primitive") assertPrimitivePivotSupported(node);
+  return withPrimitiveConstruction((own) => nodes
     .filter((node): node is AuraPrimitiveNode => node.kind === "primitive")
-    .map((node) => ({ node, resources: createProductionPrimitiveResources(node, qr), currentLodIndex: 0 }));
+    .map((node) => {
+      const resources = createProductionPrimitiveResources(node, qr, scope);
+      for (const resource of resources) if (resource) own(() => disposeUnpublishedPrimitiveResource(resource));
+      const entry: ProductionRuntimePrimitiveEntry = { node, resources, currentLodIndex: 0 };
+      if (scope) primitiveGlyphScopes.set(entry, scope);
+      if (qr) primitiveQrOptions.set(entry, qr);
+      return entry;
+    }));
 }
 
-export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?: QrPrimitiveGeometryOptions): readonly ProductionRuntimePrimitiveResource[] {
-  const sdfWarnings: string[] = [];
-  const sdfResource = createSdfTextPrimitiveResource(node, (message) => { sdfWarnings.push(message); });
+export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?: QrPrimitiveGeometryOptions, scope?: BuiltinGlyphAtlasScope): readonly ProductionRuntimePrimitiveResource[] {
+  assertPrimitivePivotSupported(node);
+  return withPrimitiveConstruction((own) => createPrimitiveResources(node, qr, own, scope));
+}
+
+function createPrimitiveResources(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined, own: (cleanup: () => void) => void, scope?: BuiltinGlyphAtlasScope): readonly ProductionRuntimePrimitiveResource[] {
   const levels = node.lod?.levels;
   if (!levels?.length) {
-    if (sdfResource) return [sdfResource];
+    const sdfWarnings: string[] = [];
+    const sdfResource = createSdfTextPrimitiveResource(node, (message) => { sdfWarnings.push(message); }, scope);
+    if (sdfResource) {
+      own(() => disposeUnpublishedPrimitiveResource(sdfResource));
+      return [sdfResource];
+    }
     const qrGeometry = qrPrimitiveGeometryFor(node, qr);
+    let geometry = qrGeometry?.geometry;
+    if (geometry) own(() => geometry!.dispose());
     const shadowGeometry = qrPrimitiveShadowGeometryFor(node, qr, qrGeometry?.geometry);
+    if (shadowGeometry && shadowGeometry !== geometry) own(() => shadowGeometry.dispose());
+    if (!geometry) {
+      geometry = createProductionPrimitiveGeometry(node);
+      own(() => geometry!.dispose());
+    }
+    const material = createProductionPrimitiveMaterial(node);
+    own(() => material.dispose());
     const fallback = {
-      geometry: qrGeometry?.geometry ?? createProductionPrimitiveGeometry(node),
+      geometry,
       ...(shadowGeometry ? { shadowGeometry } : {}),
-      material: createProductionPrimitiveMaterial(node),
+      material,
       bounds: qrGeometry?.bounds ?? primitiveGeometryBounds(node),
       name: node.name ?? node.primitive,
       materialSpec: node.material,
@@ -65,12 +246,19 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
       lod: undefined
     };
     const levelWarnings: string[] = [];
-    const levelSdf = createSdfTextPrimitiveResource(levelNode, (message) => { levelWarnings.push(message); });
-    if (levelSdf) return { ...levelSdf, name: level.name };
+    const levelSdf = createSdfTextPrimitiveResource(levelNode, (message) => { levelWarnings.push(message); }, scope);
+    if (levelSdf) {
+      own(() => disposeUnpublishedPrimitiveResource(levelSdf));
+      return { ...levelSdf, name: level.name };
+    }
     const levelQrGeometry = qrPrimitiveGeometryFor(levelNode, qr);
+    const geometry = levelQrGeometry?.geometry ?? createProductionPrimitiveGeometry(levelNode);
+    own(() => geometry.dispose());
+    const material = createProductionPrimitiveMaterial(levelNode);
+    own(() => material.dispose());
     const levelFallback = {
-      geometry: levelQrGeometry?.geometry ?? createProductionPrimitiveGeometry(levelNode),
-      material: createProductionPrimitiveMaterial(levelNode),
+      geometry,
+      material,
       bounds: levelQrGeometry?.bounds ?? primitiveGeometryBounds(levelNode),
       name: level.name,
       materialSpec: levelNode.material,
@@ -83,20 +271,152 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
   });
 }
 
+/** Stage the current fallback without changing the resource already in use. */
+function createLiveTextFallbackResource(
+  entry: ProductionRuntimePrimitiveEntry,
+  previous: ProductionRuntimePrimitiveResource,
+  node: AuraPrimitiveNode,
+  keepLevelName: boolean,
+  warnings: readonly string[]
+): ProductionRuntimePrimitiveResource {
+  const fallbackNode = keepLevelName ? node : { ...node, geometry: createLiveBuiltinTextFallbackGeometry(node.text3D!) };
+  return withPrimitiveConstruction((own) => {
+    const qrGeometry = qrPrimitiveGeometryFor(fallbackNode, primitiveQrOptions.get(entry));
+    const geometry = qrGeometry?.geometry ?? createProductionPrimitiveGeometry(fallbackNode);
+    own(() => geometry.dispose());
+    const material = createProductionPrimitiveMaterial(fallbackNode);
+    own(() => material.dispose());
+    const resource: ProductionRuntimePrimitiveResource = {
+      geometry,
+      material,
+      bounds: qrGeometry?.bounds ?? primitiveGeometryBounds(fallbackNode),
+      name: keepLevelName ? previous.name : node.name ?? node.primitive,
+      materialSpec: node.material,
+      // Keep the authored geometry marker: the freshly generated fallback is
+      // already current and must not be replaced by the original text mesh.
+      sourceNode: node,
+      ...blankProductionPrimitiveTextureState()
+    };
+    (resource as ProductionRuntimePrimitiveResource & L2ResourceTrack).__parityL2AppliedGeometry = node.geometry;
+    resource.textureWarnings.push(...warnings);
+    return resource;
+  });
+}
+
+/** Publish before retirement so synchronous cleanup sees the resource the entry owns. */
+function replaceCurrentSdfResource(
+  entry: ProductionRuntimePrimitiveEntry,
+  index: number,
+  previous: ProductionRuntimePrimitiveResource,
+  node: AuraPrimitiveNode,
+  revision: number,
+  keepLevelName: boolean
+): ProductionRuntimePrimitiveResource {
+  if (activeSdfReplacements.has(previous)) throw new Error("PRIMITIVE_MATERIAL_SUPERSEDED: text replacement is already in progress");
+  activeSdfReplacements.add(previous);
+  let staged: ProductionRuntimePrimitiveResource | undefined;
+  let published = false;
+  const notified: PrimitiveMaterialObserver[] = [];
+  const isOldCurrent = (): boolean => entry.resources[index] === previous && sdfResourceAlive(previous);
+  const assertOldCurrent = (): void => {
+    if (!isOldCurrent()) throw new Error("PRIMITIVE_MATERIAL_SUPERSEDED: text resource was changed or removed during frame preparation");
+    assertCurrentPrimitiveMaterial(entry, previous, node);
+  };
+  try {
+    const warnings: string[] = [];
+    const createdSdf = createSdfTextPrimitiveResource(node, (message) => {
+      if (previous.sdfText) throw new Error(message);
+      warnings.push(message);
+    }, primitiveGlyphScopes.get(entry));
+    const created = createdSdf ?? (previous.sdfText
+      ? undefined
+      : createLiveTextFallbackResource(entry, previous, node, keepLevelName, warnings));
+    if (!created) throw new Error("Aura3D live text refresh did not create a text resource.");
+    staged = keepLevelName ? { ...created, name: previous.name } : created;
+    assertOldCurrent();
+
+    // A before callback can cancel mount-owned work and reenter the scene.
+    // Remember each called observer so a failed precommit restores tracking.
+    const observers = primitiveMaterialObservers.get(entry);
+    if (observers) for (const observer of [...observers]) {
+      if (!primitiveMaterialObservers.get(entry)?.has(observer)) continue;
+      notified.push(observer);
+      observer.beforeReplace(entry, previous);
+      assertOldCurrent();
+    }
+    assertOldCurrent();
+    (entry.resources as ProductionRuntimePrimitiveResource[])[index] = staged;
+    published = true;
+    appliedMaterialRevisions.set(staged, revision);
+
+    const failures: unknown[] = [];
+    try { retireSdfTextPrimitiveResource(previous); } catch (error) { failures.push(error); }
+    const isStagedCurrent = (): boolean => entry.resources[index] === staged &&
+      sdfResourceAlive(staged!) && currentMaterialNode(node);
+    const after = primitiveMaterialObservers.get(entry);
+    if (after) for (const observer of [...after]) {
+      if (!isStagedCurrent()) break;
+      if (!primitiveMaterialObservers.get(entry)?.has(observer)) continue;
+      try { observer.afterApply(entry, staged, node, revision); } catch (error) { failures.push(error); }
+    }
+    if (failures.length) throw new AggregateError(failures, "SDF text replacement cleanup failed");
+    if (!isStagedCurrent()) throw new Error("PRIMITIVE_MATERIAL_SUPERSEDED: text resource changed during retirement");
+    return staged;
+  } catch (error) {
+    if (published) throw error;
+    const failures: unknown[] = [];
+    if (staged) {
+      try { retireSdfTextPrimitiveResource(staged); } catch (failure) { failures.push(failure); }
+    }
+    // Restore only observers which actually saw beforeReplace, and only if
+    // the old resource still belongs to this entry. A newer revision may have
+    // invalidated its jobs; the observer must decide whether to queue again.
+    for (const observer of notified) {
+      if (!isOldCurrent()) break;
+      if (!primitiveMaterialObservers.get(entry)?.has(observer)) continue;
+      try { observer.afterApply(entry, previous, previous.sourceNode, primitiveMaterialAppliedRevision(previous)); }
+      catch (failure) { failures.push(failure); }
+    }
+    if (failures.length) throw new AggregateError([error, ...failures], "SDF text replacement and rollback failed", { cause: error });
+    throw error;
+  } finally {
+    activeSdfReplacements.delete(previous);
+  }
+}
+
+function syncPrimitiveMaterials(entry: ProductionRuntimePrimitiveEntry, node: AuraPrimitiveNode): void {
+  const revision = resolvedMaterialRevisions.get(node) ?? 0;
+  const levels = node.lod?.levels;
+  for (let index = 0; index < entry.resources.length; index += 1) {
+    let resource = entry.resources[index]!;
+    const levelMaterial = levels?.length ? levels[index]?.material ?? node.material : node.material;
+    const changed = levelMaterial !== resource.materialSpec || revision !== (appliedMaterialRevisions.get(resource) ?? 0);
+    const optedBuiltinFallback = !resource.sdfText && node.text3D?.backend === "sdf" &&
+      node.text3D.sdfGlyphAtlas === "shared" && !node.text3D.sdfDynamic;
+    const textChanged = Boolean((resource.sdfText || optedBuiltinFallback) && node.text3D && node.text3D !== resource.sourceNode.text3D);
+    if (!changed && !textChanged) {
+      assertCurrentPrimitiveMaterial(entry, resource, node);
+      continue;
+    }
+    const levelNode = levels?.length
+      ? { ...resource.sourceNode, material: levelMaterial, text3D: node.text3D ?? resource.sourceNode.text3D } as AuraPrimitiveNode
+      : node;
+    const guard = resolvedMaterialCurrent.get(node);
+    if (guard && levelNode !== node) resolvedMaterialCurrent.set(levelNode, guard);
+    if (levelNode.text3D && ((resource.sdfText && (textChanged || changed)) || (optedBuiltinFallback && textChanged))) {
+      resource = replaceCurrentSdfResource(entry, index, resource, levelNode, revision, Boolean(levels?.length));
+    } else if (!resource.sdfText && changed) {
+      applyPrimitiveMaterial(entry, resource, levelNode, revision);
+    }
+    assertCurrentPrimitiveMaterial(entry, resource, levelNode);
+  }
+}
+
 export function selectProductionPrimitiveResource(entry: ProductionRuntimePrimitiveEntry, node: AuraPrimitiveNode, cameraPosition: AuraVec3, lodBias = 1): ProductionRuntimePrimitiveResource {
+  syncPrimitiveMaterials(entry, node);
   if (!node.lod?.levels.length) {
     const resource = entry.resources[0]!;
-    if (node.material && node.material !== resource.materialSpec) {
-      const mutableResource = resource as {
-        materialSpec?: AuraPrimitiveNode["material"];
-        material: ProductionRuntimePrimitiveResource["material"];
-      };
-      mutableResource.materialSpec = node.material;
-      mutableResource.material = createProductionPrimitiveMaterial(node);
-    }
-    // threejs-parity L2 (SG-05): `handle.setGeometry`/`updateAttribute` —
-    // in-place buffer writes when the vertex count is unchanged, replace
-    // otherwise. Tracked per resource so unchanged frames cost nothing.
+    // In-place buffer writes when the vertex count is unchanged, replace otherwise.
     syncRuntimePrimitiveGeometry(resource, node);
     return resource;
   }
@@ -104,7 +424,7 @@ export function selectProductionPrimitiveResource(entry: ProductionRuntimePrimit
   const distance = Math.hypot(cameraPosition[0] - position[0], cameraPosition[1] - position[1], cameraPosition[2] - position[2]);
   const selection = selectAuraRootLodLevel(distance * lodBias, node.lod.levels, entry.currentLodIndex, node.lod.hysteresis ?? 0);
   entry.currentLodIndex = selection.levelIndex;
-  return entry.resources[selection.levelIndex] ?? entry.resources[entry.resources.length - 1]!;
+  return entry.resources[Math.min(selection.levelIndex, entry.resources.length - 1)]!;
 }
 
 export function createProductionModelInstanceTransforms(
@@ -113,10 +433,18 @@ export function createProductionModelInstanceTransforms(
   bounds: { readonly min: AuraVec3; readonly max: AuraVec3 },
   time: number
 ): Float32Array {
+  assertValidPivot(node.pivot);
   const matrices = new Float32Array(transforms.length * 16);
   transforms.forEach((transform, index) => {
-    const localNode: AuraModelNode = { ...node, ...transform };
-    matrices.set(createModelMatrix(localNode, bounds, shouldNormalizeModelNode(node), time), index * 16);
+    assertValidPivot(transform.pivot);
+    const pivoted = hasNonzeroPivot(node.pivot) || hasNonzeroPivot(transform.pivot);
+    const localNode: AuraModelNode = {
+      ...node, ...transform,
+      ...(pivoted && transform.rotation !== undefined && transform.quaternion === undefined ? { quaternion: undefined } : {})
+    };
+    matrices.set(pivoted
+      ? createModelMatrixV2(localNode, bounds, shouldNormalizeModelNode(node), time, new Float32Array(16))
+      : createModelMatrix(localNode, bounds, shouldNormalizeModelNode(node), time), index * 16);
   });
   return matrices;
 }
@@ -124,8 +452,12 @@ export function createProductionModelInstanceTransforms(
 export function createProductionInstanceTransforms(transforms: readonly AuraTransformSpec[], node: AuraPrimitiveNode): Float32Array {
   const matrices = new Float32Array(transforms.length * 16);
   transforms.forEach((transform, index) => {
+    assertValidPivot(transform.pivot);
     const localNode: AuraPrimitiveNode = { kind: "primitive", primitive: node.primitive, size: node.size, ...transform };
-    matrices.set(createModelMatrix(localNode, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, false, 0), index * 16);
+    const bounds = { min: [-0.5, -0.5, -0.5] as AuraVec3, max: [0.5, 0.5, 0.5] as AuraVec3 };
+    matrices.set(hasNonzeroPivot(transform.pivot)
+      ? createModelMatrixV2(localNode, bounds, false, 0, new Float32Array(16))
+      : createModelMatrix(localNode, bounds, false, 0), index * 16);
   });
   return matrices;
 }
@@ -172,6 +504,7 @@ export function resolveProductionPrimitiveRuntimeState(
     // `setGeometry` stores the normalized spec, `updateAttribute` queues
     // partial writes; both drain per frame in `selectProductionPrimitiveResource`.
     readonly __parityL2Geometry?: AuraCustomGeometrySpec;
+    readonly __auraText3D?: AuraPrimitiveNode["text3D"];
     __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[];
   }) | undefined;
   const runtimeSnapshot = runtimeHandle?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
@@ -203,14 +536,24 @@ export function resolveProductionPrimitiveRuntimeState(
     position: runtimeSnapshot.position,
     rotation: runtimeSnapshot.rotation,
     scale: runtimeSnapshot.scale,
+    pivot: runtimeSnapshot.pivot ?? entry.node.pivot,
     material: runtimeSnapshot.material ?? entry.node.material,
     animation: runtimeSnapshot.animation ?? entry.node.animation,
     ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
     ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {}),
     ...(runtimeSnapshot.instanceMatrices ? { instanceMatrices: runtimeSnapshot.instanceMatrices } : {}),
     ...(runtimeSnapshot.instanceRgba ? { instanceRgba: runtimeSnapshot.instanceRgba } : {}),
+    ...(runtimeHandle?.__auraText3D ? { text3D: runtimeHandle.__auraText3D } : {}),
     ...(runtimeHandle?.__parityL2Geometry !== undefined ? { geometry: runtimeHandle.__parityL2Geometry } : {})
   } as AuraPrimitiveNode & { __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[]; instanceMatrices?: Float32Array; instanceRgba?: Float32Array };
+  const revision = runtimeMaterialRevision(runtimeHandle);
+  const textRevision = runtimeHandle?.__auraText3D;
+  resolvedMaterialRevisions.set(resolvedNode, revision);
+  resolvedMaterialCurrent.set(resolvedNode, () => runtimeNodes?.get(runtimeId) === runtimeHandle &&
+    runtimeMaterialRevision(runtimeHandle) === revision && runtimeHandle?.__auraText3D === textRevision);
+  // Material replacement is observed even while hidden, and every LOD drops
+  // its superseded owned texture before a later level becomes visible.
+  syncPrimitiveMaterials(entry, resolvedNode);
   if (pendingAttributes && pendingAttributes.length > 0) {
     resolvedNode.__parityL2AttributeUpdates = pendingAttributes;
   }
@@ -235,11 +578,124 @@ export function describeTextureStreamingResidency(
   return evaluateDistancePrioritizedMipResidency(candidates, normalizeTextureBudgetBytes(budgetBytes));
 }
 
+export type ProductionEnvironmentAsset = string | AuraAssetRef<"texture">;
+
+export interface ProductionEnvironmentRequestOptions {
+  readonly request?: AssetRequestOptions;
+  readonly signal?: AbortSignal;
+}
+
+function environmentDigest(value: string): string {
+  if (!/^(?:sha256-)?[a-f0-9]{64}$/i.test(value)) throw new Error("Invalid asset SHA-256 digest");
+  return value.replace(/^sha256-/i, "").toLowerCase();
+}
+
+function equalEnvironmentIntegrity(a: AssetIntegrity, b: AssetIntegrity): boolean {
+  if (a.version !== 1 || b.version !== 1 || environmentDigest(a.digest) !== environmentDigest(b.digest) ||
+      (a.requireDependencies ?? false) !== (b.requireDependencies ?? false)) return false;
+  const left = Object.entries(a.dependencies ?? {}).sort(([x], [y]) => x.localeCompare(y));
+  const right = Object.entries(b.dependencies ?? {}).sort(([x], [y]) => x.localeCompare(y));
+  return left.length === right.length && left.every(([url, digest], index) =>
+    url === right[index]?.[0] && environmentDigest(digest) === environmentDigest(right[index]![1]));
+}
+
+/** Combine app and asset restrictions without discarding admitted integrity. */
+export function productionEnvironmentRequest(source: ProductionEnvironmentAsset, appRequest?: AssetRequestOptions): AssetRequestOptions {
+  const maxEnvironmentBytes = 256 * 1024 * 1024;
+  if (typeof source === "string") return { ...appRequest, maxBytes: Math.min(appRequest?.maxBytes ?? maxEnvironmentBytes, maxEnvironmentBytes) };
+  const assetRequest = source.request;
+  const digests = [source.hash, source.sha256].filter((value): value is string => value !== undefined).map(environmentDigest);
+  if (digests.some((digest) => digest !== digests[0])) throw new Error("Conflicting asset SHA-256 digests");
+  const integrities = [source.integrity, assetRequest?.integrity, appRequest?.integrity]
+    .filter((value): value is AssetIntegrity => value !== undefined);
+  if (integrities.some((item) => item.version !== 1 || (digests[0] && environmentDigest(item.digest) !== digests[0]))) {
+    throw new Error("Asset hash does not match its integrity metadata");
+  }
+  if (integrities.some((item) => !equalEnvironmentIntegrity(integrities[0]!, item))) {
+    throw new Error("Request integrity conflicts with the admitted asset");
+  }
+  if (assetRequest?.expectedUrl && appRequest?.expectedUrl && assetRequest.expectedUrl !== appRequest.expectedUrl) {
+    throw new Error("Conflicting asset expected URLs");
+  }
+  const origins = assetRequest?.allowedOrigins && appRequest?.allowedOrigins
+    ? assetRequest.allowedOrigins.filter((origin) => appRequest.allowedOrigins!.includes(origin))
+    : assetRequest?.allowedOrigins ?? appRequest?.allowedOrigins;
+  const limits = [maxEnvironmentBytes, assetRequest?.maxBytes, appRequest?.maxBytes].filter((value): value is number => value !== undefined);
+  const integrity = integrities[0] ?? (digests[0] ? { version: 1 as const, digest: digests[0] } : undefined);
+  return {
+    ...assetRequest,
+    ...appRequest,
+    ...(origins ? { allowedOrigins: origins } : {}),
+    ...(limits.length ? { maxBytes: Math.min(...limits) } : {}),
+    ...(integrity ? { integrity, expectedUrl: appRequest?.expectedUrl ?? assetRequest?.expectedUrl ?? source.url } : {})
+  };
+}
+
+function productionEnvironmentFormat(buffer: ArrayBuffer, format?: string): "exr" | "radiance" {
+  const bytes = new Uint8Array(buffer);
+  const exrMagic = bytes.length >= 4 && bytes[0] === 0x76 && bytes[1] === 0x2f && bytes[2] === 0x31 && bytes[3] === 0x01;
+  const declared = format?.replace(/^\./, "").toLowerCase();
+  if (declared && !["exr", "hdr", "rgbe", "radiance"].includes(declared)) {
+    throw new Error(`Unsupported HDRI format: ${declared}`);
+  }
+  if (declared === "exr" && !exrMagic) throw new Error("HDRI declared EXR but does not contain an OpenEXR header");
+  if (declared && declared !== "exr" && exrMagic) throw new Error("HDRI declared Radiance but contains OpenEXR data");
+  return exrMagic ? "exr" : "radiance";
+}
+
+/** Decode Radiance or EXR into top-down, linear equirectangular RGBA pixels. */
+export async function decodeProductionEnvironmentImage(buffer: ArrayBuffer, format?: string): Promise<LinearHdrEnvironmentMapSource> {
+  if (productionEnvironmentFormat(buffer, format) === "exr") {
+    const { parseEXR } = await import("@aura3d/assets/browser");
+    const image = await parseEXR(buffer, { type: "float", outputFormat: "rgba" });
+    if (!(image.data instanceof Float32Array)) throw new Error("EXR decoder did not return float RGBA pixels");
+    // EXR texture output is device-row ordered. The equirectangular prefilter
+    // uses the first row for +Y, matching Radiance's top-down scanlines.
+    const data = new Float32Array(image.data.length);
+    const rowLength = image.width * 4;
+    for (let y = 0; y < image.height; y += 1) {
+      data.set(image.data.subarray((image.height - 1 - y) * rowLength, (image.height - y) * rowLength), y * rowLength);
+    }
+    if (!data.every(Number.isFinite)) throw new Error("HDRI pixels must be finite");
+    return { width: image.width, height: image.height, data };
+  }
+  const radiance = parseProductionRadianceHDR(buffer);
+  return decodeRgbeEnvironmentMap({ width: radiance.width, height: radiance.height, data: radiance.rgbe });
+}
+
+async function loadProductionEnvironmentBytes(source: ProductionEnvironmentAsset, options: ProductionEnvironmentRequestOptions): Promise<ArrayBuffer> {
+  const url = typeof source === "string" ? source : source.url;
+  const buffer = await fetchBytes(url, options.signal, undefined, productionEnvironmentRequest(source, options.request));
+  if (buffer.byteLength === 0) throw new Error("HDRI asset is empty");
+  return buffer;
+}
+
+export async function loadProductionEnvironmentImage(source: ProductionEnvironmentAsset, options: ProductionEnvironmentRequestOptions = {}): Promise<LinearHdrEnvironmentMapSource> {
+  const buffer = await loadProductionEnvironmentBytes(source, options);
+  return decodeProductionEnvironmentImage(buffer, typeof source === "string" ? undefined : source.format);
+}
+
+async function loadProductionEnvironmentPipeline(
+  source: ProductionEnvironmentAsset,
+  options: ProductionEnvironmentRequestOptions,
+  pipelineOptions: Parameters<typeof createProductionPbrHdrPipelineFromRadiance>[1]
+) {
+  const bytes = await loadProductionEnvironmentBytes(source, options);
+  const format = typeof source === "string" ? undefined : source.format;
+  if (productionEnvironmentFormat(bytes, format) === "radiance") {
+    return createProductionPbrHdrPipelineFromRadiance(bytes, pipelineOptions);
+  }
+  const image = await decodeProductionEnvironmentImage(bytes, format);
+  if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
+  return createProductionPbrHdrPipelineFromLinear(image, pipelineOptions);
+}
+
 export async function upgradeProductionEnvironmentHdri(
-  url: string,
+  source: ProductionEnvironmentAsset,
   intensity: number,
-  reflectionUrl?: string,
-  rotation?: number
+  reflectionSource?: ProductionEnvironmentAsset,
+  rotation?: number,
+  options: ProductionEnvironmentRequestOptions = {}
 ): Promise<{
   readonly lighting: EnvironmentLightingOptions;
   readonly dispose: () => void;
@@ -247,25 +703,15 @@ export async function upgradeProductionEnvironmentHdri(
   readonly specularMipCount: number;
   readonly dualProbe: boolean;
 }> {
-  if (typeof fetch !== "function") {
-    throw new Error("HDRI upgrade requires fetch (browser production mount)");
-  }
-  const fetchRadiance = async (assetUrl: string): Promise<Uint8Array> => {
-    const response = await fetch(assetUrl);
-    if (!response.ok) throw new Error(`HDRI fetch failed with status ${response.status} for ${assetUrl}`);
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.length === 0) throw new Error(`HDRI asset is empty for ${assetUrl}`);
-    return bytes;
-  };
   const clampIntensity = Math.max(0, intensity);
-  const illumination = createProductionPbrHdrPipelineFromRadiance(await fetchRadiance(url), {
+  const illumination = await loadProductionEnvironmentPipeline(source, options, {
     id: "root-hdri-environment",
     label: "Root HDRI environment",
     intensity: clampIntensity,
     ...(rotation !== undefined ? { rotation } : {})
   });
-  if (!illumination.diagnostics.realRadianceHdr) throw new Error(`HDRI asset did not parse as Radiance HDR for ${url}`);
-  if (!reflectionUrl) {
+  if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
+  if (!reflectionSource) {
     const resources = createProductionEnvironmentLightingResources(illumination);
     return {
       lighting: resources.lighting,
@@ -275,13 +721,13 @@ export async function upgradeProductionEnvironmentHdri(
       dualProbe: false
     };
   }
-  const reflection = createProductionPbrHdrPipelineFromRadiance(await fetchRadiance(reflectionUrl), {
+  const reflection = await loadProductionEnvironmentPipeline(reflectionSource, options, {
     id: "root-hdri-reflection-environment",
     label: "Root HDRI reflection environment",
     intensity: clampIntensity,
     ...(rotation !== undefined ? { rotation } : {})
   });
-  if (!reflection.diagnostics.realRadianceHdr) throw new Error(`HDRI reflection asset did not parse as Radiance HDR for ${reflectionUrl}`);
+  if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
   const dual = createDualProbeEnvironmentLightingResources({ illumination, reflection });
   return {
     lighting: dual.lighting,
@@ -292,7 +738,7 @@ export async function upgradeProductionEnvironmentHdri(
   };
 }
 
-import { Geometry, IndexBuffer, InstancedPBRMaterial, PBRMaterial, VertexBuffer, VertexFormat, assignCustomAttributeLocations, customAttributeSemantic, type VertexAttributeDescriptor } from "@aura3d/rendering";
+import { Geometry, IndexBuffer, InstancedPBRMaterial, PBRMaterial, VertexBuffer, VertexFormat, assignCustomAttributeLocations, customAttributeSemantic, type VertexAttributeDescriptor, type VertexAttributeType } from "@aura3d/rendering";
 import { computeAuraGeometryBounds, computeAuraGeometryNormals, defineAuraCustomGeometry, normalizeGeometryAttributes } from "../RootGeometry.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { instances } from "../nodes/instances.js";
@@ -367,7 +813,11 @@ export function resolveProductionPrimitiveScalars(node: AuraPrimitiveNode): Prod
   const iridescence = clamp01(materialSpec?.iridescence ?? 0);
   const anisotropy = clamp01(Math.abs(materialSpec?.anisotropy ?? 0));
   const transmission = clamp01(materialSpec?.transmission ?? 0);
-  const thicknessRange = materialSpec?.iridescenceThicknessRange;
+  // The scalar and textured paths use the same validated endpoints.
+  const [thicknessMinimum, thicknessMaximum] = resolveIridescenceThickness(materialSpec ?? {});
+  const thicknessRange = thicknessMinimum === undefined && thicknessMaximum === undefined
+    ? undefined
+    : [thicknessMinimum ?? 100, thicknessMaximum ?? 400] as const;
   /*
    * Sheen colour defaults to the sheen strength as a white tint rather than to black.
    * `sheenColorFactor: [0,0,0]` multiplies the entire sheen lobe to zero, so `sheen: 1` with no
@@ -397,8 +847,24 @@ export function resolveProductionPrimitiveScalars(node: AuraPrimitiveNode): Prod
   };
 }
 
+/** Shared culling contract for primitive rendering and CPU scene queries. */
+export function productionPrimitiveCullMode(node: AuraPrimitiveNode, opacity: number): "none" | "back" {
+  return node.primitive === "plane" || node.material?.doubleSided === true || opacity < 0.999 ? "none" : "back";
+}
+
 export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial {
   const materialSpec = node.material;
+  if (materialSpec?.kind === "depth-preview") {
+    const extra = Object.keys(materialSpec).find((key) => key !== "kind" && key !== "depthPreview");
+    if (extra) throw new Error(`DEPTH_PREVIEW_OPTION_UNSUPPORTED: material field '${extra}' is not supported`);
+    if (!materialSpec.depthPreview) throw new Error("DEPTH_PREVIEW_OPTION_UNSUPPORTED: missing preview range");
+    if (node.geometry?.topology && node.geometry.topology !== "triangles") {
+      throw new Error("DEPTH_PREVIEW_GEOMETRY_UNSUPPORTED: only triangle geometry is supported");
+    }
+    if (node.text3D) throw new Error("DEPTH_PREVIEW_GEOMETRY_UNSUPPORTED: SDF text is not supported");
+    if (node.instanceColors?.length) throw new Error("DEPTH_PREVIEW_OPTION_UNSUPPORTED: instance colors are not supported");
+    return new DepthPreviewMaterial(materialSpec.depthPreview);
+  }
   // parity:L1 (SH-02): `material.custom(spec)` routes to the portable-shader
   // adapter — a validated `PortableShaderMaterial`, never a PBR downgrade.
   if (materialSpec?.kind === "custom" && materialSpec.custom) {
@@ -414,12 +880,15 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
    * is represented by that shader. This makes the one-draw claim real without silently dropping
    * clearcoat/transmission/etc. (those continue to render correctly via expansion).
    */
-  if (node.instances && !declaresExtension && transmission === 0 && materialSpec?.thickness === undefined && materialSpec?.ior === undefined && materialSpec?.attenuationColor === undefined && materialSpec?.attenuationDistance === undefined) {
+  if (node.instances && !declaresExtension && transmission === 0 && thicknessRange === undefined && materialSpec?.thickness === undefined && materialSpec?.ior === undefined && materialSpec?.attenuationColor === undefined && materialSpec?.attenuationDistance === undefined) {
     return new InstancedPBRMaterial({
       name: `a3d-production-instanced-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
       baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
       metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
       roughness: clamp01(materialSpec?.roughness ?? 0.58),
+      diffuseRoughness: materialSpec?.diffuseRoughness,
+      retroreflection: materialSpec?.retroreflection,
+      bumpFactor: materialSpec?.bumpFactor,
       emissiveColor,
       emissiveStrength: Math.max(0, materialSpec?.emissiveIntensity ?? (materialSpec?.emissive ? 1.35 : 0)),
       environmentIntensity,
@@ -429,7 +898,7 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
       renderState: {
         blend: opacity < 0.999,
         depthWrite: opacity >= 0.999,
-        cullMode: node.primitive === "plane" || opacity < 0.999 ? "none" : "back"
+        cullMode: productionPrimitiveCullMode(node, opacity)
       }
     });
   }
@@ -438,6 +907,9 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
     baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
     metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
     roughness: clamp01(materialSpec?.roughness ?? 0.58),
+    diffuseRoughness: materialSpec?.diffuseRoughness,
+    retroreflection: materialSpec?.retroreflection,
+    bumpFactor: materialSpec?.bumpFactor,
     emissiveColor,
     emissiveStrength: Math.max(0, materialSpec?.emissiveIntensity ?? (materialSpec?.emissive ? 1.35 : 0)),
     clearcoatFactor: clearcoat,
@@ -448,7 +920,7 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
     anisotropyStrength: anisotropy,
     anisotropyRotation: materialSpec?.anisotropyRotation ?? 0,
     iridescenceFactor: iridescence,
-    iridescenceIor: Math.max(1, materialSpec?.iridescenceIOR ?? 1.3),
+    iridescenceIor: materialSpec?.iridescenceIOR ?? 1.3,
     ...(thicknessRange ? { iridescenceThicknessMinimum: thicknessRange[0], iridescenceThicknessMaximum: thicknessRange[1] } : {}),
     transmissionFactor: transmission,
     ...(materialSpec?.thickness === undefined ? {} : { volumeThicknessFactor: Math.max(0, materialSpec.thickness) }),
@@ -462,7 +934,7 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
     renderState: {
       blend: opacity < 0.999,
       depthWrite: opacity >= 0.999,
-      cullMode: node.primitive === "plane" || opacity < 0.999 ? "none" : "back"
+      cullMode: productionPrimitiveCullMode(node, opacity)
     }
   });
 }
@@ -498,11 +970,14 @@ function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
   const count = node.instances?.length;
   if (count === undefined || count <= 64 || node.primitive === "custom") return qr;
   let fullTriangles = 0;
+  let full: Geometry | undefined;
   try {
-    const full = createPrimitiveGeometry(qrBuiltinPrimitive(node.primitive), node.params as AuraParityPrimitiveParams | undefined, { primitiveSegments: qr.primitiveSegments ?? "full" });
+    full = createPrimitiveGeometry(qrBuiltinPrimitive(node.primitive), node.params as AuraParityPrimitiveParams | undefined, { primitiveSegments: qr.primitiveSegments ?? "full" });
     fullTriangles = (full.indexBuffer?.count ?? full.vertexBuffer.vertexCount) / 3;
   } catch {
     return qr;
+  } finally {
+    full?.dispose();
   }
   const scale = purpose === "shadow" ? instancedShadowSegmentScale(count, fullTriangles, node.primitive) : instancedDefaultSegmentScale(count, fullTriangles);
   return scale === 1 ? qr : { ...qr, defaultSegmentScale: scale };
@@ -568,18 +1043,21 @@ export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: Q
   if ((qr.defaultSegmentScale ?? 1) >= viewScale) return undefined;
   const size = primitiveSize(node);
   const primitive = qrBuiltinPrimitive(node.primitive);
-  const proxy = !qr.pool || !qrPrimitiveParamsPoolable(node.params)
-    ? createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params))
-    : qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
-      createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
-  if (viewGeometry && triangleCount(proxy) >= triangleCount(viewGeometry)) {
-    proxy.dispose();
-    return undefined;
-  }
-  // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): which nodes of a page got a proxy, and how much cheaper it is.
-  const record = (globalThis as { __A3D_SHADOW_PROXIES__?: unknown[] });
-  (record.__A3D_SHADOW_PROXIES__ ??= []).push({ node: node.name ?? node.primitive, primitive: node.primitive, instances: count, cameraTriangles: viewGeometry ? triangleCount(viewGeometry) : null, proxyTriangles: triangleCount(proxy) });
-  return proxy;
+  return withPrimitiveConstruction((own) => {
+    const proxy = !qr.pool || !qrPrimitiveParamsPoolable(node.params)
+      ? createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params))
+      : qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
+        createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
+    own(() => proxy.dispose());
+    if (viewGeometry && triangleCount(proxy) >= triangleCount(viewGeometry)) {
+      proxy.dispose();
+      return undefined;
+    }
+    // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): which nodes of a page got a proxy, and how much cheaper it is.
+    const record = (globalThis as { __A3D_SHADOW_PROXIES__?: unknown[] });
+    (record.__A3D_SHADOW_PROXIES__ ??= []).push({ node: node.name ?? node.primitive, primitive: node.primitive, instances: count, cameraTriangles: viewGeometry ? triangleCount(viewGeometry) : null, proxyTriangles: triangleCount(proxy) });
+    return proxy;
+  });
 }
 
 export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
@@ -675,41 +1153,51 @@ function createProductionGeometryFromCustomSpec(spec: AuraCustomGeometrySpec): G
   ];
   let cursor = 24;
   if (normalized.uvs) { attributes.push({ semantic: "uv", components: 2, offset: cursor }); cursor += 8; }
+  if (normalized.uv1s) { attributes.push({ semantic: "uv1", components: 2, offset: cursor }); cursor += 8; }
   if (normalized.colors) { attributes.push({ semantic: "color", components: 4, offset: cursor }); cursor += 16; }
   // R-23: custom attributes follow the built-ins in name order and bind by
   // their GLSL name; locations come from the stable pool.
   const customLocations = assignCustomAttributeLocations(normalized.custom.map((entry) => entry.name));
   for (const entry of normalized.custom) {
+    const layout = customAttributeLayout(spec.attributes![entry.name]!);
+    cursor = alignVertexOffset(cursor, Math.min(4, layout.bytes * entry.itemSize));
     attributes.push({
       semantic: customAttributeSemantic(entry.name),
       components: entry.itemSize,
       offset: cursor,
+      type: layout.type,
+      normalized: layout.normalized,
       shaderName: entry.name,
       shaderLocation: customLocations.get(entry.name)!
     });
-    cursor += entry.itemSize * 4;
+    cursor += entry.itemSize * layout.bytes;
   }
-  const vertices = new VertexBuffer(new VertexFormat(attributes), vertexCount);
-  for (let index = 0; index < vertexCount; index += 1) {
-    vertices.setAttribute(index, "position", [normalized.positions[index * 3]!, normalized.positions[index * 3 + 1]!, normalized.positions[index * 3 + 2]!]);
-    vertices.setAttribute(index, "normal", [normals[index * 3]!, normals[index * 3 + 1]!, normals[index * 3 + 2]!]);
-    if (normalized.uvs) vertices.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
-    if (normalized.colors) vertices.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
-  }
-  for (const entry of normalized.custom) writeCustomAttribute(vertices, entry.name, entry.itemSize, entry.data, 0);
-  const indexList = normalized.indices ?? Uint32Array.from({ length: vertexCount }, (_, i) => i);
-  const indexBuffer = indexList.length > 0 ? new IndexBuffer(Array.from(indexList), vertexCount) : null;
-  const geometry = new Geometry(vertices, indexBuffer, spec.topology === "lines" ? "lines" : spec.topology === "points" ? "points" : "triangles", customGeometryBounds(spec));
-  if (spec.groups) geometry.groups = [...spec.groups];
-  if (spec.drawRange) geometry.drawRange = { ...spec.drawRange };
-  if (spec.morphTargets) geometry.morphTargets = spec.morphTargets.map((target) => ({ ...target }));
-  return geometry;
+  return withPrimitiveConstruction((own) => {
+    const vertices = new VertexBuffer(new VertexFormat(attributes, alignVertexOffset(cursor, 4)), vertexCount);
+    let geometry: Geometry | undefined;
+    own(() => { if (geometry) geometry.dispose(); else vertices.dispose(); });
+    for (let index = 0; index < vertexCount; index += 1) {
+      vertices.setAttribute(index, "position", [normalized.positions[index * 3]!, normalized.positions[index * 3 + 1]!, normalized.positions[index * 3 + 2]!]);
+      vertices.setAttribute(index, "normal", [normals[index * 3]!, normals[index * 3 + 1]!, normals[index * 3 + 2]!]);
+      if (normalized.uvs) vertices.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
+      if (normalized.uv1s) vertices.setAttribute(index, "uv1", [normalized.uv1s[index * 2]!, normalized.uv1s[index * 2 + 1]!]);
+      if (normalized.colors) vertices.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
+    }
+    for (const entry of normalized.custom) writeCustomAttribute(vertices, entry, spec.attributes![entry.name]!);
+    const indexBuffer = normalized.indices ? new IndexBuffer(Array.from(normalized.indices), vertexCount) : null;
+    if (indexBuffer) own(() => { if (!geometry) indexBuffer.dispose(); });
+    geometry = new Geometry(vertices, indexBuffer, spec.topology === "lines" ? "lines" : spec.topology === "points" ? "points" : "triangles", customGeometryBounds(spec));
+    if (spec.groups) geometry.groups = [...spec.groups];
+    if (spec.drawRange) geometry.drawRange = { ...spec.drawRange };
+    if (spec.morphTargets) geometry.morphTargets = spec.morphTargets.map((target) => ({ ...target }));
+    return geometry;
+  });
 }
 
-/** Authored normals, else computed; points carry a constant +Y (a vertex count that is not a multiple of 3 would yield NaN face normals). */
+/** Authored normals, else computed; lines and points use a constant +Y. */
 function resolveSpecNormals(spec: AuraCustomGeometrySpec, normalized: ReturnType<typeof normalizeGeometryAttributes>): Float32Array {
   if (normalized.normals) return normalized.normals;
-  if (spec.topology === "points") {
+  if (spec.topology === "points" || spec.topology === "lines") {
     const up = new Float32Array(normalized.positions.length);
     for (let i = 1; i < up.length; i += 3) up[i] = 1;
     return up;
@@ -729,33 +1217,34 @@ function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh
     mesh.uvs && mesh.uvs.length === vertexCount * 2
     && mesh.tangents && mesh.tangents.length === vertexCount * 4
   );
-  const vertices = new VertexBuffer(textured ? VertexFormat.P3N3T4T2T2 : VertexFormat.P3N3, vertexCount);
-  for (let index = 0; index < vertexCount; index += 1) {
-    const base = index * 3;
-    vertices.setAttribute(index, "position", [mesh.positions[base] ?? 0, mesh.positions[base + 1] ?? 0, mesh.positions[base + 2] ?? 0]);
-    vertices.setAttribute(index, "normal", [mesh.normals[base] ?? 0, mesh.normals[base + 1] ?? 1, mesh.normals[base + 2] ?? 0]);
-    if (textured) {
-      const uvBase = index * 2;
-      const tangentBase = index * 4;
-      vertices.setAttribute(index, "tangent", [
-        mesh.tangents![tangentBase] ?? 1, mesh.tangents![tangentBase + 1] ?? 0,
-        mesh.tangents![tangentBase + 2] ?? 0, mesh.tangents![tangentBase + 3] ?? 1
-      ]);
-      vertices.setAttribute(index, "uv", [mesh.uvs![uvBase] ?? 0, mesh.uvs![uvBase + 1] ?? 0]);
-      const uv1 = mesh.uv1s && mesh.uv1s.length === vertexCount * 2 ? mesh.uv1s : mesh.uvs!;
-      vertices.setAttribute(index, "uv1", [uv1[uvBase] ?? 0, uv1[uvBase + 1] ?? 0]);
+  return withPrimitiveConstruction((own) => {
+    const vertices = new VertexBuffer(textured ? VertexFormat.P3N3T4T2T2 : VertexFormat.P3N3, vertexCount);
+    let geometry: Geometry | undefined;
+    own(() => { if (geometry) geometry.dispose(); else vertices.dispose(); });
+    for (let index = 0; index < vertexCount; index += 1) {
+      const base = index * 3;
+      vertices.setAttribute(index, "position", [mesh.positions[base] ?? 0, mesh.positions[base + 1] ?? 0, mesh.positions[base + 2] ?? 0]);
+      vertices.setAttribute(index, "normal", [mesh.normals[base] ?? 0, mesh.normals[base + 1] ?? 1, mesh.normals[base + 2] ?? 0]);
+      if (textured) {
+        const uvBase = index * 2;
+        const tangentBase = index * 4;
+        vertices.setAttribute(index, "tangent", [
+          mesh.tangents![tangentBase] ?? 1, mesh.tangents![tangentBase + 1] ?? 0,
+          mesh.tangents![tangentBase + 2] ?? 0, mesh.tangents![tangentBase + 3] ?? 1
+        ]);
+        vertices.setAttribute(index, "uv", [mesh.uvs![uvBase] ?? 0, mesh.uvs![uvBase + 1] ?? 0]);
+        const uv1 = mesh.uv1s && mesh.uv1s.length === vertexCount * 2 ? mesh.uv1s : mesh.uvs!;
+        vertices.setAttribute(index, "uv1", [uv1[uvBase] ?? 0, uv1[uvBase + 1] ?? 0]);
+      }
     }
-  }
-  const geometry = new Geometry(
-    vertices,
-    new IndexBuffer(Array.from(mesh.indices), vertexCount),
-    mesh.topology ?? "triangles",
-    mesh.bounds
-  );
-  // threejs-parity L2: carry three's groups/drawRange through to the draw path.
-  if (mesh.groups) geometry.groups = [...mesh.groups];
-  if (mesh.drawRange) geometry.drawRange = { ...mesh.drawRange };
-  return geometry;
+    const indexBuffer = new IndexBuffer(Array.from(mesh.indices), vertexCount);
+    own(() => { if (!geometry) indexBuffer.dispose(); });
+    geometry = new Geometry(vertices, indexBuffer, mesh.topology ?? "triangles", mesh.bounds);
+    // threejs-parity L2: carry three's groups/drawRange through to the draw path.
+    if (mesh.groups) geometry.groups = [...mesh.groups];
+    if (mesh.drawRange) geometry.drawRange = { ...mesh.drawRange };
+    return geometry;
+  });
 }
 
 // ── threejs-parity L2 (SG-05): runtime dynamic geometry ──────────────────────
@@ -763,7 +1252,7 @@ function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh
 /** Queued partial attribute write produced by `handle.updateAttribute` (region parity:L2). */
 export interface AuraL2AttributeUpdate {
   readonly name: string;
-  readonly array: Float32Array | Uint16Array | Uint32Array;
+  readonly array: Float32Array | Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | readonly number[];
   readonly offset: number;
 }
 
@@ -781,10 +1270,16 @@ const L2_UPDATE_SEMANTICS: Record<string, "position" | "normal" | "uv" | "uv1" |
   uv0: "uv",
   uvs: "uv",
   uv1: "uv1",
+  uv1s: "uv1",
   color: "color",
   colors: "color",
   tangent: "tangent",
   tangents: "tangent"
+};
+
+const L2_INTEGER_STORAGE_RANGES: Partial<Record<VertexAttributeType, readonly [number, number]>> = {
+  int8: [-128, 127], uint8: [0, 255], int16: [-32768, 32767], uint16: [0, 65535],
+  int32: [-2147483648, 2147483647], uint32: [0, 4294967295]
 };
 
 /**
@@ -814,7 +1309,16 @@ function syncRuntimePrimitiveGeometry(
   }
   const updates = node.__parityL2AttributeUpdates;
   if (updates) {
-    for (const update of updates) applyAttributeUpdateToGeometry(resource.geometry, update);
+    let positionsChanged = false;
+    for (const update of updates) {
+      positionsChanged = applyAttributeUpdateToGeometry(resource.geometry, update, spec) || positionsChanged;
+    }
+    if (positionsChanged) {
+      // Authored bounds describe the original positions, not subsequent writes.
+      // Derive new bounds from all current vertices so culling and matrix caches
+      // receive the same result as the actual buffer, including partial edits.
+      tracked.bounds = resource.geometry.refreshBounds();
+    }
   }
 }
 
@@ -825,12 +1329,13 @@ function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, 
   };
   const normalized = normalizeGeometryAttributes(spec);
   const geometry = resource.geometry;
-  const vertexBuffer = geometry.vertexBuffer;
+  let vertexBuffer = geometry.vertexBuffer;
   const has = (semantic: "position" | "normal" | "uv" | "uv1" | "color" | "tangent") => vertexBuffer.format.hasAttribute(semantic);
   const sameFootprint = vertexBuffer.vertexCount === normalized.vertexCount
     && has("uv") === (normalized.uvs !== undefined)
+    && has("uv1") === (normalized.uv1s !== undefined)
     && has("color") === (normalized.colors !== undefined)
-    && customFootprintMatches(vertexBuffer, normalized.custom)
+    && customFootprintMatches(vertexBuffer, normalized.custom, spec)
     && geometry.topology === (spec.topology ?? "triangles")
     && vertexBuffer.format.hasAttribute("normal")
     && !has("tangent");
@@ -838,21 +1343,39 @@ function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, 
 
   if (sameFootprint) {
     // In-place path (L2-04): attribute writes mark byte ranges dirty; the next
-    // upload() flushes only those ranges — no new GPU buffer.
+    // upload() flushes only those ranges. Detach first when a peer owns the
+    // same storage, so a node-local edit cannot alter another scene resource.
+    const previousIndex = geometry.indexBuffer;
+    const requiresWideIndices = normalized.indices !== undefined && normalized.indices.some((index) => index > 65535);
+    const updateExistingIndex = normalized.indices !== undefined && previousIndex !== null
+      && normalized.indices.length === previousIndex.count && (!requiresWideIndices || previousIndex.type === "uint32");
+    geometry.ensureWritableBuffers({ vertex: true, index: updateExistingIndex });
+    vertexBuffer = geometry.vertexBuffer;
     for (let index = 0; index < normalized.vertexCount; index += 1) {
       vertexBuffer.setAttribute(index, "position", [normalized.positions[index * 3]!, normalized.positions[index * 3 + 1]!, normalized.positions[index * 3 + 2]!]);
       vertexBuffer.setAttribute(index, "normal", [normals[index * 3]!, normals[index * 3 + 1]!, normals[index * 3 + 2]!]);
       if (normalized.uvs) vertexBuffer.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
+      if (normalized.uv1s) vertexBuffer.setAttribute(index, "uv1", [normalized.uv1s[index * 2]!, normalized.uv1s[index * 2 + 1]!]);
       if (normalized.colors) vertexBuffer.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
     }
-    for (const entry of normalized.custom) writeCustomAttribute(vertexBuffer, entry.name, entry.itemSize, entry.data, 0);
-    if (normalized.indices && geometry.indexBuffer && normalized.indices.length === geometry.indexBuffer.count) {
-      geometry.indexBuffer.setIndices(0, normalized.indices);
+    for (const entry of normalized.custom) writeCustomAttribute(vertexBuffer, entry, spec.attributes![entry.name]!);
+    if (normalized.indices && updateExistingIndex) {
+      geometry.indexBuffer!.setIndices(0, normalized.indices);
     } else if (normalized.indices) {
       // Same vertex count but a different index count still fits the existing
       // vertex allocation; only the index buffer is swapped.
-      geometry.indexBuffer?.dispose();
-      (geometry as { indexBuffer?: IndexBuffer | null }).indexBuffer = new IndexBuffer(Array.from(normalized.indices), normalized.vertexCount);
+      const nextIndex = new IndexBuffer(Array.from(normalized.indices), normalized.vertexCount);
+      try { geometry.replaceIndexBuffer(nextIndex); }
+      catch (error) {
+        // A failed transfer must not leak its new allocation. A cleanup error
+        // after a successful transfer leaves the geometry owning that buffer.
+        let retained = false;
+        try { retained = geometry.indexBuffer === nextIndex; } catch { /* Disposed geometry cannot retain a new stream. */ }
+        if (!retained) { try { nextIndex.dispose(); } catch { /* Preserve the transfer error. */ } }
+        throw error;
+      }
+    } else if (geometry.indexBuffer) {
+      geometry.replaceIndexBuffer(null);
     }
     const bounds = spec.bounds ? { min: spec.bounds.min, max: spec.bounds.max } : computeAuraGeometryBounds({ positions: normalized.positions });
     (geometry as { bounds: GltfBounds }).bounds = { min: [...bounds.min] as AuraVec3, max: [...bounds.max] as AuraVec3 };
@@ -870,36 +1393,70 @@ function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, 
   tracked.bounds = { min: [...next.bounds.min] as AuraVec3, max: [...next.bounds.max] as AuraVec3 };
 }
 
-/** R-23: write `data` (itemSize floats per vertex) into the named custom attribute starting at vertex `start`. */
-function writeCustomAttribute(vertexBuffer: VertexBuffer, name: string, itemSize: number, data: ArrayLike<number>, start: number): void {
+type CustomVertexEntry = ReturnType<typeof normalizeGeometryAttributes>["custom"][number];
+type CustomVertexSource = NonNullable<AuraCustomGeometrySpec["attributes"]>[string];
+
+/**
+ * WebGPU's float shader inputs support normalized 8/16-bit pairs and quads.
+ * Other integer layouts are decoded to float32 so the same root scene remains
+ * usable on both backends (including scalar/vec3 and 32-bit components).
+ */
+function customAttributeLayout(source: CustomVertexSource): { type: VertexAttributeType; normalized: boolean; bytes: number } {
+  const raw = source.data;
+  if (source.normalized && (source.itemSize === 2 || source.itemSize === 4)) {
+    if (raw instanceof Int8Array) return { type: "int8", normalized: true, bytes: 1 };
+    if (raw instanceof Uint8Array) return { type: "uint8", normalized: true, bytes: 1 };
+    if (raw instanceof Int16Array) return { type: "int16", normalized: true, bytes: 2 };
+    if (raw instanceof Uint16Array) return { type: "uint16", normalized: true, bytes: 2 };
+  }
+  return { type: "float32", normalized: false, bytes: 4 };
+}
+
+function alignVertexOffset(value: number, alignment: number): number {
+  return Math.ceil(value / alignment) * alignment;
+}
+
+/** Write one source attribute, preserving raw integer storage when supported. */
+function writeCustomAttribute(vertexBuffer: VertexBuffer, entry: CustomVertexEntry, source: CustomVertexSource): void {
+  const { name, itemSize } = entry;
   const semantic = customAttributeSemantic(name);
-  const elements = data.length / itemSize;
+  const nativeInteger = vertexBuffer.format.getAttribute(semantic).type !== "float32";
+  const sourceStride = source.stride ?? itemSize;
+  const sourceOffset = source.offset ?? 0;
+  const elements = entry.data.length / itemSize;
   const scratch: number[] = new Array(itemSize);
   for (let element = 0; element < elements; element += 1) {
-    for (let component = 0; component < itemSize; component += 1) scratch[component] = data[element * itemSize + component] ?? 0;
-    vertexBuffer.setAttribute(start + element, semantic, scratch);
+    for (let component = 0; component < itemSize; component += 1) {
+      scratch[component] = nativeInteger
+        ? source.data[element * sourceStride + sourceOffset + component]!
+        : entry.data[element * itemSize + component]!;
+    }
+    vertexBuffer.setAttribute(element, semantic, scratch);
   }
 }
 
-/** R-23: the live buffer holds exactly the spec's custom attributes (same names, same itemSize). */
-function customFootprintMatches(vertexBuffer: VertexBuffer, custom: readonly { readonly name: string; readonly itemSize: number }[]): boolean {
+/** Reuse the allocation only when attribute storage and conversion agree. */
+function customFootprintMatches(vertexBuffer: VertexBuffer, custom: readonly CustomVertexEntry[], spec: AuraCustomGeometrySpec): boolean {
   const live = vertexBuffer.format.attributes.filter((attribute) => String(attribute.semantic).startsWith("custom:"));
   if (live.length !== custom.length) return false;
   return custom.every((entry) => {
     const semantic = customAttributeSemantic(entry.name);
-    return vertexBuffer.format.hasAttribute(semantic) && vertexBuffer.format.getAttribute(semantic).components === entry.itemSize;
+    if (!vertexBuffer.format.hasAttribute(semantic)) return false;
+    const attribute = vertexBuffer.format.getAttribute(semantic);
+    const layout = customAttributeLayout(spec.attributes![entry.name]!);
+    return attribute.components === entry.itemSize && attribute.type === layout.type && attribute.normalized === layout.normalized;
   });
 }
 
 /** SG-05 `updateAttribute`: partial write by element offset — dirty-ranged, never reallocates. */
-function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2AttributeUpdate): void {
+function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2AttributeUpdate, spec?: AuraCustomGeometrySpec): boolean {
   // R-23: exact-name custom attributes win; validated names never collide with the built-in aliases.
   const customSemantic = customAttributeSemantic(update.name);
   const semantic = geometry.vertexBuffer.format.hasAttribute(customSemantic) ? customSemantic : L2_UPDATE_SEMANTICS[update.name.toLowerCase()];
   if (!semantic) {
     throw new Error(`Aura3D updateAttribute name "${update.name}" is not a writable vertex semantic (position/normal/uv/uv1/color/tangent) or a custom attribute on this geometry.`);
   }
-  const vertexBuffer = geometry.vertexBuffer;
+  let vertexBuffer = geometry.vertexBuffer;
   if (!vertexBuffer.format.hasAttribute(semantic)) {
     throw new Error(`Aura3D updateAttribute("${update.name}") — the live geometry has no "${semantic}" attribute.`);
   }
@@ -908,18 +1465,61 @@ function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2Attrib
   if (data.length % components !== 0) {
     throw new Error(`Aura3D updateAttribute("${update.name}") array length must be a multiple of ${components}.`);
   }
-  const start = Math.max(0, Math.floor(update.offset));
+  if (!Number.isInteger(update.offset) || update.offset < 0) {
+    throw new Error(`Aura3D updateAttribute("${update.name}") offset must be a non-negative integer vertex index.`);
+  }
+  const start = update.offset;
   const elements = data.length / components;
   if (start + elements > vertexBuffer.vertexCount) {
     throw new Error(`Aura3D updateAttribute("${update.name}") overruns the vertex buffer (${vertexBuffer.vertexCount} vertices).`);
   }
   const scratch: number[] = new Array(components);
+  const source = spec?.attributes?.[update.name];
+  const storageType = vertexBuffer.format.getAttribute(semantic).type;
+  const nativeInteger = storageType !== "float32";
+  const convert = source ? attributeUpdateConverter(source, update.name, nativeInteger) : (value: number) => value;
+  const checked = (input: number): number => {
+    const value = convert(input);
+    const range = L2_INTEGER_STORAGE_RANGES[storageType];
+    if (!Number.isFinite(value) || (storageType === "float32" && !Number.isFinite(Math.fround(value))) ||
+        (range && (!Number.isInteger(value) || value < range[0] || value > range[1]))) {
+      throw new RangeError(`Aura3D updateAttribute("${update.name}") value is outside the ${storageType} storage range.`);
+    }
+    return value;
+  };
+  // Validate the entire update before mutating any vertex, so a malformed
+  // later component cannot leave a partially applied GPU buffer.
+  for (let i = 0; i < data.length; i += 1) checked(data[i]!);
+  if (elements > 0) {
+    geometry.ensureWritableBuffers({ vertex: true });
+    vertexBuffer = geometry.vertexBuffer;
+  }
   for (let element = 0; element < elements; element += 1) {
     for (let component = 0; component < components; component += 1) {
-      scratch[component] = data[element * components + component] ?? 0;
+      scratch[component] = checked(data[element * components + component]!);
     }
     vertexBuffer.setAttribute(start + element, semantic, scratch);
   }
+  return semantic === "position";
+}
+
+/** Convert packed update values using the authored attribute's component type. */
+function attributeUpdateConverter(source: CustomVertexSource, name: string, nativeInteger: boolean): (value: number) => number {
+  const data = source.data;
+  const limits = data instanceof Int8Array ? [-128, 127] as const
+    : data instanceof Uint8Array ? [0, 255] as const
+    : data instanceof Int16Array ? [-32768, 32767] as const
+    : data instanceof Uint16Array ? [0, 65535] as const
+    : data instanceof Int32Array ? [-2147483648, 2147483647] as const
+    : data instanceof Uint32Array ? [0, 4294967295] as const
+    : undefined;
+  return (value) => {
+    if (!Number.isFinite(value) || (limits && (!Number.isInteger(value) || value < limits[0] || value > limits[1]))) {
+      throw new Error(`Aura3D updateAttribute("${name}") value is outside the authored component type.`);
+    }
+    if (nativeInteger || !source.normalized || !limits) return value;
+    return limits[0] < 0 ? Math.max(-1, value / limits[1]) : value / limits[1];
+  };
 }
 
 
@@ -970,10 +1570,6 @@ function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2Attrib
  * procedural 2x tiling unwrap of uv0 (documented) so the native texCoord
  * selector has two distinct sets to choose between.
  */
-
-
-
-
 
 
 

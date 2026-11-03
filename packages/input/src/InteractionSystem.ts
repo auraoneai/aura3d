@@ -20,12 +20,13 @@ export interface InteractionHit {
   readonly distance: number;
 }
 
-export type InteractionEventType = "hover-enter" | "hover-exit" | "pointer-down" | "drag-start" | "drag" | "drag-end" | "click";
+export type InteractionEventType = "hover-enter" | "hover-exit" | "pointer-down" | "pointer-cancel" | "drag-start" | "drag" | "drag-end" | "drag-cancel" | "click";
 
 export interface InteractionEvent {
   readonly type: InteractionEventType;
   readonly hit?: InteractionHit;
   readonly target?: InteractionTarget;
+  readonly pointerId?: number;
   readonly snapshot: InputSnapshot;
 }
 
@@ -35,9 +36,9 @@ export type InteractionTargetProvider = () => readonly InteractionTarget[];
 
 export class InteractionSystem {
   private readonly listeners = new Set<InteractionListener>();
-  private hovered?: InteractionTarget;
-  private pressed?: InteractionTarget;
-  private dragging = false;
+  private readonly states = new Map<number, { hovered?: InteractionTarget; pressed?: InteractionTarget; dragging: boolean }>();
+  private disposed = false;
+  private contactMode = false;
 
   constructor(
     private readonly rayProvider: InteractionRayProvider,
@@ -45,38 +46,92 @@ export class InteractionSystem {
   ) {}
 
   subscribe(listener: InteractionListener): () => void {
+    if (this.disposed) return () => {};
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
   update(snapshot: InputSnapshot): InteractionHit | undefined {
+    if (this.disposed) return undefined;
+    if (snapshot.pointer.cancellationReason) {
+      for (const id of [...this.states.keys()]) this.cancel(id, snapshot);
+      return undefined;
+    }
+    if (snapshot.pointer.contacts.length > 0 || snapshot.pointer.cancellations.length > 0) this.contactMode = true;
+    for (const cancellation of snapshot.pointer.cancellations) this.cancel(cancellation.id, snapshot);
+
+    let primaryHit: InteractionHit | undefined;
+    let firstHit: InteractionHit | undefined;
+    let sawPrimary = false;
+    if (snapshot.pointer.contacts.length > 0) {
+      const present = new Set(snapshot.pointer.contacts.map(contact => contact.id));
+      for (const id of [...this.states.keys()]) if (!present.has(id)) this.cancel(id, snapshot);
+      for (const contact of snapshot.pointer.contacts) {
+        if (contact.cancelled) continue;
+        const view = snapshot.forContact(contact);
+        const hit = this.updateContact(contact.id, view);
+        if (firstHit === undefined) firstHit = hit;
+        if (contact.id === snapshot.pointer.primaryId) { primaryHit = hit; sawPrimary = true; }
+        if (contact.released && (contact.pointerType === "touch" || !contact.overTarget)) this.endHover(contact.id, view);
+      }
+      return sawPrimary ? primaryHit : firstHit;
+    } else if (this.contactMode) {
+      for (const id of [...this.states.keys()]) this.cancel(id, snapshot);
+    } else if (snapshot.pointer.cancellations.length === 0) {
+      primaryHit = this.updateContact(-1, snapshot);
+    }
+    return primaryHit;
+  }
+
+  dispose(): void {
+    this.disposed = true;
+    this.states.clear();
+    this.listeners.clear();
+  }
+
+  private updateContact(id: number, snapshot: InputSnapshot): InteractionHit | undefined {
     const hit = this.pick(this.rayProvider(snapshot));
     const target = hit?.target;
-
-    if (this.hovered?.id !== target?.id) {
-      if (this.hovered) this.emit({ type: "hover-exit", target: this.hovered, snapshot });
-      if (target) this.emit({ type: "hover-enter", hit, target, snapshot });
-      this.hovered = target;
+    const state = this.states.get(id) ?? { dragging: false };
+    this.states.set(id, state);
+    const pointerId = id < 0 ? undefined : id;
+    if (state.hovered?.id !== target?.id) {
+      if (state.hovered) this.emit({ type: "hover-exit", target: state.hovered, snapshot, pointerId });
+      if (target) this.emit({ type: "hover-enter", hit, target, snapshot, pointerId });
+      state.hovered = target;
     }
-
     if (snapshot.button(0).pressed && target) {
-      this.pressed = target;
-      this.dragging = false;
-      this.emit({ type: "pointer-down", hit, target, snapshot });
+      state.pressed = target;
+      state.dragging = false;
+      this.emit({ type: "pointer-down", hit, target, snapshot, pointerId });
     }
-
-    if (this.pressed && snapshot.button(0).down && (snapshot.pointer.deltaX !== 0 || snapshot.pointer.deltaY !== 0)) {
-      this.emit({ type: this.dragging ? "drag" : "drag-start", hit, target: this.pressed, snapshot });
-      this.dragging = true;
+    if (state.pressed && snapshot.button(0).down && (snapshot.pointer.deltaX !== 0 || snapshot.pointer.deltaY !== 0)) {
+      this.emit({ type: state.dragging ? "drag" : "drag-start", hit, target: state.pressed, snapshot, pointerId });
+      state.dragging = true;
     }
-
-    if (this.pressed && snapshot.button(0).released) {
-      this.emit({ type: this.dragging ? "drag-end" : "click", hit, target: this.pressed, snapshot });
-      this.pressed = undefined;
-      this.dragging = false;
+    if (state.pressed && snapshot.button(0).released) {
+      if (state.dragging || target?.id === state.pressed.id) {
+        this.emit({ type: state.dragging ? "drag-end" : "click", hit, target: state.pressed, snapshot, pointerId });
+      }
+      state.pressed = undefined;
+      state.dragging = false;
     }
-
     return hit;
+  }
+
+  private cancel(id: number, snapshot: InputSnapshot): void {
+    const state = this.states.get(id);
+    if (!state) return;
+    if (state.pressed) this.emit({ type: state.dragging ? "drag-cancel" : "pointer-cancel", target: state.pressed, snapshot, pointerId: id < 0 ? undefined : id });
+    this.endHover(id, snapshot);
+    this.states.delete(id);
+  }
+
+  private endHover(id: number, snapshot: InputSnapshot): void {
+    const state = this.states.get(id);
+    if (state?.hovered) this.emit({ type: "hover-exit", target: state.hovered, snapshot, pointerId: id < 0 ? undefined : id });
+    if (state) state.hovered = undefined;
+    if (!state?.pressed) this.states.delete(id);
   }
 
   pick(ray: Ray): InteractionHit | undefined {

@@ -6,8 +6,9 @@
  * over the interior footprint. Piece sockets carrying `lights` emit real
  * `light` nodes (the PRD's "practical lights").
  */
-import type { AuraMaterialSpec, AuraSceneNode, AuraVec3 } from "../index.js";
-import { material, primitives } from "../index.js";
+import type { AuraMaterialSpec, AuraSceneNode, AuraVec3 } from "../nodes/types.js";
+import { material } from "../nodes/material.js";
+import { primitives } from "../nodes/primitives.js";
 import type { AuraWorldShape } from "./terrain.js";
 import type { AuraBiomeId } from "../../contracts/world.js";
 import type { AuraKit, AuraKitPlacement } from "./kits.js";

@@ -284,6 +284,7 @@ export function instancedShadowSegmentScale(instanceCount: number | undefined, f
  */
 export class QrPrimitiveGeometryPool {
   private readonly entries = new Map<string, { readonly geometry: Geometry; refs: number }>();
+  private readonly constructing = new Set<string>();
 
   /** Distinct shared geometries alive (= vertex/index buffer pairs). */
   get size(): number {
@@ -297,18 +298,31 @@ export class QrPrimitiveGeometryPool {
   acquire(key: string, create: () => Geometry): Geometry {
     let entry = this.entries.get(key);
     if (!entry) {
-      entry = { geometry: create(), refs: 0 };
-      this.entries.set(key, entry);
+      if (this.constructing.has(key)) throw new Error(`Primitive geometry pool is constructing ${key}`);
+      this.constructing.add(key);
+      try {
+        entry = { geometry: create(), refs: 0 };
+        this.entries.set(key, entry);
+      } finally {
+        this.constructing.delete(key);
+      }
     }
     entry.refs += 1;
     const shared = entry;
-    return new QrSharedPrimitiveGeometry(shared.geometry, () => {
+    const release = (): void => {
       shared.refs -= 1;
       if (shared.refs === 0) {
-        this.entries.delete(key);
+        if (this.entries.get(key) === shared) this.entries.delete(key);
         shared.geometry.dispose();
       }
-    });
+    };
+    try {
+      return new QrSharedPrimitiveGeometry(shared.geometry, release);
+    } catch (error) {
+      try { release(); }
+      catch (cleanupError) { throw new AggregateError([error, cleanupError], "Primitive geometry lease construction failed"); }
+      throw error;
+    }
   }
 }
 
@@ -317,13 +331,38 @@ class QrSharedPrimitiveGeometry extends Geometry {
   private released = false;
 
   constructor(base: Geometry, private readonly release: () => void) {
-    super(base.vertexBuffer, base.indexBuffer, base.topology, base.bounds);
+    // Snapshot mutable per-geometry metadata; buffers stay shared while every
+    // handle retains its own reference through Geometry's ownership contract.
+    const vertexBuffer = base.getVertexBuffer(0);
+    const indexBuffer = base.indexBuffer;
+    const bounds = { min: [...base.bounds.min] as [number, number, number], max: [...base.bounds.max] as [number, number, number] };
+    const groups = base.groups?.map((group) => ({ ...group }));
+    const drawRange = base.drawRange ? { ...base.drawRange } : undefined;
+    const copyChannel = (values: Float32Array | readonly number[]): Float32Array | number[] =>
+      values instanceof Float32Array ? values.slice() : [...values];
+    const morphTargets = base.morphTargets?.map((target) => {
+      const { positions, normals, tangents, ...metadata } = target;
+      return {
+        ...metadata,
+        positions: copyChannel(positions),
+        ...(normals === undefined ? {} : { normals: copyChannel(normals) }),
+        ...(tangents === undefined ? {} : { tangents: copyChannel(tangents) })
+      };
+    });
+    super(vertexBuffer, indexBuffer, base.topology, bounds, base.additionalVertexBuffers);
+    this.groups = groups;
+    this.drawRange = drawRange;
+    this.morphTargets = morphTargets;
   }
 
   override dispose(): void {
     if (this.released) return;
     this.released = true;
-    this.release();
+    const errors: unknown[] = [];
+    try { super.dispose(); } catch (error) { errors.push(error); }
+    try { this.release(); } catch (error) { errors.push(error); }
+    if (errors.length === 1) throw errors[0];
+    if (errors.length) throw new AggregateError(errors, "Primitive geometry lease disposal failed");
   }
 }
 
@@ -394,9 +433,9 @@ function hasSemantic(geometry: Geometry, semantic: string): boolean {
 }
 
 /**
- * Copies the CPU data of the shared (cached, never uploaded or disposed here)
- * rendering geometry into an engine primitive mesh, so every resource still
- * owns and disposes its own `Geometry` exactly like the legacy path.
+ * Copies the CPU data of an owned rendering geometry into an engine primitive
+ * mesh, then releases the temporary geometry. The rendering factory may reuse
+ * private CPU templates, but each returned geometry belongs to this caller.
  *
  * Capsule (§6.3): the rendering factory folds `size` into the geometry so the
  * caps stay hemispherical. The engine model matrix still applies `S(size)`, so
@@ -418,64 +457,68 @@ export function createQrPrimitiveMesh(
     { primitiveSegments: options.primitiveSegments ?? "full", defaultSegmentScale: options.defaultSegmentScale ?? 1 },
     fold ? dims : undefined
   );
-  const vertexBuffer = source.vertexBuffer;
-  const count = vertexBuffer.vertexCount;
-  const textured = hasSemantic(source, "uv") && hasSemantic(source, "tangent");
-  const positions = new Float32Array(count * 3);
-  const normals = new Float32Array(count * 3);
-  const uvs = textured ? new Float32Array(count * 2) : undefined;
-  const tangents = textured ? new Float32Array(count * 4) : undefined;
-  const sx = fold ? dims[0] : 1;
-  const sy = fold ? dims[1] : 1;
-  const sz = fold ? dims[2] : 1;
-  for (let index = 0; index < count; index += 1) {
-    const p = vertexBuffer.getAttribute(index, "position");
-    positions[index * 3] = p[0]! / sx;
-    positions[index * 3 + 1] = p[1]! / sy;
-    positions[index * 3 + 2] = p[2]! / sz;
-    const n = vertexBuffer.getAttribute(index, "normal");
-    const nx = n[0]! * sx;
-    const ny = n[1]! * sy;
-    const nz = n[2]! * sz;
-    const nl = Math.hypot(nx, ny, nz) || 1;
-    normals[index * 3] = nx / nl;
-    normals[index * 3 + 1] = ny / nl;
-    normals[index * 3 + 2] = nz / nl;
-    if (uvs && tangents) {
-      const uv = vertexBuffer.getAttribute(index, "uv");
-      uvs[index * 2] = uv[0]!;
-      uvs[index * 2 + 1] = uv[1]!;
-      const t = vertexBuffer.getAttribute(index, "tangent");
-      const tx = t[0]! / sx;
-      const ty = t[1]! / sy;
-      const tz = t[2]! / sz;
-      const tl = Math.hypot(tx, ty, tz) || 1;
-      tangents[index * 4] = tx / tl;
-      tangents[index * 4 + 1] = ty / tl;
-      tangents[index * 4 + 2] = tz / tl;
-      tangents[index * 4 + 3] = t[3]!;
+  try {
+    const vertexBuffer = source.vertexBuffer;
+    const count = vertexBuffer.vertexCount;
+    const textured = hasSemantic(source, "uv") && hasSemantic(source, "tangent");
+    const positions = new Float32Array(count * 3);
+    const normals = new Float32Array(count * 3);
+    const uvs = textured ? new Float32Array(count * 2) : undefined;
+    const tangents = textured ? new Float32Array(count * 4) : undefined;
+    const sx = fold ? dims[0] : 1;
+    const sy = fold ? dims[1] : 1;
+    const sz = fold ? dims[2] : 1;
+    for (let index = 0; index < count; index += 1) {
+      const p = vertexBuffer.getAttribute(index, "position");
+      positions[index * 3] = p[0]! / sx;
+      positions[index * 3 + 1] = p[1]! / sy;
+      positions[index * 3 + 2] = p[2]! / sz;
+      const n = vertexBuffer.getAttribute(index, "normal");
+      const nx = n[0]! * sx;
+      const ny = n[1]! * sy;
+      const nz = n[2]! * sz;
+      const nl = Math.hypot(nx, ny, nz) || 1;
+      normals[index * 3] = nx / nl;
+      normals[index * 3 + 1] = ny / nl;
+      normals[index * 3 + 2] = nz / nl;
+      if (uvs && tangents) {
+        const uv = vertexBuffer.getAttribute(index, "uv");
+        uvs[index * 2] = uv[0]!;
+        uvs[index * 2 + 1] = uv[1]!;
+        const t = vertexBuffer.getAttribute(index, "tangent");
+        const tx = t[0]! / sx;
+        const ty = t[1]! / sy;
+        const tz = t[2]! / sz;
+        const tl = Math.hypot(tx, ty, tz) || 1;
+        tangents[index * 4] = tx / tl;
+        tangents[index * 4 + 1] = ty / tl;
+        tangents[index * 4 + 2] = tz / tl;
+        tangents[index * 4 + 3] = t[3]!;
+      }
     }
+    const indexData = source.indexBuffer?.data;
+    const indices: Uint16Array | Uint32Array = indexData instanceof Uint32Array
+      ? Uint32Array.from(indexData)
+      : indexData !== undefined
+        ? Uint16Array.from(indexData)
+        : count > 0xffff
+          ? Uint32Array.from({ length: count }, (_, index) => index)
+          : Uint16Array.from({ length: count }, (_, index) => index);
+    const bounds: GltfBounds = {
+      min: [source.bounds.min[0] / sx, source.bounds.min[1] / sy, source.bounds.min[2] / sz],
+      max: [source.bounds.max[0] / sx, source.bounds.max[1] / sy, source.bounds.max[2] / sz]
+    };
+    return {
+      positions,
+      normals,
+      indices,
+      bounds,
+      topology: source.topology === "lines" || source.topology === "points" ? source.topology : "triangles",
+      ...(source.groups ? { groups: [...source.groups] } : {}),
+      ...(source.drawRange ? { drawRange: { ...source.drawRange } } : {}),
+      ...(uvs && tangents ? { uvs, uv1s: tilingSecondUnwrap(uvs), tangents } : {})
+    };
+  } finally {
+    source.dispose();
   }
-  const indexData = source.indexBuffer?.data;
-  const indices: Uint16Array | Uint32Array = indexData instanceof Uint32Array
-    ? Uint32Array.from(indexData)
-    : indexData !== undefined
-      ? Uint16Array.from(indexData)
-      : count > 0xffff
-        ? Uint32Array.from({ length: count }, (_, index) => index)
-        : Uint16Array.from({ length: count }, (_, index) => index);
-  const bounds: GltfBounds = {
-    min: [source.bounds.min[0] / sx, source.bounds.min[1] / sy, source.bounds.min[2] / sz],
-    max: [source.bounds.max[0] / sx, source.bounds.max[1] / sy, source.bounds.max[2] / sz]
-  };
-  return {
-    positions,
-    normals,
-    indices,
-    bounds,
-    topology: source.topology === "lines" || source.topology === "points" ? source.topology : "triangles",
-    ...(source.groups ? { groups: [...source.groups] } : {}),
-    ...(source.drawRange ? { drawRange: { ...source.drawRange } } : {}),
-    ...(uvs && tangents ? { uvs, uv1s: tilingSecondUnwrap(uvs), tangents } : {})
-  };
 }

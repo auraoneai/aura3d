@@ -10,11 +10,11 @@ import {
 import { Collider, type ColliderDescriptor } from "./Collider.js";
 import { CollisionEventQueue, type CollisionEvent, type Contact } from "./CollisionEvents.js";
 import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
-import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
+import type { RaycastHit, RaycastOptions, SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
 import type { PhysicsCharacterController, PhysicsCharacterControllerDescriptor } from "./PhysicalCharacterController.js";
-import type { PhysicsVehicleController } from "./PhysicalVehicleController.js";
-import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, validateFiniteVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
+import { normalizePhysicsVehiclePose, normalizePhysicsWheelSpec, validatePhysicsVehicleAxes, validatePhysicsVehicleStep, validatePhysicsWheelCommand, validatePhysicsWheelTuning, type PhysicsVehicleController } from "./PhysicalVehicleController.js";
+import { Shape, cloneVec3, dotVec3, lengthVec3, normalizeVec3, rotateVec3ByQuat, scaleVec3, subVec3, validateFiniteVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
 import { timeOfImpact } from "./TimeOfImpact.js";
 
 export type PhysicsContinuousCollisionDescriptor = {
@@ -146,8 +146,10 @@ export class PhysicsWorld {
   private readonly rapierBodiesByAuraId = new Map<number, RapierBodyHandle>();
   private readonly rapierCollidersByAuraId = new Map<number, RapierColliderHandle>();
   private readonly rapierJointsByConstraint = new Map<Constraint, RapierJointHandle>();
-  private readonly vehicleControllers = new Set<RapierVehicleControllerHandle>();
-  private readonly characterControllers = new Set<RapierCharacterControllerHandle>();
+  private readonly fixedJointFrames = new Map<Constraint, { readonly anchorA: Vec3; readonly rotationA: readonly [number, number, number, number]; readonly preserveOffset: boolean }>();
+  private readonly jointAxisFrames = new Map<Constraint, { readonly axisA: Vec3; readonly rotationBFromA: readonly [number, number, number, number] }>();
+  private readonly vehicleControllers = new Map<RapierVehicleControllerHandle, number>();
+  private readonly characterControllers = new Map<RapierCharacterControllerHandle, { bodyId: number; colliderId: number }>();
   private nextBodyId = 1;
   private nextColliderId = 1;
   private lastEvents: readonly CollisionEvent[] = [];
@@ -155,10 +157,12 @@ export class PhysicsWorld {
   private lastBroadphaseProfile: BroadphaseProfile = emptyBroadphaseProfile();
   private lastContinuousCollisionStep: ContinuousCollisionStepPlan = emptyContinuousCollisionStepPlan();
   private steps = 0;
+  private disposed = false;
 
   constructor(descriptor: PhysicsWorldDescriptor = {}) {
     this.requestedBackend = descriptor.backend ?? "auto";
     this.gravity = cloneVec3(descriptor.gravity ?? [0, -9.81, 0]);
+    validateFiniteVec3(this.gravity, "world gravity");
     this.fixedDelta = descriptor.fixedDelta ?? 1 / 60;
     // Keep the established public default while configuring Rapier's native solver.
     this.solverIterations = descriptor.solverIterations ?? 10;
@@ -203,10 +207,8 @@ export class PhysicsWorld {
   }
 
   createRigidBody(descriptor: RigidBodyDescriptor = {}): RigidBody {
+    this.assertAlive();
     const body = new RigidBody(this.nextBodyId, descriptor);
-    this.nextBodyId += 1;
-    this.bodiesById.set(body.id, body);
-    this.bodyColliders.set(body.id, new Set());
     const rapierBody = this.rapierWorld.createRigidBody({
       type: body.type === "static" ? "fixed" : body.type === "kinematic" ? "kinematic-position" : "dynamic",
       position: body.position,
@@ -221,19 +223,28 @@ export class PhysicsWorld {
       ...(body.declaredInertia ? { principalAngularInertia: body.declaredInertia } : {})
     });
     if (body.sleeping) rapierBody.sleep();
+    this.nextBodyId += 1;
+    this.bodiesById.set(body.id, body);
+    this.bodyColliders.set(body.id, new Set());
     this.rapierBodiesByAuraId.set(body.id, rapierBody);
     return body;
   }
 
   createCollider(body: RigidBody | number, descriptor: ColliderDescriptor): Collider {
-    const bodyId = typeof body === "number" ? body : body.id;
-    if (!this.bodiesById.has(bodyId)) {
-      throw new Error(`Cannot create collider for missing body ${bodyId}.`);
+    this.assertAlive();
+    const owner = this.requireBody(body, "create collider");
+    const bodyId = owner.id;
+    const shape = Shape.clone(descriptor.shape);
+    if (owner.type !== "static" && ["plane", "mesh", "heightfield"].includes(shape.kind)) {
+      throw new Error(`Collider shape '${shape.kind}' is supported only on static bodies; body ${bodyId} is '${owner.type}'.`);
     }
-    const collider = new Collider(this.nextColliderId, bodyId, descriptor);
-    this.nextColliderId += 1;
-    this.collidersById.set(collider.id, collider);
-    this.bodyColliders.get(bodyId)?.add(collider.id);
+    const collider = new Collider(this.nextColliderId, bodyId, { ...descriptor, shape });
+    validateCollisionFilter(collider.filter.layer, collider.filter.mask);
+    // Runtime collision groups and broadphase geometry must not diverge from
+    // descriptors exposed as readonly on the public collider.
+    Object.freeze(collider.filter);
+    Object.freeze(collider.material);
+    Object.freeze(collider);
     const rapierBody = this.rapierBodiesByAuraId.get(bodyId);
     if (!rapierBody) throw new Error(`Missing Rapier body for Aura body ${bodyId}.`);
     const rapierCollider = this.rapierWorld.createCollider(rapierBody, {
@@ -244,17 +255,39 @@ export class PhysicsWorld {
       sensor: collider.sensor,
       collisionGroups: encodeRapierCollisionGroups(collider.filter.layer, collider.filter.mask)
     });
+    this.nextColliderId += 1;
+    this.collidersById.set(collider.id, collider);
+    this.bodyColliders.get(bodyId)?.add(collider.id);
     this.rapierCollidersByAuraId.set(collider.id, rapierCollider);
     return collider;
   }
 
   createConstraint(descriptor: ConstraintDescriptor): Constraint {
-    if (!this.bodiesById.has(descriptor.bodyA.id) || !this.bodiesById.has(descriptor.bodyB.id)) {
+    this.assertAlive();
+    if (!descriptor || this.bodiesById.get(descriptor.bodyA?.id) !== descriptor.bodyA || this.bodiesById.get(descriptor.bodyB?.id) !== descriptor.bodyB) {
       throw new Error("Cannot create a constraint for bodies outside this PhysicsWorld.");
     }
     const constraint = new Constraint(descriptor);
+    if (constraint.type === "fixed") {
+      const rotationA = constraint.bodyA.rotation;
+      this.fixedJointFrames.set(constraint, {
+        anchorA: rotateVec3ByQuat(constraint.restOffset, [-rotationA[0], -rotationA[1], -rotationA[2], rotationA[3]]),
+        rotationA: relativeRotation(rotationA, constraint.bodyB.rotation),
+        preserveOffset: descriptor.localAnchorA === undefined && descriptor.localAnchorB === undefined
+      });
+    }
+    if (constraint.type === "hinge" || constraint.type === "slider" || constraint.type === "motorised-hinge") {
+      const rotationA = constraint.bodyA.rotation;
+      this.jointAxisFrames.set(constraint, {
+        axisA: rotateVec3ByQuat(constraint.axis, [-rotationA[0], -rotationA[1], -rotationA[2], rotationA[3]]),
+        rotationBFromA: relativeRotation(constraint.bodyB.rotation, rotationA)
+      });
+    }
+    let joint: RapierJointHandle;
+    try { joint = this.createRapierJoint(constraint); }
+    catch (error) { this.fixedJointFrames.delete(constraint); this.jointAxisFrames.delete(constraint); throw error; }
     this.constraintsList.push(constraint);
-    this.rapierJointsByConstraint.set(constraint, this.createRapierJoint(constraint));
+    this.rapierJointsByConstraint.set(constraint, joint);
     return constraint;
   }
 
@@ -266,9 +299,9 @@ export class PhysicsWorld {
    * integrating its own velocity.
    */
   createVehicleController(chassis: RigidBody | number): PhysicsVehicleController {
-    const bodyId = typeof chassis === "number" ? chassis : chassis.id;
-    const body = this.bodiesById.get(bodyId);
-    if (!body) throw new Error(`Cannot create a vehicle for missing body ${bodyId}.`);
+    this.assertAlive();
+    const body = this.requireBody(chassis, "create a vehicle");
+    const bodyId = body.id;
     if (body.type !== "dynamic") {
       throw new Error(
         `Vehicle chassis body ${bodyId} is '${body.type}', but a suspension-backed vehicle needs a dynamic ` +
@@ -279,63 +312,80 @@ export class PhysicsWorld {
     const rapierBody = this.rapierBodiesByAuraId.get(bodyId);
     if (!rapierBody) throw new Error(`Cannot create a vehicle for missing body ${bodyId}.`);
     const handle = this.rapierWorld.createVehicleController(rapierBody);
+    const assertControllerAlive = (): void => {
+      if (this.disposed || !this.vehicleControllers.has(handle)) throw new Error("Physics vehicle controller is disposed.");
+    };
+    let contactsValid = true;
     const controller: PhysicsVehicleController = {
-      get wheelCount() { return handle.wheelCount(); },
-      addWheel: (spec) => { handle.addWheel(spec); return controller; },
-      setWheelTuning: (index, tuning) => { handle.setWheelTuning(index, tuning); return controller; },
+      get wheelCount() { assertControllerAlive(); return handle.wheelCount(); },
+      addWheel: (spec) => { assertControllerAlive(); handle.addWheel(normalizePhysicsWheelSpec(spec)); contactsValid = false; return controller; },
+      setWheelTuning: (index, tuning) => { assertControllerAlive(); validatePhysicsWheelTuning(tuning); handle.setWheelTuning(index, tuning); return controller; },
       // Drive input clears the wrapper's sleep flag too. Rapier sleeps a chassis that
       // has been sitting still, and `syncRapierFromAura` pushes the wrapper's sleep
       // state onto the solver every step — so without this the world would immediately
       // put the car back to sleep and the throttle would do nothing.
-      setWheelCommand: (index, command) => { body.wake(); handle.setWheelCommand(index, command); return controller; },
-      setBrakes: (brake) => { body.wake(); handle.setBrakes(brake); return controller; },
-      setAxes: (up, forward) => { handle.upAxis = up; handle.forwardAxis = forward; return controller; },
+      setWheelCommand: (index, command) => { assertControllerAlive(); validatePhysicsWheelCommand(command); handle.setWheelCommand(index, command); body.wake(); return controller; },
+      setBrakes: (brake) => { assertControllerAlive(); validatePhysicsWheelCommand({ brake }); handle.setBrakes(brake); body.wake(); return controller; },
+      setAxes: (up, forward) => { assertControllerAlive(); validatePhysicsVehicleAxes(up, forward); handle.upAxis = up; handle.forwardAxis = forward; contactsValid = false; return controller; },
       wheelState: (index) => {
+        assertControllerAlive();
         const state = handle.wheelState(index);
         return {
           index: state.index,
-          grounded: state.isInContact,
-          contactPoint: state.contactPoint,
-          contactNormal: state.contactNormal,
+          grounded: contactsValid && state.isInContact,
+          contactPoint: contactsValid ? state.contactPoint : null,
+          contactNormal: contactsValid ? state.contactNormal : null,
           engineForce: state.engineForce,
           brake: state.brake,
           steering: state.steering,
           suspensionLength: state.suspensionLength,
           rotation: state.rotation,
           frictionSlip: state.frictionSlip,
-          suspensionForce: state.suspensionForce,
-          forwardImpulse: state.forwardImpulse,
-          sideImpulse: state.sideImpulse,
-          groundColliderHandle: state.groundColliderHandle,
+          suspensionForce: contactsValid ? state.suspensionForce : 0,
+          forwardImpulse: contactsValid ? state.forwardImpulse : 0,
+          sideImpulse: contactsValid ? state.sideImpulse : 0,
+          groundColliderHandle: contactsValid && state.groundColliderHandle !== null
+            ? this.auraColliderIdForRapierHandle(state.groundColliderHandle) ?? null
+            : null,
         };
       },
-      wheelStates: () => handle.wheelStates().map((state) => controller.wheelState(state.index)),
-      isGrounded: () => handle.isGrounded(),
-      groundedWheelCount: () => handle.groundedWheelCount(),
-      currentSpeed: () => handle.currentVehicleSpeed(),
+      wheelStates: () => { assertControllerAlive(); return handle.wheelStates().map((state) => controller.wheelState(state.index)); },
+      isGrounded: () => { assertControllerAlive(); return contactsValid && handle.isGrounded(); },
+      groundedWheelCount: () => { assertControllerAlive(); return contactsValid ? handle.groundedWheelCount() : 0; },
+      currentSpeed: () => { assertControllerAlive(); return handle.currentVehicleSpeed(); },
       step: (dt) => {
+        assertControllerAlive();
+        validatePhysicsVehicleStep(dt);
         // Wheel rays are scene queries, so a car built this frame would otherwise find
         // no road under any of its four tyres and drop through the circuit.
         this.rapierWorld.refreshQueries();
         handle.update(dt);
+        contactsValid = true;
       },
-      position: () => handle.chassisPosition(),
-      rotation: () => handle.chassisRotation(),
-      linearVelocity: () => handle.chassisLinearVelocity(),
-      angularVelocity: () => handle.chassisAngularVelocity(),
+      position: () => { assertControllerAlive(); return handle.chassisPosition(); },
+      rotation: () => { assertControllerAlive(); return handle.chassisRotation(); },
+      linearVelocity: () => { assertControllerAlive(); return handle.chassisLinearVelocity(); },
+      angularVelocity: () => { assertControllerAlive(); return handle.chassisAngularVelocity(); },
       resetToPose: (pose) => {
-        validateFiniteVec3(pose.position, "vehicle reset position");
-        handle.setChassisPose(pose.position, pose.rotation, pose.linearVelocity, pose.angularVelocity);
+        assertControllerAlive();
+        const normalized = normalizePhysicsVehiclePose(pose);
+        handle.setChassisPose(normalized.position, normalized.rotation, normalized.linearVelocity, normalized.angularVelocity);
+        contactsValid = false;
         // The public wrapper copy has to agree with the solver immediately, or a route
         // reading `body.position` between the reset and the next step renders the old
         // crash pose for one frame.
         syncAuraFromRapier(rapierBody, body);
+        body.previousPosition = cloneVec3(body.position);
+        body.previousRotation = [...body.rotation];
+        body.poseOverridden = false;
+        body.velocityOverridden = false;
+        body.clearForces();
         return controller;
       },
-      clearCommands: () => { handle.clearWheelCommands(); return controller; },
-      dispose: () => { this.vehicleControllers.delete(handle); handle.dispose(); },
+      clearCommands: () => { assertControllerAlive(); handle.clearWheelCommands(); return controller; },
+      dispose: () => { if (this.vehicleControllers.delete(handle)) handle.dispose(); },
     };
-    this.vehicleControllers.add(handle);
+    this.vehicleControllers.set(handle, bodyId);
     return controller;
   }
 
@@ -346,9 +396,9 @@ export class PhysicsWorld {
    * the reported position instead of applying their own request a second time.
    */
   createCharacterController(body: RigidBody | number, descriptor: PhysicsCharacterControllerDescriptor = {}): PhysicsCharacterController {
-    const bodyId = typeof body === "number" ? body : body.id;
-    const wrapper = this.bodiesById.get(bodyId);
-    if (!wrapper) throw new Error(`Cannot create a character controller for missing body ${bodyId}.`);
+    this.assertAlive();
+    const wrapper = this.requireBody(body, "create a character controller");
+    const bodyId = wrapper.id;
     if (wrapper.type !== "kinematic") {
       throw new Error(
         `Character body ${bodyId} is '${wrapper.type}', but Aura3D's physical character controller is a kinematic ` +
@@ -360,7 +410,9 @@ export class PhysicsWorld {
     if (!rapierBody) throw new Error(`Cannot create a character controller for missing body ${bodyId}.`);
     const colliders = this.rapierCollidersOf(bodyId);
     if (colliders.length === 0) throw new Error(`Character body ${bodyId} needs a collider before it can move.`);
+    const characterColliderId = [...(this.bodyColliders.get(bodyId) ?? [])][0]!;
     const handle = this.rapierWorld.createCharacterController(descriptor.offset ?? 0.01);
+    try {
     if (descriptor.autoStepHeight !== undefined) {
       handle.enableAutostep(descriptor.autoStepHeight, descriptor.autoStepMinWidth ?? 0.2, descriptor.autoStepIncludeDynamicBodies ?? false);
     }
@@ -370,19 +422,27 @@ export class PhysicsWorld {
     if (descriptor.slideEnabled !== undefined) handle.setSlideEnabled(descriptor.slideEnabled);
     if (descriptor.characterMass !== undefined) handle.setCharacterMass(descriptor.characterMass);
     if (descriptor.applyImpulsesToDynamicBodies !== undefined) handle.setApplyImpulsesToDynamicBodies(descriptor.applyImpulsesToDynamicBodies);
-    this.characterControllers.add(handle);
+    } catch (error) {
+      handle.dispose();
+      throw error;
+    }
+    this.characterControllers.set(handle, { bodyId, colliderId: characterColliderId });
 
     const characterCollider = colliders[0]!;
+    const assertControllerAlive = (): void => {
+      if (this.disposed || !this.characterControllers.has(handle)) throw new Error("Physics character controller is disposed.");
+    };
     const controller: PhysicsCharacterController = {
       bodyId,
-      setAutoStep: (height, minWidth, includeDynamicBodies) => { handle.enableAutostep(height, minWidth, includeDynamicBodies ?? false); return controller; },
-      setMaxSlopeClimbAngle: (radians) => { handle.setMaxSlopeClimbAngle(radians); return controller; },
-      setMinSlopeSlideAngle: (radians) => { handle.setMinSlopeSlideAngle(radians); return controller; },
-      setSnapToGround: (distance) => { handle.enableSnapToGround(distance); return controller; },
-      setSlideEnabled: (enabled) => { handle.setSlideEnabled(enabled); return controller; },
-      setCharacterMass: (mass) => { handle.setCharacterMass(mass); return controller; },
-      setApplyImpulsesToDynamicBodies: (enabled) => { handle.setApplyImpulsesToDynamicBodies(enabled); return controller; },
+      setAutoStep: (height, minWidth, includeDynamicBodies) => { assertControllerAlive(); handle.enableAutostep(height, minWidth, includeDynamicBodies ?? false); return controller; },
+      setMaxSlopeClimbAngle: (radians) => { assertControllerAlive(); handle.setMaxSlopeClimbAngle(radians); return controller; },
+      setMinSlopeSlideAngle: (radians) => { assertControllerAlive(); handle.setMinSlopeSlideAngle(radians); return controller; },
+      setSnapToGround: (distance) => { assertControllerAlive(); handle.enableSnapToGround(distance); return controller; },
+      setSlideEnabled: (enabled) => { assertControllerAlive(); handle.setSlideEnabled(enabled); return controller; },
+      setCharacterMass: (mass) => { assertControllerAlive(); handle.setCharacterMass(mass); return controller; },
+      setApplyImpulsesToDynamicBodies: (enabled) => { assertControllerAlive(); handle.setApplyImpulsesToDynamicBodies(enabled); return controller; },
       move: (desired) => {
+        assertControllerAlive();
         validateFiniteVec3(desired, "character movement");
         // Rapier only rebuilds its scene-query structure inside `step()`. Without this,
         // the first move after the character and level are created queries a world the
@@ -405,13 +465,15 @@ export class PhysicsWorld {
         };
       },
       position: () => {
+        assertControllerAlive();
         const rapier = this.rapierBodiesByAuraId.get(bodyId);
-        if (!rapier) return [0, 0, 0];
+        if (!rapier) throw new Error("Physics character controller is disposed.");
         const p = rapier.position();
         return [p[0], p[1], p[2]];
       },
-      grounded: () => handle.lastGrounded,
+      grounded: () => { assertControllerAlive(); return handle.lastGrounded; },
       resetTo: (position) => {
+        assertControllerAlive();
         validateFiniteVec3(position, "character reset position");
         const reset = handle.setPosition(characterCollider, [position[0], position[1], position[2]]);
         wrapper.position = [reset[0], reset[1], reset[2]];
@@ -422,7 +484,7 @@ export class PhysicsWorld {
         wrapper.velocityOverridden = false;
         return reset;
       },
-      dispose: () => { this.characterControllers.delete(handle); handle.dispose(); },
+      dispose: () => { if (this.characterControllers.delete(handle)) handle.dispose(); },
     };
     return controller;
   }
@@ -436,6 +498,13 @@ export class PhysicsWorld {
     return out;
   }
 
+  private auraColliderIdForRapierHandle(handle: number): number | undefined {
+    for (const [id, collider] of this.rapierCollidersByAuraId) {
+      if (collider.unsafeRapierCollider().handle === handle) return id;
+    }
+    return undefined;
+  }
+
   /**
    * Change world gravity after construction.
    *
@@ -444,6 +513,7 @@ export class PhysicsWorld {
    * change it was to rebuild the world and lose every body.
    */
   setGravity(gravity: Vec3): void {
+    this.assertAlive();
     validateFiniteVec3(gravity, "world gravity");
     this.gravity[0] = gravity[0];
     this.gravity[1] = gravity[1];
@@ -452,18 +522,22 @@ export class PhysicsWorld {
   }
 
   getBody(id: number): RigidBody | undefined {
+    this.assertAlive();
     return this.bodiesById.get(id);
   }
 
   getCollider(id: number): Collider | undefined {
+    this.assertAlive();
     return this.collidersById.get(id);
   }
 
   bodies(): readonly RigidBody[] {
+    this.assertAlive();
     return Array.from(this.bodiesById.values()).sort((a, b) => a.id - b.id);
   }
 
   colliders(): readonly Collider[] {
+    this.assertAlive();
     return Array.from(this.collidersById.values()).sort((a, b) => a.id - b.id);
   }
 
@@ -476,10 +550,39 @@ export class PhysicsWorld {
   }
 
   constraints(): readonly Constraint[] {
+    this.assertAlive();
     return [...this.constraintsList];
   }
 
+  /** Remove a constraint and its native joint. Repeated removal is harmless. */
+  removeConstraint(constraint: Constraint): void {
+    this.assertAlive();
+    const index = this.constraintsList.indexOf(constraint);
+    if (index < 0) return;
+    this.rapierJointsByConstraint.get(constraint)?.remove();
+    this.rapierJointsByConstraint.delete(constraint);
+    this.fixedJointFrames.delete(constraint);
+    this.jointAxisFrames.delete(constraint);
+    this.constraintsList.splice(index, 1);
+  }
+
   removeRigidBody(id: number): void {
+    this.assertAlive();
+    if (!this.bodiesById.has(id)) return;
+    for (const [handle, ownerId] of this.vehicleControllers) {
+      if (ownerId === id) { this.vehicleControllers.delete(handle); handle.dispose(); }
+    }
+    for (const [handle, owner] of this.characterControllers) {
+      if (owner.bodyId === id) { this.characterControllers.delete(handle); handle.dispose(); }
+    }
+    // Native joint handles become invalid when either body is removed, so explicitly
+    // retire them first rather than trying to remove an already destroyed joint.
+    for (let index = this.constraintsList.length - 1; index >= 0; index -= 1) {
+      const constraint = this.constraintsList[index]!;
+      if (constraint.bodyA.id === id || constraint.bodyB.id === id) {
+        this.removeConstraint(constraint);
+      }
+    }
     const colliderIds = Array.from(this.bodyColliders.get(id) ?? []);
     for (const colliderId of colliderIds) {
       this.removeCollider(colliderId);
@@ -491,21 +594,16 @@ export class PhysicsWorld {
       this.rapierWorld.removeBody(rapierBody);
       this.rapierBodiesByAuraId.delete(id);
     }
-    for (let index = this.constraintsList.length - 1; index >= 0; index -= 1) {
-      const constraint = this.constraintsList[index]!;
-      if (constraint.bodyA.id === id || constraint.bodyB.id === id) {
-        const joint = this.rapierJointsByConstraint.get(constraint);
-        if (joint) joint.remove();
-        this.rapierJointsByConstraint.delete(constraint);
-        this.constraintsList.splice(index, 1);
-      }
-    }
   }
 
   removeCollider(id: number): void {
+    this.assertAlive();
     const collider = this.collidersById.get(id);
     if (!collider) {
       return;
+    }
+    for (const [handle, owner] of this.characterControllers) {
+      if (owner.colliderId === id) { this.characterControllers.delete(handle); handle.dispose(); }
     }
     this.bodyColliders.get(collider.bodyId)?.delete(id);
     this.collidersById.delete(id);
@@ -519,6 +617,7 @@ export class PhysicsWorld {
   }
 
   step(dt = this.fixedDelta): readonly CollisionEvent[] {
+    this.assertAlive();
     if (!Number.isFinite(dt) || dt <= 0) {
       throw new Error("PhysicsWorld.step dt must be finite and positive.");
     }
@@ -526,6 +625,7 @@ export class PhysicsWorld {
   }
 
   drainEvents(): readonly CollisionEvent[] {
+    this.assertAlive();
     const events = this.lastEvents;
     this.lastEvents = [];
     return events;
@@ -537,6 +637,8 @@ export class PhysicsWorld {
   }
 
   raycastAll(origin: Vec3, direction: Vec3, options: RaycastOptions = {}): readonly RaycastHit[] {
+    this.assertAlive();
+    validateQuery(origin, options);
     const normalized = normalizeVec3(direction);
     const hits: RaycastHit[] = [];
     for (const collider of this.colliderValues()) {
@@ -547,9 +649,12 @@ export class PhysicsWorld {
       if (options.ignoreColliders?.includes(collider.id) || options.ignoreBodies?.includes(collider.bodyId)) {
         continue;
       }
-      const hit = raycastCollider(origin, normalized, collider, body, options);
+      if ((collider.sensor && options.includeSensors !== true) ||
+          (options.mask !== undefined && (collider.filter.layer & options.mask) === 0)) continue;
+      this.syncQueryPose(body);
+      const hit = this.rapierCollidersByAuraId.get(collider.id)?.castRay(origin, normalized, options.maxDistance, options.includeBackfaces);
       if (hit) {
-        hits.push(hit);
+        hits.push({ ...hit, colliderId: collider.id, bodyId: body.id });
       }
     }
     hits.sort((a, b) => a.distance - b.distance || a.colliderId - b.colliderId);
@@ -561,6 +666,9 @@ export class PhysicsWorld {
   }
 
   sphereCastAll(origin: Vec3, radius: number, direction: Vec3, options: RaycastOptions = {}): readonly SphereCastHit[] {
+    this.assertAlive();
+    validateQuery(origin, options);
+    if (!Number.isFinite(radius) || radius <= 0) throw new Error("sphere cast radius must be finite and positive.");
     const normalized = normalizeVec3(direction);
     const hits: SphereCastHit[] = [];
     for (const collider of this.colliderValues()) {
@@ -571,16 +679,40 @@ export class PhysicsWorld {
       if (options.ignoreColliders?.includes(collider.id) || options.ignoreBodies?.includes(collider.bodyId)) {
         continue;
       }
-      const hit = sphereCastCollider(origin, radius, normalized, collider, body, options);
+      if ((collider.sensor && options.includeSensors !== true) ||
+          (options.mask !== undefined && (collider.filter.layer & options.mask) === 0)) continue;
+      this.syncQueryPose(body);
+      const hit = this.rapierCollidersByAuraId.get(collider.id)?.castSphere(origin, radius, normalized, options.maxDistance, options.includeBackfaces);
       if (hit) {
-        hits.push(hit);
+        hits.push({ ...hit, colliderId: collider.id, bodyId: body.id, castRadius: radius });
       }
     }
     hits.sort((a, b) => a.distance - b.distance || a.colliderId - b.colliderId);
     return hits;
   }
 
+  /** Return colliders whose real shapes intersect a world-aligned sphere or box. */
+  overlapShape(center: Vec3, shape: Extract<PhysicsShape, { kind: "sphere" | "box" }>, options: RaycastOptions = {}): readonly Collider[] {
+    this.assertAlive();
+    validateQuery(center, options);
+    // Validate even for an empty world, rather than depending on a collider query.
+    const query = shape.kind === "sphere"
+      ? Shape.sphere(shape.radius)
+      : Shape.box(shape.halfExtents[0], shape.halfExtents[1], shape.halfExtents[2]);
+    const hits: Collider[] = [];
+    for (const collider of this.colliderValues()) {
+      const body = this.bodiesById.get(collider.bodyId);
+      if (!body || options.ignoreColliders?.includes(collider.id) || options.ignoreBodies?.includes(collider.bodyId)) continue;
+      if ((collider.sensor && options.includeSensors === false) ||
+          (options.mask !== undefined && (collider.filter.layer & options.mask) === 0)) continue;
+      this.syncQueryPose(body);
+      if (this.rapierCollidersByAuraId.get(collider.id)?.intersectsShape(center, query)) hits.push(collider);
+    }
+    return hits.sort((a, b) => a.id - b.id);
+  }
+
   snapshot(): PhysicsSnapshot {
+    this.assertAlive();
     const contacts = this.eventQueue.snapshotContacts();
     const bodies = this.bodies();
     return {
@@ -612,10 +744,14 @@ export class PhysicsWorld {
 
   /** Release the selected native solver and every world-owned handle. Idempotent. */
   dispose(): void {
+    if (this.disposed) return;
     this.rapierWorld.dispose();
+    this.disposed = true;
     this.vehicleControllers.clear();
     this.characterControllers.clear();
     this.rapierJointsByConstraint.clear();
+    this.fixedJointFrames.clear();
+    this.jointAxisFrames.clear();
     this.rapierCollidersByAuraId.clear();
     this.rapierBodiesByAuraId.clear();
     this.constraintsList.length = 0;
@@ -623,6 +759,38 @@ export class PhysicsWorld {
     this.bodiesById.clear();
     this.bodyColliders.clear();
     this.lastEvents = [];
+    this.eventQueue.update([]);
+  }
+
+  private assertAlive(): void {
+    if (this.disposed) throw new Error("PhysicsWorld is disposed.");
+  }
+
+  private syncQueryPose(body: RigidBody): void {
+    const native = this.rapierBodiesByAuraId.get(body.id);
+    if (!native) return;
+    const raw = native.unsafeRapierBody();
+    const position = raw.translation();
+    const rotation = raw.rotation();
+    const values = [position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, rotation.w];
+    const target = [...body.position, ...body.rotation];
+    if (!body.poseOverridden && values.every((value, index) => Math.abs(value - target[index]!) <= 1e-7 * Math.max(1, Math.abs(value)))) return;
+    validateFiniteVec3(body.position, "body position");
+    if (body.rotation.length !== 4 || !body.rotation.every(Number.isFinite) || Math.hypot(...body.rotation) <= 1e-9) {
+      throw new Error("body rotation must be a finite non-zero quaternion.");
+    }
+    raw.setTranslation(toRapierVector(body.position), false);
+    raw.setRotation({ x: body.rotation[0], y: body.rotation[1], z: body.rotation[2], w: body.rotation[3] }, false);
+    this.rapierWorld.markQueriesStale();
+  }
+
+  private requireBody(body: RigidBody | number, operation: string): RigidBody {
+    const id = typeof body === "number" ? body : body?.id;
+    const owned = id === undefined ? undefined : this.bodiesById.get(id);
+    if (!owned || (typeof body !== "number" && body !== owned)) {
+      throw new Error(`Cannot ${operation}: body ${String(id)} is missing or belongs to another PhysicsWorld.`);
+    }
+    return owned;
   }
 
   private detectContacts(): Contact[] {
@@ -634,7 +802,16 @@ export class PhysicsWorld {
       const colliderB = this.rapierCollidersByAuraId.get(b.id)?.unsafeRapierCollider();
       if (!colliderA || !colliderB) continue;
       if (a.sensor || b.sensor) {
-        if (!this.rapierWorld.unsafeRapierWorld().intersectionPair(colliderA, colliderB)) continue;
+        let overlapping = this.rapierWorld.unsafeRapierWorld().intersectionPair(colliderA, colliderB);
+        if (!overlapping && isHeightfieldConvexPair(a.shape, b.shape)) {
+          // Rapier's intersection query can miss heightfields against boxes,
+          // capsules and convex hulls even while its contact query reports their
+          // true overlap. Query the actual transformed shapes with no predictive
+          // margin, after the same broadphase and filter checks as every pair.
+          const contact = colliderA.contactCollider(colliderB, 0);
+          overlapping = contact !== null && contact.distance <= 0;
+        }
+        if (!overlapping) continue;
         const separation = subVec3(bodyB.position, bodyA.position);
         const normal = lengthVec3(separation) > 1e-9 ? normalizeVec3(separation) : [0, 1, 0] as const;
         contacts.push({ colliderA: a.id, colliderB: b.id, bodyA: bodyA.id, bodyB: bodyB.id, normal, penetration: 0, sensor: true });
@@ -736,12 +913,16 @@ export class PhysicsWorld {
       type: constraint.type,
       localAnchorA:
         constraint.type === "fixed"
-        && constraint.localAnchorA.every((value) => value === 0)
-        && constraint.localAnchorB.every((value) => value === 0)
-          ? constraint.restOffset
+        && this.fixedJointFrames.get(constraint)!.preserveOffset
+          ? this.fixedJointFrames.get(constraint)!.anchorA
           : constraint.localAnchorA,
       localAnchorB: constraint.localAnchorB,
-      axis: constraint.axis,
+      ...(constraint.type === "fixed" ? {
+        localRotationA: this.fixedJointFrames.get(constraint)!.rotationA,
+        localRotationB: [0, 0, 0, 1] as const
+      } : {}),
+      axis: this.jointAxisFrames.get(constraint)?.axisA ?? constraint.axis,
+      ...(this.jointAxisFrames.has(constraint) ? { relativeFrameBFromA: this.jointAxisFrames.get(constraint)!.rotationBFromA } : {}),
       restLength: constraint.restLength,
       stiffness: constraint.stiffness,
       damping: constraint.damping,
@@ -771,6 +952,11 @@ export class PhysicsWorld {
   }
 
   private stepProduction(dt: number): readonly CollisionEvent[] {
+    // A rejected step must not consume forces, teleports, or other pending state.
+    validateFiniteVec3(this.gravity, "world gravity");
+    const continuousStep = this.planContinuousCollisionStep(dt);
+    this.lastContinuousCollisionStep = continuousStep;
+    this.assertContinuousCollisionPlan(continuousStep);
     this.rapierWorld.setGravity(this.gravity);
     const stepForces = new Map<number, { readonly force: Vec3; readonly torque: Vec3 }>();
     for (const body of this.bodyValues()) {
@@ -785,10 +971,10 @@ export class PhysicsWorld {
       syncRapierFromAura(body, rapierBody);
     }
     this.synchronizeRapierJoints();
-    const continuousStep = this.planContinuousCollisionStep(dt);
-    this.lastContinuousCollisionStep = continuousStep;
-    this.assertContinuousCollisionPlan(continuousStep);
     const subDelta = dt / continuousStep.subSteps;
+    const transitions: CollisionEvent[] = [];
+    const stable = new Map<string, CollisionEvent>();
+    const transitioned = new Set<string>();
     for (let index = 0; index < continuousStep.subSteps; index += 1) {
       for (const [bodyId, pending] of stepForces) {
         const raw = this.rapierBodiesByAuraId.get(bodyId)?.unsafeRapierBody();
@@ -799,18 +985,28 @@ export class PhysicsWorld {
         raw.addTorque(toRapierVector(pending.torque), true);
       }
       this.rapierWorld.step(subDelta);
+      for (const body of this.bodyValues()) {
+        const rapierBody = this.rapierBodiesByAuraId.get(body.id);
+        if (rapierBody) syncAuraFromRapier(rapierBody, body, index === 0);
+      }
+      // Observe each internal step: a fast body can enter and leave a sensor
+      // within one public step, so checking only the final pose loses both events.
+      for (const event of this.eventQueue.update(this.detectContacts())) {
+        if (event.type === "stay") {
+          if (!transitioned.has(event.pairKey)) stable.set(event.pairKey, event);
+        } else {
+          transitioned.add(event.pairKey);
+          stable.delete(event.pairKey);
+          transitions.push(event);
+        }
+      }
     }
     for (const bodyId of stepForces.keys()) {
       const raw = this.rapierBodiesByAuraId.get(bodyId)?.unsafeRapierBody();
       raw?.resetForces(false);
       raw?.resetTorques(false);
     }
-    for (const body of this.bodyValues()) {
-      const rapierBody = this.rapierBodiesByAuraId.get(body.id);
-      if (rapierBody) syncAuraFromRapier(rapierBody, body);
-    }
-    const contacts = this.detectContacts();
-    this.lastEvents = this.eventQueue.update(contacts);
+    this.lastEvents = [...transitions, ...stable.values()];
     this.steps += 1;
     return this.lastEvents;
   }
@@ -823,8 +1019,15 @@ export class PhysicsWorld {
     for (const body of this.bodyValues()) {
       if (body.type === "static" || body.sleeping) continue;
       const bodyRadius = this.bodyBoundingRadius(body.id);
-      const linearMotion = lengthVec3(body.velocity) * dt;
-      const angularMotion = lengthVec3(body.angularVelocity) * bodyRadius * dt;
+      const force = body.pendingForce();
+      const acceleration = body.type === "dynamic"
+        ? [this.gravity[0] + force[0] * body.inverseMass, this.gravity[1] + force[1] * body.inverseMass, this.gravity[2] + force[2] * body.inverseMass] as const
+        : [0, 0, 0] as const;
+      const torque = body.pendingTorque();
+      const angularAcceleration = body.type === "dynamic" ? body.multiplyInverseInertiaWorld(torque) : [0, 0, 0] as const;
+      // Semi-implicit integration can travel v*dt + a*dt² over an outer step.
+      const linearMotion = (lengthVec3(body.velocity) + lengthVec3(acceleration) * dt) * dt;
+      const angularMotion = (lengthVec3(body.angularVelocity) + lengthVec3(angularAcceleration) * dt) * bodyRadius * dt;
       maxMotion = Math.max(maxMotion, linearMotion + angularMotion);
     }
     const minColliderFeature = this.smallestFiniteColliderFeature();
@@ -966,6 +1169,9 @@ function normalizeContinuousCollisionDescriptor(
       onSubstepLimit: "error"
     };
   }
+  if (descriptor.mode !== "adaptive-substeps") {
+    throw new Error(`Unsupported continuousCollision.mode '${String(descriptor.mode)}'; expected 'adaptive-substeps'.`);
+  }
   const maxSubSteps = descriptor.maxSubSteps ?? 256;
   const motionThreshold = descriptor.motionThreshold ?? 0.5;
   const onSubstepLimit = descriptor.onSubstepLimit ?? "error";
@@ -974,6 +1180,9 @@ function normalizeContinuousCollisionDescriptor(
   }
   if (!Number.isFinite(motionThreshold) || motionThreshold <= 0 || motionThreshold > 1) {
     throw new Error("continuousCollision.motionThreshold must be finite and in the range (0, 1].");
+  }
+  if (onSubstepLimit !== "error" && onSubstepLimit !== "clamp") {
+    throw new Error("continuousCollision.onSubstepLimit must be 'error' or 'clamp'.");
   }
   return {
     active: true,
@@ -1012,8 +1221,38 @@ function toRapierVector(value: Vec3): { x: number; y: number; z: number } {
   return { x: value[0], y: value[1], z: value[2] };
 }
 
+/** Local fixed frame of B in A: inverse(A) * B. */
+function relativeRotation(a: readonly [number, number, number, number], b: readonly [number, number, number, number]): readonly [number, number, number, number] {
+  const [x, y, z, w] = [-a[0], -a[1], -a[2], a[3]];
+  return [
+    w * b[0] + x * b[3] + y * b[2] - z * b[1],
+    w * b[1] - x * b[2] + y * b[3] + z * b[0],
+    w * b[2] + x * b[1] - y * b[0] + z * b[3],
+    w * b[3] - x * b[0] - y * b[1] - z * b[2]
+  ];
+}
+
 function encodeRapierCollisionGroups(layer: number, mask: number): number {
   return (((layer & 0xffff) << 16) | (mask & 0xffff)) >>> 0;
+}
+
+function validateCollisionFilter(layer: number, mask: number): void {
+  // Native groups have 16 membership and 16 filter bits. 0xffffffff is the
+  // established public default for "all" and maps exactly to all 16 groups.
+  if (!Number.isInteger(layer) || layer < 0 || layer > 0xffff ||
+      !Number.isInteger(mask) || mask < 0 || (mask > 0xffff && mask !== 0xffffffff)) {
+    throw new Error("Physics collision layer and mask must fit 16 bits (mask 0xffffffff means all layers).");
+  }
+}
+
+function validateQuery(origin: Vec3, options: RaycastOptions): void {
+  validateFiniteVec3(origin, "query origin");
+  if (options.maxDistance !== undefined && (Number.isNaN(options.maxDistance) || options.maxDistance < 0)) {
+    throw new Error("query maxDistance must be non-negative.");
+  }
+  if (options.mask !== undefined && (!Number.isInteger(options.mask) || options.mask < 0 || options.mask > 0xffffffff)) {
+    throw new Error("query mask must be a non-negative 32-bit mask.");
+  }
 }
 
 /** Mirror the public Aura body state onto its sole physical-simulation owner. */
@@ -1049,14 +1288,16 @@ function syncRapierFromAura(body: RigidBody, rapierBody: RapierBodyHandle): void
 }
 
 /** Publish Rapier's solved transform and velocity through the stable Aura wrapper. */
-function syncAuraFromRapier(rapierBody: RapierBodyHandle, body: RigidBody): void {
+function syncAuraFromRapier(rapierBody: RapierBodyHandle, body: RigidBody, advanceHistory = true): void {
   const raw = rapierBody.unsafeRapierBody();
   const position = raw.translation();
   const rotation = raw.rotation();
   const velocity = raw.linvel();
   const angularVelocity = raw.angvel();
-  body.previousPosition = cloneVec3(body.position);
-  body.previousRotation = [body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]];
+  if (advanceHistory) {
+    body.previousPosition = cloneVec3(body.position);
+    body.previousRotation = [body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]];
+  }
   body.position = [position.x, position.y, position.z];
   body.rotation = [rotation.x, rotation.y, rotation.z, rotation.w];
   body.velocity = [velocity.x, velocity.y, velocity.z];
@@ -1131,6 +1372,11 @@ function boundsOverlap(a: Bounds, b: Bounds): boolean {
   return a.min[0] <= b.max[0] && a.max[0] >= b.min[0] &&
     a.min[1] <= b.max[1] && a.max[1] >= b.min[1] &&
     a.min[2] <= b.max[2] && a.max[2] >= b.min[2];
+}
+
+function isHeightfieldConvexPair(a: PhysicsShape, b: PhysicsShape): boolean {
+  const other = a.kind === "heightfield" ? b : b.kind === "heightfield" ? a : undefined;
+  return other !== undefined && (other.kind === "sphere" || other.kind === "box" || other.kind === "capsule" || other.kind === "convex-hull");
 }
 
 function pushPotentialPair(pairs: PotentialPair[], seen: Set<string>, a: BroadphaseEntry, b: BroadphaseEntry): void {

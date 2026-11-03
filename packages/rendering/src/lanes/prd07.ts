@@ -9,12 +9,9 @@ import { particlePassFor, registerPrd07Contributors } from "../vfx/contributors"
 import { skyPassFor } from "../atmosphere/SkyBackgroundPass";
 import { registerParticleChunks } from "../vfx/shaders/particle.glsl";
 import { registerSkyChunks } from "../atmosphere/sky.glsl";
-import { registerPrd07Chunks, FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME, WETNESS_CHUNK_NAME, WETNESS_APPLY_CHUNK_NAME } from "../atmosphere/fogChunks";
+import { registerPrd07Chunks } from "../atmosphere/fogChunks";
 import { registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
-import { prd07WetnessState } from "../atmosphere/shaders/wetness.glsl";
-import { prd07FogSelect, prd07WetnessSelect } from "../vfx/prd07FeaturePars";
-import { bindPrd07FogUniforms, prd07ForwardFog } from "../atmosphere/fogUniformStore";
-import { TextureBinding } from "../TextureBinding";
+import { PRD07_FOG_FEATURE, PRD07_WETNESS_FEATURE } from "../vfx/replayFeatureIdentity";
 
 // C-20 / C-21 provides — real implementations keyed by device.
 particleRenderHookSlot.provide((device) => particlePassFor(device));
@@ -29,53 +26,10 @@ registerSkyChunks();
 registerPrd07Chunks();
 registerPrd07VolumeChunk();
 
-// C-02 feature: fog attachment for PRD 07 programs (flag-gated by the registry).
-// select returns the fog model — "volumetric" on froxel tiers (P5), else
-// "height" — only when A3D_QR_VFX_FOG is on (registry already filters it off).
+// C-02 fog and wetness features (flag-gated by the registry).
 try {
-  registerShaderFeature({
-    id: "prd07.fog",
-    owner: "prd07",
-    flag: "A3D_QR_VFX_FOG",
-    // GU47 E-G (WP-7): only while a fog node is live (the prd07.fog collect
-    // published the store this frame), like prd07.wetness — so promoting
-    // A3D_QR_VFX_FOG leaves fog-free scenes on their current programs.
-    select: (input) => (prd07ForwardFog() === null ? undefined : prd07FogSelect(input)),
-    // No FOG_VOLUMETRIC on forward programs: `#define FOG_VOLUMETRIC 0` is
-    // still `defined()` and pulled in an undefined a3dSampleFroxel(); the
-    // froxel volume is composited by VolumetricFogPass apply instead. The
-    // select value still keys the "height" vs "volumetric" program variant.
-    defines: (value) => ({ A3D_FOG: 1, ...(value === "volumetric" ? { A3D_FOG_FROXEL_TIER: 1 } : {}) }),
-    // #880: pars (declarations) at fragment:pars, call at fragment:fog.
-    chunks: [FOG_CHUNK_NAME, FOG_APPLY_CHUNK_NAME],
-    hooks: ["fragment:pars", "fragment:fog"],
-    // #187/#82 — packed §8.4 uniforms from the prd07.fog contributor (module
-    // store; bindUniforms sees no blackboard). Mode 5 = real absorption.
-    bindUniforms: (_value, _item, set) => bindPrd07FogUniforms(set)
-  });
-  registerShaderFeature({
-    id: "prd07.wetness",
-    owner: "prd07",
-    flag: "A3D_QR_VFX",
-    // gated on live wetness state so dry scenes keep the chunk out (IC-0),
-    // and per item: lit forward draws only (the call chunk edits `material`)
-    select: (input) => prd07WetnessSelect(input),
-    defines: () => ({ A3D_WETNESS: 1 }),
-    // #880: pars (uniforms + functions) at fragment:pars; the call chunk
-    // appends to the default material at fragment:material.
-    chunks: [WETNESS_CHUNK_NAME, WETNESS_APPLY_CHUNK_NAME],
-    hooks: ["fragment:pars", "fragment:material"],
-    // §6.8 globals — driven by AtmosphereWetness/WeatherVolume via
-    // setPrd07WetnessState (bindUniforms sees no blackboard; module store).
-    bindUniforms: (_value, _item, set) => {
-      const w = prd07WetnessState();
-      set("u_wetness", w.wetness);
-      set("u_puddleThreshold", w.puddleThreshold);
-      set("u_rainRipples", w.rainRipples);
-      set("u_snowCover", w.snowCover);
-      set("u_puddleNoise", new TextureBinding({ name: "u_puddleNoise", texture: w.puddleNoise, required: false }));
-    }
-  });
+  registerShaderFeature(PRD07_FOG_FEATURE);
+  registerShaderFeature(PRD07_WETNESS_FEATURE);
 } catch (error) {
   // Idempotent: a second import must not throw on the duplicate-id path.
   if (!(error instanceof Error && error.message.startsWith("SHADER_FEATURE"))) throw error;

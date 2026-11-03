@@ -14,34 +14,64 @@ export const VELOCITY_MRT: { readonly velocityLocation: 1; readonly velocityForm
 
 import type { RenderTarget } from "../RenderDevice";
 
+/** Stable for the lifetime of an authored view or renderable, never its label. */
+export type TemporalIdentity = object | string | number | symbol;
+/** Same token on every pass of one authored frame; choose a new token for each subsequent frame. */
+export type TemporalFrameId = string | number | symbol;
+export type TemporalResetReason = "camera-cut" | "resize" | "tier-change" | "scene-swap" | "device-loss" | "explicit-reset";
+
 export interface TemporalCameraMatrices {
   /** Jittered clip-space view-projection for the current frame (raster VP). */
   readonly jittered: Float32Array;
   /** Physical (unjittered) clip-space view-projection — velocity reprojection input. */
   readonly unjittered: Float32Array;
-  /** Previous frame's jittered clip-space view-projection. */
+  /** Previous committed frame's unjittered clip-space view-projection. */
   readonly previous: Float32Array;
-  /** Linear-Z source written by the forward depth pass this frame. */
+  /** Previous committed signed linear-Z surface, if provided by this history. */
   readonly linZ?: RenderTarget;
-  /** Linear-Z ping-pong partner — last frame's Z after commit. */
+  /** Current signed linear-Z output; promoted to linZ on commit. */
   readonly linZOutput?: RenderTarget;
-  /** Jitter in full-pixel units (u_jitterClip = jitter / {w, h}). */
+  /** Clip-space jitter; half of each component is its WebGL UV offset. */
   readonly jitterClip?: readonly [number, number];
   /** §8.8: measured frame delta in seconds; scales the S7 shutter (C-23). */
   readonly frameTime?: number;
 }
 
-export interface TemporalHistoryLike { prepare(viewProjection: Float32Array, jitter: readonly [number, number]): TemporalCameraMatrices; reset(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void; }
+export interface TemporalHistoryLike {
+  prepare(viewProjection: Float32Array, jitter: readonly [number, number], frameId?: TemporalFrameId): TemporalCameraMatrices;
+  commit?(frameId?: TemporalFrameId): void;
+  cancel?(frameId?: TemporalFrameId): boolean | void;
+  reset(reason: TemporalResetReason): void;
+}
+
+/** A renderer-owned history or a view-specific reset adapter. */
+export type TemporalResetTarget = Pick<TemporalHistoryLike, "reset">;
 
 let temporalHistoryImpl: TemporalHistoryLike | null = null;
+// Ownership metadata only: no camera, model, or frame history is shared here.
+const temporalHistoryOwnership = new WeakMap<object, "compatibility" | "scoped">();
 
-/** Registered by the renderer seam (PR 0b, TemporalHistory wiring). */
+/** @internal Claim a fresh history so the legacy reset seam cannot select it. */
+export function claimScopedTemporalHistory(history: TemporalHistoryLike): boolean {
+  if (temporalHistoryOwnership.has(history)) return false;
+  temporalHistoryOwnership.set(history, "scoped");
+  return true;
+}
+
+/** Registers the shared compatibility history used by an unscoped reset. */
 export function setTemporalHistoryImpl(history: TemporalHistoryLike | null): void {
+  if (history && temporalHistoryOwnership.get(history) === "scoped") {
+    throw new Error("A scoped temporal history cannot be registered for unscoped reset");
+  }
+  if (history) temporalHistoryOwnership.set(history, "compatibility");
   temporalHistoryImpl = history;
 }
 
-/** PR 0a stub: calls the registered TemporalHistoryLike.reset() (Renderer.ts). */
-export function resetTemporalHistory(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void {
-  temporalHistoryImpl?.reset(reason);
+/**
+ * Reset an explicit owner or view adapter. With no target, only the shared
+ * compatibility history is reset; no renderer or view is selected implicitly.
+ */
+export function resetTemporalHistory(reason: TemporalResetReason, target?: TemporalResetTarget): void {
+  (target ?? temporalHistoryImpl)?.reset(reason);
 }
 // AuraApp.cutCamera(): void  (via C-38; PRD 08's app.camera.cut() calls it)

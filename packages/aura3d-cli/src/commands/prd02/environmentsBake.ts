@@ -10,6 +10,13 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { createHash } from "node:crypto";
+import { encodeRgb9e5ProbeKTX2 } from "@aura3d/assets/exporters";
+import {
+  STANDARD_PROBE_PRIMARIES_FLAG,
+  UNSPECIFIED_PROBE_READER_WARNING,
+  standardProbePrimaries,
+  type StandardProbePrimaries
+} from "./probeFormatOptions.js";
 
 /**
  * Lane-02 math lives in `packages/rendering/src/environment/**`; the packed
@@ -30,10 +37,13 @@ interface BakeArgs {
   outDir: string;
   name: string;
   tags: string[];
+  standardKtx2Primaries?: StandardProbePrimaries;
 }
 
 function parseArgs(argv: readonly string[], cwd: string): BakeArgs {
   const args: BakeArgs = { source: "room", faceSize: 256, samples: 128, outDir: cwd, name: "room-neutral", intensity: 1, rotateYawDeg: 0, tags: ["neutral", "stand-in"] };
+  const primaries = standardProbePrimaries(argv);
+  if (primaries !== undefined) args.standardKtx2Primaries = primaries;
   for (let i = 0; i < argv.length; i += 1) {
     const v = argv[i + 1];
     if (argv[i] === "--source" && v) { args.source = v as BakeArgs["source"]; i += 1; }
@@ -45,6 +55,7 @@ function parseArgs(argv: readonly string[], cwd: string): BakeArgs {
     else if (argv[i] === "--out" && v) { args.outDir = resolve(cwd, v); i += 1; }
     else if (argv[i] === "--name" && v) { args.name = v; i += 1; }
     else if (argv[i] === "--tags" && v) { args.tags = v.split(","); i += 1; }
+    else if (argv[i] === STANDARD_PROBE_PRIMARIES_FLAG) { i += 1; }
   }
   return args;
 }
@@ -130,7 +141,11 @@ export async function runEnvironmentsBake(argv: readonly string[], io: { readonl
     onProgress: (level, face) => io.stdout(`mip ${level} face ${face}`)
   });
   const sh9 = L.projectCubeToSH9Corrected(faces, args.faceSize);
-  const ktx2 = encodeKtx2Rgb9e5Cube(L, args.faceSize, result.levels);
+  const ktx2 = args.standardKtx2Primaries === undefined
+    ? encodeKtx2Rgb9e5Cube(L, args.faceSize, result.levels)
+    : encodeRgb9e5ProbeKTX2(result.levels.map((level) => ({
+      size: level.faceSize, channels: 4 as const, faces: level.faces
+    })), { colorPrimaries: args.standardKtx2Primaries });
   mkdirSync(args.outDir, { recursive: true });
   const specPath = join(args.outDir, `${args.name}.specular.ktx2`);
   const shPath = join(args.outDir, `${args.name}.sh9.f32`);
@@ -143,6 +158,11 @@ export async function runEnvironmentsBake(argv: readonly string[], io: { readonl
     faceSize: args.faceSize,
     mipCount: result.mipCount,
     format: "E5B9G9R9_UFLOAT_PACK32",
+    ...(args.standardKtx2Primaries === undefined ? {} : {
+      container: "standard-ktx2",
+      colorPrimaries: args.standardKtx2Primaries,
+      auraProbeReaderSupportsPrimaries: args.standardKtx2Primaries === "bt709"
+    }),
     specular: `${args.name}.specular.ktx2`,
     sh9: `${args.name}.sh9.f32`,
     sha256: {
@@ -155,6 +175,7 @@ export async function runEnvironmentsBake(argv: readonly string[], io: { readonl
     samplesPerTexel: args.samples
   };
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  if (args.standardKtx2Primaries === "unspecified") io.stderr(UNSPECIFIED_PROBE_READER_WARNING);
   io.stdout(`wrote ${specPath}`);
   io.stdout(`wrote ${shPath}`);
   io.stdout(`wrote ${manifestPath}`);

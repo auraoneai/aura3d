@@ -1,5 +1,6 @@
 import { createXRButton } from "./xrButton.js";
 import { createAuraXRRuntime } from "./xrRuntime.js";
+import { attachXRSceneHelpers, createXRSceneHelpers } from "./XRSceneHelpers.js";
 
 /**
  * threejs-parity SC-04: WebXR entry points. `xr.button()` is three's
@@ -9,11 +10,15 @@ import { createAuraXRRuntime } from "./xrRuntime.js";
  */
 export const xr = Object.freeze({
   button: createXRButton,
-  createRuntime: createAuraXRRuntime
+  createRuntime: createAuraXRRuntime,
+  createSceneHelpers: createXRSceneHelpers,
+  attachSceneHelpers: attachXRSceneHelpers
 });
 
 export { createAuraXRRuntime } from "./xrRuntime.js";
-export type { AuraXRLayerConstructor, AuraXRLayerInit, AuraXRRuntimeOptions } from "./xrRuntime.js";
+export type { AuraXRLayerConstructor, AuraXRLayerInit, AuraXRRuntimeOptions, AuraXRWebGLBindingConstructor } from "./xrRuntime.js";
+export { attachXRSceneHelpers, createXRSceneHelpers } from "./XRSceneHelpers.js";
+export type { AuraXRSceneHelperOptions, AuraXRSceneHelpers, AuraXRVisual } from "./XRSceneHelpers.js";
 export { createXRButton } from "./xrButton.js";
 export type {
   AuraXRButtonDocumentLike,
@@ -33,5 +38,6 @@ export type {
   AuraXRMode,
   AuraXRRuntime,
   AuraXRSessionInit,
+  AuraXRSessionProvenance,
   AuraXRViewCamera
 } from "./types.js";

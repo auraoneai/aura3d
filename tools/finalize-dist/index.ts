@@ -1,5 +1,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
+import { assertWorkerPackageLayout } from "./worker-layout.mjs";
+import { emitPackagedWorker } from "./worker-bundle.mjs";
 
 const root = process.cwd();
 const packageRoot = join(root, "packages");
@@ -88,8 +90,21 @@ for (const file of [join(rootDist, "physics-rapier", "index.js"), join(packageRo
 writeFileSync(join(rootDist, "index.js"), `${rootIndexLines.join("\n")}\n`);
 writeFileSync(join(rootDist, "index.d.ts"), `${rootTypeLines.join("\n")}\n`);
 
+// Node 20.19+/22.12+ can synchronously require ESM graphs without top-level
+// await. The math entry meets that constraint, so CommonJS consumers receive
+// its actual named exports rather than a promise or a second implementation.
+const mathEntry = join(rootDist, "math", "index.js");
+if (!existsSync(mathEntry)) throw new Error("finalize-dist: missing math entry for CommonJS bridge");
+writeFileSync(join(rootDist, "math", "index.cjs"), '"use strict";\nmodule.exports = require("./index.js");\n');
+
 copyEngineVfxPages();
 assertWorkerUrlsEmitted();
+const rootManifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { files?: string[] };
+assertWorkerPackageLayout({
+  entryFile: join(rootDist, "engine", "agent-api", "app", "render.worker.js"),
+  includedRoots: (rootManifest.files ?? []).map((file) => join(root, file))
+});
+await emitPackagedWorker(root);
 
 console.log(`Finalized dist exports for ${packageNames.length} packages.`);
 

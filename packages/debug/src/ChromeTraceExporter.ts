@@ -1,10 +1,11 @@
 import type { ProfilerMarker, ProfilerSnapshot } from "./Profiler.js";
-import type { GPUSample, GPUProfilerSnapshot } from "./GPUProfiler.js";
+import type { GPUSample, GPUProfilerCPUSample, GPUProfilerMeasurement, GPUProfilerSnapshot } from "./GPUProfiler.js";
 
 export interface ChromeTraceEvent {
   readonly name: string;
   readonly cat: string;
   readonly ph: "M" | "X" | "C" | "i";
+  readonly s?: "g" | "p" | "t";
   readonly ts: number;
   readonly pid: number;
   readonly tid: number;
@@ -53,14 +54,41 @@ export class ChromeTraceExporter {
     }
 
     if (gpu) {
+      for (const sample of gpu.cpuSamples ?? []) {
+        events.push(gpuProfilerCpuSampleEvent(sample, processId, cpuThreadId));
+      }
       for (const sample of gpu.samples) {
         events.push(gpuSampleEvent(sample, processId, gpuThreadId));
+      }
+      for (const [index, measurement] of (gpu.measurements ?? []).entries()) {
+        if (measurement.gpuStatus !== "available") {
+          events.push(gpuMeasurementStatusEvent(measurement, index, processId, gpuThreadId));
+        }
+      }
+      const evictions = gpu.historyEvictions;
+      if (evictions && (evictions.gpuSamples > 0 || evictions.cpuSamples > 0 || evictions.measurements > 0)) {
+        events.push({
+          name: "profiler_history_evicted",
+          cat: "profiler",
+          ph: "i",
+          s: "t",
+          ts: 0,
+          pid: processId,
+          tid: cpuThreadId,
+          args: {
+            gpuSamples: evictions.gpuSamples,
+            cpuSamples: evictions.cpuSamples,
+            measurements: evictions.measurements,
+            historyLimit: gpu.historyLimit ?? null
+          }
+        });
       }
       if (gpu.supported === false) {
         events.push({
           name: "gpu_timing_unavailable",
           cat: "gpu",
           ph: "i",
+          s: "t",
           ts: 0,
           pid: processId,
           tid: gpuThreadId,
@@ -81,6 +109,7 @@ export class ChromeTraceExporter {
           cpuMarkerCount: cpu.markerCount,
           cpuTotalDurationMs: fixed(cpu.totalDurationMs),
           gpuSampleCount: gpu?.sampleCount ?? 0,
+          gpuProfilerCpuSampleCount: gpu?.cpuSamples?.length ?? 0,
           gpuSupported: gpu?.supported ?? false
         }
       });
@@ -132,6 +161,40 @@ function cpuMarkerEvent(marker: ProfilerMarker, pid: number, tid: number): Chrom
   };
 }
 
+/** A scope duration has no recorded start timestamp; represent it as data, not a timed interval. */
+function gpuProfilerCpuSampleEvent(sample: GPUProfilerCPUSample, pid: number, tid: number): ChromeTraceEvent {
+  return {
+    name: "cpu_scope_duration",
+    cat: "cpu",
+    ph: "i",
+    s: "t",
+    ts: 0,
+    pid,
+    tid,
+    args: {
+      label: sample.label,
+      durationMs: fixed(sample.durationMs),
+      source: sample.source,
+      measurement: sample.measurement,
+      timestamp: "not-recorded"
+    }
+  };
+}
+
+/** Status records carry no duration and never imply a successful GPU result. */
+function gpuMeasurementStatusEvent(measurement: GPUProfilerMeasurement, index: number, pid: number, tid: number): ChromeTraceEvent {
+  return {
+    name: "gpu_timing_status",
+    cat: "gpu",
+    ph: "i",
+    s: "t",
+    ts: 0,
+    pid,
+    tid,
+    args: { label: measurement.label, status: measurement.gpuStatus, scopeIndex: index, timestamp: "not-recorded" }
+  };
+}
+
 function gpuSampleEvent(sample: GPUSample, pid: number, tid: number): ChromeTraceEvent {
   return {
     name: sample.label,
@@ -141,7 +204,7 @@ function gpuSampleEvent(sample: GPUSample, pid: number, tid: number): ChromeTrac
     dur: millisecondsToMicroseconds(sample.durationMs),
     pid,
     tid,
-    args: { durationMs: fixed(sample.durationMs) }
+    args: { durationMs: fixed(sample.durationMs), timestamp: "not-recorded" }
   };
 }
 

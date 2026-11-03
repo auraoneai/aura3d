@@ -14,6 +14,7 @@ import { Geometry } from "../../../../packages/rendering/src/Geometry";
 import { VertexBuffer } from "../../../../packages/rendering/src/VertexBuffer";
 import { VertexFormat } from "../../../../packages/rendering/src/VertexFormat";
 import type { RenderItem } from "../../../../packages/rendering/src/ForwardPass";
+import type { RenderDevice, RenderShaderProgram, ShaderSources } from "../../../../packages/rendering/src/RenderDevice";
 
 const ALL_STRICT = resolveQrFlags({ env: { A3D_QR: "core,lighting,post,materials,assets,animation,vfx,camera,game,world,tiers,looks,compiler,strict" } });
 const OFF = resolveQrFlags({ env: {} });
@@ -83,11 +84,19 @@ describe("#867 generated-path attribute contract ($ALL,strict)", () => {
   async function renderOne(make: () => RenderItem, flags = ALL_STRICT) {
     setRendererQrFlags(flags);
     const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
-    const device = (renderer as unknown as { device: { draw(c: { shader: { label: string; reflection: { attributes: Map<string, number> } } }): void } }).device;
-    const drawn: { label: string; attributes: string[] }[] = [];
+    const device = (renderer as unknown as { device: RenderDevice }).device;
+    const sources = new WeakMap<RenderShaderProgram, ShaderSources>();
+    const compile = device.createShaderProgram.bind(device);
+    device.createShaderProgram = (source) => {
+      const program = compile(source);
+      sources.set(program, source);
+      return program;
+    };
+    const drawn: { label: string; attributes: string[]; vertex: string }[] = [];
     const draw = device.draw.bind(device);
     device.draw = (command) => {
-      drawn.push({ label: command.shader.label, attributes: [...command.shader.reflection.attributes.keys()] });
+      const shader = command.shader;
+      if (shader) drawn.push({ label: shader.label, attributes: [...shader.reflection.attributes.keys()], vertex: sources.get(shader)?.vertex ?? "" });
       draw(command);
     };
     try {
@@ -99,14 +108,21 @@ describe("#867 generated-path attribute contract ($ALL,strict)", () => {
     }
   }
 
-  it("03-damaged-helmet: the generated program draws; it consumes uv but not the tangent attribute (derivative TBN)", async () => {
+  it("03-damaged-helmet: generated shading consumes the authored tangent and uv", async () => {
     const { diagnostics, drawn } = await renderOne(helmetItem);
     expect(diagnostics.drawCalls).toBeGreaterThan(0);
     const generated = drawn.filter((d) => d.label.startsWith("a3d-program:"));
     expect(generated.length).toBeGreaterThan(0);
     for (const d of generated) {
       expect(d.attributes).toContain("a_uv");
-      expect(d.attributes).not.toContain("a_tangent");
+    }
+    // Reflection in a mock can include inactive guarded attributes. Require an
+    // active tangent define and the generated vertex shader's actual read.
+    const tangentDraws = generated.filter((d) => /^#define A3D_HAS_TANGENT\b/m.test(d.vertex));
+    expect(tangentDraws.length).toBeGreaterThan(0);
+    for (const d of tangentDraws) {
+      expect(d.attributes).toContain("a_tangent");
+      expect(d.vertex).toMatch(/objectTangent\s*=\s*a_tangent\s*;/);
     }
   });
 

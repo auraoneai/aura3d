@@ -1,84 +1,43 @@
 /**
- * a3d_prd04_dispersion — KHR_materials_dispersion (PRD-04 §8.7, §12.8).
- *
- * Ported from three r185:
- *  - `halfSpread = ( ior - 1 ) * 0.025 * dispersion`;
- *    `iors = vec3( ior - halfSpread, ior, ior + halfSpread )`; three refraction
- *    samples, one per band — transmission_pars_fragment.glsl.js:178-204.
- *
- * Sits inside `#ifdef A3D_TRANSMISSION` + `#ifdef A3D_DISPERSION` mirroring
- * r185's USE_TRANSMISSION + USE_DISPERSION guards.
- *
- * Requires `a3d_prd04_transmission` (a3dVolumeTransmissionRay,
- * a3dTransmissionCoords, a3dTransmissionSample) and `a3d_prd04_volume`
- * (a3dVolumeAttenuation).
+ * Aura three-band screen-space dispersion. The KHR dispersion coefficient
+ * determines the band indices around the material IOR. The separately
+ * maintained WGSL companion has its own provenance.
  */
 import type { ShaderChunk } from "../../contracts/program";
-import A3D_PRD04_DISPERSION_WGSL from "../physical-wgsl/dispersion.wgsl.js";
+import WGSL from "../physical-wgsl/dispersion.wgsl.js";
 
 const glsl = /* glsl */ `
-// A3D_LOBE_DISPERSION: the C-02 generator's define for an active dispersion lobe
-// (T0-05); A3D_DISPERSION stays accepted for the ChunkHarness / direct callers.
-#if defined( A3D_TRANSMISSION ) && ( defined( A3D_DISPERSION ) || defined( A3D_LOBE_DISPERSION ) )
-
-// Per-band IOR spread (r185 transmission_pars_fragment.glsl.js:180-182):
-// halfSpread = ( ior - 1 ) * 0.025 * dispersion.
-vec3 a3dPrd04DispersionIors( const in float ior, const in float dispersion ) {
-
-	float halfSpread = ( ior - 1.0 ) * 0.025 * dispersion;
-	return vec3( ior - halfSpread, ior, ior + halfSpread );
-
+#if defined(A3D_TRANSMISSION) && (defined(A3D_DISPERSION) || defined(A3D_LOBE_DISPERSION))
+vec3 a3dPrd04DispersionIors(float ior, float dispersion) {
+  float center = max(ior, 1e-4);
+  float spread = max(center - 1.0, 0.0) * 0.025 * max(dispersion, 0.0);
+  return max(vec3(center - spread, center, center + spread), vec3(1e-4));
 }
-
-// Dispersive volume refraction — three rays at ior ± halfSpread, channel i
-// keeps band i of the transmission sample and the full alpha averaged
-// (r185 getIBLVolumeRefraction USE_DISPERSION arm,
-// transmission_pars_fragment.glsl.js:178-204,222-231).
-vec4 a3dGetIBLVolumeRefractionDispersion( const in vec3 n, const in vec3 v, const in float roughness, const in vec3 diffuseColor, const in vec3 specularColor, const in float specularF90, const in vec3 position, const in mat4 modelMatrix, const in float dispersion, const in float ior, const in float thickness, const in vec3 attenuationColor, const in float attenuationDistance ) {
-
-	vec4 transmittedLight = vec4( 0.0 );
-	vec3 transmittance = vec3( 0.0 );
-
-	vec3 iors = a3dPrd04DispersionIors( ior, dispersion );
-
-	for ( int i = 0; i < 3; i ++ ) {
-
-		vec3 transmissionRay = a3dVolumeTransmissionRay( n, v, thickness, iors[ i ], modelMatrix );
-		vec3 refractedRayExit = position + transmissionRay;
-
-		// Project refracted vector on the framebuffer, while mapping to normalized device coordinates.
-		vec2 refractionCoords = a3dTransmissionCoords( refractedRayExit, a3d_prd04_viewMatrix, a3d_prd04_projectionMatrix );
-
-		// Sample framebuffer to get pixel the refracted ray hits.
-		vec4 transmissionSample = a3dTransmissionSample( refractionCoords, roughness, iors[ i ] );
-		transmittedLight[ i ] = transmissionSample[ i ];
-		transmittedLight.a += transmissionSample.a;
-
-		transmittance[ i ] = diffuseColor[ i ] * a3dVolumeAttenuation( length( transmissionRay ), attenuationColor, attenuationDistance )[ i ];
-
-	}
-
-	transmittedLight.a /= 3.0;
-
-	vec3 attenuatedColor = transmittance * transmittedLight.rgb;
-
-	// Get the specular component.
-	vec3 F = a3dPrd04EnvironmentBRDF( n, v, specularColor, specularF90, roughness );
-
-	float transmittanceFactor = ( transmittance.r + transmittance.g + transmittance.b ) / 3.0;
-
-	return vec4( ( 1.0 - F ) * attenuatedColor, 1.0 - ( 1.0 - transmittedLight.a ) * transmittanceFactor );
-
+vec4 a3dGetIBLVolumeRefractionDispersion(vec3 n, vec3 v, float roughness, vec3 diffuseColor,
+  vec3 specularColor, float specularF90, vec3 position, mat4 modelMatrix,
+  float dispersion, float ior, float thickness, vec3 attenuationColor, float attenuationDistance) {
+  vec3 iors = a3dPrd04DispersionIors(ior, dispersion);
+  vec3 transmitted = vec3(0.0);
+  vec3 transmittance = vec3(0.0);
+  float alpha = 0.0;
+  for (int band = 0; band < 3; band++) {
+    vec3 ray = a3dVolumeTransmissionRay(n, v, thickness, iors[band], modelMatrix);
+    vec2 uv = a3dTransmissionCoords(position + ray, a3d_prd04_viewMatrix, a3d_prd04_projectionMatrix);
+    vec4 sampleColor = a3dTransmissionSample(uv, roughness, iors[band]);
+    vec3 attenuated = clamp(diffuseColor, 0.0, 1.0)
+      * a3dVolumeAttenuation(length(ray), attenuationColor, attenuationDistance);
+    transmitted[band] = sampleColor[band];
+    transmittance[band] = attenuated[band];
+    alpha += clamp(sampleColor.a, 0.0, 1.0) / 3.0;
+  }
+  vec3 reflectance = a3dPrd04EnvironmentBRDF(n, v, specularColor, specularF90, roughness);
+  float opacity = 1.0 - (1.0 - alpha) * dot(transmittance, vec3(1.0 / 3.0));
+  return vec4((vec3(1.0) - reflectance) * transmittance * transmitted, opacity);
 }
-
-#endif // A3D_TRANSMISSION && A3D_DISPERSION
+#endif
 `;
 
 export const A3D_PRD04_DISPERSION: ShaderChunk = {
-	name: "a3d_prd04_dispersion",
-	owner: "prd04",
-	glsl,
-	wgsl: A3D_PRD04_DISPERSION_WGSL,
-	stage: "fragment",
-	requires: ["brdf", "a3d_prd04_bsdf_lobes_common", "a3d_prd04_volume", "a3d_prd04_transmission"]
+  name: "a3d_prd04_dispersion", owner: "prd04", glsl, wgsl: WGSL,
+  stage: "fragment", requires: ["brdf", "a3d_prd04_bsdf_lobes_common", "a3d_prd04_volume", "a3d_prd04_transmission"]
 };

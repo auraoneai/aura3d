@@ -1,0 +1,102 @@
+{
+  "kind": "aura3d-game-runtime-runtime-evidence-manifest",
+  "version": 1,
+  "scope": "runtime-evidence-requirements",
+  "status": "pending-execution",
+  "evidenceOnly": true,
+  "executionRequired": true,
+  "collector": "collectGameRuntimeEvidence(app)",
+  "fallbackCollector": "game.evidence(app)",
+  "requiredReports": [
+    "tests/reports/game-runtime/game-runtime-evidence.json"
+  ],
+  "requiredSystems": [
+    "mutableNodes",
+    "frameLoop",
+    "input",
+    "physics",
+    "collision",
+    "animation",
+    "effectsPlan",
+    "cameraPlan",
+    "stage"
+  ],
+  "requiredProofs": [
+    {
+      "proofId": "collectGameRuntimeEvidence",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "collectGameRuntimeEvidence(app)",
+        "game.evidence(app)",
+        "tests/reports/game-runtime/game-runtime-evidence.json"
+      ],
+      "requiredArtifacts": [
+        "tests/reports/game-runtime/game-runtime-evidence.json",
+        "report.sha256",
+        "report.generatedAt",
+        "report.route",
+        "report.runtime.frame"
+      ],
+      "runtimeSignals": [
+        "systems.mutableNodes",
+        "systems.frameLoop",
+        "systems.input",
+        "systems.physics",
+        "systems.collision",
+        "systems.animation",
+        "systems.effectsPlan",
+        "systems.cameraPlan",
+        "systems.stage"
+      ]
+    },
+    {
+      "proofId": "auraOwnedRuntimeSystems",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "GameEvidence",
+        "mutableNodes",
+        "frameLoop",
+        "input",
+        "physics",
+        "collision",
+        "animation",
+        "effectsPlan",
+        "cameraPlan",
+        "stage"
+      ],
+      "requiredArtifacts": [
+        "systems.mutableNodes",
+        "systems.frameLoop",
+        "systems.input",
+        "systems.physics",
+        "systems.collision",
+        "systems.animation",
+        "systems.effectsPlan",
+        "systems.cameraPlan",
+        "systems.stage"
+      ],
+      "runtimeSignals": [
+        "Aura3D-owned systems proof"
+      ]
+    },
+    {
+      "proofId": "typedRuntimeNodes",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "typed GLB runtime node mutation",
+        "model(assets.fighter)",
+        "game.runtimeNode",
+        "app.nodes.require(\"player\")"
+      ],
+      "requiredArtifacts": [
+        "runtime.nodes.player.assetType",
+        "runtime.nodes.player.assetName",
+        "runtime.nodes.player.before",
+        "runtime.nodes.player.after"
+      ],
+      "runtimeSignals": [
+        "typedGlbRuntimeNodeMutation"
+      ]
+    }
+  ]
+}

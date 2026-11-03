@@ -17,35 +17,31 @@ ENV CI=1 \
 
 WORKDIR /repo
 
+ARG AURA3D_NATIVE_ACCEPTANCE=0
+ARG AURA3D_CODE_COMPLETE_GATE=none
+
 # Repo pins pnpm@11.1.3 via package.json#packageManager; .gitlab-ci.yml uses
 # `npm install -g pnpm@$PNPM_VERSION` — do the same (corepack also works but
 # npm -g matches the repo's proven CI path and needs no shim juggling).
 RUN npm install -g "pnpm@11.1.3" >/dev/null && pnpm --version
 
-# 1) Workspace manifests + patches first so the dependency layer stays
-#    cacheable across source-only changes (staged context includes all of
-#    packages/ and workers/, so every workspace package.json is present and
-#    `pnpm install --frozen-lockfile` validates against pnpm-lock.yaml).
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY patches/ ./patches/
-COPY packages/ ./packages/
-COPY workers/ ./workers/
-
-# 2) Hermetic linux install from the lockfile (same command as
-#    .gitlab-ci.yml). pnpm-workspace.yaml is shipped verbatim, so its
-#    overrides / patchedDependencies / allowBuilds / minimumReleaseAgeExclude
-#    all apply identically to a local install. NOTE: `minimumReleaseAge`
-#    itself is not currently enabled in any repo or global config on the
-#    build host (verified 2026-10-21) — only the Exclude list exists; the
-#    Exclude list travels with the workspace file if a floor is enabled later.
+# The host stages the complete gate-enumerated candidate for native runs;
+# legacy runs retain their existing slim/full context. No host node_modules or
+# unverified dist directories are included in a native context.
+COPY . ./
+RUN if [ "$AURA3D_NATIVE_ACCEPTANCE" = "1" ]; then \
+      node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE"; \
+    fi
 RUN pnpm install --frozen-lockfile
 
 # 2b) Independent WebXR implementation for tests/browser/parity-xr.spec.ts: the
 #     Immersive Web Emulation Runtime (MIT, Meta), pinned and installed OUTSIDE the
 #     workspace so the repo lockfile is untouched. The spec injects
 #     /opt/iwer/node_modules/iwer/build/iwer.js (UMD global `IWER`) as a page init script.
-RUN npm install --prefix /opt/iwer iwer@2.7.0 --no-audit --no-fund --ignore-scripts >/dev/null \
- && test -f /opt/iwer/node_modules/iwer/build/iwer.js
+RUN if [ "$AURA3D_NATIVE_ACCEPTANCE" != "1" ]; then \
+      npm install --prefix /opt/iwer iwer@2.7.0 --no-audit --no-fund --ignore-scripts >/dev/null && \
+      test -f /opt/iwer/node_modules/iwer/build/iwer.js; \
+    fi
 
 # 2c) Basis Universal / KTX2 encoder (GU47 WP-9 E-I): Khronos KTX-Software, pinned to the
 #     same release and sha256 as tools/asset-optimize/tool-versions.json (keep the two in
@@ -56,6 +52,7 @@ RUN npm install --prefix /opt/iwer iwer@2.7.0 --no-audit --no-fund --ignore-scri
 ARG KTX_VERSION=4.4.2
 ARG KTX_SHA256=a8781bad05f9624edbf910b7f258cd0a4ba7d3e63b49ecc0a0ab440bf6a0a245
 RUN set -eux; \
+    if [ "$AURA3D_NATIVE_ACCEPTANCE" = "1" ]; then exit 0; fi; \
     if ! command -v curl >/dev/null || ! command -v bzip2 >/dev/null; then \
       apt-get update; apt-get install -y --no-install-recommends ca-certificates curl bzip2; rm -rf /var/lib/apt/lists/*; \
     fi; \
@@ -70,29 +67,10 @@ RUN set -eux; \
 ENV A3D_KTX_BINARY=/opt/ktx/bin/ktx \
     LD_LIBRARY_PATH=/opt/ktx/lib
 
-# 3) Sources the tests actually serve/execute. tests/browser/example-dev-
-#    server.ts transpiles packages/*/src on the fly (esbuild + typescript)
-#    and resolves @aura3d/* specifiers to src entry points, falling back to
-#    node_modules resolution (package.json exports -> dist/) for unmapped
-#    subpaths — so both src/ and dist/ ship for every workspace package.
-COPY tests/browser/ ./tests/browser/
-COPY tests/support/ ./tests/support/
-# Repo-root fixtures/ — parity labs fetch /fixtures/threejs-parity/assets/*
-# (soldier.glb et al.) from the example dev server's origin-root resolution.
-COPY fixtures/ ./fixtures/
-COPY examples/ ./examples/
-COPY apps/ ./apps/
-COPY src/ ./src/
-COPY assets/ ./assets/
-# Repo public/ mirrors at the origin root in the dev server — the engine
-# lazily fetches /aura-environments/*.manifest.json for the baked presets.
-COPY public/ ./public/
-# Whole tools/ tree (about 11 MB): the visual specs import many tool modules
-# (production-runtime-report-bridge, muse3jsparity-readiness, showcase-library,
-# external-parity-*), and a single unresolved import aborts a whole Playwright run.
-COPY tools/ ./tools/
-COPY evidence/exposure-parity/wp6/ ./evidence/exposure-parity/wp6/
-COPY playwright.config.ts tsconfig.base.json index.html favicon.svg vite.config.ts vite.aliases.generated.ts tsconfig.paths.generated.json ./
+# `COPY .` includes all gate-listed source, test fixtures, templates,
+# environments, reports, and candidate archives at their original paths.
+# Native tests may use these verified archives through A3D_RELEASE_PLAN;
+# image construction does not silently repack or substitute candidate bytes.
 
 # Fail the build, not the run, if the runner script failed to land.
 RUN chmod +x tools/remote-acr/task-run.sh && test -f tools/remote-acr/task-run.sh

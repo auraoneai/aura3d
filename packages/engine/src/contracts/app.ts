@@ -6,7 +6,7 @@
 import type { RegistryEntry } from "@aura3d/rendering/contracts";
 import { createRegistry } from "@aura3d/rendering/contracts";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import type { AuraApp, AuraCreateAppOptions } from "../agent-api/index";
+import type { AuraApp, AuraCreateAppOptions } from "../agent-api/nodes/types/runtime.js";
 import type { AuraLightingRuntime } from "./lighting";
 import type { AuraCameraController } from "./camera";
 import type { AuraTimeController, AuraFeelBus } from "./time";

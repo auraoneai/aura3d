@@ -73,6 +73,8 @@ describe("create-aura3d on-demand template assets (audit RH-14)", () => {
     for (const t of CREATE_AURA3D_TEMPLATES) { mkdirSync(join(root, "templates", t), { recursive: true }); if (t === template) copy(join(PKG, "templates", t), join(root, "templates", t)); else writeFileSync(join(root, "templates", t, "package.json"), "{}"); }
     mkdirSync(join(root, "hdri"));
     copy(join(PKG, "hdri"), join(root, "hdri"));
+    mkdirSync(join(root, "aura-environments"));
+    copy(join(PKG, "aura-environments"), join(root, "aura-environments"));
     writeFileSync(join(root, "template-assets.json"), readFileSync(join(PKG, "template-assets.json")));
 
     const result = createA3DProject({ targetDir: join(root, "out"), template, rootDir: root });

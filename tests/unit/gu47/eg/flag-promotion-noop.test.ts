@@ -101,16 +101,17 @@ describe("GU47 E-G promotion prep: A3D_QR_POST_VELOCITY_MRT", () => {
   it("the registered velocity feature selects only once a temporal frame prepared velocity", () => {
     const history = new VelocityHistory();
     history.reset("scene-swap");
-    expect(velocityFramePrepared()).toBe(false);
+    expect(velocityFramePrepared(input.item)).toBe(false);
     expect(registeredVelocityFeature.select(input)).toBeUndefined();
     // The flag-only rule is unchanged for direct callers.
     expect(velocityFeature.select(input)).toBe("velocity");
     history.prepare(IDENTITY, [0, 0]);
-    expect(velocityFramePrepared()).toBe(true);
-    expect(registeredVelocityFeature.select(input)).toBe("velocity");
-    expect(registeredVelocityFeature.select({ ...input, pass: "depth" as never })).toBeUndefined();
+    const item = history.prepareItem(input.item, true);
+    expect(velocityFramePrepared(item)).toBe(true);
+    expect(registeredVelocityFeature.select({ ...input, item })).toBe("velocity");
+    expect(registeredVelocityFeature.select({ ...input, item, pass: "depth" as never })).toBeUndefined();
     history.reset("scene-swap");
-    expect(registeredVelocityFeature.select(input)).toBeUndefined();
+    expect(registeredVelocityFeature.select({ ...input, item })).toBeUndefined();
   });
 
   it("the registry carries the gated form", () => {

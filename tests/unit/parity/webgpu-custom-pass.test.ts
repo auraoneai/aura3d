@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WebGPUDevice } from "../../../packages/rendering/src/WebGPUDevice";
 import { registerPostPass, type PostPassDescriptor } from "../../../packages/rendering/src/contracts/post";
-import { postSkippedReasons, resetPostSkipped } from "../../../packages/rendering/src/renderer/postSkipped";
+import { beginPostStageTrace, postSkippedReasons, postStagesRan, resetPostSkipped } from "../../../packages/rendering/src/renderer/postSkipped";
+import { postDiagnostics, type PostDiagnosticToken } from "../../../packages/rendering/src/renderer/PostDiagnosticsScope";
 import type { RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 
 /*
@@ -14,9 +15,12 @@ import type { RenderTarget } from "../../../packages/rendering/src/RenderDevice"
 
 interface Seams {
   webgpuCustomPassPositions(this: unknown, passes: readonly { readonly name: string }[]): Map<number, PostPassDescriptor[]>;
-  executeWebGPUCustomPass(this: unknown, pass: PostPassDescriptor, source: RenderTarget): RenderTarget | null;
+  executeWebGPUCustomPass(this: unknown, pass: PostPassDescriptor, source: RenderTarget, token: PostDiagnosticToken | undefined,
+    frame: { readonly timeSeconds: number; readonly frameIndex: number; readonly postScopeId?: object; readonly blackboard: Map<string, unknown> }): RenderTarget | null;
 }
 const seams = WebGPUDevice.prototype as unknown as Seams;
+const execute = (self: unknown, pass: PostPassDescriptor, input: RenderTarget, token?: PostDiagnosticToken) =>
+  seams.executeWebGPUCustomPass.call(self, pass, input, token, { timeSeconds: 0, frameIndex: 0, blackboard: new Map() });
 
 const releases: Array<() => void> = [];
 afterEach(() => {
@@ -107,13 +111,13 @@ function stubDevice() {
   const created: Array<{ format: string; label: string; target: ReturnType<typeof nativeTarget> }> = [];
   const draws: Array<Record<string, unknown>> = [];
   const self = {
-    requireRenderTarget: (target: RenderTarget) => (target as unknown as ReturnType<typeof nativeTarget>),
+    requireRenderTarget: vi.fn((target: RenderTarget) => (target as unknown as ReturnType<typeof nativeTarget>)),
+    flushNativeRenderTargetClear: vi.fn(),
     createRenderTarget: (options: { format: string; label: string }) => {
       const target = nativeTarget(options.label);
       created.push({ format: options.format, label: options.label, target });
       return target as unknown as RenderTarget;
     },
-    webgpuPostBlankTarget: () => nativeTarget("blank") as unknown as RenderTarget,
     runWebGPUFullscreenPass: vi.fn((args: Record<string, unknown>) => { draws.push(args); })
   };
   return { self, created, draws };
@@ -125,7 +129,7 @@ describe("WebGPU custom pass execution (WGSL contract + diagnostics)", () => {
   it("a pass with no WGSL is skipped with a named WGSL_PROGRAM_MISSING reason — never silent, never a GLSL fallback", () => {
     const pass = register("no-wgsl", { fragment: { glsl: "void main(){}" } });
     const { self, draws } = stubDevice();
-    expect(seams.executeWebGPUCustomPass.call(self, pass, source())).toBeNull();
+    expect(execute(self, pass, source())).toBeNull();
     expect(draws).toHaveLength(0);
     expect(postSkippedReasons()).toContain("WGSL_PROGRAM_MISSING:test.webgpu.no-wgsl");
   });
@@ -133,14 +137,14 @@ describe("WebGPU custom pass execution (WGSL contract + diagnostics)", () => {
   it("a blank WGSL string is treated as missing", () => {
     const pass = register("blank-wgsl", { fragment: { glsl: "void main(){}", wgsl: "   " } });
     const { self } = stubDevice();
-    expect(seams.executeWebGPUCustomPass.call(self, pass, source())).toBeNull();
+    expect(execute(self, pass, source())).toBeNull();
     expect(postSkippedReasons()).toContain("WGSL_PROGRAM_MISSING:test.webgpu.blank-wgsl");
   });
 
   it("enabled:false skips without a diagnostic and without drawing", () => {
-    const pass = register("disabled", { enabled: () => false });
+    const pass = register("disabled", { enabled: () => false, inputs: ["color", "depth"] });
     const { self, draws } = stubDevice();
-    expect(seams.executeWebGPUCustomPass.call(self, pass, source())).toBeNull();
+    expect(execute(self, pass, source())).toBeNull();
     expect(draws).toHaveLength(0);
     expect(postSkippedReasons()).toEqual([]);
   });
@@ -150,7 +154,7 @@ describe("WebGPU custom pass execution (WGSL contract + diagnostics)", () => {
       uniforms: () => ({ u_gain: 0.5, u_tint: [1, 2, 3] })
     });
     const { self, created, draws } = stubDevice();
-    const out = seams.executeWebGPUCustomPass.call(self, pass, source());
+    const out = execute(self, pass, source());
     expect(out).toBe(created[0]!.target);
     expect(created[0]).toMatchObject({ format: "rgba16f", label: "a3d-webgpu-custom-test.webgpu.wgsl" });
     expect(draws).toHaveLength(1);
@@ -170,23 +174,70 @@ describe("WebGPU custom pass execution (WGSL contract + diagnostics)", () => {
       fragment: { glsl: "void main(){}", wgsl: "/* @aura3d-bindings */\nfn helper() {}" }
     });
     const { self, created, draws } = stubDevice();
-    seams.executeWebGPUCustomPass.call(self, pass, source());
+    execute(self, pass, source());
     expect(created[0]!.format).toBe("rgba8");
     expect(draws[0]).toMatchObject({ entryPoint: "fs_main" });
   });
 
-  it("declared depth and velocity inputs bind 1×1 stand-ins after the color view", () => {
-    const pass = register("inputs", { inputs: ["color", "depth", "velocity"] });
-    const { self, draws } = stubDevice();
-    seams.executeWebGPUCustomPass.call(self, pass, source());
-    expect(draws[0]!.views).toHaveLength(3);
+  it.each(["depth", "velocity", "normal", "reactive"] as const)("reports an unavailable %s input before allocating or drawing", (input) => {
+    beginPostStageTrace();
+    const uniforms = vi.fn(() => ({ u_gain: 1 }));
+    const pass = register(`needs-${input}`, { inputs: ["color", input], uniforms });
+    const { self, created, draws } = stubDevice();
+    expect(execute(self, pass, source())).toBeNull();
+    expect(postSkippedReasons()).toEqual([`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:${input}`]);
+    expect(postStagesRan()).toEqual([]);
+    expect(self.requireRenderTarget).not.toHaveBeenCalled();
+    expect(self.flushNativeRenderTargetClear).not.toHaveBeenCalled();
+    expect(uniforms).not.toHaveBeenCalled();
+    expect(created).toHaveLength(0);
+    expect(draws).toHaveLength(0);
+  });
+
+  it("records every missing declared input and the missing shader without claiming a draw", () => {
+    const pass = register("several-missing", { inputs: ["color", "depth", "velocity", "normal", "reactive"],
+      fragment: { glsl: "void main(){}" } });
+    const { self, created, draws } = stubDevice();
+    expect(execute(self, pass, source())).toBeNull();
+    expect(postSkippedReasons()).toEqual([
+      `POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`, `POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:velocity`,
+      `POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:normal`, `POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:reactive`,
+      `WGSL_PROGRAM_MISSING:${pass.id}`
+    ]);
+    expect(created).toHaveLength(0);
+    expect(draws).toHaveLength(0);
+  });
+
+  it("records unavailable inputs only for the supplied renderer and view token", () => {
+    const scope = {};
+    const first = postDiagnostics.begin(scope, "left", 1);
+    const second = postDiagnostics.begin(scope, "right", 1);
+    const pass = register("scoped-depth", { inputs: ["color", "depth"] });
+    const { self } = stubDevice();
+    try {
+      expect(execute(self, pass, source(), first)).toBeNull();
+      expect(postSkippedReasons(first)).toEqual([`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`]);
+      expect(postSkippedReasons(second)).toEqual([]);
+      expect(postSkippedReasons()).toEqual([]);
+    } finally { postDiagnostics.resetScope(scope); }
+  });
+
+  it("clears a prior unavailable-input diagnostic when the pass is replaced with a color-only pass", () => {
+    const pass = register("replaced", { inputs: ["color", "depth"] });
+    const { self, created, draws } = stubDevice();
+    expect(execute(self, pass, source())).toBeNull();
+    expect(postSkippedReasons()).toContain(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`);
+    const replacement: PostPassDescriptor = { ...pass, inputs: ["color"] };
+    expect(execute(self, replacement, source())).toBe(created[0]!.target);
+    expect(draws).toHaveLength(1);
+    expect(postSkippedReasons()).not.toContain(`POSTPROCESS_INPUT_UNAVAILABLE:${pass.id}:depth`);
   });
 
   it("disposes the allocated target and rethrows when the draw fails", () => {
     const pass = register("throws");
     const { self, created } = stubDevice();
     self.runWebGPUFullscreenPass.mockImplementation(() => { throw new Error("pipeline rejected"); });
-    expect(() => seams.executeWebGPUCustomPass.call(self, pass, source())).toThrowError("pipeline rejected");
+    expect(() => execute(self, pass, source())).toThrowError("pipeline rejected");
     expect(created[0]!.target.dispose).toHaveBeenCalledTimes(1);
   });
 });

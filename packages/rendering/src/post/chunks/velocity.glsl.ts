@@ -8,8 +8,8 @@
  *                      u_unjitteredViewProjection (bound by the C-14
  *                      `velocityMrtBinder`) + clip varyings.
  *   `vertex:end`     — writes both clip positions from the object-space
- *                      position: current via u_unjitteredViewProjection,
- *                      previous via u_previousViewProjection · u_previousModel.
+ *                      generated current world position and geometry/local
+ *                      transform for a rigid previous-model reprojection.
  *   `fragment:pars`  — AURA_VELOCITY outputs: `layout(location = 1) out vec4`
  *                      (velocity, rg16f on the wire) and `layout(location = 2)
  *                      out float` (reactive mask, r8) per VELOCITY_MRT.
@@ -20,9 +20,8 @@
  * the chunk only emits meaningfully when the forward target actually carries
  * the location-1/2 attachments — Q-01-2 (lane 01 MRT) is still pending, so
  * the feature is registered and ChunkHarness-compiled but never selected by
- * default. Skinned and morph items remain covered: skinned pose/morph weight
- * varyings are applied by the vertex deform stages before this hook reads
- * the position.
+ * default. Deformed and instanced history requires a separate producer; the
+ * rigid approximation marks those items reactive and reports the limitation.
  */
 import type { ShaderChunk, ShaderFeature } from "../../contracts/program";
 import { VELOCITY_MRT } from "../../contracts/velocity";
@@ -33,7 +32,6 @@ export const velocityParsVertexChunk: ShaderChunk = {
   owner: "prd03",
   stage: "vertex",
   glsl: `// AURA_VELOCITY — C-14 velocity MRT (PRD-03 §8.6)
-uniform mat4 u_model;
 uniform mat4 u_previousModel;
 uniform mat4 u_previousViewProjection;
 uniform mat4 u_unjitteredViewProjection;
@@ -50,9 +48,8 @@ export const velocityWriteVertexChunk: ShaderChunk = {
   owner: "prd03",
   stage: "vertex",
   requires: ["a3d_prd03_velocityParsVertex"],
-  glsl: `vec4 a3dWorldPos = u_model * vec4(a_position, 1.0);
-a3d_velCurrClip = u_unjitteredViewProjection * a3dWorldPos;
-a3d_velPrevClip = u_previousViewProjection * (u_previousModel * vec4(a_position, 1.0));`,
+  glsl: `a3d_velCurrClip = u_unjitteredViewProjection * a3dWorld;
+a3d_velPrevClip = u_previousViewProjection * (u_previousModel * instanceMatrix * a3dLocal);`,
   wgsl: `// see vertex pars`
 };
 
@@ -113,11 +110,12 @@ export const velocityFeature: ShaderFeature = {
  * GU47 E-G (WP-7): the registered form of `velocityFeature` also requires a
  * prepared temporal frame (`velocityFramePrepared`), so promoting
  * `A3D_QR_POST_VELOCITY_MRT` leaves scenes without TAA / motion blur on
- * their current programs. `velocityFeature.select` keeps the flag-only rule.
+ * their current programs. Selection is per draw and requires a real writable
+ * velocity/reactive MRT; another view's prepared frame cannot enable it.
  */
 export const registeredVelocityFeature: ShaderFeature = {
   ...velocityFeature,
-  select: (input) => (velocityFramePrepared() ? velocityFeature.select(input) : undefined)
+  select: (input) => (velocityFramePrepared(input.item) ? velocityFeature.select(input) : undefined)
 };
 
 export function registerVelocityShader(

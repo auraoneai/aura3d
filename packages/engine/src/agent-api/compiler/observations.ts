@@ -5,16 +5,17 @@
 import type { AuraVec3, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraRendererRuntimeObservation, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
 import type { CollectedLight, RenderDeviceDiagnostics, RendererShadowOptions } from "@aura3d/rendering";
 import { createAssetProvenance } from "../diagnostics.js";
+import { formatDiagnosticError } from "../sanitizeDiagnostics.js";
 import { rotationXYZ } from "../sceneMath.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
-import { round } from "../GameRuntime.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import { distance3 } from "../nodes/character.js";
-import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
 import type { AuraLightNode, AuraSceneSnapshot, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
+import type { AuraDegradation } from "../../contracts/compiler.js";
 import { normalize3 } from "../sceneMath.js";
-import { bindAuthoredLight, collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02DescriptorNode, prd02LightingOn } from "./lights.js";
+import { flattenNodesWithLineWorldMatrices } from "./sceneGraph.js";
+import { authoredRectTwoSided, bindAuthoredLight, collectPrd02Lights, createProductionRuntimeCollectedLight, createProductionRuntimeFallbackLights, createProductionRuntimeStudioLightDescriptors, prd02DescriptorNode, prd02LightingOn } from "./lights.js";
 import { describeTextureStreamingResidency } from "./primitives.js";
 import { mediaMatches } from "../platform.js";
 import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
@@ -39,6 +40,12 @@ export function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode
   const reasons: string[] = [];
   if (unsafeModelCount > 0) reasons.push("unsafeModelUrl and remote/raw model URLs are blocked from the production bridge");
   if (inlineModelCount > 0) reasons.push("inline model definitions without manifest hashes are blocked from the production bridge");
+  if (nodes.some((node) => node.kind === "gaussian-splat" && createAssetProvenance(node.asset).source !== "typed-aura-assets-manifest")) {
+    reasons.push("Gaussian splats require typed manifest assets with hashes and durable provenance");
+  }
+  if (nodes.some((node) => node.kind === "scalar-volume" && createAssetProvenance(node.asset).source !== "typed-aura-assets-manifest")) {
+    reasons.push("Scalar volumes require typed manifest assets with hashes and durable provenance");
+  }
   return {
     eligible: reasons.length === 0,
     typedModelCount,
@@ -51,10 +58,12 @@ export function analyzeProductionBridgeEligibility(nodes: readonly AuraSceneNode
 }
 
 export function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode {
-  return node.kind === "model" && node.visible !== false && Boolean(node.asset.url) && ["glb", "gltf"].includes(node.asset.format);
+  // Format support belongs to the selected per-app adapter, not this geometry
+  // predicate. Dropping an unknown extension here would silently hide a model.
+  return node.kind === "model" && node.visible !== false && Boolean(node.asset.url);
 }
 
-export function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode {
+export function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode | import("../nodes/gaussianSplat.js").AuraGaussianSplatNode | import("../nodes/scalarVolume.js").AuraScalarVolumeNode {
   return isRenderableModelNode(node)
     || node.kind === "primitive"
     // threejs-parity L5/L6: these kinds compile to real RenderItems through
@@ -64,7 +73,9 @@ export function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNod
     || node.kind === "line"
     || node.kind === "points"
     || node.kind === "sprite"
-    || node.kind === "batched";
+    || node.kind === "batched"
+    || node.kind === "gaussian-splat"
+    || node.kind === "scalar-volume";
 }
 
 /**
@@ -94,7 +105,7 @@ export function countWorldContentNodes(nodes: readonly AuraSceneNode[]): number 
  * through compile contributions — they draw without adding to
  * `primitiveCount`/`meshCount`, exactly like the prd10 contributor.
  */
-const PARITY_CONTRIBUTOR_KINDS: ReadonlySet<string> = new Set(["line", "points", "sprite", "batched"]);
+const PARITY_CONTRIBUTOR_KINDS: ReadonlySet<string> = new Set(["line", "points", "sprite", "batched", "gaussian-splat"]);
 
 /**
  * Nodes whose draws arrive through a contributor rather than the mesh-
@@ -265,23 +276,58 @@ function defaultShadowTier(): AuraQualityTier {
   return mediaMatches("(pointer: coarse)") ? "medium" : "high";
 }
 
+/** Options accepted by light builders whose renderer bindings are not available yet. */
+export function unsupportedLightModulationDegradations(
+  nodes: readonly AuraSceneNode[],
+  options?: { readonly deferPhotometricProfiles?: boolean; readonly deferProjectedSpotImages?: boolean }
+): readonly Omit<AuraDegradation, "frame">[] {
+  const degradations: Omit<AuraDegradation, "frame">[] = [];
+  for (const node of nodes) {
+    if (node.kind !== "light" || (node.light !== "point" && node.light !== "spot")) continue;
+    const missing: string[] = [];
+    if (node.photometricProfile !== undefined && options?.deferPhotometricProfiles !== true) missing.push("photometricProfile");
+    if (node.light === "spot" && node.projectedImage !== undefined && options?.deferProjectedSpotImages !== true) missing.push("projectedImage");
+    if (missing.length === 0) continue;
+    const fallback = (options?.deferPhotometricProfiles === true && node.photometricProfile !== undefined) ||
+      (options?.deferProjectedSpotImages === true && node.light === "spot" && node.projectedImage !== undefined)
+      ? "non-strict mode retains the light without this option."
+      : "non-strict mode uses the ordinary scalar light without these options.";
+    degradations.push({
+      code: "capability-degraded",
+      nodeId: (node as { readonly runtime?: { readonly id?: string } }).runtime?.id ?? node.name ?? `${node.light} light`,
+      message: `LIGHT_MODULATION_UNSUPPORTED: ${missing.join(" and ")} cannot yet be applied to a ${node.light} light; ${fallback}`
+    });
+  }
+  return degradations;
+}
+
+/** Match the app degradation sink's warning format for current live nodes. */
+export function formatLightModulationWarning(degradation: Omit<AuraDegradation, "frame">): string {
+  return `[${degradation.code}]${degradation.nodeId ? ` ${degradation.nodeId}` : ""} ${degradation.message}`;
+}
+
 export function createProductionRuntimeCollectedLights(
   snapshot: AuraSceneSnapshot,
   flags?: { on(name: string): boolean },
   options?: ProductionRuntimeCollectedLightsOptions
 ): readonly CollectedLight[] {
+  const flattened = flattenNodesWithLineWorldMatrices(snapshot.nodes);
   // E3 stage 1: physical (PRD-02 §6.3) descriptors reach the root renderer
   // only when BOTH lanes are on. A3D_QR_LIGHTING is default-on while
   // A3D_QR_COMPILER is dev, so shipped scenes keep the legacy descriptors
   // byte-identical until captures promote the conjunction away. Ambient and
   // hemisphere resolve through the environment path in both modes.
   if (flags !== undefined && flags.on("A3D_QR_COMPILER") && prd02LightingOn(flags)) {
-    const physical = collectPrd02Lights(snapshot).descriptors;
+    const physical = collectPrd02Lights({ ...snapshot, nodes: flattened }).descriptors;
     if (physical.length === 0) return createProductionRuntimeFallbackLights(flags);
     // GU47 E-B: the PRD-02 shadow system renders the sun plus local tiles, so the physical path selects the single
     // legacy caster plus up to the tier's `localShadowLights` explicitly shadowed spot / point lights.
     const localShadowLights = QUALITY_TIERS[options?.shadowTier ?? defaultShadowTier()].shadow.localShadowLights;
-    const casters = new Set(resolveProductionShadowCasterIndices(physical, localShadowLights));
+    const shadowCandidates = physical.map((descriptor, index) => ({ descriptor, index }))
+      .filter(({ descriptor }) => descriptor.kind !== "rect-area" || descriptor.twoSided !== true);
+    const casters = new Set(resolveProductionShadowCasterIndices(
+      shadowCandidates.map(({ descriptor }) => descriptor), localShadowLights
+    ).map((index) => shadowCandidates[index]!.index));
     return physical.map((descriptor, index) => {
       const light = createProductionRuntimeCollectedLight(descriptor, casters.has(index));
       // GU47 E-B: the per-frame light update drives this light from the node's runtime handle.
@@ -289,14 +335,18 @@ export function createProductionRuntimeCollectedLights(
       return node ? bindAuthoredLight(light, node, 0, (position) => productionRuntimeLightDirection(node, position)) : light;
     });
   }
-  const authoredLights = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
+  const authoredLights = flattened.filter((node): node is AuraLightNode => node.kind === "light");
   const authored = authoredLights.flatMap((node, index) =>
     createProductionRuntimeLightDescriptors(node, index, options).map((descriptor, part) => ({ node, descriptor, part }))
   );
   const descriptors = authored.map((entry) => entry.descriptor);
   if (descriptors.length === 0) return createProductionRuntimeFallbackLights(flags);
 
-  const shadowCasterIndex = resolveProductionShadowCasterIndex(descriptors);
+  // A legacy area light is a spot proxy. One spot shadow map cannot cover
+  // its new back cone, so a two-sided proxy must not occupy a caster slot.
+  const shadowCandidates = descriptors.map((descriptor, index) => ({ descriptor, index }))
+    .filter(({ descriptor }) => descriptor.twoSided !== true);
+  const shadowCasterIndex = shadowCandidates[resolveProductionShadowCasterIndex(shadowCandidates.map(({ descriptor }) => descriptor))]?.index ?? -1;
   return authored.map(({ node, descriptor, part }, index) =>
     bindAuthoredLight(createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex), node, part, legacyLightAim(node, part))
   );
@@ -332,8 +382,11 @@ export function createRuntimeAddedCollectedLights(
 /** The legacy descriptor builder's aim rule per light (GU47 E-B re-aims a moved light the same way it was built). */
 function legacyLightAim(node: AuraLightNode, part: number): (position: AuraVec3) => AuraVec3 {
   if (node.light === "spot") {
+    if (!node.target && !node.lookAt && node.rotation) {
+      return (position) => productionRuntimeLightDirection(node, position);
+    }
     const target = node.target ?? node.lookAt ?? [0, 0.75, 0];
-    return (position) => normalize3([target[0] - position[0], target[1] - position[1], target[2] - position[2]]);
+    return (position) => normalizedDirection(position, target);
   }
   if (node.light === "studio" && part > 0) {
     const target = node.lookAt ?? [0, 0.75, 0];
@@ -469,14 +522,13 @@ function createProductionRuntimeLightDescriptors(
     // N1 (muse3jsparity-PRD): authored spot with an explicit cone. The aim
     // target wins over lookAt; the direction feeds the B1 spot shadow path
     // and the A5 volumetric dominant-light selection.
-    const spotTarget = node.target ?? node.lookAt ?? [0, 0.75, 0];
     return [{
       kind: "spot",
       name,
       color,
       intensity,
       position,
-      direction: normalize3([spotTarget[0] - position[0], spotTarget[1] - position[1], spotTarget[2] - position[2]]),
+      direction: legacyLightAim(node, 0)(position),
       range: Math.max(1, node.distance ?? 12),
       spotAngle: clampNumber(node.angle ?? Math.PI / 6, 0.08, Math.PI / 2 - 0.01),
       penumbra: clampNumber(node.penumbra ?? 0.4, 0, 1),
@@ -491,7 +543,7 @@ function createProductionRuntimeLightDescriptors(
     * productionRuntimeLightAxisScale(node.scale, 0);
   const height = positiveFinite(node.height, node.light === "softbox" ? 1.6 : 1.2)
     * productionRuntimeLightAxisScale(node.scale, 1);
-  const target = node.lookAt ?? [0, 0.75, 0];
+  const target = node.target ?? node.lookAt ?? [0, 0.75, 0];
   const targetDistance = Math.max(0.001, distance3(position, target));
   const halfDiagonal = Math.hypot(width, height) / 2;
   return [{
@@ -508,7 +560,8 @@ function createProductionRuntimeLightDescriptors(
     shadowRequested: false,
     authoredLight: node.light,
     authoredWidth: width,
-    authoredHeight: height
+    authoredHeight: height,
+    ...((node.light === "rect" || node.light === "softbox") && authoredRectTwoSided(node) ? { twoSided: true } : {})
   }];
 }
 
@@ -525,6 +578,12 @@ function productionRuntimeLightPosition(node: AuraLightNode): AuraVec3 {
 }
 
 export function productionRuntimeLightDirection(node: AuraLightNode, position: AuraVec3): AuraVec3 {
+  // Explicit targets define the forward axis for punctual and area lights.
+  // Keep the existing lookAt/rotation order when no target was authored.
+  if ((node.light === "directional" || node.light === "point" || node.light === "spot" ||
+       node.light === "rect" || node.light === "softbox") && node.target) {
+    return normalizedDirection(position, node.target);
+  }
   if (node.lookAt) {
     const direction = normalizedDirection(position, node.lookAt);
     if (length3(direction) > 0) return direction;
@@ -587,10 +646,5 @@ export function clampNumber(value: number, min: number, max: number): number {
 }
 
 export function productionRenderErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    const details = (error as { details?: Record<string, unknown> }).details;
-    const suffix = details && Object.keys(details).length ? ` ${JSON.stringify(details)}` : "";
-    return `${error.name}: ${error.message}${suffix}`;
-  }
-  return String(error);
+  return formatDiagnosticError(error);
 }

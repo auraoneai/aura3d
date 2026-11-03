@@ -5,9 +5,18 @@
 // select `rapierInit.lazy.ts` instead through the `aura3d-no-tla` condition (see `imports` in package.json).
 type RapierModule = typeof import("@dimforge/rapier3d-compat");
 
-const loaded = (await import("@dimforge/rapier3d-compat").catch(() => null)) as RapierModule | null;
+let loaded = (await import("@dimforge/rapier3d-compat").catch(() => null)) as RapierModule | null;
+let initializationError: { readonly cause: unknown } | null = null;
 const init = (loaded as unknown as { init?: (input?: unknown) => Promise<unknown> } | null)?.init;
-if (loaded && init) await init({});
+if (loaded && init) {
+  try { await init({}); }
+  catch (cause) {
+    // A broken optional WASM backend must not reject imports which never use
+    // physics. Preserve the original failure for an explicit physics request.
+    initializationError = { cause };
+    loaded = null;
+  }
+}
 
 export const rapierInitMode: "top-level-await" | "lazy" = "top-level-await";
 
@@ -15,6 +24,11 @@ export function getRapierModule(): RapierModule | null {
   return loaded;
 }
 
+/** @internal Failed initialization is reported only when physics is requested. */
+export function getRapierInitializationError(): { readonly cause: unknown } | null {
+  return initializationError;
+}
+
 export function ensureRapier(): Promise<RapierModule | null> {
-  return Promise.resolve(loaded);
+  return initializationError ? Promise.reject(initializationError.cause) : Promise.resolve(loaded);
 }

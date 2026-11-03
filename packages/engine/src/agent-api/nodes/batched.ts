@@ -5,48 +5,47 @@
  * One `kind:"batched"` node carries multiple geometries and a fixed-capacity
  * instance pool: `addGeometry` packs each `Geometry` into a
  * `BatchedGeometryPool` (shared vertex/index arenas, `geometryId` = insertion
- * order), `addInstance` allocates a slot, and `setMatrixAt`/`setColorAt`/
- * `setVisibleAt`/`deleteInstance` mutate dense per-instance storage.
+ * order), `addInstance` allocates a slot and returns its lifetime ID, and
+ * `setMatrixAt`/`setColorAt`/`setVisibleAt`/`deleteInstance` resolve that ID
+ * to dense per-instance storage.
  *
  * Render routes (resolved per update by {@link resolveBatchedMode}):
  *
- *   - "multi-draw": one `RenderItem` per live instance, all sharing the pooled
- *     `Geometry`; `drawRange` selects the instance's packed slice and the
- *     `multiDraw` marker selects the `parity.batchDraw` shader feature, which
- *     fetches model matrix + base colour + visibility flags from a
- *     `DrawDataTexture` row. `DrawSubmit` enqueues consecutive markers into a
- *     single `device.multiDrawElementsInstanced` — one real
- *     `WEBGL_multi_draw` call when the extension exists (the program uses
- *     `gl_DrawID`), else an honest one-draw-per-member loop (`u_drawId`).
- *     Requires the generated-program path (A3D_QR_CORE_GENERATOR) — otherwise
- *     degrades to "instanced".
+ *   - "loop": one logical `RenderItem` per live member. Supported forward
+ *     draws share packed geometry; other draws retain the logical source.
+ *   - "multi-draw": a capable WebGL2 renderer keeps recoverable logical
+ *     members; compatible unlit and bounded PBR indexed runs may use one
+ *     native extension call. Unsupported contexts use per-geometry instancing.
  *   - "instanced": one `RenderItem` per geometry bucket carrying dense
  *     `instanceTransforms`/`instanceColors` — the native instanced-material
-     * path, an honest one-draw-per-geometry fallback that works on every
+ *     path, an honest one-draw-per-geometry fallback that works on every
  *     renderer path.
  *
  * The dense `matrices`/`colors` stores are the same arrays uploaded via the
  * C-07 `InstanceBufferLike.setMatrices/setColors` contract — writes are the
  * real GPU-write path (L5-01), not a decompose-to-spec stub.
  */
-import { Geometry } from "@aura3d/rendering";
+import { Geometry, Renderer, WebGL2Device } from "@aura3d/rendering";
 import type { Bounds3 } from "@aura3d/rendering";
-import { BatchedGeometryPool, DrawDataTexture, drawDataBindingFor, packDrawDataFlags } from "@aura3d/rendering";
-import type { PackedGeometryEntry, Texture, RenderItem } from "@aura3d/rendering";
+import { createEngineBatchInstanceItem, createEnginePackedBatchItem, packedLoopProducerMemberCurrent, rememberPackedLoopMember, registerBatchedDrawShader, transferPackedLoopMember } from "@aura3d/rendering";
+import type { PackedGeometryLease, RenderItem } from "@aura3d/rendering";
 import { qrCoreGeneratorOn } from "@aura3d/rendering";
-import { registerShaderChunk, registerShaderFeature, registerDepthVariantFeature } from "@aura3d/rendering/contracts";
 import type { NodeHandler, RenderSourceContributions, SceneCompileContext } from "../../contracts/compiler.js";
 import { registerNodeHandler } from "../../contracts/compiler.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
+import { assertDepthPreviewTarget } from "./depthPreviewTarget.js";
+import { sourceSceneNodeOf } from "../compiler/sceneGraph.js";
+import { runtimeNodeQueryState } from "../app/runtimeNodes.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { colorToRgba } from "../colorUtils.js";
 import { createModelMatrix } from "../sceneMath.js";
+import { getMaterialClipping } from "./scene.js";
 import { createProductionPrimitiveGeometry, createProductionPrimitiveMaterial } from "../compiler/primitives.js";
 import { blankProductionPrimitiveTextureState, createProductionPrimitiveTextureIntent, upgradeProductionPrimitiveResource } from "../compiler/textures.js";
 import type { ProductionRuntimePrimitiveResource } from "./types.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
-import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec, AuraPrimitiveNode } from "./types.js";
+import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec, AuraPrimitiveNode, AuraRuntimeNodeHandle } from "./types.js";
 import {
   allocBatchedStateId,
   batchedIdentityMatrix,
@@ -64,8 +63,9 @@ export {
   batchedStateForNode,
   registerBatchedState
 } from "./batchedState.js";
-export type { AuraBatchedGeometryInput, AuraBatchedMeshMode } from "./batchedState.js";
-import type { AuraBatchedGeometryInput, AuraBatchedMeshMode } from "./batchedState.js";
+export type { AuraBatchedGeometryInput, AuraBatchedMemberReference, AuraBatchedMemberTarget, AuraBatchedMeshMode } from "./batchedState.js";
+export { registerBatchedDrawShader } from "@aura3d/rendering";
+import type { AuraBatchedGeometryInput, AuraBatchedMemberTarget, AuraBatchedMeshMode } from "./batchedState.js";
 
 // Injected impls for the leaf module (see batchedState.ts header): geometry
 // resolution needs `compiler/primitives`, authored-node seeding needs
@@ -78,142 +78,14 @@ registerBatchedGeometryResolver((input) => {
 });
 registerBatchedColorConverter(colorToRgba);
 registerBatchedNodeSeeder((node, state) => {
-  (node.instances ?? []).forEach((transform) => {
-    const slot = state.addInstance(0);
+  (node.instances ?? []).forEach((transform, index) => {
+    const memberId = state.addInstance(0);
     const m = createModelMatrix({ kind: "primitive", primitive: "box", ...transform } as AuraPrimitiveNode, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, false, 0);
-    state.setMatrixAt(slot, m);
-    const color = node.instanceColors?.[slot];
-    if (color !== undefined) state.setColorAt(slot, color);
+    state.setMatrixAt(memberId, m);
+    const color = node.instanceColors?.[index];
+    if (color !== undefined) state.setColorAt(memberId, color);
   });
 });
-
-/* ------------------------------------------------------------------ */
-/* `parity.batchDraw` shader feature (generated-program path)          */
-/* ------------------------------------------------------------------ */
-
-const L5_BATCH_PARS_CHUNK = "a3d_l5_batch_draw_pars";
-const L5_BATCH_WORLD_CHUNK = "a3d_l5_batch_draw_world";
-const L5_BATCH_FRAG_CHUNK = "a3d_l5_batch_draw_frag";
-const L5_BATCH_FEATURE = "parity.batchDraw";
-const L5_BATCH_DEPTH_FEATURE = "parity.batchDraw.depth";
-
-/**
- * Declarations shared by both stages. `a3d_l5_draw_index` resolves to
- * `gl_DrawID` when the driver exposes `WEBGL_multi_draw` AND the feature's
- * multi-draw bit is set — `#extension ... : warn` (emitted by the generator
- * for `A3D_L5_MULTI_DRAW`) leaves the macro undefined on drivers without it,
- * selecting the `u_drawId` uniform loop instead. That is exactly the
- * distinction `canMultiDraw` keys on (a program declaring `u_drawId` is the
- * uniform-loop fallback).
- */
-const L5_BATCH_PARS_GLSL = /* glsl */ `
-#if defined(GL_ANGLE_multi_draw) && defined(A3D_L5_MULTI_DRAW)
-#define a3d_l5_draw_index gl_DrawID
-#else
-uniform highp int u_drawId;
-#define a3d_l5_draw_index u_drawId
-#endif
-uniform highp sampler2D u_a3dDrawData;
-#ifdef A3D_STAGE_VERTEX
-out vec4 v_a3dL5DrawColor;
-#else
-in vec4 v_a3dL5DrawColor;
-#endif
-vec4 a3dL5DrawTexel(int draw, int row) {
-  return texelFetch(u_a3dDrawData, ivec2(draw * 6 + row, 0), 0);
-}
-mat4 a3dL5DrawModel(int draw) {
-  return mat4(a3dL5DrawTexel(draw, 0), a3dL5DrawTexel(draw, 1), a3dL5DrawTexel(draw, 2), a3dL5DrawTexel(draw, 3));
-}
-vec4 a3dL5DrawBaseColor(int draw) {
-  return a3dL5DrawTexel(draw, 4);
-}
-vec4 a3dL5DrawMeta(int draw) {
-  return a3dL5DrawTexel(draw, 5);
-}
-`;
-
-/**
- * World hook: the draw row's model matrix replaces `u_modelMatrix *
- * instanceMatrix` entirely — the engine folds node×instance transforms into
- * the draw-data texture so one packed draw = one (geometry-slice, instance)
- * pair. meta.w bit 0 is the visibility flag: hidden rows collapse to a
- * degenerate point at the origin (no fragments).
- */
-const L5_BATCH_WORLD_GLSL = /* glsl */ `
-#ifdef A3D_L5_BATCH_DRAW
-  {
-    int a3dL5Draw = a3d_l5_draw_index;
-    vec4 a3dL5Meta = a3dL5DrawMeta(a3dL5Draw);
-    mat4 a3dL5Model = a3dL5DrawModel(a3dL5Draw);
-    v_a3dL5DrawColor = a3dL5DrawBaseColor(a3dL5Draw);
-    a3dWorld = a3dL5Model * a3dLocal;
-    if ((floatBitsToUint(a3dL5Meta.w) & 1u) == 0u) a3dWorld = vec4(0.0);
-  }
-#endif
-`;
-
-/**
- * Material hook: per-draw base colour, applied to `a3dBaseColor` and (when
- * lit) to the already-constructed `PhysicalMaterial`'s colour-derived fields
- * so diffuse and specular both track the draw colour.
- */
-const L5_BATCH_FRAG_GLSL = /* glsl */ `
-#ifdef A3D_L5_BATCH_DRAW
-  a3dBaseColor *= v_a3dL5DrawColor;
-  #ifdef A3D_LIT
-    material.baseColor *= v_a3dL5DrawColor.rgb;
-    material.diffuseContribution *= v_a3dL5DrawColor.rgb;
-    material.specularColorBlended *= v_a3dL5DrawColor.rgb;
-  #endif
-#endif
-`;
-
-let batchDrawShaderRegistered = false;
-
-/** Register the L5 feature + chunks once (idempotent; engine import side effect). */
-export function registerBatchedDrawShader(): void {
-  if (batchDrawShaderRegistered) return;
-  batchDrawShaderRegistered = true;
-  registerShaderChunk({ name: L5_BATCH_PARS_CHUNK, owner: "prd15", glsl: L5_BATCH_PARS_GLSL, stage: "both" });
-  registerShaderChunk({ name: L5_BATCH_WORLD_CHUNK, owner: "prd15", glsl: L5_BATCH_WORLD_GLSL, stage: "vertex" });
-  registerShaderChunk({ name: L5_BATCH_FRAG_CHUNK, owner: "prd15", glsl: L5_BATCH_FRAG_GLSL, stage: "fragment" });
-  registerShaderFeature({
-    id: L5_BATCH_FEATURE,
-    owner: "prd15",
-    flag: "A3D_PARITY_BATCHING",
-    order: 40,
-    select: (input) => {
-      if (input.pass !== "forward") return undefined;
-      const marker = (input.item as RenderItem & { multiDraw?: { mode: string; drawIndex: number } }).multiDraw;
-      return marker ? marker.mode : undefined;
-    },
-    defines: (value): Readonly<Record<string, string | number | true>> => value === "multi-draw"
-      ? { A3D_L5_BATCH_DRAW: true, A3D_L5_MULTI_DRAW: true }
-      : { A3D_L5_BATCH_DRAW: true },
-    chunks: [L5_BATCH_PARS_CHUNK, L5_BATCH_PARS_CHUNK, L5_BATCH_WORLD_CHUNK, L5_BATCH_FRAG_CHUNK],
-    hooks: ["vertex:pars", "fragment:pars", "vertex:world", "fragment:material"],
-    bindUniforms: (_value, item, set) => {
-      const marker = (item as RenderItem & { multiDraw?: { drawIndex: number; drawData?: Texture } }).multiDraw;
-      if (!marker) return;
-      set("u_drawId", marker.drawIndex);
-      if (marker.drawData) set("u_a3dDrawData", drawDataBindingFor(marker.drawData));
-    }
-  });
-  // Depth/distance passes run through the depth-variant registry — same
-  // fetch, vertex stage only, so shadow casters stay correct.
-  registerDepthVariantFeature({
-    id: L5_BATCH_DEPTH_FEATURE,
-    owner: "prd15",
-    flag: "A3D_PARITY_BATCHING",
-    passes: ["depth", "distance"],
-    select: (input) =>
-      (input.item as RenderItem & { multiDraw?: unknown }).multiDraw ? true : undefined,
-    defines: () => ({ A3D_L5_BATCH_DRAW: true }),
-    chunks: [L5_BATCH_PARS_CHUNK, L5_BATCH_WORLD_CHUNK],
-    hooks: ["vertex:pars", "vertex:world"]
-  });
-}
 
 /* ------------------------------------------------------------------ */
 /* Handler                                                             */
@@ -296,8 +168,69 @@ function batchedNodeModelMatrix(node: AuraBatchedNode, bounds: Bounds3, time: nu
   return createModelMatrix(node as unknown as AuraPrimitiveNode, bounds, false, time);
 }
 
+/** Live ancestry and node metadata can veto a captured member, never authorize its draw. */
+export function batchedRuntimeNodeWorldReader(handle: AuraRuntimeNodeHandle, node: AuraBatchedNode): () => ArrayLike<number> | undefined {
+  const captured = {
+    material: node.material, renderOrder: node.renderOrder, frustumCulled: node.frustumCulled,
+    layers: node.layers, userData: node.userData,
+    castShadow: (node as AuraBatchedNode & { readonly castShadow?: boolean }).castShadow ?? true
+  };
+  return () => {
+    const live = runtimeNodeQueryState(handle);
+    if (!live || live.node.kind !== "batched" || live.node.material !== captured.material ||
+      live.node.renderOrder !== captured.renderOrder || live.node.frustumCulled !== captured.frustumCulled ||
+      live.node.layers !== captured.layers || live.node.userData !== captured.userData ||
+      ((live.node as typeof live.node & { readonly castShadow?: boolean }).castShadow ?? true) !== captured.castShadow) return undefined;
+    return live.worldMatrix;
+  };
+}
+
+/** One batch has one material; per-member overrides cannot be represented by its dense buckets. */
+function assertSingleBatchMaterial(node: AuraBatchedNode): void {
+  if (Array.isArray(node.material)) {
+    throw new TypeError("BATCH_MEMBER_MATERIAL_UNSUPPORTED: a batched node requires one material shared by all members.");
+  }
+  for (const [index, instance] of (node.instances ?? []).entries()) {
+    const member = instance as unknown as Record<string, unknown>;
+    if (["material", "clipping", "materialClipping"].some((key) => Object.prototype.hasOwnProperty.call(member, key) && member[key] !== undefined)) {
+      throw new TypeError(`BATCH_MEMBER_MATERIAL_UNSUPPORTED: member ${index} cannot override its batch material or clipping group.`);
+    }
+  }
+}
+
+/** Select a recoverable logical route only for an actual capable renderer. */
+function packedBatchedExecutionAvailable(ctx: SceneCompileContext): boolean {
+  try {
+    if (!(ctx.renderer instanceof Renderer) || !(ctx.renderer.device instanceof WebGL2Device)) return false;
+    const device = ctx.renderer.device;
+    return device.supportsMultiDrawElementsInstanced() && device.supportsSubmittedWorkCompletion();
+  } catch { return false; }
+}
+
 export function resolveBatchedMode(state: BatchedMeshState, node: AuraBatchedNode, ctx: SceneCompileContext): { readonly mode: "multi-draw" | "loop" | "instanced"; readonly fallbackReason?: string } {
+  assertSingleBatchMaterial(node);
   const requested = state.mode !== "auto" ? state.mode : node.multiDraw ?? "auto";
+  // An explicitly requested loop keeps one logical item per member. The
+  // compiled bridge owns its frame lease; each pass may independently use
+  // packed storage only when its device and draw inputs support it.
+  if (requested === "loop" && !state.instanced && state.geometries.length > 1 &&
+      (ctx as SceneCompileContext & { readonly auraBatchFrameOwnership?: boolean }).auraBatchFrameOwnership === true) {
+    return { mode: "loop" };
+  }
+  // Depth uses logical members. A clipped batch either keeps those members
+  // or falls back to per-geometry instancing when frame ownership is absent.
+  const materialClipping = getMaterialClipping(node.material) !== undefined;
+  const sceneClipping = (ctx as SceneCompileContext & { readonly auraBatchSceneClipping?: boolean }).auraBatchSceneClipping === true;
+  if (materialClipping || sceneClipping) {
+    // A capable renderer can retain individual members while clipping or a
+    // later material resolver is active. No packed shader is needed here.
+    if (requested !== "instanced" && !state.instanced && state.geometries.length > 1 &&
+        (ctx as SceneCompileContext & { readonly auraBatchFrameOwnership?: boolean }).auraBatchFrameOwnership === true &&
+        packedBatchedExecutionAvailable(ctx)) {
+      return { mode: "loop", fallbackReason: materialClipping ? "material-clipping" : "scene-clipping" };
+    }
+    return { mode: "instanced", ...(requested !== "instanced" ? { fallbackReason: materialClipping ? "material-clipping" : "scene-clipping" } : {}) };
+  }
   const single = state.geometries.length <= 1;
   if (requested === "instanced" || single) {
     return { mode: "instanced", ...(requested !== "instanced" && single ? { fallbackReason: "single-geometry" } : {}) };
@@ -305,30 +238,106 @@ export function resolveBatchedMode(state: BatchedMeshState, node: AuraBatchedNod
   if (!qrCoreGeneratorOn(ctx.flags)) {
     return { mode: "instanced", fallbackReason: "generated-programs-off" };
   }
-  // The packed route draws through marker items that only the tiers.batching submit path understands; without it the
-  // markers render as plain items with no draw data and a multi-geometry node draws nothing. Fall back to per-geometry
-  // instancing, which every renderer path supports.
+  // Feature and frame ownership are required even when the device exposes the extension.
   if (!ctx.flags.on("A3D_QR_TIERS_BATCHING")) {
     return { mode: "instanced", fallbackReason: "tiers-batching-off" };
+  }
+  if (!(ctx as SceneCompileContext & { readonly auraBatchFrameOwnership?: boolean }).auraBatchFrameOwnership ||
+      !ctx.flags.on("A3D_PARITY_BATCHING") || !packedBatchedExecutionAvailable(ctx)) {
+    return { mode: "instanced", fallbackReason: "packed-execution-unavailable" };
   }
   return { mode: requested === "auto" ? "multi-draw" : requested };
 }
 
 /**
- * Emit the render items for a batched node. Packed mode uploads the draw-data
- * rows (`model = nodeModel × instanceMatrix`, base colour, visible flag |
- * geometryId in meta.w) then emits one marker item per live instance — the
- * enqueue inside `DrawSubmit` turns a compatible run into one
- * `multiDrawElementsInstanced` call; otherwise each draws once (loop).
+ * Build logical items and keep the optional packed generation alive. The
+ * caller owns the returned lease until all backend work has completed, or must
+ * release it immediately when the items are discarded or submission fails.
+ */
+export function createBatchedLoopItems(
+  state: BatchedMeshState,
+  node: AuraBatchedNode,
+  nodeWorld: ArrayLike<number>,
+  material: RenderItem["material"],
+  mountOwner?: object,
+  readLiveNodeWorld?: () => ArrayLike<number> | undefined,
+  allowUnpackedFallback = false,
+  submissionIntent: "loop" | "multi-draw" = "loop"
+): { readonly items: readonly RenderItem[]; readonly lease?: PackedGeometryLease; release(): void } {
+  const members = state.captureLoopMembers(nodeWorld, node.runtime?.id, node, mountOwner, readLiveNodeWorld)
+    .filter((member) => member.sourceRange.count > 0);
+  if (!members.length) return { items: Object.freeze([]), release() {} };
+  const materialClipping = getMaterialClipping(node.material);
+  const items = members.map((member): RenderItem => {
+      const logical: RenderItem & { readonly temporalObjectKey: object } = {
+        geometry: member.sourceGeometry,
+        material,
+        // Both forward and depth receive the same clamped source interval;
+        // an authored Infinity is meaningful on geometry but not as an item
+        // override on either pass.
+        ...(member.sourceDrawRange === undefined ? {} : { drawRange: member.sourceRange }),
+        ...(materialClipping ? { materialClipping } : {}),
+        ...(node.name === undefined ? {} : { label: node.name }),
+        modelMatrix: Float32Array.from(member.modelMatrix),
+        instanceTransforms: Float32Array.from(batchedIdentityMatrix),
+        instanceColors: Float32Array.from(member.color),
+        temporalObjectKey: member.temporalObjectKey,
+        castShadow: member.castShadow,
+        ...(member.renderOrder === undefined ? {} : { renderOrder: member.renderOrder }),
+        ...(member.frustumCulled === undefined ? {} : { frustumCulled: member.frustumCulled }),
+        ...(member.layerMask === undefined ? {} : { layerMask: member.layerMask }),
+        ...(member.userData === undefined ? {} : { userData: member.userData })
+      };
+      return logical;
+    });
+  let pool: ReturnType<BatchedMeshState["packedPool"]>;
+  try { pool = state.packedPool(); } catch (error) {
+    if (allowUnpackedFallback && error instanceof Error && /^BatchedGeometryPool (supports a single per-vertex slot 0 stream|requires identical vertex layouts|requires matching topology and indexing)$/.test(error.message)) {
+      return { items: Object.freeze(items), release() {} };
+    }
+    throw error;
+  }
+  // Cull and sort logical members with their own bounds. A shared generation
+  // is retained once and never rebuilt merely because an instance moved.
+  const lease = pool.retainGeneration();
+  try {
+    for (const [index, member] of members.entries()) {
+      const logical = items[index]!;
+      rememberPackedLoopMember(logical, { ...member, logicalItem: logical, logicalMaterial: material,
+        itemDrawRange: logical.drawRange, pool, lease,
+        packedRange: pool.translateSourceRange(member.sourceGeometry, member.sourceRange), producerSnapshot: member,
+        ...(submissionIntent === "multi-draw" ? { combinedDrawIntent: true } : {}) });
+    }
+    if (items.some((item) => !packedLoopProducerMemberCurrent(item))) {
+      throw new Error("BATCH_LOOP_STATE_CHANGED: batch or source changed while preparing loop items.");
+    }
+    return { items: Object.freeze(items), lease, release: () => lease.release() };
+  } catch (error) {
+    try { lease.release(); } catch { /* preserve the preparation error */ }
+    throw error;
+  }
+}
+
+/**
+ * Emit per-geometry instancing or frame-owned logical loop members. Depth and
+ * unsupported forward paths can draw the original member geometry.
  */
 function emitBatchedItems(
   state: BatchedMeshState,
   node: AuraBatchedNode,
   ctx: SceneCompileContext,
   out: RenderSourceContributions,
-  time: number
+  time: number,
+  worldMatrix?: Float32Array,
+  mountOwner?: object,
+  readLiveNodeWorld?: () => ArrayLike<number> | undefined
 ): AuraBatchedEmitReport {
-  const { mode, fallbackReason } = resolveBatchedMode(state, node, ctx);
+  assertDepthPreviewTarget("batched", node.material);
+  const resolved = resolveBatchedMode(state, node, ctx);
+  // Compile-time contributions can be discarded and do not own a frame
+  // lease. Only a live runtime handle can observe ancestor movement/visibility.
+  const mode = resolved.mode !== "instanced" && !readLiveNodeWorld ? "instanced" : resolved.mode;
+  const fallbackReason = mode !== resolved.mode ? "runtime-node-unavailable" : resolved.fallbackReason;
   if (node.visible === false) {
     return { mode, geometries: state.geometries.length, instances: 0, draws: 0, ...(fallbackReason ? { fallbackReason } : {}) };
   }
@@ -339,7 +348,8 @@ function emitBatchedItems(
     return { mode, geometries: state.geometries.length, instances: 0, draws: 0, ...(fallbackReason ? { fallbackReason } : {}) };
   }
   const bounds = state.boundingBox();
-  const nodeModel = batchedNodeModelMatrix(node, bounds, time);
+  const nodeModel = worldMatrix ?? batchedNodeModelMatrix(node, bounds, time);
+  const materialClipping = getMaterialClipping(node.material);
 
   if (mode === "instanced") {
     // One item per geometry bucket; dense slices ride the C-07 instance path.
@@ -364,62 +374,39 @@ function emitBatchedItems(
       });
       const scalarMaterial = state.materialFor(materialKey, () => createProductionPrimitiveMaterial(pseudo));
       const material = batchedTexturedMaterial(state, node, state.geometries[0], scalarMaterial);
-      items.push({
+      const item = {
         geometry,
         material: material as RenderItem["material"],
+        ...(materialClipping ? { materialClipping } : {}),
         modelMatrix: nodeModel,
         instanceTransforms: transforms,
         instanceColors: colors,
         castShadow: (node as { castShadow?: boolean }).castShadow ?? true
-      } as RenderItem);
+      } as RenderItem;
+      // A batched.mesh bucket may combine multiple logical members. A
+      // per-item clipping callback cannot address them independently; the
+      // renderer uses this origin-only marker to reject that case before draw.
+      items.push(state.instanced ? item : createEngineBatchInstanceItem(item));
     }
     out.addItems(items);
     return { mode, geometries: buckets.size, instances: slots.length, draws: items.length, ...(fallbackReason ? { fallbackReason } : {}) };
   }
 
-  // Packed route — pooled geometry + draw-data rows + multiDraw markers.
-  const { geometry, entries } = state.packedGeometry();
-  const drawData = state.packedDrawData();
+  // The compiled frame owns this lease until consumers finish or discard it.
   const pseudo = pseudoNodeFor(node, undefined);
   const scalarMaterial = state.materialFor(node.material ?? SHARED_DEFAULT_MATERIAL, () => createProductionPrimitiveMaterial(pseudo));
-  const material = batchedTexturedMaterial(state, node, geometry, scalarMaterial) as RenderItem["material"];
-  const items: RenderItem[] = [];
-  slots.forEach((slot, drawIndex) => {
-    const gid = state.geometryIdAt(slot);
-    const entry = entries[gid];
-    if (!entry) return;
-    // Fold node model × instance local matrix into the draw row.
-    const row = new Float32Array(16);
-    multiplyMat4Into(row, nodeModel, state.matrices.subarray(slot * 16, slot * 16 + 16));
-    drawData.setDraw(drawIndex, {
-      model: row,
-      baseColor: state.colors.subarray(slot * 4, slot * 4 + 4),
-      meta: [entry.firstIndex, entry.baseVertex, entry.indexCount, packDrawDataFlags(state.isVisible(slot), gid)]
-    });
-    items.push({
-      geometry,
-      material,
-      drawRange: entry.firstIndex >= 0
-        ? { start: entry.firstIndex, count: entry.indexCount }
-        : { start: entry.baseVertex, count: entry.vertexCount },
-      modelMatrix: batchedIdentityMatrix,
-      castShadow: (node as { castShadow?: boolean }).castShadow ?? true,
-      multiDraw: { mode, drawIndex, drawData: drawData.upload() }
-    } as unknown as RenderItem);
-  });
-  out.addItems(items);
-  return { mode, geometries: state.geometries.length, instances: slots.length, draws: mode === "multi-draw" ? 1 : items.length, ...(fallbackReason ? { fallbackReason } : {}) };
-}
-
-/** Column-major `out = a * b`. */
-function multiplyMat4Into(out: Float32Array, a: ArrayLike<number>, b: ArrayLike<number>): void {
-  for (let col = 0; col < 4; col += 1) {
-    const b0 = b[col * 4]!, b1 = b[col * 4 + 1]!, b2 = b[col * 4 + 2]!, b3 = b[col * 4 + 3]!;
-    out[col * 4] = a[0]! * b0 + a[4]! * b1 + a[8]! * b2 + a[12]! * b3;
-    out[col * 4 + 1] = a[1]! * b0 + a[5]! * b1 + a[9]! * b2 + a[13]! * b3;
-    out[col * 4 + 2] = a[2]! * b0 + a[6]! * b1 + a[10]! * b2 + a[14]! * b3;
-    out[col * 4 + 3] = a[3]! * b0 + a[7]! * b1 + a[11]! * b2 + a[15]! * b3;
-  }
+  const material = batchedTexturedMaterial(state, node, state.geometries[0], scalarMaterial) as RenderItem["material"];
+  const prepared = createBatchedLoopItems(state, node, nodeModel, material, mountOwner, readLiveNodeWorld, true, mode);
+  // Each public marker retains one logical member. It is expanded before
+  // culling or observers and does not itself authorize a native draw.
+  const emitted = mode === "multi-draw" && prepared.lease ? prepared.items.map((logical, index) => {
+    const carrier = createEnginePackedBatchItem({ ...logical,
+      multiDraw: Object.freeze({ mode: "multi-draw" as const, drawIndex: index }) });
+    transferPackedLoopMember(logical, carrier, logical);
+    return Object.freeze(carrier);
+  }) : prepared.items;
+  try { out.addItems(emitted); } catch (error) { prepared.release(); throw error; }
+  return { mode, geometries: state.geometries.length, instances: prepared.items.length, draws: prepared.items.length, ...(fallbackReason ? { fallbackReason } : {}) };
 }
 
 const L5_FLAG = "A3D_PARITY_BATCHING" as const;
@@ -444,16 +431,31 @@ export const batchedNodeHandler: NodeHandler<{ readonly kind: "batched" }> = {
     assertL5Flag(ctx);
     registerBatchedDrawShader();
     const batchedNode = node as unknown as AuraBatchedNode;
-    const state = batchedStateForNode(batchedNode);
+    const source = sourceSceneNodeOf(batchedNode) ?? batchedNode;
+    const state = batchedStateForNode(source as AuraBatchedNode);
     const report = emitBatchedItems(state, batchedNode, ctx, out, 0);
     if (report.mode === "instanced") out.feature("instancing");
     out.set("parityBatched", report);
   },
-  update(node, _handle, ctx, out, timeSeconds) {
+  update(node, handle, ctx, out, timeSeconds) {
     registerBatchedDrawShader();
     const batchedNode = node as unknown as AuraBatchedNode;
-    const state = batchedStateForNode(batchedNode);
-    const report = emitBatchedItems(state, batchedNode, ctx, out, timeSeconds);
+    const source = sourceSceneNodeOf(batchedNode) ?? batchedNode;
+    const state = batchedStateForNode(source as AuraBatchedNode);
+    // Runtime graph visibility and world placement include all ancestors. A
+    // hidden or retired handle submits no items, and showing an ancestor can
+    // override the flattened snapshot's original inherited visibility.
+    const live = handle ? runtimeNodeQueryState(handle) : undefined;
+    const liveNode = live?.node.kind === "batched" ? live.node : undefined;
+    const currentNode = handle ? {
+      ...batchedNode,
+      ...(liveNode ? { material: liveNode.material, renderOrder: liveNode.renderOrder, frustumCulled: liveNode.frustumCulled,
+        layers: liveNode.layers, userData: liveNode.userData,
+        castShadow: (liveNode as AuraBatchedNode & { readonly castShadow?: boolean }).castShadow } : {}),
+      visible: live !== undefined
+    } : batchedNode;
+    const liveWorld = handle && live ? batchedRuntimeNodeWorldReader(handle, currentNode) : undefined;
+    const report = emitBatchedItems(state, currentNode, ctx, out, timeSeconds, live?.worldMatrix, handle ?? source, liveWorld);
     out.set("parityBatched", report);
   }
 };
@@ -471,8 +473,13 @@ export interface AuraBatchedMeshOptions {
   readonly maxInstances: number;
   readonly maxVertices?: number;
   readonly maxIndices?: number;
+  /**
+   * Material clipping affects rendering; scene raycasts remain geometric.
+   * Renderer `materialClippingFor` callbacks cannot address individual
+   * batched members on the current instance fallback and are rejected.
+   */
   readonly material?: AuraMaterialSpec;
-  /** "auto" (default): packed multi-draw on the generated path, per-geometry instancing otherwise. */
+  /** "auto" uses combined WebGL2 when eligible and falls back on unsupported inputs. */
   readonly multiDraw?: AuraBatchedMeshMode;
   readonly name?: string;
   readonly geometries?: readonly AuraBatchedGeometryInput[];
@@ -482,7 +489,8 @@ export interface AuraBatchedMeshOptions {
  * `batched.mesh` handle — an `AuraNodeBuilder` (scene-addable, chainable
  * transforms) plus the three.js BatchedMesh mutation API. Builder methods
  * return a fresh handle sharing the same dense state (`batchedId` survives
- * the builder's spread-clone).
+ * the builder's spread-clone). Mutations also accept query hits and captured
+ * packed-loop members, resolving their lifetimes rather than their slot IDs.
  */
 export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
   readonly state: BatchedMeshState;
@@ -535,34 +543,60 @@ export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
     return this.state.addGeometry(geometry);
   }
 
+  /** Allocate a slot and return its state-scoped, non-reusable member ID. */
   addInstance(geometryId: number): number {
     return this.state.addInstance(geometryId);
   }
 
-  setMatrixAt(index: number, matrix: Float32Array | readonly number[] | { readonly elements: ArrayLike<number> }): this {
+  /** Inspect the current lifetime ID at a physical storage slot. */
+  getMemberIdAt(slot: number): number | undefined {
+    return this.state.queryMemberIdAt(slot);
+  }
+
+  /** Capture a live member ID as a state- and lifetime-bound mutation target. */
+  getMemberReferenceAt(memberId: string | number): ReturnType<BatchedMeshState["getMemberReferenceAt"]> {
+    const slot = this.state.getSlotForMemberId(memberId);
+    return slot === undefined ? undefined : this.state.getMemberReferenceAt(slot);
+  }
+
+  /** Resolve a live ID to its reusable storage slot; do not use that slot as an ID. */
+  getSlotForMemberId(memberId: string | number | undefined): number | undefined {
+    return this.state.getSlotForMemberId(memberId);
+  }
+
+  /** Recover a captured member ID from a packed-loop key, even after retirement. */
+  getMemberIdForLoopKey(key: object | undefined): number | undefined {
+    return this.state.getMemberIdForLoopKey(key);
+  }
+
+  /**
+   * Numeric IDs are scoped to this handle's batch state. Pass a query hit,
+   * captured reference or packed-loop member to check state identity too.
+   */
+  setMatrixAt(index: AuraBatchedMemberTarget, matrix: Float32Array | readonly number[] | { readonly elements: ArrayLike<number> }): this {
     this.state.setMatrixAt(index, matrix);
     return this;
   }
 
-  getMatrixAt(index: number, out?: Float32Array | number[]): Float32Array | number[] {
+  getMatrixAt(index: AuraBatchedMemberTarget, out?: Float32Array | number[]): Float32Array | number[] {
     return this.state.getMatrixAt(index, out);
   }
 
-  setColorAt(index: number, color: AuraColor | readonly number[]): this {
+  setColorAt(index: AuraBatchedMemberTarget, color: AuraColor | readonly number[]): this {
     this.state.setColorAt(index, color);
     return this;
   }
 
-  getColorAt(index: number, out?: number[]): number[] {
+  getColorAt(index: AuraBatchedMemberTarget, out?: number[]): number[] {
     return this.state.getColorAt(index, out);
   }
 
-  setVisibleAt(index: number, visible: boolean): this {
+  setVisibleAt(index: AuraBatchedMemberTarget, visible: boolean): this {
     this.state.setVisibleAt(index, visible);
     return this;
   }
 
-  deleteInstance(index: number): this {
+  deleteInstance(index: AuraBatchedMemberTarget): this {
     this.state.deleteInstance(index);
     return this;
   }
@@ -598,6 +632,7 @@ export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
 }
 
 function batchedMesh(options: AuraBatchedMeshOptions): AuraBatchedMeshHandle {
+  assertDepthPreviewTarget("batched", options.material);
   const id = allocBatchedStateId();
   const state = new BatchedMeshState({
     id,

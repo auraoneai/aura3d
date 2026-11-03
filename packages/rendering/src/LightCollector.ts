@@ -1,6 +1,15 @@
-import { DirectionalLight, Light, PointLight, RectAreaLight, Scene, SpotLight } from "@aura3d/scene";
+import { DirectionalLight, Light, PointLight, RectAreaLight, Scene, SpotLight, type SceneNode } from "@aura3d/scene";
+import type { PhotometricProfileTable } from "./lighting/PhotometricProfileAtlas";
+import type { ProjectedSpotImage } from "./lighting/ProjectedSpotBindings";
 
 export type CollectedLightKind = "directional" | "point" | "spot" | "rect-area";
+
+/** Measured absolute candela distribution for a point or spot light. */
+export interface CollectedPhotometricProfile {
+  readonly profile: PhotometricProfileTable;
+  readonly scale?: number;
+  readonly rotation?: number;
+}
 
 export interface CollectedLight {
   readonly kind: CollectedLightKind;
@@ -13,6 +22,8 @@ export interface CollectedLight {
   readonly range: number;
   readonly width?: number;
   readonly height?: number;
+  /** Both faces of a rect, or both cones of its legacy spot proxy. */
+  readonly twoSided?: boolean;
   readonly spotAngle: number;
   readonly penumbra: number;
   /**
@@ -22,6 +33,14 @@ export interface CollectedLight {
    * not read it yet — stage 2 packs it and the chunks apply it.
    */
   readonly decay?: number;
+  /** Enumerable profile metadata retained across per-frame light copies. */
+  readonly photometricProfile?: CollectedPhotometricProfile;
+  /** Effective visibility when known. Omission does not authorize profile rendering. */
+  readonly photometricVisible?: boolean;
+  /** Independent dimensionless profile dimmer; scalar intensity is not its denominator. */
+  readonly photometricDimmer?: number;
+  /** Live authored image metadata; the renderer resolves its owned resource per frame. */
+  readonly projectedImage?: ProjectedSpotImage<unknown>;
   readonly castsShadow: boolean;
   readonly layerMask: number;
   readonly source: Light;
@@ -30,7 +49,19 @@ export interface CollectedLight {
 export interface LightCollectorOptions {
   readonly maxLights?: number;
   readonly layerMask?: number;
+  /** Include locally or ancestrally hidden lights; other filters still apply. */
   readonly includeDisabled?: boolean;
+}
+
+/** Check through the scene root when present, without mutating state. Absent compiled sources are eligible. */
+export function isLightVisibleInHierarchy(light: Light | null | undefined, root?: SceneNode): boolean {
+  let node: SceneNode | null | undefined = light;
+  while (node) {
+    if (node.visible === false) return false;
+    if (node === root) break;
+    node = node.parent;
+  }
+  return true;
 }
 
 export class LightCollector {
@@ -42,7 +73,7 @@ export class LightCollector {
     scene.updateWorldTransforms();
     return scene
       .collectLights()
-      .filter((light) => (options.includeDisabled ?? false) || light.visible)
+      .filter((light) => (options.includeDisabled ?? false) || isLightVisibleInHierarchy(light, scene.root))
       .filter((light) => ((options.layerMask ?? 0xffffffff) & light.layerMask) !== 0)
       .map((light) => collectLight(light))
       .sort((a, b) => b.intensity - a.intensity)
@@ -51,6 +82,9 @@ export class LightCollector {
 }
 
 export function collectLight(light: Light): CollectedLight {
+  if (light instanceof RectAreaLight && light.twoSided && light.castsShadow) {
+    throw new Error("TWO_SIDED_RECT_SHADOW_UNSUPPORTED: rectangular lights do not support two-sided shadow maps");
+  }
   const matrix = matrixElements(light.transform.worldMatrix);
   const position: [number, number, number] = [matrix[12], matrix[13], matrix[14]];
   const direction = light instanceof DirectionalLight
@@ -74,6 +108,7 @@ export function collectLight(light: Light): CollectedLight {
     range,
     width,
     height,
+    ...(light instanceof RectAreaLight && light.twoSided ? { twoSided: true } : {}),
     spotAngle,
     penumbra,
     castsShadow: light.castsShadow,

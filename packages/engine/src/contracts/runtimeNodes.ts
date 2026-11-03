@@ -4,7 +4,9 @@
  */
 
 import type { RegistryEntry } from "@aura3d/rendering/contracts";
-import type { AuraSceneNode, AuraNodeBuilder, AuraRuntimeNodeHandle, AuraApp, AuraVec3 } from "../agent-api/index";
+import type { AuraNodeBuilder } from "../agent-api/nodes/builder.js";
+import type { AuraSceneNode, AuraVec3 } from "../agent-api/nodes/types.js";
+import type { AuraRuntimeNodeHandle, AuraApp } from "../agent-api/nodes/types/runtime.js";
 import type { AuraNodeKindMap } from "./compiler";
 import type { AuraModelMaterialHandle } from "./materials";
 import type { AuraActorAnimationApi } from "./animation";

@@ -19,6 +19,8 @@ import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraDegradation, SceneCompileContext } from "../../contracts/compiler.js";
 import type { AuraCreateAppAnimationOptions } from "../../contracts/animation.js";
 import { ANIMATION_EMPTY_POSE, consumePendingEmptyPoseRejection, qrAnimationFlags, rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
+import { prepareRuntimeNodeRootMotion, runtimeNodeHandleForSceneNode } from "../app/runtimeNodes.js";
+import { sourceSceneNodeOf } from "./sceneGraph.js";
 
 export { rejectEmptyAnimationPose } from "../app/actorAnimationHandle.js";
 
@@ -299,7 +301,12 @@ export function applyProductionActorAnimation(
       ) {
         const seconds = resolveProductionActorAnimationSeconds(animation, animationBinding, time);
         const runtimeId = (node.runtime as { readonly id?: string } | undefined)?.id;
-        const runtimeNode = runtimeId !== undefined ? runtimeNodes?.get(runtimeId) : undefined;
+        // Anonymous model descendants can still have a private parented
+        // handle. Resolve them from the stable compiled source node rather than
+        // the runtime snapshot, which may be a newly allocated copy.
+        const runtimeNode = runtimeId !== undefined
+          ? runtimeNodes?.get(runtimeId)
+          : runtimeNodeHandleForSceneNode(runtimeNodes, sourceSceneNodeOf(entry.node) ?? entry.node);
         const playbackId = `root-motion:${runtimeId ?? entry.actor.id}:${clipName}`;
         const cursors = entry.rootMotionCursors ?? new Map<string, number>();
         const previous = cursors.get(playbackId);
@@ -337,10 +344,18 @@ export function applyProductionActorAnimation(
               return [0, 0, 0] as const;
             }
             if (runtimeNode && typeof runtimeNode.translate === "function") {
-              runtimeNode.translate(masked[0], masked[1], masked[2]);
-              if (yawDelta !== 0 && typeof runtimeNode.setRotation === "function") {
-                const rotation = runtimeNode.rotation;
-                runtimeNode.setRotation(rotation[0], rotation[1] + yawDelta, rotation[2]);
+              const publishParented = prepareRuntimeNodeRootMotion(runtimeNode, masked, yawDelta);
+              if (publishParented) {
+                // The pose update is preflighted before mutation. Advance the
+                // cursor after publication but before any observer can throw,
+                // so retrying a failed observer cannot move the actor twice.
+                publishParented(commitCursors);
+              } else {
+                runtimeNode.translate(masked[0], masked[1], masked[2]);
+                if (yawDelta !== 0 && typeof runtimeNode.setRotation === "function") {
+                  const rotation = runtimeNode.rotation;
+                  runtimeNode.setRotation(rotation[0], rotation[1] + yawDelta, rotation[2]);
+                }
               }
             } else {
               // No mutable runtime node: fold into the node's model matrix

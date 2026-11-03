@@ -4,14 +4,14 @@
  * collider the pose equals the legacy helper bit-for-bit (test: 1e-6).
  */
 import type { AuraVec3 } from "../../index.js";
-import type { AuraCameraRig } from "../../../contracts/camera.js";
+import type { AuraCameraProbe, AuraCameraRig } from "../../../contracts/camera.js";
 import { createShoulderCamera } from "./shoulderCamera.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
 import { distanceForFractionInContext } from "../framing.js";
-import { subjectHeight } from "./rigUtils.js";
+import { probeForSubject, subjectHeight, type CameraSubjectRef } from "./rigUtils.js";
 
 export interface ShoulderRigOptions {
-  readonly target: string;
+  readonly target: CameraSubjectRef;
   readonly side?: "left" | "right";
   readonly distance?: number;
   readonly collision?: boolean | { readonly radius?: number };
@@ -28,6 +28,7 @@ export function createShoulderRig(o: ShoulderRigOptions): AuraCameraRig {
     fov: o.fov
   });
   let damper: CollisionDamper | undefined;
+  let damperProbe: AuraCameraProbe | undefined;
 
   return {
     id: "shoulder",
@@ -55,10 +56,11 @@ export function createShoulderRig(o: ShoulderRigOptions): AuraCameraRig {
       let eye = snap.position as AuraVec3;
       const look = snap.target as AuraVec3;
       if (o.collision) {
-        damper ??= createCollisionDamper(
-          ctx.probe,
-          typeof o.collision === "object" ? o.collision : {}
-        );
+        const probe = probeForSubject(ctx.probe, o.target);
+        if (!damper || damperProbe !== probe) {
+          damperProbe = probe;
+          damper = createCollisionDamper(probe, typeof o.collision === "object" ? o.collision : {});
+        }
         eye = damper.resolve(look, eye, ctx.dt);
       }
       return {

@@ -1,0 +1,31 @@
+{
+  "schema": "aura3d.external-codec-policy/1",
+  "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+  "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+  "rawOrigin": "https://raw.githubusercontent.com",
+  "limits": {
+    "maxDocumentBytes": 4194304,
+    "maxResourceBytes": 67108864,
+    "maxTotalBytes": 134217728,
+    "maxResources": 64,
+    "maxProofBytes": 16777216
+  },
+  "fixtures": [
+    {
+      "id": "meshopt-cube",
+      "codec": "meshoptimizer",
+      "documentPath": "Models/MeshoptCubeTest/glTF/MeshoptCubeTest.gltf",
+      "documentSha256": "8721150e3409425acf83aa21986e55880360ab084c17e96409c25fac53477f72",
+      "license": "CC0-1.0",
+      "assertionId": "tests/acceptance/gltf-external-decoder-fixtures.test.ts::external glTF decoder fixture acceptance loads the Khronos MeshoptCubeTest asset with the real meshoptimizer package"
+    },
+    {
+      "id": "duck-draco",
+      "codec": "draco3d",
+      "documentPath": "Models/Duck/glTF-Draco/Duck.gltf",
+      "documentSha256": null,
+      "license": "SCEA validation only",
+      "assertionId": "tests/acceptance/gltf-external-decoder-fixtures.test.ts::external glTF decoder fixture acceptance loads the Khronos Duck Draco asset with the real draco3d package"
+    }
+  ]
+}

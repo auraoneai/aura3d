@@ -26,7 +26,7 @@
 
 import type { Camera } from "@aura3d/scene";
 import type { ForwardLocalShadowOptions, ForwardShadowMapOptions } from "../ForwardPass";
-import type { CollectedLight } from "../LightCollector";
+import { isLightVisibleInHierarchy, type CollectedLight } from "../LightCollector";
 import type { RenderDevice } from "../RenderDevice";
 import { Sampler } from "../Sampler";
 import { createShadowFilterKernel } from "../ShadowMap";
@@ -141,9 +141,10 @@ export function prd02LocalShadowLights(source: SourceLike): readonly Prd02LocalS
   if (!source || typeof source !== "object" || Symbol.iterator in (source as object)) return [];
   const collected = (source as { collectedLights?: Iterable<CollectedLight> }).collectedLights;
   if (collected === undefined || !readPrd02KillSwitches(source).atlas) return [];
+  const root = sceneFromSource(source as RenderSource)?.root;
   const out: Prd02LocalShadowLight[] = [];
   for (const light of collected) {
-    if (!light.castsShadow || light.source?.visible === false) continue;
+    if (!light.castsShadow || !isLightVisibleInHierarchy(light.source, root)) continue;
     if (light.kind !== "spot" && light.kind !== "point") continue;
     out.push({
       light,
@@ -162,6 +163,7 @@ export function prd02LocalShadowLights(source: SourceLike): readonly Prd02LocalS
 
 /** Normalized direction of the first visible shadow-casting sun. */
 export function prd02SunDirection(source: SourceLike): readonly [number, number, number] | null {
+  const scene = source && typeof source === "object" ? sceneFromSource(source as RenderSource) : undefined;
   const collected = source && typeof source === "object" && !(Symbol.iterator in (source as object))
     ? (source as { collectedLights?: Iterable<CollectedLight> }).collectedLights
     : undefined;
@@ -169,14 +171,13 @@ export function prd02SunDirection(source: SourceLike): readonly [number, number,
   if (collected !== undefined) {
     for (const light of collected) {
       if (light.kind !== "directional" || !light.castsShadow) continue;
-      if (light.source && light.source.visible === false) continue;
+      if (!isLightVisibleInHierarchy(light.source, scene?.root)) continue;
       direction = light.direction;
       break;
     }
   } else {
-    const scene = sceneFromSource(source as RenderSource);
     const sun = scene?.collectLights().find(
-      (light) => light.visible && light.castsShadow && light.kind === "directional"
+      (light) => isLightVisibleInHierarchy(light, scene.root) && light.castsShadow && light.kind === "directional"
     ) as { getDirection?: () => readonly [number, number, number] } | undefined;
     direction = sun?.getDirection?.() ?? null;
   }
@@ -262,7 +263,7 @@ export function takePrd02BridgedShadowFrame(device: RenderDevice): Prd02BridgedS
  * declares the lookup chunk.
  */
 interface Prd02FrameObservation {
-  readonly camera: { readonly viewProjectionMatrix: Float32Array | readonly number[]; readonly near?: number; readonly far?: number } | null;
+  readonly camera: { readonly viewProjectionMatrix: Float32Array | readonly number[]; readonly near?: number; readonly far?: number; readonly position?: readonly [number, number, number] } | null;
   readonly lookupConsumer: boolean;
 }
 
@@ -291,6 +292,10 @@ export interface Prd02BridgeInput {
   /** Shadow casters (items with `castShadow !== false`). */
   readonly items: readonly RenderItem[];
   readonly camera: Camera | undefined;
+  /** Eye selected for the forward pass, including source overrides. */
+  readonly cameraPosition?: readonly [number, number, number];
+  /** The frame time used by forward and shadow vertex displacement. */
+  readonly timeSeconds?: number;
   /**
    * #1141: the renderer's resolved frame camera (VP + eye). Production-runtime
    * frames render through a structural CameraLike, so `camera` is undefined
@@ -340,7 +345,8 @@ export function shadowFrameCamera(
  * `ForwardShadowMapOptions` (T0-26 bridge). Returns undefined — and allocates
  * nothing — when shadows are off/killed, a lookup-chunk consumer exists (the
  * contributor owns that path), or there is no sun or local caster, no caster
- * item, camera or depth texture support.
+ * item, camera or compatible shadow-target support (depth textures on WebGL,
+ * encoded color targets on WebGPU).
  *
  * GU47 eint (E-B handoff EB-3): the explicitly shadowed spot / point lights of
  * the compiled source (`prd02LocalShadowLights`) get PRD-02 atlas tiles in the
@@ -359,7 +365,7 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   if (input.items.length === 0) return bail("no-caster-items");
   if (observed?.lookupConsumer === true || prd02LookupConsumerExists(input.items)) return bail("lookup-consumer");
   const capabilities = input.device.info.capabilities;
-  if (!capabilities?.includes("render-targets") || !capabilities.includes("depth-textures")) return bail("capabilities");
+  if (!capabilities?.includes("render-targets") || (input.device.kind !== "webgpu" && !capabilities.includes("depth-textures"))) return bail("capabilities");
   const concrete = input.camera as (Camera & { near?: number; far?: number }) | undefined;
   const camera = concrete?.viewProjectionMatrix ? concrete : observed?.camera ?? input.frameCamera;
   if (!camera?.viewProjectionMatrix) return bail("no-camera");
@@ -373,7 +379,9 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   const system = shadowSystemForDevice(input.device, config);
   const near = camera.near ?? 0.1;
   // Only the legacy per-item cascade selection is known to skip safely: a receiver on the lookup chunk picks per fragment.
-  const eye = input.frameCamera?.eye;
+  const cameraWorld = concrete?.transform.worldMatrix;
+  const eye = input.cameraPosition ?? input.frameCamera?.eye ?? observed?.camera?.position
+    ?? (cameraWorld ? [cameraWorld[12], cameraWorld[13], cameraWorld[14]] as const : undefined);
   const viewMatrix = input.frameCamera?.viewMatrix;
   const cascadeUse = (input.device as { skipUnusedShadowCascades?: boolean }).skipUnusedShadowCascades === true
     && (eye !== undefined || viewMatrix !== undefined) && input.receivers !== undefined && !prd02LookupConsumerExists(input.receivers)
@@ -383,6 +391,8 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   // camera's real clip range; `config.maxDistance` caps the cascade splits.
   const uniforms = system.update({
     camera: { viewProjectionMatrix: camera.viewProjectionMatrix, near, far: camera.far ?? 200 },
+    cameraPosition: eye,
+    timeSeconds: input.timeSeconds,
     sun: sun ? { direction: sun } : null,
     casters: input.items,
     // GU47 eint (EB-3): local (spot / point) tiles render here too; the forward pass samples them.
@@ -393,7 +403,7 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   });
   const localShadows = bridgeLocalShadows(uniforms, localLights, config);
   if (!sun) {
-    if (!localShadows.texture) return bail("no-local-tiles");
+    if (!localShadows.rawTexture && !localShadows.texture) return bail("no-local-tiles");
     bridgedFrames.set(input.device, { uniforms, config, system });
     return localOnlyShadowMap(localShadows);
   }
@@ -442,8 +452,9 @@ function spotTileFov(outerAngleRadians: number | undefined): number {
 
 /**
  * GU47 eint (EB-3): this frame's atlas tiles as `ForwardShadowMapOptions.localShadows`. A light gets a slot only when
- * all its tiles were kept, in face order (a spot 1, a point 6 consecutive); `slots` is empty (and `texture` unset)
- * when no light did, which still tells the forward pass the bridged map is the sun's.
+ * all its tiles were kept, in face order (a spot 1, a point 6 consecutive).
+ * Graph receivers use the raw binding; depth-texture backends also expose a
+ * comparison binding for the existing generated forward shaders.
  */
 function bridgeLocalShadows(
   uniforms: Prd02ShadowFrameUniforms,
@@ -472,7 +483,10 @@ function bridgeLocalShadows(
   }
   return {
     slots,
-    ...(atlas && slots.size > 0 ? { texture: new TextureBinding({ name: "u_localShadowAtlas", texture: atlas, sampler: LOCAL_COMPARE, required: true }) } : {}),
+    ...(atlas && slots.size > 0 ? {
+      rawTexture: new TextureBinding({ name: "u_localShadowAtlas", texture: atlas, sampler: NEAREST_CLAMP, required: true }),
+      ...(atlas.format === "depth24" ? { texture: new TextureBinding({ name: "u_localShadowAtlas", texture: atlas, sampler: LOCAL_COMPARE, required: true }) } : {})
+    } : {}),
     atlasSize,
     matrices: uniforms.localShadowMatrices,
     rects: uniforms.localShadowData,
@@ -491,7 +505,7 @@ function bridgeLocalShadows(
 function localOnlyShadowMap(localShadows: ForwardLocalShadowOptions): ForwardShadowMapOptions {
   const texel = 1 / localShadows.atlasSize;
   return {
-    texture: new TextureBinding({ name: "u_shadowMapTexture", texture: localShadows.texture!.texture, sampler: NEAREST_CLAMP, required: true }),
+    texture: new TextureBinding({ name: "u_shadowMapTexture", texture: (localShadows.rawTexture ?? localShadows.texture)!.texture, sampler: NEAREST_CLAMP, required: true }),
     lightMatrix: IDENTITY,
     strength: 0,
     bias: BRIDGE_AUTO_DEPTH_BIAS,

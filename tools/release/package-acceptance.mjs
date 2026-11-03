@@ -33,6 +33,38 @@ export function validatePassingReport(report, label) {
   for (const field of ['failures','violations','errors']) if (field in report) requireThat(Array.isArray(report[field]) && report[field].length === 0, `${label}: ${field} present`);
   if ('checks' in report) requireThat(Array.isArray(report.checks) && report.checks.length > 0 && new Set(report.checks.map(c=>c.id)).size === report.checks.length && report.checks.every(c=>c.pass === true), `${label}: failed, empty or duplicate checks`);
 }
+/** Bind the measured result itself, not just the command receipt, to the candidate. */
+export function validateBundleCandidate(report, planRef, plan) {
+  requireThat(report?.candidate?.status === 'bound' && JSON.stringify(report.candidate.releasePlan) === JSON.stringify(planRef) &&
+    report.candidate.version === plan.version && JSON.stringify(report.candidate.source) === JSON.stringify(plan.source),
+  'bundleBudgets: underlying report lacks exact candidate binding');
+}
+
+/** Validate the tree result and its explicitly selected immutable source report. */
+export function validateTreeCandidate(root, report, planRef, plan) {
+  requireThat(report?.schema === 'aura3d.installed-tree-shaking/2' &&
+    JSON.stringify(report.candidate?.releasePlan) === JSON.stringify(planRef) && report.candidate?.version === plan.version &&
+    JSON.stringify(report.candidate?.source) === JSON.stringify(plan.source), 'leanIsolation: underlying report lacks exact candidate binding');
+  const ref = report.sourceReport;
+  requireThat(ref && /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(ref.runId ?? '') &&
+    ref.path === `tests/reports/native-consumers/${ref.runId}/source.json` && /^[a-f0-9]{64}$/.test(ref.sha256 ?? ''),
+  'leanIsolation: invalid source report reference');
+  requireThat(digest(file(root, ref.path)) === ref.sha256, 'leanIsolation: source report changed');
+  const source = json(file(root, ref.path));
+  requireThat(source.schema === 'aura3d.native-consumers/1' && source.phase === 'source' && source.pass === true && source.runId === ref.runId &&
+    source.candidate?.path === planRef.path && source.candidate?.sha256 === planRef.sha256 && source.candidate?.version === plan.version &&
+    JSON.stringify(source.candidate?.packages) === JSON.stringify(plan.packages) && source.source?.revision === plan.source.commit &&
+    source.source?.stagedSourceSha256 === plan.source.fingerprint && source.source?.lockfileSha256 === plan.source.lockfileSha256,
+  'leanIsolation: source consumer report belongs to a different candidate');
+  return ref;
+}
+
+function commandFor(kind, sourceReportPath) {
+  if (kind !== 'leanIsolation') return COMMANDS[kind];
+  requireThat(typeof sourceReportPath === 'string' && /^tests\/reports\/native-consumers\/[A-Za-z0-9][A-Za-z0-9._-]{0,79}\/source\.json$/.test(sourceReportPath),
+    'leanIsolation: explicit source report required');
+  return [...COMMANDS[kind], '--source-report', sourceReportPath];
+}
 /** File descriptors retain output as it is written, including if the recorder is killed. */
 function executeRetained(root,command,args,logPath,execute,options={}) {
   const timeout=Number(process.env.AURA3D_COMMAND_TIMEOUT_MS ?? 2700000);
@@ -49,10 +81,11 @@ function executeRetained(root,command,args,logPath,execute,options={}) {
   return result;
 }
 /** Execute the canonical command, invalidate old report, and retain exit/log/report hashes. */
-export function recordCommand(root, { kind, planPath, reportPath, outputPath }, runtime = {}) {
+export function recordCommand(root, { kind, planPath, reportPath, outputPath, sourceReportPath }, runtime = {}) {
   const validatePlan=runtime.validatePlan ?? loadValidatedReleasePlan;
   const execute=runtime.execute ?? spawnSync;
   requireThat(COMMANDS[kind], 'unknown package command');
+  const invocation = commandFor(kind, sourceReportPath);
   requireThat(reportPath===REPORTS[kind], 'wrong canonical report path');
   validatePlan(root,planPath);
   const planSha256 = digest(file(root,planPath));
@@ -60,11 +93,15 @@ export function recordCommand(root, { kind, planPath, reportPath, outputPath }, 
   requireThat(new Set([reportFile,outputFile,file(root,planPath),file(root,`${outputPath}.log`)]).size===4, 'overlapping command outputs');
   rmSync(reportFile,{force:true});
   const startedAt = new Date().toISOString();
-  const [command,...args] = COMMANDS[kind];
+  const [command,...args] = invocation;
   mkdirSync(dirname(outputFile),{recursive:true});
   const logPath = `${outputPath}.log`;
-  writeFileSync(outputFile,JSON.stringify({schema:'muse301-package-command/v1',status:'running',kind,command:COMMANDS[kind],plan:{path:planPath,sha256:planSha256},startedAt,exitCode:null,log:{path:logPath}}));
-  const result = executeRetained(root,command,args,logPath,execute,{env:{...process.env,A3D_RELEASE_PLAN:file(root,planPath)}});
+  writeFileSync(outputFile,JSON.stringify({schema:'muse301-package-command/v1',status:'running',kind,command:invocation,plan:{path:planPath,sha256:planSha256},startedAt,exitCode:null,log:{path:logPath}}));
+  const commandEnv={...process.env,A3D_RELEASE_PLAN:file(root,planPath)};
+  // This legacy recorder has canonical output paths; source jobs instead use
+  // their own run-scoped directory without invoking this acceptance recorder.
+  delete commandEnv.NATIVE_REPORT_DIR;
+  const result = executeRetained(root,command,args,logPath,execute,{env:commandEnv});
   const endedAt = new Date().toISOString();
   const validationErrors=[];
   if(result.error)validationErrors.push(`Command execution: ${String(result.error)}`);
@@ -82,7 +119,7 @@ export function recordCommand(root, { kind, planPath, reportPath, outputPath }, 
     validatePassingReport(json(reportFile),kind);
   } catch(error) { validationErrors.push(`Command report validation: ${String(error)}`); }
   const commandExitCode=result.status ?? 1;
-  const receipt = {schema:'muse301-package-command/v1',kind,command:COMMANDS[kind],plan:{path:planPath,sha256:planSha256},startedAt,endedAt,commandExitCode,exitCode:commandExitCode===0 && validationErrors.length>0?1:commandExitCode,signal:result.signal,validationErrors,log:{path:logPath,sha256:digest(file(root,logPath))},report};
+  const receipt = {schema:'muse301-package-command/v1',kind,command:invocation,plan:{path:planPath,sha256:planSha256},startedAt,endedAt,commandExitCode,exitCode:commandExitCode===0 && validationErrors.length>0?1:commandExitCode,signal:result.signal,validationErrors,log:{path:logPath,sha256:digest(file(root,logPath))},report};
   writeFileSync(outputFile,`${JSON.stringify(receipt,null,2)}\n`);
   return receipt;
 }
@@ -125,7 +162,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
   const bind = path => { const full=file(root,path); const ref={path,sha256:digest(full)}; artifacts.set(path,ref); return ref; };
   const planRef=bind(planPath), plan=json(file(root,planPath));
   requireThat(plan.schema === 'aura3d-release-plan/1.0' && /^\d+\.\d+\.\d+$/.test(plan.version ?? ''), 'invalid pack plan version');
-  const version=plan.version, count=expectedPublicPackageCount(version), historical=version==='3.0.1';
+  const version=plan.version, count=expectedPublicPackageCount(version,plan.inventoryId), historical=version==='3.0.1';
   requireThat(plan.packageCount === count && plan.expectedPackageCount === count && plan.packages?.length === count, `invalid ${version} pack plan`);
   requireThat(plan.source?.commit && plan.source?.fingerprint && plan.source?.lockfileSha256 === digest(file(root,'pnpm-lock.yaml')), 'plan source/lock identity missing or stale');
   const manifests=['package.json',...readdirSync(resolve(root,'packages'),{withFileTypes:true}).filter(e=>e.isDirectory() && existsSync(resolve(root,'packages',e.name,'package.json'))).map(e=>`packages/${e.name}/package.json`)].map(path=>({path,data:json(file(root,path))})).filter(p=>p.data.private !== true);
@@ -149,7 +186,8 @@ export function producePackageAcceptance(root, {planPath, commands}) {
   const readCommand=kind=>{
     requireThat(typeof commands?.[kind] === 'string', `${kind}: command receipt missing`);
     bind(commands[kind]); const c=json(file(root,commands[kind]));
-    requireThat(c.schema==='muse301-package-command/v1' && c.kind===kind && JSON.stringify(c.command)===JSON.stringify(COMMANDS[kind]) && c.exitCode===0 && !c.signal && (!c.validationErrors || c.validationErrors.length===0), `${kind}: failed or wrong command`);
+    const sourceReportPath = kind === 'leanIsolation' && Array.isArray(c.command) ? c.command.at(-1) : undefined;
+    requireThat(c.schema==='muse301-package-command/v1' && c.kind===kind && JSON.stringify(c.command)===JSON.stringify(commandFor(kind,sourceReportPath)) && c.exitCode===0 && !c.signal && (!c.validationErrors || c.validationErrors.length===0), `${kind}: failed or wrong command`);
     requireThat(c.plan?.sha256===planRef.sha256 && c.plan.path===planPath, `${kind}: wrong exact pack plan`);
     const start=Date.parse(c.startedAt),end=Date.parse(c.endedAt);
     requireThat(Number.isFinite(start) && Number.isFinite(end) && end>=start && start>=Date.parse(plan.generatedAt) && end<=Date.now(), `${kind}: invalid command timing`);
@@ -160,7 +198,7 @@ export function producePackageAcceptance(root, {planPath, commands}) {
   };
   const frozenLock=readCommand('frozenLock');
   requireThat(frozenLock.schema==='muse301-frozen-lock/v1' && frozenLock.releasePlan?.sha256===planRef.sha256 && JSON.stringify(frozenLock.source)===JSON.stringify(plan.source), 'frozen lock/source validation missing');
-  const budgetContinuity=validateBudgetContinuity(root); bind(BUDGET_SOURCE);
+  const budgetContinuity=validateBudgetContinuity(root,version); bind(BUDGET_SOURCE);
   const inventory=validateVersionInventory(root,plan);
   for(const path of inventory.paths)bind(path);
   const source=readCommand('source'), installed=readCommand('installed');
@@ -188,13 +226,19 @@ export function producePackageAcceptance(root, {planPath, commands}) {
   for(const kind of CHECKS) {
     const report=readCommand(kind);
     if(kind==='bundleBudgets') {
+      validateBundleCandidate(report,planRef,plan);
       requireThat(Array.isArray(report.targets) && report.targets.length===budgetContinuity.currentTargets.length && new Set(report.targets.map(t=>t.id)).size===report.targets.length,'bundle report target inventory incomplete');
       for(const target of budgetContinuity.currentTargets) {
         const row=report.targets.find(r=>r.id===target.id);
-        requireThat(row && row.budget===target.budget && row.enforced===target.enforced && typeof row.label==='string' && [row.jsBytes,row.gzipBytes,row.budget].every(n=>Number.isFinite(n)&&n>=0) && typeof row.sizeLimitPassed==='boolean','bundle report target differs from measured contract');
+        requireThat(row && row.budget===target.budget && row.enforced===target.enforced && typeof row.label==='string' && [row.jsBytes,row.gzipBytes,row.budget].every(n=>Number.isFinite(n)&&n>=0) && typeof row.sizeLimitPassed==='boolean' && (!row.enforced || (row.gzipBytes<=row.budget && row.sizeLimitPassed)), 'bundle report target differs from measured contract');
+        requireThat(row.bundlePath===`tests/reports/bundle-size/${row.id}.js` && row.gzipPath===`${row.bundlePath}.gz` &&
+          /^[a-f0-9]{64}$/.test(row.bundleSha256 ?? '') && /^[a-f0-9]{64}$/.test(row.gzipSha256 ?? ''), 'bundle report artifact reference invalid');
+        const bundle=readFileSync(file(root,row.bundlePath)),gzip=readFileSync(file(root,row.gzipPath));
+        requireThat(sha(bundle)===row.bundleSha256 && sha(gzip)===row.gzipSha256 && bundle.byteLength===row.jsBytes && gzip.byteLength===row.gzipBytes, 'bundle report artifact mismatch');
+        bind(row.bundlePath); bind(row.gzipPath);
       }
       const path='BUNDLE_SIZES.md';
-      requireThat(readFileSync(file(root,path),'utf8')===renderBundleSizeMarkdown(report.targets),'Bundle Markdown differs from canonical measured report');
+      requireThat(readFileSync(file(root,path),'utf8')===renderBundleSizeMarkdown(report.targets,report.candidate),'Bundle Markdown differs from canonical measured report');
       bundleMarkdown=bind(path); bind('tools/bundle-size/markdown.mjs');
     }
     if(kind==='compatibility') requireThat(report.currentVersion===version && report.counts?.currentPackages===count && report.unresolvedEntrypoints?.length===0 && (!historical || (report.baseline==='v3.0.0' && report.counts?.baselinePackages===29 && report.counts?.removals===0 && report.counts?.declarationContractChanges===0)), 'compatibility scope incomplete');
@@ -215,7 +259,13 @@ export function producePackageAcceptance(root, {planPath, commands}) {
     }
     if(kind==='exports') requireThat(Array.isArray(report.packages) && packages.every(p=>report.packages.includes(p.name)), 'export inventory incomplete');
     if(kind==='imports') requireThat(report.entries?.length>0 && report.entries.every(e=>e.ok===true) && report.workspaceDependencies?.length>0 && report.workspaceDependencies.every(e=>e.ok===true), 'import checks incomplete');
-    if(['optionalPeers','smoke','leanIsolation'].includes(kind)) requireThat(report.releasePlan?.sha256===planRef.sha256, `${kind}: underlying report lacks exact plan binding`);
+    if(['optionalPeers','smoke'].includes(kind)) requireThat(report.releasePlan?.sha256===planRef.sha256, `${kind}: underlying report lacks exact plan binding`);
+    if(kind==='leanIsolation') {
+      const ref=validateTreeCandidate(root,report,planRef,plan);
+      const command=json(file(root,commands[kind])).command;
+      requireThat(command.at(-1)===ref.path, 'leanIsolation: command selected a different source report');
+      bind(ref.path);
+    }
     if(kind==='smoke') {
       requireThat(packages.some(p=>p.sha256===report.tarballSha256), 'smoke did not test release tarball');
       const exact=report.exactPackages;

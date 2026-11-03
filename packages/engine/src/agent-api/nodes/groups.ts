@@ -2,14 +2,11 @@
 
 import type { AuraTransformSpec, AuraPrimitiveOptions, AuraRootLodLevelSpec, AuraLodGroupSpec, AuraAnimationSpec, AuraCharacterRigSpec, AuraSceneNode, AuraPrimitiveNode, AuraGroupNode, AuraNodeInput } from "./types.js";
 import { AuraNodeBuilder, toSceneNode } from "./builder.js";
-import { animation } from "./animation.js";
-import { character } from "./character.js";
 import { flattenSceneNodes } from "../sceneMath.js";
-import { geometry } from "./geometry.js";
-import { material } from "./material.js";
 import { primitive } from "./primitives.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { tagLodLevel, type AuraLodRootSpec } from "../lodMarkers.js";
+import { assertValidPivot } from "../pivotGuard.js";
 
 function sceneNodeFromInput(node: AuraNodeInput): AuraSceneNode {
   return toSceneNode(node);
@@ -23,10 +20,13 @@ export function group(
     readonly character?: AuraCharacterRigSpec;
   } = {}
 ): AuraNodeBuilder<AuraGroupNode> {
+  assertValidPivot(options.pivot);
+  const pivot = options.pivot === undefined ? undefined : [...options.pivot] as [number, number, number];
   return new AuraNodeBuilder({
     kind: "group",
     name,
     position: options.position,
+    ...(pivot === undefined ? {} : { pivot }),
     rotation: options.rotation,
     scale: options.scale,
     lookAt: options.lookAt,
@@ -56,6 +56,8 @@ export function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | "geometr
  * the selected level's subtree each frame.
  */
 export function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode> {
+  assertValidPivot(options.pivot);
+  const pivot = options.pivot === undefined ? undefined : [...options.pivot] as [number, number, number];
   if (options.levels.length === 0) throw new Error("Aura3D LOD requires at least one level.");
   const root: AuraLodRootSpec = {
     thresholds: options.levels.map((level) => ({ maxDistance: level.maxDistance })),
@@ -71,6 +73,7 @@ export function lod(options: AuraLodGroupSpec): AuraNodeBuilder<AuraGroupNode> {
     kind: "group",
     name: options.name,
     position: options.position,
+    ...(pivot === undefined ? {} : { pivot }),
     rotation: options.rotation,
     scale: options.scale,
     lookAt: options.lookAt,

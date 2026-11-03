@@ -33,6 +33,9 @@ export function textureUploadFormat(gl: WebGL2RenderingContext, texture: Texture
     if (texture.format === "rgba16f") {
       return { internalFormat: gl.RGBA16F, format: gl.RGBA, type: gl.HALF_FLOAT };
     }
+    if (texture.format === "r32f") {
+      return { internalFormat: gl.R32F, format: gl.RED, type: gl.FLOAT };
+    }
     if (texture.format === "rgba32f") {
       return { internalFormat: gl.RGBA32F, format: gl.RGBA, type: gl.FLOAT };
     }
@@ -88,6 +91,10 @@ export function renderTargetSampleFilter(
 
 export function resolveCompressedTextureFormat(gl: WebGL2RenderingContext, format: TextureCompressedFormat): { readonly internalFormat: GLenum } | null {
     switch (format) {
+      case "bc1-rgb-unorm": {
+        const extension = gl.getExtension("WEBGL_compressed_texture_s3tc");
+        return extension ? { internalFormat: extension.COMPRESSED_RGB_S3TC_DXT1_EXT } : null;
+      }
       case "bc1-rgba-unorm": {
         const extension = gl.getExtension("WEBGL_compressed_texture_s3tc");
         return extension ? { internalFormat: extension.COMPRESSED_RGBA_S3TC_DXT1_EXT } : null;
@@ -136,6 +143,15 @@ export function resolveCompressedTextureFormatReal(
 ): number | null {
   const srgb = colorSpace === "srgb";
   switch (format) {
+    case "bc1-rgb-unorm": {
+      const s3tc = gl.getExtension("WEBGL_compressed_texture_s3tc");
+      if (!s3tc) return null;
+      if (srgb) {
+        const s3tcSrgb = gl.getExtension("WEBGL_compressed_texture_s3tc_srgb");
+        return s3tcSrgb ? s3tcSrgb.COMPRESSED_SRGB_S3TC_DXT1_EXT : null;
+      }
+      return s3tc.COMPRESSED_RGB_S3TC_DXT1_EXT;
+    }
     case "bc1-rgba-unorm": {
       const s3tc = gl.getExtension("WEBGL_compressed_texture_s3tc");
       if (!s3tc) return null;

@@ -12,9 +12,11 @@ export interface StereoViewport {
 }
 
 export interface StereoCameraRigOptions {
+  /** Perspective frame with a rigid view and camera-space forward along -Z. */
   readonly frame: Pick<PerspectiveCameraFrame, "cameraPosition" | "near" | "projectionMatrix" | "viewMatrix">;
   readonly viewport: StereoViewport;
   readonly eyeSeparation?: number;
+  /** Distance along the camera's forward axis where the eye projections meet. */
   readonly convergenceDistance?: number;
   readonly layout?: StereoLayout;
 }
@@ -66,7 +68,7 @@ function createEyeView(
   convergenceDistance: number
 ): StereoEyeView {
   const viewMatrix = multiplyMat4(translationMat4(-eyeOffset, 0, 0), options.frame.viewMatrix as Mat4);
-  const projectionMatrix = offsetProjectionForConvergence(options.frame.projectionMatrix as Mat4, eyeOffset, options.frame.near, convergenceDistance);
+  const projectionMatrix = offsetProjectionForConvergence(options.frame.projectionMatrix as Mat4, eyeOffset, convergenceDistance);
   return {
     eye,
     eyeOffset,
@@ -78,9 +80,12 @@ function createEyeView(
   };
 }
 
-function offsetProjectionForConvergence(projection: Mat4, eyeOffset: number, near: number, convergenceDistance: number): Mat4 {
+function offsetProjectionForConvergence(projection: Mat4, eyeOffset: number, convergenceDistance: number): Mat4 {
   const result = [...projection] as Mat4;
-  result[8] = (result[8] ?? 0) + eyeOffset * near / convergenceDistance;
+  // At camera-space z = -convergenceDistance, an eye translation changes x
+  // by -eyeOffset. Offset the projection center so that the resulting clip-x
+  // change cancels; retain any center offset already in the source lens.
+  result[8] = projection[8] - eyeOffset * projection[0] / convergenceDistance;
   return result;
 }
 

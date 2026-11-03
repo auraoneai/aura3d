@@ -14,6 +14,8 @@ import type { EnvironmentBackgroundOptions } from "../EnvironmentBackgroundPass"
 import type { StaticBatchOptions } from "../SceneOptimization";
 import type { MeshConsolidationOptions } from "../MeshConsolidation";
 import type { CollectedLight } from "../LightCollector";
+import type { ClippingGroupInput } from "../ClippingPlanes";
+import type { ScalarVolumeDrawRecord } from "../renderer/ScalarVolumeFrame";
 import type {
   RendererCameraPolicy,
   RendererCameraFrameOptions,
@@ -27,6 +29,8 @@ import type {
 export interface RenderSource {
   collectRenderItems?(): Iterable<RenderItem>;
   readonly renderItems?: Iterable<RenderItem>;
+  /** Frame-owned scalar-volume records; the first root route supports WebGL2. */
+  readonly scalarVolumes?: readonly ScalarVolumeDrawRecord[];
   readonly scene?: Scene;
   readonly renderTarget?: RenderTarget;
   /** threejs-parity L7/SC-01: ArrayCamera/StereoCamera views — the frame renders once per view into its viewport. */
@@ -58,7 +62,19 @@ export interface RenderSource {
   readonly geometryLibrary?: RenderResourceLookup<Geometry>;
   readonly materialLibrary?: RenderResourceLookup<RenderMaterial>;
   readonly morphTargetLibrary?: RenderResourceLookup<readonly MorphTargetDelta[]>;
+  /** Scene-wide world-space clipping, sampled once for each rendered view. */
+  readonly globalClipping?: ClippingGroupInput;
+  /** Per-item material group; overrides an item or base material group. */
+  readonly materialClippingFor?: (item: RenderItem) => ClippingGroupInput | undefined;
+  /** Optional lower device/scene budget; clipping never drops extra planes. */
+  readonly clippingPlaneLimit?: number;
   readonly frustumCulling?: boolean;
+  /**
+   * Opt into bounded weighted transparency where the renderer can preserve
+   * opaque depth and linear color. Unsupported groups use normal sorted
+   * rendering; omitting this field retains the existing rendering path.
+   */
+  readonly transparencyMode?: "sorted" | "weighted";
   readonly staticBatching?: boolean | StaticBatchOptions;
   /**
    * Merge distinct static geometries that share a material into single buffers.

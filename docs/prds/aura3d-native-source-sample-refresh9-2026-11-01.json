@@ -1,0 +1,3004 @@
+{
+  "schema": "aura3d-roadmap-source-sample/v1",
+  "sampledAt": "2026-11-01T12:19:48.867331+00:00",
+  "assessedAt": "2026-11-01T23:50:48.440063+00:00",
+  "sourceState": "Seven affected sampled rows were independently checked against the latest source-wave outcomes; their partial classifications remain. Other rows retain earlier assessments. Source is mutable, with worker/decoder and other integration reviews still in flight; this is not an immutable candidate or acceptance.",
+  "sampling": {
+    "unit": "required source outcome row",
+    "method": "deterministic sha256 ranking; up to six required source outcomes per WP; outcome IDs are the sampling units; no effort weights",
+    "seed": "source-audit-20261101:",
+    "sampled": 198,
+    "population": 1901,
+    "workPackages": 33,
+    "populationByWorkPackage": {
+      "WP-00": 8,
+      "WP-01": 55,
+      "WP-02": 37,
+      "WP-03": 55,
+      "WP-04": 87,
+      "WP-05": 81,
+      "WP-06": 78,
+      "WP-07": 134,
+      "WP-08": 116,
+      "WP-09": 45,
+      "WP-10": 31,
+      "WP-11": 103,
+      "WP-12": 93,
+      "WP-13": 115,
+      "WP-14": 30,
+      "WP-15": 24,
+      "WP-16": 28,
+      "WP-17": 33,
+      "WP-18": 21,
+      "WP-19": 108,
+      "WP-20": 97,
+      "WP-21": 74,
+      "WP-22": 26,
+      "WP-23": 19,
+      "WP-24": 65,
+      "WP-25": 42,
+      "WP-26": 55,
+      "WP-27": 37,
+      "WP-28": 15,
+      "WP-29": 21,
+      "WP-30": 86,
+      "WP-31": 43,
+      "WP-32": 39
+    }
+  },
+  "results": {
+    "counts": {
+      "implemented": 95,
+      "partial": 102,
+      "absent": 0,
+      "unknown": 1
+    },
+    "weightedPercent": {
+      "implemented": 46.6,
+      "partial": 53.2,
+      "absent": 0.0,
+      "unknown": 0.2
+    },
+    "changedClassifications": 0
+  },
+  "limitations": [
+    "Row-level source coverage is not a percentage of engineering effort, time remaining, or release readiness.",
+    "Partial rows receive no fractional implementation credit; their remaining work varies and they may contain substantial code.",
+    "The source is changing during assessment; some findings may already be under repair. Corrections to earlier classifications do not imply code loss.",
+    "A complete test harness may count as implemented source; this does not mean browser or device acceptance was executed.",
+    "No global CODE_COMPLETE_GO has been issued, and acceptance remains not run.",
+    "All rows were reassessed while the working tree was changing; observations can become stale and are not bound to one immutable candidate.",
+    "Seven partial-row explanations were updated in this refresh; other classifications retain earlier mutable-state assessments and may be stale."
+  ],
+  "outcomes": [
+    {
+      "id": "WP-00-R4a0241cefd3e",
+      "workPackage": "WP-00",
+      "description": "Create the ledger named in WP-00 with one row per concrete user-observable capability, format variant, option and backend. Include G01–G55 and every specific item named in WP-01–WP-32.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-ledger.json:1915",
+        "docs/prds/aura3d-native-capability-ledger.json:1929",
+        "docs/prds/aura3d-native-capability-ledger.json:1935"
+      ],
+      "reason": "The ledger contains 1,901 required outcomes, but only one row has a populated backend contract. Enumeration as distinct user-observable variants and backends remains incomplete."
+    },
+    {
+      "id": "WP-00-R64c0bb6d3076",
+      "workPackage": "WP-00",
+      "description": "Recheck every “not found” or “unverified” row against source, public exports, installed package and existing tests. Merge semantically identical rows; do not infer behavior from names.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-ledger.json:2020",
+        "docs/prds/aura3d-native-capability-ledger.json:2046",
+        "docs/prds/aura3d-native-source-sample-refresh3-2026-11-01.json:5"
+      ],
+      "reason": "The ledger records 1,885 of 1,901 outcomes as source-unverified; a 198-row sampled assessment exists. An exhaustive source/export/installed-package recheck and semantic merge are not established."
+    },
+    {
+      "id": "WP-00-R7c8d2694200a",
+      "workPackage": "WP-00",
+      "description": "For each public capability, track the exact package/subpath, backend, version, asset format, browser/OS/device class, known limitations and evidence level in the WP-00 ledger. A capability can be **source-tested**, **browser-tested on software**, **browser-tested on hardware**, **device-tested**, **unsupported**, or **unverified**; do not promote one level into another. Desktop browser-family coverage, mobile browsers, native GPU and physical spatial devices are separate cells. A missing physical device receipt is an explicit acceptance limitation, not a fabricated pass or a blocker to freezing completed source work.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-ledger.json:1915",
+        "docs/prds/aura3d-native-capability-ledger.json:1929",
+        "docs/prds/aura3d-native-capability-ledger.json:1935",
+        "docs/prds/aura3d-native-capability-ledger.json:1944"
+      ],
+      "reason": "The ledger records statuses and limitations, but only three rows have public entrypoints, only one has a backend contract and none has source evidence; complete package/format/device/evidence cells are absent."
+    },
+    {
+      "id": "WP-00-R7d20a073c50c",
+      "workPackage": "WP-00",
+      "description": "Record each capability, implementation ownership, status, public API, tests, limitations and evidence. WP-00 owns this file for the entire program; WP-18 supplies documentation updates through WP-00.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-ledger.json:1917",
+        "docs/prds/aura3d-native-capability-ledger.json:1929",
+        "docs/prds/aura3d-native-capability-ledger.json:1944"
+      ],
+      "reason": "The ledger has stable outcome IDs, owners, status and limitation fields, but nearly all public API/backend mappings and all source-evidence arrays remain empty."
+    },
+    {
+      "id": "WP-00-Ra81c5865d9a1",
+      "workPackage": "WP-00",
+      "description": "Complete the capability ledger in WP-00; enumerate every public capability and option, map it to an existing implementation or a named work package, and close every row with executable evidence.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-ledger.json:1915",
+        "docs/prds/aura3d-native-capability-ledger.json:1932",
+        "docs/prds/aura3d-native-capability-ledger.json:1944"
+      ],
+      "reason": "The ledger assigns owners to 1,901 required outcomes, but only three map public entrypoints, no source evidence arrays are populated and no outcome records source completion; the requested mapping/evidence is incomplete."
+    },
+    {
+      "id": "WP-00-Re7e119d2c3c4",
+      "workPackage": "WP-00",
+      "description": "Every supported option must produce its documented observable behavior or a stable actionable error. Compile-only success, a counter change, parsing metadata, an opaque canvas, or a mock device alone does not establish a visual or hardware claim.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/types.ts:1672",
+        "packages/engine/src/agent-api/nodes/camera.ts:77",
+        "packages/engine/src/agent-api/compiler/renderInput.ts:715",
+        "tools/arch-gates/rules/option-coverage.ts:26"
+      ],
+      "reason": "Many option paths are implemented, and previous camera-depth and tiled-aspect examples have been repaired. The typed and documented camera layers option is still dropped by camera.orbit while the production renderer consumes only the returned camera layers, giving no layer filter or actionable error. This is source reasoning; the tree is mutable."
+    },
+    {
+      "id": "WP-01-R18b5f7c99805",
+      "workPackage": "WP-01",
+      "description": "Preserve default-origin, disposed batch and typed attribute geometry query correctness. Exclusive execution owner: wp01_geometry. Source verification: tests/unit/engine/scene-queries.test.ts; tests/unit/agent-api/scene-query-mesh.test.ts.",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/sceneGraph.ts:190",
+        "packages/engine/src/agent-api/SceneQueries.ts:79",
+        "packages/engine/src/agent-api/SceneQueries.ts:138",
+        "packages/engine/src/agent-api/SceneQueries.ts:402",
+        "packages/engine/src/agent-api/SceneQueries.ts:590",
+        "packages/rendering/src/VertexBuffer.ts:94",
+        "tests/unit/agent-api/scene-query-mesh.test.ts:116",
+        "tests/unit/agent-api/scene-query-mesh.test.ts:198"
+      ],
+      "reason": "Default transform uses origin; disposed batches are filtered from new and retained queries; mesh query attributes use shader-visible typed decoding. Relevant source regressions are present; this audit did not run them."
+    },
+    {
+      "id": "WP-01-R4fd4a5a271f2",
+      "workPackage": "WP-01",
+      "description": "Make merge and deindex operations preserve or explicitly reject every attribute, morph, group, draw range and topology",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/geometry.ts:113",
+        "packages/engine/src/agent-api/RootGeometry.ts:313",
+        "packages/engine/src/agent-api/RootGeometry.ts:330",
+        "packages/engine/src/agent-api/RootGeometry.ts:704",
+        "packages/engine/src/agent-api/RootGeometry.ts:746",
+        "packages/engine/src/agent-api/RootGeometry.ts:838",
+        "packages/engine/src/agent-api/geometry/MorphChannels.ts:24",
+        "tests/unit/agent-api/native-geometry-unsupported-streams.test.ts:56",
+        "tests/unit/agent-api/native-geometry-unsupported-streams.test.ts:114"
+      ],
+      "reason": "Public merge and deindex now validate or preserve supported built-in/custom attributes, morph channels, topology, groups and representable draw ranges. Unknown top-level streams, including previously dropped tangents, and incompatible combinations are explicitly rejected. Source tests exist but were not executed."
+    },
+    {
+      "id": "WP-01-R5941dfb4d023",
+      "workPackage": "WP-01",
+      "description": "deformed meshes",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/SceneQueries.ts:569",
+        "packages/engine/src/agent-api/SceneQueries.ts:597",
+        "packages/engine/src/agent-api/SceneQueries.ts:614",
+        "packages/engine/src/agent-api/SceneQueries.ts:622",
+        "packages/engine/src/agent-api/nodes/types.ts:2848",
+        "tests/unit/agent-api/scene-query-mesh.test.ts:100"
+      ],
+      "reason": "Mesh picking evaluates live position morphs and skinning, including optional extra influences. It does not evaluate arbitrary custom vertex-shader deformation; the public material contract allows custom vertex code, so the broader deformed-mesh outcome is incomplete."
+    },
+    {
+      "id": "WP-01-R7c38119fbb05",
+      "workPackage": "WP-01",
+      "description": "transform",
+      "status": "partial",
+      "evidence": [
+        "packages/controls/src/index.ts:15",
+        "packages/controls/src/TransformControls.ts:80",
+        "packages/controls/src/TransformControls.ts:174",
+        "packages/controls/src/TransformControls.ts:285",
+        "packages/controls/src/TransformControls.ts:305",
+        "packages/controls/src/TransformControls.ts:354"
+      ],
+      "reason": "A public ray-driven transform control supplies handles, snapping, translation, rotation, scaling and drag methods. It owns no DOM listeners or pointer capture; callers must provide pointer/touch/keyboard routing, focus-loss and cancellation integration."
+    },
+    {
+      "id": "WP-01-R8a9f8a09cb0e",
+      "workPackage": "WP-01",
+      "description": "triangles",
+      "status": "partial",
+      "evidence": [
+        "aura.exports.json:9",
+        "packages/math/src/index.ts:32",
+        "packages/math/src/Triangle.ts:15",
+        "packages/math/src/Triangle.ts:46",
+        "packages/math/src/Triangle.ts:127",
+        "packages/math/src/Vector3.ts:80"
+      ],
+      "reason": "The public immutable triangle implements normals, barycentrics, box intersection and closest points. However, closestPointToPoint returns NaN for A=B=(0,0,0), C=(2,0,0), P=(1,1,0): its AB branch computes 0/0 instead of the closest point (1,0,0). The distinct internal mutable triangle is not the public root implementation. This defect is derived from source; no test was run."
+    },
+    {
+      "id": "WP-01-R995988e9878c",
+      "workPackage": "WP-01",
+      "description": "Add index, transform, merge, morph, attribute and bounds regressions.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/parity/geometry-dynamic.test.ts:92",
+        "tests/unit/parity/geometry-dynamic.test.ts:124",
+        "tests/unit/parity/geometry-dynamic.test.ts:136",
+        "tests/unit/parity/geometry-dynamic.test.ts:162",
+        "tests/unit/parity/geometry-dynamic.test.ts:184",
+        "tests/unit/parity/geometry-dynamic.test.ts:200"
+      ],
+      "reason": "The requested regression source covers index widths, bounds, affine transforms, morphs and custom attributes, deindex and merge, including invalid combinations. Execution was not performed or claimed."
+    },
+    {
+      "id": "WP-02-R024c339568ef",
+      "workPackage": "WP-02",
+      "description": "traversal",
+      "status": "implemented",
+      "evidence": [
+        "packages/scene/src/SceneNode.ts:125",
+        "packages/scene/src/Scene.ts:112",
+        "packages/scene/src/SceneQuery.ts:17",
+        "packages/engine/src/agent-api/app/runtimeNodes.ts:1892",
+        "tests/unit/scene/hierarchy-serialization.test.ts:22"
+      ],
+      "reason": "Public scene-node traversal visits self then recursively visits children; scene traversal and query consumers call it, and runtime handles also expose depth-first traversal. The source test is present; its execution is not implied."
+    },
+    {
+      "id": "WP-02-R040aaf0563ac",
+      "workPackage": "WP-02",
+      "description": "Assert view isolation, resize, clipping, camera and post behavior using independent fixtures.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/parity/viewport-views.test.ts:190",
+        "tests/unit/parity/viewport-views.test.ts:240",
+        "tests/unit/parity/viewport-views.test.ts:270",
+        "tests/unit/parity/viewport-views.test.ts:318",
+        "tests/unit/parity/viewport-views.test.ts:339",
+        "tests/unit/agent-api/native-orthographic-stereo.test.ts:118"
+      ],
+      "reason": "The source fixtures independently construct cameras, geometry and mock targets, and assert per-view isolation, clipping, culling, post settings, resize and disposal. This describes the fixture source; no test execution or browser/device acceptance is implied."
+    },
+    {
+      "id": "WP-02-R25b24e14f128",
+      "workPackage": "WP-02",
+      "description": "Define independent viewport/scissor, camera and post settings for array/stereo views.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/cameras.ts:29",
+        "packages/engine/src/agent-api/nodes/cameras.ts:204",
+        "packages/engine/src/agent-api/nodes/cameras.ts:220",
+        "packages/engine/src/agent-api/compiler/paritySurfaces.ts:349",
+        "packages/engine/src/agent-api/compiler/paritySurfaces.ts:374",
+        "packages/engine/src/agent-api/compiler/camera.ts:147",
+        "packages/rendering/src/Renderer.ts:1593"
+      ],
+      "reason": "Array and stereo entries define and lower separate viewport, scissor, camera and post overrides. The stereo route rejects mixed projection kinds and nonstandard depth; native WebGPU depth of field rejects multi-view rendering. In addition, array and stereo rebuild merged camera-spec objects per frame while follow smoothing keys its cache by spec identity, so per-view follow history does not persist. Source is mutable and no tests were run."
+    },
+    {
+      "id": "WP-02-R33fdb3a9b6d1",
+      "workPackage": "WP-02",
+      "description": "Perspective, orthographic, cube, array and stereo cameras; per-view projection, viewport/scissor, culling, postprocessing and camera controls.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/public/index.ts:15",
+        "packages/engine/src/agent-api/nodes/cameras.ts:181",
+        "packages/engine/src/agent-api/compiler/paritySurfaces.ts:349",
+        "packages/engine/src/agent-api/compiler/paritySurfaces.ts:384",
+        "packages/engine/src/agent-api/compiler/camera.ts:147",
+        "packages/engine/src/agent-api/nodes/camera.ts:41",
+        "packages/engine/src/contracts/camera.ts:103",
+        "packages/rendering/src/Renderer.ts:1593"
+      ],
+      "reason": "Perspective, orthographic, cube, array and stereo paths and per-view rendering exist, including orthographic stereo. The complete combination remains incomplete: mixed eye projections and nonstandard production depth are rejected, native WebGPU depth of field excludes multi-view, per-view follow smoothing loses its identity each preparation, and the public camera.rigs.fromSpec namespace uses a static stub. No current source-test or device pass is inferred."
+    },
+    {
+      "id": "WP-02-R62faac523c88",
+      "workPackage": "WP-02",
+      "description": "Add pivot-aware transforms through scene nodes, runtime handles and serialized projects; preserve old defaults.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/primitives.ts:72",
+        "packages/engine/src/agent-api/nodes/model.ts:85",
+        "packages/engine/src/agent-api/nodes/groups.ts:23",
+        "packages/engine/src/agent-api/nodes/effects.ts:93",
+        "packages/engine/src/agent-api/compiler/renderInput.ts:337",
+        "packages/engine/src/agent-api/nodes/physics-core.ts:26",
+        "packages/engine/src/production-runtime/effects/WeatherTransform.ts:33",
+        "tests/unit/agent-api/native-weather-transform.test.ts"
+      ],
+      "reason": "Primitive, model, group and weather builders retain pivots and source-level runtime, scene and serialization support exists. Weather admits rigid transforms while rejecting non-rigid, look-at and attachment combinations; several other look-at, hierarchy, LOD, skinning and physics combinations still reject, so the broader outcome remains partial."
+    },
+    {
+      "id": "WP-02-Rd6b9812856c4",
+      "workPackage": "WP-02",
+      "description": "Pivot-aware atomic preserve-world reparent, transforms and hierarchy updates. Exclusive execution owner: wp02_scene. Source verification: tests/unit/scene/pivot-transform.test.ts.",
+      "status": "implemented",
+      "evidence": [
+        "packages/scene/src/SceneNode.ts:107",
+        "packages/scene/src/SceneNode.ts:230",
+        "packages/scene/src/TransformNode.ts:170",
+        "tests/unit/scene/native-reparent-listener-atomicity.test.ts:1",
+        "tests/unit/scene/native-singular-transform.test.ts:1",
+        "tests/unit/scene/pivot-transform.test.ts:1"
+      ],
+      "reason": "Preserve-world reparent now stages ancestor and local transforms before publishing, supports finite singular children under invertible destinations, commits hierarchy and invalidation before public listeners, and reports listener failures as committed. The focused scene, hierarchy and serialization source suites passed 62/62. This row covers single-node preserve-world behavior; ordinary non-preserve and batch operations do not have the same documented atomic guarantee."
+    },
+    {
+      "id": "WP-03-R1d24ac2a0356",
+      "workPackage": "WP-03",
+      "description": "Implement actual root-app initialization, render submission, textures, materials, shadows and presentation using the native device. Implement and test deferred, meshlet and visibility-buffer drawing paths with explicit capability fallback",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/compiler/renderer.ts:187",
+        "packages/engine/src/agent-api/compiler/renderer.ts:447",
+        "packages/rendering/src/renderer/RendererFactory.ts:19",
+        "packages/rendering/src/Renderer.ts:1917",
+        "packages/rendering/src/Renderer.ts:1955",
+        "packages/rendering/src/Renderer.ts:2006",
+        "packages/rendering/src/WebGPUDevice.ts:5264",
+        "tests/unit/rendering/native-drawing-pipelines.test.ts:93"
+      ],
+      "reason": "The root app selects a native device and the renderer loads and submits deferred, meshlet and visibility pipelines with explicit forward fallback. Advanced routes still require fallback for major combinations including multiple views, shadows and environment; some transmission or shadow variants require separately supported generated shader contracts. Test source exists; no test execution or rendered acceptance is asserted."
+    },
+    {
+      "id": "WP-03-R540e7239d538",
+      "workPackage": "WP-03",
+      "description": "memory budget behavior. Unsupported features must produce precise diagnostics",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/RenderBackend.ts:19",
+        "packages/rendering/src/textures/TextureBudget.ts:325",
+        "packages/rendering/src/WebGPUDevice.ts:2021",
+        "packages/rendering/src/VolumeRenderer.ts:534",
+        "packages/rendering/src/webgpu/NativePointQuads.ts:228",
+        "packages/rendering/src/WebGPUDevice.ts:1757"
+      ],
+      "reason": "The device accounts texture, target and volume allocations in a texture budget and the point arena has a separate bounded CPU/GPU budget with an explicit error. General native buffer allocation is outside that ledger, so an encompassing GPU resource budget is not established."
+    },
+    {
+      "id": "WP-03-R76a8b8132f29",
+      "workPackage": "WP-03",
+      "description": "Implement capability negotiation, queue/resource ownership, loss/recovery, full draw-state mapping, multiple vertex streams, integer formats, explicit depth convention, shader-buffer layout and color/texture contracts. Consume the WP-31 state mapper rather than silently reducing state to a blend boolean.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/RenderBackend.ts:62",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:218",
+        "packages/rendering/src/WebGPUDevice.ts:1696",
+        "packages/rendering/src/WebGPUDevice.ts:1963",
+        "packages/rendering/src/WebGPUDevice.ts:5016",
+        "packages/rendering/src/WebGPUDevice.ts:5120",
+        "packages/rendering/src/WebGPUDevice.ts:1482",
+        "packages/rendering/src/WebGPUDevice.ts:1025"
+      ],
+      "reason": "Device creation, native draw-state resolution, multiple streams and binding-layout validation are present. Nonstandard depth and layered, depth-only or depth-compare targets still reject explicitly; recovery creates a replacement device and requires callers to rebuild resources rather than restoring the current app/device. The full stated backend contract remains incomplete."
+    },
+    {
+      "id": "WP-03-R7add7fbc7696",
+      "workPackage": "WP-03",
+      "description": "Replace unconditional rejection with a functional explicit experimental opt-in once source contracts pass; promote supported/default-selection policy only after applicable rendered acceptance.",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/app/rendererOptions.ts:86",
+        "packages/engine/src/agent-api/app/rendererOptions.ts:114",
+        "packages/engine/src/agent-api/compiler/renderer.ts:187",
+        "tests/unit/rendering/native-backend-selection.test.ts:1136"
+      ],
+      "reason": "The explicit experimental profile or backend option selects an initialized WebGPU renderer with required native-render and canvas capabilities; WebGL2 remains the default. Test source covers selection and fallback, but this audit does not claim it ran or that native rendering passed acceptance."
+    },
+    {
+      "id": "WP-03-Rd1c6f7151d1b",
+      "workPackage": "WP-03",
+      "description": "explicit fallback",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/app/rendererOptions.ts:114",
+        "packages/engine/src/agent-api/compiler/renderer.ts:219",
+        "packages/engine/src/agent-api/compiler/renderer.ts:226",
+        "packages/engine/src/agent-api/compiler/renderer.ts:244",
+        "tests/unit/rendering/native-backend-selection.test.ts:1136"
+      ],
+      "reason": "Initialization fallback is explicit: it propagates native failure when disallowed, attempts WebGL2 when allowed and records the selected backend, bounded failure reason and missing features. This is source coverage; no fresh test execution or runtime recovery claim."
+    },
+    {
+      "id": "WP-03-Rd7ee860fa0c7",
+      "workPackage": "WP-03",
+      "description": "WebGL2",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/RenderBackend.ts:29",
+        "packages/engine/src/agent-api/compiler/renderer.ts:219",
+        "packages/rendering/src/webgl2/ContextLifecycle.ts:24",
+        "packages/rendering/src/renderer/DeviceLifecycle.ts:54",
+        "packages/engine/src/agent-api/compiler/renderer.ts:1281",
+        "packages/rendering/src/Renderer.ts:2373"
+      ],
+      "reason": "The WebGL2 source path is selected by default and wires device creation, resize, per-view rendering, context-loss listeners and restore-time rebuild hooks. This is scoped to the WebGL2 feature row, not browser verification or broader WebGPU recovery."
+    },
+    {
+      "id": "WP-04-R3978010d4786",
+      "workPackage": "WP-04",
+      "description": "Implement voxel collection, volume updates and cone-traced indirect lighting with bounded quality tiers.",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/lighting/VoxelIndirectLighting.ts:104",
+        "packages/rendering/src/lighting/VoxelIndirectLighting.ts:234",
+        "packages/rendering/src/lighting/VoxelIndirectLighting.ts:254",
+        "packages/rendering/src/lighting/VoxelIndirectLighting.ts:270",
+        "packages/rendering/src/lighting/VoxelIndirectLighting.ts:371",
+        "packages/engine/src/agent-api/compiler/advancedLightingBridge.ts:112",
+        "packages/rendering/src/lighting/index.ts:4"
+      ],
+      "reason": "The public lighting subpath implements bounded voxel updates, triangle collection, filtered cone tracing and quality tiers; app frame bindings pass its volume to rendering. Construction deliberately uses a reported CPU fallback, and triangles require caller-provided radiance."
+    },
+    {
+      "id": "WP-04-R413dec6f5909",
+      "workPackage": "WP-04",
+      "description": "Parse admitted symmetric and two-dimensional photometric profiles with units, angular interpolation, linear lamp/multiplier factors and strict bounds.",
+      "status": "implemented",
+      "evidence": [
+        "packages/assets/src/IESLoader.ts:76",
+        "packages/assets/src/IESLoader.ts:122",
+        "packages/assets/src/IESLoader.ts:145",
+        "packages/assets/src/IESLoader.ts:166",
+        "packages/assets/src/IESLoader.ts:202",
+        "packages/assets/src/index.ts:338"
+      ],
+      "reason": "The exported loader parses bounded Type-C rotational and two-dimensional distributions, units, linear multipliers and angular interpolation. Other coordinate systems and external tilt files are explicitly rejected; no test execution is asserted."
+    },
+    {
+      "id": "WP-04-R4abffe4882c6",
+      "workPackage": "WP-04",
+      "description": "shadow maps/filters",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/ShadowMap.ts:3",
+        "packages/rendering/src/ShadowMap.ts:48",
+        "packages/rendering/src/ShadowMap.ts:201",
+        "packages/rendering/src/renderer/ShadowOrchestration.ts:285",
+        "packages/rendering/src/Renderer.ts:2791"
+      ],
+      "reason": "Depth shadow maps and hard or grid/Poisson PCF kernels are implemented and the renderer invokes shadow orchestration. This narrow row does not claim every filter, material or backend combination."
+    },
+    {
+      "id": "WP-04-R678d937bd5ac",
+      "workPackage": "WP-04",
+      "description": "Replace attributed shader code with independently authored, standards-based behavior and preserve supported material inputs.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/shaders/physical/lobe_calls.glsl.ts:1",
+        "packages/rendering/src/shaders/physical/index.ts:33",
+        "packages/rendering/src/shaders/physical/index.ts:61",
+        "packages/rendering/src/lanes/prd04.ts:11",
+        "packages/rendering/src/webgpu/GeneratedPbrProgram.ts:322",
+        "packages/rendering/src/webgpu/GeneratedPbrProgram.ts:1013"
+      ],
+      "reason": "Some physical shader replacements and independent WGSL candidates exist, but an attributed physical call chunk remains registered in the rendering lane. The independent preview also explicitly rejects several lobe combinations; complete replacement and preservation of supported inputs are not established."
+    },
+    {
+      "id": "WP-04-R8c3cbc4341c9",
+      "workPackage": "WP-04",
+      "description": "Ambient, hemisphere, directional, point, spot, rectangular-area, photometric and projected lights; physically meaningful units, shadow maps/filters, cascades, environment lighting, reflection probes, light-probe grids, incremental light baking and voxel-based indirect lighting where supported.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/renderer/ShadowOrchestration.ts:285",
+        "packages/rendering/src/lighting/VoxelIndirectLighting.ts:195",
+        "packages/engine/src/agent-api/compiler/renderer.ts:507",
+        "packages/rendering/src/ForwardPass.ts:764",
+        "packages/rendering/src/ForwardPass.ts:780",
+        "packages/rendering/src/ForwardPass.ts:785"
+      ],
+      "reason": "Multiple requested lighting, shadow, probe, baking and voxel paths exist. Projected spot imagery reaches an admitted generated WebGL2 path, but current draw routing falls back for WebGPU, clustered lights and custom/graph materials; the broad capability row remains incomplete."
+    },
+    {
+      "id": "WP-04-Rb3fdb3903651",
+      "workPackage": "WP-04",
+      "description": "Cover lobe energy, min/max, photometry, projected texture orientation and invalid inputs.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/rendering/native-independent-sheen-fast.test.ts:73",
+        "tests/unit/rendering/native-independent-sheen-fast.test.ts:101",
+        "packages/rendering/src/webgpu/GeneratedPbrProgram.ts:1013",
+        "tests/unit/rendering/native-physical-lighting.test.ts:39",
+        "tests/unit/rendering/native-physical-lighting.test.ts:71",
+        "tests/unit/rendering/native-physical-lighting.test.ts:144",
+        "tests/unit/rendering/native-projected-spot-shader.test.ts:28",
+        "tests/unit/rendering/native-projected-spot-shader.test.ts:68",
+        "tests/unit/rendering/native-projected-spot-shader.test.ts:112"
+      ],
+      "reason": "Source tests cover lobe energy and bounds in the independent preview, photometric interpolation and invalid input, material endpoints, and projected texture orientation. Shader-expression checks execute CPU approximations and do not establish GPU pixel behavior; this reassessment did not run them."
+    },
+    {
+      "id": "WP-05-R09762b799c98",
+      "workPackage": "WP-05",
+      "description": "Test sorting, stability policy, limits and resource cleanup.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/rendering/native-gpu-sort.test.ts:157",
+        "tests/unit/rendering/native-gpu-sort.test.ts:231",
+        "tests/unit/rendering/native-gpu-sort.test.ts:246",
+        "tests/unit/rendering/native-portable-resource-limits.test.ts:88",
+        "tests/unit/rendering/native-portable-storage-layout.test.ts:77",
+        "docs/rendering/native-graph-contact.md:3"
+      ],
+      "reason": "The specified source tests assert stable ascending/descending sort, limit rejection and scratch/caller resource retirement; separate suites cover portable texture/sampler limits and storage layouts. The graph-contact note describes current restrictions. These are source artifacts, not a current test or hardware pass."
+    },
+    {
+      "id": "WP-05-R367f2e64ab97",
+      "workPackage": "WP-05",
+      "description": "resolving",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/WebGL2Device.ts",
+        "packages/rendering/src/WebGPUDevice.ts",
+        "/tmp/aura3d-webgl-multisample-mrt-upload-inventory.log"
+      ],
+      "reason": "Both backends now support a bounded 2D multisampled multiple-color resolve with source/mock coverage. WebGL still rejects multisampled layered, depth-only and comparison targets; WebGPU rejects sampleable multisampled depth resolve and layered or mipmapped MRT. Broader resolving support remains partial."
+    },
+    {
+      "id": "WP-05-R426a51030386",
+      "workPackage": "WP-05",
+      "description": "Node graphs have typed values, explicit inputs/outputs, compile diagnostics, stable serialization and per-backend feature negotiation. A graph must support material color, normal, roughness, metalness, emissive, alpha and vertex position; additional render, compute and storage operations are owned by WP-05.",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/public/shader-graph-runtime.ts:4",
+        "packages/rendering/src/program/ShaderGraphCompiler.ts:6",
+        "packages/rendering/src/program/ShaderGraphCompiler.ts:135",
+        "packages/engine/src/agent-api/nodes/shaderGraph.ts:77",
+        "packages/engine/src/agent-api/nodes/material.ts:153",
+        "tests/unit/agent-api/native-shader-graph-public-entry.test.ts:19"
+      ],
+      "reason": "The public opt-in entry now exposes the typed graph facade and canonical persistence. The compiler provides the named material outputs, validation and target-specific diagnostics. The combined graph source suite passed 129 tests; two optional WGSL-validator checks were skipped. This classification is for this outcome only and does not assert complete graph integration or GPU acceptance."
+    },
+    {
+      "id": "WP-05-R61f802bce67b",
+      "workPackage": "WP-05",
+      "description": "ownership",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/Texture.ts:103",
+        "packages/rendering/src/WebGL2Device.ts:1584",
+        "packages/rendering/src/webgl2/TextureUpload.ts:495",
+        "packages/rendering/src/WebGPUDevice.ts:2109",
+        "packages/rendering/src/WebGPUDevice.ts:2196",
+        "packages/rendering/src/WebGPUDevice.ts:6351"
+      ],
+      "reason": "For device-created target attachments the shared ownership registry claims each native target texture, the device rejects foreign or stale attachment use, and device code retires allocations. This row concerns ownership of supported target types; unsupported target variants are not counted as implemented."
+    },
+    {
+      "id": "WP-05-Rc7647bd3f394",
+      "workPackage": "WP-05",
+      "description": "format selection",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/KTX2TargetSelection.ts:33",
+        "packages/rendering/src/WebGPUDevice.ts:6162",
+        "packages/rendering/src/WebGPUDevice.ts:6182",
+        "packages/rendering/src/WebGPUDevice.ts:6267",
+        "packages/rendering/src/WebGPUDevice.ts:6637",
+        "tests/unit/rendering/native-webgpu-array-fallback.test.ts:126"
+      ],
+      "reason": "Capability-aware compressed format selection and 2D/2D-array decoded fallback upload are implemented, including mip and opacity validation. Compressed cube/3D fallback is rejected and in-place updates of an existing decoded fallback require replacement data, leaving format-selection support incomplete across the named texture types."
+    },
+    {
+      "id": "WP-05-Rc9846c8a75af",
+      "workPackage": "WP-05",
+      "description": "Define Aura-owned graph types, construction, serialization, diagnostics, and migration from the existing node graph.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/public/shader-graph-runtime.ts:4",
+        "packages/engine/src/agent-api/nodes/shaderGraph.ts:128",
+        "packages/engine/src/agent-api/nodes/shaderGraph.ts:189",
+        "packages/engine/src/agent-api/nodes/material.ts:153"
+      ],
+      "reason": "The facade, persistence and migration are now publicly exposed. Migration remains limited to a subset and rejects unsupported operations, imperative forms and alpha-test migration, so this broader migration outcome remains partial."
+    },
+    {
+      "id": "WP-06-R085ac11a6f58",
+      "workPackage": "WP-06",
+      "description": "Add typed history, mask, transition, pixelation, halftone, glitch, dot-screen, lens-dirt and afterimage options.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/effects.post.ts:82",
+        "packages/engine/src/agent-api/nodes/effects.post.ts:113",
+        "packages/rendering/src/post/PostGraph.ts:316"
+      ],
+      "reason": "Typed mask, transition, pixelation, halftone, glitch, dot-screen, lens-dirt and afterimage options and builders exist; a separate public typed history-control option is not exposed by the specified builder."
+    },
+    {
+      "id": "WP-06-R1ea3837d0a6a",
+      "workPackage": "WP-06",
+      "description": "Complete depth/normal/motion inputs and temporal handling; add missing effect families and composable ordering, resize and disposal.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/post/v2Stages.ts:758",
+        "packages/rendering/src/post/v2Stages.ts:785",
+        "packages/rendering/src/post/v2Stages.ts:1026",
+        "packages/rendering/src/WebGPUDevice.ts:3938"
+      ],
+      "reason": "Depth and motion paths and composable effects are present; WebGL custom normal input is explicitly unavailable, custom reactive input is caller-supplied, and native WebGPU rejects temporal-v2 reconstruction and many post passes."
+    },
+    {
+      "id": "WP-06-R4a251ede3b16",
+      "workPackage": "WP-06",
+      "description": "Replace module-global history with app/device/view/frame-owned state; advance previous transforms once per authored frame and use stable runtime object identities instead of labels.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/forward/Velocity.ts:60",
+        "packages/engine/src/agent-api/compiler/renderInput.ts:627",
+        "packages/rendering/src/forward/Velocity.ts:231",
+        "packages/rendering/src/contracts/velocity.ts:49"
+      ],
+      "reason": "Renderer-owned histories, frame guards and stable draw identities exist, but the legacy velocity slot and unscoped compatibility reset still retain a shared module-level history."
+    },
+    {
+      "id": "WP-06-R54578817f925",
+      "workPackage": "WP-06",
+      "description": "Source-test independently authored effects, alpha and depth behavior. Exclusive execution owner: wp06_post. Source verification: Direct Vitest for this file.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/rendering/native-post-shaders.test.ts:25",
+        "tests/unit/rendering/native-post-shaders.test.ts:134",
+        "tests/unit/rendering/native-post-shaders.test.ts:235",
+        "tests/unit/rendering/native-independent-dof-reference.test.ts:94"
+      ],
+      "reason": "The source fixtures include independent scalar alpha/depth references, depth calculations and optical helper checks; much effect coverage inspects shader strings rather than exercising the numerical behavior of the shader effects. This reassessment did not run the tests."
+    },
+    {
+      "id": "WP-06-R62ce806b9ddb",
+      "workPackage": "WP-06",
+      "description": "Provide independently authored native-GPU counterparts.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/post/shaders/smaa.wgsl.ts:7",
+        "packages/rendering/src/post/shaders/smaa.wgsl.ts:37",
+        "packages/rendering/src/WebGPUDevice.ts:3938"
+      ],
+      "reason": "Independently authored native-GPU morphological-AA stages exist, but no rendering-source consumer of those shader stages was found, and the native device post-pass allowlist excludes that mode."
+    },
+    {
+      "id": "WP-06-R7014d71b4809",
+      "workPackage": "WP-06",
+      "description": "Own current/previous color and depth, reactive masks and resize/device generations; retire detached history resources.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/TemporalHistory.ts:28",
+        "packages/rendering/src/TemporalHistory.ts:74",
+        "packages/rendering/src/TemporalHistory.ts:453",
+        "packages/rendering/src/TemporalHistory.ts:759"
+      ],
+      "reason": "Per-view color and depth histories are owned, allocated and retired across changes; reactive inputs are explicitly borrowed from the caller rather than owned or produced by the history system."
+    },
+    {
+      "id": "WP-07-R3033f3bf2f6e",
+      "workPackage": "WP-07",
+      "description": "Production decoder/worker URLs match development URLs under root/nested deployment bases",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/vite/auraDecoders.ts:69",
+        "packages/assets/src/vite/auraDecoders.ts:195",
+        "packages/engine/src/agent-api/AssetDecoders.ts:46",
+        "docs/assets/decoder-deployment.md:25"
+      ],
+      "reason": "An opt-in virtual module now exposes the Vite-resolved path and source deployment tests passed 31/31. Runtime defaults still use the root decoder directory unless the application explicitly supplies the bridge, and the separate diagnostic also defaults to root probes."
+    },
+    {
+      "id": "WP-07-R3f34b4c3cd4a",
+      "workPackage": "WP-07",
+      "description": "Resolve dependency identity and relative paths correctly; prevent cycles before awaiting; scope cache, requests and subscriber ownership.",
+      "status": "implemented",
+      "evidence": [
+        "packages/assets/src/LoadContext.ts:120",
+        "packages/assets/src/AssetManager.ts:141",
+        "packages/assets/src/AssetManager.ts:162",
+        "packages/assets/src/AssetManager.ts:333",
+        "packages/assets/src/AssetLoader.ts:124"
+      ],
+      "reason": "Dependency paths and policy identities are resolved, ancestor and cross-flight cycles are checked before awaiting, acquisition identities are partitioned, and subscribers can cancel independently. Credentialed requests lacking an explicit authentication generation do not share or retain an identity."
+    },
+    {
+      "id": "WP-07-R534d022b4566",
+      "workPackage": "WP-07",
+      "description": "Use one validated deployment base and decoder output path across development, build and static preview.",
+      "status": "implemented",
+      "evidence": [
+        "packages/assets/src/vite/auraDecoders.ts:48",
+        "packages/assets/src/vite/auraDecoders.ts:68",
+        "packages/assets/src/vite/auraDecoders.ts:185",
+        "tests/unit/assets/native-decoder-deployment.test.ts:171"
+      ],
+      "reason": "The Vite deployment resolver validates and uses one decoder URL and output path for development, build and static preview, with a nested-base source fixture. The separate runtime base still needs configuration for nested defaults."
+    },
+    {
+      "id": "WP-07-Rdbdb3c3fc0c8",
+      "workPackage": "WP-07",
+      "description": "Make resident data and counters agree, scope budgets per device, bound jobs and allow retries after transient failures. WP-07 and WP-25.",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/GLTFRenderResources.ts",
+        "packages/rendering/src/textures/TextureBudget.ts",
+        "/tmp/aura3d-gltf-device-budget-combined-final.log"
+      ],
+      "reason": "Device-owned residency, accounting, retries and bounded jobs exist. glTF decode admission can now be explicitly partitioned by device without conflating GPU residency, but the engine actor does not automatically supply that option; retained mip sources also remain limited on some paths."
+    },
+    {
+      "id": "WP-07-Rf4ce3304a083",
+      "workPackage": "WP-07",
+      "description": "Rendered option behavior is checked end to end; unsupported values return stable diagnostics instead of silent approximations.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/engine/native-model-options.test.ts:110",
+        "tests/unit/engine/native-model-options.test.ts:201",
+        "tests/browser/native-lines-models.spec.ts:128"
+      ],
+      "reason": "Model-option source fixtures cover validation and bridge behavior, and a rendered-test fixture covers a material variant and custom shader; end-to-end source coverage for all the named options is not established. No browser result is inferred."
+    },
+    {
+      "id": "WP-07-Rfe5ef3d844f3",
+      "workPackage": "WP-07",
+      "description": "Partition in-flight and persistent caches by effective request context; hash or otherwise protect sensitive material, and ensure one caller's abort cannot cancel another.",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/AssetLoader.ts:129",
+        "packages/assets/src/AssetManager.ts:333",
+        "packages/audio/src/AudioFileManager.ts:432",
+        "packages/audio/src/synth/SampleSlices.ts:112",
+        "packages/audio/src/synth/SampleSlices.ts:197",
+        "docs/api/audio-synth.md:91"
+      ],
+      "reason": "Asset, glTF and audio-manager paths scope identities and subscriptions; SampleSlices now provides explicit generation invalidation, but a single instance still reuses name-cached downloads and decoded buffers when no authentication generation was provided, and isolation across authorization changes depends on its owner explicitly signalling each change."
+    },
+    {
+      "id": "WP-08-R1d78b9c5f9cc",
+      "workPackage": "WP-08",
+      "description": "Import and use PVR through its admitted typed public path with documented supported variants, malformed-input limits, provenance and resource disposal.",
+      "status": "partial",
+      "evidence": [
+        "packages/aura3d-cli/src/index.ts:403",
+        "packages/assets/src/loaders/ImageFormatLoaders.ts:248",
+        "packages/engine/src/agent-api/nodes/loadNativeTexture.ts:81",
+        "packages/engine/src/agent-api/compiler/textures.ts:443",
+        "packages/engine/src/agent-api/nodes/texture.ts:729",
+        "docs/api/native-formats.md:77"
+      ],
+      "reason": "Bounded PVR v3 admission, inspected digest, direct material and caller-owned load/disposal paths are present. The admission path may warn and accept parsed variants that the rendering bridge rejects, and the documentation names RGBA8 but only describes other supported CPU-decoded block formats as a limited set, leaving the exact supported-variant boundary underdocumented. Orientation metadata and premultiplied inputs are explicitly rejected."
+    },
+    {
+      "id": "WP-08-R274a7dcc86d5",
+      "workPackage": "WP-08",
+      "description": "USD/USDZ geometry, materials, transforms, cameras, lights and animation where representable.",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/loaders/USDLoader.ts:55",
+        "packages/assets/src/loaders/USDLoader.ts:230",
+        "packages/assets/src/loaders/USDLoader.ts:310",
+        "packages/assets/src/loaders/USDLoader.ts:429",
+        "packages/assets/src/loaders/USDLoader.ts:537",
+        "packages/assets/src/loaders/USDLoader.ts:547",
+        "packages/assets/src/loaders/USDLoader.ts:797",
+        "packages/assets/src/loaders/USDLoader.ts:825"
+      ],
+      "reason": "The importer converts bounded USDA and stored USDZ geometry, materials, cameras, lights and some transform animation. Binary crate layers, composition arcs, some animated ordered transforms and animated non-transform properties are explicitly unsupported; light units can be approximated."
+    },
+    {
+      "id": "WP-08-R50433fe0a5da",
+      "workPackage": "WP-08",
+      "description": "MD2",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/loaders/AnimationFormatLoaders.ts:261",
+        "packages/assets/src/loaders/AnimationFormatLoaders.ts:513",
+        "packages/assets/src/loaders/AnimationFormatLoaders.ts:554",
+        "packages/assets/src/loaders/AnimationFormatLoaders.ts:619",
+        "tests/unit/assets/native-md2-pcx-limits.test.ts:97",
+        "docs/api/native-formats.md:201"
+      ],
+      "reason": "The opt-in version 8 adapter projects frames to a bounded morph clip and separately bounds parsed arrays, projected output and PCX typed-array working payload. The morph projection caps targets at 128, regenerates flat normals and lacks a unified peak budget; the documented root typed-model path is not established. The documentation still says PCX temporaries are not bounded, which is stale for the newly added typed-array cap."
+    },
+    {
+      "id": "WP-08-Ra2e8bcdab81d",
+      "workPackage": "WP-08",
+      "description": "photometric profiles",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/IESLoader.ts:77",
+        "packages/assets/src/IESLoader.ts:95",
+        "packages/engine/src/agent-api/nodes/lights.ts:87",
+        "packages/rendering/src/ForwardPass.ts:854",
+        "packages/rendering/src/ForwardPass.ts:863",
+        "packages/rendering/src/ForwardPass.ts:909",
+        "packages/rendering/src/ForwardPass.ts:1951"
+      ],
+      "reason": "Type-C photometric profiles are parsed and reach generated forward lighting. External tilt files and Type-A/B profiles are rejected; custom and graph shaders and some other draws including unsupported skinning fall back to scalar lighting with diagnostics."
+    },
+    {
+      "id": "WP-08-Rc56054c92ebe",
+      "workPackage": "WP-08",
+      "description": "return stable diagnostics for malformed or unsupported inputs.",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/loaders/ImageFormatLoaders.ts:50",
+        "packages/assets/src/loaders/VoxelFormatLoaders.ts:204",
+        "packages/assets/src/loaders/VoxelFormatLoaders.ts:333",
+        "packages/assets/src/loaders/USDLoader.ts:230"
+      ],
+      "reason": "Several importers expose malformed-input and unsupported-feature diagnostics: images have typed codes, while VOX and USD provide other error and diagnostic forms. Complete, stable diagnostic coverage across all required importers has not been established."
+    },
+    {
+      "id": "WP-08-Rfeb4aeb99514",
+      "workPackage": "WP-08",
+      "description": "Import and use VOX through its admitted typed public path with documented supported variants, malformed-input limits, provenance and resource disposal.",
+      "status": "implemented",
+      "evidence": [
+        "packages/aura3d-cli/src/index.ts:440",
+        "packages/assets/src/loaders/VoxelFormatLoaders.ts:204",
+        "packages/assets/src/loaders/VoxelFormatLoaders.ts:411",
+        "packages/assets/src/loaders/VoxelFormatLoaders.ts:490",
+        "packages/assets/src/FormatRegistry.ts:302",
+        "packages/engine/src/production-runtime/TypedGLBActor.ts:426",
+        "tests/unit/agent-api/native-typed-vox-runtime.test.ts:152",
+        "docs/api/native-formats.md:96"
+      ],
+      "reason": "The expressly bounded typed path admits and hashes version 150/200 files, registers an opt-in adapter, enforces input/output limits and declared-version provenance, and owns disposal. Its documentation records that only a selected static frame is flattened, physical materials remain metadata and unsupported chunks are diagnosed. This classification covers that documented path, not full VOX animation, hierarchy or material breadth."
+    },
+    {
+      "id": "WP-09-R0f76c2e9775d",
+      "workPackage": "WP-09",
+      "description": "OBJ",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/exporters/OBJExporter.ts:25",
+        "packages/assets/src/exporters/OBJExporter.ts:61",
+        "packages/assets/src/exporters/OBJExporter.ts:265",
+        "packages/assets/src/exporters/OBJExporter.ts:323",
+        "packages/assets/src/exporters/index.ts:4",
+        "tests/assets/native-format-conformance.test.ts:275",
+        "tests/assets/native-exporters.test.ts:766"
+      ],
+      "reason": "The public writer emits geometry, materials and dependencies with structured loss warnings. The independently authored reader checks only triangle positions and faces; independent round-trip coverage of the other supported material, texture, line, point and color variants required by the associated checklist is not established."
+    },
+    {
+      "id": "WP-09-R6a88ce51e0fe",
+      "workPackage": "WP-09",
+      "description": "Implement every exporter in the WP-09 table with an independently specified capability matrix and a typed result.",
+      "status": "implemented",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-roadmap.md:829",
+        "packages/assets/src/exporters/index.ts:2",
+        "packages/assets/src/exporters/ExportContext.ts:74",
+        "packages/assets/src/exporters/ExportContext.ts:86",
+        "packages/assets/src/exporters/DRACOExporter.ts:235",
+        "packages/assets/src/exporters/DRACOExporter.ts:401",
+        "packages/assets/src/exporters/EXRExporter.ts:514",
+        "packages/assets/src/exporters/KTX2Exporter.ts:289",
+        "packages/assets/package.json:23"
+      ],
+      "reason": "All eight table exporters have callable implementations in the opt-in entrypoint, typed outputs and an independent declared capability matrix. Raw KTX2 and EXR RLE/PIZ have native writer paths; Draco requires a caller-supplied encoder, and compressed KTX2 requires a capable caller-supplied encoder. The Draco adapter wraps an initialized caller-owned module rather than supplying a codec. The EXR table in native-formats.md still describes the prior injected-only PIZ path."
+    },
+    {
+      "id": "WP-09-R88fd2543b00c",
+      "workPackage": "WP-09",
+      "description": "animation",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/exporters/GLTFExporter.ts",
+        "packages/assets/src/exporters/ExportContext.ts",
+        "/tmp/aura3d-export-pointer-integration-final.log"
+      ],
+      "reason": "The glTF writer and snapshot now preserve bounded material and punctual-light pointer tracks as well as node TRS and morph-weight animation, and report unsupported losses. Events, texture transforms, other properties and reconstructed light identities remain outside the broader animation scope."
+    },
+    {
+      "id": "WP-09-Rb8b6f845f8c3",
+      "workPackage": "WP-09",
+      "description": "Export OBJ through its public path, preserving supported data with explicit structured loss and independently verified round trips.",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/exporters/OBJExporter.ts:32",
+        "packages/assets/src/exporters/OBJExporter.ts:40",
+        "packages/assets/src/exporters/OBJExporter.ts:265",
+        "packages/assets/src/exporters/OBJExporter.ts:323",
+        "tests/assets/native-format-conformance.test.ts:275",
+        "tests/assets/native-exporters.test.ts:766"
+      ],
+      "reason": "The public OBJ writer reports structured losses and writes supported geometry and material dependencies. The small independent reader exercises only a triangle; equivalent independent round trips for supported material, texture, line, point and color variants are not established."
+    },
+    {
+      "id": "WP-09-Rcdfcce5cd5bf",
+      "workPackage": "WP-09",
+      "description": "Export scene graph, meshes, materials, cameras, lights, skins, morphs, animation and dependencies with explicit loss warnings.",
+      "status": "implemented",
+      "evidence": [
+        "packages/assets/src/exporters/GLTFExporter.ts:26",
+        "packages/assets/src/exporters/GLTFExporter.ts:278",
+        "packages/assets/src/exporters/GLTFExporter.ts:598",
+        "packages/assets/src/exporters/GLTFExporter.ts:712",
+        "packages/assets/src/exporters/GLTFExporter.ts:751",
+        "packages/assets/src/exporters/GLTFExporter.ts:818",
+        "packages/assets/src/exporters/GLTFExporter.ts:825",
+        "packages/assets/src/exporters/GLTFExporter.ts:885",
+        "packages/aura3d-cli/src/commands/assets/export.ts:205"
+      ],
+      "reason": "The callable glTF/GLB writer and CLI construct the listed scene categories, embedded or external dependencies, and structured warnings. Coverage is of the declared typed input and explicitly diagnosed losses; for example loaded material/light animation pointers are not preserved by the snapshot adapter."
+    },
+    {
+      "id": "WP-09-Rf53f53ef2149",
+      "workPackage": "WP-09",
+      "description": "including diffuse roughness",
+      "status": "implemented",
+      "evidence": [
+        "packages/assets/src/GLTFLoader.ts:2346",
+        "packages/assets/src/exporters/ExportContext.ts:401",
+        "packages/assets/src/exporters/GLTFExporter.ts:525",
+        "packages/assets/src/exporters/GLTFExporter.ts:564",
+        "tests/assets/native-exporters.test.ts:281",
+        "tests/assets/native-exporters.test.ts:337",
+        "tests/assets/native-exporters.test.ts:353"
+      ],
+      "reason": "The exporter snapshot preserves the loaded material extension, and the glTF writer emits its diffuse-roughness factor and texture with texture settings. Authored source checks cover an independently constructed extension document, exported fields and loader re-import. This classifies export source coverage, not device rendering or acceptance."
+    },
+    {
+      "id": "WP-10-R3015db96f14a",
+      "workPackage": "WP-10",
+      "description": "Add scalar-volume slices and rendering with clipping, transfer functions and lifecycle tests.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/scalarVolume.ts:14",
+        "packages/engine/src/agent-api/compiler/compileScene.ts:442",
+        "packages/engine/src/agent-api/compiler/compileScene.ts:470",
+        "packages/rendering/src/renderer/ScalarVolumeFrame.ts:64",
+        "packages/rendering/src/VolumeRenderer.ts:360",
+        "tests/unit/rendering/native-volume-renderer.test.ts:106",
+        "tests/unit/rendering/native-volume-renderer.test.ts:153"
+      ],
+      "reason": "Typed scene nodes and the standalone WebGL2 pass implement scalar slices, transfer functions and local clip planes, with authored lifecycle and restoration tests. The scene route explicitly rejects WebGPU, global clipping, postprocessing, multiview and other combinations; the full implementation remains partial. No test execution is asserted."
+    },
+    {
+      "id": "WP-10-R45112ccfb39c",
+      "workPackage": "WP-10",
+      "description": "spherical harmonics",
+      "status": "implemented",
+      "evidence": [
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:237",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:278",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:709",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:793",
+        "packages/rendering/src/GaussianSplatRenderer.ts:259",
+        "packages/rendering/src/GaussianSplatRenderer.ts:427",
+        "packages/rendering/src/index.ts:1172",
+        "tests/unit/rendering/native-gaussian-splat-renderer.test.ts:432"
+      ],
+      "reason": "The loader validates and retains spherical-harmonic coefficients and the exported renderer evaluates degrees zero through four against the camera direction, including asset and model orientation. Source regressions contain independent numerical cases. Individual formats retain their own degree limits: the glTF semantic parser accepts degrees through three."
+    },
+    {
+      "id": "WP-10-R565cec3b2d2d",
+      "workPackage": "WP-10",
+      "description": "define what happens on unsupported backends.",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/gaussianSplat.ts:40",
+        "packages/engine/src/agent-api/compiler/compileScene.ts:183",
+        "packages/engine/src/agent-api/compiler/compileScene.ts:442",
+        "packages/rendering/src/VolumeRenderer.ts:152",
+        "packages/rendering/src/renderer/ScalarVolumeFrame.ts:64",
+        "packages/rendering/src/GaussianSplatRenderer.ts:353",
+        "packages/rendering/src/GaussianSplatColorComposite.ts:193"
+      ],
+      "reason": "Unsupported paths are defined: the public splat diagnostic identifies non-rasterizing mock and unknown backends, volume requires WebGL2, and unsupported splat depth or color-compositing routes report errors. These diagnostics do not establish that an available device has rendered successfully."
+    },
+    {
+      "id": "WP-10-R7d528217d0e7",
+      "workPackage": "WP-10",
+      "description": "Render scalar volume textures/slices with transfer functions and clipping.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/public/index.ts:268",
+        "packages/engine/src/agent-api/nodes/scalarVolume.ts:14",
+        "packages/engine/src/agent-api/compiler/compileScene.ts:470",
+        "packages/rendering/src/Renderer.ts:2657",
+        "packages/rendering/src/renderer/ScalarVolumeFrame.ts:64",
+        "packages/rendering/src/VolumeRenderer.ts:360",
+        "packages/rendering/src/VolumeRenderer.ts:961"
+      ],
+      "reason": "The public scene builder feeds the native WebGL2 volume renderer with raymarch or slice mode, transfer stops and local clipping. WebGPU and scene-wide clipping, postprocessing, multiview and other common route combinations remain explicitly unsupported."
+    },
+    {
+      "id": "WP-10-R8928bad545e8",
+      "workPackage": "WP-10",
+      "description": "Test camera movement, depth, transparency, visible color, clipping, resize and disposal.",
+      "status": "partial",
+      "evidence": [
+        "tests/browser/native-splats-volume.spec.ts:21",
+        "tests/browser/native-splats-volume.spec.ts:131",
+        "tests/browser/native-splats-volume.spec.ts:221",
+        "tests/browser/native-splats-volume.spec.ts:261",
+        "tests/browser/native-splats-volume.spec.ts:339",
+        "tests/browser/native-splats-volume.spec.ts:348",
+        "packages/rendering/src/volumetrics.ts:4",
+        "packages/rendering/src/index.ts:1172"
+      ],
+      "reason": "The authored browser suite contains camera, depth, blending, color, clipping, resize and disposal assertions. Its volume case calls VolumeRenderer on the rendering root import, but that class is exported by the volumetrics subpath rather than the inspected rendering root, so that part of the test harness is currently disconnected. Scene-clipped splats also remain unsupported. No browser execution is asserted."
+    },
+    {
+      "id": "WP-10-R940caac67a50",
+      "workPackage": "WP-10",
+      "description": "PLY/SPLAT/KSPLAT/SPZ",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/index.ts:340",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:156",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:188",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:616",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:804",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:828",
+        "packages/assets/src/loaders/GaussianSplatLoader.ts:980",
+        "tests/assets/native-splat-loader.test.ts:594"
+      ],
+      "reason": "The public loader implements bounded PLY, SPLAT, supported SPZ versions and registered glTF splat ingestion. KSPLAT has no built-in wire decoder and requires an explicitly supplied codec; compressed PLY also requires a codec. The authored tests check the missing-KSPLAT diagnostic, without asserting execution."
+    },
+    {
+      "id": "WP-11-R332b4016851f",
+      "workPackage": "WP-11",
+      "description": "shape-preserving key optimization",
+      "status": "implemented",
+      "evidence": [
+        "packages/animation/src/AnimationUtils.ts:158",
+        "packages/animation/src/AnimationUtils.ts:165",
+        "packages/animation/src/AnimationUtils.ts:171",
+        "packages/animation/src/AnimationUtils.ts:174",
+        "packages/animation/src/index.ts:33",
+        "tests/unit/animation/native-interpolation.test.ts:118",
+        "tests/unit/parity/animation.test.ts:326"
+      ],
+      "reason": "The public optimizer removes only equal-valued interior keys from linear or step tracks, retains endpoints and events, and conservatively leaves curved or tangent-bearing tracks intact. Source cases specify sampled curve preservation; no test execution is asserted here."
+    },
+    {
+      "id": "WP-11-R43b6386c8d0b",
+      "workPackage": "WP-11",
+      "description": "repeat",
+      "status": "implemented",
+      "evidence": [
+        "packages/animation/src/AnimationAction.ts:138",
+        "packages/animation/src/AnimationAction.ts:252",
+        "packages/animation/src/AnimationAction.ts:254",
+        "packages/animation/src/AnimationAction.ts:268",
+        "packages/animation/src/AnimationAction.ts:289",
+        "packages/animation/src/index.ts:5",
+        "tests/unit/animation/native-reverse-finite-repetitions.test.ts:22"
+      ],
+      "reason": "Repeat mode handles signed traversal, finite or infinite repetitions, loop and finish signals, and finite reverse terminal boundaries. Large spans beyond safe numeric limits explicitly reject; the cited source test contains reverse-boundary assertions without claiming a fresh run."
+    },
+    {
+      "id": "WP-11-Rb9df77bc88f1",
+      "workPackage": "WP-11",
+      "description": "boolean",
+      "status": "implemented",
+      "evidence": [
+        "packages/animation/src/AnimationTrack.ts:7",
+        "packages/animation/src/AnimationTrack.ts:123",
+        "packages/animation/src/AnimationTrack.ts:242",
+        "packages/animation/src/AnimationTrack.ts:336",
+        "packages/animation/src/AnimationMixer.ts:260",
+        "packages/animation/src/AnimationMixer.ts:501",
+        "packages/animation/src/SceneAnimationBridge.ts:54",
+        "packages/animation/src/index.ts:2",
+        "tests/unit/animation/step-track-keyframe-time.test.ts:14"
+      ],
+      "reason": "Boolean keyframe tracks are public, sample discrete values including exact key times, and can feed the general mixer and scene-property bridge. Conflicting nonadditive discrete values use the later accumulated value; additive boolean and curved interpolation are explicitly unsupported. The regression source is not a new test run."
+    },
+    {
+      "id": "WP-11-Rc09ef824eac3",
+      "workPackage": "WP-11",
+      "description": "material-property tracks",
+      "status": "partial",
+      "evidence": [
+        "packages/assets/src/GLTFAnimationRuntime.ts",
+        "packages/engine/src/production-runtime/actor/TypedGLBActorAnimation.ts",
+        "/tmp/aura3d-material-tracks-extra-final.log"
+      ],
+      "reason": "Material tracks reach live actor sinks for bounded leaves, including normal and occlusion scalars and four additional optional extension properties. Other properties, texture transforms and required channels for the new extension leaves remain unsupported, so broad material-property coverage is partial."
+    },
+    {
+      "id": "WP-11-Rca2209493bec",
+      "workPackage": "WP-11",
+      "description": "add generic source adapters.",
+      "status": "implemented",
+      "evidence": [
+        "packages/audio/src/AudioSourceAdapters.ts:30",
+        "packages/audio/src/AudioSourceAdapters.ts:60",
+        "packages/audio/src/AudioSourceAdapters.ts:76",
+        "packages/audio/src/AudioSourceAdapters.ts:91",
+        "packages/audio/src/AudioSourceAdapters.ts:155",
+        "packages/audio/src/index.ts:60",
+        "packages/audio/tests/audio.test.ts:976"
+      ],
+      "reason": "Public media-element, media-stream and external-node adapters connect through private gains and distinguish borrowed from owned teardown; source cases exercise ownership and asynchronous media play. These non-buffer adapters do not provide loop regions, detune or scheduled start, as documented; no fresh run is claimed."
+    },
+    {
+      "id": "WP-11-Rd3f21885a83c",
+      "workPackage": "WP-11",
+      "description": "Preserve clip, track and mixer coverage using independent expected results.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/parity/animation.test.ts:41",
+        "tests/unit/parity/animation.test.ts:55",
+        "tests/unit/parity/animation.test.ts:124",
+        "tests/unit/parity/animation.test.ts:326",
+        "tests/unit/animation/native-pose-mixer-reference.test.ts:84",
+        "tests/unit/animation/native-pose-mixer-reference.test.ts:148"
+      ],
+      "reason": "Authored source tests cover clip construction, sampling, loop and mixer behavior, and include independently calculated vector, rotation and cubic interpolation expectations. This classifies the test source only and does not assert candidate-bound execution or browser acceptance."
+    },
+    {
+      "id": "WP-12-R1115c82d4e5d",
+      "workPackage": "WP-12",
+      "description": "procedural poses",
+      "status": "implemented",
+      "evidence": [
+        "packages/animation/package.json:17",
+        "packages/animation/src/lanes/index.ts:7",
+        "packages/animation/src/lanes/prd06.ts:29",
+        "packages/animation/src/pose/LookAtConstraint.ts:151",
+        "packages/animation/src/pose/CcdIkConstraint.ts:140",
+        "packages/engine/src/contracts/animation.ts:41",
+        "packages/engine/src/agent-api/app/actorAnimationHandle.ts:632",
+        "packages/engine/src/agent-api/app/actorAnimationHandle.ts:804",
+        "packages/engine/src/agent-api/app/actorAnimationHandle.ts:831",
+        "packages/rendering/src/contracts/flags.state.ts:33"
+      ],
+      "reason": "The default-on public actor pose path applies local bone overrides, while the public animation lanes expose look-at and CCD procedural solvers. Explicitly disabling A3D_QR_ANIMATION leaves actor pose and IK methods as no-ops; the feature-disabled configuration is a documented limitation rather than evidence that the enabled source path is absent. No device or candidate acceptance is asserted."
+    },
+    {
+      "id": "WP-12-R1602260e3e55",
+      "workPackage": "WP-12",
+      "description": "Test actual browser-shaped objects, reference-space loss and session transitions.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/input/native-xr-frames.test.ts:19",
+        "tests/unit/input/native-xr-frames.test.ts:60",
+        "tests/unit/input/native-xr-frames.test.ts:107",
+        "tests/unit/input/native-xr-frames.test.ts:294",
+        "tests/unit/input/native-xr-frames.test.ts:326",
+        "tests/unit/input/native-xr-frames.test.ts:536"
+      ],
+      "reason": "Browser-shaped mocks exercise native-shaped samples, null tracking, reset events, cancellation and session transitions. A distinct reference-space-loss scenario was not located; null poses with the session still active and a reset event do not by themselves establish it. No test run or device acceptance is asserted."
+    },
+    {
+      "id": "WP-12-R34bd649da38f",
+      "workPackage": "WP-12",
+      "description": "Consume native viewer, hand and hit-test APIs; expose input-source/select/squeeze, reference-space reset, visibility and cancellation lifecycles.",
+      "status": "implemented",
+      "evidence": [
+        "packages/input/src/index.ts:47",
+        "packages/input/src/WebXRSessionController.ts:337",
+        "packages/input/src/WebXRSessionController.ts:415",
+        "packages/input/src/WebXRSessionController.ts:522",
+        "packages/input/src/WebXRSessionController.ts:541",
+        "packages/engine/src/agent-api/xr/xrRuntime.ts:121",
+        "packages/engine/src/agent-api/xr/xrRuntime.ts:436",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:1159"
+      ],
+      "reason": "The public input controller samples native viewer, hand and hit-test shapes; app.xr routes source, select, squeeze, reset and visibility events and removes listeners and cancels owned work at teardown. Optional capabilities can be unavailable; no passing source run or physical-device acceptance is asserted."
+    },
+    {
+      "id": "WP-12-R988367ab8d55",
+      "workPackage": "WP-12",
+      "description": "Sample native XR viewer poses, hand joints and hit-test results with their reference spaces",
+      "status": "implemented",
+      "evidence": [
+        "packages/input/src/index.ts:47",
+        "packages/input/src/WebXRSessionController.ts:337",
+        "packages/input/src/WebXRSessionController.ts:345",
+        "packages/input/src/WebXRSessionController.ts:404",
+        "packages/input/src/WebXRSessionController.ts:415",
+        "packages/input/src/WebXRSessionController.ts:522",
+        "packages/input/src/WebXRSessionController.ts:541"
+      ],
+      "reason": "The exported controller requests the selected space and a viewer space for hit testing, samples viewer poses, iterable hand joints and hit poses relative to the selected space, and cancels the owned hit-test source on teardown. Source coverage does not establish device or candidate acceptance."
+    },
+    {
+      "id": "WP-12-Rd3162bca1804",
+      "workPackage": "WP-12",
+      "description": "Preserve listener lifecycle expectations for native interaction. Exclusive execution owner: wp12_controls. Source verification: Direct Vitest for this file.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/input/camera-controls.test.ts:188",
+        "tests/unit/input/camera-controls.test.ts:202",
+        "packages/input/src/index.ts:26",
+        "packages/input/src/InputSystem.ts:36",
+        "packages/input/src/InputSystem.ts:102",
+        "packages/input/src/InputSystem.ts:115",
+        "packages/input/src/InputSystem.ts:154"
+      ],
+      "reason": "The source test checks idempotent attachment, the ten target listener types and empty listener sets on disposal; the exported InputSystem registers and removes those listeners, including separate window-blur cleanup when applicable. No test execution for this revision is claimed."
+    },
+    {
+      "id": "WP-12-Rf313e4b45d9a",
+      "workPackage": "WP-12",
+      "description": "Immersive",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/xr/types.ts:3",
+        "packages/engine/src/agent-api/xr/xrRuntime.ts:192",
+        "packages/engine/src/agent-api/xr/xrRuntime.ts:206",
+        "packages/engine/src/agent-api/xr/xrRuntime.ts:263",
+        "packages/engine/src/agent-api/xr/xrRuntime.ts:285",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:1126",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:1159",
+        "docs/prds/aura3d-native-capability-roadmap.md:179"
+      ],
+      "reason": "Public app.xr supports immersive VR and AR session modes and contains per-eye presentation, but app integration obtains only a WebGL2 context and the runtime refuses a missing WebGL render path. The roadmap makes native WebGPU XR conditional on browser support; that presentation variant is not implemented in this path. Device acceptance is separate."
+    },
+    {
+      "id": "WP-13-R0145b504d734",
+      "workPackage": "WP-13",
+      "description": "Attribute formats",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/VertexFormat.ts:61",
+        "packages/rendering/src/VertexFormat.ts:95",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:113",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:132",
+        "packages/rendering/src/index.ts:68",
+        "tests/unit/rendering/native-render-state.test.ts:254",
+        "tests/unit/rendering/native-render-state.test.ts:359"
+      ],
+      "reason": "The public vertex format models typed, normalized and separate-stream attributes. The native WebGPU mapping explicitly rejects three-component packed 8/16-bit attributes, unnormalized integer-to-float conversions and instance divisors other than one, leaving advertised format variants incomplete. Regression source covers the mappings and rejections; it was not run here."
+    },
+    {
+      "id": "WP-13-R453485cf44e4",
+      "workPackage": "WP-13",
+      "description": "shared buffers",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/Geometry.ts:114",
+        "packages/rendering/src/Geometry.ts:148",
+        "packages/rendering/src/Geometry.ts:247",
+        "packages/rendering/src/Geometry.ts:996",
+        "packages/rendering/src/index.ts:71",
+        "tests/unit/rendering/native-shared-geometry-buffers.test.ts:21",
+        "tests/unit/rendering/native-shared-geometry-buffers.test.ts:118"
+      ],
+      "reason": "Public geometry retains shared primary, extra-stream and index buffers until the last geometry releases them; the managed writable path copies primary/index data when shared. Direct buffer writes remain shared and explicit buffer disposal invalidates users. Source regressions exercise ownership and copying with a mock device; execution is not asserted."
+    },
+    {
+      "id": "WP-13-R70a5eee5aabe",
+      "workPackage": "WP-13",
+      "description": "UV unwrapping",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/geometry/UVAtlas.ts",
+        "/tmp/aura3d-curved-uv-zero-angle-final.log"
+      ],
+      "reason": "The public atlas supports planar and bounded curved projection charts plus opt-in intrinsic unfolding for developable curved strips, with seams, remapping and packing. Sharp folds, incompatible loops and general non-developable surfaces still split; broad UV unwrapping remains partial."
+    },
+    {
+      "id": "WP-13-R75d8b8ad7137",
+      "workPackage": "WP-13",
+      "description": "Verify topology and counts against independently authored expectations.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/parity/geometry-counts.test.ts:1",
+        "tests/unit/parity/geometry-counts.test.ts:96",
+        "tests/unit/parity/geometry-counts.test.ts:185",
+        "tests/unit/parity/geometry-counts.test.ts:298",
+        "tests/unit/parity/geometry-counts.test.ts:399"
+      ],
+      "reason": "The requested test source specifies analytical counts, coordinates, winding, seams, groups and polygon areas, including concave outlines and holes, without importing a competitor implementation. This classifies the authored verification source; its execution and the candidate result are not asserted."
+    },
+    {
+      "id": "WP-13-R79c1c859f122",
+      "workPackage": "WP-13",
+      "description": "shapes",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/geometry/Shape.ts:1",
+        "packages/rendering/src/geometry/Shape.ts:16",
+        "packages/rendering/src/geometry/Support.ts:1",
+        "packages/rendering/src/geometry/Support.ts:138",
+        "packages/rendering/src/geometry/Support.ts:199",
+        "packages/rendering/src/geometry/Primitives.ts:397",
+        "packages/rendering/src/index.ts:98"
+      ],
+      "reason": "The public shape generator resolves and triangulates planar contours and holes, and the primitive path invokes it. Its source explicitly leaves rewrite provenance and compatibility under review, while the support module retains an unresolved historical notice, so the required independent replacement cannot yet be treated as complete."
+    },
+    {
+      "id": "WP-13-Rc9b5e41644d6",
+      "workPackage": "WP-13",
+      "description": "Provide a parametric patch-based reference geometry with controllable tessellation.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/geometry/TeapotGeometry.ts:9",
+        "packages/rendering/src/geometry/TeapotGeometry.ts:41",
+        "packages/rendering/src/geometry/TeapotGeometry.ts:98",
+        "packages/rendering/src/geometry/TeapotGeometry.ts:122",
+        "packages/rendering/src/geometry/Support.ts:98",
+        "packages/rendering/src/VertexBuffer.ts:226",
+        "packages/rendering/src/VertexBuffer.ts:251",
+        "packages/rendering/src/index.ts:1445",
+        "tests/unit/geometry/native-mesh-tools.test.ts:272"
+      ],
+      "reason": "An exported bicubic patch generator supplies tessellation and component controls, with focused test source. It advertises sizes from 1e-100 to 1e100, but the public mesh-to-geometry adapter writes float32 positions: large advertised scales are rejected and sufficiently tiny scales round positions to zero. These unsupported render-integration variants leave the outcome partial; no device acceptance is asserted."
+    },
+    {
+      "id": "WP-14-R1284cdd098b2",
+      "workPackage": "WP-14",
+      "description": "Test transforms, hot updates, empty geometry and disposal.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/debug/native-helpers.test.ts:36",
+        "tests/unit/debug/native-helpers.test.ts:80",
+        "tests/unit/debug/native-helpers.test.ts:92",
+        "tests/unit/debug/native-helpers.test.ts:113"
+      ],
+      "reason": "Authored unit cases cover transformed endpoints, updates, empty geometry, runtime registration and disposal. Source-test coverage is present; no candidate-bound execution is claimed."
+    },
+    {
+      "id": "WP-14-R2819bd1f2b41",
+      "workPackage": "WP-14",
+      "description": "Test assistive labels, pointer routing, screenshot output, resize and cleanup.",
+      "status": "implemented",
+      "evidence": [
+        "tests/browser/native-alternative-outputs.spec.ts:10",
+        "tests/browser/native-alternative-outputs.spec.ts:57",
+        "tests/browser/native-alternative-outputs.spec.ts:79",
+        "tests/browser/native-alternative-outputs.spec.ts:112"
+      ],
+      "reason": "Authored browser cases cover accessible names, pointer routing, resize and restoration; output cases capture screenshots. This records test source only, not browser acceptance."
+    },
+    {
+      "id": "WP-14-R5806b51a7708",
+      "workPackage": "WP-14",
+      "description": "Spatial DOM labels",
+      "status": "implemented",
+      "evidence": [
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts:14",
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts:80",
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts:127",
+        "packages/addons/package.json:12"
+      ],
+      "reason": "The addon has a public subpath and implements projected spatial DOM elements, visibility, stacking, input routing and disposal; occlusion is explicitly an optional caller-provided anchor test."
+    },
+    {
+      "id": "WP-14-R781349005154",
+      "workPackage": "WP-14",
+      "description": "resources",
+      "status": "implemented",
+      "evidence": [
+        "packages/debug/src/SceneHelpers.ts:51",
+        "packages/engine/src/agent-api/nodes/helpers.ts:113",
+        "packages/engine/src/agent-api/nodes/helpers.ts:140",
+        "packages/engine/src/agent-api/app/runtimeNodes.ts:622"
+      ],
+      "reason": "Dynamic helpers resample source geometry, apply transforms and visibility, and update or remove owned runtime nodes; the registry delegates compiled subtree retirement or a scene update. This is source coverage on a mutable tree."
+    },
+    {
+      "id": "WP-14-R898dbe3b1357",
+      "workPackage": "WP-14",
+      "description": "Add animation path, audio orientation, probe/grid, octree, collider, area light, texture, vertex-normal and tangent helpers.",
+      "status": "implemented",
+      "evidence": [
+        "packages/debug/src/AdvancedHelpers.ts:91",
+        "packages/debug/src/AdvancedHelpers.ts:123",
+        "packages/debug/src/AdvancedHelpers.ts:148",
+        "packages/debug/src/AdvancedHelpers.ts:172",
+        "packages/debug/src/AdvancedHelpers.ts:252",
+        "packages/debug/src/AdvancedHelpers.ts:267",
+        "packages/debug/src/AdvancedHelpers.ts:295",
+        "packages/engine/src/agent-api/nodes/helpers.ts:64"
+      ],
+      "reason": "The requested path, audio, probe/grid, octree, collider, area-light, texture, normal and tangent helpers have builders and engine helper-node integration."
+    },
+    {
+      "id": "WP-14-Rc253d460b455",
+      "workPackage": "WP-14",
+      "description": "Provide 2D and perspective DOM labels with transforms, stacking, accessibility and documented occlusion.",
+      "status": "implemented",
+      "evidence": [
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts:80",
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts:127",
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts:185",
+        "packages/addons/package.json:12"
+      ],
+      "reason": "The public addon subpath implements screen and perspective transforms, stacking, ARIA and pointer behavior, with documented anchor-only occlusion and lifecycle restoration."
+    },
+    {
+      "id": "WP-15-R01668fe17a68",
+      "workPackage": "WP-15",
+      "description": "Add grounded sky, shadow projection and volume slice objects using existing renderer facilities.",
+      "status": "partial",
+      "evidence": [
+        "packages/addons/src/objects/SpecializedObjects.ts:103",
+        "packages/addons/src/objects/SpecializedObjects.ts:109",
+        "packages/addons/src/objects/SpecializedObjects.ts:256",
+        "packages/addons/src/objects/SpecializedObjects.ts:333",
+        "packages/rendering/src/atmosphere/SkyBackgroundPass.ts:201",
+        "tests/unit/rendering/native-specialized-objects-webgpu.test.ts:217",
+        "docs/prds/aura3d-native-capability-ledger.json:122908"
+      ],
+      "reason": "Public addon paths provide bounded grounded sky, projected shadow and mutable volume slices, with WebGPU mock source checks. Shadows approximate caster bounds rather than geometry silhouettes, and native sky rejects multiple sky variants, so full behavior is incomplete."
+    },
+    {
+      "id": "WP-15-R0fcf6cbccb14",
+      "workPackage": "WP-15",
+      "description": "Test determinism, bounds, topology, budgets, undo data and teardown.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/addons/native-objects-generators.test.ts:34",
+        "tests/unit/addons/native-objects-generators.test.ts:75",
+        "tests/unit/addons/native-objects-generators.test.ts:98",
+        "tests/unit/addons/native-objects-generators.test.ts:320",
+        "tests/unit/addons/native-objects-generators.test.ts:376",
+        "tests/unit/addons/native-objects-generators.test.ts:419"
+      ],
+      "reason": "Authored source tests cover geometry topology, deterministic generation, bounds, budgets, undo and teardown. The ledger records object-inclusive mock/source checks; this does not claim browser or device acceptance."
+    },
+    {
+      "id": "WP-15-R240db76c854c",
+      "workPackage": "WP-15",
+      "description": "tube painting",
+      "status": "implemented",
+      "evidence": [
+        "packages/addons/src/tools/TubePainter.ts:25",
+        "packages/addons/src/tools/TubePainter.ts:52",
+        "packages/addons/src/tools/TubePainter.ts:74",
+        "packages/addons/package.json:66",
+        "tests/unit/addons/native-objects-generators.test.ts:376"
+      ],
+      "reason": "The public addon tube painter consumes an editable point path and generates bounded geometry with normals, caps and disposal; reversed or degenerate paths fail explicitly."
+    },
+    {
+      "id": "WP-15-R3677baf8cd6f",
+      "workPackage": "WP-15",
+      "description": "Add deterministic convex fracture geometry and explicit unsupported cases.",
+      "status": "implemented",
+      "evidence": [
+        "packages/addons/src/tools/Fracture.ts:18",
+        "packages/addons/src/tools/Fracture.ts:155",
+        "packages/addons/src/tools/Fracture.ts:229",
+        "packages/addons/src/tools/Fracture.ts:366",
+        "packages/addons/package.json:72",
+        "tests/unit/addons/native-objects-generators.test.ts:419"
+      ],
+      "reason": "The public addon implements seeded and plane-driven convex fracture, validates topology and explicitly rejects unsupported attributes, mesh kinds and budgets, as required by this bounded task."
+    },
+    {
+      "id": "WP-15-Rb17d3213d565",
+      "workPackage": "WP-15",
+      "description": "Reuse the existing terrain, sky, water and scatter facilities where they satisfy the contract; do not replace working paths.",
+      "status": "unknown",
+      "evidence": [
+        "packages/addons/src/generators/EnvironmentGenerators.ts:5",
+        "packages/addons/src/generators/EnvironmentGenerators.ts:373",
+        "packages/addons/src/generators/EnvironmentGenerators.ts:425",
+        "packages/addons/src/objects/SpecializedObjects.ts:122",
+        "packages/engine/src/agent-api/nodes/water.ts:20"
+      ],
+      "reason": "Source reuses scatter, supplies terrain-compatible inputs, calls the existing sky builder and retains water facilities. This inspection cannot establish the historical no-replacement requirement across every pre-existing path, so the full outcome remains unknown."
+    },
+    {
+      "id": "WP-15-Rf1a67781fcdc",
+      "workPackage": "WP-15",
+      "description": "Add path-based tube drawing with normals, caps and disposal.",
+      "status": "implemented",
+      "evidence": [
+        "packages/addons/src/tools/TubePainter.ts:25",
+        "packages/addons/src/tools/TubePainter.ts:74",
+        "packages/addons/src/tools/TubePainter.ts:120",
+        "packages/addons/src/tools/TubePainter.ts:149",
+        "packages/addons/package.json:66"
+      ],
+      "reason": "The public path-based tube painter creates editable geometry, transported normals and optional caps and provides idempotent disposal. Degenerate/immediate-reversal paths and budget overruns are explicitly rejected."
+    },
+    {
+      "id": "WP-16-R2a699de82053",
+      "workPackage": "WP-16",
+      "description": "Transfer canvas ownership once",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/app/workerRuntime.ts:73",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:146",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:163",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:432",
+        "packages/engine/src/agent-api/app/workerFrameLoop.ts:79",
+        "tests/unit/engine/native-worker-protocol.test.ts:122"
+      ],
+      "reason": "The host records transferred canvases, the worker requires increasing request IDs, inputs are cloned and resize data copied, and the protocol routes cancellation and errors. This assessment describes current source, not browser or candidate acceptance."
+    },
+    {
+      "id": "WP-16-R5539b3a5ac56",
+      "workPackage": "WP-16",
+      "description": "Verify rendered pixels, resize, input and clean teardown on supported backends.",
+      "status": "partial",
+      "evidence": [
+        "tests/browser/native-worker-render.spec.ts:10",
+        "tests/browser/native-worker-render.spec.ts:45",
+        "tests/browser/native-worker-render.spec.ts:61",
+        "tests/browser/native-worker-render.spec.ts:73",
+        "tests/browser/native-worker-render.spec.ts:95"
+      ],
+      "reason": "Browser test source covers pixels, input, resize and teardown for WebGL2, but its WebGPU branch disables event bridging and omits the matching input scenario. No browser result is implied."
+    },
+    {
+      "id": "WP-16-R55472c17b759",
+      "workPackage": "WP-16",
+      "description": "Test message ordering, transfer ownership, errors, cancellation and disposal.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/engine/native-worker-protocol.test.ts:122",
+        "tests/unit/engine/native-worker-protocol.test.ts:206",
+        "tests/unit/engine/native-worker-protocol.test.ts:300",
+        "tests/unit/engine/native-worker-protocol.test.ts:339",
+        "tests/unit/engine/native-worker-protocol.test.ts:758",
+        "tests/unit/engine/native-worker-protocol.test.ts:798"
+      ],
+      "reason": "Focused test source covers ordered traffic, ownership, errors, cancellation and disposal. It is source coverage only and does not prove this mutable candidate passed."
+    },
+    {
+      "id": "WP-16-R7d9f1ce4488f",
+      "workPackage": "WP-16",
+      "description": "Add explicit OffscreenCanvas handling without breaking DOM targets.",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/app/canvas.ts:6",
+        "packages/engine/src/agent-api/app/canvas.ts:10",
+        "packages/engine/src/agent-api/app/canvas.ts:31",
+        "packages/engine/src/agent-api/app/canvas.ts:93",
+        "packages/engine/src/public/worker.ts:2",
+        "aura.exports.json:86"
+      ],
+      "reason": "Canvas resolution and configuration explicitly handle offscreen canvases while retaining DOM canvas and container handling; the worker entry is exposed in the package registry."
+    },
+    {
+      "id": "WP-16-Rce47d0500864",
+      "workPackage": "WP-16",
+      "description": "resource transfer",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/app/workerRuntime.ts",
+        "/tmp/aura3d-worker-texture-transfer-source-final3.log"
+      ],
+      "reason": "Scene-owned buffers and bounded CPU-backed 2D RGBA8 texture snapshots can cross the worker boundary by copying and worker-local rehydration. Canvas/video, GPU-owned, compressed, layered, floating-point and other texture classes remain explicitly unsupported; host changes require setScene."
+    },
+    {
+      "id": "WP-16-Rfcca25ad5a7d",
+      "workPackage": "WP-16",
+      "description": "teardown",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/app/workerRuntime.ts:112",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:210",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:443",
+        "tests/unit/engine/native-worker-dispose-failure.test.ts:121",
+        "tests/unit/engine/native-worker-dispose-failure.test.ts:185",
+        "/tmp/aura3d-worker-lifecycle-parallel-rerun.log"
+      ],
+      "reason": "The host reports worker cleanup and transport failures, releases listeners and terminates, and concurrent disposal shares the result. Source/mock tests passed; the documented timeout resolves after forced termination. Browser and device acceptance have not run."
+    },
+    {
+      "id": "WP-17-R17fe4d7a866a",
+      "workPackage": "WP-17",
+      "description": "Connect graph editing to real material state and the renderer compiler",
+      "status": "partial",
+      "evidence": [
+        "packages/editor-runtime/src/ShaderGraphModel.ts:306",
+        "apps/editor/src/EditorShell.ts:213",
+        "apps/editor/src/EditorShell.ts:562",
+        "apps/editor/src/export/ProjectSceneRuntime.ts:331",
+        "apps/editor/src/export/ProjectSceneRuntime.ts:342",
+        "apps/editor/src/export/ProjectSceneRuntime.ts:389"
+      ],
+      "reason": "The editor exposes typed graph editing, history and device-backed material compilation, but explicitly rejects graph materials on imported skinned or morph-target meshes."
+    },
+    {
+      "id": "WP-17-R3d0ff00bc9fe",
+      "workPackage": "WP-17",
+      "description": "Test graph validation, undo, persistence, resource selection and errors.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/editor/native-shader-graph-editor.test.ts:37",
+        "tests/unit/editor/native-shader-graph-editor.test.ts:69",
+        "tests/unit/editor/native-shader-graph-editor.test.ts:151",
+        "tests/unit/editor/native-shader-graph-editor.test.ts:391",
+        "tests/unit/editor/native-shader-graph-editor.test.ts:522"
+      ],
+      "reason": "The test source contains concrete graph validation, undo, serialization, resource-selection and compilation-error assertions. This reports authored test coverage only, not a passing candidate suite."
+    },
+    {
+      "id": "WP-17-R79ce3fa5481e",
+      "workPackage": "WP-17",
+      "description": "Expose actual frame passes, draw/resource counts, timings and diagnostics.",
+      "status": "partial",
+      "evidence": [
+        "apps/editor/src/EditorShell.ts:585",
+        "apps/editor/src/EditorShell.ts:614",
+        "packages/debug/src/FrameInspector.ts:64",
+        "packages/rendering/src/Renderer.ts:1517",
+        "packages/rendering/src/Renderer.ts:1533",
+        "packages/rendering/src/renderer/PostStageTrace.ts:146"
+      ],
+      "reason": "Live renderer counters and measured CPU pass records reach the inspector, but frame tracing is marked incomplete and aggregate/per-pass GPU timings are null. A separate GPU-view timing field does not close the full inspector contract."
+    },
+    {
+      "id": "WP-17-Raf69bf5cf039",
+      "workPackage": "WP-17",
+      "description": "Scene/project editor",
+      "status": "implemented",
+      "evidence": [
+        "apps/editor/src/EditorShell.ts:178",
+        "apps/editor/src/EditorShell.ts:205",
+        "apps/editor/src/EditorShell.ts:287",
+        "packages/editor-runtime/src/ProjectSerializer.ts:112",
+        "apps/editor/src/export/ProjectSceneRuntime.ts:55"
+      ],
+      "reason": "The scene/project editor has a real scene runtime, hierarchy, properties, assets, materials, timeline and inspector panels, plus project serialization. This describes the editor capability and does not certify every separate checklist feature."
+    },
+    {
+      "id": "WP-17-Rea02f089c615",
+      "workPackage": "WP-17",
+      "description": "avoid fixture-only visualizations.",
+      "status": "partial",
+      "evidence": [
+        "apps/editor/src/panels/TextureInspectorPanel.ts:58",
+        "apps/editor/src/panels/TextureInspectorPanel.ts:143",
+        "apps/editor/src/viewport/EditorViewport.ts:322",
+        "apps/editor/src/EditorShell.ts:585",
+        "packages/rendering/src/Renderer.ts:1521",
+        "packages/rendering/src/Renderer.ts:1533"
+      ],
+      "reason": "The editor inspects actual texture handles and renderer data rather than only fixtures, but the renderer explicitly marks frame tracing incomplete and leaves aggregate timing unavailable."
+    },
+    {
+      "id": "WP-17-Rec8d5a3b9417",
+      "workPackage": "WP-17",
+      "description": "do not introduce remote font services.",
+      "status": "implemented",
+      "evidence": [
+        "apps/editor/src/styles.ts:1",
+        "apps/editor/src/styles.ts:12",
+        "apps/editor/src/styles.ts:19",
+        "apps/editor/src/styles.ts:26",
+        "tests/unit/editor/native-shader-graph-editor.test.ts:960"
+      ],
+      "reason": "The editor styles reference locally served font files and local fallbacks; source tests check the declared assets and reject remote font-service URLs. This is scoped to the editor app."
+    },
+    {
+      "id": "WP-18-R2f54b6ddbec9",
+      "workPackage": "WP-18",
+      "description": "complete every row and retain proof of public exposure, not merely internal classes.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-ledger.json:66492",
+        "docs/prds/aura3d-native-capability-ledger.json:66650"
+      ],
+      "reason": "This is a ledger-completion outcome: among its 1,901 outcome records, all source completion values are incomplete, only three contain public-entrypoint entries, and none contains source evidence. These fields measure tracking/proof, not how much product code exists."
+    },
+    {
+      "id": "WP-18-R63250d0221f8",
+      "workPackage": "WP-18",
+      "description": "Keep supported API examples and claim boundaries current. Exclusive execution owner: wp18_recovery. Source verification: Documentation link and snippet checks.",
+      "status": "partial",
+      "evidence": [
+        "docs/agents/agent-quickstart.md:94",
+        "docs/api/app-api.md:63",
+        "docs/api/app-api.md:80",
+        "packages/engine/src/agent-api/app/mountRenderer.ts:38"
+      ],
+      "reason": "The quickstart now correctly distinguishes toon material from a screen effect, but the app API document still claims mode safe-basic mounts a compatibility renderer and production failure can fall back; the current mount code rejects non-production mode and removed that fallback."
+    },
+    {
+      "id": "WP-18-R87900c228e33",
+      "workPackage": "WP-18",
+      "description": "device",
+      "status": "partial",
+      "evidence": [
+        "tests/browser/native-cross-browser-harness.ts:9",
+        "tests/browser/native-cross-browser-harness.ts:25",
+        "tests/browser/native-cross-browser-harness.ts:97",
+        "tests/browser/native-cross-browser.spec.ts:82",
+        "tests/browser/native-cross-browser.spec.ts:123"
+      ],
+      "reason": "The browser evidence contract distinguishes physical, emulated, software and unverified devices, but the automated producer initializes the class as unverified and only promotes recognized software; no physical-device capture producer was established. This assesses source tooling, not whether devices passed acceptance."
+    },
+    {
+      "id": "WP-18-R9c426cd286ef",
+      "workPackage": "WP-18",
+      "description": "Provide one isolated, runnable scenario per capability family with no unrelated engine runtime.",
+      "status": "partial",
+      "evidence": [
+        "examples/native-capabilities/index.ts:28",
+        "examples/native-capabilities/index.ts:54",
+        "tools/agent-examples/index.ts:265",
+        "tools/agent-examples/index.ts:482",
+        "docs/prds/aura3d-native-capability-roadmap.md:17"
+      ],
+      "reason": "Ten separately mounted typed-model scenarios and a project harness are present, but their catalog does not cover every roadmap capability family, including spatial audio and XR."
+    },
+    {
+      "id": "WP-18-Rd17df3030fc3",
+      "workPackage": "WP-18",
+      "description": "Synchronize source API appendix with generated public documentation and bounded claims. Exclusive execution owner: wp18_docs/public_api_docs. Source verification: API documentation contract tests.",
+      "status": "partial",
+      "evidence": [
+        "tools/api-docs/index.ts:253",
+        "tools/api-docs/index.ts:311",
+        "tests/unit/tools/api-docs.test.ts:126",
+        "docs/api/public-api.md:461",
+        "packages/assets/src/index.ts:69"
+      ],
+      "reason": "The appendix is now appended by the generator and source tests check changed appendix content. The generated public reference remains stale against the current source exports: it omits requestIdentityDetails and AssetRequestIdentity. Current candidate generation was not run."
+    },
+    {
+      "id": "WP-18-Rd6e9450571d5",
+      "workPackage": "WP-18",
+      "description": "Provide runnable Aura3D-owned examples for each delivered capability family using typed admitted assets.",
+      "status": "partial",
+      "evidence": [
+        "docs/agents/native-capability-recipes.md:3",
+        "docs/agents/native-capability-recipes.md:83",
+        "docs/agents/native-capability-recipes.md:110",
+        "examples/native-capabilities/index.ts:29",
+        "docs/prds/aura3d-native-capability-roadmap.md:17"
+      ],
+      "reason": "Aura3D-owned recipes describe ten typed-model scenarios and a separate advanced-lighting recipe with scoped claims. They do not provide an example for every delivered capability family; no example was executed during this audit."
+    },
+    {
+      "id": "WP-19-R31d53b85384a",
+      "workPackage": "WP-19",
+      "description": "Integrate runtime target, worker, backend and diagnostics contracts.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/types/runtime.ts:641",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:17",
+        "packages/engine/src/agent-api/app/workerRuntime.ts:284"
+      ],
+      "reason": "The worker path accepts OffscreenCanvas and has runtime readiness and diagnostics contracts, but the main AuraAppTarget type excludes it and the worker source still identifies a DOM-only scene-compiler type seam."
+    },
+    {
+      "id": "WP-19-R3d78138940cd",
+      "workPackage": "WP-19",
+      "description": "repeated like-for-like workloads report startup",
+      "status": "implemented",
+      "evidence": [
+        "tools/performance/native-workloads.ts:33",
+        "tests/browser/native-performance-probe.spec.ts:67",
+        "tests/browser/native-performance-probe.spec.ts:94",
+        "tests/browser/native-performance-probe.spec.ts:164",
+        "tests/browser/native-performance-probe.spec.ts:181",
+        "tools/performance/native-benchmark.ts:193"
+      ],
+      "reason": "The source fixes workloads and records startup metrics across three separately launched browser sessions, with identity and workload validation in the analyzer. This measures implementation of the instrumentation only; no actual candidate measurements or browser acceptance are asserted."
+    },
+    {
+      "id": "WP-19-R58b89b0fe2e2",
+      "workPackage": "WP-19",
+      "description": "Support verified Git-free staging manifests, recompute every required input and bind unchanged tested snapshots to the freeze commit; separate reviewed administrative records from implementation identity.",
+      "status": "implemented",
+      "evidence": [
+        "tools/release/source-identity.mjs:6",
+        "tools/release/source-identity.mjs:96",
+        "tools/release/source-identity.mjs:117",
+        "tools/release/source-identity.mjs:155",
+        "tools/release/exact-release-plan.mjs:13"
+      ],
+      "reason": "The source verifies Git-free staged entries and bytes, rejects undeclared inputs, separates administrative records from implementation identity, and binds matching source fingerprints, lockfile and archive hashes to a committed freeze. No current candidate or release completion is asserted."
+    },
+    {
+      "id": "WP-19-R5a75184bb5fd",
+      "workPackage": "WP-19",
+      "description": "ESM/CommonJS installed consumers",
+      "status": "partial",
+      "evidence": [
+        "package.json:43",
+        "package.json:50",
+        "package.json:57",
+        "tests/integration/native-capability-consumer.test.ts:28",
+        "tests/integration/native-capability-consumer.test.ts:61",
+        "tests/unit/packaging/native-entrypoints.test.ts:11"
+      ],
+      "reason": "An installed-consumer source suite covers ESM entrypoints and the CommonJS math bridge, but the engine root and most subpaths lack dedicated CommonJS export conditions. Broader installed CommonJS and supported-runtime behavior is not established; the suite was not run in this audit."
+    },
+    {
+      "id": "WP-19-Ra5a6e1350ebe",
+      "workPackage": "WP-19",
+      "description": "Test historical and new inventories, missing/duplicate packages and identity/rollback requirements.",
+      "status": "partial",
+      "evidence": [
+        "tools/release/release-origin.test.mjs:7",
+        "tools/release/release-origin.test.mjs:16",
+        "tools/release/release-origin.test.mjs:23",
+        "tools/release/release-origin.test.mjs:28",
+        "tools/release/release-origin.test.mjs:45"
+      ],
+      "reason": "The requested test source covers historical/current inventory membership, missing and duplicate entries, source identity and changed artifact bytes. No rollback-specific assertion was found in this file, so the described test coverage remains incomplete."
+    },
+    {
+      "id": "WP-19-Rb74f91c7e398",
+      "workPackage": "WP-19",
+      "description": "Validate the global gate before analyzing --input candidate-bound remote measurements for fixed Aura3D workloads; reject missing samples/identity and report startup/frame/draw/memory/bundle results. Source tests may exercise pure analysis with synthetic fixtures but must not launch a browser or claim acceptance.",
+      "status": "implemented",
+      "evidence": [
+        "tools/performance/native-benchmark.ts:40",
+        "tools/performance/native-benchmark.ts:52",
+        "tools/performance/native-benchmark.ts:106",
+        "tools/performance/native-benchmark.ts:134",
+        "tools/performance/native-benchmark.ts:188",
+        "tests/unit/tools/native-benchmark.test.ts:64"
+      ],
+      "reason": "The analysis source invokes the supplied global-gate validator before loading candidate data, verifies archive/workload/session identity, and compares startup, frame, draw, memory and bundle metrics. Synthetic source tests exist; no browser measurement or acceptance run is claimed."
+    },
+    {
+      "id": "WP-20-R7fb5a90be5f4",
+      "workPackage": "WP-20",
+      "description": "Repeatedly mount, load, resize, lose/recover where supported, unload and dispose without growing live resource counts.",
+      "status": "implemented",
+      "evidence": [
+        "tests/browser/native-capability-lifecycle.spec.ts:42",
+        "tests/browser/native-capability-lifecycle.spec.ts:110",
+        "tests/browser/native-capability-lifecycle.spec.ts:130",
+        "tests/browser/native-capability-lifecycle.spec.ts:147",
+        "tests/browser/native-capability-lifecycle.spec.ts:164"
+      ],
+      "reason": "Authored browser spec implements four mount/load/resize/unload/dispose cycles, context-loss recovery and zero live buffer/texture/program assertions. This is source coverage only: browser acceptance has not run."
+    },
+    {
+      "id": "WP-20-Rb192d525445b",
+      "workPackage": "WP-20",
+      "description": "Run source checks, package tests and source-phase installed consumers before freeze; run remote browser behavior and visual tests afterward. Keep actual test names, versions, run IDs, candidate hashes, backend, device and limitations with results.",
+      "status": "partial",
+      "evidence": [
+        "tools/remote-acr/source-checks.mjs:441",
+        "tools/remote-acr/source-checks.mjs:609",
+        "tools/remote-acr/source-checks.mjs:615",
+        "tools/remote-acr/run-source.sh:37",
+        "tools/remote-acr/task-run.sh:384",
+        "tests/browser/native-cross-browser-harness.ts:21"
+      ],
+      "reason": "The source phase and later browser reporting are modeled with suite inventories and candidate-bound artifacts, but both source-job phases unconditionally throw WORKSPACE_DEPENDENCY_ADMISSION_UNAVAILABLE before source checks can run. The partial status follows this source defect, not the absence of an acceptance run."
+    },
+    {
+      "id": "WP-20-Rd0d121134c1a",
+      "workPackage": "WP-20",
+      "description": "avoid uploading unrelated repository assets.",
+      "status": "partial",
+      "evidence": [
+        "tools/remote-acr/run.sh:270",
+        "tools/remote-acr/run.sh:308",
+        "tools/remote-acr/run.sh:346",
+        "tools/native-capability-gate/index.mjs:826",
+        "tools/native-capability-gate/index.mjs:837",
+        "tools/release/source-identity.mjs:19"
+      ],
+      "reason": "Native acceptance stages the complete gate-listed candidate inputs, while source identity broadly admits repository files and assets; no per-job exclusion of unrelated assets is evident, and legacy staging copies whole fixture directories."
+    },
+    {
+      "id": "WP-20-Rd7c64400dca8",
+      "workPackage": "WP-20",
+      "description": "Test partial/unowned outcomes, equal-count but different ID sets, missing/skipped source checks, tampered files, stale commits/artifacts, early browser invocation and valid code-complete-to-acceptance handoff without launching a browser/provider job.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/tools/native-capability-gate.test.ts:130",
+        "tests/unit/tools/native-capability-gate.test.ts:146",
+        "tests/unit/tools/native-capability-gate.test.ts:657",
+        "tests/unit/tools/native-capability-gate.test.ts:750",
+        "tests/unit/tools/native-source-execution.test.ts:411"
+      ],
+      "reason": "The expanded synthetic test source includes a positive emit/revalidation handoff plus skipped, tampered and missing source results and pre-provider rejection. Explicit cases for partial or unowned outcomes, equal-count differing outcome IDs and stale freeze commits were not located, so the specified test matrix remains partial."
+    },
+    {
+      "id": "WP-20-Re2d0aa136a4e",
+      "workPackage": "WP-20",
+      "description": "Implement and source-test the single global phase gate. Require its matching code-complete record at acceptance entrypoints before job submission and inside the remote task; the source runner must reject any browser/acceptance argv before starting a process.",
+      "status": "partial",
+      "evidence": [
+        "tools/native-capability-gate/index.mjs:826",
+        "tools/remote-acr/run.sh:100",
+        "tools/remote-acr/run.sh:169",
+        "tools/remote-acr/run.sh:177",
+        "tools/remote-acr/task-run.sh:134",
+        "tools/remote-acr/source-checks.mjs:407",
+        "tests/unit/tools/native-capability-gate.test.ts:657"
+      ],
+      "reason": "Native routes validate the gate before submission and in-task, source argv is guarded, and a synthetic source-handoff test exists; browser legacy selectors remain outside the native gate and some required negative handoff cases remain absent from test source."
+    },
+    {
+      "id": "WP-20-Rf1e6ffbf4c44",
+      "workPackage": "WP-20",
+      "description": "Add a source-only serverless runner, complete suites, generated-map ownership, phase-specific consumer reports and a verified current API baseline. WP-19/WP-20/WP-24/WP-25.",
+      "status": "partial",
+      "evidence": [
+        "tools/remote-acr/source-checks.mjs:22",
+        "tools/remote-acr/source-checks.mjs:446",
+        "tools/remote-acr/source-checks.mjs:609",
+        "tools/remote-acr/run-source.sh:37",
+        "tools/generate-resolution-maps/index.ts:258",
+        "tools/public-surface-diff/prepare-baseline.ts:156",
+        "tools/public-surface-diff/prepare-baseline.ts:170"
+      ],
+      "reason": "The source runner enumerates suites and consumer phases, checks generated maps, and prepares an integrity-checked baseline. Its workspace dependency admission guard is unconditional, however, so the serverless source path cannot execute those steps; finishing that path remains source work."
+    },
+    {
+      "id": "WP-21-R32827866589d",
+      "workPackage": "WP-21",
+      "description": "Fix pooled target double release; track live leases/idle membership so simultaneous users never share one lease and counters remain nonnegative. Test foreign targets, trim, restore and outstanding handles.",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/resources/RenderTargetPool.ts:49",
+        "packages/rendering/src/resources/RenderTargetPool.ts:72",
+        "packages/rendering/src/resources/RenderTargetPool.ts:93",
+        "packages/rendering/src/resources/RenderTargetPool.ts:136",
+        "packages/rendering/src/resources/RenderTargetPool.ts:166",
+        "packages/rendering/src/resources/RenderTargetPool.ts:187",
+        "tests/qr/prd11/unit/render-target-pool.test.ts:69",
+        "tests/qr/prd11/unit/render-target-pool.test.ts:139",
+        "tests/qr/prd11/unit/render-target-pool.test.ts:200"
+      ],
+      "reason": "The pool tracks exclusive token and legacy leases, idle ownership and generations; legacy returns are retired, foreign or duplicate releases are ignored, and restore retires outstanding targets. Tests cover concurrency, foreign releases, trim and restore; the parent reports a 91/91 pool/lease source rerun. Combined candidate typing is pending."
+    },
+    {
+      "id": "WP-21-R3b93dc24927c",
+      "workPackage": "WP-21",
+      "description": "Add success-aware readiness, app-owned context, bounded errors, event cleanup, loss/restore and deterministic lifecycle races.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:609",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:619",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:1336",
+        "packages/rendering/src/WebGPUDevice.ts:1026",
+        "packages/rendering/src/WebGPUDevice.ts:1483"
+      ],
+      "reason": "Readiness, cleanup and a WebGL remount hook are present, while the WebGPU adapter supplies a no-op restored callback and recovery constructs a different device. A corresponding automatic app remount across that recovery was not established."
+    },
+    {
+      "id": "WP-21-Rbe5af6722a1b",
+      "workPackage": "WP-21",
+      "description": "Prevent acquisition after disposal, dispose late successful compiles, settle cancelled handles and retry only within the correct device generation.",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/program/ProgramCache.ts:123",
+        "packages/rendering/src/program/ProgramCache.ts:163",
+        "packages/rendering/src/program/ProgramCache.ts:181",
+        "packages/rendering/src/program/ProgramCache.ts:280",
+        "packages/rendering/src/program/ProgramCache.ts:303"
+      ],
+      "reason": "Program cache rejects acquisition after disposal, settles cancelled handles, disposes late programs and invalidates results across device generations."
+    },
+    {
+      "id": "WP-21-Rc8e5dbec6ef6",
+      "workPackage": "WP-21",
+      "description": "duplicate release",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/resources/RenderTargetPool.ts:72",
+        "packages/rendering/src/resources/RenderTargetPool.ts:81",
+        "packages/rendering/src/resources/RenderTargetPool.ts:88",
+        "packages/rendering/src/resources/RenderTargetPool.ts:136",
+        "tests/unit/rendering/native-legacy-target-pool-lifetime.test.ts:9",
+        "tests/qr/prd11/unit/render-target-pool.test.ts:102"
+      ],
+      "reason": "Legacy target-only acquisitions are retired on release; reusable token acquisitions have distinct release identities, so stale or duplicate release cannot free a later borrower. The parent reports 91/91 focused pool/lease source checks after the legacy change; combined candidate typing remains pending."
+    },
+    {
+      "id": "WP-21-Rc9d8f9fca360",
+      "workPackage": "WP-21",
+      "description": "Enforce exclusive leases, idempotent release, device generations and accurate ownership. WP-21.",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/resources/RenderTargetPool.ts:49",
+        "packages/rendering/src/resources/RenderTargetPool.ts:72",
+        "packages/rendering/src/resources/RenderTargetPool.ts:81",
+        "packages/rendering/src/resources/RenderTargetPool.ts:136",
+        "packages/rendering/src/resources/RenderTargetPool.ts:187",
+        "tests/unit/rendering/native-legacy-target-pool-lifetime.test.ts:152",
+        "tests/qr/prd11/unit/render-target-pool.test.ts:200"
+      ],
+      "reason": "Token identity, retirement of target-only acquisitions, generation invalidation and explicit idle/live maps enforce the requested ownership contract. The parent reports 91/91 focused pool/lease source checks after the legacy change; no browser/device acceptance is inferred."
+    },
+    {
+      "id": "WP-21-Rf3938b8c04ab",
+      "workPackage": "WP-21",
+      "description": "events",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/assetEvents.ts:51",
+        "packages/engine/src/agent-api/assetEvents.ts:86",
+        "packages/engine/src/agent-api/assetEvents.ts:99",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:483",
+        "packages/engine/src/agent-api/app/createAuraAppCore.ts:1546"
+      ],
+      "reason": "Asset events use per-app captured scopes, subscriptions and disposal; the standalone compatibility channel does not share app handlers."
+    },
+    {
+      "id": "WP-22-R14851e5bd579",
+      "workPackage": "WP-22",
+      "description": "physical-device evidence remain separate",
+      "status": "implemented",
+      "evidence": [
+        "docs/rendering/native-browser-support.md:33",
+        "tests/browser/native-cross-browser-harness.ts:97",
+        "tests/unit/tools/native-browser-matrix.test.ts:97"
+      ],
+      "reason": "Physical-device evidence requires an explicit distinct class and provenance and is kept separate from software, automation and injected results. Actual device evidence is a later acceptance task."
+    },
+    {
+      "id": "WP-22-R183bd62cf010",
+      "workPackage": "WP-22",
+      "description": "Reject missing browser versions, false hardware labels and unqualified skipped cases.",
+      "status": "implemented",
+      "evidence": [
+        "tests/browser/native-cross-browser-harness.ts:69",
+        "tests/browser/native-cross-browser-harness.ts:97",
+        "tests/browser/native-cross-browser-harness.ts:129",
+        "tests/unit/tools/native-browser-matrix.test.ts:142"
+      ],
+      "reason": "The source validator rejects missing/placeholder browser versions, contradictory hardware labels and skipped scenarios without a specific reason."
+    },
+    {
+      "id": "WP-22-R3ba1d120301b",
+      "workPackage": "WP-22",
+      "description": "Supported browser, OS, device, backend and feature combinations have versioned support labels. Software, experimental, emulated and physical-device evidence remain separate.",
+      "status": "implemented",
+      "evidence": [
+        "docs/project/compatibility.md:3",
+        "docs/project/compatibility.md:23",
+        "docs/rendering/native-browser-support.md:18",
+        "tests/browser/native-cross-browser-harness.ts:21"
+      ],
+      "reason": "A versioned target matrix and supported/experimental/unsupported/unverified labels exist, with evidence tiers separated. Current candidate combinations are honestly unverified; no acceptance is implied."
+    },
+    {
+      "id": "WP-22-R92b1ba7474ae",
+      "workPackage": "WP-22",
+      "description": "emulated",
+      "status": "implemented",
+      "evidence": [
+        "docs/rendering/native-browser-support.md:46",
+        "tests/browser/native-cross-browser-harness.ts:9",
+        "tests/browser/native-cross-browser-harness.ts:111"
+      ],
+      "reason": "The matrix and evidence validator explicitly classify emulated devices separately and reject labeling them physical."
+    },
+    {
+      "id": "WP-22-R9e2c4e8be640",
+      "workPackage": "WP-22",
+      "description": "Build a versioned support matrix with default-flags desktop projects and separately labeled experimental, software and physical-device results. WP-22.",
+      "status": "implemented",
+      "evidence": [
+        "docs/project/compatibility.md:23",
+        "docs/rendering/native-browser-support.md:60",
+        "playwright.config.ts:44",
+        "playwright.config.ts:71"
+      ],
+      "reason": "A versioned matrix defines default-launch desktop automation and separately labeled software, experimental and physical-device targets; target results remain unverified until acceptance."
+    },
+    {
+      "id": "WP-22-Rc5986a17b6e2",
+      "workPackage": "WP-22",
+      "description": "Route browser-project forwarding and result/artifact transport through WP-20",
+      "status": "implemented",
+      "evidence": [
+        "playwright.config.ts:21",
+        "tools/remote-acr/run.sh:155",
+        "tools/remote-acr/run.sh:437",
+        "tools/remote-acr/run.sh:513"
+      ],
+      "reason": "The configured project selection is forwarded into the remote runner, which stages reports and fails on missing artifact-transfer status. The source was inspected only; no remote job was started."
+    },
+    {
+      "id": "WP-23-R133aa564fbaf",
+      "workPackage": "WP-23",
+      "description": "Exercise both declared supported peer major versions, StrictMode double mounts, Suspense, error boundaries, prop updates, input and scene disposal using packed packages.",
+      "status": "implemented",
+      "evidence": [
+        "tools/native-consumer-matrix/index.ts:750",
+        "tests/browser/native-react-lifecycle.spec.ts:60",
+        "tests/browser/native-react-lifecycle.spec.ts:424",
+        "tests/browser/native-react-lifecycle.spec.ts:573"
+      ],
+      "reason": "The browser acceptance harness source restores separate packed consumers for both peer majors and contains assertions for hydration, StrictMode, Suspense, errors, input, updates and cleanup. Implemented means the harness source exists; browser acceptance has not been run and its behavior is not claimed as passed."
+    },
+    {
+      "id": "WP-23-R368865905697",
+      "workPackage": "WP-23",
+      "description": "deliver cancellation/failure through a stable boundary and do not update unmounted components.",
+      "status": "implemented",
+      "evidence": [
+        "packages/react/src/index.ts:405",
+        "packages/react/src/index.ts:430",
+        "packages/react/src/index.ts:463",
+        "packages/react/src/index.ts:500"
+      ],
+      "reason": "The adapter aborts and revision-guards renderer readiness, delivers errors through onError or render, and suppresses late callbacks after cleanup. This is source inspection, not a claim of packed/browser acceptance."
+    },
+    {
+      "id": "WP-23-R6a82021c9374",
+      "workPackage": "WP-23",
+      "description": "Scope asset resources by effective loader, request/security context and digest",
+      "status": "partial",
+      "evidence": [
+        "packages/react/src/index.ts:126",
+        "packages/react/src/index.ts:562",
+        "packages/react/src/index.ts:909",
+        "packages/react/src/index.ts:918",
+        "tests/unit/react-adapter/native-hydration.test.ts:977",
+        "tests/unit/react-adapter/native-hydration.test.ts:1067"
+      ],
+      "reason": "Loader, descriptor/digest and explicit security-context identities partition resources; anonymous default loads omit credentials, unscoped custom models are isolated, and shared custom lookups require an explicit scope. Detecting a changed credential captured by the same custom loader still depends on the caller rotating the scope identity."
+    },
+    {
+      "id": "WP-23-R73d8a01ad575",
+      "workPackage": "WP-23",
+      "description": "The existing React integration handles both documented peer majors",
+      "status": "partial",
+      "evidence": [
+        "packages/react/package.json:15",
+        "packages/react/src/index.ts:126",
+        "packages/react/src/index.ts:399",
+        "packages/react/src/index.ts:562",
+        "packages/react/src/index.ts:918",
+        "tests/unit/react-adapter/native-hydration.test.ts:1067"
+      ],
+      "reason": "Readiness, cleanup and scoped cache paths exist for the declared peer range, with source tests and a packed-consumer harness. Full cache isolation remains conditional on rotating a supplied identity when mutable request credentials change; no browser peer-version result is inferred."
+    },
+    {
+      "id": "WP-23-R7e3fa10b0bf4",
+      "workPackage": "WP-23",
+      "description": "Test server-safe imports, resource identity, retries, cancellation and late completions.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/react-adapter/native-hydration.test.ts:36",
+        "tests/unit/react-adapter/native-hydration.test.ts:977",
+        "tests/unit/react-adapter/native-hydration.test.ts:1067",
+        "tests/unit/react-adapter/native-hydration.test.ts:1131",
+        "tests/unit/react-adapter/native-hydration.test.ts:1260",
+        "tests/unit/react-adapter/native-hydration.test.ts:1337",
+        "tests/unit/react-adapter/native-hydration.test.ts:1366"
+      ],
+      "reason": "The source suite contains server import, resource identity and scope, retry, cancellation and late-result assertions. This assesses authored source tests only and does not claim that a packed browser run passed."
+    },
+    {
+      "id": "WP-23-Rb8b2626808fa",
+      "workPackage": "WP-23",
+      "description": "StrictMode",
+      "status": "implemented",
+      "evidence": [
+        "packages/react/src/index.ts:394",
+        "packages/react/src/index.ts:500",
+        "packages/react/src/index.ts:587",
+        "tests/unit/react-adapter/native-hydration.test.ts:631",
+        "tests/unit/react-adapter/native-hydration.test.ts:793"
+      ],
+      "reason": "The effect cleanup aborts readiness and disposes the mount, and test source explicitly exercises StrictMode mount and preload-effect replay. This is source coverage, not a browser acceptance result."
+    },
+    {
+      "id": "WP-24-R19517fdc0240",
+      "workPackage": "WP-24",
+      "description": "Verify native isolated consumers, package conditions, optional peers and SSR-safe imports.",
+      "status": "partial",
+      "evidence": [
+        "tools/package-install-smoke/index.ts:111",
+        "tools/package-install-smoke/index.ts:165",
+        "tools/package-install-smoke/index.ts:386",
+        "tools/package-install-smoke/index.ts:391",
+        "tests/unit/tools/native-unmodified-consumer.test.ts:84",
+        "packages/physics/package.json:8",
+        "packages/physics/src/PhysicsWorld.ts:1"
+      ],
+      "reason": "The root-candidate harness tests absent/present declared optional peers, checks export targets and imports the root without window/document under Node and browser conditions. Other literal subpaths are only resolved in that probe, not all actually imported in each peer state; standalone physics also requires the backend adapter. The broader isolated SSR-safe import/optional-peer coverage is not fully established by source."
+    },
+    {
+      "id": "WP-24-R3b0159b988a9",
+      "workPackage": "WP-24",
+      "description": "Include or explicitly install promised environment assets in generated templates.",
+      "status": "partial",
+      "evidence": [
+        "packages/create-aura3d/src/index.ts:121",
+        "packages/create-aura3d/src/template-hdri.ts:14",
+        "packages/create-aura3d/src/template-hdri.ts:42",
+        "packages/engine/src/agent-api/looks/looks.ts:299",
+        "packages/engine/src/agent-api/looks/looks.ts:354",
+        "packages/create-aura3d/hdri/ATTRIBUTION.md:3",
+        "tests/unit/create-aura3d/native-scaffold-environment-assets.test.ts:50"
+      ],
+      "reason": "Look-authoring scaffolds copy four packaged HDRs and five validated baked probe sets, with missing or changed probes rejected. The public selectable HDRI catalog includes references such as belfast_sunset_puresky and rooftop_night that are not in the shipped HDRI set, and there is no corresponding explicit installation path here."
+    },
+    {
+      "id": "WP-24-R701635c6447d",
+      "workPackage": "WP-24",
+      "description": "Validate the complete supported example catalog rather than a small selected subset.",
+      "status": "implemented",
+      "evidence": [
+        "tools/agent-examples/index.ts:165",
+        "tools/agent-examples/index.ts:197",
+        "tools/agent-examples/index.ts:225",
+        "tools/agent-examples/index.ts:265",
+        "tools/agent-examples/index.ts:796",
+        "tools/agent-examples/index.ts:926",
+        "tests/unit/tools/native-doc-examples.test.ts:107"
+      ],
+      "reason": "The source producer discovers supported routes from classifications, gates and references, adds the currently enumerated capability scenarios, and requires exactly one passing install/build result per catalog entry. This covers the source-derived supported catalog, not absent capability-family examples or a claimed passing execution."
+    },
+    {
+      "id": "WP-24-R7898faa1bfe3",
+      "workPackage": "WP-24",
+      "description": "Verify peer, package-manager, module-condition and isolation reporting.",
+      "status": "implemented",
+      "evidence": [
+        "tools/native-consumer-matrix/index.ts:58",
+        "tools/native-consumer-matrix/index.ts:70",
+        "tools/native-consumer-matrix/index.ts:590",
+        "tests/unit/tools/native-consumer-matrix.test.ts:128",
+        "tests/unit/tools/native-consumer-matrix.test.ts:142",
+        "tests/unit/tools/native-consumer-matrix.test.ts:181",
+        "tests/unit/tools/native-consumer-matrix.test.ts:202",
+        "tests/fixtures/native-consumer/optional-peer-absent.mjs:2"
+      ],
+      "reason": "Authored tests exercise matrix and report validation for npm/pnpm, React 18/19, navigation peer absent/present, Node/browser condition commands, missing or fabricated checks, and isolation identity. This is scoped to those matrix cells and authored tests; it does not assert a fresh consumer run or all optional packages."
+    },
+    {
+      "id": "WP-24-R841292d25546",
+      "workPackage": "WP-24",
+      "description": "Build every promised template and capability-family example from an isolated, untouched scaffold. The harness may substitute the candidate package only; it must report and fail on missing dependencies or skipped required checks.",
+      "status": "partial",
+      "evidence": [
+        "tools/package-clean-install/index.ts:533",
+        "tools/package-clean-install/index.ts:854",
+        "tools/package-clean-install/index.ts:861",
+        "tools/agent-examples/index.ts:482",
+        "tools/agent-examples/index.ts:796",
+        "examples/native-capabilities/index.ts:29",
+        "tests/unit/tools/native-unmodified-consumer.test.ts:54"
+      ],
+      "reason": "The source harness enumerates templates, stages candidate-bound isolated consumers, and rejects missing or skipped required checks. The capability examples enumerate only ten scenarios for the much wider promised families, and the harness constructs their package, config and entry rather than building each from an untouched generated scaffold. Completing both family coverage and the specified scaffold contract remains."
+    },
+    {
+      "id": "WP-24-Rb8da6f4ec463",
+      "workPackage": "WP-24",
+      "description": "Typecheck every applicable documented snippet against packed packages and report explicit exemptions.",
+      "status": "partial",
+      "evidence": [
+        "tools/docs-codeblocks/index.ts:98",
+        "tools/docs-codeblocks/index.ts:143",
+        "tools/docs-codeblocks/index.ts:235",
+        "tools/docs-codeblocks/index.ts:290",
+        "tests/unit/tools/native-doc-examples.test.ts:92",
+        "apps/showcase-product-configurator/README.md:29",
+        "docs/project/showcase/apps-classification.md:42"
+      ],
+      "reason": "Packed-candidate staging, per-block TypeScript checking and recorded exemptions exist for the discovered documentation. Discovery scans root guidance, docs/**/*.md and public package READMEs but omits app/example READMEs. The public product-configurator README contains a TypeScript asset-workflow snippet that is neither checked nor recorded as exempt, so every applicable documented snippet is not inventoried."
+    },
+    {
+      "id": "WP-25-R70a1c69df636",
+      "workPackage": "WP-25",
+      "description": "Establish independently reproducible workloads for one primitive, product scene, dense instances, animation, a game loop, effects and asset import. Fix scene/asset hashes, seed, active look, quality, viewport, device pixel ratio, browser and backend.",
+      "status": "implemented",
+      "evidence": [
+        "tools/performance/native-workloads.ts:20",
+        "tools/performance/native-workloads.ts:33",
+        "tools/performance/native-workloads.ts:39",
+        "tools/performance/native-workloads.ts:192",
+        "tools/performance/native-benchmark.ts:76",
+        "tests/browser/native-performance-probe.spec.ts:142",
+        "tests/browser/native-performance-probe.spec.ts:190",
+        "tools/performance/native-budget.ts:119",
+        "tests/unit/tools/production-path-benchmark.test.ts:8"
+      ],
+      "reason": "Seven source workloads specify the requested scenarios, seed, look, quality, viewport, DPR, WebGL2 backend and referenced asset digests; the scene definitions and instrumentation are hashed. Browser project is explicitly selected per run, its actual version/options identity is recorded and comparisons require an identical browser/device identity. This is a reproducibility mechanism, not an executed workload result."
+    },
+    {
+      "id": "WP-25-R74d7b176bfb7",
+      "workPackage": "WP-25",
+      "description": "retain p50/p95/p99 frame and CPU durations, startup/first drawable frame, requests, raw/gzip/Brotli bytes, allocations and live resource counts. If timing or hardware is unavailable, report no-data.",
+      "status": "implemented",
+      "evidence": [
+        "tools/performance/native-workloads.ts:64",
+        "tools/performance/native-workloads.ts:235",
+        "tools/performance/native-workloads.ts:261",
+        "tests/browser/native-performance-probe.spec.ts:43",
+        "tests/browser/native-performance-probe.spec.ts:96",
+        "tests/browser/native-performance-probe.spec.ts:111",
+        "tests/browser/native-performance-probe.spec.ts:164",
+        "tests/unit/tools/production-path-benchmark.test.ts:43"
+      ],
+      "reason": "The probe records first drawable startup, p50/p95/p99 frame pacing and synchronous app.step wall durations, request counts, decoded response bytes and independently compressed gzip/Brotli sizes, plus observed WebGL allocations and live resources. It labels unavailable JS allocations, true CPU thread time and GPU residency explicitly; the harness specifies three independent 300-frame sessions. These are source mechanisms, not collected measurements."
+    },
+    {
+      "id": "WP-25-R9dc448c1f75c",
+      "workPackage": "WP-25",
+      "description": "Accept --source-report; validate current candidate/tarball/project hashes and measure root/addon/React slices from untouched source-phase consumers without requiring browser receipts.",
+      "status": "implemented",
+      "evidence": [
+        "tools/installed-tree-shaking/index.ts:18",
+        "tools/installed-tree-shaking/index.ts:104",
+        "tools/installed-tree-shaking/index.ts:130",
+        "tools/installed-tree-shaking/index.ts:220",
+        "tools/installed-tree-shaking/index.ts:236",
+        "tools/package-clean-install/index.ts:518",
+        "tests/unit/tools/native-installed-tree-shaking.test.ts:102"
+      ],
+      "reason": "The command accepts an explicit source report and candidate plan, validates source/plan and archive identities, restores or copies verified isolated consumer projects and rechecks installed content, then bundles root, game-addon and React slices. It does not require a browser receipt; no present candidate measurement is implied."
+    },
+    {
+      "id": "WP-25-Rbb0dbb755602",
+      "workPackage": "WP-25",
+      "description": "Reproduce and meet the repository's existing gzip budgets: 190,000 bytes for the core critical path, 250,000 for the product starter, 400,000 for the cinematic starter and 480,000 for the mini-game starter. The checked-in overages are historical measurements",
+      "status": "partial",
+      "evidence": [
+        "tools/bundle-size/index.ts:64",
+        "tools/bundle-size/index.ts:79",
+        "tools/bundle-size/index.ts:153",
+        "tools/bundle-size/index.ts:164",
+        "tools/bundle-size/index.ts:178",
+        "BUNDLE_SIZES.md:3",
+        "BUNDLE_SIZES.md:14"
+      ],
+      "reason": "The original four gzip thresholds and measurement targets remain in source, while the checked-in report marks its overages historical. Reproduction and meeting all four current-candidate budgets are not established by source inspection; no current passing size measurement is assumed."
+    },
+    {
+      "id": "WP-25-Re6087ea7b2dd",
+      "workPackage": "WP-25",
+      "description": "Use real asynchronous device timers where available; label CPU time and unsupported/disjoint GPU results correctly.",
+      "status": "implemented",
+      "evidence": [
+        "packages/debug/src/index.ts:15",
+        "packages/debug/src/GPUProfiler.ts:1",
+        "packages/debug/src/GPUProfiler.ts:194",
+        "packages/debug/src/GPUProfiler.ts:234",
+        "packages/debug/src/GPUProfiler.ts:312",
+        "packages/debug/src/GPUProfiler.ts:360",
+        "packages/debug/src/GPUProfiler.ts:500",
+        "tests/unit/debug/debug-runtime.test.ts:41",
+        "tests/unit/debug/debug-runtime.test.ts:64",
+        "tests/unit/debug/debug-runtime.test.ts:100",
+        "tests/unit/debug/debug-runtime.test.ts:395",
+        "tests/unit/rendering/native-webgpu-profiler-integration.test.ts:87"
+      ],
+      "reason": "The exported profiler provides asynchronously polled WebGL2 elapsed queries and WebGPU pass timestamp readback, keeping CPU wall samples distinct and marking unsupported, disjoint, failed or lost GPU results. Authored mock-device tests cover those paths. WebGPU integration is opt-in and can time a selected forward pass; this narrow outcome does not imply automatic whole-frame WebGPU telemetry or a physical-device run."
+    },
+    {
+      "id": "WP-25-Rf2fe6dfd264d",
+      "workPackage": "WP-25",
+      "description": "Existing bundle budgets pass without being raised; repeated like-for-like workloads report startup, p50/p95/p99, bytes, resource counts and available hardware timing. Counters and software results are not visual or hardware proof.",
+      "status": "partial",
+      "evidence": [
+        "tools/bundle-size/index.ts:79",
+        "tools/bundle-size/index.ts:159",
+        "BUNDLE_SIZES.md:3",
+        "BUNDLE_SIZES.md:16",
+        "tests/browser/native-performance-probe.spec.ts:164",
+        "tools/performance/native-benchmark.ts:188"
+      ],
+      "reason": "The unraised thresholds and repeated like-for-like workload instrumentation exist, but the only checked-in bundle table expressly identifies historical overages; there is no source basis to conclude the current candidate meets the budgets. Hardware timing remains availability-dependent and source instrumentation is not a measurement or visual/hardware proof."
+    },
+    {
+      "id": "WP-26-R1c050ca01d01",
+      "workPackage": "WP-26",
+      "description": "Compile font assets, shaping results and atlas updates to visible text.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/compiler/renderer.ts:280",
+        "packages/engine/src/agent-api/compiler/textures.ts:912",
+        "packages/rendering/src/SdfText.ts:443",
+        "packages/engine/src/agent-api/compiler/textures.ts:968",
+        "docs/rendering/world-labels-and-text.md:100",
+        "docs/rendering/world-labels-and-text.md:124"
+      ],
+      "reason": "Built-in glyphs use a shared mount-owned atlas. Admitted loaded-font text can use a bounded shared atlas for complete shaped monochrome label snapshots, but each change still reshapes and rasterizes the whole label, individual loaded-font glyphs are not retained, and incompatible or oversized cases fall back."
+    },
+    {
+      "id": "WP-26-R356417635a32",
+      "workPackage": "WP-26",
+      "description": "Load admitted licensed font data and metadata with bounded decoding.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/text/FontLoader.ts:45",
+        "packages/rendering/src/text/FontLoader.ts:82"
+      ],
+      "reason": "The font loader validates metadata, source length and table ranges, but delegates decoding to FontFace without an enforceable bound on actual decoder allocations. The upstream license-admission contract also needs explicit source evidence."
+    },
+    {
+      "id": "WP-26-R3820ec896e32",
+      "workPackage": "WP-26",
+      "description": "Request existing geometry and public type changes from their WP-01/WP-19 owners; verify source, pixel output, interaction and resource teardown.",
+      "status": "partial",
+      "evidence": [
+        "docs/prds/aura3d-native-capability-roadmap.md:2007",
+        "tests/unit/rendering/native-text-shaping.test.ts:145",
+        "tests/browser/native-world-text.spec.ts:56",
+        "tests/browser/native-world-text.spec.ts:95",
+        "tests/browser/native-lines-models.spec.ts:110",
+        "tests/unit/engine/native-line-runtime.test.ts:140"
+      ],
+      "reason": "Authored source tests and browser probes cover text and line/model pixels, updates and teardown. The targeted probes inspected do not exercise picking or pointer interaction for the changed objects, and source does not establish that the requested cross-owner changes were coordinated. Test execution is not inferred."
+    },
+    {
+      "id": "WP-26-R481e29419bdb",
+      "workPackage": "WP-26",
+      "description": "Manage bounded glyph allocation, eviction, updates and GPU disposal.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/text/GlyphAtlas.ts:41",
+        "packages/engine/src/agent-api/compiler/BuiltinGlyphAtlas.ts:81",
+        "packages/rendering/src/SdfText.ts:443"
+      ],
+      "reason": "Bounded glyph allocation, eviction, dirty updates and built-in shared-texture leases exist. Loaded-font per-glyph reuse remains incomplete; shared whole-label snapshots have bounded leases, while no-atlas-scope fallback retains its prior texture lifetime behavior."
+    },
+    {
+      "id": "WP-26-R6a154c6b2c5a",
+      "workPackage": "WP-26",
+      "description": "direction",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/text/TextShaper.ts:3",
+        "packages/rendering/src/text/TextShaper.ts:65",
+        "packages/rendering/src/text/TextShaper.ts:91",
+        "packages/rendering/src/text/TextShaper.ts:124",
+        "packages/engine/src/agent-api/nodes/text3d.ts:53",
+        "tests/unit/rendering/native-text-shaping.test.ts:75"
+      ],
+      "reason": "The public loaded-font path accepts explicit LTR and RTL as well as auto direction, with platform shaping of intact lines. Auto uses a short script list and the first Unicode letter, not complete Unicode first-strong bidi detection, so direction support is narrower than general Unicode scripts."
+    },
+    {
+      "id": "WP-26-Re58853768535",
+      "workPackage": "WP-26",
+      "description": "Implement width, dash, gradient, clipping and alpha behavior.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/ScreenSpaceLineMaterial.ts:39",
+        "packages/engine/src/agent-api/compiler/lines.ts:513",
+        "packages/rendering/src/ShaderLibrary.ts:3353",
+        "packages/rendering/src/forward/ScreenSpaceLineClipping.ts:68",
+        "packages/rendering/src/ForwardPass.ts:2709",
+        "packages/rendering/src/DepthPass.ts:419",
+        "tests/unit/agent-api/native-line-clipping.test.ts:645"
+      ],
+      "reason": "Screen/world width, dashes, gradients, alpha and ordinary forward clipping are implemented, including source tests. Clipped line draws with instance streams or geometry matrices and specialized clipped-depth paths are explicitly rejected, so the requested line clipping behavior remains incomplete across supported draw variants."
+    },
+    {
+      "id": "WP-27-R0bf557442a42",
+      "workPackage": "WP-27",
+      "description": "Complete or explicitly reject root behaviors, prove collider/joint/vehicle/game lifecycle and retain optional backend boundaries. WP-27.",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/contracts/stubs/game.ts:15",
+        "packages/game/src/index.ts:26",
+        "packages/engine/src/public/v5-context.ts:17",
+        "packages/engine/src/agent-api/physics/PhysicsWorldProvider.ts:28",
+        "packages/engine/src/public/legacy-physics-access.ts:1",
+        "packages/physics/package.json:8",
+        "packages/physics-rapier/package.json:8",
+        "tests/unit/game/stub-create-game-headless.test.ts:8",
+        "tests/unit/physics/native-root-physics.test.ts:82"
+      ],
+      "reason": "The root game now throws a versioned migration error, the full game has a separate entry, and collider/joint lifecycle tests plus staged physics providers exist. The legacy root statically imports its physics world, physics requires the Rapier adapter and the adapter requires Rapier; the requested optional installed-backend boundary and the broad collider/joint/vehicle/game lifecycle scope are not established as complete."
+    },
+    {
+      "id": "WP-27-R1738f57f8055",
+      "workPackage": "WP-27",
+      "description": "Complete supported ready/input/HUD/audio/effects/reset and disposal behavior on the full game entrypoint.",
+      "status": "partial",
+      "evidence": [
+        "packages/game/src/createGameCore.ts",
+        "packages/engine/src/agent-api/time/TimeController.ts",
+        "/tmp/aura3d-game-owned-hitstop-source.log"
+      ],
+      "reason": "The full-game reset clears owned effects, actor freezes and built-in controller session-owned hit-stops, preserving independent stops, and invokes an application restoration callback. Custom controllers without owner-aware methods retain legacy limitations, while scene, physics, HUD and replay state remain application-owned; the broader lifecycle remains partial."
+    },
+    {
+      "id": "WP-27-R5d4769b048e2",
+      "workPackage": "WP-27",
+      "description": "Synchronize scene transforms, parent transforms and physics ownership safely.",
+      "status": "partial",
+      "evidence": [
+        "packages/physics/src/ScenePhysicsBridge.ts:41",
+        "packages/physics/src/ScenePhysicsBridge.ts:75",
+        "packages/physics/src/ScenePhysicsBridge.ts:87",
+        "packages/physics/src/ScenePhysicsBridge.ts:166",
+        "packages/physics/src/ScenePhysicsBridge.ts:215",
+        "packages/physics/src/ScenePhysicsBridge.ts:245",
+        "packages/engine/src/agent-api/app/runtimeNodes.ts:849",
+        "packages/engine/src/agent-api/app/runtimeNodes.ts:910",
+        "tests/unit/physics/native-root-physics.test.ts:255"
+      ],
+      "reason": "The bridge claims world/node ownership and composes parent position transforms, while the root runtime publishes supported rigid world poses to local transforms. The standalone bridge composes rotations as quaternions even when nonuniform rotated ancestors create shear, and the root path rejects parented look-at, sheared/reflected/singular poses and collider scale changes. The broad parent/collider synchronization request therefore remains incomplete."
+    },
+    {
+      "id": "WP-27-R6d936cfd4112",
+      "workPackage": "WP-27",
+      "description": "Complete deterministic stepping, contacts, sensors, continuous collision and lifecycle behavior.",
+      "status": "implemented",
+      "evidence": [
+        "packages/physics/src/index.ts:88",
+        "packages/physics/src/PhysicsWorld.ts:55",
+        "packages/physics/src/PhysicsWorld.ts:209",
+        "packages/physics/src/PhysicsWorld.ts:619",
+        "packages/physics/src/PhysicsWorld.ts:745",
+        "packages/physics/src/PhysicsWorld.ts:796",
+        "packages/physics/src/PhysicsWorld.ts:954",
+        "tests/unit/physics/native-root-physics.test.ts:114",
+        "tests/unit/physics/ccd-or-fast-body.test.ts:46"
+      ],
+      "reason": "The production Rapier-backed world implements fixed-delta repeatability, contact and sensor events, native dynamic-body CCD with optional bounded adaptive substeps, and disposal. The authored tests cover replay, sensors and fast-body cases. This is a claim about that supported backend and call sequence, not cross-device determinism, every collider combination or acceptance."
+    },
+    {
+      "id": "WP-27-R965f26a6195c",
+      "workPackage": "WP-27",
+      "description": "Validate installed games with manual keyboard and touch, HUD, audio/effects, pause/reset, replay and cleanup. Promote only features backed by the applicable root or subpath evidence.",
+      "status": "partial",
+      "evidence": [
+        "tests/browser/native-game-physics.spec.ts:7",
+        "tests/browser/native-game-physics.spec.ts:114",
+        "tests/browser/native-game-physics.spec.ts:138",
+        "tests/browser/native-game-physics.spec.ts:147",
+        "tests/browser/native-game-physics.spec.ts:174",
+        "tests/browser/native-game-physics.spec.ts:181",
+        "tests/browser/native-game-physics.spec.ts:189",
+        "docs/prds/aura3d-native-acceptance.md:7"
+      ],
+      "reason": "An authored frozen-installed-consumer probe exercises keyboard input, synthetic touch, HUD, audio/FX, pause, fixture-owned reset, replay and cleanup. It dispatches touch events rather than establishing physical/manual device input, and it does not itself promote features on root/subpath evidence. Actual acceptance is a separate locked phase and is not inferred here."
+    },
+    {
+      "id": "WP-27-Re1196994380a",
+      "workPackage": "WP-27",
+      "description": "deterministic stepping and continuous collision.",
+      "status": "implemented",
+      "evidence": [
+        "packages/physics/src/index.ts:46",
+        "packages/physics/src/PhysicsWorld.ts:55",
+        "packages/physics/src/PhysicsWorld.ts:209",
+        "packages/physics/src/PhysicsWorld.ts:619",
+        "packages/physics/src/PhysicsWorld.ts:954",
+        "packages/physics/src/PhysicsWorld.ts:1093",
+        "tests/unit/physics/native-root-physics.test.ts:237",
+        "tests/unit/physics/ccd-or-fast-body.test.ts:46"
+      ],
+      "reason": "The production Rapier path supports repeatable fixed-delta call sequences and enables native CCD for dynamic bodies; the optional adaptive-substep mode provides a bounded policy and can reject excess required substeps. Authored replay and fast-body tests cover this source path, with no claim of cross-device determinism or completion of a separate experimental solver."
+    },
+    {
+      "id": "WP-28-R12d3b2c08d2e",
+      "workPackage": "WP-28",
+      "description": "Conformance fixtures have documented provenance",
+      "status": "implemented",
+      "evidence": [
+        "tests/fixtures/native-capabilities/manifest.json:8",
+        "tests/assets/native-format-conformance.test.ts:125",
+        "docs/assets/native-format-conformance.md:8"
+      ],
+      "reason": "The scoped fixture manifest records author, license, provenance and digest for all 21 entries; test source validates the fields. Thirty-six format categories are separately listed as unverified; this does not assert provenance for the entire library."
+    },
+    {
+      "id": "WP-28-R22f4feab0894",
+      "workPackage": "WP-28",
+      "description": "Verify actual returned/resident mip bytes, device isolation, duplicate labels and release.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/assets/native-texture-budget.test.ts:85",
+        "tests/unit/assets/native-texture-budget.test.ts:151",
+        "tests/unit/assets/native-texture-budget.test.ts:280",
+        "tests/unit/assets/native-texture-budget.test.ts:311",
+        "tests/unit/assets/native-texture-budget.test.ts:531"
+      ],
+      "reason": "The named unit-test source compares returned CPU mip bytes with the budget, records bytes submitted per mip by the real texture registry, and checks same-name allocations across two device registries and release. The device is a WebGL-shaped recorder; this source-test classification does not claim physical GPU residency or browser acceptance."
+    },
+    {
+      "id": "WP-28-R8ef763b548be",
+      "workPackage": "WP-28",
+      "description": "independent expected output. Claimed variants are decoded",
+      "status": "partial",
+      "evidence": [
+        "tests/fixtures/native-capabilities/manifest.json:8",
+        "tests/fixtures/native-capabilities/manifest.json:1041",
+        "tests/assets/native-format-conformance.test.ts:125",
+        "tests/assets/native-format-conformance.test.ts:173",
+        "tests/browser/native-format-maturity.spec.ts:163"
+      ],
+      "reason": "Independent expected outputs and authored decode/render checks exist for an initial fixture subset. Numerous additional format or variant combinations are outside that source-test and fixture inventory, so the complete claimed-variant scope remains partial."
+    },
+    {
+      "id": "WP-28-R968e6a8c4664",
+      "workPackage": "WP-28",
+      "description": "Verify the texture budget against returned CPU bytes and live device residency, including same-name textures on separate devices, eviction and release.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/assets/native-texture-budget.test.ts:85",
+        "tests/unit/assets/native-texture-budget.test.ts:280",
+        "tests/unit/assets/native-texture-budget.test.ts:531",
+        "tests/unit/assets/texture-residency-controller.test.ts:521",
+        "tests/browser/root-texture-streaming-m2.spec.ts:19"
+      ],
+      "reason": "Source assertions cover returned mip bytes, eviction and duplicate labels across mocked device registries; an authored browser probe covers funded/starved residency telemetry. The inspected live-device test source does not cover the requested full combination of same-name resources on separate devices, actual mip residency, eviction and release."
+    },
+    {
+      "id": "WP-28-Ra2f45c876ce4",
+      "workPackage": "WP-28",
+      "description": "Cover nested external dependencies, invalid required/optional extensions, corrupt/truncated files, archive expansion, strict/fallback texture failures, byte integrity and independently verified export round trips.",
+      "status": "implemented",
+      "evidence": [
+        "tests/assets/native-format-conformance.test.ts:150",
+        "tests/assets/native-scene-formats.test.ts:410",
+        "tests/assets/native-scene-formats.test.ts:440",
+        "tests/assets/native-format-conformance.test.ts:212",
+        "tests/assets/native-format-conformance.test.ts:222",
+        "tests/assets/native-format-conformance.test.ts:228",
+        "tests/assets/native-format-conformance.test.ts:254",
+        "tests/assets/native-format-conformance.test.ts:275"
+      ],
+      "reason": "Authored source cases cover nested external dependencies, required/optional extension outcomes, corrupt/truncated bytes, archive expansion limits, strict/fallback texture errors, digest failures and independently read OBJ/STL exports. This classifies the authored test scope only, not a current-candidate pass."
+    },
+    {
+      "id": "WP-28-Rac599fbd6d04",
+      "workPackage": "WP-28",
+      "description": "Publish supported combinations, fixture method, known losses and exact evidence.",
+      "status": "partial",
+      "evidence": [
+        "docs/assets/native-format-conformance.md:8",
+        "docs/assets/native-format-conformance.md:35",
+        "docs/assets/native-format-conformance.md:59",
+        "docs/assets/native-format-conformance.md:107",
+        "tests/fixtures/native-capabilities/manifest.json:1041"
+      ],
+      "reason": "The conformance page publishes the fixture method, specific initial combinations, evidence boundaries and several concrete losses. Its inventory is deliberately narrow and 36 additional format categories are listed as unverified, leaving the full supported-combination and evidence publication scope incomplete."
+    },
+    {
+      "id": "WP-29-R1acb06c000f5",
+      "workPackage": "WP-29",
+      "description": "Exercise direct/transitive/alias/optional/peer dependencies, embedded data, review candidates and false positives.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/tools/native-runtime-audit-dependency-graph.test.ts:11",
+        "tests/unit/tools/native-runtime-audit.test.ts:31",
+        "packages/math/src/independent/PolygonTriangulation.ts:656",
+        "packages/math/src/independent/ConvexHull.ts:680",
+        "aura.exports.json:106",
+        "packages/math/src/index.ts:1"
+      ],
+      "reason": "Dependency and embedded-data test cases exist, and several independent math candidates have source. This sampled ledger ID has 41 references that merge additional replacement and public-compatibility outcomes; the stable math barrel still exports the existing classes while the independent hull is an opt-in entry, so the combined row remains incomplete."
+    },
+    {
+      "id": "WP-29-R5961a74b3d2f",
+      "workPackage": "WP-29",
+      "description": "Replace reference-dependent fixtures with independently derived UV expectations.",
+      "status": "implemented",
+      "evidence": [
+        "tests/qr/prd04/unit/uv-transform-matrix.test.ts:18",
+        "tests/qr/prd04/unit/uv-transform-matrix.test.ts:27",
+        "tests/qr/prd04/unit/uv-transform-matrix.test.ts:47",
+        "tests/qr/prd04/unit/uv-transform-matrix.test.ts:62"
+      ],
+      "reason": "The test source derives expected transformed UVs from separate coordinate arithmetic and fixed analytic examples, then checks the local implementation. This audit did not execute the test."
+    },
+    {
+      "id": "WP-29-R8cc837095a89",
+      "workPackage": "WP-29",
+      "description": "Inspect permitted runtime network events for external engine implementation fetches.",
+      "status": "implemented",
+      "evidence": [
+        "tools/native-runtime-audit/runtime-network.ts:56",
+        "tools/native-runtime-audit/runtime-network.ts:62",
+        "tools/native-runtime-audit/runtime-network.ts:81",
+        "tests/unit/tools/native-runtime-audit.test.ts:230"
+      ],
+      "reason": "The classifier inspects supplied allowed and unexpected network observations and flags relevant implementation references for review. This covers classification source; it does not prove event-capture completeness or a runtime pass."
+    },
+    {
+      "id": "WP-29-R99167a0afe2e",
+      "workPackage": "WP-29",
+      "description": "Treat textual references, standardized equations and fingerprint hits as review candidates, not automatic proof of copied implementation. A scanner alone cannot prove independent authorship.",
+      "status": "implemented",
+      "evidence": [
+        "tools/native-runtime-audit/source-evidence.ts:137",
+        "tools/native-runtime-audit/source-evidence.ts:175",
+        "tools/native-runtime-audit/runtime-network.ts:56",
+        "tests/unit/tools/native-runtime-audit-cli.test.ts:35"
+      ],
+      "reason": "The audit treats textual and supplied fingerprint matches as review candidates and explicitly says matches or their absence cannot establish authorship."
+    },
+    {
+      "id": "WP-29-Rf17c6a156e5a",
+      "workPackage": "WP-29",
+      "description": "Verify a clean packed consumer runs offline without fetching an external engine implementation.",
+      "status": "implemented",
+      "evidence": [
+        "tests/browser/native-offline-independence.spec.ts:140",
+        "tests/browser/native-offline-independence.spec.ts:173",
+        "tests/browser/native-offline-independence.spec.ts:176",
+        "tests/browser/native-offline-independence.spec.ts:188"
+      ],
+      "reason": "The source harness restores an isolated packed consumer, blocks network and WebSocket access, and checks an offline negative control and observed requests. Implemented means harness source only; this audit did not run browser acceptance and does not claim an offline pass."
+    },
+    {
+      "id": "WP-29-Rf738f85fb7c4",
+      "workPackage": "WP-29",
+      "description": "Test direct, transitive, aliased, peer and optional dependency detection. Exclusive execution owner: wp29_provenance/dependency_graph. Source verification: Direct Vitest for this file.",
+      "status": "implemented",
+      "evidence": [
+        "tests/unit/tools/native-runtime-audit-dependency-graph.test.ts:11",
+        "tests/unit/tools/native-runtime-audit-dependency-graph.test.ts:32",
+        "tests/unit/tools/native-runtime-audit-dependency-graph.test.ts:65",
+        "tests/unit/tools/native-runtime-audit-dependency-graph.test.ts:89"
+      ],
+      "reason": "The test source asserts direct, transitive, aliased, peer and optional dependency detection, as well as packed entries and false positives. No test execution is claimed."
+    },
+    {
+      "id": "WP-30-R025a8daf1fcf",
+      "workPackage": "WP-30",
+      "description": "Extract and test planes for supported clip/depth ranges and optional unbounded far distance.",
+      "status": "implemented",
+      "evidence": [
+        "packages/math/src/Frustum.ts:19",
+        "packages/math/src/Frustum.ts:45",
+        "packages/math/src/Frustum.ts:56",
+        "tests/unit/rendering/native-camera-depth.test.ts:55",
+        "tests/unit/rendering/native-camera-depth.test.ts:74"
+      ],
+      "reason": "The frustum extracts the supported clip-range planes and handles reversed depth and unbounded far; test source exercises finite and unbounded cases. This audit did not run those tests."
+    },
+    {
+      "id": "WP-30-R355399f354bd",
+      "workPackage": "WP-30",
+      "description": "Keep projection, inverse projection and culling metadata coherent after updates.",
+      "status": "implemented",
+      "evidence": [
+        "packages/scene/src/Camera.ts:64",
+        "packages/scene/src/Camera.ts:71",
+        "packages/scene/src/Camera.ts:77",
+        "packages/scene/src/Camera.ts:81",
+        "packages/scene/src/Camera.ts:94"
+      ],
+      "reason": "The scene camera computes projection, inverse, view projection, frustum and metadata before publishing them as a coherent set; projection-control setters restore the prior setting if updating fails."
+    },
+    {
+      "id": "WP-30-R4b030cdc32fc",
+      "workPackage": "WP-30",
+      "description": "3×3/4×4 matrices",
+      "status": "implemented",
+      "evidence": [
+        "packages/math/src/index.ts:4",
+        "packages/math/src/Matrix3.ts:6",
+        "packages/math/src/Matrix3.ts:80",
+        "packages/math/src/Matrix4.ts:32",
+        "packages/math/src/Matrix4.ts:241"
+      ],
+      "reason": "The public math barrel exports 3-by-3 and 4-by-4 matrices with matrix arithmetic, inversion and transformations. This says nothing about completion of the separate independent mutable replacement."
+    },
+    {
+      "id": "WP-30-Raf9ecc430923",
+      "workPackage": "WP-30",
+      "description": "depth of field",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/effects.ts:205",
+        "packages/rendering/src/post/v2Stages.ts:1464",
+        "packages/rendering/src/Renderer.ts:1593",
+        "packages/rendering/src/Renderer.ts:1603",
+        "packages/rendering/src/Renderer.ts:4630"
+      ],
+      "reason": "Public depth-of-field options and a WebGL postprocess exist, as does a bounded native WebGPU route. Native scene admission is restricted to opaque full-view frames and built-in unlit triangle materials without several contributors, so broader backend and scene coverage remains incomplete."
+    },
+    {
+      "id": "WP-30-Rd24cc1160026",
+      "workPackage": "WP-30",
+      "description": "tiled/asymmetric views",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/camera.ts:56",
+        "packages/engine/src/agent-api/nodes/camera.ts:164",
+        "packages/scene/src/PerspectiveCamera.ts:50",
+        "packages/scene/src/PerspectiveCamera.ts:77",
+        "packages/scene/src/OrthographicCamera.ts:63",
+        "packages/scene/src/OrthographicCamera.ts:67",
+        "packages/rendering/src/Renderer.ts:5497",
+        "tests/unit/scene/native-tiled-camera-resize.test.ts:172"
+      ],
+      "reason": "Public perspective and orthographic camera builders forward tile controls; scene cameras crop the full-image frustum and retain its aspect through renderer viewport resize. Source cases cover adjoining tiles, physical lens shift, orthographic resize modes and renderer entry points. Tests and browser/device acceptance were not run in this audit."
+    },
+    {
+      "id": "WP-30-Re687c2c73678",
+      "workPackage": "WP-30",
+      "description": "line segments",
+      "status": "implemented",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/lines.ts:161",
+        "packages/engine/src/agent-api/compiler/lines.ts:367",
+        "packages/engine/src/agent-api/compiler/lines.ts:557",
+        "packages/engine/src/public/index.ts:15"
+      ],
+      "reason": "The public API exposes independent line-segment pairs and the live line compiler turns them into geometry."
+    },
+    {
+      "id": "WP-31-R050ea30e3439",
+      "workPackage": "WP-31",
+      "description": "sorted fallback",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/transparency/WeightedTransparency.ts:38",
+        "packages/rendering/src/transparency/WeightedTransparency.ts:192",
+        "packages/rendering/src/transparency/WeightedTransparency.ts:209",
+        "packages/rendering/src/transparency/WeightedTransparency.ts:223",
+        "packages/rendering/src/transparency/WeightedTransparency.ts:243"
+      ],
+      "reason": "The weighted-transparency helper accepts opaque depth, owns per-view resources and invokes a supplied sorted fallback. The regular renderer does not reference the helper for weighted-mode selection, leaving an integrated weighted path and its fallback incomplete."
+    },
+    {
+      "id": "WP-31-R308832ede0ca",
+      "workPackage": "WP-31",
+      "description": "Test every supported state, variant key, integer/normalized layout, separate instance stream and invalid combination.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/rendering/native-render-state.test.ts:81",
+        "tests/unit/rendering/native-render-state.test.ts:181",
+        "tests/unit/rendering/native-render-state.test.ts:254",
+        "tests/unit/rendering/native-render-state.test.ts:274",
+        "tests/unit/rendering/native-render-state.test.ts:359",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:132"
+      ],
+      "reason": "The source tests cover many states, cache keys, separate streams, scalar and selected vector formats and invalid combinations. They do not explicitly exercise every supported integer/normalized layout, including unorm8x2, so the requested exhaustive coverage remains incomplete. No test execution is claimed."
+    },
+    {
+      "id": "WP-31-R43223d1fa7d3",
+      "workPackage": "WP-31",
+      "description": "a change in shader-affecting state must select the correct variant, while ordinary uniform edits must not cause needless recompilation.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/program/ProgramCache.ts:123",
+        "packages/rendering/src/ForwardPass.ts:2083",
+        "packages/rendering/src/ForwardPass.ts:2092",
+        "packages/rendering/src/Renderer.ts:1582",
+        "packages/rendering/src/Renderer.ts:3975",
+        "tests/unit/rendering/native-pbr-detail-shaders.test.ts:1296",
+        "tests/unit/rendering/shadow-camera-position.test.ts:459"
+      ],
+      "reason": "Feature keys and warmup cover selected clipping and output variants, with source regression cases for uniform-only reuse and shadow warmup. The renderer explicitly rejects nonstandard depth modes, leaving the referenced broader clipping/depth/output integration incomplete."
+    },
+    {
+      "id": "WP-31-R8d93a3e03d26",
+      "workPackage": "WP-31",
+      "description": "Pixel-check culling, custom blend, stencil, color masks, polygon offset, depth comparison and instance data on each backend.",
+      "status": "partial",
+      "evidence": [
+        "tests/browser/native-render-state.spec.ts:15",
+        "tests/browser/native-render-state.spec.ts:27",
+        "tests/browser/native-render-state.spec.ts:35",
+        "tests/browser/native-render-state.spec.ts:55",
+        "tests/browser/native-render-state.spec.ts:194"
+      ],
+      "reason": "The browser harness contains pixel assertions for the requested state categories on both backend loops, but skips an unavailable backend and therefore does not require checks to execute on each backend. This audit did not run browser acceptance."
+    },
+    {
+      "id": "WP-31-Re756dd73ab6c",
+      "workPackage": "WP-31",
+      "description": "Define full named/custom blend, depth and alpha semantics consumed by both devices.",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/contracts/blend.ts:5",
+        "packages/rendering/src/contracts/blend.ts:12",
+        "packages/rendering/src/contracts/blend.ts:23",
+        "packages/rendering/src/contracts/blend.ts:54",
+        "packages/rendering/src/webgl2/MultiDraw.ts:664",
+        "packages/rendering/src/webgl2/MultiDraw.ts:751",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:218"
+      ],
+      "reason": "The shared contract defines and validates named/custom color and alpha blend components and depth comparisons. Both device state paths consume those semantics; this definition does not claim that every hardware-specific combination renders."
+    },
+    {
+      "id": "WP-31-Rf11b3ed535b7",
+      "workPackage": "WP-31",
+      "description": "Map full draw state to native pipeline/dynamic state and a deterministic cache key including attachment/layout requirements.",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/webgpu/NativeRenderState.ts:113",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:132",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:218",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:297",
+        "packages/rendering/src/webgpu/NativeRenderState.ts:303",
+        "packages/rendering/src/WebGPUDevice.ts:5452"
+      ],
+      "reason": "Fixed and dynamic state, attachments and layouts feed a deterministic native pipeline key used by device submission. Non-unit instance divisors, packed three-component integer layouts and unnormalized integer-to-float inputs remain explicitly unsupported, so full requested layout breadth is incomplete."
+    },
+    {
+      "id": "WP-32-R089242bb8b3f",
+      "workPackage": "WP-32",
+      "description": "Verify known color vectors, HDR values above one and below zero, output readback, layered/mip update isolation, changing media frames, compressed-block validation and final cleanup on supported backends.",
+      "status": "partial",
+      "evidence": [
+        "tests/unit/rendering/native-color-management.test.ts:38",
+        "tests/unit/rendering/native-color-management.test.ts:56",
+        "tests/browser/native-color-output.spec.ts:130",
+        "tests/browser/native-dynamic-textures.spec.ts:405",
+        "tests/browser/native-dynamic-textures.spec.ts:436"
+      ],
+      "reason": "Source tests include extended numerical color vectors and browser cases for output readback, texture isolation, media, compressed-block rejection and cleanup. Extended-range HDR GPU readback across the supported backends was not established in the inspected harnesses. No acceptance was run."
+    },
+    {
+      "id": "WP-32-R563dad4a3cf5",
+      "workPackage": "WP-32",
+      "description": "clean source disposal",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/Texture.ts:341",
+        "packages/rendering/src/Texture.ts:350",
+        "packages/engine/src/agent-api/nodes/texture.ts:340",
+        "tests/unit/rendering/native-texture-cpu-retirement.test.ts:152",
+        "tests/unit/rendering/native-webgpu-upload-disposal.test.ts:59"
+      ],
+      "reason": "Texture disposal releases polling, borrowed media and CPU content references after notifying device listeners, without controlling the source owner; source tests cover media retirement and upload-time disposal. This is source coverage, not a current-candidate or acceptance claim."
+    },
+    {
+      "id": "WP-32-R6de98e1daa47",
+      "workPackage": "WP-32",
+      "description": "negotiated wide-gamut output",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/WebGL2Device.ts:865",
+        "packages/rendering/src/WebGPUDevice.ts:1492",
+        "packages/rendering/src/WebGPUDevice.ts:1549",
+        "packages/rendering/src/WebGPUDevice.ts:1635",
+        "packages/rendering/src/WebGPUDevice.ts:1747",
+        "packages/rendering/src/WebGPUDevice.ts:3861"
+      ],
+      "reason": "Both devices have wide-gamut negotiation and native WebGPU supports a verified opaque canvas output and bounded HDR tone route. Offscreen wide-gamut output, direct scene output, preserved alpha and additional postprocess combinations are explicitly unavailable."
+    },
+    {
+      "id": "WP-32-Ra3ecbf7b81ec",
+      "workPackage": "WP-32",
+      "description": "partial uploads",
+      "status": "implemented",
+      "evidence": [
+        "packages/rendering/src/resources/UniformBlock.ts:155",
+        "packages/rendering/src/resources/UniformBlock.ts:220",
+        "packages/rendering/src/WebGPUDevice.ts:1805",
+        "tests/unit/rendering/native-uniform-block-partial-updates.test.ts:39",
+        "/tmp/aura3d-uniform-partial-source-final.log"
+      ],
+      "reason": "Both device APIs support offset buffer writes, and public UniformBlock offers opt-in four-byte-aligned tracked partial uploads with first-write, invalidation and failure handling. The default and built-in frame uniforms still upload whole blocks; direct external buffer writes require explicit invalidation. Source/mock tests passed; GPU acceptance has not run."
+    },
+    {
+      "id": "WP-32-Ra821faceda73",
+      "workPackage": "WP-32",
+      "description": "mip generation/update",
+      "status": "partial",
+      "evidence": [
+        "packages/rendering/src/Texture.ts:440",
+        "packages/rendering/src/webgl2/TextureUpload.ts:558",
+        "packages/rendering/src/WebGPUDevice.ts:2381",
+        "packages/rendering/src/WebGPUDevice.ts:6220",
+        "packages/rendering/src/WebGPUDevice.ts:6275",
+        "packages/rendering/src/WebGPUDevice.ts:7361"
+      ],
+      "reason": "Explicit mip updates, WebGL generation, WebGPU source-image mip generation and render-target generation exist. The WebGPU raw-data allocation path uses the supplied mip count and uploads supplied subresources without a corresponding automatic mip-generation path."
+    },
+    {
+      "id": "WP-32-Rcdae4b20c5e9",
+      "workPackage": "WP-32",
+      "description": "retained dynamic media/layer/mip updates",
+      "status": "partial",
+      "evidence": [
+        "packages/engine/src/agent-api/nodes/texture.ts:340",
+        "packages/rendering/src/Texture.ts:250",
+        "packages/rendering/src/Texture.ts:440",
+        "packages/rendering/src/Texture.ts:546",
+        "packages/rendering/src/WebGPUDevice.ts:6637"
+      ],
+      "reason": "Retained video polling, layer updates and explicit mip revisions exist for supported cases. Live dynamic textures are limited to flat uncompressed 2D, and updating a compressed texture through a decoded WebGPU fallback is explicitly rejected."
+    }
+  ],
+  "reassessedOutcomeIds": [
+    "WP-05-R367f2e64ab97",
+    "WP-07-Rdbdb3c3fc0c8",
+    "WP-09-R88fd2543b00c",
+    "WP-11-Rc09ef824eac3",
+    "WP-13-R70a5eee5aabe",
+    "WP-16-Rce47d0500864",
+    "WP-27-R1738f57f8055"
+  ],
+  "previousAssessment": "docs/prds/aura3d-native-source-sample-refresh8-2026-11-01.json"
+}

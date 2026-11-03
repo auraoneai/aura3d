@@ -20,7 +20,7 @@ registerCliCommand({
   name: "environments bake",
   owner: "prd02",
   summary: "Bake an environment probe asset (specular KTX2 + SH9 strip + manifest).",
-  usage: "aura3d environments bake --source room [--face-size 256] [--samples 128] [--out public/aura-environments] [--name room-neutral]",
+  usage: "aura3d environments bake --source room [--face-size 256] [--samples 128] [--out public/aura-environments] [--name room-neutral] [--standard-ktx2-primaries bt709|unspecified] (declares input primaries without conversion; the Aura3D probe reader currently requires BT.709)",
   run: runEnvironmentsBake
 });
 

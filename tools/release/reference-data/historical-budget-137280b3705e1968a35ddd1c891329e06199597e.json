@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.historical-budget-fixture/1",
+  "scope": "inert historical Aura-authored bundle configuration for synthetic unit tests only",
+  "commit": "137280b3705e1968a35ddd1c891329e06199597e",
+  "path": "tools/bundle-size/index.ts",
+  "gitBlobSha1": "73fd553418f17c853ccdc1c5a8856668bcef9fb2",
+  "sha256": "0c09f31f1df38ed2bcb4d3694375d83c6f13822d0165454917f36b807bdf0b6e",
+  "bytes": 18812,
+  "candidateIdentity": false,
+  "acceptanceEvidence": false
+}

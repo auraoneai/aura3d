@@ -2,12 +2,13 @@
 // preset loads /hdri/<file>.hdr (looks.ts HDRI_ASSET); a scaffolded project
 // that authors a look must carry them under public/hdri or its IBL/sky 404s.
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
 import { createA3DProject } from "../../../packages/create-aura3d/src";
 import { templateAuthorsLook } from "../../../packages/create-aura3d/src/template-hdri";
+import { lookHdriIds, lookHdriUrl } from "../../../packages/engine/src/agent-api/looks/looks.js";
 
 const rootDir = resolve("packages/create-aura3d");
 const hdriSource = join(rootDir, "hdri");
@@ -16,15 +17,13 @@ const scratch = mkdtempSync(join(tmpdir(), "qr13-template-hdri-"));
 afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 
 describe("create-aura3d template HDRIs", () => {
-  test("the package HDRI set is the four Poly Haven files with attribution", () => {
+  test("the package HDRI set covers the look catalog and internal night preset with attribution", () => {
     const files = readdirSync(hdriSource).sort();
     expect(files).toEqual([
       "ATTRIBUTION.md",
-      "autumn_field_puresky_1k.hdr",
-      "kloppenheim_06_puresky_1k.hdr",
       "night-2k.hdr",
-      "studio_small_08_1k.hdr"
-    ]);
+      ...lookHdriIds.map((id) => lookHdriUrl(id).slice("/hdri/".length))
+    ].sort());
     const attribution = readFileSync(join(hdriSource, "ATTRIBUTION.md"), "utf8");
     for (const file of files.filter((name) => name.endsWith(".hdr"))) {
       expect(attribution).toContain(`\`${file}\``);
@@ -57,10 +56,9 @@ describe("create-aura3d template HDRIs", () => {
   test("a look-authoring scaffold fails loudly when the HDRI set is missing", () => {
     // rootDir with templates/ but no hdri/: copy just one template tree.
     const fakeRoot = join(scratch, "fake-root");
-    createA3DProject({ targetDir: join(fakeRoot, "templates", "product-viewer"), template: "product-viewer", rootDir });
-    rmSync(join(fakeRoot, "templates", "product-viewer", "public", "hdri"), { recursive: true, force: true });
+    cpSync(join(rootDir, "templates", "product-viewer"), join(fakeRoot, "templates", "product-viewer"), { recursive: true });
     expect(() =>
       createA3DProject({ targetDir: join(scratch, "broken"), template: "product-viewer", rootDir: fakeRoot })
-    ).toThrow(/no look HDRIs found/);
+    ).toThrow(/HDRI_UNAVAILABLE:.*\.hdr: missing or unreadable/);
   });
 });

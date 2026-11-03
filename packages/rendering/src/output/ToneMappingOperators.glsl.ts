@@ -1,12 +1,8 @@
 /**
- * `output/ToneMappingOperators.glsl.ts` (PRD-01 §8.6, C-05) — the OutputPass
- * fragment shader source. Operator bodies are three.js r185 ports with the
- * `color *= toneMappingExposure;` line removed (OutputPass applies
- * `hdr * u_exposure` once before the operator). `TONE_MAP` is a `#define`
- * selecting the operator; `BACKGROUND_COVERAGE` mixes to unmapped `clamp(hdr)`
- * outside drawn coverage (§6.5); `OUTPUT_OVERLAY` runs the C-05 juice overlay
- * after encode (Q-01-1 reference GLSL adapted — the uniforms are the C-05
- * `OutputOverlayUniforms`, shape packed as `[inner, softness, aspect, on]`).
+ * Output presentation shader. Exposure is applied exactly once by the caller;
+ * tone curves operate on linear RGB and precede the sRGB transfer function.
+ * ACES, AgX, PBR Neutral, Reinhard and Cineon use their published curve
+ * equations; the viewing scale is kept for Aura3D's existing output contract.
  */
 
 export const OUTPUT_VERTEX_GLSL = `#version 300 es
@@ -19,120 +15,85 @@ void main() {
 }
 `;
 
-export const TONE_MAPPING_OPERATORS_GLSL = `// r185 tonemapping_pars_fragment, exposure lines removed (PRD-01 §8.6).
-// "none" is a pass-through (still clamped at the OETF); "linear" saturates.
+/** Shared ACES transform used by both direct and postprocessed output. */
+export const ACES_FILMIC_GLSL = `vec3 a3dToneRows(vec3 v, vec3 r0, vec3 r1, vec3 r2) {
+  return vec3(dot(r0, v), dot(r1, v), dot(r2, v));
+}
+// Hill's published rational approximation, used in the ACES working gamut.
+vec3 RRTAndODTFit(vec3 x) {
+  vec3 numerator = (x + 0.0245786) * x - 0.000090537;
+  vec3 denominator = (0.983729 * x + 0.432951) * x + 0.238081;
+  return numerator / denominator;
+}
+vec3 ACESFilmicToneMapping(vec3 color) {
+  vec3 working = a3dToneRows(max(color, vec3(0.0)) / 0.6,
+    vec3(0.59719, 0.35458, 0.04823),
+    vec3(0.07600, 0.90834, 0.01566),
+    vec3(0.02840, 0.13383, 0.83777));
+  vec3 fitted = RRTAndODTFit(working);
+  return clamp(a3dToneRows(fitted,
+    vec3(1.60475, -0.53108, -0.07367),
+    vec3(-0.10208, 1.10813, -0.00605),
+    vec3(-0.00327, -0.07276, 1.07602)), 0.0, 1.0);
+}
+
+`;
+
+export const TONE_MAPPING_OPERATORS_GLSL = `// Independent Aura3D display transforms, paired with post/ToneOperators.ts.
+${ACES_FILMIC_GLSL}
 vec3 NoneToneMapping(vec3 color) { return color; }
-vec3 LinearToneMapping(vec3 color) { return saturate(color); }
-
-// source: https://www.cs.utah.edu/docs/techreports/2002/pdf/UUCS-02-001.pdf
+vec3 LinearToneMapping(vec3 color) { return clamp(color, 0.0, 1.0); }
+// Preserve out-of-gamut negatives for the destination-primary transform;
+// gamut clipping happens afterward. Avoid the x = -1 singularity.
+float a3dReinhardChannel(float value) {
+  return value >= 0.0 ? value / (1.0 + value) : value;
+}
 vec3 ReinhardToneMapping(vec3 color) {
-  return saturate( color / ( vec3( 1.0 ) + color ) );
+  return vec3(a3dReinhardChannel(color.r), a3dReinhardChannel(color.g), a3dReinhardChannel(color.b));
 }
 
-// source: https://github.com/selfshadow/ltc_code/blob/master/webgl/shaders/ltc/ltc_blit.fs
-vec3 RRTAndODTFit( vec3 v ) {
-  vec3 a = v * ( v + 0.0245786 ) - 0.000090537;
-  vec3 b = v * ( 0.983729 * v + 0.4329510 ) + 0.238081;
-  return a / b;
+// AgX log window and sixth-degree contrast approximation.
+vec3 a3dAgxContrast(vec3 x) {
+  return (((((15.5*x - 40.14)*x + 31.96)*x - 6.868)*x + 0.4298)*x + 0.1191)*x - 0.00232;
+}
+vec3 AgXToneMapping(vec3 color) {
+  vec3 wide = a3dToneRows(max(color, vec3(0.0)),
+    vec3(0.6274, 0.3293, 0.0433), vec3(0.0691, 0.9195, 0.0113), vec3(0.0164, 0.0880, 0.8956));
+  vec3 inset = a3dToneRows(wide,
+    vec3(0.856627153315983, 0.0951212405381588, 0.0482516061458583),
+    vec3(0.137318972929847, 0.761241990602591, 0.101439036467562),
+    vec3(0.11189821299995, 0.0767994186031903, 0.811302368396859));
+  vec3 logExposure = clamp((log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999, 0.0, 1.0);
+  vec3 graded = a3dAgxContrast(logExposure);
+  vec3 outset = a3dToneRows(graded,
+    vec3(1.1271005818144368, -0.11060664309660323, -0.016493938717834573),
+    vec3(-0.1413297634984383, 1.157823702216272, -0.016493938717834257),
+    vec3(-0.14132976349843826, -0.11060664309660294, 1.2519364065950405));
+  vec3 display = pow(max(outset, vec3(0.0)), vec3(2.2));
+  return clamp(a3dToneRows(display,
+    vec3(1.6605, -0.5876, -0.0728), vec3(-0.1246, 1.1329, -0.0083), vec3(-0.0182, -0.1006, 1.1187)), 0.0, 1.0);
 }
 
-// this implementation of ACES is modified to accommodate a brighter viewing environment.
-// the scale factor of 1/0.6 is subjective. see discussion in #19621.
-vec3 ACESFilmicToneMapping( vec3 color ) {
-  // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
-  const mat3 ACESInputMat = mat3(
-    vec3( 0.59719, 0.07600, 0.02840 ),
-    vec3( 0.35458, 0.90834, 0.13383 ),
-    vec3( 0.04823, 0.01566, 0.83777 )
-  );
-  // ODT_SAT => XYZ => D60_2_D65 => sRGB
-  const mat3 ACESOutputMat = mat3(
-    vec3(  1.60475, -0.10208, -0.00327 ),
-    vec3( -0.53108,  1.10813, -0.07276 ),
-    vec3( -0.07367, -0.00605,  1.07602 )
-  );
-  color /= 0.6; // exposure factor already applied by the caller
-  color = ACESInputMat * color;
-  color = RRTAndODTFit( color );
-  color = ACESOutputMat * color;
-  return saturate( color );
+// Filmic Cineon fit, with its inverse display gamma returning linear light.
+vec3 CineonToneMapping(vec3 color) {
+  vec3 x = max(color - 0.004, vec3(0.0));
+  return pow((x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06), vec3(2.2));
 }
 
-const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(
-  vec3( 1.6605, - 0.1246, - 0.0182 ),
-  vec3( - 0.5876, 1.1329, - 0.1006 ),
-  vec3( - 0.0728, - 0.0083, 1.1187 )
-);
-const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mat3(
-  vec3( 0.6274, 0.0691, 0.0164 ),
-  vec3( 0.3293, 0.9195, 0.0880 ),
-  vec3( 0.0433, 0.0113, 0.8956 )
-);
-
-// https://iolite-engine.com/blog_posts/minimal_agx_implementation
-vec3 agxDefaultContrastApprox( vec3 x ) {
-  vec3 x2 = x * x;
-  vec3 x4 = x2 * x2;
-  return + 15.5 * x4 * x2
-    - 40.14 * x4 * x
-    + 31.96 * x4
-    - 6.868 * x2 * x
-    + 0.4298 * x2
-    + 0.1191 * x
-    - 0.00232;
-}
-
-// AgX Tone Mapping implementation based on Filament, which in turn is based
-// on Blender's implementation using rec 2020 primaries.
-// Inputs and outputs are encoded as Linear-sRGB.
-vec3 AgXToneMapping( vec3 color ) {
-  const mat3 AgXInsetMatrix = mat3(
-    vec3( 0.856627153315983, 0.137318972929847, 0.11189821299995 ),
-    vec3( 0.0951212405381588, 0.761241990602591, 0.0767994186031903 ),
-    vec3( 0.0482516061458583, 0.101439036467562, 0.811302368396859 )
-  );
-  const mat3 AgXOutsetMatrix = mat3(
-    vec3( 1.1271005818144368, - 0.1413297634984383, - 0.14132976349843826 ),
-    vec3( - 0.11060664309660323, 1.157823702216272, - 0.11060664309660294 ),
-    vec3( - 0.016493938717834573, - 0.016493938717834257, 1.2519364065950405 )
-  );
-  const float AgxMinEv = - 12.47393;
-  const float AgxMaxEv = 4.026069;
-
-  color = LINEAR_SRGB_TO_LINEAR_REC2020 * color;
-  color = AgXInsetMatrix * color;
-  color = max( color, 1e-10 );
-  color = log2( color );
-  color = ( color - AgxMinEv ) / ( AgxMaxEv - AgxMinEv );
-  color = clamp( color, 0.0, 1.0 );
-  color = agxDefaultContrastApprox( color );
-  color = AgXOutsetMatrix * color;
-  color = pow( max( vec3( 0.0 ), color ), vec3( 2.2 ) );
-  color = LINEAR_REC2020_TO_LINEAR_SRGB * color;
-  return clamp( color, 0.0, 1.0 );
-}
-
-// threejs-parity L7-02: Cineon (r185 CineonToneMapping, exposure removed).
-// Mirrors post/ToneOperators.ts:cineonToneMapping.
-vec3 CineonToneMapping( vec3 color ) {
-  color = max( vec3( 0.0 ), color - 0.004 );
-  return pow( ( color * ( 6.2 * color + 0.5 ) ) / ( color * ( 6.2 * color + 1.7 ) + 0.06 ), vec3( 2.2 ) );
-}
-
-// Khronos PBR Neutral (r185 body; exposure removed).
-vec3 NeutralToneMapping( vec3 color ) {
-  const float StartCompression = 0.8 - 0.04;
-  const float Desaturation = 0.15;
-  float x = min( color.r, min( color.g, color.b ) );
-  float offset = x < 0.08 ? x - 6.25 * x * x : 0.04;
-  color -= offset;
-  float peak = max( color.r, max( color.g, color.b ) );
-  if ( peak < StartCompression ) return color;
-  float d = 1. - StartCompression;
-  float newPeak = 1. - d * d / ( peak + d - StartCompression );
-  color *= newPeak / peak;
-  float g = 1. - 1. / ( Desaturation * ( peak - newPeak ) + 1. );
-  return mix( color, vec3( newPeak ), g );
+// Khronos PBR Neutral's dark offset and highlight shoulder.
+vec3 NeutralToneMapping(vec3 color) {
+  color = max(color, vec3(0.0));
+  float minimum = min(color.r, min(color.g, color.b));
+  float offset = minimum < 0.08 ? minimum * (1.0 - 6.25 * minimum) : 0.04;
+  vec3 shifted = color - offset;
+  float peak = max(shifted.r, max(shifted.g, shifted.b));
+  float knee = 0.76;
+  if (peak < knee) return shifted;
+  float shoulder = 1.0 - knee;
+  float compressed = 1.0 - shoulder * shoulder / (peak + shoulder - knee);
+  vec3 scaled = shifted * (compressed / peak);
+  float keepColor = 1.0 / (1.0 + 0.15 * (peak - compressed));
+  return vec3(compressed) + (scaled - vec3(compressed)) * keepColor;
 }
 `;
 
@@ -152,6 +113,26 @@ layout(location = 0) out vec4 outColor;
 `;
 
 export const OUTPUT_FRAGMENT_EPILOGUE_GLSL = `vec3 a3dLinearToSRGB(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0/2.4)) - 0.055, step(vec3(0.0031308), c)); }
+#ifdef OUTPUT_ALPHA_PRESERVE
+// Source-over stores premultiplied scene-linear light. Nonlinear tone and
+// transfer functions must operate on unassociated light, not on RGB * alpha.
+vec3 a3dUnassociateScene(vec4 scene) {
+  if (scene.a <= 0.0) return vec3(0.0);
+  return scene.rgb / min(scene.a, 1.0);
+}
+#endif
+// The output colour transform follows the scene-linear tone curve. Both
+// destinations use the same transfer curve; P3 differs in its primaries.
+vec3 a3dOutputGamut(vec3 linearSrgb) {
+#ifdef OUTPUT_DISPLAY_P3
+  return a3dToneRows(linearSrgb,
+    vec3(0.8224619687143624, 0.17753803128563794, 0.0),
+    vec3(0.03319419885096169, 0.9668058011490385, 0.0),
+    vec3(0.01708263072112004, 0.07239744066396342, 0.9105199286149166));
+#else
+  return linearSrgb;
+#endif
+}
 // PRD-01 triangular output dither (±1 LSB, §8.4 output step): the inverse triangular CDF of
 // interleaved gradient noise (Jimenez 2014). Same TPDF as two summed uniforms,
 // but low-discrepancy, so every 16-px row window spans > 1 LSB and banding
@@ -184,11 +165,11 @@ vec3 a3dSrgbToLinear(vec3 c) {
 vec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {
   if (u_overlayShape.w < 0.5) return encoded; // uniform branch; idle is bit-identical
   vec3 c = a3dSrgbToLinear(encoded);
-  c += u_overlayFlash.rgb * u_overlayFlash.a;
+  c += a3dOutputGamut(u_overlayFlash.rgb) * u_overlayFlash.a;
   vec2 d = (uv - 0.5) * vec2(u_overlayShape.z, 1.0);
   float v = smoothstep(u_overlayShape.x, u_overlayShape.x + u_overlayShape.y, length(d));
-  c = mix(c, u_overlayVignette.rgb, v * u_overlayVignette.a);
-  c = mix(c, u_overlayFade.rgb, u_overlayFade.a);
+  c = mix(c, a3dOutputGamut(u_overlayVignette.rgb), v * u_overlayVignette.a);
+  c = mix(c, a3dOutputGamut(u_overlayFade.rgb), u_overlayFade.a);
   return a3dLinearToSRGB(clamp(c, 0.0, 1.0));
 }
 #endif
@@ -196,7 +177,14 @@ void main() {
   vec4 scene = texture(u_scene, v_uv);
   // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.
   if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);
+#ifdef OUTPUT_ALPHA_PRESERVE
+  vec3 hdr = a3dUnassociateScene(scene);
+  // Even finite channels may overflow when divided by an extremely small alpha.
+  if (any(isnan(hdr)) || any(isinf(hdr))) hdr = vec3(0.0);
+#else
+  // Opaque output's alpha is a coverage tag and its raw clear can have RGB at alpha zero.
   vec3 hdr = scene.rgb;
+#endif
 #ifdef OUTPUT_VIGNETTE
   hdr = a3dLinearVignette(hdr, v_uv);
 #endif
@@ -205,18 +193,34 @@ void main() {
   // the coverage attachment, HDR alpha carries it — cleared alpha 0, drawn 1.
 #ifdef BACKGROUND_COVERAGE
   float a3dCoverage = texture(u_coverage, v_uv).r;
-#elif defined(OUTPUT_FULL_COVERAGE)
+#elif defined(OUTPUT_FULL_COVERAGE) || defined(OUTPUT_ALPHA_PRESERVE)
+  // In alpha-preserving output scene.a is opacity, not a coverage mask.
   float a3dCoverage = 1.0;
 #else
   float a3dCoverage = clamp(scene.a, 0.0, 1.0);
 #endif
+  // The legacy opaque coverage mix operates on already-composited RGB. It
+  // cannot independently tone-map translucent foreground and a raw background.
   vec3 display = mix(clamp(hdr, 0.0, 1.0), TONE_MAP(hdr * u_exposure), a3dCoverage);
-  vec3 encoded = a3dLinearToSRGB(clamp(display, 0.0, 1.0));
+  vec3 encoded = a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0));
   if (u_dither > 0.5) encoded += a3dTriangularNoise(gl_FragCoord.xy) / 255.0;
 #ifdef OUTPUT_OVERLAY
   encoded = a3dApplyOutputOverlay(encoded, v_uv);
 #endif
+#ifdef OUTPUT_ALPHA_PRESERVE
+  // No hidden color in transparent pixels, including after dither/overlay.
+  // Clamp before re-association so encoded premultiplied RGB never exceeds alpha.
+  if (scene.a <= 0.0) encoded = vec3(0.0);
+  else encoded = clamp(encoded, 0.0, 1.0);
+#endif
+#ifdef OUTPUT_ALPHA_PREMULTIPLIED
+  encoded *= clamp(scene.a, 0.0, 1.0);
+#endif
+#ifdef OUTPUT_ALPHA_PRESERVE
+  outColor = vec4(encoded, clamp(scene.a, 0.0, 1.0));
+#else
   outColor = vec4(encoded, 1.0);
+#endif
 }
 `;
 
@@ -230,20 +234,43 @@ export const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>> = {
   cineon: "CineonToneMapping"
 };
 
-/** Compose the output fragment for one variant key. */
-export function outputFragmentGlsl(options: { toneMapping: string; backgroundCoverage: boolean; overlay: boolean; vignette?: boolean; fullCoverage?: boolean }): string {
+/**
+ * Compose one output variant. Alpha-preserving variants consume associated
+ * scene-linear RGB with opacity in alpha; opaque variants retain the legacy
+ * RGB/background-coverage interpretation of the input.
+ */
+export function outputFragmentGlsl(options: {
+  toneMapping: string;
+  backgroundCoverage: boolean;
+  overlay: boolean;
+  vignette?: boolean;
+  fullCoverage?: boolean;
+  outputColorSpace?: "srgb" | "display-p3";
+  alphaMode?: "opaque" | "straight" | "premultiplied";
+}): string {
   const fn = TONE_MAP_OPERATOR_FUNCTIONS[options.toneMapping] ?? TONE_MAP_OPERATOR_FUNCTIONS["aces"];
+  const outputColorSpace = options.outputColorSpace ?? "srgb";
+  const alphaMode = options.alphaMode ?? "opaque";
+  if (outputColorSpace !== "srgb" && outputColorSpace !== "display-p3") {
+    throw new Error(`OUTPUT_COLOR_SPACE_UNSUPPORTED:${String(outputColorSpace)}`);
+  }
+  if (alphaMode !== "opaque" && alphaMode !== "straight" && alphaMode !== "premultiplied") {
+    throw new Error(`OUTPUT_ALPHA_MODE_UNSUPPORTED:${String(alphaMode)}`);
+  }
   const defines = [
     `#define TONE_MAP(c) ${fn}(c)`,
     ...(options.backgroundCoverage ? ["#define BACKGROUND_COVERAGE"] : []),
     ...(options.overlay ? ["#define OUTPUT_OVERLAY"] : []),
     ...(options.vignette ? ["#define OUTPUT_VIGNETTE"] : []),
-    ...(options.fullCoverage && !options.backgroundCoverage ? ["#define OUTPUT_FULL_COVERAGE"] : [])
+    ...(options.fullCoverage && !options.backgroundCoverage ? ["#define OUTPUT_FULL_COVERAGE"] : []),
+    ...(outputColorSpace === "display-p3" ? ["#define OUTPUT_DISPLAY_P3"] : []),
+    ...(alphaMode !== "opaque" ? ["#define OUTPUT_ALPHA_PRESERVE"] : []),
+    ...(alphaMode === "premultiplied" ? ["#define OUTPUT_ALPHA_PREMULTIPLIED"] : [])
   ];
   return [
     "#version 300 es",
-    OUTPUT_FRAGMENT_PROLOGUE_GLSL,
     ...defines,
+    OUTPUT_FRAGMENT_PROLOGUE_GLSL,
     TONE_MAPPING_OPERATORS_GLSL,
     OUTPUT_FRAGMENT_EPILOGUE_GLSL
   ].join("\n");

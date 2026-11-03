@@ -139,13 +139,19 @@ export abstract class CurveBase<V extends Vector2 | Vector3> implements Curve<V>
     return (i + segmentFraction) / (il - 1);
   }
 
-  /** Finite-difference unit tangent at `t` (three.js `Curve.getTangent`). */
+  /** Finite-difference unit tangent at `t`; periodic curves wrap at their seam. */
   getTangent(t: number): V {
     const delta = 0.0001;
-    let t1 = t - delta;
-    let t2 = t + delta;
-    if (t1 < 0) t1 = 0;
-    if (t2 > 1) t2 = 1;
+    let t1: number;
+    let t2: number;
+    if ((this as CurveBase<V> & { readonly closed?: boolean }).closed === true) {
+      const wrapped = ((t % 1) + 1) % 1;
+      t1 = (wrapped - delta + 1) % 1;
+      t2 = (wrapped + delta) % 1;
+    } else {
+      t1 = Math.max(0, t - delta);
+      t2 = Math.min(1, t + delta);
+    }
     const pt1 = this.getPoint(t1);
     const pt2 = this.getPoint(t2);
     return (subVectors(pt2, pt1) as Vector3).normalize() as V;

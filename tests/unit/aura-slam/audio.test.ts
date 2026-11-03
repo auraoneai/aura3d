@@ -243,6 +243,38 @@ describe("M-AUDIO differential vs tennis-audio.js", () => {
 });
 
 describe("M-AUDIO behaviour", () => {
+  it("disposes slice voices and invalidates preloads when the audio layer is torn down", async () => {
+    const f = newFake("suspended");
+    let finish!: (value: { ok: boolean; arrayBuffer(): Promise<ArrayBuffer> }) => void;
+    const pending = new Promise<{ ok: boolean; arrayBuffer(): Promise<ArrayBuffer> }>((resolve) => { finish = resolve; });
+    const signals: AbortSignal[] = [];
+    const audio = createTennisAudio({
+      context: f.ctx as never,
+      assets: { hit: "/h", bounce: "/b" },
+      fetch: (_url: string, init?: { readonly signal?: AbortSignal }) => {
+        if (init?.signal) signals.push(init.signal);
+        return pending;
+      }
+    });
+    audio.init();
+    await flush();
+    audio.hit(1, { speedKph: 90 });
+    const source = f.ofKind("source")[0]!;
+    expect(source).toBeDefined();
+    audio.dispose();
+    expect(signals).toHaveLength(2);
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+    expect(source.stopped).toHaveLength(1);
+    expect(source.disconnected).toBe(1);
+    expect(source.connections[0]!.disconnected).toBe(1);
+    finish({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) });
+    await flush();
+    expect(audio.slices.has("hit")).toBe(false);
+    expect(audio.slices.play("hit")).toBeNull();
+    audio.dispose();
+    expect(source.stopped).toHaveLength(1);
+  });
+
   it("is silent before init, while disabled, and resumes after setEnabled(true)", async () => {
     const f = newFake("suspended");
     const audio = createTennisAudio({ context: f.ctx as never, random: lcg(), fetch: bytes, assets: { hit: "/h", bounce: "/b" } });

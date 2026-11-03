@@ -17,7 +17,7 @@
  * chain take the OutputPass path unchanged.
  */
 
-import type { QrFlags } from "../contracts/core";
+import { createTrustedQrFlags, isTrustedQrFlags, type QrFlags } from "../contracts/core";
 
 export interface CoreOutputPostSkipped {
   readonly code: string;
@@ -76,8 +76,9 @@ export function withCoreOutputOff(flags: QrFlags): QrFlags {
   // registries' per-flags memo keeps hitting instead of seeing a new flags object each frame.
   const cached = coreOutputOffCache.get(flags);
   if (cached !== undefined) return cached;
-  const derived: QrFlags = {
-    values: Object.freeze({ ...flags.values, A3D_QR_CORE_OUTPUT: false }),
+  const values = Object.freeze({ ...flags.values, A3D_QR_CORE_OUTPUT: false });
+  const derived: QrFlags = isTrustedQrFlags(flags) ? createTrustedQrFlags(values) : {
+    values,
     on: (name) => (name === "A3D_QR_CORE_OUTPUT" ? false : flags.on(name))
   };
   // Only a flags object whose own `values` are frozen is immutable, so only then is the derived one safe to reuse.

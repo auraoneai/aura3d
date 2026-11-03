@@ -8,6 +8,12 @@ export interface EditorDiagnosticsResource {
 
 export interface EditorDiagnosticsInput {
   readonly frameTimeMs: number;
+  /**
+   * Whether frameTimeMs is an observed sample. Existing update callers that
+   * omit this field still supply a sample. On snapshots, false or absent means
+   * unavailable: the numeric value may be a placeholder or a stale sample.
+   */
+  readonly hasFrameTimeSample?: boolean;
   readonly drawCalls: number;
   readonly triangleCount?: number;
   readonly nodeCount: number;
@@ -26,6 +32,7 @@ export interface EditorDiagnosticsSnapshot extends EditorDiagnosticsInput {
 export class DiagnosticsOverlayModel {
   private snapshotRef: EditorDiagnosticsSnapshot = this.createSnapshot({
     frameTimeMs: 0,
+    hasFrameTimeSample: false,
     drawCalls: 0,
     nodeCount: 0,
     assetCount: 0,
@@ -36,6 +43,9 @@ export class DiagnosticsOverlayModel {
   update(input: EditorDiagnosticsInput): EditorDiagnosticsSnapshot {
     if (!Number.isFinite(input.frameTimeMs) || input.frameTimeMs < 0) {
       throw new Error("Editor diagnostics frame time must be a non-negative finite number.");
+    }
+    if (input.hasFrameTimeSample !== undefined && typeof input.hasFrameTimeSample !== "boolean") {
+      throw new Error("Editor diagnostics frame time sample status must be a boolean.");
     }
     if (!Number.isInteger(input.drawCalls) || input.drawCalls < 0) {
       throw new Error("Editor diagnostics draw calls must be a non-negative integer.");
@@ -57,9 +67,17 @@ export class DiagnosticsOverlayModel {
     return this.snapshotRef;
   }
 
+  /** Invalidate an earlier timing before attempting another frame. */
+  invalidateFrameTimeSample(): void {
+    if (this.snapshotRef.hasFrameTimeSample !== false) {
+      this.snapshotRef = { ...this.snapshotRef, hasFrameTimeSample: false };
+    }
+  }
+
   clear(): void {
     this.snapshotRef = this.createSnapshot({
       frameTimeMs: 0,
+      hasFrameTimeSample: false,
       drawCalls: 0,
       nodeCount: 0,
       assetCount: 0,
@@ -74,6 +92,7 @@ export class DiagnosticsOverlayModel {
     const errors = resources.filter((resource) => resource.status === "error").length;
     return {
       ...input,
+      hasFrameTimeSample: input.hasFrameTimeSample ?? true,
       triangleCount: input.triangleCount ?? 0,
       resources,
       warnings,

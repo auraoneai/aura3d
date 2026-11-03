@@ -10,6 +10,7 @@ import { createProductionRuntimePostprocess } from "../../../../packages/engine/
 import {
   collectPostSection,
   latestSubmittedPostprocess,
+  Prd03PostSurface,
   recordAuthoredPostContext,
   resetAuthoredPostContext,
   resetSubmittedPostprocess
@@ -168,6 +169,55 @@ describe("compiler Phase-1 wiring (flag A3D_QR_POST)", () => {
     expect(options.sampleCount).toBe(4);
     expect(options.fxaa).toBeUndefined();
     expect(latestSubmittedPostprocess()?.authored.resolvedAntiAlias).toMatchObject({ mode: "msaa", sampleCount: 4 });
+  });
+
+  test.each([
+    {
+      label: "auto on ultra",
+      tier: "ultra" as const,
+      snapshot: () => scene().add(primitives.box()).toJSON()
+    },
+    {
+      label: "authored TAA",
+      tier: "high" as const,
+      snapshot: () => scene().add(primitives.box()).add(effects.antiAlias({ mode: "taa" })).toJSON()
+    }
+  ])("$label keeps temporal seeding requested when coverage is unknown", ({ tier, snapshot }) => {
+    const context = flagOnContext();
+    recordAuthoredPostContext(context);
+    const surface = new Prd03PostSurface(context.flags);
+    try {
+      surface.setQualityTier(tier);
+      const options = createProductionRuntimePostprocess(snapshot(), [], 320, 200);
+      const pipeline = options.pipeline as { readonly antiAliasing?: string; readonly taa?: unknown } | undefined;
+      const post = collectPostSection({} as AuraApp);
+      expect(post.velocityCoverage?.available).toBe(false);
+      expect(post.antiAlias).toMatchObject({ mode: "taa", sampleCount: 1, tier });
+      expect(post.temporalRequested).toBe(true);
+      expect(options.temporal).toEqual(expect.objectContaining({ sceneKey: expect.any(String) }));
+      expect(options.taa).toEqual({ blend: 0.9 });
+      expect(pipeline?.antiAliasing).toBe("taa");
+      expect(pipeline?.taa).toBeDefined();
+    } finally {
+      surface.dispose();
+    }
+  });
+
+  test("unsupported temporal inputs keep their existing AA fallback", () => {
+    recordAuthoredPostContext(flagOnContext());
+    const options = createProductionRuntimePostprocess(
+      scene().add(primitives.box()).add(effects.antiAlias({ mode: "taa" })).toJSON(),
+      [], 320, 200, false
+    );
+    const pipeline = options.pipeline as { readonly antiAliasing?: string; readonly taa?: unknown } | undefined;
+    expect(latestSubmittedPostprocess()?.authored.resolvedAntiAlias).toEqual({
+      mode: "msaa", sampleCount: 4, reason: "TAA_VELOCITY_COVERAGE"
+    });
+    expect(latestSubmittedPostprocess()?.temporalRequested).toBe(false);
+    expect(options.temporal).toBeUndefined();
+    expect(options.taa).toBeUndefined();
+    expect(pipeline?.antiAliasing).toBe("msaa");
+    expect(pipeline?.taa).toBeUndefined();
   });
 
   test("flag on: real camera depth range reaches the options (CCR-03-1)", () => {

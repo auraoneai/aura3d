@@ -1534,6 +1534,8 @@ describe("game runtime source gates", () => {
     const releaseRaw = scripts["game-runtime:release:raw"] ?? "";
 
     expect(scripts["game-runtime:unit"]).toContain("pnpm game-runtime:unit:raw");
+    expect(unitRaw).toContain("--config tools/native-source-inventory/index.mjs");
+    expect(unitRaw).toContain("tests/game-runtime/aura3d104-game-runtime-source.test.ts");
     expect(unitRaw).toContain("tests/unit/game-runtime/game-runtime-source-gates.test.ts");
     expect(scripts["game-runtime:package"]).toContain("pnpm game-runtime:package:raw");
     expect(packageRaw).toContain("tools/game-runtime-package-smoke/index.ts");

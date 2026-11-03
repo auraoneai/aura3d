@@ -8,14 +8,12 @@
  *     size [0.3, 0.6, 0.3], under a rotated + uniformly scaled node world
  *     matrix, has orthogonal world axes (|dot| < 1e-5): the non-uniform part is
  *     innermost, so no shear.
- * (c) The composed matrix equals three r185 `matrixWorld · instanceMatrix`
- *     with the size baked into the geometry (three's InstancedMesh convention)
- *     to 1e-5, for every one of the 9 grid instances.
+ * (c) The composed matrix agrees with an independently evaluated sequence of
+ *     scale, X/Y/Z rotation and translation operations for each grid instance.
  * (d) The generated `instancing` vertex chunk multiplies in exactly that order.
  */
 
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
 
 import { createProductionInstanceTransforms } from "../../../../packages/engine/src/agent-api/compiler/primitives";
 import { createModelMatrix } from "../../../../packages/engine/src/agent-api/index";
@@ -54,6 +52,25 @@ function normalizedDot(a: Vec3, b: Vec3): number {
 /** Geometry matrix the renderer folds `size` into (identity elsewhere). */
 function sizeMatrix(size: Vec3): Float64Array {
   return new Float64Array([size[0], 0, 0, 0, 0, size[1], 0, 0, 0, 0, size[2], 0, 0, 0, 0, 1]);
+}
+
+/** Apply a transform directly to a point, without the implementation's matrix helpers. */
+function applyTransform(point: Vec3, transform: { position?: readonly number[]; rotation?: readonly number[]; scale?: number | readonly number[] }, size: readonly number[] = [1, 1, 1]): Vec3 {
+  const s = typeof transform.scale === "number" ? [transform.scale, transform.scale, transform.scale] : transform.scale ?? [1, 1, 1];
+  let [x, y, z] = point.map((component, i) => component * s[i]! * size[i]!) as Vec3;
+  const [rx, ry, rz] = transform.rotation ?? [0, 0, 0];
+  const cosX = Math.cos(rx!); const sinX = Math.sin(rx!);
+  [y, z] = [y * cosX - z * sinX, y * sinX + z * cosX];
+  const cosY = Math.cos(ry!); const sinY = Math.sin(ry!);
+  [x, z] = [x * cosY + z * sinY, -x * sinY + z * cosY];
+  const cosZ = Math.cos(rz!); const sinZ = Math.sin(rz!);
+  [x, y] = [x * cosZ - y * sinZ, x * sinZ + y * cosZ];
+  const p = transform.position ?? [0, 0, 0];
+  return [x + p[0]!, y + p[1]!, z + p[2]!];
+}
+
+function applyMatrix(m: ArrayLike<number>, point: Vec3): Vec3 {
+  return [0, 1, 2].map((r) => m[r]! * point[0] + m[4 + r]! * point[1] + m[8 + r]! * point[2] + m[12 + r]!) as Vec3;
 }
 
 function grid3x3(extra: AuraTransformSpec = {}): AuraTransformSpec[] {
@@ -119,7 +136,7 @@ describe("prd01 C-07 world · instance · geometry (01-S4)", () => {
     }
   });
 
-  it("(c) matches three r185 InstancedMesh matrixWorld · instanceMatrix with size in the geometry", () => {
+  it("(c) applies geometry size, instance, and world transforms in order", () => {
     const size: Vec3 = [0.3, 0.6, 0.3];
     const node: AuraPrimitiveNode = { kind: "primitive", primitive: "box", size };
     const instanceSpec: AuraTransformSpec = { rotation: [0, Math.PI / 4, 0], scale: [1, 2, 0.5] };
@@ -127,31 +144,16 @@ describe("prd01 C-07 world · instance · geometry (01-S4)", () => {
     const auraInstances = createProductionInstanceTransforms(transforms, node);
     const world = createModelMatrix(WORLD_NODE, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, false, 0);
 
-    // three: InstancedMesh node world (same ZYX Euler as today's Aura default),
-    // per-instance T·R·S, unit box geometry scaled by `size`.
-    const mesh = new THREE.Object3D();
-    mesh.position.set(...(WORLD_NODE.position as Vec3));
-    mesh.rotation.order = "ZYX";
-    mesh.rotation.set(...(WORLD_NODE.rotation as Vec3));
-    mesh.scale.setScalar(1.5);
-    mesh.updateMatrixWorld(true);
-    const geometryScale = new THREE.Matrix4().makeScale(...size);
-
     transforms.forEach((transform, i) => {
-      const dummy = new THREE.Object3D();
-      dummy.position.set(...(transform.position as Vec3));
-      dummy.rotation.order = "ZYX";
-      dummy.rotation.set(...(transform.rotation as Vec3));
-      dummy.scale.set(...(transform.scale as Vec3));
-      dummy.updateMatrix();
-      const reference = mesh.matrixWorld.clone().multiply(dummy.matrix).multiply(geometryScale).elements;
-      // Aura: world · instance, where the instance matrix carries S(size) innermost.
       const composed = mul(world, auraInstances.subarray(i * 16, i * 16 + 16));
-      for (let k = 0; k < 16; k += 1) expect(Math.abs(composed[k]! - reference[k]!)).toBeLessThan(1e-5);
-      // Explicit geometry-matrix form (u_geometryMatrix = S(size), instance = T·R·S):
       const unsized = createProductionInstanceTransforms([transform], { kind: "primitive", primitive: "box" });
       const explicit = mul(mul(world, unsized), sizeMatrix(size));
-      for (let k = 0; k < 16; k += 1) expect(Math.abs(explicit[k]! - reference[k]!)).toBeLessThan(1e-5);
+      for (const point of [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [-0.4, 0.2, 0.7]] as Vec3[]) {
+        const reference = applyTransform(applyTransform(point, transform, size), WORLD_NODE);
+        for (const actual of [applyMatrix(composed, point), applyMatrix(explicit, point)]) {
+          for (let k = 0; k < 3; k += 1) expect(actual[k]).toBeCloseTo(reference[k]!, 5);
+        }
+      }
     });
   });
 

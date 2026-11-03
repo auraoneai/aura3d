@@ -8,9 +8,13 @@ export type {
   EpisodeAudioAssetReadiness,
   EpisodeAudioAssetRequirement,
   AudioFileAssetLike,
+  AudioFileCacheStats,
+  AudioFileFetchOptions,
   AudioFileFetchResponseLike,
   AudioFileInput,
+  AudioFileLease,
   AudioFileManagerOptions,
+  AudioFileProgress,
   AudioCodecCandidate,
   AudioFileRequest,
   ResolvedAudioFileRequest
@@ -53,6 +57,16 @@ export { AudioMixer, createAudioMixerEvidence, createAnimationAudioMixer } from 
 export type { AudioMixerBusEvidence, AudioMixerEvidence, AnimationAudioMixer, AnimationAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
 export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
+export { createMediaElementAudioSourceAdapter, createMediaStreamAudioSourceAdapter, createExternalAudioNodeAdapter } from "./AudioSourceAdapters";
+export type {
+  AudioSourceAdapter,
+  AudioSourceAdapterOptions,
+  MediaElementAudioSourceAdapterOptions,
+  MediaStreamAudioSourceAdapterOptions,
+  ExternalAudioNodeAdapterOptions,
+  AudioSourceAdapterOwnership,
+  AudioSourceAdapterContext
+} from "./AudioSourceAdapters";
 export {
   PositionalEmitter,
   applyOcclusionToGain,
@@ -94,7 +108,7 @@ export { createGameSoundEngine } from "./game-sound/GameSoundEngine";
 // C-25 contract stub (CONTRACTS.md): the engine's `gameSoundSlot` uses this as
 // its flag-off implementation; lane prd09 provides the real factory above.
 export { createGameSoundEngine as createStubGameSoundEngine } from "./contracts/gameSound";
-export type { GameSoundOptions, SoundCueSpec, AudioAssetRef, EngineLoopSpec, GameBusId } from "./game-sound/GameSoundEngine";
+export type { GameSoundOptions, GameSoundRequest, GameSoundPlayHandle, SoundCueSpec, AudioAssetRef, EngineLoopSpec, GameBusId } from "./game-sound/GameSoundEngine";
 export type { SoundGraphContext } from "./game-sound/types";
 export { createMasterChain, safetyClipCurve } from "./game-sound/MasterChain";
 export { createSpatialNode, occlusionHz } from "./game-sound/SpatialVoice";

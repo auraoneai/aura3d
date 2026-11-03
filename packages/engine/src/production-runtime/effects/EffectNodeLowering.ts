@@ -11,8 +11,10 @@ import type { AuraVec3 } from "./CpuEmitter";
 import { VOLUME_PRESETS, VOLUME_SPRITE_LIMITS, type VolumeEmitterSpec } from "@aura3d/rendering";
 import { VFX_SPRITE_LAYOUT, isVfxBuiltinSprite } from "./FlipbookAtlas";
 import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
+import type { AuraTransformSpec } from "../../agent-api/nodes/types.js";
+import { assertWeatherTransformFields } from "./WeatherTransform.js";
 
-export interface EffectNodeLike {
+export interface EffectNodeLike extends AuraTransformSpec {
   readonly kind: string;
   readonly effect?: string;
   readonly name?: string;
@@ -42,7 +44,8 @@ export interface EffectNodeLike {
   readonly seed?: number;
   // PRD-07 §6.2 emitter surface (options accepted by effects.particles).
   readonly blend?: "alpha" | "premultiplied" | "additive" | "multiply" | "opaque";
-  readonly size?: number | readonly [number, number];
+  /** Particle scalar/range, or three full dimensions for a fog volume. */
+  readonly size?: number | readonly [number, number] | AuraVec3;
   readonly maxParticles?: number;
   readonly prewarm?: number;
   readonly rate?: number;
@@ -208,6 +211,13 @@ function asRange(v: number | readonly [number, number] | undefined): readonly [n
   if (v === undefined) return undefined;
   if (typeof v === "number") return [v, v];
   return [v[0], v[1] ?? v[0]];
+}
+
+function particleSizeRange(size: EffectNodeLike["size"]): readonly [number, number] | undefined {
+  if (Array.isArray(size) && size.length !== 2) {
+    throw new RangeError("Particle size must be a scalar or a [min, max] range, not fog-volume dimensions.");
+  }
+  return asRange(size as number | readonly [number, number] | undefined);
 }
 
 function hashSeed(nodeId: string): number {
@@ -386,7 +396,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           ...(typeof node.radius === "number" && node.radius > 0 ? { spawnRadius: node.radius } : {}),
           direction: node.direction ?? (node.emitter === "ambient" ? [0.15, 0.4, 0.1] : [0, 1, 0]),
           gravity,
-          size: asRange(node.size) ?? (node.emitter === "ambient" ? [0.04, 0.1] : [0.05, 0.14]),
+          size: particleSizeRange(node.size) ?? (node.emitter === "ambient" ? [0.04, 0.1] : [0.05, 0.14]),
           color: nodeColor(node),
           alpha: materialMode === "smoke" ? 0.35 : 0.85,
           spin: node.emitter === "swirl" ? 2.4 : 0.6,
@@ -400,6 +410,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     }
     case "rain":
     case "snow": {
+      assertWeatherTransformFields(node);
       // §8.2 procedural weather volume: a camera-following wrapped box
       // (ProceduralVolumeEmitter). The old CpuEmitter lowering spawned a
       // ~5 cm disc at the node origin firing straight down — a needle of
@@ -413,7 +424,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
       const wind = node.wind ?? [0, 0, 0];
       const speed = typeof node.speed === "number" && node.speed > 0 ? node.speed : 1;
       const base = isRain ? VOLUME_PRESETS.rain : VOLUME_PRESETS.snow;
-      const size = asRange(node.size);
+      const size = particleSizeRange(node.size);
       const count = Math.max(200, Math.min(20000, Math.round(
         node.particleCount ?? node.maxParticles ?? (isRain ? 4000 : 2400) * (0.3 + intensity * 0.7) * (0.25 + density * 0.75)
       )));
@@ -505,7 +516,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           spread: 0,
           direction: [0, 1, 0],
           gravity: 0,
-          size: asRange(node.size) ?? [1, 1],
+          size: particleSizeRange(node.size) ?? [1, 1],
           color: nodeColor(node),
           alpha: 1,
           spin: 0,

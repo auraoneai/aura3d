@@ -5,8 +5,8 @@
  * resolution, lighting runtime) lands in later PR-B/C phases.
  */
 import { registerLookLintRule } from "../contracts/looks.js";
-import type { AuraLightNode, AuraSceneNode } from "../agent-api/index.js";
-import { groups } from "../agent-api/index.js";
+import type { AuraLightNode, AuraSceneNode } from "../agent-api/nodes/types.js";
+import { groups } from "../agent-api/nodes/groups.js";
 
 export {
   physicalLightDescriptor,
@@ -42,7 +42,7 @@ export {
 export { descriptorToAuraLightData } from "../agent-api/compiler/lights.js";
 export { probes, type AuraProbeNode, type AuraReflectionProbeOptions, type AuraIrradianceVolumeOptions } from "../agent-api/nodes/probes.js";
 export { prd02EnvironmentBuilders, type AuraEnvironmentNodeV2, type AuraEnvironmentPresetName } from "../agent-api/nodes/environments.js";
-export { prd02KitLighting } from "../agent-api/nodes/sceneKits.js";
+export { prd02KitLighting } from "../agent-api/nodes/sceneKitsCore.js";
 
 /**
  * C-34 `look/ambient-flattens` (PRD-02): an ambient light stronger than 1
@@ -99,13 +99,16 @@ import { collectPrd02Lights, physicalLightDescriptor, prd02LightingOn, queueRunt
 import { registerNodeHandleExtension } from "../contracts/runtimeNodes.js";
 import type { AuraLightPatch, AuraLightTransitionOptions } from "../agent-api/nodes/types/runtime.js";
 import { auraLightsCounters, auraLightsLastFrame } from "../../../rendering/src/LightUniforms.js";
+import { queuePrd02ProbeUpdate } from "../../../rendering/src/probes/Prd02ProbesContributor.js";
 import type { RenderDevice } from "../../../rendering/src/RenderDevice.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { prd02ShadowDiagnostics, prd02ContactShadowDiagnostics, type CollectedLight } from "@aura3d/rendering";
 import type { AuraEnvironmentNodeV2 } from "../agent-api/nodes/environments.js";
-import type { AuraEnvironmentSwapOptions, AuraLightingDiagnostics } from "../contracts/lighting.js";
+import type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraEnvironmentSwapOptions, AuraLightmapAttachmentOptions, AuraLightingDiagnostics } from "../contracts/lighting.js";
 import type { AuraProbeNode } from "../agent-api/nodes/probes.js";
 import type { AuraAssetRef } from "../agent-api/nodes/types.js";
+import type { NativeBakedLightmapRenderData } from "@aura3d/rendering/lighting";
+import { AdvancedLightingState, advancedLightingStateFor, releaseAdvancedLightingState } from "../agent-api/app/advancedLightingState.js";
 
 /** The mount context fields the per-frame handler updates read (MountSceneCompileContext, compileScene.ts). */
 interface Prd02FrameContext {
@@ -280,31 +283,72 @@ registerOptionCoverage([
 
 /**
  * PRD-02 lighting runtime. `setEnvironmentIntensity` scales the live
- * environment term; rotation is still bookkeeping only (round-trip, model+flag
- * in diagnostics); the probe / irradiance mutation paths land in Phase 3 (env)
- * and Phase 5 (probes).
+ * environment term; probe operations enqueue work for the owning app's next
+ * pre-frame capture. The returned promise acknowledges scheduling, not pixels.
  */
 export class Prd02LightingRuntime {
   private rotation = 0;
   private intensity = 1;
   private device: RenderDevice | null = null;
   private readonly pendingProbes = new Set<string>();
+  private readonly pendingIrradiance = new Set<string>();
+  private pendingAllIrradiance = false;
+  private readonly advancedLighting: AdvancedLightingState;
 
   /**
    * T0-28: the app-resolved QR flags the extension was created with, so
    * diagnostics sections report the app's flag state — not a second
    * ambient `?a3d-qr=` / env resolution.
    */
-  constructor(readonly flags?: QrFlags, private readonly scaleOwner?: object, private readonly app?: Prd02LightingApp) {}
+  constructor(readonly flags?: QrFlags, private readonly scaleOwner?: object, private readonly app?: Prd02LightingApp) {
+    this.advancedLighting = scaleOwner ? advancedLightingStateFor(scaleOwner) : new AdvancedLightingState();
+  }
+
+  attachIndirect(source: AuraAdvancedIndirectSource, options?: AuraAdvancedIndirectOptions): () => void {
+    return this.advancedLighting.attachIndirect(source, options);
+  }
+
+  attachLightmap(nodeName: string, lightmap: NativeBakedLightmapRenderData, options: AuraLightmapAttachmentOptions): () => void {
+    return this.advancedLighting.attachLightmap(nodeName, lightmap, options);
+  }
+
+  /** Release runtime subscriptions without disposing caller-owned resources. */
+  dispose(): void {
+    if (this.scaleOwner) releaseAdvancedLightingState(this.scaleOwner);
+    else this.advancedLighting.dispose();
+  }
 
   /**
    * C-28 counters are consumed from the bound device, never counted here
    * (PRD-02 Phase 4). The flag-path env/probe binding attaches the device.
    */
-  attachDevice(device: RenderDevice): void { this.device = device; }
+  attachDevice(device: RenderDevice): void { this.device = device; this.publishPendingProbeUpdates(); }
 
-  updateProbe(name: string): Promise<void> { this.pendingProbes.add(name); return Promise.resolve(); }
-  rebakeIrradiance(name?: string): Promise<void> { if (name) this.pendingProbes.add(name); return Promise.resolve(); }
+  updateProbe(name: string): Promise<void> {
+    if (typeof name !== "string" || !name.trim()) throw new RangeError("probe name must be nonempty");
+    this.pendingProbes.add(name);
+    this.publishPendingProbeUpdates();
+    return Promise.resolve();
+  }
+
+  rebakeIrradiance(name?: string): Promise<void> {
+    if (name !== undefined && (typeof name !== "string" || !name.trim())) throw new RangeError("irradiance volume name must be nonempty");
+    if (name === undefined) this.pendingAllIrradiance = true;
+    else this.pendingIrradiance.add(name);
+    this.publishPendingProbeUpdates();
+    return Promise.resolve();
+  }
+
+  private publishPendingProbeUpdates(): void {
+    const owner = this.scaleOwner ?? this.device;
+    if (!owner) return;
+    for (const name of this.pendingProbes) queuePrd02ProbeUpdate(owner, "probe", name);
+    for (const name of this.pendingIrradiance) queuePrd02ProbeUpdate(owner, "irradiance", name);
+    if (this.pendingAllIrradiance) queuePrd02ProbeUpdate(owner, "irradiance");
+    this.pendingProbes.clear();
+    this.pendingIrradiance.clear();
+    this.pendingAllIrradiance = false;
+  }
   /**
    * GU47 E-B: absolute yaw (radians, about +Y) of the active environment. The mounted scene's per-frame update puts it
    * on the render source as `environmentProbeRotation` for probe / IBL sampling and the background (it wins over the
@@ -432,7 +476,8 @@ registerAppExtension({
   owner: "prd02",
   flag: "A3D_QR_LIGHTING",
   // The scale is keyed by `app.nodes`, the runtime registry the mounted scene's update receives.
-  create: (app, ctx) => new Prd02LightingRuntime(ctx.flags, (app as { readonly nodes?: object }).nodes, app as unknown as Prd02LightingApp)
+  create: (app, ctx) => new Prd02LightingRuntime(ctx.flags, (app as { readonly nodes?: object }).nodes, app as unknown as Prd02LightingApp),
+  dispose: (value) => (value as Prd02LightingRuntime).dispose()
 });
 
 // ---------- C-31 diagnostics sections ("lighting" / "shadows") ----------

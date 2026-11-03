@@ -28,15 +28,23 @@ export interface TypedGLBActorExtension {
 
 const EMPTY_QR_FLAGS: QrFlags = { values: {}, on: () => false };
 
-let currentQrFlags: QrFlags = EMPTY_QR_FLAGS;
+// The default is retained for independent low-level consumers. Apps bind the
+// flags to their owner/actor and carry them through async loads explicitly.
+let legacyQrFlags: QrFlags = EMPTY_QR_FLAGS;
+const flagsByOwner = new WeakMap<object, QrFlags>();
 
-/** Engine-side wiring: set once flags resolve (createAuraApp / createGameApp). */
-export function setTypedGLBActorQrFlags(flags: QrFlags): void {
-  currentQrFlags = flags;
+/** Bind flags to an app or actor; calls without an owner retain legacy behavior. */
+export function setTypedGLBActorQrFlags(flags: QrFlags, owner?: object): void {
+  if (owner === undefined) legacyQrFlags = flags;
+  else flagsByOwner.set(owner, flags);
 }
 
-export function typedGLBActorQrFlags(): QrFlags {
-  return currentQrFlags;
+export function clearTypedGLBActorQrFlags(owner: object): void {
+  flagsByOwner.delete(owner);
+}
+
+export function typedGLBActorQrFlags(owner?: object): QrFlags {
+  return owner === undefined ? legacyQrFlags : flagsByOwner.get(owner) ?? EMPTY_QR_FLAGS;
 }
 
 const extensions: TypedGLBActorExtension[] = [];
@@ -54,6 +62,6 @@ export function registerTypedGLBActorExtension(extension: TypedGLBActorExtension
 }
 
 /** Flag-active extensions in deterministic order. */
-export function typedGLBActorExtensions(flags: QrFlags = currentQrFlags): readonly TypedGLBActorExtension[] {
+export function typedGLBActorExtensions(flags: QrFlags = legacyQrFlags): readonly TypedGLBActorExtension[] {
   return extensions.filter((extension) => !extension.flag || flags.on(extension.flag));
 }

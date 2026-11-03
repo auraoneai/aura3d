@@ -11,13 +11,15 @@ export interface RendererFrameResult { readonly backend: "webgl2" | "webgpu"; re
 export interface RendererLifecycle { onDeviceLost(l: () => void): () => void; onDeviceRestored(l: () => void): () => void; isDeviceLost(): boolean; }
 // Renderer additions (PR 0b delegating stubs): static create(options: RendererCreateOptions): Promise<Renderer>; readonly backend: "webgl2" | "webgpu";
 //   renderFrame(frame: RendererInput): RendererFrameResult; renderFrameAsync(frame: RendererInput): Promise<RendererFrameResult>; + RendererLifecycle
-export interface ResourceRegistryLike { register<T extends object>(handle: T, descriptor: { readonly kind: string; readonly rebuild: () => Promise<void> | void }): T; unregister(handle: object): void; rebuild(device: RenderDevice): Promise<{ readonly rebuilt: number; readonly refetched: number; readonly failed: readonly string[] }>; }
+export interface ResourceRegistryDescriptor { readonly kind: string; readonly device?: RenderDevice; readonly rebuild: () => Promise<void> | void; }
+export interface ResourceRegistryLike { register<T extends object>(handle: T, descriptor: ResourceRegistryDescriptor): T; unregister(handle: object): void; rebuild(device: RenderDevice): Promise<{ readonly rebuilt: number; readonly refetched: number; readonly failed: readonly string[] }>; }
+export type ResourceRegistryRegistration = Pick<ResourceRegistryLike, "register"> & Partial<Pick<ResourceRegistryLike, "unregister">>;
 
 /** PR 0a stub: records registrations; rebuild invokes each registered rebuild. */
 class StubResourceRegistry implements ResourceRegistryLike {
-  private readonly entries = new Map<object, { readonly kind: string; readonly rebuild: () => Promise<void> | void }>();
+  private readonly entries = new Map<object, ResourceRegistryDescriptor>();
 
-  register<T extends object>(handle: T, descriptor: { readonly kind: string; readonly rebuild: () => Promise<void> | void }): T {
+  register<T extends object>(handle: T, descriptor: ResourceRegistryDescriptor): T {
     this.entries.set(handle, descriptor);
     return handle;
   }
@@ -26,10 +28,11 @@ class StubResourceRegistry implements ResourceRegistryLike {
     this.entries.delete(handle);
   }
 
-  async rebuild(_device: RenderDevice): Promise<{ readonly rebuilt: number; readonly refetched: number; readonly failed: readonly string[] }> {
+  async rebuild(device: RenderDevice): Promise<{ readonly rebuilt: number; readonly refetched: number; readonly failed: readonly string[] }> {
     let rebuilt = 0;
     const failed: string[] = [];
-    for (const descriptor of this.entries.values()) {
+    for (const [handle, descriptor] of [...this.entries]) {
+      if (this.entries.get(handle) !== descriptor || (descriptor.device && descriptor.device !== device)) continue;
       try {
         await descriptor.rebuild();
         rebuilt += 1;

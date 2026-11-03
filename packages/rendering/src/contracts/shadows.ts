@@ -62,6 +62,21 @@ export function depthVariantFeaturesFor(flags: QrFlags): readonly DepthVariantFe
   return depthVariantFeatures.active(flags);
 }
 
+/** Whether any depth provider is registered, without reading its metadata. */
+export function hasRegisteredDepthVariantFeatures(): boolean {
+  return depthVariantFeatures.all().length > 0;
+}
+
+/** Fail closed for unknown activation metadata without reading provider properties. */
+export function hasPotentiallyActiveDepthVariantFeatures(flags: QrFlags): boolean {
+  return depthVariantFeatures.hasPotentiallyActive(flags);
+}
+
+/** Unsorted potentially active identities, without reading provider metadata. */
+export function potentiallyActiveDepthVariantFeatures(flags: QrFlags): readonly DepthVariantFeature[] {
+  return depthVariantFeatures.potentiallyActiveEntries(flags);
+}
+
 export interface ShadowFrameUniforms {
   readonly cascadeTexture: Texture | null; readonly cascadeMatrices: Float32Array; readonly cascadeSplits: Float32Array; readonly cascadeTexelWorld: Float32Array;
   readonly atlasTexture: Texture | null; readonly localShadowData: Float32Array; readonly perLightShadowIndex: Int32Array;

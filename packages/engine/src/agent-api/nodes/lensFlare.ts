@@ -45,7 +45,7 @@ export interface AuraLensFlareOptions {
   readonly position?: AuraVec3;
   /** Name of an authored `lights.*` node whose position is the source. */
   readonly light?: string;
-  /** Defaults to three's webgl_lensflares example layout (one large glow + four small discs). */
+  /** Up to 64 elements; defaults to three's webgl_lensflares layout (one glow + four discs). */
   readonly elements?: readonly AuraLensFlareElement[];
   /** See module doc. Default `"frustum"`. */
   readonly occlusion?: AuraLensFlareOcclusion;
@@ -71,6 +71,9 @@ export function isAuraLensFlareNode(node: { readonly kind: string }): node is Au
   return node.kind === "lensflare";
 }
 
+/** Each element produces its own material and render item. */
+export const MAX_LENS_FLARE_ELEMENTS = 64;
+
 /** three's webgl_lensflares layout, sizes in pixels. */
 export const DEFAULT_LENS_FLARE_ELEMENTS: readonly AuraLensFlareElement[] = [
   { size: 700, distance: 0 },
@@ -84,16 +87,29 @@ function invalid(message: string): never {
   throw new AuraRuntimeError("invalid-lens-flare", `lights.lensFlare: ${message}`);
 }
 
-export function assertAuraLensFlareOptions(options: AuraLensFlareOptions): void {
-  if (options.elements !== undefined) {
-    if (!Array.isArray(options.elements) || options.elements.length === 0) invalid("`elements` must be a non-empty array");
-    options.elements.forEach((element, index) => {
-      if (element === null || typeof element !== "object") invalid(`elements[${index}] must be an object`);
-      if (!Number.isFinite(element.size) || element.size <= 0) invalid(`elements[${index}].size must be a positive finite number of pixels`);
-      if (!Number.isFinite(element.distance)) invalid(`elements[${index}].distance must be a finite number`);
-      if (element.texture !== undefined && element.texture.kind !== "aura-texture-ref") invalid(`elements[${index}].texture must be a texture.* handle`);
-    });
+function assertElementLimit(count: number): void {
+  if (count > MAX_LENS_FLARE_ELEMENTS) {
+    invalid(`\`elements\` must contain at most ${MAX_LENS_FLARE_ELEMENTS} entries`);
   }
+}
+
+export function assertAuraLensFlareElements(elements: unknown): asserts elements is readonly AuraLensFlareElement[] {
+  if (!Array.isArray(elements)) invalid("`elements` must be a non-empty array");
+  const count = elements.length;
+  if (!Number.isSafeInteger(count) || count < 1) invalid("`elements` must be a non-empty array");
+  assertElementLimit(count);
+  for (let index = 0; index < count; index += 1) {
+    const element: AuraLensFlareElement | undefined = elements[index];
+    if (element === null || typeof element !== "object") invalid(`elements[${index}] must be an object`);
+    if (!Number.isFinite(element.size) || element.size <= 0) invalid(`elements[${index}].size must be a positive finite number of pixels`);
+    if (!Number.isFinite(element.distance)) invalid(`elements[${index}].distance must be a finite number`);
+    if (element.texture !== undefined && (element.texture === null || typeof element.texture !== "object" || element.texture.kind !== "aura-texture-ref")) {
+      invalid(`elements[${index}].texture must be a texture.* handle`);
+    }
+  }
+}
+
+function assertAuraLensFlareSettings(options: AuraLensFlareOptions): void {
   if (options.occlusion !== undefined && options.occlusion !== "frustum" && options.occlusion !== "none") {
     invalid(`occlusion must be "frustum" or "none", got ${String(options.occlusion)}`);
   }
@@ -108,14 +124,29 @@ export function assertAuraLensFlareOptions(options: AuraLensFlareOptions): void 
   }
 }
 
+export function assertAuraLensFlareOptions(options: AuraLensFlareOptions): void {
+  if (options.elements !== undefined) assertAuraLensFlareElements(options.elements);
+  assertAuraLensFlareSettings(options);
+}
+
+/** Serialized nodes require an explicit list, unlike the authoring options. */
+export function assertAuraLensFlareNode(node: AuraLensFlareNode): readonly AuraLensFlareElement[] {
+  const elements: unknown = node.elements;
+  assertAuraLensFlareElements(elements);
+  assertAuraLensFlareSettings(node);
+  return elements;
+}
+
 export function createLensFlareNode(options: AuraLensFlareOptions = {}): AuraNodeBuilder<AuraSceneNode> {
   assertAuraLensFlareOptions(options);
+  const elements = options.elements ?? DEFAULT_LENS_FLARE_ELEMENTS;
+  if (options.elements === undefined) assertAuraLensFlareElements(elements);
   return new AuraNodeBuilder<AuraSceneNode>({
     kind: "lensflare",
     name: options.name ?? "lens flare",
     position: options.position ?? [0, 0, 0],
     ...(options.light !== undefined ? { light: options.light } : {}),
-    elements: options.elements ?? DEFAULT_LENS_FLARE_ELEMENTS,
+    elements,
     occlusion: options.occlusion ?? "frustum",
     edgeFade: options.edgeFade ?? 0.15,
     intensity: options.intensity ?? 1,
@@ -209,6 +240,7 @@ export function placeLensFlareElements(
   elements: readonly { readonly size: number; readonly distance: number }[],
   viewportHeightPx: number
 ): LensFlarePlacement[] {
+  assertElementLimit(elements.length);
   const vecX = -lightNdc[0] * 2;
   const vecY = -lightNdc[1] * 2;
   const height = Math.max(1, viewportHeightPx);

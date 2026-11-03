@@ -31,8 +31,9 @@ describe("prd11.frame diagnostics section cost", () => {
     const section = diagnosticsSectionsAll().find((s) => s.id === "prd11.frame")!;
     expect(section).toBeDefined();
     const renderFrame = (): void => {
-      contributor.collect!([], ctx(device));
-      for (const pass of contributor.passes!("after-output", ctx(device))) pass.execute({ device, width: 64, height: 64 });
+      const context = ctx(device);
+      contributor.collect!([], context);
+      for (const pass of contributor.passes!("after-output", context)) pass.execute({ device, width: 64, height: 64 });
     };
     renderFrame();
     const walk = vi.spyOn(device, "getDiagnostics");

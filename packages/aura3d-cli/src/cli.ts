@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import {
-  addAsset,
+  addAssetAsync,
   bindGameRouteEvidence,
   certifyGameGeometry,
   checkDeploy,
@@ -77,16 +77,21 @@ async function main(): Promise<void> {
       // legacy flag stays accepted-with-warning only until register scripts
       // migrate; the qr-prd05-gates workflow greps for any in-repo use.
       const requestedQuality = readAssetQuality();
+      const inspectionPolicy = readOption("--model-inspection");
+      if (hasFlag("--model-inspection") && inspectionPolicy !== "legacy" && inspectionPolicy !== "strict") {
+        throw new Error("Expected --model-inspection legacy|strict.");
+      }
       if (requestedQuality === "release" && !hasFlag("--legacy-release-gates")) {
         throw new Error("`assets add --quality release` is retired: use `assets admit <id> --quality release` after optimize + look-dev (PRD-05 §6.4).");
       }
       if (hasFlag("--legacy-release-gates")) {
         console.warn("warning: --legacy-release-gates is deprecated and will be removed; register `prototype`/`candidate` and admit through `assets admit`.");
       }
-      print(addAsset({
+      print(await addAssetAsync({
         file,
         name,
         type: readAssetType(),
+        modelInspection: inspectionPolicy as "legacy" | "strict" | undefined,
         publicPath: readOption("--public-path"),
         outputDir: readOption("--output"),
         sourcePage: readOption("--source-page"),

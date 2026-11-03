@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { defineAuraAssets, scene as auraScene } from "../../../packages/engine/src";
 import {
   R3F_MIGRATION_NOT_PARITY,
@@ -93,6 +93,83 @@ describe("V1 useAuraFrame scheduler", () => {
     release();
     release();
     expect(state.releases).toBe(1);
+  });
+
+  test("does not publish a callback from a render that never commits", async () => {
+    type Effect = () => void | (() => void);
+    type Hook = { value?: unknown; dependencies?: readonly unknown[]; cleanup?: () => void };
+    const hooks: Hook[] = [];
+    const { host, state } = fakeHost();
+    let cursor = 0;
+    let layoutEffects: (() => void)[] = [];
+    let effects: (() => void)[] = [];
+    const register = (setup: Effect, dependencies: readonly unknown[] | undefined, layout: boolean) => {
+      const hook = hooks[cursor] ?? (hooks[cursor] = {});
+      cursor++;
+      const same = dependencies !== undefined && hook.dependencies !== undefined &&
+        dependencies.length === hook.dependencies.length && dependencies.every((value, index) => Object.is(value, hook.dependencies?.[index]));
+      if (!same) {
+        (layout ? layoutEffects : effects).push(() => {
+          hook.cleanup?.();
+          const cleanup = setup();
+          hook.cleanup = typeof cleanup === "function" ? cleanup : undefined;
+          hook.dependencies = dependencies;
+        });
+      }
+    };
+    vi.resetModules();
+    vi.doMock("react", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("react")>();
+      return {
+        ...actual,
+        useContext: () => host,
+        useRef<T>(initial: T) {
+          const hook = hooks[cursor] ?? (hooks[cursor] = {});
+          cursor++;
+          if (!("value" in hook)) hook.value = { current: initial };
+          return hook.value;
+        },
+        useEffect: (setup: Effect, dependencies?: readonly unknown[]) => register(setup, dependencies, false),
+        useLayoutEffect: (setup: Effect, dependencies?: readonly unknown[]) => register(setup, dependencies, true)
+      };
+    });
+    vi.doMock("@aura3d/engine", () => ({
+      camera: {}, createAuraApp: vi.fn(), effects: {}, environments: {}, interactions: {}, lights: {}, model: vi.fn(), scene: vi.fn()
+    }));
+    try {
+      const adapter = await import("../../../packages/react/src/index");
+      vi.stubGlobal("window", {});
+      const initial = vi.fn();
+      const abandoned = vi.fn();
+      const committed = vi.fn();
+      const render = (callback: (frame: AuraFrameInfo) => void) => {
+        cursor = 0;
+        layoutEffects = [];
+        effects = [];
+        adapter.useAuraFrame(callback);
+      };
+      const commit = () => {
+        for (const effect of layoutEffects) effect();
+        for (const effect of effects) effect();
+      };
+      render(initial);
+      commit();
+      state.listener?.(FRAME);
+      render(abandoned); // A concurrent React render may be discarded before effects commit.
+      state.listener?.(FRAME);
+      expect(initial).toHaveBeenCalledTimes(2);
+      expect(abandoned).not.toHaveBeenCalled();
+      render(committed);
+      commit();
+      state.listener?.(FRAME);
+      expect(committed).toHaveBeenCalledOnce();
+      for (const hook of hooks) hook.cleanup?.();
+      expect(state.releases).toBe(1);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.doUnmock("react");
+      vi.doUnmock("@aura3d/engine");
+    }
   });
 });
 

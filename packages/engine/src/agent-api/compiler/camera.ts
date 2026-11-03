@@ -1,6 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraVec3, AuraModelNode, AuraPrimitiveNode, AuraCameraSpec, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "../nodes/types.js";
+import type { AuraVec3, AuraModelNode, AuraPrimitiveNode, AuraCameraSpec, AuraSceneSnapshot, AuraRuntimeNodeRegistry, AuraRuntimeNodeHandle } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
 import { mix3 } from "../sceneMath.js";
 
@@ -9,7 +9,7 @@ interface RuntimeCameraTarget {
   readonly rotation: AuraVec3;
 }
 
-function findRuntimeCameraTarget(cameraSpec: AuraCameraSpec, runtimeNodes: AuraRuntimeNodeRegistry | undefined): RuntimeCameraTarget | undefined {
+function findRuntimeCameraTargetHandle(cameraSpec: AuraCameraSpec, runtimeNodes: AuraRuntimeNodeRegistry | undefined): AuraRuntimeNodeHandle | undefined {
   if (cameraSpec.mode !== "follow" || !cameraSpec.targetNode || !runtimeNodes) return undefined;
   const targetNode = cameraSpec.targetNode;
   const directHandle = runtimeNodes.get(targetNode);
@@ -18,11 +18,15 @@ function findRuntimeCameraTarget(cameraSpec: AuraCameraSpec, runtimeNodes: AuraR
   // pixels; dropping that target here would also drop target-yaw rotation and
   // move the camera between the visible and suppressed captures. Visibility
   // controls drawing, not whether the camera can follow the requested node.
-  if (directHandle) return { position: directHandle.position, rotation: directHandle.rotation };
-  const namedHandle = runtimeNodes.all().find((handle) =>
+  if (directHandle) return directHandle;
+  return runtimeNodes.all().find((handle) =>
     handle.visible !== false && (handle.name === targetNode || handle.tags.includes(targetNode))
   );
-  return namedHandle ? { position: namedHandle.position, rotation: namedHandle.rotation } : undefined;
+}
+
+function findRuntimeCameraTarget(cameraSpec: AuraCameraSpec, runtimeNodes: AuraRuntimeNodeRegistry | undefined): RuntimeCameraTarget | undefined {
+  const handle = findRuntimeCameraTargetHandle(cameraSpec, runtimeNodes);
+  return handle ? { position: handle.position, rotation: handle.rotation } : undefined;
 }
 
 function rotateVec3BySceneYaw(vector: AuraVec3, yaw: number): AuraVec3 {
@@ -119,7 +123,7 @@ function resolveCameraEye(snapshot: AuraSceneSnapshot, cameraSpec: AuraCameraSpe
   return eye;
 }
 
-interface SmoothedCameraFrame {
+export interface SmoothedCameraFrame {
   readonly time: number;
   readonly target: AuraVec3;
   readonly eye: AuraVec3;
@@ -135,32 +139,37 @@ function mixCameraVector(from: AuraVec3, to: AuraVec3, amount: number): AuraVec3
   ];
 }
 
-/** Resolve one coherent camera frame and honor the public follow-camera smoothing contract. */
-export function resolveCameraFrame(
+function followSmoothing(cameraSpec: AuraCameraSpec): number {
+  if (cameraSpec.mode !== "follow") return 0;
+  const smoothing = cameraSpec.smoothing ?? 0;
+  if (typeof smoothing !== "number" || !Number.isFinite(smoothing)) {
+    throw new RangeError("CAMERA_SMOOTHING_INVALID: follow camera smoothing must be a finite number.");
+  }
+  return Math.max(0, Math.min(0.98, smoothing));
+}
+
+/** The stable runtime target, if one exists, so an owner can retire stale history when a handle is replaced. */
+export function cameraFollowTargetIdentity(cameraSpec: AuraCameraSpec, runtimeNodes?: AuraRuntimeNodeRegistry): object | undefined {
+  return findRuntimeCameraTargetHandle(cameraSpec, runtimeNodes);
+}
+
+/** Calculate a frame without committing history; multi-view owners provide their own previous frame. */
+export function sampleCameraFrame(
   snapshot: AuraSceneSnapshot,
   cameraSpec: AuraCameraSpec,
   time: number,
-  runtimeNodes?: AuraRuntimeNodeRegistry
+  runtimeNodes?: AuraRuntimeNodeRegistry,
+  previous?: SmoothedCameraFrame
 ): SmoothedCameraFrame {
+  const smoothing = followSmoothing(cameraSpec);
   const rawTarget = resolveCameraTarget(snapshot, cameraSpec, runtimeNodes);
   const rawEye = resolveCameraEye(snapshot, cameraSpec, time, runtimeNodes);
-  const smoothing = Math.max(0, Math.min(0.98, cameraSpec.smoothing ?? 0));
-  if (!runtimeNodes || cameraSpec.mode !== "follow" || smoothing <= 0) {
+  if (!runtimeNodes || smoothing <= 0) {
     return { time, target: rawTarget, eye: rawEye };
   }
-
-  const key = runtimeNodes as object;
-  let cameraMap = smoothedCameraFrames.get(key);
-  if (!cameraMap) {
-    cameraMap = new Map();
-    smoothedCameraFrames.set(key, cameraMap);
-  }
-  const previous = cameraMap.get(cameraSpec);
   if (previous && time === previous.time) return previous;
   if (!previous || time < previous.time || time - previous.time > 250) {
-    const frame = { time, target: rawTarget, eye: rawEye };
-    cameraMap.set(cameraSpec, frame);
-    return frame;
+    return { time, target: rawTarget, eye: rawEye };
   }
 
   // Treat smoothing as the intended blend fraction at 60 Hz, then convert it
@@ -168,11 +177,29 @@ export function resolveCameraFrame(
   const deltaSeconds = (time - previous.time) / 1000;
   const responsePerSecond = -Math.log(1 - smoothing) * 60;
   const amount = 1 - Math.exp(-responsePerSecond * deltaSeconds);
-  const frame = {
+  return {
     time,
     target: mixCameraVector(previous.target, rawTarget, amount),
     eye: mixCameraVector(previous.eye, rawEye, amount)
   };
+}
+
+/** Resolve one coherent camera frame and honor the public follow-camera smoothing contract. */
+export function resolveCameraFrame(
+  snapshot: AuraSceneSnapshot,
+  cameraSpec: AuraCameraSpec,
+  time: number,
+  runtimeNodes?: AuraRuntimeNodeRegistry
+): SmoothedCameraFrame {
+  const smoothing = followSmoothing(cameraSpec);
+  if (!runtimeNodes || smoothing <= 0) return sampleCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
+  const key = runtimeNodes as object;
+  let cameraMap = smoothedCameraFrames.get(key);
+  if (!cameraMap) {
+    cameraMap = new Map();
+    smoothedCameraFrames.set(key, cameraMap);
+  }
+  const frame = sampleCameraFrame(snapshot, cameraSpec, time, runtimeNodes, cameraMap.get(cameraSpec));
   cameraMap.set(cameraSpec, frame);
   return frame;
 }

@@ -21,6 +21,12 @@ Deterministic replay, repeated fixed-input simulation comparison, broadphase pai
 
 - Supported collision shape descriptors are box, sphere, capsule, plane, and indexed triangle mesh.
 - Supported constraint contracts are fixed, hinge, slider, and spring-style constraints.
+- `ScenePhysicsBridge` composes representable parent transforms and preflights
+  updates before publishing them. Sheared, reflected, singular or ambiguous
+  world poses reject rather than being approximated; collider scale is not
+  synchronized. Side effects or exceptions in caller-provided accessors and
+  setters cannot be rolled back. These bounds have source tests, not physical
+  backend or browser acceptance.
 - Continuous collision detection is not currently supported; fast-moving bodies use discrete fixed-step collision checks.
 - The built-in broadphase is deterministic sweep-and-prune with exposed profile counters, a faster browser-first workflow than a mature native physics backend.
 - The package does not claim vehicle dynamics, cloth, soft bodies, fluids, destructible simulation, or large-world streaming physics.

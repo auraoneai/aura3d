@@ -2,8 +2,8 @@
 // `effect: "contact-shadows"` is an additive AuraEffectType member (CCR-02-2);
 // the runtime node carries it verbatim via a cast until the union ships.
 
-import type { AuraEffectNode, AuraEffectType } from "../index.js";
-import { AuraNodeBuilder } from "../index.js";
+import type { AuraEffectNode, AuraEffectType } from "./types.js";
+import { AuraNodeBuilder } from "./builder.js";
 
 export interface AuraContactShadowOptions {
   readonly length?: number; // metres, default 0.25

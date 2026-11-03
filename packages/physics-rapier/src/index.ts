@@ -1,7 +1,7 @@
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { toRapierHeightfieldHeights } from "./HeightfieldLayout.js";
 
-import { ensureRapier, getRapierModule, rapierInitMode } from "./rapierInit.js";
+import { ensureRapier, getRapierInitializationError, getRapierModule, rapierInitMode } from "./rapierInit.js";
 
 // `@dimforge/rapier3d-compat` is an OPTIONAL peer: it must be absent-tolerant at module evaluation so
 // `import { createAuraApp } from "@aura3d/engine"` works in consumers that never use physics. Failure defers to
@@ -12,6 +12,8 @@ export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
 function requireRapierModule(): RapierModule {
   const rapier = getRapierModule();
   if (!rapier) {
+    const failure = getRapierInitializationError();
+    if (failure) throw new Error("@aura3d/engine physics failed to initialize the Rapier WASM backend.", { cause: failure.cause });
     throw new Error(
       rapierInitMode === "lazy"
         ? "@aura3d/engine physics is not ready: this build has no top-level await, so `await ensurePhysics()` (from @aura3d/engine/physics) before creating a world or calling createAuraApp, and install the optional peer @dimforge/rapier3d-compat."
@@ -74,6 +76,11 @@ export type RapierJointSpec = {
   readonly type: "fixed" | "hinge" | "revolute" | "slider" | "prismatic" | "spring" | "ball-socket" | "motorised-hinge";
   readonly localAnchorA: PhysicsVec3;
   readonly localAnchorB: PhysicsVec3;
+  /** Fixed-joint local frames; omitted frames default to identity. */
+  readonly localRotationA?: readonly [number, number, number, number];
+  readonly localRotationB?: readonly [number, number, number, number];
+  /** Align the two local frames using the bodies' relative rotation at creation. */
+  readonly relativeFrameBFromA?: readonly [number, number, number, number];
   readonly axis: PhysicsVec3;
   readonly restLength: number;
   readonly stiffness: number;
@@ -101,21 +108,23 @@ export class RapierBodyHandle {
   readonly #world: RapierPhysicsWorld;
   constructor(world: RapierPhysicsWorld, body: Rapier.RigidBody) { this.#world = world; this.#body = body; }
   get id(): number { return this.#body.handle; }
-  position(): PhysicsVec3 { const p = this.#body.translation(); return [p.x, p.y, p.z]; }
-  velocity(): PhysicsVec3 { const p = this.#body.linvel(); return [p.x, p.y, p.z]; }
-  sleeping(): boolean { return this.#body.isSleeping(); }
-  applyForce(force: PhysicsVec3): this { this.#body.addForce(vec(force, "force"), true); return this; }
-  applyImpulse(impulse: PhysicsVec3): this { this.#body.applyImpulse(vec(impulse, "impulse"), true); return this; }
-  setVelocity(velocity: PhysicsVec3): this { this.#body.setLinvel(vec(velocity, "velocity"), true); return this; }
-  setPosition(position: PhysicsVec3): this { this.#body.setTranslation(vec(position, "position"), true); return this; }
-  wake(): this { this.#body.wakeUp(); return this; }
-  sleep(): this { this.#body.sleep(); return this; }
+  position(): PhysicsVec3 { const p = this.unsafeRapierBody().translation(); return [p.x, p.y, p.z]; }
+  velocity(): PhysicsVec3 { const p = this.unsafeRapierBody().linvel(); return [p.x, p.y, p.z]; }
+  sleeping(): boolean { return this.unsafeRapierBody().isSleeping(); }
+  applyForce(force: PhysicsVec3): this { this.unsafeRapierBody().addForce(vec(force, "force"), true); return this; }
+  applyImpulse(impulse: PhysicsVec3): this { this.unsafeRapierBody().applyImpulse(vec(impulse, "impulse"), true); return this; }
+  setVelocity(velocity: PhysicsVec3): this { this.unsafeRapierBody().setLinvel(vec(velocity, "velocity"), true); return this; }
+  setPosition(position: PhysicsVec3): this { this.unsafeRapierBody().setTranslation(vec(position, "position"), true); this.#world.markQueriesStale(); return this; }
+  wake(): this { this.unsafeRapierBody().wakeUp(); return this; }
+  sleep(): this { this.unsafeRapierBody().sleep(); return this; }
   remove(): void { this.#world.removeBody(this); }
+  /** @internal */
+  ownedBy(world: RapierPhysicsWorld): boolean { return this.#world === world; }
   /** Stable typed escape hatch. The caller does not own or free this object. */
-  unsafeRapierBody(): Rapier.RigidBody { return this.#body; }
+  unsafeRapierBody(): Rapier.RigidBody { this.#world.assertBodyHandle(this); return this.#body; }
   /** The first attached collider, retained for the one-shape convenience API. */
   unsafeRapierCollider(): Rapier.Collider {
-    const collider = this.#body.collider(0);
+    const collider = this.unsafeRapierBody().collider(0);
     if (!collider) throw new Error("Rapier body has no collider.");
     return collider;
   }
@@ -124,11 +133,42 @@ export class RapierBodyHandle {
 export class RapierColliderHandle {
   readonly #collider: Rapier.Collider;
   readonly #world: RapierPhysicsWorld;
-  constructor(world: RapierPhysicsWorld, collider: Rapier.Collider) { this.#world = world; this.#collider = collider; }
+  readonly #surface?: Extract<RapierShapeSpec, { kind: "mesh" | "heightfield" }>;
+  constructor(world: RapierPhysicsWorld, collider: Rapier.Collider, shape?: RapierShapeSpec) {
+    this.#world = world; this.#collider = collider;
+    if (shape?.kind === "mesh") this.#surface = { kind: "mesh", vertices: shape.vertices.map((v) => [v[0], v[1], v[2]]), indices: [...shape.indices] };
+    else if (shape?.kind === "heightfield") this.#surface = { ...shape, heights: [...shape.heights] };
+  }
   get id(): number { return this.#collider.handle; }
   remove(): void { this.#world.removeCollider(this); }
+  /** @internal */
+  ownedBy(world: RapierPhysicsWorld): boolean { return this.#world === world; }
   /** Stable typed escape hatch. The adapter owns and frees this object. */
-  unsafeRapierCollider(): Rapier.Collider { return this.#collider; }
+  unsafeRapierCollider(): Rapier.Collider { this.#world.assertColliderHandle(this); return this.#collider; }
+  /** @internal Original winding is needed to filter front faces of triangle meshes. */
+  get surface(): Extract<RapierShapeSpec, { kind: "mesh" | "heightfield" }> | undefined { return this.#surface; }
+  /** Cast a unit-distance ray at this collider; `maxDistance` is in world units. */
+  castRay(origin: PhysicsVec3, direction: PhysicsVec3, maxDistance = Infinity, includeBackfaces = false): RapierColliderQueryHit | undefined {
+    return this.#world.castColliderRay(this, origin, direction, maxDistance, includeBackfaces);
+  }
+  /** Sweep a sphere at this collider without approximating its corners or surface. */
+  castSphere(origin: PhysicsVec3, radius: number, direction: PhysicsVec3, maxDistance = Infinity, includeBackfaces = false): RapierColliderSphereQueryHit | undefined {
+    return this.#world.castColliderSphere(this, origin, radius, direction, maxDistance, includeBackfaces);
+  }
+  /** Test actual collider geometry against a world-aligned box or sphere. */
+  intersectsShape(center: PhysicsVec3, shape: Extract<RapierShapeSpec, { kind: "sphere" | "box" }>): boolean {
+    return this.#world.colliderIntersectsShape(this, center, shape);
+  }
+}
+
+export interface RapierColliderQueryHit {
+  readonly point: PhysicsVec3;
+  readonly normal: PhysicsVec3;
+  readonly distance: number;
+}
+
+export interface RapierColliderSphereQueryHit extends RapierColliderQueryHit {
+  readonly castCenter: PhysicsVec3;
 }
 
 export class RapierJointHandle {
@@ -138,14 +178,19 @@ export class RapierJointHandle {
   constructor(world: RapierPhysicsWorld, joint: Rapier.ImpulseJoint, module: RapierModule) { this.#world = world; this.#joint = joint; this.#module = module; }
   get id(): number { return this.#joint.handle; }
   remove(): void { this.#world.removeJoint(this); }
+  /** @internal */
+  ownedBy(world: RapierPhysicsWorld): boolean { return this.#world === world; }
   configureMotor(speed: number, maxTorque: number): void {
-    const joint = this.#joint as Rapier.RevoluteImpulseJoint;
+    const joint = this.unsafeRapierJoint() as Rapier.RevoluteImpulseJoint;
+    if (joint.type() !== this.#module.JointType.Revolute) throw new Error("Motor control is supported only on revolute joints.");
+    const safeSpeed = finite(speed, "motor speed");
+    const safeTorque = nonNegative(maxTorque, "maximum motor torque");
     joint.configureMotorModel(this.#module.MotorModel.ForceBased);
-    joint.setMotorMaxForce(finite(maxTorque, "maximum motor torque"));
-    joint.configureMotorVelocity(finite(speed, "motor speed"), 1);
+    joint.setMotorMaxForce(safeTorque);
+    joint.configureMotorVelocity(safeSpeed, 1);
   }
   /** Stable typed escape hatch. The adapter owns and frees this object. */
-  unsafeRapierJoint(): Rapier.ImpulseJoint { return this.#joint; }
+  unsafeRapierJoint(): Rapier.ImpulseJoint { this.#world.assertJointHandle(this); return this.#joint; }
 }
 
 export interface RapierRayHit {
@@ -165,24 +210,30 @@ export interface RapierCharacterMovement {
 
 export class RapierCharacterControllerHandle {
   readonly #world: RapierPhysicsWorld;
-  readonly raw: Rapier.KinematicCharacterController;
+  readonly #raw: Rapier.KinematicCharacterController;
   #lastGrounded = false;
   #lastApplied: PhysicsVec3 = [0, 0, 0];
-  constructor(world: RapierPhysicsWorld, raw: Rapier.KinematicCharacterController) { this.#world = world; this.raw = raw; }
-  enableAutostep(maxHeight: number, minWidth: number, includeDynamicBodies = false): this { this.raw.enableAutostep(maxHeight, minWidth, includeDynamicBodies); return this; }
-  enableSnapToGround(distance: number): this { this.raw.enableSnapToGround(distance); return this; }
-  setMaxSlopeClimbAngle(radians: number): this { this.raw.setMaxSlopeClimbAngle(radians); return this; }
-  setMinSlopeSlideAngle(radians: number): this { this.raw.setMinSlopeSlideAngle(radians); return this; }
+  constructor(world: RapierPhysicsWorld, raw: Rapier.KinematicCharacterController) { this.#world = world; this.#raw = raw; }
+  /** @internal */
+  ownedBy(world: RapierPhysicsWorld): boolean { return this.#world === world; }
+  /** The adapter owns this native controller. */
+  get raw(): Rapier.KinematicCharacterController { this.#world.assertCharacterController(this); return this.#raw; }
+  enableAutostep(maxHeight: number, minWidth: number, includeDynamicBodies = false): this { this.raw.enableAutostep(positive(maxHeight, "autostep maxHeight"), positive(minWidth, "autostep minWidth"), includeDynamicBodies); return this; }
+  enableSnapToGround(distance: number): this { this.raw.enableSnapToGround(positive(distance, "snap distance")); return this; }
+  setMaxSlopeClimbAngle(radians: number): this { this.raw.setMaxSlopeClimbAngle(slopeAngle(radians)); return this; }
+  setMinSlopeSlideAngle(radians: number): this { this.raw.setMinSlopeSlideAngle(slopeAngle(radians)); return this; }
   /** Sliding down slopes too steep to stand on. Turning this off leaves a character stuck on a hill. */
   setSlideEnabled(enabled: boolean): this { this.raw.setSlideEnabled(enabled); return this; }
   /** Mass used when the character pushes a dynamic body, in kilograms. */
-  setCharacterMass(mass: number | null): this { this.raw.setCharacterMass(mass); return this; }
+  setCharacterMass(mass: number | null): this { this.raw.setCharacterMass(mass === null ? null : positive(mass, "character mass")); return this; }
   /** Whether touching a dynamic body moves it. Off, the character walks through crates. */
   setApplyImpulsesToDynamicBodies(enabled: boolean): this { this.raw.setApplyImpulsesToDynamicBodies(enabled); return this; }
   /** The grounding reported by the most recent `move`, with no solver side effect. */
-  get lastGrounded(): boolean { return this.#lastGrounded; }
-  get lastApplied(): PhysicsVec3 { return this.#lastApplied; }
+  get lastGrounded(): boolean { this.#world.assertCharacterController(this); return this.#lastGrounded; }
+  get lastApplied(): PhysicsVec3 { this.#world.assertCharacterController(this); return [...this.#lastApplied]; }
   move(character: RapierColliderHandle | RapierBodyHandle, requested: PhysicsVec3): RapierCharacterMovement {
+    this.#world.assertCharacterController(this);
+    this.#world.assertCharacterTarget(character);
     const desired = vec(requested, "character movement");
     const collider = character.unsafeRapierCollider();
     if (collider.isSensor()) {
@@ -191,16 +242,17 @@ export class RapierCharacterControllerHandle {
         "queries but never block, so the character would fall through the world with no error anywhere."
       );
     }
-    this.raw.computeColliderMovement(collider, desired);
-    const movement = this.raw.computedMovement();
     const body = collider.parent();
     if (!body) throw new Error("Character collider must be attached to a rigid body.");
-    if (!body.isKinematic()) {
+    if (!this.#world.isPositionKinematic(body)) {
       throw new Error(
         "A solver-backed character controller moves a kinematic-position body; Rapier owns the position the " +
         "collision solver allowed. A dynamic body has to be pushed by forces or it gets two transform owners."
       );
     }
+    this.#world.refreshQueries();
+    this.raw.computeColliderMovement(collider, desired);
+    const movement = this.raw.computedMovement();
     const current = body.translation();
     const next = { x: current.x + movement.x, y: current.y + movement.y, z: current.z + movement.z };
     body.setNextKinematicTranslation(next);
@@ -222,11 +274,15 @@ export class RapierCharacterControllerHandle {
    * headed on the following step.
    */
   setPosition(character: RapierColliderHandle | RapierBodyHandle, position: PhysicsVec3): PhysicsVec3 {
+    this.#world.assertCharacterController(this);
+    this.#world.assertCharacterTarget(character);
     const body = character.unsafeRapierCollider().parent();
     if (!body) throw new Error("Character collider must be attached to a rigid body.");
+    if (!this.#world.isPositionKinematic(body)) throw new Error("A character controller requires a kinematic-position body.");
     const target = vec(position, "character position");
     body.setTranslation(target, true);
     body.setNextKinematicTranslation(target);
+    this.#world.markQueriesStale();
     this.#lastGrounded = false;
     this.#lastApplied = [0, 0, 0];
     return [target.x, target.y, target.z];
@@ -297,8 +353,14 @@ function readVec(target: { x: number; y: number; z: number } | null): PhysicsVec
 
 export class RapierVehicleControllerHandle {
   readonly #world: RapierPhysicsWorld;
-  readonly raw: Rapier.DynamicRayCastVehicleController;
-  constructor(world: RapierPhysicsWorld, raw: Rapier.DynamicRayCastVehicleController) { this.#world = world; this.raw = raw; }
+  readonly #raw: Rapier.DynamicRayCastVehicleController;
+  #contactRevision = -1;
+  readonly #rotationOffsets: number[] = [];
+  constructor(world: RapierPhysicsWorld, raw: Rapier.DynamicRayCastVehicleController) { this.#world = world; this.#raw = raw; }
+  /** @internal */
+  ownedBy(world: RapierPhysicsWorld): boolean { return this.#world === world; }
+  /** The adapter owns this native controller. */
+  get raw(): Rapier.DynamicRayCastVehicleController { this.#world.assertVehicleController(this); return this.#raw; }
 
   /** Chassis-local axes the solver uses to project suspension and tyre forces. */
   get upAxis(): number { return this.raw.indexUpAxis; }
@@ -311,15 +373,27 @@ export class RapierVehicleControllerHandle {
   get forwardAxis(): number { return this.raw.indexForwardAxis; }
 
   addWheel(spec: RapierWheelSpec): this {
+    const connection = vec(spec.connection, "wheel connection");
+    const direction = vec(spec.direction, "wheel direction");
+    const axle = vec(spec.axle, "wheel axle");
+    const directionLength = Math.hypot(direction.x, direction.y, direction.z);
+    const axleLength = Math.hypot(axle.x, axle.y, axle.z);
+    if (directionLength === 0 || axleLength === 0) throw new RangeError("wheel direction and axle must be non-zero.");
+    const crossLength = Math.hypot(direction.y * axle.z - direction.z * axle.y, direction.z * axle.x - direction.x * axle.z, direction.x * axle.y - direction.y * axle.x);
+    if (crossLength <= 1e-8 * directionLength * axleLength) throw new RangeError("wheel direction and axle must not be parallel.");
+    const restLength = positive(spec.restLength, "suspension rest length");
+    const radius = positive(spec.radius, "wheel radius");
+    validateWheelTuning(spec);
     this.raw.addWheel(
-      vec(spec.connection, "wheel connection"),
-      vec(spec.direction, "wheel direction"),
-      vec(spec.axle, "wheel axle"),
-      positive(spec.restLength, "suspension rest length"),
-      positive(spec.radius, "wheel radius"),
+      connection,
+      { x: direction.x / directionLength, y: direction.y / directionLength, z: direction.z / directionLength },
+      { x: axle.x / axleLength, y: axle.y / axleLength, z: axle.z / axleLength },
+      restLength, radius,
     );
     const index = this.raw.numWheels() - 1;
     if (index < 0) throw new Error("Rapier did not register the wheel.");
+    this.#rotationOffsets[index] = 0;
+    this.#contactRevision = -1;
     this.setWheelTuning(index, spec);
     return this;
   }
@@ -327,6 +401,7 @@ export class RapierVehicleControllerHandle {
   /** Wheel geometry may only be changed through the setters after registration. */
   setWheelTuning(index: number, tuning: RapierWheelTuning): this {
     const i = WheelIndex(index, this.raw.numWheels());
+    validateWheelTuning(tuning);
     if (tuning.suspensionStiffness !== undefined) this.raw.setWheelSuspensionStiffness(i, finite(tuning.suspensionStiffness, "suspensionStiffness"));
     if (tuning.suspensionCompression !== undefined) this.raw.setWheelSuspensionCompression(i, finite(tuning.suspensionCompression, "suspensionCompression"));
     if (tuning.suspensionRelaxation !== undefined) this.raw.setWheelSuspensionRelaxation(i, finite(tuning.suspensionRelaxation, "suspensionRelaxation"));
@@ -349,6 +424,9 @@ export class RapierVehicleControllerHandle {
    */
   setWheelCommand(index: number, command: RapierWheelCommand): this {
     const i = WheelIndex(index, this.raw.numWheels());
+    if (command.engineForce !== undefined) finite(command.engineForce, "engineForce");
+    if (command.brake !== undefined) nonNegative(command.brake, "brake");
+    if (command.steering !== undefined) finite(command.steering, "steering");
     if (command.engineForce !== undefined) this.raw.setWheelEngineForce(i, finite(command.engineForce, "engineForce"));
     if (command.brake !== undefined) this.raw.setWheelBrake(i, nonNegative(command.brake, "brake"));
     if (command.steering !== undefined) this.raw.setWheelSteering(i, finite(command.steering, "steering"));
@@ -368,21 +446,22 @@ export class RapierVehicleControllerHandle {
 
   wheelState(index: number): RapierWheelState {
     const i = WheelIndex(index, this.raw.numWheels());
+    const validContact = this.#contactRevision === this.#world.queryRevision;
     return {
       index: i,
-      isInContact: this.raw.wheelIsInContact(i),
-      contactPoint: readVec(this.raw.wheelContactPoint(i)),
-      contactNormal: readVec(this.raw.wheelContactNormal(i)),
+      isInContact: validContact && this.raw.wheelIsInContact(i),
+      contactPoint: validContact ? readVec(this.raw.wheelContactPoint(i)) : null,
+      contactNormal: validContact ? readVec(this.raw.wheelContactNormal(i)) : null,
       engineForce: this.raw.wheelEngineForce(i) ?? 0,
       brake: this.raw.wheelBrake(i) ?? 0,
       steering: this.raw.wheelSteering(i) ?? 0,
-      suspensionLength: this.raw.wheelSuspensionLength(i) ?? this.raw.wheelSuspensionRestLength(i) ?? 0,
-      rotation: this.raw.wheelRotation(i) ?? 0,
+      suspensionLength: (validContact ? this.raw.wheelSuspensionLength(i) : null) ?? this.raw.wheelSuspensionRestLength(i) ?? 0,
+      rotation: (this.raw.wheelRotation(i) ?? 0) - (this.#rotationOffsets[i] ?? 0),
       frictionSlip: this.raw.wheelFrictionSlip(i) ?? 0,
-      suspensionForce: this.raw.wheelSuspensionForce(i) ?? 0,
-      forwardImpulse: this.raw.wheelForwardImpulse(i) ?? 0,
-      sideImpulse: this.raw.wheelSideImpulse(i) ?? 0,
-      groundColliderHandle: this.raw.wheelGroundObject(i)?.handle ?? null,
+      suspensionForce: validContact ? this.raw.wheelSuspensionForce(i) ?? 0 : 0,
+      forwardImpulse: validContact ? this.raw.wheelForwardImpulse(i) ?? 0 : 0,
+      sideImpulse: validContact ? this.raw.wheelSideImpulse(i) ?? 0 : 0,
+      groundColliderHandle: validContact ? this.raw.wheelGroundObject(i)?.handle ?? null : null,
     };
   }
 
@@ -392,11 +471,13 @@ export class RapierVehicleControllerHandle {
 
   /** True only while at least one tyre is touching the ground — the grounding test. */
   isGrounded(): boolean {
+    if (this.#contactRevision !== this.#world.queryRevision) { this.#world.assertVehicleController(this); return false; }
     for (let i = 0; i < this.raw.numWheels(); i += 1) if (this.raw.wheelIsInContact(i)) return true;
     return false;
   }
 
   groundedWheelCount(): number {
+    if (this.#contactRevision !== this.#world.queryRevision) { this.#world.assertVehicleController(this); return 0; }
     let count = 0;
     for (let i = 0; i < this.raw.numWheels(); i += 1) if (this.raw.wheelIsInContact(i)) count += 1;
     return count;
@@ -404,7 +485,7 @@ export class RapierVehicleControllerHandle {
 
   currentVehicleSpeed(): number { return this.raw.currentVehicleSpeed(); }
   wheelCount(): number { return this.raw.numWheels(); }
-  update(dt: number): void { this.raw.updateVehicle(finite(dt, "dt")); }
+  update(dt: number): void { const step = positive(dt, "dt"); this.#world.refreshQueries(); this.raw.updateVehicle(step); this.#contactRevision = this.#world.queryRevision; }
 
   /**
    * Release every drive input without touching the chassis.
@@ -436,19 +517,18 @@ export class RapierVehicleControllerHandle {
     linearVelocity?: PhysicsVec3,
     angularVelocity?: PhysicsVec3
   ): this {
+    const targetPosition = vec(position, "chassis position");
+    const targetRotation = quaternion(rotation ?? [0, 0, 0, 1], "chassis rotation");
+    const targetLinearVelocity = vec(linearVelocity ?? [0, 0, 0], "chassis linear velocity");
+    const targetAngularVelocity = vec(angularVelocity ?? [0, 0, 0], "chassis angular velocity");
     const body = this.raw.chassis();
-    body.setTranslation(vec(position, "chassis position"), true);
-    if (rotation) {
-      body.setRotation({
-        x: finite(rotation[0], "chassis rotation[0]"),
-        y: finite(rotation[1], "chassis rotation[1]"),
-        z: finite(rotation[2], "chassis rotation[2]"),
-        w: finite(rotation[3], "chassis rotation[3]")
-      }, true);
-    }
-    body.setLinvel(vec(linearVelocity ?? [0, 0, 0], "chassis linear velocity"), true);
-    body.setAngvel(vec(angularVelocity ?? [0, 0, 0], "chassis angular velocity"), true);
+    body.setTranslation(targetPosition, true);
+    body.setRotation(targetRotation, true);
+    body.setLinvel(targetLinearVelocity, true);
+    body.setAngvel(targetAngularVelocity, true);
     body.wakeUp();
+    for (let i = 0; i < this.raw.numWheels(); i += 1) this.#rotationOffsets[i] = this.raw.wheelRotation(i) ?? 0;
+    this.#world.markQueriesStale();
     this.clearWheelCommands();
     return this;
   }
@@ -481,14 +561,45 @@ function nonNegative(value: number, label: string): number {
   return v;
 }
 
+function slopeAngle(radians: number): number {
+  const value = nonNegative(radians, "slope angle");
+  if (value > Math.PI / 2) throw new RangeError("slope angle must not exceed pi/2.");
+  return value;
+}
+
+function quaternion(value: readonly [number, number, number, number], label: string): { x: number; y: number; z: number; w: number } {
+  const x = finite(value[0], `${label}[0]`), y = finite(value[1], `${label}[1]`);
+  const z = finite(value[2], `${label}[2]`), w = finite(value[3], `${label}[3]`);
+  const magnitude = Math.hypot(x, y, z, w);
+  if (magnitude === 0) throw new RangeError(`${label} must not be zero.`);
+  return { x: x / magnitude, y: y / magnitude, z: z / magnitude, w: w / magnitude };
+}
+
+function validateWheelTuning(tuning: RapierWheelTuning): void {
+  for (const key of ["suspensionStiffness", "suspensionCompression", "suspensionRelaxation", "maxSuspensionTravel", "maxSuspensionForce", "sideFrictionStiffness"] as const) {
+    if (tuning[key] !== undefined) nonNegative(tuning[key], key);
+  }
+  if (tuning.frictionSlip !== undefined) positive(tuning.frictionSlip, "frictionSlip");
+}
+
+/**
+ * Owns the optional Rapier world and its native allocations. Supported colliders
+ * are box, sphere, capsule, convex hull, and fixed-body plane, triangle mesh,
+ * or heightfield. Fixed, revolute/hinge, prismatic/slider, spring, spherical,
+ * and motorised-hinge joints are available. Unsupported combinations throw
+ * before native creation. Disposing the world invalidates all owned handles;
+ * removing a body also removes its colliders, joints, and vehicle controllers.
+ */
 export class RapierPhysicsWorld {
   readonly #module: RapierModule;
   readonly #world: Rapier.World;
   readonly #bodies = new Map<number, RapierBodyHandle>();
   readonly #colliders = new Map<number, RapierColliderHandle>();
   readonly #joints = new Map<number, RapierJointHandle>();
+  readonly #jointBodies = new Map<RapierJointHandle, readonly [RapierBodyHandle, RapierBodyHandle]>();
   readonly #characters = new Set<RapierCharacterControllerHandle>();
   readonly #vehicles = new Set<RapierVehicleControllerHandle>();
+  readonly #vehicleBodies = new Map<RapierVehicleControllerHandle, RapierBodyHandle>();
   #disposed = false;
   /**
    * Whether Rapier's internal scene-query structure still needs a pass before it can
@@ -508,12 +619,15 @@ export class RapierPhysicsWorld {
    * about freshness and pay one extra narrow-phase pass, once, after a structural change.
    */
   #queriesStale = true;
+  #queryRevision = 0;
   constructor(module: RapierModule, gravity: PhysicsVec3) { this.#module = module; this.#world = new module.World(vec(gravity, "gravity")); }
   get disposed(): boolean { return this.#disposed; }
   /** True until {@link refreshQueries} or a real step has run since the last structural change. */
   get queriesStale(): boolean { return this.#queriesStale; }
+  /** @internal Revision changes when a structural edit or teleport invalidates wheel observations. */
+  get queryRevision(): number { return this.#queryRevision; }
   /** Declare that a transform was written outside the solver, so the next query needs a refresh. */
-  markQueriesStale(): void { this.#queriesStale = true; }
+  markQueriesStale(): void { this.#assertAlive(); this.#queriesStale = true; this.#queryRevision += 1; }
   /**
    * Make scene queries valid without advancing the simulation.
    *
@@ -525,39 +639,44 @@ export class RapierPhysicsWorld {
     if (!this.#queriesStale) return;
     const previousTimestep = this.#world.timestep;
     this.#world.timestep = 0;
-    this.#world.step();
-    this.#world.timestep = previousTimestep;
+    try { this.#world.step(); } finally { this.#world.timestep = previousTimestep; }
     this.#queriesStale = false;
   }
   createRigidBody(spec: RapierRigidBodySpec = {}): RapierBodyHandle {
     this.#assertAlive();
-    this.#queriesStale = true;
+    if (spec.type !== undefined && !["dynamic", "fixed", "kinematic-position", "kinematic-velocity"].includes(spec.type)) {
+      throw new TypeError(`Unsupported Rapier body type '${String(spec.type)}'.`);
+    }
+    if (spec.principalAngularInertia && spec.mass === undefined) throw new TypeError("principalAngularInertia requires mass.");
+    if (spec.principalAngularInertia) spec.principalAngularInertia.forEach((value) => positive(value, "principal angular inertia"));
+    this.markQueriesStale();
     const R = this.#module;
     const descriptor = spec.type === "fixed" ? R.RigidBodyDesc.fixed() : spec.type === "kinematic-position" ? R.RigidBodyDesc.kinematicPositionBased() : spec.type === "kinematic-velocity" ? R.RigidBodyDesc.kinematicVelocityBased() : R.RigidBodyDesc.dynamic();
-    if (spec.position) descriptor.setTranslation(...spec.position.map((value, index) => finite(value, `position[${index}]`)) as [number, number, number]);
-    if (spec.rotation) descriptor.setRotation({ x: finite(spec.rotation[0], "rotation[0]"), y: finite(spec.rotation[1], "rotation[1]"), z: finite(spec.rotation[2], "rotation[2]"), w: finite(spec.rotation[3], "rotation[3]") });
-    if (spec.linearVelocity) descriptor.setLinvel(...spec.linearVelocity.map((value, index) => finite(value, `linearVelocity[${index}]`)) as [number, number, number]);
+    if (spec.position) { const position = vec(spec.position, "position"); descriptor.setTranslation(position.x, position.y, position.z); }
+    if (spec.rotation) descriptor.setRotation(quaternion(spec.rotation, "rotation"));
+    if (spec.linearVelocity) { const velocity = vec(spec.linearVelocity, "linearVelocity"); descriptor.setLinvel(velocity.x, velocity.y, velocity.z); }
     if (spec.angularVelocity) descriptor.setAngvel(vec(spec.angularVelocity, "angularVelocity"));
-    if (spec.linearDamping !== undefined) descriptor.setLinearDamping(finite(spec.linearDamping, "linearDamping"));
-    if (spec.angularDamping !== undefined) descriptor.setAngularDamping(finite(spec.angularDamping, "angularDamping"));
+    if (spec.linearDamping !== undefined) descriptor.setLinearDamping(nonNegative(spec.linearDamping, "linearDamping"));
+    if (spec.angularDamping !== undefined) descriptor.setAngularDamping(nonNegative(spec.angularDamping, "angularDamping"));
     if (spec.ccd !== undefined) descriptor.setCcdEnabled(spec.ccd);
     if (spec.canSleep !== undefined) descriptor.setCanSleep(spec.canSleep);
     if (spec.mass !== undefined && spec.principalAngularInertia) {
       descriptor.setAdditionalMassProperties(
-        finite(spec.mass, "mass"),
+        nonNegative(spec.mass, "mass"),
         { x: 0, y: 0, z: 0 },
         vec(spec.principalAngularInertia, "principal angular inertia"),
         { x: 0, y: 0, z: 0, w: 1 }
       );
     } else if (spec.mass !== undefined) {
-      descriptor.setAdditionalMass(finite(spec.mass, "mass"));
+      descriptor.setAdditionalMass(nonNegative(spec.mass, "mass"));
     }
     const body = this.#world.createRigidBody(descriptor);
     const handle = new RapierBodyHandle(this, body); this.#bodies.set(body.handle, handle); return handle;
   }
   createCollider(body: RapierBodyHandle, spec: RapierColliderSpec): RapierColliderHandle {
-    this.#assertAlive();
-    this.#queriesStale = true;
+    this.assertBodyHandle(body);
+    validateColliderShape(spec.shape, body.unsafeRapierBody().isFixed());
+    this.markQueriesStale();
     const R = this.#module;
     const shape = spec.shape;
     let collider: Rapier.ColliderDesc;
@@ -565,8 +684,10 @@ export class RapierPhysicsWorld {
     else if (shape.kind === "sphere") collider = R.ColliderDesc.ball(shape.radius);
     else if (shape.kind === "capsule") collider = R.ColliderDesc.capsule(shape.halfHeight, shape.radius);
     else if (shape.kind === "plane") {
-      collider = new R.ColliderDesc(new R.HalfSpace(vec(shape.normal, "plane normal")));
-      collider.setTranslation(shape.normal[0] * shape.constant, shape.normal[1] * shape.constant, shape.normal[2] * shape.constant);
+      const magnitude = Math.hypot(...shape.normal);
+      const normal: PhysicsVec3 = [shape.normal[0] / magnitude, shape.normal[1] / magnitude, shape.normal[2] / magnitude];
+      collider = new R.ColliderDesc(new R.HalfSpace(vec(normal, "plane normal")));
+      collider.setTranslation(normal[0] * shape.constant, normal[1] * shape.constant, normal[2] * shape.constant);
     } else if (shape.kind === "mesh") {
       collider = R.ColliderDesc.trimesh(flattenVertices(shape.vertices), new Uint32Array(shape.indices));
     } else if (shape.kind === "convex-hull") {
@@ -581,41 +702,60 @@ export class RapierPhysicsWorld {
         { x: shape.cellSize * (shape.columns - 1), y: 1, z: shape.cellSize * (shape.rows - 1) }
       );
     }
-    if (spec.density !== undefined) collider.setDensity(finite(spec.density, "density"));
-    if (spec.friction !== undefined) collider.setFriction(finite(spec.friction, "friction"));
-    if (spec.restitution !== undefined) collider.setRestitution(finite(spec.restitution, "restitution"));
+    if (spec.density !== undefined) collider.setDensity(nonNegative(spec.density, "density"));
+    if (spec.friction !== undefined) collider.setFriction(nonNegative(spec.friction, "friction"));
+    if (spec.restitution !== undefined) collider.setRestitution(nonNegative(spec.restitution, "restitution"));
     if (spec.sensor !== undefined) collider.setSensor(spec.sensor);
-    if (spec.collisionGroups !== undefined) collider.setCollisionGroups(spec.collisionGroups >>> 0);
+    // Sensor pairs must also detect fixed/kinematic and kinematic/kinematic overlaps.
+    // Rapier's default enables only pairs containing a dynamic body.
+    if (spec.sensor) collider.setActiveCollisionTypes(R.ActiveCollisionTypes.ALL);
+    if (spec.collisionGroups !== undefined) {
+      if (!Number.isInteger(spec.collisionGroups) || spec.collisionGroups < 0 || spec.collisionGroups > 0xffffffff) throw new RangeError("collisionGroups must be an unsigned 32-bit integer.");
+      collider.setCollisionGroups(spec.collisionGroups >>> 0);
+    }
     collider.setFrictionCombineRule(R.CoefficientCombineRule.Multiply);
     collider.setRestitutionCombineRule(R.CoefficientCombineRule.Max);
     const rawCollider = this.#world.createCollider(collider, body.unsafeRapierBody());
     // Rapier applies descriptor-level additional mass at the next mass-property
     // recomputation. Do that before the first step so initial velocity, force, and
     // inertia never run for one frame against a zero-mass dynamic body.
-    body.unsafeRapierBody().recomputeMassPropertiesFromColliders();
-    const handle = new RapierColliderHandle(this, rawCollider); this.#colliders.set(rawCollider.handle, handle); return handle;
+    try { body.unsafeRapierBody().recomputeMassPropertiesFromColliders(); }
+    catch (error) { this.#world.removeCollider(rawCollider, true); throw error; }
+    const handle = new RapierColliderHandle(this, rawCollider, shape); this.#colliders.set(rawCollider.handle, handle); return handle;
   }
   createBody(spec: RapierBodySpec): RapierBodyHandle {
     const body = this.createRigidBody(spec);
-    this.createCollider(body, spec);
+    try { this.createCollider(body, spec); } catch (error) { this.removeBody(body); throw error; }
     return body;
   }
   removeBody(handle: RapierBodyHandle): void {
-    this.#assertAlive();
-    this.#queriesStale = true;
+    if (!handle.ownedBy(this)) throw new Error("Rapier body belongs to a different world.");
+    if (this.#disposed || this.#bodies.get(handle.id) !== handle) return;
+    this.markQueriesStale();
     const raw = handle.unsafeRapierBody();
+    for (const [vehicle, chassis] of this.#vehicleBodies) if (chassis === handle) this.removeVehicleController(vehicle);
+    for (const [joint, bodies] of this.#jointBodies) if (bodies.includes(handle)) this.removeJoint(joint);
     for (let index = 0; index < raw.numColliders(); index += 1) this.#colliders.delete(raw.collider(index).handle);
     this.#world.removeRigidBody(raw); this.#bodies.delete(raw.handle);
   }
-  removeCollider(handle: RapierColliderHandle): void { this.#assertAlive(); this.#queriesStale = true; const raw = handle.unsafeRapierCollider(); this.#world.removeCollider(raw, true); this.#colliders.delete(raw.handle); }
+  removeCollider(handle: RapierColliderHandle): void {
+    if (!handle.ownedBy(this)) throw new Error("Rapier collider belongs to a different world.");
+    if (this.#disposed || this.#colliders.get(handle.id) !== handle) return;
+    this.markQueriesStale(); const raw = handle.unsafeRapierCollider(); this.#world.removeCollider(raw, true); this.#colliders.delete(raw.handle);
+  }
   createJoint(spec: RapierJointSpec, a: RapierBodyHandle, b: RapierBodyHandle): RapierJointHandle {
-    this.#assertAlive();
+    this.assertBodyHandle(a);
+    this.assertBodyHandle(b);
+    if (a === b) throw new Error("A joint requires two different bodies.");
+    validateJointSpec(spec);
     const R = this.#module;
     const anchorA = vec(spec.localAnchorA, "joint anchor A");
     const anchorB = vec(spec.localAnchorB, "joint anchor B");
-    const axis = vec(spec.axis, "joint axis");
+    const axisValue = vec(spec.axis, "joint axis");
+    const axisLength = Math.hypot(axisValue.x, axisValue.y, axisValue.z);
+    const axis = axisLength > 0 ? { x: axisValue.x / axisLength, y: axisValue.y / axisLength, z: axisValue.z / axisLength } : axisValue;
     let data: Rapier.JointData;
-    if (spec.type === "fixed") data = R.JointData.fixed(anchorA, { x: 0, y: 0, z: 0, w: 1 }, anchorB, { x: 0, y: 0, z: 0, w: 1 });
+    if (spec.type === "fixed") data = R.JointData.fixed(anchorA, quaternion(spec.localRotationA ?? [0, 0, 0, 1], "joint localRotationA"), anchorB, quaternion(spec.localRotationB ?? [0, 0, 0, 1], "joint localRotationB"));
     else if (spec.type === "slider" || spec.type === "prismatic") data = R.JointData.prismatic(anchorA, anchorB, axis);
     else if (spec.type === "spring") {
       // Aura exposes normalized game-facing stiffness/damping; Rapier expects physical
@@ -626,25 +766,137 @@ export class RapierPhysicsWorld {
     else if (spec.type === "ball-socket") data = R.JointData.spherical(anchorA, anchorB);
     else data = R.JointData.revolute(anchorA, anchorB, axis);
     const raw = this.#world.createImpulseJoint(data, a.unsafeRapierBody(), b.unsafeRapierBody(), true);
-    const unit = raw as Rapier.UnitImpulseJoint;
-    if (spec.limits && "setLimits" in unit) unit.setLimits(spec.limits[0], spec.limits[1]);
     const handle = new RapierJointHandle(this, raw, R);
-    if (spec.type === "motorised-hinge") handle.configureMotor(spec.motorSpeed, spec.maxMotorTorque);
     this.#joints.set(raw.handle, handle);
+    this.#jointBodies.set(handle, [a, b]);
+    try {
+      if (spec.relativeFrameBFromA) {
+        const relative = quaternion(spec.relativeFrameBFromA, "joint relativeFrameBFromA");
+        const frame = raw.frameX1();
+        raw.setFrameX2({
+          x: relative.w * frame.x + relative.x * frame.w + relative.y * frame.z - relative.z * frame.y,
+          y: relative.w * frame.y - relative.x * frame.z + relative.y * frame.w + relative.z * frame.x,
+          z: relative.w * frame.z + relative.x * frame.y - relative.y * frame.x + relative.z * frame.w,
+          w: relative.w * frame.w - relative.x * frame.x - relative.y * frame.y - relative.z * frame.z
+        });
+      }
+      if (spec.limits) {
+        const unit = raw as Rapier.UnitImpulseJoint;
+        if (typeof unit.setLimits !== "function") throw new Error(`Rapier ${spec.type} joint limits are unavailable in this backend.`);
+        unit.setLimits(spec.limits[0], spec.limits[1]);
+      }
+      if (spec.type === "motorised-hinge") handle.configureMotor(spec.motorSpeed, spec.maxMotorTorque);
+    } catch (error) { this.removeJoint(handle); throw error; }
     return handle;
   }
-  removeJoint(handle: RapierJointHandle): void { this.#assertAlive(); const raw = handle.unsafeRapierJoint(); this.#world.removeImpulseJoint(raw, true); this.#joints.delete(raw.handle); }
+  removeJoint(handle: RapierJointHandle): void {
+    if (!handle.ownedBy(this)) throw new Error("Rapier joint belongs to a different world.");
+    if (this.#disposed || this.#joints.get(handle.id) !== handle) return;
+    const raw = handle.unsafeRapierJoint(); this.#world.removeImpulseJoint(raw, true); this.#joints.delete(raw.handle); this.#jointBodies.delete(handle);
+  }
   createFixedJoint(a: RapierBodyHandle, b: RapierBodyHandle): Rapier.ImpulseJoint {
-    this.#assertAlive();
+    this.assertBodyHandle(a);
+    this.assertBodyHandle(b);
+    if (a === b) throw new Error("A joint requires two different bodies.");
     return this.#world.createImpulseJoint(this.#module.JointData.fixed({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0, w: 1 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0, w: 1 }), a.unsafeRapierBody(), b.unsafeRapierBody(), true);
   }
-  createCharacterController(offset = 0.01): RapierCharacterControllerHandle { this.#assertAlive(); const value = new RapierCharacterControllerHandle(this, this.#world.createCharacterController(offset)); this.#characters.add(value); return value; }
-  removeCharacterController(value: RapierCharacterControllerHandle): void { if (!this.#characters.delete(value)) return; this.#world.removeCharacterController(value.raw); }
-  createVehicleController(chassis: RapierBodyHandle): RapierVehicleControllerHandle { this.#assertAlive(); const value = new RapierVehicleControllerHandle(this, this.#world.createVehicleController(chassis.unsafeRapierBody())); this.#vehicles.add(value); return value; }
-  removeVehicleController(value: RapierVehicleControllerHandle): void { if (!this.#vehicles.delete(value)) return; this.#world.removeVehicleController(value.raw); }
+  createCharacterController(offset = 0.01): RapierCharacterControllerHandle { this.#assertAlive(); const value = new RapierCharacterControllerHandle(this, this.#world.createCharacterController(positive(offset, "character offset"))); this.#characters.add(value); return value; }
+  removeCharacterController(value: RapierCharacterControllerHandle): void {
+    if (!value.ownedBy(this)) throw new Error("Rapier character controller belongs to a different world.");
+    if (this.#disposed || !this.#characters.has(value)) return;
+    this.#world.removeCharacterController(value.raw); this.#characters.delete(value);
+  }
+  createVehicleController(chassis: RapierBodyHandle): RapierVehicleControllerHandle {
+    this.assertBodyHandle(chassis);
+    if (!chassis.unsafeRapierBody().isDynamic()) throw new Error("A Rapier vehicle requires a dynamic chassis.");
+    const value = new RapierVehicleControllerHandle(this, this.#world.createVehicleController(chassis.unsafeRapierBody())); this.#vehicles.add(value); this.#vehicleBodies.set(value, chassis); return value;
+  }
+  removeVehicleController(value: RapierVehicleControllerHandle): void {
+    if (!value.ownedBy(this)) throw new Error("Rapier vehicle controller belongs to a different world.");
+    if (this.#disposed || !this.#vehicles.has(value)) return;
+    this.#world.removeVehicleController(value.raw); this.#vehicles.delete(value); this.#vehicleBodies.delete(value);
+  }
+  /** @internal Query one collider, including its current body transform. */
+  colliderIntersectsShape(handle: RapierColliderHandle, center: PhysicsVec3, shape: Extract<RapierShapeSpec, { kind: "sphere" | "box" }>): boolean {
+    this.assertColliderHandle(handle);
+    const position = vec(center, "overlap center");
+    const queryShape = shape.kind === "sphere"
+      ? new this.#module.Ball(positive(shape.radius, "overlap sphere radius"))
+      : new this.#module.Cuboid(
+        positive(shape.halfExtents[0], "overlap box half extent x"),
+        positive(shape.halfExtents[1], "overlap box half extent y"),
+        positive(shape.halfExtents[2], "overlap box half extent z")
+      );
+    this.refreshQueries();
+    const collider = handle.unsafeRapierCollider();
+    const rotation = { x: 0, y: 0, z: 0, w: 1 };
+    if (collider.intersectsShape(queryShape, position, rotation)) return true;
+    if (handle.surface?.kind !== "heightfield") return false;
+    // Rapier's intersection dispatcher can miss a box overlapping a
+    // heightfield. Its contact query uses the real transformed geometry; zero
+    // prediction admits overlap and touching but does not add a query margin.
+    const contact = collider.contactShape(queryShape, position, rotation, 0);
+    return contact !== null && contact.distance <= 0;
+  }
+  /** @internal Query one collider, including its current body transform. */
+  castColliderRay(handle: RapierColliderHandle, origin: PhysicsVec3, direction: PhysicsVec3, maxDistance: number, includeBackfaces: boolean): RapierColliderQueryHit | undefined {
+    this.assertColliderHandle(handle);
+    const query = normalizeQuery(origin, direction, maxDistance);
+    this.refreshQueries();
+    const collider = handle.unsafeRapierCollider();
+    const ray = new this.#module.Ray(query.origin, query.direction);
+    let best: Rapier.RayIntersection | null = null;
+    if (handle.surface && !includeBackfaces) {
+      const pose = collider.translation(), rotation = collider.rotation();
+      for (const [a, b, c] of surfaceTriangles(handle.surface)) {
+        if (!frontFacing(a, b, c, rotation, query.direction)) continue;
+        const triangle = new this.#module.Triangle(vec(a, "triangle a"), vec(b, "triangle b"), vec(c, "triangle c"));
+        const hit = triangle.castRayAndGetNormal(ray, pose, rotation, best?.timeOfImpact ?? query.distance, true);
+        if (hit && (!best || hit.timeOfImpact < best.timeOfImpact)) best = hit;
+      }
+    } else {
+      best = collider.castRayAndGetNormal(ray, query.distance, true);
+    }
+    if (!best) return undefined;
+    const distance = best.timeOfImpact;
+    return { distance, point: pointAt(query.origin, query.direction, distance), normal: queryNormal(best.normal, query.direction) };
+  }
+  /** @internal Sweep one sphere, retaining contact on rounded and triangular geometry. */
+  castColliderSphere(handle: RapierColliderHandle, origin: PhysicsVec3, radius: number, direction: PhysicsVec3, maxDistance: number, includeBackfaces: boolean): RapierColliderSphereQueryHit | undefined {
+    this.assertColliderHandle(handle);
+    const sphereRadius = positive(radius, "sphere cast radius");
+    const query = normalizeQuery(origin, direction, maxDistance);
+    this.refreshQueries();
+    const collider = handle.unsafeRapierCollider();
+    const rotation = collider.rotation();
+    const sphere = new this.#module.Ball(sphereRadius);
+    const stationary = { x: 0, y: 0, z: 0 };
+    const identity = { x: 0, y: 0, z: 0, w: 1 };
+    let best: Rapier.ShapeCastHit | null = null;
+    if (handle.surface && !includeBackfaces) {
+      const pose = collider.translation();
+      for (const [a, b, c] of surfaceTriangles(handle.surface)) {
+        if (!frontFacing(a, b, c, rotation, query.direction)) continue;
+        const triangle = new this.#module.Triangle(vec(a, "triangle a"), vec(b, "triangle b"), vec(c, "triangle c"));
+        const hit = triangle.castShape(pose, rotation, stationary, sphere, query.origin, identity, query.direction, 0, best?.time_of_impact ?? query.distance, true);
+        if (hit && (!best || hit.time_of_impact < best.time_of_impact)) best = hit;
+      }
+    } else {
+      best = collider.castShape(stationary, sphere, query.origin, identity, query.direction, 0, query.distance, true);
+    }
+    if (!best) return undefined;
+    const distance = best.time_of_impact;
+    const castCenter = pointAt(query.origin, query.direction, distance);
+    const normal = queryNormal(rotateVector(best.normal1, rotation), query.direction);
+    return { distance, castCenter, point: [castCenter[0] - normal[0] * sphereRadius, castCenter[1] - normal[1] * sphereRadius, castCenter[2] - normal[2] * sphereRadius], normal };
+  }
   raycast(origin: PhysicsVec3, direction: PhysicsVec3, maxDistance = Number.POSITIVE_INFINITY): RapierRayHit | undefined {
     this.#assertAlive();
-    const ray = new this.#module.Ray(vec(origin, "origin"), vec(direction, "direction"));
+    const length = Math.hypot(...direction);
+    if (!Number.isFinite(length) || length === 0) throw new RangeError("ray direction must be finite and non-zero.");
+    if (Number.isNaN(maxDistance) || maxDistance < 0) throw new RangeError("ray maxDistance must be non-negative.");
+    this.refreshQueries();
+    const ray = new this.#module.Ray(vec(origin, "origin"), { x: direction[0] / length, y: direction[1] / length, z: direction[2] / length });
     const hit = this.#world.castRay(ray, maxDistance, true);
     if (!hit) return undefined;
     const collider = this.#world.getCollider(hit.collider.handle); const rawBody = collider?.parent();
@@ -653,8 +905,9 @@ export class RapierPhysicsWorld {
     const point = ray.pointAt(hit.timeOfImpact);
     return { body, colliderHandle: hit.collider.handle, timeOfImpact: hit.timeOfImpact, point: [point.x, point.y, point.z] };
   }
-  step(dt = 1 / 60): void { this.#assertAlive(); this.#world.timestep = finite(dt, "dt"); this.#world.step(); this.#queriesStale = false; }
+  step(dt = 1 / 60): void { this.#assertAlive(); this.#world.timestep = positive(dt, "dt"); this.#world.step(); this.#queriesStale = false; }
   setGravity(gravity: PhysicsVec3): void { this.#assertAlive(); this.#world.gravity = vec(gravity, "gravity"); this.#queriesStale = true; }
+  /** Disposed worlds report no bodies, allowing owners to verify teardown. */
   bodies(): readonly RapierBodyHandle[] { return [...this.#bodies.values()]; }
   /** Stable typed escape hatch. The adapter owns and frees the returned world. */
   unsafeRapierWorld(): Rapier.World { this.#assertAlive(); return this.#world; }
@@ -662,9 +915,178 @@ export class RapierPhysicsWorld {
     if (this.#disposed) return;
     for (const value of [...this.#vehicles]) this.removeVehicleController(value);
     for (const value of [...this.#characters]) this.removeCharacterController(value);
-    this.#joints.clear(); this.#colliders.clear(); this.#bodies.clear(); this.#world.free(); this.#disposed = true;
+    this.#joints.clear(); this.#jointBodies.clear(); this.#colliders.clear(); this.#bodies.clear(); this.#world.free(); this.#disposed = true;
   }
+  /** @internal */
+  assertBodyHandle(handle: RapierBodyHandle): void {
+    this.#assertAlive();
+    if (!handle.ownedBy(this)) throw new Error("Rapier body belongs to a different world.");
+    if (this.#bodies.get(handle.id) !== handle) throw new Error("Rapier body has been removed.");
+  }
+  /** @internal */
+  assertColliderHandle(handle: RapierColliderHandle): void {
+    this.#assertAlive();
+    if (!handle.ownedBy(this)) throw new Error("Rapier collider belongs to a different world.");
+    if (this.#colliders.get(handle.id) !== handle) throw new Error("Rapier collider has been removed.");
+  }
+  /** @internal */
+  assertJointHandle(handle: RapierJointHandle): void {
+    this.#assertAlive();
+    if (!handle.ownedBy(this)) throw new Error("Rapier joint belongs to a different world.");
+    if (this.#joints.get(handle.id) !== handle) throw new Error("Rapier joint has been removed.");
+  }
+  /** @internal */
+  assertCharacterController(handle: RapierCharacterControllerHandle): void {
+    this.#assertAlive();
+    if (!handle.ownedBy(this)) throw new Error("Rapier character controller belongs to a different world.");
+    if (!this.#characters.has(handle)) throw new Error("Rapier character controller has been disposed.");
+  }
+  /** @internal */
+  assertVehicleController(handle: RapierVehicleControllerHandle): void {
+    this.#assertAlive();
+    if (!handle.ownedBy(this)) throw new Error("Rapier vehicle controller belongs to a different world.");
+    if (!this.#vehicles.has(handle)) throw new Error("Rapier vehicle controller has been disposed.");
+  }
+  /** @internal */
+  assertCharacterTarget(handle: RapierBodyHandle | RapierColliderHandle): void {
+    if (handle instanceof RapierBodyHandle) this.assertBodyHandle(handle);
+    else this.assertColliderHandle(handle);
+  }
+  /** @internal */
+  isPositionKinematic(body: Rapier.RigidBody): boolean { return body.bodyType() === this.#module.RigidBodyType.KinematicPositionBased; }
   #assertAlive(): void { if (this.#disposed) throw new Error("RapierPhysicsWorld is disposed."); }
+}
+
+type NativeVector = { x: number; y: number; z: number };
+type NativeRotation = NativeVector & { w: number };
+
+function normalizeQuery(origin: PhysicsVec3, direction: PhysicsVec3, maxDistance: number): { origin: NativeVector; direction: NativeVector; distance: number } {
+  const start = vec(origin, "query origin");
+  const velocity = vec(direction, "query direction");
+  const length = Math.hypot(velocity.x, velocity.y, velocity.z);
+  if (length === 0) throw new RangeError("query direction must be non-zero.");
+  if (Number.isNaN(maxDistance) || maxDistance < 0) throw new RangeError("query maxDistance must be non-negative.");
+  return { origin: start, direction: { x: velocity.x / length, y: velocity.y / length, z: velocity.z / length }, distance: maxDistance };
+}
+
+function pointAt(origin: NativeVector, direction: NativeVector, distance: number): PhysicsVec3 {
+  return [origin.x + direction.x * distance, origin.y + direction.y * distance, origin.z + direction.z * distance];
+}
+
+function queryNormal(value: NativeVector, direction: NativeVector): PhysicsVec3 {
+  const length = Math.hypot(value.x, value.y, value.z);
+  if (!Number.isFinite(length) || length < 1e-8) return [-direction.x, -direction.y, -direction.z];
+  return [value.x / length, value.y / length, value.z / length];
+}
+
+function rotateVector(value: NativeVector, q: NativeRotation): NativeVector {
+  const tx = 2 * (q.y * value.z - q.z * value.y);
+  const ty = 2 * (q.z * value.x - q.x * value.z);
+  const tz = 2 * (q.x * value.y - q.y * value.x);
+  return { x: value.x + q.w * tx + q.y * tz - q.z * ty, y: value.y + q.w * ty + q.z * tx - q.x * tz, z: value.z + q.w * tz + q.x * ty - q.y * tx };
+}
+
+function frontFacing(a: PhysicsVec3, b: PhysicsVec3, c: PhysicsVec3, rotation: NativeRotation, direction: NativeVector): boolean {
+  const ab = { x: b[0] - a[0], y: b[1] - a[1], z: b[2] - a[2] };
+  const ac = { x: c[0] - a[0], y: c[1] - a[1], z: c[2] - a[2] };
+  const normal = rotateVector({ x: ab.y * ac.z - ab.z * ac.y, y: ab.z * ac.x - ab.x * ac.z, z: ab.x * ac.y - ab.y * ac.x }, rotation);
+  return normal.x * direction.x + normal.y * direction.y + normal.z * direction.z < 0;
+}
+
+function* surfaceTriangles(surface: Extract<RapierShapeSpec, { kind: "mesh" | "heightfield" }>): Generator<readonly [PhysicsVec3, PhysicsVec3, PhysicsVec3]> {
+  if (surface.kind === "mesh") {
+    for (let i = 0; i < surface.indices.length; i += 3) {
+      yield [surface.vertices[surface.indices[i]!]!, surface.vertices[surface.indices[i + 1]!]!, surface.vertices[surface.indices[i + 2]!]!];
+    }
+    return;
+  }
+  const xOffset = (surface.columns - 1) * surface.cellSize / 2;
+  const zOffset = (surface.rows - 1) * surface.cellSize / 2;
+  const vertex = (row: number, column: number): PhysicsVec3 => [column * surface.cellSize - xOffset, surface.heights[row * surface.columns + column]!, row * surface.cellSize - zOffset];
+  for (let row = 0; row < surface.rows - 1; row += 1) {
+    for (let column = 0; column < surface.columns - 1; column += 1) {
+      const topLeft = vertex(row, column), bottomLeft = vertex(row + 1, column);
+      const topRight = vertex(row, column + 1), bottomRight = vertex(row + 1, column + 1);
+      yield [topLeft, bottomLeft, topRight];
+      yield [topRight, bottomLeft, bottomRight];
+    }
+  }
+}
+
+/** Supported shapes are explicit: planes, triangle meshes and terrain are fixed-body geometry. */
+function validateColliderShape(shape: RapierShapeSpec, fixedBody: boolean): void {
+  if (!shape || typeof shape !== "object") throw new TypeError("A Rapier collider requires a shape.");
+  switch (shape.kind) {
+    case "box":
+      vec(shape.halfExtents, "box halfExtents");
+      shape.halfExtents.forEach((value) => positive(value, "box halfExtents"));
+      return;
+    case "sphere":
+      positive(shape.radius, "sphere radius");
+      return;
+    case "capsule":
+      nonNegative(shape.halfHeight, "capsule halfHeight");
+      positive(shape.radius, "capsule radius");
+      return;
+    case "plane":
+      if (!fixedBody) throw new Error("Rapier plane colliders require a fixed body.");
+      vec(shape.normal, "plane normal");
+      if (Math.hypot(...shape.normal) === 0) throw new RangeError("plane normal must be non-zero.");
+      finite(shape.constant, "plane constant");
+      return;
+    case "mesh":
+      if (!fixedBody) throw new Error("Rapier mesh colliders require a fixed body.");
+      if (!Array.isArray(shape.vertices) || shape.vertices.length < 3) throw new RangeError("mesh requires at least three vertices.");
+      flattenVertices(shape.vertices);
+      if (!Array.isArray(shape.indices) || shape.indices.length === 0 || shape.indices.length % 3 !== 0) throw new RangeError("mesh indices must contain complete triangles.");
+      for (const index of shape.indices) {
+        if (!Number.isInteger(index) || index < 0 || index >= shape.vertices.length) throw new RangeError("mesh index is outside the vertex array.");
+      }
+      return;
+    case "convex-hull":
+      if (!Array.isArray(shape.vertices) || shape.vertices.length < 4) throw new RangeError("convex-hull requires at least four vertices.");
+      flattenVertices(shape.vertices);
+      return;
+    case "heightfield":
+      if (!fixedBody) throw new Error("Rapier heightfield colliders require a fixed body.");
+      if (!Number.isInteger(shape.rows) || shape.rows < 2 || !Number.isInteger(shape.columns) || shape.columns < 2) throw new RangeError("heightfield rows and columns must be integers of at least two.");
+      if (!Array.isArray(shape.heights) || shape.heights.length !== shape.rows * shape.columns) throw new RangeError("heightfield requires rows*columns samples.");
+      shape.heights.forEach((height) => finite(height, "heightfield sample"));
+      positive(shape.cellSize, "heightfield cellSize");
+      return;
+    default:
+      throw new TypeError(`Unsupported Rapier collider shape '${String((shape as { kind?: unknown }).kind)}'.`);
+  }
+}
+
+function validateJointSpec(spec: RapierJointSpec): void {
+  const types = ["fixed", "hinge", "revolute", "slider", "prismatic", "spring", "ball-socket", "motorised-hinge"];
+  if (!types.includes(spec.type)) throw new TypeError(`Unsupported Rapier joint type '${String(spec.type)}'.`);
+  vec(spec.localAnchorA, "joint anchor A");
+  vec(spec.localAnchorB, "joint anchor B");
+  vec(spec.axis, "joint axis");
+  if (spec.localRotationA !== undefined || spec.localRotationB !== undefined) {
+    if (spec.type !== "fixed") throw new Error(`Rapier ${spec.type} joints do not support fixed-joint local frames.`);
+    if (spec.localRotationA) quaternion(spec.localRotationA, "joint localRotationA");
+    if (spec.localRotationB) quaternion(spec.localRotationB, "joint localRotationB");
+  }
+  const unitJoint = spec.type === "hinge" || spec.type === "revolute" || spec.type === "motorised-hinge" || spec.type === "slider" || spec.type === "prismatic";
+  if (spec.relativeFrameBFromA) {
+    if (!unitJoint) throw new Error(`Rapier ${spec.type} joints do not support relative axis frames.`);
+    quaternion(spec.relativeFrameBFromA, "joint relativeFrameBFromA");
+  }
+  if (unitJoint && Math.hypot(...spec.axis) === 0) throw new RangeError("joint axis must be non-zero.");
+  nonNegative(spec.restLength, "joint restLength");
+  nonNegative(spec.stiffness, "joint stiffness");
+  nonNegative(spec.damping, "joint damping");
+  finite(spec.motorSpeed, "joint motorSpeed");
+  nonNegative(spec.maxMotorTorque, "joint maxMotorTorque");
+  if (spec.limits) {
+    if (!unitJoint) throw new Error(`Rapier ${spec.type} joints do not support limits.`);
+    const lower = finite(spec.limits[0], "joint lower limit");
+    const upper = finite(spec.limits[1], "joint upper limit");
+    if (lower > upper) throw new RangeError("joint limits must be ordered [lower, upper].");
+  }
 }
 
 function flattenVertices(vertices: readonly PhysicsVec3[]): Float32Array {
@@ -770,9 +1192,14 @@ export async function createCollidersFromSidecar(
   source: string | Uint8Array,
   options: ColliderSidecarOptions = {}
 ): Promise<ColliderSidecarResult> {
-  const bytes = typeof source === "string"
-    ? new Uint8Array(await (await fetch(source)).arrayBuffer())
-    : source;
+  let bytes: Uint8Array;
+  if (typeof source === "string") {
+    const response = await fetch(source);
+    if (!response.ok) throw new Error(`Collider sidecar request failed with HTTP ${response.status}.`);
+    bytes = new Uint8Array(await response.arrayBuffer());
+  } else {
+    bytes = source;
+  }
   const [{ WebIO }, { ALL_EXTENSIONS }, { MeshoptDecoder }] = await Promise.all([
     import("@gltf-transform/core"),
     import("@gltf-transform/extensions"),
@@ -789,9 +1216,11 @@ export async function createCollidersFromSidecar(
     position: options.position,
     rotation: options.rotation
   });
+  world.assertBodyHandle(body);
   const colliders: RapierColliderHandle[] = [];
   const sourceNodes: string[] = [];
-  for (const node of doc.getRoot().listNodes()) {
+  try {
+    for (const node of doc.getRoot().listNodes()) {
     const mesh = node.getMesh();
     if (!mesh) continue;
     const extras = (mesh.getExtras() as { aura3dCollider?: Aura3dColliderExtra }).aura3dCollider;
@@ -868,8 +1297,14 @@ export async function createCollidersFromSidecar(
       if (vertices.length === 0) continue;
       shape = extras.shape === "convex" ? { kind: "convex-hull", vertices } : { kind: "mesh", vertices, indices };
     }
-    colliders.push(world.createCollider(body, { ...options.collider, shape }));
-    sourceNodes.push(extras.sourceNode ?? node.getName());
+      colliders.push(world.createCollider(body, { ...options.collider, shape }));
+      sourceNodes.push(extras.sourceNode ?? node.getName());
+    }
+    return { body, colliders, sourceNodes };
+  } catch (error) {
+    // Leave a supplied body intact, but undo every collider from this failed import.
+    if (options.body) for (const collider of colliders) collider.remove();
+    else body.remove();
+    throw error;
   }
-  return { body, colliders, sourceNodes };
 }

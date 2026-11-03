@@ -45,6 +45,81 @@ export interface SkeletonHelperJoint {
   readonly position: DebugVec3;
 }
 
+/** Column-major affine transform, using the same convention as scene matrices. */
+export type DebugHelperMatrix = readonly number[] | Float32Array;
+
+/**
+ * A reusable helper whose geometry is sampled from live scene state. It owns
+ * no renderer resources; feed `lines()` to a debug renderer after each update.
+ * Transform and visibility are applied on read, leaving source geometry in
+ * local space. `dispose` releases the reader and geometry and is idempotent.
+ */
+export class DynamicSceneHelper<T> {
+  private reader: (() => T) | undefined;
+  private builder: ((source: T) => readonly DebugRenderLine[]) | undefined;
+  private localLines: readonly DebugRenderLine[] = [];
+  private matrix: readonly number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  private shown = true;
+  private closed = false;
+
+  constructor(reader: () => T, builder: (source: T) => readonly DebugRenderLine[]) {
+    this.reader = reader;
+    this.builder = builder;
+    this.update();
+  }
+
+  get disposed(): boolean { return this.closed; }
+  get visible(): boolean { return this.shown && !this.closed; }
+
+  /** Re-read current state; failed validation leaves the last valid geometry intact. */
+  update(): readonly DebugRenderLine[] {
+    this.assertOpen();
+    const next = this.builder!(this.reader!());
+    if (next.length > 262144) throw new RangeError("Debug helper exceeds the 262144 line limit.");
+    const copied = next.map((line, index) => copyLine(line, `Debug helper line ${index}`));
+    this.localLines = copied;
+    return this.lines();
+  }
+
+  setVisible(visible: boolean): this {
+    this.assertOpen();
+    this.shown = visible;
+    return this;
+  }
+
+  setTransform(matrix: DebugHelperMatrix): this {
+    this.assertOpen();
+    if (matrix.length !== 16 || Array.from(matrix).some((component) => !Number.isFinite(component)) ||
+      matrix[3] !== 0 || matrix[7] !== 0 || matrix[11] !== 0 || matrix[15] !== 1) {
+      throw new RangeError("Debug helper transform must be a finite column-major affine matrix.");
+    }
+    this.matrix = Array.from(matrix);
+    return this;
+  }
+
+  /** Returns independent endpoint and color arrays, so consumers cannot mutate stored state. */
+  lines(): readonly DebugRenderLine[] {
+    if (!this.visible) return [];
+    return this.localLines.map((line) => ({
+      from: transformPoint(line.from, this.matrix),
+      to: transformPoint(line.to, this.matrix),
+      color: [...line.color] as [number, number, number, number]
+    }));
+  }
+
+  dispose(): void {
+    if (this.closed) return;
+    this.closed = true;
+    this.localLines = [];
+    this.reader = undefined;
+    this.builder = undefined;
+  }
+
+  private assertOpen(): void {
+    if (this.closed) throw new Error("Debug helper has been disposed.");
+  }
+}
+
 const AXIS_X: DebugColor = [1, 0.18, 0.14, 1];
 const AXIS_Y: DebugColor = [0.18, 0.86, 0.28, 1];
 const AXIS_Z: DebugColor = [0.2, 0.48, 1, 1];
@@ -55,6 +130,7 @@ const DEFAULT_HELPER: DebugColor = [1, 0.84, 0.28, 1];
 export function buildAxesHelper(options: AxesHelperOptions = {}): readonly DebugRenderLine[] {
   const size = positive(options.size ?? 1, "Axes helper size");
   const origin = options.origin ?? [0, 0, 0];
+  validateVec3(origin, "Axes helper origin");
   return [
     { from: origin, to: [origin[0] + size, origin[1], origin[2]], color: AXIS_X },
     { from: origin, to: [origin[0], origin[1] + size, origin[2]], color: AXIS_Y },
@@ -65,6 +141,7 @@ export function buildAxesHelper(options: AxesHelperOptions = {}): readonly Debug
 export function buildGridHelper(options: GridHelperOptions = {}): readonly DebugRenderLine[] {
   const size = positive(options.size ?? 10, "Grid helper size");
   const divisions = integerAtLeast(options.divisions ?? 10, 1, "Grid helper divisions");
+  if (divisions > 65535) throw new RangeError("Grid helper divisions must not exceed 65535.");
   const y = finite(options.y ?? 0, "Grid helper y");
   const half = size / 2;
   const step = size / divisions;
@@ -128,6 +205,7 @@ export function buildCameraFrustumHelper(options: CameraFrustumHelperOptions): r
 
 export function buildDirectionalLightHelper(options: DirectionalLightHelperOptions): readonly DebugRenderLine[] {
   const origin = options.origin ?? [0, 0, 0];
+  validateVec3(origin, "Directional light helper origin");
   const length = positive(options.length ?? 1, "Directional light helper length");
   const direction = normalize(options.direction, "Directional light helper direction");
   const to: DebugVec3 = [
@@ -138,10 +216,33 @@ export function buildDirectionalLightHelper(options: DirectionalLightHelperOptio
   return [{ from: origin, to, color: options.color ?? DEFAULT_HELPER }];
 }
 
+function copyLine(line: DebugRenderLine, label: string): DebugRenderLine {
+  validateVec3(line.from, `${label} from`);
+  validateVec3(line.to, `${label} to`);
+  if (line.color.length !== 4 || line.color.some((component) => !Number.isFinite(component))) {
+    throw new RangeError(`${label} color must contain four finite values.`);
+  }
+  return {
+    from: [...line.from] as [number, number, number],
+    to: [...line.to] as [number, number, number],
+    color: [...line.color] as [number, number, number, number]
+  };
+}
+
+function transformPoint(point: DebugVec3, matrix: readonly number[]): DebugVec3 {
+  return [
+    matrix[0]! * point[0] + matrix[4]! * point[1] + matrix[8]! * point[2] + matrix[12]!,
+    matrix[1]! * point[0] + matrix[5]! * point[1] + matrix[9]! * point[2] + matrix[13]!,
+    matrix[2]! * point[0] + matrix[6]! * point[1] + matrix[10]! * point[2] + matrix[14]!
+  ];
+}
+
 export function buildSkeletonHelper(joints: readonly SkeletonHelperJoint[], color: DebugColor = DEFAULT_HELPER): readonly DebugRenderLine[] {
+  if (joints.length > 262144) throw new RangeError("Skeleton helper exceeds the 262144 joint limit.");
   const byId = new Map<string, SkeletonHelperJoint>();
   for (const joint of joints) {
     if (!joint.id) throw new Error("Skeleton helper joints require stable ids.");
+    if (byId.has(joint.id)) throw new Error(`Skeleton helper joint id '${joint.id}' is duplicated.`);
     validateVec3(joint.position, `Skeleton helper joint ${joint.id}`);
     byId.set(joint.id, joint);
   }

@@ -16,4 +16,10 @@ export {
 } from "../AssetDecoderRegistry.js";
 import type { KTX2BasisTargetFormat } from "../KTX2TargetSelection.js";
 
-export interface KTX2BasisTextureTranscoderOptions { readonly targetFormat: KTX2BasisTargetFormat; readonly colorSpace: "srgb" | "linear"; readonly maxDimension?: number; readonly transcoderUrl: string; }  // same-origin, default "/aura-decoders/basis/"
+export interface KTX2BasisTextureTranscoderOptions {
+  readonly targetFormat: KTX2BasisTargetFormat;
+  readonly colorSpace: "srgb" | "linear";
+  readonly maxDimension?: number;
+  readonly transcoderUrl: string; // same-origin, default "/aura-decoders/basis/"
+  readonly onCleanupPending?: (cleanup: Promise<void>) => void;
+}

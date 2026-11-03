@@ -89,6 +89,8 @@ export function createProductionRuntimeEnvironment(
   readonly lighting: EnvironmentLightingOptions;
   readonly hdriUrl?: string;
   readonly hdriReflectionUrl?: string;
+  readonly hdriAsset?: AuraAssetRef<"texture">;
+  readonly hdriReflectionAsset?: AuraAssetRef<"texture">;
   readonly hdriRotation?: number;
 } {
   const nodes = groups.flatten(lightingNodes(snapshot));
@@ -132,16 +134,18 @@ export function createProductionRuntimeEnvironment(
     // prd02AmbientTerm (F-02-01 / C-09 contract).
     const singleKnob = flags?.on("A3D_QR_COMPILER") === true;
     const proceduralMap = bundle.lighting.proceduralMap;
-    const hdriUrl = authoredEnvironment.environment === "hdri"
+    const hdriAsset = authoredEnvironment.environment === "hdri"
       && typeof authoredEnvironment.texture === "object"
       && (authoredEnvironment.texture as { kind?: string }).kind === "aura-asset-ref"
-      ? (authoredEnvironment.texture as AuraAssetRef<"texture">).url ?? undefined
+      ? authoredEnvironment.texture as AuraAssetRef<"texture">
       : undefined;
-    const hdriReflectionUrl = authoredEnvironment.environment === "hdri"
+    const hdriReflectionAsset = authoredEnvironment.environment === "hdri"
       && typeof authoredEnvironment.reflectionTexture === "object"
       && (authoredEnvironment.reflectionTexture as { kind?: string }).kind === "aura-asset-ref"
-      ? (authoredEnvironment.reflectionTexture as AuraAssetRef<"texture">).url ?? undefined
+      ? authoredEnvironment.reflectionTexture as AuraAssetRef<"texture">
       : undefined;
+    const hdriUrl = hdriAsset?.url;
+    const hdriReflectionUrl = hdriReflectionAsset?.url;
     const hdriRotation = authoredEnvironment.environment === "hdri" && authoredEnvironment.rotation !== undefined
       ? authoredEnvironment.rotation
       : undefined;
@@ -153,6 +157,8 @@ export function createProductionRuntimeEnvironment(
         : `production bridge submitted the authored ${authoredEnvironment.environment} environment through generated HDR ${preset} lighting`,
       ...(hdriUrl ? { hdriUrl } : {}),
       ...(hdriReflectionUrl ? { hdriReflectionUrl } : {}),
+      ...(hdriAsset ? { hdriAsset } : {}),
+      ...(hdriReflectionAsset ? { hdriReflectionAsset } : {}),
       ...(hdriRotation !== undefined ? { hdriRotation } : {}),
       lighting: {
         ...bundle.lighting,
@@ -407,6 +413,26 @@ const LEGACY_ENVIRONMENT_PRESET: Record<string, AuraEnvironmentPresetName> = {
   "glass-studio": "studio"
 };
 
+// Keep the asset (including private transport settings) out of diagnostic
+// probe objects while making changes of typed source visible to the binder.
+const environmentProbeAssets = new WeakMap<object, {
+  readonly illumination: AuraAssetRef<"texture">;
+  readonly reflection?: AuraAssetRef<"texture">;
+}>();
+const environmentAssetIds = new WeakMap<object, number>();
+let nextEnvironmentAssetId = 0;
+function environmentAssetId(asset: AuraAssetRef<"texture">): number {
+  let id = environmentAssetIds.get(asset);
+  if (id === undefined) { id = ++nextEnvironmentAssetId; environmentAssetIds.set(asset, id); }
+  return id;
+}
+
+/** Stable binder key; private asset request data stays out of diagnostics. */
+export function prd02EnvironmentProbeRequestKey(probe: AuraEnvironmentSourceResolution["probe"]): string {
+  const assets = typeof probe === "object" && probe !== null ? environmentProbeAssets.get(probe) : undefined;
+  return `${JSON.stringify(probe)}${assets ? `:${environmentAssetId(assets.illumination)}:${assets.reflection ? environmentAssetId(assets.reflection) : ""}` : ""}`;
+}
+
 function resolveBackgroundOption(
   node: AuraEnvironmentNodeV2,
   defaultVisible: boolean
@@ -456,14 +482,16 @@ export function explicitEnvironmentResolution(
         background: resolveBackgroundOption(node, true)
       };
     case "hdri": {
-      const url = typeof node.texture === "object" && node.texture !== null && node.texture.kind === "aura-asset-ref"
-        ? node.texture.url
+      const asset = typeof node.texture === "object" && node.texture !== null && node.texture.kind === "aura-asset-ref"
+        ? node.texture
         : undefined;
       const reflection = typeof node.reflectionTexture === "object" && node.reflectionTexture !== null && node.reflectionTexture.kind === "aura-asset-ref"
-        ? node.reflectionTexture.url
+        ? node.reflectionTexture
         : undefined;
-      if (!url) return undefined; // malformed hdri node: fall through to neutral-room
-      return { ...base, probe: { hdri: url, ...(reflection ? { reflection } : {}) }, background: resolveBackgroundOption(node, true) };
+      if (!asset?.url) return undefined; // malformed hdri node: fall through to neutral-room
+      const probe = { hdri: asset.url, ...(reflection?.url ? { reflection: reflection.url } : {}) };
+      environmentProbeAssets.set(probe, { illumination: asset, ...(reflection ? { reflection } : {}) });
+      return { ...base, probe, background: resolveBackgroundOption(node, true) };
     }
     default: {
       // Legacy alias kinds (§11): resolve to presets with background off.
@@ -751,7 +779,10 @@ import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending, type Aur
 // don't re-export RenderDevice (lane-15/-01 files); same pattern as
 // FlagshipFoundation's rendering/src deep imports.
 import type { RenderDevice } from "../../../../rendering/src/RenderDevice.js";
-import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
+import { EnvironmentCache, defaultProbeLoader, hdriProbeFaceSize } from "../../../../rendering/src/environment/EnvironmentCache.js";
+import { Texture } from "../../../../rendering/src/Texture.js";
+import { fetchBytes as fetchAssetBytes, LoadContext, mergeAssetRequestOptions, requestIdentityDetails, type AssetRequestOptions } from "@aura3d/assets/browser";
+import { decodeProductionEnvironmentImage, productionEnvironmentRequest } from "./primitives.js";
 import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";
 import { readLightingKillSwitches } from "./lights.js";
 import { markTiming } from "../platform.js";
@@ -767,6 +798,8 @@ export interface Prd02EnvironmentBindOptions {
   readonly attachDevice?: (device: RenderDevice) => void;
   /** Shared cache; a fresh one is created when omitted. */
   readonly cache?: EnvironmentCache;
+  readonly request?: AssetRequestOptions;
+  readonly signal?: AbortSignal;
   /** Live-scene capture hook; required only for `{ capture }` probes. */
   readonly captureRequest?: EnvironmentCaptureRequest;
   /** Called once when the async-acquired (hdri/preset) probe replaces the neutral floor. */
@@ -837,6 +870,7 @@ export function bindPrd02EnvironmentProbe(
       return probe;
     });
     pending.catch((error: unknown) => {
+      if (options.signal?.aborted || (error instanceof Error && error.message === "ENVIRONMENT_CACHE_DISPOSED")) return;
       const retryable = isEnvironmentProbePendingError(error);
       if (!retryable) recordEnvironmentProbeOutcome(options.device, outcomeKey, "failed");
       warnEnvironmentUpgradeFailureOnce(error instanceof Error ? error.message : String(error));
@@ -852,7 +886,7 @@ export function bindPrd02EnvironmentProbe(
     // GGX prefilter); the baked `neutral` preset upgrades it through
     // `cache.acquire` so specular detail lands without the ~33M-iter pass. A
     // failed load degrades to the floor instead of an unhandled rejection.
-    const pending = upgrade(cache.acquire({ preset: "neutral", tier }));
+    const pending = upgrade(cache.acquire({ preset: "neutral", tier }, undefined, options.signal));
     return { probe: cache.neutral(tier), pending, resolution, pmremMode };
   }
   const floor = cache.neutral(tier);
@@ -862,10 +896,99 @@ export function bindPrd02EnvironmentProbe(
     return { probe: factory.fromScene(req, { faceSize: Math.max(128, req.resolution ?? 128) as 128 | 256 | 512 | 1024 }), pending: null, resolution, pmremMode };
   }
   if (typeof request === "object" && "hdri" in request) {
-    return { probe: floor, pending: upgrade(cache.acquire({ url: request.hdri, tier })), resolution, pmremMode };
+    const assets = environmentProbeAssets.get(request);
+    if (!assets && !request.reflection && !options.request) {
+      return { probe: floor, pending: upgrade(cache.acquire({ url: request.hdri, tier }, undefined, options.signal)), resolution, pmremMode };
+    }
+    const source = assets?.illumination ?? request.hdri;
+    const reflectionSource = assets?.reflection ?? request.reflection;
+    const acquire = async (): Promise<EnvironmentProbe> => {
+      if (isEnvironmentProbeFactoryPending(resolveFactory())) throw new Error("ENVIRONMENT_PROBE_PENDING:fromEquirect");
+      const appPolicy = mergeAssetRequestOptions({}, options.request);
+      const prepare = (input: typeof source) => {
+        const url = typeof input === "string" ? input : input.url;
+        const format = typeof input === "string" ? undefined : input.format;
+        const policy = mergeAssetRequestOptions({}, productionEnvironmentRequest(input, appPolicy));
+        return { url, format, policy };
+      };
+      // Snapshot both sources before hashing: a caller may retain and mutate
+      // its input while either asynchronous identity computation is pending.
+      const prepared = prepare(source);
+      const reflection = reflectionSource ? prepare(reflectionSource) : undefined;
+      const [sourceIdentity, reflectionIdentity] = await Promise.all([
+        requestIdentityDetails(prepared.policy, prepared.url),
+        reflection ? requestIdentityDetails(reflection.policy, reflection.url) : Promise.resolve(undefined)
+      ]);
+      if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
+      const identity = JSON.stringify([sourceIdentity.key, prepared.format ?? "auto", reflectionIdentity?.key ?? null, reflection?.format ?? null]);
+      const key = {
+        url: "typed-environment", tier,
+        identity: { key: identity, reusable: sourceIdentity.reusable && (reflectionIdentity?.reusable ?? true) }
+      };
+      return cache.acquire(key, async (_key, signal) => {
+        const build = async (input: typeof prepared): Promise<EnvironmentProbe> => {
+          const bytes = await fetchAssetBytes(input.url, signal, undefined, input.policy);
+          if (bytes.byteLength === 0) throw new Error("HDRI asset is empty");
+          const image = await decodeProductionEnvironmentImage(bytes, input.format);
+          if (signal?.aborted) throw signal.reason ?? new Error("Environment load aborted");
+          const texture = new Texture({ width: image.width, height: image.height, format: "rgba32f", data: image.data as Float32Array, label: "env-source" });
+          try {
+            const probe = resolveFactory().fromEquirect(texture, { faceSize: hdriProbeFaceSize(image.width, tier) });
+            if (probe.background !== texture) texture.dispose();
+            return probe;
+          } catch (error) {
+            texture.dispose();
+            throw error;
+          }
+        };
+        const illumination = await build(prepared);
+        if (!reflection || (reflectionIdentity?.reusable && reflectionIdentity.key === sourceIdentity.key && reflection.format === prepared.format)) return illumination;
+        try {
+          const reflected = await build(reflection);
+          let disposed = false;
+          return {
+            kind: "environment-probe",
+            source: illumination.source,
+            specularCube: reflected.specularCube,
+            faceSize: reflected.faceSize,
+            mipCount: reflected.mipCount,
+            sh9: illumination.sh9,
+            shTexture: illumination.shTexture,
+            background: illumination.background,
+            dispose() {
+              if (disposed) return;
+              disposed = true;
+              try { illumination.dispose(); } finally { if (reflected !== illumination) reflected.dispose(); }
+            }
+          };
+        } catch (error) {
+          illumination.dispose();
+          throw error;
+        }
+      }, options.signal);
+    };
+    return { probe: floor, pending: upgrade(acquire()), resolution, pmremMode };
   }
   if (typeof request === "object" && "preset" in request) {
-    return { probe: floor, pending: upgrade(cache.acquire({ preset: request.preset, tier })), resolution, pmremMode };
+    if (request.preset === "neutral" || !options.request) {
+      return { probe: floor, pending: upgrade(cache.acquire({ preset: request.preset, tier }, undefined, options.signal)), resolution, pmremMode };
+    }
+    const acquire = async (): Promise<EnvironmentProbe> => {
+      const manifestUrl = `/aura-environments/${request.preset}.manifest.json`;
+      const policy = mergeAssetRequestOptions({}, options.request);
+      const identity = await requestIdentityDetails(policy, manifestUrl);
+      if (options.signal?.aborted) throw options.signal.reason ?? new Error("Environment load aborted");
+      const context = new LoadContext({ ...policy, baseUrl: "/aura-environments/", documentUrl: manifestUrl });
+      const loader = defaultProbeLoader(resolveFactory, {
+        fetchBytes: async (url, maxBytes, signal) => {
+          const resourcePolicy = context.requestOptionsFor(url);
+          const limit = maxBytes === undefined ? resourcePolicy.maxBytes : Math.min(maxBytes, resourcePolicy.maxBytes ?? maxBytes);
+          return new Uint8Array(await fetchAssetBytes(url, signal, undefined, { ...resourcePolicy, ...(limit === undefined ? {} : { maxBytes: limit }) }));
+        }
+      });
+      return cache.acquire({ preset: request.preset, tier, identity }, loader, options.signal);
+    };
+    return { probe: floor, pending: upgrade(acquire()), resolution, pmremMode };
   }
   // spaceBake and any future request kinds: neutral floor, no upgrade.
   return { probe: floor, pending: null, resolution, pmremMode };

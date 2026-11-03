@@ -4,6 +4,96 @@
   ],
   "compilerOptions": {
     "paths": {
+      "@aura3d/assets/importers": [
+        "packages/assets/src/importers.ts"
+      ],
+      "@aura3d/rendering/volumetrics": [
+        "packages/rendering/src/volumetrics.ts"
+      ],
+      "@aura3d/engine/geometry-tools": [
+        "packages/engine/src/public/geometry-tools.ts"
+      ],
+      "@aura3d/engine/shader-graph-runtime": [
+        "packages/engine/src/public/shader-graph-runtime.ts"
+      ],
+      "@aura3d/engine/worker": [
+        "packages/engine/src/public/worker.ts"
+      ],
+      "@aura3d/engine/lighting": [
+        "packages/rendering/src/lighting/index.ts"
+      ],
+      "@aura3d/engine/v5/internal": [
+        "packages/engine/src/public/v5-internal.ts"
+      ],
+      "@aura3d/engine/v5/context": [
+        "packages/engine/src/public/v5-context.ts"
+      ],
+      "@aura3d/engine/v5/game": [
+        "packages/game/src/v5.ts"
+      ],
+      "@aura3d/engine/v5/math/hull": [
+        "packages/math/src/independent/hull-entry.ts"
+      ],
+      "@aura3d/engine/v5": [
+        "packages/engine/src/public/v5.ts"
+      ],
+      "@aura3d/engine/scatter": [
+        "packages/engine/src/agent-api/nodes/scatter.ts"
+      ],
+      "@aura3d/addons/utils/WorkerPool": [
+        "packages/addons/src/utils/WorkerPool.ts"
+      ],
+      "@aura3d/addons/tools/Fracture": [
+        "packages/addons/src/tools/Fracture.ts"
+      ],
+      "@aura3d/addons/tools/TubePainter": [
+        "packages/addons/src/tools/TubePainter.ts"
+      ],
+      "@aura3d/addons/tools/Sculptor": [
+        "packages/addons/src/tools/Sculptor.ts"
+      ],
+      "@aura3d/addons/generators/EnvironmentGenerators": [
+        "packages/addons/src/generators/EnvironmentGenerators.ts"
+      ],
+      "@aura3d/addons/objects/SpecializedObjects": [
+        "packages/addons/src/objects/SpecializedObjects.ts"
+      ],
+      "@aura3d/addons/objects/MarchingCubes": [
+        "packages/addons/src/objects/MarchingCubes.ts"
+      ],
+      "@aura3d/addons/effects/OutlineOutput": [
+        "packages/addons/src/effects/OutlineOutput.ts"
+      ],
+      "@aura3d/addons/effects/AsciiOutput": [
+        "packages/addons/src/effects/AsciiOutput.ts"
+      ],
+      "@aura3d/addons/effects/StereoOutputs": [
+        "packages/addons/src/effects/StereoOutputs.ts"
+      ],
+      "@aura3d/addons/renderers/VectorRenderer": [
+        "packages/addons/src/renderers/VectorRenderer.ts"
+      ],
+      "@aura3d/addons/renderers/SpatialDOMRenderer": [
+        "packages/addons/src/renderers/SpatialDOMRenderer.ts"
+      ],
+      "@aura3d/addons": [
+        "packages/addons/src/index.ts"
+      ],
+      "@aura3d/animation/contracts": [
+        "packages/animation/src/contracts/pose.ts"
+      ],
+      "@aura3d/assets/exporters": [
+        "packages/assets/src/exporters/index.ts"
+      ],
+      "@aura3d/rendering/lighting": [
+        "packages/rendering/src/lighting/index.ts"
+      ],
+      "@aura3d/rendering/shader-graph": [
+        "packages/rendering/src/program/ShaderGraphCompiler.ts"
+      ],
+      "@aura3d/debug/helpers": [
+        "packages/debug/src/helpers.ts"
+      ],
       "@aura3d/engine/rendering/production-runtime": [
         "packages/engine/src/deprecated/rendering-production-runtime.ts"
       ],
@@ -81,9 +171,6 @@
       ],
       "@aura3d/assets/gltf-runtime": [
         "packages/assets/src/gltf-runtime.ts"
-      ],
-      "@aura3d/assets/vite": [
-        "packages/assets/src/vite/auraDecoders.ts"
       ],
       "@aura3d/animation/pose": [
         "packages/animation/src/contracts/pose.ts"

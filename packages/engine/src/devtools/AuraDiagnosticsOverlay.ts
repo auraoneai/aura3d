@@ -1,4 +1,5 @@
-import type { AuraApp, AuraDiagnostics } from "../agent-api/index.js";
+import type { AuraDiagnostics } from "../agent-api/nodes/types.js";
+import type { AuraApp } from "../agent-api/nodes/types/runtime.js";
 
 export interface AuraDiagnosticsOverlay {
   readonly element: HTMLElement;

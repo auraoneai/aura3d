@@ -1,293 +1,287 @@
-import { PropertyBinding, type AnimationObjectGroupLike, type ParsedTrackName, type PropertyBindingLike, type PropertyBindingNode } from "./PropertyBinding.js";
+import {
+  PropertyBinding,
+  type AnimationObjectGroupLike,
+  type ParsedTrackName,
+  type PropertyBindingLike,
+  type PropertyBindingNode
+} from "./PropertyBinding.js";
 
-/**
- * SA-02 — three-compatible `AnimationObjectGroup` (`three@0.185.x
- * src/animation/AnimationObjectGroup.js`). A group of objects that receives a
- * shared animation state: add the objects you would otherwise pass as the
- * mixer root, then pass this group instead. `PropertyBinding.create` detects
- * `isAnimationObjectGroup` and produces a composite binding that fans each
- * track path out over all active objects.
- *
- * Objects keep the cached/active bookkeeping of the original implementation:
- * `remove()` moves objects into a cached region (bindings preserved), `add()`
- * reactivates them, and `uncache()` frees them entirely. Objects without a
- * `uuid` get a stable generated one so plain `{ name }` nodes can join groups.
- */
-
-let objectGroupUuidCounter = 0;
-const generatedUuids = new WeakMap<object, string>();
-
-function objectUuid(object: PropertyBindingNode): string {
-  if (typeof object.uuid === "string" && object.uuid.length > 0) {
-    return object.uuid;
-  }
-  let uuid = generatedUuids.get(object);
-  if (!uuid) {
-    uuid = `animation-object-group-${(objectGroupUuidCounter++).toString(16)}-${Math.random().toString(36).slice(2, 10)}`;
-    generatedUuids.set(object, uuid);
-  }
-  return uuid;
+interface GroupMember {
+  readonly object: PropertyBindingNode;
+  /** The UUID at admission, if supplied. It remains the member's identity. */
+  readonly uuid: string | undefined;
+  active: boolean;
 }
 
+interface Subscription {
+  readonly path: string;
+  readonly parsedPath: ParsedTrackName;
+  /** Shared with composite bindings; preserve this array's identity. */
+  readonly orderedBindings: PropertyBindingLike[];
+  readonly byMember: Map<GroupMember, PropertyBinding>;
+  readonly byBinding: Map<PropertyBindingLike, GroupMember>;
+}
+
+function samePath(a: ParsedTrackName, b: ParsedTrackName): boolean {
+  return (a.directoryName ?? "") === (b.directoryName ?? "")
+    && (a.nodeName ?? "") === (b.nodeName ?? "")
+    && a.objectName === b.objectName && a.objectIndex === b.objectIndex
+    && a.propertyName === b.propertyName && a.propertyIndex === b.propertyIndex;
+}
+
+let nextGroupId = 0;
+
+/**
+ * Shares animation paths across a set of objects. Removed objects stay cached
+ * until re-added or explicitly uncached. A cached object receives no writes.
+ *
+ * A subscription owns one binding per member. Composite bindings hold its
+ * ordered array, so membership changes rebuild the contents in place with the
+ * cached members first and active members after `nCachedObjects_`.
+ */
 export class AnimationObjectGroup implements AnimationObjectGroupLike {
   readonly isAnimationObjectGroup = true as const;
-  readonly uuid: string;
+  readonly uuid = `animation-object-group-${(nextGroupId++).toString(36)}-${Math.random().toString(36).slice(2)}`;
 
-  /** Threshold between cached and active objects; read by the composite binding. */
+  /** Number of leading cached entries in every subscribed binding array. */
   nCachedObjects_ = 0;
 
-  private readonly _objects: PropertyBindingNode[];
-  private readonly _indicesByUUID: Record<string, number | undefined> = {};
-  private readonly _paths: string[] = [];
-  private readonly _parsedPaths: (ParsedTrackName | undefined)[] = [];
-  private readonly _bindings: PropertyBindingLike[][] = [];
-  private readonly _bindingsIndicesByPath: Record<string, number | undefined> = {};
+  private readonly members: GroupMember[] = [];
+  private readonly membersByObject = new Map<PropertyBindingNode, GroupMember>();
+  private readonly membersByUuid = new Map<string, GroupMember>();
+  private readonly subscriptions = new Map<string, Subscription>();
+  private disposed = false;
+  private preparingBindings = false;
 
   readonly stats: {
     readonly objects: { readonly total: number; readonly inUse: number };
     readonly bindingsPerObject: number;
   };
 
-  constructor(...args: PropertyBindingNode[]) {
-    this.uuid = `animation-object-group-${(objectGroupUuidCounter++).toString(16)}-${Math.random().toString(36).slice(2, 10)}`;
-    this._objects = args.slice();
-    for (let i = 0, n = args.length; i !== n; ++i) {
-      this._indicesByUUID[objectUuid(args[i]!)] = i;
-    }
-    const scope = this;
+  constructor(...objects: PropertyBindingNode[]) {
+    const group = this;
     this.stats = {
       objects: {
-        get total() {
-          return scope._objects.length;
-        },
-        get inUse() {
-          return scope._objects.length - scope.nCachedObjects_;
-        }
+        get total() { return group.members.length; },
+        get inUse() { return group.members.length - group.nCachedObjects_; }
       },
-      get bindingsPerObject() {
-        return scope._bindings.length;
-      }
+      get bindingsPerObject() { return group.subscriptions.size; }
     };
+    this.add(...objects);
   }
 
-  add(...args: PropertyBindingNode[]): void {
-    const objects = this._objects;
-    const indicesByUUID = this._indicesByUUID;
-    const paths = this._paths;
-    const parsedPaths = this._parsedPaths;
-    const bindings = this._bindings;
-    const nBindings = bindings.length;
-
-    let knownObject: PropertyBindingNode | undefined;
-    let nObjects = objects.length;
-    let nCachedObjects = this.nCachedObjects_;
-
-    for (let i = 0, n = args.length; i !== n; ++i) {
-      const object = args[i]!;
-      const uuid = objectUuid(object);
-      let index = indicesByUUID[uuid];
-
-      if (index === undefined) {
-        // unknown object -> add it to the ACTIVE region
-        index = nObjects++;
-        indicesByUUID[uuid] = index;
-        objects.push(object);
-
-        // accounting is done, now do the same for all bindings
-        for (let j = 0, m = nBindings; j !== m; ++j) {
-          bindings[j]!.push(new PropertyBinding(object, paths[j]!, parsedPaths[j]));
+  /** Add new objects or reactivate cached objects. Repeated additions are safe. */
+  add(...objects: PropertyBindingNode[]): void {
+    this.assertAlive();
+    const staged = this.prepare(() => {
+      const additions: GroupMember[] = [];
+      const additionsByObject = new Map<PropertyBindingNode, GroupMember>();
+      const additionsByUuid = new Map<string, GroupMember>();
+      const reactivations = new Set<GroupMember>();
+      for (const object of objects) {
+        const known = this.membersByObject.get(object) ?? additionsByObject.get(object);
+        if (known) {
+          if (!known.active) reactivations.add(known);
+          continue;
         }
-      } else if (index < nCachedObjects) {
-        knownObject = objects[index]!;
-        // move existing object to the ACTIVE region
-        const firstActiveIndex = --nCachedObjects;
-        const lastCachedObject = objects[firstActiveIndex]!;
 
-        indicesByUUID[objectUuid(lastCachedObject)] = index;
-        objects[index] = lastCachedObject;
-
-        indicesByUUID[uuid] = firstActiveIndex;
-        objects[firstActiveIndex] = object;
-
-        for (let j = 0, m = nBindings; j !== m; ++j) {
-          const bindingsForPath = bindings[j]!;
-          const lastCached = bindingsForPath[firstActiveIndex];
-          let binding = bindingsForPath[index];
-          bindingsForPath[index] = lastCached!;
-          if (binding === undefined) {
-            // since we do not bother to create new bindings for objects that
-            // are cached, the binding may or may not exist
-            binding = new PropertyBinding(object, paths[j]!, parsedPaths[j]);
-          }
-          bindingsForPath[firstActiveIndex] = binding;
+        // Read admission identity once: accessors may throw or return changing values.
+        const candidateUuid = object.uuid;
+        const uuid = typeof candidateUuid === "string" && candidateUuid.length > 0 ? candidateUuid : undefined;
+        if (uuid !== undefined && (this.membersByUuid.has(uuid) || additionsByUuid.has(uuid))) {
+          // A different object cannot inherit the bindings owned by this UUID.
+          console.error(`AnimationObjectGroup: Different objects share UUID "${uuid}".`);
+          continue;
         }
-      } else if (objects[index] !== knownObject) {
-        console.error(
-          "AnimationObjectGroup: Different objects with the same UUID detected. " +
-          "Clean the caches or recreate your infrastructure when reloading scenes."
-        );
-      } // else the object is already where we want it to be
+
+        const member: GroupMember = { object, uuid, active: true };
+        additions.push(member);
+        additionsByObject.set(object, member);
+        if (uuid !== undefined) additionsByUuid.set(uuid, member);
+      }
+
+      // Construct every new path before publishing membership. A failing node
+      // accessor or path lookup must not leave a half-added member or empty a
+      // composite binding's live array.
+      const bindings = new Map<Subscription, Map<GroupMember, PropertyBinding>>();
+      for (const subscription of this.subscriptions.values()) {
+        const created = new Map<GroupMember, PropertyBinding>();
+        for (const member of additions) {
+          created.set(member, new PropertyBinding(member.object, subscription.path, subscription.parsedPath));
+        }
+        bindings.set(subscription, created);
+      }
+      return { additions, reactivations, bindings };
+    });
+
+    if (staged.additions.length === 0 && staged.reactivations.size === 0) return;
+    for (const member of staged.reactivations) member.active = true;
+    for (const member of staged.additions) {
+      this.members.push(member);
+      this.membersByObject.set(member.object, member);
+      if (member.uuid !== undefined) this.membersByUuid.set(member.uuid, member);
     }
-
-    this.nCachedObjects_ = nCachedObjects;
-  }
-
-  remove(...args: PropertyBindingNode[]): void {
-    const objects = this._objects;
-    const indicesByUUID = this._indicesByUUID;
-    const bindings = this._bindings;
-    const nBindings = bindings.length;
-
-    let nCachedObjects = this.nCachedObjects_;
-
-    for (let i = 0, n = args.length; i !== n; ++i) {
-      const object = args[i]!;
-      const uuid = objectUuid(object);
-      const index = indicesByUUID[uuid];
-
-      if (index !== undefined && index >= nCachedObjects) {
-        // move existing object into the CACHED region
-        const lastCachedIndex = nCachedObjects++;
-        const firstActiveObject = objects[lastCachedIndex]!;
-
-        indicesByUUID[objectUuid(firstActiveObject)] = index;
-        objects[index] = firstActiveObject;
-
-        indicesByUUID[uuid] = lastCachedIndex;
-        objects[lastCachedIndex] = object;
-
-        for (let j = 0, m = nBindings; j !== m; ++j) {
-          const bindingsForPath = bindings[j]!;
-          const firstActive = bindingsForPath[lastCachedIndex];
-          const binding = bindingsForPath[index];
-          bindingsForPath[index] = firstActive!;
-          bindingsForPath[lastCachedIndex] = binding!;
-        }
+    for (const [subscription, bindings] of staged.bindings) {
+      for (const [member, binding] of bindings) {
+        subscription.byMember.set(member, binding);
+        subscription.byBinding.set(binding, member);
       }
     }
-
-    this.nCachedObjects_ = nCachedObjects;
+    this.refreshBindings();
   }
 
-  uncache(...args: PropertyBindingNode[]): void {
-    const objects = this._objects;
-    const indicesByUUID = this._indicesByUUID;
-    const bindings = this._bindings;
-    const nBindings = bindings.length;
-
-    let nCachedObjects = this.nCachedObjects_;
-    let nObjects = objects.length;
-
-    for (let i = 0, n = args.length; i !== n; ++i) {
-      const object = args[i]!;
-      const uuid = objectUuid(object);
-      const index = indicesByUUID[uuid];
-
-      if (index !== undefined) {
-        delete indicesByUUID[uuid];
-
-        if (index < nCachedObjects) {
-          // object is cached, shrink the CACHED region
-          const firstActiveIndex = --nCachedObjects;
-          const lastCachedObject = objects[firstActiveIndex]!;
-          const lastIndex = --nObjects;
-          const lastObject = objects[lastIndex]!;
-
-          // last cached object takes this object's place
-          indicesByUUID[objectUuid(lastCachedObject)] = index;
-          objects[index] = lastCachedObject;
-
-          // last object goes to the activated slot and pop
-          indicesByUUID[objectUuid(lastObject)] = firstActiveIndex;
-          objects[firstActiveIndex] = lastObject;
-          objects.pop();
-
-          for (let j = 0, m = nBindings; j !== m; ++j) {
-            const bindingsForPath = bindings[j]!;
-            const lastCached = bindingsForPath[firstActiveIndex];
-            const last = bindingsForPath[lastIndex];
-            bindingsForPath[index] = lastCached!;
-            bindingsForPath[firstActiveIndex] = last!;
-            bindingsForPath.pop();
-          }
-        } else {
-          // object is active, just swap with the last and pop
-          const lastIndex = --nObjects;
-          const lastObject = objects[lastIndex]!;
-
-          if (lastIndex > 0) {
-            indicesByUUID[objectUuid(lastObject)] = index;
-          }
-
-          objects[index] = lastObject;
-          objects.pop();
-
-          for (let j = 0, m = nBindings; j !== m; ++j) {
-            const bindingsForPath = bindings[j]!;
-            bindingsForPath[index] = bindingsForPath[lastIndex]!;
-            bindingsForPath.pop();
-          }
-        }
+  /** Deactivate objects while retaining their bindings for later reactivation. */
+  remove(...objects: PropertyBindingNode[]): void {
+    this.assertNotPreparing();
+    let changed = false;
+    for (const object of objects) {
+      const member = this.membersByObject.get(object);
+      if (member?.active) {
+        member.active = false;
+        changed = true;
       }
     }
-
-    this.nCachedObjects_ = nCachedObjects;
+    if (changed) this.refreshBindings();
   }
 
-  /** Internal interface used by `PropertyBindingComposite`. */
+  /** Release all group-owned bindings for the supplied objects. */
+  uncache(...objects: PropertyBindingNode[]): void {
+    this.assertNotPreparing();
+    let changed = false;
+    for (const object of objects) {
+      const member = this.membersByObject.get(object);
+      if (!member) continue;
+
+      this.membersByObject.delete(object);
+      if (member.uuid !== undefined) this.membersByUuid.delete(member.uuid);
+      const index = this.members.indexOf(member);
+      if (index !== -1) this.members.splice(index, 1);
+      for (const subscription of this.subscriptions.values()) {
+        const binding = subscription.byMember.get(member);
+        binding?.unbind();
+        if (binding) subscription.byBinding.delete(binding);
+        subscription.byMember.delete(member);
+      }
+      changed = true;
+    }
+    if (changed) this.refreshBindings();
+  }
+
+  /** Internal interface used by composite bindings. */
   subscribe_(path: string, parsedPath?: ParsedTrackName): PropertyBindingLike[] {
-    const indicesByPath = this._bindingsIndicesByPath;
-    let index = indicesByPath[path];
-    const bindings = this._bindings;
-
-    if (index !== undefined) {
-      return bindings[index]!;
-    }
-
-    const paths = this._paths;
-    const parsedPaths = this._parsedPaths;
-    const objects = this._objects;
-    const nObjects = objects.length;
-    const nCachedObjects = this.nCachedObjects_;
-    const bindingsForPath: PropertyBindingLike[] = new Array(nObjects);
-
-    index = bindings.length;
-    indicesByPath[path] = index;
-
-    paths.push(path);
-    parsedPaths.push(parsedPath);
-    bindings.push(bindingsForPath);
-
-    for (let i = nCachedObjects, n = objects.length; i !== n; ++i) {
-      const object = objects[i]!;
-      bindingsForPath[i] = new PropertyBinding(object, path, parsedPath);
-    }
-
-    return bindingsForPath;
+    this.assertAlive();
+    return this.prepare(() => this.createSubscription(path, parsedPath));
   }
 
+  private createSubscription(path: string, parsedPath?: ParsedTrackName): PropertyBindingLike[] {
+    // Validate supplied descriptors even when there are no members, and take
+    // a private copy so a caller cannot later redirect a subscription.
+    const normalized = new PropertyBinding({}, path, parsedPath).parsedPath;
+    const existing = this.subscriptions.get(path);
+    if (existing) {
+      if (!samePath(existing.parsedPath, normalized)) {
+        throw new Error(`AnimationObjectGroup: Conflicting parsed path for subscription "${path}".`);
+      }
+      return existing.orderedBindings;
+    }
+
+    const subscription: Subscription = {
+      path,
+      parsedPath: normalized,
+      orderedBindings: [],
+      byMember: new Map(),
+      byBinding: new Map()
+    };
+    // Build before publishing the subscription, so an invalid binding cannot
+    // leave a partially registered path or disturb an existing subscription.
+    for (const member of this.orderedMembers()) {
+      const binding = new PropertyBinding(member.object, path, subscription.parsedPath);
+      subscription.byMember.set(member, binding);
+      subscription.byBinding.set(binding, member);
+      subscription.orderedBindings.push(binding);
+    }
+    this.subscriptions.set(path, subscription);
+    return subscription.orderedBindings;
+  }
+
+  /** Internal constant-time membership check for a composite dispatch snapshot. */
+  isBindingActive_(path: string, binding: PropertyBindingLike): boolean {
+    return this.subscriptions.get(path)?.byBinding.get(binding)?.active === true;
+  }
+
+  /** Unsubscribe only this path; previously returned arrays become inert. */
   unsubscribe_(path: string): void {
-    const indicesByPath = this._bindingsIndicesByPath;
-    const index = indicesByPath[path];
+    this.assertNotPreparing();
+    const subscription = this.subscriptions.get(path);
+    if (!subscription) return;
+    this.subscriptions.delete(path);
+    this.releaseSubscription(subscription);
+  }
 
-    if (index !== undefined) {
-      const paths = this._paths;
-      const parsedPaths = this._parsedPaths;
-      const bindings = this._bindings;
-      const lastBindingsIndex = bindings.length - 1;
-      const lastBindings = bindings[lastBindingsIndex]!;
-      const lastBindingsPath = paths[lastBindingsIndex]!;
+  /** Release all members and subscriptions. A disposed group cannot be reused. */
+  dispose(): void {
+    this.assertNotPreparing();
+    if (this.disposed) return;
+    this.disposed = true;
+    for (const subscription of this.subscriptions.values()) this.releaseSubscription(subscription);
+    this.subscriptions.clear();
+    this.members.length = 0;
+    this.membersByObject.clear();
+    this.membersByUuid.clear();
+    this.nCachedObjects_ = 0;
+  }
 
-      indicesByPath[lastBindingsPath] = index;
+  private refreshBindings(): void {
+    const ordered = this.orderedMembers();
+    this.nCachedObjects_ = ordered.filter((member) => !member.active).length;
 
-      bindings[index] = lastBindings;
-      bindings.pop();
+    for (const subscription of this.subscriptions.values()) {
+      const bindings = subscription.orderedBindings;
+      bindings.length = 0;
+      for (const member of ordered) {
+        let binding = subscription.byMember.get(member);
+        if (!binding) {
+          binding = new PropertyBinding(member.object, subscription.path, subscription.parsedPath);
+          subscription.byMember.set(member, binding);
+          subscription.byBinding.set(binding, member);
+        }
+        bindings.push(binding);
+      }
+    }
+  }
 
-      parsedPaths[index] = parsedPaths[lastBindingsIndex];
-      parsedPaths.pop();
+  private orderedMembers(): GroupMember[] {
+    const cached: GroupMember[] = [];
+    const active: GroupMember[] = [];
+    for (const member of this.members) (member.active ? active : cached).push(member);
+    return cached.concat(active);
+  }
 
-      paths[index] = paths[lastBindingsIndex];
-      paths.pop();
+  private releaseSubscription(subscription: Subscription): void {
+    for (const binding of subscription.byMember.values()) binding.unbind();
+    subscription.byMember.clear();
+    subscription.byBinding.clear();
+    subscription.orderedBindings.length = 0;
+  }
+
+  private assertAlive(): void {
+    if (this.disposed) throw new Error("AnimationObjectGroup is disposed.");
+  }
+
+  /** Binding construction can invoke user getters; reject nested mutations. */
+  private prepare<T>(create: () => T): T {
+    this.assertNotPreparing();
+    this.preparingBindings = true;
+    try {
+      return create();
+    } finally {
+      this.preparingBindings = false;
+    }
+  }
+
+  private assertNotPreparing(): void {
+    if (this.preparingBindings) {
+      throw new Error("AnimationObjectGroup cannot be mutated while preparing bindings.");
     }
   }
 }

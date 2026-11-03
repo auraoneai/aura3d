@@ -30,7 +30,9 @@ Retained material and asset inspection route for the Aura3D showcase build.
 
 The route imports the shared typed root asset:
 
+<!-- aura3d-docs-example: source src/main.ts -->
 ```ts
+import { model } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 model(assets.showcaseHeadphones);
 ```

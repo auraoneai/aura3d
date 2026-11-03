@@ -26,8 +26,10 @@ export class WebGL2ContextLifecycle {
     if ("addEventListener" in canvas) {
       this.contextLostListener = ((event: Event) => {
         event.preventDefault();
+        this.restoreGeneration += 1;
         this.host.contextLost = true;
         this.lastError = "CONTEXT_LOST";
+        this.restoreError = null;
         this.frameActive = false;
         // WS-2.6: notify subscribers. Errors in a listener must not prevent the others from running,
         // nor leave the device in a half-notified state during an already-degraded condition.
@@ -40,8 +42,10 @@ export class WebGL2ContextLifecycle {
         }
       }) as EventListener;
       this.contextRestoredListener = (() => {
+        const generation = ++this.restoreGeneration;
         this.host.contextLost = false;
         this.lastError = null;
+        this.restoreError = null;
         this.framesEnded = 0;
         // PRD 11 Phase 5: registered restore hooks (GPU object invalidation,
         // C-29 ResourceRegistry.rebuild, C-02 precompile) must resolve BEFORE
@@ -52,14 +56,16 @@ export class WebGL2ContextLifecycle {
           this.notifyRestoredListeners();
           return;
         }
-        const notify = (): void => this.notifyRestoredListeners();
+        const current = (): boolean => generation === this.restoreGeneration && !this.host.contextLost;
+        const notify = (): void => { if (current()) this.notifyRestoredListeners(); };
         void (async () => {
           for (const hook of hooks) {
+            if (!current()) return;
             try {
               await hook();
             } catch {
-              // A failed hook must not starve the restore notification; the
-              // resource owners report their own failures via rebuild stats.
+              // Notify other owners, but retain a failure in device diagnostics.
+              if (current()) this.restoreError = "CONTEXT_RESTORE_FAILED";
             }
           }
         })().then(notify, notify);
@@ -80,9 +86,13 @@ export class WebGL2ContextLifecycle {
   /** Phase 5: hooks resolved before `deviceRestoredListeners` notify (§6.9). */
   readonly restoredHooks = new Set<() => Promise<void> | void>();
 
+  private restoreGeneration = 0;
+
   frameActive = false;
 
   lastError: string | null = null;
+
+  restoreError: string | null = null;
 
   viewportHeight = 0;
 
@@ -243,7 +253,7 @@ export class WebGL2ContextLifecycle {
     this.host.stateCache.invalidate();
     this.viewportWidth = width;
     this.viewportHeight = height;
-    const frameFramebuffer = this.host.activeRenderTarget?.framebuffer ?? this.externalFramebuffer;
+    const frameFramebuffer = this.host.activeRenderTarget?.drawFramebuffer ?? this.externalFramebuffer;
     this.host.stateCache.bindFramebuffer(this.host.gl.FRAMEBUFFER, frameFramebuffer, () => this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, frameFramebuffer));
     // The frame-scoped override resets every frame; the persistent viewport (XR) survives it.
     this.viewportOverride = null;
@@ -257,11 +267,7 @@ export class WebGL2ContextLifecycle {
 
   clear(color: readonly [number, number, number, number]): void {
     this.assertFrame();
-    this.host.gl.clearColor(color[0], color[1], color[2], color[3]);
-    this.host.stateCache.depthMask(true, () => this.host.gl.depthMask(true));
-    this.host.gl.clearDepth(1);
-    this.host.gl.clear(this.host.gl.COLOR_BUFFER_BIT | this.host.gl.DEPTH_BUFFER_BIT);
-    if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
+    this.clearColorDepthStencil(color);
   }
 
   clearRenderTarget(color: readonly [number, number, number, number], attachment?: number): void {
@@ -271,12 +277,51 @@ export class WebGL2ContextLifecycle {
       // other attachments untouched. Normalized and float formats both take
       // clearBufferfv (normalized formats are floating-point clears).
       this.host.gl.clearBufferfv(this.host.gl.COLOR, attachment, new Float32Array(color));
+      if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
       return;
     }
-    this.host.gl.clearColor(color[0], color[1], color[2], color[3]);
-    this.host.stateCache.depthMask(true, () => this.host.gl.depthMask(true));
-    this.host.gl.clearDepth(1);
-    this.host.gl.clear(this.host.gl.COLOR_BUFFER_BIT | this.host.gl.DEPTH_BUFFER_BIT);
+    this.clearColorDepthStencil(color);
+  }
+
+  /** The default context is a request, and an external XR framebuffer is independently supplied. */
+  hasStencilAttachment(): boolean {
+    const target = this.host.activeRenderTarget;
+    if (target) return target.hasStencil;
+    const gl = this.host.gl;
+    if (this.externalFramebuffer === null) {
+      const attributes = gl.getContextAttributes?.();
+      if (attributes) return attributes.stencil === true;
+    }
+    // For external framebuffers the context attributes describe the canvas,
+    // not the currently bound surface. STENCIL_BITS reflects that surface.
+    return Number(gl.getParameter(gl.STENCIL_BITS)) > 0;
+  }
+
+  /** Initialize the whole newly allocated surface, even with a live device scissor. */
+  initializeStencil(): void {
+    const gl = this.host.gl;
+    this.host.stateCache.setEnabled(gl.SCISSOR_TEST, false, () => gl.disable(gl.SCISSOR_TEST));
+    this.host.stateCache.stencilMask(0xffffffff, () => gl.stencilMask(0xffffffff));
+    gl.clearStencil(0);
+    gl.clear(gl.STENCIL_BUFFER_BIT);
+    this.applyViewState();
+  }
+
+  private clearColorDepthStencil(color: readonly [number, number, number, number]): void {
+    const gl = this.host.gl;
+    gl.clearColor(color[0], color[1], color[2], color[3]);
+    this.host.stateCache.depthMask(true, () => gl.depthMask(true));
+    gl.clearDepth(1);
+    let bits = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT;
+    if (this.hasStencilAttachment()) {
+      // A prior draw may have disabled some or all stencil writes. Clear must
+      // reset every bit, including on externally supplied framebuffers; the
+      // cache ensures the next draw restores its mask.
+      this.host.stateCache.stencilMask(0xffffffff, () => gl.stencilMask(0xffffffff));
+      gl.clearStencil(0);
+      bits |= gl.STENCIL_BUFFER_BIT;
+    }
+    gl.clear(bits);
     if (this.host.activeRenderTarget?.sampleCount && this.host.activeRenderTarget.sampleCount > 1) this.host.activeRenderTarget.needsResolve = true;
   }
 

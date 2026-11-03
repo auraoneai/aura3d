@@ -5,7 +5,7 @@
 
 import type { RegistryEntry } from "@aura3d/rendering/contracts";
 import { createRegistry } from "@aura3d/rendering/contracts";
-import type { AuraApp } from "../agent-api/index";
+import type { AuraApp } from "../agent-api/nodes/types/runtime.js";
 import type { AuraPostPresetId } from "./post";
 
 export interface AppliedLookReport { readonly exposure: number; readonly toneMapping: "aces-filmic" | "agx" | "neutral" | "reinhard" | "none"; readonly environment: { readonly specularIntensity: number; readonly diffuseIntensity: number; readonly background: "color" | "hdri" | "sky" }; readonly shadows: ShadowReport | null; readonly fallbackLightsActive: boolean; readonly renderPath: "production" | "safe-basic" | "lean" | "compat-preset"; readonly pixelRatio: number; }

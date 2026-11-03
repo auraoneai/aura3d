@@ -1478,9 +1478,9 @@ describe("Renderer", () => {
     const diagnostics = renderer.render({
       staticBatching: true,
       renderItems: [
-        { geometry, material, modelMatrix: translationMatrix(-0.5, 0, 0), label: "static-a" },
-        { geometry, material, modelMatrix: translationMatrix(0, 0, 0), label: "static-b" },
-        { geometry, material, modelMatrix: translationMatrix(0.5, 0, 0), label: "static-c" }
+        { geometry, material, modelMatrix: translationMatrix(-0.5, 0, 0) },
+        { geometry, material, modelMatrix: translationMatrix(0, 0, 0) },
+        { geometry, material, modelMatrix: translationMatrix(0.5, 0, 0) }
       ]
     });
 

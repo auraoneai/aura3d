@@ -73,7 +73,19 @@ Also run `tools/check-all.sh` and the remote specs (README) on the commit being 
 - **Not indexed:** keep the `noindex` meta tag and add `X-Robots-Tag: noindex` on every response while the app is a prototype. Do not link the address from any public page.
 - **Optional hardening:** a Content-Security-Policy that allows only `'self'` for scripts, styles, fonts, media and connections (plus `blob:` and `data:` where the engine needs them). Validate any policy with `check-deploy --browser` before relying on it.
 
-### The preview (Vercel)
+### Production & Preview Host (Cloudflare Pages — Canonical Host)
+
+> **Important:** **Cloudflare Pages is the canonical production host (prefer Cloudflare over Vercel; do not deploy to Vercel).**
+
+| | |
+| --- | --- |
+| Canonical Host | **Cloudflare Pages** (account `bd3fbe37a66521e496ea1b90f669f8b7`). Prefer Cloudflare Pages over Vercel; do not deploy to Vercel. |
+| Cloudflare Pages Project | `aura3d-wonder-world` (`https://aura3d-wonder-world.pages.dev` and the owner's custom domain in the `auraone.ai` Cloudflare zone, `07` O6 and O7) |
+| Deploy Command | `bash apps/veer-wonder-world/tools/deploy-build.sh && wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main` |
+| Headers Config | `apps/veer-wonder-world/public/_headers` and `apps/veer-wonder-world/dist/_headers` (`X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, `Cache-Control` rules, and `.glb`/`.hdr` content types) |
+| DNS | Proxied CNAME in the `auraone.ai` Cloudflare zone pointing to `aura3d-wonder-world.pages.dev` |
+
+### Legacy preview config (retired Vercel reference)
 
 | | |
 | --- | --- |

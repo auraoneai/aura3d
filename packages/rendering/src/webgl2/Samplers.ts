@@ -1,7 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from WebGL2Device.ts; 0 changed logic lines.
 
 import { RenderDeviceError } from "../RenderDevice";
-import type { Sampler } from "../Sampler";
+import { Sampler } from "../Sampler";
 import type { Texture } from "../Texture";
 import { isCompressedTextureFormat, isFloatColorTextureFormat } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
@@ -13,15 +13,12 @@ import { rendererQrFlags } from "../renderer/FrameGraph";
  * `undefined` = mips are generated at upload (never "exactly one level"). */
 function textureResidentMipLevels(texture: Texture | undefined): number | undefined {
   if (!texture) return undefined;
-  if (texture.dimension === "cube") {
-    return texture.cubeFaces[0]?.mipLevels.length ?? 0;
-  }
-  if (texture.mipLevels.length > 0) return texture.mipLevels.length;
-  if (texture.source) return undefined; // generateMipmap at upload
-  if (isCompressedTextureFormat(texture.format)) return texture.textureLevels.length;
-  // data/null-data 2D: float formats are pinned to level 0; the rest get
-  // generateMipmap on upload.
-  return isFloatColorTextureFormat(texture.format) ? 1 : undefined;
+  // Explicit, cube, array and volume storage allocates mipLevelCount even if
+  // only some levels have CPU content. Source and ordinary flat textures may
+  // instead generate the complete chain at upload time.
+  if (texture.dimension !== "2d" || texture.mipLevels.length > 0 || texture.mipLevelCount > 1 || isCompressedTextureFormat(texture.format)) return texture.mipLevelCount;
+  if (texture.source) return texture.generateMipmaps ? undefined : 1;
+  return isFloatColorTextureFormat(texture.format) || !texture.generateMipmaps ? 1 : undefined;
 }
 
 /** C-12: a texture with exactly one mip level downgrades `*-mipmap-*` to the
@@ -56,6 +53,12 @@ export class WebGL2SamplerRegistry {
     this.textureUnitBindings.clear();
   }
 
+  invalidateOnContextLoss(): void {
+    this.resetUnitShadow();
+    this.samplerObjectCache.clear();
+    this.floatLinearSupported = undefined;
+  }
+
   activeTextureUnitIndex = -1;
 
   readonly samplerObjectCache = new Map<string, WebGLSampler>();
@@ -64,6 +67,8 @@ export class WebGL2SamplerRegistry {
 
   /** Texture held by each (unit, target), keyed `unit * 0x10000 + target` (no per-call string key). */
   readonly textureUnitBindings = new Map<number, WebGLTexture>();
+  private readonly fallbackCompareSamplers = new WeakMap<Sampler, Sampler>();
+  private floatLinearSupported: boolean | undefined;
 
   uploadTextureUniform(location: WebGLUniformLocation, binding: TextureBinding, textureUnit: number, uniformType?: string): void {
     const validation = binding.validate();
@@ -73,31 +78,78 @@ export class WebGL2SamplerRegistry {
         name: binding.name
       });
     }
-    this.activateTextureUnit(textureUnit);
-    // `uniformType` arrives either as the GLSL type name (static shader
-    // reflection) or as a stringified GL enum (live getActiveUniform), e.g.
-    // "36289" for SAMPLER_2D_ARRAY, "36292"/"36293" for array/cube shadow,
-    // "36303"/"36311" for int/uint array samplers, "35682" for sampler2DShadow.
+    // Reflection can supply either a GLSL type name or a stringified GL enum.
     const declared = uniformType?.toLowerCase();
-    const dimension = declared === "sampler2darray" || declared === "isampler2darray" || declared === "usampler2darray" || declared === "36289" || declared === "36292" || declared === "36303" || declared === "36311"
+    const integerSampler = declared?.startsWith("isampler") || declared?.startsWith("usampler")
+      || ["36298", "36299", "36300", "36303", "36306", "36307", "36308", "36311"].includes(declared ?? "");
+    if (integerSampler) {
+      throw new RenderDeviceError("Integer samplers require an integer texture format, which is not available", "UNSUPPORTED_TEXTURE_FORMAT", { name: binding.name, uniformType });
+    }
+    const declaredDimension = declared === "sampler2darray" || declared === "sampler2darrayshadow" || declared === "36289" || declared === "36292"
       ? "2d-array"
-      : declared === "samplercube" || declared === "isamplercube" || declared === "usamplercube" || declared === "samplercubeshadow" || declared === "35680" || declared === "36293"
+      : declared === "sampler3d" || declared === "35679"
+        ? "3d"
+      : declared === "samplercube" || declared === "samplercubeshadow" || declared === "35680" || declared === "36293"
         ? "cube"
         : declared === "sampler2dshadow" || declared === "sampler2d" || declared === "35682" || declared === "35678"
           ? "2d"
-          : binding.texture?.dimension ?? (binding.name.toLowerCase().includes("cubemap") || binding.name.toLowerCase().includes("cube") ? "cube" : "2d");
-    // lane 06 Q-01-3: sampler2DArray uniforms bind to TEXTURE_2D_ARRAY units.
-    const target = dimension === "cube" ? this.host.gl.TEXTURE_CUBE_MAP : dimension === "2d-array" ? this.host.gl.TEXTURE_2D_ARRAY : this.host.gl.TEXTURE_2D;
-    const handle = binding.texture ? this.host.textureRegistry.getTextureHandle(binding.texture) : dimension === "cube" ? this.host.textureRegistry.getFallbackCubeTextureHandle() : dimension === "2d-array" ? this.host.textureRegistry.getFallbackTextureHandle() : this.host.textureRegistry.getFallbackTextureHandle();
+          : undefined;
+    const dimension = declaredDimension ?? binding.expectedDimension ?? binding.texture?.dimension
+      ?? (binding.name.toLowerCase().includes("cube") ? "cube" : "2d");
+    if (binding.texture && binding.texture.dimension !== dimension) {
+      throw new RenderDeviceError("Texture dimension does not match the declared sampler", "INVALID_TEXTURE_BINDING", {
+        name: binding.name, expected: dimension, actual: binding.texture.dimension
+      });
+    }
+    const shadow = declared === "sampler2dshadow" || declared === "samplercubeshadow" || declared === "sampler2darrayshadow"
+      || declared === "35682" || declared === "36293" || declared === "36292";
+    const plain = declared === "sampler2d" || declared === "samplercube" || declared === "sampler2darray" || declared === "sampler3d"
+      || declared === "35678" || declared === "35680" || declared === "36289" || declared === "35679";
+    const compare = binding.sampler.compare;
+    if (binding.texture) {
+      if ((shadow && (binding.texture.format !== "depth24" || compare === undefined))
+        || (compare !== undefined && (binding.texture.format !== "depth24" || plain))) {
+        throw new RenderDeviceError("Shadow samplers require a depth texture and matching comparison mode", "INVALID_TEXTURE_BINDING", { name: binding.name, uniformType });
+      }
+    } else if ((shadow || compare !== undefined) && (plain || dimension === "3d")) {
+      throw new RenderDeviceError("Comparison samplers require a matching shadow sampler dimension", "INVALID_TEXTURE_BINDING", { name: binding.name, uniformType });
+    }
+    if (binding.texture && (binding.texture.format === "r32f" || binding.texture.format === "rgba32f")
+      && (binding.sampler.magFilter !== "nearest" || (binding.sampler.minFilter !== "nearest" && binding.sampler.minFilter !== "nearest-mipmap-nearest"))) {
+      this.floatLinearSupported ??= Boolean(this.host.gl.getExtension("OES_texture_float_linear"));
+      if (!this.floatLinearSupported) {
+        throw new RenderDeviceError("Linear filtering of 32-bit float textures requires OES_texture_float_linear", "UNSUPPORTED_TEXTURE_FORMAT", { name: binding.name, format: binding.texture.format });
+      }
+    }
+    this.activateTextureUnit(textureUnit);
+    const target = dimension === "cube" ? this.host.gl.TEXTURE_CUBE_MAP : dimension === "2d-array" ? this.host.gl.TEXTURE_2D_ARRAY : dimension === "3d" ? this.host.gl.TEXTURE_3D : this.host.gl.TEXTURE_2D;
+    const registry = this.host.textureRegistry;
+    const fallbackShadow = !binding.texture && (shadow || compare !== undefined);
+    const effectiveSampler = fallbackShadow && compare === undefined ? this.fallbackCompareSampler(binding.sampler) : binding.sampler;
+    const handle = binding.texture ? registry.getTextureHandle(binding.texture)
+      : fallbackShadow ? registry.getFallbackDepthTextureHandle(dimension as "2d" | "cube" | "2d-array", effectiveSampler.compare!)
+      : dimension === "cube" ? registry.getFallbackCubeTextureHandle()
+      : dimension === "2d-array" ? registry.getFallbackArrayTextureHandle()
+      : dimension === "3d" ? registry.getFallback3DTextureHandle()
+      : registry.getFallbackTextureHandle();
     if (binding.texture) {
       const lowerName = binding.name.toLowerCase();
       if (lowerName.includes("environment")) this.host.counters.nativeEnvironmentBindings += 1;
       if (lowerName.includes("shadow")) this.host.counters.nativeShadowMapBindings += 1;
     }
     this.bindTextureForUnit(textureUnit, target, handle);
-    const samplerHandle = this.getSamplerHandle(binding.sampler, target, binding.texture ?? undefined);
+    const samplerHandle = this.getSamplerHandle(effectiveSampler, target, binding.texture ?? undefined, effectiveSampler.compare !== undefined);
     this.host.stateCache.bindSampler(textureUnit, samplerHandle, () => this.host.gl.bindSampler(textureUnit, samplerHandle));
     this.host.gl.uniform1i(location, textureUnit);
+  }
+
+  private fallbackCompareSampler(sampler: Sampler): Sampler {
+    const cached = this.fallbackCompareSamplers.get(sampler);
+    if (cached) return cached;
+    const result = new Sampler({ minFilter: sampler.minFilter, magFilter: sampler.magFilter, addressU: sampler.addressU,
+      addressV: sampler.addressV, addressW: sampler.addressW, maxAnisotropy: sampler.maxAnisotropy, mirror: sampler.mirror, compare: "less-equal" });
+    this.fallbackCompareSamplers.set(sampler, result);
+    return result;
   }
 
   activateTextureUnit(textureUnit: number): void {
@@ -137,10 +189,10 @@ export class WebGL2SamplerRegistry {
     this.host.counters.samplerAnisotropyUploadCount += 1;
   }
 
-  getSamplerHandle(sampler: Sampler, target: GLenum, texture?: Texture): WebGLSampler {
+  getSamplerHandle(sampler: Sampler, target: GLenum, texture?: Texture, forceCompare = false): WebGLSampler {
     const c12 = prd02SamplerEnabled();
     const residentLevels = c12 ? textureResidentMipLevels(texture) : undefined;
-    const key = this.samplerKey(sampler, target, c12, residentLevels);
+    const key = this.samplerKey(sampler, target, c12, residentLevels, forceCompare);
     const cached = this.samplerObjectCache.get(key);
     if (cached) return cached;
     const handle = this.host.gl.createSampler();
@@ -148,11 +200,11 @@ export class WebGL2SamplerRegistry {
       throw new RenderDeviceError("Failed to allocate WebGL sampler", "WEBGL_ALLOCATION_FAILED");
     }
     // C-12 (flag on): compare samplers force LINEAR so hardware PCF applies.
-    const compareOn = c12 && sampler.compare !== undefined;
+    const compareOn = (c12 || forceCompare) && sampler.compare !== undefined;
     const effectiveMin = c12
       ? (compareOn ? "linear" : prd02EffectiveMinFilter(sampler, residentLevels))
       : sampler.minFilter;
-    const effectiveMag = compareOn ? "linear" : sampler.magFilter;
+    const effectiveMag = c12 && compareOn ? "linear" : sampler.magFilter;
     this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_MIN_FILTER, minFilter(this.host.gl, effectiveMin));
     this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_MAG_FILTER, magFilter(this.host.gl, effectiveMag));
     const wrapSMode = c12 && sampler.mirror ? "mirror-repeat" : sampler.addressU;
@@ -160,8 +212,8 @@ export class WebGL2SamplerRegistry {
     this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_S, addressMode(this.host.gl, wrapSMode));
     this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_T, addressMode(this.host.gl, wrapTMode));
     this.host.counters.samplerParameterUploadCount += 4;
-    if (target === this.host.gl.TEXTURE_CUBE_MAP) {
-      const wrapRMode = c12 && sampler.mirror ? "mirror-repeat" : (c12 ? (sampler.addressW ?? sampler.addressV) : sampler.addressV);
+    if (target === this.host.gl.TEXTURE_CUBE_MAP || target === this.host.gl.TEXTURE_2D_ARRAY || target === this.host.gl.TEXTURE_3D) {
+      const wrapRMode = c12 && sampler.mirror ? "mirror-repeat" : (sampler.addressW ?? sampler.addressV);
       this.host.gl.samplerParameteri(handle, this.host.gl.TEXTURE_WRAP_R, addressMode(this.host.gl, wrapRMode));
       this.host.counters.samplerParameterUploadCount += 1;
     }
@@ -192,28 +244,31 @@ export class WebGL2SamplerRegistry {
    */
   private readonly samplerKeyMemo = new WeakMap<Sampler, string[]>();
 
-  samplerKey(sampler: Sampler, target: GLenum, c12: boolean = prd02SamplerEnabled(), residentLevels?: number): string {
-    const kind = target === this.host.gl.TEXTURE_CUBE_MAP ? 0 : target === this.host.gl.TEXTURE_2D_ARRAY ? 1 : 2;
-    const slot = kind + (c12 ? 3 : 0) + (residentLevels === 1 ? 6 : 0);
+  samplerKey(sampler: Sampler, target: GLenum, c12: boolean = prd02SamplerEnabled(), residentLevels?: number, forceCompare = false): string {
+    const kind = target === this.host.gl.TEXTURE_CUBE_MAP ? 0 : target === this.host.gl.TEXTURE_2D_ARRAY ? 1 : target === this.host.gl.TEXTURE_3D ? 2 : 3;
+    const slot = kind + (c12 ? 4 : 0) + (residentLevels === 1 ? 8 : 0) + (forceCompare && !c12 ? 16 : 0);
     let memo = this.samplerKeyMemo.get(sampler);
     if (memo === undefined) {
       memo = [];
       this.samplerKeyMemo.set(sampler, memo);
     }
-    return memo[slot] ??= this.buildSamplerKey(sampler, target, c12, residentLevels);
+    return memo[slot] ??= this.buildSamplerKey(sampler, target, c12, residentLevels, forceCompare);
   }
 
-  private buildSamplerKey(sampler: Sampler, target: GLenum, c12: boolean, residentLevels?: number): string {
+  private buildSamplerKey(sampler: Sampler, target: GLenum, c12: boolean, residentLevels?: number, forceCompare = false): string {
     const key = [
       sampler.minFilter,
       sampler.magFilter,
       sampler.addressU,
       sampler.addressV,
       sampler.maxAnisotropy,
-      target === this.host.gl.TEXTURE_CUBE_MAP ? "cube" : target === this.host.gl.TEXTURE_2D_ARRAY ? "2d-array" : "2d"
+      target === this.host.gl.TEXTURE_CUBE_MAP ? "cube" : target === this.host.gl.TEXTURE_2D_ARRAY ? "2d-array" : target === this.host.gl.TEXTURE_3D ? "3d" : "2d"
     ];
     if (c12) {
       key.push(sampler.compare ?? "-", sampler.addressW ?? "-", sampler.mirror ? "m" : "-", residentLevels === 1 ? "1l" : "-");
+    } else {
+      if (target !== this.host.gl.TEXTURE_2D) key.push(sampler.addressW ?? sampler.addressV);
+      if (forceCompare && sampler.compare !== undefined) key.push(sampler.compare);
     }
     return key.join("|");
   }

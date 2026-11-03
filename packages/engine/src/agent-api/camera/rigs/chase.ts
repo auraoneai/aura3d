@@ -5,7 +5,7 @@
  * optional framing solver and C-10 collision.
  */
 import type { AuraVec3 } from "../../index.js";
-import type { AuraCameraRig, AuraCameraRigContext } from "../../../contracts/camera.js";
+import type { AuraCameraProbe, AuraCameraRig, AuraCameraRigContext } from "../../../contracts/camera.js";
 import { springDamp, springDampVec3 } from "../Spring.js";
 import { distanceForFractionInContext } from "../framing.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
@@ -16,14 +16,16 @@ import {
   mul,
   nearForDistance,
   normalize,
+  probeForSubject,
   resolvePerSpeed,
   springAngle,
   subjectHeight,
-  yawDir
+  yawDir,
+  type CameraSubjectRef
 } from "./rigUtils.js";
 
 export interface ChaseRigOptions {
-  readonly target: string;
+  readonly target: CameraSubjectRef;
   readonly distance?:
     | number
     | { readonly base: number; readonly perSpeed?: number; readonly max?: number };
@@ -61,6 +63,7 @@ export function createChaseRig(o: ChaseRigOptions): AuraCameraRig {
   let bankDeg = 0;
   let prevYaw = Number.NaN;
   let damper: CollisionDamper | undefined;
+  let damperProbe: AuraCameraProbe | undefined;
   const collisionEnabled = o.collision !== undefined && o.collision !== false;
   const collisionOpts = typeof o.collision === "object" ? o.collision : {};
 
@@ -130,7 +133,11 @@ export function createChaseRig(o: ChaseRigOptions): AuraCameraRig {
       }
       let finalEye = eye;
       if (collisionEnabled) {
-        damper ??= createCollisionDamper(ctx.probe, collisionOpts);
+        const probe = probeForSubject(ctx.probe, o.target);
+        if (!damper || damperProbe !== probe) {
+          damperProbe = probe;
+          damper = createCollisionDamper(probe, collisionOpts);
+        }
         finalEye = damper.resolve(look, eye, ctx.dt);
       }
       return {

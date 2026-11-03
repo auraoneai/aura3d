@@ -1,22 +1,21 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AnimationPose } from "@aura3d/animation";
-import type { AuraCollisionLayers, AuraPhysicsRuntime } from "../PhysicsRuntime.js";
-import type { AuraCustomGeometrySpec, AuraText3DGeometry } from "../RootGeometry.js";
+import type { AuraCustomGeometrySpec, AuraCustomVertexAttributeData, AuraCustomVertexAttributeSpec, AuraText3DGeometry, AuraVec2Attribute } from "../RootGeometry.js";
 import type { AuraNodeBuilder } from "./builder.js";
+import type { AuraClipGroup, AuraClipGroupSnapshot } from "./clipping.js";
 import type { AuraPerformanceQuality } from "../RootRuntimeSupport.js";
 import type { AuraRuntimeNodeAnimationPoseBindingMetadata, AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeBounds, AuraRuntimeNodeEffectAttachment, RuntimeNodeBoundsInput, RuntimeNodeMorphTargetWeights } from "../RuntimeNodeHandle";
 import type { AuraSceneBuilder, scene } from "./scene.js";
-import type { Collider, ColliderDescriptor, CollisionEvent, Constraint, ConstraintDescriptor, Contact, DebugLine, PhysicsBackendSelection, PhysicsContinuousCollisionDescriptor, PhysicsShape, PhysicsSnapshot, RaycastHit, RaycastOptions, RigidBody, RigidBodyDescriptor, PhysicsVehicleController, PhysicsWheelSpec, PhysicsWheelState, PhysicsWheelCommand, PhysicsWheelTuning, PhysicsVehicleAxis, PhysicsCharacterController, PhysicsCharacterControllerDescriptor, PhysicsCharacterMovement, RigidBodyType, ScenePhysicsNode, SphereCastHit } from "@aura3d/physics";
-import type { GameAppRuntimeOptions } from "../GameAppRuntime";
+import type { Collider, ColliderDescriptor, CollisionEvent, Constraint, ConstraintDescriptor, Contact, DebugLine, PhysicsBackendSelection, PhysicsShape, PhysicsSnapshot, RaycastHit, RaycastOptions, RigidBody, RigidBodyDescriptor, PhysicsVehicleController, PhysicsWheelSpec, PhysicsWheelState, PhysicsWheelCommand, PhysicsWheelTuning, PhysicsVehicleAxis, PhysicsCharacterController, PhysicsCharacterControllerDescriptor, PhysicsCharacterMovement, RigidBodyType, ScenePhysicsNode, SphereCastHit } from "@aura3d/physics/solverless";
 import type { GameAssetBoundPlatformerLevel, GameAssetBoundRacingRoute, GameKitRect, GameKitVec2, GamePlatformerCheckpoint } from "../GameGenreKits";
-import type { GameHudBindingKind, GameRuntimeSubsystemOwnership, createCombatWorld, createGameCameraDirector, createGameEffects, createGameInput, createGameKinematicBody, GameInputOptions } from "../GameRuntime";
+import type { GameHudBindingKind, GameRuntimeSubsystemOwnership, createCombatWorld, createGameCameraDirector, createGameEffects, createGameInput, createGameKinematicBody, GameInputOptions } from "../GameRuntimeCore";
 import type { GamePlatformerSceneBinding, GameRacingSceneBinding } from "../GameSceneGeometryBindings";
 import type { GltfBounds } from "./types/runtime.js";
 import type { LabelTelemetry, TextBucketSummary } from "../LabelTelemetry.js";
 import type { ProjectedLabel } from "../WorldLabelRenderer.js";
 import type { PublicPlatformerGeometryContract, PublicRacingGeometryContract } from "../PublicGameGeometry";
-import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial, CollectedLight, RenderDeviceDiagnostics, RendererPostprocessExecutionMode, WrinkleMapHook, Texture } from "@aura3d/rendering";
+import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial, CollectedLight, RenderDeviceDiagnostics, RendererPostprocessExecutionMode, WrinkleMapHook, Texture, ShaderDataType, UniformDataValue } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";
 import type { WebGLPrimitive } from "./types/runtime.js";
 import type { animation } from "./animation.js";
@@ -28,15 +27,13 @@ import type { groups } from "./groups.js";
 import type { interactions } from "./interactions.js";
 import type { labels } from "./labels.js";
 import type { performance } from "../performanceEvidence.js";
-import type { physics } from "./physics.js";
 import type { primitive, primitives } from "./primitives.js";
 import type { renderer } from "../rendererDiagnostics.js";
 import type { text3D } from "./text3d.js";
 import type { timeline } from "./timeline.js";
 import type { ui } from "./ui.js";
 import type { camera } from "./camera.js";
-import type { collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105, GameRuntimeEvidence, GameRuntimeEvidenceOptions, GameRuntimeSourceEvidence } from "../GameEvidence";
-import type { game } from "./game/index.js";
+import type { GameRuntimeSourceEvidence } from "../GameEvidence";
 import type { instances } from "./instances.js";
 import type { lights } from "./lights.js";
 import type { material } from "./material.js";
@@ -50,9 +47,10 @@ export type AuraVec3 = readonly [number, number, number];
 export type AuraColor = `#${string}` | string;
 
 /** GU47 E-C: `"lut"` = a `.cube` colour LUT (`aura3d assets add <file.cube> --type lut`, `colorGrade({ lut })`). */
-export type AuraAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut";
+export type AuraAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut" | "gaussian-splat" | "photometric" | "scalar-volume";
 
-export type AuraModelFormat = "glb" | "gltf";
+/** glTF is built in; other model formats require an explicitly registered adapter. */
+export type AuraModelFormat = "glb" | "gltf" | (string & {});
 
 export type AuraTextureFormat = "png" | "jpg" | "jpeg" | "webp" | "ktx2";
 
@@ -89,9 +87,15 @@ export interface AuraTextureTransform {
 export interface AuraAssetDefinition {
   readonly type: AuraAssetType;
   readonly format: string;
+  /** Adapter, version and conversion provenance of the admitted output. */
+  readonly formatMetadata?: import("@aura3d/assets").FormatMetadata;
   readonly url: string;
   readonly hash?: string;
   readonly sha256?: string;
+  /** Integrity for the root asset and, when declared, its dependent resources. */
+  readonly integrity?: import("@aura3d/assets").AssetRequestOptions["integrity"];
+  /** Fetch policy applied to this asset and its dependencies. */
+  readonly request?: import("@aura3d/assets").AssetRequestOptions;
   readonly bounds?: AuraVec3;
   readonly sizeBytes?: number;
   readonly optional?: boolean;
@@ -152,6 +156,8 @@ export type AuraAssetMap<T extends Record<string, AuraAssetDefinition>> = {
 
 export interface AuraTransformSpec {
   readonly position?: AuraVec3;
+  /** Local point around which rotation and scale are applied. Defaults to the origin. */
+  readonly pivot?: AuraVec3;
   readonly rotation?: AuraVec3;
   readonly scale?: number | AuraVec3;
   readonly lookAt?: AuraVec3;
@@ -172,6 +178,13 @@ export interface AuraTransformSpec {
 
 export interface AuraMaterialSpec {
   readonly name?: string;
+  /**
+   * Material-scope retained half-spaces. `clipping.material(...)` creates a
+   * live group; JSON scene snapshots contain an independent group snapshot.
+   * Material planes may use world or object-local coordinates. They compose
+   * with scene clipping, and affect shadows only when `clipShadows` is true.
+   */
+  readonly clipping?: AuraClipGroup | AuraClipGroupSnapshot;
   readonly shader?: "solar-sun" | "solar-corona";
   readonly color?: AuraColor;
   readonly coreColor?: AuraColor;
@@ -179,6 +192,9 @@ export interface AuraMaterialSpec {
   readonly noiseStrength?: number;
   readonly falloff?: number;
   readonly roughness?: number;
+  /** Diffuse lobe roughness, independent from specular roughness. */
+  readonly diffuseRoughness?: number;
+  readonly retroreflection?: number;
   readonly metallic?: number;
   readonly metalness?: number;
   readonly emissive?: AuraColor;
@@ -195,6 +211,8 @@ export interface AuraMaterialSpec {
   readonly iridescence?: number;
   readonly iridescenceIOR?: number;
   readonly iridescenceThicknessRange?: readonly [number, number];
+  readonly iridescenceThicknessMinimum?: number;
+  readonly iridescenceThicknessMaximum?: number;
   readonly anisotropy?: number;
   readonly anisotropyRotation?: number;
   /**
@@ -217,8 +235,14 @@ export interface AuraMaterialSpec {
   readonly normal?: AuraMaterialTextureInput;
   readonly normalScale?: number;
   readonly roughnessMap?: AuraMaterialTextureInput;
+  /** Linear data map modulating the diffuse-lobe roughness. */
+  readonly diffuseRoughnessMap?: AuraAssetRef<"texture"> | AuraTextureRef;
+  /** Linear height map and height scale for bump perturbation. */
+  readonly bumpMap?: AuraAssetRef<"texture"> | AuraTextureRef;
+  readonly bumpFactor?: number;
   readonly metalnessMap?: AuraMaterialTextureInput;
-  readonly texture?: AuraAssetRef<"texture">;
+  /** Base-color image asset or live texture handle, including a compute storage texture. */
+  readonly texture?: AuraAssetRef<"texture"> | AuraTextureRef;
   /** Occlusion (AO/lightmap) slot: scalar is the strength 0..1, asset ref is the occlusion map. */
   readonly occlusionMap?: AuraMaterialTextureInput;
   readonly occlusionStrength?: number;
@@ -242,6 +266,8 @@ export interface AuraMaterialSpec {
     readonly baseColor?: 0 | 1;
     readonly normal?: 0 | 1;
     readonly metallicRoughness?: 0 | 1;
+    readonly diffuseRoughness?: 0 | 1;
+    readonly bump?: 0 | 1;
     readonly occlusion?: 0 | 1;
     readonly emissive?: 0 | 1;
     readonly clearcoat?: 0 | 1;
@@ -258,6 +284,8 @@ export interface AuraMaterialSpec {
     readonly baseColor?: AuraTextureTransform;
     readonly normal?: AuraTextureTransform;
     readonly metallicRoughness?: AuraTextureTransform;
+    readonly diffuseRoughness?: AuraTextureTransform;
+    readonly bump?: AuraTextureTransform;
     readonly occlusion?: AuraTextureTransform;
     readonly emissive?: AuraTextureTransform;
     readonly clearcoat?: AuraTextureTransform;
@@ -297,10 +325,16 @@ export interface AuraMaterialSpec {
   // ── threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0) — SR-02/SH-02, frozen at B.
   /** Per-material fog opt-out (SR-02): `false` excludes the material from scene fog (three's Material.fog). */
   readonly fog?: boolean;
-  /** SH-02 discriminator: `material.custom` emits `kind: "custom"` so the compiler routes to the portable-shader path. */
-  readonly kind?: "custom";
+  /** Native depth previews are distinct from authored portable custom shaders. */
+  readonly kind?: "custom" | "depth-preview";
   /** SH-02 payload: the portable custom-shader spec (see AuraCustomMaterialSpec). */
   readonly custom?: AuraCustomMaterialSpec;
+  /** Immutable preview-range snapshot created by `material.depth`. */
+  readonly depthPreview?: {
+    readonly near: number;
+    readonly far: number;
+    readonly side: "front" | "back" | "double";
+  };
   // ── GameUpgrades47 (4.7.0) additions, PRD §3.1 E-C / E-D. Optional; absent = today's behaviour.
   /**
    * GU47 E-D: fresnel rim term on the forward PBR program (see `AuraMaterialRimSpec`). Also on `material.toon`,
@@ -567,7 +601,8 @@ export interface AuraPrimitiveParams {
   readonly points?: readonly AuraVec3[];
   /** `shape` kind outline — a frozen `Shape` (L3) or point list. */
   readonly shape?: unknown;
-  /** extrude settings. */
+  /** Straight extrusion without bevel settings or a path sweep; `bevelEnabled: false` is allowed. Omit for existing behavior. */
+  readonly extrusionMode?: "linear";
   readonly depth?: number;
   readonly steps?: number;
   readonly bevelEnabled?: boolean;
@@ -831,12 +866,16 @@ export type AuraSceneNode =
   // threejs-parity L7 (SC-01/AD-15): cube-camera + mirror surface nodes compile
   // through `compiler/paritySurfaces.ts` into renderer-owned captures.
   | import("./cameras.js").AuraCubeCameraNode
+  | import("./gaussianSplat.js").AuraGaussianSplatNode
+  | import("./scalarVolume.js").AuraScalarVolumeNode
   | import("./surfaces.js").AuraMirrorSurfaceNode
   // threejs-parity AD-15 (P2): lens flare, compiled per frame by `compiler/lensFlare.ts`.
   | import("./lensFlare.js").AuraLensFlareNode;
 
 export interface AuraModelNode extends AuraTransformSpec {
   readonly kind: "model";
+  readonly lod?: AuraModelOptions["lod"];
+  readonly collider?: AuraModelOptions["collider"];
   /** `OPTION_IGNORED` notes for options the builder does not read; the compiler reports each as an `option-ignored` degradation. */
   readonly ignoredOptions?: readonly string[];
   readonly name?: string;
@@ -915,6 +954,8 @@ export interface AuraLightNode extends AuraTransformSpec {
   readonly intensity: number;
   readonly width?: number;
   readonly height?: number;
+  /** Rect/softbox emission from both sides; omitted is one-sided. */
+  readonly twoSided?: boolean;
   readonly target?: AuraVec3;
   readonly angle?: number;
   readonly penumbra?: number;
@@ -929,6 +970,8 @@ export interface AuraLightNode extends AuraTransformSpec {
    * hemisphere-irradiance contribution by the lighting collector.
    */
   readonly sh?: readonly number[];
+  readonly photometricProfile?: import("../../contracts/lighting").AuraPhotometricProfile;
+  readonly projectedImage?: import("../../contracts/lighting").AuraProjectedLightImage;
   /** C-10 (PR 0a): shadow options; boolean stays accepted. */
   readonly shadow?: boolean | import("../../contracts/lighting").AuraLocalShadowOptions | import("../../contracts/lighting").AuraDirectionalShadowOptions;
 }
@@ -937,7 +980,8 @@ export type AuraEffectType =
   | "fog" | "bloom" | "rain" | "particles" | "ambient-occlusion" | "contact-occlusion"
   | "color-grade" | "anti-alias" | "outline"
   | "screen-space-reflections" | "depth-of-field" | "motion-blur" | "volumetric-fog" | "snow"
-  | "flipbook-sprite" | "light-beam";
+  | "flipbook-sprite" | "light-beam" | "fogVolume"
+  | "pixelation" | "halftone" | "dot-screen" | "glitch" | "transition" | "lens-dirt" | "mask" | "clear-mask" | "afterimage";
 
 export type AuraParticleMaterialMode = "additive-glow" | "soft-alpha" | "spark" | "smoke" | "splash" | "dust" | "star";
 
@@ -947,6 +991,17 @@ export interface AuraEffectNode extends AuraTransformSpec {
   readonly name?: string;
   readonly animation?: AuraAnimationSpec;
   readonly intensity?: number;
+  /** Scalar post-effect or particle size, particle size range, or fog volume full extents. */
+  readonly size?: number | readonly [number, number] | AuraVec3;
+  /** Native display-space effect parameters. */
+  readonly angle?: number;
+  readonly strength?: number;
+  readonly seed?: number;
+  readonly texture?: AuraTextureRef;
+  readonly progress?: number;
+  readonly invert?: boolean;
+  readonly opacity?: number;
+  readonly decay?: number;
   readonly density?: number;
   readonly color?: AuraColor;
   readonly speed?: number;
@@ -1145,6 +1200,7 @@ export type AuraSceneCategory =
 export interface AuraRendererColorManagementPreset {
   readonly kind: "aura-renderer-color-management";
   readonly workflow: "linear";
+  /** Default policy in this preset, not an observation of a mounted output. */
   readonly outputColorSpace: "srgb";
   readonly toneMapping: "aces-filmic";
   readonly defaultExposure: number;
@@ -1216,6 +1272,16 @@ export interface AuraRendererQualityProfile {
 }
 
 export interface AuraCreateAppRendererOptions {
+  /** Opt in to per-view admission of measured punctual-light profiles. Default false. */
+  readonly photometricProfiles?: boolean;
+  /**
+   * Opt in to projected spotlight image admission. Default false. The initial
+   * path uses one hash-verified, straight/opaque RGBA8 PVR image level, with
+   * at most 1,048,576 pixels and a maximum dimension of 2048, on generated,
+   * non-clustered WebGL2 forward lit triangle draws. Unavailable variants
+   * report a degradation or throw in strict mode.
+   */
+  readonly projectedSpotImages?: boolean;
   /**
    * @deprecated CCR-15-1 (PRD-15 T4.5): use `quality` for feature levels.
    * Removed in 4.0.0 — under A3D_QR_STRICT it throws `AuraMigrationError`.
@@ -1235,6 +1301,28 @@ export interface AuraCreateAppRendererOptions {
    */
   readonly textureBudgetBytes?: number;
   /**
+   * Opt in to device-local GPU residency for static glTF textures with decoded
+   * 2D mip bytes. KTX2 data is fetched and transcoded before residency begins;
+   * this does not enable network-range streaming. Source-backed images use
+   * ordinary uploads, reported as unmanaged, under the same device byte cap.
+   * A semantic one-pixel fallback is charged until a resident mip is ready.
+   */
+  readonly textureResidency?: { readonly budgetBytes: number };
+  /**
+   * Optional per-device sampled-texture admission limits. The device may
+   * downscale newly admitted textures or reject them when they cannot fit.
+   * `textureBudgetBytes` above remains observation-only.
+   */
+  readonly textureBudgetPolicy?: {
+    readonly maxBytes?: number;
+    readonly maxDimension?: number;
+  };
+  /** Select a native drawing path and whether an unsupported request may fall back. */
+  readonly drawingPath?: {
+    readonly mode: "forward" | "deferred" | "meshlet" | "visibility";
+    readonly allowFallback?: boolean;
+  };
+  /**
    * Bloom pass fusion under `quality: "auto"` / `"cinematic"` (`production` never fuses). `"separable"` (default) keeps the
    * draw-removing folds that add no fill; `"fused-2d"` blurs mips 1..4 in one 2-D pass each and is opt-in until a real-GPU
    * receipt exists. `?aura3d-bloom-fusion=` overrides. Reported as `diagnostics().renderPath.bloomFusion`.
@@ -1249,7 +1337,12 @@ export interface AuraCreateAppRendererOptions {
   readonly strictMount?: boolean;
   readonly debug?: unknown;
   readonly renderScale?: number;
-  readonly backend?: unknown /* prd01 */;
+  /** WebGL2 is the default; auto tries WebGPU first. */
+  readonly backend?: "webgl2" | "webgpu" | "auto";
+  /** Whether an unavailable requested backend may fall back to WebGL2. */
+  readonly allowFallback?: boolean;
+  /** Required WebGPU adapter features, checked before device initialization. */
+  readonly requiredFeatures?: readonly string[];
   readonly adaptive?: unknown /* prd11 */;
   readonly targetFrameRate?: number;
   readonly batching?: unknown /* prd11 */;
@@ -1267,8 +1360,19 @@ export interface AuraCreateAppRendererOptions {
   readonly debugView?: import("../../contracts/materials").AuraRendererMaterialOptions["debugView"];
 }
 
+export interface AuraBackendSelectionDiagnostics {
+  readonly requested: "webgl2" | "webgpu" | "auto";
+  readonly active: "webgl2" | "webgpu";
+  readonly fallbackReason?: string;
+  readonly missingFeatures: readonly string[];
+  readonly deviceLost: boolean;
+}
+
 export interface AuraRendererDiagnosticReport {
   readonly kind: "aura-renderer-diagnostics";
+  readonly backendSelection?: AuraBackendSelectionDiagnostics;
+  /** Negotiated production root-camera depth; this is not pixel-backed evidence. */
+  readonly depth?: import("@aura3d/rendering").DepthConvention;
   readonly colorManagement: AuraRendererColorManagementPreset;
   readonly rendererMode: "safe-basic" | "production";
   readonly fallbackMode?: "safe-basic";
@@ -1276,7 +1380,9 @@ export interface AuraRendererDiagnosticReport {
   readonly sceneCategory: AuraSceneCategory;
   readonly exposure: AuraSceneExposurePreset;
   readonly toneMapping: "aces-filmic";
-  readonly outputColorSpace: "srgb";
+  /** Device-observed canvas color space, or unknown when it cannot be verified.
+   * This is not a claim about physical display capabilities or pixels. */
+  readonly outputColorSpace: "srgb" | "display-p3" | "unknown";
   readonly linearWorkflow: true;
   readonly bloom: {
     readonly enabled: boolean;
@@ -1409,11 +1515,12 @@ export interface AuraRendererDiagnosticReport {
     readonly reason: string;
   };
   /**
-   * M2 texture streaming residency (muse3jsparity-PRD). Funded from the
-   * post-upgrade texture table against `textureBudgetBytes`; the unfunded
-   * tail reports over-budget bytes instead of thrashing silently.
+   * Without `textureResidency`, this is the legacy primitive-texture plan.
+   * `mode: "device-residency"` reports actual device charges and tracked
+   * glTF bindings; unmanaged textures are listed separately.
    */
   readonly textures: {
+    readonly mode?: "device-residency";
     readonly budgetBytes: number;
     readonly usedBytes: number;
     readonly requestedBytes: number;
@@ -1421,6 +1528,11 @@ export interface AuraRendererDiagnosticReport {
     readonly overBudgetBytes: number;
     readonly residentEntries: number;
     readonly evictedEntries: readonly string[];
+    readonly residentBytes?: number;
+    readonly retiringBytes?: number;
+    readonly loadingEntries?: number;
+    readonly unmanagedEntries?: readonly string[];
+    readonly errors?: readonly string[];
   };
   readonly antialiasing: AuraRendererQualityPreset["antialiasing"];
   readonly screenshotQuality: AuraRendererQualityPreset;
@@ -1515,7 +1627,9 @@ export type AuraPhysicsCharacterController = PhysicsCharacterController;
 
 export interface AuraPhysicsWorldController {
   readonly kind: "aura-physics-world";
-  createBody(options?: RigidBodyDescriptor & { readonly shape?: PhysicsShape; readonly sensor?: boolean; readonly material?: ColliderDescriptor["material"] }): RigidBody;
+  createBody(options?: RigidBodyDescriptor & { readonly shape?: PhysicsShape; readonly sensor?: boolean; readonly material?: ColliderDescriptor["material"]; readonly filter?: ColliderDescriptor["filter"] }): RigidBody;
+  /** Resolve a live body by id; the public handle remains stable across reset. */
+  getBody(id: number): RigidBody | undefined;
   createCollider(body: RigidBody | number, descriptor: ColliderDescriptor): Collider;
   createConstraint(descriptor: ConstraintDescriptor): Constraint;
   /**
@@ -1529,8 +1643,10 @@ export interface AuraPhysicsWorldController {
   /** Solver-backed character: grounding, slope limits, auto-step and snap-to-ground. */
   createCharacterController(body: RigidBody | number, descriptor?: AuraPhysicsCharacterDescriptor): AuraPhysicsCharacterController;
   bindNode(body: RigidBody | number, node: ScenePhysicsNode, mode?: "dynamic" | "kinematic"): void;
+  unbindNode(body: RigidBody | number): void;
   step(options?: number | AuraPhysicsStepOptions): readonly CollisionEvent[];
   reset(): void;
+  dispose(): void;
   contacts(): readonly Contact[];
   liveContactCount(): number;
   raycast(origin: AuraVec3, direction: AuraVec3, options?: RaycastOptions): RaycastHit | undefined;
@@ -1548,13 +1664,22 @@ export interface AuraCameraSpec {
   readonly mode: AuraCameraMode;
   readonly position?: AuraVec3;
   readonly target?: AuraVec3;
-  /** C-22/CCR-08-1 (#228): camera up vector + roll — diagnostic-only until Q-15-1. */
+  /** Camera up direction; defaults to positive Y. */
   readonly up?: AuraVec3;
+  /** C-22/CCR-08-1 (#228): declarative roll is diagnostic-only until Q-15-1. */
   readonly roll?: number;
   readonly offset?: AuraVec3;
   readonly targetOffset?: AuraVec3;
   readonly offsetMode?: "scene" | "target-yaw";
   readonly fov?: number;
+  /** Focal length in millimetres overrides fov when provided. */
+  readonly focalLength?: number;
+  /** Film gauge in millimetres used with focalLength (default 35). */
+  readonly filmGauge?: number;
+  readonly filmOffset?: number;
+  /** Sub-view coordinates in pixels, measured from the top left. */
+  readonly viewOffset?: { readonly fullWidth: number; readonly fullHeight: number; readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly depth?: { readonly mode?: "standard" | "reversed" | "logarithmic"; readonly allowFallback?: boolean };
   /** Positive near clipping distance in world units; defaults to 0.05. */
   readonly near?: number;
   /** Far clipping distance in world units, greater than near; defaults to 100. */
@@ -1622,6 +1747,8 @@ export type AuraEnvironmentOptions = Partial<Omit<AuraEnvironmentNode, "kind" | 
 export interface AuraRendererRuntimeObservation {
   readonly mounted: boolean;
   readonly backend: "scene-plan" | "webgl2-agent-runtime" | "production-runtime";
+  /** Active canvas color space observed from this mounted device, not authored intent. */
+  readonly outputColorSpace?: AuraRendererDiagnosticReport["outputColorSpace"];
   readonly postprocess: {
     readonly renderPass: boolean;
     readonly outputPass: boolean;
@@ -1686,8 +1813,9 @@ export interface AuraRendererRuntimeObservation {
     readonly lastOpacity: number;
     readonly reason: string;
   };
-  /** M2 streaming residency, funded from the post-upgrade texture table. */
+  /** Legacy primitive plan, or actual per-device residency when opted in. */
   readonly textures?: {
+    readonly mode?: "device-residency";
     readonly budgetBytes: number;
     readonly usedBytes: number;
     readonly requestedBytes: number;
@@ -1695,6 +1823,11 @@ export interface AuraRendererRuntimeObservation {
     readonly overBudgetBytes: number;
     readonly residentEntries: number;
     readonly evictedEntries: readonly string[];
+    readonly residentBytes?: number;
+    readonly retiringBytes?: number;
+    readonly loadingEntries?: number;
+    readonly unmanagedEntries?: readonly string[];
+    readonly errors?: readonly string[];
   };
   readonly warnings?: readonly string[];
   readonly deviceDiagnostics?: Pick<RenderDeviceDiagnostics, "nativeTemporalPasses" | "nativeTemporalBindings" | "nativeInstancedSubmissions" | "submittedObjects" | "visibleObjects" | "culledObjects" | "frustumTestedObjects" | "bloom" | "samplerAnisotropyUploads" | "maxTextureAnisotropy">;
@@ -1742,6 +1875,8 @@ export type AuraSceneBackgroundImage =
 
 export interface AuraSceneSnapshot {
   readonly schema: "aura3d-scene-snapshot/1.0";
+  /** JSON-safe scene-wide clipping state, in world coordinates. */
+  readonly clipping?: AuraClipGroupSnapshot;
   readonly background: AuraColor;
   /**
    * threejs-parity L7/SG-10: texture/cube background (three's `scene.background`).
@@ -2565,6 +2700,7 @@ export type AuraBackend = "webgl2" | "webgpu" | "canvas2d" | "headless";
 
 export interface AuraDiagnostics {
   readonly backend: AuraBackend;
+  readonly backendSelection?: AuraBackendSelectionDiagnostics;
   readonly fps: number;
   readonly drawCalls: number;
   readonly renderSize: readonly [number, number];
@@ -2693,15 +2829,17 @@ export interface AuraTextureCompressedOptions { readonly mipmaps: readonly { rea
 export interface AuraTextureDepthOptions { readonly width: number; readonly height: number; }
 export interface AuraTextureCubeOptions { readonly faces: readonly unknown[]; readonly colorSpace?: AuraTextureColorSpace; }
 export interface AuraTextureDataArrayOptions extends Omit<AuraTextureDataOptions, "width" | "height" | "data"> { readonly width: number; readonly height: number; readonly depth: number; readonly data: Uint8Array | Float32Array | Uint16Array; }
-export interface AuraTextureLoadOptions { readonly colorSpace?: AuraTextureColorSpace; readonly flipY?: boolean; readonly anisotropy?: number; }
+export interface AuraTextureLoadOptions { readonly colorSpace?: AuraTextureColorSpace; readonly flipY?: boolean; readonly anisotropy?: number; readonly app?: AuraApp; }
 
 // ── SH-02 custom material (L1) ─────────────────────────────────────────────
 
-export type AuraCustomUniformType = "f32" | "i32" | "bool" | "vec2" | "vec3" | "vec4" | "color3" | "mat3" | "mat4" | "texture2d";
-/** Uniform spec: bare type name, or `{ type, value }` for an initial value. */
-export type AuraCustomUniformSpec = AuraCustomUniformType | { readonly type: AuraCustomUniformType; readonly value?: unknown };
-/** Runtime uniform write (handle.setUniform / setPassUniform). */
-export type AuraUniformValue = number | boolean | readonly number[] | AuraVec3 | readonly AuraVec3[] | readonly [number, number] | readonly [number, number, number, number] | Float32Array | Int32Array | AuraTextureRef | AuraAssetRef<"texture"> | Texture;
+export type AuraCustomUniformType = "f32" | "i32" | "u32" | "bool" | "vec2" | "vec3" | "vec4" | "color3" | "mat3" | "mat4" | "texture2d" | "texture3d" | "depth2d";
+/** Recursive data requires an explicit schema and initial value; WebGL cannot upload it. */
+export type AuraCustomUniformSpec = AuraCustomUniformType
+  | { readonly type: AuraCustomUniformType; readonly value?: unknown }
+  | { readonly type: "data"; readonly dataType: ShaderDataType; readonly value: UniformDataValue };
+/** Runtime material uniform write (handle.setUniform). */
+export type AuraUniformValue = UniformDataValue | AuraVec3 | readonly AuraVec3[] | AuraTextureRef | AuraAssetRef<"texture"> | Texture;
 
 /**
  * SH-02 (L1): `material.custom(spec)` payload. GLSL is required —
@@ -2729,6 +2867,8 @@ export interface AuraCustomMaterialSpec {
   readonly glsl: { readonly vertex?: string; readonly fragment: string };
   readonly wgsl?: { readonly vertex?: string; readonly fragment?: string };
   readonly uniforms?: Readonly<Record<string, AuraCustomUniformSpec>>;
+  /** Map authored uniform names to validated shader identifiers. */
+  readonly uniformAliases?: Readonly<Record<string, string>>;
   readonly defines?: Readonly<Record<string, string | number | boolean>>;
   readonly transparent?: boolean;
   readonly depthWrite?: boolean;
@@ -2763,19 +2903,25 @@ export interface AuraDynamicGeometrySpec {
   readonly positions: Float32Array | readonly number[] | readonly AuraVec3[];
   readonly normals?: Float32Array | readonly number[] | readonly AuraVec3[];
   readonly uvs?: Float32Array | readonly (readonly [number, number])[];
+  readonly uv1s?: AuraVec2Attribute;
   readonly colors?: Float32Array | readonly AuraColor[];
   readonly indices?: AuraIndexArray;
   /** R-23: author-named per-vertex attributes (three `setAttribute(name, BufferAttribute)`), bound by name in `material.custom` GLSL. */
-  readonly attributes?: Readonly<Record<string, { readonly itemSize: 1 | 2 | 3 | 4; readonly data: Float32Array | readonly number[] }>>;
+  readonly attributes?: Readonly<Record<string, AuraCustomVertexAttributeSpec>>;
   /** R-23: `"points"` draws one point per vertex (three `Points`); the vertex shader sets gl_PointSize. */
   readonly topology?: "triangles" | "points";
   readonly groups?: readonly { readonly start: number; readonly count: number; readonly materialIndex?: number }[];
   readonly drawRange?: { readonly start: number; readonly count: number };
-  readonly morphTargets?: readonly { readonly name?: string; readonly positions: Float32Array | readonly number[] }[];
+  readonly morphTargets?: readonly {
+    readonly name?: string;
+    readonly positions: Float32Array | readonly number[];
+    readonly normals?: Float32Array | readonly number[];
+    readonly tangents?: Float32Array | readonly number[];
+  }[];
 }
 /** SG-05: per-frame partial attribute write; never reallocates when length is unchanged. */
 export interface AuraAttributeUpdate {
-  readonly array: Float32Array | Uint16Array | Uint32Array | Int32Array | readonly number[];
+  readonly array: AuraCustomVertexAttributeData;
   /** Element offset into the attribute (default 0). */
   readonly offset?: number;
 }
@@ -2916,6 +3062,7 @@ export type {
   AuraSceneEvidence,
   AuraFrameInfo,
   AuraFrameCallback,
+  AuraRenderTermination,
   AuraRuntimeNodeSnapshot,
   AuraRuntimeNodeHandle,
   AuraRuntimeNodeImportedAssetEvidence,

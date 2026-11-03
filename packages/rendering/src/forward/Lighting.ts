@@ -189,11 +189,13 @@ export function applyForwardShadowMapUniforms(
     "u_shadowPcfSampleCount",
     "u_shadowPcfSamples"
   ];
+  // Point and spot receivers can be selected independently of the single
+  // directional receiver, so their packets must not depend on its uniforms.
+  applyForwardPointShadowMapUniforms(shadowMap?.pointLight, item, shader, uniforms, shadowMap?.pcfTapTier);
+  applyForwardSpotShadowMapUniforms(shadowMap?.spotLight, item, shader, uniforms, shadowMap?.pcfTapTier);
   if (!requiredUniforms.every((uniform) => shader.reflection.uniforms.has(uniform))) {
     return;
   }
-  applyForwardPointShadowMapUniforms(shadowMap?.pointLight, item, shader, uniforms, shadowMap?.pcfTapTier);
-  applyForwardSpotShadowMapUniforms(shadowMap?.spotLight, item, shader, uniforms, shadowMap?.pcfTapTier);
   if (!shadowMap) {
     uniforms.set("u_shadowMapTexture", new TextureBinding({ name: "u_shadowMapTexture", required: false }));
     uniforms.set("u_shadowMapEnabled", 0);
@@ -636,9 +638,7 @@ export function renderItemWorldCenter(item: RenderItem): readonly [number, numbe
   ];
 }
 
-/**
- * §3.3 — clustered-light setup extracted from ForwardPass.execute() (verbatim body).
- */
+/** §3.3 — clustered-light setup extracted from ForwardPass.execute(). */
 export function resolveForwardClusteredLighting(
   lights: readonly CollectedLight[] | undefined,
   width: number,
@@ -660,10 +660,35 @@ export function resolveForwardClusteredLighting(
         cameraViewProjectionMatrix
       )
     : null;
-  if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
-    recordAuraLightsCounters(forwardLightCounters(count, clustered !== null));
+  // The caller cannot own the cluster until this function returns. In
+  // particular, ForwardPass's finally cannot see it if flag or counter
+  // evaluation throws before the assignment completes.
+  try {
+    if (rendererQrFlags().on("A3D_QR_LIGHTING")) {
+      recordAuraLightsCounters(forwardLightCounters(count, clustered !== null));
+    }
+    return clustered;
+  } catch (error) {
+    if (clustered) {
+      try {
+        clustered.dispose();
+      } catch {
+        // The owner currently disposes its textures in sequence, so a failed
+        // first disposal can leave the other untouched. Best-effort fallback
+        // only for its still-live textures, once per distinct shared texture.
+        let dataTexture: ClusteredForwardLightingResources["lightData"]["texture"] = null;
+        try {
+          dataTexture = clustered.lightData.texture;
+          if (dataTexture && !dataTexture.disposed) dataTexture.dispose();
+        } catch { /* Continue with the other texture. */ }
+        try {
+          const indexTexture = clustered.lightIndices.texture;
+          if (indexTexture && indexTexture !== dataTexture && !indexTexture.disposed) indexTexture.dispose();
+        } catch { /* Preserve the original error. */ }
+      }
+    }
+    throw error;
   }
-  return clustered;
 }
 
 /** T0-27: direct-light capacity of the forward uniform path (pack cap = shader array). */

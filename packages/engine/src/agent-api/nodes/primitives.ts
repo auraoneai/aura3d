@@ -4,11 +4,7 @@ import type { AuraPrimitiveOptions, AuraPrimitiveNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
 import { ignoredOptionsNote } from "./optionDiagnostics.js";
-import { geometry } from "./geometry.js";
-import { instances } from "./instances.js";
-import { material } from "./material.js";
-import { physics } from "./physics.js";
-import { text3D } from "./text3d.js";
+import { assertValidPivot } from "../pivotGuard.js";
 
 /**
  * The six original kinds are unit-sized shapes scaled by `size` / the node
@@ -56,7 +52,7 @@ export function assertUnitPrimitiveParams(primitiveName: string, params: unknown
  * used to be dropped silently; it is now reported as OPTION_IGNORED.
  */
 export const PRIMITIVE_OPTION_KEYS: readonly string[] = [
-  "name", "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
+  "name", "position", "pivot", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
   "renderOrder", "frustumCulled", "layers", "userData",
   "material", "size", "castShadow", "receiveShadow", "physics",
   "instances", "instanceColors", "geometry", "text3D", "lod", "params"
@@ -74,6 +70,8 @@ export interface PrimitiveOptionGuard {
 }
 
 export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode> {
+  assertValidPivot(options.pivot);
+  const pivot = options.pivot === undefined ? undefined : [...options.pivot] as [number, number, number];
   const ignored = guard
     ? ignoredOptionsNote(guard.builder, guard.options, guard.validKeys)
     : ignoredOptionsNote(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
@@ -83,6 +81,7 @@ export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options
     primitive: primitiveName,
     name: options.name,
     position: options.position,
+    ...(pivot === undefined ? {} : { pivot }),
     rotation: options.rotation,
     scale: options.scale,
     lookAt: options.lookAt,

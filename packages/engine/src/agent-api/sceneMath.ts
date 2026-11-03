@@ -10,15 +10,14 @@ import type { AuraVec3, AuraColor, AuraTransformSpec, AuraSceneNode, AuraModelNo
 import type { GltfBounds } from "./nodes/types/runtime.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION } from "./SceneGroundingUtils.js";
 import { AuraSceneBuilder } from "./nodes/scene.js";
-import { animation } from "./nodes/animation.js";
-import { camera } from "./nodes/camera.js";
 import { colorToClearColor } from "./colorUtils.js";
 import { createCameraProjection } from "./RootRuntimeSupport.js";
 import { lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
 import { orbitAnimatedAngle, orbitAnimatedPosition } from "./compiler/actors.js";
 import { resolveAnimationSeconds } from "./compiler/animation.js";
 import { resolveCameraFrame } from "./compiler/camera.js";
-import { text3D } from "./nodes/text3d.js";
+import { resolveProductionCameraDepth } from "./compiler/cameraDepth.js";
+import { assertLegacyPivotHierarchySupported, assertValidPivot, hasNonzeroPivot } from "./pivotGuard.js";
 
 export function seededRange(index: number, salt: number, min: number, max: number): number {
   const value = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
@@ -134,8 +133,8 @@ export function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
 export function createCameraMatrices(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } {
   const cameraSpec = snapshot.camera;
   const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
-  const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
-  const projection = createCameraProjection(cameraSpec, aspect);
+  const view = lookAtMat4([...eye], [...target], [...(cameraSpec.up ?? [0, 1, 0])]);
+  const projection = createCameraProjection(resolveProductionCameraDepth(cameraSpec).projectionCamera, aspect);
   return { view: new Float32Array(view), projection: new Float32Array(projection), viewProjection: new Float32Array(multiplyMat4(projection, view)) };
 }
 
@@ -144,6 +143,15 @@ export function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number
 }
 
 export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {
+  const pivot = node?.pivot;
+  assertValidPivot(pivot);
+  const pivoted = hasNonzeroPivot(pivot);
+  if (pivoted && node?.lookAt !== undefined) {
+    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted legacy nodes cannot use lookAt.");
+  }
+  if (pivoted && (node?.quaternion !== undefined || (node?.rotationOrder !== undefined && node.rotationOrder !== "ZYX"))) {
+    throw new Error("PIVOT_UNSUPPORTED_LEGACY_ROTATION: pivoted legacy nodes require the default Euler rotation.");
+  }
   const extent = [
     Math.max(0.001, bounds.max[0] - bounds.min[0]),
     Math.max(0.001, bounds.max[1] - bounds.min[1]),
@@ -156,16 +164,26 @@ export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | Aura
   const nodeScale = typeof node?.scale === "number" ? [node.scale, node.scale, node.scale] as const : node?.scale ?? [1, 1, 1] as const;
   const position = animatedPosition(node, time);
   const rotation = animatedRotation(node, time);
-  return multiply4(
+  const basis = rotationXYZ(rotation);
+  const result = multiply4(
     translation(position[0], position[1], position[2]),
     multiply4(
-      rotationXYZ(rotation),
+      basis,
       multiply4(
         scaling(nodeScale[0] * baseSize[0] * fitScale, nodeScale[1] * baseSize[1] * fitScale, nodeScale[2] * baseSize[2] * fitScale),
         normalizeToUnit ? translation(-centerX, -bounds.min[1], -centerZ) : identity4()
       )
     )
   );
+  if (pivoted && pivot) {
+    // Size and model fit are inside the node transform, not part of its pivot.
+    const x = pivot[0] * nodeScale[0], y = pivot[1] * nodeScale[1], z = pivot[2] * nodeScale[2];
+    result[12] += pivot[0] - (basis[0]! * x + basis[4]! * y + basis[8]! * z);
+    result[13] += pivot[1] - (basis[1]! * x + basis[5]! * y + basis[9]! * z);
+    result[14] += pivot[2] - (basis[2]! * x + basis[6]! * y + basis[10]! * z);
+    if (!result.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted model matrix must be finite.");
+  }
+  return result;
 }
 
 export function resolveModelFitScale(
@@ -340,10 +358,40 @@ export function mix3(a: AuraVec3, b: AuraVec3, t: number): AuraVec3 {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 }
 
-export function flattenSceneSnapshot(snapshot: AuraSceneSnapshot): AuraSceneSnapshot {
+/** An authored group and its half-open range in a completed flattened scene. */
+export interface SceneGroupSpan {
+  readonly group: Extract<AuraSceneNode, { readonly kind: "group" }>;
+  /** Authored group ancestors, from the outermost to the immediate parent. */
+  readonly ancestors: readonly Extract<AuraSceneNode, { readonly kind: "group" }>[];
+  readonly start: number;
+  readonly end: number;
+}
+
+export interface SceneFlattenOptions {
+  /** Called in authored pre-order after the entire flatten succeeds. */
+  readonly onGroupSpan?: (span: SceneGroupSpan) => void;
+}
+
+/** @internal A single occurrence visited while lowering a scene. */
+export interface SceneFlattenVisit {
+  readonly node: AuraSceneNode;
+  /** Present for a group, including an empty group. */
+  readonly children?: readonly SceneFlattenVisit[];
+  /** Present when a look lowered, including when it lowered to an empty list. */
+  readonly lowered?: readonly SceneFlattenVisit[];
+}
+
+/** @internal Capture used to replay a single lowering in the hybrid line path. */
+export interface CapturedSceneFlatten {
+  readonly nodes: AuraSceneNode[];
+  readonly spans: readonly SceneGroupSpan[];
+  readonly visits: readonly SceneFlattenVisit[];
+}
+
+export function flattenSceneSnapshot(snapshot: AuraSceneSnapshot, options: SceneFlattenOptions = {}): AuraSceneSnapshot {
   return {
     ...snapshot,
-    nodes: flattenSceneNodes(snapshot.nodes)
+    nodes: flattenSceneNodes(snapshot.nodes, {}, options)
   };
 }
 
@@ -367,22 +415,78 @@ export function lowerLookNode(node: AuraSceneNode): readonly AuraSceneNode[] | u
   return (node as { kind?: string }).kind === "look" && !(node as unknown as Record<symbol, unknown>)[LOWERED_LOOK] ? getLookLowering()?.(node) : undefined;
 }
 
-export function flattenSceneNodes(nodes: readonly AuraSceneNode[], parentTransform: AuraTransformSpec = {}): AuraSceneNode[] {
+type MutableSceneGroupSpan = { -readonly [K in keyof SceneGroupSpan]: SceneGroupSpan[K] };
+
+function flattenSceneNodesInternal(
+  nodes: readonly AuraSceneNode[],
+  parentTransform: AuraTransformSpec,
+  captureVisits: boolean,
+  captureSpans: boolean
+): CapturedSceneFlatten {
   const flattened: AuraSceneNode[] = [];
-  for (const node of nodes) {
-    const lowered = lowerLookNode(node);
-    if (lowered !== undefined) {
-      flattened.push(markLookNodeLowered(node), ...flattenSceneNodes(lowered, parentTransform));
-      continue;
+  const spans: MutableSceneGroupSpan[] = [];
+
+  const visit = (
+    entries: readonly AuraSceneNode[],
+    parent: AuraTransformSpec,
+    ancestors: readonly SceneGroupSpan["group"][],
+    authored: boolean
+  ): readonly SceneFlattenVisit[] => {
+    const visits: SceneFlattenVisit[] = [];
+    for (const node of entries) {
+      const lowered = lowerLookNode(node);
+      if (lowered !== undefined) {
+        flattened.push(markLookNodeLowered(node));
+        // A look's generated nodes count toward authored ancestor ranges, but
+        // generated groups are not themselves authored runtime roots.
+        const children = visit(lowered, parent, ancestors, false);
+        if (captureVisits) visits.push({ node, lowered: children });
+        continue;
+      }
+      if (node.kind === "group") {
+        const span: MutableSceneGroupSpan | undefined = authored && captureSpans
+          ? { group: node, ancestors: [...ancestors], start: flattened.length, end: flattened.length }
+          : undefined;
+        // Reserve the slot before descending so completed spans retain pre-order.
+        if (span) spans.push(span);
+        const groupTransform = composeAuraTransform(parent, node);
+        const children = visit(node.children, groupTransform, authored ? [...ancestors, node] : ancestors, authored);
+        if (span) span.end = flattened.length;
+        if (captureVisits) visits.push({ node, children });
+        continue;
+      }
+      flattened.push(applyAuraParentTransform(node, parent));
+      if (captureVisits) visits.push({ node });
     }
-    if (node.kind === "group") {
-      const groupTransform = composeAuraTransform(parentTransform, node);
-      flattened.push(...flattenSceneNodes(node.children, groupTransform));
-      continue;
-    }
-    flattened.push(applyAuraParentTransform(node, parentTransform));
-  }
-  return flattened;
+    return visits;
+  };
+
+  const visits = visit(nodes, parentTransform, [], true);
+  return { nodes: flattened, spans, visits };
+}
+
+/**
+ * Capture each traversed occurrence for a second transform-only pass without
+ * invoking a user-supplied look lowerer or walking mutated child lists again.
+ * @internal
+ */
+export function captureFlattenSceneNodes(
+  nodes: readonly AuraSceneNode[],
+  parentTransform: AuraTransformSpec = {},
+  captureSpans = false
+): CapturedSceneFlatten {
+  return flattenSceneNodesInternal(nodes, parentTransform, true, captureSpans);
+}
+
+export function flattenSceneNodes(
+  nodes: readonly AuraSceneNode[],
+  parentTransform: AuraTransformSpec = {},
+  options: SceneFlattenOptions = {}
+): AuraSceneNode[] {
+  assertLegacyPivotHierarchySupported(nodes, parentTransform);
+  const result = flattenSceneNodesInternal(nodes, parentTransform, false, options.onGroupSpan !== undefined);
+  if (options.onGroupSpan) for (const span of result.spans) options.onGroupSpan(span);
+  return result.nodes;
 }
 
 function applyAuraParentTransform<TNode extends AuraSceneNode>(node: TNode, parentTransform: AuraTransformSpec): TNode {

@@ -42,6 +42,24 @@
     "./world": {
       "types": "./dist/world/index.d.ts",
       "import": "./dist/world/index.js"
+    },
+    "./shader-graph": {
+      "types": "./dist/program/ShaderGraphCompiler.d.ts",
+      "browser": "./dist/program/ShaderGraphCompiler.js",
+      "import": "./dist/program/ShaderGraphCompiler.js",
+      "default": "./dist/program/ShaderGraphCompiler.js"
+    },
+    "./lighting": {
+      "types": "./dist/lighting/index.d.ts",
+      "browser": "./dist/lighting/index.js",
+      "import": "./dist/lighting/index.js",
+      "default": "./dist/lighting/index.js"
+    },
+    "./volumetrics": {
+      "types": "./dist/volumetrics.d.ts",
+      "browser": "./dist/volumetrics.js",
+      "import": "./dist/volumetrics.js",
+      "default": "./dist/volumetrics.js"
     }
   },
   "main": "./dist/index.js",

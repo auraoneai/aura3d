@@ -9,7 +9,6 @@ import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { Mat4 } from "@aura3d/scene";
 import type { ProductionImportedAssetRenderMetadata, RenderItem } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";
-import { animation } from "../nodes/animation.js";
 import { AURA_UNCLAMPED_MORPH_WEIGHTS_TAG, createRuntimeNodeImportedAssetEvidence } from "../runtimeEvidence.js";
 import { model } from "../nodes/model.js";
 import { resolveAnimationSeconds } from "./animation.js";
@@ -38,10 +37,17 @@ export function resolveProductionActorRuntimeState(
   if (!runtimeSnapshot) return { node: entry.node };
   const morphTargets = runtimeSnapshot.morphTargets ?? {};
   const nextAnimation = runtimeSnapshot.animation ?? entry.node.animation;
+  const pivot = runtimeSnapshot.pivot ?? entry.node.pivot;
+  const samePivot = entry.node.pivot === pivot || (
+    (entry.node.pivot?.[0] ?? 0) === (pivot?.[0] ?? 0) &&
+    (entry.node.pivot?.[1] ?? 0) === (pivot?.[1] ?? 0) &&
+    (entry.node.pivot?.[2] ?? 0) === (pivot?.[2] ?? 0)
+  );
   const sameInPlace =
     (entry.node.position === runtimeSnapshot.position || (entry.node.position === undefined && runtimeSnapshot.position[0] === 0 && runtimeSnapshot.position[1] === 0 && runtimeSnapshot.position[2] === 0)) &&
     (entry.node.rotation === runtimeSnapshot.rotation || (entry.node.rotation === undefined && runtimeSnapshot.rotation[0] === 0 && runtimeSnapshot.rotation[1] === 0 && runtimeSnapshot.rotation[2] === 0)) &&
     (entry.node.scale === runtimeSnapshot.scale || (entry.node.scale === undefined && runtimeSnapshot.scale === 1)) &&
+    samePivot &&
     (entry.node.visible !== false) === runtimeSnapshot.visible &&
     entry.node.animation === nextAnimation &&
     (runtimeSnapshot.instances === undefined || entry.node.instances === runtimeSnapshot.instances) &&
@@ -54,6 +60,7 @@ export function resolveProductionActorRuntimeState(
           position: runtimeSnapshot.position,
           rotation: runtimeSnapshot.rotation,
           scale: runtimeSnapshot.scale,
+          pivot,
           visible: runtimeSnapshot.visible,
           animation: nextAnimation,
           ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
@@ -141,7 +148,112 @@ export function attachProductionActorEvidence(
   runtimeNodes.get(node.runtime.id)?.setImportedAssetEvidence(evidence);
 }
 
-function runtimeModelWorldBounds(node: AuraModelNode, actor: TypedGLBActor): AuraRuntimeNodeBounds {
+/**
+ * A submitted model item contains its final actor and imported-mesh placement.
+ * Use that same placement for the evidence rather than reconstructing it from
+ * the authored node, which can omit parent transforms, fit, pivot and instances.
+ * Geometry bounds describe the undeformed mesh; skin and morph displacement are
+ * not evaluated here and can extend outside this static envelope.
+ */
+function submittedActorWorldBounds(items: readonly RenderItem[]): AuraRuntimeNodeBounds | undefined {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  let found = false;
+  for (const item of items) {
+    if (item.instanceCount === 0) continue;
+    const bounds = item.geometry?.bounds;
+    if (!bounds || !validBound(bounds.min, bounds.max)) return undefined;
+    const model = affineMatrix(item.modelMatrix);
+    const geometry = affineMatrix(item.geometryMatrix);
+    if (!model || !geometry) return undefined;
+    const transforms = item.instanceTransforms;
+    if (transforms !== undefined && (transforms.length === 0 || transforms.length % 16 !== 0)) return undefined;
+    const count = transforms === undefined ? 1 : transforms.length / 16;
+    const center = bounds.min.map((value, axis) => value + (bounds.max[axis]! - value) / 2);
+    const half = bounds.min.map((value, axis) => (bounds.max[axis]! - value) / 2);
+    // Reuse the scratch matrices for all instances; large instanced scenes
+    // should not allocate three matrices per instance on every frame.
+    const instanceScratch = new Array<number>(16);
+    const intermediate = new Array<number>(16);
+    const world = new Array<number>(16);
+    for (let index = 0; index < count; index += 1) {
+      const instance = transforms === undefined ? IDENTITY_MATRIX : copyAffine(transforms, index * 16, instanceScratch, false);
+      if (!instance) return undefined;
+      multiplyAffineInto(intermediate, model, instance);
+      multiplyAffineInto(world, intermediate, geometry);
+      if (!includeTransformedBounds(min, max, center, half, world)) return undefined;
+      found = true;
+    }
+  }
+  if (!found) return undefined;
+  const size: AuraVec3 = [max[0]! - min[0]!, max[1]! - min[1]!, max[2]! - min[2]!];
+  if (!size.every(Number.isFinite)) return undefined;
+  return {
+    kind: "aura-runtime-node-bounds",
+    min: [min[0]!, min[1]!, min[2]!],
+    max: [max[0]!, max[1]!, max[2]!],
+    center: [min[0]! + size[0] / 2, min[1]! + size[1] / 2, min[2]! + size[2] / 2],
+    size,
+    radius: Math.hypot(size[0] / 2, size[1] / 2, size[2] / 2)
+  };
+}
+
+const IDENTITY_MATRIX: readonly number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+function validBound(min: readonly number[] | undefined, max: readonly number[] | undefined): boolean {
+  return Array.isArray(min) && Array.isArray(max) && min.length === 3 && max.length === 3
+    && min.every(Number.isFinite) && max.every(Number.isFinite)
+    && min.every((value, axis) => value <= max[axis]!);
+}
+
+/** Return a private, finite affine matrix snapshot; undefined means identity. */
+function affineMatrix(value: ArrayLike<number> | undefined, offset = 0, exact = true): readonly number[] | undefined {
+  if (value === undefined) return IDENTITY_MATRIX;
+  return copyAffine(value, offset, new Array<number>(16), exact);
+}
+
+function copyAffine(value: ArrayLike<number>, offset: number, matrix: number[], exact: boolean): readonly number[] | undefined {
+  if (value.length < offset + 16 || (exact && value.length !== 16)) return undefined;
+  for (let index = 0; index < 16; index += 1) {
+    const component = value[offset + index]!;
+    if (!Number.isFinite(component)) return undefined;
+    matrix[index] = component;
+  }
+  if (matrix[3] !== 0 || matrix[7] !== 0 || matrix[11] !== 0 || matrix[15] !== 1) return undefined;
+  return matrix;
+}
+
+function multiplyAffineInto(product: number[], left: readonly number[], right: readonly number[]): void {
+  for (let column = 0; column < 4; column += 1) {
+    for (let row = 0; row < 4; row += 1) {
+      product[column * 4 + row] = left[row]! * right[column * 4]!
+        + left[4 + row]! * right[column * 4 + 1]!
+        + left[8 + row]! * right[column * 4 + 2]!
+        + left[12 + row]! * right[column * 4 + 3]!;
+    }
+  }
+}
+
+function includeTransformedBounds(
+  min: number[], max: number[], center: readonly number[], half: readonly number[], matrix: readonly number[]
+): boolean {
+  for (let axis = 0; axis < 3; axis += 1) {
+    const transformed = matrix[axis]! * center[0]! + matrix[4 + axis]! * center[1]!
+      + matrix[8 + axis]! * center[2]! + matrix[12 + axis]!;
+    const extent = Math.abs(matrix[axis]!) * half[0]! + Math.abs(matrix[4 + axis]!) * half[1]!
+      + Math.abs(matrix[8 + axis]!) * half[2]!;
+    const low = transformed - extent;
+    const high = transformed + extent;
+    if (!Number.isFinite(low) || !Number.isFinite(high)) return false;
+    min[axis] = Math.min(min[axis]!, low);
+    max[axis] = Math.max(max[axis]!, high);
+  }
+  return true;
+}
+
+function runtimeModelWorldBounds(node: AuraModelNode, actor: TypedGLBActor, renderItems: readonly RenderItem[]): AuraRuntimeNodeBounds {
+  const submittedBounds = submittedActorWorldBounds(renderItems);
+  if (submittedBounds) return submittedBounds;
   const modelBounds = productionActorModelBounds(node.asset, actor);
   return calculateRuntimeNodeModelBounds({
     min: modelBounds.min,
@@ -176,10 +288,9 @@ function createRuntimeEvidenceFromTypedGLBActor(
     morphTargets,
     activeMorphTargets: morphApply?.activeWeights ?? {},
     missingMorphTargets: morphApply?.missingTargets ?? [],
-    // Live world box of the resolved model bounds (loaded GLB wins over the
-    // manifest — `productionActorModelBounds`), re-emitted every frame so the
-    // runtime handle's `bounds()` reports the geometry that is actually drawn.
-    bounds: runtimeModelWorldBounds(node, actor),
+    // Use submitted undeformed mesh bounds where available. A missing or
+    // malformed submission retains the previous loaded/manifest fallback.
+    bounds: runtimeModelWorldBounds(node, actor, renderItems),
     renderItemCount: renderItems.length,
     skinnedRenderItemCount: renderItems.filter((item) => item.skinning).length,
     morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length,
@@ -204,6 +315,9 @@ export function createProductionRuntimeMetadata(
   const primary = metadata[0];
   const primitiveCount = primitiveEntries.length;
   const typedPrimitiveCount = sumProductionMetadata(metadata, "primitiveCount");
+  const runtimePrimitiveMaterials = primitiveEntries.filter((entry) => entry.resources?.some(
+    (resource) => resource.geometry && resource.material && !resource.material.disposed
+  )).length;
   return {
     assetId: metadata.length === 0 ? "aura-primitives" : metadata.length === 1 ? primary?.assetId ?? "typed-glb" : `typed-glb-batch-${metadata.length}`,
     assetUri: metadata.length === 0 ? "aura3d://scene/primitives" : metadata.length === 1 ? primary?.assetUri ?? "aura3d://typed-glb" : "aura3d://scene/typed-glb-batch",
@@ -211,6 +325,7 @@ export function createProductionRuntimeMetadata(
     meshCount: sumProductionMetadata(metadata, "meshCount") + primitiveCount,
     primitiveCount: typedPrimitiveCount + primitiveCount,
     materialCount: sumProductionMetadata(metadata, "materialCount") + primitiveCount,
+    runtimeMaterialCount: metadata.reduce((count, item) => count + (item.runtimeMaterialCount ?? item.materialCount), 0) + runtimePrimitiveMaterials,
     textureCount: sumProductionMetadata(metadata, "textureCount"),
     imageCount: sumProductionMetadata(metadata, "imageCount"),
     animationCount: sumProductionMetadata(metadata, "animationCount"),

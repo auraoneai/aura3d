@@ -1,9 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2, GameRuntime.ts region) — verbatim move; 0 changed logic lines.
 
-import type { GameEffectAttachment, GameEffectInstance, GameEffectOptions, GameEffectPreset, GameEffectsController, GameEffectsSnapshot, GameVec3 } from "../GameRuntime.js";
-import { addVec3, round, vec3 } from "../GameRuntime.js";
-import { material } from "../nodes/material.js";
-import { primitive } from "../nodes/primitives.js";
+import type { GameEffectAttachment, GameEffectInstance, GameEffectOptions, GameEffectPreset, GameEffectsController, GameEffectsSnapshot, GameVec3 } from "../GameRuntimeCore.js";
+import { addVec3, vec3 } from "../GameVectorMath.js";
 import { prd07FlagOnFor, registerPendingGameEffects } from "./effects-api.js";
 
 /** Carved options declaration (GameRuntime.ts:1155-1164 is re-exported from

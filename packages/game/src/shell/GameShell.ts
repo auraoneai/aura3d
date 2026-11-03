@@ -101,7 +101,15 @@ export function createGameShell(deps: GameShellDeps): GameShell {
   });
 
   let state: GameSessionState = "booting";
+  let signalDisposed!: () => void;
+  const disposedSignal = new Promise<void>((resolve) => { signalDisposed = resolve; });
+  const disposedError = () => new Error("GAME_SHELL_DISPOSED: The game shell is disposed.");
+  const waitWhileOpen = <T>(pending: Promise<T>): Promise<T> => {
+    if (state === "disposed") return Promise.reject(disposedError());
+    return Promise.race([pending, disposedSignal.then(() => { throw disposedError(); })]);
+  };
   const setState = (s: GameSessionState) => {
+    if (state === "disposed") return;
     state = s;
     root.dataset.state = s;
   };
@@ -166,6 +174,7 @@ export function createGameShell(deps: GameShellDeps): GameShell {
         prompt: opts.title?.prompt,
         art: opts.title?.art,
         onStart: () => {
+          if (state === "disposed") return;
           void deps.onStart();
           title?.hide();
           setState("playing"); // §6.2 title → playing on the start gesture
@@ -173,16 +182,26 @@ export function createGameShell(deps: GameShellDeps): GameShell {
       });
   if (title) menusHost.appendChild(title.el);
 
-  const resultsMenu = opts.results
+  let resultsResolve: ((a: "retry" | "title" | "next") => void) | null = null;
+  let resultsReject: ((error: Error) => void) | null = null;
+  let resultsPending: Promise<"retry" | "title" | "next"> | null = null;
+  const resultsMenu: ReturnType<typeof createResultsMenu> | null = opts.results
     ? createResultsMenu(doc, {
         spec: opts.results,
         storage: deps.storage,
         bestKey: `a3g:${deps.gameId}:best:v1`,
-        onAction: (a) => resultsResolve?.(a)
+        onAction: (action) => {
+          const resolve = resultsResolve;
+          if (!resolve) return;
+          resultsResolve = null;
+          resultsReject = null;
+          resultsPending = null;
+          resultsMenu?.hide();
+          resolve(action);
+        }
       })
     : null;
   if (resultsMenu) menusHost.appendChild(resultsMenu.el);
-  let resultsResolve: ((a: "retry" | "title" | "next") => void) | null = null;
 
   // ---- loading progress --------------------------------------------------
   const tracked: Tracked[] = [];
@@ -192,25 +211,39 @@ export function createGameShell(deps: GameShellDeps): GameShell {
     const settled = tracked.reduce((s, t) => s + (t.settled ? t.weight : 0), 0);
     return total > 0 ? Math.min(1, Math.max(manualFraction ?? 0, settled / total)) : (manualFraction ?? 0);
   };
-  const repaintProgress = (label?: string) => loading.setProgress(progress(), label);
+  const repaintProgress = (label?: string) => {
+    if (state !== "disposed") loading.setProgress(progress(), label);
+  };
 
   const shell: GameShell = {
     get state() { return state; },
     contextLostScreen,
 
     beginLoading() {
+      if (state === "disposed") return;
       setState("loading");
-      loading.show();
+      if (opts.loading !== false) loading.show();
     },
 
     async finishLoading() {
-      const minMs = (opts.loading ? opts.loading.minMs : undefined) ?? 400;
-      await new Promise<void>((r) => setTimer(r, minMs));
+      if (state === "disposed") throw disposedError();
+      const minMs = opts.loading === false ? 0 : (opts.loading?.minMs ?? 400);
+      let timer: { cancel(): void } | undefined;
+      let timerFinished = false;
+      try {
+        if (minMs > 0) {
+          await waitWhileOpen(new Promise<void>((resolve) => {
+            timer = setTimer(() => { timerFinished = true; resolve(); }, minMs);
+          }));
+        }
+      } finally {
+        if (!timerFinished) timer?.cancel();
+      }
       // Wait for every currently-tracked promise (settle is recorded via .then).
-      await Promise.all(tracked.map((t) => t.promise.catch(() => {})));
+      await waitWhileOpen(Promise.all(tracked.map((t) => t.promise.catch(() => {}))));
       repaintProgress("Ready");
       // Fade out only after the first presented frame of the play scene (§6.2).
-      await (deps.firstPresentedFrame?.() ?? Promise.resolve());
+      await waitWhileOpen(deps.firstPresentedFrame?.() ?? Promise.resolve());
       loading.hide();
       if (title) {
         title.show();
@@ -221,15 +254,22 @@ export function createGameShell(deps: GameShellDeps): GameShell {
     },
 
     showResults(values) {
+      if (state === "disposed") return Promise.reject(disposedError());
+      if (!resultsMenu || resultsMenu.items.length === 0) return Promise.reject(new Error("GAME_RESULTS_UNAVAILABLE: Configure a results screen with an action before showing results."));
+      if (resultsPending) return resultsPending;
+      resultsMenu.setResults(values);
       setState("results");
-      resultsMenu?.setResults?.(values);
-      resultsMenu?.show();
-      return new Promise<"retry" | "title" | "next">((resolve) => {
+      const pending = new Promise<"retry" | "title" | "next">((resolve, reject) => {
         resultsResolve = resolve;
+        resultsReject = reject;
       });
+      resultsPending = pending;
+      resultsMenu.show();
+      return pending;
     },
 
     async transition(run, spec) {
+      if (state === "disposed") throw disposedError();
       const prev = state;
       setState("transitioning");
       const driver = deps.transitionDriver;
@@ -242,6 +282,7 @@ export function createGameShell(deps: GameShellDeps): GameShell {
     },
 
     openMenu(id) {
+      if (state === "disposed") return;
       openMenuSet.add(id);
       if (state === "playing") setState("paused");
       if (id === "pause") { settingsMenu.hide(); aboutMenu?.hide(); pauseMenu.show(); }
@@ -250,6 +291,7 @@ export function createGameShell(deps: GameShellDeps): GameShell {
     },
 
     closeMenus() {
+      if (state === "disposed") return;
       openMenuSet.clear();
       pauseMenu.hide();
       settingsMenu.hide();
@@ -271,9 +313,10 @@ export function createGameShell(deps: GameShellDeps): GameShell {
     },
 
     keydown(ev) {
+      if (state === "disposed") return false;
       if (contextLostScreen.visible) return ev.key === "Escape";
       if (title?.visible && title.keydown()) return true;
-      for (const m of [settingsMenu, aboutMenu, pauseMenu]) {
+      for (const m of [resultsMenu, settingsMenu, aboutMenu, pauseMenu]) {
         if (m && m.visible && m.keydown(ev)) return true;
       }
       const pauseKeys = deps.pauseKeys ?? opts.pause?.keys ?? ["Escape", "KeyP"];
@@ -294,10 +337,16 @@ export function createGameShell(deps: GameShellDeps): GameShell {
     },
 
     dispose() {
+      if (state === "disposed") return;
       setState("disposed");
-      resultsResolve?.("title");
+      signalDisposed();
+      resultsReject?.(disposedError());
+      resultsResolve = null;
+      resultsReject = null;
+      resultsPending = null;
       loading.dispose();
       title?.dispose();
+      resultsMenu?.dispose();
       pauseMenu.dispose();
       settingsMenu.dispose();
       aboutMenu?.dispose();

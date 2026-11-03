@@ -1,14 +1,6 @@
-/**
- * threejs-parity §5.2 lane L2-03/04/05 (SG-05) — typed-array dynamic geometry,
- * `handle.setGeometry`/`updateAttribute` in-place buffer writes (no realloc
- * while vertex count is stable), and the BufferGeometryUtils helpers
- * (computeNormals / bounds / applyMatrix4 / toNonIndexed / merge) checked
- * against three.js 0.185.1.
- */
+/** Dynamic geometry and geometry operation contracts, with independent numerical fixtures. */
 
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import {
   applyAuraGeometryMatrix4,
@@ -29,10 +21,7 @@ import {
   resolveProductionPrimitiveRuntimeState,
   selectProductionPrimitiveResource
 } from "../../../packages/engine/src/agent-api/compiler/primitives";
-import type { AuraCustomGeometrySpec } from "../../../packages/engine/src/agent-api/RootGeometry";
 import type { AuraPrimitiveNode } from "../../../packages/engine/src/agent-api/nodes/types";
-
-const NEPS = 1e-5;
 
 function makeRibbon(vertices: number): { positions: Float32Array; uvs: Float32Array; colors: Float32Array; indices: Uint32Array } {
   const positions = new Float32Array(vertices * 3);
@@ -58,13 +47,6 @@ function makeRibbon(vertices: number): { positions: Float32Array; uvs: Float32Ar
     indices[i * 3 + 2] = i + 2;
   }
   return { positions, uvs, colors, indices };
-}
-
-function threeGeometry(positions: Float32Array, indices: ArrayLike<number>): THREE.BufferGeometry {
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.BufferAttribute(positions.slice(), 3));
-  geo.setIndex(new THREE.BufferAttribute(Uint32Array.from(indices as ArrayLike<number>), 1));
-  return geo;
 }
 
 describe("SG-05 dynamic geometry spec + normalization", () => {
@@ -106,88 +88,157 @@ describe("SG-05 dynamic geometry spec + normalization", () => {
     expect(Array.from(a.positions)).toEqual(Array.from(b.positions));
     expect(Array.from(a.indices!)).toEqual(Array.from(b.indices!));
   });
+
+  it.each([65_535, 65_536, 65_537])("synthesizes sequential indices without overflow for %i vertices", (count) => {
+    const spec = defineAuraDynamicGeometry({ positions: new Float32Array(count * 3), topology: "points" });
+    expect(spec.indices).toBeInstanceOf(count <= 65_536 ? Uint16Array : Uint32Array);
+    expect(spec.indices.length).toBe(count);
+    expect(spec.indices[count - 1]).toBe(count - 1);
+  });
+
+  it("rejects incomplete dynamic triangles instead of creating an invalid index stream", () => {
+    expect(() => defineAuraDynamicGeometry({ positions: [0, 0, 0, 1, 0, 0] })).toThrow(/complete triangles/);
+    expect(() => defineAuraDynamicGeometry({ positions: [0, 0, 0, 1, 0, 0, 0, 1, 0], indices: [0, 1] })).toThrow(/complete triangles/);
+    expect(defineAuraDynamicGeometry({ positions: [0, 0, 0, 1, 0, 0], topology: "points" }).indices).toHaveLength(2);
+  });
+
+  it("rejects tuple components that overflow the float32 geometry representation", () => {
+    expect(() => normalizeGeometryAttributes({ positions: [[Number.MAX_VALUE, 0, 0]] })).toThrow(/positions.*finite/i);
+    expect(() => normalizeGeometryAttributes({ positions: [[0, 0, 0]], uvs: [[Number.MAX_VALUE, 0]] })).toThrow(/uvs.*finite/i);
+  });
+
+  it("chooses explicit numeric index width using the largest referenced vertex", () => {
+    const positions = new Float32Array(65_537 * 3);
+    expect(normalizeGeometryAttributes({ positions, indices: [65_535] }).indices).toBeInstanceOf(Uint16Array);
+    const indices = normalizeGeometryAttributes({ positions, indices: [65_536] }).indices!;
+    expect(indices).toBeInstanceOf(Uint32Array);
+    expect(indices[0]).toBe(65_536);
+    expect(() => normalizeGeometryAttributes({ positions: [0, 0, 0], indices: [4_294_967_296] })).toThrowError(/outside the position buffer/);
+    expect(() => normalizeGeometryAttributes({ positions: [0, 0, 0], indices: [-1] })).toThrowError(/non-negative integers/);
+  });
+
+  it("identifies the invalid custom layout field with a stable error code", () => {
+    const geometry = {
+      positions: [0, 0, 0],
+      attributes: { weight: { itemSize: 1 as const, data: new Float32Array([1]), normalized: true } }
+    };
+    try {
+      normalizeGeometryAttributes(geometry);
+      throw new Error("Expected normalized float data to be rejected.");
+    } catch (error) {
+      expect(error).toMatchObject({ code: "AURA_GEOMETRY_INVALID", field: "attributes.weight.normalized" });
+    }
+  });
 });
 
-describe("L2-05 helpers vs three 0.185.1", () => {
-  const { positions, indices } = makeRibbon(64);
-  const spec = defineAuraDynamicGeometry({ positions, indices });
-
-  it("computeNormals matches three's computeVertexNormals within 1e-5", () => {
-    const geo = threeGeometry(positions, indices);
-    geo.computeVertexNormals();
-    const theirs = (geo.getAttribute("normal") as THREE.BufferAttribute).array;
-    const ours = computeAuraGeometryNormals({ positions, indices });
-    expect(ours.length).toBe(theirs.length);
-    for (let i = 0; i < ours.length; i += 1) {
-      expect(Math.abs(ours[i]! - theirs[i]!), `normal[${i}]`).toBeLessThanOrEqual(NEPS);
-    }
+describe("geometry helpers preserve geometry and metadata", () => {
+  it("computes area-weighted indexed normals and finite bounds", () => {
+    // The shared vertex touches a large +Z face (cross length 4) and a small
+    // +Y face (cross length 1). Their weighted sum is [0, 1, 4].
+    const positions = [0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 1, 0, 0];
+    const normals = computeAuraGeometryNormals({ positions, indices: [0, 1, 2, 0, 3, 4] });
+    expect(normals[0]).toBeCloseTo(0);
+    expect(normals[1]).toBeCloseTo(1 / Math.sqrt(17));
+    expect(normals[2]).toBeCloseTo(4 / Math.sqrt(17));
+    expect(computeAuraGeometryBounds({ positions })).toEqual({ min: [0, 0, 0], max: [2, 2, 1] });
+    expect(() => computeAuraGeometryNormals({ positions, indices: [0, 1, 99] })).toThrow(/outside the position buffer/);
   });
 
-  it("computeBounds matches three's boundingBox", () => {
-    const geo = threeGeometry(positions, indices);
-    geo.computeBoundingBox();
-    const ours = computeAuraGeometryBounds({ positions });
-    expect(ours.min[0]).toBeCloseTo(geo.boundingBox!.min.x, 6);
-    expect(ours.min[1]).toBeCloseTo(geo.boundingBox!.min.y, 6);
-    expect(ours.min[2]).toBeCloseTo(geo.boundingBox!.min.z, 6);
-    expect(ours.max[0]).toBeCloseTo(geo.boundingBox!.max.x, 6);
-    expect(ours.max[1]).toBeCloseTo(geo.boundingBox!.max.y, 6);
-    expect(ours.max[2]).toBeCloseTo(geo.boundingBox!.max.z, 6);
+  it("requires a nonempty bound and triangle topology for normal generation", () => {
+    expect(() => computeAuraGeometryBounds({ positions: [] })).toThrow(/non.?empty/i);
+    expect(() => computeAuraGeometryNormals({ positions: [0, 0, 0, 1, 0, 0, 0, 1, 0], indices: [0, 1, 2], topology: "points" })).toThrow(/triangle topology/i);
   });
 
-  it("applyMatrix4 matches three's applyMatrix4 on positions+normals", () => {
-    const geo = threeGeometry(positions, indices);
-    geo.computeVertexNormals();
-    const matrix = new THREE.Matrix4().compose(
-      new THREE.Vector3(1, 2, 3),
-      new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, 0.7, -0.2)),
-      new THREE.Vector3(2, 1, 0.5)
-    );
-    geo.applyMatrix4(matrix);
-    const withNormals = {
-      ...spec,
-      normals: computeAuraGeometryNormals({ positions, indices })
-    } as AuraCustomGeometrySpec;
-    const moved = applyAuraGeometryMatrix4(withNormals, matrix.elements);
-    const threePos = (geo.getAttribute("position") as THREE.BufferAttribute).array;
-    const threeNorm = (geo.getAttribute("normal") as THREE.BufferAttribute).array;
-    const ours = normalizeGeometryAttributes(moved);
-    for (let i = 0; i < threePos.length; i += 1) {
-      expect(Math.abs(ours.positions[i]! - threePos[i]!), `position[${i}]`).toBeLessThanOrEqual(1e-4);
-      expect(Math.abs(ours.normals![i]! - threeNorm[i]!), `normal[${i}]`).toBeLessThanOrEqual(1e-3);
+  it("uses inverse-transpose normals for shear, nonuniform scale and reflection", () => {
+    const source = defineAuraCustomGeometry({
+      positions: [0, 0, 0, 1, 0, 0, 0, 1, 0], indices: [0, 1, 2],
+      normals: [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      morphTargets: [{ name: "raise", positions: [1, 0, 0, 0, 1, 0, 0, 0, 1] }],
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] }
+    });
+    // A = [[2,1,0], [0,3,0], [0,0,-1]]. A^-T * [1,1,1] is [3,1,-6]/6.
+    const matrix = [2, 0, 0, 0, 1, 3, 0, 0, 0, 0, -1, 0, 5, -2, 4, 1];
+    const moved = applyAuraGeometryMatrix4(source, matrix);
+    const values = normalizeGeometryAttributes(moved);
+    expect(Array.from(values.positions)).toEqual([5, -2, 4, 7, -2, 4, 6, 1, 4]);
+    expect(values.normals![0]).toBeCloseTo(3 / Math.sqrt(46));
+    expect(values.normals![1]).toBeCloseTo(1 / Math.sqrt(46));
+    expect(values.normals![2]).toBeCloseTo(-6 / Math.sqrt(46));
+    expect(Array.from(moved.morphTargets![0]!.positions)).toEqual([2, 0, 0, 1, 3, 0, 0, 0, -1]);
+    expect(moved.bounds).toEqual({ min: [5, -2, 4], max: [8, 1, 4] });
+    const singular = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    expect(() => applyAuraGeometryMatrix4(source, singular)).toThrowError(/singular matrix/);
+    try { applyAuraGeometryMatrix4(source, singular); } catch (error) {
+      expect(error).toMatchObject({ code: "AURA_GEOMETRY_SINGULAR_MATRIX", field: "matrix" });
     }
+    expect(() => applyAuraGeometryMatrix4(source, [1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])).toThrowError(/affine matrix/);
+    expect(() => applyAuraGeometryMatrix4(source, [1e40, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])).toThrowError(/non-finite position/);
   });
 
-  it("toNonIndexed matches three's BufferGeometry.toNonIndexed", () => {
-    const geo = threeGeometry(positions, indices);
-    const theirs = geo.toNonIndexed();
-    const theirsPos = (theirs.getAttribute("position") as THREE.BufferAttribute).array;
-    const ours = auraGeometryToNonIndexed(spec);
-    const flat = normalizeGeometryAttributes(ours);
-    expect(flat.positions.length).toBe(theirsPos.length);
-    for (let i = 0; i < theirsPos.length; i += 1) {
-      expect(Math.abs(flat.positions[i]! - theirsPos[i]!), `position[${i}]`).toBeLessThanOrEqual(NEPS);
-    }
+  it("deindexes all vertex and morph streams without changing groups or draw range", () => {
+    const spec = defineAuraCustomGeometry({
+      positions: [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0], indices: [2, 1, 0, 2, 3, 1],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+      uvs: [0, 0, 1, 0, 0, 1, 1, 1], uv1s: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
+      morphTargets: [{ name: "move", positions: [10, 0, 0, 20, 0, 0, 30, 0, 0, 40, 0, 0] }],
+      groups: [{ start: 0, count: 3, materialIndex: 2 }, { start: 3, count: 3, materialIndex: 5 }],
+      drawRange: { start: 3, count: 3 },
+      attributes: { weight: { itemSize: 1, data: new Uint8Array([7, 10, 7, 20, 7, 30, 7, 40]), stride: 2, offset: 1, normalized: true } }
+    });
+    const result = auraGeometryToNonIndexed(spec);
+    expect(result.indices.length).toBe(0);
+    expect(Array.from(result.positions as Float32Array)).toEqual([0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0]);
+    expect(Array.from(result.morphTargets![0]!.positions)).toEqual([30, 0, 0, 20, 0, 0, 10, 0, 0, 30, 0, 0, 40, 0, 0, 20, 0, 0]);
+    expect(result.attributes!.weight!.data).toBeInstanceOf(Uint8Array);
+    expect(Array.from(result.attributes!.weight!.data)).toEqual([30, 20, 10, 30, 40, 20]);
+    expect(result.attributes!.weight!.normalized).toBe(true);
+    expect(Array.from(normalizeGeometryAttributes(result).uv1s!)).toEqual(Array.from(Float32Array.from([0.5, 0.6, 0.3, 0.4, 0.1, 0.2, 0.5, 0.6, 0.7, 0.8, 0.3, 0.4])));
+    expect(result.groups).toEqual(spec.groups);
+    expect(result.drawRange).toEqual(spec.drawRange);
   });
 
-  it("merge matches three's mergeGeometries counts and index offsets", () => {
-    const a = threeGeometry(positions, indices);
-    const b = threeGeometry(positions, indices);
-    b.translate(10, 0, 0);
-    const theirs = mergeGeometries([a, b], true)!;
-    const specB = defineAuraDynamicGeometry({ positions: Float32Array.from(positions, (v, i) => (i % 3 === 0 ? v + 10 : v)), indices });
-    const ours = mergeAuraGeometries([spec, specB]);
-    const flat = normalizeGeometryAttributes(ours);
-    const theirsPos = (theirs.getAttribute("position") as THREE.BufferAttribute).array;
-    const theirsIdx = theirs.getIndex()!.array;
-    expect(flat.positions.length).toBe(theirsPos.length);
-    expect(flat.indices!.length).toBe(theirsIdx.length);
-    for (let i = 0; i < theirsIdx.length; i += 1) {
-      expect(flat.indices![i], `index[${i}]`).toBe(theirsIdx[i]);
-    }
-    for (let i = 0; i < theirsPos.length; i += 1) {
-      expect(Math.abs(flat.positions[i]! - theirsPos[i]!), `position[${i}]`).toBeLessThanOrEqual(NEPS);
-    }
+  it("merges mixed indexed and non-indexed streams without losing identity", () => {
+    const make = (x: number, indices: number[]) => defineAuraCustomGeometry({
+      positions: [x, 0, 0, x + 1, 0, 0, x, 1, 0], indices,
+      uv1s: [0, 0, 1, 0, 0, 1],
+      morphTargets: [{ name: "move", positions: [x, 0, 0, x, 0, 0, x, 0, 0] }],
+      attributes: { paint: { itemSize: 1, data: new Uint8Array([1, 2, 3]), normalized: true } },
+      groups: [{ start: 0, count: 3, materialIndex: x + 1 }]
+    });
+    const merged = mergeAuraGeometries([make(0, [2, 0, 1]), make(4, [])]);
+    expect(Array.from(merged.indices)).toEqual([2, 0, 1, 3, 4, 5]);
+    expect(merged.groups).toEqual([{ start: 0, count: 3, materialIndex: 1 }, { start: 3, count: 3, materialIndex: 5 }]);
+    expect(Array.from(merged.morphTargets![0]!.positions)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 4, 0, 0]);
+    expect(Array.from(merged.attributes!.paint!.data)).toEqual([1, 2, 3, 1, 2, 3]);
+    expect(normalizeGeometryAttributes(merged).uv1s).toHaveLength(12);
+  });
+
+  it("preserves a contiguous combined draw range and rejects impossible combinations", () => {
+    const base = defineAuraCustomGeometry({ positions: [0, 0, 0, 1, 0, 0, 0, 1, 0], indices: [0, 1, 2] });
+    const points = { ...base, topology: "points" as const };
+    const partial = { ...points, drawRange: { start: 1, count: 2 } };
+    expect(mergeAuraGeometries([partial, points]).drawRange).toEqual({ start: 1, count: 5 });
+    expect(() => mergeAuraGeometries([points, partial])).toThrowError(/disjoint draw ranges/);
+    expect(() => mergeAuraGeometries([{ ...base, drawRange: { start: 1, count: 2 } }, base])).toThrowError(/incomplete primitive/);
+    expect(() => mergeAuraGeometries([base, { ...base, normals: new Float32Array(9) }])).toThrowError(/same normals/);
+    expect(() => mergeAuraGeometries([base, { ...base, topology: "points" }])).toThrowError(/matching topology/);
+    expect(() => mergeAuraGeometries([base, { ...base, morphTargets: [{ positions: new Float32Array(9) }] }])).toThrowError(/matching morph target/);
+    expect(() => auraGeometryToNonIndexed({ ...base, morphTargets: [{ positions: [1, 2, 3] }] })).toThrowError(/one finite float32 vec3 per vertex/);
+    expect(() => auraGeometryToNonIndexed({ ...base, indices: [0, 1, 100] })).toThrowError(/outside the position buffer/);
+    expect(() => auraGeometryToNonIndexed({ ...base, indices: [0, 1] })).toThrowError(/complete primitives/);
+  });
+
+  it("retains non-indexed line topology, conservative bounds and material groups", () => {
+    const first = defineAuraCustomGeometry({
+      positions: [0, 0, 0, 1, 0, 0], indices: [], topology: "lines",
+      bounds: { min: [-2, -1, -1], max: [2, 1, 1] }, groups: [{ start: 0, count: 2, materialIndex: 7 }]
+    });
+    const second = defineAuraCustomGeometry({ positions: [3, 0, 0, 4, 0, 0], indices: [], topology: "lines" });
+    const merged = mergeAuraGeometries([first, second]);
+    expect(merged.topology).toBe("lines");
+    expect(merged.indices).toHaveLength(0);
+    expect(merged.groups).toEqual([{ start: 0, count: 2, materialIndex: 7 }, { start: 2, count: 2 }]);
+    expect(merged.bounds).toEqual({ min: [-2, -1, -1], max: [4, 1, 1] });
   });
 });
 
@@ -207,28 +258,18 @@ describe("SG-04 edges/wireframe spec helpers", () => {
     ]
   });
 
-  it("geometry.edges emits a lines-topology spec matching EdgesGeometry count", () => {
-    const geo = threeGeometry(
-      Float32Array.from((cubeSpec.positions as readonly (readonly [number, number, number])[]).flatMap((p) => p)),
-      cubeSpec.indices as readonly number[]
-    );
-    const three = new THREE.EdgesGeometry(geo, 1);
+  it("geometry.edges emits the twelve sharp cube edges", () => {
     const spec = geometry.edges(cubeSpec, 1);
     expect(spec.topology).toBe("lines");
     const flat = normalizeGeometryAttributes(spec);
-    expect(flat.positions.length).toBe((three.getAttribute("position") as THREE.BufferAttribute).array.length);
+    expect(flat.positions.length).toBe(12 * 2 * 3);
   });
 
-  it("geometry.wireframe emits a lines-topology spec matching WireframeGeometry count", () => {
-    const geo = threeGeometry(
-      Float32Array.from((cubeSpec.positions as readonly (readonly [number, number, number])[]).flatMap((p) => p)),
-      cubeSpec.indices as readonly number[]
-    );
-    const three = new THREE.WireframeGeometry(geo);
+  it("geometry.wireframe emits cube edges and face diagonals", () => {
     const spec = geometry.wireframe(cubeSpec);
     expect(spec.topology).toBe("lines");
     const flat = normalizeGeometryAttributes(spec);
-    expect(flat.positions.length).toBe((three.getAttribute("position") as THREE.BufferAttribute).array.length);
+    expect(flat.positions.length).toBe(18 * 2 * 3);
   });
 });
 

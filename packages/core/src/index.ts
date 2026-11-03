@@ -12,3 +12,4 @@ export * from "./Errors.js";
 export * from "./Disposable.js";
 export * from "./ResourceScope.js";
 export * from "./VersionedSerialization.js";
+export * from "./workerAssets.js";

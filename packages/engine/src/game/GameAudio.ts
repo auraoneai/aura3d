@@ -5,8 +5,9 @@ import {
   computeDistanceAttenuation,
   computeDopplerShift,
   createGameSoundEngine,
-  type AudioFileAssetLike,
+  type AudioAssetRef,
   type AudioFileInput,
+  type AudioFileRequest,
   type GameBusId,
   type SoundCueSpec,
   type SoundGraphContext
@@ -44,7 +45,7 @@ export interface GameAudioCueDefinition<TCue extends string = string> {
   readonly volume?: number;
   readonly frequency?: number;
   readonly duration?: number;
-  readonly asset?: AudioFileInput;
+  readonly asset?: AudioFileInput | AudioAssetRef;
   readonly loop?: boolean;
   /** World position for positional playback; `playPositional` overrides per call. */
   readonly position?: GameAudioVec3;
@@ -148,6 +149,10 @@ export interface GameAudioOptions<TCue extends string = string> {
    * tree; the formatProbe relative default 404s under any subpath.
    */
   readonly probeBase?: string;
+  /** Default request policy for sample-backed cues. Asset-specific policy is
+   * applied by the sound engine; use a new security context when the active
+   * authentication generation changes. */
+  readonly request?: Omit<AudioFileRequest, "input">;
 }
 
 export interface GameAudioListenerPose {
@@ -159,8 +164,9 @@ export interface GameAudioListenerPose {
 export interface GameAudio<TCue extends string = string> {
   readonly evidence: GameAudioEvidence<TCue>;
   unlock(): Promise<GameAudioEvidence<TCue>>;
+  /** Resolve after an asset-backed voice starts, or when the cue is suppressed or cancelled. */
   cue(cue: TCue): Promise<GameAudioCueEvent<TCue>>;
-  /** Play a cue at a world position; attenuation/doppler/occlusion land in `playingNodes`. */
+  /** Play a cue at a world position with the same completion semantics as `cue()`. */
   playPositional(cue: TCue, position: GameAudioVec3, options?: GameAudioPositionalOptions): Promise<GameAudioCueEvent<TCue>>;
   /** Move the listener; keeps the last orientation set by `setListener`. */
   setListenerPosition(position: GameAudioVec3): GameAudioEvidence<TCue>;
@@ -185,6 +191,8 @@ export interface GameAudio<TCue extends string = string> {
   stopCue(cue: TCue, fadeMs?: number): GameAudioEvidence<TCue>;
   /** Duck the music bus while dialogue/voice is active. */
   setDialogueActive(active: boolean): GameAudioEvidence<TCue>;
+  /** Change the authentication generation used by sample-backed requests. */
+  setSecurityContext(generation?: string): GameAudioEvidence<TCue>;
   setMuted(muted: boolean): GameAudioEvidence<TCue>;
   setBusVolume(bus: GameAudioBusId, volume: number): GameAudioEvidence<TCue>;
   onCue(callback: (event: GameAudioCueEvent<TCue>) => void): () => void;
@@ -227,22 +235,83 @@ const gainToDb = (volume: number): number => 20 * Math.log10(Math.max(volume, 1e
 const missingCueMessage = (id: string): string =>
   `Game audio cue "${id}" has no asset or play(); synthesized default cues were removed (PRD 09).`;
 
-const assetRefOf = (
-  input: AudioFileInput
-): { readonly url: string; readonly hash?: string; readonly license?: string; readonly buffer?: AudioBuffer } => {
+type GameAudioRequest = Omit<AudioFileRequest, "input">;
+
+/** Copy mutable request containers before a lazily created engine can yield. */
+function snapshotAudioRequest(request: GameAudioRequest | undefined): GameAudioRequest | undefined {
+  if (request === undefined) return undefined;
+  const headers = request.headers;
+  let copiedHeaders: HeadersInit | undefined;
+  if (headers !== undefined) {
+    if (Array.isArray(headers)) copiedHeaders = headers.map(([name, value]): [string, string] => [name, value]);
+    else if (typeof (headers as Headers).forEach === "function") {
+      // Iteration also works for a Headers object from another realm, which
+      // the current realm's Headers constructor may not recognize as one.
+      const entries: Array<[string, string]> = [];
+      (headers as Headers).forEach((value, name) => entries.push([name, value]));
+      copiedHeaders = entries;
+    }
+    else copiedHeaders = { ...headers };
+  }
+  const integrity = request.integrity;
+  return {
+    ...request,
+    ...(copiedHeaders === undefined ? {} : { headers: copiedHeaders }),
+    ...(request.allowedOrigins === undefined ? {} : { allowedOrigins: [...request.allowedOrigins] }),
+    ...(typeof integrity !== "object" || integrity === null ? {} : {
+      integrity: {
+        ...integrity,
+        ...(integrity.dependencies === undefined ? {} : { dependencies: { ...integrity.dependencies } })
+      }
+    })
+  };
+}
+
+const assetRefOf = (input: AudioFileInput | AudioAssetRef): AudioAssetRef => {
   if (typeof input === "string") return { url: input };
   if (input instanceof URL) return { url: input.href };
   if (input instanceof AudioClip) {
     return { url: `clip:${input.name ?? "unnamed"}`, buffer: input.buffer };
   }
-  const like = input as AudioFileAssetLike;
-  return { url: like.url, hash: like.hash, license: like.license };
+  // Preserve typed-asset metadata as well as transport identity. In particular,
+  // reducing this to a URL would merge distinct hashes or security contexts.
+  const like = input as AudioAssetRef;
+  const request = snapshotAudioRequest(like.request);
+  const integrity = like.integrity;
+  return {
+    ...like,
+    // Structurally typed assets can expose these fields as prototype getters;
+    // copying only enumerable own properties would discard their identity.
+    url: like.url,
+    id: like.id,
+    kind: like.kind,
+    type: like.type,
+    format: like.format,
+    hash: like.hash,
+    sha256: like.sha256,
+    sizeBytes: like.sizeBytes,
+    securityContext: like.securityContext,
+    license: like.license,
+    provenance: like.provenance,
+    buffer: like.buffer,
+    integrity,
+    ...(request === undefined ? {} : { request }),
+    ...(like.variantHashes === undefined ? {} : { variantHashes: { ...like.variantHashes } }),
+    ...(typeof integrity !== "object" || integrity === null ? {} : {
+      integrity: {
+        ...integrity,
+        ...(integrity.dependencies === undefined ? {} : { dependencies: { ...integrity.dependencies } })
+      }
+    })
+  };
 };
 
 interface LiveVoiceHandle {
   readonly id: number;
   /** Real engine voices report when they finished; stub handles omit it. */
   readonly ended?: boolean;
+  /** Deferred voices settle false when cancelled or unavailable. */
+  readonly started?: Promise<boolean>;
   setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
   stop(fadeMs?: number): void;
   setPosition(p: GameAudioVec3): void;
@@ -265,6 +334,8 @@ interface LiveVoiceHandle {
 export function createGameAudio<TCue extends string>(options: GameAudioOptions<TCue>): GameAudio<TCue> {
   const cueDefinitions = options.cues;
   const cueIds = Object.keys(cueDefinitions) as TCue[];
+  let defaultRequest = snapshotAudioRequest(options.request);
+  const probeBase = options.probeBase ?? "/probes/";
   let context: GameAudioContextLike | null | undefined = options.context;
   if (options.browserContext && (options.context !== undefined || options.createContext !== undefined)) {
     throw new Error("Game audio browserContext cannot be combined with context or createContext; choose one context owner.");
@@ -278,6 +349,11 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   let synthCues = 0;
   let lastCue: TCue | null = null;
   const errors: string[] = [];
+  const MAX_ERRORS = 32;
+  const recordPlaybackError = (): void => {
+    if (errors.length === MAX_ERRORS) errors.shift();
+    errors.push("Game audio cue playback failed.");
+  };
   const listeners = new Set<(event: GameAudioCueEvent<TCue>) => void>();
   const buses = new Map<GameAudioBusId, GameAudioBusState>();
 
@@ -295,6 +371,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       // forwards flags:['game']): degrade to a suppressed cue and record the
       // miss on the evidence surface instead of throwing.
       if (qrGameOn) {
+        if (errors.length === MAX_ERRORS) errors.shift();
         errors.push(missingCueMessage(String(id)));
         if (typeof console !== "undefined") console.warn(missingCueMessage(String(id)));
       } else if (typeof console !== "undefined") console.warn(missingCueMessage(String(id)));
@@ -320,6 +397,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
   const busVolumes = new Map<GameAudioBusId, number>();
   const mutedBuses = new Set<GameAudioBusId>();
   const liveVoices = new Map<TCue, Set<LiveVoiceHandle>>();
+  const voiceOcclusions = new WeakMap<LiveVoiceHandle, number>();
   let engine: ReturnType<typeof gameSoundSlot.stub> | undefined;
 
   // I1 positional state: listener pose, recently played nodes, ducking, footsteps.
@@ -378,7 +456,8 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
         context: audioContext as unknown as SoundGraphContext,
         cues: engineCues,
         buses: initialVolumes,
-        probeBase: options.probeBase ?? "/probes/"
+        probeBase,
+        ...(defaultRequest === undefined ? {} : { request: defaultRequest })
       });
       if (muted) engine.setMuted(true);
     }
@@ -430,6 +509,20 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
 
   const snapshot = (): GameAudioEvidence<TCue> => {
     const audioContext = getContext();
+    // The sound engine owns asynchronous loading. Report its failures without
+    // copying plugin or transport error text into the public evidence surface.
+    let soundStatusError: string | undefined;
+    try {
+      const status = (engine as { proof?: () => { errors?: unknown } } | undefined)?.proof?.();
+      if (Array.isArray(status?.errors) && status.errors.length > 0) {
+        soundStatusError = "Game audio engine reported a failure.";
+      }
+    } catch {
+      soundStatusError = "Game audio status unavailable.";
+    }
+    const publicErrors = soundStatusError
+      ? [...errors.slice(-(MAX_ERRORS - 1)), soundStatusError]
+      : [...errors];
     return {
       kind: "aura-game-audio-evidence",
       enabled: !disposed && audioContext !== null,
@@ -442,7 +535,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       suppressedCueCount,
       synthCues,
       lastCue,
-      errors,
+      errors: publicErrors,
       buses: [...buses.values()].map((bus) => ({
         id: bus.id,
         volume: busVolumeOf(bus),
@@ -531,6 +624,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
         return event;
       }
     }
+    let acquiredHandle: LiveVoiceHandle | undefined;
     try {
       if (!unlocked) await audio.unlock();
       const sound = getEngine();
@@ -543,19 +637,40 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
         suppressedCueCount += 1;
         return event;
       }
+      acquiredHandle = handle;
+      // Keep pending voices addressable by stopCue/dispose, but do not report
+      // playback until an asynchronously loaded source has actually started.
       pruneEnded(cue).add(handle);
-      playedCueCount += 1;
-      if (definition.asset === undefined && definition.play !== undefined) {
-        synthCues += 1;
-      }
-      // Only actually-played cues become playing nodes — suppressed cues stay out (no silent-play claim).
-      const position = spatial?.position ?? definition.position ?? listenerPosition;
+      const position = { ...(spatial?.position ?? definition.position ?? listenerPosition) };
+      const velocity = spatial?.velocity === undefined ? undefined : { ...spatial.velocity };
       const occlusion = spatial?.occlusion ?? definition.occlusion ?? 0;
       const resolvedOcclusion = validateOcclusion(occlusion, "cue occlusion");
       handle.setOcclusion(resolvedOcclusion);
-      recordPlayingNode(cue, bus.id, position, spatial?.velocity, resolvedOcclusion, event.time);
-    } catch (error) {
-      errors.push(error instanceof Error ? error.message : String(error));
+      voiceOcclusions.set(handle, resolvedOcclusion);
+      const started = (didStart: boolean): void => {
+        if (!didStart) {
+          liveVoices.get(cue)?.delete(handle);
+          suppressedCueCount += 1;
+          return;
+        }
+        playedCueCount += 1;
+        if (engineCues[cue]?.asset === undefined && engineCues[cue]?.play !== undefined) synthCues += 1;
+        if (disposed || handle.ended === true) return;
+        // Only actually-started cues become playing nodes. Preserve any
+        // occlusion update made while the deferred voice was loading.
+        recordPlayingNode(cue, bus.id, position, velocity, voiceOcclusions.get(handle) ?? resolvedOcclusion, event.time);
+      };
+      // The public cue promise resolves when an asset-backed voice starts or
+      // is suppressed. Deferred handles also settle on stop or disposal.
+      started(handle.started === undefined ? true : await handle.started);
+    } catch {
+      // Transport, decoder and user callbacks can throw messages containing
+      // signed URLs or headers. Evidence carries a stable category instead.
+      if (acquiredHandle) {
+        liveVoices.get(cue)?.delete(acquiredHandle);
+        try { acquiredHandle.stop(); } catch { /* Preserve the sanitized result. */ }
+      }
+      recordPlaybackError();
       suppressedCueCount += 1;
     }
     return event;
@@ -639,6 +754,7 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
       }
       for (const voice of liveVoices.get(cue) ?? []) {
         voice.setOcclusion(resolved);
+        voiceOcclusions.set(voice, resolved);
       }
       return snapshot();
     },
@@ -665,6 +781,19 @@ export function createGameAudio<TCue extends string>(options: GameAudioOptions<T
         writeBusVolume(bus, duckingBaseVolume);
         duckingBaseVolume = undefined;
       }
+      return snapshot();
+    },
+    setSecurityContext(generation) {
+      if (generation !== undefined && (typeof generation !== "string" || !generation.trim())) {
+        throw new Error("Game audio security context must be a non-empty authentication generation.");
+      }
+      // An already-created engine owns cancellation and cache invalidation.
+      // When it is still lazy, keep the same generation for construction.
+      (engine as { setSecurityContext?: (value?: string) => void } | undefined)?.setSecurityContext?.(generation);
+      const next = { ...defaultRequest };
+      if (generation === undefined) delete next.securityContext;
+      else next.securityContext = generation;
+      defaultRequest = next;
       return snapshot();
     },
     setMuted(value) {

@@ -4,12 +4,9 @@ import type { AuraSceneNode, AuraRacingPresentationTrackOptions, AuraRacingRoadM
 import type { GameAssetBoundRacingRoute } from "../../GameGenreKits";
 import type { GameRacingCameraRigOptions, GameScenePresentationCameraSpec, GameRacingSceneBinding } from "../../GameSceneGeometryBindings";
 import type { PublicGameGeometryCertification } from "../../PublicGameGeometry";
-import { camera } from "../camera.js";
 import { certifyPublicRacingGeometry } from "../../PublicGameGeometry";
 import { material } from "../material.js";
 import { primitives } from "../primitives.js";
-import { scene } from "../scene.js";
-import { round } from "../../GameRuntime.js";
 import type { GamePlatformerPresentationCameraOptions } from "../../GameSceneGeometryBindings.js";
 import { createGamePlatformerPresentationCamera } from "../../GameSceneGeometryBindings.js";
 import { certifyPublicPlatformerGeometry } from "../../PublicGameGeometry.js";

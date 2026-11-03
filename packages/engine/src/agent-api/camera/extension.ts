@@ -35,7 +35,13 @@ import { stubCameraRigFactories } from "../../contracts/camera.js";
 import { mediaMatches } from "../platform.js";
 import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
-import { cameraProbeBudgetForTier, createCameraProbe, type AuraBudgetedCameraProbe } from "./Probe.js";
+import {
+  cameraProbeBudgetForTier,
+  createCameraProbe,
+  type AuraBudgetedCameraProbe,
+  type CameraProbeTargetFilter,
+  type ProbeBoundsEntry
+} from "./Probe.js";
 import { createCinematicBarsLayer } from "./layers/cinematicBars.js";
 import { DEFAULT_POSE, createFromSpecRig, type LegacyCameraSpec } from "./rigs/fromSpec.js";
 import {
@@ -344,16 +350,71 @@ export function createAuraCameraController(
   // capped by the live C-27 tier (`app.quality.tier`, re-read every frame
   // so `app.quality.set` applies on the next present).
   const staticBoxes = createStaticProbeBoxSource();
+  const staticOwner = {};
+  type OwnedBounds = ProbeBoundsEntry & { readonly owner?: object };
+  const targetFilter = (ref: string | object): CameraProbeTargetFilter | undefined => {
+    let handle: RuntimeHandleLike | undefined;
+    if (typeof ref === "string") {
+      // Match the subject resolver's precedence exactly: id (even if hidden),
+      // then the first visible name/tag match.
+      handle = registry?.get(ref) ??
+        registry?.all().find((h) => h.visible !== false && (h.name === ref || h.tags.includes(ref)));
+    } else if (isHandleLike(ref)) {
+      // IDs are app-local. A foreign or retired handle with the same id is
+      // not proof that this app's node is the subject.
+      if (registry?.get(ref.id) !== ref) {
+        throw new Error(`Camera collision target '${ref.id}' is not a current handle of this app.`);
+      }
+      handle = ref;
+    } else {
+      return undefined;
+    }
+    if (handle) {
+      const subject = handle;
+      return {
+        bounds: (entry) => (entry as OwnedBounds).owner === subject,
+        colliders: (entry) => entry.owner !== undefined
+          ? entry.owner === subject
+          : entry.id !== undefined && entry.id === subject.id
+      };
+    }
+    if (typeof ref !== "string") return undefined;
+
+    // Scene-only targets use the same flattened index as staticBounds.ts. A
+    // tagged source prevents a runtime id equal to a synthetic static id
+    // from accidentally hiding an unrelated wall.
+    const nodes = app.scene?.nodes as readonly SceneCameraNodeLike[] | undefined;
+    const flat = flattenSceneNodes(nodes ?? []);
+    const index = flat.findIndex((node) =>
+      (node.kind === "model" || node.kind === "primitive") &&
+      (node.name === ref || (node.kind === "model" && node.asset?.id === ref) || node.runtime?.id === ref)
+    );
+    const node = flat[index] as (SceneCameraNodeLike & { readonly instances?: readonly unknown[] }) | undefined;
+    if (!node?.position) return undefined;
+    if (node.instances?.length) {
+      throw new Error(`Camera collision target '${ref}' is instanced and cannot be mapped to one subject.`);
+    }
+    const id = `static:${node.name ?? node.kind}:${index}`;
+    if (!staticBoxes(nodes).some((box) => box.id === id)) {
+      throw new Error(`Camera collision target '${ref}' has no mappable static bounds.`);
+    }
+    return { bounds: (entry) => (entry as OwnedBounds).owner === staticOwner && entry.id === id };
+  };
   const probe = createCameraProbe({
     budget: () => cameraProbeBudgetForTier((app as { quality?: { tier?: unknown } }).quality?.tier),
+    targetFilter,
+    // A wall can contain the cast origin too; only the identified subject is
+    // exempt from collision, never every box around the look point.
+    ignoreOriginBounds: false,
     bounds: () => [
       ...(registry?.all() ?? [])
         .filter((h) => h.visible !== false)
         .map((h) => {
           const b = h.bounds();
-          return { id: h.id, min: b.min, max: b.max };
+          return { id: h.id, min: b.min, max: b.max, owner: h };
         }),
       ...staticBoxes(app.scene?.nodes as readonly SceneCameraNodeLike[] | undefined)
+        .map((box) => ({ ...box, owner: staticOwner }))
     ]
   });
   const controller = createCameraController({

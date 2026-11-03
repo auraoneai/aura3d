@@ -7,6 +7,12 @@ import {
   optimizeUsage,
   type OptimizeRole
 } from "./optimize.js";
+import {
+  STANDARD_PROBE_PRIMARIES_FLAG,
+  UNSPECIFIED_PROBE_READER_WARNING,
+  standardProbePrimaries,
+  type StandardProbePrimaries
+} from "../prd02/probeFormatOptions.js";
 
 interface VerbIo {
   readonly cwd: string;
@@ -27,7 +33,17 @@ async function optimizeHdriVerb(argv: readonly string[], io: VerbIo, file: strin
     io.stderr(`Unsupported --hdri "${size ?? ""}". Use 1k or 2k. Usage: ${optimizeHdriUsage()}`);
     return 2;
   }
-  const result = await optimizeHdriFile({ projectDir: io.cwd, input: file, output: out, size, rgb9e5Cube: argv.includes("--rgb9e5-cube") });
+  let primaries: StandardProbePrimaries | undefined;
+  try { primaries = standardProbePrimaries(argv); }
+  catch (error) { io.stderr(error instanceof Error ? error.message : String(error)); return 2; }
+  if (primaries !== undefined && !argv.includes("--rgb9e5-cube")) {
+    io.stderr(`${STANDARD_PROBE_PRIMARIES_FLAG} requires --rgb9e5-cube`);
+    return 2;
+  }
+  const result = await optimizeHdriFile({ projectDir: io.cwd, input: file, output: out, size,
+    rgb9e5Cube: argv.includes("--rgb9e5-cube"),
+    ...(primaries === undefined ? {} : { standardKtx2Primaries: primaries }) });
+  if (primaries === "unspecified") io.stderr(UNSPECIFIED_PROBE_READER_WARNING);
   if (argv.includes("--json")) {
     io.stdout(JSON.stringify(result, null, 2));
     return 0;
@@ -48,6 +64,10 @@ export async function optimizeFileVerb(argv: readonly string[], io: VerbIo): Pro
     return 2;
   }
   if (hdri) return optimizeHdriVerb(argv, io, file, out);
+  if (argv.includes(STANDARD_PROBE_PRIMARIES_FLAG)) {
+    io.stderr(`${STANDARD_PROBE_PRIMARIES_FLAG} needs --hdri and --rgb9e5-cube. Usage: ${optimizeHdriUsage()}`);
+    return 2;
+  }
   if (argv.includes("--rgb9e5-cube")) {
     io.stderr(`--rgb9e5-cube needs --hdri. Usage: ${optimizeHdriUsage()}`);
     return 2;

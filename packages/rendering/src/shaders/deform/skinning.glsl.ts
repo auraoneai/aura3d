@@ -11,11 +11,24 @@ uniform float u_boneTextureWidth;             // multiple of 4 — §8.1 int, bo
 #ifdef A3D_VELOCITY
 uniform highp sampler2D u_prevBoneTexture;
 #endif
-// Existing attribute names/locations kept (ShaderLibrary.ts skinned-unlit + 8-influence fork).
-layout(location = 5) in vec4 a_joints;        // float today; uvec4 once WebGL2Device supports vertexAttribIPointer
+// Keep the geometry's existing names/locations and match its actual shader
+// input type. Integer joint streams must be bound with vertexAttribIPointer.
+#if defined(A3D_JOINT0_UINT)
+layout(location = 5) in uvec4 a_joints;
+#elif defined(A3D_JOINT0_SINT)
+layout(location = 5) in ivec4 a_joints;
+#else
+layout(location = 5) in vec4 a_joints;
+#endif
 layout(location = 6) in vec4 a_weights;
 #if A3D_SKINNING == 8
-layout(location = 8) in vec4 a_joints1;       // existing JOINTS_1 location
+#if defined(A3D_JOINT1_UINT)
+layout(location = 8) in uvec4 a_joints1;
+#elif defined(A3D_JOINT1_SINT)
+layout(location = 8) in ivec4 a_joints1;
+#else
+layout(location = 8) in vec4 a_joints1;
+#endif
 layout(location = 9) in vec4 a_weights1;      // existing WEIGHTS_1 location
 #endif
 mat4 a3dBone(highp sampler2D tex, float jf) {
@@ -24,11 +37,13 @@ mat4 a3dBone(highp sampler2D tex, float jf) {
               texelFetch(tex, ivec2(x + 2, y), 0), texelFetch(tex, ivec2(x + 3, y), 0));
 }
 mat4 a3dSkin(highp sampler2D tex) {
-  mat4 m = a3dBone(tex, a_joints.x) * a_weights.x + a3dBone(tex, a_joints.y) * a_weights.y
-         + a3dBone(tex, a_joints.z) * a_weights.z + a3dBone(tex, a_joints.w) * a_weights.w;
+  vec4 joints0 = vec4(a_joints);
+  mat4 m = a3dBone(tex, joints0.x) * a_weights.x + a3dBone(tex, joints0.y) * a_weights.y
+         + a3dBone(tex, joints0.z) * a_weights.z + a3dBone(tex, joints0.w) * a_weights.w;
 #if A3D_SKINNING == 8
-  m += a3dBone(tex, a_joints1.x) * a_weights1.x + a3dBone(tex, a_joints1.y) * a_weights1.y
-     + a3dBone(tex, a_joints1.z) * a_weights1.z + a3dBone(tex, a_joints1.w) * a_weights1.w;
+  vec4 joints1 = vec4(a_joints1);
+  m += a3dBone(tex, joints1.x) * a_weights1.x + a3dBone(tex, joints1.y) * a_weights1.y
+     + a3dBone(tex, joints1.z) * a_weights1.z + a3dBone(tex, joints1.w) * a_weights1.w;
 #endif
   return m;
 }

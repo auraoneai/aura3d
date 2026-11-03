@@ -1,4 +1,4 @@
-import type { A3DXRViewLike } from "@aura3d/input";
+import type { A3DXRNumericArray, A3DXRViewLike } from "@aura3d/input";
 import type { AuraXRViewCamera } from "./types.js";
 
 const views = new WeakMap<object, AuraXRViewCamera>();
@@ -38,7 +38,7 @@ export function applyXRViewOverride<S extends object, C extends object | undefin
 }
 
 /** A finite 16-number column-major matrix, or null. */
-export function readMatrix4(value: readonly number[] | undefined): number[] | null {
+export function readMatrix4(value: A3DXRNumericArray | undefined): number[] | null {
   if (!value || value.length < 16) return null;
   const out: number[] = [];
   for (let i = 0; i < 16; i += 1) {

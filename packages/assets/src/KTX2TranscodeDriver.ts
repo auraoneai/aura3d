@@ -6,7 +6,7 @@
  * and module are provided by the caller.
  */
 
-/** TranscoderFormat enum from the Basis Universal transcoder (three r185 table). */
+/** Public numeric targets from the Basis Universal transcoder API. */
 export const BASIS_TRANSCODER_FORMAT = {
   ETC1: 0,
   ETC2: 1,
@@ -72,6 +72,14 @@ export interface KTX2TranscodeResult {
   readonly levels: readonly KTX2TranscodedLevel[];
 }
 
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    const error = new Error("KTX2 transcode aborted");
+    error.name = "AbortError";
+    throw error;
+  }
+}
+
 /**
  * Transcodes every mip level (largest first) of a KTX2 container to
  * `transcoderFormat` (a `BASIS_TRANSCODER_FORMAT` value). Levels whose true
@@ -82,10 +90,14 @@ export function transcodeKTX2Levels(
   basis: BasisModuleLike,
   bytes: Uint8Array,
   transcoderFormat: number,
-  maxDimension?: number
+  maxDimension?: number,
+  maxOutputBytes = 256 * 1024 * 1024,
+  signal?: AbortSignal
 ): KTX2TranscodeResult {
+  if (!Number.isSafeInteger(maxOutputBytes) || maxOutputBytes <= 0) throw new Error("Invalid KTX2 output byte limit");
+  if (maxDimension !== undefined && (!Number.isSafeInteger(maxDimension) || maxDimension <= 0)) throw new Error("Invalid KTX2 maximum dimension");
+  throwIfAborted(signal);
   const file = new basis.KTX2File(bytes);
-  const cleanup = () => { file.close(); file.delete(); };
   try {
     if (!file.isValid()) {
       throw new Error("Invalid or unsupported .ktx2 file");
@@ -99,36 +111,43 @@ export function transcodeKTX2Levels(
     const levelCount = file.getLevels();
     const faceCount = file.getFaces();
     const hasAlpha = file.getHasAlpha();
-    if (!width || !height || !levelCount) {
+    if (![width, height, layerCount, levelCount, faceCount].every(Number.isSafeInteger) ||
+        width <= 0 || height <= 0 || width > 32768 || height > 32768 ||
+        layerCount <= 0 || layerCount > 2048 || levelCount <= 0 || levelCount > 32 ||
+        (faceCount !== 1 && faceCount !== 6)) {
       throw new Error("Invalid texture");
     }
     if (!file.startTranscoding()) {
       throw new Error(".startTranscoding failed");
     }
     const levels: KTX2TranscodedLevel[] = [];
-    let skipped = 0;
+    let totalBytes = 0;
     for (let face = 0; face < faceCount; face += 1) {
       for (let level = 0; level < levelCount; level += 1) {
+        throwIfAborted(signal);
         const levelInfo = file.getImageLevelInfo(level, 0, face);
         if (maxDimension !== undefined && Math.max(levelInfo.origWidth, levelInfo.origHeight) > maxDimension) {
-          skipped += 1;
           continue;
         }
-        const layerData: Uint8Array[] = [];
+        if (![levelInfo.origWidth, levelInfo.origHeight].every((value) => Number.isSafeInteger(value) && value > 0)) throw new Error("Invalid KTX2 mip dimensions");
+        const sizes: number[] = [];
         for (let layer = 0; layer < layerCount; layer += 1) {
-          const dst = new Uint8Array(file.getImageTranscodedSizeInBytes(level, layer, face, transcoderFormat));
-          if (!file.transcodeImage(dst, level, layer, face, transcoderFormat, 0, -1, -1)) {
+          const size = file.getImageTranscodedSizeInBytes(level, layer, face, transcoderFormat);
+          if (!Number.isSafeInteger(size) || size <= 0 || size > maxOutputBytes - totalBytes) throw new Error("KTX2 output exceeds byte limit");
+          totalBytes += size;
+          sizes.push(size);
+        }
+        const data = new Uint8Array(sizes.reduce((sum, size) => sum + size, 0));
+        let offset = 0;
+        for (let layer = 0; layer < layerCount; layer += 1) {
+          throwIfAborted(signal);
+          const destination = data.subarray(offset, offset + sizes[layer]!);
+          if (!file.transcodeImage(destination, level, layer, face, transcoderFormat, 0, -1, -1)) {
             throw new Error(".transcodeImage failed");
           }
-          layerData.push(dst);
+          offset += sizes[layer]!;
         }
-        const data = layerData.length === 1 ? layerData[0]! : concatBytes(layerData);
-        // Non-multiple-of-four textures without mipmaps report padded
-        // levelInfo.width/height; use origWidth/origHeight when real mips exist
-        // (three r185 KTX2Loader parity).
-        const mipWidth = levelCount - skipped > 1 ? levelInfo.origWidth : levelInfo.width;
-        const mipHeight = levelCount - skipped > 1 ? levelInfo.origHeight : levelInfo.height;
-        levels.push({ width: mipWidth, height: mipHeight, data });
+        levels.push({ width: levelInfo.origWidth, height: levelInfo.origHeight, data });
       }
     }
     if (levels.length === 0) {
@@ -136,14 +155,6 @@ export function transcodeKTX2Levels(
     }
     return { width: levels[0]!.width, height: levels[0]!.height, isUASTC: file.isUASTC(), hasAlpha, levels };
   } finally {
-    cleanup();
+    try { file.close(); } finally { file.delete(); }
   }
-}
-
-function concatBytes(parts: readonly Uint8Array[]): Uint8Array {
-  const total = parts.reduce((sum, part) => sum + part.byteLength, 0);
-  const out = new Uint8Array(total);
-  let offset = 0;
-  for (const part of parts) { out.set(part, offset); offset += part.byteLength; }
-  return out;
 }

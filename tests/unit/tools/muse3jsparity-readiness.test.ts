@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { validateAssertionInventory } from '../../../tools/muse3jsparity-readiness/contracts';
 import { loadMuse301ExecutionRequirements } from '../../../tools/muse3jsparity-readiness/requirements';
 import { describe, expect, it, vi } from 'vitest';
-import { executeStages, reduceReadiness, removedAssertions, REQUIRED_PARTS, validateCaptureOrder, deriveReleaseVerification, ARCHIVE_REQUIREMENT } from '../../../tools/muse3jsparity-readiness/contracts';
+import { assessAssertionLineage, executeStages, reduceReadiness, removedAssertions, REQUIRED_PARTS, validateCaptureOrder, deriveReleaseVerification, ARCHIVE_REQUIREMENT } from '../../../tools/muse3jsparity-readiness/contracts';
 import type { GateResult, Requirement } from '../../../tools/muse3jsparity-readiness/contracts';
 const requirement = (part: string): Requirement => ({ id: `${part}1`, part, gates: [`${part}-proof`] });
 const result = (part: string): GateResult => ({ gate: `${part}-proof`, parts: [part], tasks: [`${part}1`], verdict: 'pass', detail: '', receipt: `${part}.json`, receiptHash: 'a'.repeat(64), receiptValid: true });
@@ -60,6 +60,71 @@ describe('muse3jsparity fail-closed aggregation', () => {
     expect(removedAssertions(['old-a'], ['new-a'], { 'old-a': 'new-a' })).toEqual([]);
     expect(removedAssertions(['old-a', 'old-b'], ['new-a'], { 'old-a': 'new-a', 'old-b': 'new-a' })).toEqual(['old-b']);
     expect(removedAssertions(['old-a'], ['new-a'], { 'old-a': 'missing' })).toEqual(['old-a']);
+  });
+});
+
+describe('behavior-only assertion lineage', () => {
+  const schema = 'muse3jsparity-baseline-assertion-lineage/v1';
+  const lineage = () => ({
+    schema,
+    replacements: { 'native-old': 'native-new' },
+    behaviorOnlySuccessors: { 'comparison-old': { successor: 'behavior-new', reason: 'The comparison oracle was retired.' } }
+  });
+
+  it('reports the successor separately while keeping the retired comparison missing', () => {
+    const result = assessAssertionLineage(['comparison-old', 'native-old'], [
+      { id: 'behavior-new', status: 'passed' }, { id: 'native-new', status: 'passed' }
+    ], lineage());
+    expect(result.removed).toEqual(['comparison-old']);
+    expect(result.behaviorOnly).toEqual([{
+      predecessor: 'comparison-old', successor: 'behavior-new', reason: 'The comparison oracle was retired.',
+      comparisonCoverage: 'retired', historicalAssertionStatus: 'missing', behaviorStatus: 'passed'
+    }]);
+  });
+
+  it('does not report a missing, failed, skipped, or duplicate successor as passed', () => {
+    const observations = [
+      { input: [], expected: 'missing' },
+      { input: [{ id: 'behavior-new', status: 'failed' }], expected: 'not-passed' },
+      { input: [{ id: 'behavior-new', status: 'pending' }], expected: 'not-passed' },
+      { input: [{ id: 'behavior-new', status: 'skipped' }], expected: 'not-passed' },
+      { input: [{ id: 'behavior-new', status: 'passed' }, { id: 'behavior-new', status: 'passed' }], expected: 'duplicate' }
+    ] as const;
+    for (const { input, expected } of observations) {
+      const result = assessAssertionLineage(['comparison-old', 'native-old'], input, lineage());
+      expect(result.removed).toContain('comparison-old');
+      expect(result.behaviorOnly[0].behaviorStatus).toBe(expected);
+    }
+  });
+
+  it('reports the historical assertion identity separately without changing retired comparison coverage', () => {
+    const result = assessAssertionLineage(['comparison-old', 'native-old'], [
+      { id: 'comparison-old', status: 'passed' }, { id: 'behavior-new', status: 'failed' }
+    ], lineage());
+    expect(result.removed).not.toContain('comparison-old');
+    expect(result.behaviorOnly[0]).toMatchObject({ comparisonCoverage: 'retired', historicalAssertionStatus: 'passed', behaviorStatus: 'not-passed' });
+  });
+
+  it('rejects malformed entries, reused successors, and nonhistorical predecessors', () => {
+    const baseline = ['comparison-old', 'native-old'];
+    expect(() => assessAssertionLineage(baseline, [], { ...lineage(), behaviorOnlySuccessors: [] })).toThrow();
+    expect(() => assessAssertionLineage(baseline, [], { ...lineage(), behaviorOnlySuccessors: { 'comparison-old': { successor: 'native-new', reason: 'retired' } } })).toThrow(/reuses a successor/);
+    expect(() => assessAssertionLineage(baseline, [], { ...lineage(), behaviorOnlySuccessors: { 'other-old': { successor: 'behavior-new', reason: 'retired' } } })).toThrow(/invalid predecessor/);
+    expect(() => assessAssertionLineage(baseline, [], { ...lineage(), behaviorOnlySuccessors: { 'comparison-old': { successor: 'behavior-new', reason: '' } } })).toThrow(/malformed/);
+  });
+
+  it('records all four retired comparison assertions in the immutable baseline without treating them as replacements', () => {
+    const baseline = JSON.parse(readFileSync('tools/muse3jsparity-readiness/baseline-unit-inventory.json', 'utf8'));
+    const actual = JSON.parse(readFileSync('tools/muse3jsparity-readiness/baseline-assertion-lineage.json', 'utf8'));
+    const entries = Object.entries(actual.behaviorOnlySuccessors) as [string, { successor: string }][];
+    expect(entries).toHaveLength(4);
+    const observed = entries.map(([, entry]) => ({ id: entry.successor, status: 'passed' }));
+    const result = assessAssertionLineage(baseline.assertions, observed, actual);
+    for (const [predecessor, entry] of entries) {
+      expect(baseline.assertions).toContain(predecessor);
+      expect(result.removed).toContain(predecessor);
+      expect(result.behaviorOnly).toContainEqual(expect.objectContaining({ predecessor, successor: entry.successor, comparisonCoverage: 'retired', historicalAssertionStatus: 'missing', behaviorStatus: 'passed' }));
+    }
   });
 });
 

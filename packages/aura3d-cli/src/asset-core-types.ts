@@ -16,7 +16,7 @@ import type {
 } from "./contracts/assetManifest.js";
 
 /** GU47 E-C: `lut` is a display-domain `.cube` colour LUT (`effects.colorGrade({ lut: assets.<id> })`). */
-export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut";
+export type AuraCliAssetType = "model" | "texture" | "environment" | "audio" | "navigation" | "lut" | "scalar-volume";
 export type AuraAssetQuality = "ungraded" | "blocked" | "prototype" | "candidate" | "release";
 // PRD-05 §7.2 — the C-17 union plus the legacy 1.0 roles. Roles outside the
 // C-17 set ("product", "weapon", "track", "environment", "unknown",
@@ -316,10 +316,52 @@ export interface AuraCliAudioMetadata {
   readonly sourceUrl?: string;
 }
 
+/**
+ * Content admitted for a document and its external resources. Digests use the
+ * canonical `sha256-<64 hexadecimal digits>` form. Dependency keys are the
+ * URIs as written in the document (resolved relative to that document at load
+ * time), not filesystem paths relative to the process working directory.
+ *
+ * The version applies to this record independently of the manifest schema.
+ * Old single-file entries are migrated from `hash`/`sha256`; they cannot be
+ * assumed to have admitted external resources. `requireDependencies` makes
+ * missing external-resource declarations an error for newly admitted assets.
+ */
+export interface AuraCliAssetIntegrity {
+  readonly version: 1;
+  readonly digest: string;
+  readonly dependencies?: Readonly<Record<string, string>>;
+  readonly requireDependencies?: boolean;
+}
+
+/** Details of the admitted output format; `format` on the entry is its extension. */
+export interface AuraCliAssetFormatMetadata {
+  readonly version?: string;
+  readonly mediaType?: string;
+  /** Explicit native adapter id, when the output extension is ambiguous. */
+  readonly adapter?: string;
+  /** Original source retained only when the admitted output was converted offline. */
+  readonly source?: {
+    readonly format: string;
+    readonly version?: string;
+    readonly conversion: "offline";
+  };
+}
+
+/** Inspection is evidence of a parser pass, not adapter registration or rendering. */
+export interface AuraCliModelInspection {
+  readonly version: 1;
+  readonly status: "parser-inspected" | "metadata-only" | "legacy-unverified";
+  readonly inspector?: "obj" | "ply" | "stl" | "3mf" | "vox";
+  readonly digest?: string;
+}
+
 export interface AuraCliAssetEntry {
   readonly id: string;
   readonly type: AuraCliAssetType;
   readonly format: string;
+  readonly formatMetadata?: AuraCliAssetFormatMetadata;
+  readonly modelInspection?: AuraCliModelInspection;
   readonly source: string;
   readonly outputPath: string;
   readonly url: string;
@@ -327,6 +369,7 @@ export interface AuraCliAssetEntry {
   // Legacy manifests may carry a bare sha256 digest instead of `hash`;
   // typegen normalizes it into `hash` (`sha256-<hex>`) for generated refs.
   readonly sha256?: string;
+  readonly integrity?: AuraCliAssetIntegrity;
   readonly sizeBytes: number;
   readonly bounds?: readonly [number, number, number];
   readonly boundsMetadata?: AuraCliAssetBoundsInspection;
@@ -373,6 +416,8 @@ export interface AddAssetOptions {
   readonly outputDir?: string;
   readonly typegen?: string;
   readonly copy?: boolean;
+  /** Strict rejects formats without a bounded parser pass; legacy remains the default during migration. */
+  readonly modelInspection?: "legacy" | "strict";
   readonly sourcePage?: string;
   readonly downloadUrl?: string;
   readonly sourceUrl?: string;

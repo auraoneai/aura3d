@@ -26,6 +26,7 @@ describe("C-14 velocityHistorySlot (impl: prd03)", () => {
     const history = new VelocityHistory();
     const out = history.prepare(identity(), history.jitter(1920, 1080));
     expect(out.previous).toEqual(out.unjittered);
+    history.commit();
     expect(history.jitter(1920, 1080)).not.toEqual([0, 0]);
   });
 
@@ -42,6 +43,7 @@ describe("C-14 velocityHistorySlot (impl: prd03)", () => {
   it("jitter offsets in clip space scale by w and stay inside a pixel", () => {
     const history = new VelocityHistory();
     history.prepare(identity(), [0, 0]);
+    history.commit();
     const [jx, jy] = history.jitter(100, 100);
     expect(Math.abs(jx)).toBeLessThanOrEqual(0.01);
     expect(Math.abs(jy)).toBeLessThanOrEqual(0.01);
@@ -75,9 +77,9 @@ describe("C-14 velocityHistorySlot (impl: prd03)", () => {
     resetTemporalHistory("scene-swap");
     bindVelocityUniforms?.(item, uniforms as never);
     expect(uniforms.size).toBe(0);
-    const real = velocityHistorySlot.get(flagsOn()).history;
+    const real = velocityHistorySlot.get(flagsOn()).history as VelocityHistory;
     real.prepare(identity(), [0, 0]);
-    bindVelocityUniforms?.(item, uniforms as never);
+    bindVelocityUniforms?.(real.prepareItem(item, true), uniforms as never);
     expect(uniforms.has("u_previousViewProjection")).toBe(true);
     expect(uniforms.has("u_unjitteredViewProjection")).toBe(true);
     expect(uniforms.has("u_previousModel")).toBe(true);

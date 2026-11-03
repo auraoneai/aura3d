@@ -12,11 +12,13 @@
  */
 
 import { PointLight, SpotLight, type Light, type Vec3 } from "@aura3d/scene";
-import type { CollectedLight } from "../LightCollector";
+import { isLightVisibleInHierarchy, type CollectedLight } from "../LightCollector";
+import { RenderDeviceError } from "../RenderDevice";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import type { FrameContributor, FrameContributorContext } from "../contracts/frameGraph";
 import { SHADOW_BLACKBOARD_KEY } from "../contracts/shadows";
 import { sceneFromSource } from "../renderer/RenderShared";
+import { registerBenchmarkNonSceneContributor } from "../renderer/FrameGraph";
 import type { Prd02ShadowFrameUniforms, Prd02ShadowSystem, ShadowSystemConfigInput, ShadowSystemLocalLight } from "./ShadowSystem";
 import { bindShadowFrameUniforms, shadowBindingMaterial } from "./ShadowFrameBinding";
 import { readPrd02KillSwitches } from "../passes/Prd02SubFlags";
@@ -42,13 +44,11 @@ export function shadowSystemConfigFromSource(ctx: FrameContributorContext): Shad
 }
 
 function lightWorldPosition(light: Light): Vec3 {
-  light.transform.updateWorld(undefined, true);
   const w = light.transform.worldMatrix;
   return [w[12] ?? 0, w[13] ?? 0, w[14] ?? 0];
 }
 
 function spotWorldDirection(light: SpotLight): Vec3 {
-  light.transform.updateWorld(undefined, true);
   const w = light.transform.worldMatrix;
   const x = -(w[8] ?? 0);
   const y = -(w[9] ?? 0);
@@ -75,7 +75,9 @@ export function collectShadowSystemLights(ctx: FrameContributorContext): {
     for (const entry of prd02LocalShadowLights(ctx.source)) localLights.push(entry.input);
   } else {
     const scene = sceneFromSource(ctx.source);
-    const lights = scene?.collectLights().filter((light) => light.visible && light.castsShadow) ?? [];
+    // The renderer updates the scene before contributors; read its published
+    // world transforms without forcing a light-local update that drops parents.
+    const lights = scene?.collectLights().filter((light) => isLightVisibleInHierarchy(light, scene.root) && light.castsShadow) ?? [];
     for (const light of lights) {
       if (light instanceof SpotLight) {
         localLights.push({
@@ -147,6 +149,9 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
       latestShadowDiagnostics = { shadows: [], droppedFeatures: [] };
       return;
     }
+    if (ctx.device.kind === "webgpu") {
+      throw new RenderDeviceError("PRD-02 comparison lookup requires a WebGPU depth-comparison shadow layout; encoded-color graph atlases use the forward bridge instead.", "PRD02_COMPARISON_SHADOW_LAYOUT_UNAVAILABLE");
+    }
     const config = shadowSystemConfigFromSource(ctx);
     const casters = ctx.items.filter(prd02ShadowCasterEligible);
     const { sunDirection, localLights } = collectShadowSystemLights(ctx);
@@ -154,6 +159,7 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
     const uniforms: Prd02ShadowFrameUniforms | null = ctx.camera
       ? system.update({
           camera: ctx.camera,
+          timeSeconds: ctx.timeSeconds,
           sun: sunDirection ? { direction: sunDirection } : null,
           casters,
           localLights,
@@ -195,7 +201,7 @@ class Prd02ShadowsRenderPass extends BaseRenderPass {
 }
 
 export function createPrd02ShadowsContributor(): FrameContributor {
-  return {
+  const contributor: FrameContributor = {
     id: "prd02.shadows",
     owner: "prd02",
     flag: "A3D_QR_LIGHTING",
@@ -217,4 +223,6 @@ export function createPrd02ShadowsContributor(): FrameContributor {
         ? [new Prd02ShadowsRenderPass(ctx)] : [];
     }
   };
+  registerBenchmarkNonSceneContributor(contributor, ["shadows"]);
+  return contributor;
 }

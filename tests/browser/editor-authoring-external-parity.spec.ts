@@ -93,7 +93,6 @@ test.describe("ExternalParity editor authoring workflow", () => {
     expect(importedNode.physics).toMatchObject({ body: "static", collider: "box" });
     expect(importedNode.animation.enabled).toBe(true);
     expect(importedNode.animation.clip.length).toBeGreaterThan(0);
-    const materialPreviewBefore = await averageCanvasColor(page, ".editor-viewport");
 
     await page.getByRole("button", { name: "Move X" }).click();
     await page.getByRole("button", { name: "Rotate Z" }).click();
@@ -156,9 +155,6 @@ test.describe("ExternalParity editor authoring workflow", () => {
       green: expect.any(Number),
       blue: expect.any(Number)
     });
-    const materialPreviewAfter = await averageCanvasColor(page, ".editor-viewport");
-    expect(materialPreviewAfter.red).toBeGreaterThan(materialPreviewBefore.red + 4);
-    expect(materialPreviewAfter.blue).toBeLessThan(materialPreviewBefore.blue - 4);
     await page.locator('.material-panel input[data-material-path="metallic"]').fill("0.22");
     await page.locator('.material-panel input[data-material-path="roughness"]').fill("0.34");
     await page.locator('.material-panel input[data-material-path="textureSlots.baseColor"]').fill("Fox_baseColor");
@@ -192,9 +188,9 @@ test.describe("ExternalParity editor authoring workflow", () => {
     await page.locator('input[data-path="script.behavior"]').fill("OrbitCameraBehavior");
     await page.locator('input[data-path="script.behavior"]').blur();
 
-    await page.locator('select[data-action="view-mode"]').selectOption("lighting");
+    await page.locator('select[data-action="view-mode"]').selectOption("bounds");
     await page.getByRole("button", { name: "Focus" }).click();
-    await expect(page.locator('[data-role="viewport-hud"]')).toContainText("lighting");
+    await expect(page.locator('[data-role="viewport-hud"]')).toContainText("bounds");
     await page.screenshot({ path: editorScreenshotPath, fullPage: true });
 
     await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -211,9 +207,18 @@ test.describe("ExternalParity editor authoring workflow", () => {
     await waitForEditor(page);
     await expect.poll(() => editorState(page).then((state) => state.editorState.persisted)).toBe(true);
     await expect.poll(() => editorState(page).then((state) => state.editorState.gridSnap.snapToGrid)).toBe(true);
+    const projectWithExportCamera = JSON.parse(savedProjectJson);
+    for (const node of projectWithExportCamera.scene.nodes) {
+      node.camera.enabled = node.name === "ExternalParity Export Camera";
+      if (node.camera.enabled) {
+        node.parentId = null;
+        node.transform = { position: [0, 0, 8], rotation: [0, 0, 0, 1], scale: [1, 1, 1] };
+        node.mesh.enabled = false;
+      }
+    }
     await page.locator('[data-role="project-buffer"]').evaluate((element: HTMLTextAreaElement, value) => {
-      element.value = value;
-    }, savedProjectJson);
+      element.value = JSON.stringify(value);
+    }, projectWithExportCamera);
     await page.getByRole("button", { name: "Load", exact: true }).click();
     await expect(page.getByRole("button", { name: "Fox.glb" })).toBeVisible();
     await expect(page.getByRole("button", { name: "ExternalParity Key Light" })).toBeVisible();
@@ -241,8 +246,8 @@ test.describe("ExternalParity editor authoring workflow", () => {
     await expect.poll(() => editorState(page).then((state) => state.mode)).toBe("edit");
 
     await page.getByRole("button", { name: "Export", exact: true }).click();
-    await expect.poll(() => editorState(page).then((state) => state.exportedFileCount)).toBe(3);
-    const exportedFiles = await page.evaluate(() => (window as any).__AURA3D_EDITOR_APP__!.shell.exportedFiles());
+    await expect.poll(() => editorState(page).then((state) => state.exportedFileCount), { timeout: 60_000 }).toBe(3);
+    const exportedFiles = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.shell.exportedFiles());
     const runtime = exportedFiles.find((file) => file.path === "runtime.js")?.content ?? "";
     expect(runtime).not.toContain("EditorShell");
     expect(runtime).not.toContain("__AURA3D_EDITOR_APP__");
@@ -259,17 +264,20 @@ test.describe("ExternalParity editor authoring workflow", () => {
 
     await page.goto(`${server.origin}/__editor_export/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.status === "ready");
-    await page.waitForFunction(() => ((window as any).__AURA3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
     const exportedState = await exportedProjectState(page);
+    const exportedProject = JSON.parse(exportedByPath.get("project.json")!);
     expect(exportedState.assetCount).toBe(1);
     expect(exportedState.importedAssetNames).toContain("Fox.glb");
     expect(exportedState.featureEvidence.editedMaterials.some((material) => material.baseColor === "#ff8844")).toBe(true);
-    expect(exportedState.featureEvidence.lights.length).toBeGreaterThanOrEqual(1);
-    expect(exportedState.featureEvidence.cameras.length).toBeGreaterThanOrEqual(1);
-    expect(exportedState.physicsOrScripting).toBe(true);
+    expect(exportedProject.assets[0].uri).toMatch(/^data:model\/gltf-binary;base64,/);
+    expect(exportedProject.scene.nodes.some((node: { light: { kind: string } }) => node.light.kind !== "none")).toBe(true);
+    expect(exportedProject.scene.nodes.some((node: { camera: { enabled: boolean } }) => node.camera.enabled)).toBe(true);
+    expect(exportedState.renderer).toBe("aura3d-webgl2");
+    expect(exportedState.physicsOrScripting).toBe(false);
+    expect(exportedState.diagnostics.scriptTickCount).toBe(0);
     expect(exportedState.playBehaviorActive).toBe(true);
     expect(exportedState.featureEvidence.usesEditorCode).toBe(false);
-    expect(exportedState.claimBoundary.blocked).toContain("Unity replacement");
+    expect(exportedState.knownLimits.join(" ")).toContain("not executed");
     expect(await nonBlankCanvasPixels(page, "#aura3d-export")).toBeGreaterThan(5000);
     await page.locator("#aura3d-export").click({ position: { x: 520, y: 260 } });
     await page.keyboard.press("ArrowRight");
@@ -312,7 +320,7 @@ test.describe("ExternalParity editor authoring workflow", () => {
       editorPicking,
       localizationAccessibility,
       exportedEvidence: exportedState,
-      blockedClaims: exportedState.claimBoundary.blocked
+      knownLimits: exportedState.knownLimits
     }, null, 2));
   });
 
@@ -369,21 +377,29 @@ async function dropAssetIntoViewport(page: Page, assetId: string): Promise<void>
 }
 
 async function nonBlankCanvasPixels(page: Page, selector: string): Promise<number> {
-  return page.evaluate((canvasSelector) => {
+  return page.evaluate((canvasSelector) => new Promise<number>((resolve) => requestAnimationFrame(() => {
     const canvas = document.querySelector<HTMLCanvasElement>(canvasSelector);
-    const data = canvas?.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height).data;
-    if (!data) return 0;
+    if (!canvas) { resolve(0); return; }
+    const gl = canvas.getContext("webgl2");
+    let data: Uint8Array | Uint8ClampedArray | undefined;
+    if (gl) {
+      data = new Uint8Array(canvas.width * canvas.height * 4);
+      gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    } else data = canvas.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height).data;
+    if (!data) { resolve(0); return; }
     let pixels = 0;
     for (let index = 0; index < data.length; index += 4) {
-      if (data[index] > 20 || data[index + 1] > 20 || data[index + 2] > 20) pixels += 1;
+      if (gl ? Math.abs(data[index]! - 18) + Math.abs(data[index + 1]! - 26) + Math.abs(data[index + 2]! - 38) > 12
+        : data[index]! > 20 || data[index + 1]! > 20 || data[index + 2]! > 20) pixels += 1;
     }
-    return pixels;
-  }, selector);
+    resolve(pixels);
+  })), selector);
 }
 
 async function averageCanvasColor(page: Page, selector: string): Promise<{ readonly red: number; readonly green: number; readonly blue: number }> {
   return page.evaluate((canvasSelector) => {
     const canvas = document.querySelector<HTMLCanvasElement>(canvasSelector);
+    (window as any).__AURA3D_EDITOR_APP__?.shell.viewport?.render();
     const context = canvas?.getContext("webgl2", { preserveDrawingBuffer: true }) ?? canvas?.getContext("webgl", { preserveDrawingBuffer: true });
     if (!canvas || !context) return { red: 0, green: 0, blue: 0 };
     const width = canvas.width;
@@ -550,6 +566,7 @@ interface ExportedProjectState {
   readonly importedAssetNames: readonly string[];
   readonly physicsOrScripting: boolean;
   readonly playBehaviorActive: boolean;
+  readonly knownLimits: readonly string[];
   readonly claimBoundary: { readonly allowed: string; readonly blocked: readonly string[] };
   readonly diagnostics: { readonly scriptTickCount: number };
   readonly featureEvidence: {

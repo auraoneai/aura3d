@@ -51,8 +51,10 @@ describe("sceneQueryTargets", () => {
     expect(bounds.size).toEqual([4, 0.5, 2]);
   });
 
-  it("skips nodes with no position rather than placing them at the origin", () => {
-    expect(sceneQueryTargets([primitives.box({ name: "unplaced" }).toJSON()])).toHaveLength(0);
+  it("uses the default origin for nodes without an explicit position", () => {
+    const [target] = sceneQueryTargets([primitives.box({ name: "unplaced" }).toJSON()]);
+    expect(target?.bounds.center).toEqual([0, 0, 0]);
+    expect(target?.bounds.size).toEqual([1, 1, 1]);
   });
 
   it("ignores lights, labels and interactions", () => {

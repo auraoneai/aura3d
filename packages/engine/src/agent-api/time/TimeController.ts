@@ -38,6 +38,7 @@ export class TimeController implements AuraTimeController {
   private ramp: { readonly to: number; readonly halflife: number } | null = null;
   private slowMoState: { remaining: number; readonly easeOut: number } | null = null;
   private globalStop = 0;
+  private readonly ownedGlobalStops = new Map<object, number>();
   private readonly scopedStops = new Map<AuraRuntimeNodeHandle, TimeControllerScopeEntry>();
   private readonly resolveHandle?: (id: string) => AuraRuntimeNodeHandle | undefined;
 
@@ -59,11 +60,13 @@ export class TimeController implements AuraTimeController {
 
   /** Live multiplier for the loop: 0 while a global hit-stop is active. */
   get timeScale(): number {
-    return this.globalStop > 0 ? 0 : this._scale;
+    return this.hitStopRemaining > 0 ? 0 : this._scale;
   }
 
   get hitStopRemaining(): number {
-    return this.globalStop;
+    let remaining = this.globalStop;
+    for (const owned of this.ownedGlobalStops.values()) remaining = Math.max(remaining, owned);
+    return remaining;
   }
 
   /** T-3: exponential ramp toward `value` with the given halflife (seconds). */
@@ -100,6 +103,17 @@ export class TimeController implements AuraTimeController {
     }
   }
 
+  /** A global stop owned independently of legacy and other owner requests. */
+  hitStopOwned(seconds: number, owner: object): void {
+    const duration = Math.max(0, seconds);
+    if (!(duration > 0)) return;
+    this.ownedGlobalStops.set(owner, Math.max(this.ownedGlobalStops.get(owner) ?? 0, duration));
+  }
+
+  clearOwnedHitStop(owner: object): void {
+    this.ownedGlobalStops.delete(owner);
+  }
+
   /** T-4: slow-mo — scale until `seconds` of real time pass, then ease back to 1. */
   slowMo(scale: number, seconds: number, o?: { easeOut?: number }): void {
     this._scale = clampScale(scale);
@@ -134,8 +148,14 @@ export class TimeController implements AuraTimeController {
         this.scopedStops.delete(handle);
       }
     }
-    if (this.globalStop > 0) {
+    const globallyStopped = this.hitStopRemaining > 0;
+    if (globallyStopped) {
       this.globalStop = Math.max(0, this.globalStop - dt);
+      for (const [owner, remaining] of this.ownedGlobalStops) {
+        const next = Math.max(0, remaining - dt);
+        if (next <= 0) this.ownedGlobalStops.delete(owner);
+        else this.ownedGlobalStops.set(owner, next);
+      }
       return 0;
     }
     const scaledDt = dt * this._scale;

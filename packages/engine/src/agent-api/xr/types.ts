@@ -1,13 +1,24 @@
-import type { WebXRFrameSample } from "@aura3d/input";
+import type { A3DXRDepthSensingOptions, A3DXRInputSourceLike, A3DXRTransformLike, WebXRFrameSample } from "@aura3d/input";
 
-export type AuraXRMode = "immersive-vr" | "immersive-ar";
+export type AuraXRMode = "inline" | "immersive-vr" | "immersive-ar";
 
-export type AuraXREventName = "sessionstart" | "sessionend" | "frame" | "error";
+export type AuraXREventName = keyof AuraXREventMap;
+export type AuraXRSessionProvenance = "injected" | "navigator";
 
 export interface AuraXRSessionInit {
   readonly requiredFeatures?: readonly string[];
   readonly optionalFeatures?: readonly string[];
   readonly referenceSpace?: "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
+  /** Whether to request a hit-test source in viewer space. */
+  readonly hitTest?: boolean;
+  /** Whether to request an estimated-light probe. */
+  readonly lightEstimation?: boolean;
+  /** Requested fixed foveation, between 0 and 1. Unavailable support is reported as a warning. */
+  readonly foveation?: number;
+  /** Request WebXR Layers composition when the renderer supports it. */
+  readonly layers?: boolean;
+  /** Requests depth sensing with an explicit CPU/GPU usage and data-format preference. */
+  readonly depthSensing?: A3DXRDepthSensingOptions;
 }
 
 /**
@@ -57,9 +68,17 @@ export interface AuraXREnterResult {
   readonly started: boolean;
   readonly mode: AuraXRMode;
   /** Set when `started` is false. */
-  readonly reason?: "no-webxr" | "unsupported" | "already-presenting" | "render-path-unavailable" | "no-webgl-context" | "no-xr-layer" | "session-failed";
+  readonly reason?: "no-webxr" | "unsupported" | "already-presenting" | "render-path-unavailable" | "no-webgl-context" | "no-xr-layer" | "session-failed" | "cancelled";
   readonly message?: string;
   readonly warnings: readonly string[];
+  readonly provenance?: AuraXRSessionProvenance;
+  readonly capabilities?: {
+    readonly hitTest: boolean;
+    readonly lightEstimation: boolean;
+    readonly foveation: boolean;
+    readonly layers: boolean;
+    readonly depthSensing: "not-requested" | "unavailable" | "unknown" | "cpu-optimized" | "gpu-optimized";
+  };
 }
 
 export interface AuraXRFrameEvent {
@@ -67,19 +86,29 @@ export interface AuraXRFrameEvent {
   readonly time: number;
   readonly viewCount: number;
   readonly sample: WebXRFrameSample;
+  readonly provenance: AuraXRSessionProvenance;
 }
 
 export interface AuraXREventMap {
-  readonly sessionstart: { readonly mode: AuraXRMode };
+  readonly sessionstart: { readonly mode: AuraXRMode; readonly provenance?: AuraXRSessionProvenance };
   readonly sessionend: { readonly mode: AuraXRMode };
   readonly frame: AuraXRFrameEvent;
   readonly error: { readonly code: string; readonly message: string };
+  readonly inputsourceschange: { readonly added: readonly A3DXRInputSourceLike[]; readonly removed: readonly A3DXRInputSourceLike[] };
+  readonly select: { readonly inputSource?: A3DXRInputSourceLike };
+  readonly selectstart: { readonly inputSource?: A3DXRInputSourceLike };
+  readonly selectend: { readonly inputSource?: A3DXRInputSourceLike };
+  readonly squeeze: { readonly inputSource?: A3DXRInputSourceLike };
+  readonly squeezestart: { readonly inputSource?: A3DXRInputSourceLike };
+  readonly squeezeend: { readonly inputSource?: A3DXRInputSourceLike };
+  readonly visibilitychange: { readonly visibilityState: string };
+  readonly reset: { readonly transform?: A3DXRTransformLike };
 }
 
 export interface AuraXRRuntime {
   readonly isPresenting: boolean;
   readonly mode: AuraXRMode | null;
-  /** The most recent frame's controller, hand and pose sample; null before the first frame. */
+  /** The most recent frame's controller, hand and pose sample; null before the first frame and after a reference-space reset until a new frame is sampled. */
   readonly lastSample: WebXRFrameSample | null;
   isSupported(mode?: AuraXRMode): Promise<boolean>;
   enter(mode?: AuraXRMode, init?: AuraXRSessionInit): Promise<AuraXREnterResult>;

@@ -22,6 +22,19 @@ export class FirstPersonControls {
     private readonly camera: CameraTransformLike,
     options: FirstPersonControlsOptions = {}
   ) {
+    // Keep `enabled` as an enumerable own property for existing consumers,
+    // while notifying subclasses when transient input needs to be discarded.
+    let enabled = this.enabled;
+    Object.defineProperty(this, "enabled", {
+      configurable: true,
+      enumerable: true,
+      get: () => enabled,
+      set: (value: boolean) => {
+        if (enabled === value) return;
+        enabled = value;
+        this.onEnabledChange(value);
+      }
+    });
     this.moveSpeed = options.moveSpeed ?? 1;
     this.lookSpeed = options.lookSpeed ?? 0.002;
     this.minPitch = options.minPitch ?? -Math.PI / 2 + 0.001;
@@ -29,6 +42,9 @@ export class FirstPersonControls {
     this.pitch = clamp(camera.rotation?.x ?? 0, this.minPitch, this.maxPitch);
     this.yaw = camera.rotation?.y ?? 0;
   }
+
+  /** Allows subclasses to discard transient input when control is disabled. */
+  protected onEnabledChange(_enabled: boolean): void {}
 
   update(snapshot: InputSnapshot, deltaSeconds: number): void {
     if (!this.enabled) {

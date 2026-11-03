@@ -13,7 +13,7 @@ export interface EnvironmentProbe {
   readonly kind: "environment-probe";
   readonly specularCube: Texture;   // PMREM, linear HDR
   readonly mipCount: number;
-  readonly faceSize: 128 | 256 | 512 | 1024;
+  readonly faceSize: 64 | 128 | 256 | 512 | 1024;
   readonly sh9: Float32Array;                            // length 27, linear radiance SH (RGB x 9)
   readonly shTexture: Texture | null;
   readonly background: Texture | null;

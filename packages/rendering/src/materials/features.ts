@@ -15,20 +15,16 @@ import {
 } from "../contracts/program";
 import { Material, type RenderState } from "../Material.js";
 import { MaterialInstance } from "../MaterialInstance.js";
-import type { UniformValue } from "../RenderDevice";
-import { TextureBinding } from "../TextureBinding.js";
+import { RenderDeviceError, type UniformValue } from "../RenderDevice";
+import { isTextureBinding, TextureBinding } from "../TextureBinding.js";
+import { Sampler } from "../Sampler.js";
 import { capturedTransmissionTarget } from "../forward/transmissionTargetStore.js";
+import { makeShaderFeatureReplayGuard } from "../program/FeatureSelect.js";
 
 /**
  * KHR_texture_transform matrix per PRD-04 §8.9: `T · R · S` with
- * `R = [[c, s], [-s, c]]` — the spec's counter-clockwise UV rotation in
- * glTF's top-left-origin UV space. Returned column-major (GLSL `mat3`
- * constructor order, same layout as `THREE.Matrix3.elements`).
- *
- * For uniform scale the elements are numerically identical to three's
- * `Matrix3.setUvTransform(ox, oy, s, s, r, 0, 0)`; for non-uniform scale with
- * `r ≠ 0` they intentionally differ (three composes `S · R`, which bakes the
- * rotation into the wrong axes — the README formula applies it in UV space).
+ * `R = [[c, -s], [s, c]]`, matching TextureBinding.transformUV and the
+ * generated shaders. Returned column-major for a GLSL `mat3` uniform.
  */
 export function uvTransformMatrix(
   offset: readonly [number, number],
@@ -39,12 +35,12 @@ export function uvTransformMatrix(
   const s = Math.sin(rotation);
   const [sx, sy] = scale;
   // Matrix rows (column-vector apply M · uv):
-  //   [ c*sx,  s*sy, ox ]
-  //   [ -s*sx, c*sy, oy ]
+  //   [ c*sx, -s*sy, ox ]
+  //   [ s*sx,  c*sy, oy ]
   //   [ 0,     0,    1  ]
   return new Float32Array([
-    c * sx, -s * sx, 0,
-    s * sy, c * sy, 0,
+    c * sx, s * sx, 0,
+    -s * sy, c * sy, 0,
     offset[0], offset[1], 1
   ]);
 }
@@ -110,6 +106,7 @@ const uvTransformFeature: ShaderFeature = {
 /** Materials needing the tangent frame carry at least one of these params. */
 const TANGENT_FRAME_PARAMS = [
   "u_normalTextureEnabled",
+  "u_anisotropyStrength",
   "u_anisotropyTextureEnabled",
   "u_clearcoatNormalTextureEnabled",
   "u_prd04TangentFrame"
@@ -197,33 +194,54 @@ const transmissionTargetFeature: ShaderFeature = {
   select(input: ShaderFeatureSelectInput) {
     const material = input.item.material as ParameterSource | undefined;
     if (!material) return undefined;
-    for (const name of ["u_transmissionFactor", "u_diffuseTransmissionFactor", "u_volumeThicknessFactor"] as const) {
-      const v = material.getParameter(name);
-      if (typeof v === "number" && v > 0.001) return true;
-    }
+    const base = material instanceof MaterialInstance ? material.baseMaterial : material;
+    if (!(base instanceof Material) || base.programFeatures({ flags: input.flags, tier: input.tier }).lighting !== "lit") return undefined;
+    const factor = material.getParameter("u_transmissionFactor");
+    if (typeof factor === "number" && Number.isFinite(factor) && factor > 0) return true;
+    const name = "u_transmissionTexture";
+    const value = material.getParameter(name);
+    if (isTextureBinding(value) && value.texture && !value.texture.disposed && material.getParameter(`${name}Enabled`) !== 0) return true;
     return undefined;
   },
   defines(value): Readonly<Record<string, string | number | true>> {
     // `a3d_prd04_transmission` / `a3d_prd04_volume` guard on A3D_TRANSMISSION.
     return value === true ? { A3D_TRANSMISSION: 1 } : {};
   },
-  bindUniforms(_value, item, set) {
-    // T0-05 review: bind the captured opaque-scene copy (the capture pass
-    // records it in transmissionTargetStore); a material-pinned target wins.
+  bindUniforms(value, item, set, frame) {
+    if (value !== true) return;
+    // A pinned, fully supplied texture wins; otherwise use only the capture
+    // published by the current renderer/device/view/frame.
     const material = item.material as ParameterSource | undefined;
-    const captured = capturedTransmissionTarget();
     const target = material?.getParameter("u_prd04TransmissionTarget");
+    let texture: TextureBinding["texture"];
+    let width: number;
+    let height: number;
     if (target !== undefined) {
-      set("a3d_prd04_transmissionSampler", target);
-    } else if (captured) {
-      set("a3d_prd04_transmissionSampler", new TextureBinding({ name: "a3d_prd04_transmissionSampler", texture: captured.texture, required: false }));
+      if (!isTextureBinding(target) || !target.texture || !target.validate().ok || target.texture.dimension !== "2d"
+        || !target.texture.usage.includes("sampled")) {
+        throw new RenderDeviceError("Pinned transmission texture is unavailable", "TRANSMISSION_CAPTURE_UNAVAILABLE", { label: item.label });
+      }
+      texture = target.texture;
+      width = texture.width;
+      height = texture.height;
+      const levels = Math.floor(Math.log2(Math.max(width, height))) + 1;
+      const supplied = levels === 1 ? texture.data !== null || texture.source !== null || texture.mipLevels.length === 1
+        : texture.mipLevels.length === levels;
+      const size = material?.getParameter("u_prd04TransmissionTargetSize");
+      if (texture.mipLevelCount !== levels || !supplied || (size !== undefined
+        && ((!Array.isArray(size) && !(size instanceof Float32Array)) || size.length !== 2 || size[0] !== width || size[1] !== height))) {
+        throw new RenderDeviceError("Pinned transmission texture requires a complete, correctly sized mip chain", "TRANSMISSION_CAPTURE_UNAVAILABLE", { label: item.label });
+      }
+    } else {
+      const captured = capturedTransmissionTarget(frame);
+      if (!captured) throw new RenderDeviceError("Current frame transmission capture is unavailable", "TRANSMISSION_CAPTURE_UNAVAILABLE", { label: item.label });
+      texture = captured.texture;
+      width = captured.width;
+      height = captured.height;
     }
-    const size = material?.getParameter("u_prd04TransmissionTargetSize");
-    if (size !== undefined) {
-      set("a3d_prd04_transmissionSamplerSize", size);
-    } else if (captured) {
-      set("a3d_prd04_transmissionSamplerSize", new Float32Array([captured.width, captured.height]));
-    }
+    set("a3d_prd04_transmissionSampler", new TextureBinding({ name: "a3d_prd04_transmissionSampler", texture,
+      sampler: Sampler.trilinear({ wrap: "clamp" }), required: true, expectedDimension: "2d" }));
+    set("a3d_prd04_transmissionSamplerSize", new Float32Array([width, height]));
   }
 };
 
@@ -283,13 +301,15 @@ export const rimFeature: ShaderFeature = {
   }
 };
 
-const FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature, rimFeature];
+/** Stable built-in identities, used when a draw must be safe to replay. */
+export const PRD04_SHADER_FEATURES: readonly ShaderFeature[] = [uvTransformFeature, tangentFrameFeature, debugViewFeature, transmissionTargetFeature, alphaToCoverageFeature, rimFeature];
+export const isPrd04ReplaySafeFeature = makeShaderFeatureReplayGuard(PRD04_SHADER_FEATURES);
 
 let registered = false;
 
 /** Registers the PRD-04 ShaderFeatures; idempotent. */
 export function registerPrd04ShaderFeatures(): void {
   if (registered) return;
-  for (const feature of FEATURES) registerShaderFeature(feature);
+  for (const feature of PRD04_SHADER_FEATURES) registerShaderFeature(feature);
   registered = true;
 }

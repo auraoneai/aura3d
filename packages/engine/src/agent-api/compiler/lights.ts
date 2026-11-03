@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraLightNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
+import type { AuraColor, AuraLightNode, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistry, AuraSceneNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
 import type { AuraLightPatch, AuraLightTransitionOptions } from "../nodes/types/runtime.js";
 import type { AuraDirectionalShadowOptions, AuraLightingModel, AuraLocalShadowOptions } from "../../contracts/lighting.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
@@ -9,12 +9,15 @@ import { colorToLinearRgb, multiplyRgb } from "../colorUtils.js";
 import { parseAuraColor } from "../color.js";
 import { clampNumber, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../compiler/observations.js";
 import { normalize3 } from "../sceneMath.js";
+import { runtimeNodeEffectiveVisibility, runtimeNodeHandleForSceneNode } from "../app/runtimeNodes.js";
+import { sourceSceneNodeOf } from "./sceneGraph.js";
 import { groups } from "../nodes/groups.js";
 import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, RectAreaLight, SpotLight, type Light } from "@aura3d/scene";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 // Deep import (lane-15 package export map untouched; FlagshipFoundation pattern).
 import type { AuraLightData } from "../../../../rendering/src/LightUniforms.js";
+import type { PhotometricProfileTable } from "../../../../rendering/src/lighting/PhotometricProfileAtlas.js";
 // threejs-parity AD-16: LightProbe SH9 evaluation (same deep-import pattern).
 import { evaluateSH9Radiance } from "../../../../rendering/src/environment/SphericalHarmonics.js";
 
@@ -147,6 +150,10 @@ export function createProductionRuntimeCollectedLight(
   castsShadow: boolean
 ): CollectedLight {
   const rect = descriptor.kind === "rect-area";
+  // Neither a finite rect nor its legacy spot approximation has a
+  // two-sided shadow map. Do not advertise one for the opt-in path.
+  const supportedShadow = castsShadow && !(descriptor.twoSided === true
+    && (rect || descriptor.authoredLight === "rect" || descriptor.authoredLight === "softbox"));
   const source: Light = descriptor.kind === "directional"
     ? new DirectionalLight(descriptor.name)
     : descriptor.kind === "point"
@@ -156,7 +163,7 @@ export function createProductionRuntimeCollectedLight(
         : new SpotLight(descriptor.name);
   source.color = [...descriptor.color];
   source.intensity = descriptor.intensity;
-  source.castsShadow = castsShadow;
+  source.castsShadow = supportedShadow;
   source.layerMask = 0xffffffff;
   source.userData.aura3dAuthoredLight = descriptor.authoredLight;
   if (descriptor.authoredWidth !== undefined) source.userData.aura3dAuthoredWidth = descriptor.authoredWidth;
@@ -168,6 +175,7 @@ export function createProductionRuntimeCollectedLight(
   if (source instanceof RectAreaLight) {
     source.width = descriptor.authoredWidth ?? 1;
     source.height = descriptor.authoredHeight ?? 1;
+    source.twoSided = descriptor.twoSided === true;
     if (descriptor.range > 0) source.range = descriptor.range;
   }
   if (source instanceof SpotLight) {
@@ -191,10 +199,11 @@ export function createProductionRuntimeCollectedLight(
     ...(basis ? { right: basis.right, up: basis.up } : {}),
     range: descriptor.range,
     ...(rect ? { width: descriptor.authoredWidth ?? 1, height: descriptor.authoredHeight ?? 1 } : {}),
+    ...(descriptor.twoSided === true ? { twoSided: true } : {}),
     spotAngle: descriptor.spotAngle,
     penumbra: descriptor.penumbra,
     ...(descriptor.decay !== undefined ? { decay: descriptor.decay } : {}),
-    castsShadow,
+    castsShadow: supportedShadow,
     layerMask: 0xffffffff,
     source
   };
@@ -214,6 +223,17 @@ export interface PhysicalLightDescriptor extends ProductionRuntimeLightDescripto
 }
 
 const FOUR_PI = 4 * Math.PI;
+
+/** Validate raw scene nodes too, not only values passed through the builders. */
+export function authoredRectTwoSided(node: AuraLightNode): boolean {
+  if (node.twoSided !== undefined && typeof node.twoSided !== "boolean") {
+    throw new TypeError("rect/softbox twoSided must be a boolean");
+  }
+  if (node.twoSided === true && (node.shadow === true || (typeof node.shadow === "object" && node.shadow !== null))) {
+    throw new Error("TWO_SIDED_RECT_SHADOW_UNSUPPORTED: rect/softbox lights do not support two-sided shadow maps");
+  }
+  return node.twoSided === true;
+}
 
 export function physicalLightDescriptor(node: AuraLightNode, name: string): PhysicalLightDescriptor | null {
   // E3: node.color is an AuraColor (usually "#hex"), not a linear tuple —
@@ -303,7 +323,8 @@ export function physicalLightDescriptor(node: AuraLightNode, name: string): Phys
         shadowOptions,
         authoredLight: node.light,
         authoredWidth: node.width ?? 1,
-        authoredHeight: node.height ?? 1
+        authoredHeight: node.height ?? 1,
+        ...(authoredRectTwoSided(node) ? { twoSided: true } : {})
       };
     }
     default:
@@ -575,7 +596,8 @@ export function descriptorToAuraLightData(
           right: basis!.right,
           up: basis!.up,
           width: descriptor.authoredWidth ?? 1,
-          height: descriptor.authoredHeight ?? 1
+          height: descriptor.authoredHeight ?? 1,
+          ...(descriptor.twoSided === true ? { twoSided: true } : {})
         }
       : {}),
     name: descriptor.name
@@ -619,6 +641,69 @@ export function runtimeLightStats(owner: object | null | undefined): { readonly 
 
 type Rgb = readonly [number, number, number];
 
+type RuntimePhotometricProfile = {
+  readonly profile: PhotometricProfileTable;
+  readonly scale?: number;
+  readonly rotation?: number;
+};
+
+/**
+ * Snapshot the public, structurally typed light distribution at compilation.
+ * The builder validates its input, but its arrays remain caller-owned and may
+ * have changed before a mount or runtime addition. Validate the bounded copy
+ * again; device-specific float32 and atlas limits are checked at admission.
+ */
+function snapshotPhotometricProfile(source: NonNullable<AuraLightNode["photometricProfile"]>): RuntimePhotometricProfile {
+  const table = source?.profile;
+  if (!table || table.format !== "ies-lm63" || table.photometricType !== "C") {
+    throw new TypeError("photometricProfile requires a parsed Type-C IES profile");
+  }
+  const scale = source.scale;
+  const rotation = source.rotation;
+  if (scale !== undefined && (!Number.isFinite(scale) || scale < 0)) throw new RangeError("photometricProfile scale must be finite and non-negative");
+  if (rotation !== undefined && !Number.isFinite(rotation)) throw new RangeError("photometricProfile rotation must be finite");
+
+  const { verticalAngles, horizontalAngles, candela, symmetry } = table;
+  if (!Array.isArray(verticalAngles) || !Array.isArray(horizontalAngles) || !Array.isArray(candela)) {
+    throw new RangeError("photometricProfile has invalid table dimensions");
+  }
+  const verticalCount = verticalAngles.length;
+  const horizontalCount = horizontalAngles.length;
+  const sampleCount = verticalCount * horizontalCount;
+  if (verticalCount < 1 || horizontalCount < 1 || verticalCount > 4096 || horizontalCount > 4096 || sampleCount > 1048576 || candela.length !== sampleCount) {
+    throw new RangeError("photometricProfile has invalid table dimensions");
+  }
+  const copyAngles = (input: readonly number[], count: number, max: number): readonly number[] => {
+    const copy: number[] = [];
+    for (let index = 0; index < count; index += 1) {
+      const value = input[index]!;
+      if (!Number.isFinite(value) || value < 0 || value > max || (index > 0 && value <= copy[index - 1]!)) {
+        throw new RangeError("photometricProfile angles must be finite and strictly increasing");
+      }
+      copy.push(value);
+    }
+    if (input.length !== count) throw new RangeError("photometricProfile changed while being copied");
+    return Object.freeze(copy);
+  };
+  const vertical = copyAngles(verticalAngles, verticalCount, 180);
+  const horizontal = copyAngles(horizontalAngles, horizontalCount, 360);
+  const end = horizontal[horizontalCount - 1];
+  const expected = horizontalCount === 1 ? "rotational" : end === 90 ? "quadrant" : end === 180 ? "bilateral" : end === 360 ? "none" : undefined;
+  if (horizontal[0] !== 0 || symmetry !== expected) throw new RangeError("photometricProfile has invalid symmetry or candela values");
+  const samples: number[] = [];
+  for (let index = 0; index < sampleCount; index += 1) {
+    const value = candela[index]!;
+    if (!Number.isFinite(value) || value < 0) throw new RangeError("photometricProfile has invalid symmetry or candela values");
+    samples.push(value);
+  }
+  if (candela.length !== sampleCount) throw new RangeError("photometricProfile changed while being copied");
+  const profile: PhotometricProfileTable = Object.freeze({
+    format: "ies-lm63", photometricType: "C", verticalAngles: vertical,
+    horizontalAngles: horizontal, candela: Object.freeze(samples), symmetry
+  });
+  return Object.freeze({ profile, ...(scale !== undefined ? { scale } : {}), ...(rotation !== undefined ? { rotation } : {}) });
+}
+
 /**
  * Where a mount-time collected light came from. Recorded by `createProductionRuntimeCollectedLights` so the PRD-02
  * light handler's per-frame update can drive the light from its runtime handle (position, visibility, setLight).
@@ -628,6 +713,8 @@ export interface RuntimeLightBinding {
   readonly runtimeId: string | undefined;
   /** The authored light kind (`directional`, `spot`, `studio`, ...). */
   readonly authoredLight: AuraLightNode["light"];
+  /** Original source identity, retained across parent flattening. */
+  readonly sourceNode: AuraLightNode;
   /** 0 for the light the node maps to; 1, 2 for the fill / rim a legacy `studio` node expands into. */
   readonly part: number;
   /** Mount-time values, which hold until the handle changes something. */
@@ -645,6 +732,30 @@ export interface RuntimeLightBinding {
 }
 
 const runtimeLightBindings = new WeakMap<CollectedLight, RuntimeLightBinding>();
+const photometricWorldPose = new WeakSet<CollectedLight>();
+const projectedSpotImages = new WeakMap<CollectedLight, NonNullable<AuraLightNode["projectedImage"]>>();
+
+/** Copy projection controls while retaining the authored texture identity. */
+function snapshotProjectedSpotImage(source: NonNullable<AuraLightNode["projectedImage"]>): NonNullable<AuraLightNode["projectedImage"]> {
+  if (!source || typeof source !== "object" || !source.texture || source.texture.kind !== "aura-asset-ref" || source.texture.type !== "texture") {
+    throw new TypeError("projectedImage requires a typed texture asset");
+  }
+  const pair = (value: readonly [number, number] | undefined, label: string): readonly [number, number] | undefined => {
+    if (value === undefined) return undefined;
+    if (!Array.isArray(value) || value.length !== 2 || !Number.isFinite(value[0]) || !Number.isFinite(value[1])) throw new RangeError(`projectedImage ${label} requires two finite values`);
+    return Object.freeze([value[0], value[1]] as const);
+  };
+  const offset = pair(source.offset, "offset"), scale = pair(source.scale, "scale");
+  if (scale && (scale[0] === 0 || scale[1] === 0)) throw new RangeError("projectedImage scale must be nonzero");
+  if (source.rotation !== undefined && !Number.isFinite(source.rotation)) throw new RangeError("projectedImage rotation must be finite");
+  return Object.freeze({ texture: source.texture, ...(offset ? { offset } : {}), ...(scale ? { scale } : {}),
+    ...(source.rotation === undefined ? {} : { rotation: source.rotation }) });
+}
+
+/** A runtime child must resolve its registered world position after parent linking. */
+export function usePhotometricWorldPose(light: CollectedLight): void {
+  if (light.photometricProfile || projectedSpotImages.has(light)) photometricWorldPose.add(light);
+}
 
 export function bindRuntimeLight(light: CollectedLight, binding: RuntimeLightBinding): CollectedLight {
   runtimeLightBindings.set(light, binding);
@@ -662,9 +773,25 @@ export function bindAuthoredLight(
   part: number,
   aim: (position: AuraVec3) => AuraVec3
 ): CollectedLight {
+  if (node.light === "spot" && node.projectedImage !== undefined) {
+    const projection = snapshotProjectedSpotImage(node.projectedImage);
+    projectedSpotImages.set(light, projection);
+    (light as WritableCollectedLight).projectedImage = projection;
+  }
+  if ((node.light === "point" || node.light === "spot") && node.photometricProfile !== undefined) {
+    const writable = light as WritableCollectedLight;
+    writable.photometricProfile = snapshotPhotometricProfile(node.photometricProfile);
+    // Profile output is absolute candela: visibility and dimming are separate
+    // from the legacy scalar intensity, which may legitimately be zero.
+    // The runtime registry establishes effective visibility, including
+    // ancestors; until it does, the renderer must not assume visibility.
+    writable.photometricVisible = undefined;
+    writable.photometricDimmer = 1;
+  }
   return bindRuntimeLight(light, {
     runtimeId: (node as { readonly runtime?: { readonly id?: string } }).runtime?.id,
     authoredLight: node.light,
+    sourceNode: (sourceSceneNodeOf(node) ?? node) as AuraLightNode,
     part,
     base: {
       color: light.color,
@@ -710,12 +837,17 @@ interface RuntimeLightControl {
   shown: LightTargets;
   /** Handle position minus authored world position at first sight (a parent group's offset; 0 for top-level). */
   offset?: AuraVec3;
+  /** Preserve the mounted position while following later ancestor transforms for profiled lights. */
+  profileWorldOffset?: AuraVec3;
+  lastProfileWorldPosition?: AuraVec3;
   /** Signature of the values last written into each collected light (skips no-op writes). */
   readonly written: WeakMap<CollectedLight, string>;
   /** Node fields of an ambient / hemisphere / probe light before the first write (restored values). */
   nodeBase?: { readonly intensity: number; readonly color: string };
   /** `handle.version` after the last applied frame (steady-state skip). */
   lastVersion?: number;
+  /** Effective visibility also changes when an ancestor is hidden. */
+  lastEffectiveVisible?: boolean;
 }
 
 /** True until an evaluation of the channel has reached its target. */
@@ -892,6 +1024,7 @@ function frameSignature(values: RuntimeLightFrameValues): string {
 
 /** Collected lights bound to each runtime id, per mount-time light list. */
 const lightsByRuntimeId = new WeakMap<readonly CollectedLight[], Map<string, CollectedLight[]>>();
+const lightsBySourceNode = new WeakMap<readonly CollectedLight[], WeakMap<AuraSceneNode, CollectedLight[]>>();
 
 function boundLightsFor(lights: readonly CollectedLight[], runtimeId: string): readonly CollectedLight[] {
   let index = lightsByRuntimeId.get(lights);
@@ -907,6 +1040,47 @@ function boundLightsFor(lights: readonly CollectedLight[], runtimeId: string): r
     lightsByRuntimeId.set(lights, index);
   }
   return index.get(runtimeId) ?? [];
+}
+
+function boundProfileLightsForNode(lights: readonly CollectedLight[], node: AuraLightNode): readonly CollectedLight[] {
+  let index = lightsBySourceNode.get(lights);
+  if (!index) {
+    index = new WeakMap();
+    for (const light of lights) {
+      const binding = runtimeLightBindings.get(light);
+      if (!binding || (!light.photometricProfile && !projectedSpotImages.has(light))) continue;
+      const list = index.get(binding.sourceNode);
+      if (list) list.push(light);
+      else index.set(binding.sourceNode, [light]);
+    }
+    lightsBySourceNode.set(lights, index);
+  }
+  return index.get(sourceSceneNodeOf(node) ?? node) ?? [];
+}
+
+/** Refresh profiled and projected lights, including anonymous children. */
+export function updateRuntimePhotometricLights(
+  nodes: readonly AuraSceneNode[],
+  runtime: AuraRuntimeNodeRegistry | undefined,
+  lights: readonly CollectedLight[],
+  timeSeconds: number
+): void {
+  for (const node of nodes) {
+    if (node.kind !== "light") continue;
+    const bound = boundProfileLightsForNode(lights, node);
+    if (bound.length === 0) continue;
+    const handle = runtimeNodeHandleForSceneNode(runtime, sourceSceneNodeOf(node) ?? node);
+    // A reused source object or missing handle cannot establish one instance's
+    // effective ancestry, so leave profile rendering explicitly unavailable.
+    if (!handle || bound.length !== 1) {
+      for (const light of bound) {
+        if (light.photometricProfile) (light as WritableCollectedLight).photometricVisible = undefined;
+        if (projectedSpotImages.has(light)) (light as WritableCollectedLight).projectedImage = undefined;
+      }
+      continue;
+    }
+    updateRuntimeLight(node, handle, lights, timeSeconds);
+  }
 }
 
 function rgbToHex(rgb: Rgb): string {
@@ -926,6 +1100,7 @@ export interface RuntimeLightHandleLike {
   readonly visible: boolean;
   readonly position: AuraVec3;
   setPosition(x: number, y: number, z: number): unknown;
+  getWorldPosition?(): AuraVec3;
 }
 
 /**
@@ -943,20 +1118,50 @@ export function updateRuntimeLight(
   timeSeconds: number
 ): void {
   if (!handle) return;
-  const bound = boundLightsFor(lights, handle.id);
+  const bySource = boundProfileLightsForNode(lights, node);
+  if (bySource.length > 1) {
+    for (const light of bySource) {
+      if (light.photometricProfile) (light as WritableCollectedLight).photometricVisible = undefined;
+      if (projectedSpotImages.has(light)) (light as WritableCollectedLight).projectedImage = undefined;
+    }
+    return;
+  }
+  const bound = bySource.length ? bySource : boundLightsFor(lights, handle.id);
   if (bound.length === 0) {
     if (node.light === "ambient" || node.light === "hemisphere" || node.light === "probe") updateEnvironmentLightNode(node, handle, runtimeLightControls.get(handle), timeSeconds);
     return;
   }
+  const effectiveVisible = bySource.length === 1 ? runtimeNodeEffectiveVisibility(handle as AuraRuntimeNodeHandle) : handle.visible !== false;
+  if (bySource.length === 1) {
+    const light = bySource[0]!;
+    if (light.photometricProfile) (light as WritableCollectedLight).photometricVisible = effectiveVisible;
+    const projection = projectedSpotImages.get(light);
+    if (projection) (light as WritableCollectedLight).projectedImage = effectiveVisible ? projection : undefined;
+  }
   const state = lightControlFor(handle);
+  let profileWorldPosition: AuraVec3 | undefined;
+  if (bySource.length === 1 && handle.getWorldPosition) {
+    try { profileWorldPosition = handle.getWorldPosition(); } catch { /* An unknown pose cannot be admitted. */ }
+    if (!profileWorldPosition || profileWorldPosition.length !== 3 || !profileWorldPosition.every(Number.isFinite)) {
+      if (bySource[0]!.photometricProfile) (bySource[0] as WritableCollectedLight).photometricVisible = undefined;
+      if (projectedSpotImages.has(bySource[0]!)) (bySource[0] as WritableCollectedLight).projectedImage = undefined;
+      return;
+    }
+  }
   // Steady state: nothing queued, no blend running and the handle unchanged since the last frame.
-  if (state.pending.length === 0 && typeof handle.version === "number" && handle.version === state.lastVersion && !lightChannelsRunning(state)) return;
+  if (state.pending.length === 0 && typeof handle.version === "number" && handle.version === state.lastVersion && !lightChannelsRunning(state)
+      && sameVec3(profileWorldPosition, state.lastProfileWorldPosition) && state.lastEffectiveVisible === effectiveVisible) return;
   const primary = bound.find((light) => runtimeLightBindings.get(light)?.part === 0) ?? bound[0]!;
   const binding = runtimeLightBindings.get(primary)!;
   const base = binding.base;
   consumePendingPatches(state, binding, binding.authoredLight);
   // Parent-group offset, captured at the first update (mount, before any handle write); 0 for top-level nodes.
   state.offset ??= [base.position[0] - handle.position[0], base.position[1] - handle.position[1], base.position[2] - handle.position[2]];
+  if (profileWorldPosition) {
+    state.profileWorldOffset ??= (photometricWorldPose.has(primary) || projectedSpotImages.has(primary))
+      ? [0, 0, 0]
+      : [base.position[0] - profileWorldPosition[0], base.position[1] - profileWorldPosition[1], base.position[2] - profileWorldPosition[2]];
+  }
 
   // Position: a running position blend writes through setPosition; any other handle position cancels it.
   if (state.position) {
@@ -969,8 +1174,18 @@ export function updateRuntimeLight(
       if (!channelRunning(state.position)) state.position = undefined;
     }
   }
-  const offset = state.offset;
-  const position: AuraVec3 = [handle.position[0] + offset[0], handle.position[1] + offset[1], handle.position[2] + offset[2]];
+  if (profileWorldPosition && handle.getWorldPosition) {
+    try { profileWorldPosition = handle.getWorldPosition(); } catch { profileWorldPosition = undefined; }
+    if (!profileWorldPosition || !profileWorldPosition.every(Number.isFinite)) {
+      if (bySource[0]!.photometricProfile) (bySource[0] as WritableCollectedLight).photometricVisible = undefined;
+      if (projectedSpotImages.has(bySource[0]!)) (bySource[0] as WritableCollectedLight).projectedImage = undefined;
+      return;
+    }
+  }
+  state.lastProfileWorldPosition = profileWorldPosition;
+  const offset = profileWorldPosition ? state.profileWorldOffset! : state.offset;
+  const current = profileWorldPosition ?? handle.position;
+  const position: AuraVec3 = [current[0] + offset[0], current[1] + offset[1], current[2] + offset[2]];
   const moved = !sameVec3(position, base.position);
 
   const shown = state.shown;
@@ -986,7 +1201,8 @@ export function updateRuntimeLight(
   state.shown = { color, intensity, range, direction, position };
   state.lastVersion = handle.version;
 
-  const visible = handle.visible !== false;
+  const visible = effectiveVisible;
+  state.lastEffectiveVisible = visible;
   for (const light of bound) {
     const lightBinding = runtimeLightBindings.get(light)!;
     const values: RuntimeLightFrameValues = light === primary

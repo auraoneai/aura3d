@@ -26,6 +26,7 @@ import type { AuraColor, AuraMaterialSpec } from "../agent-api/index";
 import type { AuraInstanceColorTarget, AuraMaterialRimSpec } from "../agent-api/nodes/types";
 import type { AuraModelMaterialOverride } from "../contracts/materials";
 import { parseAuraColor } from "../contracts/sceneGraph";
+import { resolveIridescenceThickness } from "../material-physical/PhysicalMaterialSpec";
 
 /** GU47 E-D: a lowered `rim` (linear rgb). Same parameter names as `packages/rendering/src/shaders/chunks/rim.glsl.ts`. */
 export interface LoweredMaterialRim {
@@ -60,6 +61,9 @@ export interface TypedGLBActorMaterialOverride {
   readonly transmission?: number;
   /** GU47 E-D: `u_iridescenceFactor`, on materials that carry it. */
   readonly iridescence?: number;
+  readonly iridescenceIor?: number;
+  readonly iridescenceThicknessMinimum?: number;
+  readonly iridescenceThicknessMaximum?: number;
   /** GU47 pass 4: `u_sheenColorFactor` (linear, already scaled by `sheen`), on materials that carry it. */
   readonly sheenColor?: readonly [number, number, number];
   /** GU47 pass 4: `u_sheenRoughnessFactor`, on materials that carry it. */
@@ -310,6 +314,9 @@ export function applyMaterialOverrides(
     if (resolved.opacity !== undefined) writeToAuthoredKeys(["u_opacity", "u_alpha"], resolved.opacity);
     if (resolved.transmission !== undefined) writeToAuthoredKeys(["u_transmissionFactor"], clampRange(resolved.transmission, 0, 0, 1));
     if (resolved.iridescence !== undefined) writeToAuthoredKeys(["u_iridescenceFactor"], clampRange(resolved.iridescence, 0, 0, 1));
+    if (resolved.iridescenceIor !== undefined) writeToAuthoredKeys(["u_iridescenceIor"], resolved.iridescenceIor);
+    if (resolved.iridescenceThicknessMinimum !== undefined) writeToAuthoredKeys(["u_iridescenceThicknessMinimum"], resolved.iridescenceThicknessMinimum);
+    if (resolved.iridescenceThicknessMaximum !== undefined) writeToAuthoredKeys(["u_iridescenceThicknessMaximum"], resolved.iridescenceThicknessMaximum);
     if (resolved.sheenColor) writeToAuthoredKeys(["u_sheenColorFactor"], [resolved.sheenColor[0], resolved.sheenColor[1], resolved.sheenColor[2]]);
     if (resolved.sheenRoughness !== undefined) writeToAuthoredKeys(["u_sheenRoughnessFactor"], clampRange(resolved.sheenRoughness, 0, 0, 1));
   }
@@ -326,9 +333,11 @@ function targetPredicate(
   target: string | RegExp | readonly (string | RegExp)[] | undefined
 ): ((materialName: string) => boolean) | undefined {
   if (target === undefined) return undefined;
-  const matchers = (Array.isArray(target) ? target : [target]).map((entry) =>
-    typeof entry === "string" ? (name: string) => name === entry : (name: string) => entry.test(name)
-  );
+  const matchers = (Array.isArray(target) ? target : [target]).map((entry) => {
+    if (typeof entry === "string") return (name: string) => name === entry;
+    const expression = new RegExp(entry.source, entry.flags);
+    return (name: string) => { expression.lastIndex = 0; return expression.test(name); };
+  });
   return (name: string) => matchers.some((match) => match(name));
 }
 
@@ -365,13 +374,26 @@ export function lowerModelMaterialOverrides(
   // `model(asset, { material: { roughness } })` survives to the actor.
   const authored = (key: string) => presetDefaulted?.has(key) !== true;
   const metallic = spec?.metallic ?? spec?.metalness;
+  const [thicknessMinimum, thicknessMaximum] = resolveIridescenceThickness({
+    iridescenceThicknessRange: authored("iridescenceThicknessRange") ? spec?.iridescenceThicknessRange : undefined,
+    iridescenceThicknessMinimum: authored("iridescenceThicknessMinimum") ? spec?.iridescenceThicknessMinimum : undefined,
+    iridescenceThicknessMaximum: authored("iridescenceThicknessMaximum") ? spec?.iridescenceThicknessMaximum : undefined
+  });
+  const iridescenceIor = authored("iridescenceIOR") ? spec?.iridescenceIOR : undefined;
+  if (iridescenceIor !== undefined && (!Number.isFinite(iridescenceIor) || iridescenceIor < 1)) {
+    throw new RangeError("iridescenceIOR must be finite and at least 1");
+  }
   const surface: TypedGLBActorMaterialOverride = {
     ...(spec?.roughness !== undefined && authored("roughness") ? { roughness: spec.roughness } : {}),
     ...(metallic !== undefined && authored("metallic") && authored("metalness") ? { metallic } : {}),
     ...(spec?.clearcoat !== undefined && authored("clearcoat") ? { clearcoat: spec.clearcoat } : {}),
     ...(spec?.clearcoatRoughness !== undefined && authored("clearcoatRoughness")
       ? { clearcoatRoughness: spec.clearcoatRoughness }
-      : {})
+      : {}),
+    ...(spec?.iridescence !== undefined && authored("iridescence") ? { iridescence: spec.iridescence } : {}),
+    ...(iridescenceIor !== undefined ? { iridescenceIor } : {}),
+    ...(thicknessMinimum !== undefined ? { iridescenceThicknessMinimum: thicknessMinimum } : {}),
+    ...(thicknessMaximum !== undefined ? { iridescenceThicknessMaximum: thicknessMaximum } : {})
   };
   if (Object.keys(surface).length > 0) lowered.push(surface);
   // GU47 E-D: `model(asset, { material: { rim } })`.
@@ -382,8 +404,8 @@ export function lowerModelMaterialOverrides(
       ...(override.target !== undefined ? { target: targetPredicate(override.target) } : {}),
       ...(override.color !== undefined
         ? override.colorMode === "replace"
-          ? { baseColorReplace: colorToVec4(override.color) }
-          : { baseColorMultiply: colorToVec4(override.color) }
+          ? { baseColorReplace: colorToVec4(override.color), baseColorMultiply: undefined }
+          : { baseColorMultiply: colorToVec4(override.color), baseColorReplace: undefined }
         : {}),
       ...(override.replaceTextures !== undefined ? { replaceTextures: override.replaceTextures } : {}),
       ...(override.roughness !== undefined ? { roughness: override.roughness } : {}),

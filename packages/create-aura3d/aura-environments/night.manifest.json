@@ -1,0 +1,33 @@
+{
+  "name": "night",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "night.specular.ktx2",
+  "sh9": "night.sh9.f32",
+  "sha256": {
+    "specular": "8e334407d8fa2cda74f0f64f895d194b7aefdc84bcd765ee6995a64691e93235",
+    "sh9": "d6c05ec24b8df34da790f92b41901bf94ed67457c1dbb1f3c81670ee15e5a9c2"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128,
+  "provenance": {
+    "sourceAsset": "../hdri/kloppenheim_06_puresky_1k.hdr",
+    "sourceAssetSha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+    "sourceLicense": "CC0-1.0",
+    "sourceUri": "https://polyhaven.com/a/kloppenheim_06_puresky",
+    "sourceTransform": {
+      "intensity": 0.05,
+      "rotateYawDegrees": 140
+    },
+    "bakeOrigin": "historical-aura-bake",
+    "sourceRecord": "packages/engine/src/devtools/environments/EnvironmentRegistry.ts",
+    "bakeCommit": "45b2923f52f829fad700127befa035706780f2de",
+    "pipelineIndependenceVerified": false
+  }
+}

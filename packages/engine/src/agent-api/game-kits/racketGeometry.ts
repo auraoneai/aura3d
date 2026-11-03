@@ -1,4 +1,4 @@
-import type { AuraRuntimeNodeHandle } from "../index";
+import type { AuraRuntimeNodeHandle } from "../nodes/types/runtime.js";
 
 export type RacketVec3 = readonly [number, number, number];
 

@@ -89,7 +89,14 @@ apps/veer-wonder-world/tools/remote-run.sh look                    # look-dev fr
 
 Results land in `tests/reports/remote-acr/<RUN_ID>/`; copy what you keep into `evidence/veer-wonder-world/`. Software WebGL2 results are not real-GPU or device evidence.
 
-The unlisted preview deploys with `apps/veer-wonder-world/tools/deploy-preview.sh --prod`; the deploy host builds it (DEPLOYMENT.md section 3). Afterwards `apps/veer-wonder-world/tools/remote-run.sh live` opens the deployed address on the remote runner and checks its hosting rules. That spec file is outside the 20-run suite above.
+The unlisted preview is hosted on **Cloudflare Pages** as the canonical production host (`aura3d-wonder-world` project, `https://aura3d-wonder-world.pages.dev` and the owner's custom domain in the `auraone.ai` zone; **prefer Cloudflare Pages over Vercel and do not deploy to Vercel**). Build and deploy with:
+
+```bash
+bash apps/veer-wonder-world/tools/deploy-build.sh
+wrangler pages deploy apps/veer-wonder-world/dist --project-name aura3d-wonder-world --branch main
+```
+
+(Legacy script `apps/veer-wonder-world/tools/deploy-preview.sh --prod` is retained only for unit-test compatibility; see DEPLOYMENT.md section 3). Afterwards `apps/veer-wonder-world/tools/remote-run.sh live` opens the deployed address on the remote runner and checks its hosting rules. That spec file is outside the 20-run suite above.
 
 ## Running it
 

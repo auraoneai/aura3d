@@ -14,6 +14,25 @@
     "tests/unit/rendering/renderer.test.ts::Renderer runs renderer-owned HDR bloom in float space before tone mapping": "tests/unit/rendering/renderer.test.ts::Renderer runs renderer-owned mock reference HDR bloom in float space before tone mapping",
     "tests/unit/rendering/renderer.test.ts::Renderer runs renderer-owned WebGPU postprocess asynchronously through native texture readback": "tests/unit/rendering/renderer.test.ts::Renderer runs renderer-owned WebGPU postprocess asynchronously through native fullscreen passes without CPU readback",
     "tests/unit/rendering/renderer.test.ts::Renderer runs renderer-owned WebGPU postprocess through the same presentation contract": "tests/unit/rendering/renderer.test.ts::Renderer runs renderer-owned mock reference postprocess through the same presentation contract",
-    "tests/unit/apps/bank-shot-determinism.test.ts::bank shot determinism a full-power break scatters the rack: at least 10 of 15 balls move > 0.05 m": "tests/unit/apps/bank-shot-determinism.test.ts::bank shot determinism a full-power break scatters the rack: at least 10 of 15 balls move 0.05 m"
+    "tests/unit/apps/bank-shot-determinism.test.ts::bank shot determinism a full-power break scatters the rack: at least 10 of 15 balls move > 0.05 m": "tests/unit/apps/bank-shot-determinism.test.ts::bank shot determinism a full-power break scatters the rack: at least 10 of 15 balls move 0.05 m",
+    "tests/unit/input/orbit-controls-three-parity.test.ts::OrbitControls Three.js parity supports pan, saveState, reset, and disable flags through the public A3D API": "tests/unit/input/native-orbit-controls.test.ts::OrbitControls supports pan, saveState, reset, and disable flags through the public A3D API"
+  },
+  "behaviorOnlySuccessors": {
+    "tests/unit/controls/transform-controls-three-parity.test.ts::TransformControls bounded Three.js parity applies translate, rotate, and scale deltas to an attached object like Three.Object3D transform mutation": {
+      "successor": "tests/unit/controls/native-transform-controls.test.ts::TransformControls explicit deltas adds translate, rotate, and scale deltas to the corresponding attached-object properties",
+      "reason": "The comparative oracle was retired; the successor checks native transform behavior against calculated values."
+    },
+    "tests/unit/input/orbit-controls-three-parity.test.ts::OrbitControls Three.js parity matches Three.js orbit rotation and wheel dolly for the same pointer sequence": {
+      "successor": "tests/unit/input/native-orbit-controls.test.ts::OrbitControls orbits a camera and dollies in response to pointer and wheel input",
+      "reason": "The comparative oracle was retired; the successor checks native orbit and dolly behavior against calculated values."
+    },
+    "tests/unit/rendering/interactive-cubes-three-parity.test.ts::interactive cubes Three.js parity matches Three.js Raycaster nearest-cube hits for the CurrentRoutes picking scene": {
+      "successor": "tests/unit/rendering/native-interactive-cubes.test.ts::interactive cube picking finds the expected nearest cube and its front-face intersection in the interactive scene",
+      "reason": "The comparative oracle was retired; the successor checks native cube picking against calculated intersections."
+    },
+    "tests/unit/rendering/interactive-points-three-parity.test.ts::interactive points Three.js parity matches Three.js Raycaster point threshold hits for the CurrentRoutes picking scene": {
+      "successor": "tests/unit/rendering/native-interactive-points.test.ts::interactive point picking finds the expected points in the interactive scene and rejects a miss",
+      "reason": "The comparative oracle was retired; the successor checks native point picking against calculated intersections."
+    }
   }
 }

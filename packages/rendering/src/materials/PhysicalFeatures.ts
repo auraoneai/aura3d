@@ -9,6 +9,7 @@
  * invariant that no material can cap or disable lights.
  */
 import type { MaterialExtensionFeature, ProgramFeatures } from "../contracts/program";
+import { PHYSICAL_LOBE_MAP_BITS } from "../program/MaterialFeatures";
 import { QUALITY_TIERS } from "../contracts/quality";
 import { materialLobes, type MaterialFeatureContext, type MaterialLobeInput } from "../contracts/materialLobes";
 import { Texture } from "../Texture";
@@ -17,8 +18,8 @@ import type { PhysicalMapBinding, PhysicalMapSlot, PhysicalMaterialDescriptor, P
 
 export type { PhysicalFeatureSet };
 
-/** The five ProgramFeatures `maps` slots (C-02 names). */
-const CORE_MAP_SLOTS = ["baseColor", "normal", "metallicRoughness", "occlusion", "emissive"] as const;
+/** The ProgramFeatures `maps` slots (C-02 names). */
+const CORE_MAP_SLOTS = ["baseColor", "normal", "metallicRoughness", "occlusion", "emissive", "diffuseRoughness", "bump"] as const;
 
 type CoreMapSlot = (typeof CORE_MAP_SLOTS)[number];
 
@@ -104,11 +105,19 @@ export function physicalFeatureSet(
   for (const lobe of materialLobes(ctx.flags)) {
     const feature = lobe.feature(input);
     if (!feature) continue;
-    extensions.push(
-      lobe.id === "iridescence"
-        ? { ...feature, bits: { ...feature.bits, film: !lowTier } }
-        : feature
-    );
+    const mapUvSets: Record<string, 0 | 1> = {};
+    for (const slot of feature.maps) mapUvSets[slot] = descriptor.textures[slot as PhysicalMapSlot]?.texCoord ?? 0;
+    extensions.push({
+      ...feature,
+      ...(feature.maps.length ? { mapUvSets } : {}),
+      ...(lobe.id === "iridescence" ? { bits: { ...feature.bits, film: !lowTier } } : {})
+    });
+  }
+  if (ctx.flags.on("A3D_QR_MATERIALS") && !extensions.some((ext) => ext.lobe === "diffuse-transmission" || ext.lobe === "KHR_materials_diffuse_transmission")
+    && (descriptor.diffuseTransmission?.factor || descriptor.textures.diffuseTransmission || descriptor.textures.diffuseTransmissionColor)) {
+    const slots = (["diffuseTransmission", "diffuseTransmissionColor"] as const).filter((slot) => descriptor.textures[slot]);
+    extensions.push({ lobe: "KHR_materials_diffuse_transmission", maps: slots,
+      mapUvSets: Object.fromEntries(slots.map((slot) => [slot, descriptor.textures[slot]!.texCoord])) as Record<string, 0 | 1>, bits: {} });
   }
   const maps: { -readonly [K in CoreMapSlot]?: ProgramFeatures["maps"][K] } = {};
   for (const slot of CORE_MAP_SLOTS) {
@@ -141,7 +150,7 @@ export function physicalFeatureSet(
 // ---------------------------------------------------------------------------
 
 import { Sampler } from "../Sampler";
-import { TextureBinding } from "../TextureBinding";
+import { isTextureBinding, TextureBinding } from "../TextureBinding";
 import { uvTransformMatrix } from "./features";
 import type { RenderState } from "../Material";
 
@@ -180,6 +189,85 @@ export interface LegacyPhysicalMaterialOptions {
   readonly textureTexCoords?: Readonly<Partial<Record<string, number>>>;
 }
 
+/** Texture bindings can change after construction. Re-select their presence
+ * and UV set from the live material (or instance) before keying a draw.
+ * Transform components remain uniforms, so editing them does not recompile. */
+export function withLivePhysicalMapFeatures<T extends PhysicalFeatureSet>(
+  record: T,
+  source: { getParameter(name: string): UniformValue | undefined },
+  ctx?: MaterialFeatureContext
+): T {
+  const maps = { ...record.maps };
+  for (const slot of ["baseColor", "normal", "metallicRoughness", "occlusion", "emissive", "diffuseRoughness", "bump"] as const) {
+    const name = `u_${slot}Texture`;
+    const texture = source.getParameter(name);
+    if (texture === undefined) continue; // descriptor-only material: C-03 binds it later
+    if (!isTextureBinding(texture) || !texture.texture || source.getParameter(`${name}Enabled`) === 0) {
+      delete maps[slot];
+      continue;
+    }
+    const coord = source.getParameter(`${name}TexCoord`);
+    if (coord !== undefined && coord !== 0 && coord !== 1) throw new RangeError(`${slot} texture texCoord must be 0 or 1`);
+    maps[slot] = { uvSet: coord === 1 ? 1 : 0, transform: false };
+  }
+  const selectedExtensions = [...record.extensions];
+  if (ctx?.flags.on("A3D_QR_MATERIALS")) {
+    const number = (name: string, fallback = 0) => {
+      const value = source.getParameter(name);
+      return typeof value === "number" ? value : fallback;
+    };
+    const vectorDiffers = (name: string, fallback: number) => {
+      const value = source.getParameter(name);
+      return (Array.isArray(value) || value instanceof Float32Array) && Array.from(value).some((part) => part !== fallback);
+    };
+    const scalarActive: Readonly<Record<string, boolean>> = {
+      clearcoat: number("u_clearcoatFactor") > 0,
+      sheen: vectorDiffers("u_sheenColorFactor", 0) || number("u_sheenRoughnessFactor") > 0,
+      iridescence: number("u_iridescenceFactor") > 0,
+      anisotropy: number("u_anisotropyStrength") > 0,
+      transmission: number("u_transmissionFactor") > 0,
+      "diffuse-transmission": number("u_diffuseTransmissionFactor") > 0,
+      volume: number("u_volumeThicknessFactor") > 0,
+      specular: number("u_specularFactor", 1) !== 1 || vectorDiffers("u_specularColorFactor", 1)
+    };
+    for (const [lobe, slots] of Object.entries(PHYSICAL_LOBE_MAP_BITS)) {
+      if (lobe === "KHR_materials_diffuse_transmission") continue; // alias for externally authored feature records
+      if (selectedExtensions.some((ext) => ext.lobe === lobe || (lobe === "diffuse-transmission" && ext.lobe === "KHR_materials_diffuse_transmission"))) continue;
+      const hasLiveMap = Object.keys(slots).some((slot) => {
+        const name = `u_${slot}Texture`;
+        const texture = source.getParameter(name);
+        return isTextureBinding(texture) && !!texture.texture && !texture.texture.disposed && source.getParameter(`${name}Enabled`) !== 0;
+      });
+      if (scalarActive[lobe] || hasLiveMap) {
+        selectedExtensions.push({ lobe, maps: [], bits: lobe === "iridescence" ? { film: ctx.tier.maxLightsPerPixel > QUALITY_TIERS.low.maxLightsPerPixel } : {} });
+      }
+    }
+  }
+  const extensions = selectedExtensions.map((ext) => {
+    const switches = PHYSICAL_LOBE_MAP_BITS[ext.lobe];
+    if (!switches) return ext;
+    const slots = new Set(ext.maps);
+    const mapUvSets = { ...ext.mapUvSets };
+    const bits = { ...ext.bits };
+    for (const [slot, bit] of Object.entries(switches)) {
+      const name = `u_${slot}Texture`;
+      const texture = source.getParameter(name);
+      // Descriptor-only materials bind their textures later through C-03.
+      if (texture !== undefined) {
+        if (isTextureBinding(texture) && texture.texture && !texture.texture.disposed && source.getParameter(`${name}Enabled`) !== 0) slots.add(slot);
+        else slots.delete(slot);
+      }
+      bits[bit] = slots.has(slot);
+      if (!slots.has(slot)) { delete mapUvSets[slot]; continue; }
+      const coord = source.getParameter(`${name}TexCoord`);
+      if (coord !== undefined && coord !== 0 && coord !== 1) throw new RangeError(`${slot} texture texCoord must be 0 or 1`);
+      mapUvSets[slot] = coord === 1 ? 1 : coord === 0 ? 0 : (mapUvSets[slot] ?? 0);
+    }
+    return { ...ext, maps: [...slots], mapUvSets, bits };
+  });
+  return { ...record, maps, extensions };
+}
+
 const IDENTITY_TRANSFORM = { offset: [0, 0] as const, rotation: 0, scale: [1, 1] as const };
 
 type LegacyTransform = { readonly offset?: readonly [number, number]; readonly scale?: readonly [number, number]; readonly rotation?: number };
@@ -210,7 +298,7 @@ function resolveLegacyTransform(value: unknown): Float32Array | undefined {
 }
 
 const LEGACY_TEXTURE_SLOTS: readonly PhysicalMapSlot[] = [
-  "baseColor", "normal", "metallicRoughness", "occlusion", "emissive",
+  "baseColor", "normal", "metallicRoughness", "occlusion", "emissive", "diffuseRoughness", "bump",
   "clearcoat", "clearcoatRoughness", "clearcoatNormal",
   "transmission", "diffuseTransmission", "diffuseTransmissionColor",
   "volumeThickness", "specular", "specularColor",
@@ -236,7 +324,7 @@ export function legacyPhysicalDescriptor(options: LegacyPhysicalMaterialOptions)
           }
         : bound)
     );
-    const coord = options.textureTexCoords?.[slot];
+    const coord = options.textureTexCoords?.[slot] ?? dynamic[`${slot}TextureTexCoord`];
     textures[slot] = {
       texture,
       sampler: resolveLegacySampler(dynamic[`${slot}Sampler`] ?? bound),
@@ -319,6 +407,20 @@ export function bindMaterialLobeUniforms(
   if (extensions.length === 0) return;
   const input = materialLobeInputOf(material);
   if (!input) return;
+  const source = material as { readonly physicalDescriptor?: PhysicalMaterialDescriptor; readonly prd04Options?: LegacyPhysicalMaterialOptions };
+  const descriptor = source.physicalDescriptor ?? (source.prd04Options ? legacyPhysicalDescriptor(source.prd04Options) : undefined);
+  for (const extension of extensions) {
+    const knownSlots = PHYSICAL_LOBE_MAP_BITS[extension.lobe];
+    if (!knownSlots || !descriptor) continue;
+    for (const slot of extension.maps) {
+      if (!(slot in knownSlots)) continue;
+      const map = descriptor.textures[slot as PhysicalMapSlot];
+      if (!map) continue;
+      const name = `u_${slot}Texture`;
+      set(name, new TextureBinding({ name, texture: map.texture, sampler: map.sampler, required: false }));
+      set(`${name}UvTransform`, map.transform ?? uvTransformMatrix([0, 0], 0, [1, 1]));
+    }
+  }
   for (const lobe of materialLobes(flags)) {
     const active = extensions.some((ext) => ext.lobe === lobe.id || (lobe.glTFExtension !== undefined && ext.lobe === lobe.glTFExtension));
     if (active) lobe.bind(input, set);

@@ -1,14 +1,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { idColor } from "../../../../benchmarks/quality-rebuild/three/lib/mask";
-import * as THREE from "three";
+import { decodePng, encodePng, iou, maskFromImage, maskToPng } from "../../../../tools/look-metrics/silhouette-iou.mjs";
 
 const root = join(__dirname, "../../../..");
 const capture = readFileSync(join(root, "benchmarks/quality-rebuild/capture.mjs"), "utf8");
 const sentinels = JSON.parse(readFileSync(join(root, "benchmarks/quality-rebuild/sentinels.json"), "utf8"));
 const mainTs = readFileSync(join(root, "benchmarks/quality-rebuild/main.ts"), "utf8");
-const maskTs = readFileSync(join(root, "benchmarks/quality-rebuild/three/lib/mask.ts"), "utf8");
 
 describe("PRD-12 capture surface (T1.6, T1.16, §8.1)", () => {
   it("capture.mjs exposes the Phase-1 flags", () => {
@@ -49,26 +47,34 @@ describe("PRD-12 capture surface (T1.6, T1.16, §8.1)", () => {
     expect(sentinels.identityCheck.deltaE2000P99).toBeNull();
   });
 
-  it("idColor encodes ids per §8.1 (r=(i*37)%251+1, g=i>>8, b=0 in linear space)", () => {
-    const color = idColor(0, new THREE.Color());
-    expect(color.r * 255).toBeCloseTo(1, 0);
-    expect(color.g).toBe(0);
-    expect(color.b).toBe(0);
-    const big = idColor(512, new THREE.Color());
-    expect(big.g * 255).toBeCloseTo(2, 0);
-    // ids are distinct for the first 251 objects
-    const seen = new Set<number>();
-    for (let i = 0; i < 251; i += 1) {
-      const c = idColor(i, new THREE.Color());
-      seen.add(Math.round(c.r * 255) * 65536 + Math.round(c.g * 255) * 256);
-    }
-    expect(seen.size).toBe(251);
+  it("retains independently authored subject pixels exactly in PNG captures", () => {
+    // RGBA bytes stand in for one dark and one bright subject on a transparent background.
+    const image = {
+      width: 2, height: 2,
+      data: new Uint8ClampedArray([0, 0, 0, 0, 1, 3, 5, 255, 220, 180, 40, 255, 0, 0, 0, 0])
+    };
+    const decoded = decodePng(encodePng(image));
+    expect(decoded.width).toBe(2);
+    expect(decoded.height).toBe(2);
+    expect([...decoded.data]).toEqual([...image.data]);
   });
 
-  it("mask renderer is a separate non-AA pipeline with linear output", () => {
-    expect(maskTs).toContain("antialias: false");
-    expect(maskTs).toContain("NoToneMapping");
-    expect(maskTs).toContain("LinearSRGBColorSpace");
-    expect(maskTs).toContain("HalfFloatType");
+  it("distinguishes subject masks, background and empty captures using retained bytes", () => {
+    const background = [16, 24, 32, 255];
+    const pixelImage = (indices: readonly number[]) => {
+      const data = new Uint8ClampedArray(4 * 4 * 4);
+      for (let i = 0; i < 16; i += 1) data.set(indices.includes(i) ? [220, 180, 40, 255] : background, i * 4);
+      return { width: 4, height: 4, data };
+    };
+    const left = maskFromImage(pixelImage([5, 9]), { mode: "key", bg: background.slice(0, 3), tolerance: 8 });
+    const overlap = maskFromImage(pixelImage([9, 10]), { mode: "key", bg: background.slice(0, 3), tolerance: 8 });
+    const empty = maskFromImage(pixelImage([]), { mode: "key", bg: background.slice(0, 3), tolerance: 8 });
+    expect(left.count).toBe(2);
+    expect(left.bbox).toEqual({ x0: 1, y0: 1, x1: 1, y1: 2 });
+    expect(iou(left, overlap)).toBeCloseTo(1 / 3);
+    expect(iou(empty, empty)).toBeNull();
+    const saved = decodePng(maskToPng(left));
+    expect([...saved.data.slice(5 * 4, 5 * 4 + 4)]).toEqual([255, 255, 255, 255]);
+    expect([...saved.data.slice(0, 4)]).toEqual([0, 0, 0, 255]);
   });
 });

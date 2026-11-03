@@ -18,16 +18,12 @@
  *
  * `bindUniforms` binds the shared bone-texture palette (`bindBoneTexture`,
  * same cache entry as the forward/draw-time bind so depth and velocity see
- * this frame's upload) plus the morph array texture and the packed top-K
- * active list when the item carries morphs.
+ * this frame's upload) plus the morph array texture and the complete active
+ * list when it fits the shader's capacity. Larger sets take the CPU path.
  *
- * Draw-time consumption note: nothing in the forward path calls
- * `select`/`bindUniforms` per item yet (Q-01-4). The lane-side consumer is
- * `applyGpuMorphUniforms` in `forward/Deform.ts`, which delegates to
- * `bindPrd06MorphTextureUniforms` when the bound program declares
- * `u_morphTexture` — its K comes from the program's own reflected
- * `u_morphActiveIndex4` array bound, which equals the `A3D_MORPH_MAX_ACTIVE`
- * it was compiled with.
+ * The forward path selects and binds the feature per item. Its final morph
+ * dispatch also calls `bindPrd06MorphTextureUniforms`, which reads the
+ * compiled program's reflected `u_morphActiveIndex4` bound before binding.
  */
 
 import type { AuraQualityTierSettings } from "../../contracts/quality.js";
@@ -45,10 +41,13 @@ import type { Texture } from "../../Texture.js";
 import { TextureBinding } from "../../TextureBinding.js";
 import type { SkinningPaletteTextureCache } from "../../SkinningPaletteTextureCache.js";
 import { bindBoneTexture } from "../../SkinningUniforms.js";
-import { morphTargetBucket, type MorphTargetTextureResult, type MorphTextureLimits } from "../../resources/MorphTargetTexture.js";
+import { planMorphTargetTexture, type MorphTargetTextureResult, type MorphTextureLimits } from "../../resources/MorphTargetTexture.js";
 
 /** §970: morph bits join the key only under the GPU-morph sub-flag. */
 const GPU_MORPH_FLAG: QrFlagName = "A3D_QR_ANIMATION_GPU_MORPH";
+
+/** Conservative array-texture limits used for both selection and binding. */
+export const PRD06_MORPH_TEXTURE_LIMITS: MorphTextureLimits = { maxTextureSize: 4096, maxArrayLayers: 32 };
 
 /**
  * C-27 active-morph caps (§285/§699): 8 Low / 16 Medium / 32 High / 64 Ultra.
@@ -71,11 +70,35 @@ function selectMorphSegment(item: RenderItem, tier: AuraQualityTierSettings, fla
   const targets = item.morphTargets;
   if (!targets || targets.length === 0) return null;
   if (!flags.on(GPU_MORPH_FLAG)) return null;
-  const bucket = morphTargetBucket(Math.min(targets.length, 32));
-  if (!bucket) return null;
-  const hasNormals = targets.some((t) => (t.normals?.length ?? 0) > 0);
-  const hasTangents = targets.some((t) => (t.tangents?.length ?? 0) > 0);
-  return `morph${bucket}${hasNormals ? "n" : ""}${hasTangents ? "t" : ""}|k${morphMaxActiveForTier(tier)}`;
+  const layout = planMorphTargetTexture(item.geometry, targets, PRD06_MORPH_TEXTURE_LIMITS);
+  if ("fallback" in layout) return null;
+  const maxActive = morphMaxActiveForTier(tier);
+  if (!morphWeightsFit(item.morphWeights, item.previousMorphWeights, targets.length, maxActive)) return null;
+  // The registered provider can also decline (for example when its runtime
+  // flag is disabled). Decide before choosing the shader: feature binding
+  // happens before the draw can switch to CPU-deformed geometry.
+  const result = morphTextureFor(item);
+  if (!result || "fallback" in result) return null;
+  return `morph${layout.bucket}${layout.hasNormals ? "n" : ""}${layout.hasTangents ? "t" : ""}|k${maxActive}`;
+}
+
+/** Every active current or previous target must fit; omission changes the pose or velocity. */
+function morphWeightsFit(
+  weights: readonly number[] | Float32Array | undefined,
+  previousWeights: Float32Array | undefined,
+  targetCount: number,
+  maxActive: number
+): boolean {
+  let active = 0;
+  for (let i = 0; i < targetCount; i += 1) {
+    const current = weights?.[i] ?? 0;
+    const previous = previousWeights?.[i] ?? 0;
+    if (!Number.isFinite(current) || !Number.isFinite(previous)) {
+      throw new Error(`Morph weights must be finite (target ${i})`);
+    }
+    if (current !== 0 || previous !== 0) active += 1;
+  }
+  return active <= maxActive;
 }
 
 /** The `prd06.deform` feature key for an item, or undefined when rigid. */
@@ -155,15 +178,6 @@ type MorphTextureBuilder = (
   format?: "rgba16f" | "rgba32f"
 ) => MorphTargetTextureResult;
 
-/**
- * Conservative bind-time texture limits. `MorphTextureLimits` normally derives
- * from tier device caps; at uniform-bind time only the compiled program is
- * visible, so the WebGL2 baseline-safe `{4096, 32}` applies (the builder
- * falls back to CPU when exceeded — `applyGpuMorphUniforms` then reports the
- * CPU path). 32 layers is the §8.2 bucket ceiling.
- */
-export const PRD06_MORPH_TEXTURE_LIMITS: MorphTextureLimits = { maxTextureSize: 4096, maxArrayLayers: 32 };
-
 // `var` + lazy init: the lane barrel → Deform → forwardFeature import cycle
 // (forwardFeature → SkinningUniforms → ForwardPass → Deform → lanes/prd06)
 // can call `createPrd06DeformFeature` before this module body finishes —
@@ -186,6 +200,12 @@ function morphTextureFor(item: RenderItem): MorphTargetTextureResult | undefined
     liveMorphTextures?.delete(cached.result.texture);
   }
   const result = morphTextureBuilder(item.geometry, targets, PRD06_MORPH_TEXTURE_LIMITS);
+  // A provider can become available after a flag change; do not retain a
+  // fallback as if it were a permanent property of this geometry.
+  if ("fallback" in result) {
+    morphTextureCache.delete(item.geometry);
+    return result;
+  }
   morphTextureCache.set(item.geometry, { targets, result });
   if ("texture" in result) {
     liveMorphTextures ??= new Set();
@@ -234,7 +254,8 @@ export function morphTextureDiagnostics(): { readonly textures: number; readonly
 }
 
 /**
- * §8.2 top-K packing: non-zero weights sorted by |w| desc, first `maxActive`,
+ * §8.2 top-K packing: non-zero current or previous weights sorted by current
+ * |w| (then previous |w|), first `maxActive`,
  * padded to a multiple of 4 with index 0 / weight 0. Returns the packed index
  * and weight arrays (`maxActive` floats each — K/4 vec4 slots on the wire).
  */
@@ -246,9 +267,10 @@ export function packActiveMorphs(
 ): { indices: Float32Array; current: Float32Array; previous: Float32Array | null; count: number } {
   const order: number[] = [];
   for (let i = 0; i < targetCount; i += 1) {
-    if (Math.abs(weights[i] ?? 0) > 0) order.push(i);
+    if (Math.abs(weights[i] ?? 0) > 0 || Math.abs(previousWeights?.[i] ?? 0) > 0) order.push(i);
   }
-  order.sort((a, b) => Math.abs(weights[b] ?? 0) - Math.abs(weights[a] ?? 0));
+  order.sort((a, b) => Math.abs(weights[b] ?? 0) - Math.abs(weights[a] ?? 0)
+    || Math.abs(previousWeights?.[b] ?? 0) - Math.abs(previousWeights?.[a] ?? 0));
   const count = Math.min(order.length, maxActive);
   const padded = Math.ceil(Math.max(count, 4) / 4) * 4;
   const size = Math.min(padded, Math.ceil(maxActive / 4) * 4);
@@ -277,10 +299,11 @@ export function bindPrd06MorphTextureUniforms(
 ): boolean {
   if (!shader.reflection.uniforms.has("u_morphTexture")) return false;
   if (!item.morphTargets || !item.morphWeights) return false;
-  const result = morphTextureFor(item);
-  if (!result || "fallback" in result) return false;
   const arrayBound = shader.reflection.uniformDetails.get("u_morphActiveIndex4")?.arraySize;
   const maxActive = arrayBound !== null && arrayBound !== undefined && arrayBound > 0 ? arrayBound * 4 : 32;
+  if (!morphWeightsFit(item.morphWeights, item.previousMorphWeights, item.morphTargets.length, maxActive)) return false;
+  const result = morphTextureFor(item);
+  if (!result || "fallback" in result) return false;
   const packed = packActiveMorphs(item.morphWeights, result.targetCount, maxActive, item.previousMorphWeights);
   uniforms.set("u_morphTexture", new TextureBinding({ name: "u_morphTexture", texture: result.texture }));
   uniforms.set("u_morphStride", result.stride);
@@ -288,7 +311,9 @@ export function bindPrd06MorphTextureUniforms(
   uniforms.set("u_morphActiveCount", packed.count);
   uniforms.set("u_morphActiveIndex4", packed.indices);
   uniforms.set("u_morphActiveWeight4", packed.current);
-  if (packed.previous) uniforms.set("u_morphPrevWeight4", packed.previous);
+  if (shader.reflection.uniforms.has("u_morphPrevWeight4")) {
+    uniforms.set("u_morphPrevWeight4", packed.previous ?? new Float32Array(packed.current.length));
+  }
   return true;
 }
 
@@ -316,9 +341,16 @@ export function createPrd06DeformFeature(cache: SkinningPaletteTextureCache, bui
       if (item.skinning) bindBoneTexture(set, cache, item);
       const key = typeof value === "string" ? parsePrd06DeformKey(value) : null;
       if (!key || key.morphBucket === null) return;
-      const result = morphTextureFor(item);
-      if (!result || "fallback" in result || !item.morphWeights) return;
       const maxActive = key.morphMaxActive ?? 32;
+      if (item.morphTargets && item.morphWeights &&
+          !morphWeightsFit(item.morphWeights, item.previousMorphWeights, item.morphTargets.length, maxActive)) {
+        throw new Error("Morph weights exceed the selected GPU shader capacity; CPU deformation is required");
+      }
+      const result = morphTextureFor(item);
+      if (result && "fallback" in result) {
+        throw new Error(`Morph texture requires CPU deformation: ${result.reason}`);
+      }
+      if (!result || !item.morphWeights) return;
       const packed = packActiveMorphs(item.morphWeights, result.targetCount, maxActive, item.previousMorphWeights);
       set("u_morphTexture", new TextureBinding({ name: "u_morphTexture", texture: result.texture }));
       set("u_morphStride", result.stride);
@@ -326,7 +358,7 @@ export function createPrd06DeformFeature(cache: SkinningPaletteTextureCache, bui
       set("u_morphActiveCount", packed.count);
       set("u_morphActiveIndex4", packed.indices);
       set("u_morphActiveWeight4", packed.current);
-      if (packed.previous) set("u_morphPrevWeight4", packed.previous);
+      set("u_morphPrevWeight4", packed.previous ?? new Float32Array(packed.current.length));
     }
   };
 }

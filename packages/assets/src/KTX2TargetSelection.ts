@@ -4,9 +4,8 @@ export type { CompressedTextureCapabilities };
 
 /**
  * C-16 §7.4 — GPU-compressed targets a KTX2 texture can be transcoded to.
- * "bc1-rgb-unorm" is the opaque ETC1S target; the existing
- * `TextureCompressedFormat` member "bc1-rgba-unorm" covers the same block
- * layout on the render side (DXT1 has no alpha plane).
+ * "bc1-rgb-unorm" is the opaque ETC1S target. Although it uses the same
+ * block layout as BC1 RGBA, their alpha semantics are different.
  */
 export type KTX2BasisTargetFormat =
   | "astc-4x4-rgba-unorm"

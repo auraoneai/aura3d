@@ -1,6 +1,8 @@
 import {
   createGLTFSceneAnimationRuntime,
   loadProductionGLTFRenderPipeline,
+  parseGLTFRuntimeMaterialKey,
+  requestIdentityDetails,
   type GLTFSceneAnimationApplyResult,
   type GLTFSceneAnimationRuntime,
   type GLTFSceneAnimationRuntimeSnapshot,
@@ -8,7 +10,7 @@ import {
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/gltf-runtime";
 
-import type { GLTFImageDecoder, GLTFMaterialRenderStateOverride } from "@aura3d/assets";
+import { mergeAssetRequestOptions, type AssetRequestOptions, type GLTFImageDecoder, type GLTFMaterialRenderStateOverride } from "@aura3d/assets/browser";
 import { createBoneMask } from "@aura3d/animation/lanes";
 import type { AuraPlayLayerOptions } from "../contracts/animation";
 import type { AuraAssetDecodersOption, AuraModelLodOption } from "../contracts/assets";
@@ -17,6 +19,11 @@ import type { AuraQuat } from "../contracts/sceneGraph";
 import type { AuraRuntimeNodeHandle, AuraVec3 } from "../agent-api/index";
 import { boneMaskSkeletonFor, toPoseBoneMaskSpec } from "../agent-api/animationMask.js";
 import { createRuntimeNodeHandle, type MutableAuraRuntimeSceneNode } from "../agent-api/app/runtimeNodes.js";
+import type { ModelCustomMaterialFactoryContext, ModelCustomMaterialSlotOverride } from "../agent-api/compiler/modelMaterials.js";
+import type { ModelCustomMaterialTextureWork } from "../agent-api/compiler/customTextures.js";
+import { syncCustomTextureRefs } from "../agent-api/compiler/customMaterial.js";
+import { sanitizeDiagnosticText } from "../agent-api/sanitizeDiagnostics.js";
+import { assetEventScopeForApp } from "../agent-api/assetEvents.js";
 import type { AuraResolvedMaterialInfo } from "../contracts/materials";
 import {
   applyMaterialOverrides,
@@ -25,15 +32,18 @@ import {
   type TypedGLBActorMaterialOverride
 } from "./ModelMaterialOverrides";
 import { modelTextureShareKey, sharedModelTextures } from "./actor/ModelTextureShare";
-import { estimateGlbResourceBytes, glbResourceCache, glbResourceCacheKey } from "./GlbResourceCache";
+import { estimateGlbResourceBytes, glbResourceCache, glbResourceCacheKey, valueToken } from "./GlbResourceCache";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence, type TypedGLBActorMorphApplyOptions } from "./actor/TypedGLBActorAnimation";
-import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
-import "./actor/TypedGLBActorLod.js";
+import { clearTypedGLBActorQrFlags, setTypedGLBActorQrFlags, typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
+import { actorAnimationContextFor, bindActorAnimationContext, isActorAnimationContextDisposed, type ActorAnimationContext } from "../agent-api/app/actorAnimationHandle.js";
+import type { LodCamera } from "./LodSelector.js";
+import { getTypedGLBActorLod } from "./actor/TypedGLBActorLod.js";
 
 export { createGLBActorAnimationMaterialResolver, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
 
 import {
   consolidateStaticMeshes,
+  PortableShaderMaterial,
   type Material,
   type MeshConsolidationInput,
   type MeshConsolidationResult,
@@ -42,10 +52,17 @@ import {
 import { decomposeMat4, eulerXYZFromQuat, identityMat4, multiplyMat4, quatFromEulerXYZ, type Mat4, type SceneNode } from "@aura3d/scene";
 
 export interface TypedGLBActorAsset {
+  readonly id?: string;
   readonly url: string;
   readonly type?: string;
   readonly format?: string;
+  readonly formatMetadata?: Parameters<typeof loadProductionGLTFRenderPipeline>[0]["formatMetadata"];
   readonly hash?: string;
+  /** Legacy bare SHA-256, accepted alongside canonical `hash`. */
+  readonly sha256?: string;
+  readonly integrity?: NonNullable<Parameters<typeof loadProductionGLTFRenderPipeline>[0]["request"]>["integrity"];
+  /** Transport policy carried by the admitted asset. */
+  readonly request?: AssetRequestOptions;
   readonly bounds?: readonly number[];
   readonly sizeBytes?: number;
 }
@@ -56,6 +73,12 @@ export interface TypedGLBActorOptions {
   readonly name?: string;
   readonly width: number;
   readonly height: number;
+  /** App/runtime identity, carried through asynchronous actor loading. */
+  readonly runtimeOwner?: object;
+  /** Transport policy and cancellation for this model and all its dependencies. */
+  readonly request?: Parameters<typeof loadProductionGLTFRenderPipeline>[0]["request"];
+  /** Per-app native format adapters; ordinary glTF loads do not require a registry. */
+  readonly formatRegistry?: Parameters<typeof loadProductionGLTFRenderPipeline>[0]["formatRegistry"];
   readonly tint?: TypedGLBActorTintOptions;
   /**
    * Share one runtime material instance across identical glTF material definitions.
@@ -78,6 +101,10 @@ export interface TypedGLBActorOptions {
    * overrides applied from the post-load authored snapshot (PRD-04 P2-1/P2-3).
    */
   readonly materialOverrides?: readonly (GLTFMaterialRenderStateOverride | TypedGLBActorMaterialOverride)[];
+  /** Actor-owned portable material replacing each supported imported material slot. */
+  readonly customMaterialFactory?: (context: ModelCustomMaterialFactoryContext) => Material;
+  /** Targeted, load-time replacements keyed by the active imported material name. */
+  readonly customMaterialOverrides?: readonly ModelCustomMaterialSlotOverride[];
   /** `KHR_materials_variants` material variant name selected at load (C-15/R11). */
   readonly materialVariant?: string;
   /** Optional asset variant selector (declaration-only seam, C-17). */
@@ -94,6 +121,8 @@ export interface TypedGLBActorOptions {
   readonly transmission?: "auto" | "env" | "off";
   /** Optional GPU-bytes texture budget for the pipeline load (declaration-only seam, C-17). */
   readonly textureBudget?: number;
+  /** Preserve decoded mip source metadata for a device-local residency owner. */
+  readonly retainTextureResidencySources?: boolean;
   /** Optional max texture dimension for the pipeline load (declaration-only seam, C-17). */
   readonly maxTextureSize?: number;
   /** Optional LOD selection policy consumed by the lane-05 LOD extension (declaration-only seam, C-17). */
@@ -105,9 +134,9 @@ export interface TypedGLBActorOptions {
    */
   readonly sharedTextures?: import("@aura3d/assets").GLTFSharedTextureCache;
   /**
-   * Default true: actors of the same asset (and decode options) built without an explicit
-   * `sharedTextures` share one ref-counted texture cache, so repeated `model()` nodes upload each
-   * glTF image once. Set false to give an actor its own private textures.
+   * Default true: actors with a reusable request identity and the same asset/decode options
+   * share one ref-counted texture cache. Unscoped credentialed requests use private resources.
+   * Set false to give an actor its own private textures.
    */
   readonly shareTextures?: boolean;
 }
@@ -126,6 +155,10 @@ export interface TypedGLBActorTintOptions {
 
 export interface TypedGLBActorTransformOptions {
   readonly modelMatrix?: Mat4 | readonly number[];
+  /** Active scene camera used for this frame's LOD selection. */
+  readonly lodCamera?: LodCamera;
+  /** Reuse this frame's selection when collecting a second transform for instancing. */
+  readonly reuseLodSelection?: boolean;
   /**
    * Wrinkle-detail intensity (E1 face-rig demo), resolved engine-side from live morph
    * weights. Stamped onto every render item; shaders without `u_wrinkleStrength` ignore it.
@@ -199,6 +232,8 @@ export interface TypedGLBActor {
   readonly name: string;
   readonly asset: TypedGLBActorAsset;
   readonly pipeline: ProductionGLTFRenderPipeline;
+  readonly lodCamera?: LodCamera;
+  readonly reuseLodSelection?: boolean;
   readonly staticRenderItems?: readonly RenderItem[];
   readonly staticConsolidation?: TypedGLBActorEvidence["staticConsolidation"];
   readonly animation: GLTFSceneAnimationRuntime;
@@ -260,10 +295,12 @@ export interface TypedGLBActor {
    * never accumulates (the legacy `setTint` mutated in place). Empty list restores authored state.
    */
   setMaterialOverrides(overrides: readonly TypedGLBActorMaterialOverride[]): void;
-  /** C-15/R11: switch the actor to a declared `KHR_materials_variants` variant (`null` = authored). */
-  setMaterialVariant(name: string | null): void;
+  /** Switch to a declared material variant (`null` = authored); failures and cancellation reject. */
+  setMaterialVariant(name: string | null): Promise<"applied" | "variant-unknown">;
   /** C-15: every `KHR_materials_variants` name declared across the actor's renderable bindings. */
   materialVariants(): readonly string[];
+  /** Whether a source material name (or any name when omitted) uses a custom slot. */
+  hasCustomMaterialOverride?(name?: string): boolean;
   /** C-15: per-runtime-material inspection for diagnostics (P2-1). */
   inspectMaterials(): readonly AuraResolvedMaterialInfo[];
   /**
@@ -277,6 +314,96 @@ export interface TypedGLBActor {
 
 type TypedGLBActorTransmissionMode = "auto" | "env" | "off";
 let qrTransmissionMode: TypedGLBActorTransmissionMode | undefined;
+const explicitTextureCacheContexts = new WeakMap<object, string>();
+const registryIds = new WeakMap<object, number>();
+let nextRegistryId = 1;
+
+interface ActorDisposalState {
+  readonly pending: Set<Promise<void>>;
+  readonly failures: unknown[];
+}
+
+// Registry-backed loaders may release resources asynchronously. Track their
+// completion per app owner without keeping the app or canvas alive globally.
+const actorDisposals = new WeakMap<object, ActorDisposalState>();
+
+function disposePipeline(pipeline: ProductionGLTFRenderPipeline, owner: object | undefined, track: boolean): void {
+  const pending = pipeline.disposeAsync();
+  if (!track || !owner) {
+    void pending.catch(() => {});
+    return;
+  }
+  let state = actorDisposals.get(owner);
+  if (!state) {
+    state = { pending: new Set(), failures: [] };
+    actorDisposals.set(owner, state);
+  }
+  const owned = state;
+  const observed = pending.catch((error: unknown) => { owned.failures.push(error); });
+  owned.pending.add(observed);
+  void observed.then(() => { owned.pending.delete(observed); });
+}
+
+/** Wait for this owner's registered-format teardowns without affecting other apps. */
+export async function awaitTypedGLBActorDisposals(owner: object): Promise<void> {
+  const state = actorDisposals.get(owner);
+  if (!state) return;
+  while (state.pending.size) await Promise.all([...state.pending]);
+  if (state.failures.length) throw new AggregateError(state.failures, "Native model cleanup failed");
+}
+
+function registryToken(registry: object | undefined): string {
+  if (!registry) return "default";
+  let id = registryIds.get(registry);
+  if (id === undefined) { id = nextRegistryId++; registryIds.set(registry, id); }
+  return String(id);
+}
+
+function canonicalDigest(value: string): string {
+  const digest = value.replace(/^sha256-/i, "").toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error("Invalid asset SHA-256 digest");
+  return `sha256-${digest}`;
+}
+
+/** Legacy `hash` / `sha256` is the expected document digest, not just display provenance. */
+async function actorRequest(options: TypedGLBActorOptions): Promise<NonNullable<TypedGLBActorOptions["request"]>> {
+  const asset = options.asset;
+  const request = { ...options.request, ...mergeAssetRequestOptions(asset.request, options.request) };
+  const legacy = asset.hash ?? asset.sha256;
+  const digest = legacy === undefined ? undefined : canonicalDigest(legacy);
+  if (asset.hash !== undefined && asset.sha256 !== undefined && canonicalDigest(asset.hash) !== canonicalDigest(asset.sha256)) {
+    throw new Error("Conflicting asset SHA-256 digests");
+  }
+  if (digest && asset.integrity && digest !== canonicalDigest(asset.integrity.digest)) {
+    throw new Error("Asset hash does not match its integrity metadata");
+  }
+  if (asset.request?.integrity && options.request?.integrity && !sameIntegrity(asset.request.integrity, options.request.integrity)) {
+    throw new Error("Request integrity conflicts with the admitted asset");
+  }
+  if ((asset.integrity && request.integrity && !sameIntegrity(asset.integrity, request.integrity)) ||
+      (digest && request.integrity && digest !== canonicalDigest(request.integrity.digest))) {
+    throw new Error("Request integrity conflicts with the admitted asset");
+  }
+  const integrity = asset.integrity ?? request.integrity ?? (digest ? { version: 1 as const, digest } : undefined);
+  // Admitted models may not silently render unverified external buffers/images. Legacy single-file
+  // GLBs migrate without inventing dependency hashes; external .gltf needs an admitted map.
+  return {
+    ...request,
+    ...(integrity ? {
+      expectedUrl: request.expectedUrl ?? asset.url,
+      integrity: { ...integrity, requireDependencies: true }
+    } : {})
+  };
+}
+
+function sameIntegrity(left: NonNullable<NonNullable<TypedGLBActorOptions["request"]>["integrity"]>, right: typeof left): boolean {
+  if (left.version !== 1 || right.version !== 1 || canonicalDigest(left.digest) !== canonicalDigest(right.digest) ||
+      (left.requireDependencies ?? false) !== (right.requireDependencies ?? false)) return false;
+  const leftDependencies = Object.entries(left.dependencies ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  const rightDependencies = Object.entries(right.dependencies ?? {}).sort(([a], [b]) => a.localeCompare(b));
+  return leftDependencies.length === rightDependencies.length && leftDependencies.every(([uri, hash], index) =>
+    uri === rightDependencies[index]?.[0] && canonicalDigest(hash) === canonicalDigest(rightDependencies[index]![1]));
+}
 
 /**
  * Lane-04 seam mirroring `setTypedGLBActorQrFlags`: the mode `renderer.transmission`
@@ -292,10 +419,282 @@ export function typedGLBActorQrTransmissionMode(): TypedGLBActorTransmissionMode
   return qrTransmissionMode;
 }
 
+// Stable draw identities are actor-local, so separate actors can safely share
+// decoded nodes or geometry. Weak keys retire with their mounted resources.
+type ActorTemporalKeys = WeakMap<object, WeakMap<object, WeakMap<object, object>>>;
+const actorTemporalKeys = new WeakMap<TypedGLBActor, ActorTemporalKeys>();
+function actorTemporalKey(actor: TypedGLBActor, node: object, renderable: object, geometry: object): object {
+  let nodes = actorTemporalKeys.get(actor);
+  if (!nodes) { nodes = new WeakMap(); actorTemporalKeys.set(actor, nodes); }
+  let renderables = nodes.get(node);
+  if (!renderables) { renderables = new WeakMap(); nodes.set(node, renderables); }
+  let geometries = renderables.get(renderable);
+  if (!geometries) { geometries = new WeakMap(); renderables.set(renderable, geometries); }
+  let key = geometries.get(geometry);
+  if (!key) { key = {}; geometries.set(geometry, key); }
+  return key;
+}
+
+function unsupportedCustomModelMaterial(reason: string): Error {
+  const error = new Error(`MODEL_CUSTOM_MATERIAL_UNSUPPORTED: ${reason}`);
+  Object.assign(error, { code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED" });
+  return error;
+}
+
+/** A whole-model replacement cannot retain a source material's sampled maps. */
+function hasAuthoredMaterialTextures(material: ProductionGLTFRenderPipeline["asset"]["materials"][number], replaceSurface = false): boolean {
+  return Boolean(
+    (!replaceSurface && (material.baseColorTexture || material.metallicRoughnessTexture)) || material.normalTexture
+    || material.occlusionTexture || material.emissiveTexture
+    || material.diffuseRoughness?.texture || material.bump?.texture
+    || material.clearcoat?.texture || material.clearcoat?.roughnessTexture || material.clearcoat?.normalTexture
+    || material.transmission?.texture || material.diffuseTransmission?.texture || material.diffuseTransmission?.colorTexture
+    || material.volume?.thicknessTexture || material.specular?.texture || material.specular?.colorTexture
+    || material.pbrSpecularGlossiness?.diffuseTexture || material.pbrSpecularGlossiness?.specularGlossinessTexture
+    || material.sheen?.colorTexture || material.sheen?.roughnessTexture || material.anisotropy?.texture
+    || material.iridescence?.texture || material.iridescence?.thicknessTexture
+  );
+}
+
+type ActorRenderable = ReturnType<ProductionGLTFRenderPipeline["resources"]["scene"]["collectRenderables"]>[number];
+
+interface CustomSlotPlanEntry {
+  readonly rule: ModelCustomMaterialSlotOverride;
+  readonly skinned: Set<ActorRenderable["renderable"]>;
+  hasInstanceColors: boolean;
+}
+
+/**
+ * Match the source material of each primitive and of every possible variant,
+ * not the mesh name or the material currently visible at startup. This also
+ * lets an untouched textured/animated slot keep its original resource.
+ */
+function planCustomMaterialSlots(
+  pipeline: ProductionGLTFRenderPipeline,
+  rules: readonly ModelCustomMaterialSlotOverride[]
+): Map<string, CustomSlotPlanEntry> {
+  const plan = new Map<string, CustomSlotPlanEntry>();
+  const matched = rules.map(() => false);
+  const renderables = pipeline.resources.scene.collectRenderables();
+  for (const { node, renderable } of renderables) {
+    const meshes = pipeline.asset.meshes.filter((candidate) => candidate.name === renderable.geometry);
+    if (meshes.length !== 1) throw unsupportedCustomModelMaterial("the imported primitive cannot be identified unambiguously");
+    const mesh = meshes[0]!;
+    const candidates = [
+      { name: mesh.material, index: mesh.materialIndex },
+      ...mesh.materialVariants.map((variant) => ({ name: variant.material, index: variant.materialIndex }))
+    ];
+    let selected = false;
+    for (const candidate of candidates) {
+      let winner: ModelCustomMaterialSlotOverride | undefined;
+      for (const [index, rule] of rules.entries()) {
+        if (rule.target(candidate.name)) { matched[index] = true; winner = rule; }
+      }
+      if (!winner) continue;
+      selected = true;
+      const definitions = pipeline.asset.materials.filter((material) => material.name === candidate.name);
+      if (definitions.length > 1 || (candidate.index !== undefined && pipeline.asset.materials[candidate.index]?.name !== candidate.name)) {
+        throw unsupportedCustomModelMaterial(`the imported material slot '${candidate.name}' is ambiguous`);
+      }
+      const source = candidate.index === undefined ? definitions[0] : pipeline.asset.materials[candidate.index];
+      if (source && (source.alphaMode !== "OPAQUE" || hasAuthoredMaterialTextures(source, winner.replaceTextures))) {
+        throw unsupportedCustomModelMaterial(`slot '${candidate.name}' cannot preserve its authored texture maps or alpha coverage`);
+      }
+      let entry = plan.get(candidate.name);
+      if (!entry) {
+        entry = { rule: winner, skinned: new Set(), hasInstanceColors: false };
+        plan.set(candidate.name, entry);
+      }
+      if (entry.rule !== winner) throw unsupportedCustomModelMaterial(`slot '${candidate.name}' has inconsistent selectors`);
+      if (renderable.skinning) entry.skinned.add(renderable);
+      if (renderable.instanceColors?.length) entry.hasInstanceColors = true;
+    }
+    if (!selected) continue;
+    if (Object.hasOwn(node.userData, "gltfSkinBinding") && !renderable.skinning) {
+      throw unsupportedCustomModelMaterial("an authored skin has no live palette; its joint count or binding is unsupported");
+    }
+    if (renderable.skinning && ((mesh.joints1?.length ?? 0) > 0 || (mesh.weights1?.length ?? 0) > 0)) {
+      throw unsupportedCustomModelMaterial("the imported skin requires unavailable JOINTS_1/WEIGHTS_1 vertex streams");
+    }
+  }
+  const missing = matched.findIndex((value) => !value);
+  if (missing >= 0) throw unsupportedCustomModelMaterial(`custom material target ${missing} did not match an imported material slot`);
+  let hasLod = false;
+  pipeline.resources.scene.traverse((node) => {
+    if (Array.isArray(node.userData.gltfLods) && node.userData.gltfLods.length > 0) hasLod = true;
+  });
+  // The LOD extension substitutes geometry but does not retain a reliable
+  // per-level material/variant mapping for every primitive.
+  if (plan.size > 0 && hasLod) throw unsupportedCustomModelMaterial("custom slot replacements cannot preserve imported LOD material slots");
+  return plan;
+}
+
+/**
+ * Until the public model API can select slots and bind their authored maps,
+ * admit a skinned whole-model replacement only when it cannot conceal another
+ * authored slot, sampled map or alpha-cutout silhouette.
+ */
+function assertSkinnedCustomSourceContract(pipeline: ProductionGLTFRenderPipeline): void {
+  const renderables = pipeline.resources.scene.collectRenderables();
+  for (const { node, renderable } of renderables) {
+    if (Object.hasOwn(node.userData, "gltfSkinBinding") && !renderable.skinning) {
+      throw unsupportedCustomModelMaterial("an authored skin has no live palette; its joint count or binding is unsupported");
+    }
+  }
+  const bindings = pipeline.resources.renderableBindings;
+  const slots = new Set<string>();
+  for (const binding of bindings) {
+    const index = binding.sourceMaterialIndex;
+    const candidates = index === undefined
+      ? pipeline.asset.materials.filter((material) => material.name === binding.sourceMaterialName)
+      : [pipeline.asset.materials[index]].filter((material) => material !== undefined);
+    if (index !== undefined && candidates.length !== 1 || index === undefined && candidates.length > 1) {
+      throw unsupportedCustomModelMaterial("the authored material slot cannot be identified unambiguously");
+    }
+    slots.add(index === undefined ? `default:${binding.sourceMaterialName}` : `material:${index}`);
+    const source = candidates[0];
+    if (source && (hasAuthoredMaterialTextures(source) || source.alphaMode !== "OPAQUE")) {
+      throw unsupportedCustomModelMaterial("custom replacements cannot preserve authored texture maps or alpha coverage");
+    }
+  }
+  if (!renderables.some(({ renderable }) => Boolean(renderable.skinning))) return;
+  let hasImportedLod = false;
+  pipeline.resources.scene.traverse((node) => {
+    if (Array.isArray(node.userData.gltfLods) && node.userData.gltfLods.length > 0) hasImportedLod = true;
+  });
+  if (hasImportedLod) {
+    throw unsupportedCustomModelMaterial("skinned custom replacements cannot preserve imported LOD material slots");
+  }
+  if (slots.size > 1) {
+    throw unsupportedCustomModelMaterial("skinned custom replacements require a single authored material slot; per-slot selection is unavailable");
+  }
+  for (const { renderable } of renderables) {
+    if (!renderable.skinning) continue;
+    const meshes = pipeline.asset.meshes.filter((candidate) => candidate.name === renderable.geometry);
+    const mesh = meshes[0];
+    // The current asset resource builder uploads only JOINTS_0/WEIGHTS_0. Do
+    // not infer four influences from the resulting truncated geometry.
+    if (meshes.length !== 1 || !mesh || (mesh.joints1?.length ?? 0) > 0 || (mesh.weights1?.length ?? 0) > 0) {
+      throw unsupportedCustomModelMaterial("the imported skin requires unavailable JOINTS_1/WEIGHTS_1 vertex streams");
+    }
+  }
+}
+
+/**
+ * Only the graph adapter can currently certify paired forward/depth skinning
+ * programs. Check the actual vertex-input kind and both registered stages;
+ * do not treat a custom shader's claimed uniforms as proof of deformation.
+ */
+function assertSkinnedCustomPrograms(material: Material, items: readonly RenderItem[]): void {
+  const skinned = items.filter((item) => item.skinning !== undefined);
+  if (skinned.length === 0) return;
+  if (!(material instanceof PortableShaderMaterial) || !material.graphMaterial
+    || !PortableShaderMaterial.hasGraphClippingContract(material)) {
+    throw unsupportedCustomModelMaterial("skinned custom shaders require certified paired forward/depth skinning variants with live palette bindings");
+  }
+  for (const item of skinned) {
+    const format = item.geometry.vertexBuffer.format;
+    const extra = item.skinning!.extraInfluences === true;
+    const hasSecond = format.hasAttribute("joints1") || format.hasAttribute("weights1");
+    if (hasSecond !== extra) throw unsupportedCustomModelMaterial("skin influence sets do not match the imported vertex streams");
+    const semantics = extra ? ["joints", "weights", "joints1", "weights1"] as const : ["joints", "weights"] as const;
+    const locations = { joints: 5, weights: 6, joints1: 8, weights1: 9 } as const;
+    const kinds: ("float" | "uint" | "sint")[] = [];
+    for (const semantic of semantics) {
+      if (!format.hasAttribute(semantic)) throw unsupportedCustomModelMaterial(`skinned geometry is missing ${semantic}`);
+      const attribute = format.getAttribute(semantic);
+      const joint = semantic.startsWith("joints");
+      if (attribute.components !== 4 || attribute.shaderLocation !== locations[semantic]
+        || (joint ? attribute.normalized : attribute.integer)) {
+        throw unsupportedCustomModelMaterial(`skinned geometry has an incompatible ${semantic} attribute`);
+      }
+      if (joint) kinds.push(!attribute.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint");
+    }
+    for (const pass of ["forward", "depth"] as const) {
+      const key = material.graphSkinningVariant(extra ? 8 : 4, kinds[0]!, kinds[1] ?? "float", pass);
+      if (!key || !PortableShaderMaterial.hasGraphClippingContract(material, key, pass)) {
+        throw unsupportedCustomModelMaterial(`the certified ${pass} skinning program is unavailable or was changed`);
+      }
+    }
+  }
+}
+
+function assertCustomInstanceColors(material: Material): void {
+  const source = material instanceof PortableShaderMaterial ? material.sources.glsl.vertex : "";
+  if (!/#define\s+instanceMatrix\b/.test(source) || !/#define\s+instanceColor\b/.test(source)) {
+    throw unsupportedCustomModelMaterial("instance colors require a custom vertex shader using both instanceMatrix and instanceColor");
+  }
+}
+
 export async function createTypedGLBActor(options: TypedGLBActorOptions): Promise<TypedGLBActor> {
-  const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
-  const qrTransmission = qrMaterials && typedGLBActorQrFlags().on("A3D_QR_MATERIALS_TRANSMISSION");
-  const transmission = options.transmission ?? qrTransmissionMode;
+  // The renderer and compiler both pass their unique app owner here. Capture
+  // that scope and mount signal per request, never a process-wide listener.
+  const scope = options.runtimeOwner ? assetEventScopeForApp(options.runtimeOwner) : undefined;
+  if (!scope) return createTypedGLBActorOwned(options);
+  const signal = options.request?.signal;
+  const onProgress = options.request?.onProgress;
+  const assetId = options.asset.id ?? options.id;
+  const url = options.asset.url;
+  try {
+    return await createTypedGLBActorOwned({
+      ...options,
+      request: {
+        ...options.request,
+        onProgress: (event) => {
+          if (signal?.aborted || scope.signal.aborted) return;
+          try { onProgress?.(event); } catch { /* Observers do not own the request. */ }
+          if (signal?.aborted || scope.signal.aborted) return;
+          scope.emitProgress({
+            url: event.url,
+            item: event.url,
+            assetId,
+            loaded: event.loadedBytes,
+            total: event.totalBytes ?? event.loadedBytes
+          });
+        }
+      }
+    });
+  } catch (error) {
+    if (!signal?.aborted && !scope.signal.aborted) scope.emitError({ url, assetId, error });
+    throw error;
+  }
+}
+
+async function createTypedGLBActorOwned(options: TypedGLBActorOptions): Promise<TypedGLBActor> {
+  // Capture ownership and policy before the first await. A later app mount may
+  // start while this model is loading, but it cannot change this actor's flags.
+  const animationContext = actorAnimationContextFor(options.runtimeOwner);
+  const initialFlags = typedGLBActorQrFlags(options.runtimeOwner);
+  // The model document's derived URL and integrity belong only to that model.
+  // Custom texture refs instead inherit a snapshot of the app request policy
+  // and combine it with their own independently admitted asset metadata.
+  const customTextureRequest = mergeAssetRequestOptions({}, options.request);
+  const customTextureMaxDimension = options.maxTextureSize;
+  if (isActorAnimationContextDisposed(animationContext)) throw actorLoadCancelled();
+  if (options.customMaterialOverrides?.length && options.customMaterialFactory) {
+    throw unsupportedCustomModelMaterial("whole-model and per-slot custom replacements cannot be combined");
+  }
+  if (options.customMaterialOverrides?.length && (options.deduplicateIdenticalMaterials || options.consolidateStaticMeshes)) {
+    throw unsupportedCustomModelMaterial("per-slot replacements require distinct, unconsolidated imported materials");
+  }
+  if (options.customMaterialFactory && options.materialVariant !== undefined) {
+    throw unsupportedCustomModelMaterial("an imported material variant cannot be visible under a whole-model custom replacement");
+  }
+  const format = options.asset.format?.toLowerCase();
+  if (!options.formatRegistry && format && format !== "glb" && format !== "gltf") {
+    throw new Error(`No native model adapter is installed for format "${options.asset.format}"`);
+  }
+  const request = await actorRequest(options);
+  if (request.signal?.aborted) throw request.signal.reason ?? new Error("Asset load aborted");
+  const identity = await requestIdentityDetails(request, options.asset.url);
+  if (request.signal?.aborted) throw request.signal.reason ?? new Error("Asset load aborted");
+  if (options.sharedTextures && !identity.reusable) {
+    throw new Error("Shared glTF texture cache requires a reusable request identity; omit credentials or provide a security context");
+  }
+  const requestKey = identity.key;
+  const qrMaterials = initialFlags.on("A3D_QR_MATERIALS");
+  const qrTransmission = qrMaterials && initialFlags.on("A3D_QR_MATERIALS_TRANSMISSION");
+  const transmission = options.transmission ?? (options.runtimeOwner === undefined ? qrTransmissionMode : undefined);
   const renderStateOverrides = (options.materialOverrides ?? []).filter(
     (override): override is GLTFMaterialRenderStateOverride => "renderState" in override
   );
@@ -305,29 +704,50 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   // P5-2: decoder-missing failures surface a `decoder-missing:<id>` issue before the error
   // propagates as the actor's load failure (AssetDecoderUnavailable names the decoder).
   const loadIssues: string[] = [];
-  const textureShare = options.sharedTextures === undefined && options.shareTextures !== false
-    ? sharedModelTextures.acquire(modelTextureShareKey(options))
+  // URL and request credentials enter only the opaque identity; cache snapshots cannot reveal
+  // signed query strings or headers. Content integrity is part of the identity as well.
+  const formatKey = `${format ?? "auto"}|adapter=${registryToken(options.formatRegistry)}:${options.formatRegistry?.generation ?? 0}|metadata=${valueToken(options.asset.formatMetadata)}`;
+  const textureKey = `${modelTextureShareKey({ ...options, asset: { url: "" } })}|format=${formatKey}|request=${requestKey}`;
+  if (options.sharedTextures) {
+    const existingContext = explicitTextureCacheContexts.get(options.sharedTextures);
+    if (existingContext !== undefined && existingContext !== textureKey) {
+      throw new Error("Shared glTF texture cache cannot be used across asset or request contexts");
+    }
+    explicitTextureCacheContexts.set(options.sharedTextures, textureKey);
+  }
+  const textureShare = identity.reusable && options.sharedTextures === undefined && options.shareTextures !== false
+    ? sharedModelTextures.acquire(textureKey)
     : undefined;
   const sharedTextures = options.sharedTextures ?? textureShare?.cache;
   // GU47 E-H: GLB resource cache across setScene. A kept entry still holds this asset's parse and
   // texture leases, so the load below reuses them; a kept GLB without draco / meshopt / KTX2 needs
   // no decoders, so its decoder pre-scan (a GLB fetch) is skipped.
-  const cacheKey = glbResourceCacheKey(options);
-  const kept = glbResourceCache.peek(cacheKey);
-  glbResourceCache.noteLoad(cacheKey);
+  const cacheKey = `${glbResourceCacheKey({ ...options, asset: { url: "" } })}|format=${formatKey}|request=${requestKey}`;
+  // The global GLB remount cache cannot own an app's optional adapter lease:
+  // its cleanup must run when that app releases the actor.
+  const useResourceCache = identity.reusable && options.formatRegistry === undefined;
+  const kept = useResourceCache ? glbResourceCache.peek(cacheKey) : undefined;
+  if (useResourceCache) glbResourceCache.noteLoad(cacheKey);
   const decoders = kept?.uncompressed === true ? undefined : options.decoders;
   let pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
   try {
     pipeline = await loadProductionGLTFRenderPipeline({
       url: options.asset.url,
       assetId: options.id,
+      ...(format ? { format } : {}),
+      ...(options.asset.formatMetadata ? { formatMetadata: options.asset.formatMetadata } : {}),
+      ...(options.formatRegistry ? { formatRegistry: options.formatRegistry } : {}),
       assetName: options.name ?? options.id,
+      request,
       width: options.width,
       height: options.height,
       ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
-      ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
+      // Capture the authored bindings first. Loading directly with a variant
+      // makes the loader's binding snapshot use the variant as the default.
+      ...(options.materialVariant !== undefined && !options.customMaterialOverrides?.length ? { materialVariant: options.materialVariant } : {}),
       ...(renderStateOverrides.length > 0 ? { materialRenderStateOverrides: renderStateOverrides } : {}),
       ...(options.textureBudget !== undefined ? { textureBudget: options.textureBudget } : {}),
+      ...(options.retainTextureResidencySources ? { retainTextureResidencySources: true } : {}),
       ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {}),
       ...(decoders ? { decoders } : {}),
       ...(options.compressedTextureCapabilities ? { compressedTextureCapabilities: options.compressedTextureCapabilities } : {}),
@@ -345,8 +765,128 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     }
     throw error;
   }
+  const customTextureWork = new Set<ModelCustomMaterialTextureWork>();
+  let customMaterial: Material | undefined;
+  const scopedMaterials = new Map<string, Material>();
+  const ownedScopedMaterials = new Set<Material>();
+  let customSlotPlan: Map<string, CustomSlotPlanEntry> | undefined;
+  let animationForCleanup: GLTFSceneAnimationRuntime | undefined;
+  let customSkinnedSourceCount = 0;
+  let actorForCleanup: TypedGLBActor | undefined;
+  let textureAbort: AbortController | undefined;
+  let acceptingTextureWork = false;
+  let textureWorkReleased = false;
+  let textureCleanupFailed = false;
+  let textureCleanupFailure: unknown;
+  let notifyTextureCleanupFailure: () => void = () => undefined;
+  const textureCleanupFailureSignal = new Promise<void>((resolve) => { notifyTextureCleanupFailure = resolve; });
+  const parentSignal = request.signal;
+  const forwardTextureAbort = (): void => {
+    // Event listeners cannot report a cleanup error to the caller. Retain it
+    // for the actor's normal failure/disposal path instead of losing it.
+    try { releaseCustomTextureWork(); } catch { /* Retained below. */ }
+  };
+  const releaseCustomTextureWork = (): void => {
+    if (textureWorkReleased) {
+      if (textureCleanupFailed) throw textureCleanupFailure;
+      return;
+    }
+    textureWorkReleased = true;
+    acceptingTextureWork = false;
+    parentSignal?.removeEventListener("abort", forwardTextureAbort);
+    textureAbort?.abort(parentSignal?.aborted ? parentSignal.reason : undefined);
+    const failures: unknown[] = [];
+    for (const work of customTextureWork) {
+      try { work.dispose(); } catch (error) { failures.push(error); }
+    }
+    if (failures.length) {
+      textureCleanupFailed = true;
+      textureCleanupFailure = new AggregateError(failures, "Model custom texture cleanup failed");
+      notifyTextureCleanupFailure();
+      throw textureCleanupFailure;
+    }
+  };
+  const adoptTextureWork = (work: ModelCustomMaterialTextureWork): void => {
+    // Observe a rejection even if the factory throws after transferring work.
+    void work.ready.catch(() => undefined);
+    if (!acceptingTextureWork || textureWorkReleased) {
+      work.dispose();
+      if (parentSignal?.aborted) throw parentSignal.reason ?? actorLoadCancelled();
+      throw new Error("Model custom texture work must be adopted during material creation");
+    }
+    customTextureWork.add(work);
+  };
+  const collectSkinnedSourceItems = (): RenderItem[] => pipeline.resources.scene.collectRenderables().flatMap(({ node, renderable }) => {
+    if (!renderable.skinning) {
+      if (Object.hasOwn(node.userData, "gltfSkinBinding")) {
+        throw unsupportedCustomModelMaterial("an authored skin has no live palette; its joint count or binding is unsupported");
+      }
+      return [];
+    }
+    const geometry = pipeline.resources.geometryLibrary.get(renderable.geometry);
+    if (!geometry) throw unsupportedCustomModelMaterial("the imported skin has no renderable geometry");
+    return [{ geometry, skinning: renderable.skinning }];
+  });
+  const verifySkinnedSourceItems = (): RenderItem[] => {
+    const items = collectSkinnedSourceItems();
+    if (items.length !== customSkinnedSourceCount) {
+      throw unsupportedCustomModelMaterial("the imported skin bindings changed after admission");
+    }
+    return items;
+  };
+  const validateSkinnedSourceItems = (material: Material): RenderItem[] => {
+    const items = verifySkinnedSourceItems();
+    assertSkinnedCustomPrograms(material, items);
+    return items;
+  };
+  const validateScopedSkins = (): number => {
+    const all = new Set<ActorRenderable["renderable"]>();
+    for (const [name, entry] of customSlotPlan ?? []) {
+      const material = scopedMaterials.get(name);
+      if (!material) continue;
+      const items: RenderItem[] = [];
+      for (const renderable of entry.skinned) {
+        if (!renderable.skinning) throw unsupportedCustomModelMaterial("an authored skin has no live palette; its joint count or binding is unsupported");
+        const geometry = pipeline.resources.geometryLibrary.get(renderable.geometry);
+        if (!geometry) throw unsupportedCustomModelMaterial("the imported skin has no renderable geometry");
+        all.add(renderable);
+        items.push({ geometry, skinning: renderable.skinning });
+      }
+      assertSkinnedCustomPrograms(material, items);
+    }
+    return all.size;
+  };
+  try {
+  if (isActorAnimationContextDisposed(animationContext) || request.signal?.aborted) {
+    throw request.signal?.aborted ? request.signal.reason ?? actorLoadCancelled() : actorLoadCancelled();
+  }
+  if (options.customMaterialFactory) {
+    assertSkinnedCustomSourceContract(pipeline);
+    customSkinnedSourceCount = collectSkinnedSourceItems().length;
+    if (typedOverrides.length > 0 || renderStateOverrides.length > 0 || options.tint) {
+      const error = new Error("MODEL_CUSTOM_MATERIAL_UNSUPPORTED: PBR overrides and tint cannot be applied to a custom shader");
+      Object.assign(error, { code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED" });
+      throw error;
+    }
+  }
+  if (options.customMaterialOverrides?.length) {
+    for (const rule of options.customMaterialOverrides) {
+      if (!rule || typeof rule.target !== "function" || typeof rule.factory !== "function" || typeof rule.replaceTextures !== "boolean") {
+        throw unsupportedCustomModelMaterial("invalid custom material slot selector or factory");
+      }
+    }
+    if (options.tint || renderStateOverrides.length > 0) {
+      throw unsupportedCustomModelMaterial("tint and render-state overrides cannot be combined with custom slots");
+    }
+    customSlotPlan = planCustomMaterialSlots(pipeline, options.customMaterialOverrides);
+    for (const name of customSlotPlan.keys()) {
+      if (typedOverrides.some((override) => !override.target || override.target(name))) {
+        throw unsupportedCustomModelMaterial(`PBR overrides overlap custom slot '${name}'`);
+      }
+    }
+  }
   // This actor now holds its own parse and texture leases: the kept copy has done its job.
-  glbResourceCache.consume(cacheKey);
+  if (useResourceCache) glbResourceCache.consume(cacheKey);
   // P5-1/P5-4: resource-level load issues (colorspace-conflict, tangent-derivative-fallback)
   // surface through inspectMaterials() warnings alongside variant issues.
   for (const issue of pipeline.resources.loadIssues) {
@@ -359,23 +899,152 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       if (hidden.has(node.name)) node.visible = false;
     });
   }
+  // Arbitrary custom vertex programs do not automatically apply the palette.
+  // Only certified, paired graph programs pass the checks below; all other
+  // combinations fail instead of silently drawing the bind pose.
+  if (options.customMaterialFactory || customSlotPlan) {
+    if (parentSignal?.aborted) throw parentSignal.reason ?? actorLoadCancelled();
+    textureAbort = new AbortController();
+    parentSignal?.addEventListener("abort", forwardTextureAbort, { once: true });
+    if (parentSignal?.aborted) {
+      forwardTextureAbort();
+      throw parentSignal.reason ?? actorLoadCancelled();
+    }
+    acceptingTextureWork = true;
+    try {
+      const context = {
+        request: customTextureRequest,
+        signal: textureAbort.signal,
+        ...(customTextureMaxDimension !== undefined ? { maxDimension: customTextureMaxDimension } : {}),
+        adoptTextureWork
+      };
+      if (options.customMaterialFactory) {
+        customMaterial = options.customMaterialFactory({
+          ...context,
+          skinned: pipeline.resources.scene.collectRenderables().some(({ renderable }) => Boolean(renderable.skinning))
+        });
+      }
+      for (const [name, entry] of customSlotPlan ?? []) {
+        const material = entry.rule.factory({ ...context, skinned: entry.skinned.size > 0 });
+        if (!material || material.disposed || ownedScopedMaterials.has(material) || [...pipeline.resources.materialLibrary.values()].includes(material)) {
+          throw unsupportedCustomModelMaterial(`custom slot '${name}' must return a live, actor-owned material`);
+        }
+        ownedScopedMaterials.add(material);
+        scopedMaterials.set(name, material);
+        if (entry.hasInstanceColors || entry.rule.requiresInstanceColors) assertCustomInstanceColors(material);
+      }
+    } finally {
+      acceptingTextureWork = false;
+    }
+    if (customMaterial) validateSkinnedSourceItems(customMaterial);
+    validateScopedSkins();
+    // Abort peers on a failure, but wait for their late I/O and cleanup before
+    // publishing an actor or treating the failed acquisition as settled.
+    let readinessFailed = false;
+    let readinessFailure: unknown;
+    const allReady = Promise.allSettled([...customTextureWork].map((work) => work.ready.catch((error: unknown) => {
+      if (!readinessFailed) { readinessFailed = true; readinessFailure = error; }
+      try { releaseCustomTextureWork(); } catch { /* Retained for the outer cleanup path. */ }
+      throw error;
+    })));
+    const outcome = await Promise.race([
+      allReady.then((results) => ({ kind: "ready" as const, results })),
+      textureCleanupFailureSignal.then(() => ({ kind: "cleanup-failed" as const }))
+    ]);
+    // A failed disposer may deliberately leave `ready` unsettled to signal
+    // uncertain retirement. Report that failure rather than hanging forever.
+    if (outcome.kind === "cleanup-failed") {
+      if (readinessFailed) throw readinessFailure;
+      if (parentSignal?.aborted) throw parentSignal.reason ?? actorLoadCancelled();
+      throw textureCleanupFailure;
+    }
+    const results = outcome.results;
+    const failure = results.find((result): result is PromiseRejectedResult => result.status === "rejected");
+    if (failure) throw failure.reason;
+    if (isActorAnimationContextDisposed(animationContext) || parentSignal?.aborted) {
+      throw parentSignal?.aborted ? parentSignal.reason ?? actorLoadCancelled() : actorLoadCancelled();
+    }
+    if (customMaterial) validateSkinnedSourceItems(customMaterial);
+    validateScopedSkins();
+    if (customSlotPlan && options.materialVariant !== undefined) {
+      const result = await pipeline.resources.setMaterialVariant(options.materialVariant);
+      if (result !== "applied") throw unsupportedCustomModelMaterial(`unknown imported material variant '${options.materialVariant}'`);
+      if (isActorAnimationContextDisposed(animationContext) || parentSignal?.aborted) {
+        throw parentSignal?.aborted ? parentSignal.reason ?? actorLoadCancelled() : actorLoadCancelled();
+      }
+    }
+  }
+  const animationMaterialOptions = {
+    // The native resource builder settles all initial image decodes before
+    // returning. Registered adapters have no equivalent completion contract.
+    textureLoadFailuresFinal: options.formatRegistry === undefined
+  };
+  const resolveImportedAnimationMaterial = createGLBActorAnimationMaterialResolver(pipeline.resources, pipeline.asset, animationMaterialOptions);
+  const resolveReplacedAnimationMaterial = customMaterial || customSlotPlan
+    ? createGLBActorAnimationMaterialResolver(pipeline.resources, pipeline.asset, { ...animationMaterialOptions, importedMaterialOverridden: true })
+    : undefined;
   const animation = createGLTFSceneAnimationRuntime({
     scene: pipeline.resources.scene,
     clips: pipeline.asset.animations,
     asset: pipeline.asset,
-    resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(pipeline.resources)
+    resolveAnimationMaterial: (name) => customMaterial || customSlotPlan?.has(name)
+      ? resolveReplacedAnimationMaterial?.(name)
+      : resolveImportedAnimationMaterial(name)
   });
+  animationForCleanup = animation;
+  const initializeCustomSkinning = (): void => {
+    const count = customMaterial ? validateSkinnedSourceItems(customMaterial).length : validateScopedSkins();
+    if (count > 0) {
+      const result = animation.applyPose({ bones: {} }, "model-bind-pose");
+      const bindingCount = animation.snapshot().skinningBindingCount;
+      if ((customMaterial ? bindingCount !== count || result.skinningPalettesUpdated !== count
+        : bindingCount < count || result.skinningPalettesUpdated < count) || result.missingTargets.length > 0) {
+        throw unsupportedCustomModelMaterial("the imported skin cannot initialize every live joint palette");
+      }
+    }
+  };
+  initializeCustomSkinning();
 
   // P2-1: authored snapshot taken immediately post-load; every override application restores from
   // it first, so overrides are idempotent and never accumulate.
-  let materialSnapshot: AuthoredMaterialSnapshot = snapshotMaterials(pipeline.resources.materialLibrary.values());
+  const authoredByMaterial = new WeakMap<Material, Readonly<Record<string, unknown>>>();
+  const captureAuthoredMaterials = (): AuthoredMaterialSnapshot => {
+    const materials = [...pipeline.resources.materialLibrary.values()];
+    const current = snapshotMaterials(materials);
+    const snapshot = new Map<string, Readonly<Record<string, unknown>>>();
+    materials.forEach((material, index) => {
+      const key = `${material.name ?? ""}#${index}`;
+      const authored = authoredByMaterial.get(material) ?? current.get(key)!;
+      authoredByMaterial.set(material, authored);
+      snapshot.set(key, authored);
+    });
+    return snapshot;
+  };
+  let materialSnapshot: AuthoredMaterialSnapshot = captureAuthoredMaterials();
   let activeMaterialOverrides: readonly TypedGLBActorMaterialOverride[] = [];
+  let actorDisposed = false;
+  let actorPublished = false;
   const setMaterialOverrides = (overrides: readonly TypedGLBActorMaterialOverride[]): void => {
+    if (customMaterial && overrides.length > 0) {
+      const error = new Error("MODEL_CUSTOM_MATERIAL_UNSUPPORTED: PBR overrides cannot be applied to a custom shader");
+      Object.assign(error, { code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED" });
+      throw error;
+    }
+    for (const name of customSlotPlan?.keys() ?? []) {
+      if (overrides.some((override) => !override.target || override.target(name))) {
+        throw unsupportedCustomModelMaterial(`PBR overrides overlap custom slot '${name}'`);
+      }
+    }
     activeMaterialOverrides = overrides;
     applyMaterialOverrides(materialSnapshot, pipeline.resources.materialLibrary.values(), overrides);
   };
   const setTint = (tint: TypedGLBActorTintOptions): void => {
-    if (typedGLBActorQrFlags().on("A3D_QR_MATERIALS")) {
+    if (customMaterial || customSlotPlan) {
+      const error = new Error("MODEL_CUSTOM_MATERIAL_UNSUPPORTED: tint cannot be applied to a custom shader");
+      Object.assign(error, { code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED" });
+      throw error;
+    }
+    if (initialFlags.on("A3D_QR_MATERIALS")) {
       // P2-2: lower the tint to an explicit override — only fields actually given are written;
       // the /joint/i heuristic, 0.28/0.38/0.16 constants and emissive=baseColor fallback never run.
       setMaterialOverrides([{
@@ -393,19 +1062,43 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     tintTypedGLBActorMaterials(pipeline, tint);
   };
   const materialVariantIssues: string[] = [];
-  const setMaterialVariant = (name: string | null): void => {
-    // R11: rebind by rebuilding each renderable's material binding from the asset; an unknown
-    // variant leaves the authored materials in place and records `variant-unknown`.
-    void pipeline.resources.setMaterialVariant(name).then((result) => {
+  const setMaterialVariant = (name: string | null): Promise<"applied" | "variant-unknown"> => {
+    const selection: Promise<"applied" | "variant-unknown"> = customMaterial
+      ? name === null
+        ? Promise.resolve("applied")
+        : pipeline.resources.renderableBindings.some((binding) => binding.materialVariants.some((variant) => variant.variant === name))
+          ? Promise.reject(unsupportedCustomModelMaterial("an imported material variant cannot be visible under a whole-model custom replacement"))
+          : Promise.resolve("variant-unknown")
+      : pipeline.resources.setMaterialVariant(name);
+    const pending = selection.then((result) => {
+      if (actorDisposed) throw actorLoadCancelled();
       if (result === "variant-unknown") {
         if (!materialVariantIssues.includes(`variant-unknown:${name ?? ""}`)) {
           materialVariantIssues.push(`variant-unknown:${name ?? ""}`);
         }
+        return result;
+      }
+      // Deduplicated keys may refer to the same material; its snapshot must
+      // remain the original values even when a new alias is added later.
+      materialSnapshot = captureAuthoredMaterials();
+      if (activeMaterialOverrides.length > 0) {
+        applyMaterialOverrides(materialSnapshot, pipeline.resources.materialLibrary.values(), activeMaterialOverrides);
+      }
+      return result;
+    });
+    // The public material handle is currently synchronous and can discard this
+    // promise. Still expose rejection to actor callers and report real errors.
+    void pending.catch((error: unknown) => {
+      if (error instanceof Error && error.name === "AbortError"
+        && (actorDisposed || error.message === "glTF material variant selection was superseded")) return;
+      if (actorDisposed) {
+        console.error("Material variant selection failed after actor disposal", error);
         return;
       }
-      materialSnapshot = snapshotMaterials(pipeline.resources.materialLibrary.values());
-      applyMaterialOverrides(materialSnapshot, pipeline.resources.materialLibrary.values(), activeMaterialOverrides);
+      const reason = error instanceof Error ? error.message : String(error);
+      materialVariantIssues.push(`variant-error:${reason}`);
     });
+    return pending;
   };
   if (typedOverrides.length > 0) setMaterialOverrides(typedOverrides);
   if (options.tint) setTint(options.tint);
@@ -418,7 +1111,18 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   // GU47 E-H: named-part handles (one per name) and the model matrix of the last drawn frame.
   const parts = new Map<string, AuraRuntimeNodeHandle>();
   let lastModelMatrix: Mat4 | undefined;
-  let actorDisposed = false;
+  let lastLodCamera: LodCamera | undefined;
+  let reuseLodSelection = false;
+
+  // Capture the extension list for this actor so its load, frame and disposal
+  // see the same lifecycle. Explicit LOD opts this actor into the LOD extension
+  // even if the legacy process-wide quality flag is off.
+  const extensionFlags = options.lod === undefined ? initialFlags : {
+    values: { ...initialFlags.values, A3D_QR_ASSETS_LOD: true },
+    on: (name: Parameters<typeof initialFlags.on>[0]) => name === "A3D_QR_ASSETS_LOD" || initialFlags.on(name)
+  };
+  const actorExtensions = typedGLBActorExtensions(extensionFlags);
+  const initializedActorExtensions: Array<(typeof actorExtensions)[number]> = [];
 
   const actor: TypedGLBActor = {
     kind: "aura-typed-glb-actor",
@@ -426,6 +1130,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     name: options.name ?? options.id,
     asset: options.asset,
     pipeline,
+    get lodCamera() { return lastLodCamera; },
+    get reuseLodSelection() { return reuseLodSelection; },
     animation,
     ...(staticConsolidation ? {
       staticRenderItems: staticConsolidation.renderItems,
@@ -513,15 +1219,72 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       return animationTrack.applyMorphTargets(weights, options);
     },
     collectRenderItems(transformOptions = {}) {
+      if (transformOptions.lodCamera !== undefined) lastLodCamera = transformOptions.lodCamera;
+      reuseLodSelection = transformOptions.reuseLodSelection === true;
       // Kept by reference (no per-frame copy); read only by part world getters.
-      if (transformOptions.modelMatrix !== undefined && transformOptions.modelMatrix.length === 16) {
+      if (!reuseLodSelection && transformOptions.modelMatrix !== undefined && transformOptions.modelMatrix.length === 16) {
         lastModelMatrix = transformOptions.modelMatrix as Mat4;
       }
       let items = collectTypedGLBActorRenderItems(actor, transformOptions);
-      for (const extension of typedGLBActorExtensions()) {
+      const sourceNames = new Map<Material, Set<string>>();
+      if (customSlotPlan) {
+        for (const [key, material] of pipeline.resources.materialLibrary) {
+          const names = sourceNames.get(material) ?? new Set<string>();
+          names.add(parseGLTFRuntimeMaterialKey(key).material);
+          sourceNames.set(material, names);
+        }
+      }
+      const scopedName = (item: RenderItem): string | undefined => {
+        const candidate = item.material;
+        if (!candidate) return undefined;
+        const base = "baseMaterial" in candidate ? candidate.baseMaterial : candidate;
+        const names = sourceNames.get(base);
+        if (!names) return undefined;
+        const selected = [...names].filter((name) => customSlotPlan?.has(name));
+        if (selected.length === 0) return undefined;
+        if (names.size !== 1 || "baseMaterial" in candidate) {
+          throw unsupportedCustomModelMaterial("a custom slot aliases another source material or material instance");
+        }
+        return selected[0];
+      };
+      const selectedKeys = new Map<NonNullable<RenderItem["temporalObjectKey"]>, { readonly name: string; readonly skinned: boolean }>();
+      if (customSlotPlan) for (const item of items) {
+        const name = scopedName(item);
+        if (name && item.temporalObjectKey) selectedKeys.set(item.temporalObjectKey, { name, skinned: Boolean(item.skinning) });
+      }
+      const skinnedKeys = customMaterial
+        ? new Set(items.flatMap((item) => item.skinning && item.temporalObjectKey ? [item.temporalObjectKey] : []))
+        : undefined;
+      for (const extension of actorExtensions) {
         items = extension.collectRenderItems?.(actor, items) ?? items;
       }
-      return items;
+      if (customMaterial) {
+        verifySkinnedSourceItems();
+        if (items.some((item) => !item.skinning && item.temporalObjectKey && skinnedKeys?.has(item.temporalObjectKey))) {
+          throw unsupportedCustomModelMaterial("an actor extension removed an imported skin palette");
+        }
+        assertSkinnedCustomPrograms(customMaterial, items);
+        if (customMaterial instanceof PortableShaderMaterial) syncCustomTextureRefs(customMaterial);
+      }
+      if (customMaterial) return items.map((item) => ({ ...item, material: customMaterial }));
+      if (!customSlotPlan) return items;
+      validateScopedSkins();
+      for (const material of ownedScopedMaterials) {
+        if (material instanceof PortableShaderMaterial) syncCustomTextureRefs(material);
+      }
+      return items.map((item) => {
+        const name = scopedName(item);
+        const original = item.temporalObjectKey ? selectedKeys.get(item.temporalObjectKey) : undefined;
+        if (original && (name !== original.name || (original.skinned && !item.skinning))) {
+          throw unsupportedCustomModelMaterial("an actor extension changed a custom slot or removed its skin palette");
+        }
+        if (!name) return item;
+        const material = scopedMaterials.get(name);
+        if (!material || material.disposed) throw unsupportedCustomModelMaterial(`custom slot '${name}' is unavailable`);
+        assertSkinnedCustomPrograms(material, [item]);
+        if (item.instanceColors?.length) assertCustomInstanceColors(material);
+        return { ...item, material };
+      });
     },
     snapshot() {
       return animation.snapshot();
@@ -534,10 +1297,13 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       }
       return [...variants].sort();
     },
+    hasCustomMaterialOverride(name) {
+      return customMaterial !== undefined || (name === undefined ? (customSlotPlan?.size ?? 0) > 0 : customSlotPlan?.has(name) === true);
+    },
     setMaterialVariant,
     inspectMaterials() {
       const infos: AuraResolvedMaterialInfo[] = [];
-      for (const [key, material] of pipeline.resources.materialLibrary) {
+      for (const [key, material] of [...pipeline.resources.materialLibrary, ...scopedMaterials]) {
         const params = material.getParameters();
         const enabledMaps: string[] = [];
         for (const [name, value] of params) {
@@ -559,6 +1325,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
           warnings: [
             ...loadIssues,
             ...materialVariantIssues,
+            ...[...customTextureWork].flatMap((work) => work.warnings.map(sanitizeDiagnosticText)),
             // P2-8: hardwareWrap requested but the legacy textured shader lacks Q-01-2's
             // `mode > 2.5` passthrough — the material surfaces it for inspection.
             ...((material as { hardwareWrapPending?: boolean }).hardwareWrapPending ? ["hardware-wrap-pending"] : [])
@@ -572,51 +1339,140 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       // Idempotent: a second call must not dispose resources the GLB resource cache now keeps.
       if (actorDisposed) return;
       actorDisposed = true;
-      for (const extension of typedGLBActorExtensions()) {
-        extension.dispose?.(actor);
+      actorTemporalKeys.delete(actor);
+      const failures: unknown[] = [];
+      const cleanup = (work: () => void): void => { try { work(); } catch (error) { failures.push(error); } };
+      for (const extension of initializedActorExtensions) {
+        cleanup(() => extension.dispose?.(actor));
       }
+      cleanup(() => animation.dispose());
+      cleanup(releaseCustomTextureWork);
+      cleanup(() => customMaterial?.dispose());
+      for (const material of ownedScopedMaterials) cleanup(() => material.dispose());
       for (const item of staticConsolidation?.renderItems ?? []) {
-        if (staticConsolidation?.ownedGeometries.has(item.geometry)) item.geometry.dispose();
+        if (staticConsolidation?.ownedGeometries.has(item.geometry)) cleanup(() => item.geometry.dispose());
       }
       parts.clear();
-      if (liveTypedGLBActors.get(actor.id) === actor) liveTypedGLBActors.delete(actor.id);
+      cleanup(() => clearTypedGLBActorQrFlags(actor));
+      const actors = actorRegistry(animationContext);
+      if (actors.get(actor.id) === actor) actors.delete(actor.id);
       // GU47 E-H: GLB resource cache. Render resources and textures are freed now as before; only
       // the parse lease (held by the pipeline) is handed to the cache, so the next scene that mounts
       // this asset loads it without a fetch. One kept lease per asset is enough.
-      if (glbResourceCache.enabled && glbResourceCache.peek(cacheKey) === undefined) {
-        pipeline.resources.dispose();
-        textureShare?.release();
+      // A failed or reentrantly disposed startup has no successful mount to
+      // bridge. Keeping its parse lease would pin stale data across a retry.
+      if (actorPublished && failures.length === 0 && useResourceCache && glbResourceCache.enabled && glbResourceCache.peek(cacheKey) === undefined) {
+        cleanup(() => pipeline.resources.dispose());
+        cleanup(() => textureShare?.release());
         const compression = pipeline.asset.loaderDiagnostics.compression;
-        const kept = glbResourceCache.keep(cacheKey, {
+        const kept = failures.length === 0 && glbResourceCache.keep(cacheKey, {
           bytes: estimateGlbResourceBytes(options.asset.sizeBytes, pipeline.asset.loaderDiagnostics),
           uncompressed: !compression.draco && !compression.meshopt && !compression.ktx2Basis,
           // Re-disposing the resources inside is a no-op; this releases the parse lease.
           dispose: () => pipeline.dispose()
         });
-        if (!kept) pipeline.dispose();
+        if (!kept) cleanup(() => disposePipeline(pipeline, options.runtimeOwner, false));
+        if (failures.length) throw new AggregateError(failures, "Model actor cleanup failed");
         return;
       }
-      pipeline.dispose();
-      textureShare?.release();
+      cleanup(() => disposePipeline(pipeline, options.runtimeOwner, !useResourceCache));
+      cleanup(() => textureShare?.release());
+      if (failures.length) throw new AggregateError(failures, "Model actor cleanup failed");
     }
   };
 
+  actorForCleanup = actor;
   const animationTrack = createTypedGLBActorAnimationTrack(animation, actor);
-  liveTypedGLBActors.set(actor.id, actor);
-  for (const extension of typedGLBActorExtensions()) {
-    extension.onLoad?.(actor, pipeline);
+  bindActorAnimationContext(actor, animationContext);
+  setTypedGLBActorQrFlags(initialFlags, actor);
+  if (isActorAnimationContextDisposed(animationContext) || parentSignal?.aborted) {
+    throw parentSignal?.aborted ? parentSignal.reason ?? actorLoadCancelled() : actorLoadCancelled();
   }
+  for (const extension of actorExtensions) {
+    initializedActorExtensions.push(extension);
+    extension.onLoad?.(actor, pipeline);
+    if (actorDisposed || isActorAnimationContextDisposed(animationContext) || parentSignal?.aborted) {
+      throw parentSignal?.aborted ? parentSignal.reason ?? actorLoadCancelled() : actorLoadCancelled();
+    }
+  }
+  const lod = getTypedGLBActorLod(actor);
+  if (lod && options.lod === false) lod.setLevel(0);
+  else if (lod && options.lod !== undefined) lod.setMode("auto", typeof options.lod === "object" ? options.lod : {});
+  if (actorDisposed || isActorAnimationContextDisposed(animationContext) || parentSignal?.aborted) {
+    throw parentSignal?.aborted ? parentSignal.reason ?? actorLoadCancelled() : actorLoadCancelled();
+  }
+  initializeCustomSkinning();
+  // Only the loader can attribute a channel to the required extension, and
+  // target names are not track identities. Validate each original track after
+  // extension initialization, but before publishing/caching the actor. Pending
+  // and indeterminate bindings retain the pre-existing lazy-resource behavior.
+  for (const clip of pipeline.asset.animations) {
+    for (const track of clip.tracks) {
+      const source = pipeline.asset.animationPointerForTrack?.(track);
+      if (!source?.required) continue;
+      const binding = animation.inspectTrackBinding(track);
+      if (binding.status !== "unavailable") continue;
+      const error = new Error(
+        `Required KHR_animation_pointer binding unavailable for animation ${source.animationIndex} channel ${source.channelIndex} (${source.pointer}): ${binding.reason ?? "unavailable"}`
+      );
+      Object.assign(error, {
+        code: "GLTF_REQUIRED_ANIMATION_POINTER_BINDING_UNAVAILABLE",
+        animationIndex: source.animationIndex,
+        channelIndex: source.channelIndex,
+        pointer: source.pointer,
+        target: binding.target,
+        reason: binding.reason
+      });
+      throw error;
+    }
+  }
+  actorRegistry(animationContext).set(actor.id, actor);
+  actorPublished = true;
   return actor;
+  } catch (error) {
+    const failures: unknown[] = [];
+    const cleanup = (work: () => void): void => { try { work(); } catch (failure) { failures.push(failure); } };
+    if (actorForCleanup) {
+      cleanup(() => actorForCleanup!.dispose());
+    } else {
+      cleanup(() => animationForCleanup?.dispose());
+      cleanup(releaseCustomTextureWork);
+      cleanup(() => customMaterial?.dispose());
+      for (const material of ownedScopedMaterials) cleanup(() => material.dispose());
+      cleanup(() => disposePipeline(pipeline, options.runtimeOwner, !useResourceCache));
+      cleanup(() => textureShare?.release());
+    }
+    // A factory can throw after handing us in-flight work. Cancellation must
+    // close its late result as well, not merely detach its rejection handler.
+    if (failures.length === 0) await Promise.allSettled([...customTextureWork].map((work) => work.ready));
+    if (failures.length) throw new AggregateError([error, ...failures], "Model actor creation and cleanup failed");
+    throw error;
+  }
 }
 
 /* ------------------------------------------------- GU47 E-H: named GLB parts */
 
-/** Live actors by id (= the model node id for scene-graph models), for `handle.part(name)`. */
-const liveTypedGLBActors = new Map<string, TypedGLBActor>();
+function actorLoadCancelled(): Error {
+  const error = new Error("Actor load cancelled because its runtime was disposed");
+  error.name = "AbortError";
+  return error;
+}
+
+/** Live actors are keyed by runtime context as well as model-node id. */
+const liveTypedGLBActors = new WeakMap<ActorAnimationContext, Map<string, TypedGLBActor>>();
+
+function actorRegistry(context: ActorAnimationContext): Map<string, TypedGLBActor> {
+  let actors = liveTypedGLBActors.get(context);
+  if (!actors) {
+    actors = new Map();
+    liveTypedGLBActors.set(context, actors);
+  }
+  return actors;
+}
 
 /** The live actor created under `id`, if any (GU47 E-H; `handle.part` resolution). */
-export function liveTypedGLBActor(id: string): TypedGLBActor | undefined {
-  return liveTypedGLBActors.get(id);
+export function liveTypedGLBActor(id: string, owner?: object): TypedGLBActor | undefined {
+  return liveTypedGLBActors.get(actorAnimationContextFor(owner))?.get(id);
 }
 
 /**
@@ -640,7 +1496,7 @@ registerNodeHandleExtension({
   flag: "A3D_QR_COMPILER",
   member: "part",
   appliesTo: ["model"],
-  create: (handle) => (name: string) => liveTypedGLBActors.get(handle.id)?.part(name)
+  create: (handle, app) => (name: string) => liveTypedGLBActor(handle.id, app)?.part?.(name)
 });
 
 /**
@@ -717,12 +1573,33 @@ function createGlbPartHandle(
   });
 }
 
+const importedMorphDeltas = new WeakMap<NonNullable<RenderItem["morphTargets"]>, NonNullable<RenderItem["morphTargets"]>>();
+
+/** The glTF loader represents an omitted morph channel by `[]`; the render
+ * contract represents it by `undefined`. Preserve the original arrays for
+ * present channels and normalize only those absent channels. */
+function normalizeImportedMorphDeltas(targets: NonNullable<RenderItem["morphTargets"]>): NonNullable<RenderItem["morphTargets"]> {
+  if (!targets.some((target) => target.positions?.length === 0 || target.normals?.length === 0 || target.tangents?.length === 0)) return targets;
+  let normalized = importedMorphDeltas.get(targets);
+  if (!normalized) {
+    normalized = targets.map((target) => ({
+      ...target,
+      ...(target.positions?.length === 0 ? { positions: undefined } : {}),
+      ...(target.normals?.length === 0 ? { normals: undefined } : {}),
+      ...(target.tangents?.length === 0 ? { tangents: undefined } : {})
+    }));
+    importedMorphDeltas.set(targets, normalized);
+  }
+  return normalized;
+}
+
 export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: TypedGLBActorTransformOptions = {}): RenderItem[] {
   const wrinkle = options.wrinkleStrength === undefined ? {} : { wrinkleStrength: options.wrinkleStrength };
   if (actor.staticRenderItems) {
     return actor.staticRenderItems.map((item) => ({
       ...item,
       ...wrinkle,
+      temporalObjectKey: actorTemporalKey(actor, item, item, item.geometry),
       modelMatrix: resolveTypedGLBActorModelMatrix(
         (item.modelMatrix ?? identityMat4()) as Mat4,
         options.modelMatrix
@@ -742,12 +1619,13 @@ export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: T
       label: `${actor.id}:${node.name}:${renderable.geometry}`,
       geometry,
       material,
+      temporalObjectKey: actorTemporalKey(actor, node, renderable, geometry),
       ...wrinkle,
       modelMatrix: resolveTypedGLBActorModelMatrix(node.transform.worldMatrix, options.modelMatrix),
       ...(renderable.skinning ? { skinning: renderable.skinning } : {}),
       ...(renderable.instanceTransforms ? { instanceTransforms: renderable.instanceTransforms } : {}),
       ...(renderable.instanceColors ? { instanceColors: renderable.instanceColors } : {}),
-      ...(morphTargets && renderable.morphWeights.length > 0 ? { morphTargets, morphWeights: renderable.morphWeights } : {})
+      ...(morphTargets && renderable.morphWeights.length > 0 ? { morphTargets: normalizeImportedMorphDeltas(morphTargets), morphWeights: renderable.morphWeights } : {})
     });
   }
   return items;

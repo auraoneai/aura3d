@@ -13,12 +13,19 @@ import {
   type Vec3 as SceneVec3
 } from "@aura3d/scene";
 import { AnimationClip, AnimationTrack, Skeleton, type Mat4, type Quat, type SerializedAnimationClip, type SkinningPalette, type TrackValueType, type Vec3 } from "@aura3d/animation";
-import type { AssetLoadProgress, AssetLoadRequest, AssetLoader } from "./AssetLoader";
+import { mergeAssetRequestOptions, redactAssetUrl, requestIdentityDetails, type AssetLoadProgress, type AssetLoadRequest, type AssetLoader, type AssetRequestOptions } from "./AssetLoader";
+import { fetchBytes, isNonRetryableAssetError, verifyAssetBytes } from "./LoaderFetch";
 import {
   evaluateGLTFExtensionSupport,
   type GLTFExtensionSupportEvaluation
 } from "./GLTFExtensionSupport";
-import type { LoadContext } from "./LoadContext";
+import {
+  getGLTFLightAnimationTrackIdentity,
+  getGLTFLightSceneIdentity,
+  registerGLTFLightAnimationTrack,
+  registerGLTFLightSceneInstance
+} from "./GLTFLightPointerIdentity";
+import { LoadContext } from "./LoadContext";
 
 type GLTFComponentType = 5120 | 5121 | 5122 | 5123 | 5125 | 5126;
 type GLTFSparseIndexComponentType = 5121 | 5123 | 5125;
@@ -27,6 +34,7 @@ type GLTFAccessorType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
 const DEFAULT_GLTF_MATERIAL_NAME = "default-material";
 const RUNTIME_MATERIAL_KEY_MARKER = "#aura3d-runtime:";
 const DISPOSE_GLTF_ASSET = Symbol("disposeGLTFAsset");
+const MAX_COLORED_INSTANCES = 1_000_000;
 /**
  * Joints addressable through a uniform-array palette. Skins above this still render:
  * the palette is uploaded as an RGBA32F data texture instead.
@@ -115,6 +123,7 @@ interface GLTFNode {
   readonly name?: string;
   readonly camera?: number;
   readonly mesh?: number;
+  readonly weights?: readonly number[];
   readonly skin?: number;
   readonly children?: readonly number[];
   readonly translation?: readonly [number, number, number];
@@ -164,6 +173,14 @@ interface GLTFMaterial {
   readonly doubleSided?: boolean;
   readonly extensions?: {
     readonly KHR_materials_unlit?: Record<string, never>;
+    readonly KHR_materials_diffuse_roughness?: {
+      readonly diffuseRoughnessFactor?: number;
+      readonly diffuseRoughnessTexture?: GLTFTextureInfo;
+    };
+    readonly EXT_materials_bump?: {
+      readonly bumpFactor?: number;
+      readonly bumpTexture?: GLTFTextureInfo;
+    };
     readonly KHR_materials_emissive_strength?: {
       readonly emissiveStrength?: number;
     };
@@ -398,7 +415,21 @@ export interface GLTFMeshAsset {
   readonly material: string;
   readonly materialIndex?: number;
   readonly materialVariants: readonly GLTFMaterialVariantMappingAsset[];
+  /**
+   * Legacy first skin referencing this shared mesh. A glTF node, rather than
+   * the mesh, owns the actual skin binding; see `gltfSkinBinding` on imported
+   * renderable nodes when binding an instantiated scene.
+   */
   readonly skinIndex?: number;
+}
+
+/** @internal Source identity carried by a skinned scene renderable's userData. */
+export interface GLTFSkinBindingProvenance {
+  readonly assetId: string;
+  readonly nodeIndex: number;
+  readonly meshIndex: number;
+  readonly primitiveIndex: number;
+  readonly skinIndex: number;
 }
 
 export interface GLTFRuntimeMaterialContract {
@@ -485,9 +516,103 @@ export interface GLTFAccessorLoadProfileEntry {
   readonly bufferView?: number;
 }
 
+/** Authored source of one imported KHR_animation_pointer track. */
+export interface GLTFAnimationPointerTrackProvenance {
+  readonly animationIndex: number;
+  readonly channelIndex: number;
+  readonly pointer: string;
+  readonly required: boolean;
+}
+
+interface RequiredEmissiveDefaultSource {
+  readonly material: WeakRef<GLTFMaterialAsset>;
+  readonly provenance: GLTFAnimationPointerTrackProvenance;
+  readonly target: string;
+}
+
+interface RequiredEmissiveDefaultTrack {
+  readonly track: WeakRef<AnimationTrack>;
+  readonly path: string;
+  readonly pointer: string;
+}
+
+// Runtime materials collapse an absent extension and an authored default to
+// the same number. Keep the source proof off caller-owned objects and key it
+// by the actual imported track, not by a material name, index, or value.
+const requiredEmissiveDefaultSources = new WeakMap<AnimationTrack, RequiredEmissiveDefaultSource>();
+const requiredEmissiveDefaultTracks = new WeakMap<object, readonly RequiredEmissiveDefaultTrack[]>();
+
+/** @internal Inspect, but never expose or alter, loader-owned source evidence. */
+export function inspectRequiredEmissiveDefaultSource(
+  track: AnimationTrack,
+  provenance: GLTFAnimationPointerTrackProvenance | undefined,
+  material: GLTFMaterialAsset | undefined
+): "verified" | "changed" | undefined {
+  const source = requiredEmissiveDefaultSources.get(track);
+  if (!source) return undefined;
+  return provenance === source.provenance && material !== undefined && material === source.material.deref() &&
+    track.target === source.target ? "verified" : "changed";
+}
+
+/** @internal Detect a missing or duplicated original track without identifying its replacement. */
+export function inspectRequiredEmissiveDefaultTrackLoss(
+  lookup: GLTFAsset["animationPointerForTrack"],
+  animations: readonly AnimationClip[]
+): { readonly path: string; readonly pointer: string; readonly message: string } | undefined {
+  const expected = lookup && requiredEmissiveDefaultTracks.get(lookup);
+  if (!expected) return undefined;
+  const counts = new Map<AnimationTrack, number>();
+  for (const animation of animations) for (const track of animation.tracks) {
+    counts.set(track, (counts.get(track) ?? 0) + 1);
+  }
+  for (const entry of expected) {
+    const track = entry.track.deref();
+    if (!track || counts.get(track) !== 1) {
+      return Object.freeze({
+        path: entry.path, pointer: entry.pointer,
+        message: "The original required emissive-strength track was removed, reconstructed, or duplicated."
+      });
+    }
+  }
+  return undefined;
+}
+
 export interface GLTFAsset {
   readonly url: string;
   readonly disposed: boolean;
+  /**
+   * Opaque identity for a loaded asset with skins or animations, not a content
+   * hash or URL. Its scene instances and skinned renderables retain it through
+   * cloning and scene serialization; the scene container identifies the actor.
+   * Optional for static assets and existing structural GLTFAsset implementations.
+   */
+  readonly gltfAssetId?: string;
+  /**
+   * Source node for an imported node-animation track. Keyed by track object,
+   * not clip/target name; material/light tracks and foreign or reconstructed
+   * tracks return undefined. It can be passed to the animation runtime.
+   */
+  readonly nodeIndexForTrack?: (track: AnimationTrack) => number | undefined;
+  /**
+   * Immutable source metadata for an original imported pointer track. Ordinary
+   * glTF channels, foreign tracks and reconstructed/serialized tracks return
+   * undefined; a clone of the scene still uses the original asset's tracks.
+   * Optional for structural assets produced by other format adapters.
+   */
+  readonly animationPointerForTrack?: (track: AnimationTrack) => GLTFAnimationPointerTrackProvenance | undefined;
+  /**
+   * Whether an original node/light track's source occurs in the exact scene
+   * built by this asset. This immutable creation-time snapshot proves an
+   * authored scene omission, not the current state of a mutable scene. Cloned,
+   * reconstructed and foreign scenes/tracks return undefined.
+   */
+  readonly sceneIncludesTrackTarget?: (scene: Scene, track: AnimationTrack) => boolean | undefined;
+  /**
+   * Canonical source mesh/skin binding for an authored node, used to validate
+   * scene metadata without inferring the skin from a shared mesh name.
+   */
+  readonly skinBindingForNode?: (nodeIndex: number) =>
+    Readonly<Pick<GLTFSkinBindingProvenance, "meshIndex" | "skinIndex">> | undefined;
   readonly loaderDiagnostics: GLTFLoaderDiagnostics;
   readonly images: readonly GLTFImageAsset[];
   readonly textures: readonly GLTFTextureAsset[];
@@ -500,8 +625,20 @@ export interface GLTFAsset {
   readonly lights: readonly GLTFLightAsset[];
   readonly skins: readonly GLTFSkinAsset[];
   readonly animations: readonly AnimationClip[];
+  /** @internal Images whose authored texture transforms have required pointer channels. */
+  readonly requiredTextureAnimationTargets?: readonly GLTFRequiredTextureAnimationTarget[];
   createScene(options?: GLTFSceneCreateOptions): Scene;
   toJSON(): SerializedGLTFAsset;
+}
+
+/** @internal Source identity needed to validate a required texture animation after decoding. */
+export interface GLTFRequiredTextureAnimationTarget {
+  readonly clipName: string;
+  readonly target: string;
+  readonly materialIndex: number;
+  readonly materialName: string;
+  readonly textureIndex: number;
+  readonly imageIndex: number;
 }
 
 interface DisposableGLTFAsset extends GLTFAsset {
@@ -519,6 +656,22 @@ export interface GLTFImageAsset {
   readonly uri?: string;
   readonly mimeType?: string;
   readonly data?: ArrayBuffer;
+}
+
+// Request credentials are deliberately kept off the public asset and its JSON representation.
+const imageRequestContexts = new WeakMap<GLTFAsset, { readonly options: AssetRequestOptions; readonly documentUrl: string; readonly baseUrl: string; readonly onProgress?: AssetLoadRequest["onProgress"] }>();
+
+/** @internal Resolve the original document's policy for a deferred image request. */
+export function gltfImageRequestOptions(asset: GLTFAsset, uri: string, overrides: AssetRequestOptions = {}): AssetRequestOptions {
+  const record = imageRequestContexts.get(asset);
+  if (!record) return overrides;
+  const context = new LoadContext({ ...mergeAssetRequestOptions(record.options, overrides), documentUrl: record.documentUrl, baseUrl: record.baseUrl });
+  return context.requestOptionsFor(uri);
+}
+
+/** @internal Deferred image loads retain the document subscriber's progress callback. */
+export function gltfImageRequestProgress(asset: GLTFAsset): AssetLoadRequest["onProgress"] {
+  return imageRequestContexts.get(asset)?.onProgress;
 }
 
 export interface GLTFTextureAsset {
@@ -554,6 +707,8 @@ export interface GLTFMaterialAsset {
   readonly emissiveFactor: readonly [number, number, number];
   readonly emissiveStrength: number;
   readonly clearcoat?: GLTFClearcoatMaterialExtension;
+  readonly diffuseRoughness?: GLTFDiffuseRoughnessMaterialExtension;
+  readonly bump?: GLTFBumpMaterialExtension;
   readonly transmission?: GLTFTransmissionMaterialExtension;
   readonly diffuseTransmission?: GLTFDiffuseTransmissionMaterialExtension;
   readonly volume?: GLTFVolumeMaterialExtension;
@@ -586,6 +741,18 @@ export interface GLTFClearcoatMaterialExtension {
   readonly roughnessFactor: number;
   readonly roughnessTexture?: GLTFResolvedTextureInfo;
   readonly normalTexture?: GLTFResolvedTextureInfo & { readonly scale: number };
+}
+
+/** Draft KHR_materials_diffuse_roughness; the linear texture uses its red channel. */
+export interface GLTFDiffuseRoughnessMaterialExtension {
+  readonly factor: number;
+  readonly texture?: GLTFResolvedTextureInfo;
+}
+
+/** Draft EXT_materials_bump; the linear height texture uses its red channel. */
+export interface GLTFBumpMaterialExtension {
+  readonly factor: number;
+  readonly texture?: GLTFResolvedTextureInfo;
 }
 
 export interface GLTFTransmissionMaterialExtension {
@@ -795,6 +962,29 @@ interface GLTFAccessorReadCache {
   readonly profile: MutableGLTFLoaderLoadProfileDiagnostics;
 }
 
+// An in-memory source identity, not an authentication token or a content hash.
+// The fallback namespace separates independently bundled copies of this module
+// without touching an application's random stream when Web Crypto is available.
+let gltfAssetIdentityNamespace: string | undefined;
+let nextGLTFAssetIdentity = 0;
+
+function createGLTFAssetIdentity(): string {
+  try {
+    const uuid = globalThis.crypto?.randomUUID?.();
+    if (uuid) return `gltf-${uuid}`;
+  } catch {
+    // Some hosts expose crypto without permitting randomUUID.
+  }
+  try {
+    const bytes = globalThis.crypto?.getRandomValues(new Uint8Array(16));
+    if (bytes) return `gltf-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+  } catch {
+    // A host may expose crypto without a usable random source.
+  }
+  gltfAssetIdentityNamespace ??= `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `gltf-${gltfAssetIdentityNamespace}-${nextGLTFAssetIdentity++}`;
+}
+
 export class GLTFLoader implements AssetLoader<GLTFAsset> {
   readonly type = "gltf";
 
@@ -806,7 +996,14 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
 
   async load(request: AssetLoadRequest, context: LoadContext): Promise<GLTFAsset> {
     context.throwIfAborted(request.url);
-    const document = await loadDocument(request);
+    const requestOptions = mergeAssetRequestOptions(context.requestOptionsFor(request.url), request);
+    const signal = context.signalFor(request.signal);
+    const effectiveRequest: AssetLoadRequest = { ...request, ...requestOptions, signal };
+    if (signal?.aborted) throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+    const documentUrl = resolveAbsoluteDocumentUrl(request.url);
+    const baseUrl = request.url.startsWith("data:") ? "" : new URL(".", documentUrl).toString();
+    const dependencyContext = new LoadContext({ ...requestOptions, documentUrl, baseUrl, signal });
+    const document = await loadDocument(effectiveRequest);
     let json = document.json;
     if (json.asset?.version && !json.asset.version.startsWith("2.")) {
       throw new Error(`Unsupported glTF version: ${json.asset.version}`);
@@ -817,14 +1014,14 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       throw new Error(`Unsupported required glTF extensions: ${unsupportedRequiredExtensions.join(", ")}`);
     }
 
-    const rawBuffers = await Promise.all((json.buffers ?? []).map((buffer, index) => loadBuffer(buffer, index, document, request)));
+    const rawBuffers = await Promise.all((json.buffers ?? []).map((buffer, index) => loadBuffer(buffer, index, document, effectiveRequest, dependencyContext)));
     const prepared = await prepareBufferViews(json, rawBuffers, this.options.meshoptDecoder);
     const buffers = prepared.buffers;
     json = prepared.json;
     resolveMsftLods(json);
     const accessorCache = createGLTFAccessorReadCache();
     const meshQuantizationEnabled = usesGLTFExtension(json, "KHR_mesh_quantization");
-    const images = createImageAssets(json, buffers);
+    const images = await admitImageAssets(createImageAssets(json, buffers), effectiveRequest, dependencyContext);
     const textures = createTextureAssets(json);
     const materials = createMaterialAssets(json, textures);
     const materialVariants = createMaterialVariantAssets(json);
@@ -833,7 +1030,8 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     const cameras = createCameraAssets(json);
     const lights = createLightAssets(json);
     const skins = createSkinAssets(json, buffers, accessorCache);
-    const nodeInstanceTransforms = createNodeInstanceTransforms(json, buffers, accessorCache);
+    const nodeInstanceColors = new Map<number, Float32Array>();
+    const nodeInstanceTransforms = createNodeInstanceTransforms(json, buffers, accessorCache, nodeInstanceColors);
     const meshes = await Promise.all((json.meshes ?? []).flatMap((mesh, meshIndex) => {
       validateMeshDescriptor(mesh, meshIndex);
       return mesh.primitives.map(async (primitive, primitiveIndex) => {
@@ -876,6 +1074,9 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         const primitiveMaterial = primitiveMaterialIndex === undefined ? undefined : materials[primitiveMaterialIndex];
         const primitiveMaterialVariants = resolvePrimitiveMaterialVariants(primitive, materialVariants, materials, meshIndex, primitiveIndex);
         validateMaterialTexCoordSets(primitiveMaterial, texcoordSets, meshIndex, primitiveIndex);
+        for (const mapping of primitiveMaterialVariants) {
+          validateMaterialTexCoordSets(materials[mapping.materialIndex], texcoordSets, meshIndex, primitiveIndex);
+        }
         const typedPositions = positions.map((position) => [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0] as const);
         const typedNormals = normals.map((normal) => [normal[0] ?? 0, normal[1] ?? 0, normal[2] ?? 0] as const);
         const typedTangents = tangents.map((tangent) => [tangent[0] ?? 0, tangent[1] ?? 0, tangent[2] ?? 0, tangent[3] ?? 1] as const);
@@ -923,7 +1124,30 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         };
       });
     }));
-    const animations = createAnimationClips(json, buffers, accessorCache);
+    const trackNodeIndices = new WeakMap<AnimationTrack, number>();
+    const trackAnimationPointers = new WeakMap<AnimationTrack, GLTFAnimationPointerTrackProvenance>();
+    const animations = createAnimationClips(json, buffers, accessorCache, materials, lights, trackNodeIndices, trackAnimationPointers);
+    const animationPointerForTrack = (track: AnimationTrack): GLTFAnimationPointerTrackProvenance | undefined => trackAnimationPointers.get(track);
+    const requiredDefaults = animations.flatMap((clip, animationIndex) => clip.tracks.flatMap((track, trackIndex) => {
+      const source = requiredEmissiveDefaultSources.get(track);
+      return source ? [Object.freeze({
+        track: new WeakRef(track),
+        path: `animations[${animationIndex}].tracks[${trackIndex}]`,
+        pointer: source.provenance.pointer
+      })] : [];
+    }));
+    if (requiredDefaults.length) requiredEmissiveDefaultTracks.set(animationPointerForTrack, Object.freeze(requiredDefaults));
+    const requiredTextureAnimationTargets = collectRequiredTextureAnimationTargets(animations, trackAnimationPointers, materials);
+    const sceneTargets = new WeakMap<Scene, { readonly nodes: ReadonlySet<number>; readonly lights: ReadonlySet<number> }>();
+    const hasRuntimeBindingProvenance = skins.length > 0 || (json.animations?.length ?? 0) > 0;
+    const gltfAssetId = hasRuntimeBindingProvenance ? createGLTFAssetIdentity() : "";
+    // Snapshot the node binding separately from writable scene userData, so a
+    // runtime can reject stale or altered node/skin provenance.
+    const skinBindingsByNode = (json.nodes ?? []).map((node) =>
+      node.mesh === undefined || node.skin === undefined
+        ? undefined
+        : Object.freeze({ meshIndex: node.mesh, skinIndex: node.skin })
+    );
     const loadProfile = createGLTFLoaderLoadProfileDiagnostics(document, buffers, images, accessorCache);
     const loaderDiagnostics = createGLTFLoaderDiagnostics(json, {
       images,
@@ -937,7 +1161,7 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     let disposed = false;
     const assertAlive = (): void => {
       if (disposed) {
-        throw new Error(`glTF asset ${request.url} has been disposed`);
+        throw new Error(`glTF asset ${redactAssetUrl(request.url)} has been disposed`);
       }
     };
     const asset: DisposableGLTFAsset = {
@@ -945,6 +1169,19 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       get disposed() {
         return disposed;
       },
+      ...(hasRuntimeBindingProvenance ? { gltfAssetId } : {}),
+      nodeIndexForTrack: (track) => trackNodeIndices.get(track),
+      animationPointerForTrack,
+      sceneIncludesTrackTarget: (scene, track) => {
+        const targets = sceneTargets.get(scene);
+        if (!targets) return undefined;
+        const nodeIndex = trackNodeIndices.get(track);
+        if (nodeIndex !== undefined) return targets.nodes.has(nodeIndex);
+        const light = getGLTFLightAnimationTrackIdentity(track);
+        return light?.owner === lights ? targets.lights.has(light.definitionIndex) : undefined;
+      },
+      skinBindingForNode: (nodeIndex) =>
+        Number.isSafeInteger(nodeIndex) && nodeIndex >= 0 ? skinBindingsByNode[nodeIndex] : undefined,
       loaderDiagnostics,
       images,
       textures,
@@ -957,9 +1194,22 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       lights,
       skins,
       animations,
+      ...(requiredTextureAnimationTargets.length > 0 ? { requiredTextureAnimationTargets } : {}),
       createScene: (options) => {
         assertAlive();
-        return createScene(json, meshes, cameras, lights, skins, nodeInstanceTransforms, materialVariants, options);
+        const scene = createScene(json, meshes, cameras, lights, skins, nodeInstanceTransforms, nodeInstanceColors, materialVariants, gltfAssetId, options);
+        if (animations.length > 0) {
+          const sceneNodes = new Set<number>();
+          const sceneLights = new Set<number>();
+          scene.traverse((node) => {
+            const index = node.userData.gltfNodeIndex;
+            if (typeof index === "number" && Number.isSafeInteger(index) && index >= 0) sceneNodes.add(index);
+            const identity = getGLTFLightSceneIdentity(node);
+            if (identity?.owner === lights) sceneLights.add(identity.definitionIndex);
+          });
+          sceneTargets.set(scene, { nodes: sceneNodes, lights: sceneLights });
+        }
+        return scene;
       },
       toJSON: () => {
         assertAlive();
@@ -967,8 +1217,21 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       },
       [DISPOSE_GLTF_ASSET]: () => {
         disposed = true;
+        imageRequestContexts.delete(asset);
       }
     };
+    // Shared parse-cache consumers must not be able to replace the immutable
+    // source/scene lookups for another actor. Other asset fields retain their
+    // existing structural compatibility.
+    Object.defineProperties(asset, {
+      animationPointerForTrack: { writable: false, configurable: false },
+      sceneIncludesTrackTarget: { writable: false, configurable: false },
+      ...(requiredTextureAnimationTargets.length > 0
+        ? { requiredTextureAnimationTargets: { writable: false, configurable: false } }
+        : {})
+    });
+    imageRequestContexts.set(asset, { options: requestOptions, documentUrl, baseUrl, onProgress: request.onProgress });
+    if (signal?.aborted) { imageRequestContexts.delete(asset); throw signal.reason ?? new DOMException("Asset load aborted", "AbortError"); }
     return asset;
   }
 
@@ -1143,6 +1406,17 @@ function collectUnsupportedFeatureDiagnostics(json: GLTFJson): readonly string[]
       }
     }
   }
+  for (const animation of json.animations ?? []) {
+    for (const channel of animation.channels) {
+      if (!isAnimationPointerChannel(json, channel)) continue;
+      const pointer = channel.target.extensions!.KHR_animation_pointer!.pointer!;
+      if (!resolveAnimationPointerBinding(json, pointer) || isMeshWeightAnimationPointer(pointer)) {
+        unsupported.add(`animation-pointer-unsupported:${pointer || "<empty>"}`);
+      } else if (materialTextureTransformPointerLeaf(pointer) && !hasMaterialTextureTransformPointerTarget(json, pointer)) {
+        unsupported.add(`animation-pointer-missing-target:${pointer}`);
+      }
+    }
+  }
   return [...unsupported].sort();
 }
 
@@ -1155,6 +1429,8 @@ function materialFeatureNames(material: GLTFMaterialAsset): readonly string[] {
     material.alphaMode !== "OPAQUE" ? `alpha-${material.alphaMode.toLowerCase()}` : undefined,
     material.doubleSided ? "double-sided" : undefined,
     material.normalTexture ? "normal-texture" : undefined,
+    material.diffuseRoughness ? "diffuse-roughness" : undefined,
+    material.bump ? "bump" : undefined,
     material.occlusionTexture ? "occlusion-texture" : undefined,
     material.clearcoat ? "clearcoat" : undefined,
     material.transmission ? "transmission" : undefined,
@@ -1175,6 +1451,8 @@ function materialTextureSlotNames(material: GLTFMaterialAsset): readonly string[
     material.baseColorTexture ? "base-color" : undefined,
     material.metallicRoughnessTexture ? "metallic-roughness" : undefined,
     material.normalTexture ? "normal" : undefined,
+    material.diffuseRoughness?.texture ? "diffuse-roughness" : undefined,
+    material.bump?.texture ? "bump" : undefined,
     material.occlusionTexture ? "occlusion" : undefined,
     material.emissiveTexture ? "emissive" : undefined,
     material.clearcoat?.texture ? "clearcoat" : undefined,
@@ -1415,6 +1693,8 @@ function materialTextureInfos(material: GLTFMaterialAsset): readonly GLTFResolve
     material.baseColorTexture,
     material.metallicRoughnessTexture,
     material.normalTexture,
+    material.diffuseRoughness?.texture,
+    material.bump?.texture,
     material.occlusionTexture,
     material.emissiveTexture,
     material.clearcoat?.texture,
@@ -1625,9 +1905,28 @@ function createImageAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): rea
       name: image.name ?? `image-${index}`,
       uri: image.uri,
       mimeType: image.mimeType,
-      data: image.bufferView === undefined ? undefined : readBufferViewBytes(json, buffers, image.bufferView)
+      data: image.bufferView !== undefined
+        ? readBufferViewBytes(json, buffers, image.bufferView)
+        : image.uri?.startsWith("data:") ? decodeDataUri(image.uri) : undefined
     };
   });
+}
+
+/**
+ * A verified document can refer to external images. Fetch and verify them before
+ * returning the asset, so an injected decoder cannot bypass admission checks.
+ * Embedded bytes are already covered by their document/buffer digest.
+ */
+async function admitImageAssets(images: readonly GLTFImageAsset[], request: AssetLoadRequest, context: LoadContext): Promise<readonly GLTFImageAsset[]> {
+  if (!request.integrity) return images;
+  return Promise.all(images.map(async (image) => {
+    if (!image.uri || image.uri.startsWith("data:")) return image;
+    if (request.url.startsWith("data:") && !/^[a-z][a-z0-9+.-]*:/i.test(image.uri)) throw new Error("Relative glTF image URI cannot be resolved from a data URL asset");
+    const url = new URL(image.uri, resolveAbsoluteDocumentUrl(request.url)).toString();
+    const options = context.requestOptionsFor(image.uri);
+    const data = await fetchGltfBytesShared(url, "buffer", { ...options, url, signal: request.signal, onProgress: request.onProgress }, (status) => `glTF image request failed with ${status}`);
+    return { ...image, data };
+  }));
 }
 
 function validateImageMimeType(image: GLTFImage, index: number, avifEnabled: boolean, webpEnabled: boolean, basisuEnabled: boolean): void {
@@ -1778,6 +2077,8 @@ function createMaterialAssets(
       emissiveTexture: resolveTextureInfo(textures, material.emissiveTexture, `material ${index} emissiveTexture`),
       ...resolveEmissive(material, index),
       ...(resolveClearcoat(material, textures, index)),
+      ...(resolveDiffuseRoughness(material, textures, index)),
+      ...(resolveBump(material, textures, index)),
       ...(resolveTransmission(material, textures, index)),
       ...(resolveDiffuseTransmission(material, textures, pbrSpecularGlossiness, index)),
       ...(resolveVolume(material, textures, index)),
@@ -1789,7 +2090,8 @@ function createMaterialAssets(
       ...(resolveIridescence(material, textures, index)),
       ...(resolveDispersion(material, index)),
       alphaMode: resolveAlphaMode(material.alphaMode, index),
-      alphaCutoff: resolveUnit(material.alphaCutoff, 0.5, `material ${index} alphaCutoff`),
+      // glTF permits cutoffs above 1, which make a MASK material fully transparent.
+      alphaCutoff: resolveNonNegative(material.alphaCutoff, 0.5, `material ${index} alphaCutoff`),
       doubleSided: material.doubleSided ?? false
     };
   });
@@ -2184,6 +2486,7 @@ function warnGLTFMaterialRepairOnce(message: string): void {
  *  - a channel above 1 -> the factor is normalized by its max channel and the
  *    max is folded into emissiveStrength, so the emitted radiance is unchanged;
  *  - non-finite/negative emissiveStrength -> 1.
+ * A fold whose result exceeds the finite number range throws a RangeError.
  */
 function resolveEmissive(
   material: GLTFMaterial,
@@ -2212,9 +2515,13 @@ function resolveEmissive(
   }
   const peak = Math.max(factor[0], factor[1], factor[2]);
   if (peak > 1) {
+    const foldedStrength = strength * peak;
+    if (!Number.isFinite(foldedStrength)) {
+      throw new RangeError(`${label} and KHR_materials_emissive_strength.emissiveStrength exceed the finite number range when combined; reduce either value`);
+    }
     warnGLTFMaterialRepairOnce(`${label} exceeds [0, 1]; folded ${peak} into emissiveStrength (use KHR_materials_emissive_strength)`);
     factor = [factor[0] / peak, factor[1] / peak, factor[2] / peak];
-    strength *= peak;
+    strength = foldedStrength;
   }
   return { emissiveFactor: factor, emissiveStrength: strength };
 }
@@ -2238,6 +2545,45 @@ function resolveClearcoat(
       )
     }
   };
+}
+
+function resolveDraftMaterialExtension(material: GLTFMaterial, name: "KHR_materials_diffuse_roughness" | "EXT_materials_bump", materialIndex: number): Record<string, unknown> | undefined {
+  const extension = material.extensions?.[name];
+  if (extension === undefined) return undefined;
+  if (!isObjectRecord(extension) || Array.isArray(extension)) throw new Error(`glTF material ${materialIndex} ${name} must be an object`);
+  if (material.extensions?.KHR_materials_unlit !== undefined || material.extensions?.KHR_materials_pbrSpecularGlossiness !== undefined) {
+    throw new Error(`glTF material ${materialIndex} ${name} cannot be combined with KHR_materials_unlit or KHR_materials_pbrSpecularGlossiness`);
+  }
+  return extension;
+}
+
+function resolveDiffuseRoughness(material: GLTFMaterial, textures: readonly GLTFTextureAsset[], materialIndex: number): { readonly diffuseRoughness?: GLTFDiffuseRoughnessMaterialExtension } {
+  const ext = resolveDraftMaterialExtension(material, "KHR_materials_diffuse_roughness", materialIndex);
+  if (!ext) return {};
+  validateDraftMaterialProperties(ext, "KHR_materials_diffuse_roughness", "diffuseRoughnessFactor", "diffuseRoughnessTexture", materialIndex);
+  return { diffuseRoughness: {
+    // Draft prose specifies zero; the draft schema's default of one conflicts with it.
+    factor: resolveUnit(ext.diffuseRoughnessFactor as number | undefined, 0, `material ${materialIndex} KHR_materials_diffuse_roughness.diffuseRoughnessFactor`),
+    texture: resolveTextureInfo(textures, ext.diffuseRoughnessTexture as GLTFTextureInfo | undefined, `material ${materialIndex} KHR_materials_diffuse_roughness.diffuseRoughnessTexture`)
+  } };
+}
+
+function resolveBump(material: GLTFMaterial, textures: readonly GLTFTextureAsset[], materialIndex: number): { readonly bump?: GLTFBumpMaterialExtension } {
+  const ext = resolveDraftMaterialExtension(material, "EXT_materials_bump", materialIndex);
+  if (!ext) return {};
+  validateDraftMaterialProperties(ext, "EXT_materials_bump", "bumpFactor", "bumpTexture", materialIndex);
+  const factor = resolveNonNegative(ext.bumpFactor as number | undefined, 1, `material ${materialIndex} EXT_materials_bump.bumpFactor`);
+  if (factor > 100) throw new RangeError(`glTF material ${materialIndex} EXT_materials_bump.bumpFactor must be within [0, 100]`);
+  return { bump: { factor, texture: resolveTextureInfo(textures, ext.bumpTexture as GLTFTextureInfo | undefined, `material ${materialIndex} EXT_materials_bump.bumpTexture`) } };
+}
+
+function validateDraftMaterialProperties(extension: Record<string, unknown>, name: string, factor: string, texture: string, materialIndex: number): void {
+  if (factor in extension && (typeof extension[factor] !== "number" || !Number.isFinite(extension[factor]))) {
+    throw new RangeError(`glTF material ${materialIndex} ${name}.${factor} must be a finite number`);
+  }
+  if (texture in extension && (!isObjectRecord(extension[texture]) || Array.isArray(extension[texture]))) {
+    throw new Error(`glTF material ${materialIndex} ${name}.${texture} must be a textureInfo object`);
+  }
 }
 
 function resolveTransmission(
@@ -2416,7 +2762,25 @@ function resolveIridescence(
   materialIndex: number
 ): { readonly iridescence?: GLTFIridescenceMaterialExtension } {
   const extension = material.extensions?.KHR_materials_iridescence;
-  if (!extension) return {};
+  if (extension === undefined) return {};
+  if (!isObjectRecord(extension) || Array.isArray(extension)) {
+    throw new Error(`glTF material ${materialIndex} KHR_materials_iridescence must be an object`);
+  }
+  if (material.extensions?.KHR_materials_unlit !== undefined || material.extensions?.KHR_materials_pbrSpecularGlossiness !== undefined) {
+    throw new Error(`glTF material ${materialIndex} KHR_materials_iridescence cannot be combined with KHR_materials_unlit or KHR_materials_pbrSpecularGlossiness`);
+  }
+  for (const property of ["iridescenceFactor", "iridescenceIor", "iridescenceThicknessMinimum", "iridescenceThicknessMaximum"] as const) {
+    const value = extension[property];
+    if (value !== undefined && (typeof value !== "number" || !Number.isFinite(value))) {
+      throw new RangeError(`glTF material ${materialIndex} KHR_materials_iridescence.${property} must be a finite number`);
+    }
+  }
+  for (const property of ["iridescenceTexture", "iridescenceThicknessTexture"] as const) {
+    const value = extension[property];
+    if (value !== undefined && (!isObjectRecord(value) || Array.isArray(value))) {
+      throw new Error(`glTF material ${materialIndex} KHR_materials_iridescence.${property} must be a textureInfo object`);
+    }
+  }
   const thicknessMinimum = resolveNonNegative(
     extension.iridescenceThicknessMinimum,
     100,
@@ -2427,11 +2791,8 @@ function resolveIridescence(
     400,
     `material ${materialIndex} KHR_materials_iridescence.iridescenceThicknessMaximum`
   );
-  if (thicknessMaximum < thicknessMinimum) {
-    throw new RangeError(
-      `glTF material ${materialIndex} KHR_materials_iridescence.iridescenceThicknessMaximum must be greater than or equal to iridescenceThicknessMinimum`
-    );
-  }
+  // Khronos permits reversed endpoints: texture values 0 and 1 interpolate
+  // from the authored minimum to the authored maximum, in that order.
   return {
     iridescence: {
       factor: resolveUnit(extension.iridescenceFactor, 0, `material ${materialIndex} KHR_materials_iridescence.iridescenceFactor`),
@@ -2450,8 +2811,8 @@ function resolveIridescence(
 
 function resolveIridescenceIOR(value: number | undefined, materialIndex: number): number {
   const ior = value ?? 1.3;
-  if (!Number.isFinite(ior) || ior < 1 || ior > 3) {
-    throw new RangeError(`glTF material ${materialIndex} KHR_materials_iridescence.iridescenceIor must be finite and within [1, 3]`);
+  if (!Number.isFinite(ior) || ior < 1) {
+    throw new RangeError(`glTF material ${materialIndex} KHR_materials_iridescence.iridescenceIor must be finite and at least 1`);
   }
   return ior;
 }
@@ -2686,7 +3047,12 @@ function validateSkinDescriptor(json: GLTFJson, skin: GLTFSkin, skinIndex: numbe
   }
 }
 
-function createNodeInstanceTransforms(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorCache: GLTFAccessorReadCache): ReadonlyMap<number, Float32Array> {
+function createNodeInstanceTransforms(
+  json: GLTFJson,
+  buffers: readonly ArrayBuffer[],
+  accessorCache: GLTFAccessorReadCache,
+  nodeColors: Map<number, Float32Array>
+): ReadonlyMap<number, Float32Array> {
   const transforms = new Map<number, Float32Array>();
   for (const [nodeIndex, node] of (json.nodes ?? []).entries()) {
     const extension = node.extensions?.EXT_mesh_gpu_instancing;
@@ -2694,7 +3060,7 @@ function createNodeInstanceTransforms(json: GLTFJson, buffers: readonly ArrayBuf
     if (!isObjectRecord(extension.attributes) || Array.isArray(extension.attributes)) {
       throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing.attributes must be an object`);
     }
-    const allowed = new Set(["TRANSLATION", "ROTATION", "SCALE"]);
+    const allowed = new Set(["TRANSLATION", "ROTATION", "SCALE", "_COLOR_0"]);
     for (const semantic of Object.keys(extension.attributes)) {
       if (!allowed.has(semantic)) {
         throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing attribute ${semantic} is unsupported`);
@@ -2707,13 +3073,49 @@ function createNodeInstanceTransforms(json: GLTFJson, buffers: readonly ArrayBuf
     const translations = readOptionalAccessor(json, buffers, extension.attributes.TRANSLATION, accessorCache);
     const rotations = readOptionalAccessor(json, buffers, extension.attributes.ROTATION, accessorCache);
     const scales = readOptionalAccessor(json, buffers, extension.attributes.SCALE, accessorCache);
-    const instanceCount = firstPositiveLength([translations.length, rotations.length, scales.length]);
-    if (instanceCount === 0) {
-      throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing requires TRANSLATION, ROTATION, or SCALE attributes`);
+    const colorIndex = extension.attributes._COLOR_0;
+    const colorAccessor = colorIndex === undefined ? undefined : json.accessors?.[colorIndex];
+    if (colorIndex !== undefined) {
+      if (!Number.isSafeInteger(node.mesh) || node.mesh! < 0 || !json.meshes?.[node.mesh!]) {
+        throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 requires a valid mesh`);
+      }
+      if (node.skin !== undefined) {
+        throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 cannot be combined with a skin`);
+      }
+      if (!colorAccessor) {
+        throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 references missing accessor ${colorIndex}`);
+      }
+      if (colorAccessor.type !== "VEC3" && colorAccessor.type !== "VEC4") {
+        throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 must use a VEC3 or VEC4 accessor`);
+      }
+      if (!((colorAccessor.componentType === 5126 && (colorAccessor.normalized === undefined || colorAccessor.normalized === false)) ||
+        ((colorAccessor.componentType === 5121 || colorAccessor.componentType === 5123) && colorAccessor.normalized === true))) {
+        throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 must use FLOAT or normalized UNSIGNED_BYTE/UNSIGNED_SHORT`);
+      }
+      if (!Number.isSafeInteger(colorAccessor.count) || colorAccessor.count < 1 || colorAccessor.count > MAX_COLORED_INSTANCES) {
+        throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 count must be between 1 and ${MAX_COLORED_INSTANCES}`);
+      }
     }
-    validateInstanceAttributeCount("TRANSLATION", translations.length, instanceCount, nodeIndex);
-    validateInstanceAttributeCount("ROTATION", rotations.length, instanceCount, nodeIndex);
-    validateInstanceAttributeCount("SCALE", scales.length, instanceCount, nodeIndex);
+    const instanceCount = firstPositiveLength([translations.length, rotations.length, scales.length, colorAccessor?.count ?? 0]);
+    if (instanceCount === 0) {
+      throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing requires TRANSLATION, ROTATION, SCALE, or _COLOR_0 attributes`);
+    }
+    validateInstanceAttributeCount("TRANSLATION", translations.length, instanceCount, nodeIndex, extension.attributes.TRANSLATION !== undefined);
+    validateInstanceAttributeCount("ROTATION", rotations.length, instanceCount, nodeIndex, extension.attributes.ROTATION !== undefined);
+    validateInstanceAttributeCount("SCALE", scales.length, instanceCount, nodeIndex, extension.attributes.SCALE !== undefined);
+    validateInstanceAttributeCount("_COLOR_0", colorAccessor?.count ?? 0, instanceCount, nodeIndex, colorIndex !== undefined);
+    if (colorIndex !== undefined && colorAccessor) {
+      const rows = readAccessor(json, buffers, colorIndex, accessorCache);
+      const colors = new Float32Array(instanceCount * 4);
+      for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex += 1) {
+        const row = rows[instanceIndex]!;
+        if (row.some((value) => !Number.isFinite(value))) {
+          throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing _COLOR_0 must contain finite values`);
+        }
+        colors.set([row[0]!, row[1]!, row[2]!, colorAccessor.type === "VEC4" ? row[3]! : 1], instanceIndex * 4);
+      }
+      nodeColors.set(nodeIndex, colors);
+    }
     const packed = new Float32Array(instanceCount * 16);
     for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex += 1) {
       const translation = toInstanceVec3(translations[instanceIndex], [0, 0, 0], `node ${nodeIndex} EXT_mesh_gpu_instancing TRANSLATION`);
@@ -2730,8 +3132,8 @@ function firstPositiveLength(lengths: readonly number[]): number {
   return lengths.find((length) => length > 0) ?? 0;
 }
 
-function validateInstanceAttributeCount(semantic: string, count: number, instanceCount: number, nodeIndex: number): void {
-  if (count > 0 && count !== instanceCount) {
+function validateInstanceAttributeCount(semantic: string, count: number, instanceCount: number, nodeIndex: number, present: boolean): void {
+  if (present && count !== instanceCount) {
     throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing ${semantic} count must match instance count`);
   }
 }
@@ -2752,7 +3154,15 @@ function toInstanceQuat(row: readonly number[] | undefined, fallback: SceneQuat,
   return [row[0]!, row[1]!, row[2]!, row[3]!];
 }
 
-function createAnimationClips(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorCache: GLTFAccessorReadCache): readonly AnimationClip[] {
+function createAnimationClips(
+  json: GLTFJson,
+  buffers: readonly ArrayBuffer[],
+  accessorCache: GLTFAccessorReadCache,
+  materials: readonly GLTFMaterialAsset[],
+  lights: readonly GLTFLightAsset[],
+  trackNodeIndices: WeakMap<AnimationTrack, number>,
+  trackAnimationPointers: WeakMap<AnimationTrack, GLTFAnimationPointerTrackProvenance>
+): readonly AnimationClip[] {
   const nodeNameForIndex = createGLTFNodeNameResolver(json);
   return (json.animations ?? []).map((animation, animationIndex) => {
     const tracks = animation.channels.flatMap((channel, channelIndex) => {
@@ -2760,23 +3170,106 @@ function createAnimationClips(json: GLTFJson, buffers: readonly ArrayBuffer[], a
       if (!sampler) {
         throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} references missing sampler ${channel.sampler}`);
       }
-      if (isOptionalAnimationPointerChannel(json, channel)) {
+      const pointerRequired = json.extensionsRequired?.includes("KHR_animation_pointer") === true;
+      if (channel.target.path === "pointer" && usesGLTFExtension(json, "KHR_animation_pointer") &&
+          (channel.target.node !== undefined || typeof channel.target.extensions?.KHR_animation_pointer?.pointer !== "string")) {
+        throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} has an invalid ${pointerRequired ? "required " : ""}animation pointer target`);
+      }
+      if (isAnimationPointerChannel(json, channel)) {
         const pointer = channel.target.extensions?.KHR_animation_pointer?.pointer ?? "";
         const resolved = resolveAnimationPointerBinding(json, pointer);
-        if (!resolved) {
-          // Unsupported pointer shape: preserve the previous diagnose-and-drop behavior
-          // rather than failing the whole asset. Supported shapes are bound below.
+        const textureTransformLeaf = materialTextureTransformPointerLeaf(pointer);
+        const nodeWeightCount = animationPointerNodeWeightCount(json, pointer);
+        const requiredOutputType = pointerRequired ? requiredAnimationPointerOutputType(json, pointer) : undefined;
+        if (!resolved || isMeshWeightAnimationPointer(pointer) || (pointerRequired && !requiredOutputType) ||
+            (textureTransformLeaf && !hasMaterialTextureTransformPointerTarget(json, pointer))) {
+          if (pointerRequired) {
+            throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} has unsupported required animation pointer: ${pointer || "<empty>"}`);
+          }
+          // The loader diagnostics name unsupported pointer shapes; keep other
+          // channels in this otherwise usable optional-extension asset.
           return [];
         }
         const interpolation = resolveAnimationInterpolation(sampler.interpolation, animationIndex, channelIndex);
+        const textureScalar = isMaterialTextureScalarPointer(pointer);
+        if ((pointerRequired || nodeWeightCount !== undefined) && (json.accessors?.[sampler.input]?.type !== "SCALAR" || json.accessors?.[sampler.input]?.componentType !== 5126 || json.accessors?.[sampler.input]?.normalized)) {
+          throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires a float SCALAR input accessor`);
+        }
+        const expectedOutputType = requiredOutputType ?? (nodeWeightCount === undefined ? undefined : "SCALAR");
+        if (expectedOutputType && (json.accessors?.[sampler.output]?.type !== expectedOutputType || json.accessors?.[sampler.output]?.componentType !== 5126 || json.accessors?.[sampler.output]?.normalized)) {
+          throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires a float ${expectedOutputType} output accessor`);
+        }
+        if (textureScalar && json.accessors?.[sampler.input]?.type !== "SCALAR") {
+          throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires a SCALAR input accessor`);
+        }
+        if (textureScalar && json.accessors?.[sampler.output]?.type !== "SCALAR") {
+          throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires a SCALAR output accessor`);
+        }
+        if (textureTransformLeaf) {
+          const inputAccessor = json.accessors?.[sampler.input];
+          const outputAccessor = json.accessors?.[sampler.output];
+          const outputType = textureTransformLeaf === "rotation" ? "SCALAR" : "VEC2";
+          if (inputAccessor?.type !== "SCALAR" || inputAccessor.componentType !== 5126 || inputAccessor.normalized) {
+            throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires a float SCALAR input accessor`);
+          }
+          if (outputAccessor?.type !== outputType || outputAccessor.componentType !== 5126 || outputAccessor.normalized) {
+            throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires a float ${outputType} output accessor`);
+          }
+        }
         const times = readAccessor(json, buffers, sampler.input, accessorCache).map((row) => row[0] ?? 0);
         const output = readAccessor(json, buffers, sampler.output, accessorCache);
-        const values = animationPointerKeyframesForSampler(resolved.valueType, times, output, interpolation, animationIndex, channelIndex);
-        return [new AnimationTrack({
+        if (textureScalar || pointerRequired || textureTransformLeaf || nodeWeightCount !== undefined) {
+          if ((pointerRequired || textureTransformLeaf || nodeWeightCount !== undefined) && times.length === 0) {
+            throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires at least one input time`);
+          }
+          let previous = -Infinity;
+          for (const time of times) {
+            if (!Number.isFinite(time) || time < 0 || time <= previous) {
+              throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires finite, non-negative, strictly increasing input times`);
+            }
+            previous = time;
+          }
+          const scalarValues = textureScalar || textureTransformLeaf === "rotation" || nodeWeightCount !== undefined;
+          if (output.some((row) => row.some((value) => !Number.isFinite(value)) || (scalarValues && row.length !== 1))) {
+            throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} ${pointer} requires finite ${scalarValues ? "scalar " : ""}values and tangents`);
+          }
+        }
+        if (nodeWeightCount !== undefined && output.length !== times.length * nodeWeightCount * (interpolation === "CUBICSPLINE" ? 3 : 1)) {
+          throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} weights output count does not match morph target count`);
+        }
+        const values = nodeWeightCount === undefined
+          ? animationPointerKeyframesForSampler(resolved.valueType, times, output, interpolation, animationIndex, channelIndex)
+          : animationKeyframesForSampler("weights", times, output, interpolation, animationIndex, channelIndex, nodeWeightCount);
+        const track = new AnimationTrack({
           target: resolved.target,
           valueType: resolved.valueType,
           keyframes: values
-        })];
+        });
+        const provenance = Object.freeze({
+          animationIndex, channelIndex, pointer, required: pointerRequired
+        });
+        trackAnimationPointers.set(track, provenance);
+        const emissivePointer = /^\/materials\/(0|[1-9]\d*)\/extensions\/KHR_materials_emissive_strength\/emissiveStrength$/.exec(pointer);
+        if (pointerRequired && emissivePointer && usesGLTFExtension(json, "KHR_materials_emissive_strength")) {
+          const materialIndex = Number(emissivePointer[1]);
+          const material = Number.isSafeInteger(materialIndex) ? materials[materialIndex] : undefined;
+          const extension: unknown = json.materials?.[materialIndex]?.extensions?.KHR_materials_emissive_strength;
+          if (material && isObjectRecord(extension) && !Array.isArray(extension) &&
+              (!Object.prototype.hasOwnProperty.call(extension, "emissiveStrength") || extension.emissiveStrength === 1)) {
+            requiredEmissiveDefaultSources.set(track, Object.freeze({
+              material: new WeakRef(material), provenance, target: resolved.target
+            }));
+          }
+        }
+        // Only a node pointer identifies one source node. Material, light and
+        // mesh pointers must not accidentally acquire a node identity.
+        const nodePointer = /^\/nodes\/(0|[1-9]\d*)\/(?:translation|rotation|scale|weights)$/.exec(pointer);
+        if (nodePointer) trackNodeIndices.set(track, Number(nodePointer[1]));
+        const lightPointer = parsePunctualLightPointer(json, pointer);
+        if (lightPointer) {
+          registerGLTFLightAnimationTrack(track, lights, lightPointer.index, lightPointer.name, lightPointer.leaf, resolved.target);
+        }
+        return [track];
       }
       if (channel.target.node === undefined || !json.nodes?.[channel.target.node]) {
         throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} references missing target node ${channel.target.node ?? "undefined"}`);
@@ -2787,21 +3280,151 @@ function createAnimationClips(json: GLTFJson, buffers: readonly ArrayBuffer[], a
       const output = readAccessor(json, buffers, sampler.output, accessorCache);
       const values = animationKeyframesForSampler(path, times, output, interpolation, animationIndex, channelIndex, morphWeightCountForAnimationTarget(json, channel.target.node));
       const valueType = valueTypeForAnimationPath(path);
-      return [new AnimationTrack({
+      const track = new AnimationTrack({
         target: `${nodeNameForIndex(channel.target.node)}.${path}`,
         valueType,
         keyframes: values
-      })];
+      });
+      trackNodeIndices.set(track, channel.target.node);
+      return [track];
     });
     return new AnimationClip({ name: animation.name ?? `animation-${animationIndex}`, tracks });
   });
 }
 
-function isOptionalAnimationPointerChannel(json: GLTFJson, channel: GLTFAnimationChannel): boolean {
+function isAnimationPointerChannel(json: GLTFJson, channel: GLTFAnimationChannel): boolean {
   return channel.target.path === "pointer" &&
-    json.extensionsUsed?.includes("KHR_animation_pointer") === true &&
-    json.extensionsRequired?.includes("KHR_animation_pointer") !== true &&
+    usesGLTFExtension(json, "KHR_animation_pointer") &&
     typeof channel.target.extensions?.KHR_animation_pointer?.pointer === "string";
+}
+
+function isMeshWeightAnimationPointer(pointer: string): boolean {
+  const match = /^\/meshes\/(0|[1-9]\d*)\/weights$/.exec(pointer);
+  return match !== null && match[0] === pointer;
+}
+
+type CoreAnimatedTextureField =
+  | "baseColorTexture" | "metallicRoughnessTexture" | "normalTexture" | "occlusionTexture" | "emissiveTexture";
+
+// These are the exact textureInfo paths consumed by GLTFSceneAnimationRuntime
+// and its actor material adapter. Extension textureInfo paths remain parseable
+// when optional, but must not be advertised as required runtime support.
+const CORE_ANIMATED_TEXTURE_FIELDS = new Map<string, CoreAnimatedTextureField>([
+  ["pbrMetallicRoughness/baseColorTexture", "baseColorTexture"],
+  ["pbrMetallicRoughness/metallicRoughnessTexture", "metallicRoughnessTexture"],
+  ["normalTexture", "normalTexture"],
+  ["occlusionTexture", "occlusionTexture"],
+  ["emissiveTexture", "emissiveTexture"]
+]);
+
+function coreTextureTransformPointer(pointer: string): {
+  readonly materialIndex: number;
+  readonly field: CoreAnimatedTextureField;
+  readonly leaf: MaterialTextureTransformLeaf;
+} | undefined {
+  const match = /^\/materials\/(0|[1-9]\d*)\/(.+)\/extensions\/KHR_texture_transform\/(offset|scale|rotation)$/.exec(pointer);
+  if (!match || match[0] !== pointer) return undefined;
+  const materialIndex = Number(match[1]);
+  const field = CORE_ANIMATED_TEXTURE_FIELDS.get(match[2]!);
+  if (!Number.isSafeInteger(materialIndex) || !field) return undefined;
+  return { materialIndex, field, leaf: match[3] as MaterialTextureTransformLeaf };
+}
+
+function coreTextureInfo(material: GLTFMaterial, field: CoreAnimatedTextureField): GLTFTextureInfo | undefined {
+  return field === "baseColorTexture" || field === "metallicRoughnessTexture"
+    ? material.pbrMetallicRoughness?.[field]
+    : material[field];
+}
+
+function collectRequiredTextureAnimationTargets(
+  clips: readonly AnimationClip[],
+  pointers: WeakMap<AnimationTrack, GLTFAnimationPointerTrackProvenance>,
+  materials: readonly GLTFMaterialAsset[]
+): readonly GLTFRequiredTextureAnimationTarget[] {
+  const targets: GLTFRequiredTextureAnimationTarget[] = [];
+  for (const clip of clips) {
+    for (const track of clip.tracks) {
+      const provenance = pointers.get(track);
+      const pointer = provenance?.required ? coreTextureTransformPointer(provenance.pointer) : undefined;
+      if (!pointer) continue;
+      const material = materials[pointer.materialIndex];
+      const info = material?.[pointer.field];
+      // Never silently omit an image prerequisite if the source-to-runtime
+      // material mapping stops preserving one of the admitted core slots.
+      if (!material || !info) throw new Error(`glTF required texture animation has no resolved texture: ${provenance!.pointer}`);
+      targets.push(Object.freeze({
+        clipName: clip.name,
+        target: track.target,
+        materialIndex: pointer.materialIndex,
+        materialName: material.name,
+        textureIndex: info.texture,
+        imageIndex: info.image
+      }));
+    }
+  }
+  return Object.freeze(targets);
+}
+
+/** Required pointer channels must stay within the currently bound runtime subset. */
+function requiredAnimationPointerOutputType(json: GLTFJson, pointer: string): "SCALAR" | "VEC2" | "VEC3" | "VEC4" | undefined {
+  const node = /^\/nodes\/(0|[1-9]\d*)\/(translation|rotation|scale)$/.exec(pointer);
+  if (node && Number.isSafeInteger(Number(node[1])) && json.nodes?.[Number(node[1])]) {
+    return node[2] === "rotation" ? "VEC4" : "VEC3";
+  }
+  if (animationPointerNodeWeightCount(json, pointer) !== undefined) return "SCALAR";
+  const light = parsePunctualLightPointer(json, pointer);
+  if (light) {
+    const definition = json.extensions?.KHR_lights_punctual?.lights?.[light.index];
+    if (light.leaf === "range" && definition?.type === "directional") return undefined;
+    return light.leaf === "color" ? "VEC3" : "SCALAR";
+  }
+  const materialPointer = /^\/materials\/(0|[1-9]\d*)\/(.+)$/.exec(pointer);
+  if (!materialPointer) return undefined;
+  const index = Number(materialPointer[1]);
+  const material = Number.isSafeInteger(index) ? json.materials?.[index] : undefined;
+  if (!material || (material.name !== undefined && (typeof material.name !== "string" || !material.name.trim()))) return undefined;
+  const name = material.name ?? `material-${index}`;
+  if ((json.materials ?? []).some((other, otherIndex) => otherIndex !== index && (other.name ?? `material-${otherIndex}`) === name)) return undefined;
+  const transform = coreTextureTransformPointer(pointer);
+  if (transform) {
+    const info = coreTextureInfo(material, transform.field);
+    if (!usesGLTFExtension(json, "KHR_texture_transform") || !info ||
+        !hasMaterialTextureTransformPointerTarget(json, pointer)) return undefined;
+    const unlit = material.extensions?.KHR_materials_unlit !== undefined;
+    const specularGlossiness = material.extensions?.KHR_materials_pbrSpecularGlossiness !== undefined;
+    // Unlit ignores the other core maps, while the spec/gloss conversion can
+    // substitute a different source for these metallic-roughness slots.
+    if ((unlit && transform.field !== "baseColorTexture") ||
+        (specularGlossiness && (transform.field === "baseColorTexture" || transform.field === "metallicRoughnessTexture"))) return undefined;
+    const texCoord = info.extensions?.KHR_texture_transform?.texCoord ?? info.texCoord ?? 0;
+    // Native PBR supports UV0/UV1. The unlit shader only samples UV0.
+    if (texCoord > 1 || (unlit && texCoord !== 0)) return undefined;
+    return transform.leaf === "rotation" ? "SCALAR" : "VEC2";
+  }
+  switch (materialPointer[2]) {
+    case "pbrMetallicRoughness/baseColorFactor": return "VEC4";
+    case "pbrMetallicRoughness/metallicFactor":
+    case "pbrMetallicRoughness/roughnessFactor": return "SCALAR";
+    case "emissiveFactor": return "VEC3";
+    case "normalTexture/scale": return material.normalTexture ? "SCALAR" : undefined;
+    case "occlusionTexture/strength": return material.occlusionTexture ? "SCALAR" : undefined;
+    case "extensions/KHR_materials_emissive_strength/emissiveStrength":
+      return material.extensions?.KHR_materials_emissive_strength ? "SCALAR" : undefined;
+    case "extensions/KHR_materials_clearcoat/clearcoatFactor":
+    case "extensions/KHR_materials_clearcoat/clearcoatRoughnessFactor":
+      return material.extensions?.KHR_materials_clearcoat ? "SCALAR" : undefined;
+    case "extensions/KHR_materials_specular/specularFactor":
+      return material.extensions?.KHR_materials_specular && !material.extensions.KHR_materials_unlit &&
+        !material.extensions.KHR_materials_pbrSpecularGlossiness ? "SCALAR" : undefined;
+    case "extensions/KHR_materials_sheen/sheenRoughnessFactor":
+      return material.extensions?.KHR_materials_sheen && !material.extensions.KHR_materials_unlit &&
+        !material.extensions.KHR_materials_pbrSpecularGlossiness ? "SCALAR" : undefined;
+    case "extensions/KHR_materials_iridescence/iridescenceFactor":
+    case "extensions/KHR_materials_iridescence/iridescenceIor":
+      return material.extensions?.KHR_materials_iridescence && !material.extensions.KHR_materials_unlit &&
+        !material.extensions.KHR_materials_pbrSpecularGlossiness ? "SCALAR" : undefined;
+    default: return undefined;
+  }
 }
 
 /**
@@ -2815,7 +3438,8 @@ function isOptionalAnimationPointerChannel(json: GLTFJson, channel: GLTFAnimatio
  * - `/nodes/{i}/weights`, `/meshes/{i}/weights` → `<name>.weights` (number-array)
  * - `/materials/{i}/<property…>` → `material:<name>.<property…>` (scalar/vector3/number-array by leaf)
  * - `/extensions/KHR_lights_punctual/lights/{i}/intensity|color|range` and the short
- *   `/lights/{i}/…` form → `light:<name>.<property>` (scalar/vector3)
+ *   `/lights/{i}/…` form → `light:<name>.<property>`, or `light-index:<i>.<property>`
+ *   when definition names collide (scalar/vector3)
  *
  * three.js r185 resolves the full pointer grammar (including camera and extension-object
  * leaves); leaves outside this subset remain diagnostic-only here and are listed in
@@ -2827,21 +3451,105 @@ export interface GLTFAnimationPointerBinding {
   readonly valueType: TrackValueType;
 }
 
+/** These material leaves are scalar even though a node or texture transform's scale is a vector. */
+function isMaterialTextureScalarPointer(pointer: string): boolean {
+  return /^\/materials\/(?:0|[1-9]\d*)\/(?:normalTexture\/scale|occlusionTexture\/strength)$/.test(pointer);
+}
+
+// Texture transforms occur on these glTF textureInfo properties, including
+// supported material extensions. They use scalar rotation and two-component
+// offset/scale; texCoord is an integer selector and is not animatable here.
+const MATERIAL_TEXTURE_INFO_PATHS = new Set([
+  "pbrMetallicRoughness/baseColorTexture",
+  "pbrMetallicRoughness/metallicRoughnessTexture",
+  "normalTexture",
+  "occlusionTexture",
+  "emissiveTexture",
+  "extensions/KHR_materials_clearcoat/clearcoatTexture",
+  "extensions/KHR_materials_clearcoat/clearcoatRoughnessTexture",
+  "extensions/KHR_materials_clearcoat/clearcoatNormalTexture",
+  "extensions/KHR_materials_diffuse_roughness/diffuseRoughnessTexture",
+  "extensions/EXT_materials_bump/bumpTexture",
+  "extensions/KHR_materials_transmission/transmissionTexture",
+  "extensions/KHR_materials_diffuse_transmission/diffuseTransmissionTexture",
+  "extensions/KHR_materials_diffuse_transmission/diffuseTransmissionColorTexture",
+  "extensions/KHR_materials_volume/thicknessTexture",
+  "extensions/KHR_materials_specular/specularTexture",
+  "extensions/KHR_materials_specular/specularColorTexture",
+  "extensions/KHR_materials_sheen/sheenColorTexture",
+  "extensions/KHR_materials_sheen/sheenRoughnessTexture",
+  "extensions/KHR_materials_anisotropy/anisotropyTexture",
+  "extensions/KHR_materials_iridescence/iridescenceTexture",
+  "extensions/KHR_materials_iridescence/iridescenceThicknessTexture",
+  "extensions/KHR_materials_pbrSpecularGlossiness/diffuseTexture",
+  "extensions/KHR_materials_pbrSpecularGlossiness/specularGlossinessTexture"
+]);
+
+const MATERIAL_PROPERTY_POINTER_PATHS = new Set([
+  "baseColorFactor",
+  "emissiveFactor",
+  "metallicFactor",
+  "roughnessFactor",
+  "emissiveStrength",
+  "clearcoatFactor",
+  "clearcoatRoughnessFactor",
+  "pbrMetallicRoughness/baseColorFactor",
+  "pbrMetallicRoughness/metallicFactor",
+  "pbrMetallicRoughness/roughnessFactor",
+  "normalTexture/scale",
+  "occlusionTexture/strength",
+  "extensions/KHR_materials_emissive_strength/emissiveStrength",
+  "extensions/KHR_materials_clearcoat/clearcoatFactor",
+  "extensions/KHR_materials_clearcoat/clearcoatRoughnessFactor",
+  "extensions/KHR_materials_specular/specularFactor",
+  "extensions/KHR_materials_sheen/sheenRoughnessFactor",
+  "extensions/KHR_materials_iridescence/iridescenceFactor",
+  "extensions/KHR_materials_iridescence/iridescenceIor"
+]);
+
+type MaterialTextureTransformLeaf = "offset" | "rotation" | "scale";
+
+function materialTextureTransformLeaf(rest: readonly string[]): MaterialTextureTransformLeaf | undefined {
+  const leaf = rest[rest.length - 1];
+  if ((leaf !== "offset" && leaf !== "rotation" && leaf !== "scale") ||
+      rest[rest.length - 2] !== "KHR_texture_transform" || rest[rest.length - 3] !== "extensions" ||
+      !MATERIAL_TEXTURE_INFO_PATHS.has(rest.slice(0, -3).join("/"))) return undefined;
+  return leaf;
+}
+
+function materialTextureTransformPointerLeaf(pointer: string): MaterialTextureTransformLeaf | undefined {
+  const segments = pointer.split("/");
+  return segments[1] === "materials" ? materialTextureTransformLeaf(segments.slice(3)) : undefined;
+}
+
+/** Do not turn a missing JSON pointer target into a synthesized default on export. */
+function hasMaterialTextureTransformPointerTarget(json: GLTFJson, pointer: string): boolean {
+  const segments = pointer.split("/");
+  let value: unknown = json.materials?.[Number(segments[2])];
+  for (const segment of segments.slice(3)) {
+    if (!isObjectRecord(value) || !Object.prototype.hasOwnProperty.call(value, segment)) return false;
+    value = value[segment];
+  }
+  return true;
+}
+
 export function resolveAnimationPointerBinding(json: GLTFJson, pointer: string): GLTFAnimationPointerBinding | undefined {
-  const segments = pointer.split("/").filter((segment) => segment.length > 0);
+  if (!pointer.startsWith("/") || pointer.endsWith("/") || pointer.includes("//")) return undefined;
+  const segments = pointer.slice(1).split("/");
   if (segments.length < 3) return undefined;
   // Full extension-object form first: it carries no bare index in segment 2.
   if (segments[0] === "extensions" && segments[1] === "KHR_lights_punctual" && segments[2] === "lights") {
-    return resolvePunctualLightPointer(json, pointer, segments.slice(3));
+    return resolvePunctualLightPointer(json, pointer);
   }
   const [root, indexRaw, ...rest] = segments as [string, string, ...string[]];
   const index = Number(indexRaw);
   if (!Number.isInteger(index) || index < 0) return undefined;
 
   if (root === "nodes") {
+    if (!/^(?:0|[1-9]\d*)$/.test(indexRaw) || !Number.isSafeInteger(index) || rest.length !== 1) return undefined;
     const node = json.nodes?.[index];
     if (!node) return undefined;
-    const name = typeof node.name === "string" && node.name.trim().length > 0 ? node.name : `node-${index}`;
+    const name = createGLTFNodeNameResolver(json)(index);
     const [leaf] = rest;
     if (leaf === "translation" || leaf === "scale") {
       return { pointer, target: `${name}.${leaf}`, valueType: "vector3" };
@@ -2849,13 +3557,14 @@ export function resolveAnimationPointerBinding(json: GLTFJson, pointer: string):
     if (leaf === "rotation") {
       return { pointer, target: `${name}.${leaf}`, valueType: "quaternion" };
     }
-    if (leaf === "weights" && rest.length === 1) {
+    if (leaf === "weights" && animationPointerNodeWeightCount(json, pointer) !== undefined) {
       return { pointer, target: `${name}.weights`, valueType: "number-array" };
     }
     return undefined;
   }
 
   if (root === "meshes") {
+    if (!/^(?:0|[1-9]\d*)$/.test(indexRaw) || !Number.isSafeInteger(index)) return undefined;
     const mesh = json.meshes?.[index];
     if (!mesh) return undefined;
     const meshName = typeof (mesh as { name?: unknown }).name === "string" && ((mesh as { name?: string }).name?.trim().length ?? 0) > 0
@@ -2868,31 +3577,68 @@ export function resolveAnimationPointerBinding(json: GLTFJson, pointer: string):
   }
 
   if (root === "materials") {
+    if (String(index) !== indexRaw || !Number.isSafeInteger(index)) return undefined;
     const material = json.materials?.[index];
     if (!material) return undefined;
-    const materialName = typeof material.name === "string" && material.name.trim().length > 0 ? material.name : `material-${index}`;
     if (rest.length === 0) return undefined;
+    const textureScalar = isMaterialTextureScalarPointer(pointer);
+    const textureTransformLeaf = materialTextureTransformLeaf(rest);
+    if (rest.includes("KHR_texture_transform") && !textureTransformLeaf) return undefined;
+    if (!textureTransformLeaf && !MATERIAL_PROPERTY_POINTER_PATHS.has(rest.join("/"))) return undefined;
+    // The render resource loader preserves an explicitly blank name. Do not
+    // silently address a different, synthesized material for these channels.
+    if ((textureScalar || textureTransformLeaf) && material.name !== undefined && (typeof material.name !== "string" || material.name.trim().length === 0)) return undefined;
+    const materialName = typeof material.name === "string" && material.name.trim().length > 0 ? material.name : `material-${index}`;
     const leaf = rest[rest.length - 1] ?? "";
-    return { pointer, target: `material:${materialName}.${rest.join(".")}`, valueType: pointerLeafValueType(leaf) };
+    const valueType = textureScalar || textureTransformLeaf === "rotation" ? "scalar"
+      : textureTransformLeaf ? "number-array" : pointerLeafValueType(leaf);
+    return { pointer, target: `material:${materialName}.${rest.join(".")}`, valueType };
   }
 
   if (root === "lights") {
-    return resolvePunctualLightPointer(json, pointer, segments.slice(1));
+    return resolvePunctualLightPointer(json, pointer);
   }
 
   return undefined;
 }
 
-function resolvePunctualLightPointer(json: GLTFJson, pointer: string, lightSegments: readonly string[]): GLTFAnimationPointerBinding | undefined {
-  const [lightIndexRaw, ...lightRest] = lightSegments;
-  const lightIndex = Number(lightIndexRaw);
-  if (!Number.isInteger(lightIndex) || lightIndex < 0 || lightRest.length === 0) return undefined;
-  const light = json.extensions?.KHR_lights_punctual?.lights?.[lightIndex];
-  if (!light) return undefined;
-  const lightName = typeof light.name === "string" && light.name.trim().length > 0 ? light.name : `light-${lightIndex}`;
-  const leaf = lightRest[lightRest.length - 1] ?? "";
-  if (leaf !== "intensity" && leaf !== "color" && leaf !== "range") return undefined;
-  return { pointer, target: `light:${lightName}.${lightRest.join(".")}`, valueType: leaf === "color" ? "vector3" : "scalar" };
+interface GLTFPunctualLightPointer {
+  readonly index: number;
+  readonly name: string;
+  readonly leaf: "intensity" | "color" | "range";
+}
+
+function punctualLightPointerName(name: string | undefined, index: number): string {
+  return typeof name === "string" && name.trim().length > 0 ? name : `light-${index}`;
+}
+
+/** Only direct light properties are supported; nested or noncanonical pointers stay diagnostic-only. */
+function parsePunctualLightPointer(json: GLTFJson, pointer: string): GLTFPunctualLightPointer | undefined {
+  const match = /^\/(?:extensions\/KHR_lights_punctual\/)?lights\/(0|[1-9]\d*)\/(intensity|color|range)$/.exec(pointer);
+  if (!match || match[0] !== pointer) return undefined;
+  const index = Number(match[1]);
+  if (!Number.isSafeInteger(index)) return undefined;
+  const light = json.extensions?.KHR_lights_punctual?.lights?.[index];
+  if (!light || (light.name != null && typeof light.name !== "string")) return undefined;
+  return {
+    index,
+    name: punctualLightPointerName(light.name, index),
+    leaf: match[2] as GLTFPunctualLightPointer["leaf"]
+  };
+}
+
+function resolvePunctualLightPointer(json: GLTFJson, pointer: string): GLTFAnimationPointerBinding | undefined {
+  const lightPointer = parsePunctualLightPointer(json, pointer);
+  if (!lightPointer) return undefined;
+  const definitions = json.extensions?.KHR_lights_punctual?.lights ?? [];
+  const duplicate = definitions.some((light, index) =>
+    index !== lightPointer.index && punctualLightPointerName(light.name, index) === lightPointer.name
+  );
+  // Distinct definitions with the same name must not collapse during blending.
+  const target = duplicate
+    ? `light-index:${lightPointer.index}.${lightPointer.leaf}`
+    : `light:${lightPointer.name}.${lightPointer.leaf}`;
+  return { pointer, target, valueType: lightPointer.leaf === "color" ? "vector3" : "scalar" };
 }
 
 const POINTER_SCALAR_LEAVES = new Set([
@@ -2906,6 +3652,8 @@ const POINTER_SCALAR_LEAVES = new Set([
   "emissiveStrength",
   "clearcoatFactor",
   "clearcoatRoughnessFactor",
+  "diffuseRoughnessFactor",
+  "bumpFactor",
   "transmissionFactor",
   "thicknessFactor",
   "attenuationDistance",
@@ -3081,6 +3829,20 @@ function morphWeightCountForAnimationTarget(json: GLTFJson, nodeIndex: number | 
   return Math.max(0, ...mesh.primitives.map((primitive) => primitive.targets?.length ?? 0)) || undefined;
 }
 
+function animationPointerNodeWeightCount(json: GLTFJson, pointer: string): number | undefined {
+  const match = /^\/nodes\/(0|[1-9]\d*)\/weights$/.exec(pointer);
+  if (!match || match[0] !== pointer) return undefined;
+  const index = Number(match[1]);
+  const node = Number.isSafeInteger(index) ? json.nodes?.[index] : undefined;
+  const mesh = node?.mesh === undefined ? undefined : json.meshes?.[node.mesh];
+  if (!node || !mesh || !Array.isArray(mesh.primitives) || mesh.primitives.length === 0) return undefined;
+  const count = mesh.primitives[0]?.targets?.length ?? 0;
+  if (count <= 0 || mesh.primitives.some((primitive) => (primitive.targets?.length ?? 0) !== count)) return undefined;
+  if (mesh.weights !== undefined && (!Array.isArray(mesh.weights) || mesh.weights.length !== count)) return undefined;
+  if (node.weights !== undefined && (!Array.isArray(node.weights) || node.weights.length !== count || node.weights.some((value) => !Number.isFinite(value)))) return undefined;
+  return count;
+}
+
 function normalizeWeightAnimationOutput(
   times: readonly number[],
   output: readonly (readonly number[])[],
@@ -3119,88 +3881,124 @@ interface GLTFDocument {
   readonly jsonChunkBytes: number;
 }
 
-// Concurrent loads of the same URL share one network fetch. Scenes
-// instantiate the same multi-MB prop GLB many times; without dedupe every
-// instance downloads it in parallel and Chromium aborts those same-key
-// cache writes with net::ERR_CACHE_WRITE_FAILURE over the network
-// (localhost loads finish too fast to collide). The first caller's signal
-// and progress drive the shared read; later callers parse their own copy
-// of the bytes and emit a synthetic complete progress event.
-// Kept on globalThis so duplicate module instances (bundled copies of
-// this loader) still share one in-flight fetch per URL instead of racing.
-const SHARED_IN_FLIGHT_KEY = "__aura3dInFlightByteFetches";
-type SharedInFlightGlobal = typeof globalThis & { [SHARED_IN_FLIGHT_KEY]?: Map<string, Promise<ArrayBuffer>> };
-const inFlightGltfFetches = ((globalThis as SharedInFlightGlobal)[SHARED_IN_FLIGHT_KEY] ??= new Map<string, Promise<ArrayBuffer>>());
+interface GLTFByteSubscriber {
+  readonly progress?: AssetLoadRequest["onProgress"];
+  readonly phase: AssetLoadProgress["phase"];
+}
+interface GLTFSharedByteFetch {
+  readonly controller: AbortController;
+  readonly subscribers: Set<GLTFByteSubscriber>;
+  readonly promise: Promise<ArrayBuffer>;
+}
+// The credential-scoped version must not reuse entries from older modules.
+const SHARED_IN_FLIGHT_KEY = "__aura3dInFlightByteFetchesV3";
+type SharedInFlightGlobal = typeof globalThis & { [SHARED_IN_FLIGHT_KEY]?: Map<string, GLTFSharedByteFetch> };
+const inFlightGltfFetches = ((globalThis as SharedInFlightGlobal)[SHARED_IN_FLIGHT_KEY] ??= new Map<string, GLTFSharedByteFetch>());
 
-export function fetchGltfBytesShared(
+export async function fetchGltfBytesShared(
   url: string,
   phase: AssetLoadProgress["phase"],
   request: AssetLoadRequest,
   describeFailure: (status: number) => string
 ): Promise<ArrayBuffer> {
-  const attempt = async (cache?: RequestCache): Promise<ArrayBuffer> => {
-    const response = await fetch(url, { signal: request.signal, ...(cache ? { cache } : {}) });
-    if (!response.ok) {
-      const error = new Error(describeFailure(response.status)) as Error & { status?: number };
-      error.status = response.status;
-      throw error;
+  const signal = request.signal;
+  if (signal?.aborted) throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+  const options = mergeAssetRequestOptions({}, request);
+  const identity = await requestIdentityDetails(options, url);
+  if (signal?.aborted) throw signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+  const key = identity.key;
+  let shared = identity.reusable ? inFlightGltfFetches.get(key) : undefined;
+  if (!shared) {
+    const controller = new AbortController();
+    const subscribers = new Set<GLTFByteSubscriber>();
+    const attempt = (fetchOptions: AssetRequestOptions) => fetchBytes(url, controller.signal, (progress) => {
+      for (const subscriber of subscribers) {
+        try { subscriber.progress?.({ url, phase: subscriber.phase, loadedBytes: progress.loaded, ...(progress.total === undefined ? {} : { totalBytes: progress.total }) }); } catch { /* A subscriber cannot abort another subscriber's transport. */ }
+      }
+    }, fetchOptions);
+    const promise = (async () => {
+      try {
+        return await attempt(options);
+      } catch (error) {
+        const status = (error as { status?: number } | null)?.status;
+        if (status !== undefined) {
+          const wrapped = new Error(describeFailure(status)) as Error & { status: number };
+          wrapped.status = status;
+          throw wrapped;
+        }
+        if (controller.signal.aborted || isNonRetryableAssetError(error)) throw error;
+        return attempt({ ...options, cache: "no-store" });
+      }
+    })();
+    shared = { controller, subscribers, promise };
+    if (identity.reusable) {
+      inFlightGltfFetches.set(key, shared);
+      const current = shared;
+      void promise.then(() => { if (inFlightGltfFetches.get(key) === current) inFlightGltfFetches.delete(key); }, () => { if (inFlightGltfFetches.get(key) === current) inFlightGltfFetches.delete(key); });
     }
-    return readResponseBytes(response, url, phase, request);
-  };
-  const pending = inFlightGltfFetches.get(url) ?? (async () => {
-    try {
-      return await attempt();
-    } catch (error) {
-      // HTTP failures are deterministic; network/cache failures (Chromium
-      // ERR_CACHE_WRITE_FAILURE on multi-MB GLBs under disk-cache pressure)
-      // get one retry that bypasses the HTTP cache entirely.
-      if (request.signal?.aborted || (error as { status?: number } | null)?.status !== undefined) throw error;
-      return attempt("no-store");
-    }
-  })();
-  if (!inFlightGltfFetches.has(url)) {
-    inFlightGltfFetches.set(url, pending);
-    const clear = () => {
-      if (inFlightGltfFetches.get(url) === pending) inFlightGltfFetches.delete(url);
-    };
-    pending.then(clear, clear);
-    return pending.then((bytes) => bytes.slice(0));
   }
-  return pending.then((bytes) => {
-    request.onProgress?.({ url, phase: "complete", loadedBytes: bytes.byteLength, totalBytes: bytes.byteLength });
-    return bytes.slice(0);
+  const current = shared;
+  const subscriber: GLTFByteSubscriber = { progress: request.onProgress, phase };
+  current.subscribers.add(subscriber);
+  return new Promise<ArrayBuffer>((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => {
+      current.subscribers.delete(subscriber);
+      signal?.removeEventListener("abort", abort);
+    };
+    const abort = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (current.subscribers.size === 0) {
+        if (inFlightGltfFetches.get(key) === current) inFlightGltfFetches.delete(key);
+        current.controller.abort();
+      }
+      reject(signal?.reason ?? new DOMException("Asset load aborted", "AbortError"));
+    };
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) { abort(); return; }
+    current.promise.then((bytes) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      try { request.onProgress?.({ url, phase: "complete", loadedBytes: bytes.byteLength, totalBytes: bytes.byteLength }); }
+      catch { /* A progress observer cannot change a completed transport result. */ }
+      resolve(bytes.slice(0));
+    }, (error) => { if (!settled) { settled = true; cleanup(); reject(error); } });
   });
 }
 
 async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
-  const binary = request.url.startsWith("data:model/gltf-binary") || /\.glb(?:\?.*)?$/i.test(request.url);
-
+  const bytes = request.url.startsWith("data:")
+    ? decodeDataUri(request.url)
+    : await fetchGltfBytesShared(request.url, "document", request, (status) => `glTF request failed with ${status}`);
   if (request.url.startsWith("data:")) {
-    const data = decodeDataUri(request.url);
-    if (binary) {
-      return parseGLB(data, request.url);
-    }
-    const text = new TextDecoder().decode(data);
-    return { json: JSON.parse(text) as GLTFJson, url: request.url, byteLength: data.byteLength, version: 0, jsonChunkBytes: 0 };
+    if (request.maxBytes !== undefined && bytes.byteLength > request.maxBytes) throw new Error(`glTF document exceeds maxBytes (${request.maxBytes})`);
+    await verifyAssetBytes(bytes, request.integrity, request.url);
   }
-
-  if (typeof fetch !== "function") {
-    throw new Error("GLTFLoader requires fetch for non-data URLs");
+  if (request.signal?.aborted) throw request.signal.reason ?? new DOMException("Asset load aborted", "AbortError");
+  const binary = bytes.byteLength >= 4 && new DataView(bytes).getUint32(0, true) === 0x46546c67;
+  const format = request.format;
+  if ((format === "glb" && !binary) || (format === "gltf" && binary)) {
+    throw new Error(`glTF content does not match declared ${format} format`);
   }
-
-  const bytes = await fetchGltfBytesShared(request.url, "document", request, (status) => `glTF request failed with ${status}`);
-
   if (binary) {
     return parseGLB(bytes, request.url);
   }
-  return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url, byteLength: bytes.byteLength, version: 0, jsonChunkBytes: 0 };
+  try {
+    return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url, byteLength: bytes.byteLength, version: 0, jsonChunkBytes: 0 };
+  } catch (cause) {
+    throw new Error("Invalid glTF JSON document", { cause });
+  }
 }
 
 async function loadBuffer(
   buffer: GLTFBuffer,
   index: number,
   document: GLTFDocument,
-  request: AssetLoadRequest
+  request: AssetLoadRequest,
+  context: LoadContext
 ): Promise<ArrayBuffer> {
   validateBufferDescriptor(index, buffer);
   if (!buffer.uri) {
@@ -3235,7 +4033,9 @@ async function loadBuffer(
   }
 
   const url = new URL(buffer.uri, resolveAbsoluteDocumentUrl(document.url)).toString();
-  const bytes = await fetchGltfBytesShared(url, "buffer", request, (status) => `glTF buffer request failed with ${status}`);
+  const options = context.requestOptionsFor(buffer.uri);
+  const { integrity: _integrity, expectedUrl: _expectedUrl, ...withoutDocumentIntegrity } = request;
+  const bytes = await fetchGltfBytesShared(url, "buffer", { ...withoutDocumentIntegrity, ...options, url }, (status) => `glTF buffer request failed with ${status}`);
   return validateLoadedBufferLength(index, buffer, bytes);
 }
 
@@ -3952,7 +4752,9 @@ function createScene(
   lights: readonly GLTFLightAsset[],
   skins: readonly GLTFSkinAsset[],
   nodeInstanceTransforms: ReadonlyMap<number, Float32Array>,
+  nodeInstanceColors: ReadonlyMap<number, Float32Array>,
   materialVariants: readonly GLTFMaterialVariantAsset[],
+  gltfAssetId: string,
   options: GLTFSceneCreateOptions = {}
 ): Scene {
   const sceneIndex = resolveSelectedSceneIndex(json, options);
@@ -3969,6 +4771,11 @@ function createScene(
   while (authoredNames.has(containerName)) containerName = `_${containerName}`;
   scene.root.name = containerName;
   scene.root.userData.gltfSceneContainer = true;
+  // Static assets with neither skins nor animations need no runtime binding
+  // provenance; leave their existing scene metadata unchanged.
+  if (skins.length > 0 || (json.animations?.length ?? 0) > 0) {
+    scene.root.userData.gltfAssetId = gltfAssetId;
+  }
   const nodes = new Map<number, SceneNode>();
   const createNode = (index: number): SceneNode => {
     const source = json.nodes?.[index];
@@ -3995,7 +4802,7 @@ function createScene(
       node.transform.setScale(transform.scale[0], transform.scale[1], transform.scale[2]);
     }
     if (source.mesh !== undefined) {
-      attachMeshPrimitives(scene, node, source.mesh, index, meshes, skins, source.skin, nodeWorldMatrices.get(index), nodeInstanceTransforms.get(index), materialKeyForRenderable);
+      attachMeshPrimitives(scene, node, source.mesh, index, gltfAssetId, meshes, skins, source.skin, nodeWorldMatrices.get(index), nodeInstanceTransforms.get(index), materialKeyForRenderable, source.weights, nodeInstanceColors.get(index));
     }
     nodes.set(index, node);
     for (const childIndex of source.children ?? []) {
@@ -4143,12 +4950,15 @@ function attachMeshPrimitives(
   node: SceneNode,
   meshIndex: number,
   nodeIndex: number,
+  gltfAssetId: string,
   meshes: readonly GLTFMeshAsset[],
   skins: readonly GLTFSkinAsset[],
   nodeSkinIndex?: number,
   nodeWorldMatrix?: Mat4,
   instanceTransforms?: Float32Array,
-  materialKeyForRenderable?: (mesh: GLTFMeshAsset, contract: GLTFRuntimeMaterialContract) => string
+  materialKeyForRenderable?: (mesh: GLTFMeshAsset, contract: GLTFRuntimeMaterialContract) => string,
+  nodeWeights?: readonly number[],
+  instanceColors?: Float32Array
 ): void {
   if (!Number.isInteger(meshIndex) || meshIndex < 0) {
     throw new RangeError(`glTF node ${nodeIndex} mesh must be a non-negative integer`);
@@ -4157,6 +4967,26 @@ function attachMeshPrimitives(
   if (primitives.length === 0) {
     throw new Error(`glTF node ${nodeIndex} references missing mesh ${meshIndex}`);
   }
+  if (nodeWeights !== undefined &&
+      (!Array.isArray(nodeWeights) || nodeWeights.some((weight) => !Number.isFinite(weight)) ||
+       primitives.some((mesh) => nodeWeights.length !== mesh.morphTargets.length))) {
+    throw new Error(`glTF node ${nodeIndex} weights must contain one finite number per morph target`);
+  }
+  const retainSkinBinding = (target: SceneNode, mesh: GLTFMeshAsset): void => {
+    if (nodeSkinIndex === undefined) return;
+    // Each renderable gets its own JSON-safe record, including synthetic
+    // primitive children that intentionally have no authored gltfNodeIndex.
+    // The enclosing gltfSceneContainer is the actor identity, so clones and
+    // separately created scenes cannot share palette ownership.
+    const binding: GLTFSkinBindingProvenance = {
+      assetId: gltfAssetId,
+      nodeIndex,
+      meshIndex,
+      primitiveIndex: mesh.primitiveIndex,
+      skinIndex: nodeSkinIndex
+    };
+    target.userData.gltfSkinBinding = binding;
+  };
   if (primitives.length === 1) {
     const mesh = primitives[0]!;
     const skinning = skinningForMesh(mesh, skins, nodeSkinIndex, nodeWorldMatrix);
@@ -4164,9 +4994,11 @@ function attachMeshPrimitives(
       geometry: mesh.name,
       material: materialKeyForRenderable?.(mesh, runtimeMaterialContract(skinning, instanceTransforms)) ?? mesh.material,
       ...(skinning ? { skinning } : {}),
-      morphWeights: mesh.morphWeights,
-      ...(instanceTransforms ? { instanceTransforms } : {})
+      morphWeights: nodeWeights ?? mesh.morphWeights,
+      ...(instanceTransforms ? { instanceTransforms } : {}),
+      ...(instanceColors ? { instanceColors } : {})
     }));
+    retainSkinBinding(node, mesh);
     return;
   }
   for (const mesh of primitives) {
@@ -4179,9 +5011,11 @@ function attachMeshPrimitives(
       geometry: mesh.name,
       material: materialKeyForRenderable?.(mesh, runtimeMaterialContract(skinning, instanceTransforms)) ?? mesh.material,
       ...(skinning ? { skinning } : {}),
-      morphWeights: mesh.morphWeights,
-      ...(instanceTransforms ? { instanceTransforms } : {})
+      morphWeights: nodeWeights ?? mesh.morphWeights,
+      ...(instanceTransforms ? { instanceTransforms } : {}),
+      ...(instanceColors ? { instanceColors } : {})
     }));
+    retainSkinBinding(primitiveNode, mesh);
     node.addChild(primitiveNode);
   }
 }
@@ -4353,6 +5187,7 @@ function createSceneNodeForGLTFNode(
     throw new Error(`glTF node ${nodeIndex} references missing punctual light ${lightIndex}`);
   }
   const lightNode = scene.createLight(light.type, nodeName);
+  registerGLTFLightSceneInstance(lightNode, lights, lightIndex, punctualLightPointerName(light.name, lightIndex));
   lightNode.color = [...light.color];
   lightNode.intensity = light.intensity;
   if (lightNode instanceof PointLight) {

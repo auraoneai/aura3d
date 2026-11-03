@@ -88,11 +88,11 @@ function lobe(entry: {
   };
 }
 
-const LOBES: readonly MaterialLobe[] = [
+export const PRD04_MATERIAL_LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "ior",
     glTFExtension: "KHR_materials_ior",
-    chunks: { pars: "a3d_prd04_specular_ior", fragment: "a3d_prd04_specular_ior_call" },
+    chunks: { pars: "a3d_prd04_specular_ior_pars", fragment: "a3d_prd04_specular_ior_call" },
     samplerSlots: [],
     active: (p) =>
       num(p, "ior", 1.5) !== 1.5 ||
@@ -105,7 +105,7 @@ const LOBES: readonly MaterialLobe[] = [
   lobe({
     id: "specular",
     glTFExtension: "KHR_materials_specular",
-    chunks: { pars: "a3d_prd04_specular_ior", fragment: "a3d_prd04_specular_ior_call" },
+    chunks: { pars: "a3d_prd04_specular_ior_pars", fragment: "a3d_prd04_specular_ior_call" },
     samplerSlots: ["specular", "specularColor"],
     active: (p, t) =>
       p.specularFactor !== undefined ||
@@ -196,6 +196,20 @@ const LOBES: readonly MaterialLobe[] = [
     }
   }),
   lobe({
+    id: "diffuse-transmission",
+    order: 9,
+    glTFExtension: "KHR_materials_diffuse_transmission",
+    chunks: { pars: "a3d_prd04_diffuse_transmission_pars", fragment: "a3d_prd04_diffuse_transmission_call",
+      direct: "a3d_prd04_diffuse_transmission_direct_call", ibl: "a3d_prd04_diffuse_transmission_ibl_call" },
+    samplerSlots: ["diffuseTransmission", "diffuseTransmissionColor"],
+    active: (p, t) => num(p, "diffuseTransmissionFactor") > 0 || tex(t, "diffuseTransmission") !== undefined || tex(t, "diffuseTransmissionColor") !== undefined,
+    bits: (p, t) => ({ map: tex(t, "diffuseTransmission") !== undefined, colorMap: tex(t, "diffuseTransmissionColor") !== undefined }),
+    bind: (p, set) => {
+      set("u_diffuseTransmissionFactor", num(p, "diffuseTransmissionFactor"));
+      set("u_diffuseTransmissionColorFactor", vec3(p, "diffuseTransmissionColorFactor", [1, 1, 1]));
+    }
+  }),
+  lobe({
     id: "transmission",
     order: 10,
     glTFExtension: "KHR_materials_transmission",
@@ -248,11 +262,45 @@ const LOBES: readonly MaterialLobe[] = [
   })
 ];
 
+type ReplayDataProof = {
+  readonly target: object;
+  readonly prototype: object | null;
+  readonly descriptors: readonly (readonly [PropertyKey, PropertyDescriptor])[];
+};
+
+function replayDataProof(target: object): ReplayDataProof {
+  return {
+    target,
+    prototype: Object.getPrototypeOf(target),
+    descriptors: Reflect.ownKeys(target).map(key => [key, Object.getOwnPropertyDescriptor(target, key)!] as const)
+  };
+}
+
+function replayDataUnchanged(proof: ReplayDataProof): boolean {
+  if (Object.getPrototypeOf(proof.target) !== proof.prototype || Reflect.ownKeys(proof.target).length !== proof.descriptors.length) return false;
+  return proof.descriptors.every(([key, expected]) => {
+    const current = Object.getOwnPropertyDescriptor(proof.target, key);
+    return current !== undefined && "value" in expected && "value" in current &&
+      Object.is(current.value, expected.value) && current.writable === expected.writable &&
+      current.enumerable === expected.enumerable && current.configurable === expected.configurable;
+  });
+}
+
+const replayLobeProofs = new Map(PRD04_MATERIAL_LOBES.map(entry => [entry, [
+  replayDataProof(entry), replayDataProof(entry.chunks), replayDataProof(entry.samplerSlots)
+]] as const));
+
+/** Replay is safe only for the original built-in lobe and unchanged callbacks/metadata. */
+export function isReplaySafePrd04Lobe(entry: MaterialLobe): boolean {
+  const proof = replayLobeProofs.get(entry);
+  return proof !== undefined && proof.every(replayDataUnchanged);
+}
+
 let registered = false;
 
 /** Registers all PRD-04 lobes; idempotent (lane barrel + tests may both call). */
 export function registerPrd04MaterialLobes(): void {
   if (registered) return;
-  for (const entry of LOBES) registerMaterialLobe(entry);
+  for (const entry of PRD04_MATERIAL_LOBES) registerMaterialLobe(entry);
   registered = true;
 }

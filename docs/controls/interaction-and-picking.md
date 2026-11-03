@@ -58,7 +58,7 @@ Reference: repository-locked `three@0.185.1` addon implementations.
 | Pointer lock gate | PointerLock yes | n/a | n/a | n/a | n/a | n/a | n/a | yes (`lock`/`unlock`/`locked`) | n/a | n/a | n/a |
 | `saveState` / `reset` | Orbit yes | yes (attached) | GAP (stateless deltas) | yes (inherits Orbit) | yes (inherits Orbit) | n/a | n/a | n/a | n/a | n/a | n/a |
 | Snap (translate/rotate/scale) | Transform yes | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a (delegates) | yes (`snap` settings + drag math) | n/a |
-| Gizmo pick + pointer drag lifecycle | Transform yes | n/a | n/a | n/a | n/a | n/a | n/a | n/a | explicit deltas only (deprecated shim) | yes (`pick`/`hover`/`pointerDown`/`pointerMove`/`pointerUp`) | n/a |
+| Gizmo pick + pointer drag lifecycle | Transform yes | n/a | n/a | n/a | n/a | n/a | n/a | n/a | pointer drag with supplied hit test or picking query | yes (`pick`/`hover`/`pointerDown`/`pointerMove`/`pointerUp`) | n/a |
 | `dispose()` to F1 standard | yes (listener removal) | yes | yes | yes | yes (inherits Orbit) | yes | yes (inherits Fly) | yes | yes | yes | yes |
 | Skinned/instanced picking | Raycaster yes | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a (see Picking rows) |
 
@@ -84,9 +84,11 @@ Notes:
    on the XZ ground plane. One touch rotates Orbit/pans Map, two touches pan
    and pinch both. These additions currently have attached unit proof and
    test-only browser proof source; release acceptance requires its fresh remote run.
-3. `DragControls` is a deprecated compatibility shim (explicit world-space
-   deltas onto `TransformControls`); it is not a browser/Three.js
-   DragControls implementation. See `DRAG_CONTROLS_DEPRECATION`.
+3. `DragControls` retains the deprecated explicit world-space delta interface
+   and also supports pointer-driven plane dragging via `DragControlsOptions`.
+   Exact picking requires a supplied query or hit test; compatibility-object
+   instances are rejected rather than moved incorrectly. Source-level tests
+   cover ownership and cleanup; browser acceptance remains pending.
 
 ## F4 Picking, Hover, Focus, And Gizmo Snap
 
@@ -143,9 +145,9 @@ Focused coverage lives in:
 - `tests/browser/controls-hover-focus.spec.ts` (F4 pixel proof)
 - `tests/browser/editor-gizmo-snap.spec.ts` (F4 editor-route snap proof)
 - `tests/unit/controls/exported-controls-resolution.test.ts`
-- `tests/unit/input/orbit-controls-three-parity.test.ts`
-- `tests/unit/rendering/interactive-cubes-three-parity.test.ts`
-- `tests/unit/rendering/interactive-points-three-parity.test.ts`
+- `tests/unit/input/native-orbit-controls.test.ts`
+- `tests/unit/rendering/native-interactive-cubes.test.ts`
+- `tests/unit/rendering/native-interactive-points.test.ts`
 - `tests/unit/controls/three-compat-controls.test.ts`
 - `tests/browser/threejs-parity-orbit-controls.spec.ts`
 - `tests/browser/threejs-parity-transform-controls.spec.ts`

@@ -1,6 +1,7 @@
 import type { AnimationClip } from "../AnimationClip.js";
+import type { AnimationEventMarker } from "../AnimationEvents.js";
 import type { AnimationTrack, TrackValueType } from "../AnimationTrack.js";
-import type { AnimationValue } from "../Keyframe.js";
+import { smoothKeyframeTangent, type AnimationValue } from "../Keyframe.js";
 import { normalizeQuatFlat, slerpQuatFlat } from "./quatFlat.js";
 
 /**
@@ -8,10 +9,7 @@ import { normalizeQuatFlat, slerpQuatFlat } from "./quatFlat.js";
  * flat Float32Arrays, and each playing action carries a per-track cursor
  * (Uint32Array) so interval lookup is amortized O(1) for monotonic playback.
  *
- * Interpolation mirrors `AnimationTrack.sample` (LINEAR / STEP / CUBICSPLINE)
- * with one deliberate deviation: quaternion CUBICSPLINE output is normalized
- * directly instead of `sample`'s `slerpQuat(identity, q, 1)` — that call returns
- * the raw cubic value un-normalized whenever |q.w| < 0.9995.
+ * Interpolation and endpoint behavior mirror `AnimationTrack.sample`.
  */
 
 export type CompiledTrackCursor = Uint32Array;
@@ -20,72 +18,86 @@ export type CompiledTrack = {
   readonly target: string;
   readonly valueType: TrackValueType;
   readonly times: Float32Array;
+  /** Original key times retain exact JavaScript-number boundaries for sampling. */
+  readonly exactTimes?: Float64Array;
   /** Flattened numeric values (stride×keyCount); empty for boolean/string tracks. */
   readonly values: Float32Array;
+  /** Present only when Float32 rounding would lose authored value precision. */
+  readonly exactValues?: Float64Array;
   /** Non-numeric values for boolean/string tracks; null otherwise. */
   readonly rawValues: readonly AnimationValue[] | null;
-  /** Flattened cubic outTangents per keyframe (only when track has cubic keys). */
+  /** Flattened outgoing derivatives or Bézier controls, according to each interval mode. */
   readonly outTangents: Float32Array | null;
-  /** Flattened cubic inTangents per keyframe (only when track has cubic keys). */
+  /** Flattened incoming derivatives or Bézier controls, according to each interval mode. */
   readonly inTangents: Float32Array | null;
+  readonly exactOutTangents?: Float64Array;
+  readonly exactInTangents?: Float64Array;
   readonly stride: number;
-  /** 0 = linear, 1 = step, 2 = cubicspline; one byte per keyframe. */
+  /** 0 = linear, 1 = step, 2 = cubicspline, 3 = smooth, 4 = Bézier. */
   readonly interpolation: Uint8Array;
+  /** Per key: bit 0 authored interpolation; bit 1 incoming; bit 2 outgoing. */
+  readonly authoredKeyframeFlags?: Uint8Array;
   readonly keyframeCount: number;
 };
 
 export type CompiledClip = {
   readonly duration: number;
   readonly tracks: readonly CompiledTrack[];
+  readonly events?: readonly AnimationEventMarker[];
 };
 
 const INTERP_LINEAR = 0;
 const INTERP_STEP = 1;
 const INTERP_CUBIC = 2;
-
-function strideFor(valueType: TrackValueType, first: AnimationValue): number {
-  switch (valueType) {
-    case "scalar":
-      return 1;
-    case "vector3":
-      return 3;
-    case "quaternion":
-      return 4;
-    case "number-array":
-      return (first as readonly number[]).length;
-    default:
-      return 0;
-  }
-}
+const INTERP_SMOOTH = 3;
+const INTERP_BEZIER = 4;
 
 function interpolationCode(interpolation: string | undefined): number {
   if (interpolation === "step") return INTERP_STEP;
   if (interpolation === "cubicspline") return INTERP_CUBIC;
+  if (interpolation === "smooth") return INTERP_SMOOTH;
+  if (interpolation === "bezier") return INTERP_BEZIER;
   return INTERP_LINEAR;
+}
+
+/** Retain a double-precision sidecar only if narrowing a component loses data. */
+function writePrecise(target: Float32Array, index: number, value: number, exact: Float64Array | undefined): Float64Array | undefined {
+  target[index] = value;
+  if (!exact && target[index] !== value) {
+    exact = new Float64Array(target.length);
+    exact.set(target);
+  }
+  if (exact) exact[index] = value;
+  return exact;
 }
 
 export function compileTrack(track: AnimationTrack): CompiledTrack {
   const keyframes = track.keyframes;
   const keyframeCount = keyframes.length;
   const times = new Float32Array(keyframeCount);
+  const exactTimes = new Float64Array(keyframeCount);
   const interpolation = new Uint8Array(keyframeCount);
-  const stride = strideFor(track.valueType, keyframes[0]!.value);
+  const authoredKeyframeFlags = new Uint8Array(keyframeCount);
+  const stride = track.valueSize;
   const numeric = stride > 0;
   const values = numeric ? new Float32Array(keyframeCount * stride) : new Float32Array(0);
+  let exactValues: Float64Array | undefined;
   const rawValues: AnimationValue[] | null = numeric ? null : [];
   let hasCubic = false;
 
   for (let i = 0; i < keyframeCount; i += 1) {
     const keyframe = keyframes[i]!;
     times[i] = keyframe.time;
+    exactTimes[i] = keyframe.time;
     const code = interpolationCode(keyframe.interpolation);
     interpolation[i] = code;
-    if (code === INTERP_CUBIC) hasCubic = true;
+    authoredKeyframeFlags[i] = (keyframe.interpolation !== undefined ? 1 : 0) | (keyframe.inTangent !== undefined ? 2 : 0) | (keyframe.outTangent !== undefined ? 4 : 0);
+    if (code === INTERP_CUBIC || code === INTERP_SMOOTH || code === INTERP_BEZIER || keyframe.inTangent !== undefined || keyframe.outTangent !== undefined) hasCubic = true;
     if (numeric) {
       const value = keyframe.value;
       const base = i * stride;
-      if (stride === 1) values[base] = value as number;
-      else for (let k = 0; k < stride; k += 1) values[base + k] = (value as readonly number[])[k]!;
+      if (track.valueType === "scalar") exactValues = writePrecise(values, base, value as number, exactValues);
+      else for (let k = 0; k < stride; k += 1) exactValues = writePrecise(values, base + k, (value as readonly number[])[k]!, exactValues);
     } else {
       rawValues!.push(keyframe.value);
     }
@@ -93,19 +105,23 @@ export function compileTrack(track: AnimationTrack): CompiledTrack {
 
   let outTangents: Float32Array | null = null;
   let inTangents: Float32Array | null = null;
+  let exactOutTangents: Float64Array | undefined;
+  let exactInTangents: Float64Array | undefined;
   if (hasCubic) {
     outTangents = new Float32Array(keyframeCount * stride);
     inTangents = new Float32Array(keyframeCount * stride);
     for (let i = 0; i < keyframeCount; i += 1) {
       const keyframe = keyframes[i]!;
       const base = i * stride;
-      if (keyframe.outTangent !== undefined) {
-        const tangent = keyframe.outTangent;
-        for (let k = 0; k < stride; k += 1) outTangents[base + k] = typeof tangent === "number" ? tangent : (tangent as readonly number[])[k]!;
+      const out = keyframe.interpolation === "smooth" ? smoothKeyframeTangent(keyframes, i, "out") : keyframe.outTangent;
+      const incoming = i > 0 && keyframes[i - 1]!.interpolation === "smooth" ? smoothKeyframeTangent(keyframes, i, "in") : keyframe.inTangent;
+      if (out !== undefined) {
+        const tangent = out;
+        for (let k = 0; k < stride; k += 1) exactOutTangents = writePrecise(outTangents, base + k, typeof tangent === "number" ? tangent : (tangent as readonly number[])[k]!, exactOutTangents);
       }
-      if (keyframe.inTangent !== undefined) {
-        const tangent = keyframe.inTangent;
-        for (let k = 0; k < stride; k += 1) inTangents[base + k] = typeof tangent === "number" ? tangent : (tangent as readonly number[])[k]!;
+      if (incoming !== undefined) {
+        const tangent = incoming;
+        for (let k = 0; k < stride; k += 1) exactInTangents = writePrecise(inTangents, base + k, typeof tangent === "number" ? tangent : (tangent as readonly number[])[k]!, exactInTangents);
       }
     }
   }
@@ -114,12 +130,17 @@ export function compileTrack(track: AnimationTrack): CompiledTrack {
     target: track.target,
     valueType: track.valueType,
     times,
+    exactTimes,
     values,
+    ...(exactValues ? { exactValues } : {}),
     rawValues,
     outTangents,
     inTangents,
+    ...(exactOutTangents ? { exactOutTangents } : {}),
+    ...(exactInTangents ? { exactInTangents } : {}),
     stride,
     interpolation,
+    authoredKeyframeFlags,
     keyframeCount
   };
 }
@@ -127,7 +148,8 @@ export function compileTrack(track: AnimationTrack): CompiledTrack {
 export function compileClip(clip: AnimationClip): CompiledClip {
   return {
     duration: clip.duration,
-    tracks: clip.tracks.map((track) => compileTrack(track))
+    tracks: clip.tracks.map((track) => compileTrack(track)),
+    events: clip.events.map((event) => ({ ...event }))
   };
 }
 
@@ -143,11 +165,11 @@ export function createTrackCursors(clip: CompiledClip): CompiledTrackCursor {
  * clamps to the first/last keyframe in that case).
  */
 function locateInterval(track: CompiledTrack, time: number, cursor: CompiledTrackCursor, cursorIndex: number): number {
-  const times = track.times;
+  const times = track.exactTimes ?? track.times;
   const lastInterval = track.keyframeCount - 2;
   let i = cursor[cursorIndex]!;
   if (i > lastInterval) i = lastInterval;
-  while (i < lastInterval && time > times[i + 1]!) i += 1;
+  while (i < lastInterval && time >= times[i + 1]!) i += 1;
   while (i > 0 && time < times[i]!) i -= 1;
   cursor[cursorIndex] = i;
   if (time < times[0]! || time > times[track.keyframeCount - 1]!) return -1;
@@ -180,16 +202,19 @@ export function sampleTrackInto(
 ): void {
   const stride = track.stride;
   const keyframeCount = track.keyframeCount;
-  const times = track.times;
+  if (!Number.isFinite(time)) throw new Error("AnimationTrack sample time must be finite.");
+  const times = track.exactTimes ?? track.times;
   const values = track.values;
 
   if (time <= times[0]!) {
     for (let k = 0; k < stride; k += 1) out[outOffset + k] = values[k]!;
+    if (track.valueType === "quaternion") normalizeQuatFlat(out, outOffset);
     return;
   }
   if (time >= times[keyframeCount - 1]!) {
     const base = (keyframeCount - 1) * stride;
     for (let k = 0; k < stride; k += 1) out[outOffset + k] = values[base + k]!;
+    if (track.valueType === "quaternion") normalizeQuatFlat(out, outOffset);
     return;
   }
 
@@ -200,6 +225,12 @@ export function sampleTrackInto(
   const bTime = times[i + 1]!;
   const interp = track.interpolation[i]!;
 
+  if (track.valueType === "quaternion" && time === aTime) {
+    for (let k = 0; k < stride; k += 1) out[outOffset + k] = values[aBase + k]!;
+    normalizeQuatFlat(out, outOffset);
+    return;
+  }
+
   if (interp === INTERP_STEP || bTime === aTime) {
     for (let k = 0; k < stride; k += 1) out[outOffset + k] = values[aBase + k]!;
     return;
@@ -207,19 +238,17 @@ export function sampleTrackInto(
 
   const t = (time - aTime) / (bTime - aTime);
 
-  if (interp === INTERP_CUBIC) {
+  if (interp === INTERP_CUBIC || interp === INTERP_SMOOTH || interp === INTERP_BEZIER) {
     const deltaTime = bTime - aTime;
     const outTangents = track.outTangents!;
     const inTangents = track.inTangents!;
     for (let k = 0; k < stride; k += 1) {
-      out[outOffset + k] = cubicHermite(
-        values[aBase + k]!,
-        values[bBase + k]!,
-        outTangents[aBase + k]!,
-        inTangents[bBase + k]!,
-        t,
-        deltaTime
-      );
+      if (interp === INTERP_BEZIER) {
+        const u = 1 - t;
+        out[outOffset + k] = u * u * u * values[aBase + k]! + 3 * u * u * t * outTangents[aBase + k]! + 3 * u * t * t * inTangents[bBase + k]! + t * t * t * values[bBase + k]!;
+      } else {
+        out[outOffset + k] = cubicHermite(values[aBase + k]!, values[bBase + k]!, outTangents[aBase + k]!, inTangents[bBase + k]!, t, deltaTime);
+      }
     }
     if (track.valueType === "quaternion") normalizeQuatFlat(out, outOffset);
     return;
@@ -236,29 +265,22 @@ export function sampleTrackInto(
 
 /** Raw-value sample for boolean/string tracks (and a convenience for others). */
 export function sampleTrackRaw(track: CompiledTrack, time: number, cursor: CompiledTrackCursor, cursorIndex: number): AnimationValue {
-  const times = track.times;
+  if (!track.rawValues) {
+    const scratch = new Float32Array(track.stride);
+    sampleTrackInto(track, time, cursor, cursorIndex, scratch, 0);
+    return track.valueType === "scalar" ? scratch[0]! : [...scratch] as AnimationValue;
+  }
+  if (!Number.isFinite(time)) throw new Error("AnimationTrack sample time must be finite.");
+  const times = track.exactTimes ?? track.times;
   const keyframeCount = track.keyframeCount;
-  if (time <= times[0]!) return track.rawValues ? track.rawValues[0]! : firstNumeric(track);
+  if (time <= times[0]!) return track.rawValues[0]!;
   if (time >= times[keyframeCount - 1]!) {
-    return track.rawValues ? track.rawValues[keyframeCount - 1]! : lastNumeric(track);
+    return track.rawValues[keyframeCount - 1]!;
   }
   const i = locateInterval(track, time, cursor, cursorIndex);
   const bTime = times[i + 1]!;
   const t = (time - times[i]!) / (bTime - times[i]!);
-  if (track.rawValues) {
-    const interp = track.interpolation[i]!;
-    if (interp === INTERP_STEP || t < 1) return track.rawValues[i]!;
-    return track.rawValues[i + 1]!;
-  }
-  const scratch = new Float32Array(track.stride);
-  sampleTrackInto(track, time, cursor, cursorIndex, scratch, 0);
-  return [...scratch] as AnimationValue;
-}
-
-function firstNumeric(track: CompiledTrack): AnimationValue {
-  return track.stride === 1 ? track.values[0]! : ([...track.values.subarray(0, track.stride)] as AnimationValue);
-}
-function lastNumeric(track: CompiledTrack): AnimationValue {
-  const base = (track.keyframeCount - 1) * track.stride;
-  return track.stride === 1 ? track.values[base]! : ([...track.values.subarray(base, base + track.stride)] as AnimationValue);
+  const interp = track.interpolation[i]!;
+  if (interp === INTERP_STEP || t < 1) return track.rawValues[i]!;
+  return track.rawValues[i + 1]!;
 }

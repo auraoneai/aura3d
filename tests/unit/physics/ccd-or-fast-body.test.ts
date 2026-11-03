@@ -154,7 +154,9 @@ test("native CCD substeps preserve outer-step forces and interpolation history [
   world.step(1 / 60);
 
   assert.equal(world.snapshot().backend.active, "rapier");
-  assert.equal(world.snapshot().backend.continuousCollision.lastSubSteps, 4);
+  // The conservative bound includes the applied acceleration, so 61/60 m
+  // of possible motion at a 0.25 m threshold needs five substeps.
+  assert.equal(world.snapshot().backend.continuousCollision.lastSubSteps, 5);
   assert.ok(
     Math.abs(body.velocity[0] - 61) < 1e-4,
     `a 60 N force on a 1 kg body over 1/60 s must add exactly 1 m/s regardless of substep count, got ${body.velocity[0]}`

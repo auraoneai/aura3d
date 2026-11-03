@@ -13,6 +13,10 @@ import type { RetargetWorkerRequest, RetargetWorkerResponse } from "./retarget.w
 export function createRetargetWorker(): Worker | undefined {
   if (typeof Worker === "undefined") return undefined;
   try {
+    // Read the validated manifest from this worker realm without introducing a
+    // new dependency into the standalone animation package.
+    const assets = (globalThis as typeof globalThis & { [key: symbol]: unknown })[Symbol.for("@aura3d/worker-assets")] as { readonly retargetWorker?: string } | undefined;
+    if (assets?.retargetWorker) return new Worker(assets.retargetWorker, { type: "module" });
     return new Worker(new URL("./retarget.worker.js", import.meta.url), { type: "module" });
   } catch {
     return undefined;

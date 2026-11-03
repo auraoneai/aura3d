@@ -1,294 +1,142 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { basename, resolve } from "node:path";
-import { writeReport, type ReleaseCheck } from "../check-common";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { loadValidatedReleasePlan, type ExactReleasePlan } from "../release/exact-release-plan.mjs";
+import { expandExports } from "../public-surface-diff/index.js";
+import { readPackageArchive, sha256, sha512, verifyPackedIdentity, type PackedPackage } from "../public-surface-diff/prepare-baseline.js";
 
-interface CommandResult {
-  readonly ok: boolean;
-  readonly output: string;
-}
-
-const workspace = resolve("tests/reports/public-api-contract-workspace");
-const tarballDir = resolve(workspace, "tarballs");
-const archivedSceneTypeName = ["Aura", "Scene", "IR"].join("");
-const archivedProviderName = ["Mock", "Provider"].join("");
-const archivedPromptPackage = ["@aura3d/", "ai-", "scene"].join("");
-const archivedCreatePromptSceneName = ["create", "Prompt", "Scene"].join("");
-const archivedExportNames = [
-  archivedSceneTypeName,
-  archivedProviderName,
-  ["prompt", "To", "Scene"].join(""),
-  archivedCreatePromptSceneName
-];
-rmSync(workspace, { recursive: true, force: true });
-mkdirSync(tarballDir, { recursive: true });
-
-const engineTarball = pack(".", tarballDir);
-const reactTarball = pack("packages/react", tarballDir);
-writePackage();
-writeTsconfig();
-writeSources();
-
-const install = run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], workspace);
-const engineExports = install.ok ? readModuleExports("@aura3d/engine") : [];
-const reactExports = install.ok ? readModuleExports("@aura3d/react") : [];
-const validCompile = install.ok ? run("npm", ["exec", "tsc", "--", "--noEmit", "-p", "tsconfig.valid.json"], workspace) : install;
-const negativeCompile = install.ok ? run("npm", ["exec", "tsc", "--", "--noEmit", "-p", "tsconfig.negative.json"], workspace) : install;
-const docsImportCheck = checkDocsNamedImports(engineExports, reactExports);
-
-const requiredEngineExports = [
-  "createAuraApp",
-  "defineAuraAssets",
-  "definePromptPlan",
-  "compilePromptPlan",
-  "promptPlanToScene",
-  "promptRecipes",
-  "model",
-  "scene",
-  "camera",
-  "lights",
-  "material",
-  "effects",
-  "timeline",
-  "interactions"
-];
-const requiredReactExports = ["AuraCanvas", "Scene", "Model", "Camera", "Lights", "Effect", "productViewerScene"];
-const checks: ReleaseCheck[] = [
-  {
-    id: "public-api-clean-install",
-    pass: install.ok,
-    detail: install.ok ? "packed @aura3d/engine and @aura3d/react installed in clean project" : install.output
-  },
-  {
-    id: "engine-required-exports",
-    pass: requiredEngineExports.every((name) => engineExports.includes(name)),
-    detail: missing(requiredEngineExports, engineExports)
-  },
-  {
-    id: "react-required-exports",
-    pass: requiredReactExports.every((name) => reactExports.includes(name)),
-    detail: missing(requiredReactExports, reactExports)
-  },
-  {
-    id: "public-valid-examples-compile",
-    pass: validCompile.ok,
-    detail: validCompile.ok ? "valid public API examples compile from packed packages" : validCompile.output
-  },
-  {
-    id: "public-invalid-examples-fail-as-expected",
-    pass: negativeCompile.ok,
-    detail: negativeCompile.ok ? "invalid model string, missing asset, archived imports, and archived package imports are rejected by TypeScript" : negativeCompile.output
-  },
-  {
-    id: "docs-named-imports-are-exported",
-    pass: docsImportCheck.missing.length === 0,
-    detail: docsImportCheck.missing.length === 0 ? `${docsImportCheck.checked} documented named imports resolve` : docsImportCheck.missing.join("; ")
-  },
-  {
-    id: "archived-runtime-not-exported",
-    pass: !engineExports.some((name) => archivedExportNames.includes(name)),
-    detail: "archived runtime names are absent from public engine exports"
+interface Check { id: string; status: "passed" | "failed" | "not-applicable"; command: string[]; exitCode: number | null; detail: string }
+function run(command: string, args: string[], cwd: string): { ok: boolean; exitCode: number; output: string } {
+  try {
+    return { ok: true, exitCode: 0, output: execFileSync(command, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 16 * 1024 * 1024 }).trim() };
+  } catch (error) {
+    const failure = error as { status?: number; message?: string; stdout?: Buffer; stderr?: Buffer };
+    return { ok: false, exitCode: failure.status ?? 1, output: `${failure.message ?? ""}\n${String(failure.stdout ?? "")}\n${String(failure.stderr ?? "")}`.trim().slice(-30_000) };
   }
-];
-
-writePublicApiMarkdown(checks, engineExports, reactExports, docsImportCheck.checked);
-writeReport("tests/reports/public-api-contract.json", "aura3d-public-api-contract", checks, {
-  workspace: "tests/reports/public-api-contract-workspace",
-  engineExports,
-  reactExports,
-  docsNamedImportsChecked: docsImportCheck.checked
-});
-
-function pack(dir: string, outDir: string): string {
-  const output = execFileSync("npm", ["pack", "--silent", "--pack-destination", outDir], {
-    cwd: resolve(dir),
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
-  }).trim();
-  const file = output.split(/\r?\n/).at(-1);
-  if (!file) throw new Error(`npm pack failed for ${dir}`);
-  return resolve(outDir, basename(file));
 }
-
-function writePackage(): void {
-  writeFileSync(resolve(workspace, "package.json"), `${JSON.stringify({
-    name: "aura3d-public-api-contract",
-    private: true,
-    type: "module",
-    dependencies: {
-      "@aura3d/engine": `file:${engineTarball}`,
-      "@aura3d/react": `file:${reactTarball}`,
-      react: "^19.0.0"
-    },
-    devDependencies: {
-      "@types/react": "^19.0.0",
-      typescript: "^5.8.3"
+function candidatePackages(plan: ExactReleasePlan): Map<string, PackedPackage> {
+  const packages = new Map<string, PackedPackage>();
+  for (const entry of plan.packages) {
+    if (packages.has(entry.name)) throw new Error(`Duplicate candidate package ${entry.name}`);
+    const bytes = readFileSync(resolve(entry.tarball));
+    if (sha256(bytes) !== entry.sha256 || sha512(bytes) !== entry.integrity) throw new Error(`Candidate digest mismatch for ${entry.name}`);
+    const pkg = readPackageArchive(bytes);
+    verifyPackedIdentity(pkg, entry.name, entry.version);
+    packages.set(entry.name, pkg);
+  }
+  return packages;
+}
+/** Explicitly enumerate each package's concrete exports, including wildcard
+ * expansions. Assets and browser-only conditions are reported separately. */
+export function contractConsumers(packages: Map<string, PackedPackage>): { specifier: string; declarations: boolean; nodeImport: boolean; nodeRequire: boolean; nodeTypes: boolean; reason?: string }[] {
+  const result: { specifier: string; declarations: boolean; nodeImport: boolean; nodeRequire: boolean; nodeTypes: boolean; reason?: string }[] = [];
+  for (const [name, pkg] of packages) for (const entry of expandExports(pkg)) {
+    const keys = Object.keys(entry.conditions);
+    const importable = keys.some((key) => key === "default" || key === "import" || key === "node" || key.startsWith("node/import") || key.startsWith("node/default"));
+    const requireable = keys.some((key) => key === "require" || key === "node/require");
+    const nodeTypes = keys.some((key) => key === "types" || key.startsWith("node/types") || key.startsWith("node/import/types") || key.startsWith("node/require/types"));
+    result.push({ nodeTypes, specifier: `${name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, declarations: !entry.asset, nodeImport: !entry.asset && importable, nodeRequire: !entry.asset && requireable, ...(!entry.asset && !importable && !requireable ? { reason: "no Node import or require condition" } : entry.asset ? { reason: "non-code export" } : {}) });
+  }
+  return result.sort((a, b) => a.specifier.localeCompare(b.specifier));
+}
+function peerProfiles(packages: Map<string, PackedPackage>): { name: string; dependencies: Record<string, string> }[] {
+  const peers = new Map<string, string>();
+  for (const pkg of packages.values()) for (const [name, range] of Object.entries(pkg.manifest.peerDependencies ?? {})) {
+    if (name.startsWith("@aura3d/")) continue;
+    if (pkg.manifest.peerDependenciesMeta?.[name]?.optional) continue;
+    const old = peers.get(name);
+    if (old && old !== range) throw new Error(`Conflicting peer ranges for ${name}: ${old}, ${range}`);
+    peers.set(name, range);
+  }
+  const react = peers.get("react");
+  peers.delete("react");
+  const base = Object.fromEntries(peers);
+  if (!react) return [{ name: "declared-peers", dependencies: base }];
+  const majors = [...new Set([...react.matchAll(/(?:\^|~|>=?)?\s*(\d+)\./g)].map((m) => Number(m[1])))];
+  if (!majors.length) throw new Error(`Cannot enumerate React peer majors from ${react}`);
+  return majors.map((major) => ({ name: `react-${major}`, dependencies: { ...base, react: `^${major}.0.0`, "react-dom": `^${major}.0.0`, "@types/react": `^${major}.0.0`, "@types/react-dom": `^${major}.0.0` } }));
+}
+export async function runPublicApiContract(plan: ExactReleasePlan, workspace: string): Promise<{ pass: boolean; checks: Check[]; consumers: ReturnType<typeof contractConsumers> }> {
+  const packages = candidatePackages(plan), consumers = contractConsumers(packages), profiles = peerProfiles(packages);
+  if (!consumers.length || !profiles.length) throw new Error("Candidate exports or peer profiles are empty");
+  rmSync(workspace, { recursive: true, force: true });
+  mkdirSync(workspace, { recursive: true });
+  const checks: Check[] = [];
+  for (const profile of profiles) {
+    const project = join(workspace, profile.name);
+    mkdirSync(project, { recursive: true });
+    const dependencies = { ...Object.fromEntries(plan.packages.map((pkg) => [pkg.name, `file:${resolve(pkg.tarball)}`])), ...profile.dependencies };
+    writeFileSync(join(project, "package.json"), `${JSON.stringify({ name: `aura3d-api-${profile.name}`, private: true, type: "module", dependencies, devDependencies: { typescript: "^5.8.3" } }, null, 2)}\n`);
+    const installCommand = ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund"];
+    const installed = run(installCommand[0]!, installCommand.slice(1), project);
+    checks.push({ id: `${profile.name}:install`, status: installed.ok ? "passed" : "failed", command: installCommand, exitCode: installed.exitCode, detail: installed.output });
+    if (!installed.ok) {
+      checks.push({ id: `${profile.name}:types:NodeNext`, status: "failed", command: [], exitCode: null, detail: "Required check not run because installation failed" });
+      checks.push({ id: `${profile.name}:types:Bundler`, status: "failed", command: [], exitCode: null, detail: "Required check not run because installation failed" });
+      for (const consumer of consumers) for (const condition of ["import", "require"] as const) {
+        const required = condition === "import" ? consumer.nodeImport : consumer.nodeRequire;
+        checks.push({ id: `${profile.name}:${condition}:${consumer.specifier}`, status: required ? "failed" : "not-applicable", command: [], exitCode: null, detail: required ? "Required check not run because installation failed" : consumer.reason ?? `${condition} condition not declared` });
+      }
+      continue;
     }
-  }, null, 2)}\n`);
-}
-
-function writeTsconfig(): void {
-  const base = {
-    compilerOptions: {
-      target: "ES2022",
-      module: "NodeNext",
-      moduleResolution: "NodeNext",
-      strict: true,
-      skipLibCheck: true,
-      noEmit: true
+    // Confirm the installed lock points at every exact tarball, rather than an
+    // identically versioned registry package.
+    const lock = JSON.parse(readFileSync(join(project, "package-lock.json"), "utf8")) as { packages?: Record<string, { version?: string; integrity?: string }> };
+    for (const pkg of plan.packages) {
+      const entry = lock.packages?.[`node_modules/${pkg.name}`];
+      const ok = entry?.version === pkg.version && entry.integrity === pkg.integrity;
+      checks.push({ id: `${profile.name}:identity:${pkg.name}`, status: ok ? "passed" : "failed", command: ["inspect", "package-lock.json"], exitCode: ok ? 0 : 1, detail: ok ? `${pkg.version} ${pkg.sha256}` : "Installed version or integrity differs from candidate archive" });
     }
-  };
-  writeFileSync(resolve(workspace, "tsconfig.valid.json"), `${JSON.stringify({ ...base, include: ["valid.ts"] }, null, 2)}\n`);
-  writeFileSync(resolve(workspace, "tsconfig.negative.json"), `${JSON.stringify({ ...base, include: ["negative.ts"] }, null, 2)}\n`);
-}
-
-function writeSources(): void {
-  writeFileSync(resolve(workspace, "valid.ts"), `import { camera, compilePromptPlan, createAuraApp, defineAuraAssets, definePromptPlan, effects, interactions, lights, material, model, promptPlanToScene, scene, timeline } from "@aura3d/engine";
+    writeFileSync(join(project, "public-valid.ts"), `import { camera, compilePromptPlan, createAuraApp, defineAuraAssets, definePromptPlan, effects, interactions, lights, material, model, promptPlanToScene, promptRecipes, scene, timeline } from "@aura3d/engine";
 import { AuraCanvas, Camera, Effect, Lights, Model, Scene, productViewerScene } from "@aura3d/react";
-
-const assets = defineAuraAssets({
-  product: { type: "model", format: "glb", url: "/product.glb", bounds: [1, 1, 1], hash: "sha256-product" },
-  color: { type: "texture", format: "png", url: "/color.png", hash: "sha256-color" }
-} as const);
-
-scene()
-  .add(model(assets.product, { material: material.pbr({ texture: assets.color }) }))
-  .add(lights.studio())
-  .add(effects.rain())
-  .add(interactions.orbit())
-  .camera(camera.dolly({ from: [0, 1, 4], to: [0, 1, 2], seconds: 4 }))
-  .timeline(timeline.loop({ seconds: 4 }));
-
-const plan = definePromptPlan({
-  sceneType: "product-viewer",
-  subject: { asset: assets.product },
-  camera: { preset: "product-orbit" },
-  lighting: { preset: "studio-softbox" },
-  effects: ["bloom"],
-  acceptanceCriteria: ["product visible", "studio lighting visible"]
-} as const);
-
-promptPlanToScene(plan).toJSON();
-compilePromptPlan(plan).report.visualSystems;
-compilePromptPlan(plan).report.repairHints;
-
-console.log(typeof createAuraApp, typeof AuraCanvas, typeof Scene, typeof Model, typeof Camera, typeof Lights, typeof Effect, typeof productViewerScene);
+void [camera, compilePromptPlan, createAuraApp, defineAuraAssets, definePromptPlan, effects, interactions, lights, material, model, promptPlanToScene, promptRecipes, scene, timeline, AuraCanvas, Camera, Effect, Lights, Model, Scene, productViewerScene];
 `);
-  writeFileSync(resolve(workspace, "negative.ts"), `import { camera, defineAuraAssets, definePromptPlan, model } from "@aura3d/engine";
-
-const assets = defineAuraAssets({
-  product: { type: "model", format: "glb", url: "/product.glb", bounds: [1, 1, 1], hash: "sha256-product" }
-} as const);
-
-// @ts-expect-error The public API requires typed AuraAssetRef values, not raw strings.
+    writeFileSync(join(project, "public-negative.ts"), `import { camera, defineAuraAssets, model } from "@aura3d/engine";
+const assets = defineAuraAssets({ product: { type: "model", format: "glb", url: "/product.glb", bounds: [1, 1, 1], hash: "sha256-product" } } as const);
+// @ts-expect-error Model inputs require typed asset references.
 model("product");
-
-// @ts-expect-error Missing generated asset ids must fail at compile time.
+// @ts-expect-error Missing asset keys are not legal.
 model(assets.missingAsset);
-
-// @ts-expect-error Invalid option shapes must fail at compile time.
+// @ts-expect-error Camera distance is numeric.
 camera.orbit({ distance: "near" });
-
-// @ts-expect-error Prompt plans require typed AuraAssetRef values, not raw strings.
-definePromptPlan({ sceneType: "product-viewer", subject: { asset: "product" }, acceptanceCriteria: [] });
-
-// @ts-expect-error Archived runtime names must not be exported.
-import { ${archivedSceneTypeName}, ${archivedProviderName} } from "@aura3d/engine";
-
-// @ts-expect-error Archived runtime package must not resolve.
-import { ${archivedCreatePromptSceneName} } from "${archivedPromptPackage}";
-
-console.log(${archivedSceneTypeName}, ${archivedProviderName}, ${archivedCreatePromptSceneName});
 `);
-}
-
-function readModuleExports(specifier: string): string[] {
-  const output = execFileSync("node", ["-e", `import(${JSON.stringify(specifier)}).then((m)=>console.log(JSON.stringify(Object.keys(m).sort())))`], {
-    cwd: workspace,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"]
-  });
-  return JSON.parse(output) as string[];
-}
-
-function checkDocsNamedImports(engineExports: readonly string[], reactExports: readonly string[]): { readonly checked: number; readonly missing: readonly string[] } {
-  const files = [
-    "README.md",
-    "docs/api/public-api.md",
-    "docs/api/app-api.md",
-    "docs/agents/build-playbook.md",
-    "docs/templates/create-aura3d-templates.md"
-  ].filter((path) => existsSync(path));
-  const missingImports: string[] = [];
-  let checked = 0;
-  for (const file of files) {
-    const text = readFileSync(file, "utf8");
-    const pattern = /import\s+\{([^}]+)\}\s+from\s+["'](@aura3d\/engine|@aura3d\/react)["']/g;
-    for (const match of text.matchAll(pattern)) {
-      const names = match[1].split(",").map((name) => name.trim().replace(/\s+as\s+.+$/, "")).filter(Boolean);
-      const exported = match[2] === "@aura3d/react" ? reactExports : engineExports;
-      for (const name of names) {
-        checked += 1;
-        if (!exported.includes(name)) missingImports.push(`${file}: ${name} from ${match[2]}`);
+    for (const mode of ["NodeNext", "Bundler"]) {
+      const typed = consumers.filter((consumer) => consumer.declarations && (mode === "Bundler" || consumer.nodeImport || consumer.nodeRequire || consumer.nodeTypes));
+      const source = typed.map((consumer, index) => `import type * as api${index} from ${JSON.stringify(consumer.specifier)};\ntype Consumer${index} = typeof api${index};`).join("\n");
+      writeFileSync(join(project, `consumer.${mode}.ts`), `${source}\n`);
+      for (const excluded of consumers.filter((consumer) => consumer.declarations && !typed.includes(consumer))) checks.push({ id: `${profile.name}:types:${mode}:${excluded.specifier}`, status: "not-applicable", command: [], exitCode: null, detail: "Package declares no Node type, import or require condition" });
+      const config = { compilerOptions: { target: "ES2022", module: mode === "NodeNext" ? "NodeNext" : "ESNext", moduleResolution: mode, ...(mode === "Bundler" ? { customConditions: ["browser"] } : {}), strict: true, noEmit: true, skipLibCheck: false }, include: [`consumer.${mode}.ts`, "public-valid.ts", "public-negative.ts"] };
+      writeFileSync(join(project, `tsconfig.${mode}.json`), `${JSON.stringify(config, null, 2)}\n`);
+      const command = ["npm", "exec", "tsc", "--", "-p", `tsconfig.${mode}.json`];
+      const result = run(command[0]!, command.slice(1), project);
+      checks.push({ id: `${profile.name}:types:${mode}`, status: result.ok ? "passed" : "failed", command, exitCode: result.exitCode, detail: result.output || `${typed.length} declaration entrypoints compile` });
+    }
+    for (const consumer of consumers) {
+      for (const condition of ["import", "require"] as const) {
+        const required = condition === "import" ? consumer.nodeImport : consumer.nodeRequire;
+        if (!required) { checks.push({ id: `${profile.name}:${condition}:${consumer.specifier}`, status: "not-applicable", command: [], exitCode: null, detail: consumer.reason ?? `${condition} condition not declared` }); continue; }
+        const script = condition === "import" ? `await import(${JSON.stringify(consumer.specifier)});` : `require(${JSON.stringify(consumer.specifier)});`;
+        const command = ["node", "--input-type", condition === "import" ? "module" : "commonjs", "-e", script];
+        const result = run(command[0]!, command.slice(1), project);
+        checks.push({ id: `${profile.name}:${condition}:${consumer.specifier}`, status: result.ok ? "passed" : "failed", command, exitCode: result.exitCode, detail: result.output });
       }
     }
   }
-  return { checked, missing: missingImports };
+  return { pass: checks.length > 0 && profiles.every((profile) => checks.some((check) => check.id === `${profile.name}:install` && check.status === "passed")) && checks.every((check) => check.status !== "failed"), checks, consumers };
 }
-
-function run(command: string, args: readonly string[], cwd: string): CommandResult {
-  try {
-    const output = execFileSync(command, [...args], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-    return { ok: true, output: sanitize(output.trim()) };
-  } catch (error) {
-    const output = error instanceof Error && "stdout" in error
-      ? `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}`
-      : String(error);
-    return { ok: false, output: sanitize(output.trim().split("\n").slice(-32).join("\n")) };
-  }
-}
-
-function missing(required: readonly string[], actual: readonly string[]): string {
-  const missingNames = required.filter((name) => !actual.includes(name));
-  return missingNames.length === 0 ? "all required exports present" : `missing: ${missingNames.join(", ")}`;
-}
-
-function sanitize(value: string): string {
-  return value.replaceAll(process.cwd(), "<repo>").replaceAll(workspace, "<public-api-workspace>");
-}
-
-function writePublicApiMarkdown(checks: readonly ReleaseCheck[], engineExports: readonly string[], reactExports: readonly string[], docsChecked: number): void {
-  const lines = [
-    "# Public API Contract",
-    "",
-    "Generated reproducibly by `pnpm check:public-api` from packed current source.",
-    "",
-    "## Summary",
-    "",
-    `- Checks passing: ${checks.filter((entry) => entry.pass).length}/${checks.length}`,
-    `- Engine exports: ${engineExports.length}`,
-    `- React exports: ${reactExports.length}`,
-    `- Docs named imports checked: ${docsChecked}`,
-    "",
-    "## Checks",
-    "",
-    "| Check | Result | Detail |",
-    "|---|---:|---|",
-    ...checks.map((check) => `| \`${check.id}\` | ${check.pass ? "pass" : "fail"} | ${escapeTable(check.detail)} |`),
-    "",
-    "## Required Engine Exports",
-    "",
-    requiredEngineExports.map((name) => `- \`${name}\``).join("\n"),
-    "",
-    "## Required React Exports",
-    "",
-    requiredReactExports.map((name) => `- \`${name}\``).join("\n"),
-    ""
-  ];
-  mkdirSync("docs/project", { recursive: true });
-  writeFileSync("docs/api/contracts/public-api-contract.md", lines.join("\n"));
-}
-
-function escapeTable(value: string): string {
-  return value.replaceAll("|", "\\|").replaceAll("\n", " ");
+function option(name: string): string | undefined { const i = process.argv.indexOf(name); return i < 0 ? undefined : process.argv[i + 1]; }
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const planPath = option("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN;
+  if (!planPath) throw new Error("Usage: public-api-contract --candidate-plan <verified-plan> [--out <report>]");
+  const plan = loadValidatedReleasePlan(process.cwd(), planPath);
+  if (!plan) throw new Error("Validated candidate plan required");
+  const reportPath = resolve(option("--out") ?? "tests/reports/public-api-contract.json");
+  const workspace = resolve("tests/reports/public-api-contract-workspace");
+  const result = await runPublicApiContract(plan, workspace);
+  const report = { schema: "aura3d.public-api-contract/2", generatedAt: new Date().toISOString(), candidate: plan.reference, source: plan.source, workspace, packages: plan.packages.map(({ name, version, tarball, sha256: digest }) => ({ name, version, tarball, sha256: digest })), ...result };
+  mkdirSync(dirname(reportPath), { recursive: true });
+  writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  if (!result.pass) process.exitCode = 1;
+  console.log(`packed public API contract: ${result.pass ? "PASS" : "FAIL"}; ${result.consumers.length} entrypoints`);
 }

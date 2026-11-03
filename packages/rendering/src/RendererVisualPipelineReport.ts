@@ -35,8 +35,13 @@ import type {
   RenderDevice,
   RenderDeviceCapability,
   RenderDeviceDiagnostics,
+  RenderOutputColorSpace,
+  RenderOutputColorSpaceNegotiation,
   RenderTargetDescriptor
 } from "./RenderDevice";
+
+/** The existing linear offscreen policy plus the available canvas encodings. */
+export type RendererPresentationColorSpace = A3DColorSpace | RenderOutputColorSpace;
 
 export type RendererVisualPipelineStatus = "supported" | "partial" | "unsupported";
 export type RendererVisualTargetFormat = Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f">;
@@ -109,7 +114,7 @@ export interface RendererScreenshotConsistencyInput {
   readonly expectedWidth: number;
   readonly expectedHeight: number;
   readonly expectedByteLength?: number;
-  readonly colorSpace?: A3DColorSpace;
+  readonly colorSpace?: RendererPresentationColorSpace;
 }
 
 export interface RendererScreenshotConsistencyReport {
@@ -120,7 +125,7 @@ export interface RendererScreenshotConsistencyReport {
   readonly expectedWidth: number;
   readonly expectedHeight: number;
   readonly expectedByteLength: number;
-  readonly colorSpace: A3DColorSpace;
+  readonly colorSpace: RendererPresentationColorSpace;
   readonly pixelFormat: "rgba8";
   readonly readbackMatchesBackingStore: boolean;
   readonly colorProfileEmbedded: false;
@@ -203,9 +208,12 @@ export interface RendererVisualPipelineReportOptions {
   readonly height: number;
   readonly postprocess?: RendererVisualPostprocessDescriptor | boolean;
   readonly colorManagement?: A3DColorManagementPolicy;
+  readonly observedFloatIntermediateRendering?: boolean;
+  /** An already-applied negotiation; reporting itself never reconfigures a canvas. */
+  readonly outputNegotiation?: RenderOutputColorSpaceNegotiation;
   readonly canvas?: RendererCanvasBackingInput;
   readonly screenshot?: Omit<RendererScreenshotConsistencyInput, "expectedWidth" | "expectedHeight" | "colorSpace"> & {
-    readonly colorSpace?: A3DColorSpace;
+    readonly colorSpace?: RendererPresentationColorSpace;
   };
   readonly capture?: RendererCaptureQualityInput;
   readonly frameCadence?: RendererFrameCadenceInput;
@@ -214,9 +222,19 @@ export interface RendererVisualPipelineReportOptions {
 
 export interface RendererVisualColorReport {
   readonly lightingColorSpace: "linear";
-  readonly outputColorSpace: A3DColorSpace;
-  readonly supportedOutputColorSpaces: readonly A3DColorSpace[];
-  readonly unsupportedOutputColorSpaces: readonly ["display-p3", "rec2020"];
+  /** Active when verified, otherwise the legacy configured policy. */
+  readonly outputColorSpace: RendererPresentationColorSpace;
+  readonly requestedOutputColorSpace: RenderOutputColorSpace;
+  readonly activeOutputColorSpace: RenderOutputColorSpace | null;
+  readonly negotiationVerified: boolean;
+  readonly supportedOutputColorSpaces: readonly RendererPresentationColorSpace[];
+  readonly unsupportedOutputColorSpaces: readonly ("display-p3" | "rec2020")[];
+  readonly wideGamutOutput: boolean;
+  readonly floatIntermediateSupported: boolean;
+  readonly floatIntermediateRendering: boolean | null;
+  /** No browser context setting is evidence of a physical HDR display. */
+  readonly physicalHdrDisplay: "unverified";
+  readonly fallbackReason?: string;
   readonly texturePolicy: Readonly<Record<A3DTextureSemantic, A3DColorSpace>>;
   readonly ldrFallbackAllowed: boolean;
   readonly fallbackBehavior: string;
@@ -250,7 +268,7 @@ export interface RendererVisualPostprocessReport {
   readonly rendererOwnedPassNames: readonly RendererVisualPostprocessPassName[];
   readonly clarityWarnings: readonly string[];
   readonly forwardOutputColorSpace: PostProcessColorSpace;
-  readonly presentationColorSpace: A3DColorSpace;
+  readonly presentationColorSpace: RendererPresentationColorSpace;
   readonly renderTargetWidth: number;
   readonly renderTargetHeight: number;
   readonly plan?: RendererPostprocessPlanDiagnostics;
@@ -284,17 +302,14 @@ export interface RendererVisualPipelineReport {
   readonly capture?: RendererCaptureQualityReport;
   readonly frameCadence?: RendererFrameCadenceReport;
   readonly diagnostics?: RenderDeviceDiagnostics;
-  readonly unsupportedCapabilities: Readonly<Record<RendererUnsupportedVisualCapability, string>>;
+  readonly unsupportedCapabilities: Readonly<Partial<Record<RendererUnsupportedVisualCapability, string>>>;
   readonly warnings: readonly string[];
 }
 
-const SUPPORTED_OUTPUT_COLOR_SPACES: readonly A3DColorSpace[] = ["linear", "srgb"];
-const UNSUPPORTED_OUTPUT_COLOR_SPACES = ["display-p3", "rec2020"] as const;
 const HDR_FORMATS: readonly RendererVisualTargetFormat[] = ["rgba16f", "rgba32f"];
 
-const UNSUPPORTED_CAPABILITIES: Readonly<Record<RendererUnsupportedVisualCapability, string>> = {
-  "display-p3-output": "Renderer output color space is limited to linear or sRGB; display-p3 output is not exposed.",
-  "rec2020-output": "Renderer output color space is limited to linear or sRGB; Rec.2020 output is not exposed.",
+const UNSUPPORTED_CAPABILITIES: Readonly<Partial<Record<RendererUnsupportedVisualCapability, string>>> = {
+  "rec2020-output": "Rec.2020 canvas output is not exposed.",
   "hdr-display-swapchain": "HDR render targets can be tone-mapped, but HDR display swapchain output is not exposed.",
   "automatic-png-color-profile": "Screenshot readback is RGBA8 bytes; PNG/ICC profile tagging is owned by the caller."
 };
@@ -308,6 +323,28 @@ export function createRendererVisualPipelineReport(
   const capabilities = [...(options.device.info.capabilities ?? [])];
   const capabilitySet = new Set<RenderDeviceCapability>(capabilities);
   const colorManagement = options.colorManagement ?? createExternalParityColorManagementPolicy();
+  const outputNegotiation = typeof options.device.getOutputColorSpaceNegotiation === "function"
+    ? options.device.getOutputColorSpaceNegotiation()
+    : options.outputNegotiation;
+  if (outputNegotiation && (
+    (outputNegotiation.requested !== "srgb" && outputNegotiation.requested !== "display-p3")
+    || (outputNegotiation.active !== "srgb" && outputNegotiation.active !== "display-p3")
+    || !Array.isArray(outputNegotiation.supported)
+    || !outputNegotiation.supported.every((space) => space === "srgb" || space === "display-p3")
+    || !outputNegotiation.supported.includes(outputNegotiation.active)
+    || (outputNegotiation.fallbackReason !== undefined
+      && (typeof outputNegotiation.fallbackReason !== "string" || !outputNegotiation.fallbackReason.trim()))
+    || (outputNegotiation.requested !== outputNegotiation.active
+      && (outputNegotiation.requested !== "display-p3" || outputNegotiation.active !== "srgb"
+        || typeof outputNegotiation.fallbackReason !== "string" || !outputNegotiation.fallbackReason.trim()))
+  )) throw new RangeError("Invalid output color-space negotiation.");
+  const presentationColorSpace: RendererPresentationColorSpace = outputNegotiation?.active ?? colorManagement.outputColorSpace;
+  const supportsP3 = outputNegotiation?.supported.includes("display-p3") === true
+    && !(outputNegotiation.requested === "display-p3" && outputNegotiation.active !== "display-p3");
+  const supportedOutputColorSpaces: readonly RendererPresentationColorSpace[] = supportsP3
+    ? ["linear", "srgb", "display-p3"] : ["linear", "srgb"];
+  const unsupportedOutputColorSpaces: readonly ("display-p3" | "rec2020")[] = supportsP3
+    ? ["rec2020"] : ["display-p3", "rec2020"];
   const postprocess = normalizePostprocess(options.postprocess);
   const postprocessEnabled = postprocess !== undefined;
   const passNames = postprocess ? collectPostprocessPassNames(postprocess) : [];
@@ -323,6 +360,15 @@ export function createRendererVisualPipelineReport(
       })
     : undefined;
   const hdrTarget = createHdrTargetReport(capabilitySet, targetFormat, postprocess?.toneMapping);
+  if (options.observedFloatIntermediateRendering !== undefined
+      && typeof options.observedFloatIntermediateRendering !== "boolean") {
+    throw new RangeError("Invalid float intermediate rendering observation.");
+  }
+  if (options.observedFloatIntermediateRendering === true && (!hdrTarget.requested || !hdrTarget.supportedByBackend)) {
+    throw new RangeError("Float intermediate rendering conflicts with the target configuration.");
+  }
+  const floatIntermediateRendering = options.observedFloatIntermediateRendering
+    ?? (hdrTarget.requested && hdrTarget.supportedByBackend ? null : false);
   const toneMapping = createToneMappingReport(postprocess, targetFormat);
   const postprocessReport = createPostprocessReport({
     enabled: postprocessEnabled,
@@ -331,7 +377,7 @@ export function createRendererVisualPipelineReport(
     plan: postprocessPlan,
     width: options.width,
     height: options.height,
-    presentationColorSpace: colorManagement.outputColorSpace,
+    presentationColorSpace,
     hdrTargetStatus: hdrTarget.status,
     toneMappingStatus: toneMapping.status
   });
@@ -341,12 +387,13 @@ export function createRendererVisualPipelineReport(
         ...options.screenshot,
         expectedWidth: options.width,
         expectedHeight: options.height,
-        colorSpace: options.screenshot.colorSpace ?? colorManagement.outputColorSpace
+        colorSpace: options.screenshot.colorSpace ?? presentationColorSpace
       })
     : undefined;
   const capture = options.capture ? evaluateRendererCaptureQuality(options.capture) : undefined;
   const frameCadence = options.frameCadence ? evaluateRendererFrameCadence(options.frameCadence) : undefined;
   const warnings = [
+    ...(outputNegotiation?.fallbackReason ? [outputNegotiation.fallbackReason] : []),
     ...hdrTarget.warnings,
     ...toneMapping.warnings,
     ...postprocessReport.warnings,
@@ -364,7 +411,8 @@ export function createRendererVisualPipelineReport(
       canvas?.status,
       screenshot?.status,
       capture?.status,
-      frameCadence?.status
+      frameCadence?.status,
+      outputNegotiation?.fallbackReason ? "partial" : undefined
     ]),
     backend: options.device.kind,
     renderer: options.device.info.renderer,
@@ -373,9 +421,17 @@ export function createRendererVisualPipelineReport(
     capabilities,
     color: {
       lightingColorSpace: colorManagement.lightingColorSpace,
-      outputColorSpace: colorManagement.outputColorSpace,
-      supportedOutputColorSpaces: SUPPORTED_OUTPUT_COLOR_SPACES,
-      unsupportedOutputColorSpaces: UNSUPPORTED_OUTPUT_COLOR_SPACES,
+      outputColorSpace: presentationColorSpace,
+      requestedOutputColorSpace: outputNegotiation?.requested ?? "srgb",
+      activeOutputColorSpace: outputNegotiation?.active ?? null,
+      negotiationVerified: outputNegotiation !== undefined,
+      supportedOutputColorSpaces,
+      unsupportedOutputColorSpaces,
+      wideGamutOutput: outputNegotiation?.active === "display-p3",
+      floatIntermediateSupported: capabilitySet.has("hdr-render-targets"),
+      floatIntermediateRendering,
+      physicalHdrDisplay: "unverified",
+      ...(outputNegotiation?.fallbackReason ? { fallbackReason: outputNegotiation.fallbackReason } : {}),
       texturePolicy: colorManagement.texturePolicy,
       ldrFallbackAllowed: colorManagement.allowLdrFallback,
       fallbackBehavior: colorManagement.fallbackBehavior
@@ -388,7 +444,10 @@ export function createRendererVisualPipelineReport(
     ...(capture ? { capture } : {}),
     ...(frameCadence ? { frameCadence } : {}),
     ...(options.diagnostics ? { diagnostics: options.diagnostics } : {}),
-    unsupportedCapabilities: UNSUPPORTED_CAPABILITIES,
+    unsupportedCapabilities: {
+      ...UNSUPPORTED_CAPABILITIES,
+      ...(supportsP3 ? {} : { "display-p3-output": outputNegotiation?.fallbackReason ?? "Display-P3 output has not been verified on this context." })
+    },
     warnings
   };
 }
@@ -691,7 +750,7 @@ function createPostprocessReport(options: {
   readonly plan?: RendererPostprocessPlanDiagnostics;
   readonly width: number;
   readonly height: number;
-  readonly presentationColorSpace: A3DColorSpace;
+  readonly presentationColorSpace: RendererPresentationColorSpace;
   readonly hdrTargetStatus: RendererVisualPipelineStatus;
   readonly toneMappingStatus: RendererVisualPipelineStatus;
 }): RendererVisualPostprocessReport {

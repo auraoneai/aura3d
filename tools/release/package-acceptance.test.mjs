@@ -4,24 +4,40 @@ import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, writeSync } from 'node:fs';
+import { chmodSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, writeSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { delimiter, join, dirname } from 'node:path';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { producePackageAcceptance, recordCommand, recordBuild, BUILD_COMMAND, validatePassingReport, COMMANDS, REPORTS } from './package-acceptance.mjs';
 const hash=(bytes,algo='sha256')=>createHash(algo).update(bytes).digest(algo==='sha512'?'base64':'hex');
+const HISTORICAL_BUDGET_SHA256='0c09f31f1df38ed2bcb4d3694375d83c6f13822d0165454917f36b807bdf0b6e';
+const HISTORICAL_BUDGET_BLOB='73fd553418f17c853ccdc1c5a8856668bcef9fb2';
+function historicalBudgetFixture() {
+ const base=`./reference-data/historical-budget-${BUDGET_BASELINE}`;
+ const metadata=JSON.parse(readFileSync(new URL(`${base}.json`,import.meta.url),'utf8'));
+ const bytes=readFileSync(new URL(`${base}.ts.txt`,import.meta.url));
+ assert.equal(metadata.schema,'aura3d.historical-budget-fixture/1');
+ assert.equal(metadata.commit,BUDGET_BASELINE);assert.equal(metadata.path,BUDGET_SOURCE);
+ assert.equal(metadata.candidateIdentity,false);assert.equal(metadata.acceptanceEvidence,false);
+ assert.equal(metadata.bytes,bytes.length);assert.equal(metadata.sha256,HISTORICAL_BUDGET_SHA256);
+ assert.equal(hash(bytes),HISTORICAL_BUDGET_SHA256);
+ assert.equal(metadata.gitBlobSha1,HISTORICAL_BUDGET_BLOB);
+ assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),HISTORICAL_BUDGET_BLOB);
+ return bytes;
+}
 function fixture() {
+ const historicalBudget=historicalBudgetFixture();
  const root=mkdtempSync(join(tmpdir(),'package-acceptance-'));
- const write=(path,data)=>{mkdirSync(dirname(join(root,path)),{recursive:true});writeFileSync(join(root,path),typeof data==='string'?data:JSON.stringify(data));};
+ const write=(path,data)=>{mkdirSync(dirname(join(root,path)),{recursive:true});writeFileSync(join(root,path),typeof data==='string'||Buffer.isBuffer(data)?data:JSON.stringify(data));};
  write('pnpm-lock.yaml','lock'); const repository=fileURLToPath(new URL('../../',import.meta.url));
- const gitdir=spawnSync('git',['rev-parse','--absolute-git-dir'],{cwd:repository,encoding:'utf8'});assert.equal(gitdir.status,0,gitdir.stderr);
- write('.git',`gitdir: ${gitdir.stdout.trim()}\n`);
- // This fixture models the historical 3.0.1 release. Keep its synthetic
- // budget report bound to that release's baseline, independently of later
- // repository budget changes; production continuity validation still runs.
- const budgetSource=spawnSync('git',['show',`${BUDGET_BASELINE}:${BUDGET_SOURCE}`],{cwd:repository,encoding:'utf8'});
- assert.equal(budgetSource.status,0,budgetSource.stderr);
- write(BUDGET_SOURCE,budgetSource.stdout);
+ // This is a subprocess test double for one historical read, not a Git repo,
+ // candidate identity, or acceptance receipt. All other git operations fail.
+ // The exact retained Aura source is verified above using both object and byte
+ // digests; production budget parsing and continuity validation remain real.
+ write('.historical-budget-fixture',historicalBudget);
+ write('bin/git',`#!/bin/sh\nif [ "$#" -eq 2 ] && [ "$1" = show ] && [ "$2" = "${BUDGET_BASELINE}:${BUDGET_SOURCE}" ]; then\n  exec /bin/cat .historical-budget-fixture\nfi\nexit 64\n`);
+ chmodSync(join(root,'bin/git'),0o755);
+ write(BUDGET_SOURCE,historicalBudget);
 
  const packages=Array.from({length:29},(_,i)=>{const name=['@aura3d/engine','@aura3d/physics','@aura3d/physics-rapier'][i]??`@aura3d/p${i}`,manifest=i?`packages/p${i}/package.json`:'package.json',tarball=`packed/p${i}.tgz`,bytes=`tarball${i}`;write(manifest,{name,version:'3.0.1',...(i===0?{devDependencies:{'@aura3d/engine-runtime':'workspace:*'}}:{})});write(tarball,bytes);return{name,version:'3.0.1',tarball,sha256:hash(bytes),integrity:`sha512-${hash(bytes,'sha512')}`};});
  const names=Array.from({length:19},(_,i)=>i===0?'character-controller':`template${i}`);names.forEach(name=>write(`packages/create-aura3d/templates/${name}/package.json`,{private:true}));
@@ -48,17 +64,34 @@ function fixture() {
  reports.provenance.packageCount=29;
  reports.provenance.packages=packages.map(p=>{const statement={subject:{name:p.name,version:p.version,digest:{sha256:p.sha256}},installedIntegrity:p.integrity,releasePlan:planRef,source:plan.source,materials:[{uri:p.tarball,digest:{sha256:p.sha256}}]};return{name:p.name,version:p.version,sha256:p.sha256,ok:true,statement,signature:{algorithm:'ed25519',publicKeyPem:keys.publicKey.export({type:'spki',format:'pem'}).toString(),signatureBase64:sign(null,Buffer.from(JSON.stringify(statement)),keys.privateKey).toString('base64')}}});
  reports.frozenLock={schema:'muse301-frozen-lock/v1',pass:true,source:plan.source,releasePlan:planRef};
- const targets=readBudgetTargets(readFileSync(join(root,'tools/bundle-size/index.ts'),'utf8')).map(t=>({...t,label:t.id,jsBytes:100,gzipBytes:50,sizeLimitPassed:true}));
- reports.bundleBudgets={pass:true,checks,targets};write('BUNDLE_SIZES.md',renderBundleSizeMarkdown(targets));write('tools/bundle-size/markdown.mjs',readFileSync(join(repository,'tools/bundle-size/markdown.mjs'),'utf8'));
+ const targets=readBudgetTargets(readFileSync(join(root,'tools/bundle-size/index.ts'),'utf8')).map(t=>{
+  const bundlePath=`tests/reports/bundle-size/${t.id}.js`,gzipPath=`${bundlePath}.gz`,bundle='x'.repeat(100),gzip='y'.repeat(50);write(bundlePath,bundle);write(gzipPath,gzip);
+  return {...t,label:t.id,jsBytes:100,gzipBytes:50,sizeLimitPassed:true,bundlePath,gzipPath,bundleSha256:hash(bundle),gzipSha256:hash(gzip)};
+ });
+ const candidate={status:'bound',releasePlan:planRef,version:plan.version,source:plan.source};
+ reports.bundleBudgets={pass:true,checks,targets,candidate};write('BUNDLE_SIZES.md',renderBundleSizeMarkdown(targets,candidate));write('tools/bundle-size/markdown.mjs',readFileSync(join(repository,'tools/bundle-size/markdown.mjs'),'utf8'));
+ const sourceReportPath='tests/reports/native-consumers/fixture/source.json';
+ const sourceReport={schema:'aura3d.native-consumers/1',phase:'source',runId:'fixture',pass:true,source:{revision:plan.source.commit,stagedSourceSha256:plan.source.fingerprint,lockfileSha256:plan.source.lockfileSha256},candidate:{...planRef,version:plan.version,packages:plan.packages}};
+ write(sourceReportPath,sourceReport);
+ reports.leanIsolation={schema:'aura3d.installed-tree-shaking/2',pass:true,checks,candidate,sourceReport:{path:sourceReportPath,sha256:hash(readFileSync(join(root,sourceReportPath))),runId:'fixture'}};
  const commands={};
  for(const kind of Object.keys(COMMANDS)) {
   write(REPORTS[kind],{...(reports[kind]??{pass:true,checks}),releasePlan:{path:planPath,sha256:hash(readFileSync(join(root,planPath)))}});const log=`commands/${kind}.log`;write(log,'executed');commands[kind]=`commands/${kind}.json`;
-  write(commands[kind],{schema:'muse301-package-command/v1',kind,command:COMMANDS[kind],plan:{path:planPath,sha256:hash(readFileSync(join(root,planPath)))},startedAt:'2026-01-01T00:00:01Z',endedAt:'2026-01-01T00:00:02Z',exitCode:0,log:{path:log,sha256:hash('executed')},report:{path:REPORTS[kind],sha256:hash(readFileSync(join(root,REPORTS[kind])))}});
+  const command=kind==='leanIsolation'?[...COMMANDS[kind],'--source-report',sourceReportPath]:COMMANDS[kind];
+  write(commands[kind],{schema:'muse301-package-command/v1',kind,command,plan:{path:planPath,sha256:hash(readFileSync(join(root,planPath)))},startedAt:'2026-01-01T00:00:01Z',endedAt:'2026-01-01T00:00:02Z',exitCode:0,log:{path:log,sha256:hash('executed')},report:{path:REPORTS[kind],sha256:hash(readFileSync(join(root,REPORTS[kind])))}});
  }
  commands.build='commands/build.json';write('commands/build.log','actual build output');write(commands.build,{schema:'muse301-package-build/v1',command:BUILD_COMMAND,source:plan.source,environment:{platform:'linux',hostname:'fixture-worker',provider:'aws',workerId:'i-0123456789abcdef0'},startedAt:'2025-12-31T23:58:00Z',endedAt:'2025-12-31T23:59:00Z',commandExitCode:0,exitCode:0,validationErrors:[],log:{path:'commands/build.log',sha256:hash('actual build output')}});
- return{root,config:{planPath,commands},write};
+ return{root,config:{planPath,commands},write,testBin:join(root,'bin')};
 }
-const run=(fn)=>{const f=fixture();try{fn(f)}finally{rmSync(f.root,{recursive:true,force:true})}};
+const run=(fn)=>{const f=fixture(),previousPath=process.env.PATH;process.env.PATH=[f.testBin,previousPath??''].join(delimiter);try{fn(f)}finally{if(previousPath===undefined)delete process.env.PATH;else process.env.PATH=previousPath;rmSync(f.root,{recursive:true,force:true})}};
+test('historical budget double permits only the verified historical source read',()=>run(f=>{
+ assert.equal(existsSync(join(f.root,'.git')),false);
+ const show=spawnSync('git',['show',`${BUDGET_BASELINE}:${BUDGET_SOURCE}`],{cwd:f.root});
+ assert.equal(show.status,0);assert.equal(hash(show.stdout),HISTORICAL_BUDGET_SHA256);
+ for(const args of [['rev-parse','HEAD'],['show',`other:${BUDGET_SOURCE}`],['show',`${BUDGET_BASELINE}:other`]]) {
+  assert.notEqual(spawnSync('git',args,{cwd:f.root}).status,0);
+ }
+}));
 test('derives acceptance and binds all actual input artifacts',()=>run(({root,config})=>{const r=producePackageAcceptance(root,config);assert.equal(r.acceptance.packages.length,29);assert.equal(r.acceptance.scaffolds.length,19);assert.equal(r.acceptance.lifecycleAssertions,149);assert.equal(r.acceptance.checks.leanIsolation,true);assert.ok(r.artifacts.length>80)}));
 test('fails closed without required command',()=>run(({root,config})=>{delete config.commands.imports;assert.throws(()=>producePackageAcceptance(root,config),/receipt missing/)}));
 test('rejects failed command even with green report',()=>run(({root,config,write})=>{const path=config.commands.source,c=JSON.parse(readFileSync(join(root,path)));c.exitCode=1;write(path,c);assert.throws(()=>producePackageAcceptance(root,config),/failed or wrong command/)}));
@@ -71,6 +104,9 @@ test('requires the original 149 assertions on each lifecycle leg',()=>run(f=>{re
 test('requires all 19 distinct scaffolds',()=>run(f=>{replaceReport(f,'installed',r=>r.scaffoldSmoke[1].template=r.scaffoldSmoke[0].template);assert.throws(()=>producePackageAcceptance(f.root,f.config),/below baseline/)}));
 test('rejects a smoke report for a separately repacked archive',()=>run(f=>{replaceReport(f,'smoke',r=>r.tarballSha256='0'.repeat(64));assert.throws(()=>producePackageAcceptance(f.root,f.config),/smoke did not test/)}));
 test('rejects underlying clean install from another plan',()=>run(f=>{replaceReport(f,'optionalPeers',r=>r.releasePlan.sha256='0'.repeat(64));assert.throws(()=>producePackageAcceptance(f.root,f.config),/underlying report lacks/)}));
+test('rejects a measured bundle from another candidate despite a valid receipt',()=>run(f=>{replaceReport(f,'bundleBudgets',r=>r.candidate.releasePlan.sha256='0'.repeat(64));assert.throws(()=>producePackageAcceptance(f.root,f.config),/candidate binding/)}));
+test('rejects a retained bundle modified after measurement',()=>run(f=>{f.write('tests/reports/bundle-size/core-agent-api.js','tampered');assert.throws(()=>producePackageAcceptance(f.root,f.config),/bundle report artifact mismatch/)}));
+test('rejects a tree report pointing to a changed source consumer report',()=>run(f=>{f.write('tests/reports/native-consumers/fixture/source.json','changed');assert.throws(()=>producePackageAcceptance(f.root,f.config),/source report changed/)}));
 
 test('rejects claimed verification when provenance signature is invalid',()=>run(f=>{replaceReport(f,'provenance',r=>r.signature.signatureBase64=Buffer.alloc(64).toString('base64'));assert.throws(()=>producePackageAcceptance(f.root,f.config),/signature invalid/)}));
 

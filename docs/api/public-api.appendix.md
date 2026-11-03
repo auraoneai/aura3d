@@ -4,18 +4,18 @@
 
 **Status legend.** This appendix is hand-maintained for the parity workstream
 and appended verbatim by `tools/api-docs` — edit this file, then regenerate
-with `pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --write`.
-Verdicts: **LIVE** — a real value export on the named surface today, verified
-against the source barrels and exercised by a `tests/unit/parity/*` fixture —
-and **NOT YET** — the remaining gaps, listed in "Not yet" below.
+with `pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json --write`.
+Historical verdicts: **LIVE** denotes a value export recorded on the named
+source surface and exercised by a `tests/unit/parity/*` fixture at the time;
+**NOT YET** denotes selected limitations, not an exhaustive gap inventory.
 Lane-by-lane verdicts live in `docs/workflows/threejs-parity-gaps.md`; the
 fixture suite lives in `tests/unit/parity/` (each file header names the parity
 IDs it covers).
 
-Unless a row names another surface, exports resolve from the published
-`@aura3d/engine` "." barrel (`packages/engine/src/public/index.ts`). Math,
-audio, and animation parity ship from their own packages: `@aura3d/math`,
-`@aura3d/audio`, `@aura3d/animation`.
+Unless a row names another surface, names refer to the `@aura3d/engine` source
+barrel (`packages/engine/src/public/index.ts`). Math, audio and animation use
+their own source packages: `@aura3d/math`, `@aura3d/audio`, `@aura3d/animation`.
+Packed-consumer checks must establish the corresponding installed entrypoints.
 
 ### Math breadth — SM-01/03/04, AD-14 (lane L3 — LIVE)
 
@@ -59,6 +59,16 @@ Shape extends Path                            // holes, getPointsHoles
 instances through `options.params.path` / `.points` / `.shape`.
 Fixture: `tests/unit/parity/curves.test.ts`.
 
+For a straight, unbeveled extrusion, `primitives.extrude` also accepts
+`params.extrusionMode: "linear"`. It supports a closed outline with holes,
+signed nonzero depth, and 1–1,024 steps. Bevel settings and path sweeps are
+rejected in this mode; `bevelEnabled: false` is allowed. The generated cap
+and wall material groups are 0 and 1. Shape validation, Float32 precision,
+and a one-million-output-vertex limit may reject inputs before allocation.
+Omitting the mode retains the existing extrusion route and defaults. The
+lower-level `extrudeParityMesh` exposes the same mode. These paths have
+source-level tests; rendered and device acceptance remain separate.
+
 ### Textures — ST-01/02/03/05/06/07, AD-03 (lane L4 — LIVE)
 
 ```ts
@@ -85,6 +95,16 @@ type are exported from ".". GLTF decoder plumbing (draco/ktx2/meshopt) is
 covered by ST-05.
 Fixtures: `tests/unit/parity/texture.test.ts`, `exr.test.ts`,
 `gltf-decoders.test.ts`.
+
+For sampled, CPU-backed 2D RGBA8 textures, the native WebGPU source path can
+generate missing mip levels when mip generation is enabled. Supplied levels
+and explicit overrides take precedence. sRGB color is filtered in linear
+light, alpha is averaged independently, and odd dimensions use area coverage.
+Generation is bounded to 16,777,216 source pixels and 32 MiB of generated
+pixels; the complete native allocation counts against the device budget.
+Implicitly generated levels do not extend the texture's explicit
+`mipLevelCount` compute-range API. Other texture kinds have their own limits.
+These behaviors have source and mock-device tests; GPU pixels are unverified.
 
 ### Lines, points, sprites, helpers — SG-06/07/08, AD-08, SC-03 (lane L6 — LIVE)
 
@@ -136,11 +156,16 @@ batched.mesh({ maxInstances, maxVertices?, maxIndices?, material?,
   //         computeBoundingSphere
 ```
 
-The `batched.mesh` API and dense store are live today — `"auto"` packs a
-multi-draw where the generated path supports it and falls back to
-per-geometry instancing otherwise. Promotion of the SG-02 row to ● stays
-probe-gated on P-2 (see "Not yet").
-Fixture: `tests/unit/parity/instancing.test.ts`.
+The `batched.mesh` API and dense store are available. On a compatible WebGL2
+renderer with multi-draw and completion fences, `"auto"` and `"multi-draw"`
+can combine supported scalar PBR members. This path currently requires simple
+ambient lighting, no texture maps, shadows, fog or clipping, and compatible
+positive orthogonal transforms. Other cases use individual logical draws or
+per-geometry instancing. For supported multi-geometry forward draws, `"loop"`
+can share packed vertex and index storage while retaining one draw per visible
+member. Depth and shadow draws use source geometry.
+Source checks: `tests/unit/parity/instancing.test.ts` and
+`tests/unit/agent-api/native-batched-loop.test.ts`.
 
 ### Surfaces, cameras, scene backgrounds — SC-01, AD-15, SG-10 (lane L7 — LIVE)
 
@@ -331,17 +356,23 @@ createAudioAnalyser(node, fftSize?) / new AudioAnalyser(...)
 Coverage: `tests/unit/audio/*` (no dedicated parity fixture — L9 merged the
 attenuation fix, listener wiring, and analyser together).
 
-### Not yet — the only remaining gaps
+### Selected historical limitations
+
+This is a non-exhaustive historical list. The current
+[native capability roadmap](../prds/aura3d-native-capability-roadmap.md) tracks
+additional requirements and their evidence; a declaration alone does not prove
+an installed, rendered or device-tested path.
 
 ```ts
 // batched.mesh promotion to ● — probe-gated on P-2 (native multi-draw/
 //   GPU-residency probe). The API and per-geometry-instancing path are
 //   LIVE today; the ● verdict waits on the probe.
-// cameras.array / cameras.stereo (P2) — need viewport/scissor support in
-//   the frame graph.
+// cameras.array / cameras.stereo exist as root builders. Per-view effects,
+//   culling and device combinations need their own candidate-bound evidence.
 // SH-01 TSL subset — three's WebGPU node-material language; P2 /
 //   probe-gated.
-// SH-04 compute — behind the A3D_QR_WEBGPU backend.
+// SH-04 compute — requires a compatible WebGPU device to be explicitly bound;
+//   a WebGL2 device cannot run a compute dispatch.
 // material.custom `patch` (SH-09) — the field is typed on
 //   AuraCustomMaterialSpec and the compiler include-bakes named chunks,
 //   but promotion to public parity is intentionally deferred; treat patch
@@ -361,14 +392,42 @@ Dev gates: the parity lanes sit behind `A3D_PARITY_SHADING`,
 `A3D_PARITY_LINES`, `A3D_PARITY_RUNTIME` (or the `parity.<area>` short form —
 `?a3d-qr=parity.lines`). Fixture: `tests/unit/parity/l0-flags.test.ts`.
 
-### Excluded by contract — never lands
+### Native capability boundaries
+
+The earlier compatibility policy excluded the following addon-style loader and
+exporter contracts; their presence in this list is not evidence of an installed
+Aura3D entrypoint:
 
 ```ts
 // AD-04 loaders: FBXLoader MMDLoader PLYLoader STLLoader USDZLoader
 //   ThreeMFLoader VOXLoader ColladaLoader TDSLoader AMFLoader IFCLoader
 // AD-05 exporters: GLTFExporter OBJExporter PLYExporter STLExporter
 //   USDZExporter DRACOExporter ColladaExporter
-// AD-09 effects/*, AD-10 modifiers (bake offline),
-// AD-11 GPUComputationRenderer (waits on SH-04 WebGPU compute),
-// AD-13 webxr/inspector/transpiler/libs/offscreen
 ```
+
+The [native capability roadmap](../prds/aura3d-native-capability-roadmap.md)
+plans optional native contracts. Each format, output and optional package needs
+an installed entrypoint, behavior tests and documented losses or unsupported
+combinations before it can be described as supported.
+
+The root source exports `effects`, `compute` and `xr`; `compute` requires a
+bound WebGPU device. The `@aura3d/rendering/webgpu` package subpath declares a
+low-level `WebGPUDevice`, and the renderer accepts an `OffscreenCanvas`. Those
+source surfaces do not establish root WebGPU rendering, worker-owned app
+rendering or physical-device XR support. Retained XR evidence covers injected
+sessions. Browser, device and packed-consumer results apply only to their exact
+candidate and environment; see [claims and boundaries](../agents/claims-and-boundaries.md).
+
+Measured Type-C IES profiles can be supplied to point and spot lights with
+`photometricProfile` and requested with `renderer.photometricProfiles: true`.
+This opt-in defaults to false. The currently implemented path is limited to
+generated, lit, non-clustered forward draws within the direct-light and atlas
+limits, on a device with the required texture and submission-lifetime support.
+Unsupported combinations report a degradation and use scalar lighting in
+non-strict mode; strict mode rejects the unsupported draw. Projected spot
+images use the default-off `renderer.projectedSpotImages` opt-in for one
+hash-verified PVR texture on supported non-clustered WebGL2 generated forward
+triangle draws. Other combinations report a diagnostic or fail in strict mode.
+The public app path has source and mock-device
+coverage; browser, physical-device and installed-package behavior have not yet
+been verified.

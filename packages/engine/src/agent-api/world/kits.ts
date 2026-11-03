@@ -8,8 +8,8 @@
  * (the version-4 size bug does not apply to this path). Piece lights emit `light`
  * nodes (room/street practicals) alongside the scatter nodes.
  */
-import type { AuraAssetRef, AuraLightNode, AuraLightType, AuraSceneNode, AuraVec3 } from "../index.js";
-import { defineAuraAssets } from "../index.js";
+import type { AuraAssetRef, AuraLightNode, AuraLightType, AuraSceneNode, AuraVec3 } from "../nodes/types.js";
+import { defineAuraAssets } from "../nodes/assets.js";
 import type { AuraWorldShape } from "./terrain.js";
 import { scatterChecksum, scatterRng } from "./scatter.js";
 import type { AuraScatterNode } from "./scatter.js";

@@ -8,7 +8,15 @@ import type { QrFlags, AuraQualityTier } from "@aura3d/rendering/contracts";
 import { StubAppEffects } from "../../contracts/effects";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
 import type { EffectNodeLike } from "../../production-runtime/effects/EffectNodeLowering";
-import { attachVfxBridge } from "./bridge";
+import { ownedRootRenderSourceOverlay } from "../RootRuntimeSupport";
+import { attachAppVfxBridge, bindOwnedVfxBridge, detachOwnedVfxBridge, ownedVfxBridgeOverlay, type Prd07MountAuthority } from "./bridge";
+
+// Capture the engine implementations before an app can shadow public methods
+// on the diagnostics-visible ProductionEffectSystem instance.
+const bindSystemRuntimeOwner = ProductionEffectSystem.prototype.bindRuntimeOwner;
+const issueSystemMountAuthority = ProductionEffectSystem.prototype.mountAuthority;
+const currentSystemBridge = ProductionEffectSystem.prototype.currentBridge;
+const assignSystemBridge = ProductionEffectSystem.prototype.setOwnedBridge;
 
 interface EffectEntry {
   readonly id: string;
@@ -240,6 +248,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
    * Envelope: peak · exp(-5·t/ms), cleared to {} at t >= ms (same shape as the
    * game juice overlay driver).
    */
+  let effectsDisposed = false;
+  let effectsGeneration = 0;
   let flashAge = -1;
   let offFlashFrame: (() => void) | null = null;
   const writeFlash = (): void => {
@@ -254,6 +264,7 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     app.setOutputOverlay?.({ flash: [...SUPER_FLASH.color, amount] });
   };
   const startOverlayFlash = (): void => {
+    if (effectsDisposed) return;
     flashAge = 0;
     writeFlash();
     if (!offFlashFrame && typeof app.onFrame === "function") {
@@ -274,24 +285,101 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
   const pendingLayers: PendingLayer[] = [];
   let layerClock = 0;
   let offLayerFrame: (() => void) | null = null;
-  const scheduleLayer = (delay: number, fire: () => void): PendingLayer => {
-    const entry: PendingLayer = { due: layerClock + delay, fire, cancelled: false, done: false };
-    pendingLayers.push(entry);
-    if (!offLayerFrame && typeof app.onFrame === "function") {
-      offLayerFrame = app.onFrame((frame: { dt: number }) => {
-        layerClock += Math.max(0, frame.dt);
-        for (let i = 0; i < pendingLayers.length; ) {
-          const pending = pendingLayers[i];
-          if (pending.cancelled || pending.due <= layerClock) {
-            pendingLayers.splice(i, 1);
-            pending.done = true;
-            if (!pending.cancelled) pending.fire();
-          } else i += 1;
+  let layerFrameGeneration = 0;
+  let subscribingLayerFrame = false;
+
+  const detachLayerFrame = (): void => {
+    // Invalidate a callback before invoking the user-supplied unsubscribe: an
+    // in-flight frame or a synchronous unsubscribe hook may be reentrant.
+    layerFrameGeneration += 1;
+    const off = offLayerFrame;
+    offLayerFrame = null;
+    off?.();
+  };
+
+  const cancelLayer = (entry: PendingLayer): void => {
+    if (entry.done) return;
+    entry.cancelled = true;
+    entry.done = true;
+    const index = pendingLayers.indexOf(entry);
+    if (index >= 0) pendingLayers.splice(index, 1);
+    if (pendingLayers.length === 0) detachLayerFrame();
+  };
+
+  const cancelPendingLayers = (): void => {
+    for (const entry of pendingLayers.splice(0)) {
+      entry.cancelled = true;
+      entry.done = true;
+    }
+    detachLayerFrame();
+  };
+
+  const ensureLayerFrame = (): void => {
+    if (effectsDisposed || offLayerFrame || subscribingLayerFrame || pendingLayers.length === 0 || typeof app.onFrame !== "function") return;
+    const generation = ++layerFrameGeneration;
+    subscribingLayerFrame = true;
+    let off: (() => void) | undefined;
+    try {
+      off = app.onFrame((frame: { dt: number }) => {
+        if (effectsDisposed || generation !== layerFrameGeneration) return;
+        layerClock += Number.isFinite(frame.dt) ? Math.max(0, frame.dt) : 0;
+        try {
+          for (let i = 0; i < pendingLayers.length; ) {
+            const pending = pendingLayers[i]!;
+            if (pending.cancelled || pending.due <= layerClock) {
+              pendingLayers.splice(i, 1);
+              pending.done = true;
+              if (!pending.cancelled) pending.fire();
+            } else i += 1;
+          }
+        } finally {
+          if (pendingLayers.length === 0) detachLayerFrame();
         }
       });
+    } finally {
+      subscribingLayerFrame = false;
+    }
+    if (typeof off !== "function") throw new TypeError("onFrame must return an unsubscribe function");
+    // onFrame can invoke a callback or dispose the owner before returning its
+    // unsubscribe function. Do not publish a stale registration afterward.
+    if (effectsDisposed || generation !== layerFrameGeneration || pendingLayers.length === 0) {
+      off();
+      if (!effectsDisposed && pendingLayers.length > 0) ensureLayerFrame();
+      return;
+    }
+    offLayerFrame = off;
+  };
+
+  const scheduleLayer = (delay: number, fire: () => void): PendingLayer => {
+    const entry: PendingLayer = { due: layerClock + delay, fire, cancelled: effectsDisposed, done: effectsDisposed };
+    if (effectsDisposed) return entry;
+    pendingLayers.push(entry);
+    try {
+      ensureLayerFrame();
+    } catch (error) {
+      // A failed registration must not leave an unreachable timer behind.
+      try { cancelLayer(entry); } catch { /* Preserve the registration error. */ }
+      throw error;
     }
     return entry;
   };
+
+  // The effects API can outlive an app-owned system reference. Disposing the
+  // system cancels delayed work and its frame subscriptions immediately.
+  system.onDispose(() => {
+    effectsDisposed = true;
+    effectsGeneration += 1;
+    try {
+      cancelPendingLayers();
+    } finally {
+      const hadFlash = flashAge >= 0;
+      flashAge = -1;
+      const off = offFlashFrame;
+      offFlashFrame = null;
+      off?.();
+      if (hadFlash) app.setOutputOverlay?.({});
+    }
+  });
 
   /** Create one pooled emitter instance; returns its id (also the system emitter id). */
   const spawnInstance = (recipe: EmitterRecipe, kind: string, position: AuraVec3, options: SpawnOptions): string => {
@@ -391,14 +479,18 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     const members: string[] = [];
     const timers: PendingLayer[] = [];
     let stopped = false;
+    let stopImmediately: boolean | undefined;
+    const generation = effectsGeneration;
     let firstColor: readonly number[] | undefined;
     const fireLayer = (layer: Readonly<Record<string, unknown>> & { readonly type: string }): void => {
-      if (stopped) return;
+      if (stopped || effectsDisposed || generation !== effectsGeneration) return;
       switch (layer.type) {
         case "emitter": {
           const recipe = recipeFromLayer(spec.name, layer);
           firstColor ??= toVec3(options.color, recipe.color);
-          members.push(spawnInstance(recipe, spec.name, position, options));
+          const id = spawnInstance(recipe, spec.name, position, options);
+          if (stopped || effectsDisposed || generation !== effectsGeneration) stopInstance(id, stopImmediately);
+          else members.push(id);
           break;
         }
         case "light": {
@@ -438,7 +530,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
               ...(layer.color !== undefined ? { color: layer.color as AuraColor } : {})
             }
           );
-          members.push(handle.id);
+          if (stopped || effectsDisposed || generation !== effectsGeneration) handle.stop();
+          else members.push(handle.id);
           break;
         }
         default:
@@ -450,6 +543,13 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     };
     // A spec without layers is its named built-in (or spark) as one emitter, as before GU47.
     const layers: AuraVfxEffectSpec["layers"] = spec.layers.length > 0 ? spec.layers : [{ type: "emitter" }];
+    // Validate before firing any layer so an infinite delay cannot leave a
+    // permanent frame subscription or a partially spawned effect.
+    for (const layer of layers) {
+      if (typeof layer.at === "number" && !Number.isFinite(layer.at)) {
+        throw new RangeError("Effect layer delay must be finite");
+      }
+    }
     for (const layer of layers) {
       const delay = typeof layer.at === "number" && layer.at > 0 ? layer.at : 0;
       if (delay > 0) timers.push(scheduleLayer(delay, () => fireLayer(layer)));
@@ -458,11 +558,12 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     return {
       id: groupId,
       get alive() {
-        return !stopped && (members.some((member) => system.instanceAlive(member) && (instances.get(member)?.alive ?? true)) || timers.some((timer) => !timer.cancelled && !timer.done));
+        return !stopped && !effectsDisposed && generation === effectsGeneration && (members.some((member) => system.instanceAlive(member) && (instances.get(member)?.alive ?? true)) || timers.some((timer) => !timer.cancelled && !timer.done));
       },
       stop: (o?: { immediate?: boolean }) => {
         stopped = true;
-        for (const timer of timers) timer.cancelled = true;
+        stopImmediately = o?.immediate;
+        for (const timer of timers) cancelLayer(timer);
         for (const member of members) {
           if (instances.has(member)) stopInstance(member, o?.immediate);
           else system.removeInstance(member);
@@ -577,6 +678,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       return system.liveCount();
     },
     clear() {
+      effectsGeneration += 1;
+      cancelPendingLayers();
       for (const entry of [...instances.values()]) {
         if (entry.emitterId) system.removeInstance(entry.emitterId);
       }
@@ -648,7 +751,33 @@ export function resetPrd07AppRegistry(): void {
 
 function releasePrd07App(value: object): void {
   const app = appForEffectsValue.get(value);
-  if (app) liveApps.delete(app);
+  appForEffectsValue.delete(value);
+  if (!app || !prd07SystemFor(app)?.ownsEffectsOwner(value)) return;
+  disposePrd07SystemFor(app);
+}
+
+/** One app-owned overlay per system, shared by the effects and atmosphere factories. */
+export function attachPrd07SystemBridge(app: AuraApp, system: ProductionEffectSystem): void {
+  const canvas = app.canvas;
+  if (!canvas) return;
+  const existing = currentSystemBridge.call(system);
+  if (ownedVfxBridgeOverlay(existing, system, canvas)) return;
+  detachOwnedVfxBridge(existing, system);
+  const bridge = attachAppVfxBridge(canvas, system, (owner) => {
+    const sealed = sealedSystems.get(system);
+    return sealed?.app === app && sealed.owner === owner;
+  });
+  if (!bridge.attached) return;
+  try {
+    const owner = runtimeOwners.get(app);
+    if (owner) bindOwnedVfxBridge(bridge, system, canvas, owner);
+    assignSystemBridge.call(system, bridge, canvas);
+  } catch (error) {
+    try { detachOwnedVfxBridge(bridge, system); } catch (cleanupError) {
+      throw new AggregateError([error, cleanupError], "VFX bridge binding and cleanup failed.");
+    }
+    throw error;
+  }
 }
 
 /** C-38 factory: returns the real API under A3D_QR_VFX, the PR 0a stub otherwise.
@@ -663,12 +792,13 @@ export function createEffectsExtension(app: AuraApp, ctx: AuraEffectsExtensionCo
     // hard-coded "high" (controls transient-light cap and particle budget).
     tier: (app as { quality?: { tier?: AuraQualityTier } }).quality?.tier
   }));
-  if (app.canvas) attachVfxBridge(app.canvas, system);
+  attachPrd07SystemBridge(app, system);
   const flagOn = ctx.flags.on("A3D_QR_VFX");
   flagOnByApp.set(app, flagOn);
   liveApps.add(app);
   const fx = flagOn ? createAppEffects(app, system) : new StubAppEffects(() => null);
   appForEffectsValue.set(fx, app);
+  system.setEffectsOwner(fx);
   adoptPendingGameEffects();
   return fx;
 }
@@ -680,18 +810,99 @@ export function prd07AppDisposed(value: object): void {
 
 /** Per-app system registry — also backs app.diagnostics() collection. */
 const systems = new WeakMap<AuraApp, ProductionEffectSystem>();
+// Reserve the opaque owner even if the system is installed later. An owner
+// cannot be transferred to another app, including after disposal.
+const runtimeOwners = new WeakMap<AuraApp, object>();
+const ownerApps = new WeakMap<object, AuraApp>();
+const sealedSystems = new WeakMap<ProductionEffectSystem, { readonly app: AuraApp; readonly owner: object }>();
 
 export function registerPrd07System(app: AuraApp, create: () => ProductionEffectSystem): ProductionEffectSystem {
   let system = systems.get(app);
   if (!system) {
     system = create();
     systems.set(app, system);
+    const owner = runtimeOwners.get(app);
+    if (owner) {
+      try {
+        bindSystemRuntimeOwner.call(system, app, owner);
+        sealedSystems.set(system, { app, owner });
+      }
+      catch (error) {
+        if (systems.get(app) === system) systems.delete(app);
+        try { system.dispose(); } catch (cleanupError) {
+          throw new AggregateError([error, cleanupError], "VFX system binding and cleanup failed.");
+        }
+        throw error;
+      }
+    }
   }
   return system;
 }
 
 export function prd07SystemFor(app: AuraApp): ProductionEffectSystem | null {
   return systems.get(app) ?? null;
+}
+
+/** Called once by the owning app after its extensions are installed. */
+export function bindPrd07AppRuntimeOwner(app: AuraApp, owner: object): void {
+  if ((typeof owner !== "object" && typeof owner !== "function") || owner === null ||
+      owner === app.canvas ||
+      (runtimeOwners.has(app) && runtimeOwners.get(app) !== owner) ||
+      (ownerApps.has(owner) && ownerApps.get(owner) !== app)) {
+    throw new Error("PRD07_APP_OWNER_MISMATCH");
+  }
+  const previouslyBound = runtimeOwners.has(app);
+  runtimeOwners.set(app, owner);
+  ownerApps.set(owner, app);
+  const system = systems.get(app);
+  if (!system) return;
+  try {
+    bindSystemRuntimeOwner.call(system, app, owner);
+    sealedSystems.set(system, { app, owner });
+  } catch (error) {
+    if (!previouslyBound) {
+      try { detachOwnedVfxBridge(currentSystemBridge.call(system), system); } catch (cleanupError) {
+        throw new AggregateError([error, cleanupError], "VFX owner sealing and cleanup failed.");
+      }
+    }
+    throw error;
+  }
+  const bridge = currentSystemBridge.call(system);
+  if (!bridge) return;
+  try {
+    const canvas = app.canvas;
+    if (!canvas) throw new Error("VFX_OVERLAY_OWNER_MISMATCH");
+    bindOwnedVfxBridge(bridge, system, canvas, owner);
+  } catch (error) {
+    // Never leave an authentic but wrongly keyed bridge issuing authority.
+    try { detachOwnedVfxBridge(bridge, system); } catch (cleanupError) {
+      throw new AggregateError([error, cleanupError], "VFX overlay rebinding and cleanup failed.");
+    }
+    throw error;
+  }
+}
+
+/** Private app-mount handoff; an absent, detached, or foreign bridge cannot bind. */
+export function prd07MountAuthorityFor(app: AuraApp, canvas: HTMLCanvasElement, owner: object): Prd07MountAuthority | null {
+  const system = systems.get(app);
+  if (!system || runtimeOwners.get(app) !== owner || ownerApps.get(owner) !== app) return null;
+  const authority = issueSystemMountAuthority.call(system, app, canvas, owner);
+  return authority && ownedRootRenderSourceOverlay(canvas, owner) === authority.overlay ? authority : null;
+}
+
+/** Revoke only this app's bridge and system; repeated cleanup is harmless. */
+export function disposePrd07SystemFor(app: AuraApp): void {
+  liveApps.delete(app);
+  flagOnByApp.delete(app);
+  const system = systems.get(app);
+  systems.delete(app);
+  if (!system) return;
+  sealedSystems.delete(system);
+  const failures: unknown[] = [];
+  // Revoke the source before system disposal can invoke app callbacks.
+  try { detachOwnedVfxBridge(currentSystemBridge.call(system), system); } catch (error) { failures.push(error); }
+  try { system.dispose(); } catch (error) { failures.push(error); }
+  if (failures.length) throw new AggregateError(failures, "PRD07 app system cleanup failed.");
 }
 
 function toVec3(c: AuraColor | undefined, fallback: readonly [number, number, number]): [number, number, number] {

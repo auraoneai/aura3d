@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { createGameSoundEngine } from "../../../packages/audio/src/game-sound/GameSoundEngine";
 import { FakeContext, FakeNode, FakeSource } from "./fake-context";
 
-const asset = (url: string) => ({ url, hash: "x", license: "CC0", provenance: "sample" as const });
+const predecoded = { duration: 0.02, length: 960, sampleRate: 48_000, numberOfChannels: 1 } as AudioBuffer;
+const asset = (url: string) => ({ url, hash: "x", license: "CC0", provenance: "sample" as const, buffer: predecoded });
 
 const options = (ctx: FakeContext) => ({
   context: ctx,
@@ -45,6 +46,8 @@ describe("createGameSoundEngine (PRD-09 §7.5/1733)", () => {
     const h = engine.play("hit", { position: [1, 0, 0] });
     expect(h).not.toBeNull();
     expect(ctx.ofKind("source").length).toBe(1);
+    expect((ctx.ofKind("source")[0] as FakeSource).buffer).toBe(predecoded);
+    expect((ctx.ofKind("source")[0] as FakeSource).started).toHaveLength(1);
     h!.stop();
     expect((ctx.ofKind("source")[0] as FakeSource).stopped).toBe(1);
     expect(() => h!.setPosition([2, 0, 0])).not.toThrow();
@@ -115,7 +118,7 @@ describe("createGameSoundEngine (PRD-09 §7.5/1733)", () => {
         context: ctx,
         probeBase: "/probes/",
         cues: {
-          hit: { bus: "sfx", asset: asset("/packs/game-sfx-core/sports.billiard-clack.00.{format}") }
+          hit: { bus: "sfx", asset: { url: "/packs/game-sfx-core/sports.billiard-clack.00.{format}", hash: "x", license: "CC0", provenance: "sample" } }
         },
         fetchProbe: async (url) => {
           probes.push(url);

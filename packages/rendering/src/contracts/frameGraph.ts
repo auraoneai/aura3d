@@ -12,6 +12,7 @@ import type { AuraQualityTierSettings } from "./quality";
 import type { QrFlags, PrdId, QrFlagName, RegistryEntry } from "./core";
 import type { RenderDevice } from "../RenderDevice";
 import type { Texture } from "../Texture";
+import type { DepthConvention } from "../DepthConvention";
 
 export type AuraFramePhase =
   | "collect"            // mutate/replace the item list before any GPU work (LOD, batching, interpolation, culling)
@@ -50,6 +51,10 @@ export const FRAME_RESOURCES: {
 export interface FrameCamera extends CameraLike {
   readonly viewMatrix: Float32Array;
   readonly projectionMatrix: Float32Array;
+  /** Inverse of the exact projection used for this view. */
+  readonly projectionMatrixInverse?: Float32Array;
+  /** Active depth encoding, including any explicitly negotiated fallback. */
+  readonly depth?: DepthConvention;
   readonly viewProjectionMatrix: Float32Array;
   readonly previousViewProjectionMatrix: Float32Array | null;
   readonly near: number;
@@ -59,6 +64,7 @@ export interface FrameCamera extends CameraLike {
 }
 
 export interface TransparentQueueItem {
+  readonly renderOrder?: number;          // primary order, lower first (default 0)
   readonly sortDepth: number;             // view-space depth, larger = farther
   readonly order?: number;                // tie-break, lower first
   draw(ctx: FrameContributorContext): void;
@@ -66,17 +72,35 @@ export interface TransparentQueueItem {
 
 export interface SceneDepthSource {         // C-07-IN-2
   readonly texture: Texture | null;
-  readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+  /** Per-pixel coverage, when provided: clear is 0, a depth-writing fragment is 1. */
+  readonly coverage?: Texture | null;
+  readonly linearize: {
+    readonly near: number;
+    readonly far: number;
+    readonly orthographic: boolean;
+    readonly depth?: DepthConvention;
+    readonly projectionMatrixInverse?: Float32Array;
+  };
   readonly available: boolean;
 }
 
 export interface FrameContributorContext {
+  /** Renderer owner of a custom post callback, when invoked from a scoped frame. */
+  readonly postScopeId?: object;
+  /** Renderer view identity, stable across all phases of the same view. */
+  readonly viewId?: string | number;
+  /** Whether this frame is configured for renderer-owned temporal antialiasing. */
+  readonly temporalAntialiasing?: boolean;
   readonly device: RenderDevice;
   readonly width: number;
   readonly height: number;
   readonly frameIndex: number;
   readonly timeSeconds: number;
   readonly camera: FrameCamera | null;
+  /** Frame-owned matrix updated to the raster projection, including temporal jitter. */
+  readonly rasterViewProjectionMatrix?: Float32Array;
+  /** Whether the renderer has verified the raster covers the complete target. */
+  readonly rasterViewportIsFull?: boolean;
   readonly source: RenderSource;
   readonly items: readonly RenderItem[];
   readonly tier: AuraQualityTierSettings;
@@ -116,4 +140,19 @@ export function registerFrameContributor(contributor: FrameContributor): () => v
 
 export function frameContributors(flags: QrFlags): readonly FrameContributor[] {
   return frameContributorRegistry.active(flags);
+}
+
+/** Presence without reading contributor metadata or invoking provider accessors. */
+export function hasRegisteredFrameContributors(): boolean {
+  return frameContributorRegistry.all().length > 0;
+}
+
+/** Whether a registered contributor may be active, without reading its metadata. */
+export function hasPotentiallyActiveFrameContributors(flags: QrFlags): boolean {
+  return frameContributorRegistry.hasPotentiallyActive(flags);
+}
+
+/** Provider identities that may activate, without reading provider metadata. */
+export function potentiallyActiveFrameContributors(flags: QrFlags): readonly FrameContributor[] {
+  return frameContributorRegistry.potentiallyActiveEntries(flags);
 }

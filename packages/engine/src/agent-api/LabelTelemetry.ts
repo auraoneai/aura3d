@@ -16,13 +16,10 @@ import type { ProjectedLabel } from "./WorldLabelRenderer.js";
  * 3. Lit/occluded 3D text (G1 SDF) — in-world quads. Proven by
  *    `textPixelBacked`, owned by `packages/rendering/src/SdfText.ts`.
  *
- * ## CSS2D/CSS3D
- *
- * Explicit 2.1 decision (see `CSS2D_OUT_OF_SCOPE`): NO `CSS2DRenderer` /
- * `CSS3DRenderer` parity. Verified: zero `CSS2D`/`CSS3D` references exist in
- * `packages/`. Game annotation needs are covered by buckets 2 and 3; the
- * three-compat migration lab documents the manual CSS2D/3D mapping for
- * importers. Revisit only with a named customer workload.
+ * Optional spatial DOM labels are a separate, opt-in output: their screen- or
+ * perspective-projected DOM elements retain accessible semantics. They are
+ * not lit geometry or proof of 3D text, and they do not enter these counts.
+ * See `SPATIAL_DOM_LABEL_CAPABILITY` for its bounded occlusion and input rules.
  *
  * Pure: no DOM. Takes scene nodes plus the projected set (from
  * `AuraDiagnostics.labels`) and returns counts. The engine bridge embeds the
@@ -201,11 +198,20 @@ export function summarizeTextBuckets(input: {
   };
 }
 
+/** Capabilities and limitations of the opt-in spatial DOM output. */
+export const SPATIAL_DOM_LABEL_CAPABILITY = {
+  optIn: true,
+  modes: ["screen", "perspective"] as const,
+  accessibility: "Authored DOM semantics are retained; hidden labels are removed from the accessibility tree.",
+  occlusion: "No depth-buffer occlusion is implied; an optional caller-supplied world-anchor test may hide labels.",
+  pointerRouting: "The layer passes pointer events through by default; interactive labels receive their own events and do not forward them to the canvas.",
+  clipping: "Visibility tests the label anchor against the view frustum; the overlay clips its DOM contents to the viewport.",
+  evidence: "DOM labels are separate from lit, depth-tested scene text."
+} as const;
+
 /**
- * The explicit 2.1 decision: NO `CSS2DRenderer`/`CSS3DRenderer` parity.
- * Game annotation needs are covered by world-anchored labels + G1 SDF text;
- * the three-compat migration lab documents the manual CSS2D/3D mapping for
- * importers. Revisit only with a named customer workload.
+ * @deprecated Historical 2.1 decision retained for existing consumers. It is
+ * not the current capability contract; use `SPATIAL_DOM_LABEL_CAPABILITY`.
  */
 export const CSS2D_OUT_OF_SCOPE = {
   decision: "no-css2d-css3d-parity",

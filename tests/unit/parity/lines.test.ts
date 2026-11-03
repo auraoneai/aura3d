@@ -84,8 +84,11 @@ describe("lines.* factories", () => {
     expect(() => lines.line({ points: pts, dashed: true, gapSize: 0.5 }).toJSON()).not.toThrow();
   });
 
-  it("lines.fat rejects worldUnits + dashed (no a_lineDistance on baked quads)", () => {
-    expect(() => lines.fat({ points: pts, width: 4, worldUnits: true, dashed: true, gapSize: 1 })).toThrow(/worldUnits/);
+  it("lines.fat supports dashed world-unit strokes", () => {
+    const world = lines.fat({ points: pts, width: 4, worldUnits: true, dashed: true, gapSize: 1 }).toJSON() as AuraLineNode;
+    expect(world.worldUnits).toBe(true);
+    expect(world.dashed).toBe(true);
+    expect(world.width).toBe(4);
     const node = lines.fat({ points: pts, width: 6, dashed: true, gapSize: 1, dashSize: 2, dashOffset: 0.5 }).toJSON() as AuraLineNode;
     expect(node.line).toBe("fat");
     expect(node.width).toBe(6);

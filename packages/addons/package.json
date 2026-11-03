@@ -1,0 +1,117 @@
+{
+  "name": "@aura3d/addons",
+  "version": "4.7.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./renderers/SpatialDOMRenderer": {
+      "types": "./dist/renderers/SpatialDOMRenderer.d.ts",
+      "browser": "./dist/renderers/SpatialDOMRenderer.js",
+      "import": "./dist/renderers/SpatialDOMRenderer.js",
+      "default": "./dist/renderers/SpatialDOMRenderer.js"
+    },
+    "./renderers/VectorRenderer": {
+      "types": "./dist/renderers/VectorRenderer.d.ts",
+      "browser": "./dist/renderers/VectorRenderer.js",
+      "import": "./dist/renderers/VectorRenderer.js",
+      "default": "./dist/renderers/VectorRenderer.js"
+    },
+    "./effects/StereoOutputs": {
+      "types": "./dist/effects/StereoOutputs.d.ts",
+      "browser": "./dist/effects/StereoOutputs.js",
+      "import": "./dist/effects/StereoOutputs.js",
+      "default": "./dist/effects/StereoOutputs.js"
+    },
+    "./effects/AsciiOutput": {
+      "types": "./dist/effects/AsciiOutput.d.ts",
+      "browser": "./dist/effects/AsciiOutput.js",
+      "import": "./dist/effects/AsciiOutput.js",
+      "default": "./dist/effects/AsciiOutput.js"
+    },
+    "./effects/OutlineOutput": {
+      "types": "./dist/effects/OutlineOutput.d.ts",
+      "browser": "./dist/effects/OutlineOutput.js",
+      "import": "./dist/effects/OutlineOutput.js",
+      "default": "./dist/effects/OutlineOutput.js"
+    },
+    "./objects/MarchingCubes": {
+      "types": "./dist/objects/MarchingCubes.d.ts",
+      "browser": "./dist/objects/MarchingCubes.js",
+      "import": "./dist/objects/MarchingCubes.js",
+      "default": "./dist/objects/MarchingCubes.js"
+    },
+    "./objects/SpecializedObjects": {
+      "types": "./dist/objects/SpecializedObjects.d.ts",
+      "browser": "./dist/objects/SpecializedObjects.js",
+      "import": "./dist/objects/SpecializedObjects.js",
+      "default": "./dist/objects/SpecializedObjects.js"
+    },
+    "./generators/EnvironmentGenerators": {
+      "types": "./dist/generators/EnvironmentGenerators.d.ts",
+      "browser": "./dist/generators/EnvironmentGenerators.js",
+      "import": "./dist/generators/EnvironmentGenerators.js",
+      "default": "./dist/generators/EnvironmentGenerators.js"
+    },
+    "./tools/Sculptor": {
+      "types": "./dist/tools/Sculptor.d.ts",
+      "browser": "./dist/tools/Sculptor.js",
+      "import": "./dist/tools/Sculptor.js",
+      "default": "./dist/tools/Sculptor.js"
+    },
+    "./tools/TubePainter": {
+      "types": "./dist/tools/TubePainter.d.ts",
+      "browser": "./dist/tools/TubePainter.js",
+      "import": "./dist/tools/TubePainter.js",
+      "default": "./dist/tools/TubePainter.js"
+    },
+    "./tools/Fracture": {
+      "types": "./dist/tools/Fracture.d.ts",
+      "browser": "./dist/tools/Fracture.js",
+      "import": "./dist/tools/Fracture.js",
+      "default": "./dist/tools/Fracture.js"
+    },
+    "./utils/WorkerPool": {
+      "types": "./dist/utils/WorkerPool.d.ts",
+      "browser": "./dist/utils/WorkerPool.js",
+      "import": "./dist/utils/WorkerPool.js",
+      "default": "./dist/utils/WorkerPool.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@aura3d/rendering": "workspace:*",
+    "@aura3d/engine": "workspace:*",
+    "@aura3d/scene": "workspace:*"
+  },
+  "sideEffects": false,
+  "description": "Optional independently authored renderers, effects, procedural objects, geometry tools, and utilities for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "typescript",
+    "addons"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/addons"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
+}

@@ -1,4 +1,4 @@
-import { Frustum, Matrix4, Quaternion, Vector3 } from "@aura3d/math";
+import { Frustum, Matrix4, Quaternion, Vector3, type ProjectionOptions } from "@aura3d/math";
 
 export type Vec3 = [number, number, number];
 export type Quat = [number, number, number, number];
@@ -135,20 +135,42 @@ export function invertMat4(matrix: Readonly<Mat4>): Mat4 {
   return fromMathMat4(toMathMat4(matrix).inverse());
 }
 
-export function perspectiveMat4(fovYRadians: number, aspect: number, near: number, far: number): Mat4 {
-  return fromMathMat4(Matrix4.perspective(fovYRadians, aspect, near, far));
+/** Resolve the projection convention once, so callers can retain it alongside the matrix. */
+export function resolveProjectionOptions(options: ProjectionOptions = {}): Required<ProjectionOptions> {
+  const mode = options.mode ?? "standard";
+  const clipRange = options.clipRange ?? "minus-one-to-one";
+  if (mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") {
+    throw new RangeError(`Invalid projection depth mode: ${String(mode)}`);
+  }
+  if (clipRange !== "minus-one-to-one" && clipRange !== "zero-to-one") {
+    throw new RangeError(`Invalid projection clip range: ${String(clipRange)}`);
+  }
+  return { mode, clipRange };
+}
+
+export function perspectiveMat4(fovYRadians: number, aspect: number, near: number, far: number, options?: ProjectionOptions): Mat4 {
+  return fromMathMat4(Matrix4.perspective(fovYRadians, aspect, near, far, options));
+}
+
+/** Perspective frustum with independently specified near-plane edges. */
+export function frustumMat4(left: number, right: number, bottom: number, top: number, near: number, far: number, options?: ProjectionOptions): Mat4 {
+  return fromMathMat4(Matrix4.frustum(left, right, bottom, top, near, far, options));
 }
 
 export function lookAtMat4(eye: Readonly<Vec3>, target: Readonly<Vec3>, up: Readonly<Vec3>): Mat4 {
   return fromMathMat4(Matrix4.lookAt(toMathVec3(eye), toMathVec3(target), toMathVec3(up)));
 }
 
-export function orthographicMat4(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4 {
-  return fromMathMat4(Matrix4.orthographic(left, right, bottom, top, near, far));
+export function orthographicMat4(left: number, right: number, bottom: number, top: number, near: number, far: number, options?: ProjectionOptions): Mat4 {
+  return fromMathMat4(Matrix4.orthographic(left, right, bottom, top, near, far, options));
 }
 
-export function extractFrustumPlanes(viewProjection: Readonly<Mat4>): PlaneTuple[] {
-  return Frustum.fromMatrix(toMathMat4(viewProjection)).planes.map((plane) => [
+export function extractFrustumPlanes(viewProjection: Readonly<Mat4>, options?: ProjectionOptions, infiniteFar = false): PlaneTuple[] {
+  const depth = resolveProjectionOptions(options);
+  const frustum = Frustum.setFromProjectionMatrix(
+    toMathMat4(viewProjection), depth.clipRange === "zero-to-one" ? "webgpu" : "webgl", depth.mode === "reversed", infiniteFar
+  );
+  return frustum.activePlanes.map((plane) => [
     plane.normal.x,
     plane.normal.y,
     plane.normal.z,

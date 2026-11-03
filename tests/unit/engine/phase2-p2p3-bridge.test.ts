@@ -76,9 +76,13 @@ describe("P3 material.physical root builder", () => {
     expect(viaPhysical.physicalWarnings?.join(" ")).toContain("clearcoat");
   });
 
-  it("M2 assets.ensureDecoders stays fail-closed for unprobed decoders", async () => {
-    const diagnostics = await assets.ensureDecoders({ draco: true, meshopt: true });
+  it("M2 assets.ensureDecoders stays fail-closed when probes reject decoders", async () => {
+    const diagnostics = await assets.ensureDecoders(
+      { draco: true, meshopt: true },
+      { dracoAvailable: false, meshoptAvailable: false, ktx2Available: false }
+    );
     expect(diagnostics.draco.available).toBe(false);
     expect(diagnostics.meshopt.available).toBe(false);
+    expect(diagnostics.ktx2.available).toBe(false);
   });
 });

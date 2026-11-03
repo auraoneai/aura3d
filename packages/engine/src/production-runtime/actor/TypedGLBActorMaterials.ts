@@ -70,6 +70,11 @@ class TypedGLBActorMaterialHandle implements AuraModelMaterialHandle {
   }
 
   setMaterialOverrides(overrides: readonly AuraModelMaterialOverride[]): void {
+    if (overrides.some((override) => override.material !== undefined)) {
+      const error = new Error("MODEL_CUSTOM_MATERIAL_UNSUPPORTED: custom slot materials must be installed when the model loads");
+      Object.assign(error, { code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED" });
+      throw error;
+    }
     if (!this.materialsOn) {
       this.stub().setMaterialOverrides(overrides);
       return;
@@ -86,6 +91,11 @@ class TypedGLBActorMaterialHandle implements AuraModelMaterialHandle {
     if (!this.materialsOn) {
       this.stub().setEmissive(target, color, intensity);
       return;
+    }
+    if (this.actor?.hasCustomMaterialOverride?.(target === "*" ? undefined : target)) {
+      const error = new Error("MODEL_CUSTOM_MATERIAL_UNSUPPORTED: emissive PBR writes cannot affect a custom shader");
+      Object.assign(error, { code: "MODEL_CUSTOM_MATERIAL_UNSUPPORTED" });
+      throw error;
     }
     if (this.actor) applyMaterialEmissive(this.actor.pipeline.resources.materialLibrary.values(), target, color, intensity);
   }

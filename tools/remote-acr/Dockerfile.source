@@ -1,0 +1,31 @@
+# A Git-free, source-only candidate job. No browser binaries or stale host dist.
+FROM node:22.23.2-bookworm-slim
+ARG NATIVE_RUN_ID
+ARG NATIVE_SOURCE_PHASE
+ARG NATIVE_RELEASE_KIND
+ARG NATIVE_BUILD_REPORT_SHA256
+LABEL ai.aura3d.native-source-run=$NATIVE_RUN_ID
+ENV CI=1 \
+    NATIVE_RUN_ID=$NATIVE_RUN_ID \
+    NATIVE_SOURCE_PHASE=$NATIVE_SOURCE_PHASE \
+    NATIVE_RELEASE_KIND=$NATIVE_RELEASE_KIND \
+    NATIVE_BUILD_REPORT_SHA256=$NATIVE_BUILD_REPORT_SHA256 \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    PUPPETEER_SKIP_DOWNLOAD=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/nonexistent/aura3d-browsers-disabled \
+    AURA3D_SOURCE_PROCESS_GUARD=1 \
+    NODE_OPTIONS=--import=file:///repo/tools/remote-acr/source-checks.mjs
+WORKDIR /repo
+# run-source.sh supplies a fresh hashed context, including workspace manifests,
+# sources, current untracked additions, tests, fixtures, docs and templates.
+COPY . .
+# Workspace archive, signed source-approval and store checks do not authorize
+# execution. There is no independently authenticated running pnpm/Node toolchain,
+# sealed process and network isolation, or continuous post-install custody yet.
+RUN node tools/remote-acr/source-checks.mjs workspace-admission
+RUN node tools/remote-acr/source-checks.mjs verify-stage-inputs
+# Do not fall through to a networked Corepack/cargo/apt install if the earlier
+# guard is changed. Supplying reviewed, offline pnpm, Naga, glslang and ffmpeg
+# toolchains and a confined lifecycle-disabled install is still required.
+RUN echo 'SOURCE_IMAGE_UNAVAILABLE: verified offline toolchains and isolated workspace install are not configured' >&2; exit 1
+ENTRYPOINT ["/bin/bash", "/repo/tools/remote-acr/source-task-run.sh"]

@@ -1,0 +1,32 @@
+{
+  "name": "indoor",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "indoor.specular.ktx2",
+  "sh9": "indoor.sh9.f32",
+  "sha256": {
+    "specular": "b43dcd8d4310cdc059caabb7f7c41a713a510c0f393fee840f354546a0d9e035",
+    "sh9": "113bb10775057dd0ab64ef2c4e556cdf4be0e2f4c8e15135fd3ed2b5819ea170"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in",
+    "studio-source-alias"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128,
+  "provenance": {
+    "sourceAsset": "../hdri/studio_small_08_1k.hdr",
+    "sourceAssetSha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
+    "sourceLicense": "CC0-1.0",
+    "sourceUri": "https://polyhaven.com/a/studio_small_08",
+    "aliasOf": "studio",
+    "note": "The indoor preset temporarily uses the studio probe. A distinct independently sourced indoor bake is not included.",
+    "bakeOrigin": "historical-aura-bake",
+    "sourceRecord": "packages/engine/src/devtools/environments/EnvironmentRegistry.ts",
+    "bakeCommit": "45b2923f52f829fad700127befa035706780f2de",
+    "pipelineIndependenceVerified": false
+  }
+}

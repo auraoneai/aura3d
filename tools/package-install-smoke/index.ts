@@ -4,7 +4,7 @@ import { loadValidatedReleasePlan, inspectInstalledRelease } from "../release/ex
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -26,6 +26,7 @@ interface PackageInstallSmokeReport {
   readonly installCommand: readonly string[];
   readonly smokeCommand: readonly string[];
   readonly viteBuildCommand: readonly string[];
+  readonly nativeChecks: readonly { readonly name: string; readonly command: readonly string[]; readonly status: "pass" | "fail" | "not-run"; readonly output: string }[];
   readonly importedEntrypoints: readonly string[];
   readonly smokeAssertions: readonly string[];
   readonly installStdoutTail: string;
@@ -51,7 +52,22 @@ export function runPackageInstallSmoke(
   const packCommand = ["npm", "pack", "--pack-destination", packDirectory, "--silent"] as const;
   const tempProject = mkdtempSync(join(tmpdir(), "a3d-package-smoke-"));
   const smokeCommand = ["node", "smoke.mjs"] as const;
-  const viteBuildCommand = [join(root, "node_modules", ".bin", process.platform === "win32" ? "vite.cmd" : "vite"), "build", "--logLevel", "warn"] as const;
+  const viteBuildCommand = [join(tempProject, "node_modules", ".bin", process.platform === "win32" ? "vite.cmd" : "vite"), "build", "--logLevel", "warn"] as const;
+  const nativeCommand = ["node", "native-smoke.mjs"] as const;
+  const browserConditionsCommand = ["node", "--conditions=browser", "native-smoke.mjs"] as const;
+  const nativeChecks: Array<{ name: string; command: readonly string[]; status: "pass" | "fail" | "not-run"; output: string }> = [
+    { name: "optional peers absent, SSR and import conditions", command: nativeCommand, status: "not-run", output: "" },
+    { name: "optional peers absent, browser export conditions", command: browserConditionsCommand, status: "not-run", output: "" },
+    { name: "install optional peers", command: [], status: "not-run", output: "" },
+    { name: "optional peers present, SSR and import conditions", command: nativeCommand, status: "not-run", output: "" },
+    { name: "optional peers present, browser export conditions", command: browserConditionsCommand, status: "not-run", output: "" }
+  ];
+  const recordNative = (name: string, command: readonly string[], status: "pass" | "fail", output: string): void => {
+    const check = nativeChecks.find((item) => item.name === name);
+    if (!check || check.status !== "not-run") throw new Error(`Unexpected or duplicated native check ${name}`);
+    Object.assign(check, { command, status, output });
+  };
+  let recordedInstallCommand: readonly string[] = [];
   const violations: string[] = [];
   let tarballPath = exactPlan?.packages.find(p=>p.name===packageInfo.name)?.tarball ?? options.tarballPath ?? defaultTarballPath;
   let tarballFullPath = join(root, tarballPath);
@@ -92,19 +108,23 @@ export function runPackageInstallSmoke(
       violations.push(`Tarball is missing: ${tarballPath}.`);
     }
 
-    // The smoke exercises the physics scene kits (miniGolf, physicsPlayground), which need the optional Rapier peer;
-    // npm does not install optional peers, so install the declared version next to the tarball.
-    const rapierPeer = packageInfo.peerDependencies?.["@dimforge/rapier3d-compat"];
-    const peerSpecs = rapierPeer ? [`@dimforge/rapier3d-compat@${rapierPeer}`] : [];
-    const installCommand = ["npm", ...withNpmTransport(["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath, ...peerSpecs])] as const;
+    // First install the candidate with optional peers absent, then explicitly add
+    // every declared optional peer and rerun in a fresh Node process.
+    const optionalPeers = Object.entries(packageInfo.peerDependencies ?? {})
+      .filter(([name]) => packageInfo.peerDependenciesMeta?.[name]?.optional === true);
+    const peerSpecs = optionalPeers.map(([name, version]) => `${name}@${version}`);
+    const installCommand = ["npm", ...withNpmTransport(["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath])] as const;
+    recordedInstallCommand = installCommand;
 
     writeFileSync(join(tempProject, "package.json"), `${JSON.stringify({
       name: "a3d-external-install-smoke",
       version: "0.0.0",
       private: true,
-      type: "module"
+      type: "module",
+      devDependencies: { vite: packageInfo.viteVersion ?? "^7.3.2" }
     }, null, 2)}\n`);
     writeFileSync(join(tempProject, "smoke.mjs"), smokeSource(packageInfo.name ?? "@aura3d/engine"));
+    writeFileSync(join(tempProject, "native-smoke.mjs"), nativeSmokeSource(packageInfo.name ?? "@aura3d/engine", optionalPeers.map(([name]) => name)));
     mkdirSync(join(tempProject, "src"), { recursive: true });
     writeFileSync(join(tempProject, "index.html"), `<div id="app"></div><script type="module" src="/src/main.js"></script>\n`);
     writeFileSync(join(tempProject, "src", "main.js"), viteSmokeSource(packageInfo.name ?? "@aura3d/engine"));
@@ -126,11 +146,47 @@ export function runPackageInstallSmoke(
     }
     if (violations.length === 0 && packageInfo.name) {
       const installedPackage = join(tempProject, "node_modules", ...packageInfo.name.split("/"));
+      const conditionViolations = inspectPackageExportConditions(installedPackage);
+      if (conditionViolations.length) violations.push(...conditionViolations);
+    }
+    const runNative = (name: string, command: readonly string[], peerMode: "absent" | "present"): void => {
+      try {
+        const output = execFileSync(command[0]!, command.slice(1), {
+          cwd: tempProject, encoding: "utf8", maxBuffer: 10 * 1024 * 1024,
+          env: { ...process.env, A3D_OPTIONAL_PEERS: peerMode }
+        });
+        recordNative(name, command, "pass", output.trim());
+      } catch (error) {
+        const output = formatExecError(error);
+        recordNative(name, command, "fail", output);
+        violations.push(`${name} failed: ${output}`);
+      }
+    };
+    if (violations.length === 0) runNative("optional peers absent, SSR and import conditions", nativeCommand, "absent");
+    if (violations.length === 0) runNative("optional peers absent, browser export conditions", browserConditionsCommand, "absent");
+    if (violations.length === 0 && peerSpecs.length) {
+      const addPeers = ["npm", ...withNpmTransport(["install", "--ignore-scripts", "--no-audit", "--no-fund", ...peerSpecs])] as const;
+      try {
+        const output = execFileSync(addPeers[0], addPeers.slice(1), { cwd: tempProject, encoding: "utf8", maxBuffer: 10 * 1024 * 1024 });
+        recordNative("install optional peers", addPeers, "pass", output.trim());
+      } catch (error) {
+        const output = formatExecError(error);
+        recordNative("install optional peers", addPeers, "fail", output);
+        violations.push(`optional peer installation failed: ${output}`);
+      }
+      if (violations.length === 0) runNative("optional peers present, SSR and import conditions", nativeCommand, "present");
+      if (violations.length === 0) runNative("optional peers present, browser export conditions", browserConditionsCommand, "present");
+    } else if (violations.length === 0 && peerSpecs.length === 0) {
+      violations.push("No optional peer declarations found: required absent/present consumer cases cannot be established.");
+    }
+    if (violations.length === 0) violations.push(...missingNativeChecks(nativeChecks));
+    if (violations.length === 0 && packageInfo.name) {
+      const installedPackage = join(tempProject, "node_modules", ...packageInfo.name.split("/"));
       const unresolvedImports = findUnresolvedInternalAuraImports(installedPackage);
       if (unresolvedImports.length > 0) {
         violations.push(
           `Packed root contains unresolved internal Aura3D imports: ${unresolvedImports.join(", ")}. `
-          + "The root tarball must internalize workspace package imports before publication."
+          + "Declare each shipped package dependency and install it in the consumer."
         );
       }
     }
@@ -184,7 +240,8 @@ export function runPackageInstallSmoke(
     installedIdentity,
     packCommand: freshPack ? packCommand : undefined,
     tempProjectKind: "external-clean-npm-project",
-    installCommand: ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath],
+    installCommand: recordedInstallCommand,
+    nativeChecks,
     smokeCommand,
     viteBuildCommand,
     importedEntrypoints: [
@@ -201,7 +258,10 @@ export function runPackageInstallSmoke(
       "scene export map resolves",
       "math export map resolves",
       "assets export map resolves",
-      "packed root contains no unresolved internal @aura3d/* imports",
+      "packed root declares every internal @aura3d/* dependency",
+      "all packed export condition targets exist inside the installed package",
+      "root import is SSR-safe with each optional peer absent and present",
+      "all literal JavaScript entrypoints resolve under import and browser conditions",
       "Geometry.litCube creates vertex/index buffers",
       "PBRMaterial can be instantiated",
       "External parity generated environment lighting validates BRDF LUT and diffuse irradiance resources",
@@ -218,16 +278,31 @@ export function runPackageInstallSmoke(
   };
 }
 
+/** A required native probe may never silently turn into a passing skip. */
+export function missingNativeChecks(checks: ReadonlyArray<{ readonly name: string; readonly status: "pass" | "fail" | "not-run" }>): string[] {
+  const required = ["optional peers absent, SSR and import conditions", "optional peers absent, browser export conditions", "install optional peers", "optional peers present, SSR and import conditions", "optional peers present, browser export conditions"];
+  return required.filter((name) => checks.filter((check) => check.name === name && check.status === "pass").length !== 1)
+    .map((name) => `Required native consumer check did not pass exactly once: ${name}`);
+}
+
 export function findUnresolvedInternalAuraImports(packageRoot: string): string[] {
   const distRoot = join(packageRoot, "dist");
   if (!existsSync(distRoot)) return [`${relative(packageRoot, distRoot) || "dist"} is missing`];
 
   const findings = new Set<string>();
+  let declared = new Set<string>();
+  try {
+    const pkg = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as {
+      name?: string; dependencies?: Record<string, string>; optionalDependencies?: Record<string, string>; peerDependencies?: Record<string, string>
+    };
+    declared = new Set([pkg.name ?? "", ...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.optionalDependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})]);
+  } catch { /* an absent manifest never grants permission for an import */ }
   for (const file of walkJavaScriptFiles(distRoot)) {
     const source = readFileSync(file, "utf8");
     const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
     const record = (specifier: string | undefined): void => {
       if (!specifier || !specifier.startsWith("@aura3d/")) return;
+      if (declared.has(specifier.split("/").slice(0, 2).join("/"))) return;
       findings.add(`${relative(packageRoot, file)} -> ${specifier}`);
     };
     const visit = (node: ts.Node): void => {
@@ -255,6 +330,82 @@ function walkJavaScriptFiles(directory: string, files: string[] = []): string[] 
     else if (path.endsWith(".js")) files.push(path);
   }
   return files;
+}
+
+/** Validate every declared condition target against the actual installed payload. */
+export function inspectPackageExportConditions(packageRoot: string): string[] {
+  const errors: string[] = [];
+  let exportsMap: unknown;
+  try { exportsMap = (JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { exports?: unknown }).exports; }
+  catch { return ["Installed package.json is missing or invalid."]; }
+  if (!exportsMap || typeof exportsMap !== "object") return ["Installed package has no export map."];
+  const walk = (value: unknown, label: string): void => {
+    if (value === null) return; // Explicitly blocked condition.
+    if (typeof value === "string") {
+      if (!value.startsWith("./")) { errors.push(`${label}: invalid export target ${value}`); return; }
+      const target = resolve(packageRoot, value);
+      if (!target.startsWith(`${resolve(packageRoot)}${sep}`)) { errors.push(`${label}: export target escapes package`); return; }
+      if (value.includes("*")) {
+        const expression = new RegExp(`^${value.slice(2).split("*").map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".*")}$`);
+        const walkFiles = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+          const item = join(dir, entry.name);
+          return entry.isDirectory() ? walkFiles(item) : entry.isFile() ? [relative(packageRoot, item).split(sep).join("/")] : [];
+        });
+        if (!walkFiles(packageRoot).some((path) => expression.test(path))) errors.push(`${label}: wildcard target has no files (${value})`);
+      } else if (!existsSync(target) || !statSync(target).isFile()) errors.push(`${label}: missing export target ${value}`);
+      return;
+    }
+    if (Array.isArray(value)) { if (!value.length) errors.push(`${label}: empty condition alternatives`); value.forEach((entry, i) => walk(entry, `${label}[${i}]`)); return; }
+    if (value && typeof value === "object") { const entries = Object.entries(value); if (!entries.length) errors.push(`${label}: empty export condition`); for (const [key, entry] of entries) walk(entry, `${label}/${key}`); return; }
+    errors.push(`${label}: invalid export condition`);
+  };
+  walk(exportsMap, "exports");
+  return errors;
+}
+
+function nativeSmokeSource(packageName: string, peers: readonly string[]): string {
+  return `
+import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+import { readFileSync, statSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
+const require = createRequire(import.meta.url);
+const name = ${JSON.stringify(packageName)};
+const peers = ${JSON.stringify(peers)};
+const rootDir = join(process.cwd(), "node_modules", ...name.split("/"));
+const manifest = JSON.parse(readFileSync(join(rootDir, "package.json"), "utf8"));
+for (const peer of peers) {
+  let present = true;
+  try { require.resolve(peer); } catch (error) {
+    if (error?.code !== "MODULE_NOT_FOUND" && error?.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") throw error;
+    if (error?.code === "ERR_PACKAGE_PATH_NOT_EXPORTED") present = true; else present = false;
+  }
+  assert.equal(present, process.env.A3D_OPTIONAL_PEERS === "present", peer + " optional-peer state");
+}
+// A normal Node process has no browser window or document; importing here proves the SSR boundary.
+assert.equal(typeof globalThis.window, "undefined");
+assert.equal(typeof globalThis.document, "undefined");
+const root = await import(name);
+assert.equal(typeof root.createAuraApp, "function");
+const entries = Object.keys(manifest.exports).filter((key) => key.startsWith(".") && !key.includes("*") && !key.endsWith(".css"));
+assert.ok(entries.includes("."), "root export is required");
+for (const subpath of entries) {
+  const specifier = subpath === "." ? name : name + subpath.slice(1);
+  const resolved = fileURLToPath(import.meta.resolve(specifier));
+  assert.ok(!relative(rootDir, resolved).startsWith(".."), specifier + " resolves in candidate package");
+  assert.ok(statSync(resolved).isFile(), specifier + " resolves to an installed file");
+  const declaresRequire = (value) => value && typeof value === "object" &&
+    (Object.hasOwn(value, "require") || Object.values(value).some(declaresRequire));
+  if (declaresRequire(manifest.exports[subpath])) {
+    const required = require.resolve(specifier);
+    assert.ok(!relative(rootDir, required).startsWith(".."), specifier + " require resolves in the candidate package");
+    assert.ok(statSync(required).isFile(), specifier + " require resolves to an installed file");
+    require(specifier);
+  }
+}
+console.log(JSON.stringify({ peerMode: process.env.A3D_OPTIONAL_PEERS, peers, resolved: entries.length, ssr: true, conditions: process.execArgv }));
+`;
 }
 
 function smokeSource(packageName: string): string {
@@ -454,13 +605,15 @@ globalThis.__AURA3D_PACKAGE_VITE_SMOKE__ = {
 `;
 }
 
-function readPackageInfo(root: string): { readonly name: string | null; readonly version: string | null; readonly peerDependencies?: Readonly<Record<string, string>> } {
+function readPackageInfo(root: string): { readonly name: string | null; readonly version: string | null; readonly viteVersion?: string; readonly peerDependencies?: Readonly<Record<string, string>>; readonly peerDependenciesMeta?: Readonly<Record<string, { readonly optional?: boolean }>> } {
   try {
     const parsed = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as Record<string, unknown>;
     return {
       name: typeof parsed.name === "string" ? parsed.name : null,
       version: typeof parsed.version === "string" ? parsed.version : null,
-      peerDependencies: parsed.peerDependencies && typeof parsed.peerDependencies === "object" ? parsed.peerDependencies as Record<string, string> : undefined
+      viteVersion: typeof (parsed.devDependencies as Record<string, unknown> | undefined)?.vite === "string" ? (parsed.devDependencies as Record<string, string>).vite : undefined,
+      peerDependencies: parsed.peerDependencies && typeof parsed.peerDependencies === "object" ? parsed.peerDependencies as Record<string, string> : undefined,
+      peerDependenciesMeta: parsed.peerDependenciesMeta && typeof parsed.peerDependenciesMeta === "object" ? parsed.peerDependenciesMeta as Record<string, { optional?: boolean }> : undefined
     };
   } catch {
     return { name: null, version: null };

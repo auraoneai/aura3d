@@ -9,7 +9,7 @@
  *   [0] position.xyz,     w = kind (0 dir, 1 point, 2 spot, 3 rect)
  *   [1] direction.xyz,    w = range (0 = infinite)
  *   [2] color.rgb,        w = intensity
- *   [3] spot: cosOuter, cosInner, decay, shadowIndex
+ *   [3] spot: cosOuter, cosInner, decay, shadowIndex; rect: x = twoSided
  *   [4] shadow matrix column a (rect: right.xyz, width)
  *   [5] shadow matrix column b (rect: up.xyz, height)
  */
@@ -28,11 +28,12 @@ float a3d_rangeWindow(float d, float range) {
   return x * x;
 }
 
-// three r185 getDistanceAttenuation verbatim (Frostbite E[window1]):
-// 1/max(d^decay, 0.01) with the range window folded in when range > 0.
+// Inverse-power falloff, bounded at the emitter, with a finite-range window.
 float a3dDistanceFalloff(float d, float range, float decay) {
-  float att = 1.0 / max(pow(d, decay), 0.01);
-  return att * a3d_rangeWindow(d, range);
+  float distanceToLight = max(d, 0.0);
+  float power = decay <= 0.0 ? 1.0 : pow(distanceToLight, decay);
+  float inversePower = 1.0 / max(power, 0.01);
+  return inversePower * a3d_rangeWindow(distanceToLight, range);
 }
 
 // Spot cone: smooth falloff between cosOuter and cosInner angles.
@@ -90,67 +91,78 @@ float a3d_punctualShadowFactor(int i, vec3 worldPos, vec3 worldNormal, float vie
 }
 
 
-// ---- Area lights (rect, kind == 3) — PRD-02 §8.5: LTC on High/Ultra
-// (A3D_AREA_LTC; LUTs u_prd02LtcMInv / u_prd02LtcFresnel, 64x64 RGBA16F,
-// fetched lazily from the three.js RectAreaLightTexturesLib tables, MIT),
-// Gauss–Legendre 4-tap integrator on Low/Medium (A3D_AREA_GAUSS).
-// Rect layout in the AuraLights block: d0.xyz center, d4 = right.xyz+width,
-// d5 = up.xyz+height. Luminance in nits (d2.rgb).
+// ---- Rectangular area lights.  The LTC tables are supplied by the renderer;
+// the diffuse integral below uses the identity transform. Specular LTC still
+// requires a material-aware call in the production light loop.
 #if defined(A3D_AREA_LTC) && A3D_AREA_LTC
 uniform sampler2D u_prd02LtcMInv;
 uniform sampler2D u_prd02LtcFresnel;
 
 vec2 a3d_ltcUv(vec3 n, vec3 v, float roughness) {
-  float lod = roughness * roughness;
-  float theta = acos(clamp(dot(n, v), -1.0, 1.0)) / 3.14159265;
-  return vec2(lod, theta) * (63.0 / 64.0) + 0.5 / 64.0;
+  float theta = acos(clamp(dot(n, v), 0.0, 1.0)) / 3.14159265;
+  return vec2(roughness * roughness, theta) * (63.0 / 64.0) + 0.5 / 64.0;
 }
 
 mat3 a3d_ltcMinv(vec2 uv) {
-  vec4 t = texture2D(u_prd02LtcMInv, uv);
-  return mat3(
-    vec3(1.0, 0.0, t.y),
-    vec3(0.0, t.z, 0.0),
-    vec3(t.w, 0.0, t.x));
+  vec4 t = texture(u_prd02LtcMInv, uv);
+  return mat3(vec3(1.0, 0.0, t.y), vec3(0.0, t.z, 0.0), vec3(t.w, 0.0, t.x));
 }
 
-// Edge-integral of a quad through LTC matrix M (Real-Time Polygonal-Light
-// Shading, Heitz et al.): sum of cross-edge arc cosines.
+// Integrate a spherical polygon in a basis whose z axis is the surface normal.
+// Sutherland–Hodgman clipping prevents vertices below the horizon contributing
+// negative or inverted solid angle. Up to eight vertices result from clipping.
 float a3d_ltcEdgeIntegrate(mat3 Minv, vec3 n, vec3 v, vec3 p,
-                         vec3 c0, vec3 c1, vec3 c2, vec3 c3) {
-  vec3 vs[4];
-  vs[0] = Minv * (c0 - p); vs[1] = Minv * (c1 - p);
-  vs[2] = Minv * (c2 - p); vs[3] = Minv * (c3 - p);
-  for (int k = 0; k < 4; k++) vs[k] = normalize(vs[k]);
+                           vec3 c0, vec3 c1, vec3 c2, vec3 c3) {
+  vec3 normal = normalize(n);
+  vec3 tangent = v - normal * dot(v, normal);
+  if (dot(tangent, tangent) < 1e-8) {
+    tangent = cross(abs(normal.z) < 0.9 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0), normal);
+  }
+  tangent = normalize(tangent);
+  vec3 bitangent = cross(normal, tangent);
+  mat3 worldToLocal = transpose(mat3(tangent, bitangent, normal));
+  vec3 corners[4];
+  corners[0] = Minv * worldToLocal * (c0 - p);
+  corners[1] = Minv * worldToLocal * (c1 - p);
+  corners[2] = Minv * worldToLocal * (c2 - p);
+  corners[3] = Minv * worldToLocal * (c3 - p);
+  vec3 clipped[8];
+  int count = 0;
+  for (int i = 0; i < 4; i++) {
+    vec3 a = corners[i];
+    vec3 b = corners[(i + 1) % 4];
+    bool insideA = a.z > 0.0;
+    bool insideB = b.z > 0.0;
+    if (insideA) { clipped[count] = a; count++; }
+    if (insideA != insideB) {
+      float t = a.z / (a.z - b.z);
+      clipped[count] = mix(a, b, t);
+      count++;
+    }
+  }
+  if (count < 3) return 0.0;
   float sum = 0.0;
-  sum += a3d_ltcEdge(vs[0], vs[1]);
-  sum += a3d_ltcEdge(vs[1], vs[2]);
-  sum += a3d_ltcEdge(vs[2], vs[3]);
-  sum += a3d_ltcEdge(vs[3], vs[0]);
-  return max(sum, 0.0);
+  for (int i = 0; i < 8; i++) {
+    if (i >= count) break;
+    vec3 a = normalize(clipped[i]);
+    vec3 b = normalize(clipped[(i + 1) % count]);
+    vec3 edge = cross(a, b);
+    float edgeLength = length(edge);
+    if (edgeLength > 1e-6) {
+      sum += acos(clamp(dot(a, b), -1.0, 1.0)) * edge.z / edgeLength;
+    }
+  }
+  return abs(sum);
 }
 #endif
 
-#if (defined(A3D_AREA_LTC) && A3D_AREA_LTC) || (defined(A3D_AREA_GAUSS) && A3D_AREA_GAUSS)
-// Edge integral (Heitz et al. 2016): acos(dot) × normalize(cross).z —
-// the arc length weighted by its projection onto the shading normal's axis
-// in the transformed (identity-irradiance) space.
-float a3d_ltcEdge(vec3 v1, vec3 v2) {
-  float theta = acos(clamp(dot(v1, v2), -0.9999, 0.9999));
-  vec3 n = cross(v1, v2);
-  float nl = length(n);
-  if (nl < 1e-6) return 0.0;
-  return theta * (n.z / nl);
-}
-#endif
-
-// Gauss–Legendre 4-tap: subdivide the rect into 4 quadrants; diffuse from
-// each quadrant centroid (a point light of area·luminance/4). Cheap on
-// Low/Medium; within ~10% total energy of the LTC integral (unit test).
+// Tensor-product two-point Gauss–Legendre quadrature over the emitter.
+// Four samples integrate diffuse intensity with a bounded small-emitter error.
 vec3 a3d_rectGaussDiffuse(vec3 center, vec3 right, vec3 up, vec2 halfSize,
                           vec3 luminanceNits, vec3 worldPos, vec3 worldNormal) {
-  const float g = 0.25; // quadrant centroid offsets at ±halfSize*0.5
+  const float g = 0.5773502691896258;
   vec3 acc = vec3(0.0);
+  vec3 emitterNormal = normalize(cross(right, up));
   for (int i = 0; i < 4; i++) {
     vec3 c = center
       + right * (halfSize.x * (i == 0 || i == 3 ? -g : g))
@@ -159,9 +171,8 @@ vec3 a3d_rectGaussDiffuse(vec3 center, vec3 right, vec3 up, vec2 halfSize,
     float d2 = dot(toLight, toLight);
     vec3 l = toLight * inversesqrt(max(d2, 1e-6));
     float nl = max(dot(worldNormal, l), 0.0);
-    // Solid angle of the quadrant: A_quadrant·cos_s / d2 (small-aperture).
-    float area = halfSize.x * halfSize.y; // quadrant area = rect area /4
-    float cosS = max(dot(-l, normalize(cross(right, up))), 0.0);
+    float area = halfSize.x * halfSize.y;
+    float cosS = max(dot(-l, emitterNormal), 0.0);
     acc += luminanceNits * (nl * area * cosS / max(d2, 1e-6));
   }
   return acc / 3.14159265;
@@ -170,12 +181,15 @@ vec3 a3d_rectGaussDiffuse(vec3 center, vec3 right, vec3 up, vec2 halfSize,
 vec3 a3d_rectLightDiffuse(int i, vec3 worldPos, vec3 worldNormal, vec3 viewDir, float roughness) {
   vec4 d0 = u_lightData[a3d_lightBase(i) + 0];
   vec4 d2 = u_lightData[a3d_lightBase(i) + 2];
+  vec4 d3 = u_lightData[a3d_lightBase(i) + 3];
   vec4 d4 = u_lightData[a3d_lightBase(i) + 4];
   vec4 d5 = u_lightData[a3d_lightBase(i) + 5];
   vec3 center = d0.xyz;
   vec3 right = d4.xyz;
   vec3 up = d5.xyz;
   vec2 halfSize = vec2(d4.w, d5.w) * 0.5;
+  float facing = dot(cross(right, up), worldPos - center);
+  if (facing <= 0.0 && d3.x < 0.5) return vec3(0.0);
 #if defined(A3D_AREA_LTC) && A3D_AREA_LTC
   vec3 c0 = center - right * halfSize.x - up * halfSize.y;
   vec3 c1 = center + right * halfSize.x - up * halfSize.y;
@@ -185,9 +199,9 @@ vec3 a3d_rectLightDiffuse(int i, vec3 worldPos, vec3 worldNormal, vec3 viewDir, 
   // path fits the GGX-specular distribution — specular evaluation arrives
   // with the shading seam; diffuse is exact here).
   float sum = a3d_ltcEdgeIntegrate(mat3(1.0), worldNormal, viewDir, worldPos, c0, c1, c2, c3);
-  return d2.rgb * (sum / (2.0 * 3.14159265));
+  return d2.rgb * d2.w * (sum / (2.0 * 3.14159265));
 #elif defined(A3D_AREA_GAUSS) && A3D_AREA_GAUSS
-  return a3d_rectGaussDiffuse(center, right, up, halfSize, d2.rgb, worldPos, worldNormal);
+  return a3d_rectGaussDiffuse(center, right, facing < 0.0 ? -up : up, halfSize, d2.rgb * d2.w, worldPos, worldNormal);
 #else
   return vec3(0.0);
 #endif

@@ -1,39 +1,75 @@
-import { AssetManager, GLTFLoader } from "@aura3d/assets";
+import { AssetManager, GLTFLoader, type GLTFAsset } from "@aura3d/assets";
 import type { EditorAssetRecord } from "../project/ProjectSerializer";
 import type { EditorShell } from "../EditorShell";
+import { capturePanelFocus, restorePanelFocus } from "./PanelFocus";
 
 export class AssetBrowserPanel {
   readonly element = document.createElement("section");
   private readonly assets = new AssetManager();
+  private readonly status = document.createElement("div");
+  private readonly error = document.createElement("div");
+  private readonly empty = document.createElement("div");
+  private readonly tree = document.createElement("div");
+  private readonly cards = document.createElement("div");
+  private displayedScene: EditorShell["scene"] | undefined;
+  private busy = false;
 
   constructor(private readonly shell: EditorShell) {
     this.assets.register(new GLTFLoader());
     this.element.className = "panel asset-browser-panel";
+    this.element.setAttribute("aria-label", "Assets");
+    this.element.innerHTML = `
+      <div class="panel-title">
+        <span>Assets</span>
+        <button data-action="import-sample-gltf">Import glTF</button>
+        <button data-action="import-real-gltf">Import Fox GLB</button>
+      </div>
+    `;
+    this.status.className = "panel-feedback";
+    this.status.setAttribute("role", "status");
+    this.error.className = "panel-feedback";
+    this.error.setAttribute("role", "alert");
+    this.empty.className = "muted";
+    this.empty.setAttribute("role", "status");
+    this.tree.className = "asset-tree";
+    this.tree.setAttribute("aria-label", "Asset folders");
+    const list = document.createElement("div");
+    list.className = "asset-list";
+    list.append(this.empty, this.cards);
+    this.element.append(this.status, this.error, this.tree, list);
     this.element.addEventListener("click", (event) => {
       const target = event.target as HTMLElement;
       if (target.dataset.action === "import-sample-gltf") {
-        void this.importSampleGltf();
+        void this.runAssetAction("Importing glTF", "Imported glTF.", () => this.importSampleGltf());
+        return;
       }
       if (target.dataset.action === "import-real-gltf") {
-        void this.importRealGltf();
+        void this.runAssetAction("Importing Fox GLB", "Imported Fox GLB.", () => this.importRealGltf());
+        return;
       }
-      if (target.dataset.action === "place-asset" && target.dataset.assetId) {
-        void this.shell.placeAsset(target.dataset.assetId);
+      const assetId = target.dataset.assetId;
+      if (!assetId || !["place-asset", "reimport-asset", "delete-asset", "move-asset"].includes(target.dataset.action ?? "")) return;
+      const asset = this.shell.project.assets.find((candidate) => candidate.id === assetId);
+      if (!asset) {
+        this.reportError("The selected asset is no longer available.");
+        return;
       }
-      if (target.dataset.action === "reimport-asset" && target.dataset.assetId) {
-        void this.reimportAsset(target.dataset.assetId);
-      }
-      if (target.dataset.action === "delete-asset" && target.dataset.assetId) {
-        void this.shell.deleteAsset(target.dataset.assetId);
-      }
-      if (target.dataset.action === "move-asset" && target.dataset.assetId) {
-        void this.shell.moveAsset(target.dataset.assetId, "Imported/Moved");
-      }
+      if (target.dataset.action === "place-asset") void this.runAssetAction(`Placing ${asset.name}`, `Placed ${asset.name}.`, () => this.shell.placeAsset(assetId));
+      if (target.dataset.action === "reimport-asset") void this.runAssetAction(`Reimporting ${asset.name}`, `Reimported ${asset.name}.`, () => this.reimportAsset(assetId));
+      if (target.dataset.action === "delete-asset") void this.runAssetAction(`Deleting ${asset.name}`, `Deleted ${asset.name}.`, () => this.shell.deleteAsset(assetId));
+      if (target.dataset.action === "move-asset") void this.runAssetAction(`Moving ${asset.name}`, `Moved ${asset.name}.`, () => this.shell.moveAsset(assetId, "Imported/Moved"));
     });
     this.element.addEventListener("change", (event) => {
       const input = event.target as HTMLInputElement;
       if (input.dataset.action === "rename-asset" && input.dataset.assetId) {
-        void this.shell.renameAsset(input.dataset.assetId, input.value);
+        const assetId = input.dataset.assetId;
+        const asset = this.shell.project.assets.find((candidate) => candidate.id === assetId);
+        if (!asset) {
+          this.reportError("The selected asset is no longer available.");
+          return;
+        }
+        const name = input.value;
+        void this.runAssetAction(`Renaming ${asset.name}`, `Renamed ${asset.name} to ${name}.`, () => this.shell.renameAsset(assetId, name));
       }
     });
     this.element.addEventListener("dragstart", (event) => {
@@ -47,75 +83,126 @@ export class AssetBrowserPanel {
   }
 
   render(): void {
-    this.element.innerHTML = `
-      <div class="panel-title">
-        <span>Assets</span>
-        <button data-action="import-sample-gltf">Import glTF</button>
-        <button data-action="import-real-gltf">Import Fox GLB</button>
-      </div>
-      <div class="asset-tree" aria-label="Asset folders">
-        ${[...new Set(this.shell.project.assets.map((asset) => asset.folder ?? "Imported"))].map((folder) => `<button>${escapeHtml(folder)}</button>`).join("") || `<span class="muted">Project Assets</span>`}
-      </div>
-      <div class="asset-list">
-        ${this.shell.project.assets.map((asset) => renderAsset(asset)).join("") || `<p class="muted">No imported assets.</p>`}
-      </div>
-    `;
+    const focused = capturePanelFocus(this.element);
+    if (this.displayedScene !== this.shell.scene) {
+      if (this.displayedScene && !this.busy) {
+        this.status.textContent = "";
+        this.error.textContent = "";
+      }
+      this.displayedScene = this.shell.scene;
+    }
+    const assets = this.shell.project.assets;
+    this.tree.innerHTML = [...new Set(assets.map((asset) => asset.folder ?? "Imported"))].map((folder) => `<button>${escapeHtml(folder)}</button>`).join("") || `<span class="muted">Project Assets</span>`;
+    const emptyMessage = assets.length === 0 ? "No imported assets." : "";
+    if (this.empty.textContent !== emptyMessage) this.empty.textContent = emptyMessage;
+    this.cards.innerHTML = assets.map((asset) => renderAsset(asset)).join("");
+    this.syncBusyState();
+    restorePanelFocus(this.element, focused, this.element.querySelector<HTMLElement>('[data-action="import-sample-gltf"]'));
+  }
+
+  private async runAssetAction(progress: string, success: string, action: () => Promise<void>): Promise<void> {
+    if (this.busy) {
+      this.status.textContent = "An asset operation is already in progress.";
+      return;
+    }
+    this.busy = true;
+    this.error.textContent = "";
+    this.status.textContent = `${progress}…`;
+    this.syncBusyState();
+    try {
+      await action();
+      this.status.textContent = success;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      this.render();
+      this.reportError(`${progress} reported an error: ${reason}. Check the project before retrying.`);
+      this.shell.addConsoleMessage("error", this.error.textContent ?? reason);
+    } finally {
+      this.busy = false;
+      this.syncBusyState();
+    }
+  }
+
+  private reportError(message: string): void {
+    this.status.textContent = "";
+    this.error.textContent = message;
+  }
+
+  private syncBusyState(): void {
+    this.cards.setAttribute("aria-busy", String(this.busy));
+    for (const button of this.element.querySelectorAll<HTMLButtonElement>(".panel-title button, .asset-card button")) {
+      button.setAttribute("aria-disabled", String(this.busy));
+    }
+    for (const input of this.cards.querySelectorAll<HTMLInputElement>('[data-action="rename-asset"]')) {
+      input.readOnly = this.busy;
+      input.setAttribute("aria-disabled", String(this.busy));
+    }
   }
 
   private async importSampleGltf(): Promise<void> {
     const uri = createTriangleGltfDataUri();
-    const handle = await this.assets.load(uri);
-    const settings = this.shell.project.importSettings;
-    const id = `asset-${Date.now().toString(36)}`;
-    const asset: EditorAssetRecord = {
-      id,
-      name: handle.value.meshes[0]?.name ?? "Imported glTF",
-      type: "gltf",
-      uri,
-      importedAt: new Date().toISOString(),
-      preview: `${handle.value.meshes.length} mesh, ${handle.value.materials.length} material`,
-      diagnostics: importDiagnostics(settings),
-      folder: "Imported/glTF",
-      status: "warning",
-      thumbnailColor: "#38d99f",
-      dependencies: importDependencies(settings, ["embedded-buffer.bin", "Imported Mint material"]),
-      variants: settings.materialVariants ? ["Default", "Mint"] : [],
-      animationClips: settings.importAnimations ? [] : [],
-      revision: 1,
-      cacheKey: `${uri}#rev-1`
-    };
-    await this.shell.addAsset(asset);
-    await this.assets.release(handle);
+    const scene = this.shell.scene;
+    const handle = await this.assets.load<GLTFAsset>(uri, { type: "gltf" });
+    try {
+      if (this.shell.scene !== scene) throw new Error("The scene changed while loading. Import again in the current project.");
+      const settings = this.shell.project.importSettings;
+      const id = `asset-${Date.now().toString(36)}`;
+      const asset: EditorAssetRecord = {
+        id,
+        name: handle.value.meshes[0]?.name ?? "Imported glTF",
+        type: "gltf",
+        uri,
+        importedAt: new Date().toISOString(),
+        preview: `${handle.value.meshes.length} mesh, ${handle.value.materials.length} material`,
+        diagnostics: importDiagnostics(settings),
+        folder: "Imported/glTF",
+        status: "warning",
+        thumbnailColor: "#38d99f",
+        dependencies: importDependencies(settings, ["embedded-buffer.bin", "Imported Mint material"]),
+        variants: settings.materialVariants ? ["Default", "Mint"] : [],
+        animationClips: settings.importAnimations ? [] : [],
+        revision: 1,
+        cacheKey: `${uri}#rev-1`
+      };
+      await this.shell.addAsset(asset);
+    } finally {
+      await this.assets.release(handle);
+    }
   }
 
   private async importRealGltf(): Promise<void> {
     const uri = "../../tests/assets/corpus/khronos/Fox/Fox.glb";
-    const handle = await this.assets.load(uri);
-    const settings = this.shell.project.importSettings;
-    const materialName = handle.value.materials[0]?.name ?? "Fox Material";
-    const id = `asset-real-${Date.now().toString(36)}`;
-    const asset: EditorAssetRecord = {
-      id,
-      name: "Fox.glb",
-      type: "gltf",
-      uri,
-      importedAt: new Date().toISOString(),
-      preview: `${handle.value.meshes.length} mesh, ${handle.value.materials.length} material, ${handle.value.animations.length} clips`,
-      diagnostics: [`Loaded real glTF`, ...importDiagnostics(settings)],
-      folder: "Imported/glTF",
-      status: "imported",
-      thumbnailColor: "#ff8844",
-      dependencies: importDependencies(settings, ["Fox.glb", materialName, handle.value.animations[0]?.name ?? "animation clip"]),
-      variants: settings.materialVariants ? ["Default"] : [],
-      animationClips: settings.importAnimations ? handle.value.animations.map((clip) => ({
-        name: clip.name,
-        duration: Number(clip.duration.toFixed(3))
-      })) : [],
-      revision: 1,
-      cacheKey: `${uri}#rev-1`
-    };
-    await this.shell.addAsset(asset);
-    await this.assets.release(handle);
+    const scene = this.shell.scene;
+    const handle = await this.assets.load<GLTFAsset>(uri, { type: "gltf" });
+    try {
+      if (this.shell.scene !== scene) throw new Error("The scene changed while loading. Import again in the current project.");
+      const settings = this.shell.project.importSettings;
+      const materialName = handle.value.materials[0]?.name ?? "Fox Material";
+      const id = `asset-real-${Date.now().toString(36)}`;
+      const asset: EditorAssetRecord = {
+        id,
+        name: "Fox.glb",
+        type: "gltf",
+        uri,
+        importedAt: new Date().toISOString(),
+        preview: `${handle.value.meshes.length} mesh, ${handle.value.materials.length} material, ${handle.value.animations.length} clips`,
+        diagnostics: [`Loaded real glTF`, ...importDiagnostics(settings)],
+        folder: "Imported/glTF",
+        status: "imported",
+        thumbnailColor: "#ff8844",
+        dependencies: importDependencies(settings, ["Fox.glb", materialName, handle.value.animations[0]?.name ?? "animation clip"]),
+        variants: settings.materialVariants ? ["Default"] : [],
+        animationClips: settings.importAnimations ? handle.value.animations.map((clip) => ({
+          name: clip.name,
+          duration: Number(clip.duration.toFixed(3))
+        })) : [],
+        revision: 1,
+        cacheKey: `${uri}#rev-1`
+      };
+      await this.shell.addAsset(asset);
+    } finally {
+      await this.assets.release(handle);
+    }
   }
 
   private async reimportAsset(assetId: string): Promise<void> {
@@ -171,10 +258,10 @@ function importDependencies(settings: import("../project/ProjectSerializer").Edi
 
 function renderAsset(asset: EditorAssetRecord): string {
   return `
-    <article class="asset-card" data-asset-id="${asset.id}" draggable="true">
+    <article class="asset-card" data-asset-id="${escapeHtml(asset.id)}" draggable="true">
       <div class="asset-thumbnail" style="background:${escapeHtml(asset.thumbnailColor ?? "#38d99f")}"></div>
       <strong>${escapeHtml(asset.name)}</strong>
-      <label>Name <input data-action="rename-asset" data-asset-id="${asset.id}" value="${escapeHtml(asset.name)}" aria-label="Rename asset ${escapeHtml(asset.name)}"></label>
+      <label>Name <input data-action="rename-asset" data-asset-id="${escapeHtml(asset.id)}" value="${escapeHtml(asset.name)}" aria-label="Rename asset ${escapeHtml(asset.name)}"></label>
       <span>${escapeHtml(asset.type)} | ${escapeHtml(asset.preview)} | ${escapeHtml(asset.status ?? "imported")}</span>
       <span>rev ${asset.revision ?? 1} | ${escapeHtml(asset.cacheKey ?? `${asset.uri}#rev-${asset.revision ?? 1}`)}</span>
       <small>${asset.diagnostics.map(escapeHtml).join(", ")}</small>
@@ -182,10 +269,10 @@ function renderAsset(asset: EditorAssetRecord): string {
         <summary>Dependencies</summary>
         <ul>${(asset.dependencies ?? []).map((dependency) => `<li>${escapeHtml(dependency)}</li>`).join("") || "<li>None</li>"}</ul>
       </details>
-      <button data-action="place-asset" data-asset-id="${asset.id}">Place</button>
-      <button data-action="reimport-asset" data-asset-id="${asset.id}">Reimport</button>
-      <button data-action="move-asset" data-asset-id="${asset.id}">Move</button>
-      <button data-action="delete-asset" data-asset-id="${asset.id}">Delete</button>
+      <button data-action="place-asset" data-asset-id="${escapeHtml(asset.id)}" aria-label="Place asset ${escapeHtml(asset.name)}">Place</button>
+      <button data-action="reimport-asset" data-asset-id="${escapeHtml(asset.id)}" aria-label="Reimport asset ${escapeHtml(asset.name)}">Reimport</button>
+      <button data-action="move-asset" data-asset-id="${escapeHtml(asset.id)}" aria-label="Move asset ${escapeHtml(asset.name)}">Move</button>
+      <button data-action="delete-asset" data-asset-id="${escapeHtml(asset.id)}" aria-label="Delete asset ${escapeHtml(asset.name)}">Delete</button>
     </article>
   `;
 }

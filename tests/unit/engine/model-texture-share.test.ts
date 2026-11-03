@@ -1,20 +1,24 @@
+import { createHash, webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTypedGLBActor, type TypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
 import { ModelTextureShareRegistry, modelTextureShareKey, sharedModelTextures } from "../../../packages/engine/src/production-runtime/actor/ModelTextureShare";
 
 const GLB_BYTES = new Uint8Array(readFileSync("fixtures/asset-corpus/avocado.glb"));
+const GLB_HASH = `sha256-${createHash("sha256").update(GLB_BYTES).digest("hex")}`;
 const nativeFetch = globalThis.fetch;
 
 beforeEach(() => {
+  vi.stubGlobal("crypto", webcrypto);
   globalThis.fetch = (async () => new Response(new Uint8Array(GLB_BYTES), { status: 200 })) as unknown as typeof fetch;
 });
 afterEach(() => {
   globalThis.fetch = nativeFetch;
+  vi.unstubAllGlobals();
 });
 
 function asset(name: string) {
-  return { url: `https://assets.invalid/aura-assets/${name}.glb`, type: "model", format: "glb", hash: `sha256-${name}` } as const;
+  return { url: `https://assets.invalid/aura-assets/${name}.glb`, type: "model", format: "glb", hash: GLB_HASH } as const;
 }
 
 function countingDecoder() {
@@ -29,7 +33,7 @@ function countingDecoder() {
 async function mount(count: number, name: string, options: Record<string, unknown>): Promise<TypedGLBActor[]> {
   return await Promise.all(
     Array.from({ length: count }, (_, i) =>
-      createTypedGLBActor({ asset: asset(name), id: `${name}-${i}`, width: 64, height: 64, ...options }) as Promise<TypedGLBActor>
+      createTypedGLBActor({ asset: asset(name), id: `${name}-${i}`, width: 64, height: 64, request: { credentials: "omit" }, ...options }) as Promise<TypedGLBActor>
     )
   );
 }

@@ -27,10 +27,8 @@
  *   - ibl: iridescence thin-film multiscatter and the anisotropy bent normal
  *     replace the base env specular (order 5), then sheen (20) and clearcoat
  *     (30) compose over the final accumulators (r185 meshphysical.glsl.js);
- *   - lobe textures are sampled (texCoord 0) when the lobe bit is set:
- *     clearcoat/.x, clearcoatRoughness/.y, sheenColor/.rgb, sheenRoughness/.a,
- *     iridescence/.r, iridescenceThickness/.g, anisotropy/.rgb; the clearcoat
- *     normal map is not sampled yet (geometry normal);
+ *   - lobe textures use independently selected UV sets and transforms;
+ *     clearcoat normal maps perturb the coat's own shading normal;
  *   - transmission/volume/dispersion: screen-space refraction replaces the
  *     diffuse term under A3D_TRANSMISSION (the transmission target feature);
  *   - ior/specular/emissive-strength/unlit: the base PhysicalMaterial and
@@ -75,14 +73,89 @@ void a3dPrd04LobesEnsure( const in float ior, const in float roughness, const in
 }
 `, ["brdf", "a3d_prd04_bsdf_lobes_common"]);
 
+// ── thin diffuse transmission ──────────────────────────────────────────────
+// Opposite-hemisphere illumination replaces the corresponding share of the
+// dielectric diffuse reflection, below the existing Fresnel/specular layer.
+export const A3D_PRD04_DIFFUSE_TRANSMISSION_PARS = chunk("a3d_prd04_diffuse_transmission_pars", /* glsl */ `
+uniform float u_diffuseTransmissionFactor;
+uniform vec3 u_diffuseTransmissionColorFactor;
+#ifdef A3D_LOBE_DIFFUSE_TRANSMISSION_MAP
+uniform sampler2D u_diffuseTransmissionTexture;
+#endif
+#ifdef A3D_LOBE_DIFFUSE_TRANSMISSION_COLOR_MAP
+uniform sampler2D u_diffuseTransmissionColorTexture;
+#endif
+float a3dDiffuseTransmissionFactor;
+vec3 a3dDiffuseTransmissionColor;
+vec3 a3dDiffuseTransmissionDirect = vec3(0.0);
+`, ["brdf"]);
+
+export const A3D_PRD04_DIFFUSE_TRANSMISSION_CALL = chunk("a3d_prd04_diffuse_transmission_call", /* glsl */ `
+a3dDiffuseTransmissionFactor = clamp(u_diffuseTransmissionFactor, 0.0, 1.0);
+a3dDiffuseTransmissionColor = clamp(u_diffuseTransmissionColorFactor, 0.0, 1.0);
+#ifdef A3D_LOBE_DIFFUSE_TRANSMISSION_MAP
+a3dDiffuseTransmissionFactor *= texture(u_diffuseTransmissionTexture, A3D_LOBE_UV_DIFFUSE_TRANSMISSION).a;
+#endif
+#ifdef A3D_LOBE_DIFFUSE_TRANSMISSION_COLOR_MAP
+a3dDiffuseTransmissionColor *= texture(u_diffuseTransmissionColorTexture, A3D_LOBE_UV_DIFFUSE_TRANSMISSION_COLOR).rgb;
+#endif
+a3dDiffuseTransmissionFactor = clamp(a3dDiffuseTransmissionFactor, 0.0, 1.0);
+a3dDiffuseTransmissionColor = clamp(a3dDiffuseTransmissionColor, 0.0, 1.0);
+`, ["a3d_prd04_diffuse_transmission_pars"]);
+
+export const A3D_PRD04_DIFFUSE_TRANSMISSION_DIRECT_CALL = chunk("a3d_prd04_diffuse_transmission_direct_call", /* glsl */ `{
+  float backNl = max(-dot(N, L), 0.0);
+  float viewNl = max(dot(N, V), 0.0);
+  if (backNl > 0.0 && viewNl > 0.0) {
+    vec3 viewF = F_Schlick(material.specularColor, material.specularIntensity, viewNl);
+    vec3 lightF = F_Schlick(material.specularColor, material.specularIntensity, backNl);
+    vec3 available = vec3(1.0) - saturate(max(viewF, lightF));
+    a3dDiffuseTransmissionDirect += max(radiance, vec3(0.0)) * backNl * RECIPROCAL_PI
+      * (1.0 - material.metallic) * a3dDiffuseTransmissionFactor * a3dDiffuseTransmissionColor * available;
+  }
+}`, ["a3d_prd04_diffuse_transmission_pars"]);
+
+export const A3D_PRD04_DIFFUSE_TRANSMISSION_IBL_CALL = chunk("a3d_prd04_diffuse_transmission_ibl_call", /* glsl */ `{
+  PhysicalMaterial backMaterial = material;
+  backMaterial.diffuseContribution = (1.0 - material.metallic) * a3dDiffuseTransmissionFactor * a3dDiffuseTransmissionColor;
+  vec3 transmittedIndirect = a3dIndirectDiffuse(a3dBackEnvIrradiance, V, N, backMaterial)
+    + a3dBackAmbientExitRadiance * backMaterial.diffuseContribution;
+#ifdef USE_OCCLUSION_MAP
+  transmittedIndirect *= a3dAo;
+#endif
+  directDiffuse = directDiffuse * (1.0 - a3dDiffuseTransmissionFactor) + a3dDiffuseTransmissionDirect;
+  indirectDiffuse = indirectDiffuse * (1.0 - a3dDiffuseTransmissionFactor) + transmittedIndirect;
+}`, ["a3d_prd04_diffuse_transmission_pars"]);
+
 // ── ior + specular (base PhysicalMaterial already consumes the factors) ─────
+
+export const A3D_PRD04_SPECULAR_IOR_PARS = chunk("a3d_prd04_specular_ior_pars", /* glsl */ `
+#ifdef A3D_LOBE_SPECULAR_SPECULAR_MAP
+uniform sampler2D u_specularTexture;
+#endif
+#ifdef A3D_LOBE_SPECULAR_SPECULAR_COLOR_MAP
+uniform sampler2D u_specularColorTexture;
+#endif
+`, ["a3d_prd04_specular_ior", "a3d_prd04_lobes_state"]);
 
 export const A3D_PRD04_SPECULAR_IOR_CALL = chunk("a3d_prd04_specular_ior_call", /* glsl */ `{
 	${ENSURE}
-	// u_ior / u_specularIntensity (renamed from u_specularFactor) /
-	// u_specularColorFactor already built material.specularColor in a3dMakeMaterial.
 	a3dLobes.ior = material.ior;
-}`, ["a3d_prd04_specular_ior", "a3d_prd04_lobes_state"]);
+#if defined(A3D_LOBE_SPECULAR_SPECULAR_MAP) || defined(A3D_LOBE_SPECULAR_SPECULAR_COLOR_MAP)
+	float strengthTexel = 1.0;
+	vec3 colorTexel = vec3( 1.0 );
+#ifdef A3D_LOBE_SPECULAR_SPECULAR_MAP
+	strengthTexel = texture( u_specularTexture, A3D_LOBE_UV_SPECULAR ).a;
+#endif
+#ifdef A3D_LOBE_SPECULAR_SPECULAR_COLOR_MAP
+	colorTexel = texture( u_specularColorTexture, A3D_LOBE_UV_SPECULAR_COLOR ).rgb;
+#endif
+	vec3 specColor = a3dPrd04SpecIorFactors( u_specularColorFactor, u_specularIntensity, colorTexel, strengthTexel, material.specularIntensity );
+	material.specularColor = a3dPrd04SpecIorSpecularColor( material.ior, specColor, material.specularIntensity );
+	material.specularColorBlended = a3dPrd04SpecIorSpecularColorBlended( material.specularColor, min( material.baseColor, vec3( 1.0 ) ), material.metallic );
+	material.specularF90 = a3dPrd04SpecIorSpecularF90( material.specularIntensity, material.metallic );
+#endif
+}`, ["a3d_prd04_specular_ior_pars"]);
 
 // ── clearcoat ────────────────────────────────────────────────────────────────
 // Textures (r185 clearcoat_pars / lights_physical_fragment): `.x` of the coat
@@ -99,6 +172,25 @@ uniform sampler2D u_clearcoatTexture;
 #ifdef A3D_LOBE_CLEARCOAT_ROUGHNESS_MAP
 uniform sampler2D u_clearcoatRoughnessTexture;
 #endif
+#ifdef A3D_LOBE_CLEARCOAT_NORMAL_MAP
+uniform sampler2D u_clearcoatNormalTexture;
+uniform float u_clearcoatNormalScale;
+vec3 a3dPrd04CoatNormal( vec3 position, vec3 normal, vec2 uv ) {
+	vec3 dx = dFdx( position ), dy = dFdy( position );
+	vec2 ux = dFdx( uv ), uy = dFdy( uv );
+	float determinant = ux.x * uy.y - ux.y * uy.x;
+	if ( abs( determinant ) < 1e-8 ) return normal;
+	vec3 tangent = ( dx * uy.y - dy * ux.y ) / determinant;
+	vec3 bitangent = ( dy * ux.x - dx * uy.x ) / determinant;
+	tangent -= normal * dot( tangent, normal );
+	bitangent -= normal * dot( bitangent, normal );
+	if ( dot( tangent, tangent ) < 1e-12 || dot( bitangent, bitangent ) < 1e-12 ) return normal;
+	vec3 mapNormal = texture( u_clearcoatNormalTexture, uv ).xyz * 2.0 - 1.0;
+	mapNormal.xy *= u_clearcoatNormalScale;
+	vec3 result = normalize( tangent ) * mapNormal.x + normalize( bitangent ) * mapNormal.y + normal * mapNormal.z;
+	return dot( result, result ) > 1e-12 ? normalize( result ) : normal;
+}
+#endif
 vec3 a3dPrd04CoatDirect = vec3( 0.0 );
 `, ["a3d_prd04_clearcoat", "a3d_prd04_lobes_state"]);
 
@@ -107,12 +199,16 @@ export const A3D_PRD04_CLEARCOAT_CALL = chunk("a3d_prd04_clearcoat_call", /* gls
 	vec4 a3dCcTex = vec4( 1.0 );
 	vec4 a3dCcRoughTex = vec4( 1.0 );
 #ifdef A3D_LOBE_CLEARCOAT_MAP
-	a3dCcTex = texture( u_clearcoatTexture, v_uv );
+	a3dCcTex = texture( u_clearcoatTexture, A3D_LOBE_UV_CLEARCOAT );
 #endif
 #ifdef A3D_LOBE_CLEARCOAT_ROUGHNESS_MAP
-	a3dCcRoughTex = texture( u_clearcoatRoughnessTexture, v_uv );
+	a3dCcRoughTex = texture( u_clearcoatRoughnessTexture, A3D_LOBE_UV_CLEARCOAT_ROUGHNESS );
 #endif
-	a3dPrd04ClearcoatInit( a3dLobes, u_clearcoatFactor, u_clearcoatRoughnessFactor, a3dCcTex, a3dCcRoughTex, geometryNormal, a3dPrd04GeometryRoughness( geometryNormal ) );
+	vec3 a3dCoatNormal = geometryNormal;
+#ifdef A3D_LOBE_CLEARCOAT_NORMAL_MAP
+	a3dCoatNormal = a3dPrd04CoatNormal( v_worldPosition, geometryNormal, A3D_LOBE_UV_CLEARCOAT_NORMAL );
+#endif
+	a3dPrd04ClearcoatInit( a3dLobes, u_clearcoatFactor, u_clearcoatRoughnessFactor, a3dCcTex, a3dCcRoughTex, a3dCoatNormal, a3dPrd04GeometryRoughness( geometryNormal ) );
 }`, ["a3d_prd04_clearcoat_pars"]);
 
 export const A3D_PRD04_CLEARCOAT_DIRECT_CALL = chunk("a3d_prd04_clearcoat_direct_call", /* glsl */ `if ( a3dLobes.clearcoat > 0.0 ) {
@@ -122,10 +218,7 @@ export const A3D_PRD04_CLEARCOAT_DIRECT_CALL = chunk("a3d_prd04_clearcoat_direct
 
 export const A3D_PRD04_CLEARCOAT_IBL_CALL = chunk("a3d_prd04_clearcoat_ibl_call", /* glsl */ `if ( a3dLobes.clearcoat > 0.0 ) {
 	vec3 a3dCcN = a3dLobes.clearcoatNormal;
-	vec3 a3dCcEnv = vec3( 0.0 );
-#ifdef A3D_ENV_SAMPLE
-	a3dCcEnv = a3dSampleEnvironment( reflect( -V, a3dCcN ), a3dLobes.clearcoatRoughness * 8.0 );
-#endif
+	vec3 a3dCcEnv = a3dLobeEnvironment( reflect( -V, a3dCcN ), a3dLobes.clearcoatRoughness );
 	vec3 a3dCcIndirect = a3dPrd04ClearcoatIndirect( a3dCcN, V, a3dLobes.clearcoatRoughness, a3dCcEnv );
 	vec3 a3dCcFresnel = F_Schlick( vec3( 0.04 ), 1.0, saturate( dot( a3dCcN, V ) ) );
 	vec3 a3dCcBase = vec3( 1.0 ) - a3dLobes.clearcoat * a3dCcFresnel;
@@ -157,10 +250,10 @@ export const A3D_PRD04_SHEEN_CALL = chunk("a3d_prd04_sheen_call", /* glsl */ `{
 	vec4 a3dShColorTex = vec4( 1.0 );
 	vec4 a3dShRoughTex = vec4( 1.0 );
 #ifdef A3D_LOBE_SHEEN_COLOR_MAP
-	a3dShColorTex = texture( u_sheenColorTexture, v_uv );
+	a3dShColorTex = texture( u_sheenColorTexture, A3D_LOBE_UV_SHEEN_COLOR );
 #endif
 #ifdef A3D_LOBE_SHEEN_ROUGHNESS_MAP
-	a3dShRoughTex = texture( u_sheenRoughnessTexture, v_uv );
+	a3dShRoughTex = texture( u_sheenRoughnessTexture, A3D_LOBE_UV_SHEEN_ROUGHNESS );
 #endif
 	a3dPrd04SheenInit( a3dLobes, u_sheenColorFactor, u_sheenRoughnessFactor, a3dShColorTex, a3dShRoughTex );
 }`, ["a3d_prd04_sheen_pars"]);
@@ -171,9 +264,7 @@ export const A3D_PRD04_SHEEN_DIRECT_CALL = chunk("a3d_prd04_sheen_direct_call", 
 
 export const A3D_PRD04_SHEEN_IBL_CALL = chunk("a3d_prd04_sheen_ibl_call", /* glsl */ `if ( max3( a3dLobes.sheenColor ) > 0.0 ) {
 	vec3 a3dShIrradiance = u_environmentColor * u_environmentIntensity;
-#ifdef A3D_ENV_SAMPLE
-	a3dShIrradiance += a3dSampleEnvironment( N, 8.0 );
-#endif
+	a3dShIrradiance += a3dLobeIrradiance * RECIPROCAL_PI;
 	vec3 a3dShIndirect = a3dPrd04SheenIndirect( N, V, a3dLobes.sheenRoughness, a3dLobes.sheenColor, a3dShIrradiance );
 	float a3dShComp = a3dPrd04SheenEnergyCompensationIndirect( N, V, a3dLobes.sheenColor, a3dLobes.sheenRoughness );
 	directDiffuse *= a3dShComp;
@@ -209,10 +300,10 @@ export const A3D_PRD04_IRIDESCENCE_CALL = chunk("a3d_prd04_iridescence_call", /*
 	vec4 a3dIrTex = vec4( 1.0 );
 	vec4 a3dIrThickTex = vec4( 1.0 );
 #ifdef A3D_LOBE_IRIDESCENCE_MAP
-	a3dIrTex = texture( u_iridescenceTexture, v_uv );
+	a3dIrTex = texture( u_iridescenceTexture, A3D_LOBE_UV_IRIDESCENCE );
 #endif
 #ifdef A3D_LOBE_IRIDESCENCE_THICKNESS_MAP
-	a3dIrThickTex = texture( u_iridescenceThicknessTexture, v_uv );
+	a3dIrThickTex = texture( u_iridescenceThicknessTexture, A3D_LOBE_UV_IRIDESCENCE_THICKNESS );
 #endif
 	a3dPrd04IridescenceInit( a3dLobes, u_iridescenceFactor, u_iridescenceIor, a3dIrTex, a3dIrThickTex, u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, material.specularColor, material.baseColor, material.metallic, saturate( dot( N, V ) ) );
 }`, ["a3d_prd04_iridescence_pars"]);
@@ -228,15 +319,15 @@ export const A3D_PRD04_IRIDESCENCE_DIRECT_CALL = chunk("a3d_prd04_iridescence_di
 	directSpecular += radiance * a3dIrNL * ( a3dIrFilm - a3dIrF ) * a3dIrVD;
 }`, ["a3d_prd04_iridescence_pars"]);
 
-export const A3D_PRD04_IRIDESCENCE_IBL_CALL = chunk("a3d_prd04_iridescence_ibl_call", /* glsl */ `#ifdef A3D_ENV_SAMPLE
+export const A3D_PRD04_IRIDESCENCE_IBL_CALL = chunk("a3d_prd04_iridescence_ibl_call", /* glsl */ `#if defined(A3D_ENV_SAMPLE) || defined(A3D_LOCAL_PROBE) || defined(LIGHT_HEMISPHERE) || defined(A3D_LOCAL_DIFFUSE_IRRADIANCE)
 if ( a3dLobes.iridescence > 0.0 ) {
-	vec3 a3dIrEnv = a3dSampleEnvironment( reflect( -V, N ), material.roughness * 8.0 );
+	vec3 a3dIrEnv = a3dLobeEnvironment( reflect( -V, N ), material.roughness );
 	vec3 a3dIrSingle = vec3( 0.0 );
 	vec3 a3dIrMulti = vec3( 0.0 );
 	a3dPrd04ComputeMultiscatteringIridescence( N, V, material.specularColorBlended, material.specularF90, a3dLobes.iridescence, a3dLobes.iridescenceF0, material.roughness, a3dIrSingle, a3dIrMulti );
 	// r185 RE_IndirectSpecular_Physical: radiance * single + multi * irradiance / PI
 	// (a3dEnvIrradiance comes from the default indirect body, same #ifdef).
-	indirectSpecular += a3dIrEnv * a3dIrSingle + a3dIrMulti * ( a3dEnvIrradiance * RECIPROCAL_PI ) - a3dIndirectSpecular( a3dIrEnv, a3dEnvIrradiance, V, N, material );
+	indirectSpecular += a3dIrEnv * a3dIrSingle + a3dIrMulti * ( a3dLobeIrradiance * RECIPROCAL_PI ) - a3dIndirectSpecular( a3dIrEnv, a3dLobeIrradiance, V, N, material );
 }
 #endif`, ["a3d_prd04_iridescence_pars"]);
 
@@ -257,12 +348,35 @@ uniform sampler2D u_anisotropyTexture;
 export const A3D_PRD04_ANISOTROPY_CALL = chunk("a3d_prd04_anisotropy_call", /* glsl */ `{
 	${ENSURE}
 #ifdef A3D_PRD04_TANGENT_FRAME
+	// Recover the basis from the selected, transformed anisotropy UV when
+	// available. It also handles geometry without an authored tangent.
+#ifdef A3D_LOBE_ANISOTROPY_MAP
+	vec2 a3dAnUv = A3D_LOBE_UV_ANISOTROPY;
+	vec3 a3dAnDx = dFdx( v_worldPosition ), a3dAnDy = dFdy( v_worldPosition );
+	vec2 a3dAnUx = dFdx( a3dAnUv ), a3dAnUy = dFdy( a3dAnUv );
+	float a3dAnDet = a3dAnUx.x * a3dAnUy.y - a3dAnUx.y * a3dAnUy.x;
+	if ( abs( a3dAnDet ) > 1e-8 ) {
+		vec3 tangent = ( a3dAnDx * a3dAnUy.y - a3dAnDy * a3dAnUx.y ) / a3dAnDet;
+		vec3 bitangent = ( a3dAnDy * a3dAnUx.x - a3dAnDx * a3dAnUy.x ) / a3dAnDet;
+		tangent -= N * dot( tangent, N );
+		bitangent -= N * dot( bitangent, N );
+		if ( dot( tangent, tangent ) > 1e-12 && dot( bitangent, bitangent ) > 1e-12 ) {
+			a3dPrd04TangentT = normalize( tangent );
+			a3dPrd04TangentB = normalize( bitangent );
+		}
+	}
+#endif
+	if ( dot( a3dPrd04TangentT, a3dPrd04TangentT ) < 1e-12 ) {
+		vec3 axis = abs( N.z ) < 0.9 ? vec3( 0.0, 0.0, 1.0 ) : vec3( 0.0, 1.0, 0.0 );
+		a3dPrd04TangentT = normalize( cross( axis, N ) );
+		a3dPrd04TangentB = cross( N, a3dPrd04TangentT );
+	}
 	if ( dot( a3dPrd04TangentT, a3dPrd04TangentT ) > 0.0 ) {
 		vec2 a3dAnisoVector = vec2( cos( u_anisotropyRotation ), sin( u_anisotropyRotation ) ) * u_anisotropyStrength;
 		vec4 a3dAnisoTex = vec4( 0.0 );
 		bool a3dAnisoUseTex = false;
 #ifdef A3D_LOBE_ANISOTROPY_MAP
-		a3dAnisoTex = texture( u_anisotropyTexture, v_uv );
+		a3dAnisoTex = texture( u_anisotropyTexture, A3D_LOBE_UV_ANISOTROPY );
 		a3dAnisoUseTex = true;
 #endif
 		a3dPrd04AnisotropyInit( a3dLobes, a3dAnisoVector, a3dAnisoTex, a3dAnisoUseTex, a3dPrd04TangentT, a3dPrd04TangentB, material.roughness );
@@ -281,12 +395,12 @@ export const A3D_PRD04_ANISOTROPY_DIRECT_CALL = chunk("a3d_prd04_anisotropy_dire
 	directSpecular += radiance * a3dAnNL * ( a3dAnAniso - a3dAnIso );
 }`, ["a3d_prd04_anisotropy_pars"]);
 
-export const A3D_PRD04_ANISOTROPY_IBL_CALL = chunk("a3d_prd04_anisotropy_ibl_call", /* glsl */ `#ifdef A3D_ENV_SAMPLE
+export const A3D_PRD04_ANISOTROPY_IBL_CALL = chunk("a3d_prd04_anisotropy_ibl_call", /* glsl */ `#if defined(A3D_ENV_SAMPLE) || defined(A3D_LOCAL_PROBE) || defined(LIGHT_HEMISPHERE)
 if ( a3dLobes.anisotropy > 0.0 ) {
 	vec3 a3dAnBent = a3dPrd04AnisotropyBentNormal( V, N, material.roughness, a3dLobes.anisotropyB, a3dLobes.anisotropy );
-	vec3 a3dAnEnvBent = a3dSampleEnvironment( reflect( -V, a3dAnBent ), material.roughness * 8.0 );
-	vec3 a3dAnEnvIso = a3dSampleEnvironment( reflect( -V, N ), material.roughness * 8.0 );
-	indirectSpecular += a3dIndirectSpecular( a3dAnEnvBent, a3dEnvIrradiance, V, N, material ) - a3dIndirectSpecular( a3dAnEnvIso, a3dEnvIrradiance, V, N, material );
+	vec3 a3dAnEnvBent = a3dLobeEnvironment( reflect( -V, a3dAnBent ), material.roughness );
+	vec3 a3dAnEnvIso = a3dLobeEnvironment( reflect( -V, N ), material.roughness );
+	indirectSpecular += a3dIndirectSpecular( a3dAnEnvBent, a3dLobeIrradiance, V, N, material ) - a3dIndirectSpecular( a3dAnEnvIso, a3dLobeIrradiance, V, N, material );
 }
 #endif`, ["a3d_prd04_anisotropy_pars"]);
 
@@ -296,11 +410,17 @@ export const A3D_PRD04_VOLUME_PARS = chunk("a3d_prd04_volume_pars", /* glsl */ `
 uniform float u_volumeThicknessFactor;
 uniform float u_volumeAttenuationDistance;
 uniform vec3 u_volumeAttenuationColor;
+#ifdef A3D_LOBE_VOLUME_THICKNESS_MAP
+uniform sampler2D u_volumeThicknessTexture;
+#endif
 `, ["a3d_prd04_volume", "a3d_prd04_lobes_state"]);
 
 export const A3D_PRD04_VOLUME_CALL = chunk("a3d_prd04_volume_call", /* glsl */ `{
 	${ENSURE}
 	a3dLobes.thickness = u_volumeThicknessFactor;
+#ifdef A3D_LOBE_VOLUME_THICKNESS_MAP
+	a3dLobes.thickness *= texture( u_volumeThicknessTexture, A3D_LOBE_UV_VOLUME_THICKNESS ).g;
+#endif
 	a3dLobes.attenuationDistance = u_volumeAttenuationDistance;
 	a3dLobes.attenuationColor = u_volumeAttenuationColor;
 }`, ["a3d_prd04_volume_pars"]);
@@ -308,6 +428,10 @@ export const A3D_PRD04_VOLUME_CALL = chunk("a3d_prd04_volume_call", /* glsl */ `
 export const A3D_PRD04_TRANSMISSION_PARS = chunk("a3d_prd04_transmission_pars", /* glsl */ `
 uniform float u_transmissionFactor;
 uniform mat4 u_modelMatrix;
+uniform mat4 u_geometryMatrix;
+#ifdef A3D_LOBE_TRANSMISSION_MAP
+uniform sampler2D u_transmissionTexture;
+#endif
 `, ["a3d_prd04_transmission", "a3d_prd04_lobes_state"]);
 
 // Thin-walled by default: thickness / attenuation stay at the
@@ -318,6 +442,9 @@ uniform mat4 u_modelMatrix;
 export const A3D_PRD04_TRANSMISSION_CALL = chunk("a3d_prd04_transmission_call", /* glsl */ `{
 	${ENSURE}
 	a3dLobes.transmission = saturate( u_transmissionFactor );
+#ifdef A3D_LOBE_TRANSMISSION_MAP
+	a3dLobes.transmission *= texture( u_transmissionTexture, A3D_LOBE_UV_TRANSMISSION ).r;
+#endif
 }`, ["a3d_prd04_transmission_pars"]);
 
 // r185 transmission_fragment.glsl.js: totalDiffuse = mix( totalDiffuse,
@@ -325,10 +452,15 @@ export const A3D_PRD04_TRANSMISSION_CALL = chunk("a3d_prd04_transmission_call", 
 // (prd04.transmissionTarget feature → A3D_TRANSMISSION).
 export const A3D_PRD04_TRANSMISSION_IBL_CALL = chunk("a3d_prd04_transmission_ibl_call", /* glsl */ `#ifdef A3D_TRANSMISSION
 if ( a3dLobes.transmission > 0.0 ) {
-#ifdef A3D_LOBE_DISPERSION
-	vec4 a3dTr = a3dGetIBLVolumeRefractionDispersion( N, V, material.roughness, material.diffuseContribution, material.specularColorBlended, material.specularF90, v_worldPosition, u_modelMatrix, a3dLobes.dispersion, a3dLobes.ior, a3dLobes.thickness, a3dLobes.attenuationColor, a3dLobes.attenuationDistance );
+#ifdef A3D_INSTANCE_VOLUME_TRANSFORM
+	mat4 a3dTransmissionModel = mat4( vec4( v_a3dVolumeColumn0, 0.0 ), vec4( v_a3dVolumeColumn1, 0.0 ), vec4( v_a3dVolumeColumn2, 0.0 ), vec4( 0.0, 0.0, 0.0, 1.0 ) );
 #else
-	vec4 a3dTr = a3dGetIBLVolumeRefraction( N, V, material.roughness, material.diffuseContribution, material.specularColorBlended, material.specularF90, v_worldPosition, u_modelMatrix, a3dLobes.ior, a3dLobes.thickness, a3dLobes.attenuationColor, a3dLobes.attenuationDistance );
+	mat4 a3dTransmissionModel = u_modelMatrix * u_geometryMatrix;
+#endif
+#ifdef A3D_LOBE_DISPERSION
+	vec4 a3dTr = a3dGetIBLVolumeRefractionDispersion( N, V, material.roughness, material.diffuseContribution, material.specularColorBlended, material.specularF90, v_worldPosition, a3dTransmissionModel, a3dLobes.dispersion, a3dLobes.ior, a3dLobes.thickness, a3dLobes.attenuationColor, a3dLobes.attenuationDistance );
+#else
+	vec4 a3dTr = a3dGetIBLVolumeRefraction( N, V, material.roughness, material.diffuseContribution, material.specularColorBlended, material.specularF90, v_worldPosition, a3dTransmissionModel, a3dLobes.ior, a3dLobes.thickness, a3dLobes.attenuationColor, a3dLobes.attenuationDistance );
 #endif
 	vec3 a3dTotalDiffuse = directDiffuse + indirectDiffuse;
 	directDiffuse = vec3( 0.0 );
@@ -371,9 +503,11 @@ vec3 a3dPrd04TangentB = vec3( 0.0 );
 `, ["a3d_prd04_tangent_frame"], "both");
 
 /** vertex:world — world tangent from the (deformed) object tangent; zero when absent. */
-export const A3D_PRD04_TANGENT_FRAME_VERTEX_CALL = chunk("a3d_prd04_tangent_frame_vertex_call", /* glsl */ `v_prd04Tangent = dot( objectTangent.xyz, objectTangent.xyz ) > 0.0
-		? a3dPrd04TangentWorld( mat3( u_modelMatrix ) * mat3( instanceMatrix ), objectTangent )
-		: vec4( 0.0 );`, ["a3d_prd04_tangent_frame_state"], "vertex");
+export const A3D_PRD04_TANGENT_FRAME_VERTEX_CALL = chunk("a3d_prd04_tangent_frame_vertex_call", /* glsl */ `mat3 a3dTangentTransform = mat3( u_modelMatrix ) * mat3( instanceMatrix ) * mat3( u_geometryMatrix );
+v_prd04Tangent = dot( objectTangent.xyz, objectTangent.xyz ) > 0.0
+		? a3dPrd04TangentWorld( a3dTangentTransform, objectTangent )
+		: vec4( 0.0 );
+if ( determinant( a3dTangentTransform ) < 0.0 ) v_prd04Tangent.w *= -1.0;`, ["a3d_prd04_tangent_frame_state"], "vertex");
 
 /** fragment:normal — re-orthogonalized T/B for lobes (anisotropy) and debug views. */
 export const A3D_PRD04_TANGENT_FRAME_CALL = chunk("a3d_prd04_tangent_frame_call", /* glsl */ `if ( dot( v_prd04Tangent.xyz, v_prd04Tangent.xyz ) > 0.0 ) {
@@ -446,6 +580,11 @@ export const A3D_PRD04_RIM_CALL = chunk("a3d_prd04_rim_call", /* glsl */ `#ifdef
 
 export const PRD04_CALL_CHUNKS: readonly ShaderChunk[] = [
 	A3D_PRD04_LOBES_STATE,
+	A3D_PRD04_DIFFUSE_TRANSMISSION_PARS,
+	A3D_PRD04_DIFFUSE_TRANSMISSION_CALL,
+	A3D_PRD04_DIFFUSE_TRANSMISSION_DIRECT_CALL,
+	A3D_PRD04_DIFFUSE_TRANSMISSION_IBL_CALL,
+	A3D_PRD04_SPECULAR_IOR_PARS,
 	A3D_PRD04_SPECULAR_IOR_CALL,
 	A3D_PRD04_CLEARCOAT_PARS,
 	A3D_PRD04_CLEARCOAT_CALL,

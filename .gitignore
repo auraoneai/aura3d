@@ -343,6 +343,17 @@ test-data/
 !marketing/public/store-assets/brand/social/*.png
 
 fixtures/
+# The tracked decoder corpus redistributes these upstream license texts.
+!/fixtures/
+/fixtures/*
+!/fixtures/asset-corpus/
+/fixtures/asset-corpus/*
+!/fixtures/asset-corpus/decoders/
+/fixtures/asset-corpus/decoders/*
+!/fixtures/asset-corpus/decoders/LICENSE-basis.txt
+!/fixtures/asset-corpus/decoders/LICENSE-zstd.txt
+!/fixtures/asset-corpus/decoders/LICENSE-draco.txt
+!/fixtures/asset-corpus/decoders/LICENSE-meshopt.txt
 # PRD-15 lane fixtures (codemod inputs/outputs, C-30 lean template scenes).
 !tests/qr/prd15/fixtures/
 # Lane test fixtures that unit/contract tests read (prd03 .cube LUTs, prd05

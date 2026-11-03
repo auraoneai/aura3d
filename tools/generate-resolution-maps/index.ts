@@ -4,6 +4,7 @@
 //   2. /tsconfig.paths.generated.json               (all in-repo specifiers)
 //   3. /vite.aliases.generated.ts                   (rows where flags.vite !== false)
 //   4. /tools/finalize-dist/manifest.generated.json (merged spec view)
+//   5. /packages/aura3d-cli/data/aura.exports.json (bundled registry copy)
 // Deprecated entries additionally emit a re-export stub source at the mapped
 // path so the published dist target keeps resolving until removeIn.
 // Usage: pnpm exec tsx --tsconfig tsconfig.base.json tools/generate-resolution-maps/index.ts --write|--check [--root <dir>]
@@ -14,6 +15,8 @@ export interface AuraEntry {
   readonly source?: string;
   readonly conditions?: boolean;
   readonly browser?: string;
+  /** Explicit generated CommonJS bridge for entrypoints whose ESM graph supports synchronous require. */
+  readonly require?: string;
   readonly devOnly?: boolean;
 }
 
@@ -62,11 +65,15 @@ export function buildPackageExports(aura: AuraExportsFile): Record<string, unkno
     }
     const dist = distTarget(entry.source, "js");
     const dts = distTarget(entry.source, "d.ts");
-    if (entry.conditions || entry.browser) {
+    if (entry.require && (!/^\.\/dist\/[a-zA-Z0-9_./-]+\.cjs$/.test(entry.require) || entry.require.split("/").includes(".."))) {
+      throw new Error(`entry ${subpath} has an invalid CommonJS target`);
+    }
+    if (entry.conditions || entry.browser || entry.require) {
       out[subpath] = {
         types: dts,
         browser: entry.browser ? distTarget(entry.browser, "js") : dist,
         import: dist,
+        ...(entry.require ? { require: entry.require } : {}),
         default: dist
       };
     } else {
@@ -135,6 +142,7 @@ export function buildManifest(aura: AuraExportsFile): Record<string, unknown> {
       : undefined,
     ...(entry.conditions ? { conditions: true } : {}),
     ...(entry.browser ? { browser: entry.browser, browserDist: distTarget(entry.browser, "js") } : {}),
+    ...(entry.require ? { requireDist: entry.require } : {}),
     ...(entry.devOnly ? { devOnly: true } : {})
   }));
   const deprecated = Object.entries(aura.deprecated ?? {}).map(([name, entry]) => ({
@@ -234,7 +242,8 @@ export function spliceTsconfigPaths(baseText: string, pathsObject: Record<string
 }
 
 export function generateResolutionMaps(root: string, mode: "write" | "check"): { ok: boolean; changed: string[]; diffs: string[] } {
-  const aura = JSON.parse(readFileSync(join(root, "aura.exports.json"), "utf8")) as AuraExportsFile;
+  const registrySource = readFileSync(join(root, "aura.exports.json"), "utf8");
+  const aura = JSON.parse(registrySource) as AuraExportsFile;
   const exportsObject = buildPackageExports(aura);
   const pkgPath = join(root, "package.json");
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { exports?: unknown };
@@ -255,6 +264,11 @@ export function generateResolutionMaps(root: string, mode: "write" | "check"): {
     [join(root, "vite.aliases.generated.ts"), buildViteAliases(aura)],
     [join(root, "tools/finalize-dist/manifest.generated.json"), `${JSON.stringify(buildManifest(aura), null, 2)}\n`]
   ];
+  // The CLI consumes an embedded copy at runtime. Generate and check it from
+  // the exact same registry instead of requiring a separate manual sync.
+  if (existsSync(join(root, "packages/aura3d-cli"))) {
+    artifacts.push([join(root, "packages/aura3d-cli/data/aura.exports.json"), registrySource]);
+  }
   for (const [path, content] of artifacts) {
     if (mode === "write") writeIfChanged(path, content, changed);
     else if (!existsSync(path) || readFileSync(path, "utf8") !== content) diffs.push(`${path} differs from generated output`);

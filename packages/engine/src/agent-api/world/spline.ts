@@ -14,8 +14,9 @@
  * record's `gridVersion` so the Path S runtime re-uploads the height texture.
  */
 import { CatmullRomCurve3, Vector3 as MathVector3 } from "@aura3d/math";
-import type { AuraMaterialSpec, AuraSceneNode } from "../index.js";
-import { defineAuraCustomGeometry, geometry } from "../index.js";
+import type { AuraMaterialSpec, AuraSceneNode } from "../nodes/types.js";
+import { defineAuraCustomGeometry } from "../RootGeometry.js";
+import { geometry } from "../nodes/geometry.js";
 import type { AuraWorldNodeBase } from "./types.js";
 import { terrainRecordFor, type AuraTerrainHandle } from "./terrain.js";
 

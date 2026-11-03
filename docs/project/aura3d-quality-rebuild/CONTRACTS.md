@@ -1014,7 +1014,7 @@ File: `packages/rendering/src/contracts/velocity.ts`. `RenderItem` gains optiona
 //   readonly writesReactive?: boolean;                                // particles/transparents (C-07-IN-8)
 export const VELOCITY_MRT: { readonly velocityLocation: 1; readonly velocityFormat: "rg16f"; readonly reactiveLocation: 2; readonly reactiveFormat: "r8"; readonly define: "AURA_VELOCITY" };
 export interface TemporalHistoryLike { prepare(viewProjection: Float32Array, jitter: readonly [number, number]): { readonly jittered: Float32Array; readonly unjittered: Float32Array; readonly previous: Float32Array }; reset(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void; }
-export function resetTemporalHistory(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap"): void;
+export function resetTemporalHistory(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap" | "device-loss" | "explicit-reset", target?: { reset(reason: "camera-cut" | "resize" | "tier-change" | "scene-swap" | "device-loss" | "explicit-reset"): void }): void;
 // AuraApp.cutCamera(): void  (via C-38; PRD 08's app.camera.cut() calls it)
 ```
 
@@ -1026,8 +1026,10 @@ Semantics:
 
 Stub:
 - Fields are inert.
-- `resetTemporalHistory` calls the existing `this.temporalHistory.reset()` (`Renderer.ts`, inside `render` before
-  post).
+- An unscoped `resetTemporalHistory(reason)` resets the registered shared
+  compatibility history only. Pass a renderer-owned history or a view-specific
+  reset adapter as the second argument to target that owner. Renderer camera-cut
+  handling resets its own history directly.
 - Shader chunks compile `o_velocity`/`o_reactive` out when the attachment is absent (C-07-IN-8 stub).
 
 Real (PRD 03): `forward/Velocity.ts` (carve-out, §3.3) with MRT selection.

@@ -47,6 +47,8 @@ interface LodChain {
   /** Levels 1..N-1, in `lods` order. */
   readonly levels: readonly LodLevelEntry[];
   readonly selector: LodSelector;
+  /** Actor-owned tokens for each logical draw and simultaneously visible LOD. */
+  readonly temporalKeys: Map<NonNullable<RenderItem["temporalObjectKey"]>, Map<number, object>>;
   /** Level-0 bounding sphere in holder-local space. */
   readonly center: readonly [number, number, number];
   readonly radius: number;
@@ -162,6 +164,7 @@ function buildChains(pipeline: ProductionGLTFRenderPipeline): readonly LodChain[
       baseGeometry: baseGeometry as readonly RenderItem["geometry"][],
       levels,
       selector: new LodSelector({ screenCoverage: holderScreenCoverage(node, lods) }),
+      temporalKeys: new Map(),
       center: sphere.center,
       radius: sphere.radius
     });
@@ -169,13 +172,22 @@ function buildChains(pipeline: ProductionGLTFRenderPipeline): readonly LodChain[
   return chains;
 }
 
+function lodTemporalKey(chain: LodChain, identity: NonNullable<RenderItem["temporalObjectKey"]>, level: number): object {
+  let levels = chain.temporalKeys.get(identity);
+  if (!levels) { levels = new Map(); chain.temporalKeys.set(identity, levels); }
+  let key = levels.get(level);
+  if (!key) { key = {}; levels.set(level, key); }
+  return key;
+}
+
 /** Swap a base item's geometry to `level` (0 = base); `undefined` drops the primitive. */
 function remapItem(item: RenderItem, chain: LodChain, level: number): RenderItem | undefined {
   const entry = chain.levels[level - 1];
-  if (level === 0 || !entry) return item;
+  const temporalObjectKey = lodTemporalKey(chain, item.temporalObjectKey ?? item, level);
+  if (level === 0 || !entry) return { ...item, temporalObjectKey };
   const geometry = entry.geometry.get(item.geometry);
   if (!geometry) return undefined;
-  return { ...item, geometry };
+  return { ...item, geometry, temporalObjectKey };
 }
 
 function collectChainItems(chain: LodChain, baseItems: readonly RenderItem[], level: number): RenderItem[] {
@@ -185,7 +197,9 @@ function collectChainItems(chain: LodChain, baseItems: readonly RenderItem[], le
   if (level > 0) {
     const template = baseItems[0];
     for (const extra of chain.levels[level - 1]?.overflow ?? []) {
-      if (template) items.push({ ...template, geometry: extra.geometry, ...(extra.material ? { material: extra.material } : {}) });
+      if (template) items.push({ ...template, geometry: extra.geometry,
+        temporalObjectKey: lodTemporalKey(chain, extra, level),
+        ...(extra.material ? { material: extra.material } : {}) });
     }
   }
   return items;
@@ -212,7 +226,7 @@ function createHandle(actor: TypedGLBActor, state: ActorLodState): TypedGLBActor
       state.mode = "fixed";
       state.fixedLevel = level;
       state.lastLevel = level;
-      for (const chain of state.chains) chain.selector.setLevel(level);
+      for (const chain of state.chains) chain.selector.setLevel(Math.min(level, chain.selector.levels - 1));
     },
     setMode(mode, options = {}) {
       if (options.bias !== undefined) state.bias = options.bias;
@@ -272,6 +286,8 @@ export function registerTypedGLBActorLodExtension(): () => void {
         let level: number;
         if (state.mode === "fixed") {
           level = state.fixedLevel;
+        } else if (actor.reuseLodSelection) {
+          level = chain.selector.activeLevel;
         } else {
           const m: Float32Array | readonly number[] | undefined = baseItems[0].modelMatrix;
           const scale = m ? columnScale(m) : 1;
@@ -285,7 +301,7 @@ export function registerTypedGLBActorLodExtension(): () => void {
           const coverage = projectedSphereCoverage({
             center: worldCenter,
             radius: chain.radius * scale,
-            camera: actor.pipeline.camera
+            camera: actor.lodCamera ?? actor.pipeline.camera
           });
           level = chain.selector.select(coverage * state.bias);
         }

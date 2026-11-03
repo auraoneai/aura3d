@@ -51,34 +51,85 @@ interface InstalledMode {
 /** Bound on distinct inputs remembered for warn-once (a runaway generator must not grow it forever). */
 const MAX_WARNED_INPUTS = 256;
 
+// The legacy setter remains available for standalone compiler consumers. App
+// execution uses an explicitly owned policy instead: creating one app must not
+// change the parser (or warning history) of another app.
 let installed: InstalledMode | null = null;
+const ownedModes = new WeakMap<object, { mode: InstalledMode | null }>();
+let activeMode: InstalledMode | null | undefined;
 
 function defaultWarn(warning: Prd01ColorParseWarning): void {
   if (typeof console !== "undefined") console.warn(`[aura3d] ${warning.code}: ${warning.message}`);
 }
 
-/** createAuraApp installs the mode when `A3D_QR_CORE` is on; `null` restores the legacy helpers. */
-export function setPrd01ColorParsing(mode: Prd01ColorParsingMode | null): void {
-  installed = mode === null
+/** Set an owner's parser policy; the optional ownerless form is a legacy standalone policy. */
+export function setPrd01ColorParsing(mode: Prd01ColorParsingMode | null): void;
+export function setPrd01ColorParsing(mode: Prd01ColorParsingMode | null, owner: object): () => void;
+export function setPrd01ColorParsing(mode: Prd01ColorParsingMode | null, owner?: object): (() => void) | void {
+  const next = mode === null
     ? null
     : { strict: mode.strict === true, warn: mode.warn ?? defaultWarn, warned: new Set<string>() };
+  if (owner) {
+    const registration = { mode: next };
+    ownedModes.set(owner, registration);
+    return () => {
+      if (ownedModes.get(owner) === registration) ownedModes.delete(owner);
+    };
+  }
+  installed = next;
+}
+
+/**
+ * Run a synchronous compilation step under one owner's policy. The previous
+ * policy is restored even on throw and under re-entrant compilation. Never
+ * keep this scope open across an await: pass the owner into the next step and
+ * enter a fresh scope there instead.
+ */
+export function withPrd01ColorParsing<T>(owner: object, work: () => T): T {
+  const previous = activeMode;
+  // Unregistered callers retain the historical standalone policy. An app
+  // registers even its disabled (`null`) policy to opt out of that fallback.
+  activeMode = ownedModes.get(owner)?.mode ?? (ownedModes.has(owner) ? null : installed);
+  try {
+    return work();
+  } finally {
+    activeMode = previous;
+  }
 }
 
 export function prd01ColorParsingEnabled(): boolean {
-  return installed !== null;
+  return (activeMode === undefined ? installed : activeMode) !== null;
 }
 
-function fail(mode: InstalledMode, color: unknown, error: unknown): null {
-  if (mode.strict) throw error instanceof AuraColorParseError ? error : new AuraColorParseError(color);
-  const key = `${typeof color}:${String(color)}`;
+function fail(mode: InstalledMode, color: unknown): null {
+  let display: string;
+  try { display = typeof color === "string" ? color : String(color); } catch { display = "[unprintable]"; }
+  // Invalid color input is untrusted and may actually be a URL or header.
+  // Do not copy credentials, query parameters or arbitrary object state into
+  // diagnostics. Ordinary color strings remain actionable.
+  display = display
+    .replace(/https?:\/\/[^\s"'<>]+/gi, (url) => {
+      try {
+        const parsed = new URL(url);
+        parsed.username = "";
+        parsed.password = "";
+        if (parsed.search) parsed.search = "?[redacted]";
+        if (parsed.hash) parsed.hash = "#[redacted]";
+        return parsed.toString();
+      } catch { return "[redacted URL]"; }
+    })
+    .replace(/\b(authorization|proxy-authorization|cookie|set-cookie|password|secret|token|api[-_]?key)\s*[:=]\s*[^\s,;]+/gi, "$1=[redacted]")
+    .slice(0, 128);
+  if (mode.strict) throw new AuraColorParseError(display);
+  const key = `${typeof color}:${display}`;
   if (!mode.warned.has(key)) {
     if (mode.warned.size >= MAX_WARNED_INPUTS) mode.warned.clear();
     mode.warned.add(key);
     mode.warn({
       code: COLOR_PARSE_FAILED,
       kind: "option-ignored",
-      input: color,
-      message: `Could not parse color ${JSON.stringify(color)}; using the legacy fallback.`,
+      input: typeof color === "number" && Number.isFinite(color) ? color : display,
+      message: `Could not parse color ${JSON.stringify(display)}; using the legacy fallback.`,
       ownerPrd: 1
     });
   }
@@ -90,12 +141,12 @@ function fail(mode: InstalledMode, color: unknown, error: unknown): null {
  * (already warned) -> the caller runs its legacy body.
  */
 export function prd01ColorSrgb(color: unknown): Prd01Rgba | null {
-  const mode = installed;
+  const mode = activeMode === undefined ? installed : activeMode;
   if (mode === null) return null;
   try {
     return parseAuraColorSrgb(color as string | number);
-  } catch (error) {
-    return fail(mode, color, error);
+  } catch {
+    return fail(mode, color);
   }
 }
 
@@ -104,11 +155,11 @@ export function prd01ColorSrgb(color: unknown): Prd01Rgba | null {
  * (already warned) -> the caller runs its legacy body.
  */
 export function prd01ColorLinear(color: unknown): Prd01Rgba | null {
-  const mode = installed;
+  const mode = activeMode === undefined ? installed : activeMode;
   if (mode === null) return null;
   try {
     return parseAuraColor(color as string | number);
-  } catch (error) {
-    return fail(mode, color, error);
+  } catch {
+    return fail(mode, color);
   }
 }

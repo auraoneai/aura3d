@@ -146,11 +146,16 @@ describe("#266 default-on sub-flag expansion", () => {
     expect(resolveQrFlags({ options: ["world", "-world.biome"] }).on("A3D_QR_WORLD_BIOME")).toBe(false);
     expect(resolveQrFlags({ options: { A3D_QR_WORLD: true }, url: "http://x/?a3d-qr=-world.water" }).on("A3D_QR_WORLD_WATER")).toBe(false);
     // a lane turned off by an earlier source keeps its sub-flags off under `all`
-    const worldOff = resolveQrFlags({ options: ["-world"], url: "http://x/?a3d-qr=all" });
+    const worldOff = resolveQrFlags({ url: "http://x/?a3d-qr=-world", options: "all" });
     expect(worldOff.on("A3D_QR_WORLD")).toBe(false);
     expect(worldOff.on("A3D_QR_WORLD_TERRAIN")).toBe(false);
+    expect(worldOff.on("A3D_QR_WORLD_WATER")).toBe(false);
+    expect(worldOff.on("A3D_QR_WORLD_BIOME")).toBe(false);
+    expect(worldOff.on("A3D_QR_WORLD_WIND")).toBe(false);
     // opt-in sub-flags and lane-01's helper-resolved sub-flags are not implied; flag-off stays empty
-    expect(all.on("A3D_QR_POST_VELOCITY_MRT")).toBe(false);
+    expect(all.on("A3D_QR_POST_TAA")).toBe(false);
+    // Velocity MRT was promoted independently and stays on with its lane.
+    expect(all.on("A3D_QR_POST_VELOCITY_MRT")).toBe(true);
     expect(resolveQrFlags({ options: ["core"] }).values.A3D_QR_CORE_OUTPUT).toBeUndefined();
     // `none` writes every lane flag false (so it also turns default-on flags off)
     const none = resolveQrFlags({ options: ["none"] });

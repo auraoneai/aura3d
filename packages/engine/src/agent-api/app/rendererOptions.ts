@@ -2,12 +2,9 @@
 
 import type { AuraCreateAppRendererOptions, AuraRendererQualityPreset, AuraRendererQualityProfile, AuraRendererQualityProfileId } from "../nodes/types.js";
 import { DEFAULT_BLOOM_FUSION_MODE, isBloomFusion, type AuraBloomFusion } from "@aura3d/rendering/contracts";
+import type { RendererOptions } from "@aura3d/rendering";
 
-/**
- * PRD 11 Phase 1 freeze (§6.2): thrown when a caller requests the frozen
- * `experimental-webgpu` quality profile. The union member stays for CCR
- * compatibility, but selecting it is a migration-time error, not a warning.
- */
+/** Retained for callers that handle migration errors from older profiles. */
 export class AuraMigrationError extends Error {
   readonly code = "A3D_PROFILE_FROZEN" as const;
 
@@ -97,19 +94,64 @@ export const rendererQualityProfiles: Readonly<Record<AuraRendererQualityProfile
     preserveDrawingBuffer: true,
     maxRecommendedDrawCalls: 220,
     requestedFeatures: ["WebGPU adapter", "compute dispatch", "native WebGPU rendering"],
-    supportedInRoot: ["capability diagnostics", "fallback route evidence"],
+    supportedInRoot: ["experimental native backend selection", "selected-device compute", "backend and fallback diagnostics"],
     blockedInRoot: ["native WebGPU claim without adapter/backend/dispatch/render evidence"],
     claimBoundary: "May only claim native WebGPU when route diagnostics and browser screenshots prove adapter, backend, dispatch, and pixels."
   }
 };
 
 export function resolveRendererQualityProfile(id: AuraRendererQualityProfileId | undefined): AuraRendererQualityProfile {
-  if (id === "experimental-webgpu") {
-    throw new AuraMigrationError(
-      "Renderer quality profile \"experimental-webgpu\" is frozen by PRD 11 (WebGPU is an experimental probe device; no game uses it). Use \"production\" or \"safe-basic\"."
-    );
-  }
   return rendererQualityProfiles[id ?? "safe-basic"] ?? rendererQualityProfiles["safe-basic"];
+}
+
+/** Backend intent is resolved separately from quality. WebGL2 remains the default. */
+export interface ResolvedBackendOptions {
+  readonly requested: "webgl2" | "webgpu" | "auto";
+  readonly allowFallback: boolean;
+  readonly requiredFeatures: readonly string[];
+}
+
+export function resolveBackendOptions(options: AuraCreateAppRendererOptions | undefined): ResolvedBackendOptions {
+  const raw = options as (AuraCreateAppRendererOptions & {
+    readonly allowFallback?: unknown;
+    readonly requiredFeatures?: unknown;
+  }) | undefined;
+  const requested = raw?.backend === undefined ? (raw?.qualityProfile === "experimental-webgpu" ? "webgpu" : "webgl2") : raw.backend;
+  if (requested !== "webgl2" && requested !== "webgpu" && requested !== "auto") {
+    throw new Error(`BACKEND_OPTION_INVALID:renderer.backend=${String(requested)} (expected webgl2|webgpu|auto)`);
+  }
+  if (raw?.allowFallback !== undefined && typeof raw.allowFallback !== "boolean") {
+    throw new Error("BACKEND_OPTION_INVALID:renderer.allowFallback (expected boolean)");
+  }
+  const features = raw?.requiredFeatures;
+  if (features !== undefined && (!Array.isArray(features) || features.some((feature) => typeof feature !== "string" || !feature.trim()))) {
+    throw new Error("BACKEND_OPTION_INVALID:renderer.requiredFeatures (expected non-empty feature names)");
+  }
+  if (requested === "webgl2" && Array.isArray(features) && features.length > 0) {
+    throw new Error("BACKEND_OPTION_INVALID:renderer.requiredFeatures requires a WebGPU or auto backend");
+  }
+  return {
+    requested,
+    allowFallback: (raw?.allowFallback as boolean | undefined) ?? (requested === "auto"),
+    requiredFeatures: [...new Set((features as readonly string[] | undefined) ?? [])]
+  };
+}
+
+/** Validate an optional native drawing-path request before device initialization. */
+export function resolveDrawingPathOptions(options: AuraCreateAppRendererOptions | undefined): RendererOptions["drawingPath"] {
+  const value = (options as (AuraCreateAppRendererOptions & { readonly drawingPath?: unknown }) | undefined)?.drawingPath;
+  if (value === undefined) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("DRAWING_PATH_OPTION_INVALID:renderer.drawingPath (expected an object)");
+  }
+  const candidate = value as { readonly mode?: unknown; readonly allowFallback?: unknown };
+  if (candidate.mode !== "forward" && candidate.mode !== "deferred" && candidate.mode !== "meshlet" && candidate.mode !== "visibility") {
+    throw new Error("DRAWING_PATH_OPTION_INVALID:renderer.drawingPath.mode (expected forward|deferred|meshlet|visibility)");
+  }
+  if (candidate.allowFallback !== undefined && typeof candidate.allowFallback !== "boolean") {
+    throw new Error("DRAWING_PATH_OPTION_INVALID:renderer.drawingPath.allowFallback (expected boolean)");
+  }
+  return { mode: candidate.mode, ...(candidate.allowFallback === undefined ? {} : { allowFallback: candidate.allowFallback }) };
 }
 
 export function normalizeCreateAppRendererOptions(options: AuraCreateAppRendererOptions | undefined): Required<AuraCreateAppRendererOptions> & {
@@ -117,15 +159,45 @@ export function normalizeCreateAppRendererOptions(options: AuraCreateAppRenderer
 } {
   const profile = resolveRendererQualityProfile(options?.qualityProfile);
   const mode = options?.mode ?? profile.rendererMode;
+  const textureBudgetPolicy = normalizeTextureBudgetPolicy(options?.textureBudgetPolicy);
   return {
     mode,
     // 4.0 Live Fix E1: no fallback renderer exists; the deprecated field is
     // only echoed into diagnostics when a caller still passes it.
     fallback: options?.fallback,
     qualityProfile: profile.id,
+    photometricProfiles: resolvePhotometricProfilesOption(options),
+    projectedSpotImages: resolveProjectedSpotImagesOption(options),
     textureBudgetBytes: normalizeTextureBudgetBytes(options?.textureBudgetBytes),
+    ...(textureBudgetPolicy === undefined ? {} : { textureBudgetPolicy }),
     profile: profile
   } as Required<AuraCreateAppRendererOptions> & { readonly profile: AuraRendererQualityProfile };
+}
+
+/** Validate the explicit renderer opt-in before starting a mount or worker. */
+export function resolvePhotometricProfilesOption(options: AuraCreateAppRendererOptions | undefined): boolean {
+  const value = (options as (AuraCreateAppRendererOptions & { readonly photometricProfiles?: unknown }) | undefined)?.photometricProfiles;
+  if (value === undefined) return false;
+  if (typeof value !== "boolean") throw new TypeError("RENDERER_OPTION_INVALID:renderer.photometricProfiles (expected boolean)");
+  return value;
+}
+
+/** Validate the separate projected-spot opt-in before starting a mount or worker. */
+export function resolveProjectedSpotImagesOption(options: AuraCreateAppRendererOptions | undefined): boolean {
+  const value = (options as (AuraCreateAppRendererOptions & { readonly projectedSpotImages?: unknown }) | undefined)?.projectedSpotImages;
+  if (value === undefined) return false;
+  if (typeof value !== "boolean") throw new TypeError("RENDERER_OPTION_INVALID:renderer.projectedSpotImages (expected boolean)");
+  return value;
+}
+
+/** Validate the separate, explicitly opted-in device admission policy. */
+export function normalizeTextureBudgetPolicy(value: AuraCreateAppRendererOptions["textureBudgetPolicy"] | undefined): AuraCreateAppRendererOptions["textureBudgetPolicy"] {
+  if (value === undefined) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Aura3D textureBudgetPolicy must be an object.");
+  const { maxBytes, maxDimension } = value;
+  if (maxBytes !== undefined && (!Number.isFinite(maxBytes) || maxBytes < 0)) throw new Error("Aura3D textureBudgetPolicy.maxBytes must be finite and non-negative.");
+  if (maxDimension !== undefined && (!Number.isSafeInteger(maxDimension) || maxDimension < 1)) throw new Error("Aura3D textureBudgetPolicy.maxDimension must be a positive integer.");
+  return { ...(maxBytes === undefined ? {} : { maxBytes }), ...(maxDimension === undefined ? {} : { maxDimension }) };
 }
 
 export function normalizeTextureBudgetBytes(value: number | undefined): number {

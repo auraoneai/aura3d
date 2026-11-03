@@ -1,4 +1,5 @@
-import { type UniformValue } from "./RenderDevice";
+import { type RecursiveUniformValue, type UniformDataValue, type UniformValue } from "./RenderDevice";
+import type { ShaderDataType } from "./webgpu/ShaderDataLayout";
 import type { BlendMode, DepthCompare as DepthCompareV2 } from "./contracts/blend";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
 import { defaultProgramFeatures } from "./program/MaterialFeatures";
@@ -49,11 +50,14 @@ export interface RenderState {
   readonly stencil?: StencilState | null;
 }
 
-export type MaterialUniformKind = "any" | "float" | "vec2" | "vec3" | "vec4" | "mat4" | "texture2d" | "textureCube";
+export type MaterialUniformKind = "any" | "float" | "i32" | "u32" | "bool" | "vec2" | "vec3" | "vec4" | "mat4" | "data" | "texture2d" | "texture3d" | "depth2d" | "textureCube";
 
 export interface MaterialUniformDescriptor {
   readonly name: string;
   readonly kind: MaterialUniformKind;
+  /** Portable data schemas are validated and bound only by PortableShaderMaterial. */
+  readonly dataType?: ShaderDataType;
+  readonly arrayLength?: number;
   readonly required?: boolean;
   /**
    * The engine declares this uniform in the shader on the author's behalf, so the
@@ -64,12 +68,12 @@ export interface MaterialUniformDescriptor {
   readonly optimizable?: boolean;
 }
 
-export interface MaterialDescriptor {
+export interface MaterialDescriptor<TUniform extends RecursiveUniformValue = UniformValue> {
   readonly name?: string;
   readonly shaderKey: string;
   readonly shaderVariant?: string;
   readonly renderState?: Partial<RenderState>;
-  readonly parameters?: Readonly<Record<string, UniformValue>>;
+  readonly parameters?: Readonly<Record<string, TUniform>>;
   readonly requiredAttributes?: readonly string[];
   readonly requiredUniforms?: readonly string[];
   readonly uniformSchema?: readonly MaterialUniformDescriptor[];
@@ -94,7 +98,7 @@ export const DEFAULT_RENDER_STATE: RenderState = {
   stencil: null
 };
 
-export class Material {
+export class Material<TUniform extends RecursiveUniformValue = UniformValue> {
   public disposed = false;
   public readonly name: string;
   public readonly shaderKey: string;
@@ -105,11 +109,11 @@ export class Material {
   public readonly uniformSchema: readonly MaterialUniformDescriptor[];
   /** threejs-parity L7/SR-02: three's `material.fog` (default true). */
   public readonly fog: boolean;
-  protected readonly parameters = new Map<string, UniformValue>();
+  protected readonly parameters = new Map<string, RecursiveUniformValue>();
   private dirty = true;
   private revision = 0;
 
-  constructor(descriptor: MaterialDescriptor) {
+  constructor(descriptor: MaterialDescriptor<NoInfer<TUniform>>) {
     if (!descriptor.shaderKey.trim()) {
       throw new Error("Material shaderKey is required");
     }
@@ -127,11 +131,16 @@ export class Material {
     this.requiredUniforms = descriptor.requiredUniforms ?? this.uniformSchema.filter((uniform) => uniform.required !== false && uniform.optimizable !== true).map((uniform) => uniform.name);
     this.fog = descriptor.fog !== false;
     for (const [key, value] of Object.entries(descriptor.parameters ?? {})) {
-      this.setParameter(key, value);
+      this.setParameter(key, value as TUniform);
     }
   }
 
-  setParameter(name: string, value: UniformValue): void {
+  setParameter(name: string, value: TUniform): void {
+    this.setParameterValue(name, value);
+  }
+
+  /** Shared owned storage; subclasses validate their expanded value type first. */
+  protected setParameterValue(name: string, value: RecursiveUniformValue): void {
     this.assertAlive();
     if (!name.trim()) {
       throw new Error("Material parameter name is required");
@@ -141,19 +150,29 @@ export class Material {
     this.revision += 1;
   }
 
-  getParameter(name: string): UniformValue | undefined {
+  getParameter(name: string): TUniform | undefined {
     this.assertAlive();
     const value = this.parameters.get(name);
-    return value === undefined ? undefined : cloneUniformValue(value);
+    return value === undefined ? undefined : cloneUniformValue(value) as TUniform;
   }
 
-  getParameters(): ReadonlyMap<string, UniformValue> {
+  /** Polymorphic consumers must use the recursive surface for portable materials. */
+  getRecursiveParameter(name: string): RecursiveUniformValue | undefined {
+    return this.getParameter(name);
+  }
+
+  getParameters(): ReadonlyMap<string, TUniform> {
     this.assertAlive();
-    const output = new Map<string, UniformValue>();
+    const output = new Map<string, TUniform>();
     for (const [key, value] of this.parameters) {
-      output.set(key, cloneUniformValue(value));
+      output.set(key, cloneUniformValue(value) as TUniform);
     }
     return output;
+  }
+
+  /** Owned snapshots, retaining aggregate values without a legacy-uniform cast. */
+  getRecursiveParameters(): ReadonlyMap<string, RecursiveUniformValue> {
+    return this.getParameters();
   }
 
   isDirty(): boolean {
@@ -168,7 +187,7 @@ export class Material {
    * environment/fog/pass/target/backgroundCoverage are supplied by the pass.
    */
   programFeatures(ctx: import("./contracts/materialLobes").MaterialFeatureContext): Omit<import("./contracts/program").ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage"> {
-    return defaultProgramFeatures(this, ctx);
+    return defaultProgramFeatures(this as unknown as Material, ctx);
   }
 
   getRevision(): number {
@@ -240,12 +259,30 @@ function validateUniformSchema(schema: readonly MaterialUniformDescriptor[]): re
   });
 }
 
-function cloneUniformValue(value: UniformValue): UniformValue {
-  if (typeof value === "number") {
-    return value;
+function cloneUniformValue(value: RecursiveUniformValue): RecursiveUniformValue {
+  if (isTextureBinding(value)) return value;
+  const active = new Set<object>();
+  function clone(input: UniformDataValue, depth: number): UniformDataValue {
+    if (typeof input === "number" || typeof input === "boolean") return input;
+    if (!input || typeof input !== "object" || depth > 128 || active.has(input)) {
+      throw new TypeError("Material uniform data must be an acyclic numeric, boolean, array, or plain object value");
+    }
+    if (input instanceof Float32Array) return new Float32Array(input);
+    if (input instanceof Int32Array) return new Int32Array(input);
+    if (input instanceof Uint32Array) return new Uint32Array(input);
+    if (ArrayBuffer.isView(input)) throw new TypeError("Material uniform data has an unsupported typed array");
+    active.add(input);
+    try {
+      if (Array.isArray(input)) return input.map((entry) => clone(entry, depth + 1));
+      if (Object.getPrototypeOf(input) !== Object.prototype && Object.getPrototypeOf(input) !== null) {
+        throw new TypeError("Material uniform data must use plain objects");
+      }
+      const result: Record<string, UniformDataValue> = Object.create(null);
+      for (const [key, entry] of Object.entries(input)) result[key] = clone(entry, depth + 1);
+      return result;
+    } finally {
+      active.delete(input);
+    }
   }
-  if (isTextureBinding(value)) {
-    return value;
-  }
-  return ArrayBuffer.isView(value) ? new (value.constructor as Float32ArrayConstructor)(value as Float32Array) : [...value];
+  return clone(value, 0);
 }

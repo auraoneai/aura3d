@@ -17,7 +17,222 @@ export interface LiveFogState {
   visible: boolean;
 }
 
-const FOG_SPECS_WEAK = new WeakMap<object, LiveFogState>();
+type AtmosphereNodeAccess = {
+  readonly nodes?: {
+    get(id: string): { visible?: boolean } | undefined;
+    atmosphereNodeState?(node: EffectNodeLike): { readonly visible: boolean; readonly worldPosition: readonly [number, number, number] } | undefined;
+  };
+};
+
+/** Scalar-only fog data copied into a renderer frame. */
+export interface AtmosphereRenderFog {
+  readonly mode?: "height" | "exp" | "exp2" | "linear" | "absorption";
+  readonly color?: string | readonly [number, number, number];
+  readonly density?: number;
+  readonly heightDensity?: number;
+  readonly heightFalloff?: number;
+  readonly heightReference?: number;
+  readonly start?: number;
+  readonly maxOpacity?: number;
+  readonly near?: number;
+  readonly far?: number;
+  readonly absorption?: readonly [number, number, number];
+  readonly sunInscatter?: number;
+  readonly anisotropy?: number;
+  readonly ambientScale?: number;
+  readonly affectsBackground?: boolean;
+  readonly backgroundDistance?: number;
+  readonly transitionSeconds?: number;
+  readonly legacyOpacityCap?: boolean;
+  readonly intensity?: number;
+}
+
+export interface AtmosphereRenderVolume {
+  readonly shape: "box" | "ellipsoid";
+  readonly center: readonly [number, number, number];
+  readonly halfSize: readonly [number, number, number];
+  readonly density: number;
+}
+
+/** Sky fields used by CPU fog-color/inscatter evaluation, with no asset references. */
+export interface AtmosphereFogSky {
+  readonly model?: string;
+  readonly sun?: Readonly<{ elevationDeg?: number; azimuthDeg?: number; intensity?: number; discSize?: number }>;
+  readonly zenith?: string | readonly [number, number, number];
+  readonly horizon?: string | readonly [number, number, number];
+  readonly ground?: string | readonly [number, number, number];
+  readonly groundColor?: string | readonly [number, number, number];
+  readonly color?: string | readonly [number, number, number];
+  readonly value?: string | readonly [number, number, number];
+  readonly turbidity?: number;
+  readonly rayleigh?: number;
+  readonly mieCoefficient?: number;
+  readonly mieDirectionalG?: number;
+  readonly exposure?: number;
+  readonly exponent?: number;
+  readonly horizonGlow?: number;
+  readonly intensity?: number;
+  readonly stars?: Readonly<{ count?: number; brightness?: number; density?: number; intensity?: number; enabled?: boolean; auroraBand?: boolean }>;
+  readonly clouds?: Readonly<{
+    scale?: number; speed?: number; coverage?: number; density?: number; elevation?: number;
+    color?: string | readonly [number, number, number];
+  }>;
+  readonly moon?: Readonly<{
+    elevationDeg?: number; azimuthDeg?: number; phase?: number; intensity?: number; size?: number;
+    color?: string | readonly [number, number, number];
+  }>;
+  readonly bands?: readonly Readonly<{
+    elevationDeg?: number;
+    widthDeg?: number;
+    color?: string | readonly [number, number, number];
+    intensity?: number;
+  }>[];
+}
+
+/**
+ * A value snapshot, not a renderer capability. The owner is unique to one
+ * LiveAtmosphere; renderer code must establish source provenance separately.
+ */
+export interface AtmosphereRenderSnapshot {
+  readonly owner: object;
+  readonly revision: number;
+  readonly fog: AtmosphereRenderFog | null;
+  readonly fogVolumes: readonly AtmosphereRenderVolume[];
+  readonly skyForFog: AtmosphereFogSky | null;
+  readonly wetness: {
+    readonly wetness: number;
+    readonly puddleThreshold: number;
+    readonly rainRipples: number;
+    readonly snowCover: number;
+    /** Textures need a renderer-owned retention/revision lease. */
+    readonly puddleNoise: null;
+  };
+}
+
+const RENDER_FOG_NUMBERS = [
+  "density", "heightDensity", "heightFalloff", "heightReference", "start", "maxOpacity", "near", "far",
+  "sunInscatter", "anisotropy", "ambientScale", "backgroundDistance", "transitionSeconds", "intensity"
+] as const;
+
+function copyRenderVector(value: unknown): readonly [number, number, number] {
+  if (!Array.isArray(value) || value.length < 3) {
+    throw new Error("PRD07_ATMOSPHERE_VECTOR_INVALID");
+  }
+  const x: unknown = value[0], y: unknown = value[1], z: unknown = value[2];
+  if (![x, y, z].every((component) => typeof component === "number" && Number.isFinite(component))) {
+    throw new Error("PRD07_ATMOSPHERE_VECTOR_INVALID");
+  }
+  return Object.freeze([x, y, z] as [number, number, number]);
+}
+
+/** Copy only fields consumed by the fog renderer; never retain authored arrays. */
+function copyRenderFog(spec: AuraHeightFogSpec | null): AtmosphereRenderFog | null {
+  if (!spec) return null;
+  const input = spec as unknown as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const key of RENDER_FOG_NUMBERS) {
+    const value = input[key];
+    if (value === undefined) continue;
+    if (typeof value !== "number" || !Number.isFinite(value)) throw new Error("PRD07_ATMOSPHERE_NUMBER_INVALID");
+    out[key] = value;
+  }
+  for (const key of ["affectsBackground", "legacyOpacityCap"] as const) {
+    const value = input[key];
+    if (value === undefined) continue;
+    if (typeof value !== "boolean") throw new Error("PRD07_ATMOSPHERE_BOOLEAN_INVALID");
+    out[key] = value;
+  }
+  const mode = input.mode;
+  if (mode !== undefined) {
+    if (mode !== "height" && mode !== "exp" && mode !== "exp2" && mode !== "linear" && mode !== "absorption") {
+      throw new Error("PRD07_ATMOSPHERE_FOG_MODE_INVALID");
+    }
+    out.mode = mode;
+  }
+  const color = input.color;
+  if (color !== undefined) {
+    if (typeof color === "string") out.color = color;
+    else out.color = copyRenderVector(color);
+  }
+  const absorption = input.absorption;
+  if (absorption !== undefined) out.absorption = copyRenderVector(absorption);
+  return Object.freeze(out) as AtmosphereRenderFog;
+}
+
+function copyScalarFields(input: Record<string, unknown>, keys: readonly string[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const key of keys) {
+    const value = input[key];
+    if (value === undefined) continue;
+    if (typeof value !== "number" || !Number.isFinite(value)) throw new Error("PRD07_ATMOSPHERE_NUMBER_INVALID");
+    out[key] = value;
+  }
+  return out;
+}
+
+function copySkyColor(value: unknown): string | readonly [number, number, number] {
+  return typeof value === "string" ? value : copyRenderVector(value);
+}
+
+/** Whitelist procedural sky inputs, never an HDRI/cubemap texture. */
+function copySkyForFog(spec: AuraSkySpec | null): AtmosphereFogSky | null {
+  if (!spec) return null;
+  const input = spec as unknown as Record<string, unknown>;
+  const out: Record<string, unknown> = copyScalarFields(input, [
+    "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "exposure", "exponent", "horizonGlow", "intensity"
+  ]);
+  const model = input.model;
+  if (model !== undefined) {
+    if (typeof model !== "string") throw new Error("PRD07_ATMOSPHERE_SKY_MODEL_INVALID");
+    out.model = model;
+  }
+  for (const key of ["zenith", "horizon", "ground", "groundColor", "color", "value"] as const) {
+    const value = input[key];
+    if (value !== undefined && value !== null) out[key] = copySkyColor(value);
+  }
+  const sun = input.sun;
+  if (sun !== undefined && sun !== null) {
+    if (typeof sun !== "object") throw new Error("PRD07_ATMOSPHERE_SKY_SUN_INVALID");
+    out.sun = Object.freeze(copyScalarFields(sun as Record<string, unknown>, ["elevationDeg", "azimuthDeg", "intensity", "discSize"]));
+  }
+  for (const [key, numeric] of [
+    ["stars", ["count", "brightness", "density", "intensity"]],
+    ["clouds", ["scale", "speed", "coverage", "density", "elevation"]],
+    ["moon", ["elevationDeg", "azimuthDeg", "phase", "intensity", "size"]]
+  ] as const) {
+    const value = input[key];
+    if (value === undefined || value === null) continue;
+    if (typeof value !== "object") throw new Error("PRD07_ATMOSPHERE_SKY_COMPONENT_INVALID");
+    const fields = value as Record<string, unknown>;
+    const copy: Record<string, unknown> = copyScalarFields(fields, numeric);
+    const color = key === "stars" ? undefined : fields.color;
+    if (color !== undefined) copy.color = copySkyColor(color);
+    if (key === "stars") for (const flag of ["enabled", "auroraBand"] as const) {
+      const enabled = fields[flag];
+      if (enabled === undefined) continue;
+      if (typeof enabled !== "boolean") throw new Error("PRD07_ATMOSPHERE_BOOLEAN_INVALID");
+      copy[flag] = enabled;
+    }
+    out[key] = Object.freeze(copy);
+  }
+  const bands = input.bands;
+  if (bands !== undefined && bands !== null) {
+    if (!Array.isArray(bands)) throw new Error("PRD07_ATMOSPHERE_SKY_BANDS_INVALID");
+    const copiedBands: Readonly<Record<string, unknown>>[] = [];
+    const count = Math.min(bands.length, 4);
+    for (let index = 0; index < count; index++) {
+      const band: unknown = bands[index];
+      if (!band || typeof band !== "object") throw new Error("PRD07_ATMOSPHERE_SKY_BAND_INVALID");
+      const fields = band as Record<string, unknown>;
+      const copy: Record<string, unknown> = copyScalarFields(fields, ["elevationDeg", "widthDeg", "intensity"]);
+      const color = fields.color;
+      if (color !== undefined) copy.color = copySkyColor(color);
+      copiedBands.push(Object.freeze(copy));
+    }
+    out.bands = Object.freeze(copiedBands);
+  }
+  return Object.freeze(out) as AtmosphereFogSky;
+}
 
 function specFromNode(node: EffectNodeLike): AuraHeightFogSpec {
   // The node's authored §6.6 fields carry the AuraHeightFogSpec names; copy
@@ -98,9 +313,18 @@ export class LiveAtmosphere {
   private wetness = 0;
   private readonly listeners = new Set<() => void>();
   private readonly skyListeners = new Set<() => void>();
+  private readonly renderListeners = new Set<() => void>();
+  private readonly renderOwner: object = Object.freeze({});
+  private renderRevision = 0;
+  private authoredMutationRevision = 0;
+  private renderFingerprint: string | null = null;
+  private lastRenderSnapshot: AtmosphereRenderSnapshot | null = null;
+  private renderUpdateDepth = 0;
+  private renderNotificationPending = false;
+  private disposed = false;
   /** §6.6 fog nodes in scene order; visibility resolved against runtime handles. */
   private fogNodes: EffectNodeLike[] = [];
-  private readonly fogStates = FOG_SPECS_WEAK;
+  private readonly fogStates = new WeakMap<object, LiveFogState>();
   /** `effects.fogVolume` nodes → constant-density box/ellipsoid volumes. */
   private fogVolumeNodes: EffectNodeLike[] = [];
   private fogTransition: FogTransition | null = null;
@@ -116,22 +340,26 @@ export class LiveAtmosphere {
 
   /** Called by the owning system on each scene rebuild (scene order). */
   trackFogNodes(nodes: readonly EffectNodeLike[]): void {
+    if (this.disposed) return;
     this.fogNodes = [...nodes];
     for (const node of this.fogNodes) {
       if (!this.fogStates.has(node as object)) {
         this.fogStates.set(node as object, { spec: specFromNode(node), visible: true });
       }
     }
+    this.renderChanged();
   }
 
   /** Called by the owning system on each scene rebuild (scene order). */
   trackFogVolumes(nodes: readonly EffectNodeLike[]): void {
+    if (this.disposed) return;
     this.fogVolumeNodes = [...nodes];
     for (const node of this.fogVolumeNodes) {
       if (!this.fogStates.has(node as object)) {
         this.fogStates.set(node as object, { spec: specFromNode(node), visible: true });
       }
     }
+    this.renderChanged();
   }
 
   /**
@@ -139,45 +367,64 @@ export class LiveAtmosphere {
    * halfSize, density}. The builder authors `position`/`size`; `size` is the
    * full extent, so halfSize = size/2.
    */
-  fogVolumes(): readonly { readonly shape: "box" | "ellipsoid"; readonly center: readonly [number, number, number]; readonly halfSize: readonly [number, number, number]; readonly density: number }[] {
+  fogVolumes(app?: AtmosphereNodeAccess): readonly { readonly shape: "box" | "ellipsoid"; readonly center: readonly [number, number, number]; readonly halfSize: readonly [number, number, number]; readonly density: number }[] {
     const out: { shape: "box" | "ellipsoid"; center: readonly [number, number, number]; halfSize: readonly [number, number, number]; density: number }[] = [];
     for (const node of this.fogVolumeNodes) {
       const state = this.fogStates.get(node as object);
       if (!state?.visible) continue;
       const n = node as unknown as Record<string, unknown>;
-      const pos = (n.position ?? [0, 0, 0]) as readonly number[];
-      const size = (n.size ?? n.halfSize ?? [2, 2, 2]) as readonly number[];
-      const isFull = n.size !== undefined;
+      const runtime = app?.nodes?.atmosphereNodeState?.(node);
+      if (runtime?.visible === false) continue;
+      const pos = (runtime?.worldPosition ?? n.position ?? [0, 0, 0]) as readonly number[];
+      const authoredSize = n.size;
+      const size = (authoredSize ?? n.halfSize ?? [2, 2, 2]) as readonly number[];
+      const isFull = authoredSize !== undefined;
+      const density = n.density;
       out.push({
         shape: n.shape === "ellipsoid" ? "ellipsoid" : "box",
         center: [pos[0] ?? 0, pos[1] ?? 0, pos[2] ?? 0],
         halfSize: [(size[0] ?? 2) / (isFull ? 2 : 1), (size[1] ?? 2) / (isFull ? 2 : 1), (size[2] ?? 2) / (isFull ? 2 : 1)],
-        density: typeof n.density === "number" ? n.density : 0.25
+        density: typeof density === "number" ? density : 0.25
       });
     }
     return out;
   }
 
   /** Per-frame: refresh handle visibility for tracked fog + volume nodes. */
-  updateFogVisibility(app: { readonly nodes?: { get(id: string): { visible?: boolean } | undefined } }): void {
+  updateFogVisibility(app: AtmosphereNodeAccess): void {
+    if (this.disposed) return;
+    let changed = false;
     for (const node of [...this.fogNodes, ...this.fogVolumeNodes]) {
       const state = this.fogStates.get(node as object);
       if (!state) continue;
       const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
-      if (typeof runtimeId === "string" && app.nodes) {
+      let visible: boolean;
+      const runtime = app.nodes?.atmosphereNodeState?.(node);
+      if (runtime) {
+        visible = runtime.visible;
+      } else if (typeof runtimeId === "string" && app.nodes) {
         const handle = app.nodes.get(runtimeId);
-        state.visible = handle?.visible !== false;
+        visible = handle?.visible !== false;
       } else {
-        state.visible = true;
+        visible = true;
       }
+      if (state.visible !== visible) { state.visible = visible; changed = true; }
     }
+    if (changed) this.renderChanged();
   }
 
   /** C-37 `handle.setFog(partial)` — merge authored fields into a tracked node's spec. */
   setNodeFog(node: EffectNodeLike, partial: Partial<AuraHeightFogSpec>): void {
+    if (this.disposed) return;
+    this.authoredMutationRevision++;
+    if (this.mergeNodeFog(node, partial)) this.renderChanged();
+  }
+
+  private mergeNodeFog(node: EffectNodeLike, partial: Partial<AuraHeightFogSpec>): boolean {
     const state = this.fogStates.get(node as object);
-    if (!state) return;
+    if (!state) return false;
     state.spec = { ...state.spec, ...partial };
+    return true;
   }
 
   /**
@@ -185,11 +432,14 @@ export class LiveAtmosphere {
    * blends the change). False when no tracked fog node carries the id.
    */
   setNodeFogByRuntimeId(runtimeId: string, partial: Partial<AuraHeightFogSpec>): boolean {
+    if (this.disposed) return false;
+    this.authoredMutationRevision++;
     const node = this.fogNodes.find((candidate) => (candidate as { readonly runtime?: { readonly id?: string } }).runtime?.id === runtimeId);
     if (!node) return false;
     const { transitionSeconds, ...fields } = partial;
-    this.setNodeFog(node, fields);
+    this.mergeNodeFog(node, fields);
     if (transitionSeconds !== undefined) this.nextTransitionSeconds = transitionSeconds;
+    this.renderChanged();
     return true;
   }
 
@@ -278,7 +528,10 @@ export class LiveAtmosphere {
 
   /** Frame tick — drives transition timing and visibility refresh. */
   tick(dtSeconds: number): void {
+    if (this.disposed) return;
+    this.authoredMutationRevision++;
     this.clockSeconds += dtSeconds;
+    if (dtSeconds !== 0 && this.fogTransition) this.renderChanged();
   }
 
   /** Current atmosphere clock (seconds) — transitions/animations read this. */
@@ -297,6 +550,8 @@ export class LiveAtmosphere {
   }
 
   setFog(spec: AuraSetFogSpec | null, o?: AuraSetFogOptions): void {
+    if (this.disposed) return;
+    this.authoredMutationRevision++;
     this.fog = spec
       ? { ...spec, ...(o?.transitionSeconds !== undefined ? { transitionSeconds: o.transitionSeconds } : {}) }
       : null;
@@ -310,36 +565,46 @@ export class LiveAtmosphere {
         const candidates = this.sceneFogCandidates();
         const node = this.activeFogNode() ?? candidates[candidates.length - 1]!;
         const { transitionSeconds: _ignored, ...fields } = spec;
-        this.setNodeFog(node, fields);
+        this.mergeNodeFog(node, fields);
       }
       this.sceneFogOverrideApplied = true;
       this.nextTransitionSeconds = o?.transitionSeconds ?? spec?.transitionSeconds ?? 0;
     }
+    this.renderChanged();
     this.emit();
   }
 
   setSky(spec: Partial<AuraSkySpec>, _o?: { transitionSeconds?: number }): void {
+    if (this.disposed) return;
+    this.authoredMutationRevision++;
     this.sky = spec as AuraSkySpec;
+    this.renderChanged();
     for (const listener of this.skyListeners) listener();
     this.emit();
   }
 
   /** Drops the sky (a scene whose sky node left with `setScene`); listeners fire as for `setSky`. */
   clearSky(): void {
-    if (this.sky === null) return;
+    if (this.disposed || this.sky === null) return;
+    this.authoredMutationRevision++;
     this.sky = null;
+    this.renderChanged();
     for (const listener of this.skyListeners) listener();
     this.emit();
   }
 
   /** P3-T6 — fires only when the sky spec changes (probe re-capture hook). */
   onSkyChanged(listener: () => void): () => void {
+    if (this.disposed) return () => {};
     this.skyListeners.add(listener);
     return () => this.skyListeners.delete(listener);
   }
 
   setWetness(value: number, _o?: { transitionSeconds?: number }): void {
+    if (this.disposed) return;
+    this.authoredMutationRevision++;
     this.wetness = value;
+    this.renderChanged();
     this.emit();
   }
 
@@ -347,13 +612,115 @@ export class LiveAtmosphere {
     return { sky: this.sky, fog: this.fogTarget(), wetness: this.wetness };
   }
 
+  /** Internal ingestion guard; scene bookkeeping accounts for its own sky writes. */
+  authoredMutationVersion(): number { return this.authoredMutationRevision; }
+
   onChange(listener: () => void): () => void {
+    if (this.disposed) return () => {};
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
   private emit(): void {
     for (const listener of this.listeners) listener();
+  }
+
+  /** Batch a scene rebuild so observers see either side, never a partial scene. */
+  batchRenderUpdates<T>(update: () => T): T {
+    this.renderUpdateDepth++;
+    let complete = false;
+    try {
+      const result = update();
+      complete = true;
+      return result;
+    }
+    finally {
+      this.renderUpdateDepth--;
+      if (this.renderUpdateDepth === 0 && this.renderNotificationPending) {
+        this.renderNotificationPending = false;
+        if (complete) this.notifyRenderListeners();
+      }
+    }
+  }
+
+  /** Each instance owns its revision and listeners; unsubscribe is idempotent. */
+  onRenderChange(listener: () => void): () => void {
+    if (this.disposed) return () => {};
+    this.renderListeners.add(listener);
+    return () => { this.renderListeners.delete(listener); };
+  }
+
+  private renderChanged(): void {
+    if (this.disposed) return;
+    this.renderRevision++;
+    if (this.renderUpdateDepth > 0) this.renderNotificationPending = true;
+    else this.notifyRenderListeners();
+  }
+
+  private notifyRenderListeners(): void {
+    for (const listener of [...this.renderListeners]) {
+      try { listener(); } catch { /* One observer must not prevent other owners from invalidating. */ }
+    }
+  }
+
+  /**
+   * Copy frame inputs at the app clock. The sky subset is solely for fog
+   * evaluation and carries no sky textures or arbitrary borrowed objects.
+   */
+  renderSnapshot(app?: AtmosphereNodeAccess): AtmosphereRenderSnapshot | null {
+    if (this.disposed || this.renderUpdateDepth > 0) return null;
+    if (!Number.isFinite(this.wetness)) throw new Error("PRD07_ATMOSPHERE_NUMBER_INVALID");
+    const fog = copyRenderFog(this.resolveFog());
+    const skyForFog = copySkyForFog(this.sky);
+    const volumes = Object.freeze(this.fogVolumes(app).map((volume): AtmosphereRenderVolume => {
+      if (!Number.isFinite(volume.density)) throw new Error("PRD07_ATMOSPHERE_NUMBER_INVALID");
+      return Object.freeze({
+        shape: volume.shape,
+        center: copyRenderVector(volume.center),
+        halfSize: copyRenderVector(volume.halfSize),
+        density: volume.density
+      });
+    }));
+    const wetness = Object.freeze({
+      // The shader clamps this value; retain the public state as authored but
+      // give the frame writer the equivalent bounded scalar.
+      wetness: Math.max(0, Math.min(1, this.wetness)),
+      puddleThreshold: 0.62, rainRipples: 0, snowCover: 0, puddleNoise: null
+    });
+    // These objects contain only copied primitives/arrays, so this fingerprint
+    // also detects in-place edits of authored volume arrays between frames.
+    const fingerprint = JSON.stringify([fog, volumes, skyForFog, wetness]);
+    if (this.renderFingerprint !== null && fingerprint !== this.renderFingerprint &&
+        this.lastRenderSnapshot?.revision === this.renderRevision) this.renderChanged();
+    this.renderFingerprint = fingerprint;
+    if (this.lastRenderSnapshot?.revision === this.renderRevision) return this.lastRenderSnapshot;
+    return (this.lastRenderSnapshot = Object.freeze({ owner: this.renderOwner, revision: this.renderRevision, fog, fogVolumes: volumes, skyForFog, wetness }));
+  }
+
+  /** A copied value may outlive its source, but cannot remain current after a change/disposal. */
+  isRenderSnapshotCurrent(snapshot: AtmosphereRenderSnapshot): boolean {
+    return this.renderSnapshot() === snapshot;
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.renderRevision++;
+    this.lastRenderSnapshot = null;
+    try { this.notifyRenderListeners(); }
+    finally {
+      this.renderListeners.clear();
+      this.listeners.clear();
+      this.skyListeners.clear();
+      this.fogNodes = [];
+      this.fogVolumeNodes = [];
+      this.sky = null;
+      this.fog = null;
+      this.fogTransition = null;
+      this.lastFogTarget = null;
+      this.renderFingerprint = null;
+      this.wetness = 0;
+    }
   }
 
   /** Atmosphere diagnostics section (C-31). */

@@ -1,6 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraEffectNode } from "../nodes/types.js";
+import type { AuraEffectNode, AuraTextureRef } from "../nodes/types.js";
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import type { AuraCustomPostPass, AuraPostPassOrder } from "../../contracts/post.js";
 import type { PostInsertAt } from "@aura3d/rendering/contracts";
@@ -79,7 +79,78 @@ import { shadows } from "./shadows.js";
  */
 type BloomBuilderOptions = Omit<AuraEffectNode, "kind" | "effect"> & { readonly knee?: number; readonly clampLuminance?: number };
 
+export interface AuraNativePostBaseOptions { readonly name?: string }
+export interface AuraPixelationOptions extends AuraNativePostBaseOptions { readonly size?: number }
+export interface AuraScreenPatternOptions extends AuraPixelationOptions { readonly angle?: number; readonly strength?: number }
+export interface AuraGlitchOptions extends AuraNativePostBaseOptions { readonly intensity?: number; readonly seed?: number }
+export interface AuraTransitionOptions extends AuraNativePostBaseOptions { readonly texture: AuraTextureRef; readonly progress?: number }
+export interface AuraLensDirtOptions extends AuraNativePostBaseOptions { readonly texture: AuraTextureRef; readonly intensity?: number }
+export interface AuraPostMaskOptions extends AuraNativePostBaseOptions { readonly texture: AuraTextureRef; readonly invert?: boolean; readonly opacity?: number }
+export interface AuraAfterimageOptions extends AuraNativePostBaseOptions { readonly decay?: number }
+
+function nativePostNumber(value: number | undefined, fallback: number, field: string, min: number, max: number): number {
+  const resolved = value ?? fallback;
+  if (!Number.isFinite(resolved) || resolved < min || resolved > max) {
+    throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `effects post field ${field} must be finite and in [${min}, ${max}]`);
+  }
+  return resolved;
+}
+
+function nativePostTexture(texture: AuraTextureRef | undefined, effect: string): AuraTextureRef {
+  if (!texture || texture.kind !== "aura-texture-ref") {
+    throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `effects.${effect} requires a live 2D texture reference`);
+  }
+  return texture;
+}
+
+function nativePostNode(effect: string, options: AuraNativePostBaseOptions, fields: Record<string, unknown>): AuraNodeBuilder<AuraEffectNode> {
+  return new AuraNodeBuilder<AuraEffectNode>({
+    kind: "effect", effect, name: options.name ?? effect,
+    ...fields, postAuthored: Object.keys(options)
+  } as unknown as AuraEffectNode);
+}
+
 export const postEffectBuilders = {
+  /** Quantize the sample coordinate into square blocks, measured in output pixels. */
+  pixelation: (options: AuraPixelationOptions = {}) => nativePostNode("pixelation", options, {
+    size: nativePostNumber(options.size, 6, "size", 1, 4096)
+  }),
+  halftone: (options: AuraScreenPatternOptions = {}) => nativePostNode("halftone", options, {
+    size: nativePostNumber(options.size, 8, "size", 1, 4096),
+    angle: nativePostNumber(options.angle, Math.PI / 4, "angle", -1e6, 1e6),
+    strength: nativePostNumber(options.strength, 1, "strength", 0, 1)
+  }),
+  dotScreen: (options: AuraScreenPatternOptions = {}) => nativePostNode("dot-screen", options, {
+    size: nativePostNumber(options.size, 8, "size", 1, 4096),
+    angle: nativePostNumber(options.angle, Math.PI / 4, "angle", -1e6, 1e6),
+    strength: nativePostNumber(options.strength, 1, "strength", 0, 1)
+  }),
+  glitch: (options: AuraGlitchOptions = {}) => nativePostNode("glitch", options, {
+    intensity: nativePostNumber(options.intensity, 0.15, "intensity", 0, 1),
+    seed: nativePostNumber(options.seed, 0, "seed", -1e6, 1e6)
+  }),
+  transition: (options: AuraTransitionOptions) => nativePostNode("transition", options, {
+    texture: nativePostTexture(options?.texture, "transition"),
+    progress: nativePostNumber(options?.progress, 0, "progress", 0, 1)
+  }),
+  lensDirt: (options: AuraLensDirtOptions) => nativePostNode("lens-dirt", options, {
+    texture: nativePostTexture(options?.texture, "lensDirt"),
+    intensity: nativePostNumber(options?.intensity, 1, "intensity", 0, 1)
+  }),
+  /** Subsequent native effects are blended by the red channel until clearMask. */
+  mask: (options: AuraPostMaskOptions) => {
+    if (options?.invert !== undefined && typeof options.invert !== "boolean") {
+      throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", "effects.mask invert must be boolean");
+    }
+    return nativePostNode("mask", options, {
+      texture: nativePostTexture(options?.texture, "mask"), invert: options?.invert ?? false,
+      opacity: nativePostNumber(options?.opacity, 1, "opacity", 0, 1)
+    });
+  },
+  clearMask: (options: AuraNativePostBaseOptions = {}) => nativePostNode("clear-mask", options, {}),
+  afterimage: (options: AuraAfterimageOptions = {}) => nativePostNode("afterimage", options, {
+    decay: nativePostNumber(options.decay, 0.85, "decay", 0, 1)
+  }),
   bloom: (options: BloomBuilderOptions = {}) => {
     const antiBlowout = options.antiBlowout ?? true;
     const maxIntensity = options.maxIntensity ?? 0.92;
@@ -286,8 +357,8 @@ export const postEffectBuilders = {
     }
     const inputs = options.inputs ?? ["color"];
     for (const input of inputs) {
-      if (!["color", "depth", "velocity"].includes(input)) {
-        throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass input ${String(input)} is not color|depth|velocity`);
+      if (!["color", "depth", "velocity", "reactive"].includes(input)) {
+        throw new AuraRuntimeError("invalid-material-spec", `effects.shaderPass input ${String(input)} is not color|depth|velocity|reactive`);
       }
     }
     return {
@@ -314,7 +385,8 @@ export interface AuraShaderPassOptions {
   readonly fragment?: { readonly glsl?: string; readonly wgsl?: string };
   /** Numeric pass uniforms, bound by name at draw time. */
   readonly uniforms?: Readonly<Record<string, number | readonly number[]>>;
-  readonly inputs?: readonly ("color" | "depth" | "velocity")[];
+  /** `reactive` borrows a caller-populated current-frame mask on WebGL2 HDR paths. */
+  readonly inputs?: readonly ("color" | "depth" | "velocity" | "reactive")[];
   /** v2 anchor — defaults from a named `order` slot when omitted. */
   readonly insertAt?: PostInsertAt;
   readonly order?: AuraPostPassOrder;

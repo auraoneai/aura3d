@@ -1,55 +1,112 @@
 import { Geometry } from "./Geometry";
+import { VertexBuffer } from "./VertexBuffer";
+import { IndexBuffer } from "./IndexBuffer";
 import { type CollectedLight } from "./LightCollector";
-import { LightUniforms, type LocalShadowedLight } from "./LightUniforms";
+import { LightUniforms, type LocalShadowedLight, type PackedLightsWithSelection, type PackedLightUniforms } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
-import { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
+import { isFlatUniformValue, MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
 import { PortableShaderMaterial } from "./PortableShaderMaterial";
+import { DepthPreviewMaterial } from "./DepthPreviewMaterial";
+import { PBRMaterial } from "./PBRMaterial";
+import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
+import { InstancedPBRMaterial } from "./InstancedPBRMaterial";
+import { InstancedUnlitMaterial } from "./InstancedUnlitMaterial";
+import { SkinnedLitMaterial } from "./SkinnedLitMaterial";
+import { ScreenSpaceLineMaterial } from "./ScreenSpaceLineMaterial";
 import { cullInstancesToFrustum, MIN_CULLED_INSTANCES, type InstanceFrustumCullResult } from "./renderer/InstanceFrustumCull";
-import { type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
+import { type DrawCommand, type InstanceVertexAttribute, type RecursiveUniformValue, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { MAX_UNIFORM_SKINNING_JOINTS as SHADER_MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
 import { type SkinningCpuFallbackReason } from "./WebGPUSkinningLimits";
 import { ShaderModule } from "./ShaderModule";
 import { formatShaderFailure, isShaderFailureError, reportShaderFailure, resolveShaderFailureMode, type ShaderFailureMode } from "./ShaderFailures";
-import { createLeanCoreShaderLibrary, type ShaderLibrary } from "./ShaderLibraryCore";
+import { createLeanCoreShaderLibrary, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, DEFAULT_UNLIT_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { type ShadowFilterKernel } from "./ShadowMap";
 import type { ShadowPcfTapTier } from "./shadows/ShadowFilterTier";
 import type { ForwardSpotShadowMapOptions } from "./shadows/SpotShadowMaps";
-import { TextureBinding } from "./TextureBinding";
+import { isTextureBinding, TextureBinding } from "./TextureBinding";
+import { Texture } from "./Texture";
+import { Sampler } from "./Sampler";
 import { UnlitMaterial } from "./UnlitMaterial";
-import { sortRenderQueueItems } from "./performance/RenderItemSorting";
+import { sortRenderQueueItems, type RenderQueueBucket } from "./performance/RenderItemSorting";
 import { blendQueueForState, blendStateIsTransparent } from "./BlendModes";
 import { renderStateKey } from "./contracts/blend";
 import type { RenderCommandState } from "./RenderDevice";
 import { type RenderItem } from "./contracts/renderItem";
+import { hasPotentiallyActiveFrameContributors, type FrameContributorContext } from "./contracts/frameGraph";
 import { instanceBufferSlot, type InstanceBufferLike } from "./contracts/geometry";
-import { type VertexFormat } from "./VertexFormat";
-import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
-import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
-import { normalizeProgramFeatures, PROGRAM_OUTPUT_SRGB_FEATURE } from "./program/ProgramFeatures";
-import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
-import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
-import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
+import { VertexFormat } from "./VertexFormat";
+import { MAX_LIGHTS_PER_CLUSTER, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
+import { allShaderFeatures, potentiallyActiveShaderFeatures, programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
+import { potentiallyActiveMaterialLobes } from "./contracts/materialLobes";
+import { normalizeProgramFeatures, PROGRAM_CLIPPING_FEATURE, PROGRAM_OUTPUT_SRGB_FEATURE, PROGRAM_TRANSPARENCY_FEATURE, NATIVE_PROBE_GRID_FEATURE, NATIVE_VOXEL_INDIRECT_FEATURE, NATIVE_BAKED_LIGHTMAP_FEATURE, LEGACY_POINT_SHADOW_FEATURE, LEGACY_SPOT_SHADOW_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROJECTED_SPOT_FEATURE, DEPTH_COVERAGE_FEATURE } from "./program/ProgramFeatures";
+import { weightedTransparencyIneligibility, type WeightedTransparencyBindings, type WeightedTransparencyPhase } from "./transparency/WeightedTransparency";
+import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram, withLiveAlphaCutoff } from "./program/MaterialFeatures";
+import { bindShaderFeatureUniforms, makeShaderFeatureReplayGuard, selectShaderFeatureBits } from "./program/FeatureSelect";
+import { bindMaterialLobeUniforms, withLivePhysicalMapFeatures } from "./materials/PhysicalFeatures";
+import { isPrd04ReplaySafeFeature } from "./materials/features";
+import { isReplaySafePrd04Lobe } from "./materials/lobes";
 import { QUALITY_TIERS, type AuraQualityTierSettings } from "./contracts/quality";
 import { rendererQrFlags } from "./renderer/FrameGraph";
-import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererAuraFrame } from "./renderer/qrSubFlags";
-import type { QrFlags } from "./contracts/core";
+import { qrCoreGeneratorOn, qrE3CompilerLightingOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame } from "./renderer/qrSubFlags";
+import { isTrustedQrFlags, type QrFlags } from "./contracts/core";
 import { PRD02_IBL_FEATURE, type EnvironmentProbe } from "./contracts/environment";
 import { packA3DEnvironmentUniforms } from "./environment/EnvUniforms";
 import { dfgLutBinding, dfgLutTexture } from "./program/DFGLut";
+import { PRD02_LOCAL_PROBE_FEATURE, PRD02_IRRADIANCE_VOLUME_FEATURE, prd02ItemProbeBindings, prd02ItemIrradianceBindings } from "./probes/ProbeBoxProjection";
+import { advancedLightingFeatures, advancedLightingItemBinding } from "./lighting/AdvancedLightingBindings";
+import { buildPhotometricProfileBindings, type PhotometricProfileBindings } from "./lighting/PhotometricProfileBindings";
+import type { PhotometricFrameIdentity, PhotometricFrameLease, PhotometricFrameResources, PhotometricProfileIssue } from "./lighting/PhotometricFrameResources";
+import { buildProjectedSpotBindings, type ProjectedSpotBindings, type ProjectedSpotFrameIdentity, type ProjectedSpotFrameLease, type ProjectedSpotResource } from "./lighting/ProjectedSpotBindings";
+import { createClippingBinding, createClippingUniforms, type ClippingBinding, type ClippingGroupInput } from "./ClippingPlanes";
+import { batchMembersFor, expandLogicalBatchItems, hasCombinedDrawIntent, isEngineBatchInstanceItem, isEnginePackedBatchItem, packedLoopCandidate, packedLoopMemberFor } from "./batching/BatchMembers";
+import { createClippedScreenSpaceLineShader, LINE_CLIP_INVERSE_TRANSFORM } from "./forward/ScreenSpaceLineClipping";
+import { certifiedDefaultScreenLineSource, isUnmodifiedDefaultShaderLibrary } from "./renderer/TrustedShaderLibrary";
+import { trustedShaderVariantOptions } from "./renderer/TrustedShaderVariants";
+import { NativePointQuadArena, type NativePointQuadDevice } from "./webgpu/NativePointQuads";
+import type { WebGPUNativePointViewport } from "./WebGPUDevice";
 
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
-import type { ContactShadowMaskScope } from "./forward/contactShadowMaskStore.js";
-import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardLocalShadowUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
-import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
-import { bindVelocityUniforms } from "./forward/Velocity.js";
-import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
+import { resolveContactShadowMask, type ContactShadowMaskScope } from "./forward/contactShadowMaskStore.js";
+import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardLocalShadowUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap, DEFAULT_FORWARD_SHADOW_FILTER_KERNEL, packForwardShadowPcfSamples, prd02ShadowStrengthDefault } from "./forward/Lighting.js";
+import { applyShadowPcfTapTier } from "./shadows/ShadowFilterTier";
+import { createForwardDrawCommand, flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
+import { bindVelocityUniforms, isReplaySafeVelocityBinder } from "./forward/Velocity.js";
+import { A3D_INSTANCE_EMISSIVE_ATTRIBUTE, isInstanceColorReplaySafeFeature, materialInstanceColorTarget, registerInstanceColorTargetFeature } from "./shaders/chunks/instance_color_target.glsl";
+import { PRD02_IBL_SHADER_FEATURE } from "./shaders/Prd02IblFeature";
+import { PRD02_SHADOW_FILTER_FEATURE } from "./shadows/Prd02ShadowFilter";
+import { indirectFractionFeature } from "./post/chunks/indirectFraction.glsl";
+import { lodDitherFeature } from "./shaders/lod-dither.glsl";
+import { debugViewFeature } from "./shaders/debug-view.glsl";
+import { cameraFadeFeature } from "./shaders/camera-fade.glsl";
+import { isOriginalPrd07FeatureIdentity, originalPrd07FeatureFlag } from "./vfx/replayFeatureIdentity";
+import { isOriginalBatchedDrawFeature } from "./batching/shaders/ParityBatchDraw";
+import { isOriginalPrd11DrawIdFeature } from "./batching/shaders/drawId.glsl";
+import { isOriginalPrd11InstanceEmissiveFeature } from "./batching/shaders/instanceEmissive.glsl";
+import { combinedWebGLDevice } from "./batching/CombinedWebGLDevice";
+import { combinedForwardEntries } from "./batching/CombinedForwardEntries";
+import { MAX_COMBINED_DRAW_PLAN_ITEMS, planCombinedDrawRuns, type CombinedDrawPlanRun } from "./batching/CombinedDrawPlanner";
+import { stageCombinedDrawData, type StagedCombinedDrawData } from "./batching/CombinedDrawData";
+import { withCombinedDrawCarrier, isActiveCombinedDrawCarrier } from "./batching/CombinedDrawCarrier";
+import { packedLoopDrawDataCurrent, retainPackedLoopDrawData } from "./batching/BatchMembers";
+import { drawDataBindingFor } from "./batching/DrawDataTexture";
+import { WebGL2Device } from "./WebGL2Device";
+import { staticGeneratedCacheCapability, type StaticGeneratedCacheCapability } from "./program/StaticGeneratedCacheCapability";
 
 export type { RenderItem };
+
+// This pass-local permission is installed only by the renderer's simple
+// explicit-item frame. The backend independently authenticates every ticket.
+const staticUnlitPairFrames = new WeakMap<ForwardPass, () => boolean>();
+
+/** @internal Renderer-owned frame authorization; not a public batching API. */
+export function authorizeRendererStaticUnlitPairs(pass: ForwardPass, isCurrent: () => boolean): void {
+  staticUnlitPairFrames.set(pass, isCurrent);
+}
 
 /**
  * GU47 E-D: the `prd04.instanceColorTarget` ShaderFeature. Registered when this module loads, so the renderer warmup
@@ -77,6 +134,237 @@ export interface ForwardDrawHook {
 }
 
 const forwardDrawHooks: ForwardDrawHook[] = [];
+
+/** Frame replay must not invoke caller-provided draw hooks a second time. */
+export function hasForwardDrawHooks(): boolean { return forwardDrawHooks.length > 0; }
+
+const isCoreReplaySafeFeature = makeShaderFeatureReplayGuard([
+  PRD02_IBL_SHADER_FEATURE, PRD02_SHADOW_FILTER_FEATURE, indirectFractionFeature, lodDitherFeature, debugViewFeature, cameraFadeFeature
+]);
+
+// A replay proof is scoped to the built-ins loaded with this module. Capture
+// descriptors as well as function identities: replacing a getter, inserting a
+// method or changing a prototype's parent can introduce a second user callback.
+const replayPrototypes = [
+  Material.prototype, MaterialInstance.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype,
+  InstancedPBRMaterial.prototype, InstancedUnlitMaterial.prototype, SkinnedLitMaterial.prototype, UnlitMaterial.prototype,
+  Geometry.prototype, VertexBuffer.prototype, IndexBuffer.prototype, VertexFormat.prototype,
+  TextureBinding.prototype, Texture.prototype, Sampler.prototype
+].map((prototype) => ({
+  prototype,
+  parent: Object.getPrototypeOf(prototype) as object | null,
+  descriptors: Object.getOwnPropertyDescriptors(prototype)
+}));
+
+function replayPrototypesUnchanged(): boolean {
+  return replayPrototypes.every(({ prototype, parent, descriptors }) => {
+    if (Object.getPrototypeOf(prototype) !== parent) return false;
+    const keys = Reflect.ownKeys(descriptors);
+    if (Reflect.ownKeys(prototype).length !== keys.length) return false;
+    return keys.every((key) => {
+      const before = Reflect.get(descriptors, key) as PropertyDescriptor;
+      const after = Object.getOwnPropertyDescriptor(prototype, key);
+      return after !== undefined && after.value === before.value && after.get === before.get && after.set === before.set
+        && after.writable === before.writable && after.enumerable === before.enumerable && after.configurable === before.configurable;
+    });
+  });
+}
+
+/** Reject instance-owned methods and accessors which would bypass the snapshots. */
+function replayBuiltinObject(value: object, prototype: object): boolean {
+  if (Object.getPrototypeOf(value) !== prototype) return false;
+  return Reflect.ownKeys(value).every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return descriptor !== undefined && !descriptor.get && !descriptor.set && typeof descriptor.value !== "function";
+  });
+}
+
+function replayGeometrySafe(geometry: Geometry): boolean {
+  if (!replayBuiltinObject(geometry, Geometry.prototype)) return false;
+  const streams = [geometry.vertexBuffer, ...geometry.additionalVertexBuffers];
+  if (streams.some((stream) => !replayBuiltinObject(stream, VertexBuffer.prototype)
+    || !replayBuiltinObject(stream.format, VertexFormat.prototype))) return false;
+  return geometry.indexBuffer === null || replayBuiltinObject(geometry.indexBuffer, IndexBuffer.prototype);
+}
+
+function replayMaterialTexturesSafe(material: Material | MaterialInstance): boolean {
+  try {
+    for (const value of material.getParameters().values()) {
+      if (!isTextureBinding(value)) continue;
+      if (!replayBuiltinObject(value, TextureBinding.prototype) || !replayBuiltinObject(value.sampler, Sampler.prototype)
+        || (value.texture && !replayBuiltinObject(value.texture, Texture.prototype))) return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Callback-free proof of the providers that may run during a forward draw. */
+export function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders = false): boolean {
+  if (!isTrustedQrFlags(flags) || forwardDrawHooks.length || !isReplaySafeVelocityBinder() || !replayPrototypesUnchanged()) return false;
+  for (const feature of allShaderFeatures()) {
+    if (isOriginalPrd07FeatureIdentity(feature) && originalPrd07FeatureFlag(feature) === undefined) return false;
+  }
+  // Activation uses the registry's immutable registration-time flag, so this
+  // list is safe to filter without touching a provider's properties. Identity
+  // guards inspect descriptors only for known built-in plain objects.
+  for (const feature of potentiallyActiveShaderFeatures(flags)) {
+    if (!isCoreReplaySafeFeature(feature) && !isPrd04ReplaySafeFeature(feature) && !isInstanceColorReplaySafeFeature(feature)
+      && !(allowCombinedProviders && (isOriginalBatchedDrawFeature(feature) || isOriginalPrd11DrawIdFeature(feature)
+        || isOriginalPrd11InstanceEmissiveFeature(feature)))) return false;
+  }
+  for (const lobe of potentiallyActiveMaterialLobes(flags)) if (!isReplaySafePrd04Lobe(lobe)) return false;
+  return true;
+}
+
+/** A repeated opaque draw may only use built-in callbacks with unchanged
+ * identities. The caller must also reject custom or mutated shader libraries. */
+export function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean {
+  if (!forwardDrawProvidersSafe(flags)) return false;
+  return items.every(forwardBuiltinParticipantSafe);
+}
+
+/** Contact depth relies on the same built-in participant methods throughout
+ * the frame. Portable/custom graph carriers need a separate identity proof. */
+export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean {
+  return forwardContactGeometrySafe(item, flags) && forwardBuiltinParticipantSafe(item);
+}
+
+/** Common plain-item and geometry portion for graph-specific contact proofs. */
+export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean {
+  return forwardDrawProvidersSafe(flags) && replayBuiltinObject(item, Object.prototype)
+    && !item.onBeforeRender && replayGeometrySafe(item.geometry);
+}
+
+function forwardBuiltinParticipantSafe(item: RenderItem): boolean {
+  if (item.onBeforeRender || !replayGeometrySafe(item.geometry)) return false;
+  const input = item.material;
+  if (!input) return true;
+  if (input instanceof MaterialInstance && !replayBuiltinObject(input, MaterialInstance.prototype)) return false;
+  const material = input instanceof MaterialInstance ? input.baseMaterial : input;
+  if (material instanceof PortableShaderMaterial) return false;
+  const prototype = Object.getPrototypeOf(material);
+  if (![PBRMaterial.prototype, TexturedPBRMaterial.prototype, InstancedPBRMaterial.prototype, InstancedUnlitMaterial.prototype, SkinnedLitMaterial.prototype, UnlitMaterial.prototype].includes(prototype)
+    || !replayBuiltinObject(material, prototype)) return false;
+  return replayMaterialTexturesSafe(input);
+}
+
+const staticUnlitItemFields = new Set([
+  "geometry", "material", "label", "temporalObjectKey", "drawRange", "includeInAutoFrame", "modelMatrix", "normalMatrix",
+  "modelViewProjectionMatrix", "boundingBoxCenter", "castShadow", "receiveShadow", "renderOrder", "frustumCulled", "layerMask", "userData"
+]);
+const staticUnlitParameters = new Set([
+  "u_baseColor", "u_pointSize", "u_roundPoints", "u_pointSizeAttenuation", "u_alphaCutoff", "u_spriteMode",
+  "u_spriteRotation", "u_spriteCenter", "u_spriteSizeAttenuation", "u_modelViewProjection", "u_instanceMatrices",
+  "u_instanceCount", "u_instanceAttributeMode"
+]);
+
+/** The prospective binding may inspect only built-in numeric values. */
+function staticUnlitNumericValue(value: unknown): boolean {
+  if (typeof value === "number") return Number.isFinite(value);
+  if (ArrayBuffer.isView(value)) {
+    if (Object.getPrototypeOf(value) !== Float32Array.prototype || !(value.buffer instanceof ArrayBuffer)
+      || !replayBuiltinObject(value, Float32Array.prototype)) return false;
+    return (value as Float32Array).every(Number.isFinite);
+  }
+  if (!Array.isArray(value) || !replayBuiltinObject(value, Array.prototype)) return false;
+  return value.every((entry) => typeof entry === "number" && Number.isFinite(entry));
+}
+
+function staticUnlitMaterialSafe(material: UnlitMaterial): boolean {
+  if (!replayBuiltinObject(material, UnlitMaterial.prototype) || material.disposed
+    || material.shaderKey !== DEFAULT_UNLIT_SHADER_NAME || material.shaderVariant !== undefined) return false;
+  const state = material.renderState;
+  if (!replayBuiltinObject(state, Object.prototype) || state.blend || (state.blendMode !== undefined && state.blendMode !== "opaque")
+    || !state.depthTest || !state.depthWrite || state.depthCompare !== "less-equal" || state.cullMode !== "back"
+    || state.scissor || state.stencil || state.polygonOffset || state.alphaToCoverage
+    || !Array.isArray(state.colorWrite) || !replayBuiltinObject(state.colorWrite, Array.prototype)
+    || state.colorWrite.length !== 4 || state.colorWrite.some((value) => value !== true)) return false;
+  const parameters: unknown = Object.getOwnPropertyDescriptor(material, "parameters")?.value;
+  if (!(parameters instanceof Map) || Object.getPrototypeOf(parameters) !== Map.prototype) return false;
+  for (const [name, value] of parameters) {
+    if (typeof name !== "string" || !staticUnlitParameters.has(name) || !staticUnlitNumericValue(value)) return false;
+  }
+  for (const values of [material.requiredAttributes, material.requiredUniforms, material.uniformSchema]) {
+    if (!Array.isArray(values) || !replayBuiltinObject(values, Array.prototype)) return false;
+  }
+  return material.requiredAttributes.every((value) => typeof value === "string")
+    && material.requiredUniforms.every((value) => typeof value === "string" && value !== "u_lightCount" && value !== "u_lightData")
+    && material.uniformSchema.every((value) => replayBuiltinObject(value, Object.prototype));
+}
+
+function staticGeneratedUnlitFeaturesSafe(features: ProgramFeatures): boolean {
+  return features.target === "glsl300es" && features.pass === "forward" && features.lighting === "unlit"
+    && features.alphaMode === "opaque" && !features.doubleSided && !features.vertexColors && !features.flatShading
+    && !features.skinning && !features.morph && !features.instancing && !features.drawId
+    && !(features as ProgramFeatures & { readonly graph?: unknown }).graph
+    && Object.values(features.maps).every((value) => value === undefined) && features.extensions.length === 0
+    && features.fog === "none" && features.environment === "none" && !features.backgroundCoverage
+    && features.shadows.cascades === 0 && features.shadows.localShadows === 0 && !features.shadows.contact
+    && Object.keys(features.features).length === 1 && features.features[PROGRAM_OUTPUT_SRGB_FEATURE] === true;
+}
+
+function staticUnlitItemSafe(item: RenderItem, generated = false): boolean {
+  if (!replayBuiltinObject(item, Object.prototype)
+    || Reflect.ownKeys(item).some((key) => typeof key !== "string" || (!staticUnlitItemFields.has(key) && !(generated && key === "geometryMatrix")))
+    || item.onBeforeRender || !replayGeometrySafe(item.geometry) || item.geometry.topology !== "triangles" || !item.geometry.indexBuffer
+    || !item.material || Object.getPrototypeOf(item.material) !== UnlitMaterial.prototype
+    || isEngineBatchInstanceItem(item) || isEnginePackedBatchItem(item) || packedLoopMemberFor(item)) return false;
+  // Unlike projected model matrices, an authored geometry matrix is not
+  // copied by collection. Only a genuine non-shared typed value can be read
+  // speculatively without invoking an array iterator or accessor.
+  if (generated && item.geometryMatrix !== undefined && (!ArrayBuffer.isView(item.geometryMatrix)
+    || !staticUnlitNumericValue(item.geometryMatrix))) return false;
+  return !item.drawRange || replayBuiltinObject(item.drawRange, Object.prototype);
+}
+
+const staticPairDeviceDraw = WebGL2Device.prototype.draw;
+const staticPairBufferCheck = WebGL2Device.prototype.hasStaticUnlitPairBuffers;
+const staticPairPrepare = WebGL2Device.prototype.prepareStaticUnlitPair;
+const staticPairSubmit = WebGL2Device.prototype.submitStaticUnlitPair;
+const staticPairMaterialBind = MaterialBinding.prototype.bind;
+const staticPairMaterialBindRecursive = MaterialBinding.prototype.bindRecursive;
+const staticPairMaterialBindGenerated = MaterialBinding.prototype.bindGenerated;
+const staticPairPipelineCommand = RenderPipeline.prototype.createDrawCommand;
+const staticPairShaderCompile = ShaderModule.prototype.compile;
+const staticPairShaderPeek = ShaderModule.prototype.peek;
+const staticGeneratedPairProgram = WebGL2Device.prototype.hasStaticGeneratedUnlitProgram;
+const staticGeneratedPairPrepare = WebGL2Device.prototype.prepareStaticGeneratedUnlitPair;
+const staticGeneratedPairSubmit = WebGL2Device.prototype.submitStaticGeneratedUnlitPair;
+const staticGeneratedDeviceDescriptors = ["hasStaticGeneratedUnlitProgram", "prepareStaticGeneratedUnlitPair", "submitStaticGeneratedUnlitPair"]
+  .map((name) => [name, Object.getOwnPropertyDescriptor(WebGL2Device.prototype, name)] as const);
+const staticPairDeviceDescriptors = ["draw", "createBuffer", "updateBuffer", "createShaderProgram", "isDeviceLost", "disposed", "contextLost", "generation",
+  "hasStaticUnlitPairBuffers", "snapshotStaticUnlitBuffer", "prepareStaticUnlitPair", "submitStaticUnlitPair"]
+  .map((name) => [name, Object.getOwnPropertyDescriptor(WebGL2Device.prototype, name)] as const);
+
+function staticPairDeviceCurrent(device: RenderDevice): device is WebGL2Device {
+  if (!(device instanceof WebGL2Device) || Object.getPrototypeOf(device) !== WebGL2Device.prototype) return false;
+  return staticPairDeviceDescriptors.every(([name, before]) => {
+    if (!before || Object.hasOwn(device, name)) return false;
+    const after = Object.getOwnPropertyDescriptor(WebGL2Device.prototype, name);
+    return !!after && after.value === before.value && after.get === before.get && after.set === before.set
+      && after.writable === before.writable && after.enumerable === before.enumerable && after.configurable === before.configurable;
+  });
+}
+
+function staticGeneratedDeviceCurrent(device: WebGL2Device): boolean {
+  return staticGeneratedDeviceDescriptors.every(([name, before]) => {
+    if (!before || Object.hasOwn(device, name)) return false;
+    const after = Object.getOwnPropertyDescriptor(WebGL2Device.prototype, name);
+    return !!after && after.value === before.value && after.get === before.get && after.set === before.set
+      && after.writable === before.writable && after.enumerable === before.enumerable && after.configurable === before.configurable;
+  });
+}
+
+interface StaticGeneratedCapture {
+  readonly cache: ProgramCacheLike;
+  readonly capability: StaticGeneratedCacheCapability;
+  readonly features: ProgramFeatures;
+  readonly program: RenderShaderProgram;
+}
+
+interface StaticUnlitCapture { command?: DrawCommand; generatedRequested?: boolean; generated?: StaticGeneratedCapture; }
 
 /** Registers a per-draw uniform hook; returns its unregister function. A duplicate id throws. */
 export function registerForwardDrawHook(hook: ForwardDrawHook): () => void {
@@ -161,16 +449,67 @@ export const MAX_GPU_MORPH_VERTICES = 64;
 export const MAX_GPU_MORPH_TARGETS = 4;
 export const MAX_GPU_INSTANCES = 64;
 
+export interface ProjectedSpotIssue {
+  readonly reason: string;
+  readonly message: string;
+  readonly viewId: string | number;
+  readonly frameIndex: number;
+}
+
+interface ForwardProjectedSpotCache {
+  readonly packet: ProjectedSpotBindings;
+  readonly selection: PackedLightsWithSelection;
+  readonly lights: readonly CollectedLight[];
+  readonly source: readonly CollectedLight[] | undefined;
+  readonly shadow: ForwardPassOptions["shadowMap"];
+  readonly sourceCurrent: () => boolean;
+}
+
+/** Shared by every forward segment in one renderer view and device frame. */
+export interface ForwardProjectedSpotFrame {
+  readonly identity: ProjectedSpotFrameIdentity;
+  readonly resolveResource: (asset: unknown) => ProjectedSpotResource<unknown> | undefined;
+  readonly onUnsupported: (issue: ProjectedSpotIssue) => void;
+  readonly leases: Set<ProjectedSpotFrameLease>;
+  cache?: ForwardProjectedSpotCache;
+}
+
 export interface ForwardPassOptions {
   readonly items: readonly RenderItem[];
+  /** @internal Sorting camera when it differs from the shading camera. */
+  readonly sortCameraPosition?: readonly [number, number, number];
+  /** @internal Renderer-owned weighted accumulation or revealage submission. */
+  readonly weightedTransparency?: { readonly phase: WeightedTransparencyPhase; readonly bindings: WeightedTransparencyBindings };
+  /** Renderer-owned opaque depth/coverage pair for the native depth-of-field route. */
+  readonly nativeDepthCoverage?: { readonly assertCurrent: () => void };
+  /** The current frame's owner-scoped contributor resources, when available. */
+  readonly frameContext?: FrameContributorContext;
+  /** Internal renderer-owned lifetime and diagnostic scope for this view. */
+  readonly photometricFrame?: {
+    readonly identity: PhotometricFrameIdentity;
+    readonly resources: PhotometricFrameResources;
+    readonly leases: PhotometricFrameLease[];
+    readonly onUnsupported: (issue: PhotometricProfileIssue) => void;
+  };
+  /** Internal per-view projected-light admission, cache and frame leases. */
+  readonly projectedSpotFrame?: ForwardProjectedSpotFrame;
   readonly lights?: readonly CollectedLight[];
   readonly environmentLighting?: EnvironmentLightingOptions;
   readonly environmentFog?: ForwardEnvironmentFogOptions | false;
   readonly inputColorResource?: string;
   readonly shadowMap?: ForwardShadowMapOptions;
+  /** The scene group; per-item snapshots take precedence. */
+  readonly globalClipping?: ClippingGroupInput;
+  /** Per-material group override; matches the depth-pass precedence. */
+  readonly materialClippingFor?: (item: RenderItem) => ClippingGroupInput | undefined;
+  /** Renderer already ran a per-item resolver while preparing this pass. */
+  readonly disableCombinedDraw?: boolean;
+  readonly clippingPlaneLimit?: number;
   readonly cameraPosition?: readonly [number, number, number];
   readonly cameraViewMatrix?: Float32Array | readonly number[];
   readonly cameraViewProjectionMatrix?: Float32Array | readonly number[];
+  /** Clip range of the supplied camera projection, independent of the backend. */
+  readonly projectionClipRange?: "minus-one-to-one" | "zero-to-one";
   readonly outputColorSpace?: "linear" | "srgb";
   readonly shaderLibrary?: ShaderLibrary;
   /**
@@ -209,6 +548,39 @@ export interface ForwardPassOptions {
    * reads for ordering. `writes` defaults to `["color"]`.
    */
   readonly framePass?: { readonly name: string; readonly reads?: readonly string[]; readonly writes?: readonly string[] };
+}
+
+interface ForwardPhotometricBinding {
+  readonly packet: PhotometricProfileBindings;
+  readonly selection: PackedLightsWithSelection;
+  readonly lease: PhotometricFrameLease;
+  readonly sourceCurrent: () => boolean;
+  active: boolean;
+}
+
+interface ForwardProjectedSpotBinding extends ForwardProjectedSpotCache { active: boolean; }
+
+const PROJECTED_SPOT_UNIFORMS = ["u_projectedSpotEnabled", "u_projectedSpotIndex", "u_projectedSpotMap",
+  "u_projectedSpotOffset", "u_projectedSpotScale", "u_projectedSpotRotation"] as const;
+
+function projectedSpotItemSupported(item: RenderItem): boolean {
+  return item.geometry.topology === "triangles" && !item.skinning && !item.morphTargets && !item.morphWeights &&
+    !item.geometry.morphTargets?.length && !item.instanceTransforms && !item.instanceColors && !item.instanceAttributes &&
+    (item.instanceCount === undefined || item.instanceCount === 1) && !isEngineBatchInstanceItem(item) &&
+    !item.geometry.vertexBuffer.format.streams.some((stream) => stream.stepMode === "instance");
+}
+
+/** Conservative count: a vertex-stage sampler also consumes a numbered unit. */
+function projectedSamplerBudgetAvailable(device: RenderDevice, shader: RenderShaderProgram): boolean {
+  const limit = device.info.maxFragmentTextureUnits;
+  if (!Number.isSafeInteger(limit) || limit! < 1) return false;
+  const samplerTypes = new Set([0x8b5e, 0x8b5f, 0x8b60, 0x8b62, 0x8dc1, 0x8dc4, 0x8dc5,
+    0x8dca, 0x8dcb, 0x8dcc, 0x8dcf, 0x8dd2, 0x8dd3, 0x8dd4, 0x8dd7].map(String));
+  let count = 0;
+  for (const detail of shader.reflection.uniformDetails.values()) {
+    if (/sampler/i.test(detail.type) || samplerTypes.has(detail.type)) count += detail.arraySize ?? 1;
+  }
+  return count > 0 && count <= limit!;
 }
 
 export interface EnvironmentLightingOptions {
@@ -323,6 +695,8 @@ export interface ForwardLocalShadowOptions {
   readonly slots: ReadonlyMap<CollectedLight, number>;
   /** The local-light depth atlas with a compare sampler; set whenever `slots` is not empty. */
   readonly texture?: TextureBinding;
+  /** Raw nearest-sampled atlas for portable shaders; `texture` remains the compare binding. */
+  readonly rawTexture?: TextureBinding;
   /** Atlas edge in px. */
   readonly atlasSize: number;
   /** MAX_FORWARD_LOCAL_SHADOW_TILES column-major mat4: world -> tile [0,1]^3 (the tiles' sampling view-projections). */
@@ -346,15 +720,22 @@ export interface ForwardLocalShadowOptions {
  */
 export function forwardShadedLights(
   lights: readonly CollectedLight[] | undefined,
-  localShadows: ForwardLocalShadowOptions | undefined
+  localShadows: ForwardLocalShadowOptions | undefined,
+  standalone?: Pick<ForwardShadowMapOptions, "pointLight" | "spotLight">
 ): readonly CollectedLight[] {
   if (!lights) return [];
   if (!localShadows) return lights;
   let changed = false;
   const shaded = lights.map((light): CollectedLight => {
     if (!light.castsShadow || (light.kind !== "spot" && light.kind !== "point")) return light;
-    changed = true;
     const slot = localShadows.slots.get(light);
+    // A light not in the local atlas can still own the independent legacy map.
+    const legacy = light.kind === "point" ? standalone?.pointLight : standalone?.spotLight;
+    if (slot === undefined && legacy && legacy.strength !== 0 && legacy.lightPosition?.length === 3
+      && isFiniteArrayLike(legacy.lightPosition) && graphShadowPositionMatches(light.position, legacy.lightPosition)
+      && (light.kind !== "spot" || (standalone?.spotLight?.lightDirection?.length === 3
+        && isFiniteArrayLike(standalone.spotLight.lightDirection) && graphShadowDirectionMatches(light.direction, standalone.spotLight.lightDirection)))) return light;
+    changed = true;
     const out: LocalShadowedLight = { ...light, castsShadow: false, ...(slot === undefined ? {} : { localShadowSlot: slot }) };
     return out;
   });
@@ -397,11 +778,53 @@ const INSTANCE_MATRIX_ATTRIBUTE_NAMES = [
   "a_instanceMatrix3"
 ] as const;
 
+type NativeForwardPointDevice = NativePointQuadDevice & {
+  getNativePointViewport(): WebGPUNativePointViewport;
+  drawNativePointQuads: NonNullable<RenderDevice["drawNativePointQuads"]>;
+};
+
+function isNativePointQuadDevice(device: RenderDevice): device is NativeForwardPointDevice {
+  const candidate = device as Partial<NativeForwardPointDevice>;
+  return device.kind === "webgpu" && typeof candidate.getNativePointViewport === "function"
+    && typeof candidate.getNativePointLimits === "function" && typeof candidate.createNativePointBuffer === "function"
+    && typeof candidate.assertNativePointBufferStamp === "function" && typeof candidate.retireNativePointBuffer === "function"
+    && typeof candidate.onNativePointInvalidated === "function" && typeof candidate.drawNativePointQuads === "function";
+}
+
+interface CombinedForwardSubmission {
+  readonly items: readonly RenderItem[];
+  readonly run: CombinedDrawPlanRun;
+  readonly staged: StagedCombinedDrawData;
+  readonly texture: Texture;
+  readonly textureRevision: number;
+  readonly rows: readonly Float32Array[];
+  attempted: boolean;
+}
+
+/** Initial lit admission only shares a plain ambient environment, not probes or shadows. */
+function combinedPbrEnvironmentSafe(options: ForwardPassOptions): boolean {
+  if (options.shadowMap || options.environmentFog || (options.lights?.length ?? 0) !== 0) return false;
+  const environment = options.environmentLighting;
+  if (!environment) return true;
+  try {
+    if (Object.getPrototypeOf(environment) !== Object.prototype || Reflect.ownKeys(environment).some((key) => {
+      const descriptor = Object.getOwnPropertyDescriptor(environment, key);
+      return (key !== "color" && key !== "intensity") || !descriptor || !!descriptor.get || !!descriptor.set;
+    })) return false;
+    return Array.isArray(environment.color) && environment.color.length === 3
+      && environment.color.every(Number.isFinite) && Number.isFinite(environment.intensity);
+  } catch { return false; }
+}
+
 export class ForwardPass extends BaseRenderPass {
   private static readonly shaderCaches = new WeakMap<RenderDevice, WeakMap<ShaderLibrary, ShaderCacheRecord>>();
+  private static readonly staticPairDrawItem = ForwardPass.prototype.drawItem;
+  private static readonly staticPairGetShader = ForwardPass.prototype.getShader;
+  private static readonly staticPairProgramFeatures = ForwardPass.prototype.programFeaturesFor;
   private readonly materialBinding = new MaterialBinding();
   private readonly shaderLibrary: ShaderLibrary;
   private readonly skinningPaletteUploads = new SkinningPaletteUploadManager();
+  private staticPairAuraFrame: RenderBuffer | null = null;
   private clusteredLighting: ClusteredForwardLightingResources | null = null;
   private generatorProgramCache: ProgramCacheLike | undefined;
 
@@ -410,6 +833,7 @@ export class ForwardPass extends BaseRenderPass {
   // hit. Keyed by device they survive pass reconstruction (same precedent as
   // `shaderCaches`) and die with the device.
   private static readonly pipelineCaches = new WeakMap<RenderDevice, Map<string, RenderPipeline>>();
+  private static readonly pointArenas = new WeakMap<NativePointQuadDevice, { readonly arena: NativePointQuadArena; failure?: unknown }>();
   private static readonly uniformPacketPools = new WeakMap<RenderDevice, { free: Map<string, UniformValue>[]; used: Map<string, UniformValue>[] }>();
   // SI-3: one owner-keyed slot allocator per device, shared by every ForwardPass (opaque pass, interleaved
   // transparent segments, mirror/probe views), so an instanced item keeps its buffer across passes and frames.
@@ -424,6 +848,7 @@ export class ForwardPass extends BaseRenderPass {
   // execute() because drawItem() does not carry the pass context.
   private frameWidth = 0;
   private frameHeight = 0;
+  private spriteFrameCamera: { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } | undefined;
   // WP-4: which view this pass renders, so the contact-shadow mask binds only to the main camera's draws (one object per frame).
   private contactMaskScope: ContactShadowMaskScope | undefined;
 
@@ -435,6 +860,38 @@ export class ForwardPass extends BaseRenderPass {
     );
     this.shaderLibrary = options.shaderLibrary ?? createLeanCoreShaderLibrary();
     ensureGu47ForwardFeatures();
+  }
+
+  /** Preflight both the item contract and generated shader before any weighted draw. */
+  canDrawWeighted(device: RenderDevice): boolean {
+    const weighted = this.options.weightedTransparency;
+    const flags = rendererQrFlags(device);
+    if (!weighted || !qrCoreGeneratorOn(flags) || !forwardDrawReplaySafe(this.options.items, flags)
+      || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)) return false;
+    try {
+      for (const item of this.options.items) {
+        const material = item.material;
+        if (!(material instanceof UnlitMaterial) || Object.getPrototypeOf(material) !== UnlitMaterial.prototype || material.disposed
+          || item.geometry.topology !== "triangles" || item.geometryMatrix || item.instanceTransforms
+          || item.instanceAttributes?.length || item.instanceColors || (item.instanceCount !== undefined && item.instanceCount !== 1)
+          || item.skinning || item.morphTargets?.length || item.morphWeights?.length || item.geometry.morphTargets?.length
+          || item.globalClipping || item.materialClipping || item.cameraFade !== undefined || item.lodFade !== undefined
+          || material.requiredAttributes.includes("a_color") || material.getParameter("u_pointMap") !== undefined
+          || material.getParameter("u_spriteMode") === 1 || material.getParameter("u_alphaCutoff") !== 0
+          || weightedTransparencyIneligibility(material.renderState, { renderOrder: item.renderOrder, depthConvention: "standard" })
+          || (material.renderState.blendMode !== undefined && material.renderState.blendMode !== "alpha")) return false;
+        const features = this.programFeaturesFor(material, device, item);
+        if (features.alphaMode !== "blend" || features.lighting !== "unlit" || features.fog !== "none"
+          || features.skinning || features.morph || features.instancing || features.drawId || features.backgroundCoverage
+          || Object.values(features.maps).some((value) => value !== undefined) || features.extensions.length
+          || Object.keys(features.features).some((key) => key !== PROGRAM_TRANSPARENCY_FEATURE)) return false;
+        const handle = this.programCache(device).acquire(features);
+        if (handle.status !== "ready" || !handle.program || handle.program.disposed
+          || ["u_a3dOpaqueDepth", "u_a3dTransparencyDepthOrigin", "u_a3dTransparencyReversedDepth"]
+            .some((name) => !handle.program!.reflection.uniforms.has(name))) return false;
+      }
+      return true;
+    } catch { return false; }
   }
 
   /**
@@ -450,50 +907,288 @@ export class ForwardPass extends BaseRenderPass {
   /** GU47 eint (EB-3): `forwardShadedLights` of this pass, computed once per execute (packed per draw). */
   private shadedLightsMemo: readonly CollectedLight[] | undefined;
   private shadedLights(): readonly CollectedLight[] {
-    return (this.shadedLightsMemo ??= forwardShadedLights(this.options.lights, this.options.shadowMap?.localShadows));
+    return (this.shadedLightsMemo ??= forwardShadedLights(this.options.lights, this.options.shadowMap?.localShadows, this.options.shadowMap));
+  }
+
+  private photometricCache?: Omit<ForwardPhotometricBinding, "active">;
+
+  private photometricUnsupported(reason: string, message: string): void {
+    const frame = this.options.photometricFrame;
+    if (frame) frame.onUnsupported({ reason, message, viewId: frame.identity.viewId, frameIndex: frame.identity.frameIndex });
+  }
+
+  private projectedSpotUnsupported(reason: string, message: string): void {
+    const frame = this.options.projectedSpotFrame;
+    if (frame) frame.onUnsupported({ reason, message, viewId: frame.identity.viewId, frameIndex: frame.identity.frameIndex });
+  }
+
+  /** Reuse the exact light occurrences across separate interleaved passes. */
+  private adoptProjectedSpotLights(): void {
+    const frame = this.options.projectedSpotFrame;
+    const cache = frame?.cache;
+    if (frame && cache && cache.source === this.options.lights && cache.shadow === this.options.shadowMap &&
+        cache.sourceCurrent() && cache.packet.isCurrent(frame.identity)) this.shadedLightsMemo = cache.lights;
+  }
+
+  private projectedSpotForDraw(device: RenderDevice, item: RenderItem, material: Material,
+    photometric?: ForwardPhotometricBinding): ForwardProjectedSpotBinding | undefined {
+    const frame = this.options.projectedSpotFrame;
+    const lights = this.shadedLights();
+    if (!frame || !lights.some((light) => light.projectedImage !== undefined)) return undefined;
+    const flags = rendererQrFlags(device);
+    const route = { core: qrCoreGeneratorOn(flags), lobes: qrMaterialsLobeProgramsOn(flags) };
+    const context = { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high };
+    const features = material.programFeatures(context);
+    if (material instanceof PortableShaderMaterial) {
+      if (features.lighting === "lit" || material.graphLightingModel === "metallic-roughness") {
+        this.projectedSpotUnsupported("material-unsupported", "Custom and graph materials cannot use projected spot images; scalar lighting is used.");
+      }
+      return undefined;
+    }
+    if (features.lighting !== "lit") return undefined;
+    if (device.kind !== "webgl2" ||
+        (!route.core && !route.lobes) || !materialRoutesToGeneratedProgram(material, route, context) || !projectedSpotItemSupported(item)) {
+      this.projectedSpotUnsupported("material-unsupported", "This draw cannot use the bounded projected-spot shader; scalar lighting is used.");
+      return undefined;
+    }
+    if (this.clusteredLighting !== null) {
+      this.projectedSpotUnsupported("clustered", "Clustered projected-spot indexing is unavailable; scalar lighting is used.");
+      return undefined;
+    }
+    const cache = frame.cache;
+    let selection: PackedLightsWithSelection;
+    try {
+      selection = photometric?.active ? photometric.selection
+        : cache && cache.lights === lights && cache.sourceCurrent() && cache.packet.isCurrent(frame.identity)
+          ? cache.selection : LightUniforms.packWithSelection(lights);
+    } catch {
+      this.projectedSpotUnsupported("stale-selection", "Direct lights could not be selected for projected images; scalar lighting is used.");
+      return undefined;
+    }
+    if (cache && cache.selection === selection && cache.lights === lights && cache.sourceCurrent() && cache.packet.isCurrent(frame.identity)) {
+      return { ...cache, active: true };
+    }
+    const image = lights.find((light) => light.projectedImage !== undefined)?.projectedImage;
+    let resource: ProjectedSpotResource<unknown> | undefined;
+    try { resource = image ? frame.resolveResource(image.texture) : undefined; }
+    catch {
+      this.projectedSpotUnsupported("texture-unavailable", "The projected image resource is unavailable; scalar lighting is used.");
+      return undefined;
+    }
+    const result = buildProjectedSpotBindings(lights, selection, frame.identity, resource, { clustered: this.clusteredLighting !== null });
+    if (result.status === "not-required") return undefined;
+    if (result.lease) frame.leases.add(result.lease);
+    if (result.status === "unsupported") {
+      this.projectedSpotUnsupported(result.reason, `${result.detail}; scalar lighting is used.`);
+      return undefined;
+    }
+    const source = this.options.lights;
+    const shadow = this.options.shadowMap;
+    let occurrences: CollectedLight[], original: Float32Array;
+    let metadata: Array<{ image: CollectedLight["projectedImage"]; profile: CollectedLight["photometricProfile"]; visible: CollectedLight["photometricVisible"]; dimmer: CollectedLight["photometricDimmer"] }>;
+    try {
+      occurrences = [...(source ?? [])];
+      original = LightUniforms.pack(source ?? []).data.slice();
+      metadata = (source ?? []).map((light) => ({ image: light.projectedImage, profile: light.photometricProfile,
+        visible: light.photometricVisible, dimmer: light.photometricDimmer }));
+    } catch {
+      this.projectedSpotUnsupported("stale-selection", "Projected light data could not be retained; scalar lighting is used.");
+      return undefined;
+    }
+    const slots = selection.selected.map((entry) => entry.inputIndex);
+    const same = (a: ArrayLike<number>, b: ArrayLike<number>) => a.length === b.length && Array.from(a).every((value, index) => Object.is(value, b[index]));
+    const sourceCurrent = (): boolean => {
+      try {
+        const live = this.options.lights;
+        if (live !== source || this.options.shadowMap !== shadow || !live || live.length !== occurrences.length ||
+            live.some((light, i) => light !== occurrences[i] || light.projectedImage !== metadata[i]!.image ||
+              light.photometricProfile !== metadata[i]!.profile || light.photometricVisible !== metadata[i]!.visible ||
+              !Object.is(light.photometricDimmer, metadata[i]!.dimmer)) || !same(LightUniforms.pack(live).data, original)) return false;
+        const remapped = forwardShadedLights(live, shadow?.localShadows, shadow);
+        const fresh = LightUniforms.packWithSelection(remapped, selection.packed.diagnostics.requestedMaxLights);
+        return same(fresh.packed.data, selection.packed.data) && fresh.selected.length === slots.length &&
+          fresh.selected.every((entry, index) => entry.inputIndex === slots[index]) &&
+          remapped.length === lights.length && remapped.every((light, index) => light.projectedImage === lights[index]?.projectedImage);
+      } catch { return false; }
+    };
+    const projected: ForwardProjectedSpotCache = { packet: result, selection, lights, source, shadow, sourceCurrent };
+    if (!sourceCurrent() || !result.isCurrent(frame.identity)) {
+      this.projectedSpotUnsupported("stale-selection", "Projected light data changed during admission; scalar lighting is used.");
+      return undefined;
+    }
+    frame.cache = projected;
+    return { ...projected, active: true };
+  }
+
+  private photometricForDraw(device: RenderDevice, item: RenderItem, material: Material): ForwardPhotometricBinding | undefined {
+    const frame = this.options.photometricFrame;
+    const lights = this.shadedLights();
+    if (!frame || !lights.some((light) => light.photometricProfile !== undefined)) return undefined;
+    const flags = rendererQrFlags(device);
+    const route = { core: qrCoreGeneratorOn(flags), lobes: qrMaterialsLobeProgramsOn(flags) };
+    const context = { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high };
+    const features = material.programFeatures(context);
+    const graphLit = material instanceof PortableShaderMaterial && material.graphLightingModel === "metallic-roughness";
+    if (material instanceof PortableShaderMaterial) {
+      this.photometricUnsupported("material-unsupported", "Custom and graph shaders cannot use generated photometric profile lighting; scalar lighting is used.");
+      return undefined;
+    }
+    if (features.lighting !== "lit" && !graphLit) return undefined;
+    if (!materialRoutesToGeneratedProgram(material, route, context) ||
+        (!route.core && !route.lobes) || item.geometry.topology !== "triangles") {
+      this.photometricUnsupported("material-unsupported", "This lit draw cannot use generated photometric profile lighting; scalar lighting is used.");
+      return undefined;
+    }
+    if (this.photometricCache?.lease.isCurrent(frame.identity) && this.photometricCache.sourceCurrent()) {
+      const cached = this.photometricCache;
+      const current = LightUniforms.pack(lights).data;
+      if (current.length === cached.selection.packed.data.length && current.every((value, index) => Object.is(value, cached.selection.packed.data[index]))) {
+        return { ...cached, active: true };
+      }
+    }
+    let selection: PackedLightsWithSelection;
+    let sourceCurrent: () => boolean;
+    try {
+      const shared = this.options.projectedSpotFrame?.cache;
+      selection = shared && shared.lights === lights && shared.sourceCurrent() &&
+        shared.packet.isCurrent(this.options.projectedSpotFrame!.identity) ? shared.selection : LightUniforms.packWithSelection(lights);
+      const source = this.options.lights ?? [];
+      const occurrences = [...source];
+      const packed = LightUniforms.pack(source).data.slice();
+      const profiles = source.map((light) => ({ profile: light.photometricProfile, visible: light.photometricVisible, dimmer: light.photometricDimmer }));
+      sourceCurrent = () => {
+        try {
+          const live = this.options.lights ?? [];
+          if (live.length !== occurrences.length || live.some((light, i) => light !== occurrences[i] ||
+              light.photometricProfile !== profiles[i]!.profile || light.photometricVisible !== profiles[i]!.visible ||
+              !Object.is(light.photometricDimmer, profiles[i]!.dimmer))) return false;
+          const current = LightUniforms.pack(live).data;
+          if (current.length !== packed.length || !current.every((value, index) => Object.is(value, packed[index]))) return false;
+          const shaded = forwardShadedLights(live, this.options.shadowMap?.localShadows, this.options.shadowMap);
+          const currentShaded = LightUniforms.pack(shaded).data;
+          return currentShaded.length === selection.packed.data.length &&
+            currentShaded.every((value, index) => Object.is(value, selection.packed.data[index]));
+        } catch { return false; }
+      };
+    }
+    catch {
+      this.photometricUnsupported("stale-selection", "Direct lights could not be selected for photometric profiles; scalar lighting is used.");
+      return undefined;
+    }
+    const result = buildPhotometricProfileBindings(lights, selection, { clustered: this.clusteredLighting !== null });
+    if (result.status === "not-required") return undefined;
+    if (result.status === "unsupported") {
+      this.photometricUnsupported(result.reason, `${result.detail}; scalar lighting is used.`);
+      return undefined;
+    }
+    const adopted = frame.resources.adopt(frame.identity, result);
+    if (adopted.status !== "ready") {
+      result.dispose();
+      this.photometricUnsupported(adopted.reason, "Photometric profile frame resources are unavailable; scalar lighting is used.");
+      return undefined;
+    }
+    frame.leases.push(adopted.lease);
+    this.photometricCache = { packet: result, selection, lease: adopted.lease, sourceCurrent };
+    return { ...this.photometricCache, active: true };
   }
 
   execute(context: RenderPassContext): void {
+    if (this.options.frameContext && this.options.frameContext.device !== context.device) {
+      throw new RenderDeviceError("Forward frame context belongs to another device", "FRAME_CONTEXT_DEVICE_MISMATCH");
+    }
     this.customFrame = {};
     this.shadedLightsMemo = undefined;
+    this.photometricCache = undefined;
     this.skinningPaletteUploads.beginFrame();
     this.frameWidth = context.width;
     this.frameHeight = context.height;
-    this.contactMaskScope = { device: context.device, width: context.width, height: context.height, cameraPosition: this.options.cameraPosition };
+    this.spriteFrameCamera = undefined;
+    this.staticPairAuraFrame = null;
+    this.contactMaskScope = { device: context.device, width: context.width, height: context.height, cameraPosition: this.options.cameraPosition ?? [0, 0, 1],
+      timeSeconds: this.options.timeSeconds ?? 0, viewProjectionMatrix: this.options.cameraViewProjectionMatrix ?? identityMatrix(), frame: this.options.frameContext };
     this.beginFramePools(context.device);
-    this.clusteredLighting = resolveForwardClusteredLighting(this.shadedLights(), context.width, context.height, this.options.cameraViewProjectionMatrix);
-    const flags = rendererQrFlags(context.device);
-    if (qrGeneratedProgramsOn(flags)) {
-      const auraFrame = rendererAuraFrame(context.device, flags);
-      if ("viewport" in auraFrame) {
-        (auraFrame as { viewport: { width: number; height: number } }).viewport = { width: context.width, height: context.height };
-      }
-      const vp = this.options.cameraViewProjectionMatrix ?? identityMatrix();
-      auraFrame.update(
-        {
-          viewMatrix: toMat4Uniform(this.options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"),
-          projectionMatrix: toMat4Uniform(this.options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"),
-          viewProjectionMatrix: toMat4Uniform(vp, "cameraViewProjectionMatrix"),
-          previousViewProjectionMatrix: this.options.auraFrameCamera?.previousViewProjectionMatrix
-            ? toMat4Uniform(this.options.auraFrameCamera.previousViewProjectionMatrix, "auraFrameCamera.previousViewProjectionMatrix")
-            : null,
-          near: this.options.auraFrameCamera?.near ?? 0.1,
-          far: this.options.auraFrameCamera?.far ?? 1000,
-          projection: this.options.auraFrameCamera?.projection ?? "perspective",
-          position: this.options.cameraPosition ?? [0, 0, 0]
-        },
-        this.options.timeSeconds ?? 0,
-        this.options.exposure ?? 1,
-        0
-      );
-      // The device binds the AuraFrame block to point 0 at link time
-      // (`uniformBlockBinding`), so one global buffer bind covers every
-      // generated draw this frame.
-      if (auraFrame.buffer) context.device.bindUniformBuffer?.(auraFrame.buffer, 0);
-    }
     try {
-      for (const item of sortForwardRenderItems(this.options.items.filter(hasDrawableInstances), this.options.cameraPosition)) {
-        this.drawItem(context.device, item);
+      this.clusteredLighting = resolveForwardClusteredLighting(this.shadedLights(), context.width, context.height, this.options.cameraViewProjectionMatrix);
+      const flags = rendererQrFlags(context.device);
+      if (qrGeneratedProgramsOn(flags)) {
+        const auraFrame = rendererAuraFrame(context.device, flags);
+        if ("viewport" in auraFrame) {
+          (auraFrame as { viewport: { width: number; height: number } }).viewport = { width: context.width, height: context.height };
+        }
+        const view = new Float32Array(toMat4Uniform(this.options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"));
+        const projection = new Float32Array(toMat4Uniform(this.options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"));
+        const viewProjection = new Float32Array(toMat4Uniform(this.options.cameraViewProjectionMatrix ?? identityMatrix(), "cameraViewProjectionMatrix"));
+        this.spriteFrameCamera = { view, projection, viewProjection };
+        auraFrame.update(
+          {
+            viewMatrix: view,
+            projectionMatrix: projection,
+            viewProjectionMatrix: viewProjection,
+            previousViewProjectionMatrix: this.options.auraFrameCamera?.previousViewProjectionMatrix
+              ? toMat4Uniform(this.options.auraFrameCamera.previousViewProjectionMatrix, "auraFrameCamera.previousViewProjectionMatrix")
+              : null,
+            near: this.options.auraFrameCamera?.near ?? 0.1,
+            far: this.options.auraFrameCamera?.far ?? 1000,
+            projection: this.options.auraFrameCamera?.projection ?? "perspective",
+            position: this.options.cameraPosition ?? [0, 0, 0]
+          },
+          this.options.timeSeconds ?? 0,
+          this.options.exposure ?? 1,
+          0
+        );
+        // The device binds the AuraFrame block to point 0 at link time
+        // (`uniformBlockBinding`), so one global buffer bind covers every
+        // generated draw this frame.
+        if (auraFrame.buffer) context.device.bindUniformBuffer?.((this.staticPairAuraFrame = auraFrame.buffer), 0);
+      }
+      // Until a backend can attest observer-safe batch execution, recover
+      // logical members before sorting or running any per-draw callbacks.
+      for (const carrier of this.options.items) {
+        const members = batchMembersFor(carrier);
+        if (members && [carrier, ...members].some((item) => item.material && getBaseMaterial(item.material) instanceof DepthPreviewMaterial)) {
+          throw new RenderDeviceError("Depth preview does not support batched draws", "DEPTH_PREVIEW_BATCH_UNSUPPORTED", { label: carrier.label });
+        }
+      }
+      const logicalItems = expandLogicalBatchItems(this.options.items);
+      if (logicalItems.some(isEnginePackedBatchItem)) {
+        throw new RenderDeviceError("Packed draw rows require authenticated logical members", "PACKED_DRAW_PROVENANCE_UNAVAILABLE", {});
+      }
+      if (this.options.materialClippingFor && logicalItems.some(isEngineBatchInstanceItem)) {
+        throw new RenderDeviceError("Per-member materialClippingFor is unavailable for batched instances", "BATCH_MATERIAL_CLIPPING_CALLBACK_UNSUPPORTED", {});
+      }
+      const ordered = sortForwardRenderItems(logicalItems.filter(hasDrawableInstances), this.options.sortCameraPosition ?? this.options.cameraPosition);
+      const canPlan = ordered.some(hasCombinedDrawIntent) && combinedWebGLDevice(context.device) && qrCoreGeneratorOn(flags)
+        && flags.on("A3D_PARITY_BATCHING") && flags.on("A3D_QR_TIERS_BATCHING")
+        && !(this.options.photometricFrame && this.shadedLights().some((light) => light.photometricProfile !== undefined))
+        && !this.options.projectedSpotFrame
+        && !this.options.globalClipping && !this.options.materialClippingFor && !this.options.disableCombinedDraw
+        && !resolveContactShadowMask(this.contactMaskScope) && isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
+        && forwardDrawProvidersSafe(flags, true);
+      if (!canPlan) {
+        for (let index = 0; index < ordered.length;) {
+          const first = ordered[index]!;
+          const second = ordered[index + 1];
+          const pair = second ? this.tryStaticUnlitPair(context.device, first, second) : "ineligible";
+          if (pair === "submitted") index += 2;
+          else if (pair === "declined" && second) {
+            this.drawItem(context.device, first);
+            this.drawItem(context.device, second);
+            index += 2;
+          } else { this.drawItem(context.device, first); index += 1; }
+        }
+      } else {
+        // Plan bounded contiguous chunks in already-sorted order. A rejected
+        // run resumes the exact ordinary member sequence at its first item.
+        for (let start = 0; start < ordered.length; start += MAX_COMBINED_DRAW_PLAN_ITEMS) {
+          const chunk = ordered.slice(start, start + MAX_COMBINED_DRAW_PLAN_ITEMS);
+          const runs = planCombinedDrawRuns(combinedForwardEntries(context.device, chunk));
+          const byStart = new Map(runs.map((run) => [run.members[0]!.itemIndex, run]));
+          for (let index = 0; index < chunk.length;) {
+            const run = byStart.get(index);
+            if (run && this.tryCombinedRun(context.device, chunk, run)) index += run.members.length;
+            else { this.drawItem(context.device, chunk[index]!); index += 1; }
+          }
+        }
       }
       // #181: issue any trailing multi-draw run deferred by `submitDraw`.
       flushMultiDrawQueue(context.device);
@@ -503,49 +1198,380 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
-  private drawItem(device: RenderDevice, sourceItem: RenderItem): void {
+  /** Recheck callback, source and resource ownership after every preparation step. */
+  private staticUnlitPairCurrent(device: RenderDevice, first: RenderItem, second: RenderItem): device is WebGL2Device {
+    try {
+      const authorization = staticUnlitPairFrames.get(this);
+      const flags = rendererQrFlags(device);
+      const generated = qrGeneratedProgramsOn(flags);
+      if (!authorization || !staticPairDeviceCurrent(device) || !authorization() || device.disposed || device.contextLost
+        || device.draw !== staticPairDeviceDraw || device.hasStaticUnlitPairBuffers !== staticPairBufferCheck
+        || device.prepareStaticUnlitPair !== staticPairPrepare || device.submitStaticUnlitPair !== staticPairSubmit
+        || this.drawItem !== ForwardPass.staticPairDrawItem || this.materialBinding.bind !== staticPairMaterialBind
+        || this.materialBinding.bindRecursive !== staticPairMaterialBindRecursive
+        || this.getShader !== ForwardPass.staticPairGetShader
+        || MaterialBinding.prototype.bind !== staticPairMaterialBind || MaterialBinding.prototype.bindRecursive !== staticPairMaterialBindRecursive
+        || RenderPipeline.prototype.createDrawCommand !== staticPairPipelineCommand
+        || ShaderModule.prototype.compile !== staticPairShaderCompile || ShaderModule.prototype.peek !== staticPairShaderPeek
+        || !isTrustedQrFlags(flags) || hasPotentiallyActiveFrameContributors(flags)
+        || !forwardDrawProvidersSafe(flags) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
+        || this.options.globalClipping || this.options.materialClippingFor || this.options.disableCombinedDraw
+        || this.options.nativeDepthCoverage || this.options.shadowMap || this.options.photometricFrame || this.options.projectedSpotFrame
+        || resolveContactShadowMask(this.contactMaskScope)
+        || !staticUnlitItemSafe(first, generated) || !staticUnlitItemSafe(second, generated)
+        || first.geometry !== second.geometry || first.material !== second.material
+        || !staticUnlitMaterialSafe(first.material as UnlitMaterial)) return false;
+
+      if (generated) {
+        const cache = rendererProgramCachePeek(device, flags);
+        if (!qrCoreGeneratorOn(flags) || this.options.outputColorSpace !== "srgb" || !this.staticPairAuraFrame
+          || !staticGeneratedDeviceCurrent(device) || device.hasStaticGeneratedUnlitProgram !== staticGeneratedPairProgram
+          || device.prepareStaticGeneratedUnlitPair !== staticGeneratedPairPrepare
+          || device.submitStaticGeneratedUnlitPair !== staticGeneratedPairSubmit
+          || this.programFeaturesFor !== ForwardPass.staticPairProgramFeatures || this.materialBinding.bindGenerated !== staticPairMaterialBindGenerated
+          || MaterialBinding.prototype.bindGenerated !== staticPairMaterialBindGenerated
+          || !cache || !staticGeneratedCacheCapability(cache)) return false;
+      } else {
+        // A normal frame must have compiled this exact legacy program first.
+        const record = ForwardPass.shaderCaches.get(device)?.get(this.shaderLibrary);
+        const module = record?.revision === this.shaderLibrary.getRevision() ? record.modules.get(DEFAULT_UNLIT_SHADER_NAME) : undefined;
+        if (!module || module.compile !== staticPairShaderCompile || module.peek !== staticPairShaderPeek || !module.peek(device)) return false;
+      }
+
+      // `uploadedBuffer` is the last device's resource. Authenticate it on
+      // this device before invoking the ordinary upload path for a packet.
+      const geometry = first.geometry;
+      const indices = geometry.indexBuffer!;
+      if (!indices.uploadedBuffer || indices.getDirtyRange() !== null) return false;
+      const vertices: (RenderBuffer | undefined)[] = [];
+      for (const stream of geometry.vertexBuffer.format.streams) {
+        if (stream.stepMode === "instance") return false;
+        const vertex = geometry.getVertexBuffer(stream.slot);
+        if (!vertex.uploadedBuffer || vertex.getDirtyRange() !== null) return false;
+        vertices[stream.slot] = vertex.uploadedBuffer;
+      }
+      return device.hasStaticUnlitPairBuffers(vertices, indices.uploadedBuffer);
+    } catch { return false; }
+  }
+
+  private tryStaticUnlitPair(device: RenderDevice, first: RenderItem, second: RenderItem): "ineligible" | "declined" | "submitted" {
+    if (!this.staticUnlitPairCurrent(device, first, second)) return "ineligible";
+    const generated = qrGeneratedProgramsOn(rendererQrFlags(device));
+    const firstCapture: StaticUnlitCapture = { generatedRequested: generated };
+    const secondCapture: StaticUnlitCapture = { generatedRequested: generated };
+    // These calls take the ordinary selection and binding route, but cannot
+    // submit. The preflight requires warm resources and callback-free owners.
+    try {
+      if (this.drawItem(device, first, undefined, firstCapture) !== true || !firstCapture.command
+        || !this.staticUnlitPairCurrent(device, first, second)
+        || this.drawItem(device, second, undefined, secondCapture) !== true || !secondCapture.command
+        || !this.staticUnlitPairCurrent(device, first, second)) return "declined";
+    } catch {
+      // Neither logical draw was submitted. Let the ordinary path reproduce
+      // its own warning or error at the original position in the queue.
+      return "declined";
+    }
+    const firstCommand = firstCapture.command;
+    const secondCommand = secondCapture.command;
+    if (!firstCommand || !secondCommand) return "declined";
+    if (generated) {
+      const firstGenerated = firstCapture.generated;
+      const secondGenerated = secondCapture.generated;
+      const auraFrameBuffer = this.staticPairAuraFrame;
+      if (!firstGenerated || !secondGenerated || !auraFrameBuffer || firstGenerated.cache !== secondGenerated.cache
+        || firstGenerated.capability !== secondGenerated.capability || firstGenerated.program !== secondGenerated.program
+        || firstCommand.shader !== firstGenerated.program || secondCommand.shader !== secondGenerated.program) return "declined";
+      const cacheCurrent = (): boolean => {
+        const cache = rendererProgramCachePeek(device, rendererQrFlags(device));
+        return cache !== undefined && cache === firstGenerated.cache && staticGeneratedCacheCapability(cache) === firstGenerated.capability
+          && firstGenerated.capability.peekReady(firstGenerated.features) === firstGenerated.program
+          && firstGenerated.capability.peekReady(secondGenerated.features) === secondGenerated.program
+          && staticGeneratedDeviceCurrent(device) && device.hasStaticGeneratedUnlitProgram === staticGeneratedPairProgram
+          && device.hasStaticGeneratedUnlitProgram(firstGenerated.program, firstGenerated.features)
+          && device.hasStaticGeneratedUnlitProgram(secondGenerated.program, secondGenerated.features);
+      };
+      if (!cacheCurrent()) return "declined";
+      const ticket = device.prepareStaticGeneratedUnlitPair([firstCommand, secondCommand], {
+        features: firstGenerated.features, auraFrameBuffer
+      });
+      if (!ticket || this.staticPairAuraFrame !== auraFrameBuffer || !this.staticUnlitPairCurrent(device, first, second) || !cacheCurrent()) return "declined";
+      let committed = 0;
+      const commit = (capture: StaticGeneratedCapture, expected: number): void => {
+        if (committed !== expected || !cacheCurrent() || !capture.capability.commitReadyReuse(capture.features, capture.program, 1)) {
+          throw new RenderDeviceError("The generated pair program cache changed during submission", "STATIC_BATCH_PROGRAM_CACHE_CHANGED");
+        }
+        committed += 1;
+      };
+      const result = device.submitStaticGeneratedUnlitPair(ticket, {
+        onAttempt: () => {
+          if (!this.staticUnlitPairCurrent(device, first, second)) {
+            throw new RenderDeviceError("The generated pair changed during submission", "STATIC_BATCH_INVALIDATED");
+          }
+          commit(firstGenerated, 0);
+        },
+        onSubmitted: () => commit(secondGenerated, 1)
+      });
+      if ((result === "submitted" && committed !== 2) || (result === "declined" && committed !== 0)) {
+        throw new RenderDeviceError("The generated pair submission did not preserve cache accounting", "STATIC_BATCH_PROGRAM_CACHE_CHANGED");
+      }
+      return result;
+    }
+    const ticket = device.prepareStaticUnlitPair([firstCommand, secondCommand]);
+    if (!ticket || !this.staticUnlitPairCurrent(device, first, second)) return "declined";
+    // The backend returns declined only before native submission. An exception
+    // after entering native draw must escape: replay could draw a member twice.
+    return device.submitStaticUnlitPair(ticket);
+  }
+
+  private combinedRunCurrent(device: RenderDevice, items: readonly RenderItem[], run: CombinedDrawPlanRun): boolean {
+    const flags = rendererQrFlags(device);
+    if (!combinedWebGLDevice(device) || !qrCoreGeneratorOn(flags) || !flags.on("A3D_PARITY_BATCHING")
+      || !flags.on("A3D_QR_TIERS_BATCHING") || this.options.globalClipping || this.options.materialClippingFor || this.options.disableCombinedDraw
+      || resolveContactShadowMask(this.contactMaskScope) || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
+      || !forwardDrawProvidersSafe(flags, true) || !items.every(forwardBuiltinParticipantSafe)
+      || items.some((item) => item.material && materialInstanceColorTarget(item.material) === "emissive")) return false;
+    if (items[0]?.material && [PBRMaterial.prototype, InstancedPBRMaterial.prototype].includes(Object.getPrototypeOf(items[0].material))) {
+      if (!combinedPbrEnvironmentSafe(this.options)) return false;
+      try {
+        // Renderer projection normally supplies the standard normal matrix.
+        // An authored override is only equivalent when its float32 value is
+        // identical to the normal matrix used by ordinary logical drawing.
+        if (items.some((item) => {
+          if (!item.normalMatrix) return false;
+          const packet = packedLoopMemberFor(item);
+          if (!packet || item.normalMatrix.length !== 16) return true;
+          const expected = normalMatrixFromModel(toMat4Values(packet.modelMatrix, "modelMatrix", item.label));
+          return expected.some((value, index) => !Object.is(Math.fround(value), Math.fround(item.normalMatrix![index]!)));
+        })) return false;
+      } catch { return false; }
+    }
+    const entries = combinedForwardEntries(device, items);
+    const first = entries[0];
+    return first !== undefined && entries.length === run.members.length && entries.every((entry, index) =>
+      entry !== undefined && entry.compatibilityKey === first.compatibilityKey && entry.indexType === run.indexType
+      && entry.firstIndex === run.members[index]!.firstIndex && entry.indexCount === run.members[index]!.indexCount);
+  }
+
+  private tryCombinedRun(device: RenderDevice, queue: readonly RenderItem[], run: CombinedDrawPlanRun): boolean {
+    const items = run.members.map((member) => queue[member.itemIndex]!);
+    if (!this.combinedRunCurrent(device, items, run)) return false;
+    // WebGL2 guarantees at least 2048 texture columns. The bounded planner
+    // uses at most 1536; stage against that conservative guaranteed limit.
+    const staged = stageCombinedDrawData(queue, run, 1536);
+    if (!staged) return false;
+    let transferred = false;
+    try {
+      const texture = staged.drawData.upload();
+      const rows = staged.members.map((_, index) => staged.drawData.drawTexels(index).slice());
+      if (!retainPackedLoopDrawData(device, staged.drawData)) return false;
+      transferred = true;
+      const submission: CombinedForwardSubmission = { items, run, staged, texture, textureRevision: texture.revision, rows, attempted: false };
+      try {
+        return withCombinedDrawCarrier(items[0]!, texture, (carrier) => this.drawItem(device, carrier, submission) === true);
+      } catch (error) {
+        // A failed speculative preparation has no observers and can follow
+        // the original path. Once device submission is entered, never replay.
+        if (submission.attempted) throw error;
+        return false;
+      }
+    } finally {
+      if (!transferred) staged.drawData.dispose();
+    }
+  }
+
+  private drawItem(device: RenderDevice, sourceItem: RenderItem, combined?: CombinedForwardSubmission, staticCapture?: StaticUnlitCapture): boolean | void {
     let item = sourceItem;
     // An instanced item with zero instances draws nothing (never a contract throw that blanks the frame).
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
+    if (item.instanceCount !== undefined && (!Number.isSafeInteger(item.instanceCount) || item.instanceCount < 1)) {
+      throw new RenderDeviceError("instanceCount must be a positive integer", "INVALID_INSTANCE_COUNT", { instanceCount: item.instanceCount });
+    }
+    if (item.instanceCount !== undefined && item.instanceTransforms !== undefined && item.instanceCount !== item.instanceTransforms.length / 16) {
+      throw new RenderDeviceError("instanceCount must match the number of instance transforms", "INSTANCE_COUNT_MISMATCH", { instanceCount: item.instanceCount });
+    }
+    if (resolveContactShadowMask(this.contactMaskScope)
+      && (item.onBeforeRender || !forwardDrawProvidersSafe(rendererQrFlags(device)))) {
+      throw new RenderDeviceError("Contact shadows require stable forward providers and draw participants", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
+    }
     // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
     // immediately before the draw call.
     item.onBeforeRender?.(item);
+    // Local-shadow remapping can copy a light. Rebuild that list after the
+    // user callback so profile visibility and transforms are from this draw.
+    if (this.options.photometricFrame || this.options.projectedSpotFrame) this.shadedLightsMemo = undefined;
+    this.adoptProjectedSpotLights();
+    if (resolveContactShadowMask(this.contactMaskScope)
+      && (item.onBeforeRender || !forwardDrawProvidersSafe(rendererQrFlags(device)))) {
+      throw new RenderDeviceError("Contact shadows require stable forward providers and draw participants", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
+    }
     const material = item.material ?? new UnlitMaterial();
     const baseMaterial = getBaseMaterial(material);
-    this.applyLightUniforms(material);
+    const previewClipRange = baseMaterial instanceof DepthPreviewMaterial
+      ? validateDepthPreviewDraw(item, baseMaterial, this.options, device) : undefined;
+    const nativePoint = device.kind === "webgpu" && item.geometry.topology === "points";
+    if (nativePoint) {
+      if (!isNativePointQuadDevice(device) || !qrCoreGeneratorOn(rendererQrFlags(device))
+        || Object.getPrototypeOf(baseMaterial) !== UnlitMaterial.prototype
+        || (material instanceof MaterialInstance && Object.getPrototypeOf(material) !== MaterialInstance.prototype)) {
+        throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: baseMaterial.name });
+      }
+      if (item.skinning || item.morphTargets || item.morphWeights || item.geometry.morphTargets?.length
+        || item.instanceTransforms || item.instanceColors || item.instanceAttributes || (item.instanceCount !== undefined && item.instanceCount !== 1)
+        || item.geometry.vertexBuffer.format.streams.some(stream => stream.stepMode !== "vertex")) {
+        throw new RenderDeviceError("WebGPU point quads do not support deformation or instancing", "WEBGPU_POINT_SOURCE_UNSUPPORTED", { label: item.label });
+      }
+    }
+    if (device.kind === "webgpu" && (baseMaterial instanceof UnlitMaterial || baseMaterial instanceof InstancedUnlitMaterial)
+      && material.getParameter("u_spriteMode") === 1) {
+      throw new RenderDeviceError("Native WebGPU billboard sprites require a dedicated shader", "NATIVE_UNLIT_SPRITE_UNSUPPORTED", { material: baseMaterial.name });
+    }
+    const clipping = resolveForwardClipping(item, this.options, device);
+    assertForwardClippingSupported(item, clipping, { flags: rendererQrFlags(device), cameraViewMatrix: this.spriteFrameCamera?.view ?? this.options.cameraViewMatrix, shaderLibrary: this.shaderLibrary });
+    const advancedLighting = advancedLightingItemBinding(item, this.options.frameContext, { deferLightmapContentCheck: true });
+    if (advancedLighting) {
+      if (prd02ItemIrradianceBindings(item, device)) throw new RenderDeviceError("An item cannot combine advanced and volume diffuse lighting", "ADVANCED_LIGHTING_SOURCE_CONFLICT", {});
+      if (advancedLighting.kind === "lightmap") {
+        const semantic = advancedLighting.uvSet === 1 ? "uv1" : "uv";
+        const name = advancedLighting.uvSet === 1 ? "a_uv1" : "a_uv";
+        const location = advancedLighting.uvSet === 1 ? 7 : 2;
+        const attribute = item.geometry.vertexBuffer.format.attributes.find((candidate) => candidate.semantic === semantic || candidate.shaderName === name);
+        if (!attribute || attribute.components !== 2 || attribute.shaderLocation !== location || attribute.integer) {
+          throw new RenderDeviceError("The baked lightmap UV channel is missing or incompatible", "ADVANCED_LIGHTING_UV_UNSUPPORTED", { semantic, location });
+        }
+      }
+    }
+    if (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphRequiresWebGPU && device.kind !== "webgpu") {
+      throw new RenderDeviceError("Shader graph storage resources require WebGPU", "GRAPH_STORAGE_BACKEND_UNSUPPORTED", { material: baseMaterial.name });
+    }
+    validateGraphGeometry(baseMaterial, item, device);
+    const graphPhysical = baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphLightingModel === "metallic-roughness";
+    const graphContactIndex = graphPhysical ? contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights()) : -1;
+    graphDrawShaderKey(baseMaterial, item, device, this.options.shadowMap, this.shadedLights(), this.options.environmentLighting, this.contactMaskScope);
+    if (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphLightingModel === "metallic-roughness"
+        && this.shadedLights().some((light) => light.kind === "rect-area")) {
+      throw new RenderDeviceError("Physical shader graphs do not yet support rectangular area lights", "GRAPH_RECT_LIGHT_UNSUPPORTED", { material: baseMaterial.name });
+    }
+    if (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphLightingModel === "metallic-roughness") {
+      const shadow = this.options.shadowMap;
+      const directionalShadowActive = shadow && ((shadow.cascades?.length ?? 0) > 0
+        ? shadow.cascades!.some((cascade) => cascade.shadowMap.strength !== 0)
+        : shadow.strength !== 0);
+      if (item.receiveShadow !== false && directionalShadowActive
+        && this.shadedLights().filter((light) => light.kind === "directional" && light.castsShadow).length > 1) {
+        throw new RenderDeviceError("Graph directional shadow maps cannot distinguish multiple shadow-casting directional lights", "GRAPH_MULTIPLE_DIRECTIONAL_SHADOWS_UNSUPPORTED", { material: baseMaterial.name });
+      }
+      if (item.receiveShadow !== false && shadow) {
+        validateGraphLocalShadowSources(baseMaterial, shadow, this.shadedLights());
+      }
+    }
+    // A combined candidate may still fall back before submission. Avoid the
+    // public material writes here; reproduce them only after a successful
+    // native call, once for each logical draw that it replaced.
+    const photometric = combined ? undefined : this.photometricForDraw(device, item, baseMaterial);
+    const projected = combined ? undefined : this.projectedSpotForDraw(device, item, baseMaterial, photometric);
+    if (!combined) this.applyLightUniforms(material, photometric?.selection.packed ?? projected?.selection.packed);
     let shader: RenderShaderProgram | undefined;
-    const knownFailure = this.shaderFailureOutcome(baseMaterial);
+    const clippedLine = clipping.groups.length > 0 && baseMaterial instanceof ScreenSpaceLineMaterial;
+    const knownFailure = clippedLine || photometric || projected || this.options.weightedTransparency ? undefined : this.shaderFailureOutcome(baseMaterial, device, item);
     if (knownFailure === undefined) {
       try {
-        shader = this.getShader(baseMaterial, device, item);
+        shader = this.getShader(baseMaterial, device, item, clipping, photometric, projected, staticCapture);
       } catch (error) {
+        if (this.options.weightedTransparency) throw error;
+        if (this.options.nativeDepthCoverage) throw error;
+        if (combined && isShaderFailureError(error)) return false;
+        if (clipping.groups.length > 0) throw error;
         if (!isShaderFailureError(error)) throw error;
         this.lastProgramFeatures = undefined;
-        const mode = this.handleShaderFailure(error, baseMaterial, device);
+        const mode = this.handleShaderFailure(error, baseMaterial, device, item);
         if (mode === "magenta") {
           this.drawItem(device, { ...item, onBeforeRender: undefined, material: shaderFailureDebugMaterial() });
         }
         return;
       }
     } else {
+      if (this.options.nativeDepthCoverage) throw new RenderDeviceError("The native depth-coverage program failed", "NATIVE_DOF_COVERAGE_PROGRAM_UNAVAILABLE");
+      if (combined) return false;
       // A program that already failed is not recompiled every frame: skip, or draw the magenta debug item.
+      if (clipping.groups.length > 0) throw new RenderDeviceError("The clipping shader is unavailable", "FORWARD_CLIPPING_PROGRAM_UNSUPPORTED", { material: baseMaterial.name });
+      if (advancedLighting) throw new RenderDeviceError("The advanced-lighting shader is unavailable", "ADVANCED_LIGHTING_PROGRAM_UNSUPPORTED", {});
       if (knownFailure === "magenta") {
         this.drawItem(device, { ...item, onBeforeRender: undefined, material: shaderFailureDebugMaterial() });
       }
       return;
     }
-    if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
+    if (shader === undefined) {
+      if (this.options.weightedTransparency) throw new RenderDeviceError("The weighted transparency program is not ready", "WEIGHTED_TRANSPARENCY_PROGRAM_UNAVAILABLE");
+      if (this.options.nativeDepthCoverage) throw new RenderDeviceError("The native depth-coverage program is not ready", "NATIVE_DOF_COVERAGE_PROGRAM_UNAVAILABLE");
+      if (advancedLighting) throw new RenderDeviceError("The generated advanced-lighting program is not ready", "ADVANCED_LIGHTING_PROGRAM_PENDING", {});
+      if (projected?.active) this.projectedSpotUnsupported("shader-pending", "The projected-spot program is not ready; this draw was skipped.");
+      return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
+    }
+    if (photometric?.active && (this.lastProgramFeatures?.features[PHOTOMETRIC_PROFILE_FEATURE] !== true ||
+        ["u_a3dPhotometricOffsets", "u_a3dPhotometricMeta", "u_a3dPhotometricAtlas"].some((name) => !shader!.reflection.uniforms.has(name)))) {
+      this.photometricUnsupported("shader-contract", "The selected shader cannot bind photometric profiles; scalar lighting is used.");
+      photometric.active = false;
+      shader = this.getShader(baseMaterial, device, item, clipping, photometric, projected);
+      if (!shader) return;
+    }
+    if (projected?.active && (this.lastProgramFeatures?.features[PROJECTED_SPOT_FEATURE] !== true ||
+        PROJECTED_SPOT_UNIFORMS.some((name) => !shader!.reflection.uniforms.has(name)) || !projectedSamplerBudgetAvailable(device, shader))) {
+      this.projectedSpotUnsupported("shader-contract", "The projected-spot shader or sampler budget is unavailable; scalar lighting is used.");
+      projected.active = false;
+      shader = this.getShader(baseMaterial, device, item, clipping, photometric, projected);
+      if (!shader) return;
+    }
+    const localShadowAtlas = this.options.shadowMap?.localShadows;
+    const activeLocalShadows = localShadowAtlas !== undefined && localShadowAtlas.strength !== 0
+      && this.shadedLights().some((light) => (light as LocalShadowedLight).localShadowSlot !== undefined);
+    const litPhysical = this.lastProgramFeatures?.lighting === "lit" || LEGACY_PBR_DETAIL_SHADERS.has(baseMaterial.shaderKey)
+      || baseMaterial.shaderKey === "aura3d/pbr-normal-map"
+      || (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphLightingModel === "metallic-roughness");
+    const receiverContactIndex = litPhysical ? contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights()) : -1;
+    if ((graphPhysical && receiverContactIndex !== graphContactIndex)
+      || (this.lastProgramFeatures?.lighting === "lit" && this.lastProgramFeatures.shadows.contact !== (receiverContactIndex >= 0))) {
+      throw new RenderDeviceError("The contact shadow selection changed during shader acquisition", "CONTACT_SHADOW_MASK_STALE", {});
+    }
+    validateContactShadowReceiver(baseMaterial, receiverContactIndex, this.contactMaskScope);
+    if (litPhysical && item.receiveShadow !== false && localShadowAtlas && activeLocalShadows
+      && !shader.reflection.uniforms.has("u_localShadowAtlas")
+      && (!(baseMaterial instanceof PortableShaderMaterial) || baseMaterial.graphLightingModel === "metallic-roughness")) {
+      throw new RenderDeviceError("The selected physical shader cannot receive local shadow atlas tiles", "LOCAL_SHADOW_RECEIVER_UNSUPPORTED", { material: baseMaterial.name });
+    }
+    if (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphMaterial && item.skinning) {
+      const attributes = ["a_joints", "a_weights", ...(item.skinning.extraInfluences ? ["a_joints1", "a_weights1"] : [])];
+      const uniforms = ["u_jointMatrices", "u_jointCount", "u_jointPaletteMode", "u_jointPaletteTexture", "u_jointPaletteTextureSize"];
+      const reflection = shader.reflection;
+      if (attributes.some((name) => !reflection.attributes.has(name)) || uniforms.some((name) => !reflection.uniforms.has(name))) {
+        throw new RenderDeviceError("Shader graph skinning variant lacks the palette or attribute contract", "GRAPH_SKINNING_SHADER_UNSUPPORTED", { material: baseMaterial.name });
+      }
+    }
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
     let generated = this.lastProgramFeatures !== undefined;
+    if (clipping.groups.length > 0 && !generated && !clippedLine
+      && !PortableShaderMaterial.hasGraphClippingContract(baseMaterial, shader.label)) {
+      throw new RenderDeviceError("Clipping requires a generated forward shader", "FORWARD_CLIPPING_PROGRAM_UNSUPPORTED", { material: baseMaterial.name });
+    }
+    if (advancedLighting && !generated) throw new RenderDeviceError("Advanced lighting requires a generated lit physical program", "ADVANCED_LIGHTING_PROGRAM_UNSUPPORTED", { material: baseMaterial.name });
+    if (!generated && litPhysical && hasLiveDiffuseTransmission(material)) {
+      throw new RenderDeviceError("Diffuse transmission requires the generated physical receiver", "GENERATED_DIFFUSE_TRANSMISSION_LOBE_UNAVAILABLE", { material: baseMaterial.name });
+    }
+    const deform = this.lastProgramFeatures?.features["prd06.deform"];
+    if (generated && item.skinning && typeof deform === "string" && /(?:^|\|)skin[48](?:\||$)/.test(deform)) {
+      this.skinningPaletteUploads.validateGenerated(item, item.skinning);
+    }
     // Large instanced draws: submit only the instances whose bounding sphere meets this pass's view frustum.
     const culled = this.cullInstancesToView(item, baseMaterial);
     if (culled !== null) {
       if (culled.count === 0) return;
-      item = { ...item, instanceTransforms: culled.transforms, ...(culled.colors ? { instanceColors: culled.colors } : {}) };
+      item = { ...item, instanceTransforms: culled.transforms, ...(item.instanceCount !== undefined ? { instanceCount: culled.count } : {}), ...(culled.colors ? { instanceColors: culled.colors } : {}) };
     }
-    if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
-      for (const expanded of expandInstancedRenderItem(item)) {
+    const usesGeometryMatrix = shader.reflection.uniforms.has("u_geometryMatrix")
+      && (generated || (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphMaterial && baseMaterial.graphSourcesPristine));
+    if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item, usesGeometryMatrix)) {
+      if (hasInstanceVertexStreams(item.geometry)) throw new RenderDeviceError("Per-instance vertex streams cannot be expanded for mixed culling", "INSTANCE_STREAM_EXPANSION_UNSUPPORTED", {});
+      for (const expanded of expandInstancedRenderItem(item, this.options.cameraViewProjectionMatrix)) {
         this.drawItem(device, expanded);
       }
       return;
@@ -558,43 +1584,87 @@ export class ForwardPass extends BaseRenderPass {
     // legacy library, so the >64 split and no-support expansion never apply
     // on this path.
     if (item.instanceTransforms && !generated && !authorInstancing && !supportsInstanceAttributes(shader) && instanceTransformCount(item) > MAX_GPU_INSTANCES) {
+      if (hasInstanceVertexStreams(item.geometry)) throw new RenderDeviceError("Per-instance vertex streams cannot be split across legacy draws", "INSTANCE_STREAM_SPLIT_UNSUPPORTED", {});
       for (const batch of splitInstanceTransforms(item.instanceTransforms)) {
-        this.drawItem(device, { ...item, instanceTransforms: batch });
+        this.drawItem(device, { ...item, instanceTransforms: batch, ...(item.instanceCount !== undefined ? { instanceCount: batch.length / 16 } : {}) });
       }
       return;
     }
     if (item.instanceTransforms && !generated && !authorInstancing && !supportsInstanceAttributes(shader) && !supportsInstanceUniforms(shader)) {
-      for (const expanded of expandInstancedRenderItem(item)) {
+      if (hasInstanceVertexStreams(item.geometry)) throw new RenderDeviceError("Per-instance vertex streams cannot be expanded for this shader", "INSTANCE_STREAM_EXPANSION_UNSUPPORTED", {});
+      for (const expanded of expandInstancedRenderItem(item, this.options.cameraViewProjectionMatrix)) {
         this.drawItem(device, expanded);
       }
       return;
     }
     let uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
-    // #867 (games): binding validation never kills the frame. A generated
-    // draw that fails validation falls back to the legacy shaderKey program;
-    // a legacy draw that fails is skipped with one warning. Strict throws.
-    let binding: ReturnType<MaterialBinding["bind"]> | null = null;
+    // Legacy WebGL can recover from a generated binding failure; a native
+    // generated program must not silently lose features through that fallback.
+    let binding: ReturnType<MaterialBinding["bindRecursive"]> | null = null;
+    const bindMaterial = (currentShader: RenderShaderProgram) => {
+      const recursive = baseMaterial instanceof PortableShaderMaterial
+        && (baseMaterial.uniformSchema.some((uniform) => uniform.kind === "data")
+          || [...material.getRecursiveParameters().values()].some((value) => !isFlatUniformValue(value)));
+      return recursive ? this.materialBinding.bindRecursive(material, currentShader) : this.materialBinding.bind(material, currentShader);
+    };
     try {
       binding = generated
         ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
-        : this.materialBinding.bind(material, shader);
+        : bindMaterial(shader);
     } catch (error) {
-      if (!(error instanceof MaterialBindingError) || rendererQrFlags(device).on("A3D_QR_STRICT")) throw error;
+      if ((photometric?.active || projected?.active) && error instanceof MaterialBindingError) {
+        if (photometric?.active) {
+          this.photometricUnsupported("material-binding-unsupported", "The profile material bindings are unavailable; scalar lighting is used.");
+          photometric.active = false;
+        }
+        if (projected?.active) {
+          this.projectedSpotUnsupported("material-binding-unsupported", "The projected image material bindings are unavailable; scalar lighting is used.");
+          projected.active = false;
+        }
+        shader = this.getShader(baseMaterial, device, item, clipping, photometric, projected);
+        if (!shader) return;
+        generated = this.lastProgramFeatures !== undefined;
+        uniforms = generated ? this.acquireUniformPacket(device) : new Map<string, UniformValue>();
+        binding = generated
+          ? this.materialBinding.bindGenerated(material, shader, this.lastProgramFeatures, uniforms)
+          : bindMaterial(shader);
+      } else {
+      if (combined && error instanceof MaterialBindingError) return false;
+      if (this.options.weightedTransparency || !(error instanceof MaterialBindingError) || rendererQrFlags(device).on("A3D_QR_STRICT") || advancedLighting || clipping.groups.length > 0
+        || (generated && (device.kind === "webgpu" || (this.lastProgramFeatures && requiresGeneratedEffectsProgram(this.lastProgramFeatures))))) throw error;
       warnBindingOnce(item, baseMaterial, error, generated);
       if (!generated) return;
       this.lastProgramFeatures = undefined;
       generated = false;
-      shader = this.legacyShader(baseMaterial, device);
+      shader = this.legacyShader(baseMaterial, device, item);
       uniforms = new Map<string, UniformValue>();
       try {
-        binding = this.materialBinding.bind(material, shader);
+        binding = bindMaterial(shader);
       } catch (legacyError) {
         if (!(legacyError instanceof MaterialBindingError)) throw legacyError;
         warnBindingOnce(item, baseMaterial, legacyError, false);
         return;
       }
+      }
     }
-    if (!generated) for (const [k, v] of binding.uniforms) uniforms.set(k, v);
+    // Keep structured values out of the legacy packet and carry them separately
+    // until an explicitly capable WebGPU portable submission is selected.
+    const portableUniforms = new Map<string, RecursiveUniformValue>();
+    if (!generated) for (const [name, value] of binding.uniforms) {
+      const descriptor = baseMaterial instanceof PortableShaderMaterial
+        ? baseMaterial.uniformSchema.find((uniform) => uniform.name === name) : undefined;
+      if (descriptor?.kind === "data" || !isFlatUniformValue(value)) {
+        if (!descriptor || device.kind !== "webgpu" || !device.drawPortable) {
+          throw new RenderDeviceError("Structured material uniforms require portable WebGPU submission", "PORTABLE_UNIFORM_BACKEND_UNSUPPORTED", { material: baseMaterial.name, uniform: name });
+        }
+        portableUniforms.set(name, value);
+      } else uniforms.set(name, value);
+    }
+    if (combined && (baseMaterial instanceof PBRMaterial || baseMaterial instanceof InstancedPBRMaterial)) {
+      const packed = LightUniforms.pack(this.shadedLights());
+      uniforms.set("u_lightCount", packed.lightCount);
+      uniforms.set("u_lightData", packed.data);
+    }
     applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     // E3 stage-2b: under the conjunction a generated draw that selected
     // `prd02.ibl` shades indirect from the C-09 probe pack below (single
@@ -606,35 +1676,140 @@ export class ForwardPass extends BaseRenderPass {
     const drawFlags = rendererQrFlags(device);
     const e3Conjunction = qrE3CompilerLightingOn(drawFlags);
     const prd02Ibl = generated && e3Conjunction && this.lastProgramFeatures?.features[PRD02_IBL_FEATURE] !== undefined;
-    applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms, { conjunction: e3Conjunction, generated });
-    if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, item, shader, uniforms, drawFlags);
-    if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, item, shader, uniforms, prd02Ibl);
+    const graphLighting = baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphLightingModel === "metallic-roughness";
+    const localProbes = (generated && this.lastProgramFeatures?.features[PRD02_LOCAL_PROBE_FEATURE] === true) || graphLighting
+      ? prd02ItemProbeBindings(item, device) : null;
+    // A foreign-device tag must not activate its local probes, but its legacy
+    // dominant-cube override still needs to be undone for the global light.
+    const taggedProbes = prd02ItemProbeBindings(item);
+    const environmentItem = taggedProbes ? globalEnvironmentItem(item, taggedProbes) : item;
+    applyEnvironmentLightingUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, { conjunction: e3Conjunction, generated });
+    if (generated) applyGeneratedEnvironmentMapUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, drawFlags);
+    if (generated) applyGeneratedProceduralEnvironmentUniforms(this.options.environmentLighting, environmentItem, shader, uniforms, prd02Ibl);
+    if (localProbes) {
+      if (graphLighting) validateGraphEnvironmentUniforms(shader, [...GRAPH_LOCAL_PROBE_UNIFORMS, "u_a3dLocalProbeIntensity"], baseMaterial.name);
+      for (const [name, value] of Object.entries(localProbes.uniforms)) uniforms.set(name, value);
+      if (graphLighting) ensureGraphProbeCubeBindings(uniforms, baseMaterial.name);
+      const intensity = uniforms.get("u_materialEnvironmentIntensity");
+      uniforms.set("u_a3dLocalProbeIntensity", typeof intensity === "number" && Number.isFinite(intensity) ? Math.max(0, intensity) : 1);
+    }
+    if ((generated && this.lastProgramFeatures?.features[PRD02_IRRADIANCE_VOLUME_FEATURE] === true) || graphLighting) {
+      const volume = prd02ItemIrradianceBindings(item, device);
+      if (!volume && generated && this.lastProgramFeatures?.features[PRD02_IRRADIANCE_VOLUME_FEATURE] === true) {
+        throw new RenderDeviceError("Selected irradiance volume is unavailable for this device", "IRRADIANCE_VOLUME_UNAVAILABLE", {});
+      }
+      if (volume) {
+        if (graphLighting) validateGraphEnvironmentUniforms(shader, GRAPH_IRRADIANCE_VOLUME_UNIFORMS, baseMaterial.name);
+        for (const [name, value] of Object.entries(volume.uniforms)) uniforms.set(name, value);
+        if (graphLighting) validateGraphIrradianceBindings(uniforms, baseMaterial.name);
+      }
+    }
+    if (graphLighting) {
+      const cube = graphGlobalEnvironmentCube(this.options.environmentLighting, environmentItem);
+      if (cube) {
+        validateGraphEnvironmentUniforms(shader, ["u_graphGlobalEnvCube", "u_graphGlobalEnvCubeInfo", "u_graphGlobalEnvCubeEncoding", "u_graphGlobalEnvCubeDiffuseIntensity"], baseMaterial.name);
+        uniforms.set("u_graphGlobalEnvCube", cube.binding);
+        uniforms.set("u_graphGlobalEnvCubeInfo", cube.info);
+        uniforms.set("u_graphGlobalEnvCubeEncoding", cube.encoding);
+        uniforms.set("u_graphGlobalEnvCubeDiffuseIntensity", cube.diffuseIntensity);
+      }
+    }
     // threejs-parity L7/SR-02: three's `material.fog === false` — the draw
     // binds fog-disabled uniforms while other scene materials keep fog.
     const itemFog = baseMaterial.fog === false ? false : this.options.environmentFog;
     applyEnvironmentFogUniforms(itemFog, item, shader, uniforms);
     if (generated) applyGeneratedFogUniforms(itemFog, shader, uniforms);
+    const selectedShadow = selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition);
+    const effectiveShadow = selectedShadow && this.options.shadowMap && selectedShadow !== this.options.shadowMap
+      ? { ...selectedShadow, pointLight: this.options.shadowMap.pointLight, spotLight: this.options.shadowMap.spotLight }
+      : selectedShadow;
     applyForwardShadowMapUniforms(
-      selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
+      effectiveShadow,
       item,
       shader,
       uniforms,
       this.contactMaskScope
     );
-    // GU47 eint (EB-3): PRD-02 local-light tiles, bound only to programs that declare them (generated, localShadows > 0).
-    applyForwardLocalShadowUniforms(this.options.shadowMap?.localShadows, item, shader, uniforms);
+    if (graphContactIndex >= 0 && ["u_contactShadowMask", "u_contactShadowMaskViewport", "u_contactShadowMaskStrength", "u_contactShadowLightIndex"]
+      .some((name) => !shader.reflection.uniforms.has(name))) {
+      throw new RenderDeviceError("The selected graph shader lacks the contact shadow contract", "GRAPH_CONTACT_SHADOW_CONTRACT", { material: baseMaterial.name });
+    }
+    if (!generated && litPhysical) {
+      const index = contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights());
+      if (index >= 0 && baseMaterial instanceof TexturedPBRMaterial && baseMaterial.shaderVariant !== undefined) {
+        throw new RenderDeviceError("This textured legacy variant cannot receive the contact mask", "CONTACT_SHADOW_RECEIVER_UNSUPPORTED", { material: baseMaterial.name });
+      }
+      if (index >= 0 && !shader.reflection.uniforms.has("u_contactShadowMask")) {
+        throw new RenderDeviceError("The selected physical shader cannot receive the contact mask", "CONTACT_SHADOW_RECEIVER_UNSUPPORTED", { material: baseMaterial.name });
+      }
+      if (index >= 0 && !shader.reflection.uniforms.has("u_contactShadowLightIndex")) {
+        throw new RenderDeviceError("The selected legacy shader cannot identify the contact-shadow light", "CONTACT_SHADOW_LEGACY_LIGHT_UNSUPPORTED", { material: baseMaterial.name });
+      }
+      if (index < 0 && shader.reflection.uniforms.has("u_contactShadowMaskStrength")) uniforms.set("u_contactShadowMaskStrength", 0);
+      if (index >= 0 && shader.reflection.uniforms.has("u_contactShadowLightIndex")) uniforms.set("u_contactShadowLightIndex", index);
+    }
+    if (generated && this.lastProgramFeatures?.shadows.contact) {
+      const index = contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights());
+      if (index < 0) throw new RenderDeviceError("The contact shadow light changed during the draw", "CONTACT_SHADOW_MASK_STALE", {});
+      uniforms.set("u_contactShadowLightIndex", index);
+    }
+    // Portable graphs and native generated WebGPU programs consume the raw
+    // atlas; generated WebGL retains the depth-comparison sampler.
+    const atlas = this.options.shadowMap?.localShadows;
+    const graphRawAtlas = baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphLightingModel === "metallic-roughness";
+    if ((graphRawAtlas || (generated && device.kind === "webgpu")) && shader.reflection.uniforms.has("u_localShadowAtlas")) {
+      if (item.receiveShadow !== false && atlas && activeLocalShadows) {
+        const raw = atlas.rawTexture;
+        if (!raw || !raw.texture || !raw.validate().ok || raw.texture.dimension !== "2d" || raw.sampler.compare !== undefined
+          || raw.sampler.minFilter !== "nearest" || raw.sampler.magFilter !== "nearest"
+          || (device.kind === "webgpu" && raw.texture.format === "depth24")) {
+          throw new RenderDeviceError("Local shadows require a live nearest-sampled noncomparison atlas", graphRawAtlas ? "GRAPH_LOCAL_SHADOW_ATLAS_UNAVAILABLE" : "LOCAL_SHADOW_RAW_ATLAS_UNAVAILABLE", { material: baseMaterial.name });
+        }
+        applyForwardLocalShadowUniforms({ ...atlas, texture: raw }, item, shader, uniforms);
+      } else {
+        applyForwardLocalShadowUniforms(undefined, item, shader, uniforms);
+        uniforms.set("u_localShadowAtlas", GRAPH_EMPTY_LOCAL_SHADOW_ATLAS);
+      }
+    } else {
+      if (litPhysical && item.receiveShadow !== false && atlas && activeLocalShadows && shader.reflection.uniforms.has("u_localShadowAtlas")
+        && (!atlas.texture || !atlas.texture.texture || !atlas.texture.validate().ok)) {
+        throw new RenderDeviceError("The selected shader requires a live comparison shadow atlas", "LOCAL_SHADOW_ATLAS_UNAVAILABLE", { material: baseMaterial.name });
+      }
+      applyForwardLocalShadowUniforms(atlas, item, shader, uniforms);
+    }
     applyOutputColorSpaceUniform(this.options.outputColorSpace ?? "srgb", item, shader, uniforms);
     applyCameraUniforms(this.options.cameraPosition, item, shader, uniforms);
     applyAlphaCutoffUniform(item, shader, uniforms);
     applyWrinkleUniform(item, shader, uniforms);
-    applyTransformUniforms(item, shader, uniforms);
+    if (this.options.weightedTransparency) {
+      const { phase, bindings } = this.options.weightedTransparency;
+      if (!generated || this.lastProgramFeatures?.features[PROGRAM_TRANSPARENCY_FEATURE] !== phase) {
+        throw new RenderDeviceError("The weighted transparency shader is unavailable", "WEIGHTED_TRANSPARENCY_PROGRAM_UNAVAILABLE");
+      }
+      uniforms.set("u_a3dOpaqueDepth", bindings.depth);
+      uniforms.set("u_a3dTransparencyDepthOrigin", bindings.depthOrigin);
+      uniforms.set("u_a3dTransparencyReversedDepth", bindings.reversedDepth);
+      uniforms.set("u_a3dTransparencyInputPremultiplied", 0);
+    }
+    applyTransformUniforms(item, shader, uniforms, this.options.cameraViewProjectionMatrix,
+      baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphMaterial);
     // threejs-parity SH-02: the frame-scoped built-ins `material.custom` shaders
     // may declare (u_time/u_resolution/u_viewMatrix/u_projectionMatrix) — bound
     // only when the program actually reflects them, mirroring applyCameraUniforms.
     applyCustomShaderFrameUniforms(this.options, this.frameWidth, this.frameHeight, shader, uniforms);
+    if (clippedLine && typeof uniforms.get("u_lineWorldUnits") === "number" && (uniforms.get("u_lineWorldUnits") as number) > 0.5) {
+      bindClippedLineRasterCamera(this.options, uniforms);
+    }
     // GU47 E-D: `a3d_lights` / sun / hemisphere / fog built-ins for `material.custom` programs (reflection-guarded).
     if (baseMaterial instanceof PortableShaderMaterial) {
       applyCustomShaderLightingUniforms(this.options, itemFog, shader, uniforms, this.customFrameCache);
+      if (baseMaterial.graphLightingModel === "metallic-roughness") {
+        applyGraphEnvironmentShIntensity(this.options.environmentLighting, uniforms, item);
+        applyGraphCascadeUniforms(this.options, item, device, shader, uniforms);
+      }
+      if (baseMaterial.graphMaterial && shader.reflection.uniforms.has("u_a3dClipRange")) {
+        uniforms.set("u_a3dClipRange", this.options.projectionClipRange === "zero-to-one" ? 1 : 0);
+      }
       // `instanceColor` reads white unless this instanced draw carries per-instance colours.
       if (shader.reflection.uniforms.has("u_a3dInstanceColors")) {
         uniforms.set("u_a3dInstanceColors", authorInstancing && item.instanceColors !== undefined ? 1 : 0);
@@ -646,44 +1821,311 @@ export class ForwardPass extends BaseRenderPass {
     }
     if (generated && this.lastProgramFeatures) {
       // C-02 `ShaderFeature.bindUniforms` for the features this draw selected.
-      bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value));
+      bindShaderFeatureUniforms(this.lastProgramFeatures.features, rendererQrFlags(device), item, (name, value) => uniforms.set(name, value), this.options.frameContext);
       // E3 stage-2b bind site: `prd02.ibl` has no feature-local bind (the
       // probe, knob and ambient are pass state, not item state), so the
       // PRD-02 environment pack is bound here, in the feature-bind slot.
-      if (prd02Ibl) applyPrd02EnvironmentUniforms(this.options.environmentLighting, item, material, uniforms);
+      if (prd02Ibl) applyPrd02EnvironmentUniforms(this.options.environmentLighting, environmentItem, material, uniforms);
       // C-03 `lobe.bind` (04-LOBES): descriptor factors and lobe textures for the
       // lobes this record carries. Material parameters stay authoritative.
       bindMaterialLobeUniforms(this.lastProgramFeatures.extensions, baseMaterial, rendererQrFlags(device), (name, value) => {
         if (!uniforms.has(name)) uniforms.set(name, value);
       });
     }
-    if (item.skinning && !generated) {
-      // Legacy skinned programs take the u_jointMatrices palette; on the
-      // generated path prd06.deform's bindUniforms binds the bone texture, and
-      // a generated draw without it has no skin attributes (featuresForGeometry).
-      this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
+    if (previewClipRange !== undefined && baseMaterial instanceof DepthPreviewMaterial) {
+      // Draw hooks can mutate the item or frame after the initial preflight.
+      const currentRange = validateDepthPreviewDraw(item, baseMaterial, this.options, device);
+      bindDepthPreviewFrameUniforms(this.options, item, baseMaterial, shader, uniforms, currentRange);
     }
-    const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated || authorInstancing) : { count: 1 };
-    if (authorInstancing) uniforms.set("u_a3dInstancing", 1);
-    const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
-    const geometry = gpuMorph ? item.geometry : resolveRenderGeometry(item);
-    // Generated programs validate their selected attributes in MaterialBinding.
-    // The legacy descriptor can require maps/tangents deliberately masked out
-    // for this geometry, so it is not the generated program contract.
-    if (!generated) validateMaterialGeometryContract(item, baseMaterial, geometry);
+    let transientPalette: TextureBinding | undefined;
     try {
-      const vertexBuffer = geometry.vertexBuffer.upload(device);
-      const indexBuffer = geometry.indexBuffer?.upload(device);
-      const drawRange = resolveDrawRange(geometry, item.drawRange);
-      // three's setDrawRange(0, 0) draws nothing; the device rejects zero-count draws, so skip here.
-      if (drawRange.count === 0) return;
-      const pipeline = this.pipelineFor(device, item, baseMaterial, shader, geometry);
-      submitDraw(device, pipeline, geometry, instanceBinding.count, drawRange, { item, vertexBuffer, indexBuffer, drawRange, uniforms, instanceBinding });
-    } finally {
-      for (const buffer of instanceBinding.buffers ?? []) buffer.dispose();
-      if (geometry !== item.geometry) {
-        geometry.dispose();
+      if (item.skinning && !generated) {
+        // Legacy skinned programs take the u_jointMatrices palette; on the
+        // generated path prd06.deform's bindUniforms binds the bone texture, and
+        // a generated draw without it has no skin attributes (featuresForGeometry).
+        const graphSkinning = baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphMaterial;
+        if (graphSkinning) for (const name of ["u_jointMatrices", "u_jointCount", "u_jointPaletteMode", "u_jointPaletteTexture", "u_jointPaletteTextureSize"]) uniforms.delete(name);
+        transientPalette = this.skinningPaletteUploads.bind(item, item.skinning, baseMaterial, shader, uniforms, device);
+        if (graphSkinning && (!uniforms.has("u_jointMatrices") || !uniforms.has("u_jointCount") || !uniforms.has("u_jointPaletteMode") || !uniforms.has("u_jointPaletteTexture") || !uniforms.has("u_jointPaletteTextureSize"))) {
+          throw new RenderDeviceError("Shader graph skinning palette was not bound", "GRAPH_SKINNING_PALETTE_UNAVAILABLE", { material: baseMaterial.name });
+        }
       }
+      const instanceBinding = item.instanceTransforms ? this.applyInstanceBinding(device, item, shader, uniforms, generated || authorInstancing) : { count: item.instanceCount ?? 1 };
+      let geometry: Geometry | undefined;
+      try {
+        if (authorInstancing) uniforms.set("u_a3dInstancing", 1);
+        const gpuMorph = item.morphTargets || item.morphWeights ? applyGpuMorphUniforms(item, shader, uniforms) : false;
+        geometry = gpuMorph ? item.geometry : resolveRenderGeometry(item);
+        // The legacy descriptor may require attributes intentionally omitted
+        // from the generated variant; validate its own geometry contract here.
+        if (!generated) validateMaterialGeometryContract(item, baseMaterial, geometry);
+        const drawRange = resolveDrawRange(geometry, item.drawRange);
+        // three's setDrawRange(0, 0) draws nothing; the device rejects zero-count draws, so skip here.
+        if (drawRange.count === 0) return;
+        const safeFeatures = this.lastProgramFeatures && this.lastProgramFeatures.extensions.length === 0 &&
+          Object.keys(this.lastProgramFeatures.features).every((name) => ["a3d.nativePrimitive", "a3d.output.srgb", "a3d.clipping",
+            "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction"].includes(name));
+        const candidate = combined && geometry === item.geometry ? packedLoopCandidate(device, combined.items[0]!)
+          : !nativePoint && generated && safeFeatures && packedLoopMemberFor(item) && geometry === item.geometry &&
+          [UnlitMaterial.prototype, PBRMaterial.prototype, TexturedPBRMaterial.prototype,
+            InstancedUnlitMaterial.prototype, InstancedPBRMaterial.prototype].includes(Object.getPrototypeOf(baseMaterial)) &&
+          isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? packedLoopCandidate(device, item) : undefined;
+        const usePacked = candidate && drawRange.start === candidate.sourceRange.start && drawRange.count === candidate.sourceRange.count;
+        if (combined && !usePacked) return false;
+        let submittedGeometry = usePacked ? candidate.packedGeometry : geometry;
+        let submittedRange = usePacked ? candidate.packedRange : drawRange;
+        let submittedVertices: readonly (RenderBuffer | undefined)[] | undefined;
+        let submittedVertex: RenderBuffer | undefined;
+        let submittedIndex: RenderBuffer | undefined;
+        if (!nativePoint) {
+          submittedVertices = submittedGeometry.uploadVertexBuffers(device, instanceBinding.count);
+          submittedVertex = submittedVertices[0];
+          if (!submittedVertex) throw new RenderDeviceError("Geometry has no primary vertex stream", "MISSING_VERTEX_BUFFER", {});
+          submittedIndex = submittedGeometry.indexBuffer?.upload(device);
+        }
+        const pipeline = nativePoint ? undefined : this.pipelineFor(device, item, baseMaterial, shader, geometry, usesGeometryMatrix);
+        const nativeStorageBindings = baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphRequiresWebGPU
+          ? baseMaterial.graphStorageBindings("forward") : undefined;
+        if (clipping.groups.length > 0) {
+          assertForwardClippingSupported(item, clipping, { flags: rendererQrFlags(device), cameraViewMatrix: this.spriteFrameCamera?.view ?? this.options.cameraViewMatrix, shaderLibrary: this.shaderLibrary });
+          if (generated ? this.lastProgramFeatures?.features[PROGRAM_CLIPPING_FEATURE] !== true
+            : !clippedLine && !PortableShaderMaterial.hasGraphClippingContract(baseMaterial, shader.label)) {
+            throw new RenderDeviceError("The selected shader does not preserve clipping", "FORWARD_CLIPPING_PROGRAM_UNSUPPORTED", { material: baseMaterial.name });
+          }
+          for (const [name, value] of createClippingUniforms(clipping)) {
+            if (!shader.reflection.uniforms.has(name)) throw new RenderDeviceError("The selected shader lacks a clipping uniform", "FORWARD_CLIPPING_SHADER_CONTRACT", { material: baseMaterial.name, name });
+            uniforms.set(name, value);
+          }
+          if (material.getParameter("u_spriteMode") === 1) {
+            const model = uniforms.get("u_modelMatrix");
+            const viewInverse = spriteClipInverse(this.spriteFrameCamera?.view ?? this.options.cameraViewMatrix ?? identityMatrix());
+            const modelInverse = model instanceof Float32Array || Array.isArray(model) ? spriteClipInverse(model) : undefined;
+            if (!viewInverse || (clipping.groups.some((group) => group.space === "local") && !modelInverse)) {
+              throw new RenderDeviceError("Clipped sprites require finite, affine and invertible view and local transforms", "FORWARD_CLIPPING_SPRITE_TRANSFORM", { label: item.label });
+            }
+            for (const name of ["u_a3dSpriteViewToWorld", "u_a3dSpriteWorldToObject"]) {
+              if (!shader.reflection.uniforms.has(name)) throw new RenderDeviceError("The selected sprite shader lacks a clipping transform", "FORWARD_CLIPPING_SHADER_CONTRACT", { material: baseMaterial.name, name });
+            }
+            uniforms.set("u_a3dSpriteViewToWorld", viewInverse);
+            uniforms.set("u_a3dSpriteWorldToObject", modelInverse ?? new Float32Array(identityMatrix()));
+          }
+          if (clippedLine) bindClippedLineInverse(uniforms, shader, item);
+        } else if (baseMaterial instanceof PortableShaderMaterial && baseMaterial.graphMaterial
+          && shader.reflection.uniforms.has("u_a3dClipGroupCount")
+          && (PortableShaderMaterial.hasGraphClippingContract(baseMaterial, shader.label)
+            || material.getParameter("u_a3dClipGroupCount") === undefined)) {
+          // A reused graph shader must never retain the previous draw's groups.
+          uniforms.set("u_a3dClipGroupCount", 0);
+        }
+        if (advancedLighting) {
+          // User hooks and geometry resolution can change attachments. Check
+          // the ticket and certificate after them, directly before submission.
+          const current = advancedLightingItemBinding(item, this.options.frameContext);
+          if (!current) throw new RenderDeviceError("Advanced lighting disappeared during draw", "ADVANCED_LIGHTING_RESOURCE_CHANGED", {});
+          for (const [name, value] of Object.entries(advancedLightingFeatures(current))) {
+            if (this.lastProgramFeatures?.features[name] !== value) {
+              throw new RenderDeviceError("Advanced lighting changed after shader selection", "ADVANCED_LIGHTING_RESOURCE_CHANGED", { name });
+            }
+          }
+          for (const [name, value] of Object.entries(current.uniforms)) {
+            if (!shader.reflection.uniforms.has(name)) throw new RenderDeviceError("Generated program lacks an advanced lighting binding", "ADVANCED_LIGHTING_SHADER_CONTRACT", { name });
+            uniforms.set(name, value);
+          }
+        }
+        const generatedContact = generated && this.lastProgramFeatures?.shadows.contact === true;
+        if (resolveContactShadowMask(this.contactMaskScope) && !forwardDrawProvidersSafe(rendererQrFlags(device))) {
+          throw new RenderDeviceError("Contact shadow forward providers changed during the draw", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
+        }
+        validateContactShadowReceiver(baseMaterial, receiverContactIndex, this.contactMaskScope);
+        if (litPhysical && contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights()) !== receiverContactIndex) {
+          throw new RenderDeviceError("The contact shadow selection changed during the draw", "CONTACT_SHADOW_MASK_STALE", {});
+        }
+        if (generatedContact || receiverContactIndex >= 0) {
+          const mask = resolveContactShadowMask(this.contactMaskScope);
+          const binding = uniforms.get("u_contactShadowMask");
+          if (!mask || !isTextureBinding(binding) || binding.texture !== mask.texture
+            || uniforms.get("u_contactShadowMaskStrength") !== Math.min(1, mask.strength)
+            || uniforms.get("u_contactShadowLightIndex") !== contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights())) {
+            throw new RenderDeviceError("The scoped contact shadow mask changed during the draw", "CONTACT_SHADOW_MASK_STALE", {});
+          }
+        }
+        if (photometric?.active) {
+          const frame = this.options.photometricFrame!;
+          if (!generated || this.lastProgramFeatures?.features[PHOTOMETRIC_PROFILE_FEATURE] !== true ||
+              !photometric.lease.isCurrent(frame.identity) || !photometric.sourceCurrent()) {
+            this.photometricUnsupported("draw-changed", "Photometric light data changed during the draw; this draw was skipped.");
+            return;
+          }
+          uniforms.set("u_lightCount", photometric.selection.packed.lightCount);
+          uniforms.set("u_lightData", photometric.selection.packed.data);
+          uniforms.set("u_a3dPhotometricOffsets", photometric.packet.offsets);
+          uniforms.set("u_a3dPhotometricMeta", photometric.packet.meta);
+          uniforms.set("u_a3dPhotometricAtlas", photometric.packet.binding);
+        }
+        if (nativePoint) {
+          if (!generated || !isNativePointQuadDevice(device) || geometry !== item.geometry
+            || this.lastProgramFeatures?.features["a3d.nativePrimitive"] !== "points") {
+            throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: baseMaterial.name });
+          }
+          // Preserve the logical item through callbacks; only the checked
+          // submission needs the implicit default material made explicit.
+          this.submitNativePoint(device, item.material ? item : { ...item, material }, drawRange, shader, uniforms, baseMaterial);
+          return;
+        }
+        if (combined) {
+          const features = this.lastProgramFeatures;
+          const bytes = combined.texture.data;
+          if (!generated || !features || features.features["parity.batchDraw"] !== "multi-draw"
+            || features.features["prd11.drawId"] !== undefined || features.extensions.length !== 0 || features.instancing !== undefined
+            || features.vertexColors || Object.values(features.maps).some(Boolean)
+            || [...INSTANCE_MATRIX_ATTRIBUTE_NAMES, "a_instanceColor"].some((name) => shader.reflection.attributes.has(name))
+            || Object.keys(features.features).some((name) => !["parity.batchDraw", "a3d.nativePrimitive", "a3d.output.srgb"].includes(name))
+            || !shader.reflection.uniforms.has("u_a3dDrawData") || shader.reflection.uniforms.has("u_drawId")
+            || uniforms.get("u_a3dDrawData") !== drawDataBindingFor(combined.texture)
+            || combined.texture.disposed || combined.texture.revision !== combined.textureRevision || !(bytes instanceof Float32Array)
+            || bytes.length !== combined.rows.length * 24 || combined.rows.some((row, rowIndex) => {
+              const current = combined.staged.drawData.drawTexels(rowIndex);
+              return row.some((value, index) => !Object.is(value, current[index]) || !Object.is(value, bytes[rowIndex * 24 + index]));
+            }) || !pipeline || !submittedVertex || !submittedIndex || !submittedGeometry.indexBuffer
+            || !this.combinedRunCurrent(device, combined.items, combined.run)
+            || !packedLoopDrawDataCurrent(device, combined.staged.drawData) || !combinedWebGLDevice(device)) return false;
+          const base = pipeline.createDrawCommand({ label: item.label, vertexBuffer: submittedVertex,
+            ...(submittedVertices === undefined ? {} : { vertexBuffers: submittedVertices }),
+            vertexCount: submittedGeometry.vertexBuffer.vertexCount, uniforms, indexBuffer: submittedIndex,
+            indexType: submittedGeometry.indexBuffer.type, indexCount: combined.run.members[0]!.indexCount,
+            firstIndex: combined.run.members[0]!.firstIndex, instanceCount: 1 });
+          const commands = combined.run.members.map((member) => ({ ...base, firstIndex: member.firstIndex, indexCount: member.indexCount }));
+          // No fallback is allowed after the device enters a native attempt;
+          // false means its combined-only method performed no draw at all.
+          combined.attempted = true;
+          let submitted: boolean;
+          try { submitted = device.tryMultiDrawElementsInstanced(commands); }
+          catch (error) {
+            // An ordinary failed first draw has already performed one logical
+            // material update. Preserve it, without replaying any member.
+            this.applyLightUniforms(material);
+            throw error;
+          }
+          if (submitted) for (const _member of combined.items) this.applyLightUniforms(material);
+          return submitted;
+        }
+        // Shader selection and all item callbacks use the logical geometry.
+        // A synchronous loop may then replace just its equivalent vertex/index
+        // storage and range, leaving one ordinary device draw per member.
+        // Uploads and feature binders can invoke code after the initial check.
+        // Fall back to the source if a member or supported device entry moved.
+        if (usePacked && packedLoopCandidate(device, item) !== candidate) {
+          submittedGeometry = geometry;
+          submittedRange = drawRange;
+          submittedVertices = geometry.uploadVertexBuffers(device, instanceBinding.count);
+          submittedVertex = submittedVertices[0];
+          if (!submittedVertex) throw new RenderDeviceError("Geometry has no primary vertex stream", "MISSING_VERTEX_BUFFER", {});
+          submittedIndex = geometry.indexBuffer?.upload(device);
+        }
+        if (!pipeline || !submittedVertex) throw new RenderDeviceError("Forward draw resources are unavailable", "MISSING_VERTEX_BUFFER", {});
+        if (this.options.nativeDepthCoverage) {
+          this.options.nativeDepthCoverage.assertCurrent();
+          if (!generated || this.lastProgramFeatures?.features[DEPTH_COVERAGE_FEATURE] !== true || nativePoint || combined || usePacked) {
+            throw new RenderDeviceError("The selected draw cannot preserve native depth coverage", "NATIVE_DOF_COVERAGE_DRAW_UNSUPPORTED");
+          }
+        }
+        if (projected?.active) {
+          const frame = this.options.projectedSpotFrame!;
+          if (!generated || device.kind !== "webgl2" || !projectedSpotItemSupported(item) ||
+              this.lastProgramFeatures?.features[PROJECTED_SPOT_FEATURE] !== true || this.lastProgramFeatures.instancing ||
+              this.lastProgramFeatures.skinning || this.lastProgramFeatures.morph || this.lastProgramFeatures.drawId ||
+              this.lastProgramFeatures.features["prd06.deform"] !== undefined ||
+              !projected.sourceCurrent() || !projected.packet.isCurrent(frame.identity) ||
+              (photometric?.active && (photometric.selection !== projected.selection ||
+                !photometric.lease.isCurrent(this.options.photometricFrame!.identity) || !photometric.sourceCurrent()))) {
+            this.projectedSpotUnsupported("draw-changed", "Projected light data changed during the draw; this draw was skipped.");
+            return;
+          }
+          uniforms.set("u_lightCount", projected.selection.packed.lightCount);
+          uniforms.set("u_lightData", projected.selection.packed.data);
+          for (const [name, value] of Object.entries(projected.packet.uniforms)) uniforms.set(name, value);
+          const usedSamplers = [...uniforms].filter(([name, value]) => shader!.reflection.uniforms.has(name) && isTextureBinding(value)).length;
+          if (!Number.isSafeInteger(device.info.maxFragmentTextureUnits) || usedSamplers > device.info.maxFragmentTextureUnits!) {
+            this.projectedSpotUnsupported("sampler-budget", "The projected image exceeds the available texture units; this draw was skipped.");
+            return;
+          }
+        }
+        const drawBindings = { item, vertexBuffer: submittedVertex,
+          vertexBuffers: submittedVertices, indexBuffer: submittedIndex, drawRange: submittedRange, uniforms, instanceBinding, nativeStorageBindings,
+          checked: (receiverContactIndex >= 0 && device.kind === "webgpu") || Boolean(this.options.nativeDepthCoverage) };
+        if (staticCapture) {
+          if (generated !== (staticCapture.generatedRequested === true)
+            || (generated && (!staticCapture.generated || staticCapture.generated.program !== shader
+              || !staticGeneratedUnlitFeaturesSafe(staticCapture.generated.features)))
+            || nativePoint || combined || usePacked || geometry !== item.geometry || !submittedIndex
+            || pipeline.createDrawCommand !== staticPairPipelineCommand || advancedLighting || photometric?.active || projected?.active
+            || clipping.groups.length || generatedContact || receiverContactIndex >= 0 || this.options.nativeDepthCoverage) return false;
+          staticCapture.command = createForwardDrawCommand(pipeline, submittedGeometry, instanceBinding.count, submittedRange, drawBindings);
+          return true;
+        }
+        try {
+          if (portableUniforms.size) {
+            if (device.kind !== "webgpu" || !device.drawPortable) {
+              throw new RenderDeviceError("Portable uniform submission is unavailable", "PORTABLE_UNIFORM_BACKEND_UNSUPPORTED", { material: baseMaterial.name });
+            }
+            const combinedUniforms = new Map<string, RecursiveUniformValue>(uniforms);
+            for (const [name, value] of portableUniforms) {
+              if (combinedUniforms.has(name)) {
+                throw new RenderDeviceError("A forward binding overwrote a portable data uniform", "PORTABLE_UNIFORM_BINDING_COLLISION", { material: baseMaterial.name, uniform: name });
+              }
+              combinedUniforms.set(name, value);
+            }
+            const command = createForwardDrawCommand(pipeline, submittedGeometry, instanceBinding.count, submittedRange, drawBindings);
+            device.drawPortable({ ...command, uniforms: combinedUniforms }, drawBindings.checked);
+          } else {
+            submitDraw(device, pipeline, submittedGeometry, instanceBinding.count, submittedRange, drawBindings);
+          }
+        } catch (error) {
+          if (photometric?.active) this.photometricUnsupported("submission-failed", "Photometric draw submission failed; the frame was stopped.");
+          if (projected?.active) this.projectedSpotUnsupported("submission-failed", "Projected-spot draw submission failed; the frame was stopped.");
+          throw error;
+        }
+        // The packet's lifetime is scoped to this draw; do not leave it in a
+        // deferred multi-draw queue across another item's mutation callback.
+        if (advancedLighting || photometric?.active || projected?.active || clipping.groups.length > 0 || generatedContact || receiverContactIndex >= 0 || this.options.nativeDepthCoverage) flushMultiDrawQueue(device);
+      } finally {
+        try {
+          if ((instanceBinding.buffers?.length ?? 0) > 0 || (geometry && geometry !== item.geometry)) flushMultiDrawQueue(device);
+        } finally {
+          for (const buffer of instanceBinding.buffers ?? []) buffer.dispose();
+          if (geometry && geometry !== item.geometry) geometry.dispose();
+        }
+      }
+    } finally {
+      if (transientPalette) {
+        try { flushMultiDrawQueue(device); } finally { transientPalette.texture?.dispose(); }
+      }
+    }
+  }
+
+  private submitNativePoint(device: NativeForwardPointDevice, item: RenderItem, range: RenderItemDrawRange,
+    shader: RenderShaderProgram, uniforms: Map<string, UniformValue>, material: Material): void {
+    let owner = ForwardPass.pointArenas.get(device);
+    if (!owner) {
+      owner = { arena: new NativePointQuadArena(device, { maxCpuBytes: 64 * 1024 * 1024, maxGpuBytes: 32 * 1024 * 1024, maxStreamBytes: 32 * 1024 * 1024 }) };
+      ForwardPass.pointArenas.set(device, owner);
+    }
+    if (owner.failure !== undefined) {
+      throw new RenderDeviceError("A previous point resource retirement failed", "WEBGPU_POINT_RETIREMENT_FAILED", { cause: String(owner.failure) });
+    }
+    const viewport = device.getNativePointViewport();
+    uniforms.set("u_a3dPointViewport", [viewport.width, viewport.height]);
+    const lease = owner.arena.acquire(item.geometry, range);
+    try {
+      const buffers = lease.upload();
+      const vertexBuffer = buffers[0];
+      if (!vertexBuffer) throw new RenderDeviceError("Point quad has no primary vertex stream", "MISSING_VERTEX_BUFFER", {});
+      device.drawNativePointQuads({ label: item.label, topology: "triangles", renderState: { ...material.renderState, cullMode: "none" },
+        vertexBuffer, vertexBuffers: buffers, vertexFormat: lease.vertexFormat, vertexCount: lease.vertexCount, shader, uniforms },
+      { lease, item, range, viewport });
+    } finally {
+      const pointOwner = owner;
+      void lease.release().catch(error => { pointOwner.failure = error; });
     }
   }
 
@@ -695,12 +2137,13 @@ export class ForwardPass extends BaseRenderPass {
   private cullInstancesToView(item: RenderItem, baseMaterial: Material): InstanceFrustumCullResult | null {
     const transforms = item.instanceTransforms;
     const viewProjection = this.options.cameraViewProjectionMatrix;
-    if (!(transforms instanceof Float32Array) || viewProjection === undefined || viewProjection.length < 16) return null;
+    if (!(transforms instanceof Float32Array) || viewProjection === undefined || viewProjection.length < 16 || hasInstanceVertexStreams(item.geometry)) return null;
     if (transforms.length < MIN_CULLED_INSTANCES * 16) return null;
     if (instanceCullExcluded(item, baseMaterial instanceof PortableShaderMaterial)) return null;
     const colors = item.instanceColors;
     if (colors !== undefined && !(colors instanceof Float32Array)) return null;
-    return cullInstancesToFrustum({ viewProjection, modelMatrix: item.modelMatrix, bounds: item.geometry.bounds, transforms, ...(colors ? { colors } : {}) });
+    const typedColors = colors instanceof Float32Array ? colors : undefined;
+    return cullInstancesToFrustum({ viewProjection, modelMatrix: item.modelMatrix, bounds: item.geometry.bounds, transforms, ...(typedColors ? { colors: typedColors } : {}) });
   }
 
   /**
@@ -754,12 +2197,12 @@ export class ForwardPass extends BaseRenderPass {
     };
   }
 
-  private applyLightUniforms(material: RenderMaterial): void {
+  private applyLightUniforms(material: RenderMaterial, selected?: PackedLightUniforms): void {
     const baseMaterial = getBaseMaterial(material);
     if (!baseMaterial.requiredUniforms.includes("u_lightCount") || !baseMaterial.requiredUniforms.includes("u_lightData")) {
       return;
     }
-    const packed = LightUniforms.pack(this.shadedLights());
+    const packed = selected ?? LightUniforms.pack(this.shadedLights());
     if (material instanceof MaterialInstance) {
       material.setOverride("u_lightCount", packed.lightCount);
       material.setOverride("u_lightData", packed.data);
@@ -769,28 +2212,31 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
-  private readonly failedShaders = new WeakMap<Material, { readonly revision: number; readonly mode: ShaderFailureMode }>();
+  private readonly failedShaders = new WeakMap<Material, { readonly revision: number; readonly variantKey: string; readonly mode: ShaderFailureMode }>();
 
   /** Outcome for a material whose program already failed (undefined: not failed, or the shader library changed since). */
-  private shaderFailureOutcome(material: Material): ShaderFailureMode | undefined {
+  private shaderFailureOutcome(material: Material, device: RenderDevice, item?: RenderItem): ShaderFailureMode | undefined {
     const failed = this.failedShaders.get(material);
     if (!failed) return undefined;
     if (failed.revision !== this.shaderLibrary.getRevision()) {
       this.failedShaders.delete(material);
       return undefined;
     }
+    if (failed.variantKey !== shaderCacheKey(material, this.legacyDetailDefines(material, device, item), item && graphDrawShaderKey(material, item, device, this.options.shadowMap, this.shadedLights(), this.options.environmentLighting, this.contactMaskScope))) return undefined;
     return failed.mode;
   }
 
   /** Records a compile/link/WGSL failure, logs it once, and returns how the item is handled. Strict rethrows. */
-  private handleShaderFailure(error: unknown, material: Material, device: RenderDevice): ShaderFailureMode {
+  private handleShaderFailure(error: unknown, material: Material, device: RenderDevice, item?: RenderItem): ShaderFailureMode {
     const strict = rendererQrFlags(device).on("A3D_QR_STRICT");
     const mode = resolveShaderFailureMode(strict);
     let sources: { vertex?: string; fragment?: string } = {};
+    const defines = this.legacyDetailDefines(material, device, item);
+    const key = item ? graphDrawShaderKey(material, item, device, this.options.shadowMap, this.shadedLights(), this.options.environmentLighting, this.contactMaskScope) : material.shaderKey;
     try {
-      const compiled = material.shaderVariant
-        ? this.shaderLibrary.compileVariant(material.shaderKey, material.shaderVariant)
-        : this.shaderLibrary.compileSource(material.shaderKey);
+      const compiled = material.shaderVariant && key === material.shaderKey
+        ? this.shaderLibrary.compileVariant(key, material.shaderVariant, trustedShaderVariantOptions(defines))
+        : this.shaderLibrary.compileSource(key, { defines });
       sources = { vertex: compiled.vertex, fragment: compiled.fragment };
     } catch {
       // the source registry no longer has the pair: the record keeps the driver log only
@@ -806,41 +2252,129 @@ export class ForwardPass extends BaseRenderPass {
     if (mode === "throw") {
       throw new RenderDeviceError(formatShaderFailure(record), record.code, { material: record.material, stage: record.stage, log: record.log, locations: record.locations });
     }
-    this.failedShaders.set(material, { revision: this.shaderLibrary.getRevision(), mode });
+    this.failedShaders.set(material, { revision: this.shaderLibrary.getRevision(), variantKey: shaderCacheKey(material, defines, key), mode });
     return mode;
   }
 
-  private getShader(material: Material, device: RenderDevice, item?: RenderItem): RenderShaderProgram | undefined {
+  private getShader(material: Material, device: RenderDevice, item?: RenderItem, clipping?: ClippingBinding, photometric?: ForwardPhotometricBinding,
+    projected?: ForwardProjectedSpotBinding, staticCapture?: StaticUnlitCapture): RenderShaderProgram | undefined {
     const flags = rendererQrFlags(device);
     this.lastProgramFeatures = undefined;
-    // PRD-04: under `materials` without the core generator, lobe-bearing
-    // materials still take the generated program (the legacy shader has no
-    // lobe code). That program writes linear HDR, so the lobe route only runs
-    // into a linear target (postprocess / OutputPass encodes).
+    if (clipping && clipping.groups.length > 0 && material instanceof ScreenSpaceLineMaterial) {
+      const cache = getForwardPassShaderCache(device, this.shaderLibrary);
+      const key = `${DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME}:clipped`;
+      let module = cache.get(key);
+      if (!module) {
+        const source = certifiedDefaultScreenLineSource(this.shaderLibrary);
+        if (!source) throw new RenderDeviceError("Clipped screen-space lines require an authenticated shader source", "FORWARD_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { material: material.name });
+        module = new ShaderModule(createClippedScreenSpaceLineShader(source));
+        cache.set(key, module);
+      }
+      return module.compile(device);
+    }
+    // PRD-04 lobe-bearing materials need the generated shader even without
+    // core; an explicit sRGB output selects the generator's encode variant.
     const route = {
       core: qrCoreGeneratorOn(flags),
-      lobes: qrMaterialsLobeProgramsOn(flags) && this.options.outputColorSpace === "linear"
+      lobes: qrMaterialsLobeProgramsOn(flags)
     };
-    if ((route.core || route.lobes) && materialRoutesToGeneratedProgram(material, route, { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high })) {
+    const materialContext = { flags, tier: this.options.qualityTier ?? QUALITY_TIERS.high };
+    const liveExtensions = route.lobes && item?.material instanceof MaterialInstance
+      ? withLivePhysicalMapFeatures(material.programFeatures(materialContext), item.material, materialContext).extensions : undefined;
+    if ((route.core || route.lobes) && materialRoutesToGeneratedProgram(material, route, materialContext, liveExtensions)) {
       const warning = materialFeatureWarning(material);
       if (warning) console.warn(`[prd01] ${warning}`);
-      this.lastProgramFeatures = this.programFeaturesFor(material, device, item);
+      this.lastProgramFeatures = this.programFeaturesFor(material, device, item, clipping, photometric?.active === true, projected?.active === true);
+      if (this.lastProgramFeatures.features["prd15.paritySprite"] === true && !spriteCameraMatchesRaster(this.spriteFrameCamera)) {
+        throw new RenderDeviceError("Sprite view and projection do not match the raster camera", "SPRITE_CAMERA_MATRIX_UNSUPPORTED", { material: material.name });
+      }
+      if (this.lastProgramFeatures.features["prd11.drawId"] !== undefined
+        || this.lastProgramFeatures.features["parity.batchDraw"] !== undefined) {
+        if (!item || !isActiveCombinedDrawCarrier(item) || device.kind !== "webgl2"
+          || this.lastProgramFeatures.features["parity.batchDraw"] !== "multi-draw"
+          || this.lastProgramFeatures.features["prd11.drawId"] !== undefined) {
+          throw new RenderDeviceError("Packed draw rows require authenticated logical members", "PACKED_DRAW_PROVENANCE_UNAVAILABLE", { material: material.name });
+        }
+      }
+      if (clipping && clipping.groups.length > 0 && (item?.material ?? material).getParameter("u_spriteMode") === 1
+        && this.lastProgramFeatures.features["prd15.paritySprite"] !== true) {
+        throw new RenderDeviceError("Clipped sprites require the generated billboard feature", "FORWARD_CLIPPING_SPRITE_UNSUPPORTED", { material: material.name });
+      }
+      if (device.kind === "webgpu" && this.lastProgramFeatures.lighting === "unlit"
+        && this.lastProgramFeatures.features["a3d.nativePrimitive"] === "points" && !isNativePointQuadDevice(device)) {
+        throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: material.name });
+      }
+      const effectiveMaterial = item?.material ?? material;
+      if (this.lastProgramFeatures.lighting === "lit" && hasLiveTransmission(effectiveMaterial)
+        && (!this.lastProgramFeatures.extensions.some((extension) => extension.lobe === "transmission" || extension.lobe === "KHR_materials_transmission")
+          || this.lastProgramFeatures.features["prd04.transmissionTarget"] !== true)) {
+        throw new RenderDeviceError("Generated transmission requires its physical lobe and frame capture", "TRANSMISSION_CAPTURE_UNAVAILABLE", { material: material.name });
+      }
+      if (this.lastProgramFeatures.lighting === "lit" && hasLiveDiffuseTransmission(effectiveMaterial)
+        && !this.lastProgramFeatures.extensions.some((extension) => extension.lobe === "diffuse-transmission" || extension.lobe === "KHR_materials_diffuse_transmission")) {
+        throw new RenderDeviceError("Diffuse transmission requires its generated physical lobe", "GENERATED_DIFFUSE_TRANSMISSION_LOBE_UNAVAILABLE", { material: material.name });
+      }
       // #867: a skinned draw needs its program to skin. When no registered
       // deform feature (prd06.deform, A3D_QR_ANIMATION) selected this item,
       // the generated program has no skinning, so the draw keeps the legacy
       // skinned shaderKey program instead of rendering the bind pose.
-      // A skinned item whose geometry has no joints/weights draws unskinned on
-      // the generated program (features follow the geometry, #867 games).
-      if (item?.skinning && geometryHasSkin((a) => geometryHasAttribute(item.geometry, a)) && this.lastProgramFeatures.features["prd06.deform"] === undefined) {
-        this.lastProgramFeatures = undefined;
-        return this.legacyShader(material, device);
+      // Missing skin attributes must not turn a skinned item into a rigid draw.
+      if (item?.skinning && !geometryHasSkin((a) => geometryHasAttribute(item.geometry, a))) {
+        throw new RenderDeviceError("Skinned render item geometry requires joint and weight attributes", "SKINNING_GEOMETRY_CONTRACT", { material: material.name });
       }
-      const handle = this.programCache(device).acquire(this.lastProgramFeatures);
+      if (item?.skinning && geometryHasSkin((a) => geometryHasAttribute(item.geometry, a)) && this.lastProgramFeatures.features["prd06.deform"] === undefined) {
+        if (photometric?.active) {
+          this.photometricUnsupported("skinning-unsupported", "The generated profile shader cannot skin this draw; scalar lighting is used.");
+          photometric.active = false;
+          this.lastProgramFeatures = undefined;
+          return this.legacyShader(material, device, item);
+        }
+        if (requiresGeneratedEffectsProgram(this.lastProgramFeatures)) throw new RenderDeviceError("The selected shading features require a generated skinning program", "GENERATED_EFFECT_SKINNING_UNSUPPORTED", {});
+        if (device.kind === "webgpu") throw new RenderDeviceError("This draw requires a generated skinning program", "GENERATED_SKINNING_UNSUPPORTED", {});
+        this.lastProgramFeatures = undefined;
+        return this.legacyShader(material, device, item);
+      }
+      if (staticCapture?.generatedRequested) {
+        if (!staticGeneratedUnlitFeaturesSafe(this.lastProgramFeatures)) return undefined;
+        const cache = rendererProgramCachePeek(device, flags);
+        const capability = cache && staticGeneratedCacheCapability(cache);
+        const features = this.lastProgramFeatures;
+        const program = capability?.peekReady(features);
+        if (!cache || !capability || !program || !(device instanceof WebGL2Device) || !staticGeneratedDeviceCurrent(device)
+          || device.hasStaticGeneratedUnlitProgram !== staticGeneratedPairProgram
+          || !device.hasStaticGeneratedUnlitProgram(program, features)) return undefined;
+        staticCapture.generated = { cache, capability, features, program };
+        return program;
+      }
+      let handle: ReturnType<ProgramCacheLike["acquire"]>;
+      try { handle = this.programCache(device).acquire(this.lastProgramFeatures); }
+      catch (error) {
+        if (projected?.active) {
+          this.projectedSpotUnsupported("shader-unsupported", "The projected-spot program is unavailable; scalar lighting is used.");
+          projected.active = false;
+          return this.getShader(material, device, item, clipping, photometric, projected);
+        }
+        if (!photometric?.active) throw error;
+        this.photometricUnsupported("shader-unsupported", `The profile program is unavailable; scalar lighting is used. ${String(error)}`);
+        photometric.active = false;
+        return this.getShader(material, device, item, clipping, photometric, projected);
+      }
       if (handle.status === "failed") {
+        if (this.options.weightedTransparency) throw new RenderDeviceError("Weighted transparency program failed", "WEIGHTED_TRANSPARENCY_PROGRAM_UNAVAILABLE");
+        if (projected?.active) {
+          this.projectedSpotUnsupported("shader-unsupported", "The projected-spot program failed to compile; scalar lighting is used.");
+          projected.active = false;
+          return this.getShader(material, device, item, clipping, photometric, projected);
+        }
+        if (photometric?.active) {
+          this.photometricUnsupported("shader-unsupported", `The profile program failed to compile; scalar lighting is used. ${handle.error ?? handle.key}`);
+          photometric.active = false;
+          return this.getShader(material, device, item, clipping, photometric, projected);
+        }
         // T0-03: the cache already emitted `program-compile-failed` (C-36) +
-        // console.error. Strict escalates to a throw; otherwise the draw falls
-        // back to the legacy shaderKey path below.
-        if (flags.on("A3D_QR_STRICT")) {
+        // console.error. WebGPU variants may carry features absent from the
+        // legacy program, so only WebGL can use its non-strict fallback.
+        if (flags.on("A3D_QR_STRICT") || requiresGeneratedEffectsProgram(this.lastProgramFeatures) || device.kind === "webgpu") {
           throw new RenderDeviceError(`generated program failed to compile: ${handle.error ?? handle.key}`, "PROGRAM_COMPILE_FAILED", { key: handle.key });
         }
         // The fallback draw is a legacy draw: bind it as one.
@@ -851,21 +2385,40 @@ export class ForwardPass extends BaseRenderPass {
         return handle.status === "ready" ? handle.program : undefined;
       }
     }
-    return this.legacyShader(material, device);
+    if (staticCapture?.generatedRequested) return undefined;
+    if (this.options.nativeDepthCoverage) throw new RenderDeviceError("Native depth coverage requires a generated forward program", "NATIVE_DOF_COVERAGE_PROGRAM_UNAVAILABLE");
+    return this.legacyShader(material, device, item);
   }
 
   /** Frozen legacy shaderKey program (flag-off path, and generated-path fallbacks). */
-  private legacyShader(material: Material, device: RenderDevice): RenderShaderProgram {
-    const cacheKey = shaderCacheKey(material);
+  private legacyShader(material: Material, device: RenderDevice, item?: RenderItem): RenderShaderProgram {
+    const defines = this.legacyDetailDefines(material, device, item);
+    const key = item ? graphDrawShaderKey(material, item, device, this.options.shadowMap, this.shadedLights(), this.options.environmentLighting, this.contactMaskScope) : material.shaderKey;
+    const cacheKey = shaderCacheKey(material, defines, key);
     const shaderCache = getForwardPassShaderCache(device, this.shaderLibrary);
     let module = shaderCache.get(cacheKey);
     if (!module) {
-      module = material.shaderVariant
-        ? ShaderModule.fromLibraryVariant(this.shaderLibrary, material.shaderKey, material.shaderVariant)
-        : ShaderModule.fromLibrary(this.shaderLibrary, material.shaderKey);
+      const options = trustedShaderVariantOptions(defines);
+      module = new ShaderModule(material.shaderVariant && key === material.shaderKey
+        ? this.shaderLibrary.compileVariant(key, material.shaderVariant, options)
+        : this.shaderLibrary.compileSource(key, options));
       shaderCache.set(cacheKey, module);
     }
     return module.compile(device);
+  }
+
+  /** Only active maps allocate legacy sampler units. Existing material variants
+   * already budget their other samplers, so absent detail must not cost units. */
+  private legacyDetailDefines(material: Material, device: RenderDevice, item?: RenderItem): Record<string, true> {
+    if (!LEGACY_PBR_DETAIL_SHADERS.has(material.shaderKey)) return {};
+    const flags = rendererQrFlags(device);
+    const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
+    const live = withLivePhysicalMapFeatures(material.programFeatures({ flags, tier }), item?.material ?? material, { flags, tier });
+    const features = item ? featuresForGeometry(live, (name) => geometryHasAttribute(item.geometry, name)) : live;
+    return {
+      ...(features.maps.diffuseRoughness ? { A3D_PBR_DIFFUSE_ROUGHNESS_MAP: true as const } : {}),
+      ...(features.maps.bump ? { A3D_PBR_BUMP_MAP: true as const } : {})
+    };
   }
 
   /** Feature record for the program `getShader` most recently resolved (C-02). */
@@ -876,24 +2429,95 @@ export class ForwardPass extends BaseRenderPass {
     return this.generatorProgramCache;
   }
 
-  private programFeaturesFor(material: Material, device: RenderDevice, item?: RenderItem): ProgramFeatures {
+  private programFeaturesFor(material: Material, device: RenderDevice, item?: RenderItem, clipping?: ClippingBinding, photometric = false, projected = false): ProgramFeatures {
     const flags = rendererQrFlags(device);
     const tier = this.options.qualityTier ?? QUALITY_TIERS.high;
-    const mf = material.programFeatures({ flags, tier });
-    const axes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
+    const effectiveMaterial = item?.material ?? material;
+    const mf = withLiveAlphaCutoff(withLivePhysicalMapFeatures(material.programFeatures({ flags, tier }), effectiveMaterial, { flags, tier }), effectiveMaterial);
+    const passAxes = forwardPassFeatureAxes(this.options, this.clusteredLighting !== null);
+    const selectedShadow = item ? selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition) : undefined;
+    const punctual = item && item.receiveShadow !== false && mf.lighting === "lit"
+      ? selectLegacyPunctualShadows(this.options.shadowMap, this.shadedLights(), material, device) : { point: false, spot: false };
+    const hasCommonCaster = this.shadedLights().some((light) => light.castsShadow && (light.kind === "directional" || (light.kind === "spot" && !punctual.spot)));
+    const hasLocalCaster = this.shadedLights().some((light) => (light as LocalShadowedLight).localShadowSlot !== undefined);
+    const activeContact = item !== undefined && mf.lighting === "lit" && contactShadowLightIndex(this.contactMaskScope, item, this.shadedLights()) >= 0;
+    const axes = item ? { ...passAxes, shadows: { ...passAxes.shadows,
+      cascades: item.receiveShadow === false || !hasCommonCaster || selectedShadow?.strength === 0 ? 0 as const : passAxes.shadows.cascades,
+      localShadows: item.receiveShadow === false || !hasLocalCaster || this.options.shadowMap?.localShadows?.strength === 0 ? 0 as const : passAxes.shadows.localShadows,
+      contact: activeContact
+    } } : passAxes;
     // T0-05: registered ShaderFeatures select their bits per draw (C-02 §A.2:
     // at acquire time); the warmup applies the same selection per item.
-    const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags }) : {};
+    const selected = item ? selectShaderFeatureBits({ item, pass: "forward", tier, flags, frameContext: this.options.frameContext }) : {};
+    if (this.options.weightedTransparency) selected[PROGRAM_TRANSPARENCY_FEATURE] = this.options.weightedTransparency.phase;
+    if (this.options.nativeDepthCoverage) selected[DEPTH_COVERAGE_FEATURE] = true;
+    if (photometric) selected[PHOTOMETRIC_PROFILE_FEATURE] = true;
+    if (punctual.point) selected[LEGACY_POINT_SHADOW_FEATURE] = true;
+    if (punctual.spot) selected[LEGACY_SPOT_SHADOW_FEATURE] = true;
+    const advanced = item ? advancedLightingItemBinding(item, this.options.frameContext, { deferLightmapContentCheck: true }) : null;
+    if (advanced) {
+      if (mf.lighting !== "lit") throw new RenderDeviceError("Advanced lighting requires a lit physical material", "ADVANCED_LIGHTING_PROGRAM_UNSUPPORTED", { material: material.name });
+      Object.assign(selected, advancedLightingFeatures(advanced));
+    }
+    const localProbes = item && mf.lighting === "lit" ? prd02ItemProbeBindings(item, device) : null;
+    const taggedProbes = item ? prd02ItemProbeBindings(item) : null;
+    const environmentItem = item && taggedProbes ? globalEnvironmentItem(item, taggedProbes) : item;
+    if (localProbes) selected[PRD02_LOCAL_PROBE_FEATURE] = true;
+    if (item && mf.lighting === "lit" && prd02ItemIrradianceBindings(item, device)) selected[PRD02_IRRADIANCE_VOLUME_FEATURE] = true;
     // E3 stage-2b: `prd02.ibl` shades from a C-09 probe cube; without one
     // (bare preset/procedural lighting) the default indirect body stays.
-    if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(this.options.environmentLighting, item)) {
+    if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(this.options.environmentLighting, environmentItem)) {
       delete selected[PRD02_IBL_FEATURE];
     }
     // Direct render path (frame output colour space is sRGB: no post chain, no OutputPass): the generated program
     // tone-maps and encodes its own output. Explicit "srgb" only; an unset option keeps the linear program.
     if (this.options.outputColorSpace === "srgb") selected[PROGRAM_OUTPUT_SRGB_FEATURE] = true;
-    const record = item ? featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, (a) => geometryHasAttribute(item.geometry, a)) : { ...mf, features: { ...mf.features, ...selected } };
-    return normalizeProgramFeatures({
+    const selectedFeatures = { ...mf.features, ...selected };
+    // This feature is issued only by the frame-owned checked packet, never by
+    // a material or a registered shader feature.
+    delete selectedFeatures[PROJECTED_SPOT_FEATURE];
+    if (projected) selectedFeatures[PROJECTED_SPOT_FEATURE] = true;
+    delete selectedFeatures[PROGRAM_CLIPPING_FEATURE];
+    if (clipping && clipping.groups.length > 0) selectedFeatures[PROGRAM_CLIPPING_FEATURE] = true;
+    delete selectedFeatures["a3d.nativePrimitive"];
+    const nativePrimitive = item && nativeUnlitPrimitiveForGeometry(item.geometry, device, mf.lighting);
+    if (nativePrimitive) selectedFeatures["a3d.nativePrimitive"] = nativePrimitive;
+    let record = item ? featuresForGeometry({ ...mf, features: selectedFeatures }, (a) => geometryHasAttribute(item.geometry, a)) : { ...mf, features: selectedFeatures };
+    if (item) {
+      // A glTF/custom-geometry color belongs to the draw's geometry, not to a
+      // shared physical material. Select it independently for each lit draw.
+      if (record.lighting === "lit" && physicalVertexColorsForGeometry(item.geometry, device)) {
+        record = { ...record, vertexColors: true };
+      }
+      const before = mf.extensions.find((extension) => extension.lobe === "diffuse-transmission" || extension.lobe === "KHR_materials_diffuse_transmission");
+      const after = record.extensions.find((extension) => extension.lobe === "diffuse-transmission" || extension.lobe === "KHR_materials_diffuse_transmission");
+      if (before?.maps.some((slot) => !after?.maps.includes(slot))) {
+        throw new RenderDeviceError("Diffuse transmission requires its selected texture coordinate attributes", "DIFFUSE_TRANSMISSION_UV_UNAVAILABLE", { material: material.name });
+      }
+    }
+    const deform = record.features["prd06.deform"];
+    const skin = typeof deform === "string" ? /(?:^|\|)skin([48])(?:\||$)/.exec(deform) : null;
+    if (item && skin) {
+      const influences = Number(skin[1]) as 4 | 8;
+      const attributes = item.geometry.vertexBuffer.format.attributes;
+      const kind = (semantic: "joints" | "joints1"): "float" | "uint" | "sint" => {
+        const attribute = attributes.find((candidate) => candidate.semantic === semantic);
+        return !attribute?.integer ? "float" : attribute.type.startsWith("uint") ? "uint" : "sint";
+      };
+      if (attributes.some((attribute) => (attribute.semantic === "weights" || (influences === 8 && attribute.semantic === "weights1")) && attribute.integer)) {
+        throw new RenderDeviceError("Generated skinning weights require float or normalized inputs", "GENERATED_SKINNING_WEIGHT_INPUT_UNSUPPORTED", { material: material.name });
+      }
+      record = { ...record, skinning: { influences, palette: "texture" }, features: { ...record.features,
+        "prd06.joint0Type": kind("joints"), ...(influences === 8 ? { "prd06.joint1Type": kind("joints1") } : {}) } };
+    }
+    if (item && record.features["prd04.geometryTangent"] === true) {
+      const tangent = item.geometry.vertexBuffer.format.attributes.find((attribute) => attribute.semantic === "tangent" || attribute.shaderName === "a_tangent");
+      if (!tangent || tangent.components !== 4 || tangent.shaderLocation !== 3 || tangent.integer
+        || (device.kind === "webgpu" && tangent.type !== "float32" && !tangent.normalized)) {
+        throw new RenderDeviceError("Physical shading requires a compatible four-component tangent at location 3", "PHYSICAL_TANGENT_FORMAT_UNSUPPORTED", { material: material.name });
+      }
+    }
+    const normalized = normalizeProgramFeatures({
       ...record,
       ...axes,
       // threejs-parity L7/SR-02: `material.fog === false` selects a fog-free
@@ -903,13 +2527,19 @@ export class ForwardPass extends BaseRenderPass {
       // only declares it when authored instanced; the draw's program must
       // cover the union (attribute matrices are the only generated path).
       // GU47 E-D: `instanceColorTarget: "emissive"` keeps the base colour (no USE_INSTANCING_COLOR base multiply).
-      ...(item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined && materialInstanceColorTarget(material) !== "emissive" } } : {}),
+      // Only the private combined carrier has already folded each member's
+      // model and tint into draw-data rows and deliberately has no instance
+      // stream. Some built-in materials request instancing unconditionally;
+      // retaining that request would require attributes we do not bind.
+      ...(item && isActiveCombinedDrawCarrier(item) ? { instancing: undefined }
+        : item?.instanceTransforms ? { instancing: { color: item.instanceColors !== undefined && materialInstanceColorTarget(material) !== "emissive" } } : {}),
       // #1140: a per-item probe cube (PRD-02 S12) is sampled as a cube.
-      ...(item?.environmentCube?.texture?.dimension === "cube" ? { environment: "pmrem-cube" as const } : {}),
+      ...(environmentItem?.environmentCube?.texture?.dimension === "cube" ? { environment: "pmrem-cube" as const } : {}),
       backgroundCoverage: this.options.backgroundCoverage === true,
       pass: "forward",
       target: "glsl300es"
     });
+    return normalized;
   }
 
   // ── Phase 6 submission-perf pools ──────────────────────────────────────
@@ -960,15 +2590,19 @@ export class ForwardPass extends BaseRenderPass {
     item: RenderItem,
     baseMaterial: Material,
     shader: RenderShaderProgram,
-    geometry: { readonly vertexBuffer: { readonly format: VertexFormat }; readonly topology?: RenderItem["geometry"]["topology"] }
+    geometry: { readonly vertexBuffer: { readonly format: VertexFormat }; readonly topology?: RenderItem["geometry"]["topology"] },
+    usesGeometryMatrix: boolean
   ): RenderPipeline {
-    const renderState = renderStateForItem(baseMaterial.renderState, item);
+    const originalState = renderStateForItem(baseMaterial.renderState, item, usesGeometryMatrix);
+    const renderState = this.options.nativeDepthCoverage ? { ...originalState,
+      colorAttachments: [undefined, { colorWrite: [true, false, false, false] as const, blendMode: "opaque" as const }] }
+      : this.options.weightedTransparency ? { ...originalState, ...this.options.weightedTransparency.bindings.state } : originalState;
     const vertexFormatId = ForwardPass.weakId(ForwardPass.vertexFormatIds, () => ForwardPass.nextVertexFormatId++, geometry.vertexBuffer.format);
     const renderStateId = ForwardPass.weakId(ForwardPass.renderStateIds, () => ForwardPass.nextRenderStateId++, baseMaterial.renderState);
     const attrsId = ForwardPass.weakId(ForwardPass.requiredAttributeIds, () => ForwardPass.nextRequiredAttributeId++, baseMaterial.requiredAttributes);
     // `renderStateForItem` returns the SAME object for the unflipped case, so
     // the flip bit is the only per-item term needed in the key.
-    const key = `${shader.id}|${vertexFormatId}|${geometry.topology ?? "triangles"}|${renderStateId}:${renderState === baseMaterial.renderState ? 0 : 1}|${attrsId}`;
+    const key = `${shader.id}|${vertexFormatId}|${geometry.topology ?? "triangles"}|${renderStateId}:${originalState === baseMaterial.renderState ? 0 : 1}|${attrsId}|coverage:${this.options.nativeDepthCoverage ? 1 : 0}|weighted:${this.options.weightedTransparency?.phase ?? "none"}`;
     let cache = ForwardPass.pipelineCaches.get(device);
     if (!cache) {
       cache = new Map();
@@ -1439,8 +3073,654 @@ function geometryHasAttribute(geometry: Geometry, attribute: string): boolean {
   return geometry.vertexBuffer.format.attributes.some((candidate) => candidate.semantic === attribute || candidate.shaderName === attribute);
 }
 
-function shaderCacheKey(material: Material): string {
-  return material.shaderVariant ? `${material.shaderKey}:${material.shaderVariant}` : material.shaderKey;
+/** Resolve once per draw with the same item/options/material precedence as DepthPass. */
+export function resolveForwardClipping(
+  item: RenderItem,
+  options: Pick<ForwardPassOptions, "globalClipping" | "materialClippingFor" | "clippingPlaneLimit">,
+  device: Pick<RenderDevice, "kind">
+): ClippingBinding {
+  const base = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
+  const material = options.materialClippingFor?.(item) ?? item.materialClipping
+    ?? (base as (typeof base & { readonly clipping?: ClippingGroupInput }))?.clipping;
+  return createClippingBinding({ global: item.globalClipping ?? options.globalClipping, material, pass: "forward",
+    primitive: item.geometry.topology === "lines" ? "line" : item.geometry.topology === "points" ? "point" : "mesh",
+    backend: device.kind, maxPlanes: options.clippingPlaneLimit });
+}
+
+/** A preview has no clipping, deformation, packed-draw or nonstandard-depth shader. */
+function validateDepthPreviewDraw(
+  item: RenderItem,
+  material: DepthPreviewMaterial,
+  options: ForwardPassOptions,
+  device: RenderDevice
+): 0 | 1 {
+  if (item.geometry.topology !== "triangles" || item.skinning || item.morphTargets?.length
+    || item.morphWeights?.length || item.geometry.morphTargets?.length
+    || item.instanceAttributes?.length || item.instanceColors?.length || item.instanceEmissive?.length
+    || hasInstanceVertexStreams(item.geometry)
+    || (item.instanceCount !== undefined && item.instanceCount !== 1 && !item.instanceTransforms)) {
+    throw new RenderDeviceError("Depth preview requires rigid triangle geometry without instance attributes", "DEPTH_PREVIEW_GEOMETRY_UNSUPPORTED", { label: item.label });
+  }
+  if (isEngineBatchInstanceItem(item) || isEnginePackedBatchItem(item) || packedLoopMemberFor(item)
+    || (item as RenderItem & { readonly multiDraw?: unknown }).multiDraw !== undefined) {
+    throw new RenderDeviceError("Depth preview does not support batched draws", "DEPTH_PREVIEW_BATCH_UNSUPPORTED", { label: item.label });
+  }
+  if (item.geometryMatrix && toMat4Values(item.geometryMatrix, "geometryMatrix", item.label)
+    .some((value, index) => value !== identityMatrix()[index])) {
+    throw new RenderDeviceError("Depth preview does not support a separate geometry transform", "DEPTH_PREVIEW_GEOMETRY_UNSUPPORTED", { label: item.label });
+  }
+  const state = material.renderState;
+  if (state.blend || (state.blendMode !== undefined && state.blendMode !== "opaque")
+    || !state.depthTest || !state.depthWrite || (state.depthCompareV2 ?? state.depthCompare) !== "less-equal"
+    || state.alphaToCoverage) {
+    throw new RenderDeviceError("Depth preview requires opaque standard depth testing and writing", "DEPTH_PREVIEW_DEPTH_UNSUPPORTED", { label: item.label });
+  }
+  const cameraDepth = options.frameContext?.camera?.depth;
+  const activeDepth = device.getDepthConvention?.();
+  for (const depth of [cameraDepth, activeDepth]) {
+    if (depth && (depth.mode !== "standard" || (depth.requestedMode !== "standard" && !depth.fallbackReason)
+      || depth.clearValue !== 1 || depth.compare !== "less-equal" || depth.biasSign !== 1)) {
+      throw new RenderDeviceError("Depth preview requires the standard depth convention", "DEPTH_PREVIEW_DEPTH_UNSUPPORTED", { label: item.label });
+    }
+  }
+  const range = options.projectionClipRange ?? cameraDepth?.clipRange ?? "minus-one-to-one";
+  if ((range !== "minus-one-to-one" && range !== "zero-to-one")
+    || (cameraDepth && options.projectionClipRange !== undefined && options.projectionClipRange !== cameraDepth.clipRange)) {
+    throw new RenderDeviceError("Depth preview projection clip range is invalid or disagrees with the camera", "DEPTH_PREVIEW_DEPTH_UNSUPPORTED", { label: item.label });
+  }
+  return range === "zero-to-one" ? 1 : 0;
+}
+
+/** Bind the real frame matrices and clip convention, including a verified jittered raster projection. */
+function bindDepthPreviewFrameUniforms(
+  options: ForwardPassOptions,
+  item: RenderItem,
+  material: DepthPreviewMaterial,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>,
+  clipRange: 0 | 1
+): void {
+  const required = ["u_modelMatrix", "u_viewMatrix", "u_projectionMatrix", "u_a3dClipRange", "u_depthPreviewNear", "u_depthPreviewSpan"];
+  if (required.some((name) => !shader.reflection.uniforms.has(name)) || !shader.reflection.attributes.has("a_position")) {
+    throw new RenderDeviceError("Depth preview shader reflection is incomplete", "DEPTH_PREVIEW_SHADER_UNSUPPORTED", { label: item.label });
+  }
+  let view = options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix;
+  let projection = options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix;
+  const raster = options.cameraViewProjectionMatrix;
+  const rasterView = options.cameraViewMatrix;
+  const rasterProjection = options.auraFrameCamera?.projectionMatrix;
+  if (raster && rasterView && rasterProjection) {
+    const product = multiplyMat4(toMat4Values(rasterProjection, "projectionMatrix"), toMat4Values(rasterView, "viewMatrix"));
+    if (matricesMatchAtFloatPrecision(product, raster)) {
+      view = rasterView;
+      projection = rasterProjection;
+    }
+  }
+  if ((view === undefined) !== (projection === undefined) || (raster && (!view || !projection))) {
+    throw new RenderDeviceError("Depth preview requires both camera view and projection matrices", "DEPTH_PREVIEW_CAMERA_UNSUPPORTED", { label: item.label });
+  }
+  const viewMatrix = toMat4Uniform(view ?? identityMatrix(), "cameraViewMatrix", item.label);
+  const projectionMatrix = toMat4Uniform(projection ?? identityMatrix(), "projectionMatrix", item.label);
+  const modelMatrix = toMat4Uniform(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
+  const affine = (matrix: Float32Array) => matrix.every(Number.isFinite)
+    && matrix[3] === 0 && matrix[7] === 0 && matrix[11] === 0 && matrix[15] === 1;
+  if (!affine(viewMatrix) || !affine(modelMatrix) || !projectionMatrix.every(Number.isFinite)) {
+    throw new RenderDeviceError("Depth preview requires finite affine model and view matrices", "DEPTH_PREVIEW_CAMERA_UNSUPPORTED", { label: item.label });
+  }
+  if (raster) {
+    const product = multiplyMat4(Array.from(projectionMatrix) as Mat4, Array.from(viewMatrix) as Mat4);
+    if (!matricesMatchAtFloatPrecision(product, raster)) {
+      throw new RenderDeviceError("Depth preview matrices disagree with the raster camera", "DEPTH_PREVIEW_CAMERA_UNSUPPORTED", { label: item.label });
+    }
+  }
+  uniforms.set("u_modelMatrix", modelMatrix);
+  uniforms.set("u_viewMatrix", viewMatrix);
+  uniforms.set("u_projectionMatrix", projectionMatrix);
+  uniforms.set("u_a3dClipRange", clipRange);
+  uniforms.set("u_depthPreviewNear", material.getParameter("u_depthPreviewNear")!);
+  uniforms.set("u_depthPreviewSpan", material.getParameter("u_depthPreviewSpan")!);
+}
+
+/** Check specialized paths before any forward or shadow work for a clipped item. */
+export function assertForwardClippingSupported(
+  item: RenderItem,
+  clipping: ClippingBinding,
+  options: { readonly flags?: QrFlags; readonly cameraViewMatrix?: Float32Array | readonly number[]; readonly shaderLibrary?: ShaderLibrary } = {}
+): void {
+  if (clipping.groups.length === 0) return;
+  const material = item.material;
+  const base = material ? getBaseMaterial(material) : undefined;
+  if (base?.shaderKey === DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME) {
+    const geometryMatrix = item.geometryMatrix && toMat4Values(item.geometryMatrix, "geometryMatrix", item.label);
+    if (!(base instanceof ScreenSpaceLineMaterial) || base.shaderVariant !== undefined || !options.shaderLibrary
+      || !certifiedDefaultScreenLineSource(options.shaderLibrary) || item.instanceTransforms !== undefined
+      || (item.instanceCount !== undefined && item.instanceCount !== 1) || hasInstanceVertexStreams(item.geometry)
+      || item.skinning || item.morphTargets || item.morphWeights
+      || (geometryMatrix && geometryMatrix.some((value, index) => value !== identityMatrix()[index]))) {
+      throw new RenderDeviceError("Clipped screen-space lines require an authenticated non-instanced shader source", "FORWARD_CLIPPING_SPECIALIZED_GEOMETRY_UNSUPPORTED", { material: base.name });
+    }
+  }
+  if (material?.getParameter("u_spriteMode") === 1) {
+    if (clipping.backend === "webgpu" || !options.flags || !qrCoreGeneratorOn(options.flags) || !options.flags.on("A3D_PARITY_LINES")
+      || item.instanceTransforms !== undefined || (item.instanceCount !== undefined && item.instanceCount !== 1)
+      || hasInstanceVertexStreams(item.geometry)) {
+      throw new RenderDeviceError("Clipped sprites require the generated WebGL billboard path without instancing", "FORWARD_CLIPPING_SPRITE_UNSUPPORTED", { material: base?.name });
+    }
+    if (item.geometryMatrix && toMat4Values(item.geometryMatrix, "geometryMatrix", item.label).some((value, index) => value !== identityMatrix()[index])) {
+      throw new RenderDeviceError("Clipped sprites do not apply a geometry transform", "FORWARD_CLIPPING_SPRITE_UNSUPPORTED", { material: base?.name });
+    }
+    if (!spriteClipInverse(options.cameraViewMatrix ?? identityMatrix())
+      || (clipping.groups.some((group) => group.space === "local") && !spriteClipInverse(item.modelMatrix ?? identityMatrix()))) {
+      throw new RenderDeviceError("Clipped sprites require finite, affine and invertible view and local transforms", "FORWARD_CLIPPING_SPRITE_TRANSFORM", { label: item.label });
+    }
+  }
+  if ((item as RenderItem & { readonly multiDraw?: unknown }).multiDraw !== undefined) {
+    throw new RenderDeviceError("Clipping is unavailable for packed multi-draw geometry", "FORWARD_CLIPPING_BATCH_UNSUPPORTED", { label: item.label });
+  }
+  if (clipping.backend === "webgpu" && base instanceof UnlitMaterial && item.geometry.topology === "points") {
+    throw new RenderDeviceError("Generated WebGPU points require the point-quad path", "NATIVE_UNLIT_POINTS_UNSUPPORTED", { material: base.name });
+  }
+  if (base instanceof PortableShaderMaterial && !PortableShaderMaterial.hasGraphClippingContract(base)) {
+    throw new RenderDeviceError("Portable and custom shaders do not yet provide forward clipping", "FORWARD_CLIPPING_PROGRAM_UNSUPPORTED", { material: base.name });
+  }
+}
+
+function spriteClipInverse(value: Float32Array | readonly number[]): Float32Array | undefined {
+  try {
+    const matrix = Array.from(new Float32Array(toMat4Values(value, "spriteClipTransform"))) as Mat4;
+    if (!isFiniteArrayLike(matrix) || matrix[3] !== 0 || matrix[7] !== 0 || matrix[11] !== 0 || matrix[15] !== 1) return undefined;
+    const inverse = new Float32Array(invertMat4(matrix));
+    return isFiniteArrayLike(inverse) ? inverse : undefined;
+  } catch { return undefined; }
+}
+
+function spriteCameraMatchesRaster(camera: { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } | undefined): boolean {
+  if (!camera) return false;
+  const product = multiplyMat4(Array.from(camera.projection) as Mat4, Array.from(camera.view) as Mat4);
+  return matricesMatchAtFloatPrecision(product, camera.viewProjection);
+}
+
+function matricesMatchAtFloatPrecision(left: ArrayLike<number>, right: ArrayLike<number>): boolean {
+  if (left.length !== 16 || right.length !== 16) return false;
+  return Array.from(left).every((value, index) => {
+    const actual = Math.fround(value), expected = Math.fround(right[index]!);
+    return Number.isFinite(actual) && Number.isFinite(expected)
+      && Math.abs(actual - expected) <= 1e-5 * Math.max(1, Math.abs(actual), Math.abs(expected));
+  });
+}
+
+/** Use the actual raster camera when all three frame matrices agree. Custom
+ * standalone cameras retain their existing bindings if no such proof exists. */
+function bindClippedLineRasterCamera(options: ForwardPassOptions, uniforms: Map<string, UniformValue>): void {
+  const view = options.cameraViewMatrix, projection = options.auraFrameCamera?.projectionMatrix, raster = options.cameraViewProjectionMatrix;
+  if (!view || !projection || !raster) return;
+  try {
+    const viewMatrix = toMat4Uniform(view, "cameraViewMatrix");
+    const projectionMatrix = toMat4Uniform(projection, "auraFrameCamera.projectionMatrix");
+    const rasterMatrix = toMat4Uniform(raster, "cameraViewProjectionMatrix");
+    const product = multiplyMat4(Array.from(projectionMatrix) as Mat4, Array.from(viewMatrix) as Mat4);
+    if (!matricesMatchAtFloatPrecision(product, rasterMatrix)) return;
+    uniforms.set("u_viewMatrix", viewMatrix);
+    uniforms.set("u_projectionMatrix", projectionMatrix);
+  } catch {
+    // The final line-transform validation retains the existing explicit error.
+  }
+}
+
+/** Invert the exact transform consumed by the selected line shader after hooks. */
+function bindClippedLineInverse(uniforms: Map<string, UniformValue>, shader: RenderShaderProgram, item: RenderItem): void {
+  const matrix = (name: string): Mat4 => {
+    const value = uniforms.get(name);
+    if (!(value instanceof Float32Array) && !Array.isArray(value)) {
+      throw new RenderDeviceError("Clipped screen-space lines require bound transforms", "FORWARD_CLIPPING_LINE_TRANSFORM", { label: item.label, name });
+    }
+    return toMat4Values(value, name, item.label);
+  };
+  try {
+    const model = matrix("u_modelMatrix");
+    if (model[3] !== 0 || model[7] !== 0 || model[11] !== 0 || model[15] !== 1) throw new Error("non-affine model");
+    const worldUnits = uniforms.get("u_lineWorldUnits");
+    if (typeof worldUnits !== "number" || !Number.isFinite(worldUnits)) throw new Error("invalid line width mode");
+    const transform = worldUnits > 0.5
+      ? multiplyMat4(multiplyMat4(matrix("u_projectionMatrix"), matrix("u_viewMatrix")), model)
+      : matrix("u_modelViewProjection");
+    if (worldUnits > 0.5) {
+      // The built-in line shader uses MVP for near-plane trimming and the
+      // separate projection/view/model uniforms for world-width expansion.
+      // Both operations must describe the same raster camera.
+      const mvp = matrix("u_modelViewProjection");
+      if (!matricesMatchAtFloatPrecision(transform, mvp)) throw new RenderDeviceError("World-width clipped lines require matching raster transforms", "FORWARD_CLIPPING_LINE_CAMERA_MISMATCH", { label: item.label });
+    }
+    const inverse = new Float32Array(invertMat4(Array.from(new Float32Array(transform)) as Mat4));
+    if (!isFiniteArrayLike(inverse) || !shader.reflection.uniforms.has(LINE_CLIP_INVERSE_TRANSFORM)) throw new Error("invalid inverse or missing uniform");
+    uniforms.set(LINE_CLIP_INVERSE_TRANSFORM, inverse);
+  } catch (error) {
+    if (error instanceof RenderDeviceError && error.code === "FORWARD_CLIPPING_LINE_CAMERA_MISMATCH") throw error;
+    throw new RenderDeviceError("Clipped screen-space lines require a finite invertible bound transform", "FORWARD_CLIPPING_LINE_TRANSFORM", { label: item.label });
+  }
+}
+
+/** Local-probe collection may install a legacy dominant-cube override. A
+ * generated blend instead needs the original scene/item environment. */
+function globalEnvironmentItem(item: RenderItem, probes: NonNullable<ReturnType<typeof prd02ItemProbeBindings>>): RenderItem {
+  return { ...item, environmentCube: probes.originalEnvironmentCube, environmentCubeMip: probes.originalEnvironmentCubeMip };
+}
+
+/** Native unlit pipelines are keyed by the original geometry topology. */
+export function nativeUnlitPrimitiveForGeometry(
+  geometry: Pick<Geometry, "topology">,
+  device: Pick<RenderDevice, "kind">,
+  lighting: ProgramFeatures["lighting"]
+): Geometry["topology"] | undefined {
+  return device.kind === "webgpu" && lighting === "unlit" ? geometry.topology : undefined;
+}
+
+/** Physical color selection is geometry-specific even when a material is shared. */
+export function physicalVertexColorsForGeometry(geometry: Geometry, device: RenderDevice): boolean {
+  const color = geometry.vertexBuffer.format.attributes.find((attribute) => attribute.semantic === "color" || attribute.shaderName === "a_color");
+  if (!color) return false;
+  if (color.components !== 4 || color.shaderLocation !== 4 || color.integer
+    || (device.kind === "webgpu" && color.type !== "float32" && !color.normalized)) {
+    throw new RenderDeviceError("Physical vertex colors require compatible four-component inputs at location 4", "PHYSICAL_VERTEX_COLOR_FORMAT_UNSUPPORTED", {});
+  }
+  return true;
+}
+
+function hasLiveTransmission(material: Material | MaterialInstance): boolean {
+  const factor = material.getParameter("u_transmissionFactor");
+  if (typeof factor === "number" && Number.isFinite(factor) && factor > 0) return true;
+  const name = "u_transmissionTexture", map = material.getParameter(name);
+  return isTextureBinding(map) && !!map.texture && !map.texture.disposed && material.getParameter(`${name}Enabled`) !== 0;
+}
+
+function hasLiveDiffuseTransmission(material: Material | MaterialInstance): boolean {
+  const factor = material.getParameter("u_diffuseTransmissionFactor");
+  if (typeof factor === "number" && Number.isFinite(factor) && factor > 0) return true;
+  for (const name of ["u_diffuseTransmissionTexture", "u_diffuseTransmissionColorTexture"] as const) {
+    const map = material.getParameter(name);
+    if (isTextureBinding(map) && map.texture && !map.texture.disposed && material.getParameter(`${name}Enabled`) !== 0) return true;
+  }
+  return false;
+}
+
+const GRAPH_LOCAL_PROBE_UNIFORMS = ["u_prd02ProbeCubeA", "u_prd02ProbeCubeB", "u_prd02ProbeCenterA", "u_prd02ProbeCenterB",
+  "u_prd02ProbeOriginA", "u_prd02ProbeOriginB", "u_prd02ProbeHalfA", "u_prd02ProbeHalfB", "u_prd02ProbeWeights"] as const;
+const GRAPH_IRRADIANCE_VOLUME_UNIFORMS = ["u_prd02IrradianceR", "u_prd02IrradianceG", "u_prd02IrradianceB",
+  "u_prd02IrradianceMin", "u_prd02IrradianceMax", "u_prd02IrradianceGrid"] as const;
+
+/** Resolve the same original per-item/scene cube used by the generated IBL
+ * path, rather than the legacy dominant-local-probe override. */
+function graphGlobalEnvironmentCube(environment: EnvironmentLightingOptions | undefined, item: RenderItem): {
+  readonly binding: TextureBinding;
+  readonly info: readonly [number, number, number, number];
+  readonly encoding: number;
+  readonly diffuseIntensity: number;
+} | null {
+  const env = environment ? withItemEnvironmentCube(environment, item) : undefined;
+  const authored = item.environmentCube ?? env?.environmentCubeMapTexture;
+  const probe = env?.environmentProbe;
+  let binding: TextureBinding;
+  let fromProbe = false;
+  if (authored?.texture || authored?.required) {
+    validateEnvironmentTextureBinding("Graph global environment cube", authored, "cube", item);
+    binding = authored;
+  } else if (probe) {
+    fromProbe = true;
+    binding = new TextureBinding({
+      name: "u_graphGlobalEnvCube", texture: probe.specularCube,
+      sampler: Sampler.trilinear({ wrap: "clamp" }), required: true, expectedDimension: "cube"
+    });
+    validateEnvironmentTextureBinding("Graph global environment probe", binding, "cube", item);
+  } else {
+    return null;
+  }
+  const intensity = env?.environmentMapSpecularIntensity ?? env?.environmentMapIntensity ?? 1;
+  const diffuseIntensity = env?.environmentMapIntensity ?? 1;
+  const mipCount = item.environmentCubeMip ?? env?.environmentMapMipCount
+    ?? (fromProbe ? probe!.mipCount : Math.max(1, binding.texture?.cubeFaces[0]?.mipLevels.length ?? 1));
+  const rotation = env?.environmentMapRotation ?? 0;
+  const encoding = fromProbe ? "linear" : env?.environmentMapEncoding ?? (binding.texture?.colorSpace === "srgb" ? "srgb" : "linear");
+  if (!Number.isFinite(intensity) || !Number.isFinite(Math.fround(intensity)) || intensity < 0
+    || !Number.isFinite(diffuseIntensity) || !Number.isFinite(Math.fround(diffuseIntensity)) || diffuseIntensity < 0
+    || !Number.isSafeInteger(mipCount) || mipCount < 1
+    || !Number.isFinite(rotation) || !Number.isFinite(Math.fround(rotation))
+    || (encoding !== "srgb" && encoding !== "rgbe" && encoding !== "linear")) {
+    throw new RenderDeviceError("Graph global environment cube options are invalid", "ENVIRONMENT_LIGHTING_CONTRACT", { label: item.label });
+  }
+  return {
+    binding: new TextureBinding({ name: "u_graphGlobalEnvCube", texture: binding.texture, sampler: binding.sampler,
+      required: true, ready: binding.ready, expectedColorSpace: binding.expectedColorSpace, expectedDimension: "cube" }),
+    info: [1, intensity, mipCount - 1, rotation],
+    encoding: encoding === "rgbe" ? 1 : encoding === "linear" ? 2 : 0,
+    diffuseIntensity
+  };
+}
+
+function validateGraphEnvironmentUniforms(shader: RenderShaderProgram, names: readonly string[], material: string): void {
+  if (names.some((name) => !shader.reflection.uniforms.has(name))) {
+    throw new RenderDeviceError("Graph shader lacks selected environment bindings", "GRAPH_ENVIRONMENT_BINDING_UNSUPPORTED", { material, names });
+  }
+}
+
+function applyGraphEnvironmentShIntensity(environment: EnvironmentLightingOptions | undefined, uniforms: Map<string, UniformValue>, item: RenderItem): void {
+  if (uniforms.get("u_a3dEnvShEnabled") !== 1) return;
+  const sh = uniforms.get("u_a3dEnvSh");
+  const intensity = environment?.environmentMapIntensity ?? 1;
+  if (!(sh instanceof Float32Array) || !Number.isFinite(intensity) || intensity < 0) {
+    throw new RenderDeviceError("Graph environment irradiance options are invalid", "ENVIRONMENT_LIGHTING_CONTRACT", { label: item.label });
+  }
+  const scaled = Float32Array.from(sh, (coefficient) => coefficient * intensity);
+  if (!scaled.every(Number.isFinite)) {
+    throw new RenderDeviceError("Graph environment irradiance exceeds GPU precision", "ENVIRONMENT_LIGHTING_CONTRACT", { label: item.label });
+  }
+  uniforms.set("u_a3dEnvSh", scaled);
+}
+
+function validateGraphIrradianceBindings(uniforms: Map<string, UniformValue>, material: string): void {
+  for (const name of GRAPH_IRRADIANCE_VOLUME_UNIFORMS.slice(0, 3)) {
+    const value = uniforms.get(name);
+    if (!isTextureBinding(value) || !value.texture || value.texture.dimension !== "2d-array" || value.texture.format !== "rgba16f" || !value.validate().ok) {
+      throw new RenderDeviceError("Graph irradiance volume texture is unavailable", "GRAPH_IRRADIANCE_VOLUME_BINDING_UNAVAILABLE", { material, name });
+    }
+  }
+  const vectors = GRAPH_IRRADIANCE_VOLUME_UNIFORMS.slice(3).map((name) => uniforms.get(name));
+  if (vectors.some((value) => !(value instanceof Float32Array) || value.length !== 4 || !value.every(Number.isFinite))) {
+    throw new RenderDeviceError("Graph irradiance volume parameters are unavailable", "GRAPH_IRRADIANCE_VOLUME_BINDING_UNAVAILABLE", { material });
+  }
+  const [minimum, maximum, grid] = vectors as Float32Array[];
+  if (grid![3]! < 0 || [0, 1, 2].some((axis) => maximum![axis]! <= minimum![axis]! || !Number.isInteger(grid![axis]!) || grid![axis]! < 1)) {
+    throw new RenderDeviceError("Graph irradiance volume parameters are invalid", "GRAPH_IRRADIANCE_VOLUME_BINDING_UNAVAILABLE", { material });
+  }
+}
+
+/** Portable native layouts require both cube views even when one weight is 0. */
+function ensureGraphProbeCubeBindings(uniforms: Map<string, UniformValue>, material: string): void {
+  for (const name of GRAPH_LOCAL_PROBE_UNIFORMS.slice(2, 8)) {
+    const value = uniforms.get(name);
+    if (!(value instanceof Float32Array) || value.length !== 4 || !value.every(Number.isFinite)) {
+      throw new RenderDeviceError("Graph reflection probe parameters are unavailable", "GRAPH_PROBE_BINDING_UNAVAILABLE", { material, name });
+    }
+  }
+  const weights = uniforms.get("u_prd02ProbeWeights");
+  if (!(weights instanceof Float32Array) || weights.length < 4 || !Array.from(weights).every(Number.isFinite)
+    || weights[0]! < 0 || weights[1]! < 0) {
+    throw new RenderDeviceError("Graph reflection probe weights are invalid", "GRAPH_PROBE_BINDING_UNAVAILABLE", { material });
+  }
+  const names = ["u_prd02ProbeCubeA", "u_prd02ProbeCubeB"] as const;
+  const cubes = names.map((name) => {
+    const value = uniforms.get(name);
+    return isTextureBinding(value) && value.texture && value.texture.dimension === "cube" && value.validate().ok ? value : null;
+  });
+  if (names.some((_, index) => weights[index]! > 0 && !cubes[index])) {
+    throw new RenderDeviceError("Graph reflection probe cube is unavailable", "GRAPH_PROBE_BINDING_UNAVAILABLE", { material });
+  }
+  const fallback = cubes[0] ?? cubes[1];
+  if (!fallback) throw new RenderDeviceError("Graph reflection probe cubes are unavailable", "GRAPH_PROBE_BINDING_UNAVAILABLE", { material });
+  for (let index = 0; index < names.length; index += 1) {
+    if (!cubes[index]) uniforms.set(names[index]!, new TextureBinding({
+      name: names[index]!, texture: fallback.texture, sampler: fallback.sampler, required: true, expectedDimension: "cube"
+    }));
+  }
+}
+
+function requiresGeneratedEffectsProgram(features: ProgramFeatures): boolean {
+  return features.extensions.length > 0 || features.shadows.contact || features.lights.rect > 0 || features.features[PROGRAM_CLIPPING_FEATURE] === true
+    || features.features[LEGACY_POINT_SHADOW_FEATURE] === true || features.features[LEGACY_SPOT_SHADOW_FEATURE] === true
+    || features.features[PRD02_LOCAL_PROBE_FEATURE] === true || features.features[PRD02_IRRADIANCE_VOLUME_FEATURE] === true
+    || features.features[NATIVE_PROBE_GRID_FEATURE] === true || features.features[NATIVE_VOXEL_INDIRECT_FEATURE] === true
+    || features.features[NATIVE_BAKED_LIGHTMAP_FEATURE] !== undefined;
+}
+
+/** Both packed and clustered light data retain input order for their active
+ * paths, so the producer's actual light identity selects exactly one entry. */
+function contactShadowLightIndex(scope: ContactShadowMaskScope | undefined, item: RenderItem, lights: readonly CollectedLight[]): number {
+  if (item.receiveShadow === false) return -1;
+  const mask = resolveContactShadowMask(scope);
+  if (!mask) return -1;
+  let selected = -1;
+  for (let index = 0; index < lights.length; index += 1) {
+    const light = lights[index]!;
+    if (light.kind !== "directional" || !light.castsShadow || light.source !== mask.sourceLight) continue;
+    if (selected >= 0 || index > 0x1000000) {
+      throw new RenderDeviceError("Contact shadow light identity is ambiguous", "CONTACT_SHADOW_LIGHT_AMBIGUOUS", {});
+    }
+    selected = index;
+  }
+  // Cluster tiles retain at most the first 64 candidates in input order.
+  // A directional appears in every tile, so an earlier index is guaranteed
+  // to survive; beyond that point it may disappear in some tiles. Do not
+  // silently count or bind a contact receiver whose source can be dropped.
+  if (selected >= MAX_LIGHTS_PER_CLUSTER) {
+    throw new RenderDeviceError("The contact shadow light exceeds the clustered light capacity", "CONTACT_SHADOW_LIGHT_CAPACITY_EXCEEDED", { index: selected });
+  }
+  return selected;
+}
+
+/** The mask is computed from a single camera-depth surface per pixel. These
+ * receiver states can select a different surface or coverage than its depth
+ * prepass, so accepting them would apply another object's shadow. */
+function validateContactShadowReceiver(material: Material, index: number, scope: ContactShadowMaskScope | undefined): void {
+  if (index < 0) return;
+  const state = material.renderState;
+  const depthCompare = scope?.frame?.camera?.depth?.mode === "reversed" ? "greater-equal" : "less-equal";
+  if (blendStateIsTransparent(state) || !state.depthTest || !state.depthWrite
+    || (state.depthCompareV2 ?? state.depthCompare) !== depthCompare
+    || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null) {
+    throw new RenderDeviceError("Contact shadows require an opaque receiver matching the camera depth prepass", "CONTACT_SHADOW_RECEIVER_DEPTH_UNSUPPORTED", { material: material.name });
+  }
+  if (material instanceof PortableShaderMaterial && material.graphMaterial && !material.graphSourcesPristine) {
+    throw new RenderDeviceError("Reloaded graph sources require a rebuilt contact depth contract", "GRAPH_CONTACT_SHADOW_SOURCE_UNSUPPORTED", { material: material.name });
+  }
+  if (material instanceof PortableShaderMaterial && material.graphMaterial
+    && (material.graphDisplaced || typeof (material as Material & { readonly customDepthShaderKey?: unknown }).customDepthShaderKey === "string")) {
+    throw new RenderDeviceError("Displaced graph contact receivers require a matching camera depth prepass", "GRAPH_CONTACT_SHADOW_DEPTH_UNSUPPORTED", { material: material.name });
+  }
+}
+
+const LEGACY_PBR_DETAIL_SHADERS = new Set([
+  "aura3d/pbr-direct", "aura3d/instanced-pbr", "aura3d/skinned-lit", "aura3d/skinned-lit-8", "aura3d/pbr-textured"
+]);
+
+const GRAPH_EMPTY_LOCAL_SHADOW_ATLAS = new TextureBinding({ name: "u_localShadowAtlas", required: false,
+  sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest" }), expectedDimension: "2d" });
+
+const GRAPH_EMPTY_CASCADE_TEXTURES = Array.from({ length: 4 }, (_, index) => new TextureBinding({
+  name: `u_graphCascadeTexture${index}`, required: false,
+  sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest" }), expectedDimension: "2d"
+}));
+
+/** Per-fragment graph cascade packet. Every map retains its own filter and
+ * bias, and disabled receivers get zero cascades and safe fallback textures. */
+function applyGraphCascadeUniforms(options: ForwardPassOptions, item: RenderItem, device: RenderDevice, shader: RenderShaderProgram, uniforms: Map<string, UniformValue>): void {
+  if (!shader.reflection.uniforms.has("u_graphCascadeCount")) return;
+  const cascades = item.receiveShadow === false ? [] : options.shadowMap?.cascades ?? [];
+  if (cascades.length > 4) throw new RenderDeviceError("Graph shadow receivers support at most four cascades", "GRAPH_CASCADE_CONTRACT", { count: cascades.length });
+  const capacity = Math.max(1, cascades.length);
+  const splits = new Float32Array(4), matrices = new Float32Array(capacity * 16), params = new Float32Array(capacity * 4);
+  const texels = new Float32Array(capacity * 4), samples = new Float32Array(capacity * MAX_FORWARD_SHADOW_PCF_SAMPLES * 4);
+  let previousFar = 0;
+  for (let index = 0; index < capacity; index += 1) {
+    const cascade = cascades[index];
+    if (!cascade) {
+      uniforms.set(`u_graphCascadeTexture${index}`, GRAPH_EMPTY_CASCADE_TEXTURES[index]!);
+      continue;
+    }
+    const map = cascade.shadowMap;
+    const texture = map.texture;
+    const strength = map.strength ?? prd02ShadowStrengthDefault();
+    const bias = map.bias ?? 0.001, slopeBias = map.slopeBias ?? 1, normalBias = map.normalBias ?? 0;
+    const texel = map.texelSize ?? [1 / Math.max(1, texture.texture?.width ?? 1), 1 / Math.max(1, texture.texture?.height ?? 1)];
+    if (!Number.isFinite(cascade.near) || !Number.isFinite(cascade.far) || cascade.near < 0 || cascade.far <= cascade.near
+      || (index > 0 && cascade.far <= previousFar)
+      || !texture.texture || !texture.validate().ok || texture.texture.dimension !== "2d" || texture.sampler.compare !== undefined
+      || (device.kind === "webgpu" && texture.texture.format === "depth24")
+      || !Number.isFinite(strength) || strength < 0 || strength > 1
+      || !Number.isFinite(bias) || bias < 0 || !Number.isFinite(slopeBias) || slopeBias < 0 || !Number.isFinite(normalBias) || normalBias < 0
+      || texel.length !== 2 || !texel.every((value) => Number.isFinite(value) && value > 0)) {
+      throw new RenderDeviceError("Invalid graph cascade shadow binding", "GRAPH_CASCADE_CONTRACT", { index, material: item.label });
+    }
+    const kernel = applyShadowPcfTapTier(map.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL, map.pcfTapTier);
+    const packed = packForwardShadowPcfSamples(kernel, item.label);
+    splits[index] = cascade.far;
+    matrices.set(toMat4Uniform(map.lightMatrix, "cascade.lightMatrix", item.label), index * 16);
+    params.set([strength, bias, slopeBias, normalBias], index * 4);
+    texels.set([texel[0]!, texel[1]!, kernel.samples.length, 0], index * 4);
+    samples.set(packed, index * MAX_FORWARD_SHADOW_PCF_SAMPLES * 4);
+    uniforms.set(`u_graphCascadeTexture${index}`, texture);
+    previousFar = cascade.far;
+  }
+  const view = options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix;
+  const viewMode = view !== undefined && view.length === 16 && isFiniteArrayLike(view) ? 0 : options.cameraPosition && isFiniteArrayLike(options.cameraPosition) ? 1 : 2;
+  uniforms.set("u_graphCascadeCount", cascades.length);
+  uniforms.set("u_graphCascadeViewMode", viewMode);
+  uniforms.set("u_graphCascadeSplits", splits);
+  uniforms.set("u_graphCascadeMatrices", matrices);
+  uniforms.set("u_graphCascadeParams", params);
+  uniforms.set("u_graphCascadeTexels", texels);
+  uniforms.set("u_graphCascadeSamples", samples);
+}
+
+function shaderCacheKey(material: Material, defines: Readonly<Record<string, true>> = {}, key = material.shaderKey): string {
+  const base = material.shaderVariant && key === material.shaderKey ? `${key}:${material.shaderVariant}` : key;
+  const axes = Object.keys(defines).sort();
+  return axes.length ? `${base}:${axes.join(",")}` : base;
+}
+
+/** Match the graph shader's legacy shadow-map identity checks. A single map
+ * cannot represent two distinct casters at the same position and direction. */
+function validateGraphLocalShadowSources(material: Material, shadow: ForwardShadowMapOptions, lights: readonly CollectedLight[]): void {
+  const point = shadow.pointLight;
+  if (point && point.strength !== 0 && lights.filter((light) => light.kind === "point" && light.castsShadow
+    && graphShadowPositionMatches(light.position, point.lightPosition)).length > 1) {
+    throw new RenderDeviceError("Graph point shadow maps cannot distinguish multiple matching shadow-casting lights", "GRAPH_AMBIGUOUS_POINT_SHADOW", { material: material.name });
+  }
+  const spot = shadow.spotLight;
+  if (spot && spot.strength !== 0 && lights.filter((light) => light.kind === "spot" && light.castsShadow
+    && graphShadowPositionMatches(light.position, spot.lightPosition)
+    && graphShadowDirectionMatches(light.direction, spot.lightDirection)).length > 1) {
+    throw new RenderDeviceError("Graph spot shadow maps cannot distinguish multiple matching shadow-casting lights", "GRAPH_AMBIGUOUS_SPOT_SHADOW", { material: material.name });
+  }
+}
+
+/** The legacy packet has no light ID, so select it only when its position
+ * (and spot axis) identify a single shadow-casting light in the packed data. */
+function selectLegacyPunctualShadows(shadow: ForwardShadowMapOptions | undefined, lights: readonly CollectedLight[], material: Material, device: RenderDevice): { point: boolean; spot: boolean } {
+  const selected = { point: false, spot: false };
+  for (const kind of ["point", "spot"] as const) {
+    const map = kind === "point" ? shadow?.pointLight : shadow?.spotLight;
+    const candidates = lights.filter((light) => light.kind === kind && light.castsShadow);
+    if (!map || map.strength === 0 || candidates.length === 0) continue;
+    if ((map.strength !== undefined && (!Number.isFinite(map.strength) || map.strength < 0 || map.strength > 1))
+      || !map.lightPosition || map.lightPosition.length !== 3 || !isFiniteArrayLike(map.lightPosition)
+      || (kind === "spot" && (!shadow?.spotLight?.lightDirection || shadow.spotLight.lightDirection.length !== 3
+        || !isFiniteArrayLike(shadow.spotLight.lightDirection) || Math.hypot(...shadow.spotLight.lightDirection) <= 0.0001))) {
+      throw new RenderDeviceError("Invalid standalone shadow light identity", "GENERATED_PUNCTUAL_SHADOW_CONTRACT", { material: material.name, kind });
+    }
+    const matching = candidates.filter((light) => graphShadowPositionMatches(light.position, map.lightPosition)
+      && (kind !== "spot" || graphShadowDirectionMatches(light.direction, shadow!.spotLight!.lightDirection)));
+    if (matching.length > 1) {
+      throw new RenderDeviceError("Standalone shadow map cannot distinguish multiple matching shadow-casting lights", "GENERATED_PUNCTUAL_SHADOW_AMBIGUOUS", { material: material.name, kind });
+    }
+    if (matching.length === 0) continue;
+    const binding = map.texture;
+    if (!binding?.texture || !binding.validate().ok || binding.texture.dimension !== "2d" || binding.sampler.compare !== undefined
+      || (device.kind === "webgpu" && binding.texture.format === "depth24")) {
+      throw new RenderDeviceError("Invalid standalone shadow texture binding", "GENERATED_PUNCTUAL_SHADOW_CONTRACT", { material: material.name, kind });
+    }
+    selected[kind] = true;
+  }
+  return selected;
+}
+
+function graphShadowPositionMatches(a: readonly number[], b: readonly number[]): boolean {
+  // Both packed light vectors and map uniforms reach GLSL/WGSL as f32.
+  const distance = Math.hypot(Math.fround(a[0]!) - Math.fround(b[0]!), Math.fround(a[1]!) - Math.fround(b[1]!), Math.fround(a[2]!) - Math.fround(b[2]!));
+  return distance <= 0.000100001;
+}
+
+function graphShadowDirectionMatches(a: readonly number[], b: readonly number[]): boolean {
+  const av = a.map(Math.fround);
+  const bv = b.map(Math.fround);
+  const denominator = Math.max(Math.hypot(...av), 0.0001) * Math.max(Math.hypot(...bv), 0.0001);
+  // Give the CPU check a small conservative margin for f32 dot/normalize rounding.
+  return (av[0]! * bv[0]! + av[1]! * bv[1]! + av[2]! * bv[2]!) / denominator >= 0.999899;
+}
+
+/** Graph skin variants match each joint stream's numeric input type and use
+ * the common legacy palette binder. Unsupported layouts fail explicitly. */
+function graphSkinningShaderKey(material: Material, item: RenderItem, device: RenderDevice): string {
+  if (!(material instanceof PortableShaderMaterial) || !material.graphMaterial || !item.skinning) return material.shaderKey;
+  const attributes = item.geometry.vertexBuffer.format.attributes;
+  const hasSecondSet = attributes.some((attribute) => attribute.semantic === "joints1" || attribute.semantic === "weights1" || attribute.shaderName === "a_joints1" || attribute.shaderName === "a_weights1");
+  if (hasSecondSet && !item.skinning.extraInfluences) {
+    throw new RenderDeviceError("Graph skinning must enable all geometry influence sets", "GRAPH_SKINNING_INFLUENCE_MISMATCH", { material: material.name });
+  }
+  const semantics = item.skinning.extraInfluences ? ["joints", "weights", "joints1", "weights1"] : ["joints", "weights"];
+  const locations: Readonly<Record<string, number>> = { joints: 5, weights: 6, joints1: 8, weights1: 9 };
+  const jointKinds: ("float" | "uint" | "sint")[] = [];
+  for (const semantic of semantics) {
+    const attribute = attributes.find((candidate) => candidate.semantic === semantic || candidate.shaderName === `a_${semantic}`);
+    if (!attribute || attribute.components !== 4) {
+      throw new RenderDeviceError("Skinned shader graph geometry requires four-component joint and weight attributes", "GRAPH_SKINNING_GEOMETRY_UNSUPPORTED", { material: material.name, semantic });
+    }
+    if (attribute.shaderLocation !== locations[semantic]) {
+      throw new RenderDeviceError("Shader graph skinning attribute has an incompatible location", "GRAPH_SKINNING_LOCATION_UNSUPPORTED", { material: material.name, semantic, location: attribute.shaderLocation });
+    }
+    if (semantic.startsWith("joints") && attribute.normalized) {
+      throw new RenderDeviceError("Shader graph joint indices must not be normalized", "GRAPH_SKINNING_INTEGER_ATTRIBUTE_UNSUPPORTED", { material: material.name, semantic });
+    }
+    if (semantic.startsWith("joints")) {
+      if (device.kind === "webgpu" && attribute.type !== "float32" && !attribute.integer) {
+        throw new RenderDeviceError("WebGPU joint storage must use an integer shader input", "GRAPH_SKINNING_INTEGER_ATTRIBUTE_UNSUPPORTED", { material: material.name, semantic });
+      }
+      jointKinds.push(attribute.integer ? (attribute.type.startsWith("uint") ? "uint" : "sint") : "float");
+    } else if (attribute.integer || (device.kind === "webgpu" && attribute.type !== "float32" && !attribute.normalized)) {
+      throw new RenderDeviceError("Shader graph weights require float or normalized storage", "GRAPH_SKINNING_WEIGHT_ATTRIBUTE_UNSUPPORTED", { material: material.name, semantic });
+    }
+  }
+  const key = material.graphSkinningVariant(item.skinning.extraInfluences ? 8 : 4, jointKinds[0]!, jointKinds[1] ?? "float", "forward");
+  if (!key) throw new RenderDeviceError("Shader graph material has no compatible skinning variant", "GRAPH_SKINNING_UNSUPPORTED", { material: material.name });
+  return key;
+}
+
+/** Graph shadows are per-draw variants so inactive resources consume no slots. */
+function graphDrawShaderKey(material: Material, item: RenderItem, device: RenderDevice, shadow: ForwardShadowMapOptions | undefined, lights: readonly CollectedLight[], environment: EnvironmentLightingOptions | undefined, contactMaskScope?: ContactShadowMaskScope): string {
+  const base = graphSkinningShaderKey(material, item, device);
+  if (!(material instanceof PortableShaderMaterial) || material.graphLightingModel !== "metallic-roughness") return base;
+  let mask = 0;
+  if (item.receiveShadow !== false && shadow) {
+    const directional = lights.some((light) => light.kind === "directional" && light.castsShadow);
+    const cascadeCount = shadow.cascades?.length ?? 0;
+    if (directional && cascadeCount > 4) throw new RenderDeviceError("Graph shadow receivers support at most four cascades", "GRAPH_CASCADE_CONTRACT", { count: cascadeCount });
+    if (directional && cascadeCount > 0) {
+      if (shadow.cascades!.some((cascade) => cascade.shadowMap.strength !== 0)) mask |= 16 | ((cascadeCount - 1) << 5);
+    } else if (directional && shadow.strength !== 0) mask |= 1;
+    if (shadow.pointLight && shadow.pointLight.strength !== 0 && lights.some((light) => light.kind === "point" && light.castsShadow)) mask |= 2;
+    if (shadow.spotLight && shadow.spotLight.strength !== 0 && lights.some((light) => light.kind === "spot" && light.castsShadow)) mask |= 4;
+    if (shadow.localShadows && shadow.localShadows.strength !== 0 && lights.some((light) => (light as LocalShadowedLight).localShadowSlot !== undefined)) mask |= 8;
+  }
+  if (contactShadowLightIndex(contactMaskScope, item, lights) >= 0) mask |= 128;
+  const probes = prd02ItemProbeBindings(item, device);
+  const volume = prd02ItemIrradianceBindings(item, device);
+  const taggedProbes = prd02ItemProbeBindings(item);
+  const globalCube = graphGlobalEnvironmentCube(environment, taggedProbes ? globalEnvironmentItem(item, taggedProbes) : item);
+  const environmentMask = (probes ? 1 : 0) | (volume ? 2 : 0) | (globalCube ? 4 : 0);
+  const key = material.graphLightingVariant(base, mask, environmentMask);
+  if (!key) throw new RenderDeviceError("Shader graph has no compatible lighting variant", "GRAPH_LIGHTING_VARIANT_UNSUPPORTED", { material: material.name, mask, environmentMask });
+  return key;
+}
+
+function validateGraphGeometry(material: Material, item: RenderItem, device: RenderDevice): void {
+  if (device.kind !== "webgpu" || !(material instanceof PortableShaderMaterial) || !material.graphMaterial) return;
+  const locations: Readonly<Record<string, number>> = { a_position: 0, a_normal: 1, a_uv: 2, a_uv1: 7 };
+  for (const name of material.requiredAttributes) {
+    const location = locations[name];
+    if (location === undefined) continue;
+    const attribute = item.geometry.vertexBuffer.format.attributes.find((candidate) => candidate.shaderName === name || `a_${candidate.semantic}` === name);
+    if (!attribute || attribute.shaderLocation !== location) {
+      throw new RenderDeviceError("Shader graph geometry has an incompatible attribute location", "GRAPH_VERTEX_LOCATION_UNSUPPORTED", { material: material.name, attribute: name, location });
+    }
+  }
 }
 
 function supportsInstanceUniforms(shader: RenderShaderProgram): boolean {
@@ -1453,24 +3733,37 @@ function supportsInstanceAttributes(shader: RenderShaderProgram): boolean {
     INSTANCE_MATRIX_ATTRIBUTE_NAMES.every((name) => shader.reflection.attributes.has(name));
 }
 
-function renderStateForItem(renderState: RenderState, item: RenderItem): RenderState {
+function renderStateForItem(renderState: RenderState, item: RenderItem, usesGeometryMatrix: boolean): RenderState {
   if (renderState.cullMode === "none") return renderState;
-  const modelMatrix = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
-  if (!hasNegativeHandedness(modelMatrix)) return renderState;
+  if (!renderItemHasNegativeHandedness(item, usesGeometryMatrix)) return renderState;
   return {
     ...renderState,
     cullMode: renderState.cullMode === "back" ? "front" : "back"
   };
 }
 
-function instancedItemNeedsPerInstanceCullState(item: RenderItem): boolean {
+/** Winding follows model × geometry for a non-instanced draw. */
+export function renderItemHasNegativeHandedness(item: RenderItem, usesGeometryMatrix: boolean): boolean {
+  const model = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
+  const geometry = usesGeometryMatrix && item.geometryMatrix
+    ? toMat4Values(item.geometryMatrix, "geometryMatrix", item.label) : undefined;
+  return hasNegativeHandedness(geometry ? multiplyMat4(model, geometry) : model);
+}
+
+export function instancedItemNeedsPerInstanceCullState(item: RenderItem, usesGeometryMatrix: boolean): boolean {
   const source = validateInstanceTransformSource(item);
   const base = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
+  const geometry = usesGeometryMatrix && item.geometryMatrix
+    ? toMat4Values(item.geometryMatrix, "geometryMatrix", item.label) : undefined;
+  const baseNegative = hasNegativeHandedness(geometry ? multiplyMat4(base, geometry) : base);
   // Allocation-free: a 10,000-instance draw runs this every pass. Only the upper 3x3 of
   // `base * instance` feeds the handedness test, so build it from scalars (same sums as
   // `multiplyMat4`, rows 0..2 / columns 0..2) instead of two arrays per instance.
   for (let offset = 0; offset < source.length; offset += 16) {
-    if (instanceProductHasNegativeHandedness(base, source, offset)) return true;
+    const negative = geometry
+      ? hasNegativeHandedness(multiplyMat4(multiplyMat4(base, mat4FromArrayLike(source, offset)), geometry))
+      : instanceProductHasNegativeHandedness(base, source, offset);
+    if (negative || negative !== baseNegative) return true;
   }
   return false;
 }
@@ -1491,11 +3784,17 @@ function instanceProductHasNegativeHandedness(base: Mat4, source: ArrayLike<numb
   return Number.isFinite(determinant) && determinant < -1e-8;
 }
 
-function expandInstancedRenderItem(item: RenderItem): readonly RenderItem[] {
+function hasInstanceVertexStreams(geometry: Geometry): boolean {
+  return geometry.vertexBuffer.format.streams.some((stream) => stream.stepMode === "instance");
+}
+
+function expandInstancedRenderItem(item: RenderItem, cameraViewProjection?: Float32Array | readonly number[]): readonly RenderItem[] {
   const source = validateInstanceTransformSource(item);
   const baseModel = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
-  const baseModelViewProjection = toMat4Values(item.modelViewProjectionMatrix ?? baseModel, "modelViewProjectionMatrix", item.label);
-  const { instanceTransforms: _instanceTransforms, normalMatrix: _normalMatrix, ...baseItem } = item;
+  const baseModelViewProjection = item.modelViewProjectionMatrix
+    ? toMat4Values(item.modelViewProjectionMatrix, "modelViewProjectionMatrix", item.label)
+    : multiplyMat4(toMat4Values(cameraViewProjection ?? identityMatrix(), "cameraViewProjectionMatrix"), baseModel);
+  const { instanceTransforms: _instanceTransforms, instanceCount: _instanceCount, normalMatrix: _normalMatrix, ...baseItem } = item;
   const expanded: RenderItem[] = [];
   for (let offset = 0; offset < source.length; offset += 16) {
     const index = offset / 16;
@@ -1526,7 +3825,7 @@ function multiplyMat4(left: Mat4, right: Mat4): Mat4 {
   return out;
 }
 
-function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
+export function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
   let matrix: Mat4;
   try {
     matrix = transposeMat4(invertMat4(modelMatrix));
@@ -2298,13 +4597,19 @@ function applyWrinkleUniform(
 function applyTransformUniforms(
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  cameraViewProjection: Float32Array | readonly number[] | undefined,
+  graphMaterial: boolean
 ): void {
   const modelMatrix = shader.reflection.uniforms.has("u_modelMatrix") || shader.reflection.uniforms.has("u_normalMatrix")
     ? toMat4Uniform(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label)
     : undefined;
   if (item.modelViewProjectionMatrix && shader.reflection.uniforms.has("u_modelViewProjection")) {
     uniforms.set("u_modelViewProjection", toMat4Uniform(item.modelViewProjectionMatrix, "modelViewProjectionMatrix", item.label));
+  } else if (graphMaterial && shader.reflection.uniforms.has("u_modelViewProjection")) {
+    const camera = toMat4Values(cameraViewProjection ?? identityMatrix(), "cameraViewProjectionMatrix");
+    const model = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
+    uniforms.set("u_modelViewProjection", new Float32Array(multiplyMat4(camera, model)));
   }
   if (modelMatrix && shader.reflection.uniforms.has("u_modelMatrix")) {
     uniforms.set("u_modelMatrix", modelMatrix);
@@ -2529,7 +4834,7 @@ function getBaseMaterial(material: RenderMaterial): Material {
   return material instanceof MaterialInstance ? material.baseMaterial : material;
 }
 
-function sortForwardRenderItems(
+export function sortForwardRenderItems(
   items: readonly RenderItem[],
   cameraPosition: readonly [number, number, number] | undefined
 ): readonly RenderItem[] {
@@ -2537,14 +4842,14 @@ function sortForwardRenderItems(
     const queue = blendQueueForState(getBaseMaterial(item.material ?? new UnlitMaterial()).renderState);
     return {
       item,
-      bucket: queue !== "opaque" ? "transparent" : isTransmissionRenderItem(item) ? "transmission" : "opaque",
-      // threejs-parity L7/SG-09: three sorts on `object.renderOrder` first.
+      bucket: forwardItemBucket(item),
+      // renderOrder is primary within this queue; split frame phases still constrain it.
       renderOrder: item.renderOrder ?? 0,
-      depth: cameraPosition ? distanceSquaredFromCamera(item, cameraPosition) : 0,
+      depth: cameraPosition ? Math.sqrt(distanceSquaredFromCamera(item, cameraPosition)) : 0,
       pipelineKey: renderItemPipelineKey(item),
       batchKey: renderItemPipelineKey(item),
       blendRank: queue === "transparent-unordered" ? 1 : 0,
-      instanceCount: item.instanceTransforms ? instanceTransformCount(item) : 1
+      instanceCount: item.instanceTransforms ? instanceTransformCount(item) : item.instanceCount ?? 1
     };
   })).items;
 }
@@ -2554,22 +4859,32 @@ function isTransparentRenderItem(item: RenderItem): boolean {
   return blendStateIsTransparent(getBaseMaterial(material).renderState);
 }
 
-/** C-04 bucket an item lands in for the v2 frame-order split (§9.1). */
-export type ForwardBucket = "opaque" | "transmission" | "transparent";
+/** C-04 bucket an item lands in for sorting and the v2 frame-order split (§9.1). */
+export type ForwardBucket = RenderQueueBucket;
 
-/** Bucket one item the same way `sortForwardRenderItems` does. */
+/**
+ * Bucket one item the same way `sortForwardRenderItems` does. A non-blended,
+ * non-transmissive cutout uses its live `u_alphaCutoff`; shader-only discards
+ * without that metadata remain opaque for routing purposes.
+ */
 export function forwardItemBucket(item: RenderItem): ForwardBucket {
   const material = item.material ?? new UnlitMaterial();
-  const queue = blendQueueForState(getBaseMaterial(material).renderState);
+  const baseMaterial = getBaseMaterial(material);
+  const queue = blendQueueForState(baseMaterial.renderState);
   if (queue !== "opaque") return "transparent";
-  return isTransmissionRenderItem(item) ? "transmission" : "opaque";
+  // A masked transmissive material still needs the post-opaque capture; a
+  // blended transmissive material must remain in the transparent phase.
+  if (isTransmissionRenderItem(item)) return "transmission";
+  const cutoff = material.getParameter("u_alphaCutoff");
+  return typeof cutoff === "number" && cutoff > 0 ? "mask" : "opaque";
 }
 
 /**
- * §9.1 split: `opaque` feeds the opaque phase, `transmission` the transmissive
- * draw after contributor `transmission` passes, and `transparent` the
- * interleaved transparent phase (each item carries its view-space distance as
- * `sortDepth`, larger = farther, matching `TransparentQueueItem` semantics).
+ * §9.1 split: opaque and masked items feed the opaque phase; transmission
+ * draws after the backdrop capture, then transparent items are interleaved
+ * with contributors (`sortDepth` is larger for farther items). Each phase can
+ * honor renderOrder internally, but an order across phases cannot override
+ * these capture and depth dependencies.
  */
 export function splitForwardItems(
   items: readonly RenderItem[],
@@ -2577,43 +4892,42 @@ export function splitForwardItems(
 ): {
   readonly opaque: readonly RenderItem[];
   readonly transmission: readonly RenderItem[];
-  readonly transparent: readonly { readonly item: RenderItem; readonly sortDepth: number }[];
+  readonly transparent: readonly { readonly item: RenderItem; readonly sortDepth: number; readonly blendRank: number }[];
 } {
   const opaque: RenderItem[] = [];
   const transmission: RenderItem[] = [];
-  const transparent: { item: RenderItem; sortDepth: number }[] = [];
+  const transparent: RenderItem[] = [];
   for (const item of items) {
+    if (!hasDrawableInstances(item)) continue;
     const bucket = forwardItemBucket(item);
-    if (bucket === "opaque") {
+    if (bucket === "opaque" || bucket === "mask") {
       opaque.push(item);
     } else if (bucket === "transmission") {
       transmission.push(item);
     } else {
-      transparent.push({ item, sortDepth: cameraPosition ? Math.sqrt(distanceSquaredFromCamera(item, cameraPosition)) : 0 });
+      transparent.push(item);
     }
   }
-  // Transparents are drawn back-to-front (farther first), matching the queue sort.
-  // threejs-parity L7/SG-09: `renderOrder` remains the primary sort key.
-  transparent.sort((a, b) => {
-    const orderDelta = (a.item.renderOrder ?? 0) - (b.item.renderOrder ?? 0);
-    return orderDelta !== 0 ? orderDelta : b.sortDepth - a.sortDepth;
+  // Use the same ordering as each later ForwardPass, including the stable
+  // additive/multiply policy, so contributor boundaries cannot reorder a run.
+  const orderedTransparent = sortForwardRenderItems(transparent, cameraPosition).map((item) => {
+    const material = getBaseMaterial(item.material ?? new UnlitMaterial());
+    return {
+      item,
+      sortDepth: cameraPosition ? Math.sqrt(distanceSquaredFromCamera(item, cameraPosition)) : 0,
+      blendRank: blendQueueForState(material.renderState) === "transparent-unordered" ? 1 : 0
+    };
   });
-  return { opaque, transmission, transparent };
-}
-
-function materialNumericParameter(material: Material, name: string, fallback: number): number {
-  const value = material.getParameter(name);
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+  return { opaque, transmission, transparent: orderedTransparent };
 }
 
 function isTransmissionRenderItem(item: RenderItem): boolean {
   const material = item.material ?? new UnlitMaterial();
   const baseMaterial = getBaseMaterial(material);
-  if (baseMaterial.renderState.blend) return false;
-  const transmissionFactor = materialNumericParameter(baseMaterial, "u_transmissionFactor", 0);
-  const diffuseTransmissionFactor = materialNumericParameter(baseMaterial, "u_diffuseTransmissionFactor", 0);
-  const volumeThicknessFactor = materialNumericParameter(baseMaterial, "u_volumeThicknessFactor", 0);
-  return transmissionFactor > 0.001 || diffuseTransmissionFactor > 0.001 || volumeThicknessFactor > 0.001;
+  if (blendQueueForState(baseMaterial.renderState) !== "opaque") return false;
+  if (!hasLiveTransmission(material)) return false;
+  const flags = { values: {}, on: () => false };
+  return baseMaterial.programFeatures({ flags, tier: QUALITY_TIERS.high }).lighting === "lit";
 }
 
 function distanceSquaredFromCamera(item: RenderItem, cameraPosition: readonly [number, number, number]): number {

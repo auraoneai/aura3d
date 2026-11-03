@@ -40,6 +40,10 @@ export interface RenderQueueSortDiagnostics {
   readonly transparentBackToFront: boolean;
 }
 
+/**
+ * Sort one queue with renderOrder first. A renderer that partitions the queue
+ * into frame phases cannot honor an order that crosses those phase barriers.
+ */
 export function sortRenderQueueItems<T>(
   items: readonly RenderQueueSortItem<T>[],
   options: RenderQueueSortOptions = {}
@@ -65,7 +69,7 @@ export function sortRenderQueueItems<T>(
       if (rankDelta !== 0) return rankDelta;
       if (transparentBackToFront && (left.blendRank ?? 0) === 0) {
         const depthDelta = right.depth - left.depth;
-        if (Math.abs(depthDelta) > 1e-6) return depthDelta;
+        if (depthDelta !== 0) return depthDelta;
       }
       return left.index - right.index;
     }
@@ -77,12 +81,12 @@ export function sortRenderQueueItems<T>(
 
     if (opaqueFrontToBack) {
       const depthDelta = left.depth - right.depth;
-      if (Math.abs(depthDelta) > 1e-6) return depthDelta;
+      if (depthDelta !== 0) return depthDelta;
     }
 
-    if (!groupOpaqueByPipeline) {
+    if (!groupOpaqueByPipeline && opaqueFrontToBack) {
       const pipelineDelta = pipelineKey(left).localeCompare(pipelineKey(right));
-      if (pipelineDelta !== 0 && Math.abs(left.depth - right.depth) <= 1e-6) return pipelineDelta;
+      if (pipelineDelta !== 0 && left.depth === right.depth) return pipelineDelta;
     }
 
     return left.index - right.index;
@@ -112,8 +116,9 @@ export function sortRenderItems(items: readonly SortableRenderItem[]): SortableR
 
 function bucketRank(bucket: RenderQueueBucket): number {
   if (bucket === "opaque") return 0;
-  if (bucket === "transmission") return 1;
-  if (bucket === "mask") return 2;
+  // Masked depth/color must be available to the transmission backdrop.
+  if (bucket === "mask") return 1;
+  if (bucket === "transmission") return 2;
   return 3;
 }
 

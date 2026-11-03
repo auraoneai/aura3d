@@ -8,7 +8,7 @@
 // `a3d_prd02_contact_shadow` chunk — never to total colour.
 
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
-import type { RenderBuffer, RenderDevice, RenderTarget, RenderShaderProgram, UniformValue } from "../RenderDevice";
+import { RenderDeviceError, type RenderBuffer, type RenderDevice, type RenderTarget, type RenderShaderProgram, type ShaderSources, type UniformValue } from "../RenderDevice";
 import type { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
 import { Sampler } from "../Sampler";
@@ -17,6 +17,8 @@ import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import type { RenderItem } from "../ForwardPass";
 import { DepthPass, type DepthPassOptions } from "../DepthPass";
 import { VertexFormat } from "../VertexFormat";
+import { clearContactShadowMaskTexture, createContactShadowMaskTarget, setContactShadowMask } from "../forward/contactShadowMaskStore";
+import type { DepthConvention } from "../DepthConvention";
 
 export const CONTACT_MASK_BLACKBOARD_KEY = "prd02.contactShadowMask";
 
@@ -42,12 +44,13 @@ export interface ContactShadowPassInput {
     readonly near: number;
     readonly far: number;
     readonly orthographic?: boolean;
+    readonly depth?: DepthConvention;
   };
   /** C-07-IN-2: real scene depth when the C-01 prepass is provided. */
   readonly sceneDepth?: {
     readonly texture: Texture | null;
     readonly available: boolean;
-    readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean };
+    readonly linearize: { readonly near: number; readonly far: number; readonly orthographic: boolean; readonly depth?: DepthConvention };
   };
   /** Fallback casters for the lane's own half-res depth render (C-01 stub). */
   readonly casters?: readonly RenderItem[];
@@ -80,12 +83,89 @@ const MASK_FRAGMENT = /* glsl */ `#version 300 es
 precision highp float;
 in vec2 v_uv;
 layout(location = 0) out vec4 o_vis;
-${CONTACT_SHADOW_CHUNK_GLSL}
+${CONTACT_SHADOW_CHUNK_GLSL
+  .replace("float sceneZ = texture(u_prd02ContactDepth, uv).r;", "float sceneZ = texture(u_prd02ContactDepth, uv).r;\n  if (sceneZ >= 0.999999) return 1.0;")
+  .replace("float blockerZ = texture(u_prd02ContactDepth, suv).r;", "float blockerZ = texture(u_prd02ContactDepth, suv).r;\n    if (blockerZ >= 0.999999) continue;")}
 void main() { o_vis = vec4(a3d_contactShadow(v_uv)); }
 `;
 
-/** @internal Contact-mask program sources (GLSL validation in unit tests). */
-export const CONTACT_MASK_SHADER_SOURCES = { vertex: FULLSCREEN_VERT, fragment: MASK_FRAGMENT } as const;
+// WebGPU attachments, fragment positions and texture coordinates have a top-left
+// origin. World reconstruction and projection use the same OpenGL-style camera
+// matrix as the depth pass; depth samples are the remapped [0,1] raster values.
+const FULLSCREEN_VERT_WGSL = /* wgsl */ `
+// @aura3d-shader:prd02_contact_mask
+/* @aura3d-bindings */
+struct ContactVertex { @builtin(position) position: vec4<f32>, @location(0) uv: vec2<f32>, };
+@vertex fn vs_main(@location(0) position: vec2<f32>) -> ContactVertex {
+  var out: ContactVertex;
+  out.position = vec4<f32>(position, 0.0, 1.0);
+  out.uv = vec2<f32>(position.x * 0.5 + 0.5, 0.5 - position.y * 0.5);
+  return out;
+}
+`;
+
+const MASK_FRAGMENT_WGSL = /* wgsl */ `
+// @aura3d-shader:prd02_contact_mask
+/* @aura3d-bindings */
+fn contactDepth(uv: vec2<f32>) -> f32 {
+  let size = vec2<f32>(textureDimensions(u_prd02ContactDepthTexture));
+  let pixel = vec2<i32>(clamp(uv * size, vec2<f32>(0.0), size - vec2<f32>(1.0)));
+  return textureLoad(u_prd02ContactDepthTexture, pixel, 0);
+}
+fn contactWorld(uv: vec2<f32>, z: f32) -> vec3<f32> {
+  let clip = vec4<f32>(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, z * 2.0 - 1.0, 1.0);
+  let world = aura.u_prd02ContactInvViewProj * clip;
+  return world.xyz / world.w;
+}
+fn contactBehind(clip: vec4<f32>, p: vec3<f32>, blocker: vec3<f32>, uv: vec2<f32>) -> f32 {
+  if (aura.u_prd02ContactNearFar.z > 0.5) {
+    let viewDirection = normalize(contactWorld(uv, 1.0) - contactWorld(uv, 0.0));
+    return dot(p - blocker, viewDirection);
+  }
+  return clip.w - (aura.u_prd02ContactViewProj * vec4<f32>(blocker, 1.0)).w;
+}
+@fragment fn fs_main(@location(0) uv: vec2<f32>, @builtin(position) pixel: vec4<f32>) -> @location(0) vec4<f32> {
+  let sceneZ = contactDepth(uv);
+  if (sceneZ >= 0.999999) { return vec4<f32>(1.0); }
+  let pos = contactWorld(uv, sceneZ);
+  let rayLength = aura.u_prd02ContactParams.x;
+  let thickness = aura.u_prd02ContactParams.y;
+  let steps = max(aura.u_prd02ContactParams.z, 1.0);
+  let jitter = fract(52.9829189 * fract(0.06711056 * pixel.x + 0.00583715 * pixel.y)) * aura.u_prd02ContactParams.w;
+  var occluded = 0.0;
+  for (var i = 1; i <= 16; i++) {
+    if (f32(i) > steps) { break; }
+    let t = (f32(i) - jitter) / steps;
+    let p = pos + aura.u_prd02ContactSun * (t * rayLength);
+    let clip = aura.u_prd02ContactViewProj * vec4<f32>(p, 1.0);
+    if (clip.w <= 0.0) { continue; }
+    let ndc = clip.xyz / clip.w;
+    let sampleUv = vec2<f32>(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5);
+    if (any(sampleUv < vec2<f32>(0.0)) || any(sampleUv > vec2<f32>(1.0))) { continue; }
+    let blockerZ = contactDepth(sampleUv);
+    if (blockerZ >= 0.999999) { continue; }
+    let blocker = contactWorld(sampleUv, blockerZ);
+    let behind = contactBehind(clip, p, blocker, sampleUv);
+    if (behind > thickness && behind < rayLength * 2.0) { occluded = max(occluded, 1.0 - t); }
+  }
+  return vec4<f32>(1.0 - occluded);
+}
+`;
+
+/** @internal Paired sources are exposed for offline validation and device tests. */
+export const CONTACT_MASK_SHADER_SOURCES: ShaderSources = {
+  label: "a3d_prd02_contact_mask", marker: "@aura3d-shader:prd02_contact_mask",
+  vertex: FULLSCREEN_VERT, fragment: MASK_FRAGMENT,
+  webgpu: { vertex: FULLSCREEN_VERT_WGSL, fragment: MASK_FRAGMENT_WGSL },
+  portableBindings: [
+    { name: "u_prd02ContactInvViewProj", kind: "mat4" },
+    { name: "u_prd02ContactViewProj", kind: "mat4" },
+    { name: "u_prd02ContactSun", kind: "vec3" },
+    { name: "u_prd02ContactParams", kind: "vec4" },
+    { name: "u_prd02ContactNearFar", kind: "vec3" },
+    { name: "u_prd02ContactDepth", kind: "depth2d", required: true }
+  ]
+};
 
 export class ContactShadowPass extends BaseRenderPass {
   private mask: RenderTarget | null = null;
@@ -96,6 +176,9 @@ export class ContactShadowPass extends BaseRenderPass {
   private lastMask: Texture | null = null;
   private lastDepthSource: "scene" | "self" | "none" = "none";
   private executed = false;
+  private owner: RenderDevice | null = null;
+  private ownerGeneration: number | undefined;
+  private unsubscribeLoss: (() => void) | undefined;
 
   constructor(private input: ContactShadowPassInput) {
     super("prd02-contact-shadows", [MASK_LABEL], [MASK_LABEL]);
@@ -170,81 +253,160 @@ export class ContactShadowPass extends BaseRenderPass {
   }
 
   maskTexture(): Texture | null { return this.lastMask; }
+  maskTarget(): RenderTarget | null { return this.executed ? this.mask : null; }
   depthSource(): string { return this.lastDepthSource; }
   passExecuted(): boolean { return this.executed; }
 
-  execute(context: RenderPassContext): void {
-    const { device } = context;
-    const prevTarget = device.getRenderTarget?.() ?? null;
-    const w = Math.max(1, Math.floor(context.width / 2));
-    const h = Math.max(1, Math.floor(context.height / 2));
-    if (!this.mask || this.mask.width !== w || this.mask.height !== h) {
-      this.mask?.dispose();
-      this.mask = device.createRenderTarget({ width: w, height: h, format: "rgba8", label: MASK_LABEL });
-    }
-    let depthTex: Texture | null = null;
-    if (this.input.sceneDepth?.available && this.input.sceneDepth.texture) {
-      depthTex = this.input.sceneDepth.texture;
-      this.lastDepthSource = "scene";
-    } else if (this.depthPass) {
-      if (!this.ownDepth || this.ownDepth.width !== w || this.ownDepth.height !== h) {
-        this.ownDepth?.dispose();
-        this.ownDepth = device.createRenderTarget({ width: w, height: h, format: "rgba8", depth: "texture", label: OWN_DEPTH_LABEL });
-      }
-      device.setRenderTarget(this.ownDepth);
-      device.clear([0, 0, 0, 0]);
-      this.depthPass.execute(context);
-      depthTex = this.ownDepth.depthTexture ?? null;
-      this.lastDepthSource = "self";
-    } else {
-      this.lastDepthSource = "none";
-    }
+  private releaseResources(): void {
     this.lastMask = null;
     this.executed = false;
-    if (!depthTex) {
-      device.setRenderTarget(this.mask);
-      device.clear([1, 1, 1, 1]);
-      this.lastMask = this.mask.colorTexture;
-      device.setRenderTarget(prevTarget);
-      return;
+    this.lastDepthSource = "none";
+    const resources = [this.mask, this.ownDepth, this.program, this.triBuffer];
+    this.mask = null;
+    this.ownDepth = null;
+    this.program = null;
+    this.triBuffer = null;
+    const failures: unknown[] = [];
+    for (const resource of resources) {
+      if (!resource || resource.disposed) continue;
+      try { resource.dispose(); } catch (error) { failures.push(error); }
     }
-    this.program ??= device.createShaderProgram({
-      label: "a3d_prd02_contact_mask",
-      marker: "@aura3d-shader:prd02_contact_mask",
-      vertex: FULLSCREEN_VERT,
-      fragment: MASK_FRAGMENT,
-    });
-    this.triBuffer ??= device.createBuffer(
-      "vertex", 24, new Float32Array([-1, -1, 3, -1, -1, 3]));
+    if (failures.length) throw new AggregateError(failures, "Contact shadow resource disposal failed");
+  }
+
+  dispose(): void {
+    const owner = this.owner;
+    this.unsubscribeLoss?.();
+    this.unsubscribeLoss = undefined;
+    this.owner = null;
+    if (owner) clearContactShadowMaskTexture(owner, this.mask?.colorTexture ?? null);
+    this.releaseResources();
+  }
+
+  private prepareDevice(device: RenderDevice): void {
+    if (device.disposed || device.contextLost) throw new RenderDeviceError("Contact shadow device is unavailable", "CONTACT_SHADOW_DEVICE_UNAVAILABLE");
+    if (this.owner !== device || this.ownerGeneration !== device.generation) {
+      if (this.owner) clearContactShadowMaskTexture(this.owner, this.mask?.colorTexture ?? null);
+      this.unsubscribeLoss?.();
+      this.unsubscribeLoss = undefined;
+      this.releaseResources();
+      this.owner = device;
+      this.ownerGeneration = device.generation;
+      this.unsubscribeLoss = device.onDeviceLost?.(() => {
+        setContactShadowMask(device, undefined);
+        this.releaseResources();
+      });
+    }
+  }
+
+  private target(device: RenderDevice, current: RenderTarget | null, width: number, height: number, depth: boolean): RenderTarget {
+    if (current && !current.disposed && !current.colorTexture.disposed && current.width === width && current.height === height &&
+        (!depth || (current.depthTexture && !current.depthTexture.disposed))) return current;
+    const next = depth
+      ? device.createRenderTarget({ width, height, format: "rgba8", depth: "texture", label: OWN_DEPTH_LABEL })
+      : createContactShadowMaskTarget(device, width, height);
+    if (next.disposed || next.colorTexture.disposed || next.width !== width || next.height !== height ||
+        next.colorTexture.width !== width || next.colorTexture.height !== height || (next.sampleCount ?? 1) !== 1 ||
+        (depth && (!next.depthTexture || next.depthTexture.disposed || next.depthTexture.format !== "depth24" || next.depthTexture.dimension !== "2d"))) {
+      next.dispose();
+      throw new RenderDeviceError("Contact shadow target has invalid attachments", "CONTACT_SHADOW_TARGET_INVALID");
+    }
+    try { current?.dispose(); } catch (error) {
+      try { next.dispose(); } catch (cleanup) {
+        throw new AggregateError([error, cleanup], "Contact shadow target replacement failed");
+      }
+      throw error;
+    }
+    return next;
+  }
+
+  execute(context: RenderPassContext): void {
+    const { device } = context;
+    this.lastMask = null;
+    this.executed = false;
+    this.lastDepthSource = "none";
+    this.prepareDevice(device);
+    if (!device.getRenderTarget) throw new RenderDeviceError("Contact shadows require target state restoration", "CONTACT_SHADOW_STATE_UNAVAILABLE");
+    if (device.kind === "webgpu" && !device.drawChecked) throw new RenderDeviceError("WebGPU contact shadows require checked draw submission", "CONTACT_SHADOW_SUBMISSION_UNAVAILABLE");
+    if (![context.width, context.height].every((value) => Number.isSafeInteger(value) && value > 0)) throw new RenderDeviceError("Contact shadow dimensions must be positive integers", "CONTACT_SHADOW_SIZE_INVALID");
+    for (const convention of [this.input.camera.depth, this.input.sceneDepth?.available ? this.input.sceneDepth.linearize.depth : undefined]) {
+      if (convention && (convention.mode !== "standard" || convention.clipRange !== "minus-one-to-one")) {
+        throw new RenderDeviceError("Contact shadows require standard depth and a minus-one-to-one camera projection", "CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED");
+      }
+    }
     const o = this.input.options ?? {};
-    const steps = Math.min(16, Math.max(1, o.steps ?? 12));
+    if (![o.length ?? 0.25, o.thickness ?? 0.05, o.steps ?? 12, o.intensity ?? 1].every(Number.isFinite) ||
+        (o.length ?? 0.25) < 0 || (o.thickness ?? 0.05) < 0 || (o.steps ?? 12) < 1 || (o.intensity ?? 1) < 0 ||
+        !this.input.sunDirection.every(Number.isFinite) || Math.hypot(...this.input.sunDirection) === 0) {
+      throw new RenderDeviceError("Contact shadow options and light direction must be finite and valid", "CONTACT_SHADOW_INPUT_INVALID");
+    }
     const viewProjection = cameraViewProjection(this.input.camera);
-    const sun = normalize3([this.input.sunDirection[0], this.input.sunDirection[1], this.input.sunDirection[2]]);
-    device.setRenderTarget(this.mask);
-    device.draw({
-      label: "prd02-contact-shadow-mask",
-      topology: "triangles",
-      vertexBuffer: this.triBuffer,
-      vertexFormat: new VertexFormat([{ semantic: "position", components: 2, offset: 0 }], 8),
-      vertexCount: 3,
-      renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" },
-      shader: this.program,
-      uniforms: new Map<string, UniformValue>([
-        ["u_prd02ContactDepth", new TextureBinding({
-          name: "u_prd02ContactDepth",
-          texture: depthTex,
-          sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
-        })],
-        ["u_prd02ContactInvViewProj", invertMat4(viewProjection)],
-        ["u_prd02ContactViewProj", viewProjection],
-        ["u_prd02ContactSun", sun],
-        ["u_prd02ContactParams", [o.length ?? 0.25, o.thickness ?? 0.05, steps, 0.9]],
-        ["u_prd02ContactNearFar", [this.input.camera.near, this.input.camera.far, this.input.camera.orthographic ? 1 : 0]],
-      ]),
-    });
-    this.lastMask = this.mask.colorTexture;
-    this.executed = true;
-    device.setRenderTarget(prevTarget);
+    // Resolve the inverse before drawing any caster so a bad camera cannot
+    // leave a partly rendered depth frame behind and then publish it.
+    const invViewProjection = invertMat4(viewProjection);
+    const prevTarget = device.getRenderTarget();
+    const w = Math.max(1, Math.floor(context.width / 2));
+    const h = Math.max(1, Math.floor(context.height / 2));
+    try {
+      this.mask = this.target(device, this.mask, w, h, false);
+      let depthTex: Texture | null = null;
+      if (this.input.sceneDepth?.available && this.input.sceneDepth.texture) {
+        depthTex = this.input.sceneDepth.texture;
+        this.lastDepthSource = "scene";
+      } else if (this.depthPass) {
+        this.ownDepth = this.target(device, this.ownDepth, w, h, true);
+        device.setRenderTarget(this.ownDepth);
+        device.clear([0, 0, 0, 0]);
+        this.depthPass.execute({ device, width: w, height: h });
+        depthTex = this.ownDepth.depthTexture ?? null;
+        this.lastDepthSource = "self";
+      }
+      if (!depthTex) {
+        device.setRenderTarget(this.mask);
+        device.clear([1, 1, 1, 1]);
+        this.lastMask = this.mask.colorTexture;
+        return;
+      }
+      // WebGL also permits a color texture containing depth in its red channel;
+      // WebGPU's depth2d binding specifically requires a depth attachment.
+      if (depthTex.disposed || depthTex.dimension !== "2d" || (device.kind === "webgpu" && depthTex.format !== "depth24")) throw new RenderDeviceError("Contact shadows require a live compatible 2D depth texture", "CONTACT_SHADOW_DEPTH_INVALID");
+      this.program ??= device.createShaderProgram(CONTACT_MASK_SHADER_SOURCES);
+      this.triBuffer ??= device.createBuffer("vertex", 24, new Float32Array([-1, -1, 3, -1, -1, 3]));
+      const steps = Math.min(16, Math.max(1, o.steps ?? 12));
+      const sun = normalize3([this.input.sunDirection[0], this.input.sunDirection[1], this.input.sunDirection[2]]);
+      device.setRenderTarget(this.mask);
+      const command = {
+        label: "prd02-contact-shadow-mask",
+        topology: "triangles" as const,
+        vertexBuffer: this.triBuffer,
+        vertexFormat: new VertexFormat([{ semantic: "position", components: 2, offset: 0 }], 8),
+        vertexCount: 3,
+        renderState: { depthTest: false, depthWrite: false, cullMode: "none" as const, blend: false, depthCompare: "always" as const },
+        shader: this.program,
+        uniforms: new Map<string, UniformValue>([
+          ["u_prd02ContactDepth", new TextureBinding({
+            name: "u_prd02ContactDepth",
+            texture: depthTex,
+            sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
+          })],
+          ["u_prd02ContactInvViewProj", invViewProjection],
+          ["u_prd02ContactViewProj", viewProjection],
+          ["u_prd02ContactSun", sun],
+          ["u_prd02ContactParams", [o.length ?? 0.25, o.thickness ?? 0.05, steps, 0.9]],
+          ["u_prd02ContactNearFar", [this.input.camera.near, this.input.camera.far, this.input.camera.orthographic ? 1 : 0]],
+        ])
+      };
+      if (device.kind === "webgpu") device.drawChecked!(command);
+      else device.draw(command);
+      this.lastMask = this.mask.colorTexture;
+      this.executed = true;
+    } catch (error) {
+      this.lastMask = null;
+      this.executed = false;
+      throw error;
+    } finally {
+      device.setRenderTarget(prevTarget);
+    }
   }
 }
 

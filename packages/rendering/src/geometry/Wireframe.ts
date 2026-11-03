@@ -1,12 +1,3 @@
-/**
- * threejs-parity (§5.2, lane L2-06) — `WireframeGeometry` verbatim port.
- *
- * Unique triangle edges (exact-coordinate string hash, both directions
- * deduped) emitted in traversal order: indexed input walks the geometry
- * groups (a single implicit group when absent); non-indexed input walks
- * triangles in order. Output = line-segment vertex pairs.
- */
-
 import type { ParityMesh } from "./Support";
 
 export interface WireframeInput {
@@ -15,60 +6,48 @@ export interface WireframeInput {
   readonly groups?: readonly { readonly start: number; readonly count: number }[];
 }
 
+type Point = readonly [number, number, number];
+
+/**
+ * Produce one line segment per distinct triangle edge. Edge identity is based
+ * on exact coordinates, so coincident vertices at UV or material seams share
+ * a line. Indexed meshes can restrict traversal with groups; overlapping groups
+ * still emit any shared edge only once. Lines retain first-encounter order.
+ */
 export function wireframeParityMesh(input: WireframeInput): ParityMesh {
+  if (input.positions.length % 3 !== 0) throw new RangeError("Position data must contain complete 3D vertices.");
+  const vertexCount = input.positions.length / 3;
+  const cornerCount = input.indices?.length ?? vertexCount;
+  const read = (corner: number): Point => {
+    const index = input.indices ? input.indices[corner]! : corner;
+    if (!Number.isInteger(index) || index < 0 || index >= vertexCount) throw new RangeError("Wireframe index is outside the position buffer.");
+    const point: Point = [input.positions[index * 3]!, input.positions[index * 3 + 1]!, input.positions[index * 3 + 2]!];
+    if (!point.every(Number.isFinite)) throw new RangeError("Wireframe positions must be finite.");
+    return point;
+  };
+  const sections = input.indices && input.groups?.length
+    ? input.groups
+    : [{ start: 0, count: cornerCount }];
   const vertices: number[] = [];
-  const edges = new Set<string>();
-  const position = input.positions;
-
-  const isUniqueEdge = (sx: number, sy: number, sz: number, ex: number, ey: number, ez: number): boolean => {
-    const hash1 = `${sx},${sy},${sz}-${ex},${ey},${ez}`;
-    const hash2 = `${ex},${ey},${ez}-${sx},${sy},${sz}`;
-    if (edges.has(hash1) || edges.has(hash2)) {
-      return false;
+  const visited = new Set<string>();
+  for (const section of sections) {
+    if (!Number.isInteger(section.start) || !Number.isInteger(section.count) || section.start < 0 || section.count < 0 || section.count % 3 !== 0 || section.start + section.count > cornerCount) {
+      throw new RangeError("Wireframe groups must contain complete triangles inside the index buffer.");
     }
-    edges.add(hash1);
-    edges.add(hash2);
-    return true;
-  };
-
-  const pushEdge = (index1: number, index2: number): void => {
-    const sx = position[index1 * 3]!;
-    const sy = position[index1 * 3 + 1]!;
-    const sz = position[index1 * 3 + 2]!;
-    const ex = position[index2 * 3]!;
-    const ey = position[index2 * 3 + 1]!;
-    const ez = position[index2 * 3 + 2]!;
-    if (isUniqueEdge(sx, sy, sz, ex, ey, ez)) {
-      vertices.push(sx, sy, sz, ex, ey, ez);
-    }
-  };
-
-  const indices = input.indices;
-  if (indices) {
-    const groups = input.groups && input.groups.length > 0
-      ? input.groups
-      : [{ start: 0, count: indices.length, materialIndex: 0 }];
-    for (const group of groups) {
-      const groupStart = group.start;
-      const groupCount = group.count;
-      for (let i = groupStart, l = groupStart + groupCount; i < l; i += 3) {
-        for (let j = 0; j < 3; j += 1) {
-          const index1 = indices[i + j]!;
-          const index2 = indices[i + ((j + 1) % 3)]!;
-          pushEdge(index1, index2);
+    for (let i = section.start; i < section.start + section.count; i += 3) {
+      const corners = [read(i), read(i + 1), read(i + 2)] as const;
+      for (let side = 0; side < 3; side += 1) {
+        const a = corners[side]!;
+        const b = corners[(side + 1) % 3]!;
+        const aKey = a.join(",");
+        const bKey = b.join(",");
+        const key = aKey < bKey ? `${aKey}|${bKey}` : `${bKey}|${aKey}`;
+        if (!visited.has(key)) {
+          visited.add(key);
+          vertices.push(...a, ...b);
         }
       }
     }
-  } else {
-    const count = position.length / 9; // triangles = position.count / 3
-    for (let i = 0; i < count; i += 1) {
-      for (let j = 0; j < 3; j += 1) {
-        const index1 = 3 * i + j;
-        const index2 = 3 * i + ((j + 1) % 3);
-        pushEdge(index1, index2);
-      }
-    }
   }
-
   return { positions: vertices };
 }

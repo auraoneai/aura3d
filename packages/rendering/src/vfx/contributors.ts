@@ -39,7 +39,9 @@ import { contextViewProjection, skyDrawPassFor } from "../atmosphere/SkyBackgrou
 import { VolumetricFogPass, froxelGridFor, type VolumetricFogPassInput, type FroxelGridSpec } from "../atmosphere/VolumetricFogPass";
 import type { PackedFogUniforms } from "../atmosphere/HeightFog";
 import { SkyCaptureAdapter, type SkyCaptureAppLike } from "../atmosphere/SkyCaptureAdapter";
-import { ParticleGpuSim, particleGpuSimAvailable, type GpuSimSpec } from "./ParticleGpuSim";
+import { ParticleGpuSim, ParticleGpuSimInitializationError, particleGpuSimAvailable, type GpuSimSpec } from "./ParticleGpuSim";
+import { hasPrd07ManagedFrameContext, producePrd07ManagedFrame } from "./Prd07FrameState";
+import { prd07RendererContextSnapshot } from "./Prd07RendererBridge";
 
 /** §8.3 GPU sim request published per emitter whose sim lowered to "gpu". */
 export interface GpuSimRequest {
@@ -311,6 +313,11 @@ const skyContributor: FrameContributor = {
  * fog-volume segments on the blackboard for the prd07.sky pass and any
  * C-02 generator material that binds `a3d_prd07_fog`.
  */
+/** Only explicitly registered contexts opt in while renderer integration is staged. */
+function managedPrd07Collect(ctx: FrameContributorContext): boolean {
+  return hasPrd07ManagedFrameContext(ctx);
+}
+
 const fogContributor: FrameContributor = {
   id: "prd07.fog",
   owner: "prd07",
@@ -321,6 +328,29 @@ const fogContributor: FrameContributor = {
   // saw "no fog" and A3D_QR_VFX_FOG frames matched flags-off byte for byte.
   phases: ["collect"],
   collect: (items, ctx) => {
+    const managed = managedPrd07Collect(ctx);
+    if (managed) {
+      // All fog consumers share the already captured app revision. In
+      // particular, never call a live source getter while building the managed
+      // blackboard after asynchronous warmup.
+      const packet = producePrd07ManagedFrame(ctx);
+      const snapshot = prd07RendererContextSnapshot(ctx);
+      const fog = packet.fog;
+      if (fog) {
+        ctx.blackboard.set("prd07.fog", {
+          uniforms: fog.uniforms, volumes: fog.volumes, sunColor: fog.sunColor,
+          affectsBackground: snapshot?.fog?.affectsBackground !== false,
+          backgroundDistance: snapshot?.fog?.backgroundDistance ?? ctx.camera?.far ?? 1000
+        });
+      } else if (snapshot?.fogVolumes.length) {
+        const packed = packV2(resolvePrd07FogSpec(null), { fogColor: PRD07_FOG_DEFAULTS.fallbackColor });
+        ctx.blackboard.set("prd07.fog", {
+          uniforms: { ...packed, fogA: [0, 0, 0, 0], fogMode: 0 }, volumes: snapshot.fogVolumes,
+          sunColor: [1, 1, 1], affectsBackground: false, backgroundDistance: ctx.camera?.far ?? 1000
+        });
+      } else ctx.blackboard.delete("prd07.fog");
+      return items;
+    }
     const atmosphere = (ctx.source as Prd07FrameSource).atmosphere as {
       resolveFog?: (t: number) => Record<string, unknown> | null;
       fogVolumes?: () => readonly unknown[];
@@ -404,6 +434,18 @@ const fogContributor: FrameContributor = {
   passes: () => []
 };
 
+/** Produce a managed packet on wetness-only frames, without touching legacy state. */
+const wetnessContributor: FrameContributor = {
+  id: "prd07.wetness",
+  owner: "prd07",
+  flag: "A3D_QR_VFX",
+  phases: ["collect"],
+  collect: (items, ctx) => {
+    if (managedPrd07Collect(ctx)) producePrd07ManagedFrame(ctx);
+    return items;
+  }
+};
+
 /**
  * P3-T6 — prd07.environmentProbe: when the source carries a live atmosphere
  * (state + onSkyChanged) and no explicit environment, a per-device
@@ -452,8 +494,84 @@ const skyCaptureContributor: FrameContributor = {
  * Requires floatColorBuffer; producers gate on `ParticleGpuSim.isAvailable`
  * and keep the CPU emitter otherwise (PARTICLE_GPU_UNAVAILABLE).
  */
-/** Per-device ParticleGpuSim instances, keyed by emitter nodeId (P5-T1). */
-const gpuSims = new WeakMap<RenderDevice, Map<string, ParticleGpuSim>>();
+interface GpuSimScope {
+  simulations: Map<string, ParticleGpuSim>;
+  readonly pending: Set<ParticleGpuSim>;
+  collecting: boolean;
+  disposing: boolean;
+  released: boolean;
+  revision: number;
+}
+
+const gpuSims = new WeakMap<RenderDevice, WeakMap<object, GpuSimScope>>();
+const gpuSimDeviceHooks = new WeakSet<RenderDevice>();
+
+function gpuSimScopes(device: RenderDevice): WeakMap<object, GpuSimScope> {
+  let scopes = gpuSims.get(device);
+  if (!scopes) {
+    scopes = new WeakMap();
+    gpuSims.set(device, scopes);
+  }
+  return scopes;
+}
+
+function installGpuSimDeviceHook(device: RenderDevice): void {
+  if (!gpuSimDeviceHooks.has(device)) {
+    const originalDispose = device.dispose.bind(device);
+    let disposing = false;
+    device.dispose = (): void => {
+      if (disposing) return;
+      disposing = true;
+      try {
+        originalDispose();
+        // A failed device cleanup still needs the owner mappings for retry.
+        gpuSims.delete(device);
+      } finally {
+        disposing = false;
+      }
+    };
+    gpuSimDeviceHooks.add(device);
+  }
+}
+
+function retireGpuSim(scope: GpuSimScope, sim: ParticleGpuSim, errors: unknown[]): void {
+  try {
+    sim.dispose();
+    if (sim.cleanupPending) {
+      scope.pending.add(sim);
+      errors.push(new Error("Particle simulation cleanup is in progress"));
+    } else scope.pending.delete(sim);
+  } catch (error) {
+    if (sim.cleanupPending) scope.pending.add(sim);
+    else scope.pending.delete(sim);
+    errors.push(error);
+  }
+}
+
+export function disposePrd07GpuSimsForOwner(device: RenderDevice, owner: object): void {
+  const scopes = gpuSims.get(device);
+  const scope = scopes?.get(owner);
+  if (!scope || scope.disposing) return;
+  scope.disposing = true;
+  scope.released = true;
+  scope.revision += 1;
+  const simulations = new Set([...scope.simulations.values(), ...scope.pending]);
+  scope.simulations.clear();
+  scope.pending.clear();
+  const errors: unknown[] = [];
+  try {
+    for (const sim of simulations) retireGpuSim(scope, sim, errors);
+    // The collection may still return newly allocated resources after this
+    // callback. Keep its scope and tell the renderer to retry when it unwinds.
+    if (scope.collecting) errors.push(new Error("Particle simulation collection was interrupted by owner cleanup"));
+  } finally {
+    scope.disposing = false;
+    if (!scope.collecting && scope.simulations.size === 0 && scope.pending.size === 0 && scopes?.get(owner) === scope) {
+      scopes?.delete(owner);
+    }
+  }
+  if (errors.length) throw new AggregateError(errors, "Particle simulation owner cleanup failed");
+}
 
 const gpuSimContributor: FrameContributor = {
   id: "prd07.gpuSim",
@@ -463,25 +581,78 @@ const gpuSimContributor: FrameContributor = {
   collect: (items, ctx) => {
     const vfx = (ctx.source as Prd07FrameSource).vfx;
     const requests = vfx?.gpuSimFeed?.() ?? [];
+    const owner = ctx.postScopeId ?? ctx.device;
     if (requests.length > 0 && particleGpuSimAvailable(ctx.device)) {
-      const map = new Map<string, ParticleGpuSim>();
-      const entries: { sim: ParticleGpuSim; emitCount: number }[] = [];
-      for (const r of requests) {
-        const sim = gpuSims.get(ctx.device)?.get(r.nodeId) ?? new ParticleGpuSim(ctx.device, r.spec);
-        map.set(r.nodeId, sim);
-        entries.push({ sim, emitCount: r.emitCount });
+      const scopes = gpuSimScopes(ctx.device);
+      const scope: GpuSimScope = scopes.get(owner) ?? {
+        simulations: new Map(), pending: new Set(), collecting: false, disposing: false, released: false, revision: 0
+      };
+      if (!scopes.has(owner)) scopes.set(owner, scope);
+      if (scope.collecting || scope.disposing) throw new Error("Particle simulation owner is busy");
+      scope.collecting = true;
+      scope.released = false;
+      const revision = scope.revision;
+      const current = (): boolean => !scope.released && scope.revision === revision && scopes.get(owner) === scope;
+      const previous = scope.simulations;
+      const created = new Set<ParticleGpuSim>();
+      try {
+        const map = new Map<string, ParticleGpuSim>();
+        const entries: { sim: ParticleGpuSim; emitCount: number }[] = [];
+        const reused = new Set<ParticleGpuSim>();
+        try {
+          for (const r of requests) {
+            if (!current()) throw new Error("Particle simulation collection invalidated");
+            let sim = map.get(r.nodeId) ?? previous.get(r.nodeId);
+            if (!sim || sim.disposed) {
+              sim = new ParticleGpuSim(ctx.device, r.spec, ctx.flags);
+              created.add(sim);
+            } else if (!created.has(sim)) reused.add(sim);
+            if (!current()) throw new Error("Particle simulation collection invalidated");
+            map.set(r.nodeId, sim);
+            entries.push({ sim, emitCount: r.emitCount });
+          }
+          for (const sim of reused) {
+            sim.useFlags(ctx.flags);
+            if (!current()) throw new Error("Particle simulation collection invalidated");
+          }
+          scope.simulations = map;
+        } catch (error) {
+          const errors: unknown[] = [error];
+          if (error instanceof ParticleGpuSimInitializationError && error.simulation.cleanupPending) {
+            scope.pending.add(error.simulation);
+          }
+          for (const sim of created) retireGpuSim(scope, sim, errors);
+          if (errors.length > 1) throw new AggregateError(errors, "Particle simulation collection failed");
+          throw error;
+        }
+        const active = new Set(map.values());
+        const retiring = new Set([...scope.pending, ...previous.values()]);
+        const errors: unknown[] = [];
+        for (const sim of retiring) {
+          if (!active.has(sim)) retireGpuSim(scope, sim, errors);
+        }
+        if (errors.length) throw new AggregateError(errors, "Particle simulation retirement failed");
+        if (!current()) throw new Error("Particle simulation collection invalidated");
+        ctx.blackboard.set("prd07.gpuSims", entries);
+        for (const entry of entries) {
+          if (!current()) throw new Error("Particle simulation collection invalidated");
+          entry.sim.step(1 / 60, entry.emitCount, ctx.timeSeconds);
+        }
+      } finally {
+        scope.collecting = false;
+        // Install outside the simulation's device hook, after construction,
+        // so mappings are dropped only if the entire device cleanup succeeds.
+        installGpuSimDeviceHook(ctx.device);
+        if (scope.simulations.size === 0 && scope.pending.size === 0 && scopes.get(owner) === scope) {
+          scopes.delete(owner);
+        }
       }
-      gpuSims.set(ctx.device, map);
-      ctx.blackboard.set("prd07.gpuSims", entries);
     } else {
       // floatColorBuffer absent (PARTICLE_GPU_UNAVAILABLE) or no gpu emitters:
       // CPU emitter stays the only sim (§8.3 fallback).
       ctx.blackboard.set("prd07.gpuSims", []);
-      gpuSims.delete(ctx.device);
+      disposePrd07GpuSimsForOwner(ctx.device, owner);
     }
-    const sims = ctx.blackboard.get("prd07.gpuSims") as readonly { sim: { step(dt: number, emitCount: number, time: number): unknown }; emitCount: number }[] | undefined;
-    if (!sims) return items;
-    for (const entry of sims) entry.sim.step(1 / 60, entry.emitCount, ctx.timeSeconds);
     return items;
   },
   passes: () => []
@@ -644,7 +815,9 @@ const volumetricContributor: FrameContributor = {
     const fogEntry = ctx.flags.on("A3D_QR_VFX_FOG")
       ? (ctx.blackboard.get("prd07.fog") as { uniforms?: PackedFogUniforms; volumes?: readonly Prd07FogVolume[]; sunColor?: Vec3 } | undefined)
       : undefined;
-    const sky = ((ctx.source as Prd07FrameSource).atmosphere as { sky?: Record<string, unknown> | null } | undefined)?.sky ?? null;
+    const sky = managedPrd07Collect(ctx)
+      ? (prd07RendererContextSnapshot(ctx)?.skyForFog as Record<string, unknown> | null | undefined) ?? null
+      : ((ctx.source as Prd07FrameSource).atmosphere as { sky?: Record<string, unknown> | null } | undefined)?.sky ?? null;
     let sunDirection: Vec3 = [0, 1, 0];
     let sunColor: Vec3 = (fogEntry?.sunColor ?? [1, 1, 1]) as Vec3;
     // Without a sky, light the froxels with the scene's own key light and
@@ -700,7 +873,7 @@ const volumetricContributor: FrameContributor = {
 
 /** Idempotent lane registration (P1-T1): safe on repeated barrel imports. */
 export function registerPrd07Contributors(): void {
-  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, gpuSimContributor, skyCaptureContributor, fogContributor, skyContributor, decalsContributor, volumetricContributor]) {
+  for (const contributor of [particlesContributor, lightsContributor, ribbonContributor, beamContributor, meshContributor, gpuSimContributor, skyCaptureContributor, fogContributor, wetnessContributor, skyContributor, decalsContributor, volumetricContributor]) {
     try {
       registerFrameContributor(contributor);
     } catch (error) {

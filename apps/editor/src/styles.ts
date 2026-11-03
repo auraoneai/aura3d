@@ -1,47 +1,77 @@
+/**
+ * Local Whitney web cuts from the licensed font library's README.md
+ * (Hoefler & Co.; typography.com EULA).
+ * Source filenames under fonts/sans/Whitney: regular 24bda95d153a319704c33329f3ab84bb.woff2,
+ * medium cf4a8a10bbdf9b775fad41e0b9921c84.woff2, semibold f9e7047f6447547781512ec4b977b2ab.woff2.
+ */
 export function installEditorStyles(): void {
   const style = document.createElement("style");
   style.textContent = `
-    /* Editor shell chrome — light-first, Graphik (licensed, committed at
-       /public/fonts/graphik), Dense UI: 13px body, 12px floor, 32px controls,
-       34px hierarchy rows, weights 400/500 + 600 on the single topbar title.
-       The 3D viewport itself keeps a dark scene backdrop (content, not chrome). */
+    /* Whitney web cuts use the weights documented in the licensed font guide.
+       Dense editor UI: 13px body, 12px metadata, 32px controls, 34px rows. */
     @font-face {
-      font-family: "Graphik";
-      src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
+      font-family: "Whitney";
+      src: url("/fonts/whitney-regular.woff2") format("woff2");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
     @font-face {
-      font-family: "Graphik";
-      src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
-      font-weight: 400;
-      font-style: italic;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "Graphik";
-      src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
+      font-family: "Whitney";
+      src: url("/fonts/whitney-medium.woff2") format("woff2");
       font-weight: 500;
       font-style: normal;
       font-display: swap;
     }
     @font-face {
-      font-family: "Graphik";
-      src: url("/fonts/graphik/Graphik-Semibold-Web.woff2") format("woff2");
+      font-family: "Whitney";
+      src: url("/fonts/whitney-semibold.woff2") format("woff2");
       font-weight: 600;
       font-style: normal;
       font-display: swap;
     }
+    @font-face {
+      font-family: "Whitney Fallback";
+      src: local("Arial"), local("ArialMT"), local("Helvetica Neue"), local("Helvetica");
+      font-weight: 400 500;
+      font-style: normal;
+      size-adjust: 93.6%;
+      ascent-override: 102.6%;
+      descent-override: 25.6%;
+      line-gap-override: 0%;
+    }
+    @font-face {
+      font-family: "Whitney Fallback";
+      src: local("Arial Bold"), local("Arial-BoldMT"), local("Helvetica Neue Bold"), local("Helvetica Bold");
+      font-weight: 600;
+      font-style: normal;
+      size-adjust: 87.9%;
+      ascent-override: 109.2%;
+      descent-override: 27.3%;
+      line-gap-override: 0%;
+    }
     :root {
       color-scheme: light;
-      font-family: "Graphik", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-ui: "Whitney", "Whitney Fallback", sans-serif;
+      font-family: var(--font-ui);
       font-synthesis: none;
       font-size: 13px;
+      font-weight: 400;
+      line-height: 1.45;
       background: #f4f6f9;
       color: #1c2530;
     }
     * { box-sizing: border-box; }
+    strong, b { font-weight: 500; }
+    small { font-size: 12px; }
+    th {
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-caps: small-caps;
+      text-transform: lowercase;
+      text-align: left;
+    }
+    td, .metrics dd { font-variant-numeric: tabular-nums; }
     body { margin: 0; min-height: 100vh; background: #f4f6f9; }
     button, input, select, textarea {
       font: inherit;
@@ -55,11 +85,12 @@ export function installEditorStyles(): void {
     }
     button { cursor: pointer; font-weight: 500; }
     button:hover { border-color: #1f6feb; }
+    button[aria-disabled="true"] { cursor: not-allowed; opacity: 0.65; }
     button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
       outline: 2px solid #1f6feb;
       outline-offset: 1px;
     }
-    label { font-size: 12px; color: #566272; }
+    label { font-size: 12px; font-weight: 500; color: #566272; }
     .editor-topbar {
       height: 52px;
       display: flex;
@@ -69,7 +100,7 @@ export function installEditorStyles(): void {
       border-bottom: 1px solid #d8dde5;
       background: #ffffff;
     }
-    .editor-topbar strong { margin-right: auto; font-size: 15px; font-weight: 600; }
+    .editor-topbar strong { margin-right: auto; font-size: 17px; font-weight: 600; }
     .editor-topbar select { max-width: 150px; }
     .editor-layout {
       min-height: calc(100vh - 52px);
@@ -104,6 +135,12 @@ export function installEditorStyles(): void {
     }
     .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .toolbar select { min-width: 110px; }
+    .panel-feedback:not(:empty) { padding: 8px 10px; }
+    .panel-feedback[role="alert"] { color: #9b2233; }
+    .inspector-field-error { color: #9b2233; font-size: 12px; font-weight: 400; }
+    .hierarchy-parent { display: flex; align-items: end; gap: 8px; padding: 0 10px 10px; }
+    .hierarchy-parent label { flex: 1; min-width: 0; }
+    .hierarchy-parent select { width: 100%; }
     .hierarchy-list, .asset-list, .asset-tree, .hierarchy-search, fieldset, .metrics, .diagnostics-list, .plugin-list, .timeline-controls, .timeline-track-list, .material-editor, .console-list {
       padding: 10px;
     }

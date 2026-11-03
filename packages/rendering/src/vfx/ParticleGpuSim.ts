@@ -8,10 +8,11 @@
 import { Geometry } from "../Geometry";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
-import type { RenderDevice, RenderShaderProgram, RenderTarget } from "../RenderDevice";
+import type { RenderBuffer, RenderDevice, RenderShaderProgram, RenderTarget } from "../RenderDevice";
+import { resourceDisposalInProgress, resourceDisposalPending } from "../ResourceLifecycle";
 import type { Texture } from "../Texture";
 import type { DeviceProbe } from "../contracts/device";
-import { resourceRegistrySlot } from "../contracts/rendererFactory";
+import { resourceRegistrySlot, type ResourceRegistryLike } from "../contracts/rendererFactory";
 import type { QrFlags } from "../contracts";
 import { TextureBinding } from "../TextureBinding";
 import {
@@ -208,21 +209,121 @@ export function gpuSimCpuStep(
  * GPU driver
  * ------------------------------------------------------------------ */
 
-let fullscreen: Geometry | null = null;
-
 function fullscreenTriangle(): Geometry {
-  if (fullscreen) return fullscreen;
   const vertices = new VertexBuffer(VertexFormat.P3, 3);
   vertices.setAttribute(0, "position", [-1, -1, 0]);
   vertices.setAttribute(1, "position", [3, -1, 0]);
   vertices.setAttribute(2, "position", [-1, 3, 0]);
-  fullscreen = new Geometry(vertices, null, "triangles", { min: [-1, -1, 0], max: [3, 3, 0] });
-  return fullscreen;
+  return new Geometry(vertices, null, "triangles", { min: [-1, -1, 0], max: [3, 3, 0] });
+}
+
+interface DeviceSimulations {
+  readonly simulations: Set<ParticleGpuSim>;
+  disposing: boolean;
+  disposalStarted: boolean;
+  deviceDisposed: boolean;
+}
+
+const deviceSimulations = new WeakMap<RenderDevice, DeviceSimulations>();
+
+interface RetryableResource {
+  readonly disposed: boolean;
+  readonly [resourceDisposalPending]?: boolean;
+  readonly [resourceDisposalInProgress]?: boolean;
+  /** WebGPU targets expose their completion receipt separately. */
+  readonly nativeDisposalComplete?: boolean;
+  retryNativeRetirements?(): void;
+  dispose(): void;
+}
+
+function resourceReleased(resource: RetryableResource): boolean {
+  return resource.disposed && resource[resourceDisposalPending] !== true
+    && resource[resourceDisposalInProgress] !== true && resource.nativeDisposalComplete !== false;
+}
+
+function retainDeviceSimulation(device: RenderDevice, sim: ParticleGpuSim): void {
+  let state = deviceSimulations.get(device);
+  if (!state) {
+    state = { simulations: new Set(), disposing: false, disposalStarted: false, deviceDisposed: false };
+    const owned = state;
+    const originalDispose = device.dispose.bind(device);
+    let prototype: object | null = device;
+    let descriptor: PropertyDescriptor | undefined;
+    while (prototype && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(prototype, resourceDisposalPending);
+      prototype = Object.getPrototypeOf(prototype) as object | null;
+    }
+    let originalPendingValue: unknown = descriptor && "value" in descriptor ? descriptor.value : undefined;
+    const originalPendingStatus = (): unknown => descriptor?.get
+      ? descriptor.get.call(device)
+      : originalPendingValue;
+    const originalPending = (): boolean => originalPendingStatus() === true;
+    const ownPending = Object.getOwnPropertyDescriptor(device, resourceDisposalPending);
+    if (!ownPending || ownPending.configurable) {
+      // Compose with native and lane owners in either installation order.
+      // A parent lifecycle must retain the device while any one needs retry.
+      Object.defineProperty(device, resourceDisposalPending, {
+        configurable: true,
+        enumerable: ownPending?.enumerable ?? false,
+        get: () => (owned.disposalStarted &&
+          (owned.disposing || !owned.deviceDisposed || owned.simulations.size > 0)) || originalPending(),
+        ...(descriptor?.set
+          ? { set: (value: unknown) => descriptor!.set!.call(device, value) }
+          : descriptor && "value" in descriptor && descriptor.writable
+            ? { set: (value: unknown) => { originalPendingValue = value; } }
+            : {})
+      });
+    }
+    device.dispose = (): void => {
+      if (owned.disposing) return;
+      owned.disposalStarted = true;
+      owned.disposing = true;
+      const errors: unknown[] = [];
+      try {
+        for (const entry of [...owned.simulations]) {
+          try {
+            entry.dispose();
+            if (entry.cleanupPending) errors.push(new Error("Particle simulation cleanup is in progress"));
+          } catch (error) { errors.push(error); }
+        }
+        try {
+          if (!owned.deviceDisposed || originalPending()) {
+            originalDispose();
+            owned.deviceDisposed = !originalPending();
+          }
+        } catch (error) {
+          // A closed device may still have native or lane-owned work pending.
+          // Conversely, don't repeat teardown that completed before reporting.
+          // WebGPU currently has retryable teardown but no device-level
+          // completion signal. A thrown close must remain owned until its
+          // idempotent disposer succeeds, even if `disposed` is already true.
+          try {
+            const status = originalPendingStatus();
+            owned.deviceDisposed = device.disposed && status !== true && (device.kind !== "webgpu" || status === false);
+          }
+          catch { owned.deviceDisposed = false; }
+          errors.push(error);
+        }
+      } finally {
+        owned.disposing = false;
+      }
+      if (errors.length) throw new AggregateError(errors, "Particle simulation device cleanup failed");
+    };
+    deviceSimulations.set(device, state);
+  }
+  state.simulations.add(sim);
 }
 
 /** True when the device can render to rgba32f (EXT_color_buffer_float, C-28). */
 export function particleGpuSimAvailable(device: RenderDevice): boolean {
   return device.probe?.floatColorBuffer === true;
+}
+
+/** Carries a partially constructed simulation whose failed cleanup still needs an owner. */
+export class ParticleGpuSimInitializationError extends AggregateError {
+  constructor(error: unknown, cleanup: unknown, readonly simulation: ParticleGpuSim) {
+    super([error, cleanup], "Particle simulation initialization failed");
+  }
 }
 
 export class ParticleGpuSim {
@@ -236,6 +337,29 @@ export class ParticleGpuSim {
   private frame = 0;
   private posProgram: RenderShaderProgram | null = null;
   private velProgram: RenderShaderProgram | null = null;
+  private geometry: Geometry | null = null;
+  private needsClear = false;
+  private retired = false;
+  private disposing = false;
+  private retiringResources = false;
+  private allocating = false;
+  private stepping = false;
+  private uploadingGeometry: Geometry | null = null;
+  private deferredRetirement = false;
+  private activeOperations = 0;
+  private resourceEpoch = 0;
+  private resourceGeneration: number | undefined;
+  private registry: ResourceRegistryLike | null = null;
+  private registryFactory: (() => ResourceRegistryLike) | null = null;
+  private offDeviceLost: (() => void) | null = null;
+  private readonly pendingRegistries = new Set<ResourceRegistryLike>();
+  private readonly registriesInFlight = new Set<ResourceRegistryLike>();
+  private changingRegistry = false;
+  private readonly pendingTargets = new Set<RenderTarget>();
+  private readonly pendingTargetBindings = new Set<RenderTarget>();
+  private readonly pendingPrograms = new Set<RenderShaderProgram>();
+  private readonly pendingGeometries = new Set<Geometry>();
+  private readonly pendingBuffers = new Set<RenderBuffer>();
 
   constructor(
     private readonly device: RenderDevice,
@@ -245,10 +369,28 @@ export class ParticleGpuSim {
     this.spec = spec;
     this.width = spec.stateWidth ?? Math.max(1, Math.ceil(Math.sqrt(spec.capacity)));
     this.height = Math.ceil(spec.capacity / this.width);
-    this.allocate();
-    // C-29 — rebuild the state textures on device restore.
-    const registryFactory = flags ? resourceRegistrySlot.get(flags) : null;
-    registryFactory?.().register(this, { kind: "prd07.gpuSim", rebuild: () => this.allocate() });
+    if (device.disposed || deviceSimulations.get(device)?.disposalStarted) {
+      throw new Error("Particle simulation device is disposed");
+    }
+    // Retain before allocation: even an interrupted constructor can leave a
+    // failed resource behind for an owner or the device to retry.
+    retainDeviceSimulation(device, this);
+    this.activeOperations += 1;
+    try {
+      this.offDeviceLost = device.onDeviceLost?.(() => {
+        if (!this.retired) this.retireResources();
+      }) ?? null;
+      this.allocate();
+      this.useFlags(flags);
+    } catch (error) {
+      try { this.dispose(); } catch (cleanup) {
+        throw new ParticleGpuSimInitializationError(error, cleanup, this);
+      }
+      throw error;
+    } finally {
+      this.activeOperations -= 1;
+      this.forgetDeviceIfClean();
+    }
   }
 
   /** Capability check per P5-T1: false → caller keeps the CPU emitter. */
@@ -256,21 +398,257 @@ export class ParticleGpuSim {
     return probe?.floatColorBuffer === true;
   }
 
-  private allocate(): void {
-    const desc = { width: this.width, height: this.height, format: "rgba32f" as const, label: "prd07.gpuSim" };
-    this.pos = [this.device.createRenderTarget(desc), this.device.createRenderTarget({ ...desc, label: "prd07.gpuSim.pos" })];
-    this.vel = [this.device.createRenderTarget(desc), this.device.createRenderTarget({ ...desc, label: "prd07.gpuSim.vel" })];
-    // Dead state: age = +∞ so every slot reads past u_lifetimeMax.
-    const prev = this.device.getRenderTarget?.() ?? null;
-    for (const target of [...this.pos, ...this.vel]) {
-      this.device.setRenderTarget(target);
-      this.device.clearRenderTarget?.([0, 0, 0, 1e9]);
+  get disposed(): boolean {
+    return this.retired;
+  }
+
+  get [resourceDisposalPending](): boolean {
+    return this.retired && this.cleanupPending;
+  }
+
+  /** Retirement is immediate, but failed or in-flight cleanup can need a retry. */
+  get cleanupPending(): boolean {
+    return !this.retired || this.disposing || this.retiringResources || this.deferredRetirement || this.activeOperations > 0 ||
+      this.registry !== null || this.offDeviceLost !== null || this.pendingRegistries.size > 0 ||
+      this.pos !== null || this.vel !== null || this.posProgram !== null || this.velProgram !== null ||
+      this.geometry !== null || this.pendingTargets.size > 0 || this.pendingTargetBindings.size > 0 ||
+      this.pendingPrograms.size > 0 || this.pendingGeometries.size > 0 || this.pendingBuffers.size > 0;
+  }
+
+  private forgetDeviceIfClean(): void {
+    const simulations = deviceSimulations.get(this.device)?.simulations;
+    if (!this.cleanupPending) simulations?.delete(this);
+    else if (this.retired) simulations?.add(this);
+  }
+
+  private unregisterRegistry(registry: ResourceRegistryLike): void {
+    if (this.registriesInFlight.has(registry)) return;
+    this.registriesInFlight.add(registry);
+    try {
+      registry.unregister(this);
+      if (this.registry === registry) this.registry = null;
+      this.pendingRegistries.delete(registry);
+    } finally {
+      this.registriesInFlight.delete(registry);
     }
-    this.device.setRenderTarget(prev);
+  }
+
+  useFlags(flags?: QrFlags): void {
+    if (this.retired) throw new Error("ParticleGpuSim is disposed");
+    if (this.changingRegistry) throw new Error("Particle simulation registration is in progress");
+    this.changingRegistry = true;
+    this.activeOperations += 1;
+    try {
+      const factory = flags ? resourceRegistrySlot.get(flags) : null;
+      if (factory === this.registryFactory) return;
+      const next = factory?.() ?? null;
+      if (next === this.registry) {
+        this.registryFactory = factory;
+        return;
+      }
+      if (next) {
+        // A callback captured from an uncommitted or superseded registry must
+        // never rebuild the current simulation.
+        const descriptor = {
+          kind: "prd07.gpuSim", device: this.device,
+          rebuild: () => { if (this.registry === next) this.allocate(); }
+        };
+        this.pendingRegistries.add(next);
+        this.registriesInFlight.add(next);
+        try {
+          next.register(this, descriptor);
+        } catch (error) {
+          this.registriesInFlight.delete(next);
+          try { this.unregisterRegistry(next); } catch (cleanup) {
+            throw new AggregateError([error, cleanup], "Particle simulation registration failed");
+          }
+          throw error;
+        } finally {
+          this.registriesInFlight.delete(next);
+        }
+      }
+      try {
+        if (this.retired) throw new Error("ParticleGpuSim is disposed");
+        if (this.registry) this.unregisterRegistry(this.registry);
+        if (this.retired) throw new Error("ParticleGpuSim is disposed");
+      } catch (error) {
+        if (next) {
+          // Registration may have completed after a reentrant disposal.
+          this.pendingRegistries.add(next);
+          try { this.unregisterRegistry(next); } catch (cleanup) {
+            throw new AggregateError([error, cleanup], "Particle simulation registration change failed");
+          }
+        }
+        throw error;
+      }
+      this.registry = next;
+      if (next) this.pendingRegistries.delete(next);
+      this.registryFactory = factory;
+    } finally {
+      this.changingRegistry = false;
+      this.activeOperations -= 1;
+      this.forgetDeviceIfClean();
+    }
+  }
+
+  private resourcesCurrent(epoch: number, generation: number | undefined): boolean {
+    return !this.retired && !this.device.disposed && !this.device.contextLost &&
+      !deviceSimulations.get(this.device)?.disposalStarted && !this.deferredRetirement &&
+      this.resourceEpoch === epoch && this.device.generation === generation;
+  }
+
+  private allocate(): void {
+    if (this.retired) return;
+    if (this.allocating || this.retiringResources) throw new Error("Particle simulation allocation is already in progress");
+    this.allocating = true;
+    this.activeOperations += 1;
+    try {
+      this.retireResources();
+      if (this.deferredRetirement) throw new Error("Particle simulation resource cleanup is in progress");
+      if (this.retired) return;
+      this.read = 0;
+      this.head = 0;
+      this.frame = 0;
+      const desc = { width: this.width, height: this.height, format: "rgba32f" as const, label: "prd07.gpuSim" };
+      const epoch = this.resourceEpoch;
+      const generation = this.device.generation;
+      const current = (): boolean => this.resourcesCurrent(epoch, generation);
+      const targets: RenderTarget[] = [];
+      const errors: unknown[] = [];
+      try {
+        for (const descriptor of [desc, { ...desc, label: "prd07.gpuSim.pos" }, desc, { ...desc, label: "prd07.gpuSim.vel" }]) {
+          if (!current()) break;
+          targets.push(this.device.createRenderTarget(descriptor));
+        }
+      } catch (error) {
+        errors.push(error);
+      }
+      if (errors.length || targets.length !== 4 || !current()) {
+        if (!errors.length && !this.retired) errors.push(new Error("Particle simulation allocation invalidated"));
+        this.queueTargets(targets);
+        this.releaseTargetBinding(errors);
+        for (const target of new Set(targets)) this.releaseResource(this.pendingTargets, target, errors);
+        if (errors.length > 1) throw new AggregateError(errors, "Particle simulation allocation failed");
+        if (errors.length) throw errors[0];
+        return;
+      }
+      this.pos = [targets[0]!, targets[1]!];
+      this.vel = [targets[2]!, targets[3]!];
+      this.resourceGeneration = generation;
+      this.needsClear = true;
+    } finally {
+      this.allocating = false;
+      this.activeOperations -= 1;
+      this.forgetDeviceIfClean();
+    }
+  }
+
+  private initializeTargets(): void {
+    if (!this.needsClear || !this.pos || !this.vel) return;
+    const bound = this.device.getRenderTarget?.() ?? null;
+    const previous = bound?.disposed ? null : bound;
+    try {
+      for (const target of [...this.pos, ...this.vel]) {
+        this.device.setRenderTarget(target);
+        if (this.device.clearRenderTarget) this.device.clearRenderTarget([0, 0, 0, 1e9]);
+        else this.device.clear([0, 0, 0, 1e9]);
+      }
+    } finally {
+      if (!this.device.disposed && !this.device.contextLost) this.device.setRenderTarget(previous?.disposed ? null : previous);
+    }
+    this.needsClear = false;
+  }
+
+  private queueTargets(targets: readonly RenderTarget[]): void {
+    for (const target of targets) {
+      this.pendingTargets.add(target);
+      this.pendingTargetBindings.add(target);
+    }
+  }
+
+  private releaseResource<T extends RetryableResource>(
+    pending: Set<T>, resource: T, errors: unknown[]
+  ): void {
+    let released = false;
+    try {
+      if (!resourceReleased(resource) && resource[resourceDisposalInProgress] !== true) {
+        if (resource.disposed && resource.nativeDisposalComplete === true && resource.retryNativeRetirements) {
+          resource.retryNativeRetirements();
+        } else {
+          resource.dispose();
+        }
+      }
+      released = resourceReleased(resource);
+      if (!released) throw new Error("Particle simulation resource cleanup is in progress");
+    } catch (error) {
+      // A closed resource may still have native cleanup pending; a completed
+      // resource that reports an error must not be disposed a second time.
+      try { released = resourceReleased(resource); } catch { /* retain it */ }
+      errors.push(error);
+    }
+    if (released) pending.delete(resource);
+  }
+
+  private releaseTargetBinding(errors: unknown[]): void {
+    if (this.pendingTargetBindings.size === 0) return;
+    try {
+      if (!this.device.disposed && !this.device.contextLost) {
+        const current = this.device.getRenderTarget?.();
+        if (current && this.pendingTargetBindings.has(current)) this.device.setRenderTarget(null);
+      }
+      this.pendingTargetBindings.clear();
+    } catch (error) { errors.push(error); }
+  }
+
+  private retireResources(deferGeometry: Geometry | null = null): void {
+    if (this.retiringResources) return;
+    if (this.uploadingGeometry) {
+      // A synchronous createBuffer callback can dispose the sim before the
+      // upload receives its buffer. Closing Geometry here would make that
+      // callback throw, orphaning the allocation before VertexBuffer sees it.
+      this.deferredRetirement = true;
+      this.resourceEpoch += 1;
+      return;
+    }
+    this.deferredRetirement = false;
+    this.retiringResources = true;
+    this.resourceEpoch += 1;
+    const targets = [...(this.pos ?? []), ...(this.vel ?? [])];
+    const programs = [this.posProgram, this.velProgram];
+    const geometry = this.geometry;
+    this.pos = null;
+    this.vel = null;
+    this.posProgram = null;
+    this.velProgram = null;
+    this.geometry = null;
+    this.resourceGeneration = undefined;
+    this.needsClear = false;
+    const errors: unknown[] = [];
+    this.queueTargets(targets);
+    for (const program of programs) if (program) this.pendingPrograms.add(program);
+    if (geometry) this.pendingGeometries.add(geometry);
+    try {
+      this.releaseTargetBinding(errors);
+      for (const target of [...this.pendingTargets]) this.releaseResource(this.pendingTargets, target, errors);
+      for (const program of [...this.pendingPrograms]) this.releaseResource(this.pendingPrograms, program, errors);
+      for (const entry of [...this.pendingGeometries]) {
+        if (entry !== deferGeometry) this.releaseResource(this.pendingGeometries, entry, errors);
+      }
+      for (const buffer of [...this.pendingBuffers]) this.releaseResource(this.pendingBuffers, buffer, errors);
+    } finally {
+      this.retiringResources = false;
+      this.forgetDeviceIfClean();
+    }
+    if (!errors.length && (this.pendingTargets.size || this.pendingTargetBindings.size ||
+      this.pendingPrograms.size || [...this.pendingGeometries].some((entry) => entry !== deferGeometry) || this.pendingBuffers.size)) {
+      errors.push(new Error("Particle simulation resource cleanup is incomplete"));
+    }
+    if (errors.length) throw new AggregateError(errors, "Particle simulation resource cleanup failed");
   }
 
   get state(): ParticleGpuSimState | null {
-    if (!this.pos || !this.vel) return null;
+    if (!this.pos || !this.vel || this.retired || this.deferredRetirement || this.device.disposed || this.device.contextLost ||
+      this.resourceGeneration !== this.device.generation) return null;
     return {
       posTexture: this.pos[this.read].colorTexture,
       velTexture: this.vel[this.read].colorTexture,
@@ -287,12 +665,23 @@ export class ParticleGpuSim {
   private program(kind: "pos" | "vel"): RenderShaderProgram {
     if (kind === "pos" && this.posProgram) return this.posProgram;
     if (kind === "vel" && this.velProgram) return this.velProgram;
+    const epoch = this.resourceEpoch;
+    const generation = this.device.generation;
+    if (!this.resourcesCurrent(epoch, generation)) throw new Error("Particle simulation program allocation invalidated");
     const program = this.device.createShaderProgram({
       label: `prd07.gpuSim.${kind}`,
       vertex: gpuSimVertexSource(),
       fragment: kind === "pos" ? gpuSimPositionFragmentSource() : gpuSimVelocityFragmentSource(),
       marker: PRD07_GPU_SIM_MARKER
     });
+    if (!this.resourcesCurrent(epoch, generation)) {
+      const error = new Error("Particle simulation program allocation invalidated");
+      const errors: unknown[] = [error];
+      this.pendingPrograms.add(program);
+      this.releaseResource(this.pendingPrograms, program, errors);
+      if (errors.length > 1) throw new AggregateError(errors, "Particle simulation program cleanup failed");
+      throw error;
+    }
     if (kind === "pos") this.posProgram = program;
     else this.velProgram = program;
     return program;
@@ -338,42 +727,128 @@ export class ParticleGpuSim {
 
   /** One §8.3 step: pos pass then vel pass, then ping-pong swap. */
   step(dt: number, emitCount = 0, time = 0): ParticleGpuSimState {
-    if (!this.pos || !this.vel) throw new Error("ParticleGpuSim not allocated");
-    const geometry = fullscreenTriangle();
-    const uniforms = this.uniforms(dt, emitCount, time);
-    const write = 1 - this.read;
-    // T0-34: restore the caller's bound target, never clobber to null.
-    const prevSim = this.device.getRenderTarget?.() ?? null;
-    for (const [kind, target] of [
-      ["pos", this.pos[write]],
-      ["vel", this.vel[write]]
-    ] as const) {
-      this.device.setRenderTarget(target);
-      this.device.draw({
-        label: `prd07.gpuSim.${kind}`,
-        topology: "triangles",
-        vertexBuffer: geometry.vertexBuffer.upload(this.device),
-        vertexFormat: geometry.vertexBuffer.format,
-        vertexCount: 3,
-        shader: this.program(kind),
-        uniforms,
-        renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" }
-      });
+    if (this.stepping) throw new Error("Particle simulation step is already in progress");
+    this.stepping = true;
+    this.activeOperations += 1;
+    try {
+      if ((!this.pos || !this.vel || this.resourceGeneration !== this.device.generation) && !this.retired) this.allocate();
+      if (!this.pos || !this.vel) throw new Error("ParticleGpuSim not allocated");
+      const epoch = this.resourceEpoch;
+      const generation = this.device.generation;
+      const current = (): boolean => this.resourcesCurrent(epoch, generation);
+      this.initializeTargets();
+      if (!current()) throw new Error("Particle simulation step invalidated");
+      const geometry = this.geometry ??= fullscreenTriangle();
+      const uniforms = this.uniforms(dt, emitCount, time);
+      const write = 1 - this.read;
+      // T0-34: restore the caller's bound target, never clobber to null.
+      const bound = this.device.getRenderTarget?.() ?? null;
+      const prevSim = bound?.disposed ? null : bound;
+      try {
+        for (const [kind, target] of [
+          ["pos", this.pos[write]],
+          ["vel", this.vel[write]]
+        ] as const) {
+          if (!current()) throw new Error("Particle simulation step invalidated");
+          this.device.setRenderTarget(target);
+          if (!current()) throw new Error("Particle simulation step invalidated");
+          let buffer: RenderBuffer;
+          this.uploadingGeometry = geometry;
+          try {
+            buffer = geometry.vertexBuffer.upload(this.device);
+          } catch (error) {
+            this.uploadingGeometry = null;
+            if (this.deferredRetirement) {
+              // Upload may already have attempted (and failed) buffer cleanup.
+              // Retire the other resources now, but leave Geometry as the
+              // owner of that buffer until the next explicit cleanup pass.
+              try {
+                if (this.retired) this.disposeWithDeferredGeometry(geometry);
+                else this.retireResources(geometry);
+              } catch (cleanup) {
+                throw new AggregateError([error, cleanup], "Particle simulation buffer cleanup failed");
+              }
+            }
+            throw error;
+          } finally {
+            this.uploadingGeometry = null;
+          }
+          if (!current()) {
+            const error = new Error("Particle simulation step invalidated");
+            const errors: unknown[] = [error];
+            if (this.deferredRetirement) {
+              try {
+                if (this.retired) this.disposeWithDeferredGeometry(null);
+                else this.retireResources();
+              } catch (cleanup) { errors.push(cleanup); }
+            } else {
+              this.pendingBuffers.add(buffer);
+              this.releaseResource(this.pendingBuffers, buffer, errors);
+            }
+            if (errors.length > 1) throw new AggregateError(errors, "Particle simulation buffer cleanup failed");
+            throw error;
+          }
+          const shader = this.program(kind);
+          this.device.draw({
+            label: `prd07.gpuSim.${kind}`,
+            topology: "triangles",
+            vertexBuffer: buffer,
+            vertexFormat: geometry.vertexBuffer.format,
+            vertexCount: 3,
+            shader,
+            uniforms,
+            renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" }
+          });
+          if (!current()) throw new Error("Particle simulation step invalidated");
+        }
+      } finally {
+        if (!this.device.disposed && !this.device.contextLost) this.device.setRenderTarget(prevSim?.disposed ? null : prevSim);
+      }
+      if (!current()) throw new Error("Particle simulation step invalidated");
+      this.read = write;
+      this.head = (this.head + Math.max(0, emitCount)) % this.spec.capacity;
+      this.frame += 1;
+      return this.state!;
+    } finally {
+      this.stepping = false;
+      this.activeOperations -= 1;
+      this.forgetDeviceIfClean();
     }
-    this.device.setRenderTarget(prevSim);
-    this.read = write;
-    this.head = (this.head + Math.max(0, emitCount)) % this.spec.capacity;
-    this.frame += 1;
-    return this.state!;
   }
 
   dispose(): void {
-    for (const t of [...(this.pos ?? []), ...(this.vel ?? [])]) t.dispose();
-    this.pos = null;
-    this.vel = null;
-    this.posProgram?.dispose();
-    this.velProgram?.dispose();
-    this.posProgram = null;
-    this.velProgram = null;
+    this.disposeWithDeferredGeometry(null);
+  }
+
+  private disposeWithDeferredGeometry(deferGeometry: Geometry | null): void {
+    if (this.disposing || (this.retired && !this.cleanupPending)) return;
+    this.retired = true;
+    if (this.uploadingGeometry) {
+      this.deferredRetirement = true;
+      this.resourceEpoch += 1;
+      return;
+    }
+    this.disposing = true;
+    this.registryFactory = null;
+    const errors: unknown[] = [];
+    try {
+      const registries = new Set(this.pendingRegistries);
+      if (this.registry) registries.add(this.registry);
+      for (const registry of registries) {
+        try { this.unregisterRegistry(registry); } catch (error) { errors.push(error); }
+      }
+      const offDeviceLost = this.offDeviceLost;
+      if (offDeviceLost) {
+        try {
+          offDeviceLost();
+          if (this.offDeviceLost === offDeviceLost) this.offDeviceLost = null;
+        } catch (error) { errors.push(error); }
+      }
+      try { this.retireResources(deferGeometry); } catch (error) { errors.push(error); }
+    } finally {
+      this.disposing = false;
+      this.forgetDeviceIfClean();
+    }
+    if (errors.length) throw new AggregateError(errors, "Particle simulation disposal failed");
   }
 }

@@ -1,8 +1,8 @@
 /**
  * `renderer/InterleavedTransparentPass.ts` (PRD-01 §9.1 "transparent", C-01) —
  * the v2 transparent phase: forward transparents and contributor
- * `TransparentQueueItem`s drawn in one sequence merged by `sortDepth`
- * (larger = farther; `order` breaks contributor ties), rather than the
+ * `TransparentQueueItem`s drawn in one sequence merged by `renderOrder`,
+ * then `sortDepth` (larger = farther; `order` breaks contributor ties), rather than the
  * contributor queue running as a block after the engine transparents.
  * Consecutive engine items group into a single `ForwardPass` draw run so the
  * merge costs nothing when no contributor emits queue items.
@@ -15,6 +15,8 @@ import type { FrameContributorContext, TransparentQueueItem } from "../contracts
 export interface TransparentEngineItem {
   readonly item: RenderItem;
   readonly sortDepth: number;
+  /** Forward queue policy: additive/multiply follow the sorted group. */
+  readonly blendRank?: number;
 }
 
 interface DrawSegment {
@@ -26,7 +28,8 @@ export function mergeTransparentSegments(
   engineItems: readonly TransparentEngineItem[],
   queues: readonly TransparentQueueItem[]
 ): readonly DrawSegment[] {
-  const queue = [...queues].sort((a, b) => (b.sortDepth - a.sortDepth) || ((a.order ?? 0) - (b.order ?? 0)));
+  const queue = [...queues].sort((a, b) => ((a.renderOrder ?? 0) - (b.renderOrder ?? 0))
+    || (b.sortDepth - a.sortDepth) || ((a.order ?? 0) - (b.order ?? 0)));
   const segments: DrawSegment[] = [];
   let run: RenderItem[] = [];
   let qi = 0;
@@ -36,8 +39,10 @@ export function mergeTransparentSegments(
       run = [];
     }
   };
-  for (const { item, sortDepth } of engineItems) {
-    while (qi < queue.length && (queue[qi]?.sortDepth ?? 0) >= sortDepth) {
+  for (const { item, sortDepth, blendRank } of engineItems) {
+    while (qi < queue.length && ((queue[qi]!.renderOrder ?? 0) < (item.renderOrder ?? 0)
+      || ((queue[qi]!.renderOrder ?? 0) === (item.renderOrder ?? 0)
+        && ((blendRank ?? 0) > 0 || queue[qi]!.sortDepth >= sortDepth)))) {
       flush();
       segments.push({ queue: queue[qi] });
       qi += 1;

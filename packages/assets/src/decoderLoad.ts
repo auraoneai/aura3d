@@ -1,3 +1,5 @@
+import { redactAssetMessage } from "./AssetLoader.js";
+
 /**
  * Decoder load fail-closed helpers (05-S3S4 / T0-21 part 2).
  *
@@ -21,6 +23,15 @@ export class AssetDecoderUnavailable extends Error {
 
 /** Shared bound on decoder module loads (script, wasm fetch, emscripten init). */
 export const DECODER_LOAD_TIMEOUT_MS = 30_000;
+
+/** An Emscripten abort callback must settle even for hostile thrown values. */
+export function decoderAbortReason(reason: unknown): string {
+  try {
+    return redactAssetMessage(String(reason).slice(0, 2048));
+  } catch {
+    return "[unavailable]";
+  }
+}
 
 /**
  * Rejects with `Error` after `ms` when `promise` has not settled. Both outcome

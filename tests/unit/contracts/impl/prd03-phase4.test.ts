@@ -10,8 +10,7 @@ import {
   VelocityHistory,
   bindVelocityUniforms,
   postVelocityCoverage,
-  setVelocityUniformBinder,
-  velocityHistorySlot
+  setVelocityUniformBinder
 } from "../../../../packages/rendering/src/forward/Velocity";
 import {
   velocityFeature,
@@ -65,13 +64,16 @@ describe("PRD-03 Phase 4 — TemporalHistory flag-on (C-14 matrices, no re-draw)
     device.endFrame(); owner.dispose(); device.dispose();
   });
 
-  it("flag-on accepts skinned/instanced geometry — velocity coverage replaces the throw", () => {
+  it("flag-on accepts skinned/instanced items while reporting unsupported deformation motion", () => {
     setRendererQrFlags(POST_ON);
     const device = new MockRenderDevice();
     const owner = new TemporalHistory();
     device.beginFrame(16, 16);
-    const skinned = { ...rigidItem("s"), skinning: { joints: [{} as never] } } as never;
-    expect(() => owner.prepare(device, 16, 16, [skinned], identityMat4(), {})).not.toThrow();
+    const skinned = { ...rigidItem("s"), skinning: { jointCount: 1, matrices: Float32Array.from(identityMat4()) } };
+    const instanced = { ...rigidItem("i"), instanceTransforms: Float32Array.from(identityMat4()) };
+    const bindings = owner.prepare(device, 16, 16, [skinned, instanced], identityMat4(), {});
+    expect(bindings.renderItems).toHaveLength(2);
+    expect(bindings.v2!.unsupportedMotion).toEqual(expect.arrayContaining(["skinning-motion", "instance-motion"]));
     device.endFrame(); owner.dispose(); device.dispose();
   });
 
@@ -82,8 +84,8 @@ describe("PRD-03 Phase 4 — TemporalHistory flag-on (C-14 matrices, no re-draw)
     device.beginFrame(16, 16);
     owner.prepare(device, 16, 16, [rigidItem("a")], identityMat4(), {});
     expect(device.drawCommands.length).toBeGreaterThan(0); // ForwardPass re-draw
-    const skinned = { ...rigidItem("s"), skinning: { joints: [{} as never] } } as never;
-    expect(() => owner.prepare(device, 16, 16, [skinned], identityMat4(), {})).toThrow(/TEMPORAL_UNSUPPORTED_GEOMETRY|stable unique labels/);
+    const skinned = { ...rigidItem("s"), skinning: { jointCount: 1, matrices: Float32Array.from(identityMat4()) } };
+    expect(() => owner.prepare(device, 16, 16, [skinned], identityMat4(), {})).toThrow(/stable unique objects/);
     device.endFrame(); owner.dispose(); device.dispose();
   });
 
@@ -105,19 +107,20 @@ describe("PRD-03 Phase 4 — TemporalHistory flag-on (C-14 matrices, no re-draw)
 describe("PRD-03 Phase 4 — C-14 binder coverage + rigid prev-matrix cache", () => {
   it("binds camera + previous-model matrices only after a prepared frame; coverage counts movers", () => {
     const history = new VelocityHistory();
-    history.reset("scene-swap"); // coverage/prev-item state is module-level — clear leftovers
+    history.reset("scene-swap");
     const uniforms = new Map<string, unknown>();
     const item = rigidItem("mover");
-    // No cameraMatrices prepared (reset) → the armed binder is inert.
+    // An item without a view-owned draw context leaves the binder inert.
     bindVelocityUniforms?.(item as never, uniforms as never);
     expect(uniforms.size).toBe(0);
 
     history.prepare(Float32Array.from(identityMat4()), [0, 0]);
-    bindVelocityUniforms?.(item as never, uniforms as never);
+    const prepared = history.prepareItem(item as never, true);
+    bindVelocityUniforms?.(prepared, uniforms as never);
     expect(uniforms.get("u_previousViewProjection")).toBeInstanceOf(Float32Array);
     expect(uniforms.get("u_unjitteredViewProjection")).toBeInstanceOf(Float32Array);
     expect(uniforms.get("u_previousModel")).toBeInstanceOf(Float32Array); // seeds to current
-    let c = postVelocityCoverage();
+    let c = postVelocityCoverage(prepared);
     expect(c.items).toBe(1);
     expect(c.withVelocity).toBe(0); // first frame: no baseline yet
     expect(c.moving).toBe(1); // no baseline = uncovered motion (conservative)
@@ -126,12 +129,13 @@ describe("PRD-03 Phase 4 — C-14 binder coverage + rigid prev-matrix cache", ()
     // Frame 2, item moved → mover WITH history.
     item.modelMatrix[12] = 0.5;
     history.prepare(Float32Array.from(identityMat4()), [0, 0]);
-    bindVelocityUniforms?.(item as never, new Map() as never);
-    c = postVelocityCoverage();
+    const moved = history.prepareItem(item as never, true);
+    bindVelocityUniforms?.(moved, new Map() as never);
+    c = postVelocityCoverage(moved);
     expect(c.moving).toBe(1);
     expect(c.movingWithHistory).toBe(1);
     history.reset("camera-cut");
-    expect(postVelocityCoverage().items).toBe(0);
+    expect(postVelocityCoverage(moved).items).toBe(0);
   });
 
   it("static items stop counting as movers once baselined", () => {
@@ -139,10 +143,11 @@ describe("PRD-03 Phase 4 — C-14 binder coverage + rigid prev-matrix cache", ()
     history.reset("scene-swap");
     const item = rigidItem("static");
     history.prepare(Float32Array.from(identityMat4()), [0, 0]);
-    bindVelocityUniforms?.(item as never, new Map() as never);
+    bindVelocityUniforms?.(history.prepareItem(item as never, true), new Map() as never);
     history.prepare(Float32Array.from(identityMat4()), [0, 0]);
-    bindVelocityUniforms?.(item as never, new Map() as never);
-    const c = postVelocityCoverage();
+    const current = history.prepareItem(item as never, true);
+    bindVelocityUniforms?.(current, new Map() as never);
+    const c = postVelocityCoverage(current);
     expect(c.items).toBe(1);
     expect(c.withVelocity).toBe(1);
     expect(c.moving).toBe(0);
@@ -244,15 +249,25 @@ describe("PRD-03 Phase 4 — engine stamps + AA coverage gate", () => {
 describe("PRD-03 Phase 4 — TemporalHistory reset reaches the C-14 history", () => {
   it("TemporalHistory.reset() invalidates the camera-level velocity history (flag-on)", () => {
     setRendererQrFlags(POST_ON);
-    const history = velocityHistorySlot.get(POST_ON).history;
-    history.prepare(Float32Array.from(identityMat4()), [0, 0]);
-    history.prepare(Float32Array.from(identityMat4()), [0, 0]); // armed prev
+    const device = new MockRenderDevice();
     const owner = new TemporalHistory();
+    const previous = Float32Array.from(identityMat4()); previous[12] = 1;
+    const current = Float32Array.from(identityMat4()); current[12] = 2;
+    const afterReset = Float32Array.from(identityMat4()); afterReset[12] = 3;
+    device.beginFrame(16, 16);
+    owner.prepare(device, 16, 16, [], previous, { sceneKey: "reset", frameId: 1 });
+    owner.commit(undefined, 1);
+    const beforeReset = owner.prepare(device, 16, 16, [], current, { sceneKey: "reset", frameId: 2 });
+    expect(beforeReset.v2!.previous).toEqual(previous);
+    expect(beforeReset.v2!.unjittered).toEqual(current);
+    owner.commit(undefined, 2);
     owner.reset();
-    const cam = history.prepare(Float32Array.from(identityMat4()), [0, 0]);
-    // After reset the "previous" VP reseeds to current — no stale reprojection.
-    expect(Array.from(cam.previous)).toEqual(Array.from(cam.unjittered));
+    const reseeded = owner.prepare(device, 16, 16, [], afterReset, { sceneKey: "reset", frameId: 3 });
+    expect(reseeded.v2!.previous).toEqual(afterReset);
+    expect(reseeded.v2!.previous).not.toEqual(current);
     setRendererQrFlags(FLAGS_OFF);
+    device.endFrame();
     owner.dispose();
+    device.dispose();
   });
 });

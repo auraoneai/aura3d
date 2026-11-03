@@ -11,7 +11,7 @@
 
 interface GameTestStepper {
   step(dt?: number): unknown;
-  firstPresentedFrame(): Promise<number>;
+  firstPresentedFrame(options?: { readonly signal?: AbortSignal }): Promise<number>;
   readonly evidence?: { frame?: number };
 }
 
@@ -39,6 +39,24 @@ function overlayOpacityNow(): number {
   return Number.isFinite(opacity) ? opacity : 0;
 }
 
+function isPresentationCancellation(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const item = error as { readonly name?: unknown; readonly code?: unknown };
+  return item.name === "AbortError" || item.code === "A3D_GAME_RUNTIME_DISPOSED";
+}
+
+/** Preserve the visibility of unexpected errors in this fire-and-forget hook. */
+function reportUnexpectedPresentationError(error: unknown): void {
+  const report = (globalThis as typeof globalThis & { reportError?: (error: unknown) => void }).reportError;
+  if (typeof report === "function") {
+    report.call(globalThis, error);
+  } else {
+    // Older runtimes do not expose reportError. Surface the failure instead of
+    // silently treating it as an expected disposal cancellation.
+    queueMicrotask(() => { throw error; });
+  }
+}
+
 /**
  * Install the hook. `stepper` is the mounted `createGameApp` runtime (its
  * `step(dt)` advances the loop, renders, and fires the frame callbacks the
@@ -59,8 +77,12 @@ export function installGameTestHook(args: {
   const armPresentLog = () => {
     if (!isActive()) return;
     void stepper.firstPresentedFrame().then((frame) => {
+      if (!isActive()) return;
       presentLog.push({ frame, overlayOpacity: overlayOpacityNow(), sceneId: getSceneId() });
       armPresentLog();
+    }).catch((error: unknown) => {
+      if (!isActive() && isPresentationCancellation(error)) return;
+      reportUnexpectedPresentationError(error);
     });
   };
   armPresentLog();
@@ -68,11 +90,19 @@ export function installGameTestHook(args: {
   const hook: GameTestHook = {
     presentLog,
     async stepFrames(n: number, dt = 1 / 60): Promise<void> {
-      const presented = stepper.firstPresentedFrame();
-      for (let i = 0; i < n; i += 1) stepper.step(dt);
-      // `step()` resolves presented waiters synchronously after its render;
-      // awaiting the waiter still covers runtimes that defer presentation.
-      await presented;
+      const controller = new AbortController();
+      const presented = stepper.firstPresentedFrame({ signal: controller.signal });
+      try {
+        for (let i = 0; i < n; i += 1) stepper.step(dt);
+        // `step()` resolves presented waiters synchronously after its render;
+        // awaiting the waiter still covers runtimes that defer presentation.
+        await presented;
+      } finally {
+        controller.abort();
+        // If stepping itself throws, the cancelled waiter can reject later.
+        // Its rejection is secondary to the already-propagated step error.
+        void presented.catch(() => {});
+      }
     }
   };
   window.__AURA3D_GAME_TEST__ = hook;

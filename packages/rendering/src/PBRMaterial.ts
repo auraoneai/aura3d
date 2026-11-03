@@ -1,14 +1,98 @@
 import type { MaterialFeatureContext } from "./contracts/materialLobes";
-import { Material, type RenderState } from "./Material";
-import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
+import type { UniformValue } from "./RenderDevice";
+import { legacyPhysicalDescriptor, physicalFeatureSet, withLivePhysicalMapFeatures } from "./materials/PhysicalFeatures";
 import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
+import { DEFAULT_PBR_SHADER_NAME } from "./ShaderLibraryCore";
 
-export const DEFAULT_PBR_SHADER_NAME = "aura3d/pbr-direct";
-export const DEFAULT_PBR_SHADER_MARKER = "@aura3d-shader:pbr-direct";
+export { DEFAULT_PBR_SHADER_NAME, DEFAULT_PBR_SHADER_MARKER } from "./ShaderLibraryCore";
 
-export interface PBRMaterialOptions {
+/** Optional linear scalar maps shared by the legacy physical material families. */
+export interface PBRSurfaceDetailOptions {
+  readonly diffuseRoughness?: number;
+  readonly retroreflection?: number;
+  readonly diffuseRoughnessTexture?: TextureBinding;
+  readonly diffuseRoughnessTextureTexCoord?: number;
+  readonly bumpFactor?: number;
+  readonly bumpTexture?: TextureBinding;
+  readonly bumpTextureTexCoord?: number;
+}
+
+/**
+ * Both maps are linear red-channel data. Transform and sampler state travel
+ * with the binding; separate uniforms expose them to shader variants.
+ * Missing samplers stay absent so materials without maps do not allocate or
+ * validate unused textures. A shader declaring them needs a backend fallback.
+ */
+export function pbrSurfaceDetailParameters(options: PBRSurfaceDetailOptions): Record<string, UniformValue> {
+  validateUnit(options.diffuseRoughness ?? 0, "diffuseRoughness");
+  validateUnit(options.retroreflection ?? 0, "retroreflection");
+  const bumpFactor = options.bumpFactor ?? 0;
+  if (!Number.isFinite(bumpFactor) || bumpFactor < 0 || bumpFactor > 100) {
+    throw new RangeError("PBR bumpFactor must be finite and within [0, 100]");
+  }
+  const diffuseCoord = detailTexCoord(options.diffuseRoughnessTextureTexCoord, "diffuseRoughness");
+  const bumpCoord = detailTexCoord(options.bumpTextureTexCoord, "bump");
+  return {
+    u_diffuseRoughness: options.diffuseRoughness ?? 0,
+    u_retroreflection: options.retroreflection ?? 0,
+    ...detailTextureParameters("u_diffuseRoughnessTexture", options.diffuseRoughnessTexture, diffuseCoord),
+    u_bumpFactor: bumpFactor,
+    ...detailTextureParameters("u_bumpTexture", options.bumpTexture, bumpCoord)
+  };
+}
+
+function detailTexCoord(value: number | undefined, label: string): number {
+  if (value !== undefined && value !== 0 && value !== 1) {
+    throw new RangeError(`PBR ${label} texture texCoord must be 0 or 1`);
+  }
+  return value ?? 0;
+}
+
+function detailTextureParameters(name: string, source: TextureBinding | undefined, texCoord: number): Record<string, UniformValue> {
+  const binding = source ? new TextureBinding({
+    name,
+    texture: source.texture,
+    sampler: source.sampler,
+    required: source.required,
+    ready: source.ready,
+    expectedColorSpace: "linear",
+    expectedDimension: "2d",
+    transform: { offset: source.offset, scale: source.scale, rotation: source.rotation }
+  }) : undefined;
+  return {
+    ...(binding ? { [name]: binding } : {}),
+    [`${name}Enabled`]: binding?.texture ? 1 : 0,
+    [`${name}Offset`]: binding?.offset ?? [0, 0],
+    [`${name}Scale`]: binding?.scale ?? [1, 1],
+    [`${name}Rotation`]: binding?.rotation ?? 0,
+    [`${name}TexCoord`]: texCoord
+  };
+}
+
+// Optional until each legacy/generated shader variant declares these inputs.
+// This lets old shaders continue drawing while newer variants consume them.
+export const PBR_SURFACE_DETAIL_UNIFORM_SCHEMA: readonly MaterialUniformDescriptor[] = [
+  { name: "u_diffuseRoughness", kind: "float", required: false },
+  { name: "u_retroreflection", kind: "float", required: false },
+  { name: "u_diffuseRoughnessTexture", kind: "texture2d", required: false },
+  { name: "u_diffuseRoughnessTextureEnabled", kind: "float", required: false },
+  { name: "u_diffuseRoughnessTextureOffset", kind: "vec2", required: false },
+  { name: "u_diffuseRoughnessTextureScale", kind: "vec2", required: false },
+  { name: "u_diffuseRoughnessTextureRotation", kind: "float", required: false },
+  { name: "u_diffuseRoughnessTextureTexCoord", kind: "float", required: false },
+  { name: "u_bumpFactor", kind: "float", required: false },
+  { name: "u_bumpTexture", kind: "texture2d", required: false },
+  { name: "u_bumpTextureEnabled", kind: "float", required: false },
+  { name: "u_bumpTextureOffset", kind: "vec2", required: false },
+  { name: "u_bumpTextureScale", kind: "vec2", required: false },
+  { name: "u_bumpTextureRotation", kind: "float", required: false },
+  { name: "u_bumpTextureTexCoord", kind: "float", required: false }
+];
+
+export interface PBRMaterialOptions extends PBRSurfaceDetailOptions {
   readonly name?: string;
   readonly baseColor?: readonly [number, number, number, number];
   readonly renderState?: Partial<RenderState>;
@@ -120,9 +204,6 @@ export class PBRMaterial extends Material {
     const iridescenceThicknessMaximum = options.iridescenceThicknessMaximum ?? 400;
     validateNonNegative(iridescenceThicknessMinimum, "iridescenceThicknessMinimum");
     validateNonNegative(iridescenceThicknessMaximum, "iridescenceThicknessMaximum");
-    if (iridescenceThicknessMaximum < iridescenceThicknessMinimum) {
-      throw new RangeError("PBR iridescenceThicknessMaximum must be greater than or equal to iridescenceThicknessMinimum");
-    }
     validateNonNegative(options.dispersion ?? 0, "dispersion");
     validateIOR(options.ior ?? 1.5);
     validateNonNegative(options.emissiveStrength ?? 1, "emissiveStrength");
@@ -133,6 +214,7 @@ export class PBRMaterial extends Material {
       renderState: options.renderState,
       fog: options.fog,
       parameters: {
+        ...pbrSurfaceDetailParameters(options),
         u_baseColor: baseColor,
         u_metallic: options.metallic ?? 0,
         u_roughness: options.roughness ?? 0.5,
@@ -193,8 +275,14 @@ export class PBRMaterial extends Material {
         u_instanceCount: 0,
         u_instanceAttributeMode: 0
       },
-      requiredAttributes: ["a_position", "a_normal"],
+      requiredAttributes: [
+        "a_position", "a_normal",
+        ...(options.diffuseRoughnessTexture?.texture || options.bumpTexture?.texture ? ["a_uv"] : []),
+        ...((options.diffuseRoughnessTexture?.texture && options.diffuseRoughnessTextureTexCoord === 1) ||
+          (options.bumpTexture?.texture && options.bumpTextureTexCoord === 1) ? ["a_uv1"] : [])
+      ],
       uniformSchema: [
+        ...PBR_SURFACE_DETAIL_UNIFORM_SCHEMA,
         { name: "u_baseColor", kind: "vec4" },
         { name: "u_metallic", kind: "float" },
         { name: "u_roughness", kind: "float" },
@@ -380,7 +468,7 @@ export class PBRMaterial extends Material {
 
   /** C-03 `ProgramFeatureSource` (PRD-04 P3-1): generated-path features from this material's options. Pure — unread by the legacy path. */
   programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
-    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx);
+    return withLivePhysicalMapFeatures(physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx), this, ctx);
   }
 }
 
@@ -425,8 +513,8 @@ function validateIOR(value: number): void {
 }
 
 function validateIridescenceIOR(value: number): void {
-  if (!Number.isFinite(value) || value < 1 || value > 3) {
-    throw new RangeError("PBR iridescenceIor must be finite and within [1, 3]");
+  if (!Number.isFinite(value) || value < 1) {
+    throw new RangeError("PBR iridescenceIor must be finite and at least 1");
   }
 }
 

@@ -2,17 +2,24 @@
 // The fragment program mirrors the CPU evaluators; horizonRadiance uses the
 // CPU path so cube captures and fog inscatter share the same values.
 
-import type { RenderDevice, RenderShaderProgram, RenderTarget } from "../RenderDevice";
+import { RenderDeviceError, type RenderDevice, type RenderShaderProgram, type RenderTarget } from "../RenderDevice";
 import type { AuraSkySpecLike } from "../contracts/atmosphere";
 import type { FrameContributorContext } from "../contracts/frameGraph";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";
 import { Geometry } from "../Geometry";
 import { VertexBuffer } from "../VertexBuffer";
 import { VertexFormat } from "../VertexFormat";
-import { invertMat4, identityMat4 } from "@aura3d/scene";
+import { invertMat4 } from "@aura3d/scene";
 import { evaluateSky, skyFrame, skyProgramDefines, skyProgramKey, type SkyFrame } from "./SkyEval";
 import { SKY_SHADER_MARKER, skyFragmentSource, skyVertexSource } from "./sky.glsl";
+import {
+  GRADIENT_SKY_FOG_PORTABLE_BINDINGS,
+  GRADIENT_SKY_FOG_WGSL,
+  GRADIENT_SKY_PORTABLE_BINDINGS,
+  GRADIENT_SKY_WGSL
+} from "./sky.wgsl";
 import type { PackedFogUniforms } from "./HeightFog";
+import { A3D_MAX_FOG_VOLUMES } from "./FogVolumes";
 import { starVisibilityAtSunElevation } from "./StarField";
 import { SKY_BAND_CAPACITY } from "./GradientSky";
 
@@ -25,8 +32,6 @@ export interface SkyFogState {
   readonly backgroundDistance: number;
 }
 
-let fullscreen: Geometry | null = null;
-
 /**
  * GU47 phase 2: the sky vertex stage reads `in vec2 a_pos`. `VertexFormat.P3`
  * names its attribute `a_position` / `position`, which the device could not
@@ -36,13 +41,11 @@ let fullscreen: Geometry | null = null;
 const SKY_FORMAT = new VertexFormat([{ semantic: "position", components: 2, offset: 0, shaderName: "a_pos" }]);
 
 function fullscreenTriangle(): Geometry {
-  if (fullscreen) return fullscreen;
   const vertices = new VertexBuffer(SKY_FORMAT, 3);
   vertices.setAttribute(0, "position", [-1, -1]);
   vertices.setAttribute(1, "position", [3, -1]);
   vertices.setAttribute(2, "position", [-1, 3]);
-  fullscreen = new Geometry(vertices, null, "triangles", { min: [-1, -1, 0], max: [3, 3, 0] });
-  return fullscreen;
+  return new Geometry(vertices, null, "triangles", { min: [-1, -1, 0], max: [3, 3, 0] });
 }
 
 /** C-21 real: holds the sky spec, draws to the color target / cube faces. */
@@ -52,6 +55,8 @@ export class SkyBackgroundPass {
   private time = 0;
   private fog: SkyFogState | null = null;
   private readonly programs = new Map<string, RenderShaderProgram>();
+  private programGeneration: number | undefined;
+  private fullscreen: Geometry | null = null;
 
   constructor(private readonly device: RenderDevice) {}
 
@@ -85,6 +90,9 @@ export class SkyBackgroundPass {
 
   /** Draw the sky into `target` using `viewProjection` (forward VP). */
   renderToCubeFace(_face: 0 | 1 | 2 | 3 | 4 | 5, target: RenderTarget, viewProjection: Float32Array): void {
+    // Switching WebGPU targets can flush a pending clear. Reject unsupported
+    // skies before switching, then check again in drawSky for reentrant changes.
+    this.assertNativeSky(this.frame, this.fog);
     // T0-34: restore the caller's target, never clobber to null.
     const prev = this.device.getRenderTarget?.() ?? null;
     this.device.setRenderTarget(target);
@@ -102,13 +110,18 @@ export class SkyBackgroundPass {
    * pixels no opaque geometry covered.
    */
   drawSky(viewProjection: Float32Array, depthTested = false): void {
-    const defines = skyProgramDefines(this.frame, { fog: this.fog !== null });
+    // Capture one frame before consulting the cache: a later spec update must
+    // not turn an admitted draw into an unsupported native variant.
+    const frame = this.frame;
+    const fog = this.fog;
+    const defines = skyProgramDefines(frame, { fog: fog !== null });
+    this.assertNativeSky(frame, fog);
     const program = this.program(defines);
-    const geometry = fullscreenTriangle();
+    const geometry = this.fullscreen ?? (this.fullscreen = fullscreenTriangle());
     const invVp = invert(viewProjection);
-    const uniforms = skyUniforms(this.frame, invVp, this.time);
-    if (this.fog) {
-      const f = this.fog.uniforms;
+    const uniforms = skyUniforms(frame, invVp, this.time);
+    if (fog) {
+      const f = fog.uniforms;
       uniforms.set("u_fogA", f.fogA);
       uniforms.set("u_fogB", f.fogB);
       uniforms.set("u_fogColor", f.fogColor);
@@ -116,10 +129,10 @@ export class SkyBackgroundPass {
       uniforms.set("u_fogMode", f.fogMode);
       uniforms.set("u_fogNear", f.fogNear);
       uniforms.set("u_fogFar", f.fogFar);
-      uniforms.set("u_fogVolumes", this.fog.volumes);
-      uniforms.set("u_cameraPosition", this.fog.cameraPosition);
-      uniforms.set("u_sunColor", this.fog.sunColor);
-      uniforms.set("u_fogBackgroundDistance", this.fog.backgroundDistance);
+      uniforms.set("u_fogVolumes", fog.volumes);
+      uniforms.set("u_cameraPosition", fog.cameraPosition);
+      uniforms.set("u_sunColor", fog.sunColor);
+      uniforms.set("u_fogBackgroundDistance", fog.backgroundDistance);
     }
     this.device.draw({
       label: "prd07.sky",
@@ -136,24 +149,135 @@ export class SkyBackgroundPass {
   }
 
   private program(defines: ReturnType<typeof skyProgramDefines>): RenderShaderProgram {
+    if (this.programGeneration !== this.device.generation) {
+      this.disposePrograms();
+      this.programGeneration = this.device.generation;
+    }
     const key = skyProgramKey(defines);
     let p = this.programs.get(key);
+    if (p?.disposed) {
+      this.programs.delete(key);
+      p = undefined;
+    }
     if (!p) {
       p = this.device.createShaderProgram({
         label: key,
         vertex: skyVertexSource(),
         fragment: skyFragmentSource(defines),
-        marker: SKY_SHADER_MARKER
+        marker: SKY_SHADER_MARKER,
+        ...(this.device.kind === "webgpu" ? {
+          webgpu: defines.fog ? GRADIENT_SKY_FOG_WGSL : GRADIENT_SKY_WGSL,
+          portableBindings: defines.fog ? GRADIENT_SKY_FOG_PORTABLE_BINDINGS : GRADIENT_SKY_PORTABLE_BINDINGS
+        } : {})
       });
       this.programs.set(key, p);
     }
     return p;
   }
 
-  dispose(): void {
-    for (const p of this.programs.values()) p.dispose?.();
-    this.programs.clear();
+  private assertNativeSky(frame: SkyFrame, fog: SkyFogState | null): void {
+    if (this.device.kind !== "webgpu") return;
+    if (this.device.disposed) throw new RenderDeviceError("Render device is disposed", "DISPOSED_RESOURCE");
+    if (this.device.contextLost) throw new RenderDeviceError("Render context is lost", "CONTEXT_LOST");
+    assertNativeGradientSky(frame, skyProgramDefines(frame, { fog: fog !== null }), fog);
   }
+
+  dispose(): void {
+    try {
+      this.disposePrograms();
+    } finally {
+      const geometry = this.fullscreen;
+      this.fullscreen = null;
+      geometry?.dispose();
+    }
+  }
+
+  private disposePrograms(): void {
+    const programs = [...this.programs.values()];
+    this.programs.clear();
+    const errors: unknown[] = [];
+    for (const program of programs) {
+      if (program.disposed) continue;
+      try { program.dispose?.(); } catch (error) { errors.push(error); }
+    }
+    if (errors.length) throw new AggregateError(errors, "Sky shader disposal failed");
+  }
+}
+
+/** Only enabled effects matter; zero-density stars and zero-coverage clouds
+ * are the same plain variant as an omitted effect in the existing GLSL. */
+function assertNativeGradientSky(frame: SkyFrame, defines: ReturnType<typeof skyProgramDefines>, fog: SkyFogState | null): void {
+  const unsupported: string[] = [];
+  if (frame.model !== "gradient" || !frame.gradient) unsupported.push(`model:${frame.model}`);
+  if ((frame.gradient?.bands.length ?? 0) > 0) unsupported.push("bands");
+  if (defines.stars) unsupported.push("stars");
+  if (defines.clouds) unsupported.push("clouds");
+  if (defines.moon) unsupported.push("moon");
+  if (defines.fog) unsupported.push(...unsupportedNativeFog(fog));
+  if (unsupported.length) {
+    throw new RenderDeviceError(
+      `WebGPU sky does not support ${unsupported.join(", ")}`,
+      "WEBGPU_SKY_UNSUPPORTED",
+      { unsupported }
+    );
+  }
+}
+
+function finiteGpuNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && Number.isFinite(Math.fround(value));
+}
+
+function finiteVector(value: unknown, size: number): value is readonly number[] | Float32Array {
+  if (!(Array.isArray(value) || value instanceof Float32Array) || value.length !== size) return false;
+  for (const component of value) if (!finiteGpuNumber(component)) return false;
+  return true;
+}
+
+/** Admit only inputs implemented by the native fog shader, before target switches or allocation. */
+function unsupportedNativeFog(fog: SkyFogState | null): string[] {
+  const f = fog?.uniforms;
+  if (!fog || !f ||
+    !finiteVector(f.fogA, 4) || !finiteVector(f.fogB, 4) ||
+    !finiteVector(f.fogColor, 3) || !finiteVector(f.fogAbsorption, 3) ||
+    !finiteVector(fog.cameraPosition, 3) || !finiteVector(fog.sunColor, 3) ||
+    !finiteVector(fog.volumes, A3D_MAX_FOG_VOLUMES * 8) ||
+    !finiteGpuNumber(f.fogMode) || !finiteGpuNumber(f.fogNear) || !finiteGpuNumber(f.fogFar) ||
+    !finiteGpuNumber(fog.backgroundDistance)) {
+    return ["background fog (invalid state)"];
+  }
+  const mode = f.fogMode;
+  if (!Number.isInteger(mode) || mode < 0 || mode > 6) return [`background fog mode:${mode}`];
+  if ((mode === 1 && (f.fogA[0] < 0 || f.fogA[1] < 0)) ||
+    ((mode === 2 || mode === 3) && f.fogA[0] < 0) ||
+    (mode === 5 && f.fogAbsorption.some((value) => value < 0))) {
+    return ["background fog (negative density or absorption)"];
+  }
+  if (mode === 4) {
+    const near = Math.fround(f.fogNear);
+    const far = Math.fround(f.fogFar);
+    if (far <= near || !Number.isFinite(Math.fround(far - near))) {
+      return ["background fog (invalid linear range)"];
+    }
+  }
+  if (mode >= 1 && mode <= 4 && Math.fround(f.fogB[2]) !== 0 && Math.abs(Math.fround(f.fogB[3])) >= 1) {
+    return ["background fog (invalid sun anisotropy)"];
+  }
+  let hasVolume = false;
+  for (let i = 0; i < A3D_MAX_FOG_VOLUMES; i++) {
+    const offset = i * 8;
+    const density = fog.volumes[offset + 7]!;
+    if (density === 0) continue;
+    const shape = fog.volumes[offset + 3]!;
+    if (density < 0 || (shape !== 0 && shape !== 1) ||
+      fog.volumes[offset + 4]! <= 0 || fog.volumes[offset + 5]! <= 0 || fog.volumes[offset + 6]! <= 0) {
+      return ["background fog (invalid volume)"];
+    }
+    hasVolume = true;
+  }
+  // The existing atmosphere model only adds volume optical depth in modes
+  // 1–3. Do not silently discard authored volumes in the other modes.
+  if (hasVolume && (mode === 0 || mode >= 4)) return [`background fog volumes with mode:${mode}`];
+  return [];
 }
 
 /** Background-phase pass handed to the frame graph each frame. */

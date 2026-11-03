@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, extname, join, normalize, relative, resolve, sep } from "node:path";
+import { existsSync, lstatSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, extname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
 import ts from "typescript";
 import * as esbuild from "esbuild";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
@@ -26,6 +27,9 @@ const packageEntryPoints = new Map<string, string>([
   // ("Failed to resolve module specifier '@aura3d/rendering/extension-scalar-atlas'").
   ["@aura3d/rendering/extension-scalar-atlas", "/packages/rendering/src/extension-scalar-atlas.ts"],
   ["@aura3d/rendering/webgpu", "/packages/rendering/src/webgpu.ts"],
+  ["@aura3d/rendering/shader-graph", "/packages/rendering/src/program/ShaderGraphCompiler.ts"],
+  ["@aura3d/rendering/volumetrics", "/packages/rendering/src/volumetrics.ts"],
+  ["@aura3d/rendering/lighting", "/packages/rendering/src/lighting/index.ts"],
   // contracts/world subpaths used by QR lane code (prd07 flagged the gap when
   // browser specs timed out with unresolved bare specifiers).
   ["@aura3d/rendering/contracts/flags.state", "/packages/rendering/src/contracts/flags.state.ts"],
@@ -34,6 +38,9 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/rendering/world", "/packages/rendering/src/world/index.ts"],
   ["@aura3d/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
+  ["@aura3d/engine/scatter", "/packages/engine/src/agent-api/nodes/scatter.ts"],
+  ["@aura3d/engine/worker", "/packages/engine/src/public/worker.ts"],
+  ["@aura3d/engine/shader-graph-runtime", "/packages/engine/src/public/shader-graph-runtime.ts"],
   ["@aura3d/engine", "/packages/engine/src/public/index.ts"],
   ["@aura3d/engine/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/engine/renderer", "/packages/engine/src/public/renderer.ts"],
@@ -62,6 +69,8 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/media-node", "/packages/engine/src/agent-api/media-node.ts"],
   ["@aura3d/animation/lanes", "/packages/animation/src/lanes/index.ts"],
   ["@aura3d/animation", "/packages/animation/src/browser-index.ts"],
+  ["@aura3d/assets/exporters", "/packages/assets/src/exporters/index.ts"],
+  ["@aura3d/assets/importers", "/packages/assets/src/importers.ts"],
   ["@aura3d/assets", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/assets/browser", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/assets/gltf-runtime", "/packages/assets/src/gltf-runtime.ts"],
@@ -76,6 +85,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/workflows/production", "/packages/workflows/src/production-runtime/index.ts"],
   ["@aura3d/engine/workflows", "/packages/workflows/src/index.ts"],
   ["@aura3d/editor-runtime", "/packages/editor-runtime/src/index.ts"],
+  ["@aura3d/debug/helpers", "/packages/debug/src/helpers.ts"],
   ["@aura3d/debug", "/packages/debug/src/index.ts"],
   // PRD-09 game runtime: the game-shell harness and packages/game/fixtures/*
   // import `@aura3d/game`, and createGame imports `@aura3d/engine/lanes`. The
@@ -130,17 +140,192 @@ const packageEntryPoints = new Map<string, string>([
   ["tslib", "/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.es6.mjs"],
 ]);
 
-for (const entry of installedAuraPackageAliases()) {
-  const repositoryRelative = relative(process.cwd(), entry.replacement).replaceAll("\\", "/");
-  if (repositoryRelative.startsWith("../")) {
-    throw new Error(`Installed comparison package is outside the served repository: ${entry.replacement}`);
+// Keep addon source aliases aligned with the package registry without
+// duplicating each independently published subpath in this browser harness.
+const addonRegistry = JSON.parse(readFileSync(new URL("../../aura.exports.json", import.meta.url), "utf8")) as {
+  paths: Array<readonly [string, string, unknown?]>;
+};
+for (const [specifier, source] of addonRegistry.paths) {
+  if (specifier === "@aura3d/addons" || specifier.startsWith("@aura3d/addons/")) {
+    packageEntryPoints.set(specifier, `/${source}`);
   }
-  packageEntryPoints.set(entry.find, `/${repositoryRelative}`);
+}
+
+const installedUrlPrefix = "/__aura3d_installed__/";
+
+interface InstalledCandidatePackage {
+  readonly directory: string;
+  readonly exports: Set<string>;
+  active: boolean;
+}
+
+interface ExternalInstalledCandidate {
+  readonly modules: string;
+  readonly scope: string;
+  readonly packages: Map<string, InstalledCandidatePackage>;
+}
+
+function isWithin(directory: string, file: string): boolean {
+  const path = relative(directory, file);
+  return path !== "" && path !== ".." && !path.startsWith(`..${sep}`) && !isAbsolute(path);
+}
+
+/**
+ * The runner, not an environment variable, authorizes and verifies the install.
+ * For an external root, accept only the private temporary React 19 consumer
+ * that task-run exports after its gate and restored-tree checks.
+ */
+function externalInstalledCandidate(): ExternalInstalledCandidate | undefined {
+  const configured = process.env.A3D_INSTALLED_PACKAGE_ROOT;
+  const nativeAcceptance = process.env.AURA3D_NATIVE_ACCEPTANCE === "1";
+  if (!configured) {
+    if (nativeAcceptance) throw new Error("Native acceptance requires the runner's restored candidate packages.");
+    return undefined;
+  }
+  const root = realpathSync(resolve(configured));
+  const repository = realpathSync(process.cwd());
+  if (root === repository || isWithin(repository, root)) {
+    if (nativeAcceptance) throw new Error("Native acceptance cannot use workspace packages.");
+    return undefined;
+  }
+
+  const react19 = process.env.A3D_REACT_19_CONSUMER_DIR;
+  if (!nativeAcceptance || !react19 ||
+      !isAbsolute(configured) || resolve(configured) !== root || resolve(react19) !== root ||
+      realpathSync(resolve(react19)) !== root || !isWithin(realpathSync(tmpdir()), root)) {
+    throw new Error("External installed packages must be the runner's restored React 19 candidate.");
+  }
+  const parent = lstatSync(dirname(root));
+  if (!parent.isDirectory() || (process.platform !== "win32" &&
+      ((parent.mode & 0o077) !== 0 || (process.getuid && parent.uid !== process.getuid())))) {
+    throw new Error("The restored candidate must have a private parent directory.");
+  }
+  const modules = join(root, "node_modules");
+  const scope = join(modules, "@aura3d");
+  if (realpathSync(modules) !== modules || realpathSync(scope) !== scope) {
+    throw new Error("The restored candidate package scope must not be a symlink.");
+  }
+  const packages = new Map<string, InstalledCandidatePackage>();
+  for (const entry of readdirSync(scope, { withFileTypes: true })) {
+    const directory = join(scope, entry.name);
+    const manifest = join(directory, "package.json");
+    // installedAuraPackageAliases reads these manifests; reject links before
+    // calling it, rather than following a manifest or package out of the root.
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(entry.name) || !entry.isDirectory() ||
+        realpathSync(directory) !== directory || !lstatSync(manifest).isFile() ||
+        realpathSync(manifest) !== manifest) {
+      throw new Error(`Unsafe restored candidate package: ${entry.name}`);
+    }
+    packages.set(entry.name, { directory, exports: new Set(), active: false });
+  }
+  return { modules, scope, packages };
+}
+
+const externalCandidate = externalInstalledCandidate();
+const installedWildcardAliases: Array<readonly [string, string]> = [];
+const installedAliases = installedAuraPackageAliases();
+if (externalCandidate) {
+  // A missing candidate export must never fall back to a workspace source.
+  for (const name of packageEntryPoints.keys()) {
+    if (name.startsWith("@aura3d/")) packageEntryPoints.delete(name);
+  }
+}
+const seenInstalledAliases = new Set<string>();
+for (const entry of installedAliases) {
+  if (!externalCandidate) {
+    const repositoryRelative = relative(process.cwd(), entry.replacement).replaceAll("\\", "/");
+    if (repositoryRelative === ".." || repositoryRelative.startsWith("../") || isAbsolute(repositoryRelative)) {
+      throw new Error(`Installed comparison package is outside the served repository: ${entry.replacement}`);
+    }
+    packageEntryPoints.set(entry.find, `/${repositoryRelative}`);
+    continue;
+  }
+  const parts = entry.find.split("/");
+  const pkg = parts[0] === "@aura3d" ? externalCandidate.packages.get(parts[1] ?? "") : undefined;
+  const replacement = resolve(entry.replacement);
+  const findStars = (entry.find.match(/\*/g) ?? []).length;
+  const targetStars = (replacement.match(/\*/g) ?? []).length;
+  if (!pkg || parts.slice(2).some((part) => !part || part === "." || part === "..") ||
+      !isWithin(pkg.directory, replacement) || findStars !== targetStars || findStars > 1 ||
+      seenInstalledAliases.has(entry.find)) {
+    throw new Error(`Unsafe installed candidate export: ${entry.find}`);
+  }
+  seenInstalledAliases.add(entry.find);
+  pkg.active = true;
+  if (!findStars) pkg.exports.add(replacement);
+  const target = installedUrlPrefix + relative(externalCandidate.scope, replacement)
+    .split(sep).map(encodeURIComponent).join("/");
+  if (findStars) installedWildcardAliases.push([entry.find, target]);
+  else packageEntryPoints.set(entry.find, target);
+}
+
+function installedPackageForFile(file: string): InstalledCandidatePackage | undefined {
+  if (!externalCandidate) return undefined;
+  const path = resolve(file);
+  return [...externalCandidate.packages.values()].find((pkg) => pkg.active && isWithin(pkg.directory, path));
+}
+
+function admittedInstalledFile(pkg: InstalledCandidatePackage, file: string): string | undefined {
+  const allowed = (path: string): boolean => {
+    if (!isWithin(pkg.directory, path)) return false;
+    return relative(pkg.directory, path).split(sep)[0] === "dist" || pkg.exports.has(path);
+  };
+  const path = resolve(file);
+  if (!allowed(path)) return undefined;
+  try {
+    const real = realpathSync(path);
+    return allowed(real) && statSync(real).isFile() ? real : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function installedUrlForFile(file: string): string | undefined {
+  const pkg = installedPackageForFile(file);
+  const real = pkg && admittedInstalledFile(pkg, file);
+  return real && externalCandidate
+    ? installedUrlPrefix + relative(externalCandidate.scope, real).split(sep).map(encodeURIComponent).join("/")
+    : undefined;
+}
+
+function isInstalledUrl(pathname: string): boolean {
+  return pathname === installedUrlPrefix.slice(0, -1) || pathname.startsWith(installedUrlPrefix);
+}
+
+/** Only packed dist files and explicitly exported files of admitted packages are addressable. */
+function resolveInstalledRequest(pathname: string): string | undefined {
+  if (!externalCandidate || !pathname.startsWith(installedUrlPrefix) || pathname.includes("\\")) return undefined;
+  const parts = pathname.slice(installedUrlPrefix.length).split("/");
+  if (parts.length < 2 || parts.some((part) => !part || part === "." || part === "..")) return undefined;
+  const pkg = externalCandidate.packages.get(parts[0]!);
+  if (!pkg?.active) return undefined;
+  const base = resolve(pkg.directory, ...parts.slice(1));
+  const candidates = extname(base) ? [base] : [base, `${base}.js`, `${base}.mjs`, join(base, "index.js"), join(base, "index.mjs")];
+  return candidates.map((candidate) => admittedInstalledFile(pkg, candidate)).find((candidate) => candidate !== undefined);
+}
+
+function packageTarget(specifier: string): string | undefined {
+  const exact = packageEntryPoints.get(specifier);
+  if (exact !== undefined) return exact;
+  for (const [pattern, target] of installedWildcardAliases) {
+    const [prefix, suffix] = pattern.split("*") as [string, string];
+    if (!specifier.startsWith(prefix) || !specifier.endsWith(suffix)) continue;
+    const match = specifier.slice(prefix.length, specifier.length - suffix.length);
+    if (!match || match.split("/").some((part) => !part || part === "." || part === "..")) continue;
+    return target.replace("*", match.split("/").map(encodeURIComponent).join("/"));
+  }
+  return undefined;
+}
+
+function mappedFile(root: string, target: string): string | undefined {
+  return isInstalledUrl(target)
+    ? resolveInstalledRequest(decodeURIComponent(target))
+    : resolve(join(root, target));
 }
 
 /** The URL path the dev server serves `file` at (repo-relative, forward slashes). */
 export function moduleUrlPath(root: string, file: string): string {
-  return `/${relative(resolve(root), resolve(file)).replace(/\\/g, "/")}`;
+  return installedUrlForFile(file) ?? `/${relative(resolve(root), resolve(file)).replace(/\\/g, "/")}`;
 }
 
 /** Replaces `import.meta.url` with the module's own served URL, so bundled modules keep Vite's per-file resolution. */
@@ -150,7 +335,10 @@ export function rewriteImportMetaUrl(source: string, urlPath: string): string {
 
 /** Mapped package entry points whose file is missing under `root`; their imports 404 and the page never boots. */
 export function missingPackageEntryPoints(root = process.cwd()): Array<[string, string]> {
-  return [...packageEntryPoints].filter(([, target]) => !existsSync(join(root, target)));
+  return [...packageEntryPoints].filter(([, target]) => {
+    const file = mappedFile(root, target);
+    return !file || !existsSync(file);
+  });
 }
 
 export async function startExampleDevServer(root = process.cwd()): Promise<ExampleDevServer> {
@@ -182,34 +370,61 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
   const auraResolvePlugin: esbuild.Plugin = {
     name: "aura3d-dev-server-resolve",
     setup: (build) => {
-      build.onResolve({ filter: /.*/ }, (args) => {
-        // Entry points and already-absolute filesystem paths pass through.
-        if (resolve(args.path) === args.path && existsSync(args.path)) {
-          return { path: args.path };
-        }
+      const candidateResolveProbe = {};
+      build.onResolve({ filter: /.*/ }, async (args) => {
+        if (args.pluginData === candidateResolveProbe) return undefined;
         if (args.path.startsWith("node:")) {
           // Node builtins appear inside dormant dynamic imports in deps
           // (e.g. @gltf-transform node helpers); keep them lazy like the
           // per-module path does — they 404 only if ever executed.
           return { path: args.path, external: true };
         }
+        if (externalCandidate && args.path.startsWith("@aura3d/")) {
+          const target = packageTarget(args.path);
+          const file = target && isInstalledUrl(target) ? mappedFile(root, target) : undefined;
+          return file ? { path: file } : {
+            errors: [{ text: `Installed candidate export is unavailable: ${args.path}` }],
+          };
+        }
+        if (externalCandidate && args.importer && isWithin(externalCandidate.modules, resolve(args.importer))) {
+          // Resolve dependencies from the restored installation, never from the
+          // workspace or an ancestor node_modules. The result is checked after
+          // realpath resolution, including for relative imports and symlinks.
+          const result = await build.resolve(args.path, {
+            importer: args.importer, namespace: args.namespace, resolveDir: args.resolveDir,
+            kind: args.kind, with: args.with, pluginData: candidateResolveProbe,
+          });
+          if (result.errors.length) return { errors: result.errors, warnings: result.warnings };
+          let real: string | undefined;
+          try { real = result.namespace === "file" && !result.external ? realpathSync(result.path) : undefined; }
+          catch { /* a missing dependency is not an installed candidate file */ }
+          if (!real || !isWithin(externalCandidate.modules, real)) {
+            return { errors: [{ text: `Installed candidate dependency escapes its isolated node_modules: ${args.path}` }] };
+          }
+          return { path: real, namespace: "file", suffix: result.suffix, sideEffects: result.sideEffects, warnings: result.warnings };
+        }
+        // Entry points and already-absolute filesystem paths pass through.
+        if (resolve(args.path) === args.path && existsSync(args.path)) {
+          return { path: args.path };
+        }
         if (!args.path.startsWith(".") && !args.path.startsWith("/")) {
-          const mapped = packageEntryPoints.get(args.path);
+          const mapped = packageTarget(args.path);
           if (mapped === undefined) {
             // Unmapped bare specifier: package.json/node_modules resolution
             // (deps like `three`), or a static-only miss — let esbuild decide.
             return undefined;
           }
-          const file = resolve(join(root, mapped));
+          const file = mappedFile(root, mapped);
           // Hoist layout varies across environments (e.g. which ktx-parse
           // version lands at .pnpm/node_modules); a missing mapped file must
           // defer to esbuild's own node resolution — emitting the specifier
           // external would deliver a bare import the browser cannot resolve.
-          if (!existsSync(file)) return undefined;
+          if (!file || !existsSync(file)) return undefined;
           return { path: file };
         }
         const canonical = resolveModuleSpecifier(args.importer, root, args.path);
-        return canonical ? { path: resolve(join(root, canonical)) } : undefined;
+        const file = canonical && mappedFile(root, canonical);
+        return file ? { path: file } : undefined;
       });
       build.onLoad({ filter: /\.css$/ }, (args) => ({
         loader: "js",
@@ -219,9 +434,13 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       // (`new URL("./assets/meshy/x.glb", import.meta.url)` in examples/ninja-runner-port) resolved under
       // /apps/<app>/src/ and 404ed. Vite resolves those URLs against the module's own file; do the same here.
       build.onLoad({ filter: /\.(m?js|tsx?)$/ }, (args) => {
-        if (args.path.includes(`${sep}node_modules${sep}`)) return undefined;
+        const candidatePackage = installedPackageForFile(args.path);
+        if (args.path.includes(`${sep}node_modules${sep}`) && !candidatePackage) return undefined;
         const source = readFileSync(args.path, "utf8");
         if (!source.includes("import.meta.url")) return undefined;
+        if (candidatePackage && !installedUrlForFile(args.path)) {
+          throw new Error("Installed module with import.meta.url is not an admitted packed file.");
+        }
         return {
           contents: rewriteImportMetaUrl(source, moduleUrlPath(root, args.path)),
           loader: args.path.endsWith(".tsx") ? "tsx" : args.path.endsWith(".ts") ? "ts" : "js",
@@ -294,14 +513,17 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         response.end();
         return;
       }
-      const redirect = resolveDirectoryModuleRedirect(root, decodeURIComponent(url.pathname));
+      const pathname = decodeURIComponent(url.pathname);
+      // The reserved mount is never passed to the repository resolver, even if
+      // no candidate is configured or the requested candidate file is denied.
+      const installedRequest = isInstalledUrl(pathname);
+      const redirect = installedRequest ? undefined : resolveDirectoryModuleRedirect(root, pathname);
       if (redirect) {
         response.writeHead(302, { location: redirect });
         response.end();
         return;
       }
-      const pathname = decodeURIComponent(url.pathname);
-      const file = resolveRequest(root, pathname);
+      const file = installedRequest ? resolveInstalledRequest(pathname) : resolveRequest(root, pathname);
 
       if (!file) {
         response.writeHead(404, { "content-type": "text/plain" });
@@ -315,8 +537,8 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       // three distinct module instances, which breaks singleton registries
       // (REGISTRY_DUPLICATE). Redirecting non-canonical specifiers makes the
       // browser cache them as one module — the same resolution vite/TS apply.
-      const canonical = `/${relative(resolve(root), resolve(file)).replace(/\\/g, "/")}`;
-      if (file.endsWith(".ts") && normalize(pathname).replace(/\\/g, "/") !== canonical) {
+      const canonical = moduleUrlPath(root, file);
+      if (file.endsWith(".ts") && normalize(pathname).replace(/\\/g, "/") !== decodeURIComponent(canonical)) {
         response.writeHead(302, { location: canonical });
         response.end();
         return;
@@ -339,7 +561,7 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       }
 
       const content = file.endsWith(".js") || file.endsWith(".mjs")
-        ? transformed(file, () => rewriteModuleSpecifiers(rewritePackageImports(readFileSync(file, "utf8")), file, root))
+        ? transformed(file, () => rewriteModuleSpecifiers(rewritePackageImports(readFileSync(file, "utf8"), file), file, root))
         : readFileSync(file);
       response.writeHead(200, { "content-type": contentType(file) });
       response.end(content);
@@ -518,12 +740,13 @@ function transpileForBrowser(source: string, fileName: string, rootDir: string):
     const cssPath = specifier.startsWith(".")
       ? resolve(dirname(fileName), specifier)
       : resolve(process.cwd(), specifier.replace(/^\//, ""));
-    if (!existsSync(cssPath)) {
+    const candidatePackage = installedPackageForFile(fileName);
+    if (!existsSync(cssPath) || (candidatePackage && !admittedInstalledFile(candidatePackage, cssPath))) {
       throw new Error(`CSS import not found: ${specifier} from ${fileName}`);
     }
     return `(() => { const style = document.createElement("style"); style.setAttribute("data-aura3d-dev-css", ${JSON.stringify(relative(process.cwd(), cssPath))}); style.textContent = ${JSON.stringify(readFileSync(cssPath, "utf8"))}; document.head.appendChild(style); })();`;
   });
-  const rewritten = rewriteModuleSpecifiers(rewritePackageImports(withCssInjected), fileName, rootDir);
+  const rewritten = rewriteModuleSpecifiers(rewritePackageImports(withCssInjected, fileName), fileName, rootDir);
   const result = ts.transpileModule(rewritten, {
     fileName,
     compilerOptions: {
@@ -540,7 +763,29 @@ function transpileForBrowser(source: string, fileName: string, rootDir: string):
   return result.outputText;
 }
 
-function rewritePackageImports(source: string): string {
+function rewritePackageImports(source: string, fileName: string): string {
+  if (externalCandidate) {
+    const patterns = [
+      /(\bfrom\s*["'])([^"']+)(["'])/g,
+      /(\bimport\s*["'])([^"']+)(["'])/g,
+      /(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'])([^"']+)(["']\s*\))/g,
+    ];
+    let output = source;
+    for (const pattern of patterns) {
+      output = output.replace(pattern, (statement, head: string, specifier: string, tail: string) => {
+        if (installedPackageForFile(fileName) && !specifier.startsWith(".") && !specifier.startsWith("/") &&
+            !specifier.startsWith("@aura3d/") && !specifier.startsWith("node:")) {
+          throw new Error(`Installed dependency requires an isolated bundle: ${specifier}`);
+        }
+        const target = packageTarget(specifier);
+        if (specifier.startsWith("@aura3d/") && target === undefined) {
+          throw new Error(`Installed candidate export is unavailable: ${specifier}`);
+        }
+        return target === undefined ? statement : `${head}${target}${tail}`;
+      });
+    }
+    return output;
+  }
   let output = source;
   for (const [specifier, target] of packageEntryPoints) {
     const escapedSpecifier = escapeRegExp(specifier);
@@ -590,6 +835,22 @@ function rewriteModuleSpecifiers(source: string, fileName: string, root: string)
 }
 
 function resolveModuleSpecifier(fromFile: string, root: string, specifier: string): string | undefined {
+  if (isInstalledUrl(specifier)) {
+    const file = resolveInstalledRequest(decodeURIComponent(specifier));
+    return file ? installedUrlForFile(file) : undefined;
+  }
+  const pkg = installedPackageForFile(fromFile);
+  if (pkg) {
+    if (specifier.startsWith("/")) throw new Error("Installed candidate cannot import a repository-absolute module.");
+    const base = resolve(dirname(fromFile), specifier);
+    if (!isWithin(pkg.directory, base)) throw new Error("Installed candidate module escapes its package.");
+    const candidates = extname(base) ? [base] : [base, `${base}.js`, `${base}.mjs`, join(base, "index.js"), join(base, "index.mjs")];
+    for (const candidate of candidates) {
+      const file = admittedInstalledFile(pkg, candidate);
+      if (file) return installedUrlForFile(file);
+    }
+    return undefined;
+  }
   const base = specifier.startsWith("/")
     ? join(root, specifier)
     : resolve(dirname(fromFile), specifier);

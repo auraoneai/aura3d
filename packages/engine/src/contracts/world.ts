@@ -2,7 +2,8 @@
  * C-26 — world queries (CONTRACTS.md). Provider: PRD 10. Flag: A3D_QR_WORLD.
  */
 
-import type { AuraVec3, AuraApp } from "../agent-api/index";
+import type { AuraVec3 } from "../agent-api/nodes/types.js";
+import type { AuraApp } from "../agent-api/nodes/types/runtime.js";
 import type { AuraQualityTier, ContractSlot } from "@aura3d/rendering/contracts";
 import { defineContractSlot } from "@aura3d/rendering/contracts";
 import type { AuraSkySpec, AuraHeightFogSpec } from "./atmosphere";

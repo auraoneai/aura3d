@@ -3,11 +3,15 @@ export type { AssetCacheSnapshot } from "./AssetCache";
 export { AssetDependencyGraph } from "./AssetDependencyGraph";
 export { AssetHandle } from "./AssetHandle";
 export type { AssetHandleOptions, AssetHandleStatus } from "./AssetHandle";
-export { AssetLoadError } from "./AssetLoader";
-export type { AssetLoader, AssetLoadProgress, AssetLoadRequest } from "./AssetLoader";
+export { AssetLoadError, mergeAssetRequestOptions, requestIdentity, requestIdentityDetails, redactAssetUrl } from "./AssetLoader";
+export type { AssetLoader, AssetLoadProgress, AssetLoadRequest, AssetRequestOptions, AssetRequestIdentity, AssetIntegrity } from "./AssetLoader";
 export { AssetManager } from "./AssetManager";
 export type { AssetLoadOptions, AssetManagerOptions } from "./AssetManager";
 export { AssetRegistry } from "./AssetRegistry";
+export { ImportPipeline, ImportPipelineError } from "./ImportPipeline";
+export type { ImportPipelineContext, ImportPipelineProgressEvent, ImportPipelineProgressStatus, ImportPipelineRun, ImportStage } from "./ImportPipeline";
+export { WorkerAssetJobs } from "./WorkerAssetJobs";
+export type { WorkerAssetJob, WorkerAssetJobRunner, WorkerAssetJobsOptions } from "./WorkerAssetJobs";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
 export { fetchGltfBytesShared, GLTFLoader, normalizeSkinWeights, parseGlbDocument, parseMaterialVariantSelection, resolveAnimationPointerBinding, serializeMaterialVariantSelection } from "./GLTFLoader";
@@ -150,11 +154,13 @@ export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
 export { DataTextureLoader } from "./DataTextureLoader";
 export { FileLoader } from "./FileLoader";
-export type { FileLoaderResponseType } from "./FileLoader";
+export type { FileLoaderResponseType, FileLoaderOptions } from "./FileLoader";
+export { fetchBytes, verifyAssetBytes, AssetIntegrityError, AssetPolicyError, AssetSizeError, isNonRetryableAssetError } from "./LoaderFetch";
+export type { AuraLoaderProgress } from "./LoaderFetch";
 export { ImageBitmapLoader } from "./ImageBitmapLoader";
-export type { ImageBitmapLoaderOptions } from "./ImageBitmapLoader";
-export { EXRLoader, EXRLoaderThreeCompat, parseEXR } from "./EXRLoader";
-export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData } from "./EXRLoader";
+export type { ImageBitmapLoaderOptions, ImageBitmapLoadRequest } from "./ImageBitmapLoader";
+export { EXRLoader, EXRLoaderThreeCompat, parseEXR, parseDeepEXR, compositeDeepEXR } from "./EXRLoader";
+export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData, AuraEXRDeepChannel, AuraEXRDeepData, AuraEXRDeepOptions } from "./EXRLoader";
 export {
   assertValidGLTFCorpusManifest,
   createGLTFCorpusReport,
@@ -224,6 +230,20 @@ export type {
   TextureStreamingResidency,
   TextureStreamingResident
 } from "./TextureStreaming";
+export { IESLoader, parseIES, sampleIESProfile } from "./IESLoader.js";
+export type { IESProfile, IESParseOptions } from "./IESLoader.js";
+export { GaussianSplatLoader, parseGaussianSplat, validateGaussianSplat } from "./loaders/GaussianSplatLoader.js";
+export type { GaussianSplatData, GaussianSplatFormat, GaussianSplatDegree, GaussianSplatColorSpace, GaussianSplatParseOptions, GaussianSplatCodec } from "./loaders/GaussianSplatLoader.js";
+export { PLYLoader, STLLoader, parsePLY, parseSTL } from "./loaders/MeshFormatLoaders.js";
+export type { MeshImportLimits, NativeMeshData, PlyMeshData, StlMeshData } from "./loaders/MeshFormatLoaders.js";
+export { Model3MFLoader, parseModel3MF, read3MFPackageEntries } from "./loaders/Model3MFLoader.js";
+export type { Model3MFLimits, Model3MFArchiveLimits, Model3MFAsset } from "./loaders/Model3MFLoader.js";
+export { exportOBJ } from "./exporters/OBJExporter.js";
+export type { OBJExportOptions } from "./exporters/OBJExporter.js";
+export { exportSTL } from "./exporters/STLExporter.js";
+export type { STLExportOptions } from "./exporters/STLExporter.js";
+export { FormatRegistry, createDefaultFormatRegistry, createGLTFFormatAdapter } from "./FormatRegistry.js";
+export type { FormatAdapter, RegisteredFormatAsset, FormatMetadata, FormatSelection } from "./FormatRegistry.js";
 export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecoders";
 export { ensureCompressedTextureSupport, transcodeKTX2BasisTexture } from "./KTX2BasisTextureTranscoder";
 export type { CompressedTextureDecoderProbes, CompressedTextureDecoderStatus, CompressedTextureSupportDiagnostics, CompressedTextureSupportRequest, KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";

@@ -1,28 +1,13 @@
 import { defineConfig } from "vitest/config";
+import { sourceAliases } from "../../vitest.config";
 
+// Use the same registry-derived aliases as the main source test config,
+// including all opt-in entrypoints before their package roots.
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["tests/assets/**/*.test.ts"]
+    include: ["tests/assets/**/*.test.ts"],
+    server: { deps: { inline: [/^@aura3d\//, /^@aura3d$/] } }
   },
-  resolve: {
-    alias: {
-      "@aura3d/math": new URL("../../packages/math/src/index.ts", import.meta.url).pathname,
-      "@aura3d/core": new URL("../../packages/core/src/index.ts", import.meta.url).pathname,
-      "@aura3d/scene": new URL("../../packages/scene/src/index.ts", import.meta.url).pathname,
-      "@aura3d/ecs": new URL("../../packages/ecs/src/index.ts", import.meta.url).pathname,
-      "@aura3d/rendering": new URL("../../packages/rendering/src/index.ts", import.meta.url).pathname,
-      "@aura3d/product-studio": new URL("../../packages/product-studio/src/index.ts", import.meta.url).pathname,
-      "@aura3d/physics": new URL("../../packages/physics/src/index.ts", import.meta.url).pathname,
-      "@aura3d/animation": new URL("../../packages/animation/src/index.ts", import.meta.url).pathname,
-      "@aura3d/assets": new URL("../../packages/assets/src/index.ts", import.meta.url).pathname,
-      "@aura3d/input": new URL("../../packages/input/src/index.ts", import.meta.url).pathname,
-      "@aura3d/audio": new URL("../../packages/audio/src/index.ts", import.meta.url).pathname,
-      "@aura3d/scripting": new URL("../../packages/scripting/src/index.ts", import.meta.url).pathname,
-      "@aura3d/workflows": new URL("../../packages/workflows/src/index.ts", import.meta.url).pathname,
-      "@aura3d/editor-runtime": new URL("../../packages/editor-runtime/src/index.ts", import.meta.url).pathname,
-      "@aura3d/editor": new URL("../../packages/editor/src/index.ts", import.meta.url).pathname,
-      "@aura3d/debug": new URL("../../packages/debug/src/index.ts", import.meta.url).pathname
-    }
-  }
+  resolve: { alias: sourceAliases, dedupe: ["react", "react-dom"] }
 });

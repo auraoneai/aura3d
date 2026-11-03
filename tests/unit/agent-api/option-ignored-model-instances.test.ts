@@ -30,11 +30,11 @@ describe("OPTION_IGNORED for model(), instances.model and instances.<kind>", () 
     expect(json).toMatchObject({ renderOrder: 3, frustumCulled: false, layers: 2, userData: { tag: "x" }, rotationOrder: "XYZ", quaternion: [0, 0, 0, 1] });
   });
 
-  it("model() accepts collider: false and lod: false (nothing to build) but reports other values", () => {
+  it("model() retains collider and lod settings rather than treating them as unread", () => {
     expect(notes(model(asset, { collider: false, lod: false }))).toBeUndefined();
-    const note = notes(model(asset, { collider: "bounds", lod: "auto" }));
-    expect(note).toHaveLength(1);
-    expect(note![0]).toContain('"lod", "collider"');
+    const builder = model(asset, { collider: "bounds", lod: "auto" });
+    expect(notes(builder)).toBeUndefined();
+    expect(builder.toJSON()).toMatchObject({ collider: "bounds", lod: "auto", physics: { type: "static" } });
   });
 
   it("model() without options carries no note (node JSON unchanged)", () => {

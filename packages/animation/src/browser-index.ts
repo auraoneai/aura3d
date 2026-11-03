@@ -25,6 +25,7 @@ export {
   getKeyframeOrder,
   sortedArray,
   subclip,
+  trimClip,
   optimize,
   merge,
   makeClipAdditive,

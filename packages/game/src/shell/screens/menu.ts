@@ -6,6 +6,7 @@ import type { HudDocument, HudElement } from "../../hud/dom.js";
 
 export interface MenuKeyEvent {
   readonly key: string;
+  readonly shiftKey?: boolean;
   preventDefault(): void;
   stopPropagation(): void;
 }
@@ -49,6 +50,7 @@ export abstract class BaseScreen implements ShellScreen {
     this.el.setAttribute("aria-hidden", "true");
   }
   dispose(): void {
+    this.hide();
     this.el.remove();
   }
 }
@@ -76,6 +78,7 @@ export function createMenu(
   wrap.setAttribute("aria-modal", "true");
   wrap.setAttribute("aria-label", spec.title);
   wrap.setAttribute("aria-hidden", "true");
+  wrap.style.display = "none";
 
   const panel = doc.createElement("div");
   panel.className = "a3g-menu-panel";
@@ -94,6 +97,7 @@ export function createMenu(
   list.className = "a3g-menu-items";
   list.setAttribute("role", "menu");
   const buttons: HudElement[] = [];
+  let visible = false;
   spec.items.forEach((item, i) => {
     const li = doc.createElement("li");
     const btn = doc.createElement("button");
@@ -111,7 +115,7 @@ export function createMenu(
       hint.textContent = item.hint;
       btn.appendChild(hint);
     }
-    btn.addEventListener("click", () => void item.run?.());
+    btn.addEventListener("click", () => { if (visible) void item.run?.(); });
     li.appendChild(btn);
     list.appendChild(li);
     buttons.push(btn);
@@ -119,12 +123,12 @@ export function createMenu(
   panel.appendChild(list);
   wrap.appendChild(panel);
 
-  let visible = false;
   let focus = 0;
   const setFocus = (i: number) => {
     if (buttons.length === 0) return;
     focus = (i + buttons.length) % buttons.length;
     buttons.forEach((b, j) => b.setAttribute("tabindex", j === focus ? "0" : "-1"));
+    (buttons[focus] as HudElement & { focus?: () => void }).focus?.();
   };
 
   const menu: MenuHandle = {
@@ -132,8 +136,8 @@ export function createMenu(
     items: buttons,
     get visible() { return visible; },
     focusIndex: () => focus,
-    show() { visible = true; wrap.classList.remove("a3g-hidden"); wrap.setAttribute("aria-hidden", "false"); setFocus(0); },
-    hide() { visible = false; wrap.classList.add("a3g-hidden"); wrap.setAttribute("aria-hidden", "true"); },
+    show() { visible = true; wrap.classList.remove("a3g-hidden"); wrap.style.display = ""; wrap.setAttribute("aria-hidden", "false"); setFocus(0); },
+    hide() { visible = false; wrap.classList.add("a3g-hidden"); wrap.style.display = "none"; wrap.setAttribute("aria-hidden", "true"); },
     keydown(ev) {
       if (!visible) return false;
       switch (ev.key) {
@@ -148,11 +152,11 @@ export function createMenu(
         }
         case "Escape": ev.preventDefault(); menu.onClose?.(); return true;
         // Focus trap: Tab/Shift+Tab wrap inside the menu instead of leaving it.
-        case "Tab": setFocus(focus + 1); ev.preventDefault(); return true;
+        case "Tab": setFocus(focus + (ev.shiftKey ? -1 : 1)); ev.preventDefault(); return true;
         default: return false;
       }
     },
-    dispose() { wrap.remove(); }
+    dispose() { visible = false; wrap.remove(); }
   };
   return menu;
 }

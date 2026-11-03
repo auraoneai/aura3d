@@ -1,9 +1,3 @@
-/**
- * threejs-parity (§5.2, lane L2-01) — `CircleGeometry` verbatim port.
- * Center vertex first, then `segments + 1` ring vertices; indices
- * (i, i+1, 0); normals all (0,0,1); UVs remapped into [0,1]² from xy/radius.
- */
-
 import type { ParityMesh } from "./Support";
 
 export interface CircleParityParams {
@@ -13,33 +7,30 @@ export interface CircleParityParams {
   readonly thetaLength?: number;
 }
 
+/** A disk or sector in the XY plane, with a duplicated angular seam. */
 export function circleParityMesh(params: CircleParityParams = {}): ParityMesh {
   const radius = params.radius ?? 1;
-  const segments = Math.max(3, params.segments ?? 32);
-  const thetaStart = params.thetaStart ?? 0;
-  const thetaLength = params.thetaLength ?? Math.PI * 2;
-
+  const requestedSegments = params.segments ?? 32;
+  const start = params.thetaStart ?? 0;
+  const sweep = params.thetaLength ?? 2 * Math.PI;
+  if (![radius, requestedSegments, start, sweep].every(Number.isFinite)) {
+    throw new RangeError("circleParityMesh requires finite parameters");
+  }
+  const divisions = Math.max(3, Math.floor(requestedSegments));
+  const positions: number[] = [0, 0, 0];
+  const normals: number[] = [0, 0, 1];
+  const uvs: number[] = [0.5, 0.5];
   const indices: number[] = [];
-  const vertices: number[] = [];
-  const normals: number[] = [];
-  const uvs: number[] = [];
 
-  vertices.push(0, 0, 0);
-  normals.push(0, 0, 1);
-  uvs.push(0.5, 0.5);
-
-  for (let s = 0; s <= segments; s += 1) {
-    const segment = thetaStart + (s / segments) * thetaLength;
-    const x = radius * Math.cos(segment);
-    const y = radius * Math.sin(segment);
-    vertices.push(x, y, 0);
+  for (let k = 0; k <= divisions; k += 1) {
+    const angle = start + sweep * k / divisions;
+    const x = Math.cos(angle);
+    const y = Math.sin(angle);
+    positions.push(radius * x, radius * y, 0);
     normals.push(0, 0, 1);
-    uvs.push((x / radius + 1) / 2, (y / radius + 1) / 2);
+    // The unit-circle parameterization remains finite when radius is zero.
+    uvs.push(0.5 + x / 2, 0.5 + y / 2);
+    if (k > 0) indices.push(k, k + 1, 0);
   }
-
-  for (let i = 1; i <= segments; i += 1) {
-    indices.push(i, i + 1, 0);
-  }
-
-  return { positions: vertices, normals, uvs, indices };
+  return { positions, normals, uvs, indices };
 }

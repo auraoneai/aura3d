@@ -64,6 +64,8 @@ export interface InputPlaybackSnapshot {
   readonly evidence: InputRecordingMetadata["evidence"];
 }
 
+const MAX_PLAYBACK_EVENTS_PER_UPDATE = 100_000;
+
 export class InputRecorder {
   private readonly events: InputReplayEvent[] = [];
   private readonly maxEvents: number;
@@ -202,21 +204,44 @@ export class InputPlayback {
   update(deltaTimeMs: number): readonly InputReplayEvent[] {
     if (this.state !== "playing") return [];
     const recording = this.requireRecording();
-    this.currentTimeMs += Math.max(0, finite(deltaTimeMs, 0)) * this.speed;
-    const absoluteTime = recording.metadata.startTimeMs + this.currentTimeMs;
-    const emitted: InputReplayEvent[] = [];
-    while (this.eventIndex < recording.events.length && (recording.events[this.eventIndex]?.timestampMs ?? Infinity) <= absoluteTime) {
-      emitted.push(recording.events[this.eventIndex]!);
-      this.eventIndex += 1;
+    const nextTime = this.currentTimeMs + Math.max(0, finite(deltaTimeMs, 0)) * this.speed;
+    if (!Number.isFinite(nextTime)) throw new RangeError("InputPlayback update exceeds the time limit.");
+    const { startTimeMs, durationMs } = recording.metadata;
+    const events = recording.events;
+    const through = (time: number, index = 0): number => {
+      while (index < events.length && (events[index]?.timestampMs ?? Infinity) <= startTimeMs + time) index += 1;
+      return index;
+    };
+    const cycles = this.loop && durationMs > 0 ? Math.floor(nextTime / durationMs) : 0;
+    const remainder = cycles > 0 ? nextTime % durationMs : nextTime;
+    const endIndex = cycles > 0 ? through(durationMs) : 0;
+    const partialIndex = cycles > 0 && remainder === 0 ? 0 : through(remainder, cycles > 0 ? 0 : this.eventIndex);
+    const count = cycles > 0
+      ? Math.max(0, endIndex - this.eventIndex) + (cycles - 1) * endIndex + partialIndex
+      : partialIndex - this.eventIndex;
+    if (!Number.isSafeInteger(cycles) || !Number.isSafeInteger(this.loopCount + cycles) ||
+        !Number.isSafeInteger(count) || count > MAX_PLAYBACK_EVENTS_PER_UPDATE ||
+        !Number.isSafeInteger(this.emittedEvents + count)) {
+      throw new RangeError("InputPlayback update exceeds the replay event limit.");
     }
-    if (this.currentTimeMs >= recording.metadata.durationMs) {
-      if (this.loop && recording.metadata.durationMs > 0) {
-        this.loopCount += 1;
-        this.currentTimeMs %= recording.metadata.durationMs;
-        this.eventIndex = 0;
-      } else {
+
+    const emitted: InputReplayEvent[] = [];
+    if (cycles > 0) {
+      for (let i = this.eventIndex; i < endIndex; i += 1) emitted.push(events[i]!);
+      for (let cycle = 1; cycle < cycles && endIndex > 0; cycle += 1) {
+        for (let i = 0; i < endIndex; i += 1) emitted.push(events[i]!);
+      }
+      for (let i = 0; i < partialIndex; i += 1) emitted.push(events[i]!);
+      this.currentTimeMs = remainder;
+      this.eventIndex = partialIndex;
+      this.loopCount += cycles;
+    } else {
+      for (let i = this.eventIndex; i < partialIndex; i += 1) emitted.push(events[i]!);
+      this.eventIndex = partialIndex;
+      this.currentTimeMs = nextTime;
+      if (this.currentTimeMs >= durationMs) {
         this.state = "stopped";
-        this.currentTimeMs = recording.metadata.durationMs;
+        this.currentTimeMs = durationMs;
       }
     }
     this.emittedEvents += emitted.length;

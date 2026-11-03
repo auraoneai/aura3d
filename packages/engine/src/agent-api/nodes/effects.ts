@@ -8,6 +8,7 @@ import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraLegacyParticleFields, AuraParticleEmitterOptions } from "../../contracts/effects.js";
 import { particles } from "./particles.js";
 import { lazyNamespace } from "../lazyNamespace.js";
+import { assertWeatherTransformFields } from "../../production-runtime/effects/WeatherTransform.js";
 
 /**
  * Lane node-option surface: `AuraEffectNode` (shared `agent-api/index.ts`,
@@ -18,8 +19,8 @@ import { lazyNamespace } from "../lazyNamespace.js";
 type VfxNodeOptions = Omit<AuraEffectNode, "kind" | "effect"> & Record<string, unknown>;
 
 /**
- * Lane effect kinds ("trail", "lightCone", "auroraRibbon", "meshParticles",
- * "fogVolume") are not yet members of the shared `AuraEffectType` union
+ * Lane effect kinds ("trail", "lightCone", "auroraRibbon", "meshParticles")
+ * are not yet members of the shared `AuraEffectType` union
  * (prd15-owned; union append filed as a ccr request). The runtime lowering
  * (`EffectNodeLowering.ts`) switches on the plain string, so the cast is
  * type-surface only — no runtime difference, flag-on or flag-off.
@@ -80,22 +81,47 @@ function withDefinedField<T extends AuraEffectNode>(value: T, key: string, field
 }
 
 /**
- * Authored rain/snow fields the weather-volume lowering reads (EffectNodeLowering: `size`, `radius`, `seed`) and the
- * node `name` (so a game can find or replace the volume), copied only when the caller wrote them (GU47 pass 4: g09, g12).
+ * Weather follows the camera. Position and pivot shift the sampled pattern,
+ * while rotation turns its volume, wind, and falling streaks. Transforms must
+ * be rigid: unit scale only, with no lookAt or attachTo. Sprite sizes remain
+ * world units. Authored fields are copied only when provided.
  */
-export type AuraWeatherEffectOptions = Omit<AuraEffectNode, "kind" | "effect"> & {
+export type AuraWeatherEffectOptions = Omit<AuraEffectNode, "kind" | "effect" | "size"> & {
   /** Flake or drop world size, metres (a `[min, max]` range uses its midpoint); default: the weather preset. */
   readonly size?: number | readonly [number, number];
   /** Volume seed; default: a hash of the node id. */
   readonly seed?: number;
 };
 
-const weatherAuthored = (options: AuraWeatherEffectOptions): Partial<AuraEffectNode> => ({
-  ...(options.name !== undefined ? { name: options.name } : {}),
-  ...(options.size !== undefined ? { size: options.size } : {}),
-  ...(options.radius !== undefined ? { radius: options.radius } : {}),
-  ...(options.seed !== undefined ? { seed: options.seed } : {})
-}) as Partial<AuraEffectNode>;
+const weatherAuthored = (options: AuraWeatherEffectOptions): Partial<AuraEffectNode> => {
+  assertWeatherTransformFields(options);
+  return {
+    ...(options.name !== undefined ? { name: options.name } : {}),
+    ...(options.size !== undefined ? { size: options.size } : {}),
+    ...(options.radius !== undefined ? { radius: options.radius } : {}),
+    ...(options.seed !== undefined ? { seed: options.seed } : {}),
+    ...(options.position !== undefined ? { position: [...options.position] as AuraVec3 } : {}),
+    ...(options.pivot !== undefined ? { pivot: [...options.pivot] as AuraVec3 } : {}),
+    ...(options.rotation !== undefined ? { rotation: [...options.rotation] as AuraVec3 } : {}),
+    ...(options.scale !== undefined ? { scale: typeof options.scale === "number" ? options.scale : [...options.scale] as AuraVec3 } : {}),
+    ...(options.quaternion !== undefined ? { quaternion: [...options.quaternion] as NonNullable<AuraEffectNode["quaternion"]> } : {}),
+    ...(options.rotationOrder !== undefined ? { rotationOrder: options.rotationOrder } : {})
+  };
+};
+
+/** Full dimensions of a bounded fog volume in world units; a scalar makes a cube. */
+export type AuraFogVolumeOptions = Omit<AuraEffectNode, "kind" | "effect" | "size"> & Record<string, unknown> & {
+  readonly size?: number | AuraVec3;
+};
+
+function fogVolumeSize(size: AuraFogVolumeOptions["size"]): AuraVec3 {
+  if (size === undefined) return [8, 4, 8];
+  if (typeof size === "number" && Number.isFinite(size) && size > 0) return [size, size, size];
+  if (Array.isArray(size) && size.length === 3 && [...size].every((value) => typeof value === "number" && Number.isFinite(value) && value > 0)) {
+    return [size[0], size[1], size[2]];
+  }
+  throw new RangeError("effects.fogVolume size must be a positive finite scalar or three positive finite full dimensions.");
+}
 
 export const vfxEffectBuilders = lazyNamespace(() => ({
   /**
@@ -262,7 +288,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * sprite draws the soft-dot until it has loaded. `prewarm` starts the
    * sprite that many seconds in.
    */
-  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect"> & {
+  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect" | "size"> & {
     readonly blend?: AuraBlendMode;
     readonly size?: number | readonly [number, number];
     readonly seed?: number;
@@ -428,16 +454,21 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * from scene `fog`/`volumetric-fog` (global). Height falloff and scattering
    * ride through to the P4 volumetric pass.
    */
-  fogVolume: (options: VfxNodeOptions = {}) =>
-    new AuraNodeBuilder<AuraEffectNode>(withEmitterOptions({
+  fogVolume: (options: AuraFogVolumeOptions = {}) => {
+    const size = fogVolumeSize(options.size);
+    const node = withEmitterOptions({
       kind: "effect",
-      effect: vfxEffect("fogVolume"),
+      effect: "fogVolume",
       name: options.name ?? "fog volume",
       color: options.color ?? "#9fb7d9",
       density: options.density ?? 0.25,
       position: options.position ?? [0, 0, 0],
-      size: options.size ?? [8, 4, 8],
+      size,
       scatteringAnisotropy: options.scatteringAnisotropy ?? 0.3,
       heightFalloff: options.heightFalloff ?? 0.5
-    }, options as unknown as Record<string, unknown>)),
+    }, options as unknown as Record<string, unknown>);
+    // Pass-through copies authored fields, but the runtime needs full 3-D
+    // extents even when the author supplied a scalar cube size.
+    return new AuraNodeBuilder<AuraEffectNode>({ ...node, size });
+  },
 }));

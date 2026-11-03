@@ -109,12 +109,15 @@ describe("GameAudio loops follow game state (no stacked drones)", () => {
   it("a loop cued before its buffer decoded starts once the buffer is ready (not as a silent buffer-less source)", async () => {
     const { audio, sources } = make();
     await audio.unlock();
-    await audio.cue("engine");
+    const cueStarted = audio.cue("engine");
     expect(sources().filter((s) => s.loop)).toHaveLength(0);
     audio.setCueLevel("engine", { volume: 0.25 });
-    await settle();
+    await cueStarted;
     const loops = sources().filter((s) => s.loop && s.started.length > 0);
     expect(loops).toHaveLength(1);
     expect(loops[0].buffer).not.toBeNull();
+    const gain = loops[0].connectedTo[0] as unknown as FakeGain;
+    expect(gain.gain.value).toBeGreaterThan(0.5 * 0.25 * 0.84);
+    expect(gain.gain.value).toBeLessThan(0.5 * 0.25 * 1.19);
   });
 });

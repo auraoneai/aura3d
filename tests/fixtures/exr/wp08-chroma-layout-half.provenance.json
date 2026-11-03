@@ -1,0 +1,29 @@
+{
+  "schema": "aura3d.exr-fixture-provenance/1",
+  "fixture": "wp08-chroma-layout-half.exr",
+  "sha256": "972c5f974dd731e8afa043b013e4a4ccb873cfb05bc50542ffd19667ba41c214",
+  "sizeBytes": 919,
+  "origin": "Original analytic pixel values authored for this Aura3D source test; no external image or engine asset was used.",
+  "fixtureLicense": "MIT",
+  "fixtureLicenseUrl": "https://spdx.org/licenses/MIT.html",
+  "generator": "generate-wp08-chroma-layout.cpp",
+  "generationCommand": "clang++ -std=c++17 -O1 tests/fixtures/exr/generate-wp08-chroma-layout.cpp $(pkg-config --cflags --libs OpenEXR) -o /tmp/chroma-layout-gen && /tmp/chroma-layout-gen tests/fixtures/exr/wp08-chroma-layout-half.exr zip-half",
+  "generatorCompiler": "Apple clang 21.0.0 (clang-2100.4.1.1)",
+  "encoder": {
+    "name": "OpenEXR",
+    "version": "3.4.6",
+    "license": "BSD-3-Clause",
+    "licenseUrl": "https://spdx.org/licenses/BSD-3-Clause.html"
+  },
+  "formatVersion": 2,
+  "compression": "ZIP",
+  "dataWindow": [-4, -2, 27, 13],
+  "dimensions": [32, 16],
+  "channelValuesAndChromaticities": "wp08-chroma-layout.provenance.json",
+  "channelTypes": "Y, A and root R are FLOAT; RY and BY are HALF.",
+  "referenceVerification": {
+    "encoderReadback": "OpenEXR 3.4.6 InputFile read every Y, RY, BY, A and root R sample exactly after ZIP encoding.",
+    "header": "exrheader 3.4.6 reported version 2, ZIP compression, the named FLOAT and HALF channels and sampling, chromaticities and the data window.",
+    "reproducibility": "Two consecutive generator invocations produced the same SHA-256."
+  }
+}

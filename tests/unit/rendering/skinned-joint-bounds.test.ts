@@ -26,6 +26,7 @@ import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
 import { IndexBuffer } from "../../../packages/rendering/src/IndexBuffer";
 import type { SkinningPaletteBinding } from "../../../packages/rendering/src/ForwardPass";
 import { GLTFLoader } from "../../../packages/assets/src/GLTFLoader";
+import { LoadContext } from "../../../packages/assets/src/LoadContext";
 import { createGLTFSceneAnimationRuntime } from "../../../packages/assets/src/GLTFAnimationRuntime";
 
 function flagsOf(values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>>): QrFlags {
@@ -58,7 +59,7 @@ function loadCesiumRig(): Promise<CesiumRig> {
     const base64 = readFileSync("tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb").toString("base64");
     const asset = await new GLTFLoader().load(
       { url: `data:model/gltf-binary;base64,${base64}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     );
     const clip = asset.animations[0];
     if (!clip) throw new Error("CesiumMan has no clip 0");

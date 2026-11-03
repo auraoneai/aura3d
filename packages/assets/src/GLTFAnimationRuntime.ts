@@ -1,9 +1,27 @@
-import { AnimationAction, AnimationClip, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
+import { AnimationAction, AnimationClip, AnimationLayer, AnimationMixer, consumeRootMotion, extractRootMotion, createFootIkRig, type RootMotionConsumption, type RootMotionSample, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationMixerSnapshot, type AnimationTrack, type AnimationValue, type FootIkRig, type GroundRaycaster, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
 import { bindSkeleton, compileClip, createPoseBuffer, makeClipAdditive, PoseMixer, type CompiledClip, type PoseBuffer, type PoseSampleSpec, type SkeletonBinding } from "@aura3d/animation/lanes";
 import { AURA3D_RETARGET_ENGINE_VERSION, bakeClipsInWorker, bakeRetargetedClipMap, createRetargetWorker, decompileCompiledClip, readRetargetCache, retargetCacheKey, retargetClipsHash, retargetSkeletonHash, writeRetargetCache, type BakeRetargetedClipsOptions } from "@aura3d/animation/lanes";
 import { composeMat4, decomposeMat4, invertMat4, MAX_RENDERABLE_SKINNING_JOINTS, multiplyMat4, Renderable, Scene, transformPoint, type Light, type Mat4, type Quat, type SceneNode, type Vec3 } from "@aura3d/scene";
 import { skinningPaletteCache } from "@aura3d/rendering";
-import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
+import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset, GLTFSkinBindingProvenance } from "./GLTFLoader";
+import { getGLTFLightAnimationTrackIdentity, getGLTFLightSceneIdentity } from "./GLTFLightPointerIdentity";
+
+type GLTFLightTrackIdentity = NonNullable<ReturnType<typeof getGLTFLightAnimationTrackIdentity>>;
+
+const animatedRenderableOwners = new WeakMap<Renderable, Set<WeakRef<SceneNode>>>();
+
+interface GLTFNodeTrackBinding {
+  readonly publicTarget: string;
+  readonly node?: SceneNode;
+}
+
+interface GLTFSampledAnimationTargets {
+  readonly sampledTargets: ReadonlyMap<string, AnimationValue>;
+  readonly unsupportedTracks: readonly string[];
+  readonly lightTrackIdentities?: ReadonlyMap<string, GLTFLightTrackIdentity>;
+  readonly ambiguousLightTargets?: ReadonlySet<string>;
+  readonly nodeTrackBindings?: ReadonlyMap<string, GLTFNodeTrackBinding>;
+}
 
 /**
  * Structural material sink for `material:<name>.<leaf>` animation-pointer tracks. Kept
@@ -21,15 +39,45 @@ export interface AddClipsFromRuntimeOptions extends BakeRetargetedClipsOptions {
   readonly worker?: boolean;
 }
 
+export type GLTFSceneAnimationMaterialBindingFailure = "missing-map" | "changed-map" | "disposed" | "ambiguous" | "unsupported";
+export type GLTFSceneAnimationMaterialBindingStatus = "available" | GLTFSceneAnimationMaterialBindingFailure;
+export type GLTFSceneAnimationMaterialApplyStatus = "applied" | GLTFSceneAnimationMaterialBindingFailure;
+/**
+ * Availability in the current scene/resource configuration. "unavailable"
+ * means the binding is structurally blocked, not merely waiting for lazy
+ * work. "unknown" must be used when the provider cannot make that distinction.
+ */
+export interface GLTFSceneAnimationBindingAvailability {
+  readonly status: "available" | "pending" | "unavailable" | "unknown";
+  readonly reason?: string;
+}
+export interface GLTFSceneAnimationMaterialBindingIssue {
+  readonly target: string;
+  readonly reason: GLTFSceneAnimationMaterialBindingFailure | "missing-material";
+}
+
 export interface GLTFSceneAnimationMaterialSink {
   readonly name: string;
   setAnimationParameter(parameter: string, value: number | readonly number[]): void;
+  /** Inspect the current live binding without writing to it. */
+  animationParameterStatus?(parameter: string): GLTFSceneAnimationMaterialBindingStatus;
+  /** Optional, explicit readiness/permanence evidence; old sinks remain valid. */
+  animationParameterAvailability?(parameter: string): GLTFSceneAnimationBindingAvailability;
+  /** Revalidate and apply atomically; failure must not be reported as a write. */
+  applyAnimationParameter?(parameter: string, value: number): GLTFSceneAnimationMaterialApplyStatus;
+  /** Apply a texture transform uniform only after revalidating its source binding. */
+  applyAnimationTextureTransform?(parameter: string, value: number | readonly [number, number]): GLTFSceneAnimationMaterialApplyStatus;
 }
 
 export interface GLTFSceneAnimationRuntimeOptions {
   readonly scene: Scene;
   readonly clips: readonly AnimationClip[];
-  readonly asset?: Pick<GLTFAsset, "meshes" | "skins">;
+  readonly asset?: Pick<GLTFAsset, "meshes" | "skins"> & Partial<Pick<GLTFAsset,
+    "animations" | "gltfAssetId" | "nodeIndexForTrack" | "sceneIncludesTrackTarget" | "skinBindingForNode"
+  >>;
+  readonly actorRoot?: SceneNode;
+  /** Overrides the asset's per-track lookup. An undefined index does not select a loaded asset's node. */
+  readonly nodeIndexForTrack?: (track: AnimationTrack) => number | undefined;
   /**
    * Resolves a glTF material name to its live material sink. When absent, every
    * `material:*` track is reported as a missing target (diagnosed, never silent).
@@ -49,6 +97,9 @@ export interface GLTFootPlantingLegConfig {
   readonly hip: string;
   readonly knee: string;
   readonly ankle: string;
+  readonly hipIndex?: number;
+  readonly kneeIndex?: number;
+  readonly ankleIndex?: number;
   readonly pole?: readonly [number, number, number];
   /** Optional measured joint-to-sole offset for asymmetric footwear. */
   readonly ankleHeight?: number;
@@ -252,6 +303,8 @@ export interface GLTFSceneAnimationApplyResult {
   readonly skinningPalettesUpdated: number;
   readonly missingTargets: readonly string[];
   readonly unsupportedTracks: readonly string[];
+  /** Material tracks that could not resolve or apply, with their current binding failure. */
+  readonly materialBindingIssues?: readonly GLTFSceneAnimationMaterialBindingIssue[];
   /**
    * PRD-06 §9.8/§13 — wall-clock split of this apply's animation phase, in
    * ms. Published only by the pose paths (`applyClips`, `applyPoseMixer`);
@@ -318,7 +371,15 @@ export interface GLTFSceneAnimationClipBindingDiagnostics {
   readonly boundNodeNames: readonly string[];
   readonly missingTargets: readonly string[];
   readonly unsupportedTracks: readonly string[];
+  /** Material binding failures are inspected against the current live resources. */
+  readonly materialBindingIssues?: readonly GLTFSceneAnimationMaterialBindingIssue[];
   readonly animatesSkeleton: boolean;
+}
+
+/** A binding assessment keyed by the actual track, not by its potentially shared target name. */
+export interface GLTFSceneAnimationTrackBindingDiagnostics extends GLTFSceneAnimationBindingAvailability {
+  readonly track: AnimationTrack;
+  readonly target: string;
 }
 
 export interface GLTFSceneAnimationMixerOptions extends GLTFSceneAnimationRuntimeOptions {
@@ -330,6 +391,8 @@ export interface GLTFSceneAnimationMixerOptions extends GLTFSceneAnimationRuntim
 
 export interface GLTFSceneAnimationMixerUpdateResult {
   readonly events: readonly AnimationEvent[];
+  /** Marker occurrences omitted after the action catch-up limit. */
+  readonly eventOverflow: number;
   readonly applyResult: GLTFSceneAnimationApplyResult;
   readonly activeActions: readonly GLTFSceneAnimationActionSnapshot[];
 }
@@ -343,10 +406,23 @@ export interface GLTFSceneAnimationMixerSnapshot extends GLTFSceneAnimationRunti
   readonly actions: readonly GLTFSceneAnimationActionSnapshot[];
 }
 
+/** Restorable state, separate from the existing diagnostic snapshot API. */
+export interface GLTFSceneAnimationMixerSerializedState {
+  readonly version: 1;
+  readonly elapsedTime: number;
+  readonly eventOverflow: number;
+  readonly pendingValues: readonly (readonly [string, AnimationValue])[];
+  readonly mixer: AnimationMixerSnapshot;
+}
+
 export interface GLTFSceneAnimationPlayOptions {
   readonly weight?: number;
   readonly timeScale?: number;
   readonly loopMode?: LoopMode;
+  /** Number of boundary crossings before repeat/ping-pong finishes. */
+  readonly repetitions?: number;
+  /** Keep the final pose active after playback finishes. */
+  readonly clampWhenFinished?: boolean;
   readonly reset?: boolean;
   readonly fadeDuration?: number;
 }
@@ -366,6 +442,7 @@ export interface GLTFSceneAnimationActionSnapshot {
 export interface GLTFImportedSkeletonIKOptions {
   readonly skinName?: string;
   readonly jointNames?: readonly [string, string, string];
+  readonly jointIndices?: readonly [number, number, number];
   readonly target: readonly [number, number, number];
   readonly pole?: readonly [number, number, number];
   readonly weight?: number;
@@ -394,6 +471,7 @@ export interface GLTFImportedSkeletonIKControllerSnapshot {
   readonly apply: boolean;
   readonly skinName?: string;
   readonly jointNames?: readonly [string, string, string];
+  readonly jointIndices?: readonly [number, number, number];
   readonly lastResult?: GLTFImportedSkeletonIKResult;
 }
 
@@ -637,8 +715,57 @@ export class GLTFImportedSkeletonIKController {
       apply: this.apply,
       ...(this.options.skinName === undefined ? {} : { skinName: this.options.skinName }),
       ...(this.options.jointNames === undefined ? {} : { jointNames: this.options.jointNames }),
+      ...(this.options.jointIndices === undefined ? {} : { jointIndices: this.options.jointIndices }),
       ...(this.lastResult === undefined ? {} : { lastResult: this.lastResult })
     };
+  }
+}
+
+interface RuntimeSkinningScope {
+  readonly nodesByIndex: Map<number, SceneNode[]>;
+  readonly nodesByName: Map<string, SceneNode[]>;
+  /** The enclosing imported scene instance, including when actorRoot is inside it. */
+  readonly container?: SceneNode;
+  hasNodeIdentity: boolean;
+}
+
+function gltfSceneContainerFor(node: SceneNode | null): SceneNode | undefined {
+  for (let current = node; current; current = current.parent) {
+    if (current.userData.gltfSceneContainer === true) return current;
+  }
+  return undefined;
+}
+
+function readSkinBindingProvenance(value: unknown): GLTFSkinBindingProvenance | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+  const record = value as Record<string, unknown>;
+  const isIndex = (index: unknown): index is number =>
+    typeof index === "number" && Number.isSafeInteger(index) && index >= 0;
+  if (typeof record.assetId !== "string" || record.assetId.length === 0
+    || !isIndex(record.nodeIndex) || !isIndex(record.meshIndex)
+    || !isIndex(record.primitiveIndex) || !isIndex(record.skinIndex)) return undefined;
+  return {
+    assetId: record.assetId,
+    nodeIndex: record.nodeIndex,
+    meshIndex: record.meshIndex,
+    primitiveIndex: record.primitiveIndex,
+    skinIndex: record.skinIndex
+  };
+}
+
+function duplicateAnimationClipNames(clips: readonly AnimationClip[]): Set<string> {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const clip of clips) {
+    if (seen.has(clip.name)) duplicates.add(clip.name);
+    seen.add(clip.name);
+  }
+  return duplicates;
+}
+
+function assertUnambiguousClipName(name: string, duplicates: ReadonlySet<string>): void {
+  if (duplicates.has(name)) {
+    throw new Error(`glTF animation clip "${name}" is ambiguous; select a clip object or register it under a unique name.`);
   }
 }
 
@@ -648,11 +775,11 @@ interface RuntimeSkinningBinding {
   readonly mesh: GLTFMeshAsset;
   readonly skin: GLTFSkinAsset;
   readonly bindWorldMatrix: Mat4;
-  /**
-   * PRD-06 §13: joint scene nodes resolved once per binding (a `nodesByName`
-   * string lookup per joint per frame was ~30% of the palette budget).
-   * Rebuilt while any joint is still missing so late-registered nodes resolve.
-   */
+  readonly scope: RuntimeSkinningScope;
+  readonly source?: {
+    readonly owner: SceneNode;
+    readonly provenance: GLTFSkinBindingProvenance;
+  };
   jointNodes?: (SceneNode | undefined)[];
   /** §13: persistent palette view — `matrices` is rewritten in place per frame. */
   paletteView?: { readonly jointCount: number; readonly matrices: Float32Array; paletteKey?: object };
@@ -664,8 +791,88 @@ interface RuntimeSkinningBinding {
   readonly paletteMatrices: Float32Array;
 }
 
+type RuntimePoseTrackBinding = {
+  readonly boneIndex?: number;
+  readonly channel: "position" | "rotation" | "scale";
+};
+
+class RuntimePoseMixer extends PoseMixer {
+  private readonly bindingsByClip = new WeakMap<CompiledClip, ReadonlyMap<number, RuntimePoseTrackBinding>>();
+  private readonly boneIndices: ReadonlyMap<SceneNode, number>;
+
+  constructor(
+    skeleton: SkeletonBinding,
+    nodes: readonly SceneNode[],
+    private readonly names: ReadonlyMap<string, SceneNode[]>,
+    private readonly resolveNode: (track: AnimationTrack) => SceneNode | undefined,
+    private readonly duplicateNames: ReadonlySet<string>
+  ) {
+    super({ skeleton });
+    this.boneIndices = new Map(nodes.map((node, index) => [node, index]));
+  }
+
+  override addClip(name: string, clip: AnimationClip): this {
+    return this.addCompiledClip(name, compileClip(clip), clip);
+  }
+
+  override addCompiledClip(name: string, compiled: CompiledClip, source: AnimationClip): this {
+    assertUnambiguousClipName(name, this.duplicateNames);
+    const bindings = new Map<number, RuntimePoseTrackBinding>();
+    for (let index = 0; index < compiled.tracks.length; index += 1) {
+      const compiledTrack = compiled.tracks[index]!;
+      const target = parseAnimationTarget(compiledTrack.target, this.names);
+      if (!target || target.kind !== "node" || target.path === "weights") continue;
+      const track = source.tracks[index];
+      const node = track && track.target === compiledTrack.target && track.valueType === compiledTrack.valueType
+        ? this.resolveNode(track)
+        : undefined;
+      const boneIndex = node === undefined ? undefined : this.boneIndices.get(node);
+      bindings.set(index, {
+        channel: target.path === "translation" ? "position" : target.path,
+        ...(boneIndex === undefined ? {} : { boneIndex })
+      });
+    }
+    const scopedClip = this.bindingsByClip.has(compiled) ? { ...compiled } : compiled;
+    this.bindingsByClip.set(scopedClip, bindings);
+    return super.addCompiledClip(name, scopedClip, source);
+  }
+
+  override clipAction(name: string, options?: Parameters<PoseMixer["clipAction"]>[1]): ReturnType<PoseMixer["clipAction"]> {
+    assertUnambiguousClipName(name, this.duplicateNames);
+    return super.clipAction(name, options);
+  }
+
+  override evaluateSamples(samples: readonly PoseSampleSpec[], out: PoseBuffer): void {
+    for (const sample of samples) assertUnambiguousClipName(sample.clipName, this.duplicateNames);
+    super.evaluateSamples(samples, out);
+  }
+
+  override resolveBindings(clip: CompiledClip): ReturnType<PoseMixer["resolveBindings"]> {
+    const scoped = this.bindingsByClip.get(clip);
+    if (!scoped) return super.resolveBindings(clip);
+    const fallback = super.resolveBindings({
+      ...clip,
+      tracks: clip.tracks.map((track, index) => scoped.has(index) ? { ...track, target: "" } : track)
+    });
+    for (const [trackIndex, binding] of scoped) {
+      if (binding.boneIndex === undefined) continue;
+      const track = clip.tracks[trackIndex]!;
+      const expectedType = binding.channel === "rotation" ? "quaternion" : "vector3";
+      const expectedStride = binding.channel === "rotation" ? 4 : 3;
+      if (track.valueType !== expectedType || track.stride !== expectedStride) {
+        throw new Error(`POSE_TRACK_TYPE_MISMATCH: ${track.target} requires ${expectedType} (${expectedStride} components), got ${track.valueType} (${track.stride}).`);
+      }
+      fallback.push({ trackIndex, boneIndex: binding.boneIndex, channel: binding.channel });
+    }
+    return fallback.sort((a, b) => a.trackIndex - b.trackIndex);
+  }
+}
+
 type WeightedAccumulator = { value: AnimationValue; weight: number; type: TrackValueType };
 type TargetAccumulator = { type: TrackValueType; base?: WeightedAccumulator; additive?: AnimationValue };
+type MaterialTrackBinding =
+  | { readonly status: "available"; readonly sink: GLTFSceneAnimationMaterialSink; readonly parameters: readonly string[]; readonly mode: "legacy" | "scalar" | "texture" }
+  | { readonly status: GLTFSceneAnimationMaterialBindingIssue["reason"] };
 
 /** PRD-06 §9.8 — wall clock, ms (`performance.now` where it exists). */
 function nowMs(): number {
@@ -735,9 +942,22 @@ export function invertMat4Into(out: Float32Array, a: ArrayLike<number>): Float32
 
 export class GLTFSceneAnimationRuntime {
   private readonly clipsByName = new Map<string, AnimationClip>();
+  private readonly registeredClips: AnimationClip[];
+  private readonly duplicateClipNames: Set<string>;
   private readonly nodesByName = new Map<string, SceneNode[]>();
+  private readonly nodesByIndex = new Map<number, SceneNode[]>();
+  private readonly nodeOrdinals = new Map<SceneNode, number>();
+  private readonly nodeScopes = new Map<SceneNode, RuntimeSkinningScope>();
+  private readonly trackSourceOverrides = new WeakMap<AnimationTrack, AnimationTrack>();
+  private readonly retargetedTracks = new WeakSet<AnimationTrack>();
+  private trackNodeCache = new WeakMap<AnimationTrack, SceneNode | null>();
+  private readonly morphRenderablesByNode = new Map<SceneNode, Renderable[]>();
+  private readonly blockedMorphNodes = new Set<SceneNode>();
   private readonly morphRenderablesByNodeName = new Map<string, Renderable[]>();
   private readonly skinningBindings: RuntimeSkinningBinding[] = [];
+  private readonly skinningBindingIssues: string[] = [];
+  private ambiguousActorScope = false;
+  private hasNodeIdentity = false;
   private disposed = false;
   private readonly footBindMatrices = new Map<string, { world: Mat4; local: Mat4 }>();
   private readonly footOrientationLocks = new Map<string, Mat4>();
@@ -760,6 +980,7 @@ export class GLTFSceneAnimationRuntime {
    */
   private poseState?: {
     readonly binding: SkeletonBinding;
+    readonly nodes: readonly SceneNode[];
     readonly mixer: PoseMixer;
     readonly compiled: Map<string, CompiledClip>;
     readonly pose: PoseBuffer;
@@ -786,11 +1007,75 @@ export class GLTFSceneAnimationRuntime {
   private lastConstraintEvalAtMs?: number;
 
   constructor(private readonly options: GLTFSceneAnimationRuntimeOptions) {
+    this.registeredClips = [...options.clips];
+    this.duplicateClipNames = duplicateAnimationClipNames(options.clips);
     for (const clip of options.clips) {
-      this.clipsByName.set(clip.name, clip);
+      if (!this.duplicateClipNames.has(clip.name)) this.clipsByName.set(clip.name, clip);
     }
     this.reindexScene();
     if (options.footPlanting) this.setFootPlanting(options.footPlanting);
+  }
+
+  private requireClip(name: string): AnimationClip {
+    this.assertAlive();
+    assertUnambiguousClipName(name, this.duplicateClipNames);
+    const clip = this.clipsByName.get(name);
+    if (!clip) throw new Error(`glTF animation clip "${name}" was not found.`);
+    return clip;
+  }
+
+  /**
+   * Verify the actual runtime being captured, rather than accepting a caller's
+   * description of a different actor or a name-compatible set of clips.
+   * Stateful PoseMixer/constraints and external material/foot resources have
+   * no serialization contract yet; silently discarding them would be unsafe.
+   */
+  assertSceneSerializationSource(scene: Scene, actorRoot: SceneNode, asset: GLTFAsset): void {
+    this.assertAlive();
+    if (this.options.scene !== scene || (this.options.actorRoot ?? scene.root) !== actorRoot || this.options.asset !== asset) {
+      throw new Error("glTF serialization requires the runtime's exact scene, actor root and loaded asset.");
+    }
+    this.assertSceneSerializationSupported();
+  }
+
+  /** @internal Shared by the real scene adapter and the mixer binding. */
+  assertSceneSerializationSupported(): void {
+    this.assertAlive();
+    const asset = this.options.asset;
+    if (!asset?.animations || this.options.clips.length !== asset.animations.length ||
+        this.options.clips.some((clip, index) => clip !== asset.animations![index]) ||
+        this.registeredClips.length !== asset.animations.length ||
+        this.registeredClips.some((clip, index) => clip !== asset.animations![index]) ||
+        (this.options.nodeIndexForTrack !== undefined && this.options.nodeIndexForTrack !== asset.nodeIndexForTrack)) {
+      throw new Error("glTF serialization requires the original loaded clips and track identity lookup.");
+    }
+    if (this.duplicateClipNames.size || this.ambiguousActorScope || this.skinningBindingIssues.length) {
+      throw new Error("glTF serialization cannot capture ambiguous clips, actor scopes or skin bindings.");
+    }
+    if (this.skinningBindings.some((binding) => !this.skinningBindingIsCurrent(binding))) {
+      throw new Error("glTF serialization cannot capture a stale skin binding.");
+    }
+    for (const binding of this.skinningBindings) {
+      for (let index = 0; index < binding.skin.joints.length; index += 1) {
+        const candidates = binding.scope.nodesByIndex.get(binding.skin.joints[index]!);
+        const joint = candidates?.length === 1 ? candidates[0] : undefined;
+        if (!joint || !this.nodeBelongsToScope(joint, binding.scope) ||
+            joint.userData.gltfNodeIndex !== binding.skin.joints[index] ||
+            (binding.jointNodes && binding.jointNodes[index] !== joint)) {
+          throw new Error("glTF serialization cannot capture a stale or missing joint binding.");
+        }
+      }
+    }
+    for (const clip of asset.animations) {
+      for (const track of clip.tracks) {
+        if (asset.nodeIndexForTrack?.(track) !== undefined && !this.animationNodeForTrack(track)) {
+          throw new Error("glTF serialization cannot capture a stale or missing node-track binding.");
+        }
+      }
+    }
+    if (this.poseState || this.footPlanting || this.poseConstraintModelMatrix || this.options.resolveAnimationMaterial) {
+      throw new Error("glTF serialization does not support PoseAction/PoseMixer state, constraints, foot planting or material resources.");
+    }
   }
 
   /**
@@ -801,6 +1086,7 @@ export class GLTFSceneAnimationRuntime {
    * model nodes move, and world-space locks stay valid across that refresh.
    */
   setFootPlanting(config: GLTFootPlantingConfig | undefined): void {
+    this.assertAlive();
     if (config !== undefined && config.legs.length === 0) {
       throw new Error("glTF foot planting requires at least one leg.");
     }
@@ -846,16 +1132,24 @@ export class GLTFSceneAnimationRuntime {
     const accumulators = new Map<string, TargetAccumulator>();
     const motionAccumulators = new Map<string, TargetAccumulator>();
     const unsupportedTracks: string[] = [];
+    const lightTrackIdentities = new Map<string, GLTFLightTrackIdentity>();
+    const nodeTrackBindings = new Map<string, GLTFNodeTrackBinding>();
     const names: string[] = [];
     let maxTime = 0;
+    let rootNode: SceneNode | undefined;
     // Finish validation and sampling before the physical authority can mutate the actor.
     for (const sample of samples) {
-      const clip = this.clipsByName.get(sample.clipName);
-      if (!clip) throw new Error(`glTF animation clip "${sample.clipName}" was not found.`);
+      const clip = this.requireClip(sample.clipName);
       const weight = sample.weight ?? 1;
       if (!Number.isFinite(weight) || weight < 0) throw new Error("glTF root motion blend weight must be finite and non-negative.");
       const extracted = extractRootMotion(clip, sample);
       if (weight === 0) continue;
+      const rootTracks = clip.tracks.filter((track) => track.target === sample.target);
+      const node = rootTracks.length === 1 ? this.animationNodeForTrack(rootTracks[0]!) : undefined;
+      if (!node || (rootNode && rootNode !== node)) {
+        throw new Error(`glTF root motion target "${sample.target}" is missing or ambiguous.`);
+      }
+      rootNode = node;
       const time = sample.loop && clip.duration > 0
         ? ((sample.toTime % clip.duration) + clip.duration) % clip.duration
         : Math.max(0, Math.min(clip.duration, sample.toTime));
@@ -863,13 +1157,19 @@ export class GLTFSceneAnimationRuntime {
       names.push(`${clip.name}@${time}x${weight}${sample.additive ? "+add" : ""}`);
       blendInto(motionAccumulators, "motion", "vector3", extracted.delta, weight, sample.additive === true);
       for (const track of clip.tracks) {
-        if (!parseAnimationTarget(track.target)) {
-          unsupportedTracks.push(track.target);
+        const identity = getGLTFLightAnimationTrackIdentity(track);
+        const publicTarget = identity?.publicTarget ?? track.target;
+        if (!parseAnimationTarget(publicTarget, this.nodesByName)) {
+          unsupportedTracks.push(publicTarget);
           continue;
         }
+        const nodeTrack = identity ? undefined : this.nodeTrackSample(track);
+        const sampleTarget = nodeTrack?.sampleTarget ?? identity?.sampleTarget ?? track.target;
+        if (nodeTrack) nodeTrackBindings.set(sampleTarget, nodeTrack.binding);
+        if (identity) lightTrackIdentities.set(sampleTarget, identity);
         // Consume each clip's own root before blending, including additive root tracks.
         const value = track.sample(track.target === sample.target ? 0 : time);
-        blendInto(accumulators, track.target, track.valueType, value, weight, sample.additive === true);
+        blendInto(accumulators, sampleTarget, track.valueType, value, weight, sample.additive === true);
       }
     }
     const values = new Map<string, AnimationValue>();
@@ -877,7 +1177,7 @@ export class GLTFSceneAnimationRuntime {
     const motionAccumulator = motionAccumulators.get("motion");
     const delta = motionAccumulator ? finalizeTargetBlend(motionAccumulator) as readonly [number, number, number] : [0, 0, 0] as const;
     const motion = consumeRootMotion({ target: "blend", fromTime: 0, toTime: maxTime, looped: samples.some(sample => sample.loop), delta }, options.worldFromLocal, options.move);
-    this.lastApply = this.applySampledTargets(`root-motion:${names.join(",")}`, maxTime, { sampledTargets: values, unsupportedTracks }, samples.length);
+    this.lastApply = this.applySampledTargets(`root-motion:${names.join(",")}`, maxTime, { sampledTargets: values, unsupportedTracks, lightTrackIdentities, nodeTrackBindings }, samples.length);
     return { motion, applyResult: this.lastApply };
   }
 
@@ -889,8 +1189,7 @@ export class GLTFSceneAnimationRuntime {
    * any translation track by displacement). Throws when nothing qualifies.
    */
   rootMotionTargetFor(clipName: string, bone?: string): string {
-    const clip = this.clipsByName.get(clipName);
-    if (!clip) throw new Error(`glTF animation clip "${clipName}" was not found.`);
+    const clip = this.requireClip(clipName);
     const isTranslation = (target: string) => target.endsWith(".translation") || target.endsWith(".position");
     if (bone !== undefined) {
       for (const leaf of ["translation", "position"] as const) {
@@ -932,8 +1231,7 @@ export class GLTFSceneAnimationRuntime {
    * has no matching rotation track.
    */
   rootMotionYawDelta(clipName: string, bone: string | undefined, fromTime: number, toTime: number, loop: boolean): number {
-    const clip = this.clipsByName.get(clipName);
-    if (!clip) throw new Error(`glTF animation clip "${clipName}" was not found.`);
+    const clip = this.requireClip(clipName);
     const node = bone ?? this.rootMotionTargetFor(clipName).replace(/\.(translation|position)$/, "");
     const track = clip.tracks.find(candidate =>
       candidate.valueType === "quaternion" &&
@@ -964,16 +1262,13 @@ export class GLTFSceneAnimationRuntime {
   }
 
   applyClipByName(name: string, time: number): GLTFSceneAnimationApplyResult {
-    const clip = this.clipsByName.get(name);
-    if (!clip) {
-      throw new Error(`glTF animation clip "${name}" was not found.`);
-    }
-    return this.applyClip(clip, time);
+    return this.applyClip(this.requireClip(name), time);
   }
 
   /** Names of every clip registered on this runtime, in declaration order. */
   clipNames(): readonly string[] {
-    return [...this.clipsByName.keys()];
+    this.assertAlive();
+    return this.registeredClips.map((clip) => clip.name);
   }
 
   /**
@@ -988,7 +1283,7 @@ export class GLTFSceneAnimationRuntime {
     readonly channelCount: number;
     readonly hasRootMotionCandidate: boolean;
   }[] {
-    return [...this.clipsByName.values()].map((clip) => ({
+    return this.registeredClips.map((clip) => ({
       name: clip.name,
       duration: clip.duration,
       channelCount: clip.tracks.length,
@@ -1002,7 +1297,19 @@ export class GLTFSceneAnimationRuntime {
    * Returns `undefined` when the runtime has no clips.
    */
   resolveClipName(name: string, options?: ResolveGLTFClipNameOptions): string | undefined {
-    return resolveGLTFClipName(name, this.clipNames(), options);
+    const names = this.clipNames();
+    if (names.includes(name)) {
+      assertUnambiguousClipName(name, this.duplicateClipNames);
+      return name;
+    }
+    const normalized = normalizeClipToken(name);
+    const exactMatches = names.filter((candidate) => normalizeClipToken(candidate) === normalized);
+    if (exactMatches.length > 1) {
+      throw new Error(`glTF animation clip "${name}" is ambiguous; select a clip object or use an exact unique name.`);
+    }
+    const resolved = resolveGLTFClipName(name, names, options);
+    if (resolved !== undefined) assertUnambiguousClipName(resolved, this.duplicateClipNames);
+    return resolved;
   }
 
   /**
@@ -1019,11 +1326,12 @@ export class GLTFSceneAnimationRuntime {
   }
 
   applyClip(clip: AnimationClip, time: number): GLTFSceneAnimationApplyResult {
+    this.assertAlive();
     if (!Number.isFinite(time) || time < 0) {
       throw new Error("glTF animation runtime time must be finite and non-negative.");
     }
     const wrappedTime = clip.duration > 0 && time > clip.duration ? time % clip.duration : Math.min(time, clip.duration);
-    this.lastApply = this.applySampledTargets(clip.name, wrappedTime, sampleClipTracks(clip, wrappedTime, 1, false));
+    this.lastApply = this.applySampledTargets(clip.name, wrappedTime, sampleClipTracks(clip, wrappedTime, 1, false, (track) => this.nodeTrackSample(track)));
     return this.lastApply;
   }
 
@@ -1041,6 +1349,7 @@ export class GLTFSceneAnimationRuntime {
    * blend but not by a given channel resets that channel to rest (rest reset).
    */
   applyClips(samples: readonly GLTFSceneAnimationClipSample[]): GLTFSceneAnimationApplyResult {
+    this.assertAlive();
     if (samples.length === 0) {
       throw new Error("glTF animation runtime blend requires at least one clip sample.");
     }
@@ -1050,19 +1359,17 @@ export class GLTFSceneAnimationRuntime {
     let springsMs = 0;
     const accumulators = new Map<string, TargetAccumulator>();
     const unsupportedTracks: string[] = [];
+    const lightTrackIdentities = new Map<string, GLTFLightTrackIdentity>();
+    const nodeTrackBindings = new Map<string, GLTFNodeTrackBinding>();
     let maxTime = 0;
     const names: string[] = [];
 
     const pose = this.poseRuntime();
     const poseSpecs: PoseSampleSpec[] = [];
     const touchedBones = new Set<number>();
-    const maskWeights = new Map<GLTFSceneAnimationClipBoneMask, Float32Array>();
 
     for (const sample of samples) {
-      const clip = this.clipsByName.get(sample.clipName);
-      if (!clip) {
-        throw new Error(`glTF animation clip "${sample.clipName}" was not found.`);
-      }
+      const clip = this.requireClip(sample.clipName);
       if (!Number.isFinite(sample.time) || sample.time < 0) {
         throw new Error("glTF animation runtime blend time must be finite and non-negative.");
       }
@@ -1075,40 +1382,56 @@ export class GLTFSceneAnimationRuntime {
       maxTime = Math.max(maxTime, wrappedTime);
       names.push(`${clip.name}@${Number(wrappedTime.toFixed(4))}x${Number(weight.toFixed(4))}${sample.additive ? "+add" : ""}`);
 
-      let bindsNodes = false;
+      const allowedBones = new Set<number>();
+      const boneMaskDecisions = new Map<number, { allowed: AnimationTrack[]; denied: boolean }>();
       for (const track of clip.tracks) {
-        const target = parseAnimationTarget(track.target);
+        const identity = getGLTFLightAnimationTrackIdentity(track);
+        const publicTarget = identity?.publicTarget ?? track.target;
+        const target = parseAnimationTarget(publicTarget, this.nodesByName);
         if (!target) {
-          unsupportedTracks.push(track.target);
+          unsupportedTracks.push(publicTarget);
           continue;
         }
         if (target.kind === "node" && target.path !== "weights") {
           // Node TRS: pose path when the name binds and the mask allows it.
-          const boneIndices = pose.binding.jointIndicesByName.get(target.nodeName);
-          if (boneIndices !== undefined && boneIndices.length > 0 && clipMaskAllowsNode(sample.mask, target.nodeName)) {
-            bindsNodes = true;
-            touchedBones.add(boneIndices[0]!);
-          } else if (boneIndices === undefined) {
+          const nodeTrack = this.nodeTrackSample(track)!;
+          const boneIndex = nodeTrack.binding.node === undefined ? -1 : pose.nodes.indexOf(nodeTrack.binding.node);
+          if (boneIndex >= 0) {
+            const decision = boneMaskDecisions.get(boneIndex) ?? { allowed: [], denied: false };
+            if (clipMaskAllowsNode(sample.mask, target.nodeName)) decision.allowed.push(track);
+            else decision.denied = true;
+            boneMaskDecisions.set(boneIndex, decision);
+          } else if (boneIndex < 0) {
             // Track points at a node absent from the scene — legacy path so
             // `missingTargets` reporting is unchanged.
-            blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+            nodeTrackBindings.set(nodeTrack.sampleTarget, nodeTrack.binding);
+            blendInto(accumulators, nodeTrack.sampleTarget, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
           }
           continue;
         }
-        blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+        const nodeTrack = target.kind === "node" ? this.nodeTrackSample(track) : undefined;
+        const sampleTarget = nodeTrack?.sampleTarget ?? identity?.sampleTarget ?? track.target;
+        if (nodeTrack) nodeTrackBindings.set(sampleTarget, nodeTrack.binding);
+        if (identity) lightTrackIdentities.set(sampleTarget, identity);
+        blendInto(accumulators, sampleTarget, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
       }
-      if (bindsNodes) {
+      for (const [boneIndex, decision] of boneMaskDecisions) {
+        if (decision.denied && decision.allowed.length > 0) {
+          for (const track of decision.allowed) {
+            const sampleTarget = `\u0000gltf-mask-conflict:${boneIndex}:${track.target}`;
+            nodeTrackBindings.set(sampleTarget, { publicTarget: track.target });
+            blendInto(accumulators, sampleTarget, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
+          }
+        } else if (decision.allowed.length > 0) {
+          allowedBones.add(boneIndex);
+          touchedBones.add(boneIndex);
+        }
+      }
+      if (allowedBones.size > 0) {
         let mask: Float32Array | null = null;
         if (sample.mask !== undefined) {
-          let cached = maskWeights.get(sample.mask);
-          if (cached === undefined) {
-            cached = new Float32Array(pose.binding.boneCount);
-            for (let i = 0; i < pose.binding.boneCount; i += 1) {
-              cached[i] = clipMaskAllowsNode(sample.mask, pose.binding.jointNames[i]!) ? 1 : 0;
-            }
-            maskWeights.set(sample.mask, cached);
-          }
-          mask = cached;
+          mask = new Float32Array(pose.binding.boneCount);
+          for (const index of allowedBones) mask[index] = 1;
         }
         poseSpecs.push({ clipName: clip.name, time: wrappedTime, weight, additive: sample.additive === true, mask });
       }
@@ -1133,14 +1456,6 @@ export class GLTFSceneAnimationRuntime {
       constraintsMs = constrained.constraintsMs;
       springsMs = constrained.springsMs;
       for (const boneIndex of constrained.touched) touchedBones.add(boneIndex);
-      for (const boneIndex of touchedBones) {
-        const name = pose.binding.jointNames[boneIndex]!;
-        const p = boneIndex * 3;
-        const q = boneIndex * 4;
-        sampledTargets.set(`${name}.translation`, [pose.pose.positions[p]!, pose.pose.positions[p + 1]!, pose.pose.positions[p + 2]!]);
-        sampledTargets.set(`${name}.rotation`, [pose.pose.rotations[q]!, pose.pose.rotations[q + 1]!, pose.pose.rotations[q + 2]!, pose.pose.rotations[q + 3]!]);
-        sampledTargets.set(`${name}.scale`, [pose.pose.scales[p]!, pose.pose.scales[p + 1]!, pose.pose.scales[p + 2]!]);
-      }
     }
     for (const [target, accumulator] of accumulators) {
       sampledTargets.set(target, finalizeTargetBlend(accumulator));
@@ -1149,9 +1464,10 @@ export class GLTFSceneAnimationRuntime {
     this.lastApply = this.applySampledTargets(
       `blend:${names.join(",")}`,
       maxTime,
-      { sampledTargets, unsupportedTracks },
+      { sampledTargets, unsupportedTracks, lightTrackIdentities, nodeTrackBindings },
       samples.length,
-      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart }
+      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart },
+      { pose: pose.pose, nodes: pose.nodes, indices: touchedBones }
     );
     return this.lastApply;
   }
@@ -1197,20 +1513,54 @@ export class GLTFSceneAnimationRuntime {
     if (sourceSkeleton === undefined) {
       throw new Error("addClipsFrom: source has no skeleton to retarget from.");
     }
-    const engineVersion = options.engineVersion ?? AURA3D_RETARGET_ENGINE_VERSION;
-    const sourceHash = `${retargetSkeletonHash(sourceSkeleton)}:${retargetClipsHash(sourceClips)}`;
-    const targetHash = retargetSkeletonHash(pose.binding);
-    const key = retargetCacheKey(engineVersion, sourceHash, targetHash);
-    let baked = options.cache === false ? undefined : await readRetargetCache(key);
+    const bakeOptions: BakeRetargetedClipsOptions = {
+      ...(options.map !== undefined ? { map: options.map } : {}),
+      hipsScale: options.hipsScale ?? "leg-length",
+      ...(options.fingers !== undefined ? { fingers: options.fingers } : {}),
+      ...(options.retarget !== undefined ? { retarget: options.retarget } : {})
+    };
+    let key: string | undefined;
+    let bakeSourceSkeleton = sourceSkeleton;
+    let bakeTargetSkeleton = pose.binding;
+    let bakeClips = sourceClips;
+    let effectiveOptions = bakeOptions;
+    let originalEvents: Map<string, CompiledClip["events"]> | undefined;
+    if (options.cache !== false && typeof structuredClone === "function") {
+      try {
+        const engineVersion = options.engineVersion ?? AURA3D_RETARGET_ENGINE_VERSION;
+        const sourceHash = `${retargetSkeletonHash(sourceSkeleton)}:${retargetClipsHash(sourceClips)}`;
+        const targetHash = retargetSkeletonHash(pose.binding);
+        const requestedKey = retargetCacheKey(engineVersion, sourceHash, targetHash, bakeOptions);
+        // Do not clone joint object references: retarget baking uses the
+        // captured names, index mapping and rest pose, not live scene nodes.
+        const cacheSkeleton = (value: SkeletonBinding): SkeletonBinding => ({
+          boneCount: value.boneCount, joints: [], jointNames: value.jointNames,
+          jointNodeIndices: value.jointNodeIndices, parentIndices: value.parentIndices,
+          missingNodeIndices: value.missingNodeIndices, jointIndicesByName: value.jointIndicesByName, restPose: value.restPose
+        });
+        const snapshot = structuredClone({
+          sourceSkeleton: cacheSkeleton(sourceSkeleton), targetSkeleton: cacheSkeleton(pose.binding),
+          clips: sourceClips, options: bakeOptions
+        });
+        const snapshotSourceHash = `${retargetSkeletonHash(snapshot.sourceSkeleton)}:${retargetClipsHash(snapshot.clips)}`;
+        const snapshotKey = retargetCacheKey(engineVersion, snapshotSourceHash, retargetSkeletonHash(snapshot.targetSkeleton), snapshot.options);
+        if (snapshotKey !== requestedKey) throw new Error("Retarget inputs changed during cache snapshot.");
+        originalEvents = new Map([...sourceClips].map(([name, clip]) => [name, clip.events?.map((event) => ({ ...event }))]));
+        bakeSourceSkeleton = snapshot.sourceSkeleton;
+        bakeTargetSkeleton = snapshot.targetSkeleton;
+        bakeClips = snapshot.clips;
+        effectiveOptions = snapshot.options;
+        key = snapshotKey;
+      } catch {
+        // A payload or option that cannot be represented safely must not reuse
+        // another bake. The actual retarget still runs with the original data.
+      }
+    }
+    let baked = key === undefined ? undefined : await readRetargetCache(key);
+    this.assertPoseGeneration(pose);
     if (baked === undefined) {
-      const bakeOptions: BakeRetargetedClipsOptions = {
-        ...(options.map !== undefined ? { map: options.map } : {}),
-        hipsScale: options.hipsScale ?? "leg-length",
-        ...(options.fingers !== undefined ? { fingers: options.fingers } : {}),
-        ...(options.retarget !== undefined ? { retarget: options.retarget } : {})
-      };
       const worker = options.worker === false ? undefined : createRetargetWorker();
-      const bakeInProcess = () => bakeRetargetedClipMap({ skeleton: sourceSkeleton, clips: sourceClips }, pose.binding, bakeOptions);
+      const bakeInProcess = () => bakeRetargetedClipMap({ skeleton: bakeSourceSkeleton, clips: bakeClips }, bakeTargetSkeleton, effectiveOptions);
       if (worker === undefined) {
         baked = bakeInProcess();
       } else {
@@ -1218,17 +1568,29 @@ export class GLTFSceneAnimationRuntime {
         // through `onerror` after construction succeeded. The bake is pure, so retry it in-process
         // rather than failing the caller's whole retarget.
         baked = await bakeClipsInWorker(worker, {
-          sourceSkeleton,
-          targetSkeleton: pose.binding,
-          clips: sourceClips,
-          options: bakeOptions
+          sourceSkeleton: bakeSourceSkeleton,
+          targetSkeleton: bakeTargetSkeleton,
+          clips: bakeClips,
+          options: effectiveOptions
         }).catch(bakeInProcess);
       }
-      if (options.cache !== false) void writeRetargetCache(key, baked);
+      this.assertPoseGeneration(pose);
+      if (key !== undefined) {
+        // The runtime exposes marker payloads below; isolate the pending write
+        // so a caller mutation cannot poison an already-computed cache key.
+        try { void writeRetargetCache(key, structuredClone(baked)); } catch { /* best-effort cache */ }
+      }
     }
     const names: string[] = [];
-    for (const [name, compiled] of baked) {
+    for (const name of baked.keys()) assertUnambiguousClipName(name, this.duplicateClipNames);
+    for (const [name, cached] of baked) {
+      const events = originalEvents?.get(name);
+      const compiled = events === undefined ? cached : { ...cached, events };
       const raw = decompileCompiledClip(name, compiled);
+      for (const track of raw.tracks) this.retargetedTracks.add(track);
+      const previous = this.registeredClips.findIndex((clip) => clip.name === name);
+      if (previous < 0) this.registeredClips.push(raw);
+      else this.registeredClips[previous] = raw;
       this.clipsByName.set(name, raw);
       pose.compiled.set(name, compiled);
       pose.mixer.addCompiledClip(name, compiled, raw);
@@ -1263,51 +1625,60 @@ export class GLTFSceneAnimationRuntime {
 
     const actions = pose.mixer.activeActions();
     let covered: ReadonlySet<number> | undefined;
-    if (options?.restPoseReset === false) {
+    const hasUnresolvedNodeTrack = actions.some((action) => {
+      const source = pose.mixer.sourceClip(action.clipName) ?? this.clipsByName.get(action.clipName);
+      return source?.tracks.some((track) => {
+        const target = parseAnimationTarget(track.target, this.nodesByName);
+        return target?.kind === "node" && target.path !== "weights" && !this.animationNodeForTrack(track);
+      }) === true;
+    });
+    if (options?.restPoseReset === false || hasUnresolvedNodeTrack || this.ambiguousActorScope) {
       const set = new Set<number>();
       for (const action of actions) {
-        for (const binding of action.bindings) set.add(binding.boneIndex);
+        const source = pose.mixer.sourceClip(action.clipName) ?? this.clipsByName.get(action.clipName);
+        for (const binding of action.bindings) {
+          const track = source?.tracks[binding.trackIndex];
+          const node = pose.nodes[binding.boneIndex];
+          if (track && node && this.animationNodeForTrack(track) === node) set.add(binding.boneIndex);
+        }
       }
-      for (const boneIndex of constrained.touched) set.add(boneIndex);
+      for (const boneIndex of constrained.touched) {
+        const node = pose.nodes[boneIndex];
+        const scope = node && this.nodeScopes.get(node);
+        if (node && scope && this.nodeBelongsToScope(node, scope)) set.add(boneIndex);
+      }
       covered = set;
     }
     // `covered === undefined` already emits every bound bone below — the
     // constraint union matters only on the covered path.
 
     const sampledTargets = new Map<string, AnimationValue>();
-    const writeBone = (boneIndex: number): void => {
-      const name = pose.binding.jointNames[boneIndex]!;
-      const p = boneIndex * 3;
-      const q = boneIndex * 4;
-      sampledTargets.set(`${name}.translation`, [pose.pose.positions[p]!, pose.pose.positions[p + 1]!, pose.pose.positions[p + 2]!]);
-      sampledTargets.set(`${name}.rotation`, [pose.pose.rotations[q]!, pose.pose.rotations[q + 1]!, pose.pose.rotations[q + 2]!, pose.pose.rotations[q + 3]!]);
-      sampledTargets.set(`${name}.scale`, [pose.pose.scales[p]!, pose.pose.scales[p + 1]!, pose.pose.scales[p + 2]!]);
-    };
-    if (covered === undefined) {
-      for (let i = 0; i < pose.binding.boneCount; i += 1) writeBone(i);
-    } else {
-      for (const boneIndex of covered) writeBone(boneIndex);
-    }
-
     // Legacy accumulator path for every track the pose binding does not
     // cover — sampled at each action's clock and effective weight, in active
     // action order (same semantics as `applyClips`' per-sample partition).
     const accumulators = new Map<string, TargetAccumulator>();
     const unsupportedTracks: string[] = [];
+    const lightTrackIdentities = new Map<string, GLTFLightTrackIdentity>();
+    const nodeTrackBindings = new Map<string, GLTFNodeTrackBinding>();
     for (const action of actions) {
-      const source = this.clipsByName.get(action.clipName);
+      const source = pose.mixer.sourceClip(action.clipName) ?? this.clipsByName.get(action.clipName);
       if (source === undefined) continue;
       for (const track of source.tracks) {
-        const target = parseAnimationTarget(track.target);
+        const identity = getGLTFLightAnimationTrackIdentity(track);
+        const publicTarget = identity?.publicTarget ?? track.target;
+        const target = parseAnimationTarget(publicTarget, this.nodesByName);
         if (target === undefined) {
-          unsupportedTracks.push(track.target);
+          unsupportedTracks.push(publicTarget);
           continue;
         }
         if (target.kind === "node" && target.path !== "weights") {
-          const boneIndices = pose.binding.jointIndicesByName.get(target.nodeName);
-          if (boneIndices !== undefined && boneIndices.length > 0) continue; // bound → mixer path
+          if (this.animationNodeForTrack(track)) continue; // bound → mixer path
         }
-        blendInto(accumulators, track.target, track.valueType, track.sample(action.time), action.effectiveWeight, action.additive);
+        const nodeTrack = target.kind === "node" ? this.nodeTrackSample(track) : undefined;
+        const sampleTarget = nodeTrack?.sampleTarget ?? identity?.sampleTarget ?? track.target;
+        if (nodeTrack) nodeTrackBindings.set(sampleTarget, nodeTrack.binding);
+        if (identity) lightTrackIdentities.set(sampleTarget, identity);
+        blendInto(accumulators, sampleTarget, track.valueType, track.sample(action.time), action.effectiveWeight, action.additive);
       }
     }
     for (const [target, accumulator] of accumulators) {
@@ -1318,9 +1689,10 @@ export class GLTFSceneAnimationRuntime {
     this.lastApply = this.applySampledTargets(
       `mixer:${options?.label ?? (actions.map((action) => action.clipName).join("+") || "idle")}`,
       active[0]?.time ?? 0,
-      { sampledTargets, unsupportedTracks },
+      { sampledTargets, unsupportedTracks, lightTrackIdentities, nodeTrackBindings },
       actions.length > 0 ? actions.length : undefined,
-      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart }
+      { mixerMs, constraintsMs, springsMs, paletteBytes: this.paletteBufferBytes(), cpuMs: nowMs() - phaseStart },
+      { pose: pose.pose, nodes: pose.nodes, indices: covered ?? pose.binding.jointNodeIndices }
     );
     return this.lastApply;
   }
@@ -1332,6 +1704,8 @@ export class GLTFSceneAnimationRuntime {
    * a synthesized name. Returns the registered clip key for `clipAction`/`playLayer`.
    */
   ensureAdditiveClip(clipName: string, reference?: { readonly clip?: string; readonly time?: number }): string {
+    assertUnambiguousClipName(clipName, this.duplicateClipNames);
+    if (reference?.clip !== undefined) assertUnambiguousClipName(reference.clip, this.duplicateClipNames);
     const pose = this.poseRuntime();
     const source = this.clipsByName.get(clipName);
     if (source === undefined) {
@@ -1342,6 +1716,11 @@ export class GLTFSceneAnimationRuntime {
     const name = `${clipName}#additive:${reference?.clip ?? "self"}:${referenceTime}`;
     if (!pose.compiled.has(name)) {
       const additive = makeClipAdditive(source, referenceClip === undefined ? referenceTime : { clip: referenceClip, time: referenceTime });
+      for (let index = 0; index < additive.tracks.length; index += 1) {
+        const generated = additive.tracks[index];
+        const original = source.tracks[index];
+        if (generated && original) this.trackSourceOverrides.set(generated, original);
+      }
       const compiledClip = compileClip(additive);
       pose.compiled.set(name, compiledClip);
       pose.mixer.addCompiledClip(name, compiledClip, additive);
@@ -1420,10 +1799,13 @@ export class GLTFSceneAnimationRuntime {
     return bytes;
   }
 
-  private poseRuntime(): { readonly binding: SkeletonBinding; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer; constraints: GLTFPoseConstraint[] } {
+  private poseRuntime(): { readonly binding: SkeletonBinding; readonly nodes: readonly SceneNode[]; readonly mixer: PoseMixer; readonly compiled: Map<string, CompiledClip>; readonly pose: PoseBuffer; constraints: GLTFPoseConstraint[] } {
+    this.assertAlive();
     if (this.poseState === undefined) {
-      const nodes: SceneNode[] = [];
-      this.options.scene.traverse((node) => nodes.push(node));
+      const nodes = [...this.nodeOrdinals.keys()].filter((node) => {
+        const scope = this.nodeScopes.get(node);
+        return scope !== undefined && this.nodeBelongsToScope(node, scope);
+      });
       const indexByNode = new Map<SceneNode, number>(nodes.map((node, index) => [node, index]));
       const binding = bindSkeleton({
         joints: nodes.map((_, index) => index),
@@ -1435,14 +1817,18 @@ export class GLTFSceneAnimationRuntime {
         jointNames: nodes.map((node) => node.name),
         parentIndices: nodes.map((node) => (node.parent === null ? -1 : indexByNode.get(node.parent) ?? -1))
       });
-      const mixer = new PoseMixer({ skeleton: binding });
+      const names = new Map(binding.jointIndicesByName);
+      for (const [name, indices] of names) {
+        if (indices.length !== 1 || this.ambiguousActorScope) names.delete(name);
+      }
+      const mixer = new RuntimePoseMixer({ ...binding, jointIndicesByName: names }, nodes, this.nodesByName, (track) => this.animationNodeForTrack(track), this.duplicateClipNames);
       const compiled = new Map<string, CompiledClip>();
       for (const [name, clip] of this.clipsByName) {
         const compiledClip = compileClip(clip);
         compiled.set(name, compiledClip);
         mixer.addCompiledClip(name, compiledClip, clip);
       }
-      this.poseState = { binding, mixer, compiled, pose: createPoseBuffer(binding.boneCount), constraints: [] };
+      this.poseState = { binding, nodes, mixer, compiled, pose: createPoseBuffer(binding.boneCount), constraints: [] };
     }
     return this.poseState;
   }
@@ -1451,8 +1837,10 @@ export class GLTFSceneAnimationRuntime {
     label: string,
     time: number,
     values: ReadonlyMap<string, AnimationValue>,
-    unsupportedTracks: readonly string[] = []
+    unsupportedTracks: readonly string[] = [],
+    lightBindings?: Pick<GLTFSampledAnimationTargets, "lightTrackIdentities" | "ambiguousLightTargets" | "nodeTrackBindings">
   ): GLTFSceneAnimationApplyResult {
+    this.assertAlive();
     if (label.trim().length === 0) {
       throw new Error("glTF animation runtime value application label cannot be empty.");
     }
@@ -1461,7 +1849,8 @@ export class GLTFSceneAnimationRuntime {
     }
     this.lastApply = this.applySampledTargets(label, time, {
       sampledTargets: values,
-      unsupportedTracks
+      unsupportedTracks,
+      ...lightBindings
     });
     return this.lastApply;
   }
@@ -1476,10 +1865,42 @@ export class GLTFSceneAnimationRuntime {
    */
   dispose(): void {
     if (this.disposed) return;
+    this.poseState?.mixer.dispose();
+    this.poseState = undefined;
     for (const binding of this.skinningBindings) {
       skinningPaletteCache.release(binding.paletteView?.paletteKey ?? binding);
     }
+    this.clipsByName.clear();
+    this.registeredClips.length = 0;
+    this.duplicateClipNames.clear();
+    this.nodesByName.clear();
+    this.nodesByIndex.clear();
+    this.nodeOrdinals.clear();
+    this.nodeScopes.clear();
+    this.trackNodeCache = new WeakMap();
+    this.morphRenderablesByNode.clear();
+    this.blockedMorphNodes.clear();
+    this.morphRenderablesByNodeName.clear();
+    this.skinningBindings.length = 0;
+    this.skinningBindingIssues.length = 0;
+    this.footBindMatrices.clear();
+    this.footOrientationLocks.clear();
+    this.footDescendantLocks.clear();
+    this.footSurfaceVertices.clear();
+    this.hasNodeIdentity = false;
+    this.footPlanting = undefined;
+    this.footRig = undefined;
+    this.lastApply = undefined;
     this.disposed = true;
+  }
+
+  private assertAlive(): void {
+    if (this.disposed) throw new Error("glTF animation runtime has been disposed.");
+  }
+
+  private assertPoseGeneration(pose: { readonly mixer: PoseMixer }): void {
+    this.assertAlive();
+    if (this.poseState !== pose) throw new Error("glTF animation runtime scene was reindexed during retargeting.");
   }
 
   /**
@@ -1525,18 +1946,56 @@ export class GLTFSceneAnimationRuntime {
       throw new Error("glTF imported skeleton IK requires an asset with at least one skin.");
     }
     const skin = resolveIKSkin(this.options.asset.skins, options.skinName);
-    const jointNames = options.jointNames ?? firstTwoBoneJointChain(skin);
+    const slots = options.jointIndices
+      ? options.jointIndices.map((index) => {
+        const matches = skin.joints.flatMap((candidate, slot) => candidate === index ? [slot] : []);
+        return matches.length === 1 ? matches[0]! : -1;
+      })
+      : options.jointNames
+        ? options.jointNames.map((name) => {
+          const matches = skin.jointNames.flatMap((candidate, index) => candidate === name ? [index] : []);
+          return matches.length === 1 ? matches[0]! : -1;
+        })
+        : [0, 1, 2];
+    const validSlots = slots.length === 3 && new Set(slots).size === 3 && slots.every((slot) => slot >= 0 && slot < skin.joints.length)
+      && (!options.jointNames || slots.every((slot, index) => skin.jointNames[slot] === options.jointNames![index]));
+    const jointNames = options.jointNames ?? (validSlots
+      ? slots.map((slot) => skin.jointNames[slot] ?? `#${skin.joints[slot]}`) as unknown as readonly [string, string, string]
+      : firstTwoBoneJointChain(skin));
     const [rootName, midName, endName] = jointNames;
     this.options.scene.updateWorldTransforms();
-    const rootNode = this.nodesByName.get(rootName)?.[0];
-    const midNode = this.nodesByName.get(midName)?.[0];
-    const endNode = this.nodesByName.get(endName)?.[0];
+    const scopes = new Set(this.skinningBindings.filter((binding) => binding.skin === skin && this.skinningBindingIsCurrent(binding)).map((binding) => binding.scope));
+    if (scopes.size === 0) {
+      for (const scope of new Set(this.nodeScopes.values())) {
+        const hasJoint = validSlots && slots.some((slot) => scope.hasNodeIdentity
+          ? scope.nodesByIndex.has(skin.joints[slot]!)
+          : scope.nodesByName.has(skin.jointNames[slot]!));
+        const candidate = scope.nodesByIndex.values().next().value?.[0] ?? scope.nodesByName.values().next().value?.[0];
+        if (hasJoint && candidate && this.nodeBelongsToScope(candidate, scope)) scopes.add(scope);
+      }
+    }
+    const scope = !this.ambiguousActorScope && scopes.size === 1 ? [...scopes][0] : undefined;
+    const resolveJoint = (slot: number): SceneNode | undefined => {
+      if (!validSlots || !scope) return undefined;
+      const candidates = scope.hasNodeIdentity
+        ? scope.nodesByIndex.get(skin.joints[slot]!)
+        : scope.nodesByName.get(skin.jointNames[slot]!);
+      const node = candidates?.length === 1 ? candidates[0] : undefined;
+      return node && this.nodeBelongsToScope(node, scope)
+        && (!scope.hasNodeIdentity || node.userData.gltfNodeIndex === skin.joints[slot]) ? node : undefined;
+    };
+    const rootNode = resolveJoint(slots[0]!);
+    const midNode = resolveJoint(slots[1]!);
+    const endNode = resolveJoint(slots[2]!);
     const missingTargets = [
       ...(!rootNode ? [`${skin.name}.${rootName}`] : []),
       ...(!midNode ? [`${skin.name}.${midName}`] : []),
       ...(!endNode ? [`${skin.name}.${endName}`] : [])
     ];
-    if (!rootNode || !midNode || !endNode) {
+    const invalidChain = rootNode && midNode && endNode
+      && (!rootNode.isAncestorOf(midNode) || !midNode.isAncestorOf(endNode));
+    if (invalidChain) missingTargets.push(`${skin.name}.invalid-chain`);
+    if (!rootNode || !midNode || !endNode || invalidChain) {
       return {
         skinName: skin.name,
         jointNames,
@@ -1591,7 +2050,8 @@ export class GLTFSceneAnimationRuntime {
   createTwoBoneIKController(options: GLTFImportedSkeletonIKControllerOptions): GLTFImportedSkeletonIKController {
     return new GLTFImportedSkeletonIKController(this, {
       ...(options.skinName === undefined ? {} : { skinName: options.skinName }),
-      ...(options.jointNames === undefined ? {} : { jointNames: options.jointNames })
+      ...(options.jointNames === undefined ? {} : { jointNames: options.jointNames }),
+      ...(options.jointIndices === undefined ? {} : { jointIndices: options.jointIndices })
     }, {
       target: options.target,
       ...(options.pole === undefined ? {} : { pole: options.pole }),
@@ -1610,28 +2070,94 @@ export class GLTFSceneAnimationRuntime {
   }
 
   snapshot(): GLTFSceneAnimationRuntimeSnapshot {
+    this.assertAlive();
     return {
-      clipCount: this.clipsByName.size,
+      clipCount: this.registeredClips.length,
       nodeTargetCount: this.nodesByName.size,
       morphTargetNodeCount: this.morphRenderablesByNodeName.size,
       skinningBindingCount: this.skinningBindings.length,
-      clips: [...this.clipsByName.keys()],
+      clips: this.registeredClips.map((clip) => clip.name),
       ...(this.lastApply ? { lastApply: this.lastApply } : {})
     };
   }
 
   inspectClipBindings(name?: string): readonly GLTFSceneAnimationClipBindingDiagnostics[] {
+    this.assertAlive();
     if (name !== undefined) {
-      const clip = this.clipsByName.get(name);
-      if (!clip) {
-        throw new Error(`glTF animation clip "${name}" was not found.`);
-      }
-      return [this.inspectClipBinding(clip)];
+      return [this.inspectClipBinding(this.requireClip(name))];
     }
-    return [...this.clipsByName.values()].map((clip) => this.inspectClipBinding(clip));
+    return this.registeredClips.map((clip) => this.inspectClipBinding(clip));
+  }
+
+  /**
+   * Inspect one exact track without conflating same-named channels. Missing
+   * external material sinks and unproven scene omissions have unknown
+   * permanence. Only a loader's complete selected-scene snapshot proves that
+   * a node/light source is absent rather than merely not attached yet.
+   */
+  inspectTrackBinding(track: AnimationTrack): GLTFSceneAnimationTrackBindingDiagnostics {
+    this.assertAlive();
+    const lightIdentity = getGLTFLightAnimationTrackIdentity(track);
+    const publicTarget = lightIdentity?.publicTarget ?? track.target;
+    const result = (status: GLTFSceneAnimationBindingAvailability["status"], reason?: string): GLTFSceneAnimationTrackBindingDiagnostics => ({
+      track, target: publicTarget, status, ...(reason ? { reason } : {})
+    });
+    const target = parseAnimationTarget(publicTarget, this.nodesByName);
+    if (!target) return result("unavailable", "unsupported-track");
+    if (target.kind === "material") {
+      const parameters = materialParametersForLeaf(target.leaf);
+      const transform = textureTransformLeaf(target.leaf);
+      if (!parameters || (isGuardedMaterialScalarLeaf(target.leaf) && track.valueType !== "scalar")
+        || (transform && (transform.component === "rotation"
+          ? track.valueType !== "scalar"
+          : track.valueType !== "number-array" || track.valueSize !== 2))) {
+        return result("unavailable", "unsupported-track");
+      }
+      const binding = this.materialTrackBinding(target.materialName, target.leaf);
+      const sink = this.options.resolveAnimationMaterial?.(target.materialName);
+      const availability = sink?.animationParameterAvailability?.(parameters[0]!);
+      if (availability && availability.status !== "available") {
+        return result(availability.status, availability.reason ?? (binding.status === "available" ? undefined : binding.status));
+      }
+      if (binding.status !== "available") return result("unknown", binding.status);
+      return result("available");
+    }
+    if (target.kind === "light") {
+      const lights = this.lightTrackTargets(target.lightName, lightIdentity, target.indexed === true);
+      if (lights.length > 0 && lights.every((light) => lightSupportsLeaf(light, lightIdentity?.leaf ?? target.leaf))) {
+        return result("available");
+      }
+      const inSourceScene = this.options.asset?.sceneIncludesTrackTarget?.(this.options.scene, track);
+      return result(inSourceScene === false ? "unavailable" : "unknown", "missing-light");
+    }
+    const node = this.animationNodeForTrack(track);
+    if (!node) {
+      // An overridden lookup may deliberately address a different source node.
+      const inSourceScene = this.options.nodeIndexForTrack !== undefined
+        && this.options.nodeIndexForTrack !== this.options.asset?.nodeIndexForTrack
+        ? undefined : this.options.asset?.sceneIncludesTrackTarget?.(this.options.scene, track);
+      return result(inSourceScene === false ? "unavailable" : "unknown", "missing-node");
+    }
+    if (target.path === "weights") {
+      const renderables = !this.blockedMorphNodes.has(node) ? this.morphRenderablesByNode.get(node) ?? [] : [];
+      // A resource provider may attach/rebuild morph renderables later. No
+      // completion signal currently distinguishes that from a permanent loss.
+      if (renderables.length === 0) return result("unknown", "missing-morph");
+    }
+    return result("available");
   }
 
   reindexScene(): void {
+    this.assertAlive();
+    const allNodes: SceneNode[] = [];
+    this.options.scene.traverse((node) => allNodes.push(node));
+    if (this.options.actorRoot && !allNodes.includes(this.options.actorRoot)) {
+      throw new Error("glTF animation actorRoot must be attached to the runtime scene.");
+    }
+    this.poseState?.mixer.dispose();
+    for (const binding of this.skinningBindings) {
+      skinningPaletteCache.release(binding.paletteView?.paletteKey ?? binding);
+    }
     this.poseState = undefined;
     this.lastConstraintEvalAtMs = undefined;
     this.options.scene.updateWorldTransforms();
@@ -1639,17 +2165,104 @@ export class GLTFSceneAnimationRuntime {
     this.footOrientationLocks.clear();
     this.footDescendantLocks.clear();
     this.nodesByName.clear();
+    this.nodesByIndex.clear();
+    this.nodeOrdinals.clear();
+    this.nodeScopes.clear();
+    this.hasNodeIdentity = false;
+    this.trackNodeCache = new WeakMap();
+    this.morphRenderablesByNode.clear();
+    this.blockedMorphNodes.clear();
     this.morphRenderablesByNodeName.clear();
     this.skinningBindings.length = 0;
+    this.skinningBindingIssues.length = 0;
     this.footSurfaceVertices.clear();
-    this.options.scene.traverse((node) => {
+    const root = this.options.actorRoot ?? this.options.scene.root;
+    const scopedNodes: SceneNode[] = [];
+    root.traverse((node) => scopedNodes.push(node));
+    const selected = new Set(scopedNodes);
+    this.ambiguousActorScope = scopedNodes.filter((node) => node.userData.gltfSceneContainer === true).length > 1;
+    const renderableCounts = new Map<Renderable, number>();
+    const blockedRenderables = new Set<SceneNode>();
+    for (const node of allNodes) {
+      const renderable = node.renderable;
+      if (renderable && ((this.options.asset && this.options.asset.skins.length > 0 && renderable.skinning) || renderable.morphWeights.length > 0)) {
+        renderableCounts.set(renderable, (renderableCounts.get(renderable) ?? 0) + 1);
+      }
+    }
+    for (const node of scopedNodes) {
+      const renderable = node.renderable;
+      if (!renderable || !renderableCounts.has(renderable)) continue;
+      const assetId = this.options.asset?.gltfAssetId;
+      if (assetId !== undefined && gltfSceneContainerFor(node)?.userData.gltfAssetId !== assetId) continue;
+      const owners = animatedRenderableOwners.get(renderable);
+      let otherOwner = false;
+      for (const reference of owners ?? []) {
+        const owner = reference.deref();
+        if (!owner || owner.renderable !== renderable) owners!.delete(reference);
+        else if (owner !== node) otherOwner = true;
+      }
+      if ((renderableCounts.get(renderable) ?? 0) > 1 || otherOwner) {
+        if (Object.getPrototypeOf(renderable) !== Renderable.prototype) {
+          blockedRenderables.add(node);
+          continue;
+        }
+        node.renderable = Object.assign(Object.create(Object.getPrototypeOf(renderable)) as Renderable, renderable, {
+          ...(renderable.skinning ? { skinning: { jointCount: renderable.skinning.jointCount, matrices: new Float32Array(renderable.skinning.matrices) } } : {}),
+          morphWeights: [...renderable.morphWeights]
+        });
+      }
+      const owned = node.renderable!;
+      const scopedOwners = animatedRenderableOwners.get(owned) ?? new Set<WeakRef<SceneNode>>();
+      if (![...scopedOwners].some((reference) => reference.deref() === node)) scopedOwners.add(new WeakRef(node));
+      animatedRenderableOwners.set(owned, scopedOwners);
+    }
+    for (const node of scopedNodes) {
+      this.nodeOrdinals.set(node, this.nodeOrdinals.size);
       this.footBindMatrices.set(node.id, { world: [...node.transform.worldMatrix] as Mat4, local: [...node.transform.localMatrix] as Mat4 });
       const nodes = this.nodesByName.get(node.name) ?? [];
       nodes.push(node);
       this.nodesByName.set(node.name, nodes);
-    });
-    for (const { node, renderable } of this.options.scene.collectRenderables()) {
+      const parentScope = node.parent ? this.nodeScopes.get(node.parent) : undefined;
+      const scope = node.userData.gltfSceneContainer === true || !parentScope
+        ? {
+          nodesByIndex: new Map<number, SceneNode[]>(),
+          nodesByName: new Map<string, SceneNode[]>(),
+          container: gltfSceneContainerFor(node),
+          hasNodeIdentity: false
+        }
+        : parentScope;
+      this.nodeScopes.set(node, scope);
+      const named = scope.nodesByName.get(node.name) ?? [];
+      named.push(node);
+      scope.nodesByName.set(node.name, named);
+      if (Object.prototype.hasOwnProperty.call(node.userData, "gltfNodeIndex")) {
+        scope.hasNodeIdentity = true;
+        this.hasNodeIdentity = true;
+        const nodeIndex = node.userData.gltfNodeIndex;
+        if (typeof nodeIndex === "number" && Number.isSafeInteger(nodeIndex) && nodeIndex >= 0) {
+          const indexed = scope.nodesByIndex.get(nodeIndex) ?? [];
+          indexed.push(node);
+          scope.nodesByIndex.set(nodeIndex, indexed);
+          const globallyIndexed = this.nodesByIndex.get(nodeIndex) ?? [];
+          globallyIndexed.push(node);
+          this.nodesByIndex.set(nodeIndex, globallyIndexed);
+        }
+      }
+    }
+    const renderables = this.options.scene.collectRenderables().filter(({ node }) => selected.has(node));
+    for (const { node, renderable } of renderables) {
       if (renderable.morphWeights.length === 0) continue;
+      if (blockedRenderables.has(node)) {
+        this.blockedMorphNodes.add(node);
+        if (node.parent && selected.has(node.parent)) this.blockedMorphNodes.add(node.parent);
+        continue;
+      }
+      for (const owner of [node, node.parent]) {
+        if (!owner || !selected.has(owner)) continue;
+        const owned = this.morphRenderablesByNode.get(owner) ?? [];
+        owned.push(renderable);
+        this.morphRenderablesByNode.set(owner, owned);
+      }
       for (const nodeName of new Set([node.name, node.parent?.name].filter((name): name is string => typeof name === "string" && name.length > 0))) {
         const renderables = this.morphRenderablesByNodeName.get(nodeName) ?? [];
         renderables.push(renderable);
@@ -1657,19 +2270,223 @@ export class GLTFSceneAnimationRuntime {
       }
     }
     if (this.options.asset) {
-      const meshesByName = new Map(this.options.asset.meshes.map((mesh) => [mesh.name, mesh]));
-      for (const { node, renderable } of this.options.scene.collectRenderables()) {
+      const asset = this.options.asset;
+      const meshesByName = new Map<string, GLTFMeshAsset[]>();
+      const meshesBySource = new Map<string, GLTFMeshAsset[]>();
+      for (const mesh of asset.meshes) {
+        const matches = meshesByName.get(mesh.name) ?? [];
+        matches.push(mesh);
+        meshesByName.set(mesh.name, matches);
+        const key = `${mesh.sourceMeshIndex}:${mesh.primitiveIndex}`;
+        const sourceMatches = meshesBySource.get(key) ?? [];
+        sourceMatches.push(mesh);
+        meshesBySource.set(key, sourceMatches);
+      }
+      // A source primitive may appear only once under a particular authored
+      // mesh node. Count before binding so duplicates fail closed on both sides.
+      const primitiveCounts = new Map<SceneNode, Map<string, number>>();
+      for (const { node, renderable } of renderables) {
+        const provenance = renderable.skinning && readSkinBindingProvenance(node.userData.gltfSkinBinding);
+        if (!provenance) continue;
+        const owner = node.userData.gltfNodeIndex === provenance.nodeIndex ? node : node.parent;
+        if (!owner || owner.userData.gltfNodeIndex !== provenance.nodeIndex) continue;
+        const counts = primitiveCounts.get(owner) ?? new Map<string, number>();
+        const key = `${provenance.meshIndex}:${provenance.primitiveIndex}`;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+        primitiveCounts.set(owner, counts);
+      }
+      for (const { node, renderable } of renderables) {
         if (!renderable.skinning) continue;
-        const mesh = meshesByName.get(renderable.geometry);
-        const skin = mesh?.skinIndex === undefined ? undefined : this.options.asset.skins[mesh.skinIndex];
-        if (!mesh || !skin || skin.joints.length > MAX_RENDERABLE_SKINNING_JOINTS) continue;
-        this.skinningBindings.push({ node, renderable, mesh, skin, bindWorldMatrix: [...node.transform.worldMatrix] as Mat4, paletteMatrices: new Float32Array(skin.joints.length * 16) });
+        const scope = this.nodeScopes.get(node);
+        if (blockedRenderables.has(node) || !scope || !this.nodeBelongsToScope(node, scope)) {
+          this.skinningBindingIssues.push(`${node.name}.skinning`);
+          continue;
+        }
+        let mesh: GLTFMeshAsset | undefined;
+        let skin: GLTFSkinAsset | undefined;
+        let source: RuntimeSkinningBinding["source"];
+        const hasProvenance = Object.prototype.hasOwnProperty.call(node.userData, "gltfSkinBinding");
+        const requiresProvenance = hasProvenance || asset.gltfAssetId !== undefined
+          || asset.skinBindingForNode !== undefined || scope.container?.userData.gltfAssetId !== undefined;
+        if (requiresProvenance) {
+          const provenance = readSkinBindingProvenance(node.userData.gltfSkinBinding);
+          const canonical = provenance && asset.skinBindingForNode?.(provenance.nodeIndex);
+          const owners = provenance && scope.nodesByIndex.get(provenance.nodeIndex);
+          const owner = owners?.length === 1 ? owners[0] : undefined;
+          const key = provenance && `${provenance.meshIndex}:${provenance.primitiveIndex}`;
+          const candidates = key && meshesBySource.get(key);
+          const candidate = candidates && candidates.length === 1 ? candidates[0] : undefined;
+          if (provenance && owner && candidate && key && asset.gltfAssetId === provenance.assetId
+            && scope.container?.userData.gltfAssetId === provenance.assetId
+            && canonical?.meshIndex === provenance.meshIndex && canonical.skinIndex === provenance.skinIndex
+            && this.nodeBelongsToScope(owner, scope)
+            && (owner === node || (node.parent === owner && !Object.prototype.hasOwnProperty.call(node.userData, "gltfNodeIndex")))
+            && primitiveCounts.get(owner)?.get(key) === 1
+            && candidate.name === renderable.geometry) {
+            mesh = candidate;
+            skin = asset.skins[provenance.skinIndex];
+            source = { owner, provenance };
+          }
+        } else {
+          // Compatibility for older structural assets/scenes without any
+          // loader provenance. Never downgrade a provenance-bearing scene.
+          const meshes = meshesByName.get(renderable.geometry);
+          mesh = meshes?.length === 1 ? meshes[0] : undefined;
+          skin = mesh?.skinIndex === undefined ? undefined : asset.skins[mesh.skinIndex];
+        }
+        if (!mesh || !skin || skin.joints.length === 0 || skin.joints.length > MAX_RENDERABLE_SKINNING_JOINTS
+          || renderable.skinning.jointCount !== skin.joints.length) {
+          this.skinningBindingIssues.push(`${node.name}.skinning`);
+          continue;
+        }
+        this.skinningBindings.push({
+          node, renderable, mesh, skin, scope,
+          ...(source ? { source } : {}),
+          bindWorldMatrix: [...node.transform.worldMatrix] as Mat4,
+          paletteMatrices: new Float32Array(skin.joints.length * 16)
+        });
       }
     }
   }
 
+  /** Check current ancestry as well as the indexed snapshot; reparenting must not cross actors. */
+  private nodeBelongsToScope(node: SceneNode, scope: RuntimeSkinningScope): boolean {
+    const root = this.options.actorRoot ?? this.options.scene.root;
+    let attached: SceneNode | null = root;
+    while (attached && attached !== this.options.scene.root) attached = attached.parent;
+    if (!attached) return false;
+    let current: SceneNode | null = node;
+    while (current && current !== root) current = current.parent;
+    if (!current || gltfSceneContainerFor(node) !== scope.container) return false;
+    const assetId = this.options.asset?.gltfAssetId;
+    return assetId === undefined || (typeof assetId === "string" && assetId.length > 0
+      && scope.container?.userData.gltfAssetId === assetId);
+  }
+
+  private skinningBindingIsCurrent(binding: RuntimeSkinningBinding): boolean {
+    const { node, renderable, scope, source, mesh, skin } = binding;
+    if (node.renderable !== renderable || !renderable.skinning || renderable.skinning.jointCount !== skin.joints.length
+      || !this.nodeBelongsToScope(node, scope)) return false;
+    if (!source) return true;
+    const asset = this.options.asset;
+    const current = readSkinBindingProvenance(node.userData.gltfSkinBinding);
+    const original = source.provenance;
+    const canonical = asset?.skinBindingForNode?.(original.nodeIndex);
+    const owners = scope.nodesByIndex.get(original.nodeIndex);
+    return current !== undefined && current.assetId === original.assetId
+      && current.nodeIndex === original.nodeIndex && current.meshIndex === original.meshIndex
+      && current.primitiveIndex === original.primitiveIndex && current.skinIndex === original.skinIndex
+      && asset?.gltfAssetId === original.assetId && scope.container?.userData.gltfAssetId === original.assetId
+      && canonical?.meshIndex === original.meshIndex && canonical.skinIndex === original.skinIndex
+      && asset.skins[original.skinIndex] === skin && asset.meshes.includes(mesh)
+      && mesh.sourceMeshIndex === original.meshIndex && mesh.primitiveIndex === original.primitiveIndex
+      && mesh.name === renderable.geometry
+      && owners?.length === 1 && owners[0] === source.owner
+      && source.owner.userData.gltfNodeIndex === original.nodeIndex
+      && this.nodeBelongsToScope(source.owner, scope)
+      && (node === source.owner || (node.parent === source.owner && !Object.prototype.hasOwnProperty.call(node.userData, "gltfNodeIndex")));
+  }
+
+  animationNodeForTrack(track: AnimationTrack): SceneNode | undefined {
+    const cached = this.trackNodeCache.get(track);
+    if (cached !== undefined) {
+      const scope = cached && this.nodeScopes.get(cached);
+      const original = this.trackSourceOverrides.get(track) ?? track;
+      const index = (this.options.nodeIndexForTrack ?? this.options.asset?.nodeIndexForTrack)?.(original);
+      return cached && scope && this.nodeBelongsToScope(cached, scope)
+        && (index === undefined || !this.hasNodeIdentity || cached.userData.gltfNodeIndex === index) ? cached : undefined;
+    }
+    const resolved = this.resolveAnimationNodeForTrack(track);
+    this.trackNodeCache.set(track, resolved ?? null);
+    return resolved;
+  }
+
+  private resolveAnimationNodeForTrack(track: AnimationTrack): SceneNode | undefined {
+    track = this.trackSourceOverrides.get(track) ?? track;
+    const target = parseAnimationTarget(track.target, this.nodesByName);
+    if (!target || target.kind !== "node" || this.ambiguousActorScope) return undefined;
+    const asset = this.options.asset;
+    const lookup = this.options.nodeIndexForTrack ?? asset?.nodeIndexForTrack;
+    const explicit = lookup?.(track);
+    if (explicit !== undefined) {
+      if (!Number.isSafeInteger(explicit) || explicit < 0) return undefined;
+      if (!this.hasNodeIdentity && asset?.gltfAssetId === undefined) return this.animationNodeForName(target.nodeName);
+      return this.uniqueAnimationNode(this.nodesByIndex.get(explicit), explicit);
+    }
+    // Loader-backed tracks have source identity. Do not bind a foreign or
+    // reconstructed track by a coincidentally matching name. Retargeted
+    // tracks are explicitly generated for this actor and can use its names.
+    if (asset?.gltfAssetId !== undefined && lookup
+      && (this.options.nodeIndexForTrack !== undefined || !this.retargetedTracks.has(track))) return undefined;
+    if (asset?.animations?.some((clip) => clip.tracks.includes(track))) {
+      const indices = new Set<number>();
+      for (const skin of asset.skins) {
+        for (let slot = 0; slot < skin.jointNames.length; slot += 1) {
+          if (skin.jointNames[slot] === target.nodeName && skin.joints[slot] !== undefined) indices.add(skin.joints[slot]!);
+        }
+      }
+      if (indices.size > 1) return undefined;
+      if (indices.size === 1) {
+        if (!this.hasNodeIdentity) return this.animationNodeForName(target.nodeName);
+        const index = [...indices][0]!;
+        return this.uniqueAnimationNode(this.nodesByIndex.get(index), index);
+      }
+    }
+    return this.animationNodeForName(target.nodeName);
+  }
+
+  private animationNodeForName(name: string): SceneNode | undefined {
+    if (this.ambiguousActorScope) return undefined;
+    return this.uniqueAnimationNode(this.nodesByName.get(name));
+  }
+
+  private uniqueAnimationNode(nodes: readonly SceneNode[] | undefined, index?: number): SceneNode | undefined {
+    const candidates = nodes?.filter((node) => {
+      const scope = this.nodeScopes.get(node);
+      return scope !== undefined && this.nodeBelongsToScope(node, scope)
+        && (index === undefined || node.userData.gltfNodeIndex === index);
+    });
+    return candidates?.length === 1 ? candidates[0] : undefined;
+  }
+
+  private animationNodeForIndexOrName(name: string, index: number | undefined): SceneNode | undefined {
+    if (index === undefined) return this.animationNodeForName(name);
+    if (this.ambiguousActorScope || !Number.isSafeInteger(index) || index < 0) return undefined;
+    return this.uniqueAnimationNode(this.nodesByIndex.get(index), index);
+  }
+
+  private nodeTrackSample(track: AnimationTrack): { readonly sampleTarget: string; readonly binding: GLTFNodeTrackBinding } | undefined {
+    const target = parseAnimationTarget(track.target, this.nodesByName);
+    if (!target || target.kind !== "node") return undefined;
+    const node = this.animationNodeForTrack(track);
+    const ordinal = node === undefined ? undefined : this.nodeOrdinals.get(node);
+    const sampleTarget = ordinal === undefined
+      ? `\u0000gltf-missing:${track.target}`
+      : `\u0000gltf-node:${ordinal}.${target.path}`;
+    return { sampleTarget, binding: { publicTarget: track.target, ...(node ? { node } : {}) } };
+  }
+
   private findSceneLight(name: string): Light | undefined {
-    return this.options.scene.collectLights().find((light) => light.name === name);
+    if (this.ambiguousActorScope) return undefined;
+    const lights = this.options.scene.collectLights().filter((light) => this.nodeOrdinals.has(light) && light.name === name);
+    return lights.length === 1 ? lights[0] : undefined;
+  }
+
+  /** Resolve imported definitions by their loader-owned identity, never by name. */
+  private lightTrackTargets(name: string, identity?: GLTFLightTrackIdentity, indexed = false): readonly Light[] {
+    if (identity) {
+      const lights = this.options.scene.collectLights().filter((light) => {
+        if (!this.nodeOrdinals.has(light)) return false;
+        const source = getGLTFLightSceneIdentity(light);
+        return source !== undefined && source.owner === identity.owner && source.definitionIndex === identity.definitionIndex;
+      });
+      const scopes = new Set(lights.map((light) => this.nodeScopes.get(light)));
+      return scopes.size <= 1 ? lights : [];
+    }
+    // An unregistered indexed target has no source ownership and cannot safely bind.
+    if (indexed) return [];
+    const light = this.findSceneLight(name);
+    return light ? [light] : [];
   }
 
   /**
@@ -1697,9 +2514,9 @@ export class GLTFSceneAnimationRuntime {
     const missingLegNodes: string[] = [];
     const resolved: { readonly side: "left" | "right"; readonly hip: SceneNode; readonly knee: SceneNode; readonly ankle: SceneNode; readonly pole: readonly [number, number, number] | undefined; readonly contact?: boolean; readonly support?: GLTFootPlantingLegConfig["support"] }[] = [];
     for (const leg of config.legs) {
-      const hip = this.nodesByName.get(leg.hip)?.[0];
-      const knee = this.nodesByName.get(leg.knee)?.[0];
-      const ankle = this.nodesByName.get(leg.ankle)?.[0];
+      const hip = this.animationNodeForIndexOrName(leg.hip, leg.hipIndex);
+      const knee = this.animationNodeForIndexOrName(leg.knee, leg.kneeIndex);
+      const ankle = this.animationNodeForIndexOrName(leg.ankle, leg.ankleIndex);
       if (!hip) missingLegNodes.push(`${leg.side}:hip:${leg.hip}`);
       if (!knee) missingLegNodes.push(`${leg.side}:knee:${leg.knee}`);
       if (!ankle) missingLegNodes.push(`${leg.side}:ankle:${leg.ankle}`);
@@ -1813,6 +2630,11 @@ export class GLTFSceneAnimationRuntime {
       const actorMatrix = toLocal ? multiplyMat4(toLocal, desired) : desired;
       const parent = entry.ankle.parent;
       const local = parent ? multiplyMat4(invertMat4(parent.transform.worldMatrix), actorMatrix) : actorMatrix;
+      if ((!toWorld || (toWorld[3] === 0 && toWorld[7] === 0 && toWorld[11] === 0 && toWorld[15] === 1))
+        && Math.abs(local[3]) <= 1e-12 && Math.abs(local[7]) <= 1e-12
+        && Math.abs(local[11]) <= 1e-12 && Math.abs(local[15] - 1) <= 1e-12) {
+        local[3] = 0; local[7] = 0; local[11] = 0; local[15] = 1;
+      }
       entry.ankle.transform.setFromLocalMatrix(local);
       // Toe joints remain in their touchdown relationship during stance; animated
       // toe curl otherwise moves the sole while the ankle still reports zero slip.
@@ -1848,44 +2670,66 @@ export class GLTFSceneAnimationRuntime {
     };
   }
 
-  /**
-   * Applies one sampled `material:<name>.<leaf-path>` value to the live material sink.
-   * Returns false (→ missing target, diagnosed) when no sink resolves, the leaf maps to no
-   * renderer uniform, or the value shape is wrong. Throws on a sampled value that is not
-   * finite, matching the node-path converters below.
-   */
-  private applyMaterialTrackValue(materialName: string, leafPath: string, value: AnimationValue, trackTarget: string): boolean {
+  private materialTrackBinding(materialName: string, leafPath: string): MaterialTrackBinding {
     const parameters = materialParametersForLeaf(leafPath);
+    if (parameters === undefined) return { status: "unsupported" };
     const sink = this.options.resolveAnimationMaterial?.(materialName);
-    if (parameters === undefined || sink === undefined) return false;
-    const numeric = asMaterialLeafValue(value, trackTarget);
-    for (const parameter of parameters) {
-      sink.setAnimationParameter(parameter, numeric);
+    if (sink === undefined) return { status: "missing-material" };
+    const mode = textureTransformLeaf(leafPath) ? "texture" : isGuardedMaterialScalarLeaf(leafPath) ? "scalar" : "legacy";
+    if (mode !== "legacy") {
+      // A legacy setter cannot establish that the source material, map or
+      // physical lobe is live and unambiguous. Never claim dropped writes.
+      if (!sink.animationParameterStatus || (mode === "scalar" ? !sink.applyAnimationParameter : !sink.applyAnimationTextureTransform)) return { status: "unsupported" };
+      const status = sink.animationParameterStatus(parameters[0]!);
+      if (status !== "available") return { status: isMaterialBindingFailure(status) ? status : "unsupported" };
     }
-    return true;
+    return { status: "available", sink, parameters, mode };
   }
 
-  /**
-   * Applies one sampled `light:<name>.<leaf>` value to the live scene light of that name.
-   * The loader instantiates each node-referenced `KHR_lights_punctual` light as a scene light
-   * carrying its node's name; extension-defined lights no node references have no scene object,
-   * so a light track matching no scene light is reported missing (diagnosed, never silent).
-   */
-  private applyLightTrackValue(lightName: string, leaf: string, value: AnimationValue, trackTarget: string): boolean {
-    if (lightLeafApplies(leaf) === false) return false;
-    const light = this.findSceneLight(lightName);
-    if (!light) return false;
+  /** Apply a live binding, reporting a precise failure instead of counting a dropped write. */
+  private applyMaterialTrackValue(materialName: string, leafPath: string, value: AnimationValue, trackTarget: string): GLTFSceneAnimationMaterialBindingIssue["reason"] | undefined {
+    const binding = this.materialTrackBinding(materialName, leafPath);
+    if (binding.status !== "available") return binding.status;
+    if (binding.mode === "texture") {
+      const transform = textureTransformLeaf(leafPath)!;
+      const numeric = asTextureTransformValue(value, trackTarget, transform.component);
+      const applied = binding.sink.applyAnimationTextureTransform!(binding.parameters[0]!, numeric);
+      return applied === "applied" ? undefined : isMaterialBindingFailure(applied) ? applied : "unsupported";
+    }
+    if (binding.mode === "scalar") {
+      const numeric = asScalar(value, trackTarget);
+      if (!validGuardedMaterialScalar(leafPath, numeric)) {
+        throw new RangeError(`glTF animation track "${trackTarget}" sampled an out-of-range material value.`);
+      }
+      // The sink checks the resources again before writing; a binding can be
+      // disposed or replaced between inspection and the actual application.
+      const applied = binding.sink.applyAnimationParameter!(binding.parameters[0]!, numeric);
+      return applied === "applied" ? undefined : isMaterialBindingFailure(applied) ? applied : "unsupported";
+    }
+    const numeric = asMaterialLeafValue(value, trackTarget);
+    for (const parameter of binding.parameters) {
+      binding.sink.setAnimationParameter(parameter, numeric);
+    }
+    return undefined;
+  }
+
+  /** Apply an imported definition to all of its live instances, or an authored name to one light. */
+  private applyLightTrackValue(lightName: string, leaf: string, value: AnimationValue, trackTarget: string, identity?: GLTFLightTrackIdentity, indexed = false): boolean {
+    const lights = this.lightTrackTargets(lightName, identity, indexed);
+    if (lights.length === 0 || !lights.every((light) => lightSupportsLeaf(light, leaf))) return false;
     if (leaf === "intensity") {
-      light.intensity = asScalar(value, trackTarget);
+      const intensity = asScalar(value, trackTarget);
+      if (intensity < 0) throw new RangeError(`glTF animation track "${trackTarget}" sampled a negative light intensity.`);
+      for (const light of lights) light.intensity = intensity;
       return true;
     }
     if (leaf === "color") {
-      light.color = asVec3(value, trackTarget);
+      const color = asVec3(value, trackTarget);
+      for (const light of lights) light.color = [...color];
       return true;
     }
-    const rangeHolder = light as unknown as { readonly range?: unknown };
-    if (typeof rangeHolder.range !== "number") return false;
-    (light as unknown as { range: number }).range = asPositiveScalar(value, trackTarget);
+    const range = asPositiveScalar(value, trackTarget);
+    for (const light of lights) (light as unknown as { range: number }).range = range;
     return true;
   }
 
@@ -1895,24 +2739,27 @@ export class GLTFSceneAnimationRuntime {
     if (!config) return [];
     const samples: { side: "left" | "right"; mesh: string; vertex: number; worldPosition: readonly [number, number, number]; groundError: number | null; skinningProbe?: { position: readonly number[]; joints: readonly number[]; weights: readonly number[]; matrices: readonly number[]; modelMatrix: readonly number[]; expectedWorldPosition: readonly number[] } }[] = [];
     for (const leg of config.legs) {
-      const ankle = this.nodesByName.get(leg.ankle)?.[0];
+      const ankle = this.animationNodeForIndexOrName(leg.ankle, leg.ankleIndex);
       if (!ankle) continue;
-      const footNames = new Set<string>();
-      const visit = (node: SceneNode): void => { footNames.add(node.name); node.children.forEach(visit); };
+      const footNodes = new Set<SceneNode>();
+      const visit = (node: SceneNode): void => { footNodes.add(node); node.children.forEach(visit); };
       visit(ankle);
       for (const binding of this.skinningBindings) {
+        if (this.nodeScopes.get(ankle) !== binding.scope || !binding.jointNodes) continue;
         const palette = binding.renderable.skinning;
         if (!palette) continue;
         const mesh = binding.mesh;
-        const cacheKey = `${leg.ankle}:${binding.node.id}:${mesh.name}`;
+        const cacheKey = `${ankle.id}:${binding.node.id}:${mesh.name}`;
         let selected = this.footSurfaceVertices.get(cacheKey);
         if (!selected) {
         const candidates: number[] = [];
         for (let vertex = 0; vertex < mesh.positions.length; vertex++) {
           let footWeight = 0;
           for (let lane = 0; lane < 4; lane++) {
-            if (footNames.has(binding.skin.jointNames[mesh.joints[vertex]?.[lane] ?? -1] ?? "")) footWeight += mesh.weights[vertex]?.[lane] ?? 0;
-            if (footNames.has(binding.skin.jointNames[mesh.joints1?.[vertex]?.[lane] ?? -1] ?? "")) footWeight += mesh.weights1?.[vertex]?.[lane] ?? 0;
+            const first = binding.jointNodes[mesh.joints[vertex]?.[lane] ?? -1];
+            const second = binding.jointNodes[mesh.joints1?.[vertex]?.[lane] ?? -1];
+            if (first && footNodes.has(first)) footWeight += mesh.weights[vertex]?.[lane] ?? 0;
+            if (second && footNodes.has(second)) footWeight += mesh.weights1?.[vertex]?.[lane] ?? 0;
           }
           if (footWeight >= 0.5) candidates.push(vertex);
         }
@@ -1963,43 +2810,53 @@ export class GLTFSceneAnimationRuntime {
     const result = this.paletteResult;
     result.updated = 0;
     result.missingTargets.length = 0;
+    result.missingTargets.push(...this.skinningBindingIssues);
     if (this.skinningBindings.length === 0) {
       return result;
     }
     const missingTargets = result.missingTargets;
     for (const binding of this.skinningBindings) {
+      if (!this.skinningBindingIsCurrent(binding)) {
+        missingTargets.push(`${binding.node.name}.skinning`);
+        continue;
+      }
       // T0.11: write into the binding's persistent palette buffer — no per-frame
       // Float32Array allocation, and the renderer's C-18 cache can key on it.
       const matrices = binding.paletteMatrices;
       const inverseMeshWorld = invertMat4Into(this.inverseWorldScratch, binding.node.transform.worldMatrix);
-      // §13: joint nodes resolved once per binding instead of a string Map
-      // lookup per joint per frame; the cache rebuilds while any joint is
-      // missing so late-registered nodes still resolve.
       let jointNodes = binding.jointNodes;
       if (!jointNodes) {
-        jointNodes = new Array(binding.skin.jointNames.length);
+        jointNodes = new Array(binding.skin.joints.length);
         let allResolved = true;
-        for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
-          const node = this.nodesByName.get(binding.skin.jointNames[index]!)?.[0];
+        for (let index = 0; index < binding.skin.joints.length; index += 1) {
+          const candidates = binding.source || binding.scope.hasNodeIdentity
+            ? binding.scope.nodesByIndex.get(binding.skin.joints[index]!)
+            : binding.scope.nodesByName.get(binding.skin.jointNames[index]!);
+          const node = candidates?.length === 1 ? candidates[0] : undefined;
           jointNodes[index] = node;
           if (!node) allResolved = false;
         }
         if (allResolved) binding.jointNodes = jointNodes;
       }
       let complete = true;
-      for (let index = 0; index < binding.skin.jointNames.length; index += 1) {
+      for (let index = 0; index < binding.skin.joints.length; index += 1) {
         const jointNode = jointNodes[index];
         const inverseBind = binding.skin.inverseBindMatrices[index];
-        if (!jointNode || !inverseBind) {
-          missingTargets.push(`${binding.skin.name}.${binding.skin.jointNames[index]!}`);
+        if (!jointNode || !inverseBind || !this.nodeBelongsToScope(jointNode, binding.scope)
+          || ((binding.source || binding.scope.hasNodeIdentity) && jointNode.userData.gltfNodeIndex !== binding.skin.joints[index])) {
+          missingTargets.push(`${binding.skin.name}.${binding.skin.jointNames[index] ?? `#${binding.skin.joints[index]}`}`);
           complete = false;
           break;
         }
+      }
+      if (!complete) continue;
+      for (let index = 0; index < binding.skin.joints.length; index += 1) {
+        const jointNode = jointNodes[index]!;
+        const inverseBind = binding.skin.inverseBindMatrices[index]!;
         // (inverseMeshWorld * jointWorld) * inverseBind, straight into the palette.
         multiplyMat4Into(this.paletteScratch, 0, inverseMeshWorld, jointNode.transform.worldMatrix);
         multiplyMat4Into(matrices, index * 16, this.paletteScratch, inverseBind);
       }
-      if (!complete) continue;
       let skinningPalette = binding.paletteView;
       if (!skinningPalette) {
         skinningPalette = {
@@ -2029,37 +2886,57 @@ export class GLTFSceneAnimationRuntime {
     const boundNodeNames = new Set<string>();
     const missingTargets = new Set<string>();
     const unsupportedTracks = new Set<string>();
+    const materialBindingIssues = new Map<string, GLTFSceneAnimationMaterialBindingIssue>();
 
     for (const track of clip.tracks) {
-      const target = parseAnimationTarget(track.target);
+      const identity = getGLTFLightAnimationTrackIdentity(track);
+      const publicTarget = identity?.publicTarget ?? track.target;
+      const target = parseAnimationTarget(publicTarget, this.nodesByName);
       if (!target) {
-        unsupportedTracks.add(track.target);
+        unsupportedTracks.add(publicTarget);
         continue;
       }
-      supportedTrackCount += 1;
       if (target.kind === "material") {
         materialTrackCount += 1;
-        if (materialParametersForLeaf(target.leaf) === undefined || this.options.resolveAnimationMaterial?.(target.materialName) === undefined) {
+        const transform = textureTransformLeaf(target.leaf);
+        if (materialParametersForLeaf(target.leaf) === undefined
+          || (isGuardedMaterialScalarLeaf(target.leaf) && track.valueType !== "scalar")
+          || (transform && (transform.component === "rotation"
+            ? track.valueType !== "scalar"
+            : track.valueType !== "number-array" || track.valueSize !== 2))) {
+          unsupportedTracks.add(track.target);
           missingTargets.add(track.target);
+          materialBindingIssues.set(track.target, { target: track.target, reason: "unsupported" });
+          continue;
+        }
+        supportedTrackCount += 1;
+        const binding = this.materialTrackBinding(target.materialName, target.leaf);
+        if (binding.status !== "available") {
+          missingTargets.add(track.target);
+          materialBindingIssues.set(track.target, { target: track.target, reason: binding.status });
           continue;
         }
         boundTrackCount += 1;
         boundMaterialNames.add(target.materialName);
         continue;
       }
+      supportedTrackCount += 1;
       if (target.kind === "light") {
         lightTrackCount += 1;
-        if (lightLeafApplies(target.leaf) === false || this.findSceneLight(target.lightName) === undefined) {
-          missingTargets.add(track.target);
+        const leaf = identity?.leaf ?? target.leaf;
+        const lights = this.lightTrackTargets(target.lightName, identity, target.indexed === true);
+        if (lights.length === 0 || !lights.every((light) => lightSupportsLeaf(light, leaf))) {
+          missingTargets.add(publicTarget);
           continue;
         }
         boundTrackCount += 1;
-        boundLightNames.add(target.lightName);
+        boundLightNames.add(identity?.definitionName ?? target.lightName);
         continue;
       }
       if (target.path === "weights") {
         morphWeightTrackCount += 1;
-        const renderables = this.morphRenderablesByNodeName.get(target.nodeName) ?? [];
+        const node = this.animationNodeForTrack(track);
+        const renderables = node && !this.blockedMorphNodes.has(node) ? this.morphRenderablesByNode.get(node) ?? [] : [];
         if (renderables.length === 0) {
           missingTargets.add(track.target);
           continue;
@@ -2070,8 +2947,8 @@ export class GLTFSceneAnimationRuntime {
       }
 
       transformTrackCount += 1;
-      const nodes = this.nodesByName.get(target.nodeName) ?? [];
-      if (nodes.length === 0) {
+      const node = this.animationNodeForTrack(track);
+      if (!node) {
         missingTargets.add(track.target);
         continue;
       }
@@ -2096,6 +2973,7 @@ export class GLTFSceneAnimationRuntime {
       boundNodeNames: [...boundNodeNames].sort(),
       missingTargets: [...missingTargets].sort(),
       unsupportedTracks: [...unsupportedTracks].sort(),
+      ...(materialBindingIssues.size === 0 ? {} : { materialBindingIssues: [...materialBindingIssues.values()].sort((a, b) => a.target.localeCompare(b.target)) }),
       animatesSkeleton: this.skinningBindings.length > 0 && boundTrackCount > 0 && transformTrackCount > 0
     };
   }
@@ -2103,39 +2981,58 @@ export class GLTFSceneAnimationRuntime {
   private applySampledTargets(
     clipName: string,
     time: number,
-    sampled: { readonly sampledTargets: ReadonlyMap<string, AnimationValue>; readonly unsupportedTracks: readonly string[] },
+    sampled: GLTFSampledAnimationTargets,
     blendedClipCount?: number,
-    phaseTimings?: GLTFSceneAnimationPhaseTimings
+    phaseTimings?: GLTFSceneAnimationPhaseTimings,
+    poseWrite?: { readonly pose: PoseBuffer; readonly nodes: readonly SceneNode[]; readonly indices: Iterable<number> }
   ): GLTFSceneAnimationApplyResult {
+    this.assertAlive();
     let transformTracksApplied = 0;
     let morphWeightTracksApplied = 0;
     let materialTracksApplied = 0;
     let lightTracksApplied = 0;
     const missingTargets: string[] = [];
+    const materialBindingIssues: GLTFSceneAnimationMaterialBindingIssue[] = [];
+    const unsupportedTracks = [...sampled.unsupportedTracks];
 
-    for (const [trackTarget, value] of sampled.sampledTargets) {
-      const target = parseAnimationTarget(trackTarget);
+    for (const [sampleTarget, value] of sampled.sampledTargets) {
+      const identity = sampled.lightTrackIdentities?.get(sampleTarget);
+      const nodeBinding = sampled.nodeTrackBindings?.get(sampleTarget);
+      const trackTarget = nodeBinding?.publicTarget ?? identity?.publicTarget ?? sampleTarget;
+      if (sampled.ambiguousLightTargets?.has(sampleTarget)) {
+        missingTargets.push(trackTarget);
+        continue;
+      }
+      const target = parseAnimationTarget(trackTarget, this.nodesByName);
       if (!target) {
         continue;
       }
       if (target.kind === "material") {
-        if (this.applyMaterialTrackValue(target.materialName, target.leaf, value, trackTarget)) {
+        const failure = this.applyMaterialTrackValue(target.materialName, target.leaf, value, trackTarget);
+        if (failure === undefined) {
           materialTracksApplied += 1;
         } else {
           missingTargets.push(trackTarget);
+          materialBindingIssues.push({ target: trackTarget, reason: failure });
+          if (materialParametersForLeaf(target.leaf) === undefined && !unsupportedTracks.includes(trackTarget)) unsupportedTracks.push(trackTarget);
         }
         continue;
       }
       if (target.kind === "light") {
-        if (this.applyLightTrackValue(target.lightName, target.leaf, value, trackTarget)) {
+        if (this.applyLightTrackValue(target.lightName, identity?.leaf ?? target.leaf, value, trackTarget, identity, target.indexed === true)) {
           lightTracksApplied += 1;
         } else {
           missingTargets.push(trackTarget);
         }
         continue;
       }
+      const node = nodeBinding ? nodeBinding.node : this.animationNodeForName(target.nodeName);
+      if (!node) {
+        missingTargets.push(trackTarget);
+        continue;
+      }
       if (target.path === "weights") {
-        const renderables = this.morphRenderablesByNodeName.get(target.nodeName) ?? [];
+        const renderables = this.blockedMorphNodes.has(node) ? [] : this.morphRenderablesByNode.get(node) ?? [];
         if (renderables.length === 0) {
           missingTargets.push(trackTarget);
           continue;
@@ -2148,15 +3045,23 @@ export class GLTFSceneAnimationRuntime {
         continue;
       }
 
-      const nodes = this.nodesByName.get(target.nodeName) ?? [];
-      if (nodes.length === 0) {
-        missingTargets.push(trackTarget);
-        continue;
-      }
-      for (const node of nodes) {
-        applyTransformValue(node, target.path, value, trackTarget);
-      }
+      applyTransformValue(node, target.path, value, trackTarget);
       transformTracksApplied += 1;
+    }
+
+    // Pose slots carry scene-node identity. Writing via names would collapse
+    // duplicate names and replace each node's distinct rest-pose contribution.
+    if (poseWrite) {
+      for (const index of poseWrite.indices) {
+        const node = poseWrite.nodes[index];
+        if (!node) continue;
+        const p = index * 3;
+        const q = index * 4;
+        node.transform.setPosition(poseWrite.pose.positions[p]!, poseWrite.pose.positions[p + 1]!, poseWrite.pose.positions[p + 2]!);
+        node.transform.setRotation(poseWrite.pose.rotations[q]!, poseWrite.pose.rotations[q + 1]!, poseWrite.pose.rotations[q + 2]!, poseWrite.pose.rotations[q + 3]!);
+        node.transform.setScale(poseWrite.pose.scales[p]!, poseWrite.pose.scales[p + 1]!, poseWrite.pose.scales[p + 2]!);
+        transformTracksApplied += 3;
+      }
     }
 
     this.options.scene.updateWorldTransforms();
@@ -2175,7 +3080,8 @@ export class GLTFSceneAnimationRuntime {
       ...(measuredFootPlanting === undefined ? {} : { footPlanting: measuredFootPlanting }),
       skinningPalettesUpdated: skinning.updated,
       missingTargets: [...missingTargets, ...skinning.missingTargets],
-      unsupportedTracks: sampled.unsupportedTracks,
+      unsupportedTracks,
+      ...(materialBindingIssues.length === 0 ? {} : { materialBindingIssues }),
       ...(phaseTimings === undefined ? {} : { phaseTimings })
     };
   }
@@ -2190,13 +3096,27 @@ export class GLTFSceneAnimationMixerBinding {
   readonly mixer: AnimationMixer;
   readonly actions: ReadonlyMap<string, AnimationAction>;
   private readonly mutableActions = new Map<string, AnimationAction>();
+  private readonly duplicateClipNames: Set<string>;
   private readonly pendingValues = new Map<string, AnimationValue>();
   private elapsedTime = 0;
+  private eventOverflow = 0;
   private lastApply?: GLTFSceneAnimationApplyResult;
   private disposed = false;
+  private readonly rootMotionTarget?: string;
 
   constructor(options: GLTFSceneAnimationMixerOptions) {
+    this.duplicateClipNames = duplicateAnimationClipNames(options.clips);
+    const autoPlay = options.autoPlay === false ? undefined : options.autoPlay ?? options.clips[0]?.name;
+    if (autoPlay !== undefined) {
+      assertUnambiguousClipName(autoPlay, this.duplicateClipNames);
+      if (!options.clips.some((clip) => clip.name === autoPlay)) {
+        throw new Error(`glTF animation mixer autoPlay clip "${autoPlay}" was not found.`);
+      }
+    }
     this.runtime = new GLTFSceneAnimationRuntime(options);
+    this.rootMotionTarget = options.mixer?.applyRootMotion
+      ? options.mixer.rootMotionTrack ?? "root.position"
+      : undefined;
     this.mixer = new AnimationMixer({
       ...(options.consumeRootMotion ? { consumeRootMotion: options.consumeRootMotion } : {}),
       setAnimationValue: (target, value) => {
@@ -2204,11 +3124,11 @@ export class GLTFSceneAnimationMixerBinding {
       }
     }, options.mixer ?? {});
     for (const clip of options.clips) {
+      if (this.duplicateClipNames.has(clip.name)) continue;
       const action = new AnimationAction(clip).setWeight(0);
       this.mixer.addAction(action);
       this.mutableActions.set(clip.name, action);
     }
-    const autoPlay = options.autoPlay === false ? undefined : options.autoPlay ?? options.clips[0]?.name;
     if (autoPlay) {
       const action = this.mutableActions.get(autoPlay);
       if (!action) {
@@ -2221,7 +3141,7 @@ export class GLTFSceneAnimationMixerBinding {
 
   listClips(): readonly string[] {
     this.assertAlive();
-    return [...this.actions.keys()];
+    return this.runtime.clipNames();
   }
 
   play(name: string, weight = 1): AnimationAction {
@@ -2281,10 +3201,7 @@ export class GLTFSceneAnimationMixerBinding {
 
   setTimeScale(timeScale: number): void {
     this.assertAlive();
-    if (!Number.isFinite(timeScale) || timeScale < 0) {
-      throw new Error("glTF animation mixer timeScale must be finite and non-negative.");
-    }
-    this.mixer.timeScale = timeScale;
+    this.mixer.setTimeScale(timeScale);
   }
 
   setActionTimeScale(name: string, timeScale: number): AnimationAction {
@@ -2295,8 +3212,8 @@ export class GLTFSceneAnimationMixerBinding {
     return this.requireAction(name).setWeight(weight);
   }
 
-  setActionLoop(name: string, loopMode: LoopMode): AnimationAction {
-    return this.requireAction(name).setLoop(loopMode);
+  setActionLoop(name: string, loopMode: LoopMode, repetitions?: number): AnimationAction {
+    return this.requireAction(name).setLoop(loopMode, repetitions);
   }
 
   crossFade(fromName: string, toName: string, duration: number): void {
@@ -2313,31 +3230,138 @@ export class GLTFSceneAnimationMixerBinding {
     this.pendingValues.clear();
     this.lastApply = this.runtime.applyClips(samples);
     this.elapsedTime = Math.max(this.elapsedTime, this.lastApply.time);
-    return { events: [], applyResult: this.lastApply, activeActions: this.actionSnapshots().filter((action) => action.active) };
+    return { events: [], eventOverflow: 0, applyResult: this.lastApply, activeActions: this.actionSnapshots().filter((action) => action.active) };
   }
 
   update(deltaSeconds: number): GLTFSceneAnimationMixerUpdateResult {
     this.assertAlive();
-    if (!Number.isFinite(deltaSeconds) || deltaSeconds < 0) {
-      throw new Error("glTF animation mixer delta must be finite and non-negative.");
+    if (!Number.isFinite(deltaSeconds)) {
+      throw new Error("glTF animation mixer delta must be finite.");
     }
     this.pendingValues.clear();
-    const events = this.mixer.update(deltaSeconds);
-    this.elapsedTime += deltaSeconds;
+    this.eventOverflow = 0;
+    // An action may finish while the generic mixer advances it. Retain the
+    // pre-update set so identity checks do not overlook its contribution.
+    const activeBeforeUpdate = new Set([...this.mutableActions.values()].filter((action) => action.playing && action.weight > 0));
+    const mixerBeforeUpdate = this.mixer.snapshot();
+    const untrackedActionsBeforeUpdate = mixerBeforeUpdate.actions.length !== this.mutableActions.size;
+    const untrackedMixerStateBeforeUpdate = untrackedActionsBeforeUpdate || mixerBeforeUpdate.layers.length > 0;
+    if (this.rootMotionTarget !== undefined) {
+      if (untrackedActionsBeforeUpdate) {
+        throw new Error("glTF root motion requires tracked actions and an unambiguous actor.");
+      }
+      let rootNode: SceneNode | undefined;
+      for (const action of this.mutableActions.values()) {
+        if (!action.playing) continue;
+        const tracks = action.clip.tracks.filter((track) => track.target === this.rootMotionTarget);
+        if (tracks.length === 0) continue;
+        const node = tracks.length === 1 ? this.runtime.animationNodeForTrack(tracks[0]!) : undefined;
+        if (!node || (rootNode && rootNode !== node)) {
+          throw new Error(`glTF root motion target "${this.rootMotionTarget}" is missing or ambiguous.`);
+        }
+        rootNode = node;
+      }
+    }
+    // This is binding-owned bookkeeping, not an application callback. Keep it
+    // scoped to update so strict mixer serialization can reject every actual
+    // user listener without mistaking this internal observer for one.
+    const stopOverflow = this.mixer.addEventListener("overflow", ({ dropped }) => { this.eventOverflow += dropped; });
+    let events: readonly AnimationEvent[];
+    try {
+      events = this.mixer.update(deltaSeconds);
+    } finally {
+      stopOverflow();
+    }
+    // This is a wall-clock duration used to label applications, not the
+    // signed playhead. Reverse updates must not make that label negative.
+    this.elapsedTime += Math.abs(deltaSeconds);
     this.lastApply = this.runtime.applyAnimationValues(
       "gltf-animation-mixer",
       this.elapsedTime,
-      this.pendingValues
+      this.pendingValues,
+      [],
+      {
+        ...this.pendingLightBindings(activeBeforeUpdate, untrackedMixerStateBeforeUpdate),
+        nodeTrackBindings: this.pendingNodeBindings(activeBeforeUpdate, untrackedActionsBeforeUpdate)
+      }
     );
-    return { events, applyResult: this.lastApply, activeActions: this.actionSnapshots().filter((action) => action.active) };
+    return { events, eventOverflow: this.eventOverflow, applyResult: this.lastApply, activeActions: this.actionSnapshots().filter((action) => action.active) };
+  }
+
+  /**
+   * The generic mixer blends by public target string. Preserve loader identity
+   * when all contributing tracks have the same source; otherwise the mixed
+   * value cannot be split safely and must be reported missing. Masked actions
+   * may conservatively count as contributors. External actions or mixer layers
+   * are not represented by the binding's action map, so they also fail closed.
+   * Public action clips stay intact.
+   */
+  private pendingLightBindings(activeBeforeUpdate: ReadonlySet<AnimationAction>, untrackedMixerStateBeforeUpdate: boolean): Pick<GLTFSampledAnimationTargets, "lightTrackIdentities" | "ambiguousLightTargets"> {
+    const seen = new Map<string, GLTFLightTrackIdentity | null>();
+    const ambiguousLightTargets = new Set<string>();
+    const lightTrackIdentities = new Map<string, GLTFLightTrackIdentity>();
+    const mixerState = this.mixer.snapshot();
+    const untrackedMixerState = untrackedMixerStateBeforeUpdate || mixerState.actions.length !== this.mutableActions.size || mixerState.layers.length > 0;
+    for (const action of this.mutableActions.values()) {
+      if (!activeBeforeUpdate.has(action) && !(action.playing && action.weight > 0)) continue;
+      for (const track of action.clip.tracks) {
+        const target = track.target;
+        if (!this.pendingValues.has(target) || !(target.startsWith("light:") || target.startsWith("light-index:"))) continue;
+        const identity = getGLTFLightAnimationTrackIdentity(track) ?? null;
+        if (!seen.has(target)) {
+          seen.set(target, identity);
+          continue;
+        }
+        const previous = seen.get(target)!;
+        if (previous === null ? identity !== null : identity === null || previous.owner !== identity.owner || previous.definitionIndex !== identity.definitionIndex || previous.leaf !== identity.leaf) {
+          ambiguousLightTargets.add(target);
+        }
+      }
+    }
+    for (const target of this.pendingValues.keys()) {
+      if (!(target.startsWith("light:") || target.startsWith("light-index:"))) continue;
+      if (untrackedMixerState || !seen.has(target)) {
+        ambiguousLightTargets.add(target);
+      } else {
+        const identity = seen.get(target);
+        if (identity && !ambiguousLightTargets.has(target)) lightTrackIdentities.set(target, identity);
+      }
+    }
+    return { lightTrackIdentities, ambiguousLightTargets };
+  }
+
+  private pendingNodeBindings(activeBeforeUpdate: ReadonlySet<AnimationAction>, untrackedMixerStateBeforeUpdate: boolean): ReadonlyMap<string, GLTFNodeTrackBinding> {
+    const seen = new Map<string, SceneNode | null>();
+    const bindings = new Map<string, GLTFNodeTrackBinding>();
+    const mixerState = this.mixer.snapshot();
+    const untracked = untrackedMixerStateBeforeUpdate || mixerState.actions.length !== this.mutableActions.size;
+    for (const action of this.mutableActions.values()) {
+      if (!activeBeforeUpdate.has(action) && !(action.playing && action.weight > 0)) continue;
+      for (const track of action.clip.tracks) {
+        const target = parseAnimationTarget(track.target);
+        if (!target || target.kind !== "node" || !this.pendingValues.has(track.target)) continue;
+        const node = this.runtime.animationNodeForTrack(track) ?? null;
+        if (!seen.has(track.target)) seen.set(track.target, node);
+        else if (seen.get(track.target) !== node) seen.set(track.target, null);
+      }
+    }
+    for (const target of this.pendingValues.keys()) {
+      const parsed = parseAnimationTarget(target);
+      if (!parsed || parsed.kind !== "node") continue;
+      const node = untracked ? null : seen.get(target);
+      bindings.set(target, { publicTarget: target, ...(node ? { node } : {}) });
+    }
+    return bindings;
   }
 
   getAction(name: string): AnimationAction | undefined {
     this.assertAlive();
+    assertUnambiguousClipName(name, this.duplicateClipNames);
     return this.actions.get(name);
   }
 
   snapshot(): GLTFSceneAnimationMixerSnapshot {
+    this.assertAlive();
     return {
       ...this.runtime.snapshot(),
       mixerActionCount: this.actions.size,
@@ -2350,9 +3374,95 @@ export class GLTFSceneAnimationMixerBinding {
     };
   }
 
+  /**
+   * Capture strict core mixer/action state. Application listeners must be
+   * unsubscribed and explicitly rebound to the new actor after restoration.
+   */
+  serialize(): GLTFSceneAnimationMixerSerializedState {
+    this.assertAlive();
+    this.runtime.assertSceneSerializationSupported();
+    this.assertTrackedActions();
+    if (!Number.isFinite(this.elapsedTime) || this.elapsedTime < 0 || Object.is(this.elapsedTime, -0) ||
+        !Number.isFinite(this.eventOverflow) || this.eventOverflow < 0 || Object.is(this.eventOverflow, -0)) {
+      throw new Error("glTF animation mixer contains non-serializable clock or overflow state.");
+    }
+    return {
+      version: 1,
+      elapsedTime: this.elapsedTime,
+      eventOverflow: this.eventOverflow,
+      pendingValues: [...this.pendingValues].map(([target, value]) => [target, cloneAnimationValue(value)] as const),
+      mixer: this.mixer.serialize({ externalTarget: "rebind" })
+    };
+  }
+
+  /**
+   * Restore into a newly created binding, with matching clips and callbacks
+   * already rebound. Scene-adapter rollback owns disposal if validation fails.
+   */
+  restore(state: GLTFSceneAnimationMixerSerializedState): this {
+    this.assertAlive();
+    this.runtime.assertSceneSerializationSupported();
+    this.assertTrackedActions();
+    if (!state || typeof state !== "object" || Array.isArray(state) ||
+        Object.keys(state).sort().join(",") !== "elapsedTime,eventOverflow,mixer,pendingValues,version" ||
+        state.version !== 1 || !Number.isFinite(state.elapsedTime) || state.elapsedTime < 0 ||
+        !Number.isFinite(state.eventOverflow) || state.eventOverflow < 0 ||
+        !Array.isArray(state.pendingValues) || !state.mixer?.state || state.mixer.state.version !== 1) {
+      throw new Error("glTF animation mixer restore requires complete versioned state.");
+    }
+    const pending = new Map<string, AnimationValue>();
+    for (const entry of state.pendingValues) {
+      if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== "string" || !entry[0] || pending.has(entry[0]) ||
+          !isSerializableAnimationValue(entry[1])) {
+        throw new Error("glTF animation mixer restore has invalid pending values.");
+      }
+      pending.set(entry[0], cloneAnimationValue(entry[1]));
+    }
+    if (this.mixer.snapshot().layers.length !== 0) {
+      throw new Error("glTF animation mixer restore requires a fresh binding without layers.");
+    }
+    const actions = [...this.mutableActions.values()];
+    if (!Array.isArray(state.mixer.layers) || !Array.isArray(state.mixer.state.layers) ||
+        state.mixer.layers.length !== state.mixer.state.layers.length) {
+      throw new Error("glTF animation mixer restore has invalid layer state.");
+    }
+    for (let index = 0; index < state.mixer.layers.length; index++) {
+      const saved = state.mixer.layers[index]!;
+      const membership = state.mixer.state.layers[index]!;
+      if (!membership || !Array.isArray(membership.actionIndices)) throw new Error("glTF animation mixer restore has invalid layer membership.");
+      const layer = new AnimationLayer(saved.name, { weight: saved.weight, additive: saved.additive, mask: saved.mask });
+      for (const actionIndex of membership.actionIndices) {
+        if (!Number.isSafeInteger(actionIndex) || actionIndex < 0 || !actions[actionIndex] || layer.actions.includes(actions[actionIndex]!)) {
+          throw new Error("glTF animation mixer restore has invalid layer action.");
+        }
+        layer.add(actions[actionIndex]!);
+      }
+      this.mixer.addLayer(layer);
+    }
+    this.mixer.restore(state.mixer);
+    this.elapsedTime = state.elapsedTime;
+    this.eventOverflow = state.eventOverflow;
+    this.pendingValues.clear();
+    for (const [target, value] of pending) this.pendingValues.set(target, value);
+    this.lastApply = undefined;
+    return this;
+  }
+
+  private assertTrackedActions(): void {
+    // AnimationMixer intentionally keeps its action list private. The binding
+    // owns that mixer, and must detect externally added/replaced actions by
+    // object identity, not merely by equal clip names or equal snapshots.
+    const actions = (this.mixer as unknown as { readonly actions: readonly AnimationAction[] }).actions;
+    const tracked = [...this.mutableActions.values()];
+    if (!Array.isArray(actions) || actions.length !== tracked.length || actions.some((action, index) => action !== tracked[index])) {
+      throw new Error("glTF animation mixer contains untracked or unsupported actions.");
+    }
+  }
+
   dispose(): void {
     if (this.disposed) return;
     this.mixer.dispose();
+    this.runtime.dispose();
     this.mutableActions.clear();
     this.pendingValues.clear();
     this.lastApply = undefined;
@@ -2373,9 +3483,10 @@ export class GLTFSceneAnimationMixerBinding {
     if (options.timeScale !== undefined) {
       action.setTimeScale(options.timeScale);
     }
-    if (options.loopMode !== undefined) {
-      action.setLoop(options.loopMode);
+    if (options.loopMode !== undefined || options.repetitions !== undefined) {
+      action.setLoop(options.loopMode ?? action.loopMode, options.repetitions);
     }
+    if (options.clampWhenFinished !== undefined) action.clampWhenFinished = options.clampWhenFinished;
   }
 
   private resolveActions(name: string | undefined): readonly AnimationAction[] {
@@ -2394,6 +3505,7 @@ export class GLTFSceneAnimationMixerBinding {
 
   private requireAction(name: string): AnimationAction {
     this.assertAlive();
+    assertUnambiguousClipName(name, this.duplicateClipNames);
     const action = this.actions.get(name);
     if (!action) {
       throw new Error(`glTF animation action "${name}" was not found.`);
@@ -2406,6 +3518,12 @@ export class GLTFSceneAnimationMixerBinding {
   }
 }
 
+function isSerializableAnimationValue(value: unknown): value is AnimationValue {
+  if (typeof value === "number") return Number.isFinite(value) && !Object.is(value, -0);
+  if (typeof value === "string" || typeof value === "boolean") return true;
+  return Array.isArray(value) && value.every((component) => typeof component === "number" && Number.isFinite(component) && !Object.is(component, -0));
+}
+
 export function createGLTFSceneAnimationMixer(options: GLTFSceneAnimationMixerOptions): GLTFSceneAnimationMixerBinding {
   return new GLTFSceneAnimationMixerBinding(options);
 }
@@ -2413,16 +3531,69 @@ export function createGLTFSceneAnimationMixer(options: GLTFSceneAnimationMixerOp
 type GLTFAnimationTarget =
   | { readonly kind: "node"; readonly nodeName: string; readonly path: "translation" | "rotation" | "scale" | "weights" }
   | { readonly kind: "material"; readonly materialName: string; readonly leaf: string }
-  | { readonly kind: "light"; readonly lightName: string; readonly leaf: string };
+  | { readonly kind: "light"; readonly lightName: string; readonly leaf: string; readonly indexed?: true };
+
+const TEXTURE_TRANSFORM_PREFIXES: Readonly<Record<string, string>> = {
+  "pbrMetallicRoughness.baseColorTexture": "baseColor",
+  "pbrMetallicRoughness.metallicRoughnessTexture": "metallicRoughness",
+  normalTexture: "normal",
+  occlusionTexture: "occlusion",
+  emissiveTexture: "emissive"
+};
+const TEXTURE_TRANSFORM_LEAVES = Object.entries(TEXTURE_TRANSFORM_PREFIXES).flatMap(([prefix, slot]) =>
+  (["offset", "scale", "rotation"] as const).map((component) => ({
+    leaf: `${prefix}.extensions.KHR_texture_transform.${component}`,
+    parameter: `u_${slot}Texture${component[0]!.toUpperCase()}${component.slice(1)}`,
+    component
+  }))
+);
+
+function textureTransformLeaf(leaf: string): (typeof TEXTURE_TRANSFORM_LEAVES)[number] | undefined {
+  return TEXTURE_TRANSFORM_LEAVES.find((entry) => entry.leaf === leaf);
+}
 
 /**
- * Pointer-bound leaf paths (`material:`/`light:`) use the FIRST dot as the name/leaf split:
- * the binding emits `material:<name>.<property-path…>` where the property path itself may
- * contain dots (`pbrMetallicRoughness.baseColorFactor`), while glTF material/light names with
- * dots are rare. Names containing "." therefore resolve by first segment and are documented
- * as unsupported in the animation-pointer limits.
+ * Exact light and guarded material suffixes are split from the right to preserve dotted names.
+ * Other pointer paths retain the existing first-dot name/leaf split.
  */
-function parseAnimationTarget(target: string): GLTFAnimationTarget | undefined {
+function parseAnimationTarget(target: string, nodes?: ReadonlyMap<string, unknown>): GLTFAnimationTarget | undefined {
+  if (target.startsWith("light-index:")) {
+    const match = /^light-index:(0|[1-9]\d*)\.(.+)$/.exec(target);
+    return match ? { kind: "light", lightName: match[1]!, leaf: match[2]!, indexed: true } : undefined;
+  }
+  if (target.startsWith("light:")) {
+    const rest = target.slice("light:".length);
+    for (const leaf of ["intensity", "color", "range"] as const) {
+      const suffix = `.${leaf}`;
+      if (rest.endsWith(suffix) && rest.length > suffix.length) {
+        return { kind: "light", lightName: rest.slice(0, -suffix.length), leaf };
+      }
+    }
+  }
+  if (target.startsWith("material:")) {
+    const rest = target.slice("material:".length);
+    for (const leaf of [
+      "normalTexture.scale", "occlusionTexture.strength",
+      "pbrMetallicRoughness.baseColorFactor",
+      "pbrMetallicRoughness.metallicFactor",
+      "pbrMetallicRoughness.roughnessFactor",
+      "extensions.KHR_materials_emissive_strength.emissiveStrength",
+      "extensions.KHR_materials_clearcoat.clearcoatFactor",
+      "extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor",
+      "extensions.KHR_materials_specular.specularFactor",
+      "extensions.KHR_materials_sheen.sheenRoughnessFactor",
+      "extensions.KHR_materials_iridescence.iridescenceFactor",
+      "extensions.KHR_materials_iridescence.iridescenceIor",
+      ...TEXTURE_TRANSFORM_LEAVES.map((entry) => entry.leaf),
+      "baseColorFactor", "emissiveFactor", "metallicFactor", "roughnessFactor",
+      "emissiveStrength", "clearcoatFactor", "clearcoatRoughnessFactor"
+    ]) {
+      const suffix = `.${leaf}`;
+      if (rest.endsWith(suffix) && rest.length > suffix.length) {
+        return { kind: "material", materialName: rest.slice(0, -suffix.length), leaf };
+      }
+    }
+  }
   for (const prefix of ["material:", "light:"] as const) {
     if (target.startsWith(prefix)) {
       const rest = target.slice(prefix.length);
@@ -2439,13 +3610,19 @@ function parseAnimationTarget(target: string): GLTFAnimationTarget | undefined {
   if (separator <= 0 || separator === target.length - 1) {
     return undefined;
   }
-  const path = target.slice(separator + 1);
+  const leaf = target.slice(separator + 1);
+  const path = leaf === "position" ? "translation" : leaf === "quaternion" ? "rotation" : leaf;
   if (path !== "translation" && path !== "rotation" && path !== "scale" && path !== "weights") {
     return undefined;
   }
+  const rawNodeName = target.slice(0, separator);
+  // glTF imports may contain literal backslashes, while authored binding
+  // paths may escape dots or brackets. Prefer the literal node when both exist.
+  const unescapedNodeName = rawNodeName.replace(/\\(.)/gu, "$1");
+  const nodeName = nodes?.has(rawNodeName) ? rawNodeName : nodes?.has(unescapedNodeName) ? unescapedNodeName : rawNodeName;
   return {
     kind: "node",
-    nodeName: target.slice(0, separator),
+    nodeName,
     path
   };
 }
@@ -2454,11 +3631,20 @@ function parseAnimationTarget(target: string): GLTFAnimationTarget | undefined {
  * Maps an animation-pointer material leaf path to the renderer uniform parameters it drives.
  * Only leaves with uniforms the production bridge provably writes (see TypedGLBActor tint
  * path: `u_baseColor`, `u_baseColorFactor`, `u_emissiveColor`, `u_emissiveFactor`,
- * `u_emissiveStrength`, `u_metallic`, `u_roughness`) are supported; every other leaf stays
- * diagnostic-only, preserving diagnose-and-drop for the unmapped remainder. Matches on the
- * last path segment so `pbrMetallicRoughness.baseColorFactor` and `baseColorFactor` agree.
+ * `u_emissiveStrength`, `u_metallic`, `u_roughness`) are supported; guarded texture and
+ * physical scalar and core texture-transform leaves require a sink that confirms the live
+ * resource and applies atomically.
+ * Other legacy leaves match on the last path segment for compatibility.
  */
 function materialParametersForLeaf(leafPath: string): readonly string[] | undefined {
+  const transform = textureTransformLeaf(leafPath);
+  if (transform) return [transform.parameter];
+  if (leafPath === "normalTexture.scale") return ["u_normalScale"];
+  if (leafPath === "occlusionTexture.strength") return ["u_occlusionStrength"];
+  if (leafPath === "extensions.KHR_materials_specular.specularFactor") return ["u_specularFactor"];
+  if (leafPath === "extensions.KHR_materials_sheen.sheenRoughnessFactor") return ["u_sheenRoughnessFactor"];
+  if (leafPath === "extensions.KHR_materials_iridescence.iridescenceFactor") return ["u_iridescenceFactor"];
+  if (leafPath === "extensions.KHR_materials_iridescence.iridescenceIor") return ["u_iridescenceIor"];
   const leaf = leafPath.slice(leafPath.lastIndexOf(".") + 1);
   switch (leaf) {
     case "baseColorFactor":
@@ -2480,23 +3666,50 @@ function materialParametersForLeaf(leafPath: string): readonly string[] | undefi
   }
 }
 
+function isGuardedMaterialScalarLeaf(leafPath: string): boolean {
+  return leafPath === "normalTexture.scale" || leafPath === "occlusionTexture.strength"
+    || leafPath === "extensions.KHR_materials_specular.specularFactor"
+    || leafPath === "extensions.KHR_materials_sheen.sheenRoughnessFactor"
+    || leafPath === "extensions.KHR_materials_iridescence.iridescenceFactor"
+    || leafPath === "extensions.KHR_materials_iridescence.iridescenceIor";
+}
+
+function validGuardedMaterialScalar(leafPath: string, value: number): boolean {
+  if (!Number.isFinite(Math.fround(value))) return false;
+  if (leafPath === "normalTexture.scale") return value >= 0;
+  if (leafPath === "extensions.KHR_materials_iridescence.iridescenceIor") return value >= 1;
+  return value >= 0 && value <= 1;
+}
+
+function isMaterialBindingFailure(value: unknown): value is GLTFSceneAnimationMaterialBindingFailure {
+  return value === "missing-map" || value === "changed-map" || value === "disposed" || value === "ambiguous" || value === "unsupported";
+}
+
 /** Light leaves the runtime can drive on a live scene light. Anything else stays diagnostic-only. */
 function lightLeafApplies(leaf: string): boolean {
   return leaf === "intensity" || leaf === "color" || leaf === "range";
 }
 
+function lightSupportsLeaf(light: Light, leaf: string): boolean {
+  if (!lightLeafApplies(leaf)) return false;
+  return leaf !== "range" || typeof (light as unknown as { readonly range?: unknown }).range === "number";
+}
+
 function resolveIKSkin(skins: readonly GLTFSkinAsset[], skinName: string | undefined): GLTFSkinAsset {
   if (skinName === undefined) {
-    const skin = skins.find((candidate) => candidate.jointNames.length >= 3);
-    if (!skin) {
+    const matches = skins.filter((candidate) => candidate.jointNames.length >= 3);
+    if (matches.length === 0) {
       throw new Error("glTF imported skeleton IK requires a skin with at least three joints.");
     }
-    return skin;
+    if (matches.length !== 1) throw new Error("glTF imported skeleton IK requires an unambiguous skin.");
+    return matches[0]!;
   }
-  const skin = skins.find((candidate) => candidate.name === skinName);
-  if (!skin) {
+  const matches = skins.filter((candidate) => candidate.name === skinName);
+  if (matches.length === 0) {
     throw new Error(`glTF imported skeleton IK skin "${skinName}" was not found.`);
   }
+  if (matches.length !== 1) throw new Error(`glTF imported skeleton IK skin "${skinName}" is ambiguous.`);
+  const skin = matches[0]!;
   if (skin.jointNames.length < 3) {
     throw new Error(`glTF imported skeleton IK skin "${skinName}" does not contain a two-bone chain.`);
   }
@@ -2539,6 +3752,9 @@ function sameFootPlantingShape(
       && leg.hip === other.hip
       && leg.knee === other.knee
       && leg.ankle === other.ankle
+      && leg.hipIndex === other.hipIndex
+      && leg.kneeIndex === other.kneeIndex
+      && leg.ankleIndex === other.ankleIndex
       && leg.ankleHeight === other.ankleHeight
       && (leg.pole ?? []).join(",") === (other.pole ?? []).join(",");
   });
@@ -2666,6 +3882,19 @@ function asScalar(value: AnimationValue, target: string): number {
   return value;
 }
 
+function asTextureTransformValue(value: AnimationValue, target: string, component: "offset" | "scale" | "rotation"): number | readonly [number, number] {
+  if (component === "rotation") {
+    const scalar = asScalar(value, target);
+    if (!Number.isFinite(Math.fround(scalar))) throw new RangeError(`glTF animation track "${target}" sampled an out-of-range texture rotation.`);
+    return scalar;
+  }
+  if (!Array.isArray(value) || value.length !== 2 || value.some((entry) =>
+    typeof entry !== "number" || !Number.isFinite(entry) || !Number.isFinite(Math.fround(entry)))) {
+    throw new Error(`glTF animation track "${target}" sampled an invalid texture transform vec2.`);
+  }
+  return [value[0], value[1]];
+}
+
 function asPositiveScalar(value: AnimationValue, target: string): number {
   const scalar = asScalar(value, target);
   if (!(scalar > 0)) {
@@ -2684,22 +3913,31 @@ function sampleClipTracks(
   clip: AnimationClip,
   time: number,
   weight: number,
-  additive: boolean
-): { readonly sampledTargets: ReadonlyMap<string, AnimationValue>; readonly unsupportedTracks: readonly string[] } {
+  additive: boolean,
+  resolveNodeTrack?: (track: AnimationTrack) => { readonly sampleTarget: string; readonly binding: GLTFNodeTrackBinding } | undefined
+): GLTFSampledAnimationTargets {
   const accumulators = new Map<string, TargetAccumulator>();
   const unsupportedTracks: string[] = [];
+  const lightTrackIdentities = new Map<string, GLTFLightTrackIdentity>();
+  const nodeTrackBindings = new Map<string, GLTFNodeTrackBinding>();
   for (const track of clip.tracks) {
-    if (!parseAnimationTarget(track.target)) {
-      unsupportedTracks.push(track.target);
+    const identity = getGLTFLightAnimationTrackIdentity(track);
+    const publicTarget = identity?.publicTarget ?? track.target;
+    if (!parseAnimationTarget(publicTarget)) {
+      unsupportedTracks.push(publicTarget);
       continue;
     }
-    blendInto(accumulators, track.target, track.valueType, track.sample(time), weight, additive);
+    const nodeTrack = identity ? undefined : resolveNodeTrack?.(track);
+    const sampleTarget = nodeTrack?.sampleTarget ?? identity?.sampleTarget ?? track.target;
+    if (nodeTrack) nodeTrackBindings.set(sampleTarget, nodeTrack.binding);
+    if (identity) lightTrackIdentities.set(sampleTarget, identity);
+    blendInto(accumulators, sampleTarget, track.valueType, track.sample(time), weight, additive);
   }
   const sampledTargets = new Map<string, AnimationValue>();
   for (const [target, accumulator] of accumulators) {
     sampledTargets.set(target, finalizeTargetBlend(accumulator));
   }
-  return { sampledTargets, unsupportedTracks };
+  return { sampledTargets, unsupportedTracks, lightTrackIdentities, nodeTrackBindings };
 }
 
 function blendInto(

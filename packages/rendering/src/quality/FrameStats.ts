@@ -32,11 +32,24 @@ interface MutableFrameStatsSample {
   scopes: Record<string, number>;
 }
 
-interface PendingGpuScope {
-  readonly token: RendererGpuTimingToken;
-  readonly name: string;
+interface GpuScopeAggregate {
   readonly sample: MutableFrameStatsSample;
+  readonly name: string;
+  remaining: number;
+  durationMs: number;
+  valid: boolean;
 }
+
+type PendingGpuScope =
+  | { readonly token: RendererGpuTimingToken; readonly kind: "frame"; readonly sample: MutableFrameStatsSample }
+  | { readonly token: RendererGpuTimingToken; readonly kind: "scope"; readonly aggregate: GpuScopeAggregate }
+  | { readonly token: RendererGpuTimingToken; readonly kind: "discard" };
+
+// A driver or custom backend may never return a result, or may discard a query
+// without reporting its token. Do not retain frame samples indefinitely.
+const MAX_PENDING_GPU_SCOPES = 1024;
+// Reserve one slot for the enclosing frame query when its scopes are queued.
+const MAX_COMPLETED_GPU_SCOPES_PER_FRAME = MAX_PENDING_GPU_SCOPES - 1;
 
 export class FrameStats implements FrameStatsLike {
   private readonly ring: (MutableFrameStatsSample | undefined)[];
@@ -45,15 +58,20 @@ export class FrameStats implements FrameStatsLike {
   private lastBeginTs: number | null = null;
   private frameStart = 0;
   private submitStart = 0;
-  private cpuScopes: Record<string, number> = {};
-  private openScopes: { readonly name: string; readonly token: RendererGpuTimingToken }[] = [];
+  private cpuScopes: Record<string, number> = Object.create(null) as Record<string, number>;
+  private completedScopes: { readonly name: string; readonly token: RendererGpuTimingToken }[] = [];
+  private readonly failedGpuScopes = new Set<string>();
   private pendingGpu: PendingGpuScope[] = [];
   private frameToken: RendererGpuTimingToken | null = null;
   private readonly gpu: RendererGpuScopedTimingBackend | null;
+  private frameActive = false;
+  private frameGeneration = 0;
+  private frameIdentity: object | null = null;
+  private requestedTrackedIdentity: object | null = null;
 
   constructor(capacity = 240, gpu?: RendererGpuTimingBackend) {
     this.ring = new Array<MutableFrameStatsSample | undefined>(Math.max(1, Math.floor(capacity)));
-    this.gpu = gpu && isScopedGpuTimingBackend(gpu) ? gpu : null;
+    this.gpu = gpu?.supported && isScopedGpuTimingBackend(gpu) ? gpu : null;
   }
 
   /** Number of live samples in the ring (≤ capacity). Test/diagnostic surface; not in FrameStatsLike. */
@@ -62,70 +80,171 @@ export class FrameStats implements FrameStatsLike {
   }
 
   begin(ts: number): void {
+    // Claim this invocation's requested identity before invoking a backend:
+    // callbacks may synchronously begin a different tracked frame.
+    const identity = this.requestedTrackedIdentity ?? Object.freeze({});
+    this.requestedTrackedIdentity = null;
+    const generationAtEntry = this.frameGeneration;
+    this.abandonFrame();
+    if (this.frameGeneration !== generationAtEntry) return;
     this.drainGpu();
+    // A backend callback may have started a newer frame. Leave it intact and
+    // let this invocation's identity remain inert.
+    if (this.frameGeneration !== generationAtEntry) return;
     this.frameStart = ts;
     this.submitStart = ts;
-    this.cpuScopes = {};
-    this.openScopes = [];
+    this.cpuScopes = Object.create(null) as Record<string, number>;
+    this.completedScopes = [];
+    this.failedGpuScopes.clear();
     this.frameToken = null;
+    this.frameActive = true;
+    this.frameGeneration += 1;
+    this.frameIdentity = identity;
     if (this.gpu) {
       try {
-        this.frameToken = this.gpu.beginScope("frame");
+        const token = this.gpu.beginScope("frame");
+        if (this.frameActive && this.frameIdentity === identity) {
+          this.frameToken = token;
+        } else {
+          // A reentrant begin/end replaced this frame while the backend was
+          // starting its query. Retire the old query without recording it.
+          this.enqueueGpu({ token, kind: "discard" });
+          try { this.gpu.endScope(token); } catch { /* Backend may already be lost. */ }
+        }
       } catch {
-        this.frameToken = null;
+        // Do not clear the token of a newer frame started by the backend.
+        if (this.frameIdentity === identity) this.frameToken = null;
       }
     }
   }
 
+  /** Start a frame and return its opaque identity for a matching end/cancel. */
+  beginTracked(ts: number): object {
+    const identity = Object.freeze({});
+    const previous = this.requestedTrackedIdentity;
+    this.requestedTrackedIdentity = identity;
+    try { this.begin(ts); } finally { this.requestedTrackedIdentity = previous; }
+    // The handle is inert if reentrant work replaced or ended this frame.
+    return identity;
+  }
+
+  /** End only the frame represented by this identity. Stale handles are inert. */
+  endTracked(handle: object): FrameStatsSample | null {
+    if (!this.frameActive || this.frameIdentity !== handle) return null;
+    return this.end();
+  }
+
+  /** Discard only the represented active frame, including its GPU query. */
+  cancelTracked(handle: object): void {
+    if (!this.frameActive || this.frameIdentity !== handle) return;
+    this.abandonFrame();
+    this.drainGpu();
+  }
+
+  /** Poll delayed GPU results without changing the active frame. */
+  pollGpuResults(): void {
+    this.drainGpu(true);
+  }
+
   end(): FrameStatsSample {
+    // Detach before external backend calls. Those calls may synchronously
+    // begin another frame; cleanup below must not clear that newer state.
+    const frameStart = this.frameStart;
+    const submitStart = this.submitStart;
+    const scopes = this.cpuScopes;
+    const completedScopes = this.completedScopes;
+    const failedGpuScopes = new Set(this.failedGpuScopes);
+    const frameToken = this.frameToken;
+    this.completedScopes = [];
+    this.failedGpuScopes.clear();
+    this.frameToken = null;
+    this.frameActive = false;
+    this.frameIdentity = null;
     const now = nowMs();
-    const intervalMs = this.lastBeginTs === null ? 0 : this.frameStart - this.lastBeginTs;
-    this.lastBeginTs = this.frameStart;
+    const intervalMs = this.lastBeginTs === null ? 0 : frameStart - this.lastBeginTs;
+    this.lastBeginTs = frameStart;
     const sample: MutableFrameStatsSample = {
       intervalMs,
-      cpuFrameMs: now - this.frameStart,
-      cpuSubmitMs: now - this.submitStart,
+      cpuFrameMs: now - frameStart,
+      cpuSubmitMs: now - submitStart,
       gpuMs: null,
-      scopes: { ...this.cpuScopes }
+      scopes: { ...scopes }
     };
-    if (this.gpu && this.frameToken) {
-      try {
-        this.gpu.endScope(this.frameToken);
-        this.pendingGpu.push({ token: this.frameToken, name: "frame", sample });
-      } catch {
-        // GPU clock vanished mid-frame; the sample stays cpu-only (gpuMs: null).
+    // Repeated scopes with the same name are reported as one sum. Keep the CPU
+    // total until every corresponding GPU token has settled successfully; a
+    // partial or disjoint sum would be misleading.
+    const aggregates = new Map<string, GpuScopeAggregate>();
+    for (const scope of completedScopes) {
+      let aggregate = aggregates.get(scope.name);
+      if (!aggregate) {
+        aggregate = { sample, name: scope.name, remaining: 0, durationMs: 0, valid: !failedGpuScopes.has(scope.name) };
+        aggregates.set(scope.name, aggregate);
       }
+      aggregate.remaining += 1;
     }
-    for (const scope of this.openScopes) {
-      try {
-        this.gpu?.endScope(scope.token);
-        this.pendingGpu.push({ token: scope.token, name: scope.name, sample });
-      } catch {
-        // A scope query that fails to submit leaves its cpu ms in place.
-      }
+    for (const scope of completedScopes) {
+      this.enqueueGpu({ token: scope.token, kind: "scope", aggregate: aggregates.get(scope.name)! });
     }
-    this.openScopes = [];
-    this.frameToken = null;
     this.pushSample(sample);
+    if (this.gpu && frameToken) {
+      // Register before calling the backend so a reentrant poll cannot consume
+      // a result before it has a sample to attach to.
+      const pending: PendingGpuScope = { token: frameToken, kind: "frame", sample };
+      this.enqueueGpu(pending);
+      try {
+        this.gpu.endScope(frameToken);
+      } catch {
+        this.removePendingGpu(pending);
+        sample.gpuMs = null;
+        // GPU clock vanished mid-frame; the sample stays cpu-only.
+      }
+    }
     this.drainGpu();
     return sample;
   }
 
   scope<T>(name: string, fn: () => T): T {
     const start = nowMs();
-    const token = this.tryBeginScope(name);
+    const generation = this.frameGeneration;
+    const activeAtStart = this.frameActive;
+    const token = activeAtStart ? this.tryBeginScope(name) : null;
+    if (activeAtStart && this.gpu && !token && this.frameActive && this.frameGeneration === generation) {
+      this.failedGpuScopes.add(name);
+    }
     try {
       return fn();
     } finally {
-      this.cpuScopes[name] = (this.cpuScopes[name] ?? 0) + (nowMs() - start);
-      if (token) {
-        this.openScopes.push({ name, token });
+      const sameFrame = this.frameActive && this.frameGeneration === generation;
+      const sameUnframedContext = !activeAtStart && !this.frameActive && this.frameGeneration === generation;
+      if (sameFrame || sameUnframedContext) this.cpuScopes[name] = (this.cpuScopes[name] ?? 0) + (nowMs() - start);
+      if (token && this.gpu) {
+        try {
+          // Stamp the end next to the work itself, not at the end of the
+          // enclosing frame. In particular, later passes must not inflate it.
+          this.gpu.endScope(token);
+          // endScope itself may reenter begin(), so check identity again after
+          // the external call rather than using the pre-call snapshot.
+          if (this.frameActive && this.frameGeneration === generation) {
+            this.completedScopes.push({ name, token });
+            if (this.completedScopes.length > MAX_COMPLETED_GPU_SCOPES_PER_FRAME) {
+              const dropped = this.completedScopes.shift()!;
+              // The eventual total for this name is incomplete; keep CPU.
+              this.failedGpuScopes.add(dropped.name);
+              this.enqueueGpu({ token: dropped.token, kind: "discard" });
+            }
+          } else {
+            this.enqueueGpu({ token, kind: "discard" });
+          }
+        } catch {
+          // Diagnostics never replace the callback's return value or error.
+          if (this.frameActive && this.frameGeneration === generation) this.failedGpuScopes.add(name);
+        }
       }
     }
   }
 
   percentiles(field: FrameStatsPercentileField): FrameStatsPercentiles {
-    this.drainGpu();
+    this.drainGpu(true);
     const values = this.orderedSamples()
       .map((sample) => sample[field])
       .filter((value): value is number => value !== null)
@@ -169,6 +288,61 @@ export class FrameStats implements FrameStatsLike {
     }
   }
 
+  /** Close an abandoned frame so an elapsed-query backend can start another. */
+  private abandonFrame(): void {
+    if (!this.frameActive) return;
+    const completedScopes = this.completedScopes;
+    const frameToken = this.frameToken;
+    this.completedScopes = [];
+    this.failedGpuScopes.clear();
+    this.frameToken = null;
+    this.frameActive = false;
+    this.frameIdentity = null;
+    for (const scope of completedScopes) this.enqueueGpu({ token: scope.token, kind: "discard" });
+    if (this.gpu && frameToken) {
+      const pending: PendingGpuScope = { token: frameToken, kind: "discard" };
+      this.enqueueGpu(pending);
+      try {
+        this.gpu.endScope(frameToken);
+      } catch {
+        this.removePendingGpu(pending);
+        // A lost backend may reject cleanup; the abandoned sample is dropped.
+      }
+    }
+  }
+
+  private removePendingGpu(pending: PendingGpuScope): void {
+    const index = this.pendingGpu.indexOf(pending);
+    if (index >= 0) this.pendingGpu.splice(index, 1);
+  }
+
+  private enqueueGpu(pending: PendingGpuScope): void {
+    this.pendingGpu.push(pending);
+    if (this.pendingGpu.length > MAX_PENDING_GPU_SCOPES) {
+      this.settleGpu(this.pendingGpu.shift()!, null);
+    }
+  }
+
+  private settleGpu(pending: PendingGpuScope, value: number | null | undefined): void {
+    const valid = typeof value === "number" && Number.isFinite(value) && value >= 0;
+    if (pending.kind === "frame") {
+      if (valid) pending.sample.gpuMs = value;
+      return;
+    }
+    if (pending.kind !== "scope") return;
+    const aggregate = pending.aggregate;
+    if (valid) {
+      aggregate.durationMs += value;
+      if (!Number.isFinite(aggregate.durationMs)) aggregate.valid = false;
+    } else {
+      aggregate.valid = false;
+    }
+    aggregate.remaining -= 1;
+    if (aggregate.remaining === 0 && aggregate.valid) {
+      aggregate.sample.scopes[aggregate.name] = aggregate.durationMs;
+    }
+  }
+
   private pushSample(sample: MutableFrameStatsSample): void {
     this.ring[this.writeIndex] = sample;
     this.writeIndex = (this.writeIndex + 1) % this.ring.length;
@@ -188,11 +362,18 @@ export class FrameStats implements FrameStatsLike {
     return out;
   }
 
-  private drainGpu(): void {
+  private drainGpu(observeOnly = false): void {
     if (!this.gpu || this.pendingGpu.length === 0) return;
+    // A just-closed scope belongs to the current frame, but its sample does
+    // not exist until end(). Polling now could consume that token's result
+    // before it can be associated with the sample.
+    if (this.frameActive && this.completedScopes.length > 0) return;
     let results: readonly { token: RendererGpuTimingToken; durationMs: number | null }[];
     try {
-      results = this.gpu.poll();
+      // Diagnostics may be read many times between rendered frames. Use a
+      // backend's non-aging observation path when available; custom backends
+      // retain their previous polling behavior and do not delay ready results.
+      results = observeOnly && this.gpu.pollWithoutAging ? this.gpu.pollWithoutAging() : this.gpu.poll();
     } catch {
       return;
     }
@@ -204,15 +385,9 @@ export class FrameStats implements FrameStatsLike {
         remaining.push(pending);
         continue;
       }
-      const durationMs = settled.get(pending.token);
-      // `durationMs: null` means the query settled but was discarded (disjoint):
-      // the sample keeps gpuMs: null / its cpu scope time.
-      if (durationMs === null || durationMs === undefined) continue;
-      if (pending.name === "frame") {
-        pending.sample.gpuMs = durationMs;
-      } else {
-        pending.sample.scopes[pending.name] = durationMs;
-      }
+      // A discarded, non-finite, or negative result keeps the CPU fallback
+      // and never becomes a reported GPU duration.
+      this.settleGpu(pending, settled.get(pending.token));
     }
     this.pendingGpu = remaining;
   }

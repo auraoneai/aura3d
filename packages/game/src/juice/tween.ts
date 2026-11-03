@@ -26,6 +26,8 @@ export interface TweenableNode {
 
 export interface TweenHandle {
   readonly done: Promise<void>;
+  /** True if the built-in engine cancelled this tween before completion. */
+  readonly cancelled?: boolean;
   cancel(): void;
   finish(): void;
 }
@@ -49,11 +51,15 @@ interface Slot {
   easeFn: (t: number) => number;
   channels: { channel: Channel; from: number[]; to: number[] }[];
   resolve: () => void;
+  token: object;
+  markCancelled: () => void;
   onComplete?: () => void;
 }
 
 export interface TweenEngine {
   readonly activeCount: number;
+  /** Changes whenever the engine cancels all active work. */
+  readonly cancelGeneration?: number;
   tween<T extends object>(target: T | TweenableNode, to: Partial<Record<string, number | readonly number[]>>, options: TweenOptions): TweenHandle;
   /** Advance the pool. `scaledDt` defaults to `rawDt` (no session). */
   tick(rawDt: number, scaledDt?: number): void;
@@ -62,11 +68,13 @@ export interface TweenEngine {
 
 export function createTweenEngine(): TweenEngine {
   const slots: Slot[] = Array.from({ length: TWEEN_POOL_CAPACITY }, () => ({ active: false } as Slot));
+  let cancelGeneration = 0;
 
   function complete(slot: Slot, canceled: boolean): void {
     slot.active = false;
-    const { resolve, onComplete } = slot;
+    const { resolve, onComplete, markCancelled } = slot;
     slot.channels = [];
+    if (canceled) markCancelled();
     if (!canceled) onComplete?.();
     resolve();
   }
@@ -79,6 +87,7 @@ export function createTweenEngine(): TweenEngine {
   }
 
   return {
+    get cancelGeneration() { return cancelGeneration; },
     get activeCount() {
       return slots.reduce((n, s) => n + (s.active ? 1 : 0), 0);
     },
@@ -90,9 +99,11 @@ export function createTweenEngine(): TweenEngine {
       const slot = slots.find((s) => !s.active);
       if (!slot) {
         console.warn("[game/tween] pool exhausted (64); tween dropped");
-        return { done: Promise.resolve(), cancel() {}, finish() {} };
+        return { done: Promise.resolve(), cancelled: true, cancel() {}, finish() {} };
       }
       const channels = buildChannels(target, to);
+      const token = {};
+      let cancelled = false;
       let resolve!: () => void;
       const done = new Promise<void>((r) => (resolve = r));
       Object.assign(slot, {
@@ -103,16 +114,19 @@ export function createTweenEngine(): TweenEngine {
         duration: options.duration,
         easeFn: resolveEase(options.ease),
         channels,
+        token,
+        markCancelled: () => { cancelled = true; },
         resolve,
         onComplete: options.onComplete
       });
       return {
         done,
+        get cancelled() { return cancelled; },
         cancel() {
-          if (slot.active) complete(slot, true);
+          if (slot.active && slot.token === token) complete(slot, true);
         },
         finish() {
-          if (!slot.active) return;
+          if (!slot.active || slot.token !== token) return;
           applyProgress(slot, 1);
           complete(slot, false);
         }
@@ -140,6 +154,7 @@ export function createTweenEngine(): TweenEngine {
     },
 
     cancelAll() {
+      cancelGeneration += 1;
       for (const slot of slots) if (slot.active) complete(slot, true);
     }
   };

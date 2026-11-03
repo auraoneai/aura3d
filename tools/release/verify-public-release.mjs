@@ -4,7 +4,9 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { sourceIdentity } from './source-identity.mjs';
+import { sourceIdentity, assertCommittedReleaseSource } from './source-identity.mjs';
+import { bindReleasePlanToCurrentCommit, loadValidatedReleasePlan } from './exact-release-plan.mjs';
+import { assertReleaseInventory } from './release-inventory.mjs';
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
 const option = name => { const i = args.indexOf(name); if (i < 0) return undefined; if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`Missing ${name}`); return args[i + 1]; };
@@ -12,20 +14,22 @@ const version = option('--version');
 if (!version || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('--version requires an exact version');
 const planPath = option('--release-plan') ?? 'tests/reports/release-tarballs/release-plan.json';
 const planBytes = readFileSync(resolve(root, planPath));
-const plan = JSON.parse(planBytes);
+const plan = loadValidatedReleasePlan(root, planPath);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 if (execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: root, encoding: 'utf8' }).trim()) throw new Error('Registry verification requires frozen tracked source');
-if (plan.version !== version || plan.commit !== commit || plan.lockfileSha256 !== sha256(readFileSync(resolve(root, 'pnpm-lock.yaml')))) throw new Error('Release plan differs from frozen source/version/lockfile');
-const source = sourceIdentity(root);
-if (Object.entries(source).some(([key, value]) => plan.source?.[key] !== value)) throw new Error('Release plan full source identity mismatch');
+if (plan.version !== version || plan.lockfileSha256 !== sha256(readFileSync(resolve(root, 'pnpm-lock.yaml')))) throw new Error('Release plan differs from frozen source/version/lockfile');
+assertCommittedReleaseSource(root);
+bindReleasePlanToCurrentCommit(root, plan);
+const source = sourceIdentity(root, null);
 const manifests = [JSON.parse(readFileSync(resolve(root, 'package.json')))];
 for (const entry of readdirSync(resolve(root, 'packages'))) {
   const path = resolve(root, 'packages', entry, 'package.json');
   if (existsSync(path)) { const manifest = JSON.parse(readFileSync(path)); if (manifest.private !== true) manifests.push(manifest); }
 }
-const expectedNames = manifests.map(p => p.name).sort();
-if (manifests.length !== 29 || new Set(expectedNames).size !== 29 || manifests.some(p => p.version !== version) || plan.expectedPackageCount !== 29 || plan.packageCount !== 29 || plan.packages?.length !== 29 || JSON.stringify(plan.packages.map(p => p.name).sort()) !== JSON.stringify(expectedNames)) throw new Error('Expected the exact 29 public packages at target version');
+const expectedNames = assertReleaseInventory(version, manifests.map(p => p.name), plan.inventoryId);
+assertReleaseInventory(version, plan.packages.map(p => p.name), plan.inventoryId);
+if (manifests.some(p => p.version !== version) || plan.expectedPackageCount !== expectedNames.length || plan.packageCount !== expectedNames.length) throw new Error('Expected the exact public packages at target version');
 const packages = [];
 for (const entry of plan.packages) {
   if (entry.version !== version || !entry.integrity?.startsWith('sha512-') || !entry.sha256 || !entry.tarball) throw new Error(`Incomplete packed artifact ${entry.name}`);
@@ -49,7 +53,7 @@ for (const entry of plan.packages) {
   packages.push({ downloadedTarball: { path: downloadedTarballPath, sha256: sha256(bytes) }, validatedTarballSha256: entry.sha256, deprecated: false, name: entry.name, version, publishedAt: metadata.time[version], integrity: entry.integrity, sha256: entry.sha256, tarball: tarball.href, latest: metadata['dist-tags']?.latest ?? null, provenance: published.dist.attestations ?? null, matchesCandidate: true });
 }
 const output = resolve(root, option('--output') ?? `release-artifacts/${version}-npm-registry-verification.json`);
-const receipt = { schema: 'aura3d.npm-public-release-verification/2.0', version, expectedVersion: version, generatedAt: new Date().toISOString(), command: ['node', ...process.argv.slice(1)], cwd: '.', source, releasePlan: { path: planPath, sha256: sha256(planBytes) }, registry: 'https://registry.npmjs.org', expectedPackageCount: 29, packageCount: packages.length, status: 'pass', scope: 'Published tarball byte identity only. Registry-installed lifecycles, provenance attestation verification, deployment and human review require separate evidence.', packages };
+const receipt = { schema: 'aura3d.npm-public-release-verification/2.0', version, expectedVersion: version, generatedAt: new Date().toISOString(), command: ['node', ...process.argv.slice(1)], cwd: '.', source, freezeCommit: commit, releasePlan: { path: planPath, sha256: sha256(planBytes) }, registry: 'https://registry.npmjs.org', expectedPackageCount: expectedNames.length, packageCount: packages.length, status: 'pass', scope: 'Published tarball byte identity only. Registry-installed lifecycles, provenance attestation verification, deployment and human review require separate evidence.', packages };
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, `${JSON.stringify(receipt, null, 2)}\n`);
-console.log(`Verified ${packages.length}/29 exact ${version} registry tarballs: ${output}`);
+console.log(`Verified ${packages.length}/${expectedNames.length} exact ${version} registry tarballs: ${output}`);

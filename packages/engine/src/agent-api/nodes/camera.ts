@@ -1,13 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraAssetRef, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraCameraSpec, AuraVec3 } from "../nodes/types.js";
-import { charts } from "../nodes/charts.js";
-import { city } from "../nodes/city.js";
-import { neon } from "../nodes/neon.js";
-import { physics } from "../nodes/physics.js";
-import { product } from "../nodes/product.js";
 import { resolveFrameAssetRenderScale } from "../nodes/scene.js";
-import { solar } from "../nodes/solar.js";
 import { gameCameraRigs } from "../GameCameraRigs.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { boundsFromAsset, boundsSize } from "../SceneGroundingUtils.js";
@@ -59,13 +53,32 @@ function createCameraRigFactories(): AuraCameraRigFactories {
   });
 }
 
+function perspectiveProjectionOptions(options: Omit<AuraCameraSpec, "mode">): Pick<AuraCameraSpec, "viewOffset" | "focalLength" | "filmGauge" | "filmOffset"> {
+  return {
+    ...(options.viewOffset !== undefined ? { viewOffset: options.viewOffset } : {}),
+    ...(options.focalLength !== undefined ? { focalLength: options.focalLength } : {}),
+    ...(options.filmGauge !== undefined ? { filmGauge: options.filmGauge } : {}),
+    ...(options.filmOffset !== undefined ? { filmOffset: options.filmOffset } : {})
+  };
+}
+
+function cameraViewOptions(options: Omit<AuraCameraSpec, "mode">): Pick<AuraCameraSpec, "up" | "layers"> {
+  return {
+    ...(options.up !== undefined ? { up: options.up } : {}),
+    ...(options.layers !== undefined ? { layers: options.layers } : {})
+  };
+}
+
 export const camera = lazyNamespace(() => ({
   perspective: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "perspective",
-    ...resolveCameraClipping(options),
+    ...resolveCameraClipping({ ...options, mode: "perspective" }),
     position: options.position ?? [0, 1.4, 4],
     target: options.target ?? [0, 0.8, 0],
     fov: options.fov ?? 45,
+    ...(options.up !== undefined ? { up: options.up } : {}),
+    ...perspectiveProjectionOptions(options),
+    ...(options.depth !== undefined ? { depth: options.depth } : {}),
     ...(options.layers !== undefined ? { layers: options.layers } : {})
   }),
   orbit: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => {
@@ -73,7 +86,7 @@ export const camera = lazyNamespace(() => ({
     const target = options.target ?? [0, 0.8, 0];
     return {
       mode: "orbit",
-      ...resolveCameraClipping(options),
+      ...resolveCameraClipping({ ...options, mode: "orbit" }),
       distance,
       target,
       position: options.position ?? [
@@ -81,24 +94,32 @@ export const camera = lazyNamespace(() => ({
         target[1] + distance * 0.42,
         target[2] + distance * 0.78
       ],
-      fov: options.fov ?? 45
+      fov: options.fov ?? 45,
+      ...(options.autoRotate !== undefined ? { autoRotate: options.autoRotate } : {}),
+      ...(options.captureTime !== undefined ? { captureTime: options.captureTime } : {}),
+      ...cameraViewOptions(options),
+      ...perspectiveProjectionOptions(options),
+      ...(options.depth !== undefined ? { depth: options.depth } : {})
     };
   },
   dolly: (options: Omit<AuraCameraSpec, "mode"> & { readonly from: AuraVec3; readonly to: AuraVec3 }): AuraCameraSpec => ({
     mode: "dolly",
-    ...resolveCameraClipping(options),
+    ...resolveCameraClipping({ ...options, mode: "dolly" }),
     from: options.from,
     to: options.to,
     target: options.target ?? [0, 0.8, 0],
     seconds: options.seconds ?? 6,
     fov: options.fov ?? 45,
-    captureTime: options.captureTime
+    captureTime: options.captureTime,
+    ...cameraViewOptions(options),
+    ...perspectiveProjectionOptions(options),
+    ...(options.depth !== undefined ? { depth: options.depth } : {})
   }),
   follow: (options: Omit<AuraCameraSpec, "mode"> & { readonly targetNode: string }): AuraCameraSpec => {
     warnSmoothingDeprecated(options);
     return {
       mode: "follow",
-      ...resolveCameraClipping(options),
+      ...resolveCameraClipping({ ...options, mode: "follow" }),
       targetNode: options.targetNode,
       distance: options.distance ?? 5,
       position: options.position,
@@ -110,30 +131,39 @@ export const camera = lazyNamespace(() => ({
       easing: options.easing,
       captureTime: options.captureTime,
       smoothing: options.smoothing ?? 0.18,
-      subjectEmphasis: options.subjectEmphasis ?? 0.62
+      subjectEmphasis: options.subjectEmphasis ?? 0.62,
+      ...cameraViewOptions(options),
+      ...perspectiveProjectionOptions(options),
+      ...(options.depth !== undefined ? { depth: options.depth } : {})
     };
   },
   path: (options: Omit<AuraCameraSpec, "mode"> & { readonly from: AuraVec3; readonly to: AuraVec3 }): AuraCameraSpec => ({
     mode: "path",
-    ...resolveCameraClipping(options),
+    ...resolveCameraClipping({ ...options, mode: "path" }),
     from: options.from,
     to: options.to,
     target: options.target ?? [0, 0.8, 0],
     seconds: options.seconds ?? 6,
     fov: options.fov ?? 45,
     easing: options.easing ?? "easeInOut",
-    captureTime: options.captureTime
+    captureTime: options.captureTime,
+    ...cameraViewOptions(options),
+    ...perspectiveProjectionOptions(options),
+    ...(options.depth !== undefined ? { depth: options.depth } : {})
   }),
   flythrough: (options: Omit<AuraCameraSpec, "mode"> & { readonly from?: AuraVec3; readonly to?: AuraVec3 } = {}): AuraCameraSpec => ({
     mode: "flythrough",
-    ...resolveCameraClipping(options),
+    ...resolveCameraClipping({ ...options, mode: "flythrough" }),
     from: options.from ?? [0, 0.36, 1.6],
     to: options.to ?? [0, 0.36, -4.4],
     target: options.target ?? [0, 0.28, -5.8],
     seconds: options.seconds ?? 8,
     fov: options.fov ?? 54,
     easing: options.easing ?? "easeInOut",
-    captureTime: options.captureTime
+    captureTime: options.captureTime,
+    ...cameraViewOptions(options),
+    ...perspectiveProjectionOptions(options),
+    ...(options.depth !== undefined ? { depth: options.depth } : {})
   }),
   /**
    * A parallel-projection camera: no foreshortening, so equal world lengths
@@ -147,10 +177,14 @@ export const camera = lazyNamespace(() => ({
    */
   orthographic: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
     mode: "orthographic",
-    ...resolveCameraClipping(options),
+    ...resolveCameraClipping({ ...options, mode: "orthographic" }),
     position: options.position ?? [0, 1.4, 4],
     target: options.target ?? [0, 0.8, 0],
-    orthographicSize: options.orthographicSize ?? 1.4
+    orthographicSize: options.orthographicSize ?? 1.4,
+    ...(options.up !== undefined ? { up: options.up } : {}),
+    ...(options.viewOffset !== undefined ? { viewOffset: options.viewOffset } : {}),
+    ...(options.depth !== undefined ? { depth: options.depth } : {}),
+    ...(options.layers !== undefined ? { layers: options.layers } : {})
   }),
   /**
    * The conventional isometric view: an orthographic camera on a 45-degree
@@ -170,7 +204,7 @@ export const camera = lazyNamespace(() => ({
     const horizontal = Math.cos(elevation) * distance;
     return {
       mode: "isometric",
-      ...resolveCameraClipping(options),
+      ...resolveCameraClipping({ ...options, mode: "isometric" }),
       target,
       distance,
       orthographicSize: options.orthographicSize ?? 6,
@@ -178,7 +212,11 @@ export const camera = lazyNamespace(() => ({
         target[0] + Math.sin(azimuth) * horizontal,
         target[1] + Math.sin(elevation) * distance,
         target[2] + Math.cos(azimuth) * horizontal
-      ]
+      ],
+      ...(options.up !== undefined ? { up: options.up } : {}),
+      ...(options.viewOffset !== undefined ? { viewOffset: options.viewOffset } : {}),
+      ...(options.depth !== undefined ? { depth: options.depth } : {}),
+      ...(options.layers !== undefined ? { layers: options.layers } : {})
     };
   },
   autoFrame: (options: { readonly bounds?: AuraBoundsSpec; readonly target?: AuraVec3; readonly padding?: number; readonly fov?: number } = {}): AuraCameraSpec => {

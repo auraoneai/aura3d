@@ -25,15 +25,12 @@ export function createGameRacingPresentationTrackNodes(...args: Parameters<typeo
 export function createGamePublicRacingPresentationNodes(...args: Parameters<typeof _gamePresentation.createGamePublicRacingPresentationNodes>): ReturnType<typeof _gamePresentation.createGamePublicRacingPresentationNodes> { return _gamePresentation.createGamePublicRacingPresentationNodes(...args); }
 export function certifyPublicRacingPresentation(...args: Parameters<typeof _gamePresentation.certifyPublicRacingPresentation>): ReturnType<typeof _gamePresentation.certifyPublicRacingPresentation> { return _gamePresentation.certifyPublicRacingPresentation(...args); }
 export { neon } from "./nodes/neon.js";
-import { createCameraProjection } from "./RootRuntimeSupport.js";
-import { lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION } from "./SceneGroundingUtils.js";
 import { resolveAnimationSeconds } from "./compiler/animation.js";
 import { orbitAnimatedAngle } from "./compiler/actors.js";
-import { resolveCameraFrame } from "./compiler/camera.js";
 import { colorToClearColor } from "./colorUtils.js";
 import type { GltfBounds } from "./nodes/types/runtime.js";
-import { animatedPosition, flattenSceneNodes, isPositiveFinite, multiply4, primitiveSize, rotationXYZ, scaling, translation } from "./sceneMath.js";
+import { animatedPosition, createViewProjection as createProductionViewProjection, flattenSceneNodes, isPositiveFinite, multiply4, primitiveSize, rotationXYZ, scaling, translation } from "./sceneMath.js";
 import type { AuraCameraMode, AuraColor, AuraEffectNode, AuraLabelNode, AuraModelNode, AuraPrimitiveNode, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3 } from "./nodes/types.js";
 
 function transformNormals(normals: Float32Array, matrix: Float32Array): Float32Array {
@@ -54,11 +51,7 @@ function transformNormals(normals: Float32Array, matrix: Float32Array): Float32A
 }
 
 export function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): Float32Array {
-  const cameraSpec = snapshot.camera;
-  const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
-  const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
-  const projection = createCameraProjection(cameraSpec, aspect);
-  return new Float32Array(multiplyMat4(projection, view));
+  return createProductionViewProjection(snapshot, aspect, time, runtimeNodes);
 }
 
 export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {
@@ -291,7 +284,7 @@ export { games } from "./nodes/games.js";
 export { geometry } from "./nodes/geometry.js";
 export { group, distanceLod, groups, findGroupNode } from "./nodes/groups.js";
 export { helpers } from "./nodes/helpers.js";
-export type { AuraHelperBaseOptions } from "./nodes/helpers.js";
+export type { AuraHelperBaseOptions, AuraDynamicHelper, AuraDynamicHelperOptions } from "./nodes/helpers.js";
 export { interactions } from "./nodes/interactions.js";
 export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
@@ -323,8 +316,12 @@ export { defineModelAssets, modelsEnabledFromUrl } from "./assets/productionMode
 export type { AuraModelAssetEntry, AuraModelAssetsOptions, AuraModelAssetSet, AuraModelAssetRefs } from "./assets/productionModels.js";
 export { solarMaterialPresetsInNodes, solar } from "./nodes/solar.js";
 export { rootSdfFontAtlas, text3D } from "./nodes/text3d.js";
+export type { AuraWorldTextOptions } from "./nodes/text3d.js";
+export { loadFont } from "@aura3d/rendering";
+export type { FontAsset, FontAssetMetadata, FontLoadOptions, FontLoaderPlatform, LoadedFont, TextDirection } from "@aura3d/rendering";
 // threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.
 export { texture, TextureHandle } from "./nodes/texture.js";
+export type { AuraNativeTextureLoadOptions } from "./nodes/loadNativeTexture.js";
 export type { AuraTextureRef, AuraTextureWrapMode, AuraTextureMinFilter, AuraTextureMagFilter, AuraTextureColorSpace, AuraTextureDataOptions, AuraTextureCanvasOptions, AuraTextureVideoOptions, AuraTextureCompressedOptions, AuraTextureDepthOptions, AuraTextureCubeOptions, AuraTextureDataArrayOptions, AuraTextureLoadOptions } from "./nodes/types.js";
 export { timeline } from "./nodes/timeline.js";
 export type { AuraVec3, AuraColor, AuraAssetType, AuraModelFormat, AuraTextureFormat, AuraProceduralTextureKind, AuraProceduralTextureSpec, AuraMaterialTextureInput, AuraTextureTransform, AuraAssetDefinition, AuraAssetMetadata, AuraAssetRef, AuraAssetMap, AuraTransformSpec, AuraMaterialSpec, AuraEditableMaterialParameters, AuraMaterialInspectorParameter, AuraMaterialInspectorPanel, AuraMaterialVisualQAResult, AuraMaterialCapabilityFeatureId, AuraMaterialCapabilitySupport, AuraMaterialCapabilityFeature, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraModelRole, AuraModelScaleMode, AuraModelOptions, AuraPrimitiveOptions, AuraBuiltinPrimitive, AuraRootLodLevelSpec, AuraRootLodSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraCharacterClipName, AuraCharacterStyle, AuraCharacterPose, AuraCharacterJointName, AuraCharacterJoint, AuraCharacterClip, AuraCharacterSkeleton, AuraCharacterRigSpec, AuraCharacterFootPlantingSpec, AuraCharacterRootMotionSpec, AuraCharacterConstraintCorrectionSpec, AuraCharacterVisualQAGap, AuraCharacterVisualQAResult, AuraProceduralHumanMeshPartName, AuraProceduralHumanMeshPart, AuraProceduralHumanMeshDescriptor, AuraHelperBudgetId, AuraHelperPerformanceBudget, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraBatchedNode, AuraGroupNode, AuraLightType, AuraLightNode, AuraEffectType, AuraParticleMaterialMode, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraLabelNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraEnvironmentMapPreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraInteractionNode, AuraPhysicsShapeKind, AuraNodePhysicsSpec, AuraPhysicsStepOptions, AuraPhysicsDebugSnapshot, AuraPhysicsSceneSummary, AuraPhysicsWheelSpec, AuraPhysicsWheelTuning, AuraPhysicsWheelCommand, AuraPhysicsWheelState, AuraPhysicsVehicleAxis, AuraPhysicsVehicleController, AuraPhysicsCharacterDescriptor, AuraPhysicsCharacterMovement, AuraPhysicsCharacterController, AuraPhysicsWorldController, AuraNodeInput, AuraCameraMode, AuraCameraSpec, AuraBoundsSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraEnvironmentOptions, AuraRendererRuntimeObservation, AuraSceneSnapshot, CityBlockTimeOfDay, AuraCityCameraPreset, AuraCityBlockOptions, AuraCityStateChangeEvidence, AuraCityInstancingPlan, AuraCityVisualQAResult, AuraCityStateController, AuraSolarSystemPrefabOptions, AuraSolarPlanetMaterialPreset, AuraSolarVisualQAResult, AuraNeonPalettePreset, AuraNeonTunnelOptions, AuraNeonVisualQAResult, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraChartTheme, AuraChartVisualQAResult, AuraProductStageStyle, AuraProductViewerOptions, AuraProductPlacement, AuraProductDiagnostics, AuraProductVisualQAResult, AuraMiniGolfMetrics, AuraMiniGolfStateController, AuraMiniGolfPointerPoint, AuraMiniGolfShotInput, AuraGameLoopPlan, AuraGameInputPlan, AuraGameInputAxisBinding, AuraGameInputActionState, AuraGameInputReplayEvent, AuraGameInputSnapshot, AuraGameInputController, AuraGameRuntimeEvidence, AuraGameRules, AuraGameRuntimeOptions, AuraGameRuntime, AuraRacingPresentationTrackOptions, AuraRacingRoadMeshOptions, AuraRacingCheckpointGateOptions, AuraRacingStartFinishOptions, AuraPublicRacingPresentationOptions, AuraRacingPresentationCertificationInput, AuraPlatformerPresentationSurfaceOptions, AuraPlatformerPublicSurfaceMode, AuraPublicPlatformerPresentationOptions, AuraPlatformerSurfaceMeshOptions, AuraPlatformerHazardOptions, AuraPlatformerCheckpointOptions, AuraPlatformerFinishOptions, AuraPlatformerPresentationCertificationInput, AuraCityBrowserRuntimeState, AuraCityDayNightToggleOptions, AuraSceneKitId, AuraSceneKitCustomizeOptions, AuraSceneKitDiagnostics, AuraSceneKitPerformanceDiagnostics, AuraSceneKitDrawCallBudget, AuraSceneKitBundleBudget, AuraSceneKitFpsBudget, AuraSceneKitInstancingFamilyEvidence, AuraSceneKitInstancingEvidence, AuraSceneKitLodEvidence, AuraSceneKitLazySystemId, AuraSceneKitLazyLoadingEntry, AuraSceneKitLazyLoadingPlan, AuraLazySystemEvidence, AuraSceneKit, AuraSceneKitBudgetDefaults, AuraPromptSceneType, AuraPromptEffectId, AuraPromptCameraPreset, AuraPromptLightingPreset, AuraPromptInteractionMode, AuraPromptResolvedSubject, AuraPromptIntentSubject, AuraPromptPlanSubject, AuraPromptSubjectResolver, AuraPromptPlan, AuraPromptPlanReport, AuraCompiledPromptPlan, AuraBackend, AuraDiagnostics, AuraAssetProvenance, AuraAssetLoadState, AuraSceneEvidence, AuraFrameInfo, AuraFrameCallback, AuraRuntimeNodeSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeImportedAssetDiagnostic, AuraRuntimeNodeImportedAssetEvidenceInput, AuraRuntimeNodeRegistry, AuraRuntimeState, AuraApp, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraDiagnosticsOptions, AuraScreenshot, AuraAppTarget, AuraAppRegistry, WebGLRenderController, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource, ProductionRuntimePrimitiveState, ProductionRuntimeLightDescriptor, AuraFountainParticleLayer, WebGLSceneRenderer, WebGLModel } from "./nodes/types.js";
@@ -437,9 +434,15 @@ export { AURA_PRIMITIVE_AXES, clearFocus, focusCameraIntent, focusObject, focusS
 export type { FocusCameraIntent, FocusIndicator, FocusInvariantReport, FocusOptions, FocusResult, FocusTarget, FocusTargetBounds } from "./FocusSelection.js";
 export { createGameAssetReadinessManifest, createGameAssetValidationIssue, createPrimaryGameAssetValidationPolicy, createQuaterniusGameReadyFighterValidationPolicy, defineGameAssetReadinessManifest, evaluateGameAssetAnimationClips, evaluateGameAssetBounds, evaluateGameAssetOrientation, fightingGameAnimationRoles, gameAssetBoundsFromSize, gameAssetValidation, gameAssetValidationContractVersion, isAuraGameModelAssetRef, quaterniusGameReadyFighterValidationContract, validateGameAssetReadiness, validatePrimaryGameAsset, validateQuaterniusGameReadyFighterAsset } from "./GameAssetValidation.js";
 export type { CreateGameAssetReadinessManifestOptions, GameAssetAnimationClipReadiness, GameAssetAnimationEvent, GameAssetAnimationPolicy, GameAssetAnimationRole, GameAssetApprovalStatus, GameAssetAxis, GameAssetBounds, GameAssetBoundsPolicy, GameAssetBoundsSource, GameAssetClipRequirement, GameAssetIntendedUse, GameAssetMaterialReadiness, GameAssetModelFormat, GameAssetOrientation, GameAssetOrientationPolicy, GameAssetProvenance, GameAssetReadinessManifest, GameAssetSkeletonReadiness, GameAssetTextureReadiness, GameAssetThumbnail, GameAssetUsageKind, GameAssetValidationCheck, GameAssetValidationContractVersion, GameAssetValidationIssue, GameAssetValidationPolicy, GameAssetValidationReport, GameAssetValidationSeverity, GameAssetValidationStatus, GamePrimaryAssetRole, QuaterniusGameReadyFighterSourceFamily, QuaterniusGameReadyFighterValidationContract } from "./GameAssetValidation.js";
-export { CSS2D_OUT_OF_SCOPE, collectLabelTelemetry, labelTelemetryRoleFor, summarizeTextBuckets, tuneLabelCollision } from "./LabelTelemetry.js";
+export { CSS2D_OUT_OF_SCOPE, SPATIAL_DOM_LABEL_CAPABILITY, collectLabelTelemetry, labelTelemetryRoleFor, summarizeTextBuckets, tuneLabelCollision } from "./LabelTelemetry.js";
 export type { LabelCollisionTuning, LabelTelemetry, LabelTelemetryByRole, LabelTelemetryRole, TextBucketSummary } from "./LabelTelemetry.js";
 export { camera } from "./nodes/camera.js";
+export { gaussianSplat, gaussianSplatBackendDiagnostic } from "./nodes/gaussianSplat.js";
+export type { AuraGaussianSplatBackendDiagnostic, AuraGaussianSplatColorSpace, AuraGaussianSplatFormat, AuraGaussianSplatNode, AuraGaussianSplatOptions } from "./nodes/gaussianSplat.js";
+export { scalarVolume } from "./nodes/scalarVolume.js";
+export type { AuraScalarVolumeFormat, AuraScalarVolumeNode, AuraScalarVolumeOptions } from "./nodes/scalarVolume.js";
+export { clipping, AuraClipGroup } from "./nodes/clipping.js";
+export type { AuraClipPlane, AuraClipScope, AuraClipOptions, AuraGlobalClipOptions, AuraClipGroupSnapshot } from "./nodes/clipping.js";
 export { cameras } from "./nodes/cameras.js";
 // threejs-parity SC-04: WebXR entry points (`xr.button`, `app.xr`).
 export { xr } from "./xr/index.js";
@@ -448,9 +451,16 @@ export type {
   AuraXRButtonOptions,
   AuraXRDeviceBridge,
   AuraXREnterResult,
+  AuraXREventMap,
+  AuraXREventName,
+  AuraXRFrameEvent,
   AuraXRMode,
   AuraXRRuntime,
-  AuraXRSessionInit
+  AuraXRSceneHelperOptions,
+  AuraXRSceneHelpers,
+  AuraXRSessionInit,
+  AuraXRSessionProvenance,
+  AuraXRVisual
 } from "./xr/index.js";
 export type { AuraCubeCameraNode, AuraCubeCameraOptions } from "./nodes/cameras.js";
 export type { ChaseOptions, ChaseRig, ChasePose, ChaseTarget, ChaseOffset, ChaseLag, ChaseFovKick, ChaseShake, ChaseVec3 } from "./nodes/chaseCamera.js";
@@ -484,6 +494,7 @@ export type { AuraInstancedMeshBoundingSphere, AuraInstancedBufferView, AuraInst
 export { lights } from "./nodes/lights.js";
 export { looks } from "./looks/looks.js";
 export { material } from "./nodes/material.js";
+export type { AuraMatcapMaterialOptions, AuraDepthPreviewMaterialOptions, AuraDistanceMaterialOptions, AuraShadowMaterialOptions } from "./nodes/material.js";
 // SH-01 / L1-11: TSL-subset node graph (`tsl.*`, `material.node`); GLSL only.
 export { tsl } from "./nodes/tsl/index.js";
 export type { TslCompileResult, TslEvalContext, TslInput, TslMaterialNodeOptions, TslType, TslUniformKind, TslUniformOptions } from "./nodes/tsl/index.js";
@@ -491,3 +502,4 @@ export { particles } from "./nodes/particles.js";
 export { sceneKits } from "./nodes/sceneKits.js";
 export { shadows } from "./nodes/shadows.js";
 export { sky } from "./nodes/sky.js";
+export type { AuraReadinessOptions, AuraReadyOutcome, AuraRenderTermination } from "./nodes/types/runtime.js";

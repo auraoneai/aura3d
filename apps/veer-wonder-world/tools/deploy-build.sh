@@ -18,6 +18,9 @@ for name in $(compgen -e); do
 done
 node "$APP_DIR/tools/validate-wonder-world-content.mjs"
 node_modules/.bin/vite build "$APP_DIR" --logLevel warn
+if [ -f "$APP_DIR/public/_headers" ]; then
+  cp "$APP_DIR/public/_headers" "$APP_DIR/dist/_headers"
+fi
 node "$APP_DIR/tools/check-dist.mjs"
 cd "$APP_DIR"
 npx -y @aura3d/cli@4.6.2 check-deploy --dist dist --no-assets

@@ -1,3 +1,5 @@
+import { redactAssetUrl } from "./AssetLoader";
+
 export type AssetHandleStatus = "ready" | "disposed";
 
 export interface AssetHandleOptions<T> {
@@ -49,14 +51,14 @@ export class AssetHandle<T> {
     return this;
   }
 
+  /**
+   * Release one owned reference. The final release marks the handle disposed
+   * before invoking the disposer, so concurrent releases cannot dispose twice.
+   * Releasing an already disposed handle is an error, even if disposal failed.
+   */
   async release(): Promise<number> {
     this.assertAlive();
     this.retainCount -= 1;
-
-    if (this.retainCount < 0) {
-      this.retainCount = 0;
-      throw new Error(`Asset handle ${this.id} was released too many times`);
-    }
 
     if (this.retainCount === 0) {
       this.currentStatus = "disposed";
@@ -68,7 +70,9 @@ export class AssetHandle<T> {
 
   assertAlive(): void {
     if (this.currentStatus === "disposed") {
-      throw new Error(`Asset handle ${this.id} for ${this.url} has been disposed`);
+      // IDs are caller-controlled and may themselves contain signed URLs.
+      const safeId = /^[a-zA-Z0-9._-]{1,128}$/.test(this.id) ? this.id : "<redacted>";
+      throw new Error(`Asset handle ${safeId} for ${redactAssetUrl(this.url)} has been disposed`);
     }
   }
 }

@@ -2,13 +2,14 @@ import { ValidationError } from "@aura3d/core";
 import { Light } from "./Light.js";
 
 /**
- * A one-sided rectangular emitter whose local +X/+Y axes define the emitting
- * surface and whose local -Z axis defines its facing direction.
+ * A rectangular emitter whose local +X/+Y axes define the surface and whose
+ * local -Z axis faces the front. It is one-sided unless twoSided is enabled.
  */
 export class RectAreaLight extends Light {
   private currentWidth = 1;
   private currentHeight = 1;
   private currentRange = 10;
+  private currentTwoSided = false;
 
   constructor(name = "RectAreaLight", id?: string) {
     super("rect-area", name, id);
@@ -34,6 +35,17 @@ export class RectAreaLight extends Light {
       throw new ValidationError("RECT_AREA_LIGHT_HEIGHT", "Rectangular area-light height must be positive.");
     }
     this.currentHeight = value;
+  }
+
+  get twoSided(): boolean {
+    return this.currentTwoSided;
+  }
+
+  set twoSided(value: boolean) {
+    if (typeof value !== "boolean") {
+      throw new ValidationError("RECT_AREA_LIGHT_TWO_SIDED", "Rectangular area-light twoSided must be a boolean.");
+    }
+    this.currentTwoSided = value;
   }
 
   /**

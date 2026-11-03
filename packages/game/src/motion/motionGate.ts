@@ -1,4 +1,4 @@
-import { createFixedStepLoop } from "@aura3d/engine";
+import { createFixedStepLoop } from "@aura3d/engine/v5/internal";
 
 export interface MotionGateOptions {
   /** Display refresh rate to simulate. */

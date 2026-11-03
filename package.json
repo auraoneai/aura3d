@@ -47,7 +47,13 @@
       "import": "./dist/engine/public/index.js",
       "default": "./dist/engine/public/index.js"
     },
-    "./math": "./dist/math/index.js",
+    "./math": {
+      "types": "./dist/math/index.d.ts",
+      "browser": "./dist/math/index.js",
+      "import": "./dist/math/index.js",
+      "require": "./dist/math/index.cjs",
+      "default": "./dist/math/index.js"
+    },
     "./scene": "./dist/scene/index.js",
     "./scene/math": "./dist/scene/MathTypes.js",
     "./ecs": "./dist/ecs/index.js",
@@ -99,6 +105,66 @@
       "default": "./dist/game/util/index.js"
     },
     "./game/styles.css": "./dist/game/styles.css",
+    "./scatter": {
+      "types": "./dist/engine/agent-api/nodes/scatter.d.ts",
+      "browser": "./dist/engine/agent-api/nodes/scatter.js",
+      "import": "./dist/engine/agent-api/nodes/scatter.js",
+      "default": "./dist/engine/agent-api/nodes/scatter.js"
+    },
+    "./worker": {
+      "types": "./dist/engine/public/worker.d.ts",
+      "browser": "./dist/engine/public/worker.js",
+      "import": "./dist/engine/public/worker.js",
+      "default": "./dist/engine/public/worker.js"
+    },
+    "./lighting": {
+      "types": "./dist/rendering/lighting/index.d.ts",
+      "browser": "./dist/rendering/lighting/index.js",
+      "import": "./dist/rendering/lighting/index.js",
+      "default": "./dist/rendering/lighting/index.js"
+    },
+    "./v5": {
+      "types": "./dist/engine/public/v5.d.ts",
+      "browser": "./dist/engine/public/v5.js",
+      "import": "./dist/engine/public/v5.js",
+      "default": "./dist/engine/public/v5.js"
+    },
+    "./v5/context": {
+      "types": "./dist/engine/public/v5-context.d.ts",
+      "browser": "./dist/engine/public/v5-context.js",
+      "import": "./dist/engine/public/v5-context.js",
+      "default": "./dist/engine/public/v5-context.js"
+    },
+    "./v5/game": {
+      "types": "./dist/game/v5.d.ts",
+      "browser": "./dist/game/v5.js",
+      "import": "./dist/game/v5.js",
+      "default": "./dist/game/v5.js"
+    },
+    "./v5/math/hull": {
+      "types": "./dist/math/independent/hull-entry.d.ts",
+      "browser": "./dist/math/independent/hull-entry.js",
+      "import": "./dist/math/independent/hull-entry.js",
+      "default": "./dist/math/independent/hull-entry.js"
+    },
+    "./v5/internal": {
+      "types": "./dist/engine/public/v5-internal.d.ts",
+      "browser": "./dist/engine/public/v5-internal.js",
+      "import": "./dist/engine/public/v5-internal.js",
+      "default": "./dist/engine/public/v5-internal.js"
+    },
+    "./shader-graph-runtime": {
+      "types": "./dist/engine/public/shader-graph-runtime.d.ts",
+      "browser": "./dist/engine/public/shader-graph-runtime.js",
+      "import": "./dist/engine/public/shader-graph-runtime.js",
+      "default": "./dist/engine/public/shader-graph-runtime.js"
+    },
+    "./geometry-tools": {
+      "types": "./dist/engine/public/geometry-tools.d.ts",
+      "browser": "./dist/engine/public/geometry-tools.js",
+      "import": "./dist/engine/public/geometry-tools.js",
+      "default": "./dist/engine/public/geometry-tools.js"
+    },
     "./media-node": "./dist/engine/deprecated/media-node.js",
     "./apps": "./dist/engine/deprecated/apps.js",
     "./contracts": "./dist/engine/deprecated/contracts.js",
@@ -156,13 +222,13 @@
     "check:production-path-benchmark": "pnpm exec tsx --tsconfig tsconfig.base.json tools/production-path-benchmark/index.ts --gate-only",
     "check:public-api": "pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts",
     "check:public-surface-diff": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts",
-    "check:release": "pnpm typecheck && pnpm lint && pnpm --dir marketing check:version && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:public-surface-diff && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:asset-screening && pnpm check:agent-docs && pnpm check:templates && pnpm check:template-source-audit && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:claim-lineage && pnpm check:package-graph && pnpm check:production-path-benchmark && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install && pnpm check:templates:installed && pnpm check:installed-tree-shaking && pnpm check:game-runtime && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx && pnpm check:no-three-runtime",
+    "check:release": "printf '%s\\n' 'check:release blocked: candidate-bound clean-install optional-peer and installed-template custody are unavailable' >&2 && false && : \"${A3D_RELEASE_PLAN:?A3D_RELEASE_PLAN must identify the candidate plan}\" && : \"${NATIVE_CONSUMER_SOURCE_REPORT:?NATIVE_CONSUMER_SOURCE_REPORT must identify its source report}\" && pnpm typecheck && pnpm lint && pnpm --dir marketing check:version && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:public-surface-diff && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:asset-screening && pnpm check:agent-docs && pnpm check:templates && pnpm check:template-source-audit && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:claim-lineage && pnpm check:package-graph && pnpm check:production-path-benchmark && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install && pnpm check:templates:installed && pnpm check:installed-tree-shaking --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\" --candidate-plan \"$A3D_RELEASE_PLAN\" && pnpm check:game-runtime && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx && pnpm check:no-three-runtime",
     "check:skills": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/check.ts",
     "skills:sync": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/sync.ts",
     "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",
     "check:template-source-audit": "pnpm exec tsx --tsconfig tsconfig.base.json tools/template-source-audit/index.ts",
     "check:templates": "pnpm exec vitest run tests/unit/create-aura3d/templates.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
-    "check:templates:installed": "pnpm build:raw && node tools/release/publish-all.mjs --pack-only && A3D_TEMPLATE_TARBALL_DIR=tests/reports/release-tarballs pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
+    "check:templates:installed": "printf '%s\\n' 'check:templates:installed blocked: candidate-bound source, CODE_COMPLETE_GO and isolated installer/browser custody are required' >&2 && false && pnpm build:raw && node tools/release/publish-all.mjs --pack-only && A3D_TEMPLATE_TARBALL_DIR=tests/reports/release-tarballs pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
     "dev": "vite",
     "doctor": "tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts doctor",
     "evidence:command": "node tools/evidence/run-command-proof.mjs",
@@ -179,7 +245,7 @@
     "game-runtime:template": "pnpm evidence:command --id game-runtime-template --out tests/reports/game-runtime/template.json --log tests/reports/game-runtime/template.log --cwd . -- pnpm game-runtime:template:raw",
     "game-runtime:template:raw": "tsx --tsconfig tsconfig.base.json tools/game-runtime-readiness/index.ts",
     "game-runtime:unit": "pnpm evidence:command --id game-runtime-unit --out tests/reports/game-runtime/unit.json --log tests/reports/game-runtime/unit.log --cwd . -- pnpm game-runtime:unit:raw",
-    "game-runtime:unit:raw": "vitest run tests/unit/agent-api/aura-app-handle.test.ts tests/unit/agent-api/runtime-node-handle.test.ts tests/unit/game-runtime/input.test.ts tests/unit/game-runtime/kinematic-body.test.ts tests/unit/game-runtime/hitbox-world.test.ts tests/unit/game-runtime/game-runtime-source-gates.test.ts tests/unit/game-runtime/runtime-node-frame-loop-source-contract.test.ts tests/unit/animation/animation-controller.test.ts tests/game-runtime/aura3d104-game-runtime-source.test.ts --reporter=dot",
+    "game-runtime:unit:raw": "vitest run --config tools/native-source-inventory/index.mjs tests/unit/agent-api/aura-app-handle.test.ts tests/unit/agent-api/runtime-node-handle.test.ts tests/unit/game-runtime/input.test.ts tests/unit/game-runtime/kinematic-body.test.ts tests/unit/game-runtime/hitbox-world.test.ts tests/unit/game-runtime/game-runtime-source-gates.test.ts tests/unit/game-runtime/runtime-node-frame-loop-source-contract.test.ts tests/unit/animation/animation-controller.test.ts tests/game-runtime/aura3d104-game-runtime-source.test.ts --reporter=dot",
     "lint": "eslint .",
     "pack:check": "tsx --tsconfig tsconfig.base.json tools/packed-consumer-check/index.ts",
     "prompt-animation:auravoice-contract": "pnpm evidence:command --id prompt-animation-auravoice-contract --out tests/reports/prompt-animation/auravoice-contract-proof.json --log tests/reports/prompt-animation/auravoice-contract.log --cwd . -- pnpm prompt-animation:auravoice-contract:raw",
@@ -219,7 +285,7 @@
     "test:packages": "pnpm exec tsx --tsconfig tsconfig.base.json --test packages/assets/tests/assets.test.ts packages/audio/tests/audio.test.ts packages/ecs/tests/ecs.test.ts packages/editor-runtime/tests/editor-runtime.test.ts packages/input/tests/input.test.ts packages/scene/tests/scene.test.ts packages/scripting/tests/scripting.test.ts",
     "test:packages:dist": "node --import tsx --test packages/assets/tests/assets.test.ts packages/audio/tests/audio.test.ts packages/ecs/tests/ecs.test.ts packages/editor-runtime/tests/editor-runtime.test.ts packages/input/tests/input.test.ts packages/scene/tests/scene.test.ts packages/scripting/tests/scripting.test.ts",
     "test:parity": "vitest run tests/unit/parity --maxWorkers=2",
-    "test:performance": "pnpm threejs-parity:performance && pnpm superiority:performance",
+    "test:performance": "pnpm exec tsx --tsconfig tsconfig.base.json tools/performance/native-benchmark.ts",
     "test:unit": "vitest run tests/unit --maxWorkers=2 --reporter=default --reporter=json --outputFile=tests/reports/unit.json",
     "test:visual": "node scripts/visual-qa.mjs --routes scripts/visual-qa.routes.json --static-dir marketing/dist --port 3180",
     "typecheck": "tsc -p tsconfig.check.json --noEmit",
@@ -236,9 +302,13 @@
     "verify:public-demo-deployment": "tsx --tsconfig tsconfig.base.json tools/public-demo-deployment-smoke/index.ts",
     "verify:size": "node --experimental-strip-types tools/package-size/index.ts",
     "verify:source-cleanliness": "node --experimental-strip-types tools/verify-source-cleanliness/index.ts",
-    "verify:static-demo-server-smoke": "node --experimental-strip-types tools/static-demo-server-smoke/index.ts"
+    "verify:static-demo-server-smoke": "node --experimental-strip-types tools/static-demo-server-smoke/index.ts",
+    "check:clean-install:source": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source",
+    "check:clean-install:browser": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase browser",
+    "verify:api-docs": "tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts"
   },
   "devDependencies": {
+    "@aura3d/addons": "workspace:*",
     "@aura3d/animation": "workspace:*",
     "@aura3d/apps": "workspace:*",
     "@aura3d/asset-index": "workspace:*",
@@ -263,22 +333,16 @@
     "@aura3d/scene": "workspace:*",
     "@aura3d/scripting": "workspace:*",
     "@aura3d/workflows": "workspace:*",
-    "@babylonjs/core": "^7.16.1",
-    "@babylonjs/loaders": "^7.16.1",
     "@dimforge/rapier3d-compat": "0.20.0",
     "@gltf-transform/functions": "4.5.1",
     "@playwright/test": "1.59.1",
-    "@react-three/drei": "10.7.8",
-    "@react-three/fiber": "9.7.0",
     "@size-limit/file": "^12.1.0",
     "@types/node": "^22.15.3",
     "@types/react": "^19.0.0",
     "@types/stats.js": "0.17.4",
-    "@types/three": "0.185.4",
     "@typescript-eslint/eslint-plugin": "8.66.0",
     "@typescript-eslint/parser": "8.66.0",
     "axe-core": "^4.14.0",
-    "babylonjs-gltf2interface": "7.16.1",
     "create-aura3d": "workspace:*",
     "draco3d": "^1.5.7",
     "esbuild": "^0.28.0",
@@ -288,15 +352,14 @@
     "playwright": "1.59.1",
     "react": "^19.2.8",
     "react-dom": "19.2.8",
+    "recast-navigation": "0.43.1",
     "sharp": "0.33.5",
     "size-limit": "^12.1.0",
     "stats.js": "0.17.0",
-    "three": "0.185.1",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vite": "^7.3.2",
-    "vitest": "^3.1.3",
-    "recast-navigation": "0.43.1"
+    "vitest": "^3.1.3"
   },
   "dependencies": {
     "@gltf-transform/core": "4.5.1",
@@ -308,6 +371,9 @@
   },
   "sideEffects": [
     "*.css",
+    "./dist/engine/agent-api/app/render.worker.js",
+    "./dist/assets/workers/zstd.worker.js",
+    "./dist/engine/agent-api/app/worker-assets/zstd.worker.bundle.js",
     "./dist/engine/agent-api/compiler/diagnosticOnly.*.js",
     "./dist/engine/agent-api/compiler/optionCoverage.js",
     "./dist/engine/agent-api/feel/lint/evidenceOnlyFeel.js",
@@ -318,6 +384,7 @@
     "./dist/engine/agent-api/camera/rigs/*.js",
     "./dist/engine/lanes/**/*.js",
     "./dist/engine/public/index.js",
+    "./dist/engine/public/v5.js",
     "./dist/rendering/lanes/**/*.js",
     "./dist/rendering/program/ProgramGenerator.js",
     "./examples/**",

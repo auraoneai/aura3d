@@ -32,6 +32,7 @@ import {
   type RendererCameraPolicy,
   type RendererInput,
   type RendererPostProcessOptions,
+  type RenderDevice,
   type RendererShadowOptions,
   type RenderSource,
   type RenderState,
@@ -43,11 +44,14 @@ import {
   type TexturedPBRTextureSlot,
   isTexturedPbrTextureSlotShaderActive,
   DEFAULT_TEXTURED_PBR_SHADER_NAME,
-  applyTextureBudget
+  applyTextureBudget,
+  releaseTextureBudget
 } from "@aura3d/rendering";
 import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   gltfRuntimeMaterialKey,
+  gltfImageRequestOptions,
+  gltfImageRequestProgress,
   parseGLTFRuntimeMaterialKey,
   type GLTFAsset,
   type GLTFImageAsset,
@@ -60,7 +64,14 @@ import {
 } from "./GLTFLoader";
 import type { KTX2BasisTargetFormat, KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
 import { generateMikkTSpaceTangents, mikkTSpaceAvailable } from "./MikkTSpaceTangents";
-import { decodeImageInBrowser } from "./gltf/ImageDecode";
+import { decodeImageInBrowser, gltfImageByteLimit, readImageBytes, resolveImageUrl } from "./gltf/ImageDecode";
+import { createGLTFTextureResidencySource, gltfTextureFallback, type GLTFTextureFallback, type GLTFTextureResidencyMip } from "./gltf/GLTFTextureResidency.js";
+import type { TextureResidencySource } from "./TextureResidencyController.js";
+import { mergeAssetRequestOptions, redactAssetMessage, redactAssetUrl, requestIdentityDetails, validateAssetMaxBytes, type AssetLoadRequest } from "./AssetLoader";
+import { redactImportCause } from "./ImportPipeline";
+import type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache";
+import { LoadContext } from "./LoadContext";
+import { AssetIntegrityError, AssetPolicyError, AssetSizeError, verifyAssetBytes } from "./LoaderFetch";
 
 export interface DecodedGLTFImage {
   readonly width: number;
@@ -74,10 +85,19 @@ export interface DecodedGLTFImage {
   readonly fallbackMipLevels?: readonly TextureMipLevelDescriptor[];
 }
 
-export type GLTFImageDecoder = (image: GLTFImageAsset, imageIndex: number, asset: GLTFAsset) => DecodedGLTFImage | Promise<DecodedGLTFImage>;
+export interface GLTFImageDecodeContext {
+  readonly signal?: AbortSignal;
+  readonly request?: Omit<AssetLoadRequest, "url" | "type">;
+}
+
+export type GLTFImageDecoder = (image: GLTFImageAsset, imageIndex: number, asset: GLTFAsset, context?: GLTFImageDecodeContext) => DecodedGLTFImage | Promise<DecodedGLTFImage>;
 
 export interface GLTFRenderResourceOptions {
   readonly imageDecoder?: GLTFImageDecoder;
+  readonly signal?: AbortSignal;
+  readonly request?: Omit<AssetLoadRequest, "url" | "type">;
+  /** Retain device-independent mip source metadata for an opted-in app. */
+  readonly retainTextureResidencySources?: boolean;
   readonly ktx2BasisTargetFormat?: KTX2BasisTargetFormat;
   readonly ktx2BasisTranscoderOptions?: KTX2BasisTextureTranscoderOptions;
   readonly materialVariant?: GLTFSceneCreateOptions["materialVariant"];
@@ -93,11 +113,12 @@ export interface GLTFRenderResourceOptions {
   readonly failOnMissingTexture?: boolean;
   /**
    * SA-04: shared GPU-texture ownership for skinned clones. When set, decoded
-   * `Texture` objects are leased from this cache (keyed by
-   * `imageIndex:colorSpace`) instead of being created per call, so N clones of
+   * `Texture` objects are leased from this cache, so N clones of
    * one GLB decode and upload each image once. `dispose()` on the returned
    * resources releases the lease rather than disposing the textures; the cache
-   * frees them when the last lease releases.
+   * frees them when the last lease releases. Only anonymous or explicitly
+   * scoped matching request policies may share. Cancellable requests and
+   * requests with their own progress callbacks use private textures.
    */
   readonly sharedTextures?: import("./GLTFSharedTextureCache.js").GLTFSharedTextureCache;
   /**
@@ -122,8 +143,15 @@ export interface GLTFRenderResourceOptions {
    * unset) prefers MikkTSpace when the module is registered (PRD-04 P5-4).
    */
   readonly tangents?: boolean | "auto" | "generate" | "legacy";
-  /** Optional GPU-bytes texture budget applied during resource creation (declaration-only seam, C-17). */
+  /** Estimated texture bytes admitted during decoding; physical GPU residency is tracked by each backend. */
   readonly textureBudget?: number;
+  /**
+   * Partition decode-time budget admission by the intended device. This does
+   * not allocate GPU textures or reserve native residency. Omit for the
+   * historical unscoped admission ledger. The caller must supply the intended
+   * device; the production actor does not automatically provide one.
+   */
+  readonly textureBudgetDevice?: RenderDevice;
   /** Optional max texture dimension applied during resource creation (C-27 policy, PRD-04 P2-11). */
   readonly maxTextureSize?: number;
   /**
@@ -169,6 +197,10 @@ export interface GLTFRenderResources {
   readonly loadIssues: readonly GLTFRenderResourceLoadIssue[];
   readonly morphTargetLibrary: ReadonlyMap<string, readonly MorphTargetDelta[]>;
   readonly textureLibrary: ReadonlyMap<string, Texture>;
+  /** Static decoded mips, when requested; GPU residency remains device-local. */
+  readonly textureResidencySources?: ReadonlyMap<Texture, TextureResidencySource<GLTFTextureResidencyMip>>;
+  /** Source-backed or otherwise unsupported textures that keep ordinary uploads. */
+  readonly unmanagedTextureResidency?: ReadonlyMap<Texture, string>;
   readonly bounds: CameraFrameBounds;
   collectMaterialOverrideTargets(query?: GLTFMaterialOverrideQuery): readonly GLTFMaterialOverrideTarget[];
   createCameraFrame(viewport: CameraFrameViewport, options?: PerspectiveCameraFrameOptions): PerspectiveCameraFrame;
@@ -178,9 +210,16 @@ export interface GLTFRenderResources {
    * PRD-04 P2/R11: runtime `KHR_materials_variants` rebind — remaps each renderable's material key
    * to the given variant's material (creating non-resident contract variants on demand); `null`
    * restores the authored mapping. Resolves `"variant-unknown"` when no binding declares it.
+   * A later selection supersedes a pending selection. Superseded or disposed operations reject
+   * with an `AbortError`; other material/texture failures are propagated.
    */
   setMaterialVariant(variant: string | null): Promise<"applied" | "variant-unknown">;
   dispose(): void;
+  /**
+   * Drain late and shared cleanup. The first call reports synchronous disposal
+   * failures; a call after rejection retries only the still-owned resources.
+   */
+  disposeAsync?(): Promise<void>;
 }
 
 export interface GLTFRenderableBinding {
@@ -202,7 +241,7 @@ export type GLTFRenderResourceMaterialFidelityIssue =
 
 export interface GLTFRenderResourceMaterialFidelityDiagnostic {
   readonly issue: GLTFRenderResourceMaterialFidelityIssue;
-  readonly slot: TexturedPBRTextureSlot;
+  readonly slot: TexturedPBRTextureSlot | "diffuseRoughness" | "bump";
   readonly texCoord: number;
   readonly renderedTexCoord: number;
   readonly nodeName: string;
@@ -220,8 +259,23 @@ export interface GLTFRenderResourceMaterialFidelityDiagnostic {
  * caller should see (`colorspace-conflict`, `tangent-derivative-fallback`).
  */
 export interface GLTFRenderResourceLoadIssue {
-  readonly code: "colorspace-conflict" | "tangent-derivative-fallback";
+  readonly code: "colorspace-conflict" | "tangent-derivative-fallback" | "texture-load-failed";
   readonly detail: string;
+  readonly textureIndex?: number;
+  readonly imageIndex?: number;
+  readonly uri?: string;
+  readonly reason?: string;
+  readonly fallback?: boolean;
+}
+
+/** A texture could not be fetched or decoded in strict mode. */
+export class GLTFTextureLoadError extends Error {
+  readonly issue: GLTFRenderResourceLoadIssue;
+  constructor(issue: GLTFRenderResourceLoadIssue, cause?: unknown) {
+    super(issue.detail, { cause });
+    this.name = "GLTFTextureLoadError";
+    this.issue = issue;
+  }
 }
 
 /** Texture slots read sRGB-authored data; every other slot decodes linear. */
@@ -234,6 +288,8 @@ const IMAGE_COLORSPACE_SLOTS: readonly {
   { slot: "emissive", colorSpace: "srgb", texture: (material) => material.emissiveTexture },
   { slot: "metallicRoughness", colorSpace: "linear", texture: (material) => material.metallicRoughnessTexture },
   { slot: "normal", colorSpace: "linear", texture: (material) => material.normalTexture },
+  { slot: "diffuseRoughness", colorSpace: "linear", texture: (material) => material.diffuseRoughness?.texture },
+  { slot: "bump", colorSpace: "linear", texture: (material) => material.bump?.texture },
   { slot: "occlusion", colorSpace: "linear", texture: (material) => material.occlusionTexture },
   { slot: "clearcoat", colorSpace: "linear", texture: (material) => material.clearcoat?.texture },
   { slot: "clearcoatRoughness", colorSpace: "linear", texture: (material) => material.clearcoat?.roughnessTexture },
@@ -377,6 +433,7 @@ export interface GLTFRenderResourceTextureContributionDiagnostic extends GLTFRen
 }
 
 type GLTFTextureColorSpace = "srgb" | "linear";
+type GLTFTextureGetter = (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace, fallback?: GLTFTextureFallback) => Promise<Texture>;
 
 const GLTF_DIAGNOSTIC_TEXTURE_BINDINGS: readonly (readonly [slot: TexturedPBRTextureSlot, textureParameter: string, enabledParameter: string])[] = [
   ["baseColor", "u_baseColorTexture", "u_baseColorTextureEnabled"],
@@ -491,21 +548,93 @@ export const DEFAULT_GLTF_STUDIO_PREVIEW_FRAME: PerspectiveCameraFrameOptions = 
   farPadding: 2.4
 };
 
+// Cache scope includes parsed-asset and decoder identity, not only image index.
+// A shared cache can be handed to several independently loaded documents.
+const gltfResourceObjectIds = new WeakMap<object, number>();
+// Source admission and native GPU residency have different lifetimes. A scope
+// keeps these decoded texture estimates separate from the backend ledger.
+const gltfDecodeBudgetScope = {};
+class GLTFTextureBudgetDeviceDisposedError extends Error {
+  readonly code = "GLTF_TEXTURE_BUDGET_DEVICE_DISPOSED";
+  constructor() {
+    super("The intended glTF texture budget device is disposed.");
+    this.name = "GLTFTextureBudgetDeviceDisposedError";
+  }
+}
+function assertGLTFTextureBudgetDevice(device: RenderDevice | undefined): void {
+  if (device?.disposed) throw new GLTFTextureBudgetDeviceDisposedError();
+}
+let nextGLTFResourceObjectId = 0;
+function gltfResourceObjectId(value: object | undefined): number {
+  if (!value) return 0;
+  let id = gltfResourceObjectIds.get(value);
+  if (id === undefined) { id = ++nextGLTFResourceObjectId; gltfResourceObjectIds.set(value, id); }
+  return id;
+}
+
 export async function createGLTFRenderResources(
   asset: GLTFAsset,
   options: GLTFRenderResourceOptions = {}
-): Promise<GLTFRenderResources> {
+): Promise<GLTFRenderResources & { disposeAsync(): Promise<void> }> {
+  // The owner of the admission must stay stable even if a caller reuses or
+  // mutates its options while an asynchronous image decode is in flight.
+  const capturedOptions = { ...options };
+  const transcoderOwner = capturedOptions.ktx2BasisTranscoderOptions;
+  const transcoderOptions = transcoderOwner && {
+    ...transcoderOwner,
+    ...(transcoderOwner.workerAssets ? { workerAssets: { ...transcoderOwner.workerAssets } } : {})
+  };
+  const decodeBaseOptions = transcoderOptions ? { ...capturedOptions, ktx2BasisTranscoderOptions: transcoderOptions } : capturedOptions;
+  const textureBudgetDevice = decodeBaseOptions.textureBudgetDevice;
+  const textureBudget = decodeBaseOptions.textureBudget;
+  const maxTextureSize = decodeBaseOptions.maxTextureSize;
+  const workerAssets = transcoderOptions?.workerAssets;
+  // Fold mutable codec settings into the hashed request identity, not the
+  // visible cache key, so changed settings cannot reuse an earlier decode.
+  const transcoderIdentity = transcoderOptions && [
+    gltfResourceObjectId(transcoderOwner), transcoderOptions.targetFormat, transcoderOptions.colorSpace,
+    transcoderOptions.maxDimension === undefined ? "unset" : `set:${transcoderOptions.maxDimension}`,
+    transcoderOptions.transcoderUrl, transcoderOptions.includeFallback,
+    transcoderOptions.workerCount === undefined ? "unset" : `set:${transcoderOptions.workerCount}`,
+    gltfResourceObjectId(transcoderOptions.workerPool), gltfResourceObjectId(transcoderOptions.onCleanupPending),
+    workerAssets && [workerAssets.basisScript, workerAssets.basisModule, workerAssets.basisWasm, workerAssets.basisWorker,
+      workerAssets.dracoModule, workerAssets.dracoWasm, workerAssets.meshoptModule]
+  ];
+  assertGLTFTextureBudgetDevice(textureBudgetDevice);
   const geometryLibrary = new Map<string, Geometry>();
+  const ownedGeometries = new Set<Geometry>();
   const materialLibrary = new Map<string, Material>();
   const morphTargetLibrary = new Map<string, readonly MorphTargetDelta[]>();
   const textureLibrary = new Map<string, Texture>();
   const textureByImage = new Map<string, Promise<Texture>>();
-  const sharedTextureLease = options.sharedTextures?.acquire() ?? null;
+  // This must be keyed by image, not texture: multiple texture definitions
+  // can alias the same image and the first caller owns the shared decode.
+  const requiredAnimationImages = new Set(asset.requiredTextureAnimationTargets?.map((target) => target.imageIndex) ?? []);
+  const textureResidencySources = new Map<Texture, TextureResidencySource<GLTFTextureResidencyMip>>();
+  const unmanagedTextureResidency = new Map<Texture, string>();
+  // Bind the later decode to the same mutable request containers that are
+  // fingerprinted for sharing, even if the caller edits them while we await.
+  const request = decodeBaseOptions.request ? { ...decodeBaseOptions.request, ...mergeAssetRequestOptions({}, decodeBaseOptions.request) } : undefined;
+  validateAssetMaxBytes(request?.maxBytes);
+  const imageMaxBytes = gltfImageByteLimit(asset, request?.maxBytes);
+  const signal = new LoadContext({ signal: decodeBaseOptions.signal }).signalFor(request?.signal);
+  throwIfResourceAborted(signal);
+  const lifetime = new AbortController();
+  const lifetimeSignal = new LoadContext({ signal: lifetime.signal }).signalFor(signal)!;
+  const ownedMaterials = new Set<Material>();
+  // Shared texture factories cannot independently cancel or report progress
+  // to per-call callbacks. The inherited callback belongs to the asset itself
+  // and is common to every resource using that same asset.
+  const privateTextures = new Set<Texture>();
+  const onProgress = request?.onProgress ?? gltfImageRequestProgress(asset);
   const scene = asset.createScene({
     ...(options.materialVariant ? { materialVariant: options.materialVariant } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
     ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {})
   });
+  // Each eligible resource pins the cache even before a deferred material
+  // variant starts a decode. Individual image policies are checked separately.
+  let sharedTextureLease: GLTFSharedTextureLease | null = null;
 
   // P5-1: per-image colour-space intent, resolved once from material slot usage and passed
   // into the C-16 decode options (`ktx2BasisTranscoderOptions.colorSpace`) so a
@@ -516,30 +645,55 @@ export async function createGLTFRenderResources(
     detail: `glTF image ${conflict.image} is used as sRGB (${conflict.srgb}) and linear (${conflict.linear}); decoding as linear.`
   }));
   const decodeOptionsForImage = (imageIndex: number): GLTFRenderResourceOptions =>
-    options.materialsR185 === true
+    decodeBaseOptions.materialsR185 === true
       ? {
-          ...options,
+          ...decodeBaseOptions,
           ktx2BasisTranscoderOptions: {
-            ...options.ktx2BasisTranscoderOptions,
+            ...decodeBaseOptions.ktx2BasisTranscoderOptions,
             // Flag-on only: pre-intent decode options stay byte-identical off-flag.
             colorSpace: colorSpaceIntent.intent.get(imageIndex) ?? "linear"
           } as GLTFRenderResourceOptions["ktx2BasisTranscoderOptions"]
         }
-      : options;
+      : decodeBaseOptions;
 
-  const getTexture = async (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace): Promise<Texture> => {
+  const getTexture: GLTFTextureGetter = async (info, colorSpace, fallback = "factor") => {
+    throwIfResourceAborted(lifetimeSignal);
     const textureAsset = asset.textures[info.texture];
     const image = asset.images[info.image];
     if (!textureAsset || !image) {
       throw new Error(`glTF material texture ${info.texture} references missing image ${info.image}`);
     }
-    const cacheKey = textureCacheKey(info.image, colorSpace);
-    const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, decodeOptionsForImage(imageIndex)));
-    if (sharedTextureLease) {
-      try {
-        const texture = await sharedTextureLease.getOrCreate(cacheKey, async () => {
-          const decoded = await decoder(image, info.image, asset);
-          const texture = new Texture({
+    // A single glTF image can serve normal and scalar slots. Their neutral
+    // samples differ, so an opted-in app needs distinct logical textures.
+    const cacheKey = `${textureCacheKey(info.image, colorSpace)}${options.retainTextureResidencySources ? `:${fallback}` : ""}`;
+    let texturePromise = textureByImage.get(cacheKey);
+    if (!texturePromise) {
+      const createTexture = async (
+        textureSignal: AbortSignal | undefined,
+        effectiveRequest: GLTFImageDecodeContext["request"]
+      ): Promise<Texture> => {
+        const decoder = decodeBaseOptions.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, { ...decodeOptionsForImage(imageIndex), request: effectiveRequest, signal: textureSignal }));
+        let decodeImage = image;
+        const externalUri = image.uri && !image.uri.startsWith("data:") ? image.uri : undefined;
+        if (decodeBaseOptions.imageDecoder && (effectiveRequest?.maxBytes !== undefined || (externalUri && effectiveRequest?.integrity))) {
+          // Give custom decoders a bounded snapshot when a byte policy applies,
+          // and never hand them unverified external bytes.
+          const data = await readImageBytes(asset, image, { signal: textureSignal, request: effectiveRequest });
+          if (externalUri && effectiveRequest?.integrity) await verifyAssetBytes(data, effectiveRequest.integrity, externalUri);
+          throwIfResourceAborted(textureSignal);
+          decodeImage = { ...image, data };
+        }
+        const decoded = await decodeWithCancellation(
+          Promise.resolve().then(() => {
+            throwIfResourceAborted(textureSignal);
+            return decoder(decodeImage, info.image, asset, { signal: textureSignal, request: effectiveRequest });
+          }), textureSignal
+        );
+        let texture: Texture | undefined;
+        try {
+          throwIfResourceAborted(textureSignal);
+          assertGLTFTextureBudgetDevice(textureBudgetDevice);
+          texture = new Texture({
             width: decoded.width,
             height: decoded.height,
             ...(decoded.format ? { format: decoded.format } : {}),
@@ -549,74 +703,104 @@ export async function createGLTFRenderResources(
             ...(decoded.fallbackData ? { fallbackData: decoded.fallbackData } : {}),
             ...(decoded.fallbackMipLevels ? { fallbackMipLevels: decoded.fallbackMipLevels } : {})
           });
-          if (options.textureBudget !== undefined || options.maxTextureSize !== undefined) {
-            return applyTextureBudget(texture, {
-              ...(options.textureBudget !== undefined ? { textureBudgetBytes: options.textureBudget } : {}),
-              ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {})
-            });
+          const budgeted = textureBudget !== undefined || maxTextureSize !== undefined
+            ? applyTextureBudget(texture, {
+                ...(textureBudget !== undefined ? { textureBudgetBytes: textureBudget } : {}),
+                ...(maxTextureSize !== undefined ? { maxTextureSize } : {})
+              }, textureBudgetDevice, textureBudgetDevice ? gltfDecodeBudgetScope : undefined)
+            : texture;
+          if (budgeted !== texture) texture.dispose();
+          if (textureBudget !== undefined || maxTextureSize !== undefined) {
+            budgeted.onDispose(() => releaseTextureBudget(budgeted, textureBudgetDevice, textureBudgetDevice ? gltfDecodeBudgetScope : undefined));
           }
-          return texture;
-        });
-        setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
-        return texture;
-      } catch (error) {
-        if (options.failOnMissingTexture) {
+          budgeted.onDispose(() => closeDecodedImage(decoded));
+          return budgeted;
+        } catch (error) {
+          texture?.dispose();
+          closeDecodedImage(decoded);
           throw error;
         }
-        const reason = error instanceof Error ? error.message : String(error);
-        warnMissingGLTFTexture(textureAsset.name, image.uri, reason);
-        const fallback = createFallbackTexture(textureAsset.name, colorSpace);
-        setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, fallback);
-        return fallback;
-      }
-    }
-    const existing = textureByImage.get(cacheKey);
-    if (existing) {
-      const texture = await existing;
-      setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
-      return texture;
-    }
-    const texturePromise = (async () => {
-      const decoded = await decoder(image, info.image, asset);
-      const texture = new Texture({
-        width: decoded.width,
-        height: decoded.height,
-        ...(decoded.format ? { format: decoded.format } : {}),
-        colorSpace,
-        label: textureAsset.name,
-        ...(decoded.mipLevels ? { mipLevels: decoded.mipLevels } : decoded.data ? { data: decoded.data } : { source: decoded.source }),
-        ...(decoded.fallbackData ? { fallbackData: decoded.fallbackData } : {}),
-        ...(decoded.fallbackMipLevels ? { fallbackMipLevels: decoded.fallbackMipLevels } : {})
+      };
+      texturePromise = (async () => {
+        try {
+          const externalUri = image.uri && !image.uri.startsWith("data:") ? image.uri : undefined;
+          // Retain the document's inherited transport policy for embedded
+          // images too; the absence of an override does not imply anonymity.
+          const imagePolicy = gltfImageRequestOptions(asset, externalUri ?? asset.url, request);
+          const identityRequest = imageMaxBytes === undefined ? imagePolicy : { ...imagePolicy, maxBytes: imageMaxBytes };
+          const effectiveRequest = externalUri
+            ? { ...identityRequest, ...(onProgress ? { onProgress } : {}) }
+            : imageMaxBytes === undefined ? request : { ...request, maxBytes: imageMaxBytes };
+          if (sharedTextureLease) {
+            let imageUrl: string | undefined;
+            try { imageUrl = externalUri ? resolveImageUrl(asset.url, externalUri) : asset.url; }
+            catch { /* A custom decoder may handle an otherwise unresolvable URI privately. */ }
+            if (imageUrl !== undefined) {
+              const identity = await requestIdentityDetails(identityRequest, JSON.stringify([imageUrl, request?.format ?? null, transcoderIdentity]));
+              throwIfResourceAborted(lifetimeSignal);
+              if (identity.reusable) {
+                const sharedKey = [gltfResourceObjectId(asset), gltfResourceObjectId(decodeBaseOptions.imageDecoder),
+                  decodeBaseOptions.ktx2BasisTargetFormat ?? "",
+                  decodeBaseOptions.materialsR185 === true, decodeBaseOptions.qrAssets === true, maxTextureSize ?? "",
+                  textureBudget ?? "", gltfResourceObjectId(textureBudgetDevice), cacheKey, identity.key].join(":");
+                return await waitForResource(sharedTextureLease.getOrCreate(sharedKey, () => createTexture(undefined, effectiveRequest)), lifetimeSignal);
+              }
+            }
+          }
+          const texture = await createTexture(lifetimeSignal, effectiveRequest);
+          privateTextures.add(texture);
+          if (lifetimeSignal.aborted) {
+            texture.dispose();
+            privateTextures.delete(texture);
+            throwIfResourceAborted(lifetimeSignal);
+          }
+          return texture;
+        } catch (error) {
+          // Security, size and cancellation failures must never turn into a
+          // successful-looking fallback, even when permissive mode is enabled.
+          const errorUrls = image.uri ? [asset.url, image.uri] : [asset.url];
+          reportLateResourceFailure(error, lifetimeSignal, errorUrls);
+          if (lifetimeSignal.aborted && !isExpectedResourceCancellation(error, lifetimeSignal)) throw error;
+          throwIfResourceAborted(lifetimeSignal);
+          if (isTexturePolicyOrAbortError(error)) throw error;
+          const sanitizedCause = redactImportCause(error, errorUrls);
+          const reason = safeTextureErrorReason(sanitizedCause);
+          const uri = image.uri ? redactAssetUrl(image.uri) : undefined;
+          const strict = options.failOnMissingTexture === true || requiredAnimationImages.has(info.image);
+          const issue: GLTFRenderResourceLoadIssue = {
+            code: "texture-load-failed", textureIndex: info.texture, imageIndex: info.image,
+            ...(uri ? { uri } : {}), reason, fallback: !strict,
+            detail: `glTF texture ${info.texture} (image ${info.image}) failed: ${reason}`
+          };
+          if (strict) {
+            const safeCause = sanitizedCause instanceof Error ? sanitizedCause : new Error(reason);
+            safeCause.name = safeCause.name.slice(0, 128);
+            safeCause.message = reason;
+            throw new GLTFTextureLoadError(issue, safeCause);
+          }
+          loadIssues.push(issue);
+          warnMissingGLTFTexture(textureAsset.name, uri, reason);
+          const missing = createFallbackTexture(textureAsset.name, colorSpace, options.retainTextureResidencySources ? fallback : "factor");
+          privateTextures.add(missing);
+          return missing;
+        }
+      })();
+      textureByImage.set(cacheKey, texturePromise);
+      const pendingTexture = texturePromise;
+      void pendingTexture.catch(() => {
+        if (!lifetimeSignal.aborted && textureByImage.get(cacheKey) === pendingTexture) textureByImage.delete(cacheKey);
       });
-      // R16/P2-11: the C-27 policy arrives as `textureBudget`/`maxTextureSize` on
-      // GLTFRenderResourceOptions (forwarded by the actor/pipeline). No device exists at
-      // this layer — the shared ledger accounts these uploads.
-      if (options.textureBudget !== undefined || options.maxTextureSize !== undefined) {
-        return applyTextureBudget(texture, {
-          ...(options.textureBudget !== undefined ? { textureBudgetBytes: options.textureBudget } : {}),
-          ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {})
-        });
-      }
-      return texture;
-    })();
-    textureByImage.set(cacheKey, texturePromise);
-    try {
-      const texture = await texturePromise;
-      setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
-      return texture;
-    } catch (error) {
-      textureByImage.delete(cacheKey);
-      if (options.failOnMissingTexture) {
-        throw error;
-      }
-      const reason = error instanceof Error ? error.message : String(error);
-      warnMissingGLTFTexture(textureAsset.name, image.uri, reason);
-      const fallback = createFallbackTexture(textureAsset.name, colorSpace);
-      const fallbackPromise = Promise.resolve(fallback);
-      textureByImage.set(cacheKey, fallbackPromise);
-      setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, fallback);
-      return fallback;
     }
+    const texture = await waitForResource(texturePromise, lifetimeSignal);
+    throwIfResourceAborted(lifetimeSignal);
+    assertGLTFTextureBudgetDevice(textureBudgetDevice);
+    if (options.retainTextureResidencySources && !textureResidencySources.has(texture) && !unmanagedTextureResidency.has(texture)) {
+      const source = createGLTFTextureResidencySource(texture, fallback);
+      if (source) textureResidencySources.set(texture, source);
+      else unmanagedTextureResidency.set(texture, "decoded texture has no supported retained 2D mip bytes");
+    }
+    setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
+    return texture;
   };
 
   // When deduplication is enabled, materials with identical definitions share one runtime instance
@@ -625,24 +809,45 @@ export async function createGLTFRenderResources(
   const sharedMaterials = options.deduplicateIdenticalMaterials
     ? new Map<string, Promise<Material>>()
     : null;
+  const ownMaterial = (created: Promise<Material>): Promise<Material> => created.then((material) => {
+    if (lifetimeSignal.aborted) {
+      try { material.dispose(); }
+      catch (error) { ownedMaterials.add(material); reportLateResourceFailure(error, lifetimeSignal, [asset.url]); throw error; }
+      throwIfResourceAborted(lifetimeSignal);
+    }
+    ownedMaterials.add(material);
+    return material;
+  }, (error: unknown) => {
+    reportLateResourceFailure(error, lifetimeSignal, [asset.url]);
+    throw error;
+  });
   const buildMaterial = (
     material: (typeof asset.materials)[number],
     contract: Parameters<typeof createMaterial>[3]
   ): Promise<Material> => {
     if (!sharedMaterials) {
-      return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission });
+      return ownMaterial(createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission }, (failed) => ownedMaterials.add(failed)));
     }
     // The contract participates in the key: the same glTF material under two different runtime
     // contracts (skinned vs instanced, for example) must not collapse into one instance.
     const key = identicalMaterialKey(material, contract);
     const existing = sharedMaterials.get(key);
     if (existing) return existing;
-    const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission });
+    const created = ownMaterial(createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides, options.materialsR185, { materialsTransmission: options.materialsTransmission, transmission: options.transmission }, (failed) => ownedMaterials.add(failed)));
     sharedMaterials.set(key, created);
+    void created.catch(() => {
+      if (!lifetimeSignal.aborted && sharedMaterials.get(key) === created) sharedMaterials.delete(key);
+    });
     return created;
   };
 
   try {
+    if (decodeBaseOptions.sharedTextures && !signal && !decodeBaseOptions.ktx2BasisTranscoderOptions?.signal && !request?.onProgress) {
+      const documentRequest = gltfImageRequestOptions(asset, asset.url, request);
+      const documentIdentity = await requestIdentityDetails(documentRequest, asset.url);
+      throwIfResourceAborted(lifetimeSignal);
+      if (documentIdentity.reusable) sharedTextureLease = decodeBaseOptions.sharedTextures.acquire();
+    }
     // P5-4: under `A3D_QR_MATERIALS` prefer MikkTSpace-generated tangents (r185's frame) over
     // the legacy triangle-average generator, unless `tangents === "legacy"` or the MikkTSpace
     // module is not registered. `tangent-derivative-fallback` is reported inside createGeometry
@@ -652,7 +857,12 @@ export async function createGLTFRenderResources(
       mikkTSpaceWanted: options.materialsR185 === true && options.tangents !== "legacy"
     };
     for (const mesh of asset.meshes) {
-      geometryLibrary.set(mesh.name, await createGeometry(mesh, materialForMesh(asset, mesh, options.materialVariant), tangentGeneration, loadIssues));
+      const materials = [materialForMesh(asset, mesh, options.materialVariant),
+        ...(mesh.materialIndex === undefined ? [] : [asset.materials[mesh.materialIndex]]),
+        ...mesh.materialVariants.map((mapping) => asset.materials[mapping.materialIndex])];
+      const geometry = await createGeometry(mesh, materials, tangentGeneration, loadIssues);
+      ownedGeometries.add(geometry);
+      geometryLibrary.set(mesh.name, geometry);
       if (mesh.morphTargets.length > 0) {
         morphTargetLibrary.set(mesh.name, mesh.morphTargets.map((target) => ({
           ...(target.name ? { name: target.name } : {}),
@@ -690,25 +900,116 @@ export async function createGLTFRenderResources(
         }));
       }
     }
-    await Promise.all(materialTasks);
+    const materialResults = await Promise.allSettled(materialTasks);
+    const failedMaterial = materialResults.find((result): result is PromiseRejectedResult => result.status === "rejected");
+    if (failedMaterial) throw failedMaterial.reason;
+    throwIfResourceAborted(signal);
 
     for (const mesh of asset.meshes) {
       for (const [key, runtime] of runtimeMaterialContracts) {
         if (runtime.material === mesh.material && !materialLibrary.has(key)) {
-          materialLibrary.set(key, createDefaultGLTFMaterial(mesh, runtime.contract, options.materialsR185));
+          const material = createDefaultGLTFMaterial(mesh, runtime.contract, options.materialsR185);
+          ownedMaterials.add(material);
+          materialLibrary.set(key, material);
         }
       }
       if (!materialLibrary.has(mesh.material)) {
-        materialLibrary.set(mesh.material, createDefaultGLTFMaterial(mesh, {}, options.materialsR185));
+        const material = createDefaultGLTFMaterial(mesh, {}, options.materialsR185);
+        ownedMaterials.add(material);
+        materialLibrary.set(mesh.material, material);
       }
     }
   } catch (error) {
-    disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary, sharedTextureLease);
+    lifetime.abort(resourceDisposedError());
+    try { disposeGLTFRenderResourceMaps(ownedGeometries, ownedMaterials, privateTextures, () => sharedTextureLease?.release()); }
+    catch (cleanupError) { throw new AggregateError([error, cleanupError], "glTF resource creation and cleanup failed"); }
     throw error;
   }
   const bounds = computeGLTFRenderResourceBounds(scene, geometryLibrary, morphTargetLibrary);
   const renderableBindings = createGLTFRenderableBindings(asset, scene);
   const materialFidelityDiagnostics = createGLTFMaterialFidelityDiagnostics(asset, renderableBindings, options.materialVariant);
+  let variantOperation: AbortController | undefined;
+  // Superseding a selection cancels only its wait: a material already being
+  // built can be reused by the next selection of the same runtime contract.
+  const variantMaterialBuilds = new Map<string, Promise<Material>>();
+  const variantMaterial = (key: string, create: () => Promise<Material>): Promise<Material> => {
+    const existing = variantMaterialBuilds.get(key);
+    if (existing) return existing;
+    const pending = create();
+    variantMaterialBuilds.set(key, pending);
+    void pending.catch(() => {
+      if (!lifetimeSignal.aborted && variantMaterialBuilds.get(key) === pending) variantMaterialBuilds.delete(key);
+    });
+    return pending;
+  };
+
+  let startedDisposal = false;
+  let disposing = false;
+  let sharedReleased = false;
+  let syncFailure: unknown;
+  let disposal: Promise<void> | undefined;
+  let disposalFailed = false;
+  let variantCleanup: Promise<void> | undefined;
+  const disposeOwned = (): void => disposeGLTFRenderResourceMaps(ownedGeometries, ownedMaterials, privateTextures, () => {
+    if (sharedReleased) return;
+    sharedTextureLease?.release();
+    sharedReleased = true;
+  });
+  const dispose = (): void => {
+    if (startedDisposal) return;
+    startedDisposal = true;
+    disposing = true;
+    try {
+      // Local shared-texture waits abort promptly; the last cache lease
+      // independently drains the shared factory itself.
+      const pendingWork = [...new Set([...variantMaterialBuilds.values(), ...textureByImage.values()])];
+      variantCleanup = Promise.allSettled(pendingWork).then((results) => {
+        const failures = results.filter((result): result is PromiseRejectedResult =>
+          result.status === "rejected" && !isExpectedResourceCancellation(result.reason, lifetimeSignal)
+        ).map((result) => result.reason);
+        if (failures.length) throw new AggregateError([...new Set(failures)], "Late glTF resource cleanup failed");
+      });
+      void variantCleanup.catch(() => {});
+      lifetime.abort(resourceDisposedError());
+      variantOperation = undefined;
+      sharedMaterials?.clear();
+      variantMaterialBuilds.clear();
+      textureByImage.clear();
+      disposeOwned();
+    }
+    catch (error) { syncFailure = error; throw error; }
+    finally { disposing = false; }
+  };
+  const disposeAsync = (): Promise<void> => {
+    if (disposing) {
+      const pending = Promise.resolve().then(disposeAsync);
+      void pending.catch(() => {});
+      return pending;
+    }
+    if (disposal && !disposalFailed) return disposal;
+    const retry = disposalFailed;
+    disposalFailed = false;
+    if (!startedDisposal) {
+      try { dispose(); } catch { /* The same failure is reported below. */ }
+    } else if (retry) {
+      disposing = true;
+      try { disposeOwned(); } catch (error) { syncFailure = error; }
+      finally { disposing = false; }
+    }
+    const failure = syncFailure;
+    syncFailure = undefined;
+    let sharedCleanup: Promise<void> | undefined;
+    try { sharedCleanup = sharedReleased ? sharedTextureLease?.releaseAsync?.() : undefined; }
+    catch (error) { sharedCleanup = Promise.reject(error); }
+    disposal = Promise.allSettled([sharedCleanup, retry ? undefined : variantCleanup]).then((results) => {
+      const failures = results.filter((result): result is PromiseRejectedResult => result.status === "rejected").map((result) => result.reason);
+      if (failure !== undefined) failures.unshift(failure);
+      if (failures.length === 1) throw failures[0];
+      if (failures.length > 1) throw new AggregateError(failures, "glTF resource disposal failed");
+    }).catch((error: unknown) => { disposalFailed = true; throw error; });
+    void disposal.catch(() => {});
+    return disposal;
+  };
 
   return {
     scene,
@@ -719,6 +1020,7 @@ export async function createGLTFRenderResources(
     loadIssues,
     morphTargetLibrary,
     textureLibrary,
+    ...(options.retainTextureResidencySources ? { textureResidencySources, unmanagedTextureResidency } : {}),
     bounds,
     collectMaterialOverrideTargets: (query = {}) => collectGLTFMaterialOverrideTargets(renderableBindings, materialLibrary, query),
     createCameraFrame: (viewport, frameOptions = {}) => computePerspectiveCameraFrame(bounds, viewport, defaultGLTFCameraFrameOptions(bounds, frameOptions)),
@@ -755,9 +1057,24 @@ export async function createGLTFRenderResources(
         bounds
       };
     },
-    setMaterialVariant: (variant) =>
-      applyGLTFMaterialVariant({ asset, scene, materialLibrary, renderableBindings, buildMaterial, variant }),
-    dispose: () => disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary, sharedTextureLease)
+    setMaterialVariant: (variant) => {
+      if (lifetimeSignal.aborted) return Promise.reject(lifetimeSignal.reason);
+      if (variant !== null && !renderableBindings.some((binding) => binding.materialVariants.some((entry) => entry.variant === variant))) {
+        return Promise.resolve("variant-unknown");
+      }
+      variantOperation?.abort(variantSupersededError());
+      const operation = new AbortController();
+      variantOperation = operation;
+      const abortForLifetime = () => operation.abort(lifetimeSignal.reason);
+      lifetimeSignal.addEventListener("abort", abortForLifetime, { once: true });
+      return applyGLTFMaterialVariant({ asset, scene, materialLibrary, renderableBindings, buildMaterial,
+        ownMaterial, variantMaterial, variant, signal: operation.signal }).finally(() => {
+        lifetimeSignal.removeEventListener("abort", abortForLifetime);
+        if (variantOperation === operation) variantOperation = undefined;
+      });
+    },
+    dispose,
+    disposeAsync
   };
 }
 
@@ -775,15 +1092,20 @@ async function applyGLTFMaterialVariant(options: {
     material: GLTFMaterialAsset,
     contract: { readonly skinned?: boolean; readonly instanced?: boolean }
   ) => Promise<Material>;
+  readonly ownMaterial: (created: Promise<Material>) => Promise<Material>;
+  readonly variantMaterial: (key: string, create: () => Promise<Material>) => Promise<Material>;
   readonly variant: string | null;
+  readonly signal: AbortSignal;
 }): Promise<"applied" | "variant-unknown"> {
-  const { asset, scene, materialLibrary, renderableBindings, buildMaterial, variant } = options;
+  const { asset, scene, materialLibrary, renderableBindings, buildMaterial, ownMaterial, variantMaterial, variant, signal } = options;
+  throwIfResourceAborted(signal);
   if (variant !== null
     && !renderableBindings.some((binding) => binding.materialVariants.some((entry) => entry.variant === variant))) {
     return "variant-unknown";
   }
   const meshByGeometry = new Map(asset.meshes.map((mesh) => [mesh.name, mesh]));
-  const tasks: Promise<unknown>[] = [];
+  const tasks = new Map<string, Promise<Material>>();
+  const rebindings: { renderable: { material: string }; key: string }[] = [];
   scene.collectRenderables().forEach(({ renderable }, index) => {
     const binding = renderableBindings[index];
     const mesh = meshByGeometry.get(renderable.geometry);
@@ -799,20 +1121,23 @@ async function applyGLTFMaterialVariant(options: {
       : mesh.materialVariants.find((entry) => entry.variant === variant);
     const targetName = mapping?.material ?? binding.sourceMaterialName;
     const key = gltfRuntimeMaterialKey(targetName, contract);
-    if (key === renderable.material) return;
-    if (!materialLibrary.has(key)) {
+    if (!materialLibrary.has(key) && !tasks.has(key)) {
       const materialDef = asset.materials.find((entry) => entry.name === targetName);
-      tasks.push((materialDef
+      tasks.set(key, variantMaterial(key, () => materialDef
         ? buildMaterial(materialDef, contract)
-        : Promise.resolve(createDefaultGLTFMaterial({ ...mesh, material: targetName }, contract))
-      ).then((runtimeMaterial) => {
-        materialLibrary.set(key, runtimeMaterial);
-      }));
+        : ownMaterial(Promise.resolve(createDefaultGLTFMaterial({ ...mesh, material: targetName }, contract)))));
     }
-    // Renderable.material is readonly at the type level; the rebind mutates the key in place.
-    (renderable as { material: string }).material = key;
+    rebindings.push({ renderable: renderable as { material: string }, key });
   });
-  await Promise.all(tasks);
+  const entries = [...tasks.entries()];
+  const results = await waitForResource(Promise.allSettled(entries.map(([, task]) => task)), signal);
+  throwIfResourceAborted(signal);
+  const failure = results.find((result): result is PromiseRejectedResult => result.status === "rejected");
+  if (failure) throw failure.reason;
+  for (let index = 0; index < entries.length; index += 1) {
+    materialLibrary.set(entries[index]![0], (results[index] as PromiseFulfilledResult<Material>).value);
+  }
+  for (const { renderable, key } of rebindings) renderable.material = key;
   return "applied";
 }
 
@@ -1384,18 +1709,31 @@ function toMat4(values: Float32Array | readonly number[]): Mat4 {
 }
 
 function disposeGLTFRenderResourceMaps(
-  geometryLibrary: ReadonlyMap<string, Geometry>,
-  textureLibrary: ReadonlyMap<string, Texture>,
-  sharedTextureLease?: { release(): void } | null
+  ownedGeometries: Set<Geometry>,
+  ownedMaterials: Set<Material>,
+  privateTextures: Set<Texture>,
+  releaseShared: () => void
 ): void {
-  for (const geometry of geometryLibrary.values()) geometry.dispose();
-  if (sharedTextureLease) {
-    // Shared textures belong to the clone cache — release this pipeline's pin;
-    // the cache disposes them when the last lease releases.
-    sharedTextureLease.release();
-    return;
-  }
-  for (const texture of textureLibrary.values()) texture.dispose();
+  const errors: unknown[] = [];
+  const cleanup = (work: () => void): void => { try { work(); } catch (error) { errors.push(error); } };
+  const cleanupOwned = <T extends { readonly disposed: boolean; dispose(): void }>(owned: Set<T>): void => {
+    for (const resource of owned) {
+      try {
+        if (!resource.disposed) resource.dispose();
+        if (!resource.disposed) throw new Error("glTF resource disposal is in progress");
+        owned.delete(resource);
+      } catch (error) {
+        try { if (resource.disposed) owned.delete(resource); } catch { /* Retain an uncertain resource. */ }
+        errors.push(error);
+      }
+    }
+  };
+  cleanupOwned(ownedGeometries);
+  cleanupOwned(ownedMaterials);
+  // Fallbacks remain private even when successful decodes use a shared lease.
+  cleanupOwned(privateTextures);
+  cleanup(releaseShared);
+  if (errors.length) throw new AggregateError(errors, "glTF resource disposal failed");
 }
 
 function materialForMesh(
@@ -1416,17 +1754,20 @@ interface GLTFTangentGenerationContext {
 
 async function createGeometry(
   mesh: GLTFMeshAsset,
-  material: GLTFMaterialAsset | undefined,
+  materials: readonly (GLTFMaterialAsset | undefined)[],
   tangentGeneration: GLTFTangentGenerationContext,
   loadIssues: GLTFRenderResourceLoadIssue[]
 ): Promise<Geometry> {
-  const usedTexCoordSets = usedRenderTexCoordSets(material);
+  // Variant switches reuse this geometry. Include every selectable material's
+  // attribute needs, not only those of the material active during creation.
+  const usedTexCoordSets = new Set(materials.flatMap((material) => [...usedRenderTexCoordSets(material)]));
+  const material = materials[0];
   const texcoords = selectRenderTexcoords(mesh, material, 0);
   const texcoords1 = usedTexCoordSets.has(1) ? selectRenderTexcoords(mesh, material, 1) : [];
-  const needsUv = usedTexCoordSets.has(0) || texcoords.length > 0;
+  const needsUv = usedTexCoordSets.size > 0 || texcoords.length > 0;
   const needsUv1 = texcoords1.length > 0;
-  const needsNormal = mesh.normals.length > 0 || needsUv || materialNeedsNormals(material);
-  const needsTangent = mesh.tangents.length > 0 || (needsUv && (materialNeedsTangents(material) || (material !== undefined && !material.unlit)));
+  const needsNormal = mesh.normals.length > 0 || needsUv || materials.some(materialNeedsNormals);
+  const needsTangent = mesh.tangents.length > 0 || (needsUv && materials.some((candidate) => materialNeedsTangents(candidate) || (candidate !== undefined && !candidate.unlit)));
   const needsColor = mesh.colors.length > 0;
   const needsSkinning = mesh.skinIndex !== undefined || mesh.joints.length > 0 || mesh.weights.length > 0;
   const format = vertexFormatForGLTFMesh(needsNormal, needsUv, needsTangent, needsUv1, needsColor, needsSkinning);
@@ -1442,7 +1783,7 @@ async function createGeometry(
    * vertex format carries no tangent attribute (e.g. a normal-mapped mesh without UVs).
    * A successful MikkTSpace->legacy fallback still produces the generated-attribute path.
    */
-  if (tangentGeneration.mikkTSpaceWanted && materialNeedsTangents(material) && !format.hasAttribute("tangent")) {
+  if (tangentGeneration.mikkTSpaceWanted && materials.some(materialNeedsTangents) && !format.hasAttribute("tangent")) {
     loadIssues.push({
       code: "tangent-derivative-fallback",
       detail: `glTF mesh ${mesh.name}: material needs a tangent frame but no tangent attribute was produced; the generated program uses the derivative frame.`
@@ -1674,7 +2015,7 @@ function materialTextureInfos(material: GLTFMaterialAsset): readonly GLTFResolve
 }
 
 function materialTextureInfosBySlot(material: GLTFMaterialAsset): readonly {
-  readonly slot: TexturedPBRTextureSlot;
+  readonly slot: TexturedPBRTextureSlot | "diffuseRoughness" | "bump";
   readonly info: GLTFResolvedTextureInfo;
   readonly tangentSpace: boolean;
 }[] {
@@ -1682,6 +2023,8 @@ function materialTextureInfosBySlot(material: GLTFMaterialAsset): readonly {
     material.baseColorTexture ? { slot: "baseColor", info: material.baseColorTexture, tangentSpace: false } : undefined,
     material.metallicRoughnessTexture ? { slot: "metallicRoughness", info: material.metallicRoughnessTexture, tangentSpace: false } : undefined,
     material.normalTexture ? { slot: "normal", info: material.normalTexture, tangentSpace: true } : undefined,
+    material.diffuseRoughness?.texture ? { slot: "diffuseRoughness", info: material.diffuseRoughness.texture, tangentSpace: false } : undefined,
+    material.bump?.texture ? { slot: "bump", info: material.bump.texture, tangentSpace: false } : undefined,
     material.occlusionTexture ? { slot: "occlusion", info: material.occlusionTexture, tangentSpace: false } : undefined,
     material.emissiveTexture ? { slot: "emissive", info: material.emissiveTexture, tangentSpace: false } : undefined,
     material.clearcoat?.texture ? { slot: "clearcoat", info: material.clearcoat.texture, tangentSpace: false } : undefined,
@@ -1699,7 +2042,7 @@ function materialTextureInfosBySlot(material: GLTFMaterialAsset): readonly {
     material.iridescence?.texture ? { slot: "iridescence", info: material.iridescence.texture, tangentSpace: false } : undefined,
     material.iridescence?.thicknessTexture ? { slot: "iridescenceThickness", info: material.iridescence.thicknessTexture, tangentSpace: false } : undefined
   ].filter((entry): entry is {
-    readonly slot: TexturedPBRTextureSlot;
+    readonly slot: TexturedPBRTextureSlot | "diffuseRoughness" | "bump";
     readonly info: GLTFResolvedTextureInfo;
     readonly tangentSpace: boolean;
   } => entry !== undefined);
@@ -1780,14 +2123,30 @@ function stableJson(value: unknown): string {
 async function createMaterial(
   asset: GLTFAsset,
   material: GLTFMaterialAsset,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  getTexture: GLTFTextureGetter,
   options: { readonly skinned?: boolean; readonly instanced?: boolean } = {},
   renderStateOverrides: readonly GLTFMaterialRenderStateOverride[] = [],
   materialsR185 = false,
-  qrTransmission?: Omit<GLTFTransmissionQrContext, "materialsR185">
+  qrTransmission?: Omit<GLTFTransmissionQrContext, "materialsR185">,
+  retainFailedMaterial?: (material: Material) => void
 ): Promise<Material> {
   const qr: GLTFTransmissionQrContext = { ...qrTransmission, materialsR185 };
   const renderState = renderStateForGLTFMaterial(material, renderStateOverrides, materialsR185, qrTransmission);
+  // Extension bindings can fail after construction; release the partial material.
+  const finishMaterial = async (runtimeMaterial: Material): Promise<Material> => {
+    try {
+      applyAlphaCutoff(runtimeMaterial, material);
+      await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
+      return runtimeMaterial;
+    } catch (error) {
+      try { runtimeMaterial.dispose(); }
+      catch (cleanupError) {
+        retainFailedMaterial?.(runtimeMaterial);
+        throw new AggregateError([error, cleanupError], "glTF material creation and cleanup failed");
+      }
+      throw error;
+    }
+  };
   if (options.skinned && !material.unlit) {
     const [
       baseColorTexture,
@@ -1795,6 +2154,8 @@ async function createMaterial(
       metallicRoughnessTexture,
       occlusionTexture,
       emissiveTexture,
+      diffuseRoughnessTexture,
+      bumpTexture,
       clearcoatTexture,
       clearcoatNormalTexture,
       sheenColorTexture,
@@ -1819,6 +2180,12 @@ async function createMaterial(
         : Promise.resolve(undefined),
       material.emissiveTexture
         ? createTextureBinding(asset, material.emissiveTexture, "srgb", getTexture, "u_emissiveTexture")
+        : Promise.resolve(undefined),
+      material.diffuseRoughness?.texture
+        ? createTextureBinding(asset, material.diffuseRoughness.texture, "linear", getTexture, "u_diffuseRoughnessTexture")
+        : Promise.resolve(undefined),
+      material.bump?.texture
+        ? createTextureBinding(asset, material.bump.texture, "linear", getTexture, "u_bumpTexture")
         : Promise.resolve(undefined),
       material.clearcoat?.texture
         ? createTextureBinding(asset, material.clearcoat.texture, "linear", getTexture, "u_clearcoatTexture")
@@ -1862,6 +2229,12 @@ async function createMaterial(
       occlusionTexture,
       occlusionStrength: material.occlusionTexture?.strength,
       emissiveTexture,
+      diffuseRoughness: material.diffuseRoughness?.factor ?? 0,
+      diffuseRoughnessTexture,
+      diffuseRoughnessTextureTexCoord: renderTexCoord(material.diffuseRoughness?.texture?.texCoord ?? 0),
+      bumpFactor: material.bump?.factor ?? 0,
+      bumpTexture,
+      bumpTextureTexCoord: renderTexCoord(material.bump?.texture?.texCoord ?? 0),
       metallic: material.metallicFactor,
       roughness: material.roughnessFactor,
       emissiveColor: material.emissiveFactor,
@@ -1877,9 +2250,7 @@ async function createMaterial(
       volumeThicknessTexture,
       ...pbrExtensionScalarOptions(material, qr)
     });
-    applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-    return runtimeMaterial;
+    return finishMaterial(runtimeMaterial);
   }
   if (options.instanced && material.unlit && !material.baseColorTexture) {
     const runtimeMaterial = new InstancedUnlitMaterial({
@@ -1887,9 +2258,7 @@ async function createMaterial(
       color: material.baseColorFactor,
       renderState
     });
-    applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-    return runtimeMaterial;
+    return finishMaterial(runtimeMaterial);
   }
   if (material.unlit) {
     if (material.baseColorTexture) {
@@ -1902,20 +2271,20 @@ async function createMaterial(
         color: material.baseColorFactor,
         renderState
       });
-      applyAlphaCutoff(runtimeMaterial, material);
-      await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-      return runtimeMaterial;
+      return finishMaterial(runtimeMaterial);
     }
     const runtimeMaterial = new UnlitMaterial({
       name: material.name,
       color: material.baseColorFactor,
       renderState
     });
-    applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-    return runtimeMaterial;
+    return finishMaterial(runtimeMaterial);
   }
-  if (options.instanced && !requiresTexturedPBRMaterial(material) && !material.baseColorTexture) {
+  if (options.instanced && !requiresTexturedPBRMaterial(material, false)) {
+    const diffuseRoughnessTexture = material.diffuseRoughness?.texture
+      ? await createTextureBinding(asset, material.diffuseRoughness.texture, "linear", getTexture, "u_diffuseRoughnessTexture") : undefined;
+    const bumpTexture = material.bump?.texture
+      ? await createTextureBinding(asset, material.bump.texture, "linear", getTexture, "u_bumpTexture") : undefined;
     const runtimeMaterial = new InstancedPBRMaterial({
       name: material.name,
       renderState,
@@ -1923,18 +2292,24 @@ async function createMaterial(
       metallic: material.metallicFactor,
       roughness: material.roughnessFactor,
       emissiveColor: material.emissiveFactor,
-      emissiveStrength: material.emissiveStrength
+      emissiveStrength: material.emissiveStrength,
+      diffuseRoughness: material.diffuseRoughness?.factor ?? 0,
+      diffuseRoughnessTexture,
+      diffuseRoughnessTextureTexCoord: renderTexCoord(material.diffuseRoughness?.texture?.texCoord ?? 0),
+      bumpFactor: material.bump?.factor ?? 0,
+      bumpTexture,
+      bumpTextureTexCoord: renderTexCoord(material.bump?.texture?.texCoord ?? 0)
     });
-    applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-    return runtimeMaterial;
+    return finishMaterial(runtimeMaterial);
   }
   if (requiresTexturedPBRMaterial(material)) {
     const baseColorTexture = material.baseColorTexture ? await getTexture(material.baseColorTexture, "srgb") : undefined;
-    const normalTexture = material.normalTexture ? await getTexture(material.normalTexture, "linear") : undefined;
+    const normalTexture = material.normalTexture ? await getTexture(material.normalTexture, "linear", "normal") : undefined;
     const metallicRoughnessTexture = material.metallicRoughnessTexture ? await getTexture(material.metallicRoughnessTexture, "linear") : undefined;
     const occlusionTexture = material.occlusionTexture ? await getTexture(material.occlusionTexture, "linear") : undefined;
     const emissiveTexture = material.emissiveTexture ? await getTexture(material.emissiveTexture, "srgb") : undefined;
+    const diffuseRoughnessTexture = material.diffuseRoughness?.texture ? await getTexture(material.diffuseRoughness.texture, "linear") : undefined;
+    const bumpTexture = material.bump?.texture ? await getTexture(material.bump.texture, "linear", "bump") : undefined;
     const extensionTextureOptions = await pbrExtensionTextureOptions(asset, material, getTexture);
     const runtimeMaterial = new TexturedPBRMaterial({
       name: material.name,
@@ -1944,6 +2319,14 @@ async function createMaterial(
       roughness: renderPbrRoughnessFactor(material, qr),
       emissiveColor: material.emissiveFactor,
       emissiveStrength: material.emissiveStrength,
+      diffuseRoughness: material.diffuseRoughness?.factor ?? 0,
+      diffuseRoughnessTexture,
+      diffuseRoughnessSampler: material.diffuseRoughness?.texture ? createSamplerForInfo(asset, material.diffuseRoughness.texture) : undefined,
+      diffuseRoughnessTextureTransform: material.diffuseRoughness?.texture?.transform,
+      bumpFactor: material.bump?.factor ?? 0,
+      bumpTexture,
+      bumpSampler: material.bump?.texture ? createSamplerForInfo(asset, material.bump.texture) : undefined,
+      bumpTextureTransform: material.bump?.texture?.transform,
       textureTexCoords: pbrTextureTexCoords(material),
       ...pbrExtensionScalarOptions(material, qr),
       ...extensionTextureOptions,
@@ -1965,9 +2348,7 @@ async function createMaterial(
       emissiveSampler: createSampler(material.emissiveTexture ? asset.textures[material.emissiveTexture.texture] : undefined),
       emissiveTextureTransform: material.emissiveTexture?.transform
     });
-    applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-    return runtimeMaterial;
+    return finishMaterial(runtimeMaterial);
   }
   if (material.baseColorTexture) {
     const texture = await getTexture(material.baseColorTexture, "srgb");
@@ -1979,9 +2360,7 @@ async function createMaterial(
       color: material.baseColorFactor,
       renderState
     });
-    applyAlphaCutoff(runtimeMaterial, material);
-    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-    return runtimeMaterial;
+    return finishMaterial(runtimeMaterial);
   }
   const runtimeMaterial = new PBRMaterial({
     name: material.name,
@@ -1991,11 +2370,11 @@ async function createMaterial(
     roughness: renderPbrRoughnessFactor(material, qr),
     emissiveColor: material.emissiveFactor,
     emissiveStrength: material.emissiveStrength,
+    diffuseRoughness: material.diffuseRoughness?.factor ?? 0,
+    bumpFactor: material.bump?.factor ?? 0,
     ...pbrExtensionScalarOptions(material, qr)
   });
-  applyAlphaCutoff(runtimeMaterial, material);
-  await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture, qr);
-  return runtimeMaterial;
+  return finishMaterial(runtimeMaterial);
 }
 
 function createDefaultGLTFMaterial(
@@ -2281,7 +2660,7 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset, qr?: GLTFTransmi
 async function pbrExtensionTextureOptions(
   asset: GLTFAsset,
   material: GLTFMaterialAsset,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+  getTexture: GLTFTextureGetter
 ): Promise<Partial<TexturedPBRMaterialOptions>> {
   const clearcoatTexture = material.clearcoat?.texture;
   const clearcoatRoughnessTexture = material.clearcoat?.roughnessTexture;
@@ -2310,7 +2689,7 @@ async function pbrExtensionTextureOptions(
       clearcoatRoughnessTextureTransform: clearcoatRoughnessTexture.transform
     } : {}),
     ...(clearcoatNormalTexture ? {
-      clearcoatNormalTexture: await getTexture(clearcoatNormalTexture, "linear"),
+      clearcoatNormalTexture: await getTexture(clearcoatNormalTexture, "linear", "normal"),
       clearcoatNormalSampler: createNormalSamplerForInfo(asset, clearcoatNormalTexture),
       clearcoatNormalTextureTransform: clearcoatNormalTexture.transform,
       clearcoatNormalScale: renderNormalMapScale(asset, clearcoatNormalTexture)
@@ -2356,7 +2735,7 @@ async function pbrExtensionTextureOptions(
       sheenRoughnessTextureTransform: sheenRoughnessTexture.transform
     } : {}),
     ...(anisotropyTexture ? {
-      anisotropyTexture: await getTexture(anisotropyTexture, "linear"),
+      anisotropyTexture: await getTexture(anisotropyTexture, "linear", "anisotropy"),
       anisotropySampler: createSamplerForInfo(asset, anisotropyTexture),
       anisotropyTextureTransform: anisotropyTexture.transform
     } : {}),
@@ -2382,6 +2761,8 @@ function pbrTextureTexCoords(material: GLTFMaterialAsset): Partial<Record<Textur
   return {
     ...(material.baseColorTexture ? { baseColor: renderTexCoord(material.baseColorTexture.texCoord) } : {}),
     ...(material.normalTexture ? { normal: renderTexCoord(material.normalTexture.texCoord) } : {}),
+    ...(material.diffuseRoughness?.texture ? { diffuseRoughness: renderTexCoord(material.diffuseRoughness.texture.texCoord) } : {}),
+    ...(material.bump?.texture ? { bump: renderTexCoord(material.bump.texture.texCoord) } : {}),
     ...(material.metallicRoughnessTexture ? { metallicRoughness: renderTexCoord(material.metallicRoughnessTexture.texCoord) } : {}),
     ...(material.occlusionTexture ? { occlusion: renderTexCoord(material.occlusionTexture.texCoord) } : {}),
     ...(material.emissiveTexture ? { emissive: renderTexCoord(material.emissiveTexture.texCoord) } : {}),
@@ -2410,9 +2791,22 @@ async function applyPBRExtensionParameters(
   asset: GLTFAsset,
   runtimeMaterial: Material,
   material: GLTFMaterialAsset,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  getTexture: GLTFTextureGetter,
   qr?: GLTFTransmissionQrContext
 ): Promise<void> {
+  // These bindings are consumed by the renderer once its matching shader and
+  // feature paths are available. Until then the support matrix must remain
+  // parse-only and required declarations must still be rejected.
+  runtimeMaterial.setParameter("u_diffuseRoughness", material.diffuseRoughness?.factor ?? 0);
+  runtimeMaterial.setParameter("u_diffuseRoughnessTextureEnabled", material.diffuseRoughness?.texture ? 1 : 0);
+  runtimeMaterial.setParameter("u_bumpFactor", material.bump?.factor ?? 0);
+  runtimeMaterial.setParameter("u_bumpTextureEnabled", material.bump?.texture ? 1 : 0);
+  if (material.diffuseRoughness?.texture) {
+    await setTextureParameter(asset, runtimeMaterial, "u_diffuseRoughnessTexture", material.diffuseRoughness.texture, "linear", getTexture);
+  }
+  if (material.bump?.texture) {
+    await setTextureParameter(asset, runtimeMaterial, "u_bumpTexture", material.bump.texture, "linear", getTexture);
+  }
   if (material.clearcoat) {
     runtimeMaterial.setParameter("u_clearcoatFactor", material.clearcoat.factor);
     runtimeMaterial.setParameter("u_clearcoatRoughnessFactor", renderClearcoatRoughnessFactor(material));
@@ -2508,7 +2902,7 @@ async function setTextureParameter(
   uniformName: string,
   info: GLTFResolvedTextureInfo,
   colorSpace: GLTFTextureColorSpace,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  getTexture: GLTFTextureGetter,
   sampler?: Sampler
 ): Promise<void> {
   runtimeMaterial.setParameter(uniformName, await createTextureBinding(asset, info, colorSpace, getTexture, uniformName, sampler));
@@ -2522,13 +2916,13 @@ async function createTextureBinding(
   asset: GLTFAsset,
   info: GLTFResolvedTextureInfo,
   colorSpace: GLTFTextureColorSpace,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  getTexture: GLTFTextureGetter,
   uniformName = `gltf-texture-${info.texture}`,
   sampler?: Sampler
 ): Promise<TextureBinding> {
   return new TextureBinding({
     name: uniformName,
-    texture: await getTexture(info, colorSpace),
+    texture: await getTexture(info, colorSpace, textureFallbackForUniform(uniformName)),
     sampler: sampler ?? createSampler(asset.textures[info.texture]),
     required: true,
     expectedColorSpace: colorSpace,
@@ -2536,13 +2930,21 @@ async function createTextureBinding(
   });
 }
 
-function requiresTexturedPBRMaterial(material: GLTFMaterialAsset): boolean {
+function textureFallbackForUniform(name: string): GLTFTextureFallback {
+  if (name === "u_normalTexture" || name === "u_clearcoatNormalTexture") return "normal";
+  if (name === "u_bumpTexture") return "bump";
+  if (name === "u_anisotropyTexture") return "anisotropy";
+  return "factor";
+}
+
+function requiresTexturedPBRMaterial(material: GLTFMaterialAsset, includeDetailTextures = true): boolean {
   return Boolean(
     material.baseColorTexture ||
     material.normalTexture ||
     material.metallicRoughnessTexture ||
     material.occlusionTexture ||
     material.emissiveTexture ||
+    (includeDetailTextures && (material.diffuseRoughness?.texture || material.bump?.texture)) ||
     material.clearcoat?.texture ||
     material.clearcoat?.roughnessTexture ||
     material.clearcoat?.normalTexture ||
@@ -2622,20 +3024,111 @@ function createSamplerForInfo(asset: GLTFAsset, info: GLTFResolvedTextureInfo): 
   return createSampler(asset.textures[info.texture]);
 }
 
-function createFallbackTexture(label: string, colorSpace: GLTFTextureColorSpace): Texture {
+function createFallbackTexture(label: string, colorSpace: GLTFTextureColorSpace, fallback: GLTFTextureFallback = "factor"): Texture {
   return new Texture({
     width: 1,
     height: 1,
     colorSpace,
     label: `${label} (missing-texture-fallback)`,
-    data: new Uint8Array([255, 255, 255, 255])
+    data: new Uint8Array(gltfTextureFallback(fallback))
   });
+}
+
+function throwIfResourceAborted(signal: AbortSignal | undefined): void {
+  if (signal?.aborted) throw signal.reason ?? new DOMException("glTF resource creation aborted", "AbortError");
+}
+
+function resourceDisposedError(): Error {
+  const error = new Error("glTF render resources were disposed");
+  error.name = "AbortError";
+  return error;
+}
+
+function variantSupersededError(): Error {
+  const error = new Error("glTF material variant selection was superseded");
+  error.name = "AbortError";
+  return error;
+}
+
+function isExpectedResourceCancellation(error: unknown, signal: AbortSignal): boolean {
+  if (error === signal.reason) return true;
+  try { return error instanceof Error && !(error instanceof AggregateError) && error.name === "AbortError"; }
+  catch { return false; }
+}
+
+function reportLateResourceFailure(error: unknown, signal: AbortSignal, urls: readonly string[]): void {
+  if (!signal.aborted || isExpectedResourceCancellation(error, signal)) return;
+  console.error("Late glTF resource cleanup failed", redactImportCause(error, urls));
+}
+
+/** Cancel this consumer's wait without cancelling a shared factory or its other subscribers. */
+function waitForResource<T>(pending: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise((resolve, reject) => {
+    const abort = () => { signal.removeEventListener("abort", abort); reject(signal.reason); };
+    signal.addEventListener("abort", abort, { once: true });
+    pending.then((value) => {
+      signal.removeEventListener("abort", abort);
+      resolve(value);
+    }, (error) => {
+      signal.removeEventListener("abort", abort);
+      reject(error);
+    });
+  });
+}
+
+function closeDecodedImage(decoded: DecodedGLTFImage): void {
+  const source = decoded.source as (TexImageSource & { close?: () => void }) | undefined;
+  try { if (source && typeof source.close === "function") source.close(); }
+  catch { /* Cleanup must not replace the original decode or cancellation error. */ }
+}
+
+/** An injected decoder may ignore the signal, so dispose any late result. */
+function decodeWithCancellation(pending: Promise<DecodedGLTFImage>, signal?: AbortSignal): Promise<DecodedGLTFImage> {
+  if (!signal) return pending;
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const abort = () => {
+      if (settled) return;
+      settled = true;
+      reject(signal.reason ?? new DOMException("glTF image decode aborted", "AbortError"));
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    if (signal.aborted) abort();
+    pending.then((decoded) => {
+      signal.removeEventListener("abort", abort);
+      if (settled) { closeDecodedImage(decoded); return; }
+      settled = true;
+      resolve(decoded);
+    }, (error) => {
+      signal.removeEventListener("abort", abort);
+      if (!settled) { settled = true; reject(error); }
+    });
+  });
+}
+
+function isTexturePolicyOrAbortError(error: unknown): boolean {
+  try {
+    if (error instanceof AssetIntegrityError || error instanceof AssetPolicyError || error instanceof AssetSizeError) return true;
+    if (!(error instanceof Error)) return false;
+  } catch {
+    // An uninspectable exception may be a policy failure: do not fall back.
+    return true;
+  }
+  try {
+    return ["AssetIntegrityError", "AssetPolicyError", "AssetSizeError", "AbortError", "TextureBudgetExceededError", "GLTFTextureBudgetDeviceDisposedError"].includes(error.name);
+  } catch { return false; }
+}
+
+function safeTextureErrorReason(error: unknown): string {
+  const reason = error instanceof Error ? error.message : String(error);
+  return redactAssetMessage(reason).slice(0, 2048);
 }
 
 function warnMissingGLTFTexture(textureName: string, imageUri: string | undefined, reason: string): void {
   if (typeof console === "undefined" || typeof console.warn !== "function") return;
   const source = imageUri ? ` (${imageUri})` : "";
   console.warn(
-    `glTF texture "${textureName}"${source} could not be loaded; falling back to baseColorFactor. Reason: ${reason}`
+    `glTF texture "${redactAssetMessage(textureName).slice(0, 256)}"${source} could not be loaded; falling back to baseColorFactor. Reason: ${reason}`
   );
 }

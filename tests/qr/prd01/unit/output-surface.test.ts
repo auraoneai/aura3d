@@ -77,6 +77,24 @@ describe("prd01 output surface (Phase 5)", () => {
     expect(snapshot.applied).toMatchObject({ toneMapping: "agx", exposure: 2 });
   });
 
+  it("merges initial output policy, preserves it on partial updates, and rejects incompatible alpha changes", async () => {
+    const app = makeApp();
+    const surface = createPrd01OutputSurface(app, ctxWith("v2", {
+      renderer: { output: { outputColorSpace: "srgb", alphaMode: "premultiplied", inputAlphaMode: "premultiplied" } },
+      output: { outputColorSpace: "display-p3" }
+    }));
+    surface.setOutput({ exposure: 2 });
+    expect(() => surface.setOutput({ alphaMode: "straight" })).toThrow(/OUTPUT_ALPHA_MODE_UNAVAILABLE/);
+    expect(() => surface.setOutput({ outputColorSpace: "invalid" as never })).toThrow(/Unsupported output color space/);
+    const renderer = makeRenderer();
+    (app as unknown as Record<symbol, unknown>)[PRD01_RENDERER] = renderer;
+    await surface.capture({ type: "png-blob" });
+    expect(renderer.calls.setOutput).toEqual([{ outputColorSpace: "display-p3", alphaMode: "premultiplied", inputAlphaMode: "premultiplied", exposure: 2 }]);
+    surface.setOutput({ dither: true });
+    expect(renderer.calls.setOutput.at(-1)).toEqual({ dithering: true });
+    expect(outputState(surface)!.snapshot().requested).toMatchObject({ outputColorSpace: "display-p3", alphaMode: "premultiplied", exposure: 2, dither: true });
+  });
+
   it("queues setOutput until PRD01_RENDERER attaches, then flushes at capture", async () => {
     const app = makeApp();
     const surface = createPrd01OutputSurface(app, ctxWith());

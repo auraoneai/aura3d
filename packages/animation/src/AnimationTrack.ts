@@ -1,4 +1,4 @@
-import { cloneAnimationValue, deserializeKeyframe, lerpNumber, lerpVec3, serializeKeyframe, slerpQuat, validateKeyframes, type AnimationValue, type InterpolationMode, type Keyframe, type NumberArray, type Quat, type SerializedKeyframe, type Vec3 } from "./Keyframe.js";
+import { AnimationValidationError, cloneAnimationValue, deserializeKeyframe, lerpNumber, lerpVec3, normalizeQuat, serializeKeyframe, slerpQuat, smoothKeyframeTangent, validateKeyframes, type AnimationValue, type InterpolationMode, type Keyframe, type NumberArray, type Quat, type SerializedKeyframe, type Vec3 } from "./Keyframe.js";
 
 /**
  * SM-03: `color` is a first-class track channel (three's `ColorKeyframeTrack`),
@@ -9,18 +9,22 @@ export type TrackValueType = "scalar" | "vector3" | "quaternion" | "color" | "nu
 export type AnimationTrackDescriptor<T extends AnimationValue = AnimationValue> = {
   readonly target: string;
   readonly valueType: TrackValueType;
+  /** Component count, required to match every value and tangent when supplied. */
+  readonly valueSize?: number;
   readonly keyframes: readonly Keyframe<T>[];
 };
 
 export type SerializedAnimationTrack<T extends AnimationValue = AnimationValue> = {
   readonly target: string;
   readonly valueType: TrackValueType;
+  readonly valueSize?: number;
   readonly keyframes: readonly SerializedKeyframe<T>[];
 };
 
 export class AnimationTrack<T extends AnimationValue = AnimationValue> {
   readonly target: string;
   readonly valueType: TrackValueType;
+  readonly valueSize: number;
   readonly keyframes: readonly Keyframe<T>[];
   readonly duration: number;
 
@@ -32,9 +36,11 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
       throw new Error(`AnimationTrack: unknown valueType "${String(descriptor.valueType)}" for target "${descriptor.target}".`);
     }
     validateKeyframes(descriptor.keyframes);
+    const valueSize = validateTrackValues(descriptor);
     this.target = descriptor.target;
     this.valueType = descriptor.valueType;
-    this.keyframes = descriptor.keyframes.map((keyframe) => ({ ...keyframe, value: cloneAnimationValue(keyframe.value) }));
+    this.valueSize = valueSize;
+    this.keyframes = descriptor.keyframes.map((keyframe) => deserializeKeyframe(serializeKeyframe(keyframe)));
     this.duration = this.keyframes[this.keyframes.length - 1]!.time;
   }
 
@@ -43,16 +49,17 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
       throw new Error("AnimationTrack sample time must be finite.");
     }
     if (time <= this.keyframes[0]!.time) {
-      return cloneAnimationValue(this.keyframes[0]!.value);
+      return (this.valueType === "quaternion" ? normalizeQuat(this.keyframes[0]!.value as Quat) : cloneAnimationValue(this.keyframes[0]!.value)) as T;
     }
     const last = this.keyframes[this.keyframes.length - 1]!;
     if (time >= last.time) {
-      return cloneAnimationValue(last.value);
+      return (this.valueType === "quaternion" ? normalizeQuat(last.value as Quat) : cloneAnimationValue(last.value)) as T;
     }
     for (let index = 0; index < this.keyframes.length - 1; index += 1) {
       const a = this.keyframes[index]!;
       const b = this.keyframes[index + 1]!;
       if (time >= a.time && time <= b.time) {
+        if (time === b.time && this.valueType === "quaternion") return normalizeQuat(b.value as Quat) as T;
         if (a.interpolation === "step" || b.time === a.time) {
           // Discrete tracks hold a key's value from its own time onward (three's DiscreteInterpolant):
           // exactly at the next key's time the next key's value applies.
@@ -61,6 +68,12 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
         const t = (time - a.time) / (b.time - a.time);
         if (a.interpolation === "cubicspline") {
           return interpolateCubicSpline(this.valueType, a.value, b.value, a.outTangent, b.inTangent, t, b.time - a.time) as T;
+        }
+        if (a.interpolation === "smooth") {
+          return interpolateCubicSpline(this.valueType, a.value, b.value, smoothKeyframeTangent(this.keyframes, index, "out"), smoothKeyframeTangent(this.keyframes, index + 1, "in"), t, b.time - a.time) as T;
+        }
+        if (a.interpolation === "bezier") {
+          return interpolateBezier(this.valueType, a.value, b.value, a.outTangent!, b.inTangent!, t) as T;
         }
         return interpolate(this.valueType, a.value, b.value, t) as T;
       }
@@ -72,6 +85,7 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
     return {
       target: this.target,
       valueType: this.valueType,
+      ...(this.valueType === "number-array" ? { valueSize: this.valueSize } : {}),
       keyframes: this.keyframes.map((keyframe) => serializeKeyframe(keyframe))
     };
   }
@@ -80,9 +94,63 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
     return new AnimationTrack({
       target: serialized.target,
       valueType: serialized.valueType,
+      ...(serialized.valueSize !== undefined ? { valueSize: serialized.valueSize } : {}),
       keyframes: serialized.keyframes.map((keyframe) => deserializeKeyframe(keyframe))
     });
   }
+}
+
+function validateTrackValues(descriptor: AnimationTrackDescriptor): number {
+  const type = descriptor.valueType;
+  const fixedSize = type === "scalar" ? 1 : type === "vector3" || type === "color" ? 3 : type === "quaternion" ? 4 : type === "boolean" || type === "string" ? 0 : undefined;
+  const first = descriptor.keyframes[0]!.value;
+  const size = fixedSize ?? (Array.isArray(first) ? first.length : 0);
+  if (type === "number-array" && (!Number.isInteger(size) || size < 1)) throw new AnimationValidationError("ANIMATION_VALUE_SIZE_INVALID", "valueSize", "number-array animation tracks require at least one component.");
+  if (descriptor.valueSize !== undefined && (!Number.isInteger(descriptor.valueSize) || descriptor.valueSize !== size)) {
+    throw new AnimationValidationError("ANIMATION_VALUE_SIZE_INVALID", "valueSize", `AnimationTrack valueSize must match the ${size} components of its values.`);
+  }
+  const validateValue = (value: AnimationValue, label: string): void => {
+    if (type === "boolean" || type === "string") {
+      if (typeof value !== type) throw new AnimationValidationError("ANIMATION_VALUE_INVALID", label, `AnimationTrack ${label} must be ${type}.`);
+    } else if (type === "scalar") {
+      if (typeof value !== "number" || !Number.isFinite(value)) throw new AnimationValidationError("ANIMATION_VALUE_INVALID", label, `AnimationTrack ${label} must be a finite number.`);
+    } else if (!Array.isArray(value) || value.length !== size || !value.every((entry) => typeof entry === "number" && Number.isFinite(entry))) {
+      throw new AnimationValidationError("ANIMATION_VALUE_INVALID", label, `AnimationTrack ${label} must contain ${size} finite components.`);
+    }
+  };
+  descriptor.keyframes.forEach((key, index) => {
+    validateValue(key.value, `keyframes[${index}].value`);
+    if ((type === "boolean" || type === "string") && (key.inTangent !== undefined || key.outTangent !== undefined)) {
+      const field = key.inTangent !== undefined ? `keyframes[${index}].inTangent` : `keyframes[${index}].outTangent`;
+      throw new AnimationValidationError("ANIMATION_TANGENT_UNSUPPORTED", field, `${type} animation tracks cannot have tangents.`);
+    }
+    if (key.inTangent !== undefined) validateValue(key.inTangent, `keyframes[${index}].inTangent`);
+    if (key.outTangent !== undefined) validateValue(key.outTangent, `keyframes[${index}].outTangent`);
+    const mode = key.interpolation;
+    if ((type === "boolean" || type === "string") && (mode === "smooth" || mode === "bezier" || mode === "cubicspline")) {
+      throw new AnimationValidationError("ANIMATION_INTERPOLATION_UNSUPPORTED", `keyframes[${index}].interpolation`, `${mode} interpolation is not supported for ${type} animation tracks.`);
+    }
+    if (index === descriptor.keyframes.length - 1) return;
+    if ((mode === "cubicspline" || mode === "bezier") && (key.outTangent === undefined || descriptor.keyframes[index + 1]!.inTangent === undefined)) {
+      const field = key.outTangent === undefined ? `keyframes[${index}].outTangent` : `keyframes[${index + 1}].inTangent`;
+      throw new AnimationValidationError("ANIMATION_TANGENT_MISSING", field, `${mode} keyframes require outTangent on the first keyframe and inTangent on the next keyframe.`);
+    }
+  });
+  return size;
+}
+
+function interpolateBezier(type: TrackValueType, a: AnimationValue, b: AnimationValue, out: AnimationValue, incoming: AnimationValue, t: number): AnimationValue {
+  const blend = (x: number, c1: number, c2: number, y: number) => {
+    const u = 1 - t;
+    return u * u * u * x + 3 * u * u * t * c1 + 3 * u * t * t * c2 + t * t * t * y;
+  };
+  if (type === "scalar") return blend(a as number, out as number, incoming as number, b as number);
+  const start = a as readonly number[];
+  const end = b as readonly number[];
+  const c1 = out as readonly number[];
+  const c2 = incoming as readonly number[];
+  const result = start.map((component, i) => blend(component, c1[i]!, c2[i]!, end[i]!));
+  return type === "quaternion" ? normalizeQuat(result as unknown as Quat) : result;
 }
 
 function interpolateCubicSpline(
@@ -150,15 +218,13 @@ function normalizeCubicQuaternion(
   t: number,
   deltaTime: number
 ): readonly [number, number, number, number] {
-  return slerpQuat(
-    [0, 0, 0, 1],
+  return normalizeQuat(
     [
       cubicScalar(a[0], b[0], outTangent[0], inTangent[0], t, deltaTime),
       cubicScalar(a[1], b[1], outTangent[1], inTangent[1], t, deltaTime),
       cubicScalar(a[2], b[2], outTangent[2], inTangent[2], t, deltaTime),
       cubicScalar(a[3], b[3], outTangent[3], inTangent[3], t, deltaTime)
-    ],
-    1
+    ]
   );
 }
 
@@ -211,7 +277,7 @@ function assertFiniteTimes(api: string, times: readonly number[]): void {
   }
 }
 
-function tupleKeyframes<T extends NumericTrackValue>(api: string, target: string, times: readonly number[], values: readonly number[] | readonly T[], stride: number, interpolation?: InterpolationMode): readonly Keyframe<T>[] {
+function tupleKeyframes<T extends NumericTrackValue>(api: string, target: string, times: readonly number[], values: readonly number[] | readonly T[], stride: number, interpolation?: InterpolationMode, scalar = stride === 1): readonly Keyframe<T>[] {
   assertFiniteTimes(api, times);
   const isTupleList = values.length > 0 && Array.isArray(values[0]);
   const count = isTupleList ? (values as readonly T[]).length : (values as readonly number[]).length / stride;
@@ -222,7 +288,7 @@ function tupleKeyframes<T extends NumericTrackValue>(api: string, target: string
   for (let index = 0; index < times.length; index += 1) {
     const value = isTupleList
       ? (values as readonly T[])[index]!
-      : (stride === 1 ? (values as readonly number[])[index]! : (values as readonly number[]).slice(index * stride, index * stride + stride)) as T;
+      : (scalar ? (values as readonly number[])[index]! : (values as readonly number[]).slice(index * stride, index * stride + stride)) as T;
     keyframes.push({ time: times[index]!, value, ...(interpolation ? { interpolation } : {}) });
   }
   return keyframes;
@@ -249,8 +315,14 @@ export function ScalarKeyframeTrack(target: string, times: readonly number[], va
   return NumberKeyframeTrack(target, times, values, interpolation);
 }
 
-export function VectorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly Vec3[], interpolation: InterpolationMode = "linear"): AnimationTrack<Vec3> {
-  return new AnimationTrack({ target, valueType: "vector3", keyframes: tupleKeyframes<Vec3>("VectorKeyframeTrack", target, times, values, 3, interpolation) });
+export function VectorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly Vec3[], interpolation?: InterpolationMode): AnimationTrack<Vec3>;
+export function VectorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly (readonly number[])[], valueSize: number): AnimationTrack<NumberArray>;
+export function VectorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly (readonly number[])[], interpolation: InterpolationMode | undefined, valueSize: number): AnimationTrack<NumberArray>;
+export function VectorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly (readonly number[])[], interpolationOrSize: InterpolationMode | number = "linear", explicitSize = 3): AnimationTrack<NumberArray> {
+  const interpolation = typeof interpolationOrSize === "number" ? "linear" : interpolationOrSize;
+  const valueSize = typeof interpolationOrSize === "number" ? interpolationOrSize : explicitSize;
+  if (!Number.isInteger(valueSize) || valueSize < 1) throw new AnimationValidationError("ANIMATION_VALUE_SIZE_INVALID", "valueSize", "VectorKeyframeTrack valueSize must be a positive integer.");
+  return new AnimationTrack({ target, valueType: valueSize === 3 ? "vector3" : "number-array", valueSize, keyframes: tupleKeyframes<NumberArray>("VectorKeyframeTrack", target, times, values, valueSize, interpolation, false) });
 }
 
 export function QuaternionKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly Quat[], interpolation: InterpolationMode = "linear"): AnimationTrack<Quat> {

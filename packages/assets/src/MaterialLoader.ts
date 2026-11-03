@@ -1,5 +1,6 @@
-import type { AssetLoadRequest, AssetLoader } from "./AssetLoader";
+import { mergeAssetRequestOptions, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
 import type { LoadContext } from "./LoadContext";
+import { fetchBytes } from "./LoaderFetch";
 import {
   Material,
   PBRMaterial,
@@ -21,22 +22,20 @@ export class MaterialLoader implements AssetLoader<MaterialDescriptorAsset> {
   readonly type = "material";
 
   canLoad(request: AssetLoadRequest): boolean {
-    return /\.(?:mat|material)\.json(?:\?.*)?$/i.test(request.url);
+    return /\.(?:mat|material)\.json(?:[?#].*)?$/i.test(request.url);
   }
 
   async load(request: AssetLoadRequest, context: LoadContext): Promise<MaterialDescriptorAsset> {
     context.throwIfAborted(request.url);
 
-    if (typeof fetch !== "function") {
-      throw new Error("MaterialLoader requires fetch");
-    }
-
-    const response = await fetch(request.url, { signal: request.signal });
-    if (!response.ok) {
-      throw new Error(`Material request failed with ${response.status}`);
-    }
-
-    const parsed = (await response.json()) as Partial<MaterialDescriptorAsset>;
+    const signal = context.signalFor?.(request.signal) ?? request.signal;
+    const options = mergeAssetRequestOptions(context.requestOptionsFor?.(request.url), request);
+    const bytes = await fetchBytes(request.url, signal, request.onProgress ? (progress) => request.onProgress?.({
+      url: request.url, phase: "document", loadedBytes: progress.loaded,
+      ...(progress.total === undefined ? {} : { totalBytes: progress.total })
+    }) : undefined, options);
+    context.throwIfAborted(request.url);
+    const parsed = JSON.parse(new TextDecoder().decode(bytes)) as Partial<MaterialDescriptorAsset>;
     if (parsed.model !== "unlit" && parsed.model !== "pbr") {
       throw new Error(`Unsupported material model for ${request.url}`);
     }

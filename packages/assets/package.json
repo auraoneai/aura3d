@@ -19,6 +19,22 @@
     "./vite": {
       "types": "./dist/vite/auraDecoders.d.ts",
       "import": "./dist/vite/auraDecoders.js"
+    },
+    "./vite-client": {
+      "types": "./vite-client.d.ts",
+      "import": "./vite-client.js"
+    },
+    "./exporters": {
+      "types": "./dist/exporters/index.d.ts",
+      "browser": "./dist/exporters/index.js",
+      "import": "./dist/exporters/index.js",
+      "default": "./dist/exporters/index.js"
+    },
+    "./importers": {
+      "types": "./dist/importers.d.ts",
+      "browser": "./dist/importers.js",
+      "import": "./dist/importers.js",
+      "default": "./dist/importers.js"
     }
   },
   "main": "./dist/index.js",
@@ -31,7 +47,12 @@
     "ktx-parse": "1.0.1",
     "meshoptimizer": "1.2.0"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/workers/ktx2.worker.ts",
+    "./src/workers/zstd.worker.ts",
+    "./dist/workers/ktx2.worker.js",
+    "./dist/workers/zstd.worker.js"
+  ],
   "description": "Asset identity, loading, caching, dependency tracking, import pipelines, worker job boundaries, and GLB/glTF runtime loaders for Aura3D.",
   "keywords": [
     "aura3d",
@@ -64,6 +85,8 @@
   "files": [
     "README.md",
     "dist",
-    "vendor"
+    "vendor",
+    "vite-client.d.ts",
+    "vite-client.js"
   ]
 }

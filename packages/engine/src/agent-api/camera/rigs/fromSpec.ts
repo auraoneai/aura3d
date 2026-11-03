@@ -34,6 +34,7 @@ export interface LegacyCameraSpec {
   readonly mode?: string;
   readonly position?: AuraVec3;
   readonly target?: AuraVec3;
+  readonly up?: AuraVec3;
   readonly offset?: AuraVec3;
   readonly targetOffset?: AuraVec3;
   readonly offsetMode?: "scene" | "target-yaw";
@@ -243,7 +244,7 @@ export class LegacySpecRig implements AuraCameraRig {
     return {
       position: eye,
       target,
-      up: [0, 1, 0],
+      up: spec.up ?? [0, 1, 0],
       roll: 0,
       fov: spec.fov ?? 50,
       near: spec.near ?? 0.1,

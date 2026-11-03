@@ -1,0 +1,667 @@
+{
+  "schemaVersion": 1,
+  "kind": "declaration-only",
+  "status": "behavior-unresolved",
+  "limits": [
+    "Numerical behavior, defaults, provenance, and entry registry identifiers are unresolved.",
+    "Name matches do not establish equivalent behavior or matching parameter conventions.",
+    "Shader bodies, constants and initializers, lookup data, comments, and fixture samples are excluded.",
+    "This contract is not evidence of replacement or independent authorship.",
+    "Conditional compilation guards and cross-module helper dependencies are unresolved."
+  ],
+  "interfaces": [
+    {
+      "name": "ShaderChunk",
+      "declaration": "export interface ShaderChunk {\n    readonly name: string;\n    readonly owner: PrdId;\n    readonly glsl: string;\n    readonly wgsl?: string;\n    readonly stage: \"vertex\" | \"fragment\" | \"both\";\n    readonly requires?: readonly string[];\n}"
+    },
+    {
+      "name": "PrdId",
+      "declaration": "export type PrdId = \"prd01\" | \"prd02\" | \"prd03\" | \"prd04\" | \"prd05\" | \"prd06\" | \"prd07\" | \"prd08\" | \"prd09\" | \"prd10\" | \"prd11\" | \"prd12\" | \"prd13\" | \"prd14\" | \"prd15\";"
+    }
+  ],
+  "modules": [
+    {
+      "name": "anisotropy",
+      "wgsl": {
+        "language": "wgsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_ANISOTROPY_WGSL",
+            "kind": "named",
+            "type": "unresolved"
+          },
+          {
+            "name": "default",
+            "kind": "default",
+            "type": "unresolved"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04VGGXAnisotropic",
+            "signature": "fn a3dPrd04VGGXAnisotropic(alphaT: f32, alphaB: f32, dotTV: f32, dotBV: f32, dotTL: f32, dotBL: f32, dotNV: f32, dotNL: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04DGGXAnisotropic",
+            "signature": "fn a3dPrd04DGGXAnisotropic(alphaT: f32, alphaB: f32, dotNH: f32, dotTH: f32, dotBH: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04AnisotropyInit",
+            "signature": "fn a3dPrd04AnisotropyInit(lobes: ptr<function, A3DPrd04Lobes>, anisotropyVector: vec2f, anisoTex: vec4f, useAnisoTex: bool, tangent: vec3f, bitangent: vec3f, roughness: f32)"
+          },
+          {
+            "name": "a3dPrd04AnisotropyDirect",
+            "signature": "fn a3dPrd04AnisotropyDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, f0: vec3f, f90: f32, roughness: f32, lobes: A3DPrd04Lobes) -> vec3f"
+          },
+          {
+            "name": "a3dPrd04AnisotropyBentNormal",
+            "signature": "fn a3dPrd04AnisotropyBentNormal(viewDir: vec3f, normal: vec3f, roughness: f32, bitangent: vec3f, anisotropy: f32) -> vec3f"
+          }
+        ],
+        "structs": [],
+        "resources": []
+      },
+      "glsl": {
+        "language": "glsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_ANISOTROPY",
+            "kind": "named",
+            "type": "ShaderChunk"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04VGGXAnisotropic",
+            "signature": "float a3dPrd04VGGXAnisotropic(float alphaT, float alphaB, float tv, float bv, float tl, float bl, float nv, float nl)"
+          },
+          {
+            "name": "a3dPrd04DGGXAnisotropic",
+            "signature": "float a3dPrd04DGGXAnisotropic(float alphaT, float alphaB, float nh, float th, float bh)"
+          },
+          {
+            "name": "a3dPrd04AnisotropyInit",
+            "signature": "void a3dPrd04AnisotropyInit(inout A3DPrd04Lobes lobes, vec2 factor, vec4 texel, bool useTexture, vec3 tangent, vec3 bitangent, float roughness)"
+          },
+          {
+            "name": "a3dPrd04AnisotropyDirect",
+            "signature": "vec3 a3dPrd04AnisotropyDirect(vec3 lightDir, vec3 viewDir, vec3 normal, vec3 f0, float f90, float roughness, A3DPrd04Lobes lobes)"
+          },
+          {
+            "name": "a3dPrd04AnisotropyBentNormal",
+            "signature": "vec3 a3dPrd04AnisotropyBentNormal(vec3 viewDir, vec3 normal, float roughness, vec3 bitangent, float anisotropy)"
+          }
+        ],
+        "structs": [],
+        "resources": []
+      },
+      "nameMatch": {
+        "common": [
+          "a3dPrd04AnisotropyBentNormal",
+          "a3dPrd04AnisotropyDirect",
+          "a3dPrd04AnisotropyInit",
+          "a3dPrd04DGGXAnisotropic",
+          "a3dPrd04VGGXAnisotropic"
+        ],
+        "glslOnly": [],
+        "wgslOnly": [],
+        "meaning": "name-only"
+      }
+    },
+    {
+      "name": "common",
+      "wgsl": {
+        "language": "wgsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_BSDF_LOBES_COMMON_WGSL",
+            "kind": "named",
+            "type": "unresolved"
+          },
+          {
+            "name": "default",
+            "kind": "default",
+            "type": "unresolved"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04GeometryRoughness",
+            "signature": "fn a3dPrd04GeometryRoughness(nonPerturbedNormal: vec3f) -> f32"
+          },
+          {
+            "name": "a3dPrd04ResolveRoughness",
+            "signature": "fn a3dPrd04ResolveRoughness(roughnessFactor: f32, geometryRoughness: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04SpecularOcclusion",
+            "signature": "fn a3dPrd04SpecularOcclusion(dotNV: f32, ambientOcclusion: f32, roughness: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04EnvironmentBRDF",
+            "signature": "fn a3dPrd04EnvironmentBRDF(normal: vec3f, viewDir: vec3f, specularColor: vec3f, specularF90: f32, roughness: f32) -> vec3f"
+          },
+          {
+            "name": "a3dPrd04ComputeMultiscattering",
+            "signature": "fn a3dPrd04ComputeMultiscattering(normal: vec3f, viewDir: vec3f, specularColor: vec3f, specularF90: f32, roughness: f32, singleScatter: ptr<function, vec3f>, multiScatter: ptr<function, vec3f>)"
+          }
+        ],
+        "structs": [
+          {
+            "name": "A3DPrd04Lobes",
+            "fields": [
+              "ior: f32",
+              "clearcoat: f32",
+              "clearcoatRoughness: f32",
+              "clearcoatNormal: vec3f",
+              "sheenColor: vec3f",
+              "sheenRoughness: f32",
+              "iridescence: f32",
+              "iridescenceIOR: f32",
+              "iridescenceThickness: f32",
+              "iridescenceFresnel: vec3f",
+              "iridescenceF0: vec3f",
+              "anisotropy: f32",
+              "anisotropyT: vec3f",
+              "anisotropyB: vec3f",
+              "alphaT: f32",
+              "transmission: f32",
+              "thickness: f32",
+              "attenuationDistance: f32",
+              "attenuationColor: vec3f",
+              "dispersion: f32"
+            ]
+          }
+        ],
+        "resources": []
+      },
+      "glsl": {
+        "language": "glsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_BSDF_LOBES_COMMON",
+            "kind": "named",
+            "type": "ShaderChunk"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04GeometryRoughness",
+            "signature": "float a3dPrd04GeometryRoughness(vec3 geometricNormal)"
+          },
+          {
+            "name": "a3dPrd04ResolveRoughness",
+            "signature": "float a3dPrd04ResolveRoughness(float factor, float geometricRoughness)"
+          },
+          {
+            "name": "a3dPrd04SpecularOcclusion",
+            "signature": "float a3dPrd04SpecularOcclusion(float nDotV, float ao, float roughness)"
+          },
+          {
+            "name": "a3dPrd04EnvironmentBRDF",
+            "signature": "vec3 a3dPrd04EnvironmentBRDF(vec3 normal, vec3 viewDir, vec3 f0, float f90, float roughness)"
+          },
+          {
+            "name": "a3dPrd04ComputeMultiscattering",
+            "signature": "void a3dPrd04ComputeMultiscattering(vec3 normal, vec3 viewDir, vec3 f0, float f90, float roughness, inout vec3 singleScatter, inout vec3 multiScatter)"
+          }
+        ],
+        "structs": [
+          {
+            "name": "A3DPrd04Lobes",
+            "fields": [
+              "float ior",
+              "float clearcoat",
+              "float clearcoatRoughness",
+              "vec3 clearcoatNormal",
+              "vec3 sheenColor",
+              "float sheenRoughness",
+              "float iridescence",
+              "float iridescenceIOR",
+              "float iridescenceThickness",
+              "vec3 iridescenceFresnel",
+              "vec3 iridescenceF0",
+              "float anisotropy",
+              "vec3 anisotropyT",
+              "vec3 anisotropyB",
+              "float alphaT",
+              "float transmission",
+              "float thickness",
+              "float attenuationDistance",
+              "vec3 attenuationColor",
+              "float dispersion"
+            ]
+          }
+        ],
+        "resources": []
+      },
+      "nameMatch": {
+        "common": [
+          "a3dPrd04ComputeMultiscattering",
+          "a3dPrd04EnvironmentBRDF",
+          "a3dPrd04GeometryRoughness",
+          "a3dPrd04ResolveRoughness",
+          "a3dPrd04SpecularOcclusion"
+        ],
+        "glslOnly": [],
+        "wgslOnly": [],
+        "meaning": "name-only"
+      }
+    },
+    {
+      "name": "clearcoat",
+      "wgsl": {
+        "language": "wgsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_CLEARCOAT_WGSL",
+            "kind": "named",
+            "type": "unresolved"
+          },
+          {
+            "name": "default",
+            "kind": "default",
+            "type": "unresolved"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04ClearcoatInit",
+            "signature": "fn a3dPrd04ClearcoatInit(lobes: ptr<function, A3DPrd04Lobes>, clearcoatFactor: f32, clearcoatRoughnessFactor: f32, clearcoatTex: vec4f, roughnessTex: vec4f, clearcoatNormal: vec3f, geometryRoughness: f32)"
+          },
+          {
+            "name": "a3dPrd04ClearcoatDirect",
+            "signature": "fn a3dPrd04ClearcoatDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, clearcoatRoughness: f32) -> vec3f"
+          },
+          {
+            "name": "a3dPrd04ClearcoatIndirect",
+            "signature": "fn a3dPrd04ClearcoatIndirect(normal: vec3f, viewDir: vec3f, clearcoatRoughness: f32, clearcoatRadiance: vec3f) -> vec3f"
+          },
+          {
+            "name": "a3dPrd04ComposeClearcoat",
+            "signature": "fn a3dPrd04ComposeClearcoat(outgoing: vec3f, clearcoat: f32, clearcoatNormal: vec3f, viewDir: vec3f, clearcoatDirect: vec3f, clearcoatIndirect: vec3f) -> vec3f"
+          }
+        ],
+        "structs": [],
+        "resources": []
+      },
+      "glsl": {
+        "language": "glsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_CLEARCOAT",
+            "kind": "named",
+            "type": "ShaderChunk"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04ClearcoatInit",
+            "signature": "void a3dPrd04ClearcoatInit(inout A3DPrd04Lobes lobes, float factor, float roughness, vec4 factorTex, vec4 roughnessTex, vec3 normal, float geometryRoughness)"
+          },
+          {
+            "name": "a3dPrd04ClearcoatDirect",
+            "signature": "vec3 a3dPrd04ClearcoatDirect(vec3 lightDir, vec3 viewDir, vec3 normal, float roughness)"
+          },
+          {
+            "name": "a3dPrd04ClearcoatIndirect",
+            "signature": "vec3 a3dPrd04ClearcoatIndirect(vec3 normal, vec3 viewDir, float roughness, vec3 radiance)"
+          },
+          {
+            "name": "a3dPrd04ComposeClearcoat",
+            "signature": "vec3 a3dPrd04ComposeClearcoat(vec3 outgoing, float coat, vec3 normal, vec3 viewDir, vec3 direct, vec3 indirect)"
+          }
+        ],
+        "structs": [],
+        "resources": []
+      },
+      "nameMatch": {
+        "common": [
+          "a3dPrd04ClearcoatDirect",
+          "a3dPrd04ClearcoatIndirect",
+          "a3dPrd04ClearcoatInit",
+          "a3dPrd04ComposeClearcoat"
+        ],
+        "glslOnly": [],
+        "wgslOnly": [],
+        "meaning": "name-only"
+      }
+    },
+    {
+      "name": "sheen",
+      "wgsl": {
+        "language": "wgsl",
+        "exports": [
+          {
+            "name": "A3D_PRD04_SHEEN_WGSL",
+            "kind": "named",
+            "type": "unresolved"
+          },
+          {
+            "name": "default",
+            "kind": "default",
+            "type": "unresolved"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04SheenInit",
+            "signature": "fn a3dPrd04SheenInit(lobes: ptr<function, A3DPrd04Lobes>, sheenColorFactor: vec3f, sheenRoughnessFactor: f32, colorTex: vec4f, roughnessTex: vec4f)"
+          },
+          {
+            "name": "a3dPrd04DCharlie",
+            "signature": "fn a3dPrd04DCharlie(roughness: f32, dotNH: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04VNeubelt",
+            "signature": "fn a3dPrd04VNeubelt(dotNV: f32, dotNL: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04SheenDirect",
+            "signature": "fn a3dPrd04SheenDirect(lightDir: vec3f, viewDir: vec3f, normal: vec3f, sheenColor: vec3f, sheenRoughness: f32) -> vec3f"
+          },
+          {
+            "name": "a3dPrd04IBLSheen",
+            "signature": "fn a3dPrd04IBLSheen(dotNV: f32, roughness: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04SheenIndirect",
+            "signature": "fn a3dPrd04SheenIndirect(normal: vec3f, viewDir: vec3f, sheenRoughness: f32, sheenColor: vec3f, irradiance: vec3f) -> vec3f"
+          },
+          {
+            "name": "a3dPrd04SheenEnergyCompensation",
+            "signature": "fn a3dPrd04SheenEnergyCompensation(normal: vec3f, viewDir: vec3f, lightDir: vec3f, sheenColor: vec3f, sheenRoughness: f32) -> f32"
+          },
+          {
+            "name": "a3dPrd04SheenEnergyCompensationIndirect",
+            "signature": "fn a3dPrd04SheenEnergyCompensationIndirect(normal: vec3f, viewDir: vec3f, sheenColor: vec3f, sheenRoughness: f32) -> f32"
+          }
+        ],
+        "structs": [],
+        "resources": []
+      },
+      "glsl": {
+        "language": "glsl",
+        "exports": [
+          {
+            "name": "A3D_SHEEN_ALBEDO_LUT",
+            "kind": "named",
+            "type": "unresolved"
+          },
+          {
+            "name": "A3D_PRD04_SHEEN",
+            "kind": "named",
+            "type": "ShaderChunk"
+          }
+        ],
+        "functions": [
+          {
+            "name": "a3dPrd04SheenInit",
+            "signature": "void a3dPrd04SheenInit(inout A3DPrd04Lobes lobes, vec3 color, float roughness, vec4 colorTex, vec4 roughnessTex)"
+          },
+          {
+            "name": "a3dPrd04DCharlie",
+            "signature": "float a3dPrd04DCharlie(float roughness, float nDotH)"
+          },
+          {
+            "name": "a3dPrd04VNeubelt",
+            "signature": "float a3dPrd04VNeubelt(float nDotV, float nDotL)"
+          },
+          {
+            "name": "a3dPrd04SheenDirect",
+            "signature": "vec3 a3dPrd04SheenDirect(vec3 lightDir, vec3 viewDir, vec3 normal, vec3 color, float roughness)"
+          },
+          {
+            "name": "a3dPrd04IBLSheen",
+            "signature": "float a3dPrd04IBLSheen(float nDotV, float roughness)"
+          },
+          {
+            "name": "a3dPrd04SheenIndirect",
+            "signature": "vec3 a3dPrd04SheenIndirect(vec3 normal, vec3 viewDir, float roughness, vec3 color, vec3 irradiance)"
+          },
+          {
+            "name": "a3dPrd04SheenEnergyCompensation",
+            "signature": "float a3dPrd04SheenEnergyCompensation(vec3 normal, vec3 viewDir, vec3 lightDir, vec3 color, float roughness)"
+          },
+          {
+            "name": "a3dPrd04SheenEnergyCompensationIndirect",
+            "signature": "float a3dPrd04SheenEnergyCompensationIndirect(vec3 normal, vec3 viewDir, vec3 color, float roughness)"
+          }
+        ],
+        "structs": [],
+        "resources": []
+      },
+      "nameMatch": {
+        "common": [
+          "a3dPrd04DCharlie",
+          "a3dPrd04IBLSheen",
+          "a3dPrd04SheenDirect",
+          "a3dPrd04SheenEnergyCompensation",
+          "a3dPrd04SheenEnergyCompensationIndirect",
+          "a3dPrd04SheenIndirect",
+          "a3dPrd04SheenInit",
+          "a3dPrd04VNeubelt"
+        ],
+        "glslOnly": [],
+        "wgslOnly": [],
+        "meaning": "name-only"
+      }
+    },
+    {
+      "name": "brdf-shim",
+      "glsl": {
+        "language": "glsl",
+        "exports": [
+          {
+            "name": "BRDF_R185_SHIM_CHUNK",
+            "kind": "named",
+            "type": "ShaderChunk"
+          }
+        ],
+        "functions": [
+          {
+            "name": "saturate",
+            "signature": "float saturate( const in float a )"
+          },
+          {
+            "name": "saturate",
+            "signature": "vec3 saturate( const in vec3 a )"
+          },
+          {
+            "name": "pow2",
+            "signature": "float pow2( const in float x )"
+          },
+          {
+            "name": "pow2",
+            "signature": "vec3 pow2( const in vec3 x )"
+          },
+          {
+            "name": "pow3",
+            "signature": "float pow3( const in float x )"
+          },
+          {
+            "name": "pow4",
+            "signature": "float pow4( const in float x )"
+          },
+          {
+            "name": "max3",
+            "signature": "float max3( const in vec3 v )"
+          },
+          {
+            "name": "max4",
+            "signature": "float max4( const in vec4 v )"
+          },
+          {
+            "name": "F_Schlick",
+            "signature": "vec3 F_Schlick( const in vec3 f0, const in float f90, const in float dotVH )"
+          },
+          {
+            "name": "F_Schlick",
+            "signature": "float F_Schlick( const in float f0, const in float f90, const in float dotVH )"
+          },
+          {
+            "name": "Schlick_to_F0",
+            "signature": "vec3 Schlick_to_F0( const in vec3 f, const in float f90, const in float dotVH )"
+          },
+          {
+            "name": "BRDF_Lambert",
+            "signature": "vec3 BRDF_Lambert( const in vec3 diffuseColor )"
+          },
+          {
+            "name": "a3dDFG",
+            "signature": "vec2 a3dDFG( const in float roughness, const in float dotNX )"
+          },
+          {
+            "name": "V_GGX_SmithCorrelated",
+            "signature": "float V_GGX_SmithCorrelated( const in float alpha, const in float dotNL, const in float dotNV )"
+          },
+          {
+            "name": "D_GGX",
+            "signature": "float D_GGX( const in float alpha, const in float dotNH )"
+          },
+          {
+            "name": "BRDF_GGX",
+            "signature": "vec3 BRDF_GGX( const in vec3 lightDir, const in vec3 viewDir, const in vec3 normal, const in vec3 specularColorBlended, const in float specularF90, const in float roughness )"
+          },
+          {
+            "name": "EnvironmentBRDF",
+            "signature": "vec3 EnvironmentBRDF( const in vec3 normal, const in vec3 viewDir, const in vec3 specularColor, const in float specularF90, const in float roughness )"
+          },
+          {
+            "name": "BRDF_GGX_Multiscatter",
+            "signature": "vec3 BRDF_GGX_Multiscatter( const in vec3 lightDir, const in vec3 viewDir, const in vec3 normal, const in vec3 specularColorBlended, const in float specularF90, const in float roughness )"
+          },
+          {
+            "name": "a3dDirectSpecular",
+            "signature": "vec3 a3dDirectSpecular( const in vec3 lightDir, const in vec3 viewDir, const in vec3 normal, const in vec3 irradiance, const in vec3 specularColorBlended, const in float specularF90, const in float roughness )"
+          },
+          {
+            "name": "a3dDirectLight",
+            "signature": "vec3 a3dDirectLight( const in vec3 lightDir, const in vec3 viewDir, const in vec3 normal, const in vec3 irradiance, const in vec3 diffuseContribution, const in vec3 specularColorBlended, const in float specularF90, const in float roughness )"
+          }
+        ],
+        "structs": [
+          {
+            "name": "PhysicalMaterial",
+            "fields": [
+              "vec3 diffuseColor",
+              "vec3 diffuseContribution",
+              "vec3 specularColor",
+              "vec3 specularColorBlended",
+              "float roughness",
+              "float metalness",
+              "float specularF90",
+              "float dispersion",
+              "float clearcoat",
+              "float clearcoatRoughness",
+              "vec3 clearcoatF0",
+              "float clearcoatF90",
+              "float iridescence",
+              "float iridescenceIOR",
+              "float iridescenceThickness",
+              "vec3 iridescenceFresnel",
+              "vec3 iridescenceF0",
+              "vec3 iridescenceFresnelDielectric",
+              "vec3 iridescenceFresnelMetallic",
+              "vec3 sheenColor",
+              "float sheenRoughness",
+              "float ior",
+              "float transmission",
+              "float transmissionAlpha",
+              "float thickness",
+              "float attenuationDistance",
+              "vec3 attenuationColor",
+              "float anisotropy",
+              "float alphaT",
+              "vec3 anisotropyT",
+              "vec3 anisotropyB"
+            ]
+          }
+        ],
+        "resources": [
+          "uniform sampler2D u_dfgLut"
+        ]
+      },
+      "wgsl": {
+        "language": "wgsl",
+        "exports": [
+          {
+            "name": "BRDF_R185_WGSL",
+            "kind": "named",
+            "type": "unresolved"
+          }
+        ],
+        "functions": [
+          {
+            "name": "pow2",
+            "signature": "fn pow2(x: f32) -> f32"
+          },
+          {
+            "name": "pow2v",
+            "signature": "fn pow2v(x: vec3f) -> vec3f"
+          },
+          {
+            "name": "pow4",
+            "signature": "fn pow4(x: f32) -> f32"
+          },
+          {
+            "name": "max3",
+            "signature": "fn max3(v: vec3f) -> f32"
+          },
+          {
+            "name": "F_Schlick",
+            "signature": "fn F_Schlick(f0: vec3f, f90: f32, dotVH: f32) -> vec3f"
+          },
+          {
+            "name": "Schlick_to_F0",
+            "signature": "fn Schlick_to_F0(f: vec3f, f90: f32, dotVH: f32) -> vec3f"
+          },
+          {
+            "name": "V_GGX_SmithCorrelated",
+            "signature": "fn V_GGX_SmithCorrelated(alpha: f32, dotNL: f32, dotNV: f32) -> f32"
+          },
+          {
+            "name": "D_GGX",
+            "signature": "fn D_GGX(alpha: f32, dotNH: f32) -> f32"
+          },
+          {
+            "name": "a3dDFG",
+            "signature": "fn a3dDFG(roughness: f32, dotNX: f32) -> vec2f"
+          }
+        ],
+        "structs": [],
+        "resources": [
+          "@group(1) @binding(29) var a3d_prd04_dfgLut: texture_2d<f32>",
+          "@group(1) @binding(28) var a3d_prd04_dfgSmp: sampler"
+        ]
+      },
+      "nameMatch": {
+        "common": [
+          "D_GGX",
+          "F_Schlick",
+          "Schlick_to_F0",
+          "V_GGX_SmithCorrelated",
+          "a3dDFG",
+          "max3",
+          "pow2",
+          "pow4"
+        ],
+        "glslOnly": [
+          "BRDF_GGX",
+          "BRDF_GGX_Multiscatter",
+          "BRDF_Lambert",
+          "EnvironmentBRDF",
+          "a3dDirectLight",
+          "a3dDirectSpecular",
+          "max4",
+          "pow3",
+          "saturate"
+        ],
+        "wgslOnly": [
+          "pow2v"
+        ],
+        "meaning": "name-only"
+      }
+    }
+  ]
+}

@@ -282,8 +282,15 @@ describe("GU47 eint EB-3: the generated program samples the tiles", () => {
 
   it("sun-only and unshadowed draws are unchanged", () => {
     expect(gen({ lighting: "lit", lights: ONE_DIR_TWO_SPOTS, shadows: SUN_ONLY }).fragment).not.toContain("a3dLocalLightShadow");
-    expect(gen({ lighting: "lit", lights: ONE_DIR_TWO_SPOTS, shadows: { ...LOCAL, cascades: 0 } }).fragment).not.toContain("u_localShadowAtlas");
+    expect(gen({ lighting: "lit", lights: ONE_DIR_TWO_SPOTS, shadows: { ...LOCAL, cascades: 0, localShadows: 0 } }).fragment).not.toContain("u_localShadowAtlas");
     expect(gen({ pass: "depth", shadows: LOCAL }).fragment).not.toContain("a3dLocalLightShadow");
+  });
+
+  it("uses local shadow tiles without a directional shadow map", () => {
+    const fragment = gen({ lighting: "lit", lights: ONE_DIR_TWO_SPOTS, shadows: { ...LOCAL, cascades: 0 } }).fragment;
+    expect(fragment).toContain("uniform highp sampler2DShadow u_localShadowAtlas;");
+    expect(fragment).toContain("radiance *= a3dLocalLightShadow(");
+    expect(fragment).not.toContain("uniform sampler2D u_shadowMapTexture;");
   });
 
   it("the clustered loop reads the slot from the cluster texture", () => {

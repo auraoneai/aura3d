@@ -68,10 +68,12 @@ describe("look lint — current template fixtures flagged", () => {
 
   it("flags renderer overrides", () => {
     const cwd = project({
-      "main.ts": `import { WebGLRenderer, ACESFilmicToneMapping } from "three";
-const renderer = new WebGLRenderer();
-renderer.toneMapping = ACESFilmicToneMapping;
+      "main.ts": `import { createAuraApp, looks, scene } from "@aura3d/engine";
+const app = createAuraApp("#app", { scene: scene().add(looks.preset("outdoor-day")) });
+const renderer = { toneMapping: "", setPixelRatio: (_value: number) => {} };
+renderer.toneMapping = "aces";
 renderer.setPixelRatio(1);
+void app;
 `
     });
     const report = runLookLintScan(cwd);

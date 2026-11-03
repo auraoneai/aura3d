@@ -1,7 +1,29 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraRendererColorManagementPreset, AuraSceneCategory, AuraSceneExposurePreset } from "../nodes/types.js";
+import type { AuraOutputOptions } from "../../contracts/output.js";
 
+/** Requested output settings are resolved per app; active display settings
+ * are reported separately by that app's render device after negotiation. */
+export interface AuraAppOutputColorPolicy {
+  readonly outputColorSpace: NonNullable<AuraOutputOptions["outputColorSpace"]>;
+  readonly alphaMode: NonNullable<AuraOutputOptions["alphaMode"]>;
+}
+
+export function resolveAppOutputColorPolicy(options?: Pick<AuraOutputOptions, "outputColorSpace" | "alphaMode">): AuraAppOutputColorPolicy {
+  if (options !== undefined && (options === null || typeof options !== "object" || Array.isArray(options))) {
+    throw new RangeError("Invalid app output color policy.");
+  }
+  const outputColorSpace = options?.outputColorSpace === undefined ? "srgb" : options.outputColorSpace;
+  const alphaMode = options?.alphaMode === undefined ? "opaque" : options.alphaMode;
+  if (outputColorSpace !== "srgb" && outputColorSpace !== "display-p3") {
+    throw new RangeError(`Unsupported output color space: ${String(outputColorSpace)}.`);
+  }
+  if (alphaMode !== "opaque" && alphaMode !== "straight" && alphaMode !== "premultiplied") {
+    throw new RangeError(`Unsupported output alpha mode: ${String(alphaMode)}.`);
+  }
+  return { outputColorSpace, alphaMode };
+}
 
 export const rendererColorManagementPreset: AuraRendererColorManagementPreset = {
   kind: "aura-renderer-color-management",
@@ -10,7 +32,7 @@ export const rendererColorManagementPreset: AuraRendererColorManagementPreset = 
   toneMapping: "aces-filmic",
   defaultExposure: 1.05,
   notes: [
-    "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+    "This preset defaults to sRGB output and ACES filmic tone mapping; mounted output is reported separately.",
     "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
   ]
 };

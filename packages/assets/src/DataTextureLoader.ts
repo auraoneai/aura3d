@@ -28,7 +28,7 @@ export abstract class DataTextureLoader<TData = unknown> {
       onLoad?.(data);
       return data;
     });
-    if (onError) pending.catch(onError);
+    if (onError) void pending.catch(onError).catch(() => {});
     return pending;
   }
 

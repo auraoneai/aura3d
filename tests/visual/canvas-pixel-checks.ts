@@ -29,6 +29,32 @@ export interface RegionCheckResult {
   reason?: string;
 }
 
+export interface BackgroundCheckResult {
+  passed: boolean;
+  sampleCount: number;
+  matchingCount: number;
+  matchingFraction: number;
+  reason?: string;
+}
+
+export interface SubjectExpectation {
+  region: PixelRegion;
+  background: ExpectedColor;
+  subject: ExpectedColor;
+  /** Fraction of the region that must match the subject, rather than incidental noise. */
+  minSubjectFraction?: number;
+  /** Minimum RGB channel difference from the expected background, in byte values. */
+  minContrast?: number;
+}
+
+export interface SubjectCheckResult {
+  passed: boolean;
+  sampleCount: number;
+  matchingCount: number;
+  matchingFraction: number;
+  reason?: string;
+}
+
 function validateBuffer(buffer: PixelBuffer): void {
   if (!Number.isInteger(buffer.width) || !Number.isInteger(buffer.height) || buffer.width <= 0 || buffer.height <= 0) {
     throw new RangeError("Pixel buffer width and height must be positive integers.");
@@ -40,6 +66,9 @@ function validateBuffer(buffer: PixelBuffer): void {
 }
 
 function clampRegion(buffer: PixelBuffer, region: PixelRegion): PixelRegion {
+  if (![region.x, region.y, region.width, region.height].every(Number.isFinite) || region.width <= 0 || region.height <= 0) {
+    throw new RangeError("Pixel region coordinates must be finite and dimensions positive.");
+  }
   const x = Math.max(0, Math.floor(region.x));
   const y = Math.max(0, Math.floor(region.y));
   const maxX = Math.min(buffer.width, Math.ceil(region.x + region.width));
@@ -52,15 +81,17 @@ function clampRegion(buffer: PixelBuffer, region: PixelRegion): PixelRegion {
   return { x, y, width: maxX - x, height: maxY - y };
 }
 
+/** Coarse RGB sanity check only; a nonblack background or a speck is not subject evidence. */
 export function isNonBlank(buffer: PixelBuffer, threshold = 3): boolean {
   validateBuffer(buffer);
+  validateByte(threshold, "threshold");
 
   for (let index = 0; index < buffer.data.length; index += 4) {
     if (
-      buffer.data[index] > threshold ||
+      buffer.data[index + 3] > threshold &&
+      (buffer.data[index] > threshold ||
       buffer.data[index + 1] > threshold ||
-      buffer.data[index + 2] > threshold ||
-      buffer.data[index + 3] > threshold
+      buffer.data[index + 2] > threshold)
     ) {
       return true;
     }
@@ -69,8 +100,97 @@ export function isNonBlank(buffer: PixelBuffer, threshold = 3): boolean {
   return false;
 }
 
+function validateByte(value: number, label: string): void {
+  if (!Number.isFinite(value) || value < 0 || value > 255) {
+    throw new RangeError(`${label} must be a finite number from 0 to 255.`);
+  }
+}
+
+function validateColor(color: ExpectedColor): void {
+  validateByte(color.r, "red");
+  validateByte(color.g, "green");
+  validateByte(color.b, "blue");
+  validateByte(color.a ?? 255, "alpha");
+  validateByte(color.tolerance ?? 8, "tolerance");
+}
+
+function validateFraction(value: number, name: string): void {
+  if (!Number.isFinite(value) || value <= 0 || value > 1) {
+    throw new RangeError(`${name} must be greater than 0 and at most 1.`);
+  }
+}
+
+function matchesColor(data: PixelBuffer["data"], index: number, color: ExpectedColor): boolean {
+  const tolerance = color.tolerance ?? 8;
+  return Math.abs(data[index] - color.r) <= tolerance &&
+    Math.abs(data[index + 1] - color.g) <= tolerance &&
+    Math.abs(data[index + 2] - color.b) <= tolerance &&
+    Math.abs(data[index + 3] - (color.a ?? 255)) <= tolerance;
+}
+
+/** Check the per-pixel background instead of accepting a misleading average. */
+export function checkExpectedBackground(
+  buffer: PixelBuffer,
+  region: PixelRegion,
+  expected: ExpectedColor,
+  minMatchingFraction = 0.95
+): BackgroundCheckResult {
+  validateBuffer(buffer);
+  validateColor(expected);
+  validateFraction(minMatchingFraction, "minMatchingFraction");
+  const checked = clampRegion(buffer, region);
+  const sampleCount = checked.width * checked.height;
+  let matchingCount = 0;
+  for (let y = checked.y; y < checked.y + checked.height; y += 1) {
+    for (let x = checked.x; x < checked.x + checked.width; x += 1) {
+      if (matchesColor(buffer.data, (y * buffer.width + x) * 4, expected)) matchingCount += 1;
+    }
+  }
+  const matchingFraction = matchingCount / sampleCount;
+  const passed = matchingFraction >= minMatchingFraction;
+  return { passed, sampleCount, matchingCount, matchingFraction, reason: passed ? undefined : `background match ${matchingFraction} is below ${minMatchingFraction}` };
+}
+
+/**
+ * Verify a fixture's named subject in its expected region against its known
+ * background. An alpha-only change and a few noisy pixels are not evidence of
+ * a visible subject. Use fixture-specific colors, tolerance and coverage.
+ */
+export function checkExpectedSubject(buffer: PixelBuffer, expected: SubjectExpectation): SubjectCheckResult {
+  validateBuffer(buffer);
+  validateColor(expected.background);
+  validateColor(expected.subject);
+  const minFraction = expected.minSubjectFraction ?? 0.05;
+  const minContrast = expected.minContrast ?? 3;
+  validateFraction(minFraction, "minSubjectFraction");
+  validateByte(minContrast, "minContrast");
+  if (minContrast === 0) throw new RangeError("minContrast must be greater than 0.");
+  const checked = clampRegion(buffer, expected.region);
+  const sampleCount = checked.width * checked.height;
+  let matchingCount = 0;
+  for (let y = checked.y; y < checked.y + checked.height; y += 1) {
+    for (let x = checked.x; x < checked.x + checked.width; x += 1) {
+      const index = (y * buffer.width + x) * 4;
+      // Compare the visible contribution of the subject over the specified
+      // background: fully or almost transparent RGB cannot prove a subject,
+      // and an opacity change with identical RGB is not subject evidence.
+      const opacity = buffer.data[index + 3] / 255;
+      const contrast = Math.max(
+        Math.abs(buffer.data[index] - expected.background.r) * opacity,
+        Math.abs(buffer.data[index + 1] - expected.background.g) * opacity,
+        Math.abs(buffer.data[index + 2] - expected.background.b) * opacity
+      );
+      if (contrast >= minContrast && matchesColor(buffer.data, index, expected.subject)) matchingCount += 1;
+    }
+  }
+  const matchingFraction = matchingCount / sampleCount;
+  const passed = matchingFraction >= minFraction;
+  return { passed, sampleCount, matchingCount, matchingFraction, reason: passed ? undefined : `subject match ${matchingFraction} is below ${minFraction}` };
+}
+
 export function checkExpectedRegion(buffer: PixelBuffer, region: PixelRegion, expected: ExpectedColor): RegionCheckResult {
   validateBuffer(buffer);
+  validateColor(expected);
   const checkedRegion = clampRegion(buffer, region);
   let r = 0;
   let g = 0;

@@ -2,8 +2,9 @@
  * Minimal mutable 3-vector with the same in-place semantics as three.js'
  * `Vector3` subset the original Strange Orbit simulation uses. Kept local so the
  * race module stays framework-free and every expression evaluates in the same
- * order as the source; `tests/unit/strange-orbit-port/vec3.test.ts` checks each
- * method against three 0.185.1.
+ * order as the source; `tests/unit/strange-orbit-port/vec3.test.ts` checks
+ * arithmetic, rotations, and triangle helpers with independent numerical
+ * expectations and geometric properties.
  */
 export class Vec3 {
   constructor(public x = 0, public y = 0, public z = 0) {}

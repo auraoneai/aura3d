@@ -1,7 +1,7 @@
 import { IndexBuffer } from "./IndexBuffer";
-import { type PrimitiveTopology } from "./RenderDevice";
+import { type PrimitiveTopology, type RenderBuffer, type RenderDevice } from "./RenderDevice";
 import { VertexBuffer } from "./VertexBuffer";
-import { VertexFormat } from "./VertexFormat";
+import { VertexFormat, type VertexAttributeSemantic } from "./VertexFormat";
 
 export interface Bounds3 {
   readonly min: readonly [number, number, number];
@@ -21,10 +21,12 @@ export interface GeometryDrawRange {
   readonly count: number;
 }
 
-/** SG-05 (L2): authored morph-target position data carried on a geometry (deltas applied by the morph path). */
+/** Authored packed vec3 deltas carried on a geometry for the morph path. */
 export interface GeometryMorphTarget {
   readonly name?: string;
   readonly positions: Float32Array | readonly number[];
+  readonly normals?: Float32Array | readonly number[];
+  readonly tangents?: Float32Array | readonly number[];
 }
 
 export interface CylinderGeometryOptions {
@@ -87,19 +89,314 @@ export interface WideLineSegment {
 export interface ScreenSpaceLineSegment {
   readonly start: readonly [number, number, number];
   readonly end: readonly [number, number, number];
+  /** Linear RGBA at each endpoint. Missing colors default to opaque white. */
+  readonly startColor?: readonly [number, number, number, number];
+  readonly endColor?: readonly [number, number, number, number];
+  /** Optional explicit arc-length coordinates, e.g. after a world transform. */
+  readonly startDistance?: number;
+  readonly endDistance?: number;
 }
 
 export interface UVSphereGeometryOptions {
   readonly textured?: boolean;
 }
 
+type LinePosition = readonly [number, number, number];
+type LineColor = readonly [number, number, number, number];
+
+const LINE_VERTEX_FORMAT = new VertexFormat([
+  { semantic: "position", components: 3, offset: 0 },
+  { semantic: "color", components: 4, offset: 12 }
+]);
+
+type GeometryBuffer = VertexBuffer | IndexBuffer;
+
+// A geometry owns one retain for each buffer it uses. Direct buffer disposal
+// remains an explicit invalidation of every user; geometry disposal releases
+// only that geometry's retain and disposes on the final release.
+const geometryBufferOwners = new WeakMap<GeometryBuffer, number>();
+const retiringGeometryBuffers = new WeakSet<GeometryBuffer>();
+
+function retainGeometryBuffer(buffer: GeometryBuffer): void {
+  if (retiringGeometryBuffers.has(buffer)) throw new Error("Geometry buffer disposal is in progress");
+  const owners = geometryBufferOwners.get(buffer) ?? 0;
+  if (owners >= Number.MAX_SAFE_INTEGER) throw new RangeError("Geometry buffer owner count exceeded");
+  geometryBufferOwners.set(buffer, owners + 1);
+}
+
+function dropGeometryBufferRetain(buffer: GeometryBuffer): void {
+  const owners = geometryBufferOwners.get(buffer);
+  if (owners === undefined || owners < 1) throw new Error("Geometry buffer ownership is unavailable");
+  if (owners === 1) geometryBufferOwners.delete(buffer);
+  else geometryBufferOwners.set(buffer, owners - 1);
+}
+
+function releaseGeometryBuffer(buffer: GeometryBuffer, disposeWhenUnowned: boolean): void {
+  const owners = geometryBufferOwners.get(buffer);
+  if (owners === undefined || owners < 1) throw new Error("Geometry buffer ownership is unavailable");
+  if (owners !== 1 || !disposeWhenUnowned) {
+    dropGeometryBufferRetain(buffer);
+    return;
+  }
+  if (retiringGeometryBuffers.has(buffer)) throw new Error("Geometry buffer disposal is in progress");
+  retiringGeometryBuffers.add(buffer);
+  try {
+    buffer.dispose();
+    if (!buffer.disposed) throw new Error("Geometry buffer disposal is in progress");
+  } catch (error) {
+    // If a child completed before throwing, its retain must not be retried.
+    if (buffer.disposed) dropGeometryBufferRetain(buffer);
+    throw error;
+  } finally {
+    retiringGeometryBuffers.delete(buffer);
+  }
+  dropGeometryBufferRetain(buffer);
+}
+
+/** Dispose a buffer relinquished by an assignment only when no peer owns it. */
+function disposeUnownedGeometryBuffer(buffer: GeometryBuffer): void {
+  if (geometryBufferOwners.has(buffer)) return;
+  if (retiringGeometryBuffers.has(buffer)) throw new Error("Geometry buffer disposal is in progress");
+  retiringGeometryBuffers.add(buffer);
+  try {
+    buffer.dispose();
+    if (!buffer.disposed) throw new Error("Geometry buffer disposal is in progress");
+  } finally {
+    retiringGeometryBuffers.delete(buffer);
+  }
+}
+
 export class Geometry {
+  public bounds: Bounds3;
+  private primaryVertexBuffer: VertexBuffer | null;
+  private currentIndexBuffer: IndexBuffer | null;
+  private extraVertexBuffers: readonly VertexBuffer[];
+
   constructor(
-    public readonly vertexBuffer: VertexBuffer,
-    public readonly indexBuffer: IndexBuffer | null = null,
+    vertexBuffer: VertexBuffer,
+    indexBuffer: IndexBuffer | null = null,
     public readonly topology: PrimitiveTopology = "triangles",
-    public readonly bounds: Bounds3 = computeBounds(vertexBuffer)
-  ) {}
+    bounds?: Bounds3,
+    additionalVertexBuffers: readonly VertexBuffer[] = []
+  ) {
+    this.primaryVertexBuffer = vertexBuffer;
+    this.currentIndexBuffer = indexBuffer;
+    this.extraVertexBuffers = Object.freeze([...additionalVertexBuffers]);
+    this.validateVertexStreams();
+    // Validate every supplied resource before retaining any of them. In
+    // particular, explicit bounds must not hide an already-disposed stream.
+    for (const buffer of new Set([vertexBuffer, ...this.extraVertexBuffers])) buffer.readBytes(0, 0);
+    indexBuffer?.assertReadable();
+    this.bounds = bounds ?? computeBounds(this.getAttributeBuffer("position"), vertexBuffer.vertexCount);
+    // An overridden reader can synchronously dispose a different stream while
+    // validating. Recheck the underlying built-in resources before retaining.
+    for (const buffer of new Set([vertexBuffer, ...this.extraVertexBuffers])) VertexBuffer.prototype.readBytes.call(buffer, 0, 0);
+    if (indexBuffer) IndexBuffer.prototype.assertReadable.call(indexBuffer);
+    const retained: GeometryBuffer[] = [];
+    try {
+      for (const buffer of new Set([vertexBuffer, ...this.extraVertexBuffers])) {
+        retainGeometryBuffer(buffer);
+        retained.push(buffer);
+      }
+      if (indexBuffer) {
+        retainGeometryBuffer(indexBuffer);
+        retained.push(indexBuffer);
+      }
+    } catch (error) {
+      for (const buffer of retained) releaseGeometryBuffer(buffer, false);
+      throw error;
+    }
+  }
+
+  private closed = false;
+  private disposing = false;
+  private disposalComplete = false;
+  private pendingOwnedDisposals: Set<GeometryBuffer> | null = null;
+  private readonly pendingUnownedDisposals = new Set<GeometryBuffer>();
+  private readonly unownedDisposalsInFlight = new Set<GeometryBuffer>();
+  /** Defined only for geometry created by `screenSpaceLineSegments`. */
+  private screenSpaceLineCount?: number;
+  /** Defined only for geometry created by `lineSegments`. */
+  private lineVertexCount?: number;
+
+  /** True only when all of this geometry's owned cleanup has completed. */
+  get disposed(): boolean {
+    return this.disposalComplete;
+  }
+
+  /** The current primary stream. Assignment transfers this geometry's retain. */
+  get vertexBuffer(): VertexBuffer {
+    this.assertAlive();
+    return this.primaryVertexBuffer!;
+  }
+
+  set vertexBuffer(buffer: VertexBuffer) {
+    this.assertAlive();
+    if (buffer === this.primaryVertexBuffer) return;
+    if (this.extraVertexBuffers.includes(buffer)) throw new Error("Geometry primary buffer cannot also be an additional stream");
+    const previous = this.primaryVertexBuffer!;
+    buffer.readBytes(0, 0);
+    this.assertAlive();
+    if (this.primaryVertexBuffer !== previous) throw new Error("Geometry primary buffer changed during replacement");
+    VertexBuffer.prototype.readBytes.call(buffer, 0, 0);
+    retainGeometryBuffer(buffer);
+    this.primaryVertexBuffer = buffer;
+    // Plain assignment historically left the previous buffer with its caller;
+    // preserve that behavior, including assign-and-restore workflows.
+    releaseGeometryBuffer(previous, false);
+  }
+
+  /** The current index stream. Plain assignment leaves the old buffer live. */
+  get indexBuffer(): IndexBuffer | null {
+    this.assertAlive();
+    return this.currentIndexBuffer;
+  }
+
+  set indexBuffer(buffer: IndexBuffer | null) {
+    this.assertAlive();
+    if (buffer === this.currentIndexBuffer) return;
+    const previous = this.currentIndexBuffer;
+    buffer?.assertReadable();
+    this.assertAlive();
+    if (this.currentIndexBuffer !== previous) throw new Error("Geometry index buffer changed during replacement");
+    if (buffer) IndexBuffer.prototype.assertReadable.call(buffer);
+    if (buffer) retainGeometryBuffer(buffer);
+    this.currentIndexBuffer = buffer;
+    if (previous) releaseGeometryBuffer(previous, false);
+  }
+
+  /** Additional format streams retained until this geometry is disposed. */
+  get additionalVertexBuffers(): readonly VertexBuffer[] {
+    this.assertAlive();
+    return this.extraVertexBuffers;
+  }
+
+  /**
+   * Replace the index stream and retire the old one once no geometry owns it.
+   * Build and validate a replacement before calling this method.
+   */
+  replaceIndexBuffer(buffer: IndexBuffer | null): void {
+    this.assertAlive();
+    const previous = this.currentIndexBuffer;
+    this.indexBuffer = buffer;
+    if (previous && previous !== buffer) this.retireUnownedBuffer(previous);
+  }
+
+  /**
+   * Make the requested primary and index buffers private to this geometry.
+   * Unique buffers are returned unchanged. Shared buffers are copied before
+   * either replacement is published, so a failed allocation or validation
+   * cannot partially apply the caller's subsequent edits. Direct writes to a
+   * buffer without this opt-in remain visible to all geometries sharing it.
+   */
+  ensureWritableBuffers(options: { readonly vertex?: boolean; readonly index?: boolean } = { vertex: true, index: true }): {
+    readonly vertexBuffer: VertexBuffer;
+    readonly indexBuffer: IndexBuffer | null;
+  } {
+    this.assertAlive();
+    if (!options || typeof options !== "object") {
+      throw new TypeError("Geometry writable buffer options must be booleans");
+    }
+    const vertexRequested = options.vertex;
+    const indexRequested = options.index;
+    if ((vertexRequested !== undefined && typeof vertexRequested !== "boolean") ||
+        (indexRequested !== undefined && typeof indexRequested !== "boolean")) {
+      throw new TypeError("Geometry writable buffer options must be booleans");
+    }
+    this.assertAlive();
+    const previousVertex = this.primaryVertexBuffer!;
+    const previousIndex = this.currentIndexBuffer;
+    let vertexCopy: VertexBuffer | undefined;
+    let indexCopy: IndexBuffer | undefined;
+    let vertexInstalled = false;
+    let indexInstalled = false;
+    try {
+      if (vertexRequested) {
+        const shared = (geometryBufferOwners.get(previousVertex) ?? 0) > 1;
+        const bytes = VertexBuffer.prototype.readBytes.call(previousVertex, 0, shared ? previousVertex.byteLength : 0);
+        if (shared) {
+          vertexCopy = new VertexBuffer(previousVertex.format, previousVertex.vertexCount, previousVertex.bufferSlot);
+          VertexBuffer.prototype.writeBytes.call(vertexCopy, 0, bytes);
+        }
+      }
+      if (indexRequested && previousIndex) {
+        IndexBuffer.prototype.assertReadable.call(previousIndex);
+        if ((geometryBufferOwners.get(previousIndex) ?? 0) > 1) {
+          indexCopy = IndexBuffer.prototype.clone.call(previousIndex);
+        }
+      }
+      this.assertAlive();
+      if (this.primaryVertexBuffer !== previousVertex || this.currentIndexBuffer !== previousIndex ||
+          (vertexRequested && !vertexCopy && (geometryBufferOwners.get(previousVertex) ?? 0) > 1) ||
+          (indexRequested && previousIndex && !indexCopy && (geometryBufferOwners.get(previousIndex) ?? 0) > 1)) {
+        throw new Error("Geometry buffer ownership changed during writable preparation");
+      }
+      if (vertexCopy) {
+        this.vertexBuffer = vertexCopy;
+        vertexInstalled = true;
+      }
+      if (indexCopy) {
+        this.indexBuffer = indexCopy;
+        indexInstalled = true;
+      }
+    } catch (error) {
+      const failures: unknown[] = [error];
+      if (!this.closed) {
+        if (indexInstalled && this.currentIndexBuffer === indexCopy) {
+          try { this.indexBuffer = previousIndex; } catch (rollback) { failures.push(rollback); }
+        }
+        if (vertexInstalled && this.primaryVertexBuffer === vertexCopy) {
+          try { this.vertexBuffer = previousVertex; } catch (rollback) { failures.push(rollback); }
+        }
+      }
+      if (indexCopy) {
+        try { this.retireUnownedBuffer(indexCopy); } catch (cleanup) { failures.push(cleanup); }
+      }
+      if (vertexCopy) {
+        try { this.retireUnownedBuffer(vertexCopy); } catch (cleanup) { failures.push(cleanup); }
+      }
+      if (failures.length > 1) throw new AggregateError(failures, "Geometry writable buffer preparation failed");
+      throw error;
+    }
+    return { vertexBuffer: this.primaryVertexBuffer!, indexBuffer: this.currentIndexBuffer };
+  }
+
+  /** Resolve a declared stream by slot; slot 0 always follows the current primary buffer. */
+  getVertexBuffer(slot: number): VertexBuffer {
+    this.assertAlive();
+    const buffer = slot === 0 ? this.vertexBuffer : this.additionalVertexBuffers.find((candidate) => candidate.bufferSlot === slot);
+    if (!buffer) throw new Error(`Geometry has no vertex buffer for slot ${slot}`);
+    if (buffer.bufferSlot !== slot || !sameVertexFormat(buffer.format, this.vertexBuffer.format)) {
+      throw new Error(`Geometry vertex stream ${slot} does not match the primary buffer's format`);
+    }
+    return buffer;
+  }
+
+  /** Locate the stream containing an attribute without assuming an interleaved layout. */
+  getAttributeBuffer(semantic: VertexAttributeSemantic): VertexBuffer {
+    this.assertAlive();
+    return this.getVertexBuffer(this.vertexBuffer.format.getAttribute(semantic).bufferSlot);
+  }
+
+  /** Upload each owned stream into its actual slot, validating record counts first. */
+  uploadVertexBuffers(device: RenderDevice, instanceCount = 1): readonly (RenderBuffer | undefined)[] {
+    this.assertAlive();
+    this.validateVertexStreams(instanceCount);
+    const buffers: (RenderBuffer | undefined)[] = [];
+    for (const stream of this.vertexBuffer.format.streams) {
+      buffers[stream.slot] = this.getVertexBuffer(stream.slot).upload(device);
+    }
+    return buffers;
+  }
+
+  /** Recompute the local bounds after modifying position attributes. */
+  refreshBounds(): Bounds3 {
+    this.assertAlive();
+    const vertexCount = this.screenSpaceLineCount !== undefined ? this.screenSpaceLineCount * 4
+      : this.lineVertexCount ?? this.vertexBuffer.vertexCount;
+    this.bounds = computeBounds(this.getAttributeBuffer("position"), vertexCount);
+    return this.bounds;
+  }
 
   /**
    * SG-05 (threejs-parity L2): three's `geometry.groups` — material-index
@@ -116,9 +413,9 @@ export class Geometry {
   public drawRange?: GeometryDrawRange;
 
   /**
-   * SG-05 (L2): authored morph targets carried with the geometry (three's
-   * `morphAttributes.position` set). Data survives spec round-trips; the
-   * renderer consumes deltas through the morph-target pipeline.
+   * Authored position and optional normal/tangent deltas. Data survives
+   * geometry metadata round-trips; the renderer consumes supported channels
+   * through the morph-target pipeline.
    */
   public morphTargets?: readonly GeometryMorphTarget[];
 
@@ -130,18 +427,40 @@ export class Geometry {
     return new Geometry(vertices, new IndexBuffer([0, 1, 2], 3));
   }
 
-  static lineSegments(positions: readonly (readonly [number, number, number])[]): Geometry {
-    if (positions.length === 0 || positions.length % 2 !== 0) {
-      throw new Error("Line segment geometry requires one or more pairs of positions");
+  static lineSegments(positions: readonly LinePosition[], colors?: readonly LineColor[]): Geometry {
+    validateLineVertices(positions, colors, false);
+    const vertices = new VertexBuffer(LINE_VERTEX_FORMAT, positions.length);
+    writeLineVertices(vertices, positions, colors);
+    const geometry = new Geometry(vertices, null, "lines");
+    geometry.lineVertexCount = positions.length;
+    geometry.drawRange = { start: 0, count: positions.length };
+    return geometry;
+  }
+
+  /** Update retained native line segments, keeping their uploaded buffer within capacity. */
+  updateLineSegments(positions: readonly LinePosition[], colors?: readonly LineColor[]): void {
+    this.assertAlive();
+    if (this.lineVertexCount === undefined) {
+      throw new Error("updateLineSegments requires native line-segment geometry");
     }
-    const vertices = new VertexBuffer(VertexFormat.P3, positions.length);
-    positions.forEach((position, index) => {
-      if (position.length !== 3 || !Number.isFinite(position[0]) || !Number.isFinite(position[1]) || !Number.isFinite(position[2])) {
-        throw new Error(`Line segment position ${index} must be a finite vec3`);
+    validateLineVertices(positions, colors, true);
+    if (positions.length > this.vertexBuffer.vertexCount) {
+      const vertices = new VertexBuffer(LINE_VERTEX_FORMAT, Math.max(positions.length, this.vertexBuffer.vertexCount * 2));
+      try {
+        writeLineVertices(vertices, positions, colors);
+      } catch (error) {
+        vertices.dispose();
+        throw error;
       }
-      vertices.setAttribute(index, "position", position);
-    });
-    return new Geometry(vertices, null, "lines");
+      const oldVertices = this.vertexBuffer;
+      this.vertexBuffer = vertices;
+      this.retireUnownedBuffer(oldVertices);
+    } else {
+      writeLineVertices(this.vertexBuffer, positions, colors);
+    }
+    this.lineVertexCount = positions.length;
+    this.drawRange = { start: 0, count: positions.length };
+    this.refreshBounds();
   }
 
   /**
@@ -161,42 +480,54 @@ export class Geometry {
     if (segments.length === 0) {
       throw new Error("Screen-space line geometry requires at least one segment");
     }
+    const distances = resolveScreenSpaceLineDistances(segments);
     const vertices = new VertexBuffer(VertexFormat.SCREEN_SPACE_LINE, segments.length * 4);
-    const indices: number[] = [];
-    let accumulatedDistance = 0;
+    writeScreenSpaceLineVertices(vertices, segments, distances);
+    const geometry = new Geometry(vertices, createScreenSpaceLineIndices(segments.length), "triangles");
+    geometry.screenSpaceLineCount = segments.length;
+    geometry.drawRange = { start: 0, count: segments.length * 6 };
+    return geometry;
+  }
 
-    segments.forEach((segment, segmentIndex) => {
-      validateScreenSpaceLineSegment(segment, segmentIndex);
-      const start = segment.start;
-      const end = segment.end;
-      const segmentLength = Math.hypot(end[0] - start[0], end[1] - start[1], end[2] - start[2]);
-      const startDistance = accumulatedDistance;
-      const endDistance = accumulatedDistance + segmentLength;
-      accumulatedDistance = endDistance;
-
-      // Four corners: (side, alongSegment). Position is set to the corresponding
-      // endpoint so world-space bounds stay meaningful for culling and framing even
-      // though the shader recomputes placement.
-      //
-      // Order matters: the shader expands along normal = (-dir.y, dir.x), so a
-      // (-1, 0), (+1, 0), (+1, 1), (-1, 1) walk winds clockwise on screen and is
-      // backface-culled. Starting from the +1 side yields counter-clockwise triangles.
-      const corners: readonly (readonly [number, number])[] = [[1, 0], [-1, 0], [-1, 1], [1, 1]];
-      const base = segmentIndex * 4;
-      corners.forEach((corner, cornerIndex) => {
-        const atEnd = corner[1] === 1;
-        const anchor = atEnd ? end : start;
-        const index = base + cornerIndex;
-        vertices.setAttribute(index, "position", [anchor[0], anchor[1], anchor[2]]);
-        vertices.setAttribute(index, "lineStart", [start[0], start[1], start[2]]);
-        vertices.setAttribute(index, "lineEnd", [end[0], end[1], end[2]]);
-        vertices.setAttribute(index, "lineCorner", [corner[0], corner[1]]);
-        vertices.setAttribute(index, "lineDistance", [atEnd ? endDistance : startDistance]);
-      });
-      indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
-    });
-
-    return new Geometry(vertices, new IndexBuffer(indices, segments.length * 4), "triangles");
+  /**
+   * Replace a retained screen-space line's segments. Updates within capacity
+   * reuse both GPU buffers; growth creates new buffers and disposes the old
+   * ones. Empty input hides the line while keeping its capacity for reuse.
+   */
+  updateScreenSpaceLineSegments(segments: readonly ScreenSpaceLineSegment[]): void {
+    this.assertAlive();
+    if (this.screenSpaceLineCount === undefined || this.indexBuffer === null) {
+      throw new Error("updateScreenSpaceLineSegments requires screen-space line geometry");
+    }
+    // Validate the complete update before mutating existing buffers.
+    const distances = resolveScreenSpaceLineDistances(segments);
+    const capacity = this.vertexBuffer.vertexCount / 4;
+    if (segments.length > capacity) {
+      const nextCapacity = Math.max(segments.length, capacity * 2);
+      const vertices = new VertexBuffer(VertexFormat.SCREEN_SPACE_LINE, nextCapacity * 4);
+      let indices: IndexBuffer | undefined;
+      try {
+        indices = createScreenSpaceLineIndices(nextCapacity);
+        writeScreenSpaceLineVertices(vertices, segments, distances);
+      } catch (error) {
+        vertices.dispose();
+        indices?.dispose();
+        throw error;
+      }
+      const oldVertices = this.vertexBuffer;
+      const oldIndices = this.indexBuffer;
+      this.vertexBuffer = vertices;
+      this.indexBuffer = indices!;
+      const errors: unknown[] = [];
+      try { this.retireUnownedBuffer(oldVertices); } catch (error) { errors.push(error); }
+      try { this.retireUnownedBuffer(oldIndices); } catch (error) { errors.push(error); }
+      if (errors.length) throw new AggregateError(errors, "Geometry buffer replacement failed");
+    } else {
+      writeScreenSpaceLineVertices(this.vertexBuffer, segments, distances);
+    }
+    this.screenSpaceLineCount = segments.length;
+    this.drawRange = { start: 0, count: segments.length * 6 };
+    this.refreshBounds();
   }
 
   static wideLineSegments(segments: readonly WideLineSegment[]): Geometry {
@@ -701,14 +1032,211 @@ export class Geometry {
   }
 
   dispose(): void {
-    this.vertexBuffer.dispose();
-    this.indexBuffer?.dispose();
+    if (this.disposalComplete || this.disposing) return;
+    if (!this.closed) {
+      this.closed = true;
+      this.pendingOwnedDisposals = new Set<GeometryBuffer>([this.primaryVertexBuffer!, ...this.extraVertexBuffers]);
+      if (this.currentIndexBuffer) this.pendingOwnedDisposals.add(this.currentIndexBuffer);
+      // Only failed releases need to keep their buffers reachable for retry.
+      this.primaryVertexBuffer = null;
+      this.currentIndexBuffer = null;
+      this.extraVertexBuffers = [];
+    }
+    // Mark this geometry dead before releasing: cleanup can invoke user or
+    // device callbacks, and peers must retain their own buffers throughout.
+    this.disposing = true;
+    const errors: unknown[] = [];
+    try {
+      for (const buffer of [...this.pendingOwnedDisposals!]) {
+        try {
+          releaseGeometryBuffer(buffer, true);
+          this.pendingOwnedDisposals!.delete(buffer);
+        } catch (error) {
+          if (!geometryBufferOwners.has(buffer)) this.pendingOwnedDisposals!.delete(buffer);
+          errors.push(error);
+        }
+      }
+      for (const buffer of [...this.pendingUnownedDisposals]) {
+        try { this.retireUnownedBuffer(buffer); } catch (error) { errors.push(error); }
+      }
+    } finally {
+      this.disposing = false;
+      this.finishDisposal();
+    }
+    if (errors.length) throw new AggregateError(errors, "Geometry disposal failed");
+  }
+
+  private retireUnownedBuffer(buffer: GeometryBuffer): void {
+    if (geometryBufferOwners.has(buffer)) {
+      this.pendingUnownedDisposals.delete(buffer);
+      this.finishDisposal();
+      return;
+    }
+    this.pendingUnownedDisposals.add(buffer);
+    if (this.closed) this.disposalComplete = false;
+    if (this.unownedDisposalsInFlight.has(buffer)) throw new Error("Geometry buffer disposal is in progress");
+    this.unownedDisposalsInFlight.add(buffer);
+    try {
+      disposeUnownedGeometryBuffer(buffer);
+      this.pendingUnownedDisposals.delete(buffer);
+    } catch (error) {
+      // A peer may have acquired an overridden buffer before it was closed.
+      if (buffer.disposed || geometryBufferOwners.has(buffer)) this.pendingUnownedDisposals.delete(buffer);
+      throw error;
+    } finally {
+      this.unownedDisposalsInFlight.delete(buffer);
+      this.finishDisposal();
+    }
+  }
+
+  private finishDisposal(): void {
+    if (this.closed && !this.disposing && this.pendingOwnedDisposals?.size === 0 &&
+        this.pendingUnownedDisposals.size === 0 && this.unownedDisposalsInFlight.size === 0) {
+      this.disposalComplete = true;
+    }
+  }
+
+  private validateVertexStreams(instanceCount = 1): void {
+    if (!Number.isSafeInteger(instanceCount) || instanceCount <= 0) {
+      throw new RangeError("Geometry instance count must be a positive integer");
+    }
+    const format = this.vertexBuffer.format;
+    if (this.vertexBuffer.bufferSlot !== 0 || format.streams.find((stream) => stream.slot === 0)?.stepMode !== "vertex") {
+      throw new Error("Geometry primary vertex buffer must contain vertex stream slot 0");
+    }
+    const supplied = new Map<number, VertexBuffer>([[0, this.vertexBuffer]]);
+    for (const buffer of this.additionalVertexBuffers) {
+      if (!Number.isSafeInteger(buffer.bufferSlot) || buffer.bufferSlot < 1 || buffer.bufferSlot >= 0xffffffff || supplied.has(buffer.bufferSlot)) {
+        throw new Error(`Geometry vertex buffer slot must be unique and representable: ${buffer.bufferSlot}`);
+      }
+      if (!sameVertexFormat(buffer.format, format)) throw new Error(`Geometry vertex stream ${buffer.bufferSlot} must match the primary buffer's format`);
+      supplied.set(buffer.bufferSlot, buffer);
+    }
+    for (const stream of format.streams) {
+      const buffer = supplied.get(stream.slot);
+      if (!buffer) throw new Error(`Geometry has no vertex buffer for slot ${stream.slot}`);
+      const required = stream.stepMode === "instance" ? Math.ceil(instanceCount / stream.divisor) : this.vertexBuffer.vertexCount;
+      if (buffer.vertexCount < required) {
+        throw new RangeError(`Geometry vertex stream ${stream.slot} requires ${required} records, got ${buffer.vertexCount}`);
+      }
+    }
+    if (supplied.size !== format.streams.length) throw new Error("Geometry has a vertex buffer for an undeclared stream");
+    if (format.hasAttribute("position")) {
+      const positionSlot = format.getAttribute("position").bufferSlot;
+      if (format.streams.find((stream) => stream.slot === positionSlot)?.stepMode !== "vertex") {
+        throw new Error("Geometry position attribute must use a vertex stream");
+      }
+    }
+  }
+
+  private assertAlive(): void {
+    if (this.closed) throw new Error("Geometry is disposed");
   }
 }
 
+/** Equivalent separately created formats are interchangeable for a stream. */
+function sameVertexFormat(a: VertexFormat, b: VertexFormat): boolean {
+  if (a === b) return true;
+  if (a.attributes.length !== b.attributes.length || a.streams.length !== b.streams.length) return false;
+  return a.streams.every((stream) => {
+    const other = b.streams.find((candidate) => candidate.slot === stream.slot);
+    return other !== undefined && stream.stride === other.stride && stream.stepMode === other.stepMode && stream.divisor === other.divisor;
+  }) && a.attributes.every((attribute) => {
+    const other = b.attributes.find((candidate) => candidate.semantic === attribute.semantic);
+    return other !== undefined && attribute.components === other.components && attribute.offset === other.offset
+      && attribute.type === other.type && attribute.normalized === other.normalized && attribute.integer === other.integer
+      && attribute.bufferSlot === other.bufferSlot && attribute.shaderLocation === other.shaderLocation && attribute.shaderName === other.shaderName;
+  });
+}
+
+type LineDistanceRange = readonly [number, number];
+
+function validateLineVertices(positions: readonly LinePosition[], colors: readonly LineColor[] | undefined, allowEmpty: boolean): void {
+  if ((!allowEmpty && positions.length === 0) || positions.length % 2 !== 0) {
+    throw new Error("Line segment geometry requires one or more pairs of positions");
+  }
+  if (colors !== undefined && colors.length !== positions.length) {
+    throw new Error("Line segment colors must match the number of positions");
+  }
+  Array.from(positions).forEach((position, index) => {
+    if (!position || position.length !== 3 || [...position].some((value) => !isFiniteFloat32(value))) {
+      throw new Error(`Line segment position ${index} must be a finite vec3`);
+    }
+    const color = colors?.[index];
+    if (colors !== undefined && (!color || color.length !== 4 || [...color].some((value) => !isFiniteFloat32(value)))) {
+      throw new Error(`Line segment color ${index} must be a finite vec4`);
+    }
+  });
+}
+
+function writeLineVertices(vertices: VertexBuffer, positions: readonly LinePosition[], colors: readonly LineColor[] | undefined): void {
+  const white = [1, 1, 1, 1] as const;
+  positions.forEach((position, index) => {
+    vertices.setAttribute(index, "position", position);
+    vertices.setAttribute(index, "color", colors?.[index] ?? white);
+  });
+}
+
+function createScreenSpaceLineIndices(segmentCapacity: number): IndexBuffer {
+  const indices: number[] = [];
+  for (let i = 0; i < segmentCapacity; i += 1) {
+    const base = i * 4;
+    indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  return new IndexBuffer(indices, segmentCapacity * 4);
+}
+
+function resolveScreenSpaceLineDistances(segments: readonly ScreenSpaceLineSegment[]): readonly LineDistanceRange[] {
+  let distance = 0;
+  return Array.from(segments, (segment, index) => {
+    validateScreenSpaceLineSegment(segment, index);
+    const start = segment.startDistance ?? distance;
+    const end = segment.endDistance ?? start + Math.hypot(
+      segment.end[0] - segment.start[0],
+      segment.end[1] - segment.start[1],
+      segment.end[2] - segment.start[2]
+    );
+    if (!isFiniteFloat32(start) || !isFiniteFloat32(end) || end < start) {
+      throw new Error(`Screen-space line segment ${index} distances must be finite and nondecreasing`);
+    }
+    distance = end;
+    return [start, end] as const;
+  });
+}
+
+function writeScreenSpaceLineVertices(
+  vertices: VertexBuffer,
+  segments: readonly ScreenSpaceLineSegment[],
+  distances: readonly LineDistanceRange[]
+): void {
+  const white = [1, 1, 1, 1] as const;
+  // The +1 side first yields counter-clockwise triangles after expansion.
+  const corners: readonly (readonly [number, number])[] = [[1, 0], [-1, 0], [-1, 1], [1, 1]];
+  segments.forEach((segment, segmentIndex) => {
+    const [startDistance, endDistance] = distances[segmentIndex]!;
+    const startColor = segment.startColor ?? white;
+    const endColor = segment.endColor ?? white;
+    corners.forEach((corner, cornerIndex) => {
+      const atEnd = corner[1] === 1;
+      const index = segmentIndex * 4 + cornerIndex;
+      vertices.setAttribute(index, "position", atEnd ? segment.end : segment.start);
+      vertices.setAttribute(index, "lineStart", segment.start);
+      vertices.setAttribute(index, "lineEnd", segment.end);
+      vertices.setAttribute(index, "lineCorner", corner);
+      vertices.setAttribute(index, "lineDistance", [atEnd ? endDistance : startDistance]);
+      vertices.setAttribute(index, "color", atEnd ? endColor : startColor);
+      vertices.setAttribute(index, "custom:lineOtherColor", atEnd ? startColor : endColor);
+      vertices.setAttribute(index, "custom:lineOtherDistance", [atEnd ? startDistance : endDistance]);
+    });
+  });
+}
+
 function validateScreenSpaceLineSegment(segment: ScreenSpaceLineSegment, index: number): void {
+  if (!segment || !segment.start || !segment.end) {
+    throw new Error(`Screen-space line segment ${index} requires start and end points`);
+  }
   for (const [label, point] of [["start", segment.start], ["end", segment.end]] as const) {
-    if (point.length !== 3 || point.some((component) => !Number.isFinite(component))) {
+    if (point.length !== 3 || [...point].some((component) => !isFiniteFloat32(component))) {
       throw new Error(`Screen-space line segment ${index} ${label} must contain three finite components`);
     }
   }
@@ -719,9 +1247,24 @@ function validateScreenSpaceLineSegment(segment: ScreenSpaceLineSegment, index: 
   );
   // A zero-length segment has no direction, so the shader cannot derive a perpendicular
   // to expand along and would emit a degenerate quad.
-  if (length <= 1e-6) {
+  if (!Number.isFinite(length) || length <= 1e-6) {
     throw new Error(`Screen-space line segment ${index} must have non-zero length`);
   }
+  if (segment.start.every((value, axis) => Math.fround(value) === Math.fround(segment.end[axis]!))) {
+    throw new Error(`Screen-space line segment ${index} must have non-zero length after float32 conversion`);
+  }
+  for (const [label, color] of [["startColor", segment.startColor], ["endColor", segment.endColor]] as const) {
+    if (color !== undefined && (!color || color.length !== 4 || [...color].some((component) => !isFiniteFloat32(component)))) {
+      throw new Error(`Screen-space line segment ${index} ${label} must contain four finite components`);
+    }
+  }
+  if ((segment.startDistance === undefined) !== (segment.endDistance === undefined)) {
+    throw new Error(`Screen-space line segment ${index} must provide both startDistance and endDistance`);
+  }
+}
+
+function isFiniteFloat32(value: number): boolean {
+  return Number.isFinite(value) && Number.isFinite(Math.fround(value));
 }
 
 function validateWideLineSegment(segment: WideLineSegment, index: number): void {
@@ -743,14 +1286,18 @@ function validateWideLineSegment(segment: WideLineSegment, index: number): void 
   }
 }
 
-export function computeBounds(vertexBuffer: VertexBuffer): Bounds3 {
+export function computeBounds(vertexBuffer: VertexBuffer, vertexCount = vertexBuffer.vertexCount): Bounds3 {
   if (!vertexBuffer.format.hasAttribute("position")) {
     throw new Error("Cannot compute geometry bounds without position attribute");
   }
+  if (!Number.isInteger(vertexCount) || vertexCount < 0 || vertexCount > vertexBuffer.vertexCount) {
+    throw new RangeError("Bounds vertex count must be within the vertex buffer");
+  }
+  if (vertexCount === 0) return { min: [0, 0, 0], max: [0, 0, 0] };
   const min: [number, number, number] = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
   const max: [number, number, number] = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
-  for (let i = 0; i < vertexBuffer.vertexCount; i += 1) {
-    const [x = 0, y = 0, z = 0] = vertexBuffer.getAttribute(i, "position");
+  for (let i = 0; i < vertexCount; i += 1) {
+    const [x = 0, y = 0, z = 0] = vertexBuffer.getDecodedAttribute(i, "position");
     min[0] = Math.min(min[0], x);
     min[1] = Math.min(min[1], y);
     min[2] = Math.min(min[2], z);

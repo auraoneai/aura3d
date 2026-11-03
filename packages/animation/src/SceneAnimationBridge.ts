@@ -14,12 +14,19 @@ export type SceneAnimationNode = PropertyBindingNode & {
   position?: [number, number, number];
   rotation?: [number, number, number, number];
   scale?: [number, number, number];
+  pivot?: [number, number, number];
   weights?: number[];
+  /** Native scene nodes may hold the transform separately from the node. */
+  transform?: {
+    readonly pivot: readonly [number, number, number];
+    setPivot(x: number, y: number, z: number): unknown;
+  };
   /** Opt-in per SA-05: when true, morph weight writes are not clamped to [0, 1]. */
   unclampedMorphWeights?: boolean;
   setPosition?: (value: readonly [number, number, number]) => void;
   setRotation?: (value: readonly [number, number, number, number]) => void;
   setScale?: (value: readonly [number, number, number]) => void;
+  setPivot?: (x: number, y: number, z: number) => unknown;
   setWeights?: (value: readonly number[]) => void;
 };
 
@@ -67,9 +74,11 @@ export class SceneAnimationBridge {
       writeQuatOrElement(node, propertyIndex, value);
     } else if (property === "scale") {
       writeVec3OrElement(node, "scale", "setScale", propertyIndex, value);
+    } else if (property === "pivot") {
+      writePivot(node, propertyIndex, value);
     } else if (property === "weights" || property === "morphTargetInfluences") {
       writeWeights(node, value, propertyIndex);
-    } else if (property in node) {
+    } else if (hasSceneProperty(node, property)) {
       // Generic property path (three binds any existing property).
       if (propertyIndex !== undefined) {
         writeArrayElement(node, property, componentIndex(propertyIndex), value);
@@ -119,6 +128,28 @@ export class SceneAnimationBridge {
   }
 }
 
+function writePivot(node: SceneAnimationNode, propertyIndex: string | undefined, value: AnimationValue): void {
+  let pivot: [number, number, number];
+  if (propertyIndex === undefined) {
+    if (!Array.isArray(value) || value.length !== 3 || !value.every((part) => typeof part === "number" && Number.isFinite(part))) {
+      throw new Error("pivot animation value must be a finite vec3.");
+    }
+    pivot = [value[0]!, value[1]!, value[2]!];
+  } else {
+    const index = componentIndex(propertyIndex);
+    if (index < 0 || index > 2) throw new Error(`Invalid index "${propertyIndex}" for scene animation property pivot.`);
+    const current = node.pivot ?? node.transform?.pivot;
+    if (!current || current.length !== 3) throw new Error(`Scene animation property pivot on node ${node.name ?? "root"} is not available.`);
+    const scalar = Array.isArray(value) ? value[0] : value;
+    if (typeof scalar !== "number" || !Number.isFinite(scalar)) throw new Error(`pivot[${index}] animation value must be a finite number.`);
+    pivot = [current[0], current[1], current[2]];
+    pivot[index] = scalar;
+  }
+  if (node.setPivot) node.setPivot(...pivot);
+  else if (node.transform) node.transform.setPivot(...pivot);
+  else node.pivot = pivot;
+}
+
 function writeWeights(node: SceneAnimationNode, value: AnimationValue, propertyIndex?: string): void {
   if (propertyIndex !== undefined) {
     // Single morph influence element (`morphTargetInfluences[0]` or `[name]`).
@@ -163,7 +194,7 @@ function morphDictionarySize(node: SceneAnimationNode): number {
 
 function resolveMorphIndex(node: SceneAnimationNode, propertyIndex: string): number {
   const dictionary = typeof node.morphTargetDictionary === "function" ? node.morphTargetDictionary() : node.morphTargetDictionary;
-  if (dictionary && dictionary[propertyIndex] !== undefined) {
+  if (dictionary && Object.hasOwn(dictionary, propertyIndex) && dictionary[propertyIndex] !== undefined) {
     return dictionary[propertyIndex]!;
   }
   const index = Number(propertyIndex);
@@ -184,11 +215,25 @@ function requireScalarWeight(value: AnimationValue): number {
 const COMPONENT_INDEX: Record<string, number> = { x: 0, y: 1, z: 2, w: 3 };
 
 function componentIndex(propertyIndex: string): number {
-  if (propertyIndex in COMPONENT_INDEX) {
+  if (Object.hasOwn(COMPONENT_INDEX, propertyIndex)) {
     return COMPONENT_INDEX[propertyIndex]!;
   }
   const index = Number(propertyIndex);
   return Number.isInteger(index) ? index : -1;
+}
+
+function hasSceneProperty(node: SceneAnimationNode, property: string): boolean {
+  if (Object.hasOwn(node, property)) return true;
+  let prototype = Object.getPrototypeOf(node) as object | null;
+  while (prototype && prototype !== Object.prototype) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
+    if (descriptor) {
+      const constructor = Object.getOwnPropertyDescriptor(prototype, "constructor")?.value as { prototype?: unknown } | undefined;
+      return !!(descriptor.get || descriptor.set) && typeof constructor === "function" && constructor.prototype === prototype;
+    }
+    prototype = Object.getPrototypeOf(prototype) as object | null;
+  }
+  return false;
 }
 
 function writeVec3OrElement(node: SceneAnimationNode, property: "position" | "scale", setter: "setPosition" | "setScale", propertyIndex: string | undefined, value: AnimationValue): void {

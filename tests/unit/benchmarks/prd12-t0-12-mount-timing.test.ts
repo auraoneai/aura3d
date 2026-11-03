@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const root = join(__dirname, "../../..");
-const createAuraApp = readFileSync(join(root, "packages/engine/src/agent-api/app/createAuraApp.ts"), "utf8");
+const createAuraApp = readFileSync(join(root, "packages/engine/src/agent-api/app/createAuraAppCore.ts"), "utf8");
 const frameLoop = readFileSync(join(root, "packages/engine/src/agent-api/app/frameLoop.ts"), "utf8");
 const compilerRenderer = readFileSync(join(root, "packages/engine/src/agent-api/compiler/renderer.ts"), "utf8");
 const platform = readFileSync(join(root, "packages/engine/src/agent-api/platform.ts"), "utf8");

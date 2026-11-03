@@ -12,7 +12,11 @@ import type { QrFlags } from "../contracts/core";
 import type { ProgramFeatures, ShaderFeature, ShaderFeatureSelectInput, ShaderHookPoint } from "../contracts/program";
 import { shaderChunk, shaderFeaturesFor } from "../contracts/program";
 import type { RenderItem } from "../contracts/renderItem";
+import type { FrameContributorContext } from "../contracts/frameGraph";
 import type { UniformValue } from "../RenderDevice";
+import { isActiveCombinedDrawCarrier } from "../batching/CombinedDrawCarrier";
+import { isOriginalBatchedDrawFeature } from "../batching/shaders/ParityBatchDraw";
+export { makeShaderFeatureReplayGuard } from "./ShaderFeatureReplayGuard";
 
 /** Hooks whose chunks are global-scope declarations (mirrors ProgramGenerator). */
 export const DECLARATION_HOOKS: ReadonlySet<ShaderHookPoint> = new Set<ShaderHookPoint>(["vertex:pars", "vertex:deform", "fragment:pars"]);
@@ -78,9 +82,19 @@ function generatorReady(feature: ShaderFeature): boolean {
 export function selectShaderFeatureBits(input: ShaderFeatureSelectInput): Record<string, string | number | boolean> {
   const bits: Record<string, string | number | boolean> = {};
   for (const feature of shaderFeaturesFor(input.flags)) {
+    const combined = input.pass === "forward" && isActiveCombinedDrawCarrier(input.item);
+    // The parity and PRD11 chunks both respond to a public marker. A private
+    // combined carrier selects exactly the authenticated parity provider.
+    if (combined && feature.id === "prd11.drawId") continue;
     if (!generatorReady(feature)) continue;
     const value = feature.select(input);
-    if (value !== undefined) bits[feature.id] = value;
+    if (value !== undefined) {
+      // Public markers and warmup use the uniform-index variant. Only the
+      // private scoped carrier may select the original combined shader.
+      bits[feature.id] = input.pass === "forward" && value === "multi-draw"
+        && (feature.id === "prd11.drawId" || feature.id === "parity.batchDraw")
+        && !(combined && isOriginalBatchedDrawFeature(feature)) ? "loop" : value;
+    }
   }
   return bits;
 }
@@ -90,10 +104,11 @@ export function bindShaderFeatureUniforms(
   features: ProgramFeatures["features"],
   flags: QrFlags,
   item: RenderItem,
-  set: (name: string, value: UniformValue) => void
+  set: (name: string, value: UniformValue) => void,
+  frame?: FrameContributorContext
 ): void {
   for (const feature of shaderFeaturesFor(flags)) {
     const value = features[feature.id];
-    if (value !== undefined) feature.bindUniforms?.(value, item, set);
+    if (value !== undefined) feature.bindUniforms?.(value, item, set, frame);
   }
 }

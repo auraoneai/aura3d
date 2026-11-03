@@ -95,67 +95,58 @@ fn atlasSample(index: u32, uv0: vec2<f32>, uv1: vec2<f32>) -> vec4<f32> {
   }
   return total/taps;
 }
-/* Spectral thin-film evaluation adapted from three.js iridescence_fragment (MIT).
-The MIT License
-
-Copyright © 2010-2026 three.js authors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-// Belcour/Barla Fourier-domain CIE XYZ sensitivity, converted to linear Rec.709.
-// Three monochromatic wavelength samples are not RGB tristimulus reflectance.
-fn atlasFilmSensitivity(opd: f32, shift: vec3<f32>) -> vec3<f32> {
-  let phase=2.0*3.14159265359*opd*1.0e-9;
-  let variance=vec3<f32>(4.3278e9,9.3046e9,6.6121e9);
-  var xyz=vec3<f32>(5.4856e-13,4.4201e-13,5.2481e-13)*sqrt(2.0*3.14159265359*variance)
-    *cos(vec3<f32>(1.6810e6,1.7953e6,2.2084e6)*phase+shift)*exp(-phase*phase*variance);
-  xyz.x=xyz.x+9.7470e-14*sqrt(2.0*3.14159265359*4.5282e9)*cos(2.2399e6*phase+shift.x)*exp(-4.5282e9*phase*phase);
-  xyz=xyz/1.0685e-7;
-  return mat3x3<f32>(vec3<f32>(3.2404542,-0.9692660,0.0556434),vec3<f32>(-1.5371385,1.8760108,-0.2040259),vec3<f32>(-0.4985314,0.0415560,1.0572252))*xyz;
+// Thin-film interference from Airy's two-interface formula. Integrate 41
+// visible wavelengths (380–780 nm, 10 nm spacing) against the analytic CIE
+// 1931 matching-function fits of Wyman, Sloan & Shirley (JCGT 2013), then
+// normalize equal-energy white and convert XYZ to linear Rec.709. Substrate
+// RGB F0 is treated as three effective dielectric indices; this approximation
+// does not model complex-valued conductor indices.
+fn atlasCieXyz(wavelength: f32) -> vec3<f32> {
+  let tx1=(wavelength-442.0)*select(0.0374,0.0624,wavelength<442.0);
+  let tx2=(wavelength-599.8)*select(0.0323,0.0264,wavelength<599.8);
+  let tx3=(wavelength-501.1)*select(0.0382,0.0490,wavelength<501.1);
+  let ty1=(wavelength-568.8)*select(0.0247,0.0213,wavelength<568.8);
+  let ty2=(wavelength-530.9)*select(0.0322,0.0613,wavelength<530.9);
+  let tz1=(wavelength-437.0)*select(0.0278,0.0845,wavelength<437.0);
+  let tz2=(wavelength-459.0)*select(0.0725,0.0385,wavelength<459.0);
+  return vec3<f32>(
+    0.362*exp(-0.5*tx1*tx1)+1.056*exp(-0.5*tx2*tx2)-0.065*exp(-0.5*tx3*tx3),
+    0.821*exp(-0.5*ty1*ty1)+0.286*exp(-0.5*ty2*ty2),
+    1.217*exp(-0.5*tz1*tz1)+0.681*exp(-0.5*tz2*tz2));
 }
 fn atlasThinFilm(substrateF0: vec3<f32>, filmIor: f32, thickness: f32, cosine: f32) -> vec3<f32> {
   let c1=clamp(cosine,0.0001,1.0);
   if (thickness<=0.0) { return fresnelSchlick(c1,substrateF0); }
-  let n2=mix(1.0,filmIor,smoothstep(0.0,0.03,thickness));
-  let c2Squared=1.0-(1.0-c1*c1)/(n2*n2);
-  if (c2Squared<0.0) { return vec3<f32>(1.0); }
+  let n2=max(filmIor,0.0001);
+  let sin1Squared=max(1.0-c1*c1,0.0);
+  let c2Squared=1.0-sin1Squared/(n2*n2);
+  if (c2Squared<=0.0) { return vec3<f32>(1.0); }
   let c2=sqrt(c2Squared);
-  let f12=(n2-1.0)/(n2+1.0);
-  let r12=fresnelSchlick(c1,vec3<f32>(f12*f12)).x;
-  let t121=1.0-r12;
-  let rootF0=sqrt(clamp(substrateF0,vec3<f32>(0.0),vec3<f32>(0.9999)));
-  let n3=(vec3<f32>(1.0)+rootF0)/(vec3<f32>(1.0)-rootF0);
-  let f23=(n3-vec3<f32>(n2))/(n3+vec3<f32>(n2));
-  let r23=fresnelSchlick(c2,f23*f23);
-  let phi21=select(3.14159265359,0.0,n2<1.0);
-  let phi=vec3<f32>(phi21)+select(vec3<f32>(0.0),vec3<f32>(3.14159265359),n3<vec3<f32>(n2));
-  let opd=2.0*n2*thickness*c2;
-  let r123=clamp(r12*r23,vec3<f32>(0.00001),vec3<f32>(0.9999));
-  let amplitude=sqrt(r123);
-  let rs=t121*t121*r23/(vec3<f32>(1.0)-r123);
-  var reflectance=vec3<f32>(r12)+rs;
-  var coefficient=rs-vec3<f32>(t121);
-  for (var order=1;order<=2;order=order+1) {
-    coefficient=coefficient*amplitude;
-    reflectance=reflectance+coefficient*2.0*atlasFilmSensitivity(f32(order)*opd,f32(order)*phi);
+  let root=sqrt(clamp(substrateF0,vec3<f32>(0.0),vec3<f32>(0.9999)));
+  let n3=(vec3<f32>(1.0)+root)/(vec3<f32>(1.0)-root);
+  let c3=sqrt(max(vec3<f32>(1.0)-vec3<f32>(sin1Squared)/(n3*n3),vec3<f32>(0.0)));
+  let r12s=(c1-n2*c2)/(c1+n2*c2);
+  let r12p=(n2*c1-c2)/(n2*c1+c2);
+  let r23s=(vec3<f32>(n2*c2)-n3*c3)/(vec3<f32>(n2*c2)+n3*c3);
+  let r23p=(n3*c2-vec3<f32>(n2)*c3)/(n3*c2+vec3<f32>(n2)*c3);
+  let xyzToRgb=mat3x3<f32>(vec3<f32>(3.2404542,-0.9692660,0.0556434),vec3<f32>(-1.5371385,1.8760108,-0.2040259),vec3<f32>(-0.4985314,0.0415560,1.0572252));
+  var total=vec3<f32>(0.0);
+  var normalization=vec3<f32>(0.0);
+  for (var i=0;i<=40;i=i+1) {
+    let wavelength=380.0+10.0*f32(i);
+    let phase=4.0*3.14159265359*n2*thickness*c2/wavelength;
+    let interference=cos(phase);
+    let productS=r12s*r23s;
+    let productP=r12p*r23p;
+    let reflectedS=(vec3<f32>(r12s*r12s)+r23s*r23s+2.0*productS*interference)
+      /max(vec3<f32>(1.0)+productS*productS+2.0*productS*interference,vec3<f32>(1e-6));
+    let reflectedP=(vec3<f32>(r12p*r12p)+r23p*r23p+2.0*productP*interference)
+      /max(vec3<f32>(1.0)+productP*productP+2.0*productP*interference,vec3<f32>(1e-6));
+    let weight=xyzToRgb*atlasCieXyz(wavelength);
+    total=total+weight*0.5*(reflectedS+reflectedP);
+    normalization=normalization+weight;
   }
-  return max(reflectance,vec3<f32>(0.0));
+  return clamp(total/max(normalization,vec3<f32>(1e-6)),vec3<f32>(0.0),vec3<f32>(1.0));
 }
 
 // KHR_materials_iridescence: a missing thickness map samples 1.0, and

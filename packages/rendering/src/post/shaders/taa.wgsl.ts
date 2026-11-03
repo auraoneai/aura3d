@@ -1,27 +1,27 @@
 /**
- * PRD-03 §8.6 Phase 7 — S5 TAA resolve WGSL twins: closest-depth-3×3
- * reprojection, 5-tap Catmull-Rom history fetch, YCoCg `μ ± γσ` clip
- * (γ motion-dependent), 0.1·z disocclusion test, motion/reactive feedback,
- * Karis-weighted HDR resolve. `TAA_UPSCALE_WGSL` is the §8.6 TAAU 9-tap
- * Blackman-Harris reconstruct.
+ * Native-GPU temporal resolve. Inputs may use render resolution while history
+ * and output use display resolution. `jitter_uv` uses WebGPU texture (top-left)
+ * coordinates. See taa.glsl.ts for the identical motion/depth contract.
  */
-
 export const TAA_RESOLVE_WGSL = /* wgsl */ `struct TaaResolveParams {
   has_reactive: i32,
   has_history: i32,
   feedback_min: f32,
   feedback_max: f32,
   variance_gamma: f32,
-  _pad: vec3<f32>,
+  has_expected_depth: i32,
+  jitter_uv: vec2<f32>,
+  previous_jitter_uv: vec2<f32>,
+  depth_near: f32,
+  _pad: f32,
 };
 
 @group(0) @binding(0) var<uniform> u_params: TaaResolveParams;
-@group(0) @binding(1) var u_current_tex: texture_2d<f32>;         // jittered HDR current frame
-@group(0) @binding(2) var u_history_tex: texture_2d<f32>;         // last resolved frame
-@group(0) @binding(3) var u_velocity_dilate_tex: texture_2d<f32>; // vec4(vx, vy, linZCurr, _)
-@group(0) @binding(4) var u_lin_z_prev_tex: texture_2d<f32>;      // last frame's linear depth (.r)
-@group(0) @binding(5) var u_lin_z_prev_smp: sampler;
-@group(0) @binding(6) var u_reactive_tex: texture_2d<f32>;        // C-14 reactive mask (or 1×1 zero)
+@group(0) @binding(1) var u_current_tex: texture_2d<f32>;
+@group(0) @binding(2) var u_history_tex: texture_2d<f32>;
+@group(0) @binding(3) var u_velocity_dilate_tex: texture_2d<f32>;
+@group(0) @binding(4) var u_lin_z_prev_tex: texture_2d<f32>;
+@group(0) @binding(6) var u_reactive_tex: texture_2d<f32>;
 @group(0) @binding(7) var u_reactive_smp: sampler;
 
 fn cubic_weights(f: f32) -> vec4<f32> {
@@ -31,7 +31,6 @@ fn cubic_weights(f: f32) -> vec4<f32> {
                    0.5 * f + 2.0 * f2 - 1.5 * f3, -0.5 * f2 + 0.5 * f3);
 }
 
-// §8.6: Catmull-Rom history fetch (ported from the legacy accumulation path).
 fn history_at(uv: vec2<f32>) -> vec4<f32> {
   let size = vec2<i32>(textureDimensions(u_history_tex));
   let position = uv * vec2<f32>(size) - vec2<f32>(0.5);
@@ -48,6 +47,18 @@ fn history_at(uv: vec2<f32>) -> vec4<f32> {
   return result;
 }
 
+fn current_at(uv: vec2<f32>) -> vec4<f32> {
+  let size = vec2<i32>(textureDimensions(u_current_tex));
+  let p = uv * vec2<f32>(size) - vec2<f32>(0.5);
+  let base = vec2<i32>(floor(p));
+  let f = fract(p);
+  let a = textureLoad(u_current_tex, clamp(base, vec2<i32>(0), size - vec2<i32>(1)), 0);
+  let b = textureLoad(u_current_tex, clamp(base + vec2<i32>(1, 0), vec2<i32>(0), size - vec2<i32>(1)), 0);
+  let c = textureLoad(u_current_tex, clamp(base + vec2<i32>(0, 1), vec2<i32>(0), size - vec2<i32>(1)), 0);
+  let d = textureLoad(u_current_tex, clamp(base + vec2<i32>(1, 1), vec2<i32>(0), size - vec2<i32>(1)), 0);
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
 fn rgb_to_ycocg(c: vec3<f32>) -> vec3<f32> {
   return vec3<f32>(c.r * 0.25 + c.g * 0.5 + c.b * 0.25,
                    c.r * 0.5 - c.b * 0.5,
@@ -57,28 +68,32 @@ fn ycocg_to_rgb(c: vec3<f32>) -> vec3<f32> {
   return vec3<f32>(c.x + c.y - c.z, c.x + c.z, c.x - c.y - c.z);
 }
 fn taa_luma(c: vec3<f32>) -> f32 { return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)); }
+fn valid_depth(z: f32) -> bool { return z >= u_params.depth_near && z < 3.0e38; }
 
 @fragment
 fn fs_taa_resolve(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
   let pixel = vec2<i32>(frag_coord.xy);
-  let size = vec2<i32>(textureDimensions(u_current_tex));
-  let uv = (vec2<f32>(pixel) + vec2<f32>(0.5)) / vec2<f32>(size);
-
-  let vel_tex = textureLoad(u_velocity_dilate_tex, pixel, 0);
+  let output_size = vec2<i32>(textureDimensions(u_history_tex));
+  let current_size = vec2<i32>(textureDimensions(u_current_tex));
+  let uv = (vec2<f32>(pixel) + vec2<f32>(0.5)) / vec2<f32>(output_size);
+  let current_uv = uv + u_params.jitter_uv;
+  let current_pixel = clamp(vec2<i32>(floor(current_uv * vec2<f32>(current_size))), vec2<i32>(0), current_size - vec2<i32>(1));
+  let velocity_size = vec2<i32>(textureDimensions(u_velocity_dilate_tex));
+  let velocity_pixel = clamp(vec2<i32>(floor(current_uv * vec2<f32>(velocity_size))), vec2<i32>(0), velocity_size - vec2<i32>(1));
+  let vel_tex = textureLoad(u_velocity_dilate_tex, velocity_pixel, 0);
   let velocity = vel_tex.rg;
   let uv_prev = uv - velocity;
+  let current = current_at(current_uv);
+  if (u_params.has_history == 0 || any(velocity != velocity) || any(abs(velocity) > vec2<f32>(2.0))) { return current; }
 
-  // Current pixel + Karis-weighted 3×3 neighborhood stats in YCoCg.
-  let current = textureLoad(u_current_tex, pixel, 0).rgb;
   var mu = vec3<f32>(0.0);
   var m2 = vec3<f32>(0.0);
   var wsum = 0.0;
   for (var y = -1; y <= 1; y = y + 1) {
     for (var x = -1; x <= 1; x = x + 1) {
       let tap = textureLoad(u_current_tex,
-        clamp(pixel + vec2<i32>(x, y), vec2<i32>(0), size - vec2<i32>(1)), 0).rgb;
-      // Karis weight tames HDR fireflies inside the clip box.
-      let w = 1.0 / (1.0 + taa_luma(tap));
+        clamp(current_pixel + vec2<i32>(x, y), vec2<i32>(0), current_size - vec2<i32>(1)), 0).rgb;
+      let w = 1.0 / (1.0 + max(taa_luma(tap), 0.0));
       let yc = rgb_to_ycocg(tap);
       mu = mu + yc * w;
       m2 = m2 + yc * yc * w;
@@ -87,63 +102,47 @@ fn fs_taa_resolve(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4
   }
   mu = mu / wsum;
   let sigma = sqrt(max(m2 / wsum - mu * mu, vec3<f32>(0.0)));
-
-  if (u_params.has_history == 0) {
-    return vec4<f32>(current, 1.0);
+  let motion_px = length(velocity * vec2<f32>(output_size));
+  var history = history_at(uv_prev);
+  if (motion_px < 1e-3) {
+    history = textureLoad(u_history_tex, clamp(pixel, vec2<i32>(0), output_size - vec2<i32>(1)), 0);
   }
-
-  // Static texel: direct read (GLSL twin — no per-frame resample drift).
-  let hist_size = vec2<i32>(textureDimensions(u_history_tex));
-  let history = select(history_at(uv_prev).rgb,
-    textureLoad(u_history_tex, clamp(pixel, vec2<i32>(0), hist_size - vec2<i32>(1)), 0).rgb,
-    length(velocity * vec2<f32>(size)) < 1e-3);
-  var history_yc = rgb_to_ycocg(history);
-
-  // Motion-scaled variance: fast pixels trust the box more (γ→0.5).
-  let motion_px = length(velocity * vec2<f32>(size));
   let motion_factor = clamp(motion_px / 2.0, 0.0, 1.0);
-  let gamma = mix(0.5, u_params.variance_gamma, (1.0 - motion_factor) * (1.0 - motion_factor));
-  let lo = mu - gamma * sigma;
-  let hi = mu + gamma * sigma;
-  history_yc = clamp(history_yc, lo, hi);
-  let history_rgb = ycocg_to_rgb(history_yc);
+  let gamma = mix(0.5, max(u_params.variance_gamma, 0.0), (1.0 - motion_factor) * (1.0 - motion_factor));
+  let history_rgb = ycocg_to_rgb(clamp(rgb_to_ycocg(history.rgb), mu - gamma * sigma, mu + gamma * sigma));
 
-  // Disocclusion: |prevLinZ − expectedZ| > 0.1·z → drop history.
   let out_of_bounds = any(uv_prev < vec2<f32>(0.0)) || any(uv_prev >= vec2<f32>(1.0));
-  let z_curr = vel_tex.b;
-  // 3×3 previous-depth range around the reprojected texel (GLSL twin):
-  // sub-pixel jitter moving thin geometry on/off a texel is coverage, not
-  // disocclusion, and must not drop history.
-  let z_size = vec2<i32>(textureDimensions(u_lin_z_prev_tex, 0));
-  let prev_pixel = vec2<i32>(clamp(uv_prev, vec2<f32>(0.0), vec2<f32>(1.0)) * vec2<f32>(z_size));
-  // Centre tap through the bound sampler (keeps binding 5 live for an
-  // 'auto' pipeline layout), then the 3×3 texel range.
-  let z_prev_centre = textureSampleLevel(u_lin_z_prev_tex, u_lin_z_prev_smp,
-    clamp(uv_prev, vec2<f32>(0.0), vec2<f32>(1.0)), 0.0).r;
-  var z_prev_min = z_prev_centre;
-  var z_prev_max = z_prev_centre;
-  for (var zy = -1; zy <= 1; zy = zy + 1) {
-    for (var zx = -1; zx <= 1; zx = zx + 1) {
-      let z_tap = textureLoad(u_lin_z_prev_tex, clamp(prev_pixel + vec2<i32>(zx, zy), vec2<i32>(0), z_size - vec2<i32>(1)), 0).r;
-      z_prev_min = min(z_prev_min, z_tap);
-      z_prev_max = max(z_prev_max, z_tap);
+  let expected_z = select(vel_tex.b, vel_tex.a, u_params.has_expected_depth != 0);
+  let z_size = vec2<i32>(textureDimensions(u_lin_z_prev_tex));
+  let previous_depth_uv = uv_prev + u_params.previous_jitter_uv;
+  let depth_out_of_bounds = any(previous_depth_uv < vec2<f32>(0.0)) || any(previous_depth_uv >= vec2<f32>(1.0));
+  let prev_pixel = vec2<i32>(floor(previous_depth_uv * vec2<f32>(z_size)));
+  // Linear depth is loaded without filtering; rgba32float may be unfilterable.
+  var nearest_error = 3.0e38;
+  for (var y = -1; y <= 1; y = y + 1) {
+    for (var x = -1; x <= 1; x = x + 1) {
+      let z = textureLoad(u_lin_z_prev_tex,
+        clamp(prev_pixel + vec2<i32>(x, y), vec2<i32>(0), z_size - vec2<i32>(1)), 0).r;
+      if (valid_depth(z)) { nearest_error = min(nearest_error, abs(z - expected_z)); }
     }
   }
-  let disoccluded = z_curr < z_prev_min - 0.1 * z_curr || z_curr > z_prev_max + 0.1 * z_curr;
-
-  // Reactive mask (C-14) overrides accumulation; absent the attachment, a
-  // luminance delta between current and reprojected history is the proxy.
-  var reactive = textureSampleLevel(u_reactive_tex, u_reactive_smp, uv, 0.0).r;
+  let disoccluded = depth_out_of_bounds || !valid_depth(expected_z) || nearest_error > max(0.001, 0.1 * max(expected_z - u_params.depth_near, 0.0));
+  let reactive_size = vec2<i32>(textureDimensions(u_reactive_tex));
+  let reactive_pixel = clamp(vec2<i32>(floor(current_uv * vec2<f32>(reactive_size))), vec2<i32>(0), reactive_size - vec2<i32>(1));
+  var reactive = textureSampleLevel(u_reactive_tex, u_reactive_smp,
+    (vec2<f32>(reactive_pixel) + vec2<f32>(0.5)) / vec2<f32>(reactive_size), 0.0).r;
   if (u_params.has_reactive == 0) {
-    reactive = select(0.0, 1.0, abs(taa_luma(current) - taa_luma(history_rgb)) > 0.5);
+    reactive = select(0.0, 1.0, abs(taa_luma(current.rgb) - taa_luma(history.rgb)) > 0.5);
   }
-
-  var feedback = mix(u_params.feedback_min, u_params.feedback_max, 1.0 - clamp(motion_px / 2.0, 0.0, 1.0));
-  feedback = mix(feedback, 0.5, clamp(reactive, 0.0, 1.0));
+  let current_tagged = current.a > 1.0;
+  let history_tagged = history.a > 1.0;
+  var coverage_change = clamp(abs(current.a - history.a) * 4.0, 0.0, 1.0);
+  if (current_tagged && history_tagged) { coverage_change = 0.0; }
+  if (current_tagged != history_tagged) { coverage_change = 1.0; }
+  reactive = max(clamp(reactive, 0.0, 1.0), coverage_change);
+  var feedback = mix(u_params.feedback_min, u_params.feedback_max, 1.0 - motion_factor) * (1.0 - reactive);
   if (out_of_bounds || disoccluded) { feedback = 0.0; }
-
-  let resolved = mix(current, history_rgb, feedback);
-  return vec4<f32>(max(resolved, vec3<f32>(0.0)), 1.0);
+  return vec4<f32>(mix(current.rgb, history_rgb, clamp(feedback, 0.0, 1.0)), current.a);
 }
 `;
 
@@ -170,17 +169,17 @@ fn fs_taa_upscale(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4
   let src_pos = (frag_coord.xy / u_params.output_size) * u_params.render_size - vec2<f32>(0.5);
   let base = vec2<i32>(floor(src_pos));
   let f = src_pos - vec2<f32>(base);
-  var sum = vec3<f32>(0.0);
+  var sum = vec4<f32>(0.0);
   var wsum = 0.0;
   let r_size = vec2<i32>(u_params.render_size);
   for (var y = -1; y <= 1; y = y + 1) {
     for (var x = -1; x <= 1; x = x + 1) {
       let w = blackman_harris(f32(x) - f.x) * blackman_harris(f32(y) - f.y);
       sum = sum + textureLoad(u_resolved_tex,
-        clamp(base + vec2<i32>(x, y), vec2<i32>(0), r_size - vec2<i32>(1)), 0).rgb * w;
+        clamp(base + vec2<i32>(x, y), vec2<i32>(0), r_size - vec2<i32>(1)), 0) * w;
       wsum = wsum + w;
     }
   }
-  return vec4<f32>(sum / max(wsum, 1e-6), 1.0);
+  return sum / max(wsum, 1e-6);
 }
 `;

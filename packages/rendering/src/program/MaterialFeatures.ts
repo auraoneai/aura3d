@@ -27,6 +27,30 @@ import type { MaterialFeatureContext } from "../contracts/materialLobes";
 import { isTextureBinding } from "../TextureBinding";
 
 type FeatureRecord = Omit<ProgramFeatures, "lights" | "shadows" | "environment" | "fog" | "pass" | "target" | "backgroundCoverage">;
+export const PHYSICAL_GEOMETRY_TANGENT_FEATURE = "prd04.geometryTangent";
+
+/** Select masking from the effective per-draw parameter, including an
+ * instance override. Blend remains a separate mode; an authored mask stays a
+ * mask even when its live cutoff is zero. */
+export function withLiveAlphaCutoff<T extends Partial<ProgramFeatures>>(features: T, material: Pick<Material, "getParameter">): T {
+  if (features.alphaMode === "blend" || features.alphaMode === "mask") return features;
+  const cutoff = material.getParameter("u_alphaCutoff");
+  return typeof cutoff === "number" && cutoff > 0 ? { ...features, alphaMode: "mask" } : features;
+}
+
+/** Map switches understood by the built-in physical lobes. This module stays
+ * independent of the program registry so Material can import it safely. */
+export const PHYSICAL_LOBE_MAP_BITS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  clearcoat: { clearcoat: "map", clearcoatRoughness: "roughnessMap", clearcoatNormal: "normalMap" },
+  sheen: { sheenColor: "colorMap", sheenRoughness: "roughnessMap" },
+  iridescence: { iridescence: "map", iridescenceThickness: "thicknessMap" },
+  anisotropy: { anisotropy: "map" },
+  transmission: { transmission: "map" },
+  "diffuse-transmission": { diffuseTransmission: "map", diffuseTransmissionColor: "colorMap" },
+  KHR_materials_diffuse_transmission: { diffuseTransmission: "map", diffuseTransmissionColor: "colorMap" },
+  volume: { volumeThickness: "thicknessMap" },
+  specular: { specular: "specularMap", specularColor: "specularColorMap" }
+};
 
 // Lit iff the shader key names a PBR or skinned-lit program ("unlit" must not match).
 const LIT_SHADER_MARKERS = /pbr|skinned-lit/i;
@@ -37,7 +61,9 @@ const MAP_PARAMS: readonly [string, keyof ProgramFeatures["maps"]][] = [
   ["u_normalTexture", "normal"],
   ["u_metallicRoughnessTexture", "metallicRoughness"],
   ["u_occlusionTexture", "occlusion"],
-  ["u_emissiveTexture", "emissive"]
+  ["u_emissiveTexture", "emissive"],
+  ["u_diffuseRoughnessTexture", "diffuseRoughness"],
+  ["u_bumpTexture", "bump"]
 ];
 
 /** Extension factor parameter → glTF extension id (C-03). */
@@ -159,13 +185,13 @@ export function geometryHasSkin(has: GeometryAttributeTest): boolean {
 }
 
 /**
- * #867 (games): the program's feature set follows the geometry, as in
- * three.js. A primitive or procedural mesh with no `a_uv` cannot sample
+ * #867 (games): the program's feature set follows the geometry. A primitive
+ * or procedural mesh with no `a_uv` cannot sample
  * uv-set-0 maps (they and the extension lobe maps are dropped); no `a_uv1`
  * drops uv-set-1 maps; no `a_color` drops vertex colors; no joints/weights
  * drops skinning segments from `prd06.deform` (morph is texture-driven and
- * untouched). Normal maps need only uv: the generated program never reads `a_tangent`
- * (derivative TBN when the geometry has none). Returns `record` itself when
+ * untouched). Normal maps use authored tangents when present and a derivative
+ * frame when they are absent. Returns `record` itself when
  * nothing is dropped, so program keys stay stable for complete geometry.
  */
 export function featuresForGeometry<T extends FeatureRecord>(record: T, has: GeometryAttributeTest): T {
@@ -179,13 +205,17 @@ export function featuresForGeometry<T extends FeatureRecord>(record: T, has: Geo
     if ((feature.uvSet === 1 ? uv1 : uv0)) maps[slot] = feature;
     else changed = true;
   }
-  const extensions = uv0
-    ? record.extensions
-    : record.extensions.map((ext) => {
-        if (ext.maps.length === 0) return ext;
-        changed = true;
-        return { ...ext, maps: [] };
-      });
+  const extensions = record.extensions.map((ext) => {
+    const retained = ext.maps.filter((slot) => ext.mapUvSets?.[slot] === 1 ? uv1 : uv0);
+    if (retained.length === ext.maps.length) return ext;
+    changed = true;
+    const bits = { ...ext.bits };
+    for (const [slot, bit] of Object.entries(PHYSICAL_LOBE_MAP_BITS[ext.lobe] ?? {})) {
+      if (!retained.includes(slot)) bits[bit] = false;
+    }
+    const mapUvSets = Object.fromEntries(retained.map((slot) => [slot, ext.mapUvSets?.[slot] ?? 0])) as Record<string, 0 | 1>;
+    return { ...ext, maps: retained, mapUvSets, bits };
+  });
   const vertexColors = record.vertexColors && has("a_color");
   if (vertexColors !== record.vertexColors) changed = true;
   const extraSkin = skin && has("a_joints1") && has("a_weights1");
@@ -196,6 +226,14 @@ export function featuresForGeometry<T extends FeatureRecord>(record: T, has: Geo
     : undefined;
   if (skinning !== record.skinning) changed = true;
   let features = record.features;
+  const tangentRequired = features["prd04.tangentFrame"] !== undefined && features["prd04.tangentFrame"] !== false;
+  const tangentPresent = tangentRequired && has("a_tangent");
+  if ((features[PHYSICAL_GEOMETRY_TANGENT_FEATURE] === true) !== tangentPresent) {
+    features = { ...features };
+    if (tangentPresent) (features as Record<string, string | number | boolean>)[PHYSICAL_GEOMETRY_TANGENT_FEATURE] = true;
+    else delete (features as Record<string, string | number | boolean>)[PHYSICAL_GEOMETRY_TANGENT_FEATURE];
+    changed = true;
+  }
   const deform = features["prd06.deform"];
   if (deform !== undefined) {
     // Selection may combine skinning and texture-driven morphs. Dropping the
@@ -231,11 +269,12 @@ export function materialUsesGeneratedProgram(material: Material): boolean {
 export function materialRoutesToGeneratedProgram(
   material: Material,
   route: { readonly core: boolean; readonly lobes: boolean },
-  ctx: MaterialFeatureContext
+  ctx: MaterialFeatureContext,
+  liveExtensions?: readonly MaterialExtensionFeature[]
 ): boolean {
   if (!materialUsesGeneratedProgram(material)) return false;
   if (route.core) return true;
-  return route.lobes && material.programFeatures(ctx).extensions.length > 0;
+  return route.lobes && (liveExtensions ?? material.programFeatures(ctx).extensions).length > 0;
 }
 
 /**

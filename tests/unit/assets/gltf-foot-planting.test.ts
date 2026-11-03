@@ -49,6 +49,45 @@ function worldAnkle(scene: Scene, name: string, matrix: Mat4): [number, number, 
 const LEFT = { side: "left" as const, hip: "LHip", knee: "LKnee", ankle: "LAnkle" };
 
 describe("GLTFSceneAnimationRuntime foot planting", () => {
+  it("fails closed across actors and selects duplicate-named leg nodes by index within an actor", () => {
+    const scene = new Scene();
+    const actors = [0, 1].map((actor) => {
+      const container = scene.createNode(`actor-${actor}`);
+      container.userData.gltfSceneContainer = true;
+      const joints = [4, 9, 12].map((index, slot) => {
+        const node = scene.createNode("joint");
+        node.userData.gltfNodeIndex = index;
+        node.transform.setPosition(0, slot === 0 ? 0.69 : -0.33, slot === 1 ? 0.02 : slot === 2 ? -0.02 : 0);
+        return node;
+      });
+      joints[0]!.addChild(joints[1]!);
+      joints[1]!.addChild(joints[2]!);
+      container.addChild(joints[0]!);
+      scene.root.addChild(container);
+      return { container, joints };
+    });
+    const asset = { meshes: [], skins: [] };
+    const leg = { side: "left" as const, hip: "joint", knee: "joint", ankle: "joint", hipIndex: 4, kneeIndex: 9, ankleIndex: 12 };
+    const ground = createHeightFieldGround(() => ({ height: 0 }));
+    const ambiguous = createGLTFSceneAnimationRuntime({ scene, clips: [], asset, footPlanting: { legs: [leg], ground } });
+    expect(ambiguous.applyPose({ bones: {} }).footPlanting?.missingLegNodes).toEqual([
+      "left:hip:joint", "left:knee:joint", "left:ankle:joint"
+    ]);
+    ambiguous.dispose();
+    const runtime = createGLTFSceneAnimationRuntime({
+      scene, clips: [], asset, actorRoot: actors[1]!.container, footPlanting: { legs: [leg], ground }
+    });
+    try {
+      const result = runtime.applyPose({ bones: {} });
+      expect(result.footPlanting?.missingLegNodes).toEqual([]);
+      expect(result.footPlanting?.groundedFeet).toBe(1);
+      expect(actors[0]!.joints[0]!.transform.rotation).toEqual([0, 0, 0, 1]);
+      expect(actors[0]!.joints[1]!.transform.rotation).toEqual([0, 0, 0, 1]);
+    } finally {
+      runtime.dispose();
+    }
+  });
+
   it("locks a stance foot onto flat ground", () => {
     const scene = buildLegScene(0.69, "L");
     expect(ankleWorldY(scene, "LAnkle")).toBeCloseTo(0.03, 6);

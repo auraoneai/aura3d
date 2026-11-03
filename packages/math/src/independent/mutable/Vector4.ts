@@ -1,0 +1,228 @@
+import { Vector4 as ImmutableVector4 } from "../../Vector4.js";
+
+/** A four-component value accepted by mutable vector operations. */
+export interface Vector4Like {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly w: number;
+}
+
+/** A source of four-component vertex attributes. */
+export interface BufferAttributeLikeW {
+  getX(index: number): number;
+  getY(index: number): number;
+  getZ(index: number): number;
+  getW(index: number): number;
+}
+
+interface ElementsLike {
+  readonly elements: ArrayLike<number>;
+}
+
+/** A mutable four-dimensional vector. Matrices use column-major elements. */
+export class Vector4 {
+  readonly isVector4 = true;
+
+  constructor(public x = 0, public y = 0, public z = 0, public w = 1) {}
+
+  get width(): number { return this.z; }
+  set width(value: number) { this.z = value; }
+  get height(): number { return this.w; }
+  set height(value: number) { this.w = value; }
+
+  fromImmutable(v: Vector4Like): this { return this.copy(v); }
+  toImmutable(): ImmutableVector4 { return new ImmutableVector4(this.x, this.y, this.z, this.w); }
+
+  set(x: number, y: number, z: number, w: number): this {
+    this.x = x; this.y = y; this.z = z; this.w = w;
+    return this;
+  }
+
+  setScalar(scalar: number): this { return this.set(scalar, scalar, scalar, scalar); }
+  setX(x: number): this { this.x = x; return this; }
+  setY(y: number): this { this.y = y; return this; }
+  setZ(z: number): this { this.z = z; return this; }
+  setW(w: number): this { this.w = w; return this; }
+
+  setComponent(index: number, value: number): this {
+    switch (index) {
+      case 0: this.x = value; break;
+      case 1: this.y = value; break;
+      case 2: this.z = value; break;
+      case 3: this.w = value; break;
+      default: throw new RangeError(`Vector4 component index ${index} is outside 0..3`);
+    }
+    return this;
+  }
+
+  getComponent(index: number): number {
+    switch (index) {
+      case 0: return this.x;
+      case 1: return this.y;
+      case 2: return this.z;
+      case 3: return this.w;
+      default: throw new RangeError(`Vector4 component index ${index} is outside 0..3`);
+    }
+  }
+
+  clone(): this {
+    const Constructor = this.constructor as new (x: number, y: number, z: number, w: number) => this;
+    return new Constructor(this.x, this.y, this.z, this.w);
+  }
+
+  copy(v: { readonly x: number; readonly y: number; readonly z: number; readonly w?: number }): this {
+    return this.set(v.x, v.y, v.z, v.w === undefined ? 1 : v.w);
+  }
+
+  add(v: Vector4Like): this { return this.set(this.x + v.x, this.y + v.y, this.z + v.z, this.w + v.w); }
+  addScalar(s: number): this { return this.set(this.x + s, this.y + s, this.z + s, this.w + s); }
+  addVectors(a: Vector4Like, b: Vector4Like): this { return this.set(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
+  addScaledVector(v: Vector4Like, s: number): this {
+    return this.set(this.x + v.x * s, this.y + v.y * s, this.z + v.z * s, this.w + v.w * s);
+  }
+  sub(v: Vector4Like): this { return this.set(this.x - v.x, this.y - v.y, this.z - v.z, this.w - v.w); }
+  subScalar(s: number): this { return this.set(this.x - s, this.y - s, this.z - s, this.w - s); }
+  subVectors(a: Vector4Like, b: Vector4Like): this { return this.set(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w); }
+  multiply(v: Vector4Like): this { return this.set(this.x * v.x, this.y * v.y, this.z * v.z, this.w * v.w); }
+  multiplyScalar(scalar: number): this { return this.set(this.x * scalar, this.y * scalar, this.z * scalar, this.w * scalar); }
+
+  applyMatrix4(m: ElementsLike): this {
+    const e = m.elements;
+    const { x, y, z, w } = this;
+    return this.set(
+      e[0] * x + e[4] * y + e[8] * z + e[12] * w,
+      e[1] * x + e[5] * y + e[9] * z + e[13] * w,
+      e[2] * x + e[6] * y + e[10] * z + e[14] * w,
+      e[3] * x + e[7] * y + e[11] * z + e[15] * w
+    );
+  }
+
+  divide(v: Vector4Like): this { return this.set(this.x / v.x, this.y / v.y, this.z / v.z, this.w / v.w); }
+  divideScalar(scalar: number): this {
+    return this.set(this.x / scalar, this.y / scalar, this.z / scalar, this.w / scalar);
+  }
+
+  /** Derive an axis and angle in radians from a nonzero quaternion. */
+  setAxisAngleFromQuaternion(q: Vector4Like): this {
+    const scale = Math.max(Math.abs(q.x), Math.abs(q.y), Math.abs(q.z));
+    if (scale === 0) return this.set(1, 0, 0, q.w < 0 ? 2 * Math.PI : 0);
+    const x = q.x / scale, y = q.y / scale, z = q.z / scale;
+    const length = Math.hypot(x, y, z);
+    return this.set(x / length, y / length, z / length, 2 * Math.atan2(length, q.w / scale));
+  }
+
+  /** Extract a unit rotation axis and angle in [0, pi] from a rotation matrix. */
+  setAxisAngleFromRotationMatrix(m: ElementsLike): this {
+    const e = m.elements;
+    const m00 = e[0], m01 = e[4], m02 = e[8];
+    const m10 = e[1], m11 = e[5], m12 = e[9];
+    const m20 = e[2], m21 = e[6], m22 = e[10];
+    const cosine = Math.max(-1, Math.min(1, (m00 + m11 + m22 - 1) / 2));
+    const sx = m21 - m12, sy = m02 - m20, sz = m10 - m01;
+    const sineMagnitude = Math.hypot(sx, sy, sz) / 2;
+    const angle = Math.atan2(sineMagnitude, cosine);
+
+    if (angle < 1e-12) return this.set(1, 0, 0, 0);
+    if (Math.PI - angle > 1e-5) {
+      const inverse = 1 / (2 * sineMagnitude);
+      return this.set(sx * inverse, sy * inverse, sz * inverse, angle);
+    }
+
+    // At a half turn the antisymmetric part vanishes. Recover the largest
+    // axis component from the diagonal and the other two from symmetry.
+    const denominator = 1 - cosine;
+    const xx = Math.max(0, (m00 - cosine) / denominator);
+    const yy = Math.max(0, (m11 - cosine) / denominator);
+    const zz = Math.max(0, (m22 - cosine) / denominator);
+    let x: number, y: number, z: number;
+    if (xx >= yy && xx >= zz) {
+      x = Math.sqrt(xx);
+      y = (m01 + m10) / (2 * denominator * x);
+      z = (m02 + m20) / (2 * denominator * x);
+    } else if (yy >= zz) {
+      y = Math.sqrt(yy);
+      x = (m01 + m10) / (2 * denominator * y);
+      z = (m12 + m21) / (2 * denominator * y);
+    } else {
+      z = Math.sqrt(zz);
+      x = (m02 + m20) / (2 * denominator * z);
+      y = (m12 + m21) / (2 * denominator * z);
+    }
+    const norm = Math.hypot(x, y, z);
+    if (norm === 0) return this.set(1, 0, 0, angle);
+    const sign = x * sx + y * sy + z * sz < 0 ? -1 : 1;
+    return this.set(sign * x / norm, sign * y / norm, sign * z / norm, angle);
+  }
+
+  setFromMatrixPosition(m: ElementsLike): this {
+    const e = m.elements;
+    return this.set(e[12], e[13], e[14], e[15]);
+  }
+
+  min(v: Vector4Like): this { return this.set(Math.min(this.x, v.x), Math.min(this.y, v.y), Math.min(this.z, v.z), Math.min(this.w, v.w)); }
+  max(v: Vector4Like): this { return this.set(Math.max(this.x, v.x), Math.max(this.y, v.y), Math.max(this.z, v.z), Math.max(this.w, v.w)); }
+  clamp(min: Vector4Like, max: Vector4Like): this {
+    return this.set(
+      Math.max(min.x, Math.min(max.x, this.x)), Math.max(min.y, Math.min(max.y, this.y)),
+      Math.max(min.z, Math.min(max.z, this.z)), Math.max(min.w, Math.min(max.w, this.w))
+    );
+  }
+  clampScalar(minVal: number, maxVal: number): this {
+    return this.set(
+      Math.max(minVal, Math.min(maxVal, this.x)), Math.max(minVal, Math.min(maxVal, this.y)),
+      Math.max(minVal, Math.min(maxVal, this.z)), Math.max(minVal, Math.min(maxVal, this.w))
+    );
+  }
+  clampLength(min: number, max: number): this {
+    const length = this.length();
+    const target = Math.max(min, Math.min(max, length));
+    if (length === 0 || target === length) return this;
+    return this.normalize().multiplyScalar(target);
+  }
+  floor(): this { return this.set(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w)); }
+  ceil(): this { return this.set(Math.ceil(this.x), Math.ceil(this.y), Math.ceil(this.z), Math.ceil(this.w)); }
+  round(): this { return this.set(Math.round(this.x), Math.round(this.y), Math.round(this.z), Math.round(this.w)); }
+  roundToZero(): this { return this.set(Math.trunc(this.x), Math.trunc(this.y), Math.trunc(this.z), Math.trunc(this.w)); }
+  negate(): this { return this.set(-this.x, -this.y, -this.z, -this.w); }
+  dot(v: Vector4Like): number { return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w; }
+  lengthSq(): number { return this.dot(this); }
+  length(): number { return Math.hypot(this.x, this.y, this.z, this.w); }
+  manhattanLength(): number { return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z) + Math.abs(this.w); }
+  normalize(): this {
+    const scale = Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z), Math.abs(this.w));
+    if (scale === 0) return this;
+    if (!Number.isFinite(scale)) return this.divideScalar(scale);
+    const x = this.x / scale, y = this.y / scale, z = this.z / scale, w = this.w / scale;
+    const length = Math.hypot(x, y, z, w);
+    return this.set(x / length, y / length, z / length, w / length);
+  }
+  setLength(length: number): this { return this.normalize().multiplyScalar(length); }
+  lerp(v: Vector4Like, alpha: number): this {
+    return this.set(
+      this.x + (v.x - this.x) * alpha, this.y + (v.y - this.y) * alpha,
+      this.z + (v.z - this.z) * alpha, this.w + (v.w - this.w) * alpha
+    );
+  }
+  lerpVectors(v1: Vector4Like, v2: Vector4Like, alpha: number): this {
+    return this.set(
+      v1.x + (v2.x - v1.x) * alpha, v1.y + (v2.y - v1.y) * alpha,
+      v1.z + (v2.z - v1.z) * alpha, v1.w + (v2.w - v1.w) * alpha
+    );
+  }
+  equals(v: Vector4Like): boolean { return this.x === v.x && this.y === v.y && this.z === v.z && this.w === v.w; }
+  fromArray(array: ArrayLike<number>, offset = 0): this {
+    return this.set(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+  }
+  toArray(array: number[] = [], offset = 0): number[] {
+    array[offset] = this.x; array[offset + 1] = this.y; array[offset + 2] = this.z; array[offset + 3] = this.w;
+    return array;
+  }
+  fromBufferAttribute(attribute: BufferAttributeLikeW, index: number): this {
+    return this.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index), attribute.getW(index));
+  }
+  random(): this { return this.set(Math.random(), Math.random(), Math.random(), Math.random()); }
+  *[Symbol.iterator](): Generator<number, void, undefined> {
+    yield this.x; yield this.y; yield this.z; yield this.w;
+  }
+}

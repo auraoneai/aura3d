@@ -1,39 +1,30 @@
-// PRD-04 §9.1 transmission capture contributor (P4-1). The contributor owns one
-// lane resource: a mipmapped scene-colour copy that generated programs sample
-// for KHR_materials_transmission/volume refraction.
-//
-// Behaviour (all behind A3D_QR_MATERIALS_TRANSMISSION on the registry):
-//   - `passes("transmission", ctx)` returns one copy pass when any
-//     `ctx.items` entry's material reports the transmission lobe; `[]`
-//     otherwise (including on the Low tier — no target is allocated).
-//   - Reads the produced colour resource (`aura.scene.color.opaque` on the v2
-//     path, `color` on the legacy path — T0-18(c)), writes
-//     `prd04.transmission.color` (lane-named, so no RenderGraph write
-//     conflict) and publishes the target on the blackboard under
-//     `prd04.transmissionTarget`.
-//   - Format: RGBA16F when `device.probe?.halfFloatColorBuffer`, else RGBA8
-//     with issue `transmission-ldr-capture` (C-28). No readback: the copy is a
-//     GPU-side fullscreen draw sourcing the `prd01.forwardTarget` RenderTarget
-//     published on the blackboard.
-//   - Scale: 0.5 on Medium, 1 on High/Ultra, none on Low (C-27 tier).
-//
-// Back-to-front transmissive ordering is the integrated-pass order (C-01 real);
-// against the stub the contributor still captures and publishes — the lane
-// scenes prove ordering standalone.
-
+/**
+ * Renderer-owned opaque-color capture for physical transmission.
+ *
+ * A frame copies its own linear scene target before transmissive draws, then
+ * generates the complete mip chain. Only the successfully submitted result is
+ * published to that frame's blackboard. Resources are retained per device,
+ * renderer scope and view, and are retired on resize, view removal or loss.
+ */
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass.js";
-import {
-  type FrameContributor,
-  type FrameContributorContext
-} from "../contracts/frameGraph.js";
-import type { RenderItem } from "../contracts/renderItem.js";
+import { type FrameContributor, type FrameContributorContext, registerFrameContributor } from "../contracts/frameGraph.js";
 import { QUALITY_TIERS, type AuraQualityTier, type AuraQualityTierSettings } from "../contracts/quality.js";
-import type { RenderBuffer, RenderDevice, RenderShaderProgram, RenderTarget, UniformValue } from "../RenderDevice.js";
-import { registerFrameContributor } from "../contracts/frameGraph.js";
+import { RenderDeviceError, type DrawCommand, type RenderBuffer, type RenderDevice, type RenderShaderProgram, type RenderTarget, type UniformValue } from "../RenderDevice.js";
 import { TextureBinding } from "../TextureBinding.js";
-import { MaterialInstance } from "../MaterialInstance.js";
 import { TransmissionRenderTarget } from "../TransmissionRenderTarget.js";
-import { setCapturedTransmissionTarget } from "./transmissionTargetStore.js";
+import {
+  TRANSMISSION_BLACKBOARD_KEY,
+  clearCapturedTransmissionTarget,
+  itemReportsTransmissionLobe,
+  markTrustedTransmissionCapturePass,
+  publishCapturedTransmissionTarget,
+  registerTransmissionLifecycle,
+  revokeTransmissionCapture,
+  setPrd04TransmissionDiagnostics,
+  validTransmissionFrameIdentity,
+  type Prd04TransmissionDiagnostics,
+  type CapturedTransmissionTarget
+} from "./transmissionTargetStore.js";
 import { PRD01_FORWARD_TARGET } from "../renderer/FrameGraph.js";
 import { qrCoreOutputOn } from "../renderer/qrSubFlags.js";
 import {
@@ -41,12 +32,16 @@ import {
   TRANSMISSION_COPY_MARKER,
   TRANSMISSION_COPY_VERTEX
 } from "../shaders/physical/transmission_copy.glsl.js";
+import {
+  TRANSMISSION_COPY_WGSL_FRAGMENT,
+  TRANSMISSION_COPY_WGSL_VERTEX
+} from "../shaders/physical/transmission_copy.wgsl.js";
 
+export { TRANSMISSION_BLACKBOARD_KEY };
+export { itemReportsTransmissionLobe, prd04TransmissionDiagnostics, type Prd04TransmissionDiagnostics } from "./transmissionTargetStore.js";
 export const TRANSMISSION_PHASE = "transmission" as const;
-export const TRANSMISSION_BLACKBOARD_KEY = "prd04.transmissionTarget";
 export const TRANSMISSION_LANE_RESOURCE = "prd04.transmission.color";
 
-/** Scale of the capture relative to the frame buffer, per C-27 tier (`none` on Low). */
 const TRANSMISSION_TIER_SCALE: Readonly<Record<AuraQualityTier, number | null>> = {
   low: null,
   medium: 0.5,
@@ -54,11 +49,6 @@ const TRANSMISSION_TIER_SCALE: Readonly<Record<AuraQualityTier, number | null>> 
   ultra: 1
 };
 
-/**
- * The tier settings object carries no tier name — resolve by matching
- * QUALITY_TIERS. Field comparison (no JSON.stringify): `resolveTierSettings`
- * returns fresh objects, so identity alone misses override-free copies.
- */
 function tierSettingsEqual(a: AuraQualityTierSettings, b: AuraQualityTierSettings): boolean {
   for (const key of Object.keys(a) as (keyof AuraQualityTierSettings)[]) {
     if (key === "shadow") {
@@ -69,9 +59,7 @@ function tierSettingsEqual(a: AuraQualityTierSettings, b: AuraQualityTierSetting
       const ga = a.froxelGrid, gb = b.froxelGrid;
       if ((ga === null) !== (gb === null)) return false;
       if (ga && gb && (ga[0] !== gb[0] || ga[1] !== gb[1] || ga[2] !== gb[2])) return false;
-    } else if (a[key] !== b[key]) {
-      return false;
-    }
+    } else if (a[key] !== b[key]) return false;
   }
   return true;
 }
@@ -83,192 +71,154 @@ function resolveTierName(tier: AuraQualityTierSettings): AuraQualityTier {
   return "high";
 }
 
-function numericParameter(material: { getParameter(name: string): unknown }, name: string): number {
-  const value = material.getParameter(name);
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-
-/** Same predicate ForwardPass uses for the transmissive queue (blend materials never count). */
-export function itemReportsTransmissionLobe(item: RenderItem): boolean {
-  const material = item.material;
-  if (!material) return false;
-  const base = material instanceof MaterialInstance ? material.baseMaterial : material;
-  if (!base) return false;
-  if (base.renderState?.blend) return false;
-  return numericParameter(base, "u_transmissionFactor") > 0.001
-    || numericParameter(base, "u_diffuseTransmissionFactor") > 0.001
-    || numericParameter(base, "u_volumeThicknessFactor") > 0.001;
-}
-
-export interface Prd04TransmissionDiagnostics {
-  readonly targetActive: boolean;
-  readonly format: "rgba16f" | "rgba8" | null;
-  readonly mipCount: number;
-  readonly scale: number | null;
-  readonly sourceCopied: boolean;
-  /** C-28: texture readbacks performed by the capture pass (must stay 0). */
-  readonly readbacks: number;
-  readonly issues: readonly string[];
-}
-
+type CaptureFormat = "rgba16f" | "rgba32f" | "rgba8";
 const INACTIVE_DIAGNOSTICS: Prd04TransmissionDiagnostics = {
-  targetActive: false,
-  format: null,
-  mipCount: 0,
-  scale: null,
-  sourceCopied: false,
-  readbacks: 0,
-  issues: []
+  targetActive: false, format: null, mipCount: 0, scale: null, sourceCopied: false, readbacks: 0, issues: []
 };
 
-let lastDiagnostics: Prd04TransmissionDiagnostics = INACTIVE_DIAGNOSTICS;
-
-/** Observed state for the C-31 `materials` diagnostics section. */
-export function prd04TransmissionDiagnostics(): Prd04TransmissionDiagnostics {
-  return { ...lastDiagnostics, issues: [...lastDiagnostics.issues] };
-}
-
-// The device requires `marker` to appear verbatim in both GLSL stages.
-// GLSL lives in `shaders/physical/transmission_copy.glsl.ts` (glsl-location
-// arch-gate allows `#version` strings only in chunk/post/output locations).
 const COPY_SHADER = {
   label: "a3d-prd04-transmission-copy",
   marker: TRANSMISSION_COPY_MARKER,
   vertex: TRANSMISSION_COPY_VERTEX,
-  fragment: TRANSMISSION_COPY_FRAGMENT
+  fragment: TRANSMISSION_COPY_FRAGMENT,
+  webgpu: { vertex: TRANSMISSION_COPY_WGSL_VERTEX, fragment: TRANSMISSION_COPY_WGSL_FRAGMENT },
+  portableBindings: [{ name: "u_source", kind: "texture2d", required: true }] as const
 };
 
-/**
- * GPU-side copy pass: draws the resolved scene colour into the lane target
- * with a fullscreen triangle, then publishes the target on the blackboard.
- * The mip chain contract lives on `TransmissionRenderTarget` (the device
- * allocates mip storage when the target is sampled); no readback is
- * performed (C-28).
- *
- * The pass instance is cached per device by the contributor (T0-18e): the
- * copy vertex buffer and shader program are allocated once in
- * `ensureCopyResources` instead of leaking one pair per frame. `configure`
- * re-points the pass at the current contributor context before the graph
- * executes it.
- */
-class TransmissionCapturePass extends BaseRenderPass {
-  private buffer: RenderBuffer | null = null;
-  private program: RenderShaderProgram | null = null;
-  private frame: FrameContributorContext | null = null;
-  private scale = 1;
+interface TransmissionViewState {
+  readonly generation: number;
+  target?: TransmissionRenderTarget;
+  format?: CaptureFormat;
+  buffer?: RenderBuffer;
+  program?: RenderShaderProgram;
+  capture?: CapturedTransmissionTarget;
+}
 
+interface TransmissionDeviceState {
+  readonly generation: number;
+  readonly scopes: Map<object, Map<string | number, TransmissionViewState>>;
+  unsubscribe?: () => void;
+}
+
+function disposeView(state: TransmissionViewState): void {
+  revokeTransmissionCapture(state.capture);
+  state.capture = undefined;
+  const errors: unknown[] = [];
+  for (const resource of [state.buffer, state.program, state.target]) {
+    try { resource?.dispose(); } catch (error) { errors.push(error); }
+  }
+  state.buffer = undefined;
+  state.program = undefined;
+  state.target = undefined;
+  state.format = undefined;
+  if (errors.length) throw new AggregateError(errors, "Transmission view disposal failed");
+}
+
+class TransmissionCapturePass extends BaseRenderPass {
   constructor(
-    private readonly target: TransmissionRenderTarget,
-    private readonly format: "rgba16f" | "rgba8",
+    private readonly frame: FrameContributorContext,
+    private readonly state: TransmissionViewState,
+    private readonly scale: number,
     reads: readonly string[]
   ) {
-    // T0-18(c): the copy reads the colour resource the graph actually
-    // produces — `aura.scene.color.opaque` on the v2 path (written by
-    // `prd01.opaque`, before `prd01.transmission` draws transmissives on top)
-    // or `color` on the legacy path. Declaring `reads: []` hid the ordering
-    // and let the copy run against an unproduced target.
     super("prd04.transmission.capture", reads, [TRANSMISSION_LANE_RESOURCE]);
-  }
-
-  /** Re-point at this frame's contributor context + scale (one pass per device/mode). */
-  configure(frame: FrameContributorContext, scale: number): void {
-    this.frame = frame;
-    this.scale = scale;
+    markTrustedTransmissionCapturePass(this);
   }
 
   execute(context: RenderPassContext): void {
-    if (!this.frame) return;
-    const frame = this.frame;
-    const width = Math.max(1, Math.round(context.width * this.scale));
-    const height = Math.max(1, Math.round(context.height * this.scale));
-    this.target.resize(width, height);
-    const texture = this.target.texture;
-    const issues: string[] = [];
-    if (this.format === "rgba8") {
-      // C-28: no half-float color buffer → the capture degrades to LDR.
-      issues.push("transmission-ldr-capture");
-    }
-    if (texture) {
-      frame.blackboard.set(TRANSMISSION_BLACKBOARD_KEY, texture);
-      // T0-05: per-draw bindUniforms has no blackboard; see transmissionTargetStore.
-      setCapturedTransmissionTarget({ texture: texture.colorTexture, width, height });
-    } else {
-      // 04-S10 / T0-18(d): never leave a previous frame's target bound.
-      setCapturedTransmissionTarget(undefined);
-    }
-    // The producer publishes its RenderTarget under PRD01_FORWARD_TARGET once
-    // the forward target exists (HDR path and postprocess path both do); on
-    // paths without one the copy is skipped (no readback fallback — that
-    // would violate C-28 `readbacks === 0`).
-    const source = frame.blackboard.get(PRD01_FORWARD_TARGET) as RenderTarget | undefined;
+    const frame = this.frame, device = frame.device;
+    clearCapturedTransmissionTarget(frame);
+    revokeTransmissionCapture(this.state.capture);
+    this.state.capture = undefined;
+    let format: CaptureFormat | null = null;
     let copied = false;
-    if (source && texture) {
-      this.ensureCopyResources(context.device);
-      if (this.buffer && this.program) {
-        // T0-18(d): restore the bound target — the forward target must still
-        // be bound when the transmissive forward pass runs after us.
-        const previous = context.device.getRenderTarget?.() ?? null;
-        context.device.setRenderTarget(texture);
-        context.device.draw({
-          label: "prd04-transmission-scene-color-copy",
-          topology: "triangles",
-          vertexBuffer: this.buffer,
-          vertexCount: 3,
-          shader: this.program,
-          uniforms: new Map<string, UniformValue>([
-            ["u_source", new TextureBinding({ name: "u_source", texture: source.colorTexture })]
-          ])
-        });
-        context.device.setRenderTarget(previous);
-        copied = true;
+    const issues: string[] = [];
+    try {
+      if (context.device !== device || device.disposed || device.contextLost ||
+          (device.generation ?? 0) !== this.state.generation) {
+        throw new RenderDeviceError("Transmission frame device is unavailable or changed", "TRANSMISSION_DEVICE_UNAVAILABLE");
       }
+      if (!validTransmissionFrameIdentity(frame)) {
+        throw new RenderDeviceError("Transmission capture requires renderer, view and frame identity", "TRANSMISSION_FRAME_IDENTITY_REQUIRED");
+      }
+      const source = frame.blackboard.get(PRD01_FORWARD_TARGET) as RenderTarget | undefined;
+      if (!source || source.disposed || source.colorTexture.disposed || source.depthOnly ||
+          source.colorTexture.dimension !== "2d" || !source.colorTexture.usage.includes("sampled")) {
+        throw new RenderDeviceError("Transmission requires a live opaque scene-color target", "TRANSMISSION_SOURCE_UNAVAILABLE");
+      }
+      if (frame.blackboard.get("prd01.outputColorSpace") !== "linear" || source.colorTexture.colorSpace !== "linear") {
+        throw new RenderDeviceError("Transmission requires linear scene-color input", "TRANSMISSION_SOURCE_NOT_LINEAR");
+      }
+      const sourceFormat = source.colorTexture.format;
+      if (sourceFormat !== "rgba8" && sourceFormat !== "rgba16f" && sourceFormat !== "rgba32f") {
+        throw new RenderDeviceError("Transmission scene-color format is unsupported", "TRANSMISSION_SOURCE_FORMAT_UNSUPPORTED", { format: sourceFormat });
+      }
+      format = sourceFormat;
+      if (format === "rgba8") issues.push("transmission-ldr-capture");
+      if (!device.getRenderTarget || !device.drawTransmissionCapture) {
+        throw new RenderDeviceError("Device cannot verify a transmission copy", "TRANSMISSION_COPY_UNSUPPORTED", { backend: device.kind });
+      }
+      const previous = device.getRenderTarget();
+      if (previous !== source) {
+        throw new RenderDeviceError("The opaque scene target is not currently bound", "TRANSMISSION_SOURCE_NOT_BOUND");
+      }
+      const width = Math.max(1, Math.round(source.width * this.scale));
+      const height = Math.max(1, Math.round(source.height * this.scale));
+      if (!this.state.target || this.state.format !== format) {
+        const next = new TransmissionRenderTarget(device, { width, height }, { format });
+        const previousTarget = this.state.target;
+        this.state.target = next;
+        this.state.format = format;
+        previousTarget?.dispose();
+      } else {
+        this.state.target.resize(width, height);
+      }
+      const target = this.state.target.texture;
+      if (!target) throw new RenderDeviceError("Transmission target is unavailable", "TRANSMISSION_TARGET_UNAVAILABLE");
+      if (!this.state.buffer) this.state.buffer = device.createBuffer("vertex", 3 * 2 * 4, new Float32Array(6));
+      if (!this.state.program) this.state.program = device.createShaderProgram(COPY_SHADER);
+      const command: DrawCommand = {
+        label: "prd04-transmission-scene-color-copy",
+        topology: "triangles",
+        vertexBuffer: this.state.buffer,
+        vertexCount: 3,
+        shader: this.state.program,
+        renderState: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" },
+        uniforms: new Map<string, UniformValue>([
+          ["u_source", new TextureBinding({ name: "u_source", texture: source.colorTexture, required: true })]
+        ])
+      };
+      try {
+        // Switching away resolves WebGL multisampled scene targets before sampling.
+        device.setRenderTarget(target);
+        device.drawTransmissionCapture(command);
+        copied = true;
+      } finally {
+        device.setRenderTarget(previous);
+      }
+      const mipCount = this.state.target.mipCount;
+      if (mipCount > 1) {
+        if (!device.generateRenderTargetMipmaps) {
+          throw new RenderDeviceError("Device cannot generate the transmission mip chain", "TRANSMISSION_MIP_GENERATION_UNAVAILABLE");
+        }
+        device.generateRenderTargetMipmaps(target);
+      }
+      this.state.capture = publishCapturedTransmissionTarget(frame, target, mipCount);
+      setPrd04TransmissionDiagnostics(frame, {
+        targetActive: true, format, mipCount, scale: this.scale, sourceCopied: true, readbacks: 0, issues
+      } satisfies Prd04TransmissionDiagnostics);
+    } catch (error) {
+      clearCapturedTransmissionTarget(frame);
+      revokeTransmissionCapture(this.state.capture);
+      this.state.capture = undefined;
+      const code = error instanceof RenderDeviceError ? error.code : "transmission-capture-failed";
+      setPrd04TransmissionDiagnostics(frame, {
+        targetActive: false, format, mipCount: 0, scale: this.scale, sourceCopied: copied, readbacks: 0, issues: [...issues, code]
+      } satisfies Prd04TransmissionDiagnostics);
+      throw error;
     }
-    lastDiagnostics = {
-      targetActive: texture !== undefined,
-      format: this.format,
-      mipCount: this.target.mipCount,
-      scale: this.scale,
-      sourceCopied: copied,
-      // The copy is device-to-device (setRenderTarget + draw); no readPixels
-      // or mapped-readback call exists on this path (C-28).
-      readbacks: 0,
-      issues
-    };
-  }
-
-  private ensureCopyResources(device: RenderDevice): void {
-    if (!this.buffer) {
-      this.buffer = device.createBuffer("vertex", 3 * 2 * 4, new Float32Array(6));
-    }
-    if (!this.program) {
-      this.program = device.createShaderProgram(COPY_SHADER);
-    }
-  }
-
-  dispose(): void {
-    this.buffer?.dispose();
-    this.buffer = null;
-    this.program?.dispose();
-    this.program = null;
   }
 }
-
-/**
- * T0-18(e): GPU state is per-device — the module-singleton contributor keeps a
- * `Map<RenderDevice, …>` of `{target, passes}` instead of one shared target
- * (which leaked across renderers) and one fresh pass per frame (which leaked a
- * copy VB/program pair every execute).
- */
-interface TransmissionDeviceState {
-  readonly target: TransmissionRenderTarget;
-  readonly format: "rgba16f" | "rgba8";
-  readonly passes: { v2?: TransmissionCapturePass; legacy?: TransmissionCapturePass };
-}
-
-/** Colour resource written by the v2 `prd01.opaque` ForwardPass (Renderer.ts). */
-const V2_OPAQUE_COLOR_RESOURCE = "aura.scene.color.opaque";
-/** Colour resource written by the legacy-path ForwardPass default (`writes: ["color"]`). */
-const LEGACY_COLOR_RESOURCE = "color";
 
 export class TransmissionFrameContributor implements FrameContributor {
   readonly id = "prd04.transmission";
@@ -279,65 +229,101 @@ export class TransmissionFrameContributor implements FrameContributor {
 
   passes(phase: string, ctx: FrameContributorContext): readonly TransmissionCapturePass[] {
     if (phase !== TRANSMISSION_PHASE) return [];
+    clearCapturedTransmissionTarget(ctx);
+    setPrd04TransmissionDiagnostics(ctx, INACTIVE_DIAGNOSTICS);
+    const scope = ctx.postScopeId, view = ctx.viewId;
+    const existing = scope && view !== undefined ? this.devices.get(ctx.device)?.scopes.get(scope)?.get(view) : undefined;
+    revokeTransmissionCapture(existing?.capture);
+    if (existing) existing.capture = undefined;
+    if (ctx.blackboard.get("prd01.transmissionCapturePlanned") === false) return [];
     const scale = TRANSMISSION_TIER_SCALE[resolveTierName(ctx.tier)];
-    if (scale === null || scale === undefined) {
-      lastDiagnostics = INACTIVE_DIAGNOSTICS;
-      // 04-S10: no capture this frame -> the store must not keep last frame's target.
-      setCapturedTransmissionTarget(undefined);
-      return [];
+    if (scale === null || scale === undefined || !ctx.items.some(itemReportsTransmissionLobe)) return [];
+    if (!validTransmissionFrameIdentity(ctx) || !scope || view === undefined) {
+      throw new RenderDeviceError("Transmission capture requires renderer and view identity", "TRANSMISSION_FRAME_IDENTITY_REQUIRED");
     }
-    if (!ctx.items.some(itemReportsTransmissionLobe)) {
-      lastDiagnostics = INACTIVE_DIAGNOSTICS;
-      // 04-S10: no capture this frame -> the store must not keep last frame's target.
-      setCapturedTransmissionTarget(undefined);
-      return [];
+    const generation = ctx.device.generation ?? 0;
+    let deviceState = this.devices.get(ctx.device);
+    if (deviceState && deviceState.generation !== generation) {
+      this.releaseDevice(ctx.device);
+      deviceState = undefined;
     }
-    let state = this.devices.get(ctx.device);
+    if (!deviceState) {
+      deviceState = { generation, scopes: new Map() };
+      this.devices.set(ctx.device, deviceState);
+      deviceState.unsubscribe = ctx.device.onDeviceLost?.(() => {
+        try { this.releaseDevice(ctx.device); } catch { /* Continue device-loss notifications. */ }
+      });
+    }
+    let views = deviceState.scopes.get(scope);
+    if (!views) {
+      views = new Map();
+      deviceState.scopes.set(scope, views);
+    }
+    let state = views.get(view);
     if (!state) {
-      const format: "rgba16f" | "rgba8" = ctx.device.probe?.halfFloatColorBuffer ? "rgba16f" : "rgba8";
-      state = {
-        target: new TransmissionRenderTarget(ctx.device, { width: 1, height: 1 }, { format }),
-        format,
-        passes: {}
-      };
-      this.devices.set(ctx.device, state);
+      state = { generation };
+      views.set(view, state);
     }
-    // v2 graphs order the capture after `aura.scene.color.opaque`; legacy
-    // graphs after `color` (the ForwardPass default write). Both are produced
-    // by passes that exist on every graph that runs this phase.
-    const v2 = ctx.flags !== undefined && qrCoreOutputOn(ctx.flags);
-    const key = v2 ? "v2" : "legacy";
-    let pass = state.passes[key];
-    if (!pass) {
-      pass = new TransmissionCapturePass(
-        state.target,
-        state.format,
-        [v2 ? V2_OPAQUE_COLOR_RESOURCE : LEGACY_COLOR_RESOURCE]
-      );
-      state.passes[key] = pass;
+    const declaredOpaqueResource = ctx.blackboard.get("prd01.opaqueColorResource");
+    const sourceResource = typeof declaredOpaqueResource === "string" && declaredOpaqueResource.trim()
+      ? declaredOpaqueResource
+      : qrCoreOutputOn(ctx.flags) ? "aura.scene.color.opaque" : "color";
+    return [new TransmissionCapturePass(ctx, state, scale, [sourceResource])];
+  }
+
+  releaseView(device: RenderDevice, scope: object, view: string | number): void {
+    const state = this.devices.get(device), views = state?.scopes.get(scope), entry = views?.get(view);
+    if (!state || !views || !entry) return;
+    views.delete(view);
+    if (views.size === 0) state.scopes.delete(scope);
+    try { disposeView(entry); } finally {
+      if (state.scopes.size === 0) this.releaseDevice(device);
     }
-    pass.configure(ctx, scale);
-    return [pass];
+  }
+
+  releaseScope(device: RenderDevice, scope: object): void {
+    const state = this.devices.get(device), views = state?.scopes.get(scope);
+    if (!state || !views) return;
+    state.scopes.delete(scope);
+    const errors: unknown[] = [];
+    for (const entry of views.values()) {
+      try { disposeView(entry); } catch (error) { errors.push(error); }
+    }
+    if (state.scopes.size === 0) {
+      try { this.releaseDevice(device); } catch (error) { errors.push(error); }
+    }
+    if (errors.length) throw new AggregateError(errors, "Transmission scope disposal failed");
+  }
+
+  private releaseDevice(device: RenderDevice): void {
+    const state = this.devices.get(device);
+    if (!state) return;
+    this.devices.delete(device);
+    state.unsubscribe?.();
+    const errors: unknown[] = [];
+    for (const views of state.scopes.values()) for (const entry of views.values()) {
+      try { disposeView(entry); } catch (error) { errors.push(error); }
+    }
+    state.scopes.clear();
+    if (errors.length) throw new AggregateError(errors, "Transmission device disposal failed");
   }
 
   dispose(): void {
-    for (const state of this.devices.values()) {
-      state.passes.v2?.dispose();
-      state.passes.legacy?.dispose();
-      state.target.dispose();
+    const errors: unknown[] = [];
+    for (const device of [...this.devices.keys()]) {
+      try { this.releaseDevice(device); } catch (error) { errors.push(error); }
     }
-    this.devices.clear();
-    lastDiagnostics = INACTIVE_DIAGNOSTICS;
-    // T0-18(d): the disposed targets' textures must not stay reachable from the store.
-    setCapturedTransmissionTarget(undefined);
+    if (errors.length) throw new AggregateError(errors, "Transmission contributor disposal failed");
   }
 }
 
-export const transmissionFrameContributor: FrameContributor = new TransmissionFrameContributor();
+export const transmissionFrameContributor = new TransmissionFrameContributor();
+registerTransmissionLifecycle({
+  releaseView: (device, scope, view) => transmissionFrameContributor.releaseView(device, scope, view),
+  releaseScope: (device, scope) => transmissionFrameContributor.releaseScope(device, scope)
+});
 
 let contributorRegistered = false;
-
-/** Idempotent registration for the lane barrel (import-time). */
 export function registerPrd04TransmissionContributor(): void {
   if (contributorRegistered) return;
   contributorRegistered = true;

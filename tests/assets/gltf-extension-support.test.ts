@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   GLTF_DECODER_REQUIRED_EXTENSION_NAMES,
   GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES,
+  GLTF_EXTENSION_SUPPORT_MATRIX,
+  GLTF_REQUIRED_ACCEPTED_EXTENSION_NAMES,
   GLTF_SUPPORTED_EXTENSION_NAMES,
   GLTF_PARSED_WITH_LIMITS_EXTENSION_NAMES,
   GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES,
@@ -9,10 +11,20 @@ import {
   HDRLoader,
   LoadContext,
   evaluateGLTFExtensionSupport,
-  getGLTFExtensionSupport
+  getGLTFExtensionSupport,
+  inspectGLTFAsset
 } from "../../packages/assets/src";
 
 describe("glTF extension support matrix", () => {
+  it("describes the nonstandard instance-color convention without claiming general custom attributes", () => {
+    const limits = getGLTFExtensionSupport("EXT_mesh_gpu_instancing").knownLimits;
+    expect(limits).toEqual(expect.arrayContaining([
+      expect.stringContaining("_COLOR_0"),
+      expect.stringContaining("not standardized"),
+      expect.stringContaining("other custom")
+    ]));
+  });
+
   it("exposes compression and instancing support through public package metadata", () => {
     expect(GLTF_SUPPORTED_EXTENSION_NAMES).toEqual(expect.arrayContaining([
       "KHR_draco_mesh_compression",
@@ -24,7 +36,15 @@ describe("glTF extension support matrix", () => {
     expect(getGLTFExtensionSupport("KHR_draco_mesh_compression")).toMatchObject({
       status: "decoder-required",
       decoder: "draco",
+      parseSupport: "decoder-required",
+      runtimeSupport: "decoder-required",
+      renderSupport: "decoder-required",
       requiredAccepted: true
+    });
+    expect(getGLTFExtensionSupport("KHR_texture_basisu")).toMatchObject({
+      parseSupport: "supported",
+      runtimeSupport: "decoder-required",
+      renderSupport: "decoder-required"
     });
     expect(getGLTFExtensionSupport("EXT_mesh_gpu_instancing")).toMatchObject({
       status: "runtime-supported",
@@ -33,7 +53,7 @@ describe("glTF extension support matrix", () => {
     });
     expect(GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES).toEqual(expect.arrayContaining([
       "KHR_lights_punctual",
-      "KHR_materials_unlit"
+      "EXT_mesh_gpu_instancing"
     ]));
     expect(GLTF_DECODER_REQUIRED_EXTENSION_NAMES).toEqual(expect.arrayContaining([
       "KHR_texture_basisu",
@@ -42,10 +62,47 @@ describe("glTF extension support matrix", () => {
     expect(GLTF_PARSED_WITH_LIMITS_EXTENSION_NAMES).toEqual(expect.arrayContaining([
       "KHR_materials_transmission",
       "KHR_materials_variants",
+      "KHR_materials_unlit",
+      "KHR_materials_diffuse_roughness",
+      "EXT_materials_bump",
       "KHR_animation_pointer"
     ]));
     expect(GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES).toEqual([]);
     expect(GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES).not.toContain("KHR_materials_transmission");
+  });
+
+  it("records parse, runtime and render capability separately without promoting parse-only features", () => {
+    for (const name of ["KHR_materials_diffuse_roughness", "EXT_materials_bump"]) {
+      expect(getGLTFExtensionSupport(name)).toMatchObject({
+        family: "material",
+        status: "parsed-with-limits",
+        parseSupport: "supported",
+        runtimeSupport: "unsupported",
+        renderSupport: "unsupported",
+        requiredAccepted: false,
+        knownLimits: [expect.stringContaining("Draft extension")]
+      });
+      expect(GLTF_REQUIRED_ACCEPTED_EXTENSION_NAMES).not.toContain(name);
+      expect(GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES).not.toContain(name);
+    }
+    expect(getGLTFExtensionSupport("KHR_materials_transmission")).toMatchObject({
+      parseSupport: "supported",
+      runtimeSupport: "limited",
+      renderSupport: "limited"
+    });
+    expect(getGLTFExtensionSupport("KHR_materials_dispersion")).toMatchObject({
+      parseSupport: "supported",
+      runtimeSupport: "limited",
+      renderSupport: "limited"
+    });
+    expect(getGLTFExtensionSupport("EXT_vendor_unknown")).toMatchObject({
+      status: "unsupported",
+      parseSupport: "unsupported",
+      runtimeSupport: "unsupported",
+      renderSupport: "unsupported",
+      requiredAccepted: false
+    });
+    expect(new Set(GLTF_EXTENSION_SUPPORT_MATRIX.map(({ name }) => name)).size).toBe(GLTF_EXTENSION_SUPPORT_MATRIX.length);
   });
 
   it("evaluates used and required extension lists without claiming unknown extensions", () => {
@@ -106,6 +163,126 @@ describe("glTF extension support matrix", () => {
     ]);
   });
 
+  it("diagnoses unknown optional extensions but rejects unknown required extensions", async () => {
+    const document = {
+      asset: { version: "2.0" },
+      extensionsUsed: ["EXT_vendor_unknown"],
+      scenes: [{ nodes: [] }],
+      scene: 0
+    };
+    const loader = new GLTFLoader();
+    const optional = await loader.load({ url: dataGLTF(document), type: "gltf" }, new LoadContext());
+    expect(optional.loaderDiagnostics.unsupportedExtensions).toEqual(["EXT_vendor_unknown"]);
+    await expect(loader.load({
+      url: dataGLTF({ ...document, extensionsRequired: ["EXT_vendor_unknown"] }),
+      type: "gltf"
+    }, new LoadContext())).rejects.toThrow("Unsupported required glTF extensions: EXT_vendor_unknown");
+  });
+
+  it("preserves optional draft material factors, texture indices, UV selection and transforms", async () => {
+    const asset = await loadMaterials([
+      { extensions: { KHR_materials_diffuse_roughness: {}, EXT_materials_bump: {} } },
+      { extensions: {
+        KHR_materials_diffuse_roughness: {
+          diffuseRoughnessFactor: 0.4,
+          diffuseRoughnessTexture: { index: 0, texCoord: 1, extensions: {
+            KHR_texture_transform: { offset: [0.25, 0.5], scale: [2, 3], rotation: 0.4, texCoord: 2 }
+          } }
+        },
+        EXT_materials_bump: { bumpFactor: 2.5, bumpTexture: { index: 1, texCoord: 1 } }
+      } }
+    ]);
+
+    // The current diffuse-roughness draft's prose specifies zero; its schema disagrees.
+    expect(asset.materials[0]?.diffuseRoughness).toEqual({ factor: 0, texture: undefined });
+    expect(asset.materials[0]?.bump).toEqual({ factor: 1, texture: undefined });
+    expect(asset.materials[1]?.diffuseRoughness).toEqual({
+      factor: 0.4,
+      texture: { texture: 0, image: 0, texCoord: 2, transform: { offset: [0.25, 0.5], scale: [2, 3], rotation: 0.4 } }
+    });
+    expect(asset.materials[1]?.bump).toEqual({ factor: 2.5, texture: { texture: 1, image: 1, texCoord: 1 } });
+    expect(asset.toJSON().materials[1]?.diffuseRoughness).toEqual(asset.materials[1]?.diffuseRoughness);
+    expect(asset.toJSON().materials[1]?.bump).toEqual(asset.materials[1]?.bump);
+    expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual(["EXT_materials_bump", "KHR_materials_diffuse_roughness"]);
+
+    const report = inspectGLTFAsset(asset);
+    const material = report.materials[1];
+    expect(material?.features).toMatchObject({ diffuseRoughness: { factor: 0.4 }, bump: { factor: 2.5 } });
+    expect(material?.textures).toEqual([
+      { slot: "diffuseRoughness", texture: 0, image: 0, texCoord: 2, transform: { offset: [0.25, 0.5], scale: [2, 3], rotation: 0.4 } },
+      { slot: "bump", texture: 1, image: 1, texCoord: 1 }
+    ]);
+    expect(material?.extensions).toEqual(["KHR_materials_diffuse_roughness", "EXT_materials_bump"]);
+    expect(material?.extensionSupport).toEqual([
+      expect.objectContaining({ name: "KHR_materials_diffuse_roughness", parseSupport: "supported", runtimeSupport: "unsupported", renderSupport: "unsupported" }),
+      expect.objectContaining({ name: "EXT_materials_bump", parseSupport: "supported", runtimeSupport: "unsupported", renderSupport: "unsupported" })
+    ]);
+    expect(report.warnings.filter(({ code }) => code === "GLTF_UNSUPPORTED_MATERIAL_EXTENSION")).toHaveLength(2);
+    expect(report.warnings.map(({ code }) => code)).not.toEqual(expect.arrayContaining([
+      "ASSET_VIEWER_MULTI_UV_RENDER_ACTIVE", "ASSET_VIEWER_MULTI_UV_RENDER_FALLBACK"
+    ]));
+  });
+
+  it("accepts the draft factors at both permitted boundaries", async () => {
+    const asset = await loadMaterials([
+      { extensions: {
+        KHR_materials_diffuse_roughness: { diffuseRoughnessFactor: 0 },
+        EXT_materials_bump: { bumpFactor: 0 }
+      } },
+      { extensions: {
+        KHR_materials_diffuse_roughness: { diffuseRoughnessFactor: 1 },
+        EXT_materials_bump: { bumpFactor: 100 }
+      } }
+    ]);
+    expect(asset.materials.map((material) => [material.diffuseRoughness?.factor, material.bump?.factor]))
+      .toEqual([[0, 0], [1, 100]]);
+  });
+
+  it.each(["KHR_materials_diffuse_roughness", "EXT_materials_bump"])(
+    "rejects %s when required until its renderer is supported",
+    async (name) => {
+      const document = {
+        asset: { version: "2.0" }, extensionsUsed: [name], extensionsRequired: [name],
+        materials: [{ extensions: { [name]: {} } }], scenes: [{ nodes: [] }], scene: 0
+      };
+      await expect(new GLTFLoader().load({ url: dataGLTF(document), type: "gltf" }, new LoadContext()))
+        .rejects.toThrow(`Unsupported required glTF extensions: ${name}`);
+    }
+  );
+
+  it.each([
+    ["KHR_materials_diffuse_roughness", null],
+    ["KHR_materials_diffuse_roughness", []],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessFactor: -0.01 }],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessFactor: 1.01 }],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessFactor: null }],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessFactor: "0.5" }],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessTexture: null }],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessTexture: {} }],
+    ["KHR_materials_diffuse_roughness", { diffuseRoughnessTexture: { index: 2 } }],
+    ["EXT_materials_bump", null],
+    ["EXT_materials_bump", []],
+    ["EXT_materials_bump", { bumpFactor: -0.01 }],
+    ["EXT_materials_bump", { bumpFactor: 100.01 }],
+    ["EXT_materials_bump", { bumpFactor: null }],
+    ["EXT_materials_bump", { bumpFactor: "1" }],
+    ["EXT_materials_bump", { bumpTexture: null }],
+    ["EXT_materials_bump", { bumpTexture: {} }],
+    ["EXT_materials_bump", { bumpTexture: { index: 2 } }]
+  ])("rejects malformed %s material payload %j", async (name, payload) => {
+    await expect(loadMaterials([{ extensions: { [name as string]: payload } }])).rejects.toThrow(String(name));
+  });
+
+  it.each(["KHR_materials_diffuse_roughness", "EXT_materials_bump"])(
+    "rejects %s combined with incompatible material models",
+    async (name) => {
+      for (const incompatible of ["KHR_materials_unlit", "KHR_materials_pbrSpecularGlossiness"]) {
+        await expect(loadMaterials([{ extensions: { [name]: {}, [incompatible]: {} } }]))
+          .rejects.toThrow(`${name} cannot be combined`);
+      }
+    }
+  );
+
   it("keeps the HDR loader diagnostic honest about decode parity", () => {
     const existingHdr = "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr";
     expect(new HDRLoader().load(existingHdr)).toMatchObject({
@@ -117,4 +294,17 @@ describe("glTF extension support matrix", () => {
 
 function dataGLTF(gltf: Record<string, unknown>): string {
   return `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
+}
+
+function loadMaterials(materials: readonly Record<string, unknown>[]) {
+  const gltf = {
+    asset: { version: "2.0" },
+    extensionsUsed: ["KHR_materials_diffuse_roughness", "EXT_materials_bump", "KHR_texture_transform"],
+    images: [{ uri: "data:image/png;base64,AA==" }, { uri: "data:image/png;base64,AA==" }],
+    textures: [{ source: 0 }, { source: 1 }],
+    materials,
+    scenes: [{ nodes: [] }],
+    scene: 0
+  };
+  return new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext());
 }

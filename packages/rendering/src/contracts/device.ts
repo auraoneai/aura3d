@@ -4,7 +4,7 @@
  * gains optional members in PR 0a (declared on RenderDevice.ts).
  */
 
-import type { RenderDevice, RenderTarget, RenderTargetDescriptor } from "../RenderDevice";
+import { RenderDeviceError, type RenderDevice, type RenderTarget, type RenderTargetDescriptor } from "../RenderDevice";
 import type { TextureFormat } from "../Texture";
 import { defineContractSlot, type ContractSlot } from "./core";
 
@@ -102,18 +102,50 @@ export interface RenderTargetPoolLike { acquire(desc: { width: number; height: n
 
 /** PR 0a stub: creates targets on every acquire and disposes them on release. */
 class StubRenderTargetPool implements RenderTargetPoolLike {
+  private readonly owned = new WeakSet<RenderTarget>();
+  private readonly exposedTargets = new WeakSet<RenderTarget>();
+  private readonly explicitLeases = new WeakMap<RenderTarget, symbol>();
+  private readonly retiring = new WeakSet<RenderTarget>();
+
   constructor(private readonly device: RenderDevice) {}
 
   acquire(desc: { width: number; height: number; format: TextureFormat; samples: 1 | 4; depth: boolean }): RenderTarget {
-    const target = this.device.createRenderTarget(desc as RenderTargetDescriptor);
-    (target as { __qrPooled?: boolean }).__qrPooled = true;
+    const { samples, ...descriptor } = desc;
+    const target = this.device.createRenderTarget({ ...descriptor, format: descriptor.format as RenderTargetDescriptor["format"], sampleCount: samples });
+    if (target.disposed || this.exposedTargets.has(target)) {
+      throw new RenderDeviceError("Device did not create a new live render target.", "INVALID_RESOURCE");
+    }
+    this.exposedTargets.add(target);
+    this.owned.add(target);
     return target;
   }
 
+  /** The stub allocates a fresh target; only this acquisition may retire it. */
+  acquireLease(desc: Parameters<RenderTargetPoolLike["acquire"]>[0]): { readonly target: RenderTarget; release(): void } {
+    const target = this.acquire(desc);
+    const token = Symbol("stub-render-target-lease");
+    this.explicitLeases.set(target, token);
+    return { target, release: () => {
+      if (this.explicitLeases.get(target) !== token) return;
+      this.retire(target);
+    } };
+  }
+
   release(t: RenderTarget): void {
-    if ((t as { __qrPooled?: boolean }).__qrPooled) {
-      delete (t as { __qrPooled?: boolean }).__qrPooled;
+    if (this.explicitLeases.has(t)) return;
+    this.retire(t);
+  }
+
+  private retire(t: RenderTarget): void {
+    if (!this.owned.has(t) || this.retiring.has(t)) return;
+    this.retiring.add(t);
+    try {
       t.dispose();
+      this.owned.delete(t);
+      this.explicitLeases.delete(t);
+    } finally {
+      // A failed dispose keeps both ownership and the lease token for retry.
+      this.retiring.delete(t);
     }
   }
 

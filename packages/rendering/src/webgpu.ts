@@ -63,3 +63,12 @@ export type {
 
 export { WebGPUPipelineCache } from "./webgpu/WebGPUPipelineCache";
 export { Texture } from "./Texture";
+export { WebGPUResourceInterop } from "./webgpu/ResourceInterop";
+export type { WebGPUInteropQueue, WebGPUResourceAccess, WebGPUResourceAccessMode } from "./webgpu/ResourceInterop";
+export { DeferredPipeline, nativeDrawingSceneFromRenderItems } from "./webgpu/DeferredPipeline";
+export type { NativeDrawingMaterial, NativeDrawingScene, NativeDrawingLight, NativeDrawingSurface, NativeDrawingFrame, NativeDrawingOptions, NativeDrawingDiagnostics, NativeDrawingDevice } from "./webgpu/DeferredPipeline";
+export { MeshletPipeline, buildMeshlets, meshletIntersectsFrustum } from "./webgpu/MeshletPipeline";
+export type { MeshletOptions, NativeMeshlet } from "./webgpu/MeshletPipeline";
+export { VisibilityBufferPipeline } from "./webgpu/VisibilityBufferPipeline";
+export { NativeGpuSort, NativeGpuSortError, assertNativeGpuSortDevice, createNativeGpuSort } from "./webgpu/NativeGpuSort";
+export type { NativeGpuSortBuffer, NativeGpuSortDevice, NativeGpuSortDirection, NativeGpuSortErrorCode, NativeGpuSortOptions, NativeGpuSortRequest, NativeGpuSortSubmission } from "./webgpu/NativeGpuSort";

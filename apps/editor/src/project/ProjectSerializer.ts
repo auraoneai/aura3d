@@ -1,6 +1,6 @@
-import type { EditorPrefab } from "@aura3d/editor-runtime";
-import { validatePrefab } from "@aura3d/editor-runtime";
-import { Scene, SceneNode } from "@aura3d/scene";
+import type { EditorPrefab, EditorProjectShaderGraphDocument, EditorProjectStateDocument } from "@aura3d/editor-runtime";
+import { EDITOR_PROJECT_FORMAT_VERSION, migrateEditorProject, validateEditorProject, validatePrefab } from "@aura3d/editor-runtime";
+import { Scene, SceneNode, type Mat4 } from "@aura3d/scene";
 
 export const EDITOR_PROJECT_VERSION = 1;
 
@@ -131,6 +131,12 @@ export interface EditorProjectNode {
     readonly position: readonly [number, number, number];
     readonly rotation: readonly [number, number, number, number];
     readonly scale: readonly [number, number, number];
+    /** Absent in older projects; the runtime defaults to the origin. */
+    readonly pivot?: readonly [number, number, number];
+    /** Affine linear remainder retained by a world-preserving reparent. */
+    readonly linearResidual?: Readonly<Mat4>;
+    /** Authoritative local matrix when automatic TRS composition is disabled. */
+    readonly localMatrix?: Readonly<Mat4>;
   };
   readonly material: EditorNodeMaterial;
   readonly mesh: EditorNodeMesh;
@@ -147,18 +153,23 @@ export type EditorProjectPrefab = EditorPrefab<EditorProjectNode>;
 
 export interface EditorProject {
   readonly version: typeof EDITOR_PROJECT_VERSION;
+  readonly editorFormatVersion?: typeof EDITOR_PROJECT_FORMAT_VERSION;
   readonly metadata: {
     readonly name: string;
     readonly savedAt: string;
     readonly provenance?: EditorProjectProvenance;
   };
   readonly scene: {
+    /** The implicit scene root defaults to identity in older projects. */
+    readonly rootTransform?: EditorProjectNode["transform"];
     readonly nodes: readonly EditorProjectNode[];
   };
   readonly prefabs: readonly EditorProjectPrefab[];
   readonly assets: readonly EditorAssetRecord[];
   readonly importSettings: EditorImportSettings;
   readonly plugins: readonly string[];
+  readonly shaderGraphs?: readonly EditorProjectShaderGraphDocument[];
+  readonly editor?: EditorProjectStateDocument;
   readonly export: {
     readonly title: string;
     readonly entryNodeId: string | null;
@@ -342,8 +353,9 @@ export class ProjectSerializer {
   }
 
   serialize(project: EditorProject): string {
-    this.validate(project);
-    return JSON.stringify(project, null, 2);
+    const migrated = migrateProjectEditorEnvelope(project);
+    this.validate(migrated);
+    return JSON.stringify(migrated, null, 2);
   }
 
   parse(source: string): EditorProject {
@@ -357,10 +369,10 @@ export class ProjectSerializer {
       throw new Error("Editor project source must be an object.");
     }
     if (source.version === EDITOR_PROJECT_VERSION) {
-      return source as unknown as EditorProject;
+      return migrateProjectEditorEnvelope(source as unknown as EditorProject);
     }
     if (source.version === 0 || source.version === undefined) {
-      return this.migrateV0(source);
+      return migrateProjectEditorEnvelope(this.migrateV0(source));
     }
     return source as unknown as EditorProject;
   }
@@ -401,12 +413,13 @@ export class ProjectSerializer {
   buildScene(project: EditorProject): ProjectSceneBuild {
     this.validate(project);
     const scene = new Scene();
+    if (project.scene.rootTransform !== undefined) {
+      applyProjectTransform(scene.root, project.scene.rootTransform);
+    }
     const nodes = new Map<string, SceneNode>();
     for (const nodeRecord of project.scene.nodes) {
       const node = new SceneNode({ id: nodeRecord.id, name: nodeRecord.name });
-      node.transform.setPosition(...nodeRecord.transform.position);
-      node.transform.setRotation(...nodeRecord.transform.rotation);
-      node.transform.setScale(...nodeRecord.transform.scale);
+      applyProjectTransform(node, nodeRecord.transform);
       nodes.set(nodeRecord.id, node);
     }
     for (const nodeRecord of project.scene.nodes) {
@@ -422,6 +435,7 @@ export class ProjectSerializer {
   }
 
   captureScene(scene: Scene, previous: EditorProject): EditorProject {
+    const rootTransform = captureProjectTransform(scene.root, "root", previous.scene.rootTransform);
     const previousNodes = new Map(previous.scene.nodes.map((node) => [node.id, node]));
     const nodes: EditorProjectNode[] = [];
     scene.root.traverse((node) => {
@@ -430,20 +444,19 @@ export class ProjectSerializer {
       }
       const previousNode = previousNodes.get(node.id);
       nodes.push({
-        ...(previousNode ?? createProjectNode({ id: node.id, name: node.name, parentId: node.parent?.id === "root" ? null : node.parent?.id ?? null })),
+        ...(previousNode ?? createProjectNode({ id: node.id, name: node.name, parentId: node.parent === scene.root ? null : node.parent?.id ?? null })),
         name: node.name,
-        parentId: node.parent?.id === "root" ? null : node.parent?.id ?? null,
-        transform: {
-          position: [...node.transform.position] as [number, number, number],
-          rotation: [...node.transform.rotation] as [number, number, number, number],
-          scale: [...node.transform.scale] as [number, number, number]
-        }
+        parentId: node.parent === scene.root ? null : node.parent?.id ?? null,
+        transform: captureProjectTransform(node, node.id, previousNode?.transform)
       });
     });
     return {
       ...previous,
       metadata: { ...previous.metadata, savedAt: new Date().toISOString() },
-      scene: { nodes }
+      scene: {
+        ...(previous.scene.rootTransform !== undefined || !isIdentityProjectTransform(rootTransform) ? { rootTransform } : {}),
+        nodes
+      }
     };
   }
 
@@ -451,32 +464,61 @@ export class ProjectSerializer {
     if (project.version !== EDITOR_PROJECT_VERSION) {
       throw new Error(`Unsupported editor project version: ${String(project.version)}`);
     }
+    if (project.scene.rootTransform !== undefined) {
+      validateProjectTransform(project.scene.rootTransform, "root");
+    }
     const ids = new Set<string>();
     for (const node of project.scene.nodes) {
       if (!node.id || ids.has(node.id)) {
         throw new Error(`Duplicate or empty project node id: ${node.id}`);
       }
       ids.add(node.id);
-      assertFiniteTuple(node.transform.position, 3, `${node.id}.position`);
-      assertFiniteTuple(node.transform.rotation, 4, `${node.id}.rotation`);
-      assertFiniteTuple(node.transform.scale, 3, `${node.id}.scale`);
+      validateProjectTransform(node.transform, node.id);
+      if (!/^#[0-9a-f]{6}$/i.test(node.material.baseColor)) throw new Error(`Project node ${node.id} needs a #rrggbb material base color.`);
+      if (![node.material.metallic, node.material.roughness].every((value) => Number.isFinite(value) && value >= 0 && value <= 1)) {
+        throw new Error(`Project node ${node.id} material metallic and roughness must be between 0 and 1.`);
+      }
       if (node.parentId && !ids.has(node.parentId) && !project.scene.nodes.some((candidate) => candidate.id === node.parentId)) {
         throw new Error(`Project node ${node.id} references missing parent ${node.parentId}`);
       }
     }
+    const assetIds = new Set<string>();
     for (const asset of project.assets) {
-      if (!asset.id || !asset.name || !asset.uri) {
-        throw new Error("Editor asset records require id, name, and uri.");
+      if (!asset.id || !asset.name || !asset.uri || assetIds.has(asset.id)) {
+        throw new Error("Editor asset records require unique ids, name, and uri.");
       }
+      assetIds.add(asset.id);
     }
     for (const prefab of project.prefabs) {
       validatePrefab(prefab);
+      for (const node of prefab.nodes) {
+        if (node.transform?.pivot !== undefined) {
+          assertProjectPivot(node.transform.pivot, `${prefab.id}.${node.id}.pivot`);
+        }
+        if (node.transform?.linearResidual !== undefined) {
+          assertProjectLinearResidual(node.transform.linearResidual, `${prefab.id}.${node.id}.linearResidual`);
+        }
+        if (node.transform?.localMatrix !== undefined) {
+          assertFiniteTuple(node.transform.localMatrix, 16, `${prefab.id}.${node.id}.localMatrix`);
+        }
+      }
     }
     if (project.importSettings.scale <= 0 || !Number.isFinite(project.importSettings.scale)) {
       throw new Error("Editor import scale must be a positive finite number.");
     }
     if (project.metadata.provenance) {
       validateProvenance(project.metadata.provenance);
+    }
+    validateEditorProject({
+      schema: "a3d-editor-project", name: project.metadata.name, nodes: project.scene.nodes,
+      editorFormatVersion: project.editorFormatVersion,
+      shaderGraphs: project.shaderGraphs, editor: project.editor
+    });
+    const graphMaterials = new Set<string>();
+    for (const entry of project.shaderGraphs ?? []) {
+      if (!entry.materialId || !ids.has(entry.materialId)) throw new Error(`Shader graph ${entry.id} references a missing material node.`);
+      if (graphMaterials.has(entry.materialId)) throw new Error(`A shader graph is already assigned to ${entry.materialId}.`);
+      graphMaterials.add(entry.materialId);
     }
   }
 
@@ -495,6 +537,15 @@ export class ProjectSerializer {
             : isFiniteTuple(node.position, 3)
               ? node.position
               : [0, 0, 0],
+          rotation: isRecord(node.transform) && isFiniteQuaternion(node.transform.rotation)
+            ? node.transform.rotation
+            : isFiniteQuaternion(node.rotation) ? node.rotation : undefined,
+          scale: isRecord(node.transform) && isFiniteTuple(node.transform.scale, 3)
+            ? node.transform.scale
+            : isFiniteTuple(node.scale, 3) ? node.scale : undefined,
+          pivot: isRecord(node.transform) ? node.transform.pivot as EditorProjectNode["transform"]["pivot"] : undefined,
+          linearResidual: isRecord(node.transform) ? node.transform.linearResidual as EditorProjectNode["transform"]["linearResidual"] : undefined,
+          localMatrix: isRecord(node.transform) ? node.transform.localMatrix as EditorProjectNode["transform"]["localMatrix"] : undefined,
           material: isRecord(node.material) ? node.material as EditorNodeMaterialDraft : undefined,
           mesh: isRecord(node.mesh) ? node.mesh as unknown as EditorNodeMesh : undefined,
           light: isRecord(node.light) ? node.light as unknown as EditorNodeLight : undefined,
@@ -516,7 +567,10 @@ export class ProjectSerializer {
         savedAt: typeof metadata.savedAt === "string" ? metadata.savedAt : base.metadata.savedAt,
         provenance: base.metadata.provenance
       },
-      scene: { nodes },
+      scene: {
+        ...(scene.rootTransform === undefined ? {} : { rootTransform: scene.rootTransform as EditorProjectNode["transform"] }),
+        nodes
+      },
       prefabs: [],
       assets: Array.isArray(source.assets) ? source.assets.filter(isRecord).map((asset, index) => ({
         id: typeof asset.id === "string" && asset.id.length > 0 ? asset.id : `migrated-asset-${index}`,
@@ -560,6 +614,9 @@ export function createProjectNode(options: {
   readonly position?: readonly [number, number, number];
   readonly rotation?: readonly [number, number, number, number];
   readonly scale?: readonly [number, number, number];
+  readonly pivot?: readonly [number, number, number];
+  readonly linearResidual?: Readonly<Mat4>;
+  readonly localMatrix?: Readonly<Mat4>;
   readonly material?: EditorNodeMaterialDraft;
   readonly mesh?: EditorNodeMesh;
   readonly light?: EditorNodeLight;
@@ -577,7 +634,10 @@ export function createProjectNode(options: {
     transform: {
       position: options.position ?? [0, 0, 0],
       rotation: options.rotation ?? [0, 0, 0, 1],
-      scale: options.scale ?? [1, 1, 1]
+      scale: options.scale ?? [1, 1, 1],
+      ...(options.pivot === undefined ? {} : { pivot: options.pivot }),
+      ...(options.linearResidual === undefined ? {} : { linearResidual: options.linearResidual }),
+      ...(options.localMatrix === undefined ? {} : { localMatrix: options.localMatrix })
     },
     material: normalizeMaterial(options.material ?? { name: "Default Material", baseColor: "#9ecbff", metallic: 0, roughness: 0.5 } as EditorNodeMaterial),
     mesh: options.mesh ?? { enabled: true, assetId: null, primitive: "cube" },
@@ -618,6 +678,7 @@ function normalizeProject(project: EditorProject): EditorProject {
   return {
     ...project,
     scene: {
+      ...(project.scene.rootTransform === undefined ? {} : { rootTransform: project.scene.rootTransform }),
       nodes: project.scene.nodes.map((node) => ({
         ...createProjectNode({
           id: node.id,
@@ -637,7 +698,10 @@ function normalizeProject(project: EditorProject): EditorProject {
         transform: {
           position: node.transform.position,
           rotation: node.transform.rotation,
-          scale: node.transform.scale
+          scale: node.transform.scale,
+          ...(node.transform.pivot === undefined ? {} : { pivot: node.transform.pivot }),
+          ...(node.transform.linearResidual === undefined ? {} : { linearResidual: node.transform.linearResidual }),
+          ...(node.transform.localMatrix === undefined ? {} : { localMatrix: node.transform.localMatrix })
         }
       }))
     },
@@ -673,7 +737,10 @@ function normalizeProject(project: EditorProject): EditorProject {
         transform: {
           position: node.transform.position,
           rotation: node.transform.rotation,
-          scale: node.transform.scale
+          scale: node.transform.scale,
+          ...(node.transform.pivot === undefined ? {} : { pivot: node.transform.pivot }),
+          ...(node.transform.linearResidual === undefined ? {} : { linearResidual: node.transform.linearResidual }),
+          ...(node.transform.localMatrix === undefined ? {} : { localMatrix: node.transform.localMatrix })
         }
       }))
     })),
@@ -681,6 +748,20 @@ function normalizeProject(project: EditorProject): EditorProject {
       ...defaultImportSettings,
       ...project.importSettings
     }
+  };
+}
+
+/** Share the runtime editor-envelope migration without changing the scene format version. */
+function migrateProjectEditorEnvelope(project: EditorProject): EditorProject {
+  const envelope = migrateEditorProject({
+    schema: "a3d-editor-project", name: project.metadata.name, nodes: project.scene.nodes,
+    editorFormatVersion: project.editorFormatVersion, shaderGraphs: project.shaderGraphs, editor: project.editor
+  });
+  return {
+    ...project,
+    editorFormatVersion: EDITOR_PROJECT_FORMAT_VERSION,
+    shaderGraphs: envelope.shaderGraphs ?? [],
+    ...(envelope.editor ? { editor: envelope.editor } : {})
   };
 }
 
@@ -708,14 +789,81 @@ function mustGet<T>(map: ReadonlyMap<string, T>, key: string): T {
   return value;
 }
 
-function assertFiniteTuple(value: readonly number[], length: number, label: string): void {
-  if (value.length !== length || value.some((entry) => !Number.isFinite(entry))) {
+function applyProjectTransform(node: SceneNode, transform: EditorProjectNode["transform"]): void {
+  node.transform.setPosition(...transform.position);
+  node.transform.setRotation(...transform.rotation);
+  node.transform.setScale(...transform.scale);
+  if (transform.pivot !== undefined) node.transform.setPivot(...transform.pivot);
+  if (transform.linearResidual !== undefined) node.transform.setLinearResidual([...transform.linearResidual] as Mat4);
+  if (transform.localMatrix !== undefined) node.transform.setLocalMatrix([...transform.localMatrix] as Mat4, { decompose: false });
+}
+
+function captureProjectTransform(
+  node: SceneNode,
+  label: string,
+  previous?: EditorProjectNode["transform"]
+): EditorProjectNode["transform"] {
+  const pivot = node.transform.pivot;
+  const linearResidual = node.transform.getLinearResidual();
+  const localMatrix = node.transform.matrixAutoUpdate ? undefined : node.transform.localMatrix;
+  const transform: EditorProjectNode["transform"] = {
+    position: [...node.transform.position] as [number, number, number],
+    rotation: [...node.transform.rotation] as [number, number, number, number],
+    scale: [...node.transform.scale] as [number, number, number],
+    ...(previous?.pivot !== undefined || pivot.some((coordinate) => coordinate !== 0 || Object.is(coordinate, -0))
+      ? { pivot: [...pivot] as [number, number, number] }
+      : {}),
+    ...(linearResidual === undefined ? {} : { linearResidual: [...linearResidual] as Mat4 }),
+    ...(localMatrix === undefined ? {} : { localMatrix: [...localMatrix] as Mat4 })
+  };
+  validateProjectTransform(transform, label);
+  return transform;
+}
+
+function validateProjectTransform(transform: EditorProjectNode["transform"], label: string): void {
+  assertFiniteTuple(transform.position, 3, `${label}.position`);
+  assertFiniteTuple(transform.rotation, 4, `${label}.rotation`);
+  assertFiniteTuple(transform.scale, 3, `${label}.scale`);
+  if (transform.pivot !== undefined) assertProjectPivot(transform.pivot, `${label}.pivot`);
+  if (transform.linearResidual !== undefined) assertProjectLinearResidual(transform.linearResidual, `${label}.linearResidual`);
+  if (transform.localMatrix !== undefined) assertFiniteTuple(transform.localMatrix, 16, `${label}.localMatrix`);
+}
+
+function isIdentityProjectTransform(transform: EditorProjectNode["transform"]): boolean {
+  return transform.position.every((value) => value === 0)
+    && transform.rotation.every((value, index) => value === (index === 3 ? 1 : 0))
+    && transform.scale.every((value) => value === 1)
+    && (transform.pivot === undefined || transform.pivot.every((value) => value === 0))
+    && transform.linearResidual === undefined && transform.localMatrix === undefined;
+}
+
+function assertFiniteTuple(value: unknown, length: number, label: string): void {
+  if (!Array.isArray(value) || value.length !== length || Array.from(value).some((entry) => !Number.isFinite(entry))) {
     throw new Error(`Project tuple ${label} must contain ${length} finite numbers.`);
   }
 }
 
+function assertProjectPivot(value: unknown, label: string): void {
+  if (!Array.isArray(value) || value.length !== 3 || Array.from(value).some((entry) => !Number.isFinite(entry))) {
+    throw new Error(`Project tuple ${label} must contain 3 finite numbers.`);
+  }
+}
+
+function assertProjectLinearResidual(value: unknown, label: string): void {
+  assertFiniteTuple(value, 16, label);
+  const matrix = value as readonly number[];
+  if (matrix[3] !== 0 || matrix[7] !== 0 || matrix[11] !== 0 ||
+      matrix[12] !== 0 || matrix[13] !== 0 || matrix[14] !== 0 || matrix[15] !== 1) {
+    throw new Error(`Project matrix ${label} must be an affine linear remainder.`);
+  }
+}
+
 function isFiniteTuple(value: unknown, length: number): value is readonly [number, number, number] {
-  return Array.isArray(value) && value.length === length && value.every((entry) => Number.isFinite(entry));
+  return Array.isArray(value) && value.length === length && Array.from(value).every((entry) => Number.isFinite(entry));
+}
+
+function isFiniteQuaternion(value: unknown): value is readonly [number, number, number, number] {
+  return Array.isArray(value) && value.length === 4 && Array.from(value).every((entry) => Number.isFinite(entry));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

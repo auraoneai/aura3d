@@ -11,11 +11,15 @@ import type { MorphTargetDelta } from "../MorphTarget";
 import type { RenderItemDrawRange, RenderItemInstanceAttribute } from "../ForwardPass";
 import type { Texture } from "../Texture";
 import type { TextureBinding } from "../TextureBinding";
+import type { ClippingGroupInput } from "../ClippingPlanes";
+import type { TemporalIdentity } from "./velocity";
 
 export interface RenderItem {
   readonly geometry: Geometry;
   readonly material?: RenderMaterial;
   readonly label?: string;
+  /** Stable identity of this logical draw across frames, scoped by its producer's lifetime. */
+  readonly temporalObjectKey?: TemporalIdentity;
   readonly drawRange?: RenderItemDrawRange;
   readonly includeInAutoFrame?: boolean;
   readonly modelMatrix?: Float32Array | readonly number[];
@@ -23,6 +27,9 @@ export interface RenderItem {
   readonly geometryMatrix?: Float32Array | readonly number[];
   readonly normalMatrix?: Float32Array | readonly number[];
   readonly modelViewProjectionMatrix?: Float32Array | readonly number[];
+  /** Per-item snapshots override the corresponding pass-level clipping groups. */
+  readonly globalClipping?: ClippingGroupInput;
+  readonly materialClipping?: ClippingGroupInput;
   readonly skinning?: SkinningPaletteBinding;
   readonly morphTargets?: readonly MorphTargetDelta[];
   readonly morphWeights?: readonly number[];
@@ -41,6 +48,9 @@ export interface RenderItem {
   readonly environmentCube?: TextureBinding;
   readonly environmentCubeMip?: number;
   readonly instanceTransforms?: Float32Array | readonly number[];
+  /** Draw count for instance-rate vertex streams without matrix transforms.
+   * When transforms are present, this must equal their number. */
+  readonly instanceCount?: number;
   readonly instanceColors?: Float32Array | readonly number[];
   readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];
   readonly boundingBoxCenter?: readonly [number, number, number];

@@ -15,8 +15,8 @@
  * calling back. (A single-pass read needs a renderer-report seam in the PRD-15
  * createAuraApp; that is a §12.3 request, not a lane-12 edit.)
  */
-import type { AuraApp } from "../agent-api/index";
-import { createProductionRuntimeCollectedLights } from "../agent-api/index";
+import type { AuraApp } from "../agent-api/nodes/types.js";
+import { createProductionRuntimeCollectedLights } from "../agent-api/compiler/observations.js";
 import type { AppliedLookReport, DiagnosticsSection, ShadowReport } from "../contracts/diagnostics";
 import { registerDiagnosticsSection } from "../contracts/diagnostics";
 import { resolveQrFlags } from "../contracts/flags";

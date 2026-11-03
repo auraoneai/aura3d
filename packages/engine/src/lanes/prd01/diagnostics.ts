@@ -1,14 +1,15 @@
 /**
  * PRD-01 C-31 diagnostics collectors (`lanes/prd01/diagnostics.ts`).
- * Phase 0: sections report observed values where reachable and null otherwise —
- * never constants. `output` reads the C-38 extension's recorded state; the rest
- * stay null until the Phase 2-4 surfaces exist.
+ * Sections report observed values where reachable and null or unknown otherwise.
+ * `output` reads the C-38 extension's state and the live device's negotiation,
+ * without treating an authored request as an active canvas color space.
  */
 
 import type { AuraApp } from "../../agent-api/index";
 import type { AuraOutputSurface } from "../../contracts/output";
-import { rendererProgramCachePeek } from "@aura3d/rendering";
+import { rendererProgramCachePeek, type RenderDevice, type RenderOutputColorSpaceNegotiation, type RendererOutputOptions } from "@aura3d/rendering";
 import type { DeviceCounters } from "@aura3d/rendering/contracts";
+import { readOutputColorSpaceObservation } from "../../agent-api/app/outputColorDiagnostics.js";
 import { appCanvasOf } from "../../agent-api/app/screenshot.js";
 
 /** The output surface keeps its own state block for the diagnostics section. */
@@ -24,40 +25,83 @@ export interface Prd01OutputState {
   };
 }
 
+function collectOutputColorSpace(
+  app: AuraApp,
+  device: Prd01RendererLike["device"]
+): RenderOutputColorSpaceNegotiation | { readonly active: "unknown"; readonly lastNegotiation?: RenderOutputColorSpaceNegotiation } {
+  const unknown = { active: "unknown" } as const;
+  try {
+    if (!device || app.renderTermination?.() || app.deviceLost?.() || device.activeFrameToken) return unknown;
+    const observed = readOutputColorSpaceObservation(device as RenderDevice, () => {
+      const canvas = appCanvasOf(app) ?? app.canvas;
+      return canvas?.getContext("webgl2") ?? null;
+    });
+    if (observed.active === "unknown") {
+      return observed.lastNegotiation ? { ...unknown, lastNegotiation: observed.lastNegotiation } : unknown;
+    }
+    return observed.lastNegotiation ?? unknown;
+  } catch {
+    return unknown;
+  }
+}
+
+/** The renderer's accepted configuration is not itself a rendered frame. */
+function configuredOutput(options: RendererOutputOptions | undefined): Readonly<Record<string, unknown>> | null {
+  if (!options) return null;
+  return {
+    ...(options.toneMapping === undefined ? {} : { toneMapping: options.toneMapping }),
+    ...(options.exposure === undefined ? {} : { exposure: options.exposure }),
+    ...(options.dithering === undefined ? {} : { dither: options.dithering }),
+    ...(options.backgroundCoverage === undefined ? {} : { backgroundPassthrough: options.backgroundCoverage }),
+    ...(options.outputColorSpace === undefined ? {} : { outputColorSpace: options.outputColorSpace }),
+    ...(options.alphaMode === undefined ? {} : { alphaMode: options.alphaMode }),
+    ...(options.inputAlphaMode === undefined ? {} : { inputAlphaMode: options.inputAlphaMode })
+  };
+}
+
 export function collectOutput(app: AuraApp): unknown {
   const surface = (app as { output?: AuraOutputSurface & { [PRD01_OUTPUT_STATE]?: Prd01OutputState } }).output;
   const state = surface?.[PRD01_OUTPUT_STATE]?.snapshot();
   // T0-07: the renderer's record of the legacy postprocess chain skipped
   // under A3D_QR_CORE_OUTPUT (C-36-shaped; PostGraph v2 routing is lane 03's).
-  const postSkipped = (app as { [PRD01_RENDERER]?: Prd01RendererLike })[PRD01_RENDERER]?.postSkipped ?? null;
-  if (!state) {
-    return {
-      implementation: null,
-      requested: null,
-      applied: null,
-      toneMapping: null,
-      exposure: null,
-      dithering: null,
-      overlay: null,
-      postSkipped
-    };
+  const renderer = (app as { [PRD01_RENDERER]?: Prd01RendererLike })[PRD01_RENDERER];
+  const postSkipped = renderer?.postSkipped ?? null;
+  const colorSpace = collectOutputColorSpace(app, renderer?.device);
+  let configured: Readonly<Record<string, unknown>> | null = null;
+  let lastPass: Prd01RendererLike["appliedOutput"] = null;
+  try {
+    const device = renderer?.device;
+    if (device && !device.disposed && !device.contextLost && !device.activeFrameToken
+      && !app.renderTermination?.() && !app.deviceLost?.() && renderer.outputPathActive === true) {
+      configured = configuredOutput(renderer.output);
+      lastPass = renderer.appliedOutput ?? null;
+    }
+  } catch {
+    // An uninspectable renderer is not evidence of applied settings.
   }
-  const requested = state.requested;
-  const applied = state.applied;
-  const exposureApplied = applied.exposure ?? requested.exposure ?? null;
   return {
-    implementation: state.implementation,
-    requested: requested as Record<string, unknown>,
-    applied: applied as Record<string, unknown>,
-    // C-05 AuraOutputDiagnostics fields, filled with observed-or-requested
-    // values (null where nothing observes them yet).
-    toneMapping: (applied.toneMapping ?? requested.toneMapping ?? null) as unknown,
-    exposure: { applied: exposureApplied, source: exposureApplied === null ? null : "output" },
-    dithering: (applied.dither ?? requested.dither ?? null) as unknown,
-    targetFormat: null,
-    degraded: null,
-    overlay: state.overlay,
-    rendererErrors: state.rendererErrors,
+    implementation: state?.implementation ?? null,
+    requested: state?.requested ?? null,
+    // Configuration accepted by the renderer may not have run yet.
+    configured,
+    // The verified canvas selection is separate from renderer configuration;
+    // it does not prove physical display support or successful presentation.
+    effective: colorSpace.active === "unknown" ? null : { outputColorSpace: colorSpace.active },
+    // The renderer reports only its most recent OutputPass, not physical
+    // presentation. Canvas negotiation is independently reported below.
+    applied: lastPass ? {
+      toneMapping: lastPass.toneMapping,
+      exposure: lastPass.exposure.applied,
+      dither: lastPass.dithering
+    } : state ? {} : null,
+    colorSpace,
+    toneMapping: lastPass?.toneMapping ?? null,
+    exposure: lastPass ? { ...lastPass.exposure } : null,
+    dithering: lastPass?.dithering ?? null,
+    targetFormat: lastPass?.targetFormat ?? null,
+    degraded: lastPass?.degraded ?? null,
+    overlay: state?.overlay ?? null,
+    ...(state ? { rendererErrors: state.rendererErrors } : {}),
     postSkipped
   };
 }
@@ -74,8 +118,14 @@ interface Prd01RendererLike {
     readonly backingHeight: number;
   };
   readonly renderScale?: number;
+  readonly outputPathActive?: boolean;
+  readonly output?: RendererOutputOptions;
+  readonly appliedOutput?: import("@aura3d/rendering").RendererAppliedOutput | null;
   readonly device?: {
     counters?: () => Partial<DeviceCounters>;
+    readonly activeFrameToken?: object | null;
+    readonly disposed?: boolean;
+    readonly contextLost?: boolean;
   };
   readonly frameStats?: {
     percentiles(field: "cpuSubmitMs" | "cpuFrameMs" | "gpuMs"): {

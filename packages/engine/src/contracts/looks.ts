@@ -3,7 +3,7 @@
  */
 
 import type { PrdId } from "@aura3d/rendering/contracts";
-import type { AuraSceneSnapshot, AuraColor, AuraAssetRef } from "../agent-api/index";
+import type { AuraSceneSnapshot, AuraColor, AuraAssetRef } from "../agent-api/nodes/types.js";
 import type { AuraBiomeId } from "./world";
 import type { AppliedLookReport } from "./diagnostics";
 import type { AuraDirectionalShadowOptions } from "./lighting";

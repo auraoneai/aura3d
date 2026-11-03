@@ -10,7 +10,8 @@
  * `emissive-varies` members out of merged batches.
  */
 
-import { registerShaderChunk, registerShaderFeature } from "../../contracts/program";
+import { registerShaderChunk, registerShaderFeature, shaderChunk, type ShaderChunk, type ShaderFeature } from "../../contracts/program";
+import { makeShaderFeatureReplayGuard } from "../../program/ShaderFeatureReplayGuard";
 import type { RenderItem } from "../../contracts/renderItem";
 import { registerWgslTwin } from "../../program/chunks/manifest";
 import { PRD11_INSTANCE_EMISSIVE_VTX_WGSL, PRD11_INSTANCE_EMISSIVE_FRAG_WGSL } from "../../program/chunks/instanceEmissive.wgsl";
@@ -34,34 +35,40 @@ in vec3 v_a3dInstanceEmissive;
 
 let registered = false;
 
+const instanceEmissiveVertexChunk: ShaderChunk = Object.freeze({
+  name: PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, owner: "prd11", glsl: VTX_GLSL,
+  wgsl: PRD11_INSTANCE_EMISSIVE_VTX_WGSL, stage: "vertex"
+});
+const instanceEmissiveFragmentChunk: ShaderChunk = Object.freeze({
+  name: PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, owner: "prd11", glsl: FRAG_GLSL,
+  wgsl: PRD11_INSTANCE_EMISSIVE_FRAG_WGSL, stage: "fragment"
+});
+const instanceEmissiveFeature: ShaderFeature = {
+  id: PRD11_INSTANCE_EMISSIVE_FEATURE,
+  owner: "prd11",
+  flag: "A3D_QR_TIERS_BATCHING",
+  select: (input) => emissiveLength(input.item) > 0 ? true : undefined,
+  defines: () => ({ A3D_PRD11_INSTANCE_EMISSIVE: true }),
+  chunks: [PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK],
+  hooks: ["vertex:pars", "fragment:pars"]
+};
+const unchangedInstanceEmissiveFeature = makeShaderFeatureReplayGuard([instanceEmissiveFeature]);
+
+/** Do not read metadata from an unknown or replaced provider. */
+export function isOriginalPrd11InstanceEmissiveFeature(feature: ShaderFeature): boolean {
+  return feature === instanceEmissiveFeature && unchangedInstanceEmissiveFeature(feature)
+    && shaderChunk(PRD11_INSTANCE_EMISSIVE_VTX_CHUNK) === instanceEmissiveVertexChunk
+    && shaderChunk(PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK) === instanceEmissiveFragmentChunk;
+}
+
 export function registerPrd11InstanceEmissiveShader(): void {
   if (registered) return;
   registered = true;
-  registerShaderChunk({
-    name: PRD11_INSTANCE_EMISSIVE_VTX_CHUNK,
-    owner: "prd11",
-    glsl: VTX_GLSL,
-    wgsl: PRD11_INSTANCE_EMISSIVE_VTX_WGSL,
-    stage: "vertex"
-  });
+  registerShaderChunk(instanceEmissiveVertexChunk);
   registerWgslTwin({ chunkName: PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, owner: "prd11", wgsl: PRD11_INSTANCE_EMISSIVE_VTX_WGSL });
-  registerShaderChunk({
-    name: PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK,
-    owner: "prd11",
-    glsl: FRAG_GLSL,
-    wgsl: PRD11_INSTANCE_EMISSIVE_FRAG_WGSL,
-    stage: "fragment"
-  });
+  registerShaderChunk(instanceEmissiveFragmentChunk);
   registerWgslTwin({ chunkName: PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, owner: "prd11", wgsl: PRD11_INSTANCE_EMISSIVE_FRAG_WGSL });
-  registerShaderFeature({
-    id: PRD11_INSTANCE_EMISSIVE_FEATURE,
-    owner: "prd11",
-    flag: "A3D_QR_TIERS_BATCHING",
-    select: (input) => emissiveLength(input.item) > 0 ? true : undefined,
-    defines: () => ({ A3D_PRD11_INSTANCE_EMISSIVE: true }),
-    chunks: [PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK],
-    hooks: ["vertex:pars", "fragment:pars"]
-  });
+  registerShaderFeature(instanceEmissiveFeature);
 }
 
 function emissiveLength(item: RenderItem): number {

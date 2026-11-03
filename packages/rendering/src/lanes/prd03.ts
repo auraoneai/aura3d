@@ -46,7 +46,7 @@ registerScreenFeelConsumer();
 registerPostOnlyTierContributor();
 
 export { postPipelineSlot, PostGraph, planPostGraph, resolvePostGraph, type PostGraphLike, type PostGraphFrame } from "../post/PostGraph.js";
-export { velocityHistorySlot, VelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
+export { velocityHistorySlot, VelocityHistory, createScopedVelocityHistory, postVelocityCoverage, type VelocitySurface, type VelocityUniformBinder, bindVelocityUniforms } from "../forward/Velocity.js";
 export { PostTimer } from "../post/PostTimer.js";
 export { SCREEN_FEEL_PASS_ID, screenFeelFrameState } from "../post/ScreenFeelPass.js";
 // 03-S18c: the renderer-side outcome of the last v2 seam call, so

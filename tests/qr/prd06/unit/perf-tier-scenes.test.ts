@@ -15,7 +15,7 @@ import {
 } from "../../../../benchmarks/quality-rebuild/scenes/prd06/perf-tier";
 import { scenes as sharedScenes } from "../../../../benchmarks/quality-rebuild/scenes/prd06/index";
 import { scenes as auraScenes } from "../../../../benchmarks/quality-rebuild/aura3d/scenes/prd06/index";
-import { scenes as threeScenes } from "../../../../benchmarks/quality-rebuild/three/scenes/prd06/index";
+import { historicalRegistrations } from "./historical-registry-source";
 import { rampStairsHeightAt } from "../../../../benchmarks/quality-rebuild/shared/terrain";
 
 const SPECS: readonly PerfTierSpec[] = [prd06PerfTierLow, prd06PerfTierMedium, prd06PerfTierHigh, prd06PerfTierUltra];
@@ -28,6 +28,7 @@ const EXPECTED = {
 
 describe("prd06-perf-tier-* lane specs (§13)", () => {
   it("register on all three C-30 lane indices, non-reference", () => {
+    const threeScenes = historicalRegistrations();
     for (const spec of SPECS) {
       for (const index of [sharedScenes, auraScenes, threeScenes]) {
         const entry = index.find((scene) => scene.id === spec.id);

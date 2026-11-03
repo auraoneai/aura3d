@@ -1,12 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { NullEngine, Scene, SceneLoader } from "@babylonjs/core";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
-import "@babylonjs/loaders/glTF/index.js";
-import { LoadingManager } from "three";
-import { GLTFLoader as ThreeGLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { MeshoptDecoder } from "meshoptimizer";
 import { describe, expect, it } from "vitest";
 import {
   GLTFLoader,
@@ -14,11 +8,9 @@ import {
   createBlenderExportValidationReport,
   createAssetCompatibilityReport,
   normalizeAssetImportSettings,
-  type AssetDiagnostic,
   type BlenderExportFixtureInput,
   type BlenderExportFixtureManifest,
   type BlenderExportValidationReport,
-  type ExternalAssetLoaderCompatibilityResult,
   type GLTFCorpusManifest
 } from "../../packages/assets/src";
 
@@ -33,36 +25,56 @@ const blenderFixtureRoots = [
 ];
 
 describe("asset compatibility diagnostics", () => {
-  it("emits a Three.js/Babylon compatibility report with pinned external loader runs", async () => {
+  it("emits a corpus compatibility report with honest external-loader status", async () => {
     const manifest = readManifest();
-    const externalLoaderResults = await runExternalLoaderCompatibility(manifest);
     const blenderExportValidation = await runBlenderExportValidation();
     const report = createAssetCompatibilityReport(manifest, {
       generatedAt: "2026-05-06T00:00:00.000Z",
       blenderExportFixturesPresent: blenderFixtureRoots.some((path) => existsSync(path)),
-      blenderExportValidation,
-      externalLoaderResults
+      blenderExportValidation
     });
 
     expect(report.schemaVersion).toBe("asset-compatibility-report");
     expect(report.fixtureStatus.blenderExportFixtures).toBe("present");
     expect(report.summary.assetCount).toBe(77);
+    // These are manifest classifications, not 77 loader executions.
     expect(report.summary.aura3d).toEqual({ pass: 70, warn: 7, "expected-fail": 0, "not-run": 0 });
-    expect(report.summary.threejs["not-run"]).toBe(0);
-    expect(report.summary.babylonjs["not-run"]).toBe(0);
+    expect(report.summary.threejs).toEqual({ pass: 0, warn: 0, "expected-fail": 0, "not-run": 77 });
+    expect(report.summary.babylonjs).toEqual({ pass: 0, warn: 0, "expected-fail": 0, "not-run": 77 });
     expect(report.blenderExportValidation?.summary).toMatchObject({ fixtureCount: 3, pass: 3, warn: 0, fail: 0 });
     expect(report.blenderExportValidation?.fixtures.every((fixture) => /Blender/i.test(fixture.generator))).toBe(true);
     expect(report.blenderExportValidation?.fixtures.every((fixture) => fixture.metrics.meshes > 0 && fixture.metrics.renderables > 0)).toBe(true);
-    expect(report.assets.every((asset) => asset.loaders.some((loader) => loader.loader === "threejs" && loader.status !== "not-run"))).toBe(true);
-    expect(report.assets.every((asset) => asset.loaders.some((loader) => loader.loader === "babylonjs" && loader.status !== "not-run"))).toBe(true);
-    expect(report.summary.threejs.pass + report.summary.threejs.warn + report.summary.threejs["expected-fail"]).toBe(77);
-    expect(report.summary.babylonjs.pass + report.summary.babylonjs.warn + report.summary.babylonjs["expected-fail"]).toBe(77);
+    expect(report.assets.every((asset) => asset.loaders.some((loader) => loader.loader === "threejs" && loader.status === "not-run"))).toBe(true);
+    expect(report.assets.every((asset) => asset.loaders.some((loader) => loader.loader === "babylonjs" && loader.status === "not-run"))).toBe(true);
     expect(report.assets.flatMap((asset) => asset.loaders.flatMap((loader) => loader.diagnostics)).every((diagnostic) => diagnostic.nextAction.length > 0)).toBe(true);
 
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
     writeFileSync(blenderExportReportPath, `${JSON.stringify(blenderExportValidation, null, 2)}\n`);
   }, 120_000);
+
+  it("incorporates supplied external-loader results by asset and loader", () => {
+    const report = createAssetCompatibilityReport(readManifest(), {
+      generatedAt: "2026-05-06T00:00:00.000Z",
+      externalLoaderResults: [{
+        assetId: "box",
+        loader: "threejs",
+        status: "warn",
+        diagnostics: [{
+          code: "TEST_SYNTHETIC_EXTERNAL_RESULT",
+          severity: "warning",
+          message: "Synthetic input for report indexing; no external loader ran.",
+          nextAction: "Supply separately measured evidence for a real compatibility report."
+        }]
+      }]
+    });
+    expect(report.summary.threejs).toEqual({ pass: 0, warn: 1, "expected-fail": 0, "not-run": 76 });
+    expect(report.summary.babylonjs["not-run"]).toBe(77);
+    expect(report.assets.find((asset) => asset.id === "box")?.loaders.find((loader) => loader.loader === "threejs"))
+      .toMatchObject({ status: "warn", diagnostics: [{ code: "TEST_SYNTHETIC_EXTERNAL_RESULT" }] });
+    expect(report.assets.find((asset) => asset.id === "box-textured")?.loaders.find((loader) => loader.loader === "threejs")?.status)
+      .toBe("not-run");
+  });
 
   it("keeps per-asset import settings normalized and actionable for loader decisions", () => {
     const manifest = readManifest();
@@ -132,7 +144,7 @@ describe("asset compatibility diagnostics", () => {
     });
   });
 
-  it("accepts real same-corpus Blender export results when a runner supplies them", () => {
+  it("indexes supplied same-corpus Blender results", () => {
     const manifest = readManifest();
     const report = createAssetCompatibilityReport(manifest, {
       generatedAt: "2026-05-06T00:00:00.000Z",
@@ -142,10 +154,10 @@ describe("asset compatibility diagnostics", () => {
         loader: "blender-export" as const,
         status: asset.expectedStatus === "warn" ? "warn" as const : "pass" as const,
         diagnostics: [{
-          code: "ASSET_BLENDER_SAME_CORPUS_EXPORT_VALIDATED",
+          code: "TEST_SYNTHETIC_BLENDER_RESULT",
           severity: asset.expectedStatus === "warn" ? "warning" as const : "info" as const,
-          message: "Asset was imported and exported by Blender in the same-corpus audit runner.",
-          nextAction: "Keep the same-corpus Blender report fresh when changing the corpus, importer, or renderer."
+          message: "Synthetic input for report indexing; no Blender export ran.",
+          nextAction: "Supply separately measured evidence for a real compatibility report."
         }]
       }))
     });
@@ -170,278 +182,6 @@ async function runBlenderExportValidation(): Promise<BlenderExportValidationRepo
     return { ...fixture, sourceText };
   });
   return createBlenderExportValidationReport(manifest, fixtureInputs, "2026-05-06T00:00:00.000Z");
-}
-
-async function runExternalLoaderCompatibility(manifest: GLTFCorpusManifest): Promise<ExternalAssetLoaderCompatibilityResult[]> {
-  installNodeLoaderPolyfills();
-  await MeshoptDecoder.ready;
-
-  const results: ExternalAssetLoaderCompatibilityResult[] = [];
-  for (const asset of manifest.assets) {
-    const source = await loadSourceForExternalLoader(asset.source.uri, asset.format);
-    results.push(await runThreeCompatibility(asset.id, source, asset.expectedStatus));
-    results.push(await runBabylonCompatibility(asset.id, source, asset.expectedStatus));
-  }
-  return results;
-}
-
-async function runThreeCompatibility(
-  assetId: string,
-  source: ExternalLoaderSource,
-  expectedStatus: GLTFCorpusManifest["assets"][number]["expectedStatus"]
-): Promise<ExternalAssetLoaderCompatibilityResult> {
-  const loader = new ThreeGLTFLoader(new LoadingManager());
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  try {
-    const warnings = await captureConsoleMessages(["error", "warn"], () => new Promise<string[]>((resolveResult, reject) => {
-      loader.parse(source.threeInput, "", resolveResult, reject);
-    }));
-    return externalPass(assetId, "threejs", expectedStatus, warnings);
-  } catch (error) {
-    return externalExpectedFail(assetId, "threejs", error, expectedStatus);
-  }
-}
-
-async function runBabylonCompatibility(
-  assetId: string,
-  source: ExternalLoaderSource,
-  expectedStatus: GLTFCorpusManifest["assets"][number]["expectedStatus"]
-): Promise<ExternalAssetLoaderCompatibilityResult> {
-  let engine: NullEngine | undefined;
-  let scene: Scene | undefined;
-  try {
-    const warnings = await captureBabylonLoggerMessages(async () => {
-      engine = new NullEngine({ renderWidth: 1, renderHeight: 1, textureSize: 1 });
-      scene = new Scene(engine);
-      await SceneLoader.ImportMeshAsync(null, "", source.babylonDataUri, scene, undefined, source.babylonExtension);
-    });
-    return externalPass(assetId, "babylonjs", expectedStatus, warnings.filter((message) => !/Babylon\.js v[\d.]+ - Null engine/.test(message)));
-  } catch (error) {
-    return externalExpectedFail(assetId, "babylonjs", error, expectedStatus);
-  } finally {
-    scene?.dispose();
-    engine?.dispose();
-  }
-}
-
-function externalPass(
-  assetId: string,
-  loader: "threejs" | "babylonjs",
-  expectedStatus: GLTFCorpusManifest["assets"][number]["expectedStatus"],
-  warnings: readonly string[] = []
-): ExternalAssetLoaderCompatibilityResult {
-  const status = expectedStatus === "warn" || warnings.length > 0 ? "warn" : "pass";
-  return {
-    assetId,
-    loader,
-    status,
-    diagnostics: [
-      {
-        code: `ASSET_${loader.toUpperCase()}_LOADER_EXECUTED`,
-        severity: status === "warn" ? "warning" : "info",
-        message: `Pinned ${loader} loader imported this corpus asset in the Node compatibility harness.`,
-        nextAction: "Keep this result current when changing the corpus, loader versions, or import settings."
-      },
-      ...warnings.map((message): AssetDiagnostic => ({
-        code: `ASSET_${loader.toUpperCase()}_LOADER_WARNING`,
-        severity: "warning",
-        message,
-        nextAction: "Treat this as loader-import evidence only until visual output parity is captured in a browser."
-      }))
-    ]
-  };
-}
-
-function externalExpectedFail(
-  assetId: string,
-  loader: "threejs" | "babylonjs",
-  error: unknown,
-  expectedStatus: GLTFCorpusManifest["assets"][number]["expectedStatus"]
-): ExternalAssetLoaderCompatibilityResult {
-  const message = error instanceof Error ? error.message : String(error);
-  if (loader === "threejs" && expectedStatus === "warn" && /Image is not defined/.test(message)) {
-    return {
-      assetId,
-      loader,
-      status: "warn",
-      diagnostics: [
-        {
-          code: "ASSET_THREEJS_NODE_IMAGE_POLYFILL_MISSING",
-          severity: "warning",
-          message: `threejs loader reached an image decode path not available in the pinned Node compatibility harness: ${message}`,
-          nextAction: "Use browser visual parity evidence for this asset or add a real Node Image/createImageBitmap polyfill before treating this as pass evidence."
-        }
-      ]
-    };
-  }
-  return {
-    assetId,
-    loader,
-    status: "expected-fail",
-    diagnostics: [
-      {
-        code: `ASSET_${loader.toUpperCase()}_LOADER_FAILED`,
-        severity: "warning",
-        message: `${loader} loader failed in the pinned Node compatibility harness: ${message}`,
-        nextAction: "Inspect this loader-specific failure before using this asset in parity or superiority claims."
-      }
-    ]
-  };
-}
-
-interface ExternalLoaderSource {
-  readonly threeInput: string | ArrayBuffer;
-  readonly babylonDataUri: string;
-  readonly babylonExtension: ".gltf" | ".glb";
-}
-
-async function loadSourceForExternalLoader(uri: string, format: string): Promise<ExternalLoaderSource> {
-  const response = await fetch(uri);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${uri}: ${response.status} ${response.statusText}`);
-  }
-  if (format === "glb") {
-    const bytes = Buffer.from(await response.arrayBuffer());
-    return {
-      threeInput: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
-      babylonDataUri: `data:model/gltf-binary;base64,${bytes.toString("base64")}`,
-      babylonExtension: ".glb"
-    };
-  }
-
-  const root = uri.slice(0, uri.lastIndexOf("/") + 1);
-  const gltf = JSON.parse(await response.text()) as {
-    buffers?: Array<{ uri?: string }>;
-    images?: Array<{ uri?: string }>;
-  };
-  await inlineExternalUris(gltf.buffers, root, "application/octet-stream");
-  await inlineExternalUris(gltf.images, root, "application/octet-stream");
-  const json = JSON.stringify(gltf);
-  return {
-    threeInput: json,
-    babylonDataUri: `data:model/gltf+json;base64,${Buffer.from(json).toString("base64")}`,
-    babylonExtension: ".gltf"
-  };
-}
-
-async function inlineExternalUris(
-  entries: Array<{ uri?: string }> | undefined,
-  root: string,
-  fallbackContentType: string
-): Promise<void> {
-  for (const entry of entries ?? []) {
-    if (!entry.uri || entry.uri.startsWith("data:")) continue;
-    const response = await fetch(new URL(entry.uri, root));
-    if (!response.ok) {
-      throw new Error(`Failed to fetch glTF dependency ${entry.uri}: ${response.status} ${response.statusText}`);
-    }
-    const bytes = Buffer.from(await response.arrayBuffer());
-    entry.uri = `data:${response.headers.get("content-type") ?? fallbackContentType};base64,${bytes.toString("base64")}`;
-  }
-}
-
-function installNodeLoaderPolyfills(): void {
-  const globalWithPolyfills = globalThis as typeof globalThis & {
-    self?: typeof globalThis;
-    ProgressEvent?: typeof Event;
-    Image?: new () => HTMLImageElement;
-    document?: {
-      createElementNS(namespace: string, tagName: string): unknown;
-      createElement(tagName: string): unknown;
-      addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
-      removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
-    };
-    createImageBitmap?: (source: unknown) => Promise<unknown>;
-  };
-  globalWithPolyfills.self ??= globalThis;
-  globalWithPolyfills.ProgressEvent ??= class ProgressEvent extends Event {
-    constructor(type: string, init: EventInit = {}) {
-      super(type, init);
-    }
-  };
-  globalWithPolyfills.Image ??= class NodeCompatibilityImage extends EventTarget {
-    width = 1;
-    height = 1;
-    crossOrigin = "";
-    onload: ((event: Event) => void) | null = null;
-    onerror: ((event: Event) => void) | null = null;
-    #src = "";
-
-    get src(): string {
-      return this.#src;
-    }
-
-    set src(value: string) {
-      this.#src = value;
-      queueMicrotask(() => {
-        const event = new Event("load");
-        this.onload?.(event);
-        this.dispatchEvent(event);
-      });
-    }
-
-    decode(): Promise<void> {
-      return Promise.resolve();
-    }
-  } as unknown as new () => HTMLImageElement;
-  globalWithPolyfills.document ??= {
-    createElementNS: (_namespace: string, tagName: string) => tagName.toLowerCase() === "img" ? new globalWithPolyfills.Image!() : {},
-    createElement: (tagName: string) => tagName.toLowerCase() === "img" ? new globalWithPolyfills.Image!() : {},
-    addEventListener: () => {},
-    removeEventListener: () => {}
-  };
-  globalWithPolyfills.createImageBitmap ??= async (source: unknown) => source;
-}
-
-async function captureConsoleMessages(
-  methods: readonly ("log" | "warn" | "error")[],
-  callback: () => Promise<unknown>
-): Promise<string[]> {
-  const messages: string[] = [];
-  const originals = new Map<"log" | "warn" | "error", (...data: unknown[]) => void>();
-  for (const method of methods) {
-    originals.set(method, console[method]);
-    console[method] = (...data: unknown[]) => {
-      messages.push(data.map((entry) => typeof entry === "string" ? entry : JSON.stringify(entry)).join(" "));
-    };
-  }
-  try {
-    await callback();
-    return messages;
-  } finally {
-    for (const [method, original] of originals) {
-      console[method] = original;
-    }
-  }
-}
-
-async function captureBabylonLoggerMessages(callback: () => Promise<unknown>): Promise<string[]> {
-  const messages: string[] = [];
-  const originalLog = Logger.Log;
-  const originalWarn = Logger.Warn;
-  const originalError = Logger.Error;
-  const capture = (message: string | unknown[]): void => {
-    messages.push(formatLoggerMessage(message));
-  };
-
-  Logger.Log = capture;
-  Logger.Warn = capture;
-  Logger.Error = capture;
-  try {
-    await callback();
-    return messages;
-  } finally {
-    Logger.Log = originalLog;
-    Logger.Warn = originalWarn;
-    Logger.Error = originalError;
-  }
-}
-
-function formatLoggerMessage(message: string | unknown[]): string {
-  if (Array.isArray(message)) {
-    return String(message[0]);
-  }
-  return message;
 }
 
 function triangleGLTF(): string {

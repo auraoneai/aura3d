@@ -1,13 +1,10 @@
 /**
- * R-23 — author-named per-vertex attributes (three `setAttribute(name,
- * BufferAttribute)`): spec validation, vertex layout with stable shader
- * locations, in-place per-frame `updateAttribute`, `toNonIndexed`/`merge`
- * parity with three 0.185.1, and `material.custom` GLSL binding.
+ * Author-named per-vertex attributes: validation, integer normalization,
+ * interleaved input, stable shader locations, in-place partial updates,
+ * geometry operations, and `material.custom` GLSL binding.
  */
 
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import {
   MAX_CUSTOM_VERTEX_ATTRIBUTES,
@@ -75,10 +72,23 @@ describe("R-23 spec validation", () => {
   });
 
   it("rejects length mismatch, bad itemSize, non-finite values and wrong data type", () => {
-    expect(() => withAttr("size", 3, 11)).toThrowError(/expected 4 vertices x 3 = 12/);
+    expect(() => withAttr("size", 3, 11)).toThrowError(/expected 4 vertices x 3/);
     expect(() => defineAuraCustomGeometry({ ...base, attributes: { size: { itemSize: 5 as never, data: new Float32Array(20) } } })).toThrowError(/itemSize must be 1, 2, 3 or 4/);
     expect(() => defineAuraCustomGeometry({ ...base, attributes: { size: { itemSize: 1, data: [1, 2, Number.NaN, 4] } } })).toThrowError(/must be finite/);
-    expect(() => defineAuraCustomGeometry({ ...base, attributes: { size: { itemSize: 1, data: new Uint8Array(4) as never } } })).toThrowError(/Float32Array or number\[\]/);
+    expect(() => defineAuraCustomGeometry({ ...base, attributes: { size: { itemSize: 1, data: new Float64Array(4) as never } } })).toThrowError(/data/);
+  });
+
+  it("rejects values that overflow the packed float32 shader stream", () => {
+    const packed = { size: { itemSize: 1 as const, data: [0, 1, Number.MAX_VALUE, 3] } };
+    const interleaved = { size: { itemSize: 1 as const, data: [0, 0, 1, 0, Number.MAX_VALUE, 0, 3, 0], stride: 2 } };
+    for (const attributes of [packed, interleaved]) {
+      expect(() => defineAuraCustomGeometry({ ...base, attributes })).toThrow(/finite.*float32/i);
+    }
+  });
+
+  it("does not silently discard unknown custom attribute metadata", () => {
+    const attributes = { size: { itemSize: 1 as const, data: [0, 1, 2, 3], divisor: 1 } };
+    expect(() => defineAuraCustomGeometry({ ...base, attributes })).toThrow(/unsupported.*divisor/i);
   });
 
   it("caps the attribute count at the location pool size", () => {
@@ -178,6 +188,101 @@ describe("R-23 vertex layout + round trip", () => {
   });
 });
 
+describe("Typed and interleaved custom attributes", () => {
+  const makeNode = (attributes: Parameters<typeof defineAuraDynamicGeometry>[0]["attributes"]) => primitive("custom", {
+    geometry: defineAuraDynamicGeometry({ positions: Float32Array.from(QUAD_POSITIONS), indices: QUAD_INDICES, attributes })
+  }).runtime({ id: "typed" }).toJSON() as AuraPrimitiveNode;
+
+  it("reads components from a typed-array view with nonzero offset and stride, then uploads normalized values", () => {
+    // Each record has unrelated bytes around the two useful components. The
+    // view begins inside the parent buffer, exercising both offsets.
+    const backing = Uint8Array.from([222, 77, 0, 255, 88, 77, 64, 128, 88, 77, 255, 0, 88, 77, 128, 64, 88, 222]);
+    const data = backing.subarray(1, 17);
+    const node = makeNode({ signal: { itemSize: 2, data, normalized: true, stride: 4, offset: 1 } });
+    const attribute = node.geometry!.attributes!.signal!;
+    expect(attribute.data).toBe(data);
+    expect(attribute).toMatchObject({ normalized: true, stride: 4, offset: 1 });
+    const geo = createProductionPrimitiveGeometry(node);
+    const values = [[0, 255], [64, 128], [255, 0], [128, 64]];
+    const attr = geo.vertexBuffer.format.getAttribute(customAttributeSemantic("signal"));
+    expect(attr).toMatchObject({ type: "uint8", normalized: true, components: 2 });
+    values.forEach((expected, vertex) => {
+      const actual = geo.vertexBuffer.getAttribute(vertex, customAttributeSemantic("signal"));
+      expect(actual).toEqual(expected);
+    });
+    const device = new MockRenderDevice();
+    const uploaded = geo.vertexBuffer.upload(device);
+    const uploadedBytes = device.readBuffer(uploaded);
+    expect(uploadedBytes[geo.vertexBuffer.format.stride + attr.offset]).toBe(64);
+    expect(uploadedBytes[geo.vertexBuffer.format.stride + attr.offset + 1]).toBe(128);
+    expect(Array.from(normalizeGeometryAttributes(node.geometry!).custom[0]!.data)).toEqual(values.flat().map((value) => Math.fround(value / 255)));
+    geo.dispose();
+    device.dispose();
+  });
+
+  it("maps signed integer minima to -1 and preserves unnormalized integer values", () => {
+    const node = makeNode({
+      signed: { itemSize: 1, data: Int8Array.from([-128, -127, 0, 127]), normalized: true },
+      raw: { itemSize: 1, data: Uint16Array.from([0, 1, 1024, 65535]) }
+    });
+    const geo = createProductionPrimitiveGeometry(node);
+    expect([0, 1, 2, 3].map((i) => geo.vertexBuffer.getAttribute(i, customAttributeSemantic("signed"))[0])).toEqual([-1, -1, 0, 1]);
+    expect([0, 1, 2, 3].map((i) => geo.vertexBuffer.getAttribute(i, customAttributeSemantic("raw"))[0])).toEqual([0, 1, 1024, 65535]);
+  });
+
+  it("rejects invalid offsets, strides, short backing stores, and ambiguous normalized float data", () => {
+    const attribute = (fields: Record<string, unknown>) => () => makeNode({ signal: { itemSize: 2, data: new Uint8Array(16), ...fields } });
+    expect(attribute({ stride: 1 })).toThrow(/stride/);
+    expect(attribute({ stride: 4, offset: -1 })).toThrow(/offset/);
+    expect(attribute({ stride: 4, offset: 3 })).toThrow(/offset|stride/);
+    expect(attribute({ stride: 5, offset: 1 })).toThrow(/length|values|vertices|data/);
+    expect(() => makeNode({ signal: { itemSize: 1, data: new Float32Array(4), normalized: true } })).toThrow(/normaliz/i);
+  });
+
+  it("updates a vertex range using its authored integer normalization and uploads only the dirty range", () => {
+    const node = makeNode({ signal: { itemSize: 2, data: Uint8Array.from([0, 255, 64, 128, 255, 0, 128, 64]), normalized: true } });
+    const registry = createAuraRuntimeNodeRegistry({ nodes: [node] } as unknown as AuraSceneSnapshot);
+    const [entry] = createProductionRuntimePrimitiveEntries([node]);
+    const pick = () => selectProductionPrimitiveResource(entry!, resolveProductionPrimitiveRuntimeState(entry!, registry).node, [0, 0, 10]);
+    const resource = pick();
+    const buffer = resource.geometry.vertexBuffer;
+    const device = new MockRenderDevice();
+    const gpuBuffer = buffer.upload(device);
+    expect(buffer.getDirtyRange()).toBeNull();
+    registry.get("typed")!.updateAttribute!("signal", { array: Uint8Array.from([255, 0, 128, 255]), offset: 1 });
+    expect(pick().geometry.vertexBuffer).toBe(buffer);
+    const attr = buffer.format.getAttribute(customAttributeSemantic("signal"));
+    expect(attr).toMatchObject({ type: "uint8", normalized: true });
+    expect(buffer.getDirtyRange()).toEqual({ start: buffer.format.stride + attr.offset, end: buffer.format.stride * 2 + attr.offset + attr.byteLength });
+    expect(buffer.getAttribute(0, attr.semantic)).toEqual([0, 255]);
+    expect(buffer.getAttribute(1, attr.semantic)).toEqual([255, 0]);
+    expect(buffer.getAttribute(2, attr.semantic)).toEqual([128, 255]);
+    expect(buffer.upload(device)).toBe(gpuBuffer);
+    const uploadedBytes = device.readBuffer(gpuBuffer);
+    expect(uploadedBytes[buffer.format.stride + attr.offset]).toBe(255);
+    expect(uploadedBytes[buffer.format.stride * 2 + attr.offset]).toBe(128);
+    expect(buffer.getDirtyRange()).toBeNull();
+    resource.geometry.dispose();
+    device.dispose();
+  });
+
+  it("uses a float fallback for GPU-incompatible formats and rebuilds when storage changes", () => {
+    const node = makeNode({ signal: { itemSize: 2, data: Uint8Array.from([0, 255, 64, 128, 255, 0, 128, 64]), normalized: true } });
+    const registry = createAuraRuntimeNodeRegistry({ nodes: [node] } as unknown as AuraSceneSnapshot);
+    const [entry] = createProductionRuntimePrimitiveEntries([node]);
+    const pick = () => selectProductionPrimitiveResource(entry!, resolveProductionPrimitiveRuntimeState(entry!, registry).node, [0, 0, 10]);
+    const resource = pick();
+    const previous = resource.geometry;
+    registry.get("typed")!.setGeometry!({ positions: QUAD_POSITIONS, indices: QUAD_INDICES, attributes: {
+      signal: { itemSize: 2, data: Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8]) }
+    } });
+    const updated = pick().geometry;
+    expect(updated).not.toBe(previous);
+    expect(updated.vertexBuffer.format.getAttribute(customAttributeSemantic("signal"))).toMatchObject({ type: "float32", normalized: false });
+    expect(updated.vertexBuffer.getAttribute(1, customAttributeSemantic("signal"))).toEqual([3, 4]);
+  });
+});
+
 describe("R-23 runtime setGeometry / updateAttribute on custom attributes", () => {
   const snap = (node: AuraPrimitiveNode) => ({ nodes: [node] }) as unknown as AuraSceneSnapshot;
   function boot(attributes = paintAttributes()) {
@@ -240,48 +345,98 @@ describe("R-23 runtime setGeometry / updateAttribute on custom attributes", () =
   it("updateAttribute rejects an unknown name with a message naming custom attributes", () => {
     const { pick, handle } = boot();
     pick();
-    handle.updateAttribute!("noSuchAttr", { array: [1], offset: 0 });
-    expect(() => pick()).toThrowError(/not a writable vertex semantic.*custom attribute on this geometry/);
+    expect(() => handle.updateAttribute!("noSuchAttr", { array: [1], offset: 0 })).toThrowError(/noSuchAttr|attribute/i);
   });
 
   it("updateAttribute rejects an overrun", () => {
     const { pick, handle } = boot();
     pick();
-    handle.updateAttribute!("paintOriginal", { array: [1, 2], offset: 3 });
-    expect(() => pick()).toThrowError(/overruns the vertex buffer/);
+    expect(() => handle.updateAttribute!("paintOriginal", { array: [1, 2], offset: 3 })).toThrowError(/overrun|range/i);
   });
 });
 
-describe("R-23 BufferGeometryUtils parity for custom attributes", () => {
-  const threeQuad = (extra: Float32Array) => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(Float32Array.from(QUAD_POSITIONS), 3));
-    geo.setAttribute("size", new THREE.BufferAttribute(extra, 1));
-    geo.setIndex(QUAD_INDICES);
-    return geo;
+describe("Runtime geometry state and bounds", () => {
+  const boot = (spec: Parameters<typeof defineAuraDynamicGeometry>[0]) => {
+    const node = primitive("custom", { geometry: defineAuraDynamicGeometry(spec) }).runtime({ id: "dynamic" }).toJSON() as AuraPrimitiveNode;
+    const registry = createAuraRuntimeNodeRegistry({ nodes: [node] } as unknown as AuraSceneSnapshot);
+    const [entry] = createProductionRuntimePrimitiveEntries([node]);
+    const pick = () => selectProductionPrimitiveResource(entry!, resolveProductionPrimitiveRuntimeState(entry!, registry).node, [0, 0, 10]);
+    return { handle: registry.get("dynamic")!, pick };
   };
 
-  it("toNonIndexed expands custom attributes exactly like three", () => {
+  it("refreshes resource and geometry bounds from all live positions after a partial edit", () => {
+    const { handle, pick } = boot({
+      positions: Float32Array.from([0, 0, 0, 1, 0, 0, 0, 1, 0]), indices: [0, 1, 2],
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] }
+    });
+    const first = pick();
+    handle.updateAttribute!("position", { array: [8, -3, 2], offset: 1 });
+    const updated = pick();
+    expect(updated.geometry).toBe(first.geometry);
+    expect(updated.bounds).toEqual({ min: [0, -3, 0], max: [8, 1, 2] });
+    expect(updated.geometry.bounds).toEqual(updated.bounds);
+  });
+
+  it("installs and updates the second UV set through the real vertex layout", () => {
+    const uv1s = Float32Array.from([0, 0, 0.25, 0.5, 1, 1, 0.5, 1]);
+    const { handle, pick } = boot({ positions: Float32Array.from(QUAD_POSITIONS), indices: QUAD_INDICES, uv1s });
+    const first = pick();
+    expect(first.geometry.vertexBuffer.getAttribute(1, "uv1")).toEqual([0.25, 0.5]);
+    handle.updateAttribute!("uv1", { array: [0.75, 0.125], offset: 1 });
+    const updated = pick();
+    expect(updated.geometry).toBe(first.geometry);
+    expect(updated.geometry.vertexBuffer.getAttribute(1, "uv1")).toEqual([0.75, 0.125]);
+  });
+
+  it("replaces an index buffer when its width increases or indexing is removed", () => {
+    const positions = new Float32Array(65538 * 3);
+    const { handle, pick } = boot({ positions, indices: [0, 1, 2] });
+    const resource = pick();
+    const firstIndex = resource.geometry.indexBuffer!;
+    expect(firstIndex.type).toBe("uint16");
+    handle.setGeometry!({ positions, indices: [65536, 1, 2] });
+    const widened = pick();
+    expect(widened.geometry).toBe(resource.geometry);
+    expect(widened.geometry.indexBuffer!.type).toBe("uint32");
+    expect(Array.from(widened.geometry.indexBuffer!.data)).toEqual([65536, 1, 2]);
+    expect(() => firstIndex.setIndices(0, [1])).toThrow(/disposed/i);
+    handle.setGeometry!({ positions, indices: [] });
+    expect(pick().geometry.indexBuffer).toBeNull();
+  });
+});
+
+describe("Geometry operations on custom attributes", () => {
+  it("limits wireframe traversal to the authored groups for indexed and non-indexed meshes", () => {
+    const grouped = defineAuraCustomGeometry({ positions: QUAD_POSITIONS, indices: QUAD_INDICES, groups: [{ start: 3, count: 3 }] });
+    const lines = geometry.wireframe(grouped);
+    expect(Array.from(lines.positions as readonly number[])).toEqual([0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]);
+    const expanded = auraGeometryToNonIndexed(grouped);
+    expect(Array.from(geometry.wireframe(expanded).positions as readonly number[])).toEqual(Array.from(lines.positions as readonly number[]));
+    expect(() => geometry.edges(grouped)).toThrow(/groups|drawRange/);
+    expect(() => geometry.wireframe({ ...grouped, topology: "points" })).toThrow(/triangle topology/);
+    expect(() => geometry.wireframe({ ...grouped, drawRange: { start: 0, count: 3 } })).toThrow(/drawRange/);
+  });
+
+  it("toNonIndexed expands custom attributes in index order", () => {
     const size = Float32Array.from([10, 20, 30, 40]);
-    const expected = (threeQuad(size).toNonIndexed().getAttribute("size") as THREE.BufferAttribute).array;
     const actual = auraGeometryToNonIndexed(defineAuraCustomGeometry({
       positions: QUAD_POSITIONS, indices: QUAD_INDICES, attributes: { size: { itemSize: 1, data: size } }
     }));
-    expect(Array.from(actual.attributes!.size!.data)).toEqual(Array.from(expected));
+    expect(Array.from(actual.attributes!.size!.data)).toEqual([10, 20, 30, 10, 30, 40]);
     expect(geometry.toNonIndexed(actual)).toBeDefined();
   });
 
-  it("merge concatenates custom attributes exactly like three's mergeGeometries", () => {
+  it("merge concatenates custom attributes and offsets indices", () => {
     const a = Float32Array.from([1, 2, 3, 4]);
     const b = Float32Array.from([5, 6, 7, 8]);
-    const expected = (mergeGeometries([threeQuad(a), threeQuad(b)])!.getAttribute("size") as THREE.BufferAttribute).array;
     const mk = (data: Float32Array) => defineAuraCustomGeometry({ positions: QUAD_POSITIONS, indices: QUAD_INDICES, attributes: { size: { itemSize: 1, data } } });
     const merged = mergeAuraGeometries([mk(a), mk(b)]);
-    expect(Array.from(merged.attributes!.size!.data)).toEqual(Array.from(expected));
+    expect(Array.from(merged.attributes!.size!.data)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(Array.from(merged.indices)).toEqual([0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7]);
     expect(normalizeGeometryAttributes(merged).vertexCount).toBe(8);
   });
 
-  it("merge refuses mismatched custom attribute sets (three returns null)", () => {
+  it("merge refuses mismatched custom attribute sets", () => {
     const withSize = defineAuraCustomGeometry({ positions: QUAD_POSITIONS, indices: QUAD_INDICES, attributes: { size: { itemSize: 1, data: new Float32Array(4) } } });
     const without = defineAuraCustomGeometry({ positions: QUAD_POSITIONS, indices: QUAD_INDICES });
     expect(() => mergeAuraGeometries([withSize, without])).toThrowError(/same custom vertex attributes/);

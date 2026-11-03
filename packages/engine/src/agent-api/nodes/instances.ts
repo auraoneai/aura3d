@@ -22,6 +22,8 @@ import type { AuraWindSpec } from "../../contracts/world.js";
 import { registerFrameContributor, type FrameContributor } from "@aura3d/rendering/contracts";
 import { setPrd10WindState } from "@aura3d/rendering/world";
 import type { RenderItem } from "@aura3d/rendering";
+import type { AuraQuat } from "../../contracts/sceneGraph.js";
+import { assertValidPivot, hasNonzeroPivot } from "../pivotGuard.js";
 
 /**
  * GU47 E-G (WP-7): what an instance colour multiplies — `"base"` (base
@@ -225,15 +227,79 @@ export const instances = lazyNamespace(() => ({
 function instancedModel<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions & { readonly lights: AuraInstanceLightsOptions }): AuraNodeBuilder<AuraGroupNode>;
 function instancedModel<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode>;
 function instancedModel<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode> | AuraNodeBuilder<AuraGroupNode> {
-  const model = instancedModelNode(asset, options);
+  const pivoted = validateInstancePivots(options, options.transforms);
+  if (hasWorldPlacements(options)) assertPackedInstanceTransformsSupported("SCATTER", options, options.transforms, pivoted);
+  if (options.lights) assertPackedInstanceTransformsSupported("LIGHT", options, options.transforms, pivoted);
+  const model = instancedModelNode(asset, options, pivoted);
   if (!options.lights) return model;
-  const node = model.toJSON();
+  // Generated lights are siblings, so live mutation of only the model would
+  // leave those lights behind. This serialized marker lets runtime handles
+  // reject such writes until a synchronized update path exists.
+  const node = { ...model.toJSON(), instanceLightsStatic: true as const };
   const group: AuraGroupNode = {
     kind: "group",
     name: `${node.name ?? "instances.model"} with lights`,
     children: [node, ...instanceLightNodes(node.name ?? "instances.model", options.transforms, options.lights)]
   };
   return new AuraNodeBuilder<AuraGroupNode>(group);
+}
+
+/** A batch with a pivot and lookAt cannot yet produce one consistent orientation. */
+function validateInstancePivots(node: AuraTransformSpec, transforms: readonly AuraTransformSpec[]): boolean {
+  assertValidPivot(node.pivot);
+  let pivoted = hasNonzeroPivot(node.pivot);
+  for (const transform of transforms) {
+    assertValidPivot(transform.pivot);
+    pivoted ||= hasNonzeroPivot(transform.pivot);
+  }
+  if (pivoted && (node.lookAt !== undefined || transforms.some((transform) => transform.lookAt !== undefined))) {
+    throw new Error("INSTANCE_PIVOT_LOOK_AT_UNSUPPORTED: pivoted instances cannot currently use lookAt; use a rotation or quaternion instead.");
+  }
+  return pivoted;
+}
+
+function hasWorldPlacements(options: AuraInstancedModelOptions): boolean {
+  return options.static !== undefined || options.chunkSize !== undefined || options.shadowLod !== undefined || options.wind !== undefined || options.impostor !== undefined;
+}
+
+/** The packed scatter and generated light paths currently handle only their original XYZ Euler basis. */
+function assertPackedInstanceTransformsSupported(
+  path: "SCATTER" | "LIGHT",
+  node: AuraTransformSpec,
+  transforms: readonly AuraTransformSpec[],
+  pivoted: boolean
+): void {
+  // The generated lights are siblings of the model, so model-level TRS is
+  // not inherited by them. Instance-level TRS is packed separately below.
+  const transformedLightModel = path === "LIGHT" && (
+    (node.position !== undefined && node.position.some((value) => value !== 0)) ||
+    (node.rotation !== undefined && node.rotation.some((value) => value !== 0)) ||
+    (node.scale !== undefined && (typeof node.scale === "number" ? node.scale !== 1 : node.scale.some((value) => value !== 1)))
+  );
+  if (transformedLightModel) {
+    throw new Error("INSTANCE_LIGHT_TRANSFORM_UNSUPPORTED: generated instance lights cannot follow a model-level position, rotation, or scale; apply placement to the individual instance transforms instead.");
+  }
+  if (pivoted || node.quaternion !== undefined || node.lookAt !== undefined || node.rotationOrder !== undefined ||
+    transforms.some((transform) =>
+      transform.quaternion !== undefined || transform.lookAt !== undefined ||
+      (transform.rotationOrder !== undefined && transform.rotationOrder !== "XYZ")
+    )) {
+    throw new Error(`INSTANCE_${path}_TRANSFORM_UNSUPPORTED: ${path === "SCATTER" ? "scatter placement" : "instance lights"} cannot represent pivots, quaternions, lookAt, node rotationOrder, or instance rotationOrder other than XYZ; use regular instances without this option.`);
+  }
+}
+
+function instanceDiagnostics(node: AuraPrimitiveNode | AuraModelNode, transforms: readonly AuraTransformSpec[], pivoted: boolean): readonly string[] | undefined {
+  const messages = [...(node.ignoredOptions ?? [])];
+  if (pivoted && node.frustumCulled !== false) {
+    messages.push("INSTANCE_PIVOT_CULLING_DISABLED: pivoted instance bounds cannot yet be culled safely; every instance will be drawn. Set frustumCulled: false to acknowledge this cost, or remove the pivot.");
+  }
+  if (transforms.some((transform) =>
+    !hasNonzeroPivot(transform.pivot) && !(node.kind === "model" && hasNonzeroPivot(node.pivot)) &&
+    (transform.quaternion !== undefined || (transform.rotationOrder !== undefined && transform.rotationOrder !== "ZYX"))
+  )) {
+    messages.push("INSTANCE_ROTATION_IGNORED: legacy instance rendering does not apply quaternion or nondefault rotationOrder without a pivot. Use the default Euler rotation for those instances.");
+  }
+  return messages.length ? messages : undefined;
 }
 
 /** Rotate `v` by Euler XYZ radians — the same basis as `packScatterPlacements` (three.js XYZ order). */
@@ -253,6 +319,8 @@ function rotateEulerXYZ(v: readonly [number, number, number], r: readonly [numbe
  * Many point lights take the renderer's clustered-light path.
  */
 export function instanceLightNodes(name: string, transforms: readonly AuraTransformSpec[], spec: AuraInstanceLightsOptions): AuraSceneNode[] {
+  const pivoted = validateInstancePivots({}, transforms);
+  assertPackedInstanceTransformsSupported("LIGHT", {}, transforms, pivoted);
   return transforms.map((t, i) => {
     const p = t.position ?? [0, 0, 0];
     const s = t.scale === undefined ? [1, 1, 1] : typeof t.scale === "number" ? [t.scale, t.scale, t.scale] : t.scale;
@@ -268,7 +336,7 @@ export function instanceLightNodes(name: string, transforms: readonly AuraTransf
   });
 }
 
-function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions): AuraNodeBuilder<AuraModelNode> {
+function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset, options: AuraInstancedModelOptions, pivoted: boolean): AuraNodeBuilder<AuraModelNode> {
     const built = createInstancedModelNode({
       asset,
       ...(options.name !== undefined ? { name: options.name } : {}),
@@ -289,31 +357,41 @@ function instancedModelNode<TAsset extends AuraAssetRef<"model">>(asset: TAsset,
     // PRD-10 T3.8: world options present ⇒ stamp the §7.1.5 placements block
     // (structural extension of the model node; promoted to `kind:"scatter"` by
     // the C-36 world handler under A3D_QR_WORLD — see compiler/world.ts).
-    const worldOpted = options.static !== undefined || options.chunkSize !== undefined || options.shadowLod !== undefined || options.wind !== undefined || options.impostor !== undefined;
+    const worldOpted = hasWorldPlacements(options);
     const instanceWind = resolveInstanceWind(options.wind);
     const placements = worldOpted
       ? packScatterPlacements(asset, options.transforms, options.colors, { ...options, wind: options.wind === undefined ? undefined : instanceWind !== null })
       : undefined;
+    const ignoredOptions = instanceDiagnostics(base, options.transforms, pivoted);
     const node: AuraModelNode & { readonly placements?: AuraScatterPlacement; readonly instanceColorTarget?: InstanceColorTarget; readonly instanceWind?: AuraInstanceWind } = {
       ...base,
+      ...(pivoted ? { frustumCulled: false } : {}),
+      ...(ignoredOptions ? { ignoredOptions } : {}),
       ...(placements ? { placements } : {}),
       ...(options.instanceColorTarget !== undefined ? { instanceColorTarget: options.instanceColorTarget } : {}),
       // GU47 E-G (WP-7): wind without the WORLD lane (see INSTANCE_WIND_CONTRIBUTOR).
       ...(instanceWind ? { instanceWind, userData: adoptInstanceWind(base.userData, instanceWind) } : {}),
-      instances: built.node.instances.map((transform) => ({
-        ...(transform.position ? { position: [...transform.position] as AuraVec3 } : {}),
-        ...(transform.rotation ? { rotation: [...transform.rotation] as AuraVec3 } : {}),
-        ...(transform.scale !== undefined ? { scale: transform.scale } : {})
-      })),
+      instances: built.node.instances.map((transform, index) => {
+        const authored = options.transforms[index]!;
+        const usesPivotBasis = hasNonzeroPivot(base.pivot) || hasNonzeroPivot(authored.pivot);
+        return {
+          ...(transform.position ? { position: [...transform.position] as AuraVec3 } : {}),
+          ...(transform.rotation ? { rotation: [...transform.rotation] as AuraVec3 } : {}),
+          ...(transform.scale !== undefined ? { scale: transform.scale } : {}),
+          ...(authored.pivot !== undefined ? { pivot: [...authored.pivot] as AuraVec3 } : {}),
+          ...(usesPivotBasis && authored.quaternion !== undefined ? { quaternion: [...authored.quaternion] as AuraQuat } : {}),
+          ...(usesPivotBasis && authored.rotationOrder !== undefined ? { rotationOrder: authored.rotationOrder } : {})
+        };
+      }),
       // Safe: the builder only accepts AuraColor strings above, so no RGB tuples reach the node.
       ...(built.node.instanceColors ? { instanceColors: [...built.node.instanceColors] as AuraColor[] } : {}),
       ...(built.node.instanceLod ? { instanceLod: built.node.instanceLod } : {}),
-      instanceCulling: {
+      ...(!pivoted ? { instanceCulling: {
         instanceCount: built.node.instanceCulling.instanceCount,
         centroid: [...built.node.instanceCulling.centroid] as AuraVec3,
         boundingRadius: built.node.instanceCulling.boundingRadius,
         cullable: true as const
-      },
+      } } : {}),
       ...(built.diagnostics.fallbackWarning ? { instancedModelWarning: built.diagnostics.fallbackWarning.diagnostic } : {})
     };
     return new AuraNodeBuilder<AuraModelNode>(node);
@@ -386,6 +464,8 @@ function packScatterPlacements(
 }
 
 export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraInstancedPrimitiveOptions): AuraNodeBuilder<AuraPrimitiveNode> {
+  const pivoted = validateInstancePivots(options, options.transforms);
+  if (pivoted && options.lod?.levels.length) throw new Error("PIVOT_UNSUPPORTED_LOD: pivoted primitive instances cannot use distance LOD.");
   // Zero transforms is valid (a pool that is empty this frame): the compiler skips the node with INSTANCES_EMPTY.
   if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
   const { transforms, colors, instanceColorTarget, wind, ...primitiveOptions } = options;
@@ -396,12 +476,15 @@ export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"]
     options
   });
   const instanceWind = resolveInstanceWind(wind);
-  if (instanceColorTarget === undefined && !instanceWind) return built;
+  const ignoredOptions = instanceDiagnostics(built.toJSON(), options.transforms, pivoted);
+  if (!pivoted && instanceColorTarget === undefined && !instanceWind && ignoredOptions === undefined) return built;
   // GU47 E-G (WP-7): stamp the colour target for the renderer (GU47(E-D) node
   // field) and opt the node into wind without the WORLD lane.
   const base = built.toJSON();
   const node: AuraPrimitiveNode & { readonly instanceColorTarget?: InstanceColorTarget; readonly instanceWind?: AuraInstanceWind } = {
     ...base,
+    ...(pivoted ? { frustumCulled: false } : {}),
+    ...(ignoredOptions ? { ignoredOptions } : {}),
     ...(instanceColorTarget !== undefined ? { instanceColorTarget } : {}),
     ...(instanceWind ? { instanceWind, userData: adoptInstanceWind(base.userData, instanceWind) } : {})
   };

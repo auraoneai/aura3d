@@ -1,9 +1,11 @@
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
 import { registerAnimationToonShader } from "./animation/AnimationToonMaterial.js";
+import { recordDefaultShaderLibrary } from "./renderer/TrustedShaderLibrary";
 import {
   ShaderLibrary,
   registerLeanUnlitShader,
   registerLeanPbrShader,
+  LEGACY_PBR_SURFACE_DETAIL_GLSL,
   registerLeanDepthShader,
   registerLeanEnvironmentBackgroundShader,
   DEFAULT_DEPTH_SHADER_MARKER,
@@ -105,6 +107,8 @@ void main() {
 precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;
+layout(location = 2) in vec2 a_uv;
+layout(location = 7) in vec2 a_uv1;
 uniform mat4 u_modelViewProjection;
 uniform mat4 u_modelMatrix;
 uniform mat4 u_normalMatrix;
@@ -118,8 +122,12 @@ layout(location = 11) in vec4 a_instanceMatrix3;
 layout(location = 12) in vec4 a_instanceColor;
 out vec3 v_normal;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec4 v_instanceColor;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
   mat4 attributeMatrix = mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
   mat4 instanceMatrix = u_instanceAttributeMode > 0.5 ? attributeMatrix : u_instanceMatrices[instanceIndex];
@@ -135,6 +143,7 @@ void main() {
 precision highp float;
 #include <lighting_common>
 #include <pbr_common>
+${LEGACY_PBR_SURFACE_DETAIL_GLSL}
 uniform vec4 u_baseColor;
 uniform float u_alphaCutoff;
 uniform float u_metallic;
@@ -411,8 +420,10 @@ vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec3 normal = normalize(v_normal);
   if (!gl_FrontFacing) normal = -normal;
+  normal = a3dLegacyBumpNormal(v_worldPosition, normalize(v_normal) * (gl_FrontFacing ? 1.0 : -1.0), normal);
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec3 base = u_baseColor.rgb * v_instanceColor.rgb;
   vec3 shaded = u_emissiveColor * u_emissiveStrength + a3dPbrEnvironmentLightSplitSum(
@@ -427,7 +438,7 @@ void main() {
     1.0,
     vec3(1.0)
   );
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
   for (int i = 0; i < 64; ++i) {
@@ -444,7 +455,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         base, u_metallic, u_roughness, 1.0, vec3(1.0)
       );
@@ -465,11 +476,12 @@ void main() {
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection);
+    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection);
     shaded += a3dPbrDirectLight(normal, viewDirection, lightDirection, colorIntensity.rgb, colorIntensity.a * attenuation * shadowFactor, base, u_metallic, u_roughness, 1.0, vec3(1.0));
   }
   float alpha = u_baseColor.a * v_instanceColor.a;
@@ -573,6 +585,7 @@ precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;
 layout(location = 2) in vec2 a_uv;
+layout(location = 7) in vec2 a_uv1;
 layout(location = 3) in vec4 a_tangent;
 layout(location = 4) in vec4 a_color;
 layout(location = 5) in vec4 a_joints;
@@ -586,10 +599,14 @@ uniform float u_baseColorTextureRotation;
 out vec3 v_normal;
 out vec4 v_tangent;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec2 v_uv;
 out vec4 v_vertexColor;
 out float v_weightSum;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   vec2 scaledUv = a_uv * u_baseColorTextureScale;
   float c = cos(u_baseColorTextureRotation);
   float s = sin(u_baseColorTextureRotation);
@@ -611,6 +628,7 @@ void main() {
 precision highp float;
 #include <lighting_common>
 #include <pbr_common>
+${LEGACY_PBR_SURFACE_DETAIL_GLSL}
 uniform vec4 u_baseColor;
 uniform sampler2D u_baseColorTexture;
 uniform float u_baseColorTextureEnabled;
@@ -916,12 +934,14 @@ vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec3 normal = normalize(v_normal);
   normal = mix(normal, a3dSkinnedPbrNormal(v_normal, v_tangent, v_uv), step(0.5, u_normalTextureEnabled));
   if (u_wrinkleStrength > 0.0) {
     normal = normalize(normal + u_wrinkleStrength * a3dWrinkleDetail(v_worldPosition));
   }
   if (!gl_FrontFacing) normal = -normal;
+  normal = a3dLegacyBumpNormal(v_worldPosition, normalize(v_normal) * (gl_FrontFacing ? 1.0 : -1.0), normal);
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec4 sampledBaseColor = texture(u_baseColorTexture, v_uv);
   vec4 decodedBaseColor = vec4(a3dPbrDecodeEnvironmentSrgb(sampledBaseColor.rgb), sampledBaseColor.a);
@@ -998,7 +1018,7 @@ void main() {
     u_specularFactor,
     u_specularColorFactor
   ) * occlusion + emissive;
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
   for (int i = 0; i < 64; ++i) {
@@ -1015,7 +1035,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         materialBase, metallic, roughness, u_specularFactor, u_specularColorFactor
       );
@@ -1036,6 +1056,7 @@ void main() {
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
@@ -1045,7 +1066,7 @@ void main() {
       viewDirection,
       lightDirection,
       colorIntensity.rgb,
-      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
+      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
       materialBase,
       metallic,
       roughness,
@@ -1101,6 +1122,7 @@ precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;
 layout(location = 2) in vec2 a_uv;
+layout(location = 7) in vec2 a_uv1;
 layout(location = 3) in vec4 a_tangent;
 layout(location = 4) in vec4 a_color;
 layout(location = 5) in vec4 a_joints;
@@ -1116,10 +1138,14 @@ uniform float u_baseColorTextureRotation;
 out vec3 v_normal;
 out vec4 v_tangent;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec2 v_uv;
 out vec4 v_vertexColor;
 out float v_weightSum;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   vec2 scaledUv = a_uv * u_baseColorTextureScale;
   float c = cos(u_baseColorTextureRotation);
   float s = sin(u_baseColorTextureRotation);
@@ -1143,6 +1169,7 @@ void main() {
 precision highp float;
 #include <lighting_common>
 #include <pbr_common>
+${LEGACY_PBR_SURFACE_DETAIL_GLSL}
 uniform vec4 u_baseColor;
 uniform sampler2D u_baseColorTexture;
 uniform float u_baseColorTextureEnabled;
@@ -1448,12 +1475,14 @@ vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec3 normal = normalize(v_normal);
   normal = mix(normal, a3dSkinnedPbrNormal(v_normal, v_tangent, v_uv), step(0.5, u_normalTextureEnabled));
   if (u_wrinkleStrength > 0.0) {
     normal = normalize(normal + u_wrinkleStrength * a3dWrinkleDetail(v_worldPosition));
   }
   if (!gl_FrontFacing) normal = -normal;
+  normal = a3dLegacyBumpNormal(v_worldPosition, normalize(v_normal) * (gl_FrontFacing ? 1.0 : -1.0), normal);
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec4 sampledBaseColor = texture(u_baseColorTexture, v_uv);
   vec4 decodedBaseColor = vec4(a3dPbrDecodeEnvironmentSrgb(sampledBaseColor.rgb), sampledBaseColor.a);
@@ -1530,7 +1559,7 @@ void main() {
     u_specularFactor,
     u_specularColorFactor
   ) * occlusion + emissive;
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
   for (int i = 0; i < 64; ++i) {
@@ -1547,7 +1576,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         materialBase, metallic, roughness, u_specularFactor, u_specularColorFactor
       );
@@ -1568,6 +1597,7 @@ void main() {
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
@@ -1577,7 +1607,7 @@ void main() {
       viewDirection,
       lightDirection,
       colorIntensity.rgb,
-      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
+      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
       materialBase,
       metallic,
       roughness,
@@ -1671,9 +1701,13 @@ uniform float u_instanceAttributeMode;
 out vec3 v_normal;
 out vec4 v_tangent;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec2 v_uv;
 out vec4 v_vertexColor;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   if (u_instanceCount > 0.5) {
     int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
     mat4 attributeMatrix = mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
@@ -1700,6 +1734,7 @@ void main() {
 precision highp float;
 #include <lighting_common>
 #include <pbr_common>
+${LEGACY_PBR_SURFACE_DETAIL_GLSL}
 uniform vec4 u_baseColor;
 uniform float u_alphaCutoff;
 uniform float u_metallic;
@@ -1999,8 +2034,10 @@ vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec3 mappedNormal = a3dNormalMappedNormal(v_normal, v_tangent, v_uv);
   if (!gl_FrontFacing) mappedNormal = -mappedNormal;
+  mappedNormal = a3dLegacyBumpNormal(v_worldPosition, normalize(v_normal) * (gl_FrontFacing ? 1.0 : -1.0), mappedNormal);
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec3 materialBase = u_baseColor.rgb * v_vertexColor.rgb;
   vec3 shaded = u_emissiveColor * u_emissiveStrength + a3dPbrEnvironmentLightSplitSum(
@@ -2015,7 +2052,7 @@ void main() {
     u_specularFactor,
     u_specularColorFactor
   );
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
   for (int i = 0; i < 64; ++i) {
@@ -2032,7 +2069,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         mappedNormal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor
       );
@@ -2053,11 +2090,12 @@ void main() {
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, mappedNormal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
+    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, mappedNormal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
     shaded += a3dPbrDirectLight(mappedNormal, viewDirection, lightDirection, colorIntensity.rgb, colorIntensity.a * attenuation * shadowFactor, materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor);
   }
   float alpha = u_baseColor.a * v_vertexColor.a;
@@ -2105,10 +2143,14 @@ uniform float u_instanceAttributeMode;
 out vec3 v_normal;
 out vec4 v_tangent;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec2 v_uv;
 out vec2 v_uv1;
 out vec4 v_vertexColor;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   v_uv = a_uv;
   v_uv1 = a_uv1;
   if (u_instanceCount > 0.5) {
@@ -2135,6 +2177,7 @@ void main() {
 precision highp float;
 #include <lighting_common>
 #include <pbr_common>
+${LEGACY_PBR_SURFACE_DETAIL_GLSL}
 uniform vec4 u_baseColor;
 uniform float u_alphaCutoff;
 uniform float u_metallic;
@@ -2445,6 +2488,7 @@ out vec4 outColor;
 #ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
 #include <contact_shadow_mask>
 #else
+uniform float u_contactShadowLightIndex;
 float a3dContactShadowMaskFactor(float kind) { return 1.0; }
 #endif
 vec2 a3dTexturedPbrSelectUv(float texCoord) {
@@ -2886,6 +2930,7 @@ vec4 a3dAtlasSample(vec2 uv, vec4 rect, float originY, vec2 wrapMode, vec4 filte
 
 
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec2 baseColorUv = a3dTexturedPbrUv(u_baseColorTextureTexCoord, u_baseColorTextureOffset, u_baseColorTextureScale, u_baseColorTextureRotation);
   vec2 normalUv = a3dTexturedPbrUv(u_normalTextureTexCoord, u_normalTextureOffset, u_normalTextureScale, u_normalTextureRotation);
   vec2 emissiveUv = a3dTexturedPbrUv(u_emissiveTextureTexCoord, u_emissiveTextureOffset, u_emissiveTextureScale, u_emissiveTextureRotation);
@@ -2976,6 +3021,7 @@ void main() {
   vec3 geometryNormal = normalize(v_normal);
   vec3 mappedNormal = mix(geometryNormal, a3dTexturedPbrApplyNormalSample(geometryNormal, v_tangent, sourceNormalDetailSample, u_normalScale), step(0.5, u_normalTextureEnabled));
   if (!gl_FrontFacing) mappedNormal = -mappedNormal;
+  mappedNormal = a3dLegacyBumpNormal(v_worldPosition, normalize(v_normal) * (gl_FrontFacing ? 1.0 : -1.0), mappedNormal);
   vec3 clearcoatNormalDirection = mappedNormal;
   float clearcoatNormalBoost = max(0.25, 1.0 - clamp(u_clearcoatNormalScale, 0.0, 1.0) * 0.12);
 #ifdef A3D_PBR_CLEARCOAT_TEXTURES
@@ -3154,7 +3200,7 @@ void main() {
     shaded = mix(shaded, shaded * 0.72 + texturedRefractionRadiance, texturedTransmissionAmount * mix(0.08, 0.58, texturedFallbackEnvironmentTransmissionEnergy));
   }
 #ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
 #else
@@ -3172,7 +3218,8 @@ void main() {
     vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
     vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
 #else
-    int baseIndex = i * 6;
+    int lightIndex = i;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_lightData[baseIndex];
     vec4 positionRange = u_lightData[baseIndex + 1];
     vec4 directionKind = u_lightData[baseIndex + 2];
@@ -3184,7 +3231,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         mappedNormal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         base, metallic, roughness, specular, specularColor
       ) * directTextureOcclusion;
@@ -3205,11 +3252,12 @@ void main() {
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dTexturedPbrPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dTexturedPbrShadowFactor(v_worldPosition, mappedNormal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z));
+    float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dTexturedPbrPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dTexturedPbrShadowFactor(v_worldPosition, mappedNormal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z));
 #ifndef A3D_PBR_NO_SPOT_SHADOW
     shadowFactor = a3dTexturedPbrResolveSpotShadowOverride(shadowFactor, kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
 #endif
@@ -3260,82 +3308,254 @@ void main() {
 // ${DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER}
 precision highp float;
 layout(location = 0) in vec3 a_position;
+layout(location = 4) in vec4 a_color;
 layout(location = 10) in vec3 a_lineStart;
 layout(location = 11) in vec3 a_lineEnd;
 layout(location = 12) in vec2 a_lineCorner;
 layout(location = 13) in float a_lineDistance;
+layout(location = 14) in vec4 a_lineOtherColor;
+layout(location = 15) in float a_lineOtherDistance;
 uniform mat4 u_modelViewProjection;
-/** Line width in CSS pixels. Multiplied by DPR to reach device pixels. */
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
 uniform float u_lineWidth;
-/** Device-pixel resolution of the render target. */
+uniform float u_lineWorldUnits;
 uniform vec2 u_lineResolution;
 uniform float u_linePixelRatio;
-/** 0 = butt caps, 1 = square caps extended by half a width past each endpoint. */
 uniform float u_lineSquareCaps;
-out vec2 v_lineCorner;
+uniform float u_lineRoundCaps;
+out vec4 v_lineColor;
 out float v_lineDistance;
-out float v_halfWidthPixels;
+out vec2 v_lineCap;
+out float v_lineCapFraction;
 
 void main() {
-  vec3 anchorWorld = a_position;
-  vec4 clipStart = u_modelViewProjection * vec4(a_lineStart + anchorWorld * 0.0, 1.0);
-  vec4 clipEnd = u_modelViewProjection * vec4(a_lineEnd, 1.0);
-
-  float wStart = max(abs(clipStart.w), 1e-5);
-  float wEnd = max(abs(clipEnd.w), 1e-5);
-
-  vec2 pixelStart = (clipStart.xy / wStart) * 0.5 * u_lineResolution;
-  vec2 pixelEnd = (clipEnd.xy / wEnd) * 0.5 * u_lineResolution;
-
-  vec2 pixelDirection = pixelEnd - pixelStart;
-  float pixelLength = length(pixelDirection);
-  vec2 direction = pixelLength > 1e-4 ? pixelDirection / pixelLength : vec2(1.0, 0.0);
-  vec2 normal = vec2(-direction.y, direction.x);
-
-  float halfWidth = max(u_lineWidth, 0.0) * max(u_linePixelRatio, 0.0001) * 0.5;
-  v_halfWidthPixels = halfWidth;
-
   float along = a_lineCorner.y;
-  vec2 anchorPixel = mix(pixelStart, pixelEnd, along);
-  float capExtension = u_lineSquareCaps > 0.5 ? halfWidth : 0.0;
-  vec2 capOffset = direction * (along > 0.5 ? capExtension : -capExtension);
-  vec2 pixelPosition = anchorPixel + normal * (a_lineCorner.x * halfWidth) + capOffset;
+  vec4 originalStart = u_modelViewProjection * vec4(a_lineStart, 1.0);
+  vec4 originalEnd = u_modelViewProjection * vec4(a_lineEnd, 1.0);
+  float nearStart = originalStart.z + originalStart.w;
+  float nearEnd = originalEnd.z + originalEnd.w;
+  if (nearStart < 0.0 && nearEnd < 0.0) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_lineColor = vec4(0.0);
+    v_lineDistance = 0.0;
+    v_lineCap = vec2(0.0);
+    v_lineCapFraction = 0.0;
+    return;
+  }
+  float startT = 0.0;
+  float endT = 1.0;
+  if (nearStart < 0.0 || nearEnd < 0.0) {
+    float crossing = clamp(nearStart / (nearStart - nearEnd), 0.0, 1.0);
+    if (nearStart < 0.0) startT = crossing;
+    else endT = crossing;
+  }
+  vec4 clippedStart = mix(originalStart, originalEnd, startT);
+  vec4 clippedEnd = mix(originalStart, originalEnd, endT);
+  float t = mix(startT, endT, along);
+  // Each vertex stores its own and its opposite endpoint's values.
+  vec4 colorStart = mix(a_color, a_lineOtherColor, along);
+  vec4 colorEnd = mix(a_lineOtherColor, a_color, along);
+  float distanceStart = mix(a_lineDistance, a_lineOtherDistance, along);
+  float distanceEnd = mix(a_lineOtherDistance, a_lineDistance, along);
+  v_lineColor = mix(colorStart, colorEnd, t);
+  v_lineDistance = mix(distanceStart, distanceEnd, t);
 
-  vec4 anchorClip = along > 0.5 ? clipEnd : clipStart;
-  float anchorW = along > 0.5 ? wEnd : wStart;
-  vec2 ndc = pixelPosition / (0.5 * u_lineResolution);
-  gl_Position = vec4(ndc * anchorW, anchorClip.z, anchorClip.w);
-
-  v_lineCorner = a_lineCorner;
-  v_lineDistance = a_lineDistance;
+  vec4 clipAnchor = u_modelViewProjection * vec4(a_position, 1.0);
+  clipAnchor += along > 0.5 ? clippedEnd - originalEnd : clippedStart - originalStart;
+  vec2 startPixel = clippedStart.xy / max(clippedStart.w, 1e-6) * (0.5 * u_lineResolution);
+  vec2 endPixel = clippedEnd.xy / max(clippedEnd.w, 1e-6) * (0.5 * u_lineResolution);
+  vec2 pixelDelta = endPixel - startPixel;
+  float pixelLength = length(pixelDelta);
+  vec2 pixelDirection = pixelLength > 1e-5 ? pixelDelta / pixelLength : vec2(1.0, 0.0);
+  vec2 pixelNormal = vec2(-pixelDirection.y, pixelDirection.x);
+  float halfPixels = u_lineWidth * u_linePixelRatio * 0.5;
+  float capEnabled = max(u_lineSquareCaps, u_lineRoundCaps);
+  // A clipped endpoint is a cut through the segment, not a new cap.
+  float capAtEndpoint = along > 0.5 ? (endT >= 1.0 ? capEnabled : 0.0) : (startT <= 0.0 ? capEnabled : 0.0);
+  float capFraction;
+  if (u_lineWorldUnits > 0.5) {
+    mat4 modelView = u_viewMatrix * u_modelMatrix;
+    vec4 startView = modelView * vec4(a_lineStart, 1.0);
+    vec4 endView = modelView * vec4(a_lineEnd, 1.0);
+    vec4 clippedStartView = mix(startView, endView, startT);
+    vec4 clippedEndView = mix(startView, endView, endT);
+    vec3 tangent = clippedEndView.xyz - clippedStartView.xyz;
+    float segmentLength = length(tangent);
+    tangent = segmentLength > 1e-6 ? tangent / segmentLength : vec3(1.0, 0.0, 0.0);
+    vec3 towardEye = abs(u_projectionMatrix[3][3]) > 0.5
+      ? vec3(0.0, 0.0, 1.0)
+      : -0.5 * (clippedStartView.xyz + clippedEndView.xyz);
+    vec3 side = cross(tangent, towardEye);
+    if (length(side) < 1e-6) side = cross(tangent, abs(tangent.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0));
+    side = normalize(side);
+    float halfWorld = 0.5 * u_lineWidth;
+    vec4 viewAnchor = modelView * vec4(a_position, 1.0);
+    viewAnchor += along > 0.5 ? clippedEndView - endView : clippedStartView - startView;
+    viewAnchor.xyz += side * a_lineCorner.x * halfWorld;
+    viewAnchor.xyz += tangent * (along > 0.5 ? 1.0 : -1.0) * halfWorld * capAtEndpoint;
+    gl_Position = u_projectionMatrix * viewAnchor;
+    capFraction = halfWorld / max(segmentLength, 1e-6);
+  } else {
+    vec2 offset = pixelNormal * a_lineCorner.x * halfPixels;
+    offset += pixelDirection * (along > 0.5 ? 1.0 : -1.0) * halfPixels * capAtEndpoint;
+    clipAnchor.xy += offset * (2.0 / u_lineResolution) * clipAnchor.w;
+    gl_Position = clipAnchor;
+    capFraction = halfPixels / max(pixelLength, 1e-6);
+  }
+  v_lineCapFraction = capFraction;
+  v_lineCap = vec2(a_lineCorner.x, along > 0.5 ? 1.0 + capFraction * capAtEndpoint : -capFraction * capAtEndpoint);
 }
 `,
+    portableBindings: [
+      { name: "u_modelViewProjection", kind: "mat4" },
+      { name: "u_modelMatrix", kind: "mat4" },
+      { name: "u_viewMatrix", kind: "mat4" },
+      { name: "u_projectionMatrix", kind: "mat4" },
+      { name: "u_baseColor", kind: "vec4" },
+      { name: "u_lineResolution", kind: "vec2" },
+      { name: "u_lineWidth", kind: "float" },
+      { name: "u_lineWorldUnits", kind: "float" },
+      { name: "u_linePixelRatio", kind: "float" },
+      { name: "u_lineSquareCaps", kind: "float" },
+      { name: "u_lineRoundCaps", kind: "float" },
+      { name: "u_lineDashSize", kind: "float" },
+      { name: "u_lineGapSize", kind: "float" },
+      { name: "u_lineDashOffset", kind: "float" }
+    ],
+    webgpu: {
+      vertex: `// ${DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER}
+/* @aura3d-bindings */
+struct LineOut {
+  @builtin(position) position: vec4f,
+  @location(0) color: vec4f,
+  @location(1) distance: f32,
+  @location(2) cap: vec2f,
+  @location(3) capFraction: f32,
+};
+@vertex fn vs_main(
+  @location(0) position: vec3f, @location(4) color: vec4f,
+  @location(10) lineStart: vec3f, @location(11) lineEnd: vec3f,
+  @location(12) corner: vec2f, @location(13) distance: f32,
+  @location(14) otherColor: vec4f, @location(15) otherDistance: f32
+) -> LineOut {
+  var out: LineOut;
+  let along = corner.y;
+  let start = aura.u_modelViewProjection * vec4f(lineStart, 1.0);
+  let end = aura.u_modelViewProjection * vec4f(lineEnd, 1.0);
+  let nearStart = start.z + start.w;
+  let nearEnd = end.z + end.w;
+  if (nearStart < 0.0 && nearEnd < 0.0) {
+    out.position = vec4f(2.0, 2.0, 2.0, 1.0);
+    out.color = vec4f(0.0);
+    out.distance = 0.0;
+    out.cap = vec2f(0.0);
+    out.capFraction = 0.0;
+    return out;
+  }
+  var startT = 0.0;
+  var endT = 1.0;
+  if (nearStart < 0.0 || nearEnd < 0.0) {
+    let crossing = clamp(nearStart / (nearStart - nearEnd), 0.0, 1.0);
+    if (nearStart < 0.0) { startT = crossing; } else { endT = crossing; }
+  }
+  let clippedStart = mix(start, end, startT);
+  let clippedEnd = mix(start, end, endT);
+  let t = mix(startT, endT, along);
+  out.color = mix(mix(color, otherColor, along), mix(otherColor, color, along), t);
+  out.distance = mix(mix(distance, otherDistance, along), mix(otherDistance, distance, along), t);
+  var clipAnchor = aura.u_modelViewProjection * vec4f(position, 1.0);
+  if (along > 0.5) { clipAnchor += clippedEnd - end; } else { clipAnchor += clippedStart - start; }
+  let startPixel = clippedStart.xy / max(clippedStart.w, 0.000001) * (0.5 * aura.u_lineResolution);
+  let endPixel = clippedEnd.xy / max(clippedEnd.w, 0.000001) * (0.5 * aura.u_lineResolution);
+  let pixelDelta = endPixel - startPixel;
+  let pixelLength = length(pixelDelta);
+  var pixelDirection = vec2f(1.0, 0.0);
+  if (pixelLength > 0.00001) { pixelDirection = pixelDelta / pixelLength; }
+  let pixelNormal = vec2f(-pixelDirection.y, pixelDirection.x);
+  let halfPixels = aura.u_lineWidth * aura.u_linePixelRatio * 0.5;
+  let capEnabled = max(aura.u_lineSquareCaps, aura.u_lineRoundCaps);
+  var capAtEndpoint = 0.0;
+  if ((along > 0.5 && endT >= 1.0) || (along <= 0.5 && startT <= 0.0)) { capAtEndpoint = capEnabled; }
+  var capFraction = 0.0;
+  var clip: vec4f;
+  let endSign = select(-1.0, 1.0, along > 0.5);
+  if (aura.u_lineWorldUnits > 0.5) {
+    let modelView = aura.u_viewMatrix * aura.u_modelMatrix;
+    let startView = modelView * vec4f(lineStart, 1.0);
+    let endView = modelView * vec4f(lineEnd, 1.0);
+    let clippedStartView = mix(startView, endView, startT);
+    let clippedEndView = mix(startView, endView, endT);
+    let delta = clippedEndView.xyz - clippedStartView.xyz;
+    let segmentLength = length(delta);
+    var tangent = vec3f(1.0, 0.0, 0.0);
+    if (segmentLength > 0.000001) { tangent = delta / segmentLength; }
+    var towardEye = -0.5 * (clippedStartView.xyz + clippedEndView.xyz);
+    if (abs(aura.u_projectionMatrix[3][3]) > 0.5) { towardEye = vec3f(0.0, 0.0, 1.0); }
+    var side = cross(tangent, towardEye);
+    if (length(side) < 0.000001) {
+      let axis = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(tangent.y) < 0.9);
+      side = cross(tangent, axis);
+    }
+    side = normalize(side);
+    let halfWorld = 0.5 * aura.u_lineWidth;
+    var viewAnchor = modelView * vec4f(position, 1.0);
+    if (along > 0.5) { viewAnchor += clippedEndView - endView; } else { viewAnchor += clippedStartView - startView; }
+    viewAnchor = vec4f(viewAnchor.xyz + side * corner.x * halfWorld + tangent * endSign * halfWorld * capAtEndpoint, viewAnchor.w);
+    clip = aura.u_projectionMatrix * viewAnchor;
+    capFraction = halfWorld / max(segmentLength, 0.000001);
+  } else {
+    let offset = pixelNormal * corner.x * halfPixels + pixelDirection * endSign * halfPixels * capAtEndpoint;
+    clip = vec4f(clipAnchor.xy + offset * (2.0 / aura.u_lineResolution) * clipAnchor.w, clipAnchor.zw);
+    capFraction = halfPixels / max(pixelLength, 0.000001);
+  }
+  // Engine projection matrices use GL clip depth; WebGPU clips in [0,w].
+  out.position = vec4f(clip.xy, (clip.z + clip.w) * 0.5, clip.w);
+  out.capFraction = capFraction;
+  out.cap = vec2f(corner.x, select(-capFraction * capAtEndpoint, 1.0 + capFraction * capAtEndpoint, along > 0.5));
+  return out;
+}`,
+      fragment: `// ${DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER}
+/* @aura3d-bindings */
+@fragment fn fs_main(@location(0) color: vec4f, @location(1) distance: f32, @location(2) cap: vec2f, @location(3) capFraction: f32) -> @location(0) vec4f {
+  if (aura.u_lineDashSize > 0.0) {
+    let period = aura.u_lineDashSize + aura.u_lineGapSize;
+    let phase = (distance + aura.u_lineDashOffset) - period * floor((distance + aura.u_lineDashOffset) / period);
+    if (phase >= aura.u_lineDashSize) { discard; }
+  }
+  if (aura.u_lineRoundCaps > 0.5) {
+    let outside = max(-cap.y, cap.y - 1.0) / max(capFraction, 0.000001);
+    if (outside > 0.0 && outside * outside + cap.x * cap.x > 1.0) { discard; }
+  }
+  return aura.u_baseColor * color;
+}`
+    },
     fragment: `#version 300 es
 // ${DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER}
 precision highp float;
 uniform vec4 u_baseColor;
-/** Dash period in world units. Zero disables dashing. */
 uniform float u_lineDashSize;
 uniform float u_lineGapSize;
 uniform float u_lineDashOffset;
-/** 0 = butt/square, 1 = round caps and joins. */
 uniform float u_lineRoundCaps;
-in vec2 v_lineCorner;
+in vec4 v_lineColor;
 in float v_lineDistance;
-in float v_halfWidthPixels;
+in vec2 v_lineCap;
+in float v_lineCapFraction;
 out vec4 outColor;
 
 void main() {
   if (u_lineDashSize > 0.0) {
-    float period = u_lineDashSize + max(u_lineGapSize, 0.0);
+    float period = u_lineDashSize + u_lineGapSize;
     float phase = mod(v_lineDistance + u_lineDashOffset, period);
-    if (phase > u_lineDashSize) discard;
+    if (phase >= u_lineDashSize) discard;
   }
   if (u_lineRoundCaps > 0.5) {
-    float acrossStroke = v_lineCorner.x;
-    if (abs(acrossStroke) > 1.0) discard;
+    float outside = max(-v_lineCap.y, v_lineCap.y - 1.0) / max(v_lineCapFraction, 1e-6);
+    if (outside > 0.0 && outside * outside + v_lineCap.x * v_lineCap.x > 1.0) discard;
   }
-  outColor = u_baseColor;
+  outColor = u_baseColor * v_lineColor;
 }
 `
   });
@@ -3344,5 +3564,6 @@ void main() {
   // This is a real GLSL program compiled through the same library path as the
   // built-in shaders; AnimationToonMaterial targets it via ANIMATION_TOON_SHADER_NAME.
   registerAnimationToonShader(library);
+  recordDefaultShaderLibrary(library);
   return library;
 }

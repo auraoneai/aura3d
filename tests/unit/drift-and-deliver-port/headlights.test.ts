@@ -2,51 +2,97 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { BEAM_FRAGMENT, BEAM_VERTEX, DEFAULT_LAMPS, beamGeometry, beamSpec, cylinderSide } from "../../../examples/drift-and-deliver-port/headlights";
 
-/**
- * The headlight beam is the original's only ShaderMaterial. Its geometry is built from three's own cylinder,
- * moved with the original's matrix steps, so the port's generator is checked against three itself.
- */
-const arr = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute): ArrayLike<number> => a.array as ArrayLike<number>;
-const maxDelta = (a: ArrayLike<number>, b: ArrayLike<number>): number => {
-  let m = 0;
-  for (let i = 0; i < a.length; i++) m = Math.max(m, Math.abs((a[i] as number) - (b[i] as number)));
-  return m;
+const expectVector = (values: ArrayLike<number>, index: number, expected: readonly number[], digits = 6): void => {
+  for (let component = 0; component < expected.length; component++) {
+    expect(values[index * expected.length + component]).toBeCloseTo(expected[component]!, digits);
+  }
 };
 
-describe("beam geometry equals three's", () => {
-  it("the open cone wall: same vertices, normals, uvs and indices as CylinderGeometry(3.2, 0.55, 27, 20, 1, true)", () => {
-    const ref = new THREE.CylinderGeometry(3.2, 0.55, 27, 20, 1, true);
-    const mine = cylinderSide(3.2, 0.55, 27, 20, 1);
-    expect(mine.positions.length).toBe(ref.attributes.position.array.length);
-    expect(maxDelta(mine.positions, arr(ref.attributes.position))).toBeLessThan(1e-5);
-    expect(maxDelta(mine.normals, arr(ref.attributes.normal))).toBeLessThan(1e-6);
-    expect(maxDelta(mine.uvs, arr(ref.attributes.uv))).toBeLessThan(1e-7);
-    expect(Array.from(mine.indices)).toEqual(Array.from(ref.index!.array));
+describe("beam geometry", () => {
+  it("generates the open conical wall with the expected corners, normals, UVs and topology", () => {
+    const g = cylinderSide(3.2, 0.55, 27, 20, 1);
+    expect(g.positions.length).toBe(42 * 3);
+    expect(g.normals.length).toBe(42 * 3);
+    expect(g.uvs.length).toBe(42 * 2);
+    expect(g.indices.length).toBe(20 * 6);
+
+    // Quarter-turns and the duplicated seam pin down the circular cross-section.
+    for (const [index, x, y, z, u, v] of [
+      [0, 0, 13.5, 3.2, 0, 1], [5, 3.2, 13.5, 0, 0.25, 1],
+      [10, 0, 13.5, -3.2, 0.5, 1], [15, -3.2, 13.5, 0, 0.75, 1],
+      [20, 0, 13.5, 3.2, 1, 1], [21, 0, -13.5, 0.55, 0, 0],
+      [26, 0.55, -13.5, 0, 0.25, 0], [41, 0, -13.5, 0.55, 1, 0]
+    ]) {
+      expectVector(g.positions, index!, [x!, y!, z!]);
+      expectVector(g.uvs, index!, [u!, v!]);
+    }
+
+    // The unit normal is perpendicular to the taper's longitudinal tangent.
+    const taper = (0.55 - 3.2) / 27;
+    const normalScale = Math.hypot(1, taper);
+    expectVector(g.normals, 0, [0, taper / normalScale, 1 / normalScale]);
+    expectVector(g.normals, 5, [1 / normalScale, taper / normalScale, 0]);
+    for (let segment = 0; segment < 20; segment++) {
+      const top = segment, bottom = segment + 21;
+      expect(Array.from(g.indices.slice(segment * 6, segment * 6 + 6))).toEqual([
+        top, bottom, top + 1, bottom, bottom + 1, top + 1
+      ]);
+    }
   });
 
-  it("both merged, moved beams equal the original's translate / rotateX / scale / translate pipeline", () => {
-    const make = (x: number): THREE.BufferGeometry => {
-      const g = new THREE.CylinderGeometry(3.2, 0.55, 27, 20, 1, true);
-      g.translate(0, 13.5, 0);
-      g.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2 + DEFAULT_LAMPS.tilt));
-      g.applyMatrix4(new THREE.Matrix4().makeScale(1, 0.55, 1));
-      g.translate(x, DEFAULT_LAMPS.y, DEFAULT_LAMPS.z);
-      return g.toNonIndexed();
-    };
-    const a = make(-DEFAULT_LAMPS.halfSpread);
-    const b = make(DEFAULT_LAMPS.halfSpread);
-    const mine = beamGeometry();
-    const refPos = [...Array.from(arr(a.attributes.position)), ...Array.from(arr(b.attributes.position))];
-    const refNormal = [...Array.from(arr(a.attributes.normal)), ...Array.from(arr(b.attributes.normal))];
-    expect(mine.positions.length).toBe(refPos.length);
-    expect(maxDelta(mine.positions, refPos)).toBeLessThan(1e-4);
-    expect(maxDelta(mine.normals, refNormal)).toBeLessThan(1e-5);
-    expect(mine.indices.length).toBe(mine.positions.length / 3);
+  it("places both beams around their lamps and retains surface normals under pitch and squash", () => {
+    for (const lamps of [DEFAULT_LAMPS, { halfSpread: 2, y: 1.5, z: 3, tilt: 0.23 }]) {
+      const g = beamGeometry(lamps);
+      const verticesPerBeam = 20 * 6;
+      expect(g.positions.length).toBe(verticesPerBeam * 2 * 3);
+      expect(g.normals.length).toBe(g.positions.length);
+      expect(g.uvs.length).toBe(verticesPerBeam * 2 * 2);
+      expect(Array.from(g.indices)).toEqual(Array.from({ length: verticesPerBeam * 2 }, (_, i) => i));
+
+      for (let i = 0; i < verticesPerBeam * 2; i++) {
+        const lampX = i < verticesPerBeam ? -lamps.halfSpread : lamps.halfSpread;
+        const u = g.uvs[i * 2]!;
+        const along = g.uvs[i * 2 + 1]!;
+        const theta = 2 * Math.PI * u;
+        const radius = 0.55 + 2.65 * along;
+        const sinTheta = Math.sin(theta), cosTheta = Math.cos(theta);
+        const sinTilt = Math.sin(lamps.tilt), cosTilt = Math.cos(lamps.tilt);
+
+        // In the unsquashed cone, the axis is 27 units long and the radius
+        // grows linearly from 0.55 at the lamp to 3.2 at the far end.
+        expectVector(g.positions, i, [
+          lampX + radius * sinTheta,
+          lamps.y - 0.55 * (27 * along * sinTilt + radius * cosTheta * cosTilt),
+          lamps.z + 27 * along * cosTilt - radius * cosTheta * sinTilt
+        ], 4);
+
+        const nx = g.normals[i * 3]!, ny = g.normals[i * 3 + 1]!, nz = g.normals[i * 3 + 2]!;
+        expect(Math.hypot(nx, ny, nz)).toBeCloseTo(1, 6);
+        // A correct inverse-transpose normal is perpendicular to both the
+        // circular and longitudinal tangents of the squashed cone surface.
+        const around = nx * cosTheta + ny * 0.55 * sinTheta * cosTilt + nz * sinTheta * sinTilt;
+        const forward = nx * 2.65 * sinTheta
+          - ny * 0.55 * (27 * sinTilt + 2.65 * cosTheta * cosTilt)
+          + nz * (27 * cosTilt - 2.65 * cosTheta * sinTilt);
+        expect(around).toBeCloseTo(0, 5);
+        expect(forward).toBeCloseTo(0, 5);
+        expect(nx * sinTheta - ny * cosTheta * cosTilt / 0.55 - nz * cosTheta * sinTilt).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("puts the narrow end at each lamp for a level beam", () => {
+    const g = beamGeometry({ halfSpread: 2, y: 1.5, z: 3, tilt: 0 });
+    expectVector(g.positions, 0, [-2, -0.26, 30]);
+    expectVector(g.positions, 1, [-2, 1.1975, 3]);
+    expectVector(g.positions, 120, [2, -0.26, 30]);
+    expectVector(g.positions, 121, [2, 1.1975, 3]);
+    expectVector(g.uvs, 0, [0, 1]);
+    expectVector(g.uvs, 1, [0, 0]);
   });
 
   it("the cones sit at the car's lamps, narrow end first, and run forward", () => {
@@ -65,10 +111,10 @@ describe("beam geometry equals three's", () => {
   });
 });
 
-describe("beam shaders (ported from the original)", () => {
+describe("beam shaders", () => {
   const baked = () => createCustomShaderMaterial(beamSpec(), "drift-beam");
 
-  it("keep the original's fade terms", () => {
+  it("keeps the distance and view-angle fade terms", () => {
     expect(BEAM_FRAGMENT).toContain("pow(max(1.0 - facing, 0.0), 1.6)");
     expect(BEAM_FRAGMENT).toContain("pow(clamp(1.0 - vT, 0.0, 1.0), 1.25) * smoothstep(0.0, 0.07, vT)");
     expect(BEAM_FRAGMENT).toContain("smoothstep(beamNear, beamNear * 2.3, d)");

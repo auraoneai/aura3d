@@ -25,6 +25,9 @@ export function assertAuraOverrideMaterial(spec: unknown): asserts spec is AuraM
   if (typeof record.toJSON === "function") {
     throw new AuraRuntimeError("invalid-material-spec", `${OWNER} received a node/builder, not a material spec`);
   }
+  if (record.kind === "depth-preview") {
+    throw new Error("DEPTH_PREVIEW_OVERRIDE_UNSUPPORTED: scene overrides may include models and batches; assign material.depth to triangle primitives instead");
+  }
   if (record.kind !== undefined && record.kind !== "custom") {
     throw new AuraRuntimeError("invalid-material-spec", `${OWNER} received a "${String(record.kind)}" object, not a material spec`);
   }

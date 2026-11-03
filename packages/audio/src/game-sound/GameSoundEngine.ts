@@ -11,6 +11,7 @@
 
 import { mulberry32 } from "./rng";
 import { AudioContextManager } from "../AudioContextManager";
+import { AudioFileManager, type AudioDecodeContextLike, type AudioFileRequest } from "../AudioFileManager";
 import { createMasterChain } from "./MasterChain";
 import { VoicePool, type VoiceCueSpec, type VoiceRecord } from "./Voice";
 import { createSpatialNode, type SpatialNode } from "./SpatialVoice";
@@ -26,11 +27,25 @@ import type { SoundGraphContext, SoundNodeLike, Vec3 } from "./types";
 export type GameBusId = "master" | "music" | "sfx" | "ui" | "ambience" | "voice";
 const BUS_IDS: readonly Exclude<GameBusId, "master">[] = ["music", "sfx", "ui", "ambience", "voice"];
 
+/** Transport policy is snapshotted before a cue begins asynchronous work. */
+export type GameSoundRequest = Omit<AudioFileRequest, "input">;
+
 export interface AudioAssetRef {
   readonly url: string;
+  readonly id?: string;
+  readonly kind?: string;
+  readonly type?: string;
+  readonly format?: string;
   readonly hash?: string;
+  readonly sha256?: string;
+  readonly integrity?: AudioFileRequest["integrity"];
+  readonly sizeBytes?: number;
+  readonly securityContext?: string;
   readonly license?: string;
   readonly provenance?: "sample" | "synth";
+  readonly request?: GameSoundRequest;
+  /** Encoded-byte digests for a URL containing `{format}`. */
+  readonly variantHashes?: Readonly<Partial<Record<"opus.webm" | "m4a", string>>>;
   /** Pre-decoded buffer — skips the fetch/decode path (already-loaded clips). */
   readonly buffer?: AudioBuffer;
 }
@@ -59,6 +74,8 @@ export interface GameSoundOptions<TCue extends string> {
   readonly seed?: number;
   readonly context?: SoundGraphContext;
   readonly voiceCap?: number;
+  /** Default asset transport policy; a cue asset may override individual fields. */
+  readonly request?: GameSoundRequest;
   /** Base URL of the 20 ms format probes; default "assets/probes/". */
   readonly probeBase?: string;
   /** Override fetch for probes (testing). */
@@ -71,6 +88,8 @@ type PlayOptions = GameSoundPlayOptions;
 export interface GameSoundPlayHandle {
   readonly id: number;
   readonly ended?: boolean;
+  /** Present while loading; resolves only after a voice actually starts or fails. */
+  readonly started?: Promise<boolean>;
   setLevel?(level: { gain?: number; rate?: number }, rampMs?: number): void;
   stop(fadeMs?: number): void;
   setPosition(p: Vec3): void;
@@ -80,6 +99,88 @@ type PlayHandle = GameSoundPlayHandle;
 
 const VOICE_CAPS: Record<QualityTier, number> = { low: 12, medium: 24, high: 32, ultra: 48 };
 const HRTF_CAP: Record<QualityTier, number> = { low: 0, medium: 4, high: 8, ultra: 16 };
+const MAX_AUDIO_DIAGNOSTICS = 32;
+const SHA256 = /^(?:sha256[:-])?([a-f0-9]{64})$/i;
+
+/** Copy mutable request fields while the caller's generation is still current. */
+function snapshotRequest(request: GameSoundRequest | undefined): GameSoundRequest {
+  if (!request) return {};
+  const integrity = request.integrity;
+  const source = request.headers;
+  const allowedOrigins = request.allowedOrigins;
+  if (source !== undefined && typeof Headers !== "function") throw new Error("Audio headers are unavailable");
+  let headers: Headers | undefined;
+  if (source !== undefined) {
+    // Foreign-realm Headers need not pass instanceof checks in this realm.
+    // Copy their entries explicitly instead of treating them as a plain object.
+    if (!Array.isArray(source) && typeof (source as Headers).forEach === "function") {
+      const entries: [string, string][] = [];
+      (source as Headers).forEach((value, key) => entries.push([key, value]));
+      headers = new Headers(entries);
+    } else headers = new Headers(source);
+  }
+  const fields: Record<string, unknown> = {};
+  for (const key of ["signal", "cacheKey", "name", "credentials", "cache", "mode", "redirect", "referrer",
+    "referrerPolicy", "priority", "expectedHash", "sourceOrigin", "expectedUrl", "maxBytes", "securityContext",
+    "baseURL", "onProgress"] as const) {
+    const value = request[key];
+    if (value !== undefined) fields[key] = value;
+  }
+  return {
+    ...fields,
+    ...(headers === undefined ? {} : { headers }),
+    ...(allowedOrigins === undefined ? {} : { allowedOrigins: [...allowedOrigins] }),
+    ...(integrity === undefined ? {} : { integrity: integrity && typeof integrity === "object" ? {
+      ...integrity, ...(integrity.dependencies ? { dependencies: { ...integrity.dependencies } } : {})
+    } : integrity })
+  } as GameSoundRequest;
+}
+
+function snapshotAsset(asset: AudioAssetRef): AudioAssetRef {
+  const integrity = asset.integrity;
+  return {
+    ...asset,
+    url: asset.url,
+    ...(asset.id === undefined ? {} : { id: asset.id }),
+    ...(asset.kind === undefined ? {} : { kind: asset.kind }),
+    ...(asset.type === undefined ? {} : { type: asset.type }),
+    ...(asset.format === undefined ? {} : { format: asset.format }),
+    ...(asset.hash === undefined ? {} : { hash: asset.hash }),
+    ...(asset.sha256 === undefined ? {} : { sha256: asset.sha256 }),
+    ...(asset.sizeBytes === undefined ? {} : { sizeBytes: asset.sizeBytes }),
+    ...(asset.securityContext === undefined ? {} : { securityContext: asset.securityContext }),
+    ...(asset.license === undefined ? {} : { license: asset.license }),
+    ...(asset.provenance === undefined ? {} : { provenance: asset.provenance }),
+    ...(asset.buffer === undefined ? {} : { buffer: asset.buffer }),
+    ...(asset.request ? { request: snapshotRequest(asset.request) } : {}),
+    ...(asset.variantHashes ? { variantHashes: { ...asset.variantHashes } } : {}),
+    ...(integrity === undefined ? {} : { integrity: integrity && typeof integrity === "object" ? {
+      ...integrity, ...(integrity.dependencies ? { dependencies: { ...integrity.dependencies } } : {})
+    } : integrity })
+  };
+}
+
+function digestOf(value: string | undefined, required: boolean): string | undefined {
+  if (value === undefined) return undefined;
+  const match = SHA256.exec(value.trim());
+  if (!match && required) throw new Error("Invalid audio SHA-256 digest");
+  return match?.[1].toLowerCase();
+}
+
+function integrityDigest(value: AudioFileRequest["integrity"]): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === "string") return digestOf(value, true);
+  if (!value || value.version !== 1 || typeof value.digest !== "string") throw new Error("Invalid audio integrity metadata");
+  if (value.requireDependencies || (value.dependencies && Object.keys(value.dependencies).length > 0)) {
+    throw new Error("Audio integrity dependencies are unsupported");
+  }
+  return digestOf(value.digest, true);
+}
+
+function isAbort(error: unknown): boolean {
+  try { return typeof error === "object" && error !== null && "name" in error && error.name === "AbortError"; }
+  catch { return false; }
+}
 
 export function createGameSoundEngine<TCue extends string>(options: GameSoundOptions<TCue>) {
   for (const [id, cue] of Object.entries(options.cues as Record<string, SoundCueSpec | undefined>)) {
@@ -104,68 +205,238 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     })();
   const rng = mulberry32(options.seed ?? 1);
   const chain = createMasterChain(ctx, ctx.destination, options.master);
+  const errors: string[] = [];
+  const lifetime = new AbortController();
+  const pendingLoads = new Set<AbortController>();
+  let disposed = false;
+  let generation = 0;
+  let defaultRequest: GameSoundRequest;
+  const cueSpecs: Record<string, SoundCueSpec> = Object.create(null) as Record<string, SoundCueSpec>;
+  try {
+    defaultRequest = snapshotRequest(options.request);
+    for (const [id, cue] of Object.entries(options.cues as Record<string, SoundCueSpec>)) {
+      const asset = cue.asset;
+      cueSpecs[id] = {
+        ...cue,
+        ...(asset === undefined ? {} : { asset: Array.isArray(asset)
+          ? asset.map((entry) => snapshotAsset(entry))
+          : snapshotAsset(asset as AudioAssetRef) })
+      };
+    }
+  } catch {
+    chain.dispose();
+    throw new Error("Invalid game audio asset or request policy");
+  }
+  const assetCueCount = Object.values(cueSpecs).filter((cue) => cue.asset !== undefined).length;
+  const synthCueCount = Object.values(cueSpecs).filter((cue) => cue.asset === undefined && cue.play !== undefined).length;
+  let fetchProbe = options.fetchProbe;
+  let probeBase = options.probeBase;
+  let securityContext = defaultRequest.securityContext;
+  const fileManager = typeof ctx.decodeAudioData === "function"
+    ? new AudioFileManager({ context: ctx as AudioDecodeContextLike })
+    : undefined;
+
+  // A plan is keyed by the authored asset object, never by its URL. The file
+  // manager owns all reusable decoded data and its request-policy identity.
+  interface AssetPlan {
+    readonly asset: AudioAssetRef;
+    readonly localRequest: GameSoundRequest;
+    resolved?: { readonly url: string; readonly extension?: "opus.webm" | "m4a" };
+  }
+  const plans = new WeakMap<object, AssetPlan>();
+  const planFor = (asset: AudioAssetRef): AssetPlan => {
+    let plan = plans.get(asset);
+    if (!plan) {
+      const snap = snapshotAsset(asset);
+      plan = { asset: snap, localRequest: snapshotRequest(snap.request) };
+      plans.set(asset, plan);
+    }
+    return plan;
+  };
+  const diagnostic = (code: string): void => {
+    if (disposed) return;
+    if (errors.length >= MAX_AUDIO_DIAGNOSTICS) errors.shift();
+    errors.push(code);
+  };
+  const FORMAT_TOKEN = "{format}";
+  let probedExt: Promise<"opus.webm" | "m4a"> | undefined;
+  const resolveExtension = (): Promise<"opus.webm" | "m4a"> => {
+    if (!probedExt) {
+      probedExt = probeFormat({
+        decodeAudioData: (data) => {
+          if (disposed) return Promise.reject(abortError());
+          return ctx.decodeAudioData!(data);
+        },
+        fetchProbe: async (url) => {
+          if (disposed) throw abortError();
+          const reader = fetchProbe;
+          const data = reader ? await reader(url) : await fetch(url).then((response) => {
+            if (!response.ok) throw new Error("Audio format probe failed");
+            return response.arrayBuffer();
+          });
+          if (disposed) throw abortError();
+          return data;
+        },
+        probeBase
+      }).then((format: EncodedFormat) => formatExtension(format) as "opus.webm" | "m4a")
+        .catch(() => "m4a" as const);
+    }
+    return probedExt;
+  };
+  const abortError = (): Error => typeof DOMException === "undefined"
+    ? Object.assign(new Error("Audio load cancelled"), { name: "AbortError" })
+    : new DOMException("Audio load cancelled", "AbortError");
+  const waitFor = <T>(pending: Promise<T>, signal: AbortSignal): Promise<T> => new Promise<T>((resolve, reject) => {
+    let done = false;
+    const finish = (callback: () => void): void => {
+      if (done) return;
+      done = true;
+      signal.removeEventListener("abort", onAbort);
+      callback();
+    };
+    const onAbort = (): void => finish(() => reject(abortError()));
+    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal.aborted) onAbort();
+    pending.then((value) => finish(() => resolve(value)), (error: unknown) => finish(() => reject(error)));
+  });
+  const linkSignals = (signals: readonly (AbortSignal | undefined)[]): { signal: AbortSignal; dispose(): void } => {
+    const controller = new AbortController();
+    const listeners: Array<readonly [AbortSignal, () => void]> = [];
+    const dispose = (): void => {
+      for (const [signal, listener] of listeners) signal.removeEventListener("abort", listener);
+      listeners.length = 0;
+    };
+    for (const signal of new Set(signals.filter((item): item is AbortSignal => item !== undefined))) {
+      const abort = (): void => { if (!controller.signal.aborted) controller.abort(); dispose(); };
+      if (signal.aborted) { abort(); break; }
+      listeners.push([signal, abort]);
+      signal.addEventListener("abort", abort, { once: true });
+      if (signal.aborted) { abort(); break; }
+    }
+    return { signal: controller.signal, dispose };
+  };
+  const policyFor = (plan: AssetPlan): GameSoundRequest => {
+    const local = plan.localRequest;
+    const hasHeaders = defaultRequest.headers !== undefined || local.headers !== undefined;
+    if (hasHeaders && typeof Headers !== "function") throw new Error("Audio headers are unavailable");
+    const headers = hasHeaders ? new Headers(defaultRequest.headers) : undefined;
+    if (local.headers !== undefined) new Headers(local.headers).forEach((value, key) => headers!.set(key, value));
+    const allowedOrigins = defaultRequest.allowedOrigins && local.allowedOrigins
+      ? defaultRequest.allowedOrigins.filter((origin) => local.allowedOrigins!.includes(origin))
+      : local.allowedOrigins ?? defaultRequest.allowedOrigins;
+    if (defaultRequest.expectedUrl !== undefined && local.expectedUrl !== undefined && defaultRequest.expectedUrl !== local.expectedUrl) {
+      throw new Error("Conflicting audio expected URLs");
+    }
+    const selectedContext = plan.asset.securityContext ?? local.securityContext ?? securityContext;
+    const result: GameSoundRequest = {
+      ...defaultRequest, ...local, ...(headers ? { headers } : {}),
+      ...(allowedOrigins === undefined ? {} : { allowedOrigins: [...allowedOrigins] }),
+      ...(defaultRequest.maxBytes !== undefined && local.maxBytes !== undefined
+        ? { maxBytes: Math.min(defaultRequest.maxBytes, local.maxBytes) } : {}),
+      ...(selectedContext === undefined ? { securityContext: undefined } : { securityContext: selectedContext })
+    };
+    return result;
+  };
+  const prepareInput = (plan: AssetPlan, resolved: { readonly url: string; readonly extension?: "opus.webm" | "m4a" }, request: GameSoundRequest) => {
+    const digests = [
+      digestOf(defaultRequest.expectedHash, true), digestOf(plan.localRequest.expectedHash, true),
+      integrityDigest(defaultRequest.integrity), integrityDigest(plan.localRequest.integrity),
+      digestOf(plan.asset.sha256, true), integrityDigest(plan.asset.integrity),
+      digestOf(plan.asset.hash, typeof plan.asset.hash === "string" && /^sha256[:-]/i.test(plan.asset.hash.trim()))
+    ].filter((item): item is string => item !== undefined);
+    const variantHash = resolved.extension ? digestOf(plan.asset.variantHashes?.[resolved.extension], true) : undefined;
+    if (resolved.extension && plan.asset.variantHashes !== undefined && !variantHash) throw new Error("Audio variant digest is required");
+    if (resolved.extension && digests.length > 0 && !variantHash) throw new Error("Audio variant digest is required");
+    if (variantHash) digests.push(variantHash);
+    if (digests.some((digest) => digest !== digests[0])) throw new Error("Conflicting audio content digests");
+    if (plan.asset.kind === "aura-asset-ref" && plan.asset.type !== "audio") throw new Error("Typed game asset is not audio");
+    if (plan.asset.buffer && (digests.length > 0 || plan.asset.sizeBytes !== undefined || request.maxBytes !== undefined ||
+        request.expectedUrl !== undefined || plan.asset.variantHashes !== undefined)) {
+      throw new Error("Cannot verify encoded bytes for an audio buffer");
+    }
+    const legacyHash = plan.asset.hash && !SHA256.test(plan.asset.hash.trim()) ? plan.asset.hash : undefined;
+    const fetchRequest: GameSoundRequest = {
+      ...request,
+      ...(digests[0] ? { expectedHash: digests[0] } : {}),
+      ...(legacyHash ? { cacheKey: JSON.stringify([request.cacheKey ?? null, legacyHash]) } : {}),
+      ...(request.expectedUrl && resolved.extension ? { expectedUrl: request.expectedUrl.replaceAll(FORMAT_TOKEN, resolved.extension) } : {})
+    };
+    const input = {
+      url: resolved.url,
+      ...(plan.asset.id === undefined ? {} : { id: plan.asset.id }),
+      ...(plan.asset.kind === undefined ? {} : { kind: plan.asset.kind }),
+      ...(plan.asset.type === undefined ? {} : { type: plan.asset.type }),
+      ...(plan.asset.format === undefined ? {} : { format: plan.asset.format }),
+      ...(plan.asset.sizeBytes === undefined ? {} : { sizeBytes: plan.asset.sizeBytes }),
+      ...(digests[0] ? { hash: digests[0] } : {})
+    };
+    return { input, request: fetchRequest };
+  };
+  const bufferForAsset = (asset: AudioAssetRef): AudioBuffer | undefined => {
+    if (disposed) return undefined;
+    try {
+      const plan = planFor(asset);
+      const request = policyFor(plan);
+      if (defaultRequest.signal?.aborted || plan.localRequest.signal?.aborted) return undefined;
+      if (plan.asset.buffer) {
+        prepareInput(plan, { url: plan.asset.url }, request);
+        return plan.asset.buffer;
+      }
+      const resolved = plan.resolved ?? (!plan.asset.url.includes(FORMAT_TOKEN) ? { url: plan.asset.url } : undefined);
+      if (!resolved) return undefined;
+      const prepared = prepareInput(plan, resolved, request);
+      const reusable = (prepared.request.credentials === "omit" || prepared.request.securityContext !== undefined)
+        && !["no-store", "reload", "no-cache"].includes(prepared.request.cache ?? "default");
+      return reusable ? fileManager?.getCached(prepared.input, prepared.request)?.buffer : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+  const loadAsset = (asset: AudioAssetRef, signal?: AbortSignal): Promise<AudioBuffer | undefined> => {
+    if (disposed) return Promise.resolve(undefined);
+    let plan: AssetPlan;
+    let request: GameSoundRequest;
+    try { plan = planFor(asset); request = policyFor(plan); }
+    catch { diagnostic("AUDIO_ASSET_POLICY_INVALID"); return Promise.resolve(undefined); }
+    const controller = new AbortController();
+    const linked = linkSignals([lifetime.signal, controller.signal, defaultRequest.signal, plan.localRequest.signal, signal]);
+    const currentGeneration = generation;
+    pendingLoads.add(controller);
+    const operation = async (): Promise<AudioBuffer | undefined> => {
+      if (linked.signal.aborted) throw abortError();
+      if (plan.asset.buffer) {
+        prepareInput(plan, { url: plan.asset.url }, request);
+        return plan.asset.buffer;
+      }
+      let resolved = plan.resolved;
+      if (!resolved) {
+        const extension = plan.asset.url.includes(FORMAT_TOKEN) ? await waitFor(resolveExtension(), linked.signal) : undefined;
+        if (linked.signal.aborted || disposed || generation !== currentGeneration) throw abortError();
+        resolved = { url: extension ? plan.asset.url.replaceAll(FORMAT_TOKEN, extension) : plan.asset.url, ...(extension ? { extension } : {}) };
+        plan.resolved = resolved;
+      }
+      const prepared = prepareInput(plan, resolved, request);
+      if (!fileManager) throw new Error("Audio decoding is unavailable");
+      const clip = await fileManager.load(prepared.input, { ...prepared.request, signal: linked.signal });
+      if (linked.signal.aborted || disposed || generation !== currentGeneration) throw abortError();
+      return clip.buffer;
+    };
+    return operation().catch((error: unknown) => {
+      if (!isAbort(error) && !linked.signal.aborted && !disposed && generation === currentGeneration) diagnostic("AUDIO_ASSET_LOAD_FAILED");
+      return undefined;
+    }).finally(() => { pendingLoads.delete(controller); linked.dispose(); });
+  };
   const pool = new VoicePool({
     ctx,
     rng,
     voiceCap: options.voiceCap ?? VOICE_CAPS[tier],
-    bufferFor: (url) => buffers.get(urlAliases.get(url) ?? url)
+    bufferFor: (_url, asset) => asset ? bufferForAsset(asset as AudioAssetRef) : undefined
   });
 
-  // ---- buffers -------------------------------------------------------------
-  const buffers = new Map<string, AudioBuffer>();
-  const pending = new Map<string, Promise<AudioBuffer | undefined>>();
-  // {format} placeholder urls -> the resolved variant url they were fetched as.
-  const urlAliases = new Map<string, string>();
-  const errors: string[] = [];
-  // Packed-asset URLs may carry the {format} placeholder: it resolves once
-  // via the 20 ms decode probe (§6.8/1735) into "opus.webm" or "m4a".
-  const FORMAT_TOKEN = "{format}";
-  let probedExt: Promise<string> | undefined;
-  const resolveExtension = (): Promise<string> => {
-    if (!probedExt) {
-      probedExt = probeFormat({
-        decodeAudioData: (data) => ctx.decodeAudioData!(data),
-        fetchProbe: options.fetchProbe,
-        probeBase: options.probeBase
-      })
-        .then((format: EncodedFormat) => formatExtension(format))
-        .catch(() => "m4a");
-    }
-    return probedExt;
-  };
-  const loadAsset = (url: string): Promise<AudioBuffer | undefined> => {
-    if (url.includes(FORMAT_TOKEN)) {
-      return resolveExtension().then((ext) => {
-        const resolved = url.replaceAll(FORMAT_TOKEN, ext);
-        urlAliases.set(url, resolved);
-        return loadAsset(resolved);
-      });
-    }
-    if (buffers.has(url)) return Promise.resolve(buffers.get(url));
-    let p = pending.get(url);
-    if (!p) {
-      if (typeof ctx.decodeAudioData !== "function" || typeof fetch !== "function") {
-        return Promise.resolve(undefined);
-      }
-      p = fetch(url)
-        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}`))))
-        .then((data) => ctx.decodeAudioData!(data))
-        .then((buf) => {
-          buffers.set(url, buf);
-          return buf;
-        })
-        .catch((e: Error) => {
-          errors.push(`decode ${url}: ${e.message}`);
-          return undefined;
-        });
-      pending.set(url, p);
-    }
-    return p;
-  };
-  // Eagerly kick off cue asset loads.
-  for (const cue of Object.values(options.cues as Record<string, SoundCueSpec | undefined>)) {
-    const assets = cue?.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]) : [];
-    for (const a of assets) void loadAsset(a.url);
+  // Warm authored cue assets without ever issuing a fetch for inline buffers.
+  for (const cue of Object.values(cueSpecs)) {
+    const assets = cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]) : [];
+    for (const asset of assets) if (!asset.buffer) void loadAsset(asset);
   }
 
   // ---- buses ---------------------------------------------------------------
@@ -183,7 +454,7 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     ctx,
     preset: options.reverb ?? "none",
     tier,
-    bufferFor: (url) => buffers.get(url)
+    bufferFor: () => undefined
   }) as ReturnType<typeof createReverbSend> & {
     sendTail?: SoundNodeLike;
     setIrBuffer?: (b: AudioBuffer) => void;
@@ -198,7 +469,10 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     reverb.sendTail.connect(chain.input as unknown as SoundNodeLike);
     const ext = (options as { irExtension?: string }).irExtension ?? "opus.webm";
     const url = `assets/ir/${options.reverb}.${ext}`;
-    void loadAsset(url).then((buf) => buf && reverb.setIrBuffer?.(buf));
+    // Built-in impulse responses do not inherit caller-supplied asset headers.
+    if (fileManager) void fileManager.load(url, { credentials: "omit", signal: lifetime.signal }).then((clip) => {
+      if (!disposed) reverb.setIrBuffer?.(clip.buffer);
+    }).catch((error: unknown) => { if (!disposed && !isAbort(error)) diagnostic("AUDIO_REVERB_LOAD_FAILED"); });
   }
 
   // ---- voices --------------------------------------------------------------
@@ -222,52 +496,68 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
   const startLoopVoice = (
     cueId: string,
     cue: SoundCueSpec | VoiceCueSpec,
-    input: SoundNodeLike
+    input: SoundNodeLike,
+    asset?: AudioAssetRef,
+    buffer?: AudioBuffer
   ): VoiceRecord => {
-    const record = pool.allocate(cueId, cue, input, { loop: true }).record;
+    const currentGeneration = generation;
+    const record = pool.allocate(cueId, cue, input, { loop: true, selectedAsset: asset, buffer }).record;
     if (!record) throw new Error(`Engine loop voice for "${cueId}" was dropped at cap`);
-    record.source.start();
+    try { record.source.start(); }
+    catch (error) { pool.release(record); throw error; }
+    if (disposed || generation !== currentGeneration || record.ended) {
+      pool.release(record);
+      throw new Error("Engine loop was cancelled while starting");
+    }
     return record;
   };
 
   const handles = new Set<LoopHandleImpl>();
+  const pendingPlays = new Set<PlayHandle>();
   let muted = false;
   let masterVolume = 1;
   let voicesPlayed = 0;
 
-  const assetUrlsOf = (cue: SoundCueSpec): string[] =>
-    cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]).map((a) => a.url) : [];
-  const hasBuffer = (url: string): boolean => buffers.has(urlAliases.get(url) ?? url);
-
-  /**
-   * A loop cued before its buffer decoded used to start a buffer-less source
-   * that stayed silent for good (Blockfall's hum and four stems): defer the
-   * start until the asset is decoded, replaying any level/stop calls made in
-   * the meantime.
-   */
-  const deferLoop = (cueId: string, cue: SoundCueSpec, opts: PlayOptions): PlayHandle => {
+  /** Preserve the selected variant while its policy-scoped bytes are loaded. */
+  const deferPlay = (cueId: string, cue: SoundCueSpec, asset: AudioAssetRef, opts: PlayOptions): PlayHandle => {
     let real: PlayHandle | null = null;
     let stopped = false;
     let failed = false;
     let level: { gain?: number; rate?: number } | undefined;
     let position: Vec3 | undefined;
     let occlusion: number | undefined;
-    void Promise.all(assetUrlsOf(cue).map((u) => loadAsset(u))).then((loaded) => {
-      if (stopped || !loaded.some(Boolean)) {
+    const controller = new AbortController();
+    let finishStarted!: (started: boolean) => void;
+    const started = new Promise<boolean>((resolve) => { finishStarted = resolve; });
+    void loadAsset(asset, controller.signal).then((buffer) => {
+      if (stopped || disposed || muted || !buffer) {
         failed = true;
+        finishStarted(false);
         return;
       }
-      real = playNow(cueId, opts);
-      if (!real) {
+      try { real = playNow(cueId, cue, position ? { ...opts, position } : opts, asset, buffer); }
+      catch { diagnostic("AUDIO_PLAYBACK_FAILED"); }
+      if (!real || disposed || stopped) {
+        real?.stop();
         failed = true;
+        finishStarted(false);
         return;
       }
-      if (level) real.setLevel?.(level, 1);
-      if (position) real.setPosition(position);
-      if (occlusion !== undefined) real.setOcclusion(occlusion);
-    });
-    return {
-      id: -2,
+      try {
+        if (level) real.setLevel?.(level, 1);
+        if (position) real.setPosition(position);
+        if (occlusion !== undefined) real.setOcclusion(occlusion);
+        finishStarted(true);
+      } catch {
+        real.stop();
+        failed = true;
+        diagnostic("AUDIO_PLAYBACK_FAILED");
+        finishStarted(false);
+      }
+    }).finally(() => pendingPlays.delete(handle));
+    const handle: PlayHandle = {
+      get id() { return real?.id ?? -2; },
+      started,
       get ended() {
         return stopped || failed || (real?.ended ?? false);
       },
@@ -277,6 +567,8 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
       },
       stop: (fadeMs) => {
         stopped = true;
+        controller.abort();
+        finishStarted(false);
         real?.stop(fadeMs);
       },
       setPosition: (p) => {
@@ -288,25 +580,24 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
         real?.setOcclusion(a);
       }
     };
+    pendingPlays.add(handle);
+    return handle;
   };
 
   const play = (cueId: string, opts: PlayOptions = {}): PlayHandle | null => {
-    if (muted) return null;
-    const cue = options.cues[cueId as TCue];
+    if (muted || disposed) return null;
+    const cue = cueSpecs[cueId];
     if (!cue) return null;
-    const urls = assetUrlsOf(cue);
-    const assets = cue.asset ? (Array.isArray(cue.asset) ? cue.asset : [cue.asset]) : [];
-    const inline = assets.some((a) => (a as { buffer?: AudioBuffer }).buffer !== undefined);
-    if (cue.loop && urls.length > 0 && !inline && !urls.some(hasBuffer) && typeof ctx.decodeAudioData === "function") {
-      return deferLoop(cueId, cue, opts);
-    }
-    return playNow(cueId, opts);
+    if (cue.asset === undefined) return playNow(cueId, cue, opts);
+    const selected = pool.selectAsset(cueId, cue) as AudioAssetRef | undefined;
+    if (!selected) return null;
+    const buffer = bufferForAsset(selected);
+    return buffer ? playNow(cueId, cue, opts, selected, buffer) : deferPlay(cueId, cue, selected, opts);
   };
 
-  const playNow = (cueId: string, opts: PlayOptions = {}): PlayHandle | null => {
-    if (muted) return null;
-    const cue = options.cues[cueId as TCue];
-    if (!cue) return null;
+  const playNow = (cueId: string, cue: SoundCueSpec, opts: PlayOptions = {}, selectedAsset?: AudioAssetRef, buffer?: AudioBuffer): PlayHandle | null => {
+    if (muted || disposed) return null;
+    const currentGeneration = generation;
     const spatial = spatialOf(cue, opts.position);
     if (spatial && opts.velocity) spatial.setVelocity(opts.velocity);
     const input = spatial ? spatial.input : busInput(cue.bus);
@@ -326,15 +617,19 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
         setOcclusion: (a: number) => spatial?.setOcclusion(a)
       };
     }
-    const allocation = pool.allocate(cueId, cue as VoiceCueSpec, input, opts);
-    if (allocation.dropped || !allocation.record) return null;
+    const allocation = pool.allocate(cueId, cue as VoiceCueSpec, input, { ...opts, selectedAsset, buffer });
+    if (allocation.dropped || !allocation.record) { spatial?.dispose(); return null; }
     const record = allocation.record;
-    voicesPlayed += 1;
     // Authored level after jitter, without the per-play volumeDb: setLevel
     // gains are relative to it (setLevel({gain:1}) = authored level).
     const baseGain = Math.max(1e-6, record.targetGain / dbToGain(opts.volumeDb ?? 0));
     const baseRate = record.source.playbackRate?.value ?? 1;
-    record.source.start();
+    try { record.source.start(); }
+    catch (error) { pool.release(record); spatial?.dispose(); throw error; }
+    if (disposed || generation !== currentGeneration || record.ended) {
+      pool.release(record); spatial?.dispose(); return null;
+    }
+    voicesPlayed += 1;
     return {
       id: record.id,
       /** True once the voice finished, was stopped, stolen or evicted. */
@@ -374,19 +669,26 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     };
   };
 
-  const loop = (
+  const loopNow = (
     cueId: string,
-    opts: { position?: Vec3; fadeInMs?: number } = {}
+    cue: SoundCueSpec,
+    opts: { position?: Vec3; fadeInMs?: number },
+    selectedAsset: AudioAssetRef,
+    buffer: AudioBuffer
   ): LoopHandleImpl | null => {
-    if (muted) return null;
-    const cue = options.cues[cueId as TCue];
-    if (!cue) return null;
+    if (muted || disposed) return null;
+    const currentGeneration = generation;
+    for (const handle of handles) if (handle.ended) handles.delete(handle);
     const spatial = spatialOf(cue, opts.position);
     const input = spatial ? spatial.input : busInput(cue.bus);
     if (spatial) spatial.occlusionFilter.connect(busInput(cue.bus));
-    const allocation = pool.allocate(cueId, cue as VoiceCueSpec, input, { loop: true });
-    if (allocation.dropped || !allocation.record) return null;
-    allocation.record.source.start();
+    const allocation = pool.allocate(cueId, cue as VoiceCueSpec, input, { loop: true, selectedAsset, buffer });
+    if (allocation.dropped || !allocation.record) { spatial?.dispose(); return null; }
+    try { allocation.record.source.start(); }
+    catch (error) { pool.release(allocation.record); spatial?.dispose(); throw error; }
+    if (disposed || generation !== currentGeneration || allocation.record.ended) {
+      pool.release(allocation.record); spatial?.dispose(); return null;
+    }
     const handle = new LoopHandleImpl(
       ctx,
       allocation.record,
@@ -402,16 +704,94 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     return handle;
   };
 
+  const loop = (
+    cueId: string,
+    opts: { position?: Vec3; fadeInMs?: number } = {}
+  ): (LoopHandleImpl & { readonly started?: Promise<boolean> }) | null => {
+    if (muted || disposed) return null;
+    const cue = cueSpecs[cueId];
+    if (!cue?.asset) return null;
+    const selected = pool.selectAsset(cueId, cue) as AudioAssetRef | undefined;
+    if (!selected) return null;
+    const cached = bufferForAsset(selected);
+    if (cached) return loopNow(cueId, cue, opts, selected, cached);
+
+    // Keep the existing LoopHandleImpl API while a policy-scoped load is in
+    // flight. The placeholder is never submitted to the audio context.
+    const placeholder = { id: -2, ended: false } as VoiceRecord;
+    class PendingLoop extends LoopHandleImpl {
+      private target?: LoopHandleImpl;
+      private cancelled = false;
+      private failed = false;
+      private readonly controller = new AbortController();
+      private rate?: readonly [number, number];
+      private gain?: readonly [number, number];
+      private position?: Vec3;
+      private velocity?: Vec3;
+      private occlusion?: number;
+      private settle!: (value: boolean) => void;
+      readonly started = new Promise<boolean>((resolve) => { this.settle = resolve; });
+
+      constructor() {
+        super(ctx, placeholder, undefined, () => {});
+        void loadAsset(selected!, this.controller.signal).then((buffer) => {
+          if (this.cancelled || disposed || muted || !buffer) { this.failed = true; this.settle(false); return; }
+          try {
+            this.target = loopNow(cueId, cue!, this.position ? { ...opts, position: this.position } : opts, selected!, buffer) ?? undefined;
+            if (!this.target || this.cancelled || disposed) {
+              this.target?.stop(); this.failed = true; this.settle(false); return;
+            }
+            if (this.rate) this.target.setRate(...this.rate);
+            if (this.gain) this.target.setGain(...this.gain);
+            if (this.position) this.target.setPositionVelocity(this.position, this.velocity);
+            if (this.occlusion !== undefined) this.target.setOcclusion(this.occlusion);
+            this.settle(true);
+          } catch {
+            this.target?.stop(); this.failed = true;
+            diagnostic("AUDIO_PLAYBACK_FAILED"); this.settle(false);
+          }
+        });
+      }
+
+      override get id(): number { return this.target?.id ?? -2; }
+      override get ended(): boolean { return this.cancelled || this.failed || (this.target?.ended ?? false); }
+      override stop(fadeMs = 0): void {
+        if (this.cancelled) return;
+        this.cancelled = true; this.controller.abort(); this.settle(false); this.target?.stop(fadeMs);
+      }
+      override setPosition(position: Vec3): void { this.position = position; this.target?.setPosition(position); }
+      override setPositionVelocity(position: Vec3, velocity?: Vec3): void {
+        this.position = position; this.velocity = velocity; this.target?.setPositionVelocity(position, velocity);
+      }
+      override setOcclusion(value: number): void { this.occlusion = value; this.target?.setOcclusion(value); }
+      override setRate(value: number, rampMs = 0): void { this.rate = [value, rampMs]; this.target?.setRate(value, rampMs); }
+      override setGain(value: number, rampMs = 0): void { this.gain = [value, rampMs]; this.target?.setGain(value, rampMs); }
+    }
+    const pending = new PendingLoop();
+    handles.add(pending);
+    return pending;
+  };
+
+  const engineLoops = new Set<EngineLoopHandleImpl>();
+  const assetBufferFor = (_url: string, asset?: { readonly url: string }): AudioBuffer | undefined =>
+    asset ? bufferForAsset(asset as AudioAssetRef) : undefined;
+  const requiresBufferedAsset = (): boolean =>
+    securityContext !== undefined || Object.keys(defaultRequest).length > 0;
+
   const engine = (
     spec: EngineLoopSpec | { cue: TCue; rpmRange: readonly [number, number]; pitchRange: readonly [number, number] }
   ): EngineLoopHandleImpl => {
+    if (disposed) throw new Error("Game audio engine is disposed");
+    const currentGeneration = generation;
+    for (const handle of engineLoops) if (handle.ended) engineLoops.delete(handle);
     if ("cue" in spec) {
       // C-25 shorthand: one cue asset, pitch by rpm fraction.
-      const cue = options.cues[spec.cue];
+      const cue = cueSpecs[spec.cue];
       if (!cue) throw new Error(`Unknown engine cue "${String(spec.cue)}"`);
-      const asset = Array.isArray(cue.asset) ? cue.asset[0] : cue.asset;
-      const layer: EngineLayerSpec = { asset: asset as { url: string }, rpm: spec.rpmRange[0] };
-      return createEngineLoop({
+      const asset = Array.isArray(cue.asset) ? cue.asset[0] : cue.asset as AudioAssetRef | undefined;
+      if (!asset) throw new Error("Engine loop cue requires an audio asset");
+      const layer: EngineLayerSpec = { asset, rpm: spec.rpmRange[0] };
+      const handle = createEngineLoop({
         ctx,
         onLoad: [layer],
         idleRpm: spec.rpmRange[0],
@@ -419,32 +799,50 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
         busInput: busInput(cue.bus),
         spatial: undefined,
         pool,
-        bufferFor: (url) => buffers.get(url),
-        startVoice: (_b, input) => startLoopVoice(String(spec.cue), cue, input)
+        bufferFor: assetBufferFor,
+        loadAsset: (entry, signal) => loadAsset(entry as AudioAssetRef, signal),
+        requiresBufferedAsset,
+        startVoice: (buffer, input, _loop, entry) => startLoopVoice(String(spec.cue), cue, input, entry as AudioAssetRef | undefined, buffer)
       });
+      if (disposed || generation !== currentGeneration) handle.stop(0);
+      else engineLoops.add(handle);
+      return handle;
     }
     const spatial = createSpatialNode({ ctx, panningModel: HRTF_CAP[tier] > 0 ? "HRTF" : "equalpower" });
     spatial.occlusionFilter.connect(busInput(spec.bus ?? "sfx"));
-    return createEngineLoop({
-      ctx,
-      onLoad: spec.onLoad,
-      offLoad: spec.offLoad,
-      idleRpm: spec.idleRpm,
-      maxRpm: spec.maxRpm,
-      busInput: busInput(spec.bus ?? "sfx"),
-      spatial,
-      pool,
-      bufferFor: (url) => buffers.get(url),
-      startVoice: (_b, input) =>
-        startLoopVoice("_engine", { bus: "sfx", priority: "normal" }, input)
-    });
+    try {
+      const handle = createEngineLoop({
+        ctx,
+        onLoad: spec.onLoad,
+        offLoad: spec.offLoad,
+        idleRpm: spec.idleRpm,
+        maxRpm: spec.maxRpm,
+        busInput: busInput(spec.bus ?? "sfx"),
+        spatial,
+        pool,
+        bufferFor: assetBufferFor,
+        loadAsset: (entry, signal) => loadAsset(entry as AudioAssetRef, signal),
+        requiresBufferedAsset,
+        startVoice: (buffer, input, _loop, entry) =>
+          startLoopVoice("_engine", { bus: "sfx", priority: "normal" }, input, entry as AudioAssetRef | undefined, buffer)
+      });
+      if (disposed || generation !== currentGeneration) handle.stop(0);
+      else engineLoops.add(handle);
+      return handle;
+    } catch (error) {
+      spatial.dispose();
+      throw error;
+    }
   };
 
   const music = new MusicControllerImpl({
     ctx,
     output: busInput("music"),
     tracks: options.music?.tracks ?? {},
-    bufferFor: (url) => buffers.get(url),
+    bufferFor: assetBufferFor,
+    loadAsset: (asset, signal) => loadAsset(asset as AudioAssetRef, signal),
+    requiresBufferedAsset,
+    onLoadFailure: () => diagnostic("AUDIO_MUSIC_LOAD_FAILED"),
     createMediaElement:
       typeof Audio !== "undefined" ? (url) => new Audio(url) : undefined,
     playCue: (cue) => {
@@ -457,22 +855,30 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
   let readyResolve!: () => void;
   const ready = new Promise<void>((resolve) => (readyResolve = resolve));
   let unlockArmed = false;
+  const unlockEvents = ["pointerdown", "keydown", "touchend"] as const;
+  let unlockListener: (() => void) | undefined;
+  const detachUnlock = (): void => {
+    if (unlockListener && typeof document !== "undefined") {
+      for (const event of unlockEvents) document.removeEventListener(event, unlockListener);
+    }
+    unlockListener = undefined;
+  };
   const unlock = async () => {
-    if (unlockArmed) return;
+    if (unlockArmed || disposed) return;
     unlockArmed = true;
     const resume = async () => {
+      if (disposed) return;
       try {
         await ctx.resume();
       } catch {
         /* ctx may not need resuming */
       }
-      readyResolve();
+      if (!disposed) readyResolve();
     };
     if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
       const once = { once: true, passive: true } as const;
-      for (const ev of ["pointerdown", "keydown", "touchend"]) {
-        document.addEventListener(ev, () => void resume(), once);
-      }
+      unlockListener = () => { detachUnlock(); void resume(); };
+      for (const event of unlockEvents) document.addEventListener(event, unlockListener, once);
     }
     await resume();
   };
@@ -551,6 +957,24 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
     setListener,
     setBusVolume,
     recordMaster,
+    /** Invalidate voices and cached/in-flight data when ambient identity changes. */
+    setSecurityContext(next?: string) {
+      if (disposed) return;
+      if (next !== undefined && (typeof next !== "string" || !next.trim())) {
+        throw new Error("Audio securityContext must be a non-empty authentication generation");
+      }
+      securityContext = next;
+      generation += 1;
+      for (const controller of pendingLoads) controller.abort();
+      for (const handle of pendingPlays) handle.stop();
+      for (const handle of handles) if (!handle.ended) handle.stop(0);
+      for (const handle of engineLoops) if (!handle.ended) handle.stop(0);
+      handles.clear();
+      engineLoops.clear();
+      fileManager?.clear();
+      music.reset();
+      pool.releaseAll();
+    },
     setMuted(m: boolean) {
       muted = m;
       // Unmute restores the user's master level, not unity.
@@ -568,15 +992,14 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
       for (const [id, g] of busGains) {
         busValues[id] = (g as unknown as { gain: { value: number } }).gain.value;
       }
-      const cues = Object.values(options.cues as Record<string, SoundCueSpec | undefined>);
       return {
         contextState: String(ctx.state),
         voicesPlayed,
         liveVoices: pool.liveCount,
         poolStats: pool.stats,
         buses: busValues,
-        assetCues: cues.filter((c) => c?.asset !== undefined).length,
-        synthCues: cues.filter((c) => !c?.asset && c?.play !== undefined).length,
+        assetCues: assetCueCount,
+        synthCues: synthCueCount,
         limiterEngaged: chain.limiterEngaged,
         stages: [...chain.stages],
         tier,
@@ -584,14 +1007,33 @@ export function createGameSoundEngine<TCue extends string>(options: GameSoundOpt
       };
     },
     dispose() {
-      pool.releaseAll();
+      if (disposed) return;
+      disposed = true;
+      generation += 1;
+      lifetime.abort();
+      for (const controller of pendingLoads) controller.abort();
+      for (const handle of pendingPlays) handle.stop();
+      pendingPlays.clear();
       for (const h of handles) {
         if (!h.ended) h.stop(0);
       }
+      handles.clear();
+      for (const handle of engineLoops) if (!handle.ended) handle.stop(0);
+      engineLoops.clear();
       music.dispose();
+      pool.releaseAll();
+      fileManager?.dispose();
       reverb.dispose();
       chain.dispose();
       if (duckT) clearTimeout(duckT);
+      detachUnlock();
+      readyResolve();
+      defaultRequest = {};
+      securityContext = undefined;
+      probedExt = undefined;
+      fetchProbe = undefined;
+      probeBase = undefined;
+      for (const key of Object.keys(cueSpecs)) delete cueSpecs[key];
     }
   };
 }

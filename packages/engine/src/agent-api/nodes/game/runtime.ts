@@ -5,7 +5,7 @@ import type { AuraGameRuntimeOptions, AuraGameRuntime } from "../types.js";
 import { DEFAULT_MAX_SUBSTEPS } from "./frameLoopDefaults.js";
 import { camera } from "../camera.js";
 import { createAuraGameRules } from "../../gameRules.js";
-import { createCombatWorld, createGameCameraDirector, createGameEffects, createGameInput } from "../../GameRuntime.js";
+import { createCombatWorld, createGameCameraDirector, createGameEffects, createGameInput } from "../../GameRuntimeCore.js";
 import { effects } from "../effects.composite.js";
 
 export function createAuraGameRuntime(options: AuraGameRuntimeOptions = {}): AuraGameRuntime {

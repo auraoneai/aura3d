@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import type { MaterialBindingResult } from "../../../packages/rendering/src/MaterialBinding";
+import type { UniformValue } from "../../../packages/rendering/src/RenderDevice";
 import {
   Material,
   MaterialBinding,
@@ -20,9 +22,11 @@ describe("MaterialBinding", () => {
     const shader = device.createShaderProgram(library.compileSource(DEFAULT_UNLIT_SHADER_NAME));
     const material = new UnlitMaterial({ color: [1, 0, 0, 1] });
 
-    const result = new MaterialBinding().bind(material, shader);
+    // This assignment is a compile-time regression for pre-existing flat consumers.
+    const result: MaterialBindingResult<UniformValue> = new MaterialBinding().bind(material, shader);
+    const flatUniforms: ReadonlyMap<string, UniformValue> = result.uniforms;
 
-    expect([...result.uniforms.keys()]).toContain("u_baseColor");
+    expect([...flatUniforms.keys()]).toContain("u_baseColor");
     expect([...result.uniforms.keys()]).toContain("u_modelViewProjection");
   });
 
@@ -41,6 +45,39 @@ describe("MaterialBinding", () => {
     expect(instance.getParameter("u_baseColor")).toEqual([0.8, 0.1, 0.2, 1]);
     instance.clearOverride("u_baseColor");
     expect(instance.getParameter("u_baseColor")).toEqual([0.2, 0.3, 0.4, 1]);
+  });
+
+  it("fails closed when generated binding encounters a structured instance override", () => {
+    const device = new MockRenderDevice();
+    const library = createDefaultShaderLibrary();
+    const shader = device.createShaderProgram(library.compileSource(DEFAULT_UNLIT_SHADER_NAME));
+    const base = new UnlitMaterial();
+    const instance = new MaterialInstance(base);
+    instance.setOverride("u_baseColor", [[1, 0], [0, 1]]);
+    expect(() => new MaterialBinding().bindGenerated(instance, shader)).toThrow(/structured uniform u_baseColor/);
+    base.dispose();
+    device.dispose();
+  });
+
+  it("keeps custom material parameter overrides visible through recursive snapshots", () => {
+    const device = new MockRenderDevice();
+    const library = createDefaultShaderLibrary();
+    const shader = device.createShaderProgram(library.compileSource(DEFAULT_UNLIT_SHADER_NAME));
+    const base = new class extends UnlitMaterial {
+      override getParameter(name: string) {
+        return name === "u_baseColor" ? [0.1, 0.2, 0.3, 1] : super.getParameter(name);
+      }
+      override getParameters() {
+        const values = new Map(super.getParameters());
+        values.set("u_baseColor", [0.1, 0.2, 0.3, 1]);
+        return values;
+      }
+    }();
+    const instance = new MaterialInstance(base);
+    try {
+      expect(instance.getRecursiveParameter("u_baseColor")).toEqual([0.1, 0.2, 0.3, 1]);
+      expect(new MaterialBinding().bind(instance, shader).uniforms.get("u_baseColor")).toEqual([0.1, 0.2, 0.3, 1]);
+    } finally { base.dispose(); device.dispose(); }
   });
 
   it("tracks material instance dirtiness independently from shared base materials", () => {

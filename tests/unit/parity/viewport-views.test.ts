@@ -1,17 +1,24 @@
-/**
- * threejs-parity L7/SC-01 (docs/workflows/threejs-parity-gaps.md §5.7, L7-15):
- * viewport/scissor rendering, `cameras.array` (three's ArrayCamera),
- * `cameras.stereo` (three's StereoCamera), and the XR device hooks
- * (`setViewport({ persistent })`, `resetViewport`, `setExternalFramebuffer`).
- */
+/** Viewport, scissor, array/stereo cameras and XR device viewport hooks. */
 
-import { describe, expect, it } from "vitest";
-import * as THREE from "three";
+import { describe, expect, it, vi } from "vitest";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
+import { computePerspectiveCameraFrame } from "../../../packages/rendering/src/CameraFraming";
+import { ScreenSpaceLineMaterial } from "../../../packages/rendering/src/ScreenSpaceLineMaterial";
 import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
-import { MockRenderDevice, RenderDeviceError, type MockDrawViewState } from "../../../packages/rendering/src/RenderDevice";
+import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
+import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
+import "../../../packages/rendering/src/lanes/prd01";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { rendererProgramCache } from "../../../packages/rendering/src/renderer/qrSubFlags";
+import { MockRenderDevice, MockRenderTarget, RenderDeviceError, type DrawCommand, type MockDrawViewState, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
-import { camera, cameras, primitives, scene } from "../../../packages/engine/src";
+import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
+import { createDefaultShaderLibrary } from "../../../packages/rendering/src/ShaderLibrary";
+import { DeferredPipeline } from "../../../packages/rendering/src/webgpu/DeferredPipeline";
+import { camera } from "../../../packages/engine/src/agent-api/nodes/camera";
+import { cameras } from "../../../packages/engine/src/agent-api/nodes/cameras";
+import { primitives } from "../../../packages/engine/src/agent-api/nodes/primitives";
+import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors";
 import { createProductionParitySurfaces } from "../../../packages/engine/src/agent-api/compiler/paritySurfaces";
 import { isAuraCameraArrayNode, isAuraCameraStereoNode } from "../../../packages/engine/src/agent-api/nodes/cameras";
@@ -160,171 +167,339 @@ describe("MockRenderDevice viewport / scissor recording (SC-01)", () => {
   });
 });
 
-describe("Renderer views (ArrayCamera / StereoCamera semantics, SC-01)", () => {
-  const item = () => ({
-    geometry: Geometry.litCube(1),
-    material: new PBRMaterial({ name: "cube" }),
-    label: "cube",
-    modelMatrix: IDENTITY,
-    includeInAutoFrame: false
+describe("Renderer automatic camera matrices", () => {
+  it.each(["sync", "async"] as const)("supplies auto-frame view and projection to world-unit lines (%s)", async (mode) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const geometry = Geometry.screenSpaceLineSegments([{ start: [0, 0, -1], end: [1, 0, -2] }]);
+    const material = new ScreenSpaceLineMaterial({ width: 0.5, worldUnits: true });
+    const bounds = { min: [-1, -2, -3] as const, max: [2, 1, 0] as const };
+    const frameOptions = { paddingRatio: 0.14, yawRadians: -0.38, pitchRadians: -0.18, nearPadding: 0.2, farPadding: 2.4 };
+    const expected = computePerspectiveCameraFrame(bounds, { width: 100, height: 50 }, frameOptions);
+    const input = { renderItems: [{ geometry, material }], cameraPolicy: "auto-frame" as const, cameraFrameBounds: bounds };
+    if (mode === "sync") renderer.render(input); else await renderer.renderAsync(input);
+    const draw = (renderer.device as MockRenderDevice).drawCommands[0]!;
+    expect(Array.from(draw.uniforms!.get("u_viewMatrix") as Float32Array)).toEqual(expected.viewMatrix.map(Math.fround));
+    expect(Array.from(draw.uniforms!.get("u_projectionMatrix") as Float32Array)).toEqual(expected.projectionMatrix.map(Math.fround));
+    expect(draw.uniforms!.get("u_lineWorldUnits")).toBe(1);
+    renderer.dispose();
+    geometry.dispose();
+    material.dispose();
   });
+});
 
-  const instrument = (device: MockRenderDevice) => {
-    const frames: Array<{ states: readonly MockDrawViewState[]; calls: ReturnType<MockRenderDevice["getViewportCalls"]> }> = [];
-    let clears = 0;
-    const endFrame = device.endFrame.bind(device);
-    const clear = device.clear.bind(device);
-    device.endFrame = () => {
-      frames.push({ states: [...device.getDrawViewStates()], calls: [...device.getViewportCalls()] });
-      endFrame();
-    };
-    device.clear = (color) => {
-      clears += 1;
-      clear(color);
-    };
-    return { frames, clears: () => clears };
+describe("Renderer view isolation", () => {
+  const item = (label = "cube", x = 0, layerMask = 1) => {
+    const modelMatrix = IDENTITY.slice();
+    modelMatrix[12] = x;
+    return { geometry: Geometry.litCube(1), material: new PBRMaterial({ name: label }), label, modelMatrix, layerMask, includeInAutoFrame: false };
   };
 
-  const viewCamera = () => ({ viewProjectionMatrix: IDENTITY });
+  interface RecordedDraw {
+    readonly command: DrawCommand;
+    readonly state: MockDrawViewState;
+    readonly target: RenderTarget | null;
+    readonly sampledTargets: readonly { readonly id: number; readonly width: number; readonly height: number; readonly firstPixel: readonly number[] }[];
+  }
+  const instrument = (device: MockRenderDevice) => {
+    const frames: RecordedDraw[][] = [];
+    const targets: RenderTarget[] = [];
+    const clearTargets: Array<RenderTarget | null> = [];
+    let frame: RecordedDraw[] = [];
+    const createTarget = device.createRenderTarget.bind(device);
+    const draw = device.draw.bind(device);
+    const clear = device.clear.bind(device);
+    const endFrame = device.endFrame.bind(device);
+    device.createRenderTarget = (descriptor) => {
+      const target = createTarget(descriptor);
+      targets.push(target);
+      return target;
+    };
+    device.clear = (color) => { clearTargets.push(device.getRenderTarget()); clear(color); };
+    device.draw = (command) => {
+      draw(command);
+      const sampledTargets = [...(command.uniforms?.values() ?? [])].flatMap((value) => {
+        if (!(value instanceof TextureBinding) || !value.texture) return [];
+        const source = targets.find((target) => target.colorTexture === value.texture);
+        return source instanceof MockRenderTarget
+          ? [{ id: source.id, width: source.width, height: source.height, firstPixel: Array.from(source.colorPixels.slice(0, 4)) }]
+          : [];
+      });
+      frame.push({ command, state: device.getDrawViewStates().at(-1)!, target: device.getRenderTarget(), sampledTargets });
+    };
+    device.endFrame = () => { frames.push(frame); frame = []; endFrame(); };
+    return { frames, targets, clearTargets };
+  };
 
-  it("renders one frame per view into its viewport; only the first clears", async () => {
+  const viewCamera = (x = 0, layerMask = 1) => {
+    const matrix = IDENTITY.slice();
+    matrix[12] = -x;
+    return { viewProjectionMatrix: matrix, layerMask };
+  };
+  const source = () => ({ renderItems: [item()], cameraPolicy: "require" as const, frustumCulling: false });
+
+  it("renders each view to a separate sized target and composites in order with independent clipping", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
-    const device = renderer.device as MockRenderDevice;
-    const seen = instrument(device);
+    const seen = instrument(renderer.device as MockRenderDevice);
     const left = rect(0, 0, 50, 50);
     const right = rect(50, 0, 50, 50);
-    renderer.render({
-      source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false },
-      views: [{ camera: viewCamera(), viewport: left }, { camera: viewCamera(), viewport: right }]
-    });
-    expect(seen.frames).toHaveLength(2);
-    expect(seen.clears()).toBe(1);
-    const draws = seen.frames.map((frame) => frame.states);
-    expect(draws[0]!.length).toBeGreaterThan(0);
-    expect(draws[1]!.length).toBeGreaterThan(0);
-    expect(draws[0]!.every((s) => JSON.stringify(s.viewport) === JSON.stringify(left) && JSON.stringify(s.scissor) === JSON.stringify(left))).toBe(true);
-    expect(draws[1]!.every((s) => JSON.stringify(s.viewport) === JSON.stringify(right) && JSON.stringify(s.scissor) === JSON.stringify(right))).toBe(true);
-    // order within a frame: viewport, then scissor, then scissorTest(true)
-    expect(seen.frames[0]!.calls.map((c) => c.call)).toEqual(["viewport", "scissor", "scissorTest"]);
-    renderer.dispose();
-  });
-
-  it("an explicit scissor narrows the viewport clip; views also flow from source.views", async () => {
-    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
-    const device = renderer.device as MockRenderDevice;
-    const seen = instrument(device);
-    renderer.render({
-      renderItems: [item()],
-      cameraPolicy: "require",
-      frustumCulling: false,
-      views: [{ camera: viewCamera(), viewport: rect(0, 0, 100, 50), scissor: rect(10, 10, 20, 20) }]
-    });
-    expect(seen.frames).toHaveLength(1);
-    expect(seen.frames[0]!.states[0]).toMatchObject({ viewport: rect(0, 0, 100, 50), scissor: rect(10, 10, 20, 20) });
-    renderer.dispose();
-  });
-
-  it("a single `viewport` input restricts rasterization and does not leak into the next frame", async () => {
-    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
-    const device = renderer.device as MockRenderDevice;
-    const seen = instrument(device);
-    renderer.render({ source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false }, camera: viewCamera(), viewport: rect(20, 10, 40, 20) });
-    renderer.render({ source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false }, camera: viewCamera() });
-    expect(seen.frames[0]!.states[0]).toMatchObject({ viewport: rect(20, 10, 40, 20) });
-    expect(seen.frames[1]!.states[0]).toMatchObject({ viewport: rect(0, 0, 100, 50), scissor: null });
-    renderer.dispose();
-  });
-
-  it("sub-camera count equals frame count, including three views", async () => {
-    const renderer = await Renderer.create({ backend: "mock", width: 90, height: 30 });
-    const device = renderer.device as MockRenderDevice;
-    const seen = instrument(device);
-    renderer.render({
-      source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false },
-      views: [0, 30, 60].map((x) => ({ camera: viewCamera(), viewport: rect(x, 0, 30, 30) }))
-    });
+    const crop = rect(55, 5, 30, 35);
+    renderer.render({ source: source(), views: [
+      { id: "left", camera: viewCamera(), viewport: left },
+      { id: "right", camera: viewCamera(), viewport: right, scissor: crop }
+    ] });
     expect(seen.frames).toHaveLength(3);
+    const first = seen.frames[0]!.find((draw) => draw.command.label === "cube")!;
+    const second = seen.frames[1]!.find((draw) => draw.command.label === "cube")!;
+    expect(first.target).not.toBeNull();
+    expect(second.target).not.toBeNull();
+    expect(first.target!.id).not.toBe(second.target!.id);
+    expect([first.target!.width, first.target!.height, second.target!.width, second.target!.height]).toEqual([50, 50, 50, 50]);
+    const composite = seen.frames[2]!;
+    expect(composite).toHaveLength(2);
+    expect(composite.map((draw) => draw.state)).toMatchObject([
+      { destination: "canvas", viewport: left, scissor: left },
+      { destination: "canvas", viewport: right, scissor: crop }
+    ]);
+    expect(composite[0]!.sampledTargets[0]!.id).toBe(first.target!.id);
+    expect(composite[1]!.sampledTargets[0]!.id).toBe(second.target!.id);
+    expect(seen.clearTargets.filter((target) => target === null)).toHaveLength(1);
+    expect(renderer.info.render.frame).toBe(1);
     renderer.dispose();
   });
 
-  it("works through renderAsync", async () => {
+  it("recomputes culling, camera matrices and layers for each view", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
-    const device = renderer.device as MockRenderDevice;
-    const seen = instrument(device);
-    await renderer.renderAsync({
-      source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false },
-      views: [{ camera: viewCamera(), viewport: rect(0, 0, 50, 50) }, { camera: viewCamera(), viewport: rect(50, 0, 50, 50) }]
-    });
-    expect(seen.frames).toHaveLength(2);
-    expect(seen.clears()).toBe(1);
-    renderer.dispose();
-  });
-
-  it("rejects views combined with postprocess", async () => {
-    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
-    expect(() =>
-      renderer.render({
-        source: {
-          renderItems: [item()],
-          cameraPolicy: "require",
-          postprocess: { toneMapping: { exposure: 1, gamma: 1, operator: "reinhard", outputColorSpace: "linear" } }
-        },
-        views: [{ camera: viewCamera(), viewport: rect(0, 0, 50, 50) }]
-      })
-    ).toThrowError(expect.objectContaining({ code: "VIEWPORT_POSTPROCESS_UNSUPPORTED" }));
-    renderer.dispose();
-  });
-
-  it("rejects viewports outside the target, empty view lists and non-finite rects", async () => {
-    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
-    const source = { renderItems: [item()], cameraPolicy: "require" as const, frustumCulling: false };
-    expect(() => renderer.render({ source, views: [{ camera: viewCamera(), viewport: rect(60, 0, 50, 50) }] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
-    expect(() => renderer.render({ source, views: [{ camera: viewCamera(), viewport: rect(0, 0, 0, 10) }] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
-    expect(() => renderer.render({ source, views: [{ camera: viewCamera(), viewport: rect(Number.NaN, 0, 10, 10) }] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
-    expect(() => renderer.render({ source, views: [] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
-    // a failed view frame must not leave pending view state behind for the next ordinary frame
     const seen = instrument(renderer.device as MockRenderDevice);
-    renderer.render({ source, camera: viewCamera() });
-    expect(seen.frames.at(-1)!.states[0]).toMatchObject({ viewport: rect(0, 0, 100, 50), scissor: null });
+    const items = [item("left-visible", 0, 1), item("left-wrong-layer", 0, 2), item("right-wrong-layer", 3, 1), item("right-visible", 3, 2)];
+    renderer.render({ source: { renderItems: items, cameraPolicy: "require", frustumCulling: true }, views: [
+      { camera: viewCamera(0, 1), viewport: rect(0, 0, 50, 50) },
+      { camera: viewCamera(3, 2), viewport: rect(50, 0, 50, 50) }
+    ] });
+    expect(seen.frames[0]!.map((draw) => draw.command.label)).toEqual(["left-visible"]);
+    expect(seen.frames[1]!.map((draw) => draw.command.label)).toEqual(["right-visible"]);
     renderer.dispose();
   });
 
-  it("renders views into an explicit render target at the target's size", async () => {
+  it("sorts transparent items from each view's camera position", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const seen = instrument(renderer.device as MockRenderDevice);
+    const transparent = new UnlitMaterial({ renderState: { blend: true, depthWrite: false } });
+    const objects = [
+      { ...item("near-left", -2), material: transparent },
+      { ...item("near-right", 2), material: transparent }
+    ];
+    renderer.render({ source: { renderItems: objects, cameraPolicy: "require", frustumCulling: false }, views: [
+      { camera: viewCamera(), cameraPosition: [-5, 0, 0], viewport: rect(0, 0, 50, 50) },
+      { camera: viewCamera(), cameraPosition: [5, 0, 0], viewport: rect(50, 0, 50, 50) }
+    ] });
+    expect(seen.frames[0]!.map((draw) => draw.command.label)).toEqual(["near-right", "near-left"]);
+    expect(seen.frames[1]!.map((draw) => draw.command.label)).toEqual(["near-left", "near-right"]);
+    renderer.dispose();
+  });
+
+  it("collects one-shot render items once and makes them available to every view", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const seen = instrument(renderer.device as MockRenderDevice);
+    const iterator = [item("collected")][Symbol.iterator]();
+    let collections = 0;
+    renderer.render({ source: {
+      collectRenderItems: () => { collections += 1; return iterator; },
+      cameraPolicy: "require", frustumCulling: false
+    }, views: [
+      { camera: viewCamera(), viewport: rect(0, 0, 50, 50) },
+      { camera: viewCamera(), viewport: rect(50, 0, 50, 50) }
+    ] });
+    expect(collections).toBe(1);
+    expect(seen.frames[0]!.map((draw) => draw.command.label)).toEqual(["collected"]);
+    expect(seen.frames[1]!.map((draw) => draw.command.label)).toEqual(["collected"]);
+    renderer.dispose();
+  });
+
+  it("inherits, replaces and disables postprocessing independently across views", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 120, height: 40, clearColor: [0.5, 0.5, 0.5, 1] });
+    const seen = instrument(renderer.device as MockRenderDevice);
+    const tone = (exposure: number) => ({ execution: "cpu-deterministic" as const, targetFormat: "rgba8" as const,
+      toneMapping: { exposure, gamma: 1, operator: "reinhard" as const, outputColorSpace: "linear" as const } });
+    renderer.render({ source: { ...source(), postprocess: tone(1) }, views: [
+      { id: "inherit", camera: viewCamera(), viewport: rect(0, 0, 40, 40) },
+      { id: "dim", camera: viewCamera(), viewport: rect(40, 0, 40, 40), postprocess: tone(0.25) },
+      { id: "raw", camera: viewCamera(), viewport: rect(80, 0, 40, 40), postprocess: false }
+    ] });
+    const outputs = seen.frames.at(-1)!.map((draw) => draw.sampledTargets[0]!);
+    expect(outputs).toHaveLength(3);
+    expect(new Set(outputs.map((target) => target.id)).size).toBe(3);
+    // Mock rendering deliberately does not rasterize. The first pixel reflects
+    // the clear color flowing through the actual CPU postprocess path.
+    expect(outputs[1]!.firstPixel[0]).toBeLessThan(outputs[0]!.firstPixel[0]!);
+    expect(outputs[0]!.firstPixel[0]).toBeLessThan(outputs[2]!.firstPixel[0]!);
+    expect(outputs[2]!.firstPixel).toEqual([128, 128, 128, 255]);
+    renderer.dispose();
+  });
+
+  it("resizes each target, releases obsolete storage and uses the new view dimensions", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const seen = instrument(renderer.device as MockRenderDevice);
+    const sizes: number[][] = [];
+    const cam = { viewProjectionMatrix: IDENTITY, resize: (width: number, height: number) => sizes.push([width, height]) };
+    const render = (width: number, height: number) => renderer.render({ source: source(), views: [
+      { id: "a", camera: cam, viewport: rect(0, 0, width / 2, height) },
+      { id: "b", camera: cam, viewport: rect(width / 2, 0, width / 2, height) }
+    ] });
+    render(100, 50);
+    const firstTargets = seen.frames.at(-1)!.map((draw) => draw.sampledTargets[0]!.id);
+    renderer.resize(120, 80);
+    render(120, 80);
+    const secondTargets = seen.frames.at(-1)!.map((draw) => draw.sampledTargets[0]!);
+    expect(secondTargets.map(({ width, height }) => [width, height])).toEqual([[60, 80], [60, 80]]);
+    expect(secondTargets.every((target) => !firstTargets.includes(target.id))).toBe(true);
+    expect(firstTargets.every((id) => seen.targets.find((target) => target.id === id)?.disposed)).toBe(true);
+    expect(sizes).toEqual([[50, 50], [50, 50], [60, 80], [60, 80]]);
+    renderer.dispose();
+    expect(secondTargets.every(({ id }) => seen.targets.find((target) => target.id === id)?.disposed)).toBe(true);
+  });
+
+  it("retires removed views and restores the device after a draw failure", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
     const device = renderer.device as MockRenderDevice;
-    const target = device.createRenderTarget({ width: 40, height: 20, label: "stereo-target" });
     const seen = instrument(device);
-    renderer.render({
-      source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false },
-      target,
-      views: [{ camera: viewCamera(), viewport: rect(0, 0, 20, 20) }, { camera: viewCamera(), viewport: rect(20, 0, 20, 20) }]
-    });
-    expect(seen.frames).toHaveLength(2);
-    expect(seen.frames[1]!.states[0]).toMatchObject({ viewport: rect(20, 0, 20, 20), destination: "render-target" });
-    expect(() =>
-      renderer.render({
-        source: { renderItems: [item()], cameraPolicy: "require", frustumCulling: false },
-        target,
-        views: [{ camera: viewCamera(), viewport: rect(30, 0, 20, 20) }]
-      })
-    ).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
+    const releaseView = vi.fn(), releaseScope = vi.fn();
+    Object.assign(device, { releaseNativePostEffectView: releaseView, releaseNativePostEffectScope: releaseScope });
+    const left = { id: "left", camera: viewCamera(), viewport: rect(0, 0, 50, 50) };
+    const right = { id: "right", camera: viewCamera(), viewport: rect(50, 0, 50, 50) };
+    renderer.render({ source: source(), views: [left, right] });
+    const removed = seen.frames.at(-1)![1]!.sampledTargets[0]!.id;
+    renderer.render({ source: source(), views: [left] });
+    expect(seen.targets.find((target) => target.id === removed)?.disposed).toBe(true);
+    expect(releaseView).toHaveBeenCalledTimes(1);
+    const [scope, releasedId] = releaseView.mock.calls[0]!;
+    expect(scope).toBeTypeOf("object");
+    expect(releasedId).toBe("view:string:right");
+
+    const throwing = { ...item("failure"), onBeforeRender: () => { throw new Error("injected view failure"); } };
+    expect(() => renderer.render({ source: { ...source(), renderItems: [throwing] }, views: [left] })).toThrow("injected view failure");
+    renderer.render({ source: source(), camera: viewCamera() });
+    expect(seen.frames.at(-1)![0]!.state).toMatchObject({ destination: "canvas", viewport: rect(0, 0, 100, 50), scissor: null });
+    expect(releaseView).toHaveBeenCalledWith(scope, "view:string:left");
+    expect(seen.targets.filter((target) => target.label.startsWith("renderer-view-")).every((target) => target.disposed)).toBe(true);
+    renderer.dispose();
+    expect(releaseScope).toHaveBeenCalledWith(scope);
+  });
+
+  it("works through renderAsync and can composite into an explicit target", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const device = renderer.device as MockRenderDevice;
+    const target = device.createRenderTarget({ width: 40, height: 20, label: "destination" });
+    const seen = instrument(device);
+    await renderer.renderAsync({ source: source(), target, views: [
+      { camera: viewCamera(), viewport: rect(0, 0, 20, 20) },
+      { camera: viewCamera(), viewport: rect(20, 0, 20, 20) }
+    ] });
+    expect(seen.frames).toHaveLength(3);
+    expect(seen.frames.at(-1)!.map((draw) => draw.state)).toMatchObject([
+      { destination: "render-target", viewport: rect(0, 0, 20, 20) },
+      { destination: "render-target", viewport: rect(20, 0, 20, 20) }
+    ]);
+    expect(target.disposed).toBe(false);
+    renderer.dispose();
+  });
+
+  it("rejects bad rectangles and recovers frame state after failure", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const device = renderer.device as MockRenderDevice;
+    const seen = instrument(device);
+    for (const bad of [rect(60, 0, 50, 50), rect(0, 0, 0, 10), rect(Number.NaN, 0, 10, 10)]) {
+      expect(() => renderer.render({ source: source(), views: [{ camera: viewCamera(), viewport: bad }] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
+    }
+    expect(() => renderer.render({ source: source(), views: [] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
+    expect(() => renderer.render({ source: source(), views: [{ camera: viewCamera(), viewport: rect(0, 0, 50, 50), scissor: rect(0, 0, 110, 50) }] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEWPORT" }));
+    expect(() => renderer.render({ source: source(), views: [
+      { id: "duplicate", camera: viewCamera(), viewport: rect(0, 0, 50, 50) },
+      { id: "duplicate", camera: viewCamera(), viewport: rect(50, 0, 50, 50) }
+    ] })).toThrowError(expect.objectContaining({ code: "INVALID_VIEW_ID" }));
+    renderer.render({ source: source(), camera: viewCamera() });
+    expect(seen.frames.at(-1)![0]!.state).toMatchObject({ destination: "canvas", viewport: rect(0, 0, 100, 50), scissor: null });
+    renderer.dispose();
+  });
+
+  it("preserves a single viewport override without leaking it to the next frame", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50 });
+    const seen = instrument(renderer.device as MockRenderDevice);
+    renderer.render({ source: source(), camera: viewCamera(), viewport: rect(20, 10, 40, 20) });
+    renderer.render({ source: source(), camera: viewCamera() });
+    expect(seen.frames[0]![0]!.state).toMatchObject({ viewport: rect(20, 10, 40, 20) });
+    expect(seen.frames[1]![0]!.state).toMatchObject({ viewport: rect(0, 0, 100, 50), scissor: null });
+    renderer.dispose();
+  });
+
+  it("precompiles programs visible to each camera without submitting a frame", async () => {
+    const flags = resolveQrFlags({ options: { A3D_QR_CORE: true } });
+    const renderer = await Renderer.create({ backend: "mock", width: 100, height: 50, qrFlags: flags });
+    const device = renderer.device as MockRenderDevice;
+    const seen = instrument(device);
+    const left = item("pbr", 0, 1);
+    const right = { ...item("unlit", 0, 2), material: new UnlitMaterial({ name: "unlit" }) };
+    // A caller may hand the renderer a one-shot iterator. It must be
+    // snapshotted once, then independently filtered for both cameras.
+    const result = await renderer.precompile({ source: { renderItems: [left, right][Symbol.iterator](), cameraPolicy: "require", frustumCulling: false }, views: [
+      { camera: viewCamera(0, 1), viewport: rect(0, 0, 50, 50) },
+      { camera: viewCamera(0, 2), viewport: rect(50, 0, 50, 50) }
+    ] });
+    const stats = rendererProgramCache(device, flags).stats();
+    expect(stats.compiled).toBeGreaterThanOrEqual(2);
+    expect(stats.pending).toBe(0);
+    expect(stats.failed).toBe(0);
+    expect(device.getDiagnostics().shaders).toBeGreaterThanOrEqual(2);
+    expect(result.compiledPrograms).toBeGreaterThanOrEqual(2);
+    expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    expect(seen.frames).toHaveLength(0);
+    renderer.dispose();
+  });
+
+  it("reports programs actually compiled during precompile", async () => {
+    const flags = resolveQrFlags({ options: { A3D_QR_CORE: true } });
+    const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20, qrFlags: flags });
+    const result = await renderer.precompile({ source: source(), views: [
+      { camera: viewCamera(), viewport: rect(0, 0, 20, 20) }
+    ] });
+    const cache = rendererProgramCache(renderer.device, flags).stats();
+    expect(cache.compiled).toBeGreaterThan(0);
+    expect(result.compiledPrograms).toBe(cache.compiled);
     renderer.dispose();
   });
 });
 
-type Mat16 = ArrayLike<number>;
+type Vec3 = readonly [number, number, number];
 
-function expectMatrixClose(actual: Mat16, expected: Mat16, label: string): void {
-  expect(actual.length).toBe(16);
-  for (let i = 0; i < 16; i += 1) {
-    const tolerance = 1e-6 * Math.max(1, Math.abs(expected[i]!));
-    if (Math.abs(actual[i]! - expected[i]!) > tolerance) {
-      throw new Error(`${label}[${i}] ${actual[i]} != three ${expected[i]} (tol ${tolerance})`);
-    }
-  }
+// These fixtures use camera geometry and the perspective equations directly:
+// a point (x,y,z) in eye space projects to (f*x/aspect + offset*z,
+// f*y, A*z+B, -z), where f = zoom/tan(fov/2). The two eyes are
+// displaced by half the interocular distance along the camera's right axis.
+const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const unit = (v: Vec3): Vec3 => { const d = Math.hypot(...v); return [v[0] / d, v[1] / d, v[2] / d]; };
+const addScaled = (a: Vec3, b: Vec3, scale: number): Vec3 => [a[0] + b[0] * scale, a[1] + b[1] * scale, a[2] + b[2] * scale];
+const delta = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+
+function referenceCamera(position: Vec3, target: Vec3, fov: number, aspect: number, near: number, far: number, zoom: number) {
+  const back = unit(delta(position, target));
+  const right = unit(cross([0, 1, 0], back));
+  const up = cross(back, right);
+  const view = [right[0], up[0], back[0], 0, right[1], up[1], back[1], 0, right[2], up[2], back[2], 0, -dot(right, position), -dot(up, position), -dot(back, position), 1];
+  const f = zoom / Math.tan(fov * Math.PI / 360);
+  const projection = [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, -(far + near) / (far - near), -1, 0, 0, -(2 * far * near) / (far - near), 0];
+  return { back, right, up, view, projection, f };
 }
 
-describe("computeStereoEyes matches three's StereoCamera.update (SC-01)", () => {
+function multiplyPoint(matrix: ArrayLike<number>, point: Vec3): number[] {
+  return [0, 1, 2, 3].map((row) => matrix[row]! * point[0] + matrix[4 + row]! * point[1] + matrix[8 + row]! * point[2] + matrix[12 + row]!);
+}
+
+function expectValuesClose(actual: ArrayLike<number>, expected: ArrayLike<number>): void {
+  expect(actual.length).toBe(expected.length);
+  for (let i = 0; i < expected.length; i += 1) expect(actual[i], `element ${i}`).toBeCloseTo(expected[i]!, 5);
+}
+
+describe("stereo geometry", () => {
   const cases = [
     { fov: 50, aspect: 1.6, near: 0.1, far: 100, focus: 10, zoom: 1, eyeSeparation: 0.064, aspectScale: 0.5, position: [0, 1.5, 5], target: [0, 0, 0] },
     { fov: 75, aspect: 2, near: 0.5, far: 300, focus: 3, zoom: 1.5, eyeSeparation: 0.2, aspectScale: 1, position: [3, 2, -4], target: [0, 1, 0] },
@@ -333,80 +508,42 @@ describe("computeStereoEyes matches three's StereoCamera.update (SC-01)", () => 
   ] as const;
 
   for (const params of cases) {
-    it(`fov ${params.fov} / focus ${params.focus} / sep ${params.eyeSeparation} / aspect scale ${params.aspectScale}`, () => {
-      const cam = new THREE.PerspectiveCamera(params.fov, params.aspect, params.near, params.far);
-      cam.zoom = params.zoom;
-      cam.focus = params.focus;
-      cam.position.set(params.position[0], params.position[1], params.position[2]);
-      cam.lookAt(params.target[0], params.target[1], params.target[2]);
-      cam.updateProjectionMatrix();
-      cam.updateMatrixWorld(true);
-      const stereo = new THREE.StereoCamera();
-      stereo.aspect = params.aspectScale;
-      stereo.eyeSep = params.eyeSeparation;
-      stereo.update(cam);
-
-      const eyes = computeStereoEyes({
-        viewMatrix: cam.matrixWorldInverse.elements,
-        projectionMatrix: cam.projectionMatrix.elements,
-        cameraPosition: params.position,
-        fov: params.fov,
-        aspect: params.aspect,
-        near: params.near,
-        focus: params.focus,
-        zoom: params.zoom,
-        eyeSeparation: params.eyeSeparation,
-        aspectScale: params.aspectScale
-      });
-
-      for (const [name, mine, theirs] of [["left", eyes.left, stereo.cameraL], ["right", eyes.right, stereo.cameraR]] as const) {
-        expectMatrixClose(mine.projectionMatrix, theirs.projectionMatrix.elements, `${name}.projection`);
-        // three 0.185 writes the eye transform (`camera.matrixWorld * eyeOffset`) to the unparented eye camera's local `matrix`.
-        const threeView = theirs.matrix.clone().invert();
-        expectMatrixClose(mine.viewMatrix, threeView.elements, `${name}.view`);
-        const world = theirs.matrix.elements;
-        expect(mine.cameraPosition[0]).toBeCloseTo(world[12]!, 5);
-        expect(mine.cameraPosition[1]).toBeCloseTo(world[13]!, 5);
-        expect(mine.cameraPosition[2]).toBeCloseTo(world[14]!, 5);
-        const vp = new THREE.Matrix4().multiplyMatrices(theirs.projectionMatrix, threeView);
-        expectMatrixClose(mine.viewProjectionMatrix, vp.elements, `${name}.viewProjection`);
+    it(`projects convergent eyes independently at fov ${params.fov}, focus ${params.focus}, separation ${params.eyeSeparation}`, () => {
+      const base = referenceCamera(params.position, params.target, params.fov, params.aspect, params.near, params.far, params.zoom);
+      const eyes = computeStereoEyes({ ...params, viewMatrix: base.view, projectionMatrix: base.projection, cameraPosition: params.position });
+      const focusPoint = addScaled(params.position, base.back, -params.focus);
+      for (const [eye, sign] of [[eyes.left, -1], [eyes.right, 1]] as const) {
+        const expectedPosition = addScaled(params.position, base.right, sign * params.eyeSeparation / 2);
+        expectValuesClose(eye.cameraPosition, expectedPosition);
+        const expectedView = [...base.view];
+        expectedView[12] = -dot(base.right, expectedPosition);
+        expectedView[13] = -dot(base.up, expectedPosition);
+        expectedView[14] = -dot(base.back, expectedPosition);
+        expectValuesClose(eye.viewMatrix, expectedView);
+        const expectedProjection = [...base.projection];
+        expectedProjection[0] = base.f / (params.aspect * params.aspectScale);
+        expectedProjection[8] = -sign * (params.eyeSeparation / 2) * expectedProjection[0] / params.focus;
+        expectValuesClose(eye.projectionMatrix, expectedProjection);
+        // The optical axes are parallel, while both frusta meet at the
+        // specified convergence plane; this also checks matrix multiplication.
+        const focusClip = multiplyPoint(eye.viewProjectionMatrix, focusPoint);
+        expect(focusClip[0]! / focusClip[3]!).toBeCloseTo(0, 5);
+        const testPoint = addScaled(addScaled(focusPoint, base.right, 0.4), base.up, 0.25);
+        const cameraSpace = delta(testPoint, expectedPosition);
+        const x = dot(base.right, cameraSpace), y = dot(base.up, cameraSpace), z = dot(base.back, cameraSpace);
+        expectValuesClose(multiplyPoint(eye.viewProjectionMatrix, testPoint), [expectedProjection[0]! * x + expectedProjection[8]! * z, expectedProjection[5]! * y, expectedProjection[10]! * z + expectedProjection[14]!, -z]);
       }
     });
   }
 
-  it("uses three's defaults (eyeSep 0.064, focus 10) when omitted", () => {
-    const cam = new THREE.PerspectiveCamera(60, 1.5, 0.1, 100);
-    cam.position.set(0, 0, 4);
-    cam.updateMatrixWorld(true);
-    const stereo = new THREE.StereoCamera();
-    stereo.update(cam);
-    const eyes = computeStereoEyes({
-      viewMatrix: cam.matrixWorldInverse.elements,
-      projectionMatrix: cam.projectionMatrix.elements,
-      cameraPosition: [0, 0, 4],
-      fov: 60,
-      aspect: 1.5,
-      near: 0.1
-    });
+  it("uses the documented default separation and focus", () => {
+    const base = referenceCamera([0, 0, 4], [0, 0, 0], 60, 1.5, 0.1, 100, 1);
+    const eyes = computeStereoEyes({ viewMatrix: base.view, projectionMatrix: base.projection, cameraPosition: [0, 0, 4], fov: 60, aspect: 1.5, near: 0.1 });
     expect(eyes.eyeSeparation).toBe(0.064);
     expect(eyes.focus).toBe(10);
-    expectMatrixClose(eyes.left.projectionMatrix, stereo.cameraL.projectionMatrix.elements, "left.projection");
-    expectMatrixClose(eyes.right.projectionMatrix, stereo.cameraR.projectionMatrix.elements, "right.projection");
-  });
-
-  it("eyes are mirror images: shifted frustums with opposite sign and equal separation", () => {
-    const eyes = computeStereoEyes({
-      viewMatrix: IDENTITY,
-      projectionMatrix: new THREE.PerspectiveCamera(50, 1, 0.1, 100).projectionMatrix.elements,
-      cameraPosition: [0, 0, 0],
-      fov: 50,
-      aspect: 1,
-      near: 0.1,
-      eyeSeparation: 0.2
-    });
-    expect(eyes.left.projectionMatrix[8]).toBeGreaterThan(0);
-    expect(eyes.right.projectionMatrix[8]).toBeCloseTo(-eyes.left.projectionMatrix[8]!, 6);
-    expect(eyes.right.cameraPosition[0] - eyes.left.cameraPosition[0]).toBeCloseTo(0.2, 6);
+    expectValuesClose(eyes.left.cameraPosition, [-0.032, 0, 4]);
+    expectValuesClose(eyes.right.cameraPosition, [0.032, 0, 4]);
+    expect(eyes.left.projectionMatrix[8]).toBeCloseTo(-eyes.right.projectionMatrix[8]!, 6);
   });
 
   it("validates its inputs", () => {
@@ -423,7 +560,7 @@ describe("computeStereoEyes matches three's StereoCamera.update (SC-01)", () => 
 });
 
 describe("cameras.array / cameras.stereo nodes (SC-01)", () => {
-  it("cameras.stereo applies three's defaults and emits a typed node", () => {
+  it("cameras.stereo applies documented defaults and emits a typed node", () => {
     const node = cameras.stereo().toJSON();
     expect(isAuraCameraStereoNode(node)).toBe(true);
     expect(node).toMatchObject({ kind: "camera-stereo", eyeSeparation: 0.064, focus: 10, zoom: 1, layout: "side-by-side" });
@@ -467,6 +604,34 @@ describe("cameras.array / cameras.stereo nodes (SC-01)", () => {
     expect(() => cameras.array({ cameras: [{ viewport: { x: 0.6, y: 0, width: 0.6, height: 1 } }] })).toThrowError(code);
     expect(() => cameras.array({ cameras: [{ viewport: { x: -0.1, y: 0, width: 0.5, height: 1 } }] })).toThrowError(code);
     expect(() => cameras.array({ cameras: [{ viewport: { x: Number.NaN, y: 0, width: 0.5, height: 1 } }] })).toThrowError(code);
+  });
+
+  it("preserves independent eye settings and rejects ambiguous or invalid settings", () => {
+    const viewport = rect(0, 0, 0.5, 1);
+    const scissor = rect(0.1, 0.2, 0.3, 0.5);
+    const array = cameras.array({ cameras: [
+      { id: "overview", viewport, scissor, camera: { fov: 60, layers: 2 }, postprocess: false },
+      { id: "detail", viewport: rect(0.5, 0, 0.5, 1), postprocess: { colorGrade: { contrast: 1.5 } } }
+    ] }).toJSON();
+    expect(array).toMatchObject({ cameras: [
+      { id: "overview", viewport, scissor, camera: { fov: 60, layers: 2 }, postprocess: false },
+      { id: "detail", postprocess: { colorGrade: { contrast: 1.5 } } }
+    ] });
+    viewport.x = 0.2;
+    scissor.x = 0.2;
+    expect(array).toMatchObject({ cameras: [{ viewport: { x: 0 }, scissor: { x: 0.1 } }, {}] });
+
+    const stereo = cameras.stereo({ views: [
+      { id: "left", viewport: rect(0, 0, 0.4, 1), postprocess: false },
+      { id: "right", scissor: rect(0.6, 0, 0.4, 1), camera: { fov: 65 } }
+    ] }).toJSON();
+    expect(stereo).toMatchObject({ views: [{ id: "left", postprocess: false }, { id: "right", camera: { fov: 65 } }] });
+    const code = expect.objectContaining({ code: "invalid-camera-spec" });
+    expect(() => cameras.array({ cameras: [{ id: "same", viewport: rect(0, 0, 0.5, 1) }, { id: "same", viewport: rect(0.5, 0, 0.5, 1) }] })).toThrowError(code);
+    expect(() => cameras.array({ cameras: [{ viewport: rect(0, 0, 1, 1), scissor: rect(0.9, 0, 0.2, 1) }] })).toThrowError(code);
+    expect(() => cameras.array({ cameras: [{ viewport: rect(0, 0, 1, 1), postprocess: [] as never }] })).toThrowError(code);
+    expect(() => cameras.stereo({ views: [{}] as never })).toThrowError(code);
+    expect(() => cameras.stereo({ views: [{ id: "same" }, { id: "same" }] })).toThrowError(code);
   });
 });
 
@@ -520,12 +685,13 @@ describe("production views from authored camera nodes (SC-01)", () => {
     renderer.dispose();
   });
 
-  it("an orthographic scene camera cannot be split into eyes and warns", async () => {
+  it("splits an orthographic scene camera into two views without a fallback warning", async () => {
     const { renderer, surfaces, snapshot, warnings } = await build([cameras.stereo()], "orthographic");
     const source = baseSource();
     const prepared = surfaces.prepare(source, snapshot as never, undefined, 0, 2, { width: 100, height: 50 });
-    expect(prepared.views).toBeUndefined();
-    expect(warnings.some((w) => w.startsWith("CAMERA_STEREO_ORTHOGRAPHIC"))).toBe(true);
+    expect(prepared.views?.map((view) => view.viewport)).toEqual([rect(0, 0, 50, 50), rect(50, 0, 50, 50)]);
+    expect(prepared.views?.map((view) => view.camera.projectionMetadata?.kind)).toEqual(["orthographic", "orthographic"]);
+    expect(warnings).toEqual([]);
     renderer.dispose();
   });
 
@@ -543,6 +709,49 @@ describe("production views from authored camera nodes (SC-01)", () => {
     expect(views[0]!.cameraPosition).toEqual([0, 0, 6]);
     expect(views[1]!.cameraPosition).toEqual([3, 0, 6]);
     expect(views[0]!.camera.viewProjectionMatrix).not.toEqual(views[1]!.camera.viewProjectionMatrix);
+    renderer.dispose();
+  });
+
+  it("lowers array view settings independently and recomputes pixel rectangles on resize", async () => {
+    const { renderer, surfaces, snapshot } = await build([cameras.array({ name: "split", cameras: [
+      { id: "wide", viewport: rect(0, 0, 0.5, 1), scissor: rect(0.1, 0.2, 0.3, 0.6), camera: { layers: 2 }, postprocess: false },
+      { id: "detail", viewport: rect(0.5, 0, 0.5, 1), camera: { position: [3, 0, 6], layers: 4 }, postprocess: { colorGrade: { contrast: 1.2 } } }
+    ] })]);
+    const initial = surfaces.prepare(baseSource(), snapshot as never, undefined, 0, 2, { width: 100, height: 50 }).views!;
+    const resized = surfaces.prepare(baseSource(), snapshot as never, undefined, 0, 2, { width: 200, height: 100 }).views!;
+    expect(initial[0]).toMatchObject({ viewport: rect(0, 0, 50, 50), scissor: rect(10, 10, 30, 30), postprocess: false, camera: { layerMask: 2 } });
+    expect(initial[1]).toMatchObject({ viewport: rect(50, 0, 50, 50), postprocess: { colorGrade: { contrast: 1.2 } }, cameraPosition: [3, 0, 6], camera: { layerMask: 4 } });
+    expect(resized[0]).toMatchObject({ viewport: rect(0, 0, 100, 100), scissor: rect(20, 20, 60, 60) });
+    expect(resized[1]!.viewport).toEqual(rect(100, 0, 100, 100));
+    expect(initial.map((view) => view.id)).toEqual(resized.map((view) => view.id));
+    expect(initial[0]!.id).toBeDefined();
+    expect(initial[0]!.id).not.toBe(initial[1]!.id);
+    renderer.dispose();
+  });
+
+  it("rounds adjacent normalized viewport edges consistently at odd sizes", async () => {
+    const { renderer, surfaces, snapshot } = await build([cameras.array({ cameras: [
+      { viewport: rect(0, 0, 1 / 3, 1) },
+      { viewport: rect(1 / 3, 0, 1 / 3, 1) },
+      { viewport: rect(2 / 3, 0, 1 / 3, 1) }
+    ] })]);
+    const views = surfaces.prepare(baseSource(), snapshot as never, undefined, 0, 101 / 51, { width: 101, height: 51 }).views!;
+    expect(views.map((view) => view.viewport)).toEqual([rect(0, 0, 34, 51), rect(34, 0, 33, 51), rect(67, 0, 34, 51)]);
+    renderer.dispose();
+  });
+
+  it("lowers stereo eye camera, clip and post overrides without changing the other eye", async () => {
+    const { renderer, surfaces, snapshot } = await build([cameras.stereo({ eyeSeparation: 0.2, focus: 6, views: [
+      { id: "left", postprocess: false },
+      { id: "right", viewport: rect(0.5, 0.2, 0.5, 0.8), scissor: rect(0.6, 0.3, 0.3, 0.5), camera: { position: [3, 0, 6], layers: 4, fov: 65 }, postprocess: { colorGrade: { saturation: 0.2 } } }
+    ] })]);
+    const [left, right] = surfaces.prepare(baseSource(), snapshot as never, undefined, 0, 2, { width: 100, height: 50 }).views!;
+    expect(left).toMatchObject({ viewport: rect(0, 0, 50, 50), postprocess: false });
+    expect(left!.cameraPosition![0]).toBeCloseTo(-0.1, 5);
+    expect(right).toMatchObject({ viewport: rect(50, 10, 50, 40), scissor: rect(60, 15, 30, 25), postprocess: { colorGrade: { saturation: 0.2 } }, camera: { layerMask: 4 } });
+    expect(right!.cameraPosition![0]).toBeGreaterThan(3);
+    expect(right!.camera.projectionMatrix![5]).not.toBeCloseTo(left!.camera.projectionMatrix![5]!, 3);
+    expect(left!.id).not.toBe(right!.id);
     renderer.dispose();
   });
 
@@ -572,9 +781,431 @@ describe("production views from authored camera nodes (SC-01)", () => {
     };
     const source = surfaces.prepare({ collectRenderItems: () => [item], cameraPolicy: "require", frustumCulling: false }, snapshot as never, undefined, 0, 2, { width: 100, height: 50 });
     renderer.render(source, { viewProjectionMatrix: IDENTITY });
-    expect(frames).toHaveLength(2);
-    expect(frames[0]![0]!.viewport).toEqual(rect(0, 0, 50, 50));
-    expect(frames[1]![0]!.viewport).toEqual(rect(50, 0, 50, 50));
+    expect(frames).toHaveLength(3);
+    expect(frames[0]![0]).toMatchObject({ destination: "render-target", viewport: rect(0, 0, 50, 50) });
+    expect(frames[1]![0]).toMatchObject({ destination: "render-target", viewport: rect(0, 0, 50, 50) });
+    expect(frames[2]!.map((view) => view.viewport)).toEqual([rect(0, 0, 50, 50), rect(50, 0, 50, 50)]);
     renderer.dispose();
+  });
+});
+
+
+describe("Renderer camera depth negotiation", () => {
+  it.each(["sync", "async"] as const)("rejects unsupported depth before starting any view (%s)", async (mode) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 40, height: 20 });
+    const device = renderer.device as MockRenderDevice;
+    const item = { geometry: Geometry.triangle(), material: new UnlitMaterial() };
+    const good = { viewProjectionMatrix: IDENTITY };
+    const reversed = { viewProjectionMatrix: IDENTITY, projectionMetadata: { kind: "perspective" as const, mode: "reversed" as const, clipRange: "minus-one-to-one" as const } };
+    const input = { source: { renderItems: [item], cameraPolicy: "require" as const }, views: [
+      { camera: good, viewport: rect(0, 0, 20, 20) },
+      { camera: reversed, viewport: rect(20, 0, 20, 20) }
+    ] };
+    if (mode === "sync") expect(() => renderer.render(input)).toThrowError(/requires standard depth/);
+    else await expect(renderer.renderAsync(input)).rejects.toThrowError(/requires standard depth/);
+    expect(device.drawCommands).toHaveLength(0);
+    expect(renderer.info.render.frame).toBe(0);
+    renderer.dispose();
+  });
+
+  it("rejects an advertised fallback whose projection was not rebuilt", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20 });
+    const camera = { viewProjectionMatrix: IDENTITY,
+      projectionMetadata: { kind: "perspective" as const, mode: "reversed" as const, clipRange: "minus-one-to-one" as const },
+      depthConvention: { requestedMode: "reversed" as const, mode: "standard" as const, clipRange: "minus-one-to-one" as const, clearValue: 1 as const, compare: "less-equal" as const, biasSign: 1 as const, fallbackReason: "unavailable" } };
+    expect(() => renderer.render({ source: { renderItems: [] }, camera })).toThrowError(/projection and depth convention do not match/);
+    expect((renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
+    renderer.dispose();
+  });
+
+  it("rejects a device left in reversed depth before submitting a standard camera", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20 });
+    Object.assign(renderer.device, { getDepthConvention: () => ({ requestedMode: "reversed", mode: "reversed", clipRange: "minus-one-to-one", clearValue: 0, compare: "greater-equal", biasSign: -1 }) });
+    expect(() => renderer.render({ renderItems: [{ geometry: Geometry.triangle(), material: new UnlitMaterial() }], cameraPolicy: "identity" })).toThrowError(/active device depth convention/);
+    expect((renderer.device as MockRenderDevice).drawCommands).toHaveLength(0);
+    renderer.dispose();
+  });
+
+  it("rejects explicit zero-to-one camera matrices instead of applying WebGPU conversion twice", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20 });
+    const camera = { viewProjectionMatrix: IDENTITY, projectionMetadata: { kind: "perspective" as const, mode: "standard" as const, clipRange: "zero-to-one" as const } };
+    expect(() => renderer.render({ source: { renderItems: [] }, camera })).toThrowError(/minus-one-to-one/);
+    renderer.dispose();
+  });
+});
+
+describe("Renderer temporal view ownership", () => {
+  it("retains unaffected view history on resize and reports camera-only motion", async () => {
+    const flags = resolveQrFlags({ options: { A3D_QR_POST: true } });
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, qrFlags: flags });
+    renderer.device.presentLdrPostprocess = () => undefined;
+    const history = (renderer as unknown as { temporalHistory: TemporalHistory }).temporalHistory;
+    const prepare = vi.spyOn(history, "prepare");
+    const dispose = vi.spyOn(history, "dispose");
+    const object = { geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "temporal" };
+    const source = { renderItems: [object], cameraPolicy: "require" as const, postprocess: { execution: "auto" as const, toneMapping: { operator: "linear" as const }, temporal: {}, taa: { blend: 0.9 } } };
+    const viewCamera = { viewProjectionMatrix: IDENTITY, projectionMetadata: { kind: "perspective" as const, mode: "standard" as const, clipRange: "minus-one-to-one" as const, near: 0.5, far: 100 } };
+    const first = renderer.render({ source, views: [
+      { id: "left", camera: viewCamera, viewport: rect(0, 0, 40, 40) },
+      { id: "right", camera: viewCamera, viewport: rect(40, 0, 40, 40) }
+    ] });
+    expect(first.temporalViews).toMatchObject([
+      { viewId: "left", motionSource: "camera", unsupportedMotion: expect.arrayContaining(["previous-depth-approximation"]) },
+      { viewId: "right", motionSource: "camera", unsupportedMotion: expect.arrayContaining(["previous-depth-approximation"]) }
+    ]);
+    expect(prepare.mock.calls.map((call) => call[5].depthNear)).toEqual([0.5, 0.5]);
+    const rightHistory = prepare.mock.results[1]!.value.history;
+    renderer.resize(90, 40);
+    expect(dispose).not.toHaveBeenCalled();
+    const second = renderer.render({ source, views: [
+      { id: "left", camera: viewCamera, viewport: rect(0, 0, 30, 40) },
+      { id: "right", camera: viewCamera, viewport: rect(30, 0, 40, 40) }
+    ] });
+    expect(prepare.mock.results[3]!.value.history).toBe(rightHistory);
+    expect(second.temporalViews?.map((view) => view.viewId)).toEqual(["left", "right"]);
+    expect(renderer.getDiagnostics().temporalViews).toEqual(second.temporalViews);
+    renderer.dispose();
+  });
+});
+
+describe("Renderer target-owned temporal history", () => {
+  it.each(["sync", "async"] as const)("isolates and retires histories for distinct explicit targets (%s)", async (mode) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
+    renderer.device.presentLdrPostprocess = () => undefined;
+    const history = (renderer as unknown as { temporalHistory: TemporalHistory }).temporalHistory;
+    const prepare = vi.spyOn(history, "prepare");
+    const releaseView = vi.spyOn(history, "disposeView");
+    const device = renderer.device as MockRenderDevice;
+    const releasePostView = vi.fn();
+    Object.assign(device, { releaseNativePostEffectView: releasePostView });
+    const a = device.createRenderTarget({ width: 16, height: 16, label: "a" });
+    const b = device.createRenderTarget({ width: 8, height: 8, label: "b" });
+    const object = { geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "target-temporal" };
+    const source = { renderItems: [object], cameraPolicy: "identity" as const, postprocess: { execution: "auto" as const, toneMapping: { operator: "linear" as const }, temporal: {}, taa: { blend: 0.9 } } };
+    const run = async (target: RenderTarget) => { if (mode === "sync") renderer.render({ source, target }); else await renderer.renderAsync({ source, target }); };
+    await run(a);
+    const firstId = prepare.mock.calls[0]![5].viewId;
+    await run(b);
+    const secondId = prepare.mock.calls[1]![5].viewId;
+    expect(secondId).not.toEqual(firstId);
+    expect(prepare.mock.results[1]!.value.historyValid).toBe(false);
+    await run(a);
+    expect(prepare.mock.results[2]!.value.historyValid).toBe(true);
+    a.dispose();
+    await run(b);
+    expect(releaseView).toHaveBeenCalledWith(firstId);
+    expect(releasePostView).toHaveBeenCalledWith(expect.any(Object), firstId);
+    expect(prepare.mock.results[3]!.value.historyValid).toBe(true);
+    renderer.dispose();
+  });
+});
+
+describe("Renderer frame inspection", () => {
+  it.each(["sync", "async"] as const)("reports actual graph passes and labels unobserved phases partial (%s)", async (mode) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20 });
+    expect(renderer.getFrameInspection()).toBeNull();
+    const item = { geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "inspected" };
+    const input = { renderItems: [item], cameraPolicy: "identity" as const };
+    const diagnostics = mode === "sync" ? renderer.render(input) : await renderer.renderAsync(input);
+    const capture = renderer.getFrameInspection()!;
+    expect(capture.frameNumber).toBe(1);
+    expect(capture.complete).toBe(false);
+    expect(capture.passes).toHaveLength(1);
+    expect(capture.passes[0]).toMatchObject({ name: "forward", status: "completed", drawCalls: 1, gpuTimeMs: null });
+    expect(capture.passes[0]!.reads).toEqual([]);
+    expect(capture.passes[0]!.writes.length).toBeGreaterThan(0);
+    expect(capture.passes[0]!.cpuTimeMs).toBeGreaterThanOrEqual(0);
+    expect(capture.diagnostics).toEqual(diagnostics);
+    expect(capture.cpuTimeMs).toBeNull();
+    expect(capture.gpuTimeMs).toBeNull();
+    renderer.dispose();
+    expect(renderer.getFrameInspection()).toBeNull();
+  });
+
+  it("records a failed pass without claiming a submitted frame", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 20, height: 20 });
+    const input = { renderItems: [{ geometry: Geometry.triangle(), material: new UnlitMaterial(), onBeforeRender: () => { throw new Error("draw failed"); } }], cameraPolicy: "identity" as const };
+    expect(() => renderer.render(input)).toThrow("draw failed");
+    expect(renderer.getFrameInspection()).toMatchObject({ frameNumber: 1, complete: false, passes: [{ name: "forward", status: "failed" }] });
+    expect(renderer.info.render.frame).toBe(0);
+    renderer.dispose();
+  });
+});
+
+describe("Renderer resource teardown", () => {
+  it("continues releasing device resources after a disposer throws and remains idempotent", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 40, height: 20, qrFlags: resolveQrFlags({ options: { A3D_QR_CORE: true } }) });
+    renderer.render({ renderItems: [{ geometry: Geometry.triangle(), material: new UnlitMaterial() }], cameraPolicy: "identity" });
+    const cache = rendererProgramCache(renderer.device, resolveQrFlags({ options: { A3D_QR_CORE: true } }));
+    const original = cache.dispose.bind(cache);
+    const dispose = vi.spyOn(cache, "dispose").mockImplementation(() => { original(); throw new Error("cache cleanup failed"); });
+    expect(() => renderer.dispose()).toThrowError(AggregateError);
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(renderer.device.disposed).toBe(true);
+    expect(() => renderer.dispose()).not.toThrow();
+    expect(dispose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Renderer recovery after device loss", () => {
+  it("retires view surfaces and composite resources and recreates them after restoration", () => {
+    const device = new MockRenderDevice();
+    let lose: (() => void) | undefined;
+    Object.assign(device, { onDeviceLost(listener: () => void) { lose = listener; return () => { lose = undefined; }; } });
+    const seen = instrumentRecovery(device);
+    const renderer = new Renderer(device, { backend: "mock", width: 40, height: 20, shaderLibrary: createDefaultShaderLibrary() }, new TemporalHistory());
+    const input = { source: { renderItems: [{ geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "recovery" }], cameraPolicy: "require" as const }, views: [
+      { id: "left", camera: { viewProjectionMatrix: IDENTITY }, viewport: rect(0, 0, 20, 20) },
+      { id: "right", camera: { viewProjectionMatrix: IDENTITY }, viewport: rect(20, 0, 20, 20) }
+    ] };
+    renderer.render(input);
+    const first = [...seen.targets];
+    const firstComposite = seen.compositeShaders[0]!;
+    expect(first).toHaveLength(2);
+    lose!();
+    expect(first.every((target) => target.disposed)).toBe(true);
+    expect(firstComposite.disposed).toBe(true);
+    renderer.render(input);
+    expect(seen.targets).toHaveLength(4);
+    expect(seen.targets.slice(2).every((target) => !target.disposed)).toBe(true);
+    expect(seen.compositeShaders).toHaveLength(2);
+    expect(seen.compositeShaders[1]).not.toBe(firstComposite);
+    renderer.dispose();
+  });
+});
+
+function instrumentRecovery(device: MockRenderDevice) {
+  const targets: RenderTarget[] = [];
+  const compositeShaders: ReturnType<MockRenderDevice["createShaderProgram"]>[] = [];
+  const createTarget = device.createRenderTarget.bind(device);
+  const createShader = device.createShaderProgram.bind(device);
+  device.createRenderTarget = (descriptor) => { const target = createTarget(descriptor); targets.push(target); return target; };
+  device.createShaderProgram = (source) => { const shader = createShader(source); if (source.label === "renderer-view-composite") compositeShaders.push(shader); return shader; };
+  return { targets, compositeShaders };
+}
+
+describe("Renderer repeated authored temporal frames", () => {
+  it.each(["sync", "async"] as const)("keeps camera-cut state stable across repeated passes (%s)", async (mode) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16, qrFlags: resolveQrFlags({ options: { A3D_QR_POST: true } }) });
+    renderer.device.presentLdrPostprocess = () => undefined;
+    const history = (renderer as unknown as { temporalHistory: TemporalHistory }).temporalHistory;
+    const prepare = vi.spyOn(history, "prepare");
+    // This mock device does not run a v2 output stage. Keep the prepared frame
+    // alive so repeated passes exercise its real same-frame validation.
+    vi.spyOn(renderer as unknown as { commitTemporalHistory: () => void }, "commitTemporalHistory").mockImplementation(() => undefined);
+    const object = { geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "temporal-cut" };
+    const base = { renderItems: [object], cameraPolicy: "require" as const, postprocess: { execution: "auto" as const, toneMapping: { operator: "linear" as const }, temporal: {}, taa: { blend: 0.9 } } };
+    const run = async (frameId: number, x: number) => {
+      const input = { source: { ...base, cameraPosition: [x, 0, 0] as const }, camera: { viewProjectionMatrix: IDENTITY }, frameId };
+      if (mode === "sync") renderer.render(input); else await renderer.renderAsync(input);
+    };
+    await run(1, 0);
+    await run(2, 10);
+    await run(2, 10);
+    expect(prepare.mock.calls.map((call) => Boolean(call[5].reset))).toEqual([false, true, true]);
+    renderer.dispose();
+  });
+});
+
+describe("Renderer native drawing-path integration", () => {
+  const makeNative = () => {
+    const passes: Record<string, unknown>[] = [];
+    const pipelines: Record<string, unknown>[] = [];
+    const submissions: unknown[] = [];
+    const uploads: Uint8Array[] = [];
+    const native = {
+      limits: { maxColorAttachments: 4, maxColorAttachmentBytesPerSample: 32, maxStorageBuffersPerShaderStage: 8 },
+      queue: {
+        writeBuffer(_buffer: unknown, _offset: number, data: ArrayBufferView) { uploads.push(new Uint8Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength))); },
+        submit(commands: readonly unknown[]) { submissions.push(commands); },
+        onSubmittedWorkDone: () => Promise.resolve()
+      },
+      createBuffer() { return { destroy() {} }; },
+      createTexture() { return { destroy() {}, createView: () => ({}) }; },
+      createShaderModule({ code }: { code: string }) { return { code }; },
+      createRenderPipeline(descriptor: Record<string, unknown>) { pipelines.push(descriptor); return { getBindGroupLayout: () => ({}) }; },
+      createComputePipeline(descriptor: Record<string, unknown>) { pipelines.push(descriptor); return { getBindGroupLayout: () => ({}) }; },
+      createBindGroup(descriptor: Record<string, unknown>) { return descriptor; },
+      createCommandEncoder() {
+        return {
+          beginComputePass() { return { setPipeline() {}, setBindGroup() {}, dispatchWorkgroups() {}, end() {} }; },
+          beginRenderPass(descriptor: Record<string, unknown>) {
+            passes.push(descriptor);
+            return { setPipeline() {}, setBindGroup() {}, setVertexBuffer() {}, draw() {}, drawIndirect() {}, end() {} };
+          },
+          finish: () => ({})
+        };
+      }
+    };
+    return { native, passes, pipelines, submissions, uploads };
+  };
+
+  const attachNative = (device: MockRenderDevice, fake: ReturnType<typeof makeNative>) => {
+    let generation = 1;
+    let viewOverride = false;
+    const surfaces: Array<{ target: RenderTarget | null; frameActive: unknown }> = [];
+    const written: Array<RenderTarget | null> = [];
+    Object.defineProperty(device, "kind", { value: "webgpu" });
+    Object.defineProperty(device, "generation", { get: () => generation });
+    Object.assign(device, {
+      nativeGpuDevice: fake.native,
+      getNativeRenderSurface(target: RenderTarget | null) {
+        const state = device.captureState();
+        surfaces.push({ target, frameActive: state.get("frameActive") });
+        return { view: { target }, width: target?.width ?? Number(state.get("viewportWidth")), height: target?.height ?? Number(state.get("viewportHeight")), format: "rgba8unorm", generation, sampleCount: 1 };
+      },
+      markNativeRenderSurfaceWritten(target: RenderTarget | null) { written.push(target); },
+      hasNativeSurfaceViewOverride() { return viewOverride; }
+    });
+    return { surfaces, written, setGeneration(value: number) { generation = value; }, setViewOverride(value: boolean) { viewOverride = value; } };
+  };
+  const triangle = () => ({ geometry: Geometry.triangle(), material: new UnlitMaterial(), label: "triangle" });
+
+  it.each(["deferred", "meshlet", "visibility"] as const)("submits the %s path into the frame-scoped native surface", async (mode) => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode } });
+    const device = renderer.device as MockRenderDevice;
+    const fake = makeNative();
+    const attachment = attachNative(device, fake);
+    const result = renderer.render({ source: { renderItems: [triangle()], cameraPolicy: "identity" } });
+    expect(fake.submissions).toHaveLength(1);
+    expect(attachment.surfaces).toEqual([{ target: null, frameActive: true }]);
+    expect(attachment.written).toEqual([null]);
+    expect(result.drawingPath).toMatchObject({ requested: mode, active: mode, triangles: 1 });
+    expect(renderer.drawingPathDiagnostics).toEqual(result.drawingPath);
+    expect(renderer.getDiagnostics().drawingPath).toEqual(result.drawingPath);
+    expect(fake.uploads.some((bytes) => bytes.byteLength > 0)).toBe(true);
+    expect(fake.passes.length).toBeGreaterThan(0);
+    renderer.dispose();
+  });
+
+  it.each(["sync", "async"] as const)("fails closed or draws the full forward fallback when unavailable (%s)", async (mode) => {
+    const strict = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred" } });
+    const source = { renderItems: [triangle()], cameraPolicy: "identity" as const };
+    if (mode === "sync") expect(() => strict.render(source)).toThrowError(/native WebGPU/);
+    else await expect(strict.renderAsync(source)).rejects.toThrowError(/native WebGPU/);
+    expect((strict.device as MockRenderDevice).drawCommands).toHaveLength(0);
+    expect(strict.drawingPathDiagnostics).toBeNull();
+    strict.dispose();
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred", allowFallback: true } });
+    const result = mode === "sync" ? renderer.render(source) : await renderer.renderAsync(source);
+    expect(result.drawingPath).toMatchObject({ requested: "deferred", active: "forward", fallbackReason: expect.stringContaining("native WebGPU") });
+    expect((renderer.device as MockRenderDevice).drawCommands.map((draw) => draw.label)).toEqual(["triangle"]);
+    renderer.dispose();
+  });
+
+  it("rejects unsupported frame features and preserves one-shot input in allowed fallback", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "visibility", allowFallback: true } });
+    const device = renderer.device as MockRenderDevice;
+    const fake = makeNative();
+    attachNative(device, fake);
+    const iterator = [{ ...triangle(), modelViewProjectionMatrix: IDENTITY }][Symbol.iterator]();
+    const result = renderer.render({ renderItems: iterator, cameraPolicy: "identity" });
+    expect(fake.submissions).toHaveLength(0);
+    expect(result.drawingPath).toMatchObject({ active: "forward", fallbackReason: expect.stringContaining("authored") });
+    expect(device.drawCommands.map((draw) => draw.label)).toEqual(["triangle"]);
+    renderer.dispose();
+  });
+
+  it("keeps view rendering and postprocessing in the full forward path when fallback is allowed", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred", allowFallback: true } });
+    const device = renderer.device as MockRenderDevice;
+    const fake = makeNative();
+    attachNative(device, fake);
+    const labels: (string | undefined)[] = [];
+    const draw = device.draw.bind(device);
+    device.draw = (command) => { labels.push(command.label); draw(command); };
+    const source = { renderItems: [triangle()], cameraPolicy: "identity" as const };
+    const result = await renderer.renderAsync({ source, views: [
+      { camera: { viewProjectionMatrix: IDENTITY }, viewport: rect(0, 0, 40, 40) },
+      { camera: { viewProjectionMatrix: IDENTITY }, viewport: rect(40, 0, 40, 40) }
+    ] });
+    expect(result.drawingPath).toMatchObject({ requested: "deferred", active: "forward", fallbackReason: expect.stringContaining("multiple views") });
+    expect(fake.submissions).toHaveLength(0);
+    expect(labels.filter((label) => label === "triangle")).toHaveLength(2);
+    renderer.dispose();
+
+    const strict = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred" } });
+    attachNative(strict.device as MockRenderDevice, makeNative());
+    expect(() => strict.render({ ...source, postprocess: true })).toThrowError(/postprocessing/);
+    strict.dispose();
+  });
+
+  it("preserves reflected-object winding through the full forward path", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred", allowFallback: true } });
+    const device = renderer.device as MockRenderDevice;
+    const fake = makeNative();
+    attachNative(device, fake);
+    const reflected = IDENTITY.slice();
+    reflected[0] = -1;
+    const result = renderer.render({ renderItems: [{ ...triangle(), modelMatrix: reflected }], cameraPolicy: "identity" });
+    expect(result.drawingPath).toMatchObject({ active: "forward", fallbackReason: expect.stringContaining("winding") });
+    expect(fake.submissions).toHaveLength(0);
+    expect(device.drawCommands[0]!.renderState?.cullMode).toBe("front");
+    renderer.dispose();
+  });
+
+  it("keeps explicit offscreen color and depth together in the forward path", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred", allowFallback: true } });
+    const device = renderer.device as MockRenderDevice;
+    const fake = makeNative();
+    attachNative(device, fake);
+    const target = device.createRenderTarget({ width: 17, height: 11, depth: "texture", label: "path-depth" });
+    const result = renderer.render({ source: { renderItems: [triangle()], cameraPolicy: "identity" }, target });
+    expect(result.drawingPath).toMatchObject({ active: "forward", fallbackReason: expect.stringContaining("depth attachments") });
+    expect(fake.submissions).toHaveLength(0);
+    expect(device.getDrawViewStates()[0]!.destination).toBe("render-target");
+    renderer.dispose();
+  });
+
+  it("falls back for retained canvas viewport state without submitting native work", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "meshlet", allowFallback: true } });
+    const device = renderer.device as MockRenderDevice;
+    const fake = makeNative();
+    const attachment = attachNative(device, fake);
+    device.setViewport(10, 0, 30, 40, { persistent: true });
+    attachment.setViewOverride(true);
+    const result = renderer.render({ renderItems: [triangle()], cameraPolicy: "identity" });
+    expect(result.drawingPath).toMatchObject({ requested: "meshlet", active: "forward", fallbackReason: expect.stringContaining("retained viewport") });
+    expect(fake.submissions).toHaveLength(0);
+    expect(device.getDrawViewStates()[0]!.viewport).toEqual(rect(10, 0, 30, 40));
+    renderer.dispose();
+  });
+
+  it("uses the asynchronous render entry point for a supported native frame", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "visibility" } });
+    const fake = makeNative();
+    attachNative(renderer.device as MockRenderDevice, fake);
+    const result = await renderer.renderAsync({ renderItems: [triangle()], cameraPolicy: "identity" });
+    expect(result.drawingPath).toMatchObject({ requested: "visibility", active: "visibility", triangles: 1 });
+    expect(fake.submissions).toHaveLength(1);
+    renderer.dispose();
+  });
+
+  it("recreates the pipeline when the native generation or output size changes and disposes it", async () => {
+    const dispose = vi.spyOn(DeferredPipeline.prototype, "dispose");
+    try {
+      const renderer = await Renderer.create({ backend: "mock", width: 80, height: 40, drawingPath: { mode: "deferred" } });
+      const device = renderer.device as MockRenderDevice;
+      const fake = makeNative();
+      const attachment = attachNative(device, fake);
+      const source = { renderItems: [triangle()], cameraPolicy: "identity" as const };
+      renderer.render(source);
+      const firstCount = fake.pipelines.length;
+      renderer.render(source);
+      expect(fake.pipelines).toHaveLength(firstCount);
+      attachment.setGeneration(2);
+      renderer.render(source);
+      expect(fake.pipelines).toHaveLength(firstCount * 2);
+      expect(dispose).toHaveBeenCalledTimes(1);
+      renderer.resize(81, 40);
+      expect(dispose).toHaveBeenCalledTimes(2);
+      expect(renderer.drawingPathDiagnostics).toBeNull();
+      renderer.render(source);
+      expect(fake.pipelines).toHaveLength(firstCount * 3);
+      renderer.dispose();
+      expect(dispose).toHaveBeenCalledTimes(3);
+    } finally {
+      dispose.mockRestore();
+    }
   });
 });

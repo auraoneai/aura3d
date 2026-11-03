@@ -2,18 +2,22 @@
 
 Read the code first. Every runtime message below is real and greppable in `packages/*/src`. Where a check is given, run it before changing code.
 
-How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `errors`, `drawCalls`, `assets` (load state per asset) and, when a custom shader failed, `shaderFailures` (code, material, stage, driver log, source lines). Open any route with `?diag=1` for an on-page panel (GPU, limits, draw calls, shader failures, recent errors, heal reason; failing custom shaders draw magenta). Under the strict quality-rebuild flag (`A3D_QR_STRICT`) custom-shader failures throw instead of being recorded.
+How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `errors`, `drawCalls`, `assets` (load state per asset) and, when a custom shader failed, `shaderFailures` (code, material, stage, driver log, source lines). Routes that install the diagnostics overlay can expose a panel with `?diag=1`; the query string alone does not install one. In the default custom-shader failure mode the failed draw is skipped. Strict shader handling throws; inspect the diagnostics and the error for the active configuration.
 
 ## 1. Build and install
 
 **`"readFileSync" is not exported by "__vite-browser-external"` during `vite build` (or `node:fs` in the browser bundle)**
 - Cause: a browser entry reached the Node-only `@aura3d/assets` index.
-- Fix: the engine imports `@aura3d/assets/browser`; do the same in your own browser code and never import the bare `@aura3d/assets` index there.
+- Fix: use the explicit `@aura3d/assets/browser` entry in browser code. The bare `@aura3d/assets` package has a `browser` export condition, but a tool that resolves its `import` condition instead can reach the Node entry; check the conditions supported by your bundler.
 - Check: `tools/release/consumer-build-smoke.mjs` (see its header) builds a temp project from packed tarballs and fails if a browser entry still reaches a `node:*` import.
 
 **`npm ci` fails: lockfile out of sync with `package.json`**
-- Cause: a template lockfile pinned an older `@aura3d/assets` than the manifest. The repo `mini-game` template has no lockfile.
-- Fix: delete the stale `package-lock.json` and run `npm install`; do not hand-edit it.
+- Cause: the committed lockfile and manifest disagree, or the wrong package manager was used.
+- Fix: verify the manifest and use the project's package manager to regenerate and review its lockfile, then retry the clean install. Do not silently modify a consumer project in a test harness.
+
+**An Aura3D package or optional integration cannot be resolved**
+- Check the installed package versions and each package's `exports` and `peerDependencies`; use an exported subpath and install the peer required by the integration you actually use. For example, the React adapter declares React 18 or 19 and a compatible `@aura3d/engine` peer. An optional peer can be absent until its feature is requested.
+- A package's `import`, `browser`, `types`, or `require` condition applies only when its installed export map declares that condition. An ESM import working does not establish a CommonJS `require` path.
 
 ## 2. Runtime errors (`AuraRuntimeError`, `error.code`)
 
@@ -21,6 +25,10 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 - Cause: the selector matched nothing, or `document` is unavailable (SSR).
 - Fix: add `<canvas id="app"></canvas>` (a non-canvas element gets a canvas appended), or pass an `HTMLCanvasElement`. Run `createAuraApp` in the browser only.
 - Check: `document.querySelector("#app")` is non-null before `createAuraApp`.
+
+**`RENDERER_MOUNT_FAILED` or a blank frame immediately after mount**
+- The production renderer mounts asynchronously. Await `app.ready()` before stepping or capturing and inspect `app.diagnostics().errors` and the reported backend. In the existing non-strict path `ready()` can settle after a mount failure, so resolution alone is not proof that a renderer mounted or drew a frame. With `strict: true`, a mount failure rejects `ready()`.
+- For SSR, import only entries documented as server-safe; create and mount a browser canvas after the client has a DOM. Dispose the app on unmount. React's adapter remains experimental until its own browser and hydration evidence is complete.
 
 **`missing-asset` / `failed-glb-load`** - an asset id has no typed definition, or a GLB could not load.
 - Fix: `aura3d assets add ./file.glb --name x`, import the generated `assets`, then `aura3d assets validate`. `sceneKits.productViewer` requires a typed model asset.
@@ -66,11 +74,11 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 - Cause: an instance pool with zero transforms. Valid; the node is skipped (4.1 and later; earlier versions blanked the canvas).
 - Fix: none needed unless you expected instances; check the transform array you pass per frame.
 
-**`ENV_FETCH_FAILED`** - "environment probe not ready; rendering with the neutral floor (ENV_FETCH_FAILED:/aura-environments/neutral.manifest.json:404)".
-- Cause: the baked environment files are served from `public/aura-environments` in this repository but are not in the published packages, so an app built from npm gets a 404 and falls back to a neutral floor lighting.
-- Effect: it still renders, but not with the authored environment look.
-- Fix (workaround): copy the repo's `public/aura-environments` into your app's `public/`, or author an explicit environment (`environments.studio()`, `environments.hdri(...)`). A self-contained neutral environment is planned (`docs/workflows/aura3d-vs-threejs-analysis-and-plan.md`, WP-2).
-- Check: the network panel shows no 404 for `/aura-environments/*`.
+**`ENV_PRESET_UNAVAILABLE`, `ENV_PRESET_INVALID`, `ENV_FETCH_FAILED`, or `ENV_EMBEDDED_UNSUPPORTED`**
+- The neutral preset's baked probe is embedded in the rendering package and decoded lazily; it does not fetch `/aura-environments/neutral.manifest.json`. An analytic neutral floor is used while the probe loads. The embedded decoder needs `DecompressionStream`; `ENV_EMBEDDED_UNSUPPORTED` means that API is unavailable. Offline operation also requires the application and its lazy chunks to be available offline.
+- Named non-neutral baked presets load `/aura-environments/<preset>.manifest.json` and the local specular KTX2 and SH9 files named by the manifest. A missing manifest reports `ENV_PRESET_UNAVAILABLE`; invalid metadata reports `ENV_PRESET_INVALID`; a missing file or an HTML fallback can report `ENV_FETCH_FAILED`. Install the complete, licensed preset assets at those URLs, or choose neutral. An HTTP 200 serving an HTML fallback is not a valid asset.
+- Look HDRIs are a separate `/hdri/*.hdr` asset family. Check the exact requested file in the generated project's `public/hdri/` and deployment; a preset manifest is not a replacement for a missing HDRI. The scaffold copies its available packaged HDRIs when a template authors a look. Check the installed `create-aura3d` version and generated files for the specific look used.
+- When the asynchronous probe fails, the renderer warns and keeps the neutral floor; that is a degraded result, not proof of the authored lighting. Check the reported URL, response content and console warning, then reload with the complete assets.
 
 **`ENVIRONMENT_SOURCE_TIE:<ids>`** - two environment sources registered at the same priority; one wins deterministically. Give one a different priority.
 
@@ -96,7 +104,7 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 **Black frame checklist (blank canvas, but draws are being issued)** - run it in this order before touching lights or materials
 1. **Is the canvas growing?** In the console run `[canvas.width, canvas.height, canvas.style.height]` twice, a second apart. If the numbers rise, the canvas is chasing a parent whose height is set by its own content (an auto-height `<body>` or wrapper that also holds a HUD `<div>`); the backing store ends up past GPU limits and nothing draws. The engine detects this and keeps the mounted size on that axis. If the numbers still rise, put the canvas in a wrapper with a definite size (`#stage { width: 640px; height: 360px }`), or pass `resize: false` to `createAuraApp` and give the canvas `width`/`height` attributes.
 2. **Is the first frame drawn yet?** Read the canvas only inside a `requestAnimationFrame` callback or after `app.ready()` plus two frames; a WebGL canvas without `preserveDrawingBuffer` reads as zeros anywhere else, and screenshots taken before the first draw are black. `app.screenshot()` re-renders before reading; with `frameMode: "async"` use `await app.screenshotAsync()`, because `screenshot()` cannot re-render while an async frame is in flight.
-3. **Does `diagnostics()` list anything?** `shaderFailures`, `CUSTOM_SHADER_COMPILE_FAILED`, `ENV_FETCH_FAILED` (a look preset whose environment file is not served; the neutral floor is used).
+3. **Does `diagnostics()` list anything?** Check `shaderFailures`, `CUSTOM_SHADER_COMPILE_FAILED`, and console warnings including `ENV_PRESET_UNAVAILABLE` or `ENV_FETCH_FAILED` (a missing environment asset can leave the neutral floor bound).
 4. **Toggle one thing at a time** with `?diag=1`: `?post=0`, `?shadow=0`, `?env=0`, `?aa=0`, `?quality=low`. The first toggle that brings the picture back names the culprit.
 5. **Is the camera looking at something?** Pass the camera with the `.camera(camera.perspective({ position, target, fov }))` builder, then log `app.nodes` names and positions; a game whose entities are all at the origin under a camera at the origin is also black.
 
@@ -210,4 +218,3 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
   parent resizes.
 - The chase camera sits inside a wall or tree, or looks through a building: pass the eye your rig wants through `createCameraClearance`
   with a `blocked(x, y, z)` predicate for solid space (`docs/api/motion-camera-clear.md`).
-

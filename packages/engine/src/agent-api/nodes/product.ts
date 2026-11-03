@@ -11,7 +11,6 @@ import { interactions } from "./interactions.js";
 import { prefabs } from "./prefabs/index.js";
 import { timeline } from "./timeline.js";
 import { validateProductVisualQA } from "../looks/structuralQA.js";
-import { productViewer } from "../product-viewer-runtime.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
 

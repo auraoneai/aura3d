@@ -3,17 +3,29 @@ import { WebGL2Device, type WebGL2DeviceOptions, type WebGL2ErrorCheckMode } fro
 // Type-only import: the WebGPU implementation is loaded on demand below so a route that renders
 // on WebGL2 does not ship the WebGPU device at all. `import type` is erased at build time.
 import type { WebGPULike } from "./WebGPUDevice";
+import type { TextureBudgetPolicy } from "./textures/TextureBudget";
 
 export interface RenderBackendOptions {
   readonly backend?: RenderBackendKind;
   readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
   readonly antialias?: boolean;
   readonly alpha?: boolean;
+  /** Presentation association chosen before a canvas context is acquired. */
+  readonly presentationAlphaMode?: "opaque" | "straight" | "premultiplied";
   readonly preserveDrawingBuffer?: boolean;
   /** §6.9 (lane 01): forwarded to getContext; absent = browser default. */
   readonly powerPreference?: WebGLPowerPreference;
   readonly errorCheckMode?: WebGL2ErrorCheckMode;
+  /** Opt-in sampled-texture admission limits; omitted means no admission limit. */
+  readonly textureBudgetPolicy?: TextureBudgetPolicy;
   readonly webgpu?: WebGPULike;
+  /** Native adapter features, distinct from RendererOptions.requiredFeatures. */
+  readonly webgpuRequiredFeatures?: readonly string[];
+  readonly webgpuRequiredLimits?: Readonly<Record<string, number>>;
+  /** Require usable native rendering rather than a validation-only device. */
+  readonly requireNativeRendering?: boolean;
+  /** Opt into managed WebGPU ownership; legacy callers cannot supersede a managed canvas. */
+  readonly webgpuCanvasOwnership?: "exclusive" | "legacy";
 }
 
 export async function createRenderDevice(options: RenderBackendOptions = {}): Promise<RenderDevice> {
@@ -32,6 +44,9 @@ export async function createRenderDevice(options: RenderBackendOptions = {}): Pr
     if (options.alpha !== undefined) {
       Object.assign(webglOptions, { alpha: options.alpha });
     }
+    if (options.presentationAlphaMode !== undefined) {
+      Object.assign(webglOptions, { presentationAlphaMode: options.presentationAlphaMode });
+    }
     if (options.preserveDrawingBuffer !== undefined) {
       Object.assign(webglOptions, { preserveDrawingBuffer: options.preserveDrawingBuffer });
     }
@@ -41,6 +56,9 @@ export async function createRenderDevice(options: RenderBackendOptions = {}): Pr
     if (options.errorCheckMode !== undefined) {
       Object.assign(webglOptions, { errorCheckMode: options.errorCheckMode });
     }
+    if (options.textureBudgetPolicy !== undefined) {
+      Object.assign(webglOptions, { textureBudgetPolicy: options.textureBudgetPolicy });
+    }
     return WebGL2Device.create(webglOptions);
   }
   if (backend === "webgpu") {
@@ -49,7 +67,16 @@ export async function createRenderDevice(options: RenderBackendOptions = {}): Pr
     // only ever asks for `webgl2` — which is what put the Aura Clash route 309 KB over its JS
     // budget. Callers that genuinely select WebGPU already await this function.
     const { WebGPUDevice } = await import("./WebGPUDevice");
-    return WebGPUDevice.create({ gpu: options.webgpu, canvas: options.canvas });
+    return WebGPUDevice.create({
+      gpu: options.webgpu,
+      canvas: options.canvas,
+      presentationAlphaMode: options.presentationAlphaMode,
+      requiredFeatures: options.webgpuRequiredFeatures,
+      requiredLimits: options.webgpuRequiredLimits,
+      requireNativeRendering: options.requireNativeRendering,
+      canvasOwnership: options.webgpuCanvasOwnership,
+      textureBudgetPolicy: options.textureBudgetPolicy
+    });
   }
   throw new RenderDeviceError("Unknown render backend", "UNKNOWN_BACKEND", { backend });
 }

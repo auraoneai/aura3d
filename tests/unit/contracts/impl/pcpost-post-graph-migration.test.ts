@@ -92,6 +92,47 @@ const BLOOM = { name: "bloom", options: { intensity: 0.16 } } as LdrPostprocessP
 const TONE = { name: "tone-mapping", options: { operator: "aces" } } as LdrPostprocessPassDescriptor;
 
 describe("PostGraph v2 migration: stage ordering", () => {
+  it.each([false, true])("retains and releases the HDR, bloom, and tail leases when presentation fails=%s", (failBloom) => {
+    const source = fakeTarget("rgba16f");
+    const hdr = fakeTarget("rgba16f");
+    const tail = fakeTarget("rgba8");
+    const bloom = fakeTarget("rgba16f");
+    const releaseHdr = vi.fn(), releaseTail = vi.fn(), releaseBloom = vi.fn(), releaseLegacy = vi.fn();
+    const runHdr = vi.fn((..._args: unknown[]) => ({ target: hdr, aoPending: false, skipped: [], outputLease: { target: hdr, release: releaseHdr } }));
+    const acquireLease = vi.fn((_host: unknown, key: { format: string }) => key.format === "rgba8"
+      ? { target: tail, release: releaseTail }
+      : { target: bloom, release: releaseBloom });
+    const host = {
+      gl: {} as never,
+      device: { setRenderTarget: () => undefined },
+      stateCache: { invalidate: () => undefined },
+      resolveMultisampleTarget: () => undefined,
+      post: {
+        presentLdrPostprocess: () => undefined,
+        presentHdrBloom: () => { if (failBloom) throw new Error("bloom failed"); }
+      },
+      activeRenderTarget: null
+    } as unknown as WebGL2DeviceHost;
+    const v2 = {
+      runV2HdrStages: runHdr,
+      v2NeedsLdrTail: () => true,
+      acquireV2TargetLease: acquireLease,
+      releaseV2Target: releaseLegacy,
+      runV2LdrTail: () => undefined
+    } as never;
+    const execute = () => executePostGraphWebGL2(host, source, {
+      pipeline: { ...PIPELINE, filmGrain: { intensity: 0.1 } }, passes: [BLOOM, TONE], v2
+    });
+    if (failBloom) expect(execute).toThrow("bloom failed");
+    else expect(execute).not.toThrow();
+    expect(runHdr.mock.calls[0]![6]).toMatchObject({ retainOutputLease: true });
+    expect(acquireLease).toHaveBeenCalledTimes(2);
+    expect(releaseHdr).toHaveBeenCalledTimes(1);
+    expect(releaseTail).toHaveBeenCalledTimes(1);
+    expect(releaseBloom).toHaveBeenCalledTimes(1);
+    expect(releaseLegacy).not.toHaveBeenCalled();
+  });
+
   it("runs HDR stages, then the HDR bloom into its own target, then the OutputPass, with no tail for a vignette-only chain", () => {
     const trace = run({ ...PIPELINE, vignette: VIGNETTE }, [BLOOM, TONE]);
     expect(trace.events).toEqual(["hdr-stages", "acquire-hdr", "hdr-bloom", "bind-canvas", "bind-canvas"]);
@@ -217,7 +258,7 @@ describe("PostGraph v2 migration: routing", () => {
   });
 
   it("names every reason the explicit legacy chain still applies", () => {
-    expect(postV2SeamDeclineReason("webgl2", { toneMapping: true } as RendererPostProcessOptions, [], true)).toBe("no-v2-plan");
+    expect(postV2SeamDeclineReason("webgl2", { toneMapping: true } as unknown as RendererPostProcessOptions, [], true)).toBe("no-v2-plan");
     expect(postV2SeamDeclineReason("webgpu", v2Chain, [], true)).toBe("backend");
     expect(postV2SeamDeclineReason("webgl2", { v2: true } as RendererPostProcessOptions, [], true)).toBe("no-pipeline");
     expect(postV2SeamDeclineReason("webgl2", { ...v2Chain, execution: "cpu-deterministic" } as RendererPostProcessOptions, [], true)).toBe("cpu-deterministic");

@@ -17,6 +17,8 @@ export interface PostPassDescriptor extends RegistryEntry {
   readonly fragment: { readonly glsl: string; readonly wgsl?: string };
   readonly uniforms?: (frame: FrameContributorContext) => Readonly<Record<string, number | readonly number[]>>;
   readonly enabled?: (frame: FrameContributorContext) => boolean;
+  /** Optional owner gate, evaluated before planning a renderer's custom passes. */
+  readonly postScopeMatches?: (scopeId: object | undefined) => boolean;
   /**
    * threejs-parity SH-03 (additive): deterministic ordering inside the chosen
    * `insertAt` anchor — ascending sort, stable for equal/absent keys so
@@ -57,8 +59,21 @@ export interface PostPipelineOptions {
   readonly depthRange: { readonly near: number; readonly far: number; readonly projection: "perspective" | "orthographic" };
   readonly ao?: unknown; readonly ssr?: unknown; readonly godRays?: unknown; readonly taa?: unknown; readonly dof?: unknown; readonly motionBlur?: unknown;
   readonly exposure: number; readonly bloom?: unknown; readonly toneMapping: AuraToneMappingOperatorLike;
+  readonly outputColorSpace?: "srgb" | "display-p3";
+  readonly alphaMode?: "opaque" | "straight" | "premultiplied";
+  /**
+   * WebGL2 v2 OutputPass route only: the caller warrants that the texture
+   * entering OUT is scene-linear premultiplied RGB with opacity in alpha.
+   * This warranty covers the scene clear and all HDR stages, bloom and custom
+   * passes before OUT, not just the initial source. It cannot be inferred from
+   * the requested output `alphaMode`; a coverage alpha or arbitrary effect
+   * does not establish it. Omit for the legacy opaque/coverage contract.
+   */
+  readonly inputAlphaMode?: "premultiplied";
   readonly grade?: unknown; readonly lut?: unknown; readonly vignette?: unknown; readonly filmGrain?: unknown; readonly chromaticAberration?: unknown;
   readonly dither: boolean; readonly backgroundPassthrough?: boolean; readonly customPasses?: readonly PostPassDescriptor[];
+  /** Authored effects run in order; texture-backed inputs must be available when executed. */
+  readonly nativeEffects?: readonly import("../post/NativeEffectShaders").NativePostEffect[];
   /** CCR-03-2: `output.autoExposure` typed in post/PostGraph.ts (AutoExposureOptionsV2 | false). */
   readonly autoExposure?: unknown;
 } // `unknown` members are typed by PRD 03 in post/PostGraph.ts (GtaoOptions, BloomOptionsV2, TaaOptions, DofOptions, MotionBlurOptions, ColorGradeOptionsV2, LutTexture3D, AutoExposureOptionsV2) — adding the concrete types is an allowed additive CCR.

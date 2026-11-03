@@ -31,7 +31,8 @@
     "@aura3d/audio": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "create-aura3d": "workspace:*",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@aura3d/assets": "workspace:*"
   },
   "description": "Bring real GLB/glTF assets into Aura3D browser apps with typed references, provenance, catalog search, validation, screenshots, and deploy checks.",
   "keywords": [

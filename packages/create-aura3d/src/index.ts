@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeAgentSkills } from "./agent-skills.js";
@@ -88,6 +88,59 @@ export interface CreateA3DProjectResult {
    * Empty in a source checkout. Pass the result to `fetchMissingTemplateAssets` (the CLI does) to download them.
    */
   readonly missingAssets: readonly TemplateAssetEntry[];
+}
+
+export interface InstallLookAssetsOptions {
+  /** Existing Aura3D project, identified by its package.json dependencies. */
+  readonly targetDir: string;
+  /** Override the create-aura3d package root containing the bundled look assets. */
+  readonly rootDir?: string;
+}
+
+export interface InstallLookAssetsResult {
+  readonly targetDir: string;
+  /** All verified catalogue paths, including files already present and identical. */
+  readonly files: readonly string[];
+}
+
+/** Install the packaged look catalogue into an existing Aura3D project without fetching assets. */
+export function installLookAssets(options: InstallLookAssetsOptions): InstallLookAssetsResult {
+  const targetDir = resolve(options.targetDir);
+  assertAuraProject(targetDir);
+  const rootDir = options.rootDir ?? findDefaultTemplateRoot();
+  return { targetDir, files: copyTemplateHdris(resolve(rootDir, TEMPLATE_HDRI_DIR), targetDir) };
+}
+
+function assertAuraProject(targetDir: string): void {
+  const invalid = (reason: string): never => {
+    throw new Error(`LOOK_ASSETS_INVALID_PROJECT:${targetDir}: ${reason}`);
+  };
+  try {
+    if (!lstatSync(targetDir).isDirectory()) invalid("expected an existing project directory without a symlink");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") invalid("project directory does not exist");
+    throw error;
+  }
+
+  const packagePath = resolve(targetDir, "package.json");
+  let packageJson: unknown;
+  try {
+    if (!lstatSync(packagePath).isFile()) invalid("package.json must be a regular file");
+    packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") invalid("package.json is missing");
+    if (error instanceof SyntaxError) invalid("package.json is invalid JSON");
+    throw error;
+  }
+  if (!packageJson || typeof packageJson !== "object" || Array.isArray(packageJson)) invalid("package.json must contain an object");
+  const dependencies = packageJson as Record<string, unknown>;
+  const hasAuraDependency = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].some((field) => {
+    const group = dependencies[field];
+    return !!group && typeof group === "object" && !Array.isArray(group) && Object.entries(group).some(
+      ([name, version]) => /^@aura3d\/[^/\s]+$/.test(name) && typeof version === "string" && version.trim().length > 0
+    );
+  });
+  if (!hasAuraDependency) invalid("package.json must declare an @aura3d/* dependency");
 }
 
 export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult {

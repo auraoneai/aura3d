@@ -84,22 +84,27 @@ export class SceneMetadata {
   readonly revisions: SceneRevisionRecord[] = [];
 
   constructor(options: SceneMetadataOptions = {}) {
-    this.replace(options);
+    this.populate(options);
   }
 
   replace(options: SceneMetadataOptions | SceneMetadata): this {
+    const replacement = new SceneMetadata(options);
+    this.deterministicSeed = replacement.deterministicSeed;
+    replaceValues(this.assets, replacement.assets);
+    replaceValues(this.materialAssignments, replacement.materialAssignments);
+    replaceValues(this.plans, replacement.plans);
+    replaceValues(this.capabilities, replacement.capabilities);
+    replaceValues(this.revisions, replacement.revisions);
+    return this;
+  }
+
+  private populate(options: SceneMetadataOptions): void {
     this.deterministicSeed = options.deterministicSeed;
-    this.assets.length = 0;
-    this.materialAssignments.length = 0;
-    this.plans.length = 0;
-    this.capabilities.length = 0;
-    this.revisions.length = 0;
     for (const asset of options.assets ?? []) this.registerAsset(asset);
     for (const assignment of options.materialAssignments ?? []) this.assignMaterial(assignment);
     for (const plan of options.plans ?? []) this.addPlan(plan);
     for (const capability of options.capabilities ?? []) this.discloseCapability(capability);
     for (const revision of options.revisions ?? []) this.recordRevision(revision);
-    return this;
   }
 
   clone(): SceneMetadata {
@@ -156,7 +161,13 @@ export class SceneMetadata {
 
   recordRevision(revision: SceneRevisionMetadata): this {
     requireNonEmpty(revision.summary, "revision summary");
-    const id = revision.id ?? `revision-${this.revisions.length + 1}`;
+    let id = revision.id;
+    if (id === undefined) {
+      let next = this.revisions.length + 1;
+      do {
+        id = `revision-${next++}`;
+      } while (this.revisions.some((candidate) => candidate.id === id));
+    }
     upsertByKey(this.revisions, cloneRevision({ ...revision, id }), (candidate) => candidate.id === id);
     return this;
   }
@@ -187,6 +198,11 @@ function upsertByKey<T>(items: T[], value: T, matches: (candidate: T) => boolean
   const index = items.findIndex(matches);
   if (index >= 0) items[index] = value;
   else items.push(value);
+}
+
+function replaceValues<T>(target: T[], source: readonly T[]): void {
+  target.length = 0;
+  for (const value of source) target.push(value);
 }
 
 function cloneAsset(asset: SceneAssetProvenance): SceneAssetProvenance {

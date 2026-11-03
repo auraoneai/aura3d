@@ -1,0 +1,1079 @@
+{
+  "schema": "aura3d.native-format-conformance/1",
+  "version": 1,
+  "fixturePolicy": "Fixture bytes and hand-computed geometric expectations were independently authored; each row records its own MIT or CC0-1.0 license and provenance. Browser/device evidence is recorded separately.",
+  "coordinateSystem": "right-handed, Y up; coordinates in source units (glTF uses metres)",
+  "fixtures": [
+    {
+      "id": "triangle-gltf-embedded",
+      "format": "gltf",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf+json",
+      "path": "/native-conformance/embedded/triangle.gltf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1219,
+      "sha256": "22a20f5804b8efc6e295d49a7be35de0908a3d2fd7834f53a81e772930be25e7",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red triangle",
+          "textureRGBA": [
+            255,
+            0,
+            0,
+            255
+          ]
+        }
+      },
+      "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQ0F2d0FBZ0w4QUFBQUFBQUNBUHdBQWdMOEFBQUFBQUFBQUFBQUFnRDhBQUFBQUFBQUFBQUFBQUFBQUFJQS9BQUFBQUFBQUFEOEFBSUEvQUFBQkFBSUEiLCJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7InVyaSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNG5HUDR6OER3SHdBRkFBSC9pWms5SFFBQUFBQkpSVTVFcmtKZ2dnPT0iLCJtaW1lVHlwZSI6ImltYWdlL3BuZyJ9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MH1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MH0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9LCJlbWlzc2l2ZUZhY3RvciI6WzAuMSwwLDBdfV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MCwiVEVYQ09PUkRfMCI6MX0sImluZGljZXMiOjIsIm1hdGVyaWFsIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsIm1lc2giOjB9XSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sInNjZW5lIjowfQ=="
+    },
+    {
+      "id": "triangle-glb-embedded",
+      "format": "glb",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf-binary",
+      "path": "/native-conformance/embedded/triangle.glb",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1184,
+      "sha256": "705bb16504ea445c8d3f05d0ad2a23e22248f922b107ccda0b882e3f29eac175",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red triangle",
+          "textureRGBA": [
+            255,
+            0,
+            0,
+            255
+          ]
+        }
+      },
+      "dataBase64": "Z2xURgIAAACgBAAAQAQAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UgZml4dHVyZSJ9LCJidWZmZXJzIjpbeyJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7InVyaSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNG5HUDR6OER3SHdBRkFBSC9pWms5SFFBQUFBQkpSVTVFcmtKZ2dnPT0iLCJtaW1lVHlwZSI6ImltYWdlL3BuZyJ9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MH1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MH0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9LCJlbWlzc2l2ZUZhY3RvciI6WzAuMSwwLDBdfV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MCwiVEVYQ09PUkRfMCI6MX0sImluZGljZXMiOjIsIm1hdGVyaWFsIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsIm1lc2giOjB9XSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sInNjZW5lIjowfSAgIEQAAABCSU4AAACAvwAAgL8AAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAD8AAIA/AAABAAIAAAA="
+    },
+    {
+      "id": "triangle-gltf-external",
+      "format": "gltf",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf+json",
+      "path": "/native-conformance/nested/triangle.gltf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1013,
+      "sha256": "7c0f65881af95f2707e322f99a63bdfa2c64b71c55182cf055fec9d40b7965c4",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [
+        {
+          "uri": "geometry/triangle.bin",
+          "fixtureId": "external-geometry-bin"
+        },
+        {
+          "uri": "textures/red.png",
+          "fixtureId": "external-texture-png"
+        }
+      ],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red triangle",
+          "textureRGBA": [
+            255,
+            0,
+            0,
+            255
+          ]
+        }
+      },
+      "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZ2VvbWV0cnkvdHJpYW5nbGUuYmluIiwiYnl0ZUxlbmd0aCI6NjZ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6MzYsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjozNiwiYnl0ZUxlbmd0aCI6MjQsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo2MCwiYnl0ZUxlbmd0aCI6NiwidGFyZ2V0IjozNDk2M31dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50IjozLCJ0eXBlIjoiVkVDMyIsIm1pbiI6Wy0xLC0xLDBdLCJtYXgiOlsxLDEsMF19LHsiYnVmZmVyVmlldyI6MSwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMyIn0seyJidWZmZXJWaWV3IjoyLCJjb21wb25lbnRUeXBlIjo1MTIzLCJjb3VudCI6MywidHlwZSI6IlNDQUxBUiJ9XSwiaW1hZ2VzIjpbeyJ1cmkiOiJ0ZXh0dXJlcy9yZWQucG5nIiwibWltZVR5cGUiOiJpbWFnZS9wbmcifV0sInRleHR1cmVzIjpbeyJzb3VyY2UiOjB9XSwibWF0ZXJpYWxzIjpbeyJuYW1lIjoicmVkIiwiZG91YmxlU2lkZWQiOnRydWUsInBick1ldGFsbGljUm91Z2huZXNzIjp7ImJhc2VDb2xvclRleHR1cmUiOnsiaW5kZXgiOjB9LCJtZXRhbGxpY0ZhY3RvciI6MCwicm91Z2huZXNzRmFjdG9yIjoxfSwiZW1pc3NpdmVGYWN0b3IiOlswLjEsMCwwXX1dLCJtZXNoZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsInByaW1pdGl2ZXMiOlt7ImF0dHJpYnV0ZXMiOnsiUE9TSVRJT04iOjAsIlRFWENPT1JEXzAiOjF9LCJpbmRpY2VzIjoyLCJtYXRlcmlhbCI6MH1dfV0sIm5vZGVzIjpbeyJuYW1lIjoidHJpYW5nbGUiLCJtZXNoIjowfV0sInNjZW5lcyI6W3sibm9kZXMiOlswXX1dLCJzY2VuZSI6MH0="
+    },
+    {
+      "id": "external-geometry-bin",
+      "format": "buffer",
+      "formatVersion": "1",
+      "mediaType": "application/octet-stream",
+      "path": "/native-conformance/nested/geometry/triangle.bin",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 66,
+      "sha256": "1595cb447c5ae452fa63b7b70e6b1fef630be6a6765e112f20f9c4119b8c041a",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "dependency",
+        "byteLength": 66
+      },
+      "dataBase64": "AACAvwAAgL8AAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAD8AAIA/AAABAAIA"
+    },
+    {
+      "id": "external-texture-png",
+      "format": "png",
+      "formatVersion": "1.2",
+      "mediaType": "image/png",
+      "path": "/native-conformance/nested/textures/red.png",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 70,
+      "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "dependency",
+        "width": 1,
+        "height": 1,
+        "rgba": [
+          255,
+          0,
+          0,
+          255
+        ]
+      },
+      "dataBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "triangle-obj",
+      "format": "obj",
+      "formatVersion": "Wavefront",
+      "mediaType": "model/obj",
+      "path": "/native-conformance/triangle.obj",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 80,
+      "sha256": "2292ca208ca369ddd5d4735754b248733ce2563bf9c1bdd8d7c81e20239e5532",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; material selected by importing loader"
+        }
+      },
+      "dataBase64": "IyBJbmRlcGVuZGVudGx5IGF1dGhvcmVkIHRyaWFuZ2xlCm8gdHJpYW5nbGUKdiAtMSAtMSAwCnYgMSAtMSAwCnYgMCAxIDAKZiAxIDIgMwo="
+    },
+    {
+      "id": "triangle-ply-ascii",
+      "format": "ply",
+      "formatVersion": "1.0 ascii",
+      "mediaType": "application/octet-stream",
+      "path": "/native-conformance/triangle-ascii.ply",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 222,
+      "sha256": "0f4de5d62b1b3b582c8a6a48620b57a9f5e3767db75750d151bcb035e6191548",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; material selected by importing loader"
+        }
+      },
+      "dataBase64": "cGx5CmZvcm1hdCBhc2NpaSAxLjAKY29tbWVudCBBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UKZWxlbWVudCB2ZXJ0ZXggMwpwcm9wZXJ0eSBmbG9hdCB4CnByb3BlcnR5IGZsb2F0IHkKcHJvcGVydHkgZmxvYXQgegplbGVtZW50IGZhY2UgMQpwcm9wZXJ0eSBsaXN0IHVjaGFyIGludCB2ZXJ0ZXhfaW5kaWNlcwplbmRfaGVhZGVyCi0xIC0xIDAKMSAtMSAwCjAgMSAwCjMgMCAxIDIK"
+    },
+    {
+      "id": "triangle-ply-le",
+      "format": "ply",
+      "formatVersion": "1.0 binary_little_endian",
+      "mediaType": "application/octet-stream",
+      "path": "/native-conformance/triangle-le.ply",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 257,
+      "sha256": "ee086976b53cb408f0cfac65170617f262910670cd4ccdbf1d8f2a87d6112d19",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; material selected by importing loader"
+        }
+      },
+      "dataBase64": "cGx5CmZvcm1hdCBiaW5hcnlfbGl0dGxlX2VuZGlhbiAxLjAKY29tbWVudCBBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UKZWxlbWVudCB2ZXJ0ZXggMwpwcm9wZXJ0eSBmbG9hdCB4CnByb3BlcnR5IGZsb2F0IHkKcHJvcGVydHkgZmxvYXQgegplbGVtZW50IGZhY2UgMQpwcm9wZXJ0eSBsaXN0IHVjaGFyIGludCB2ZXJ0ZXhfaW5kaWNlcwplbmRfaGVhZGVyCgAAgL8AAIC/AAAAAAAAgD8AAIC/AAAAAAAAAAAAAIA/AAAAAAMAAAAAAQAAAAIAAAA="
+    },
+    {
+      "id": "triangle-ply-be",
+      "format": "ply",
+      "formatVersion": "1.0 binary_big_endian",
+      "mediaType": "application/octet-stream",
+      "path": "/native-conformance/triangle-be.ply",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 254,
+      "sha256": "5c013b292c64dd95640e8a1fb6f4ae7e10fd12c2b6472d3ecb0bb997b2cf23eb",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; material selected by importing loader"
+        }
+      },
+      "dataBase64": "cGx5CmZvcm1hdCBiaW5hcnlfYmlnX2VuZGlhbiAxLjAKY29tbWVudCBBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UKZWxlbWVudCB2ZXJ0ZXggMwpwcm9wZXJ0eSBmbG9hdCB4CnByb3BlcnR5IGZsb2F0IHkKcHJvcGVydHkgZmxvYXQgegplbGVtZW50IGZhY2UgMQpwcm9wZXJ0eSBsaXN0IHVjaGFyIGludCB2ZXJ0ZXhfaW5kaWNlcwplbmRfaGVhZGVyCr+AAAC/gAAAAAAAAD+AAAC/gAAAAAAAAAAAAAA/gAAAAAAAAAMAAAAAAAAAAQAAAAI="
+    },
+    {
+      "id": "triangle-stl-ascii",
+      "format": "stl",
+      "formatVersion": "ASCII",
+      "mediaType": "model/stl",
+      "path": "/native-conformance/triangle-ascii.stl",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 137,
+      "sha256": "f2d27616a3c9e6d8c38035b833a799fe7093ba6e8afef6bc3f53c21cba93a5b6",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; STL has no required material"
+        }
+      },
+      "dataBase64": "c29saWQgdHJpYW5nbGUKIGZhY2V0IG5vcm1hbCAwIDAgMQogIG91dGVyIGxvb3AKICAgdmVydGV4IC0xIC0xIDAKICAgdmVydGV4IDEgLTEgMAogICB2ZXJ0ZXggMCAxIDAKICBlbmRsb29wCiBlbmRmYWNldAplbmRzb2xpZCB0cmlhbmdsZQo="
+    },
+    {
+      "id": "triangle-stl-binary",
+      "format": "stl",
+      "formatVersion": "binary little-endian",
+      "mediaType": "model/stl",
+      "path": "/native-conformance/triangle-binary.stl",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 134,
+      "sha256": "b03008e4542f6076773a9d185d368cf2bc6fffdb7464b69a65796125de78070b",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; STL has no required material"
+        }
+      },
+      "dataBase64": "QXVyYTNEIGluZGVwZW5kZW50IHRyaWFuZ2xlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAIA/AACAvwAAgL8AAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAAAAAAA="
+    },
+    {
+      "id": "gltf-unknown-optional",
+      "format": "gltf",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf+json",
+      "path": "/native-conformance/unknown-optional.gltf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1268,
+      "sha256": "53ccd05aaca15e442a2cfd84fb4aeddfca44a4ccdaa8109eb7187243a09f03d4",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [
+        "AURA_test_unknown_extension"
+      ],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red triangle",
+          "textureRGBA": [
+            255,
+            0,
+            0,
+            255
+          ]
+        },
+        "unsupportedExtension": "AURA_test_unknown_extension"
+      },
+      "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQ0F2d0FBZ0w4QUFBQUFBQUNBUHdBQWdMOEFBQUFBQUFBQUFBQUFnRDhBQUFBQUFBQUFBQUFBQUFBQUFJQS9BQUFBQUFBQUFEOEFBSUEvQUFBQkFBSUEiLCJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7InVyaSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNG5HUDR6OER3SHdBRkFBSC9pWms5SFFBQUFBQkpSVTVFcmtKZ2dnPT0iLCJtaW1lVHlwZSI6ImltYWdlL3BuZyJ9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MH1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MH0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9LCJlbWlzc2l2ZUZhY3RvciI6WzAuMSwwLDBdfV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MCwiVEVYQ09PUkRfMCI6MX0sImluZGljZXMiOjIsIm1hdGVyaWFsIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsIm1lc2giOjB9XSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sInNjZW5lIjowLCJleHRlbnNpb25zVXNlZCI6WyJBVVJBX3Rlc3RfdW5rbm93bl9leHRlbnNpb24iXX0="
+    },
+    {
+      "id": "gltf-unknown-required",
+      "format": "gltf",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf+json",
+      "path": "/native-conformance/unknown-required.gltf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1321,
+      "sha256": "95bcb9fd52edeb0cb75d1d2436a47397e1ef8d30cdb4b24cfaf4338a850f8363",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [
+        "AURA_test_unknown_extension"
+      ],
+      "extensionsRequired": [
+        "AURA_test_unknown_extension"
+      ],
+      "dependencies": [],
+      "expected": {
+        "outcome": "reject",
+        "diagnostic": "unsupported required extension",
+        "errorPattern": "Unsupported required glTF extensions.*AURA_test_unknown_extension"
+      },
+      "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQ0F2d0FBZ0w4QUFBQUFBQUNBUHdBQWdMOEFBQUFBQUFBQUFBQUFnRDhBQUFBQUFBQUFBQUFBQUFBQUFJQS9BQUFBQUFBQUFEOEFBSUEvQUFBQkFBSUEiLCJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7InVyaSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNG5HUDR6OER3SHdBRkFBSC9pWms5SFFBQUFBQkpSVTVFcmtKZ2dnPT0iLCJtaW1lVHlwZSI6ImltYWdlL3BuZyJ9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MH1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MH0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9LCJlbWlzc2l2ZUZhY3RvciI6WzAuMSwwLDBdfV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MCwiVEVYQ09PUkRfMCI6MX0sImluZGljZXMiOjIsIm1hdGVyaWFsIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsIm1lc2giOjB9XSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sInNjZW5lIjowLCJleHRlbnNpb25zVXNlZCI6WyJBVVJBX3Rlc3RfdW5rbm93bl9leHRlbnNpb24iXSwiZXh0ZW5zaW9uc1JlcXVpcmVkIjpbIkFVUkFfdGVzdF91bmtub3duX2V4dGVuc2lvbiJdfQ=="
+    },
+    {
+      "id": "glb-truncated",
+      "format": "glb",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf-binary",
+      "path": "/native-conformance/truncated.glb",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1176,
+      "sha256": "cee9d160fea2a716317c7e5709ffb6e361618bc03033f5a9b0925dbe1c09334f",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "reject",
+        "diagnostic": "truncated GLB",
+        "errorPattern": "GLB length mismatch"
+      },
+      "dataBase64": "Z2xURgIAAACgBAAAQAQAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UgZml4dHVyZSJ9LCJidWZmZXJzIjpbeyJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7InVyaSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNG5HUDR6OER3SHdBRkFBSC9pWms5SFFBQUFBQkpSVTVFcmtKZ2dnPT0iLCJtaW1lVHlwZSI6ImltYWdlL3BuZyJ9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MH1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MH0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9LCJlbWlzc2l2ZUZhY3RvciI6WzAuMSwwLDBdfV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MCwiVEVYQ09PUkRfMCI6MX0sImluZGljZXMiOjIsIm1hdGVyaWFsIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsIm1lc2giOjB9XSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sInNjZW5lIjowfSAgIEQAAABCSU4AAACAvwAAgL8AAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAD8AAIA/"
+    },
+    {
+      "id": "ply-truncated",
+      "format": "ply",
+      "formatVersion": "1.0 binary_little_endian",
+      "mediaType": "application/octet-stream",
+      "path": "/native-conformance/truncated.ply",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 252,
+      "sha256": "5bfc067012e6b753945842dea272d6caf59c8d0555471f34c121c9aa3677b8b2",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "reject",
+        "diagnostic": "truncated binary data",
+        "errorPattern": "PLY_.*(TRUNCATED|EOF|BOUNDS)|truncated"
+      },
+      "dataBase64": "cGx5CmZvcm1hdCBiaW5hcnlfbGl0dGxlX2VuZGlhbiAxLjAKY29tbWVudCBBdXJhM0QgaW5kZXBlbmRlbnQgY29uZm9ybWFuY2UKZWxlbWVudCB2ZXJ0ZXggMwpwcm9wZXJ0eSBmbG9hdCB4CnByb3BlcnR5IGZsb2F0IHkKcHJvcGVydHkgZmxvYXQgegplbGVtZW50IGZhY2UgMQpwcm9wZXJ0eSBsaXN0IHVjaGFyIGludCB2ZXJ0ZXhfaW5kaWNlcwplbmRfaGVhZGVyCgAAgL8AAIC/AAAAAAAAgD8AAIC/AAAAAAAAAAAAAIA/AAAAAAMAAAAAAQAA"
+    },
+    {
+      "id": "stl-truncated",
+      "format": "stl",
+      "formatVersion": "binary little-endian",
+      "mediaType": "model/stl",
+      "path": "/native-conformance/truncated.stl",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 129,
+      "sha256": "f46190432a0c76aa9f11d818a6cf0665aafc7161da23e190771513d48821bd6a",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "reject",
+        "diagnostic": "truncated binary data",
+        "errorPattern": "STL_SYNTAX.*exact-length binary STL"
+      },
+      "dataBase64": "QXVyYTNEIGluZGVwZW5kZW50IHRyaWFuZ2xlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAIA/AACAvwAAgL8AAAAAAACAPwAAgL8AAAAAAAAAAAAAgD8A"
+    },
+    {
+      "id": "gltf-corrupt-texture",
+      "format": "gltf",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf+json",
+      "path": "/native-conformance/corrupt-texture.gltf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1219,
+      "sha256": "ab985b773b3fd76cd7a8a61336c1f75003589c54d1fd01b783fd75901de32a56",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "texture-failure",
+        "diagnostic": "PNG CRC mismatch; strict reject or fallback with structured failure"
+      },
+      "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQ0F2d0FBZ0w4QUFBQUFBQUNBUHdBQWdMOEFBQUFBQUFBQUFBQUFnRDhBQUFBQUFBQUFBQUFBQUFBQUFJQS9BQUFBQUFBQUFEOEFBSUEvQUFBQkFBSUEiLCJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7InVyaSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQUVBQUFBQkNBWUFBQUFmRmNTSkFBQUFEVWxFUVZSNG5HUDR6c0R3SHdBRkFBSC9pWms5SFFBQUFBQkpSVTVFcmtKZ2dnPT0iLCJtaW1lVHlwZSI6ImltYWdlL3BuZyJ9XSwidGV4dHVyZXMiOlt7InNvdXJjZSI6MH1dLCJtYXRlcmlhbHMiOlt7Im5hbWUiOiJyZWQiLCJkb3VibGVTaWRlZCI6dHJ1ZSwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MH0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjF9LCJlbWlzc2l2ZUZhY3RvciI6WzAuMSwwLDBdfV0sIm1lc2hlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwicHJpbWl0aXZlcyI6W3siYXR0cmlidXRlcyI6eyJQT1NJVElPTiI6MCwiVEVYQ09PUkRfMCI6MX0sImluZGljZXMiOjIsIm1hdGVyaWFsIjowfV19XSwibm9kZXMiOlt7Im5hbWUiOiJ0cmlhbmdsZSIsIm1lc2giOjB9XSwic2NlbmVzIjpbeyJub2RlcyI6WzBdfV0sInNjZW5lIjowfQ=="
+    },
+    {
+      "id": "triangle-3mf-stored",
+      "format": "3mf",
+      "formatVersion": "1.0 ZIP",
+      "mediaType": "model/3mf",
+      "path": "/native-conformance/triangle.3mf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1203,
+      "sha256": "885737daa1ffe9e92a61697fb981a0c6de06509178e63e5084f2cafbb7b99a3f",
+      "limits": {
+        "maxBytes": 65536,
+        "maxExpandedBytes": 4096,
+        "maxCompressionRatio": 100
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "triangle; material selected by importing loader"
+        },
+        "sourceCoordinateSystem": "3MF Z-up; (x,y,z) maps to glTF (x,z,-y)"
+      },
+      "dataBase64": "UEsDBBQAAAAAAAAAAACS0i1S3AAAANwAAAALAAAAX3JlbHMvLnJlbHM8UmVsYXRpb25zaGlwcyB4bWxucz0iaHR0cDovL3NjaGVtYXMub3BlbnhtbGZvcm1hdHMub3JnL3BhY2thZ2UvMjAwNi9yZWxhdGlvbnNoaXBzIj48UmVsYXRpb25zaGlwIElkPSJyZWwwIiBUeXBlPSJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tLzNkbWFudWZhY3R1cmluZy8yMDEzLzAxLzNkbW9kZWwiIFRhcmdldD0iLzNELzNkbW9kZWwubW9kZWwiLz48L1JlbGF0aW9uc2hpcHM+UEsDBBQAAAAAAAAAAABKNS5VagEAAGoBAAAQAAAAM0QvM2Rtb2RlbC5tb2RlbDxtb2RlbCB1bml0PSJtZXRlciIgeG1sbnM9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vM2RtYW51ZmFjdHVyaW5nL2NvcmUvMjAxNS8wMiI+PHJlc291cmNlcz48b2JqZWN0IGlkPSIxIiB0eXBlPSJtb2RlbCI+PG1lc2g+PHZlcnRpY2VzPjx2ZXJ0ZXggeD0iLTEiIHk9IjAiIHo9Ii0xIi8+PHZlcnRleCB4PSIxIiB5PSIwIiB6PSItMSIvPjx2ZXJ0ZXggeD0iMCIgeT0iMCIgej0iMSIvPjwvdmVydGljZXM+PHRyaWFuZ2xlcz48dHJpYW5nbGUgdjE9IjAiIHYyPSIxIiB2Mz0iMiIvPjwvdHJpYW5nbGVzPjwvbWVzaD48L29iamVjdD48L3Jlc291cmNlcz48YnVpbGQ+PGl0ZW0gb2JqZWN0aWQ9IjEiLz48L2J1aWxkPjwvbW9kZWw+UEsDBBQAAAAAAAAAAABGMs2aFwEAABcBAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbDxUeXBlcyB4bWxucz0iaHR0cDovL3NjaGVtYXMub3BlbnhtbGZvcm1hdHMub3JnL3BhY2thZ2UvMjAwNi9jb250ZW50LXR5cGVzIj48RGVmYXVsdCBFeHRlbnNpb249InJlbHMiIENvbnRlbnRUeXBlPSJhcHBsaWNhdGlvbi92bmQub3BlbnhtbGZvcm1hdHMtcGFja2FnZS5yZWxhdGlvbnNoaXBzK3htbCIvPjxEZWZhdWx0IEV4dGVuc2lvbj0ibW9kZWwiIENvbnRlbnRUeXBlPSJhcHBsaWNhdGlvbi92bmQubXMtcGFja2FnZS4zZG1hbnVmYWN0dXJpbmctM2Rtb2RlbCt4bWwiLz48L1R5cGVzPlBLAQIUABQAAAAAAAAAAACS0i1S3AAAANwAAAALAAAAAAAAAAAAAAAAAAAAAABfcmVscy8ucmVsc1BLAQIUABQAAAAAAAAAAABKNS5VagEAAGoBAAAQAAAAAAAAAAAAAAAAAAUBAAAzRC8zZG1vZGVsLm1vZGVsUEsBAhQAFAAAAAAAAAAAAEYyzZoXAQAAFwEAABMAAAAAAAAAAAAAAAAAnQIAAFtDb250ZW50X1R5cGVzXS54bWxQSwUGAAAAAAMAAwC4AAAA5QMAAAAA"
+    },
+    {
+      "id": "3mf-expansion-limit",
+      "format": "3mf",
+      "formatVersion": "1.0 ZIP",
+      "mediaType": "model/3mf",
+      "path": "/native-conformance/expansion-limit.3mf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 172,
+      "sha256": "cb2352b569bae49d95e4dde1578950aebd75850f3da52f25d5cf51868114b109",
+      "limits": {
+        "maxBytes": 65536,
+        "maxExpandedBytes": 4096,
+        "maxCompressionRatio": 100
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "reject",
+        "diagnostic": "archive expansion exceeds limit",
+        "errorPattern": "3MF_ARCHIVE_LIMIT"
+      },
+      "dataBase64": "UEsDBBQAAAAIAAAAAACm/B8BLgAAAACAAAAOAAAAM0QvcGFkZGluZy5iaW7twQEBAAAAgJD+r+4ICgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYUEsBAhQAFAAAAAgAAAAAAKb8HwEuAAAAAIAAAA4AAAAAAAAAAAAAAAAAAAAAADNEL3BhZGRpbmcuYmluUEsFBgAAAAABAAEAPAAAAFoAAAAAAA=="
+    },
+    {
+      "id": "ktx2-red-4x4",
+      "format": "ktx2",
+      "formatVersion": "2.0 Basis ETC1S",
+      "mediaType": "image/ktx2",
+      "path": "/native-conformance/textures/red-4x4.ktx2",
+      "origin": {
+        "author": "Aura3D native capability worker contributors",
+        "license": "CC0-1.0",
+        "provenance": "Independently authored solid RGBA input and encoded as Basis ETC1S; see tests/assets/native-fixtures/ktx2-red-4x4.md for encoder and hashes."
+      },
+      "byteLength": 316,
+      "sha256": "50e9c1550c9b1e94c6e9f5ac66858241d57bf75e56e82f0af045c1cc56d506e8",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [],
+      "extensionsRequired": [],
+      "dependencies": [],
+      "expected": {
+        "outcome": "dependency",
+        "width": 4,
+        "height": 4,
+        "rgba": [
+          224,
+          32,
+          16,
+          255
+        ],
+        "tolerance": 45
+      },
+      "dataBase64": "q0tUWCAyMLsNChoKAAAAAAEAAAAEAAAABAAAAAAAAAAAAAAAAQAAAAEAAAABAAAAaAAAACwAAACUAAAAJAAAALgAAAAAAAAAgwAAAAAAAAA7AQAAAAAAAAEAAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAIAKACjAQEAAwMAAAAAAAAAAAAAAAA/AAAAAAAAAAAA/////x8AAABLVFh3cml0ZXIAQmFzaXMgVW5pdmVyc2FsIDEuMTYAAAEAAQArAAAABQAAACsAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABwAQAAAAAAADCApgSMAAAAADCCuDYA4AJAAAAAAAARAAwAQAAAAAAgCADBAAAAAAAwUQAAAAAAADyXy0AmAAAAAAAAEAIABMAAgAAAACIAcAEAAAAAAAAAggAAA=="
+    },
+    {
+      "id": "gltf-ktx2-basis",
+      "format": "gltf",
+      "formatVersion": "2.0",
+      "mediaType": "model/gltf+json",
+      "path": "/native-conformance/ktx2-basis.gltf",
+      "origin": {
+        "author": "Aura3D native capability conformance contributors",
+        "license": "MIT",
+        "provenance": "Independently authored for this repository from the public format specifications; not derived from another engine or its fixtures."
+      },
+      "byteLength": 1671,
+      "sha256": "99786605b595b3055f37f091a72767f1f2632f9da9eaa09aa36c21e33dd4aa9f",
+      "limits": {
+        "maxBytes": 65536
+      },
+      "extensionsUsed": [
+        "KHR_texture_basisu"
+      ],
+      "extensionsRequired": [
+        "KHR_texture_basisu"
+      ],
+      "dependencies": [],
+      "expected": {
+        "outcome": "render",
+        "positions": [
+          [
+            -1,
+            -1,
+            0
+          ],
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "indices": [
+          0,
+          1,
+          2
+        ],
+        "bounds": {
+          "min": [
+            -1,
+            -1,
+            0
+          ],
+          "max": [
+            1,
+            1,
+            0
+          ]
+        },
+        "visual": {
+          "foreground": "opaque red textured triangle",
+          "textureRGBA": [
+            224,
+            32,
+            16,
+            255
+          ],
+          "tolerance": 45
+        }
+      },
+      "dataBase64": "eyJhc3NldCI6eyJ2ZXJzaW9uIjoiMi4wIiwiZ2VuZXJhdG9yIjoiQXVyYTNEIGluZGVwZW5kZW50IGNvbmZvcm1hbmNlIGZpeHR1cmUifSwiYnVmZmVycyI6W3sidXJpIjoiZGF0YTphcHBsaWNhdGlvbi9vY3RldC1zdHJlYW07YmFzZTY0LEFBQ0F2d0FBZ0w4QUFBQUFBQUNBUHdBQWdMOEFBQUFBQUFBQUFBQUFnRDhBQUFBQUFBQUFBQUFBQUFBQUFJQS9BQUFBQUFBQUFEOEFBSUEvQUFBQkFBSUEiLCJieXRlTGVuZ3RoIjo2Nn1dLCJidWZmZXJWaWV3cyI6W3siYnVmZmVyIjowLCJieXRlT2Zmc2V0IjowLCJieXRlTGVuZ3RoIjozNiwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjM2LCJieXRlTGVuZ3RoIjoyNCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjYwLCJieXRlTGVuZ3RoIjo2LCJ0YXJnZXQiOjM0OTYzfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjMsInR5cGUiOiJWRUMzIiwibWluIjpbLTEsLTEsMF0sIm1heCI6WzEsMSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6MywidHlwZSI6IlZFQzIifSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozLCJ0eXBlIjoiU0NBTEFSIn1dLCJpbWFnZXMiOlt7Im1pbWVUeXBlIjoiaW1hZ2Uva3R4MiIsInVyaSI6ImRhdGE6aW1hZ2Uva3R4MjtiYXNlNjQscTB0VVdDQXlNTHNOQ2hvS0FBQUFBQUVBQUFBRUFBQUFCQUFBQUFBQUFBQUFBQUFBQVFBQUFBRUFBQUFCQUFBQWFBQUFBQ3dBQUFDVUFBQUFKQUFBQUxnQUFBQUFBQUFBZ3dBQUFBQUFBQUE3QVFBQUFBQUFBQUVBQUFBQUFBQUFBQUFBQUFBQUFBQXNBQUFBQUFBQUFBSUFLQUNqQVFFQUF3TUFBQUFBQUFBQUFBQUFBQUEvQUFBQUFBQUFBQUFBLy8vLy94OEFBQUJMVkZoM2NtbDBaWElBUW1GemFYTWdWVzVwZG1WeWMyRnNJREV1TVRZQUFBRUFBUUFyQUFBQUJRQUFBQ3NBQUFBQUFBQUFBQUFBQUFBQUFBQUJBQUFBQUFBQUFBQUFBQUFCd0FRQUFBQUFBQURDQXBnU01BQUFBQURDQ3VEWUE0QUpBQUFBQUFBQVJBQXdBUUFBQUFBQWdDQURCQUFBQUFBQXdVUUFBQUFBQUFEeVh5MEFtQUFBQUFBQUFFQUlBQk1BQWdBQUFBQ0lBY0FFQUFBQUFBQUFBZ2dBQUE9PSJ9XSwidGV4dHVyZXMiOlt7ImV4dGVuc2lvbnMiOnsiS0hSX3RleHR1cmVfYmFzaXN1Ijp7InNvdXJjZSI6MH19fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6InJlZCIsImRvdWJsZVNpZGVkIjp0cnVlLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JUZXh0dXJlIjp7ImluZGV4IjowfSwibWV0YWxsaWNGYWN0b3IiOjAsInJvdWdobmVzc0ZhY3RvciI6MX0sImVtaXNzaXZlRmFjdG9yIjpbMC4xLDAsMF19XSwibWVzaGVzIjpbeyJuYW1lIjoidHJpYW5nbGUiLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowLCJURVhDT09SRF8wIjoxfSwiaW5kaWNlcyI6MiwibWF0ZXJpYWwiOjB9XX1dLCJub2RlcyI6W3sibmFtZSI6InRyaWFuZ2xlIiwibWVzaCI6MH1dLCJzY2VuZXMiOlt7Im5vZGVzIjpbMF19XSwic2NlbmUiOjAsImV4dGVuc2lvbnNVc2VkIjpbIktIUl90ZXh0dXJlX2Jhc2lzdSJdLCJleHRlbnNpb25zUmVxdWlyZWQiOlsiS0hSX3RleHR1cmVfYmFzaXN1Il19"
+    }
+  ],
+  "unverifiedFormats": [
+    "FBX",
+    "USD",
+    "USDZ",
+    "Collada",
+    "3DM",
+    "AMF",
+    "3DS",
+    "VRML",
+    "LDraw",
+    "KMZ",
+    "VOX",
+    "SVG",
+    "BVH",
+    "MD2",
+    "MDD",
+    "PCD",
+    "PDB",
+    "VTK",
+    "XYZ",
+    "NRRD",
+    "GCode",
+    "EXR",
+    "HDR",
+    "JXL",
+    "UltraHDR",
+    "DDS",
+    "PVR",
+    "KTX1",
+    "TGA",
+    "TIFF",
+    "IES",
+    "3DL",
+    "MaterialX",
+    "SPLAT",
+    "KSPLAT",
+    "SPZ"
+  ]
+}

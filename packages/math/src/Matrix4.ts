@@ -2,6 +2,33 @@ import { Quaternion } from "./Quaternion.js";
 import { Vector3 } from "./Vector3.js";
 import { Vector4 } from "./Vector4.js";
 
+/** NDC depth interval used by a projection. The view looks down its -Z axis. */
+export type ProjectionClipRange = "minus-one-to-one" | "zero-to-one";
+export type ProjectionDepthMode = "standard" | "reversed" | "logarithmic";
+
+/**
+ * Logarithmic depth still uses the standard projection; the renderer must also
+ * write and reconstruct logarithmic fragment depth. Merely selecting this
+ * matrix does not enable that pipeline.
+ */
+export interface ProjectionOptions {
+  clipRange?: ProjectionClipRange;
+  mode?: ProjectionDepthMode;
+}
+
+function depthEndpoints(options: ProjectionOptions): readonly [number, number] {
+  const clipRange = options.clipRange ?? "minus-one-to-one";
+  const mode = options.mode ?? "standard";
+  if (clipRange !== "minus-one-to-one" && clipRange !== "zero-to-one") {
+    throw new RangeError("Invalid projection clip range.");
+  }
+  if (mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") {
+    throw new RangeError("Invalid projection depth mode.");
+  }
+  const low = clipRange === "zero-to-one" ? 0 : -1;
+  return mode === "reversed" ? [1, low] : [low, 1];
+}
+
 export class Matrix4 {
   readonly elements: readonly [
     number, number, number, number,
@@ -67,32 +94,56 @@ export class Matrix4 {
     return Matrix4.translation(position).multiply(Matrix4.rotation(rotation)).multiply(Matrix4.scaling(scale));
   }
 
-  static perspective(fovYRadians: number, aspect: number, near: number, far: number): Matrix4 {
-    if (![fovYRadians, aspect, near, far].every(Number.isFinite) || fovYRadians <= 0 || aspect <= 0 || near <= 0 || far <= near) {
+  static perspective(fovYRadians: number, aspect: number, near: number, far: number, options: ProjectionOptions = {}): Matrix4 {
+    if (![fovYRadians, aspect, near].every(Number.isFinite) || fovYRadians <= 0 || fovYRadians >= Math.PI || aspect <= 0 || near <= 0) {
       throw new RangeError("Invalid perspective projection parameters.");
     }
-    const f = 1 / Math.tan(fovYRadians / 2);
-    const nf = 1 / (near - far);
+    const top = near * Math.tan(fovYRadians / 2);
+    const right = top * aspect;
+    return Matrix4.frustum(-right, right, -top, top, near, far, options);
+  }
+
+  /** Perspective projection of a possibly asymmetric near-plane rectangle. */
+  static frustum(left: number, right: number, bottom: number, top: number, near: number, far: number, options: ProjectionOptions = {}): Matrix4 {
+    if (![left, right, bottom, top, near].every(Number.isFinite) || left >= right || bottom >= top || near <= 0 ||
+        !(far === Infinity || (Number.isFinite(far) && far > near))) {
+      throw new RangeError("Invalid perspective projection parameters.");
+    }
+    const [nearDepth, farDepth] = depthEndpoints(options);
+    if (far === Infinity && options.mode === "logarithmic") {
+      throw new RangeError("Logarithmic projection requires a finite far plane.");
+    }
+    // Solve z_ndc = -A + B / distance for the declared endpoint values.
+    // Ratios avoid overflowing near * far for large but finite depth ranges.
+    const ratio = far === Infinity ? 0 : near / far;
+    const a = (nearDepth * ratio - farDepth) / (1 - ratio);
+    const b = (nearDepth - farDepth) * near / (1 - ratio);
+    const width = right - left;
+    const height = top - bottom;
     return new Matrix4([
-      f / aspect, 0, 0, 0,
-      0, f, 0, 0,
-      0, 0, (far + near) * nf, -1,
-      0, 0, 2 * far * near * nf, 0
+      2 * near / width, 0, 0, 0,
+      0, 2 * near / height, 0, 0,
+      (right + left) / width, (top + bottom) / height, a, -1,
+      0, 0, b, 0
     ]);
   }
 
-  static orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Matrix4 {
-    if (![left, right, bottom, top, near, far].every(Number.isFinite) || left === right || bottom === top || near === far) {
+  static orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number, options: ProjectionOptions = {}): Matrix4 {
+    if (![left, right, bottom, top, near, far].every(Number.isFinite) || left === right || bottom === top || far <= near) {
       throw new RangeError("Invalid orthographic projection parameters.");
+    }
+    const [nearDepth, farDepth] = depthEndpoints(options);
+    if (options.mode === "logarithmic" && near <= 0) {
+      throw new RangeError("Logarithmic projection requires a positive near plane.");
     }
     const lr = 1 / (left - right);
     const bt = 1 / (bottom - top);
-    const nf = 1 / (near - far);
+    const depthScale = (nearDepth - farDepth) / (far - near);
     return new Matrix4([
       -2 * lr, 0, 0, 0,
       0, -2 * bt, 0, 0,
-      0, 0, 2 * nf, 0,
-      (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1
+      0, 0, depthScale, 0,
+      (left + right) * lr, (top + bottom) * bt, nearDepth + depthScale * near, 1
     ]);
   }
 
@@ -102,7 +153,7 @@ export class Matrix4 {
 
     let x = up.cross(z).normalize();
     if (x.lengthSquared() === 0) {
-      const fallbackUp = Math.abs(up.z) === 1 ? Vector3.up : Vector3.forward;
+      const fallbackUp = Math.abs(z.z) > 0.9 ? Vector3.up : Vector3.forward;
       x = fallbackUp.cross(z).normalize();
     }
     const y = z.cross(x).normalize();
@@ -209,8 +260,13 @@ export class Matrix4 {
     inv[15] = m[0] * m[5] * m[10] - m[0] * m[6] * m[9] - m[4] * m[1] * m[10] + m[4] * m[2] * m[9] + m[8] * m[1] * m[6] - m[8] * m[2] * m[5];
 
     const det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
-    if (Math.abs(det) < 1e-12) throw new RangeError("Matrix4 is singular.");
-    return new Matrix4(inv.map((value) => value / det) as unknown as Matrix4["elements"]);
+    // An absolute epsilon incorrectly rejects valid small-scale transforms and
+    // projections with a very near clipping plane. A zero/non-finite
+    // determinant or a non-finite result is not invertible in this format.
+    if (det === 0 || !Number.isFinite(det)) throw new RangeError("Matrix4 is singular.");
+    const result = inv.map((value) => value / det);
+    if (!result.every(Number.isFinite)) throw new RangeError("Matrix4 inverse is not finite.");
+    return new Matrix4(result as unknown as Matrix4["elements"]);
   }
 
   decompose(): { position: Vector3; rotation: Quaternion; scale: Vector3 } {

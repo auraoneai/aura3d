@@ -4,7 +4,6 @@
 import type { AuraColor } from "./nodes/types.js";
 import { clampNumber } from "./compiler/observations.js";
 import { srgbToLinearChannel } from "@aura3d/rendering";
-import { round } from "./GameRuntime.js";
 import { prd01ColorLinear, prd01ColorSrgb } from "./compiler/color.js";
 
 export function multiplyRgb(

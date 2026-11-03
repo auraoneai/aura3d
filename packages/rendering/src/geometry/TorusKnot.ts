@@ -1,11 +1,3 @@
-/**
- * threejs-parity (§5.2, lane L2-01) — `TorusKnotGeometry` verbatim port.
- * Per tubular segment i: sample curve at u and u+0.01 for the T/N/B basis,
- * emit radialSegments+1 ring verts (v = j/radialSegments * 2π) with
- * normal = vertex − P1 normalized and uv = (i/tubular, j/radial).
- * Indices per quad: (a,b,d)(b,c,d).
- */
-
 import type { ParityMesh } from "./Support";
 
 export interface TorusKnotParityParams {
@@ -17,96 +9,78 @@ export interface TorusKnotParityParams {
   readonly q?: number;
 }
 
-interface Vec3 {
-  x: number;
-  y: number;
-  z: number;
-}
-
-function calculatePositionOnCurve(u: number, p: number, q: number, radius: number, position: Vec3): void {
-  const cu = Math.cos(u);
-  const su = Math.sin(u);
-  const quOverP = (q / p) * u;
-  const cs = Math.cos(quOverP);
-  position.x = radius * (2 + cs) * 0.5 * cu;
-  position.y = radius * (2 + cs) * su * 0.5;
-  position.z = radius * Math.sin(quOverP) * 0.5;
-}
-
+/** Sweep a round cross section around an analytically differentiated torus knot. */
 export function torusKnotParityMesh(params: TorusKnotParityParams = {}): ParityMesh {
   const radius = params.radius ?? 1;
   const tube = params.tube ?? 0.4;
-  const tubularSegments = Math.floor(params.tubularSegments ?? 64);
-  const radialSegments = Math.floor(params.radialSegments ?? 8);
+  const requestedLength = params.tubularSegments ?? 64;
+  const requestedAround = params.radialSegments ?? 8;
   const p = params.p ?? 2;
   const q = params.q ?? 3;
-
-  const indices: number[] = [];
-  const vertices: number[] = [];
+  if (![radius, tube, requestedLength, requestedAround, p, q].every(Number.isFinite) || p === 0) {
+    throw new RangeError("torusKnotParityMesh requires finite parameters and nonzero p");
+  }
+  const length = Math.max(1, Math.floor(requestedLength));
+  const around = Math.max(3, Math.floor(requestedAround));
+  const stride = around + 1;
+  const positions: number[] = [];
   const normals: number[] = [];
   const uvs: number[] = [];
+  const indices: number[] = [];
 
-  const P1: Vec3 = { x: 0, y: 0, z: 0 };
-  const P2: Vec3 = { x: 0, y: 0, z: 0 };
+  for (let row = 0; row <= length; row += 1) {
+    const t = row / length;
+    const majorAngle = 2 * Math.PI * p * t;
+    const minorAngle = 2 * Math.PI * q * t;
+    const cosine = Math.cos(majorAngle);
+    const sine = Math.sin(majorAngle);
+    const minorCosine = Math.cos(minorAngle);
+    const minorSine = Math.sin(minorAngle);
+    const majorRadius = 1 + 0.5 * minorCosine;
+    const radialDerivative = -0.5 * q * minorSine;
+    // Factor 2π and the global radius cancel during normalization.
+    let tx = radialDerivative * cosine - majorRadius * p * sine;
+    let ty = radialDerivative * sine + majorRadius * p * cosine;
+    let tz = 0.5 * q * minorCosine;
+    const tangentLength = Math.hypot(tx, ty, tz);
+    if (!Number.isFinite(tangentLength) || tangentLength === 0) {
+      throw new RangeError("torusKnotParityMesh curve tangent is degenerate");
+    }
+    tx /= tangentLength;
+    ty /= tangentLength;
+    tz /= tangentLength;
 
-  for (let i = 0; i <= tubularSegments; i += 1) {
-    const u = (i / tubularSegments) * p * Math.PI * 2;
-
-    calculatePositionOnCurve(u, p, q, radius, P1);
-    calculatePositionOnCurve(u + 0.01, p, q, radius, P2);
-
-    // T = P2 − P1; N = P2 + P1; B = T × N; N = B × T; normalize B, N.
-    const Tx = P2.x - P1.x;
-    const Ty = P2.y - P1.y;
-    const Tz = P2.z - P1.z;
-    let Nx = P2.x + P1.x;
-    let Ny = P2.y + P1.y;
-    let Nz = P2.z + P1.z;
-    let Bx = Ty * Nz - Tz * Ny;
-    let By = Tz * Nx - Tx * Nz;
-    let Bz = Tx * Ny - Ty * Nx;
-    Nx = By * Tz - Bz * Ty;
-    Ny = Bz * Tx - Bx * Tz;
-    Nz = Bx * Ty - By * Tx;
-    const bl = Math.hypot(Bx, By, Bz);
-    Bx /= bl;
-    By /= bl;
-    Bz /= bl;
-    const nl = Math.hypot(Nx, Ny, Nz);
-    Nx /= nl;
-    Ny /= nl;
-    Nz /= nl;
-
-    for (let j = 0; j <= radialSegments; j += 1) {
-      const v = (j / radialSegments) * Math.PI * 2;
-      const cx = -tube * Math.cos(v);
-      const cy = tube * Math.sin(v);
-
-      const vx = P1.x + (cx * Nx + cy * Bx);
-      const vy = P1.y + (cx * Ny + cy * By);
-      const vz = P1.z + (cx * Nz + cy * Bz);
-      vertices.push(vx, vy, vz);
-
-      const nx = vx - P1.x;
-      const ny = vy - P1.y;
-      const nz = vz - P1.z;
-      const il = 1 / Math.hypot(nx, ny, nz);
-      normals.push(nx * il, ny * il, nz * il);
-
-      uvs.push(i / tubularSegments, j / radialSegments);
+    // Project the radial direction onto the tangent's perpendicular plane.
+    let bx = -tz * sine;
+    let by = tz * cosine;
+    let bz = tx * sine - ty * cosine;
+    const binormalLength = Math.hypot(bx, by, bz);
+    if (binormalLength === 0) throw new RangeError("torusKnotParityMesh cannot construct a frame");
+    bx /= binormalLength;
+    by /= binormalLength;
+    bz /= binormalLength;
+    const nx = by * tz - bz * ty;
+    const ny = bz * tx - bx * tz;
+    const nz = bx * ty - by * tx;
+    const cx = radius * majorRadius * cosine;
+    const cy = radius * majorRadius * sine;
+    const cz = radius * 0.5 * minorSine;
+    for (let col = 0; col <= around; col += 1) {
+      const angle = 2 * Math.PI * col / around;
+      const a = -Math.cos(angle);
+      const b = Math.sin(angle);
+      const x = a * nx + b * bx;
+      const y = a * ny + b * by;
+      const z = a * nz + b * bz;
+      positions.push(cx + tube * x, cy + tube * y, cz + tube * z);
+      const orientation = tube < 0 ? -1 : 1;
+      normals.push(orientation * x, orientation * y, orientation * z);
+      uvs.push(t, col / around);
+      if (row > 0 && col > 0) {
+        const last = row * stride + col;
+        indices.push(last - stride - 1, last - 1, last - stride, last - 1, last, last - stride);
+      }
     }
   }
-
-  for (let j = 1; j <= tubularSegments; j += 1) {
-    for (let i = 1; i <= radialSegments; i += 1) {
-      const a = (radialSegments + 1) * (j - 1) + (i - 1);
-      const b = (radialSegments + 1) * j + (i - 1);
-      const c = (radialSegments + 1) * j + i;
-      const d = (radialSegments + 1) * (j - 1) + i;
-      indices.push(a, b, d);
-      indices.push(b, c, d);
-    }
-  }
-
-  return { positions: vertices, normals, uvs, indices };
+  return { positions, normals, uvs, indices };
 }

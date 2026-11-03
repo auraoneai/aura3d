@@ -3,13 +3,12 @@
  * KHR_materials_transmission (PRD-04 §7.3, P1-8). The transmission pass
  * reads this target's mip chain for rough refraction.
  *
- * The device allocates GPU mip storage when the pass binds the target;
- * `mipCount` here is the chain contract (`floor(log2(max(w,h))) + 1`, i.e.
- * a full chain down to 1×1). `resize` only reallocates when the dimensions
- * actually change — per-frame calls are free.
+ * A full chain is explicitly requested from the device. The wrapper reports
+ * only levels the returned texture actually exposes; populating those levels
+ * remains the capture pass's responsibility after each base-level copy.
  */
 
-import type { RenderDevice, RenderTarget } from "./RenderDevice";
+import { RenderDeviceError, type RenderDevice, type RenderTarget } from "./RenderDevice";
 
 export class TransmissionRenderTarget {
   private target: RenderTarget | undefined;
@@ -42,7 +41,7 @@ export class TransmissionRenderTarget {
   }
 
   resize(width: number, height: number): void {
-    if (width === this._width && height === this._height) return;
+    if (width === this._width && height === this._height && this.target && !this.target.disposed && !this.target.colorTexture.disposed) return;
     this.allocate(width, height);
   }
 
@@ -55,16 +54,32 @@ export class TransmissionRenderTarget {
   }
 
   private allocate(width: number, height: number): void {
-    this.target?.dispose();
-    this._width = width;
-    this._height = height;
-    this._mipCount = Math.floor(Math.log2(Math.max(width, height))) + 1;
-    this.target = this.device.createRenderTarget({
+    if (!Number.isInteger(width) || width < 1 || !Number.isInteger(height) || height < 1) {
+      throw new RenderDeviceError("Transmission target dimensions must be positive integers", "INVALID_RENDER_TARGET_SIZE", { width, height });
+    }
+    const mipCount = Math.floor(Math.log2(Math.max(width, height))) + 1;
+    const next = this.device.createRenderTarget({
       width,
       height,
       label: "prd04-transmission-scene-color",
       format: this.options.format ?? "rgba8",
-      depth: "renderbuffer"
+      depth: false,
+      sampleCount: 1,
+      mipLevelCount: mipCount
     });
+    if (next.disposed || next.colorTexture.disposed || next.width !== width || next.height !== height ||
+        next.colorTexture.width !== width || next.colorTexture.height !== height ||
+        next.colorTexture.format !== (this.options.format ?? "rgba8") || next.colorTexture.dimension !== "2d" ||
+        !next.colorTexture.usage.includes("sampled") || !next.colorTexture.usage.includes("render-attachment") ||
+        next.colorTexture.mipLevelCount !== mipCount) {
+      next.dispose();
+      throw new RenderDeviceError("Device did not allocate the requested transmission mip chain", "TRANSMISSION_MIP_ALLOCATION_UNAVAILABLE", { width, height, mipCount });
+    }
+    const previous = this.target;
+    this.target = next;
+    this._width = width;
+    this._height = height;
+    this._mipCount = next.colorTexture.mipLevelCount;
+    previous?.dispose();
   }
 }

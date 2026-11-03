@@ -28,7 +28,9 @@ test("physics stress scene covers stacks, fast bodies, constraints, sensors, fil
   for (let index = 0; index < 4; index += 1) {
     const body = world.createRigidBody({ position: [-1.2 + index * 0.32, 2, 0], velocity: [0.2, index * 0.1, 0] });
     world.createCollider(body, { shape: Shape.box(0.12, 0.12, 0.12), filter: { layer: 0b001, mask: 0b111 } });
-    world.createConstraint({ type: index % 2 === 0 ? "fixed" : "spring", bodyA: previous, bodyB: body, restLength: 0.32, stiffness: 0.65 });
+    world.createConstraint(index % 2 === 0
+      ? { type: "fixed", bodyA: previous, bodyB: body }
+      : { type: "spring", bodyA: previous, bodyB: body, restLength: 0.32, stiffness: 0.65 });
     previous = body;
   }
 

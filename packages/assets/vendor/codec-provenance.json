@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "basisDracoAcquiredAt": "2026-11-01T04:05:09Z",
+  "meshoptAcquiredAt": "2026-11-01T04:10:14Z",
+  "acquisition": "Direct HTTPS from immutable commits of the named official upstream projects; all SHA-256 digests were verified before placement.",
+  "priorVendorAcquisition": "The earlier vendor copies were recorded as acquired through an intermediary distribution.",
+  "basisZstdLicense": "Included conservatively because the upstream KTX2 build enables Zstandard by default; the configuration used for the prebuilt binary is not established.",
+  "codecLicenses": {
+    "basis": ["basis-apache-license", "basis-zstd-license"],
+    "draco": ["draco-apache-license"],
+    "meshopt": ["meshopt-mit-license"]
+  },
+  "artifacts": [
+    {
+      "id": "basis-transcoder-js",
+      "project": "BinomialLLC/basis_universal",
+      "version": "v1_50_0_2",
+      "revision": "b76a431c6a39c07fe8bb2edf1cbf44781150ed6b",
+      "upstreamPath": "webgl/transcoder/build/basis_transcoder.js",
+      "sha256": "8478b5b6d6b74e7d3082b89f6417321d8d1dc0307f2b30d4484bb11b441696a1",
+      "destinations": [
+        "packages/assets/vendor/basis/basis_transcoder.js",
+        "public/aura-decoders/basis/basis_transcoder.js",
+        "fixtures/asset-corpus/decoders/basis_transcoder.js"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/BinomialLLC/basis_universal/b76a431c6a39c07fe8bb2edf1cbf44781150ed6b/webgl/transcoder/build/basis_transcoder.js"
+    },
+    {
+      "id": "basis-transcoder-wasm",
+      "project": "BinomialLLC/basis_universal",
+      "version": "v1_50_0_2",
+      "revision": "b76a431c6a39c07fe8bb2edf1cbf44781150ed6b",
+      "upstreamPath": "webgl/transcoder/build/basis_transcoder.wasm",
+      "sha256": "6cf17dc889352c42e9acf8897107978d127005fe3386c36a0e3845e27967630a",
+      "destinations": [
+        "packages/assets/vendor/basis/basis_transcoder.wasm",
+        "public/aura-decoders/basis/basis_transcoder.wasm",
+        "fixtures/asset-corpus/decoders/basis_transcoder.wasm"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/BinomialLLC/basis_universal/b76a431c6a39c07fe8bb2edf1cbf44781150ed6b/webgl/transcoder/build/basis_transcoder.wasm"
+    },
+    {
+      "id": "draco-gltf-js",
+      "project": "google/draco",
+      "version": "1.5.6",
+      "revision": "9f856abaafb4b39f1f013763ff061522e0261c6f",
+      "upstreamPath": "javascript/draco_decoder_gltf.js",
+      "sha256": "8625489da79a805f4f2a7d511c3e52d8b4085608a9d2a4d5f4f9de5db0aea04f",
+      "destinations": [
+        "packages/assets/vendor/draco/draco_decoder.js",
+        "public/aura-decoders/draco/draco_decoder.js",
+        "fixtures/asset-corpus/decoders/draco_decoder.js"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/google/draco/9f856abaafb4b39f1f013763ff061522e0261c6f/javascript/draco_decoder_gltf.js"
+    },
+    {
+      "id": "draco-gltf-wasm",
+      "project": "google/draco",
+      "version": "1.5.6",
+      "revision": "9f856abaafb4b39f1f013763ff061522e0261c6f",
+      "upstreamPath": "javascript/draco_decoder_gltf.wasm",
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac",
+      "destinations": [
+        "packages/assets/vendor/draco/draco_decoder.wasm",
+        "public/aura-decoders/draco/draco_decoder.wasm",
+        "fixtures/asset-corpus/decoders/draco_decoder_gltf.wasm"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/google/draco/9f856abaafb4b39f1f013763ff061522e0261c6f/javascript/draco_decoder_gltf.wasm"
+    },
+    {
+      "id": "draco-npm-js",
+      "project": "google/draco",
+      "version": "1.5.7",
+      "revision": "8786740086a9f4d83f44aa83badfbea4dce7a1b5",
+      "upstreamPath": "javascript/npm/draco3d/draco_decoder_nodejs.js",
+      "sha256": "e8049906ef3f8f75d3456c22a3f31bfdfe5b5b5bd09ccdec613b9e9a49d554d8",
+      "destinations": [
+        "marketing/public/assets/draco/draco_decoder_nodejs.js"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/google/draco/8786740086a9f4d83f44aa83badfbea4dce7a1b5/javascript/npm/draco3d/draco_decoder_nodejs.js"
+    },
+    {
+      "id": "draco-npm-wasm",
+      "project": "google/draco",
+      "version": "1.5.7",
+      "revision": "8786740086a9f4d83f44aa83badfbea4dce7a1b5",
+      "upstreamPath": "javascript/npm/draco3d/draco_decoder.wasm",
+      "sha256": "2516a4e43526d71787bf2f678f951329f7f858f8f15f42d4bc9e370b31a0da3a",
+      "destinations": [
+        "marketing/public/assets/draco/draco_decoder.wasm"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/google/draco/8786740086a9f4d83f44aa83badfbea4dce7a1b5/javascript/npm/draco3d/draco_decoder.wasm"
+    },
+    {
+      "id": "basis-apache-license",
+      "project": "BinomialLLC/basis_universal",
+      "version": "v1_50_0_2",
+      "revision": "b76a431c6a39c07fe8bb2edf1cbf44781150ed6b",
+      "upstreamPath": "LICENSE",
+      "license": "Apache-2.0",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "destinations": [
+        "packages/assets/vendor/basis/LICENSE.txt",
+        "public/aura-decoders/basis/LICENSE.txt",
+        "fixtures/asset-corpus/decoders/LICENSE-basis.txt"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/BinomialLLC/basis_universal/b76a431c6a39c07fe8bb2edf1cbf44781150ed6b/LICENSE"
+    },
+    {
+      "id": "basis-zstd-license",
+      "project": "BinomialLLC/basis_universal",
+      "version": "v1_50_0_2",
+      "revision": "b76a431c6a39c07fe8bb2edf1cbf44781150ed6b",
+      "upstreamPath": "zstd/LICENSE",
+      "license": "BSD-3-Clause",
+      "sha256": "2c1a7fa704df8f3a606f6fc010b8b5aaebf403f3aeec339a12048f1ba7331a0b",
+      "destinations": [
+        "packages/assets/vendor/basis/LICENSE-zstd.txt",
+        "public/aura-decoders/basis/LICENSE-zstd.txt",
+        "fixtures/asset-corpus/decoders/LICENSE-zstd.txt"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/BinomialLLC/basis_universal/b76a431c6a39c07fe8bb2edf1cbf44781150ed6b/zstd/LICENSE"
+    },
+    {
+      "id": "draco-apache-license",
+      "project": "google/draco",
+      "version": "1.5.6",
+      "revision": "9f856abaafb4b39f1f013763ff061522e0261c6f",
+      "upstreamPath": "LICENSE",
+      "license": "Apache-2.0",
+      "sha256": "d3709b0fb4b8a94bbb1d02b8a2e484f258b0d9c5c5a01f940391f3fe662cd1a4",
+      "equivalentSources": [
+        {
+          "version": "1.5.7",
+          "revision": "8786740086a9f4d83f44aa83badfbea4dce7a1b5",
+          "sourceUrl": "https://raw.githubusercontent.com/google/draco/8786740086a9f4d83f44aa83badfbea4dce7a1b5/LICENSE"
+        }
+      ],
+      "destinations": [
+        "packages/assets/vendor/draco/LICENSE.txt",
+        "public/aura-decoders/draco/LICENSE.txt",
+        "fixtures/asset-corpus/decoders/LICENSE-draco.txt",
+        "marketing/public/assets/draco/LICENSE.txt"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/google/draco/9f856abaafb4b39f1f013763ff061522e0261c6f/LICENSE"
+    },
+    {
+      "id": "meshopt-decoder-esm",
+      "project": "zeux/meshoptimizer",
+      "version": "v1.2",
+      "revision": "9d9890c73011d75920af614485296d1e03e95448",
+      "upstreamPath": "js/meshopt_decoder.mjs",
+      "sha256": "cb08bf53ad8ad9693d8bb759b2dbade350eb38bcce63d005385e225b564c5f6a",
+      "destinations": [
+        "packages/assets/vendor/meshopt/meshopt_decoder.mjs",
+        "packages/assets/vendor/meshopt_decoder.mjs",
+        "public/aura-decoders/meshopt/meshopt_decoder.mjs",
+        "fixtures/asset-corpus/decoders/meshopt_decoder.js"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/zeux/meshoptimizer/9d9890c73011d75920af614485296d1e03e95448/js/meshopt_decoder.mjs"
+    },
+    {
+      "id": "meshopt-decoder-cjs",
+      "project": "zeux/meshoptimizer",
+      "version": "v1.2",
+      "revision": "9d9890c73011d75920af614485296d1e03e95448",
+      "upstreamPath": "js/meshopt_decoder.cjs",
+      "sha256": "fedf06f101ff2ba59d66335578230b7e8f5fac5057dee084be64c67444ac6c12",
+      "destinations": [
+        "packages/assets/vendor/meshopt/meshopt_decoder.cjs",
+        "public/aura-decoders/meshopt/meshopt_decoder.cjs"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/zeux/meshoptimizer/9d9890c73011d75920af614485296d1e03e95448/js/meshopt_decoder.cjs"
+    },
+    {
+      "id": "meshopt-mit-license",
+      "project": "zeux/meshoptimizer",
+      "version": "v1.2",
+      "revision": "9d9890c73011d75920af614485296d1e03e95448",
+      "upstreamPath": "LICENSE.md",
+      "license": "MIT",
+      "sha256": "f03037ca7bad1e3eb7f4a63fa6084a8baabd5ba30d3c239a9a7f35705d873e26",
+      "destinations": [
+        "packages/assets/vendor/meshopt/LICENSE.txt",
+        "public/aura-decoders/meshopt/LICENSE.txt",
+        "fixtures/asset-corpus/decoders/LICENSE-meshopt.txt"
+      ],
+      "sourceUrl": "https://raw.githubusercontent.com/zeux/meshoptimizer/9d9890c73011d75920af614485296d1e03e95448/LICENSE.md"
+    }
+  ]
+}

@@ -8,8 +8,8 @@
  * primitive nodes from `world.extrude`. `wet` is accepted for API stability
  * and warns once — the wet-look material variant lands with PRD-11 shaders.
  */
-import type { AuraMaterialSpec, AuraSceneNode, AuraVec3 } from "../index.js";
-import { material } from "../index.js";
+import type { AuraMaterialSpec, AuraSceneNode, AuraVec3 } from "../nodes/types.js";
+import { material } from "../nodes/material.js";
 import type { AuraKit, AuraKitPlacement } from "./kits.js";
 import { worldKits } from "./kits.js";
 import { worldPlaceAlong } from "./placement.js";

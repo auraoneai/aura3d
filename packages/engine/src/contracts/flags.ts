@@ -2,14 +2,14 @@
  * §1.1 / §5.2 — flag resolution (CONTRACTS.md). Custodian: PRD 15.
  *
  * Sources in precedence order; the first source that sets a flag wins:
- *   1. explicit `qualityRebuild: { flags }` option
- *   2. URL `?a3d-qr=<list>` (ignored by callers when allowUrlFlags is false)
- *   3. environment `A3D_QR=<list>` / `import.meta.env.VITE_A3D_QR`
- *   4. per-flag `A3D_QR_<AREA>=1|0|value`
- *   5. the registry default (all flags off while every flag is `dev`, §5.3)
+ *   1. URL `?a3d-qr=<list>` (ignored by callers when allowUrlFlags is false)
+ *   2. environment `A3D_QR=<list>` / `import.meta.env.VITE_A3D_QR`
+ *   3. per-flag `A3D_QR_<AREA>=1|0|value`
+ *   4. explicit `qualityRebuild: { flags }` option
+ *   5. registry defaults (§5.3)
  */
 
-import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
+import { createTrustedQrFlags, isTrustedQrFlags, type QrFlagName, type QrFlagValue, type QrFlags } from "@aura3d/rendering/contracts";
 import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
 import { parseHrefCached } from "./urlCache";
 
@@ -110,7 +110,7 @@ function propagateSubFlags(out: Record<string, QrFlagValue>): void {
 
 function flagNameFor(short: string): QrFlagName | null {
   const lower = short.toLowerCase();
-  if (lower in SHORT_NAMES) return SHORT_NAMES[lower];
+  if (Object.prototype.hasOwnProperty.call(SHORT_NAMES, lower)) return SHORT_NAMES[lower];
   // threejs-parity: a full `A3D_PARITY_*` name is a valid list token
   // (`?a3d-qr=A3D_PARITY_LINES`), as is the `parity.<area>` short form.
   const upper = short.toUpperCase();
@@ -121,7 +121,7 @@ function flagNameFor(short: string): QrFlagName | null {
   }
   // #72: multi-segment names — `core.shadows.cascade` →
   // `A3D_QR_CORE_SHADOWS_CASCADE`; `route.demo.alpha` → `A3D_QR_ROUTE_DEMO_ALPHA`.
-  if (sub.length >= 2 && sub[0] in SHORT_NAMES) {
+  if (sub.length >= 2 && Object.prototype.hasOwnProperty.call(SHORT_NAMES, sub[0])) {
     return `A3D_QR_${sub[0].toUpperCase()}_${sub.slice(1).join("_").toUpperCase()}` as QrFlagName;
   }
   if (sub.length >= 2 && sub[0] === "route") {
@@ -196,6 +196,9 @@ export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legac
   if (mixer !== "pose" || flags.values.A3D_QR_ANIMATION_POSE_MIXER !== undefined) {
     return flags;
   }
+  if (isTrustedQrFlags(flags)) {
+    return createTrustedQrFlags({ ...flags.values, A3D_QR_ANIMATION_POSE_MIXER: true });
+  }
   const values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>> = Object.freeze({
     ...flags.values,
     A3D_QR_ANIMATION_POSE_MIXER: true
@@ -203,14 +206,17 @@ export function qrFlagsWithAnimationMixer(flags: QrFlags, mixer: "pose" | "legac
   return {
     values,
     on(name: QrFlagName): boolean {
-      const v = values[name];
-      return v !== undefined && v !== false && v !== "0" && v !== "off" && v !== "";
+      // A custom `on` may depend on mutable state or its `this` receiver.
+      // Preserve that behavior and do not give this wrapper trusted identity.
+      return name === "A3D_QR_ANIMATION_POSE_MIXER" || flags.on(name);
     }
   };
 }
 
 export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly url?: URL | string; readonly env?: Readonly<Record<string, string | undefined>> }): QrFlags {
-  const values: Record<string, QrFlagValue> = {};
+  // Flag names are data. A null prototype prevents inherited or polluted
+  // properties from defeating first-write precedence for a real flag.
+  const values: Record<string, QrFlagValue> = Object.create(null) as Record<string, QrFlagValue>;
   // Precedence (first write wins): URL `a3d-qr` > env (A3D_QR list, then A3D_QR_X) >
   // programmatic options > flags.state default-on. Runtime overrides must beat
   // values baked into app code, or `-x` / `none` can't measure a flag (#1232).
@@ -233,14 +239,7 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
       if (typeof console !== "undefined") console.warn(`QR_FLAG_REMOVED:${removed}`);
     }
   }
-  const frozen: Readonly<Partial<Record<QrFlagName, QrFlagValue>>> = Object.freeze({ ...values });
-  return {
-    values: frozen,
-    on(name: QrFlagName): boolean {
-      const v = frozen[name];
-      return v !== undefined && v !== false && v !== "0" && v !== "off" && v !== "";
-    }
-  };
+  return createTrustedQrFlags(values);
 }
 
 // createAuraApp/createGameApp option (C-38):

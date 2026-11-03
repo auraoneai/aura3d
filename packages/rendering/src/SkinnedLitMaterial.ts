@@ -1,15 +1,15 @@
 import type { MaterialFeatureContext } from "./contracts/materialLobes";
 import { Material, type RenderState } from "./Material";
-import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import { legacyPhysicalDescriptor, physicalFeatureSet, withLivePhysicalMapFeatures } from "./materials/PhysicalFeatures";
 import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
-import type { PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
+import { PBR_SURFACE_DETAIL_UNIFORM_SCHEMA, pbrSurfaceDetailParameters, type PBRProceduralEnvironmentMapOptions, type PBRSurfaceDetailOptions } from "./PBRMaterial";
 import { MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
 import { DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibraryCore";
 import { MAX_DATA_TEXTURE_SKINNING_JOINTS } from "./SkinnedUnlitMaterial";
 import { TextureBinding } from "./TextureBinding";
 
-export interface SkinnedLitMaterialOptions {
+export interface SkinnedLitMaterialOptions extends PBRSurfaceDetailOptions {
   readonly name?: string;
   readonly color?: readonly [number, number, number, number];
   readonly baseColor?: readonly [number, number, number, number];
@@ -126,7 +126,9 @@ export class SkinnedLitMaterial extends Material {
     validateUnit(options.anisotropyStrength ?? 0, "anisotropyStrength");
     validateFinite(options.anisotropyRotation ?? 0, "anisotropyRotation");
     validateUnit(options.iridescenceFactor ?? 0, "iridescenceFactor");
-    validateFinite(options.iridescenceIor ?? 1.3, "iridescenceIor");
+    if (!Number.isFinite(options.iridescenceIor ?? 1.3) || (options.iridescenceIor ?? 1.3) < 1) {
+      throw new RangeError("SkinnedLitMaterial iridescenceIor must be finite and at least 1");
+    }
     validateNonNegative(options.iridescenceThicknessMinimum ?? 100, "iridescenceThicknessMinimum");
     validateNonNegative(options.iridescenceThicknessMaximum ?? 400, "iridescenceThicknessMaximum");
     validateNonNegative(options.dispersion ?? 0, "dispersion");
@@ -150,6 +152,7 @@ export class SkinnedLitMaterial extends Material {
       shaderKey: extraInfluences ? DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME : DEFAULT_SKINNED_LIT_SHADER_NAME,
       renderState: options.renderState,
       parameters: {
+        ...pbrSurfaceDetailParameters(options),
         u_baseColor: baseColor,
         u_baseColorTexture: options.baseColorTexture ?? new TextureBinding({ name: "u_baseColorTexture", required: false }),
         u_baseColorTextureEnabled: options.baseColorTexture ? 1 : 0,
@@ -236,12 +239,15 @@ export class SkinnedLitMaterial extends Material {
         "a_position",
         "a_normal",
         ...(usesTextureCoordinates(options) ? ["a_uv"] : []),
+        ...((options.diffuseRoughnessTexture?.texture && options.diffuseRoughnessTextureTexCoord === 1) ||
+          (options.bumpTexture?.texture && options.bumpTextureTexCoord === 1) ? ["a_uv1"] : []),
         ...(options.normalTexture ? ["a_tangent"] : []),
         "a_joints",
         "a_weights",
         ...(extraInfluences ? ["a_joints1", "a_weights1"] : [])
       ],
       uniformSchema: [
+        ...PBR_SURFACE_DETAIL_UNIFORM_SCHEMA,
         { name: "u_baseColor", kind: "vec4" },
         { name: "u_baseColorTexture", kind: "texture2d", required: false },
         { name: "u_baseColorTextureEnabled", kind: "float" },
@@ -333,17 +339,19 @@ export class SkinnedLitMaterial extends Material {
   /** C-03 `ProgramFeatureSource` (PRD-04 P3-1): generated-path features from this material's options. Pure — unread by the legacy path. */
   programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
     const maxJoints = this.prd04Options.maxJoints ?? MAX_UNIFORM_SKINNING_JOINTS;
-    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx, {
+    return withLivePhysicalMapFeatures(physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx, {
       skinning: {
         influences: this.prd04Options.extraInfluences ? 8 : 4,
         palette: maxJoints > MAX_UNIFORM_SKINNING_JOINTS ? "texture" : "uniform"
       }
-    });
+    }), this, ctx);
   }
 }
 
 function usesTextureCoordinates(options: SkinnedLitMaterialOptions): boolean {
   return Boolean(
+    options.diffuseRoughnessTexture?.texture ||
+    options.bumpTexture?.texture ||
     options.baseColorTexture ||
     options.normalTexture ||
     options.metallicRoughnessTexture ||

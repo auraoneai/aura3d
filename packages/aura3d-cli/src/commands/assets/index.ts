@@ -6,6 +6,7 @@
 import { registerCliCommand } from "../../contracts/commands.js";
 import { meshyLedgerCommand } from "../meshyLedger.js";
 import { mergeClipsUsage, mergeGlbClips, parseClipSpec } from "./mergeClips.js";
+import { exportAssetsVerb, exportAssetsUsage } from "./export.js";
 
 function flag(argv: readonly string[], name: string): string | undefined {
   const index = argv.indexOf(name);
@@ -43,6 +44,14 @@ registerCliCommand({
     }
     return 0;
   }
+});
+
+registerCliCommand({
+  name: "assets export",
+  owner: "assets-tooling",
+  summary: "Export an Aura interchange scene with a loss report.",
+  usage: exportAssetsUsage(),
+  run: exportAssetsVerb
 });
 
 registerCliCommand({

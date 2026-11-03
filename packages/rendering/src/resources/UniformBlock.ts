@@ -1,29 +1,29 @@
-/**
- * C-08 (PRD-01 §8.2, Phase 3) — std140 packer + `AuraFrame` UBO.
- *
- * `layoutStd140` computes the std140 offsets of a block field list; `UniformBlock`
- * owns a `BufferUsage:"uniform"` buffer, a Float32Array staging view and
- * `bindBufferBase` wiring through `RenderDevice.bindUniformBuffer`. `FrameUniforms`
- * is the real `FrameUniformsLike`: `AuraFrame` at binding 0 in the frozen C-08
- * order, uploaded once per `update()` via `bufferSubData`.
- *
- * The block's GLSL declaration is emitted from the same field list, so generated
- * sources can never drift from the packed layout.
- */
+/** Byte-accurate std140 uniform buffers and the AuraFrame uniform block. */
 
 import type { RenderDevice, RenderBuffer } from "../RenderDevice";
 import { RenderDeviceError } from "../RenderDevice";
 import { AURA_FRAME_BLOCK, type FrameUniformsLike } from "../contracts/frameUniforms";
 import type { FrameCamera } from "../contracts/frameGraph";
+import {
+  deriveShaderDataLayout,
+  writeShaderData,
+  type ShaderDataLayout,
+  type ShaderDataScalar,
+  type ShaderDataType,
+  type ShaderDataValue
+} from "../webgpu/ShaderDataLayout";
 
-export type Std140Field = readonly [name: string, type: string];
+/** Legacy GLSL names and recursively typed structures/arrays are both accepted. */
+export type Std140Field = readonly [name: string, type: string | ShaderDataType];
 
-interface Std140FieldLayout {
+export interface Std140FieldLayout {
   readonly name: string;
+  /** GLSL type label; structured fields expose their full schema through `layout.type`. */
   readonly type: string;
   readonly offset: number;
-  /** Element stride in floats; matrices are packed column-major at 16-byte column stride. */
+  /** Field footprint in 4-byte words, including matrix/array padding. */
   readonly floats: number;
+  readonly layout: ShaderDataLayout;
 }
 
 export interface Std140Layout {
@@ -32,126 +32,267 @@ export interface Std140Layout {
   readonly offsets: ReadonlyMap<string, number>;
 }
 
-/** std140 base alignment + footprint (floats) for the block types Aura3D emits. */
-function std140Shape(type: string): { align: number; floats: number; columns?: { rows: number; count: number } } {
-  switch (type) {
-    case "float": case "int": case "uint": case "bool":
-      return { align: 4, floats: 1 };
-    case "vec2": case "ivec2": case "uvec2": case "bvec2":
-      return { align: 8, floats: 2 };
-    case "vec3": case "ivec3": case "uvec3": case "bvec3":
-      return { align: 16, floats: 3 };
-    case "vec4": case "ivec4": case "uvec4": case "bvec4":
-      return { align: 16, floats: 4 };
-    // Matrices: C columns stored at a vec4 stride (16B) each — mat2: 2×4 floats
-    // (32B), mat3: 3×4 (48B), mat4: 4×4 (64B).
-    case "mat2":
-      return { align: 16, floats: 8, columns: { rows: 2, count: 2 } };
-    case "mat3":
-      return { align: 16, floats: 12, columns: { rows: 3, count: 3 } };
-    case "mat4":
-      return { align: 16, floats: 16, columns: { rows: 4, count: 4 } };
-    default:
+const SCALAR_GLSL: Readonly<Record<ShaderDataScalar, string>> = {
+  f32: "float", i32: "int", u32: "uint", bool: "bool"
+};
+
+/** Convert the legacy GLSL field vocabulary to the common typed schema. */
+export function parseStd140Type(type: string | ShaderDataType): ShaderDataType {
+  if (typeof type !== "string") return type;
+  const match = /^([A-Za-z][A-Za-z0-9]*)(\s*(?:\[\s*\d+\s*\]\s*)*)$/.exec(type);
+  if (!match) throw new RenderDeviceError(`Unsupported std140 field type "${type}"`, "UNSUPPORTED_UNIFORM_BLOCK_FIELD", { type });
+  const base = match[1];
+  let result: ShaderDataType;
+  const scalars: Record<string, ShaderDataScalar> = {
+    float: "f32", f32: "f32", int: "i32", i32: "i32", uint: "u32", u32: "u32", bool: "bool"
+  };
+  if (Object.prototype.hasOwnProperty.call(scalars, base)) result = scalars[base];
+  else {
+    const vector = /^(b|i|u)?vec([234])$/.exec(base);
+    const matrix = /^mat([234])(?:x([234]))?$/.exec(base);
+    if (vector) {
+      const element: ShaderDataScalar = vector[1] === "i" ? "i32" : vector[1] === "u" ? "u32" : vector[1] === "b" ? "bool" : "f32";
+      result = { kind: "vector", element, length: Number(vector[2]) as 2 | 3 | 4 };
+    } else if (matrix) {
+      result = { kind: "matrix", columns: Number(matrix[1]) as 2 | 3 | 4, rows: Number(matrix[2] ?? matrix[1]) as 2 | 3 | 4 };
+    } else {
       throw new RenderDeviceError(`Unsupported std140 field type "${type}"`, "UNSUPPORTED_UNIFORM_BLOCK_FIELD", { type });
+    }
+  }
+  const dimensions = [...match[2].matchAll(/\[\s*(\d+)\s*\]/g)].map((entry) => Number(entry[1]));
+  for (let i = dimensions.length - 1; i >= 0; i -= 1) result = { kind: "array", element: result, length: dimensions[i] };
+  return result;
+}
+
+function glslTypeLabel(type: ShaderDataType): string {
+  if (typeof type === "string") return SCALAR_GLSL[type];
+  switch (type.kind) {
+    case "vector": return `${type.element === "f32" ? "" : type.element === "i32" ? "i" : type.element === "u32" ? "u" : "b"}vec${type.length}`;
+    case "matrix": return type.columns === type.rows ? `mat${type.columns}` : `mat${type.columns}x${type.rows}`;
+    case "array": {
+      const dimensions = [type.length];
+      let element = type.element;
+      while (typeof element !== "string" && element.kind === "array") {
+        dimensions.push(element.length);
+        element = element.element;
+      }
+      return `${glslTypeLabel(element)}${dimensions.map((length) => `[${length}]`).join("")}`;
+    }
+    case "struct": return "struct";
   }
 }
 
-const alignUp = (offset: number, align: number): number => offset + ((align - (offset % align)) % align);
-
-/** Compute the std140 layout of `fields` (block size is 16-aligned). */
+/** Compute std140 offsets, recursively including arrays and structures. */
 export function layoutStd140(fields: readonly Std140Field[]): Std140Layout {
-  const laidOut: Std140FieldLayout[] = [];
   const offsets = new Map<string, number>();
-  let offset = 0;
-  for (const [name, type] of fields) {
-    const { align, floats } = std140Shape(type);
-    offset = alignUp(offset, align);
-    if (offsets.has(name)) {
-      throw new RenderDeviceError(`Duplicate uniform block field "${name}"`, "UNIFORM_BLOCK_DUPLICATE_FIELD", { name });
-    }
-    offsets.set(name, offset);
-    laidOut.push({ name, type, offset, floats });
-    offset += floats * 4;
+  for (const [name] of fields) {
+    if (offsets.has(name)) throw new RenderDeviceError(`Duplicate uniform block field "${name}"`, "UNIFORM_BLOCK_DUPLICATE_FIELD", { name });
+    offsets.set(name, 0);
   }
-  return { byteSize: alignUp(offset, 16), fields: laidOut, offsets };
+  if (fields.length === 0) return { byteSize: 0, fields: [], offsets };
+  const struct = deriveShaderDataLayout({ kind: "struct", fields: fields.map(([name, type]) => ({ name, type: parseStd140Type(type) })) }, "glsl-std140");
+  const laidOut = struct.members!.map((member, index): Std140FieldLayout => {
+    offsets.set(member.name, member.offset);
+    const suppliedType = fields[index][1];
+    return { name: member.name, type: typeof suppliedType === "string" ? suppliedType : glslTypeLabel(member.layout.type), offset: member.offset, floats: member.layout.size / 4, layout: member.layout };
+  });
+  return { byteSize: struct.size, fields: laidOut, offsets };
 }
 
 /**
- * Emit `layout(std140) uniform <name> { <type> <field>; ... };` for a block.
- * T0-02: declarations carry no baked `binding=` — the device assigns the named
- * block → binding-point mapping with `gl.uniformBlockBinding` post-link.
+ * Emit GLSL declarations from exactly the same schema as the std140 layout.
+ * GLSL ES 3.00 has no arrays-of-arrays, so each inner array is wrapped in a
+ * generated struct. Access an inner element as `field[i].value[j]`.
  */
 export function uniformBlockGlsl(name: string, fields: readonly Std140Field[]): string {
-  const body = fields.map(([field, type]) => `  ${type} ${field};`).join("\n");
-  return `layout(std140) uniform ${name} {\n${body}\n};`;
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) throw new RenderDeviceError("Invalid uniform block name", "UNIFORM_BLOCK_NAME", { name });
+  const layout = layoutStd140(fields);
+  const definitions: string[] = [];
+  let nextStruct = 0;
+  function declaration(type: ShaderDataType, field: string): string {
+    if (typeof type !== "string" && type.kind === "array") {
+      if (typeof type.element !== "string" && type.element.kind === "array") {
+        const wrapper = `${name}_Array${nextStruct++}`;
+        const inner = declaration(type.element, "value");
+        definitions.push(`struct ${wrapper} {\n  ${inner};\n};`);
+        return `${wrapper} ${field}[${type.length}]`;
+      }
+      return `${declaration(type.element, field)}[${type.length}]`;
+    }
+    let glsl: string;
+    if (typeof type === "string") glsl = SCALAR_GLSL[type];
+    else if (type.kind === "vector") {
+      const prefix = type.element === "f32" ? "" : type.element === "i32" ? "i" : type.element === "u32" ? "u" : "b";
+      glsl = `${prefix}vec${type.length}`;
+    } else if (type.kind === "matrix") {
+      glsl = type.columns === type.rows ? `mat${type.columns}` : `mat${type.columns}x${type.rows}`;
+    } else if (type.kind === "struct") {
+      glsl = `${name}_Struct${nextStruct++}`;
+      const body = type.fields.map((member) => `  ${declaration(member.type, member.name)};`).join("\n");
+      definitions.push(`struct ${glsl} {\n${body}\n};`);
+    } else throw new RenderDeviceError("Invalid uniform block field type", "UNSUPPORTED_UNIFORM_BLOCK_FIELD");
+    return `${glsl} ${field}`;
+  }
+  const body = layout.fields.map((field) => `  ${declaration(field.layout.type, field.name)};`).join("\n");
+  return `${definitions.length ? `${definitions.join("\n")}\n` : ""}layout(std140) uniform ${name} {\n${body}\n};`;
 }
 
 /**
- * A std140 uniform block: one `BufferUsage:"uniform"` buffer plus a Float32Array
- * staging image. `set*` writes into staging; `upload()` pushes it with a single
- * `bufferSubData` (PRD-01: uploaded once per view).
+ * std140 uniform buffer with independently owned CPU staging. `data` remains a
+ * float view for existing float-only callers; integer/bool fields must be set
+ * with `set`, which encodes the corresponding integer bits into the same bytes.
  */
 export class UniformBlock {
   public readonly layout: Std140Layout;
   public readonly buffer: RenderBuffer;
   public readonly binding: number;
-  /** CPU staging image of the whole block (float units). */
   public readonly data: Float32Array;
+  private readonly bytes: Uint8Array;
+  private readonly trackPartialUpdates: boolean;
+  private readonly removeLifecycleListeners: (() => void)[] = [];
+  private hasLossAndRestoreListeners = false;
+  private uploadedBytes: Uint8Array | undefined;
+  private uploadedGeneration: number | undefined;
+  private uploadEpoch = 0;
+  private uploading = false;
+  private disposed = false;
 
   constructor(
     private readonly device: RenderDevice,
     public readonly name: string,
     fields: readonly Std140Field[],
-    options: { readonly binding?: number } = {}
+    options: {
+      readonly binding?: number;
+      /**
+       * Coalesce changed four-byte words into a partial upload. The first upload
+       * and any invalidated upload write the entire block. Opt in only while
+       * this block exclusively owns writes to `buffer`; after any external
+       * device/native write, call `invalidateUploadCache()` before uploading.
+       * Direct changes to `data` are detected automatically.
+       */
+      readonly trackPartialUpdates?: boolean;
+    } = {}
   ) {
     this.layout = layoutStd140(fields);
     this.binding = options.binding ?? 0;
-    this.data = new Float32Array(this.layout.byteSize / 4);
+    if (!Number.isSafeInteger(this.binding) || this.binding < 0) throw new RenderDeviceError("Invalid uniform block binding", "UNIFORM_BLOCK_BINDING", { binding: this.binding });
+    this.bytes = new Uint8Array(this.layout.byteSize);
+    this.data = new Float32Array(this.bytes.buffer);
     this.buffer = device.createBuffer("uniform", this.layout.byteSize);
-  }
-
-  private offsetOf(name: string): number {
-    const offset = this.layout.offsets.get(name);
-    if (offset === undefined) {
-      throw new RenderDeviceError(`Unknown uniform block field "${name}"`, "UNIFORM_BLOCK_UNKNOWN_FIELD", {
-        block: this.name,
-        field: name
-      });
-    }
-    return offset;
-  }
-
-  /** Write a scalar/vector/matrix field (column-major for matrices). */
-  set(name: string, value: ArrayLike<number>): void {
-    const offset = this.offsetOf(name) / 4;
-    const field = this.layout.fields.find((f) => f.name === name)!;
-    const shape = std140Shape(field.type);
-    if (shape.columns) {
-      // Column stride is a vec4 (16 bytes) in std140 even for mat2/mat3.
-      for (let c = 0; c < shape.columns.count; c += 1) {
-        for (let r = 0; r < shape.columns.rows; r += 1) {
-          this.data[offset + c * 4 + r] = value[c * shape.columns.rows + r];
+    this.trackPartialUpdates = options.trackPartialUpdates === true;
+    if (this.trackPartialUpdates) {
+      try {
+        const invalidate = (): void => this.forgetUploadedBytes();
+        if (device.onDeviceLost) this.removeLifecycleListeners.push(device.onDeviceLost(invalidate));
+        if (device.onDeviceRestored) this.removeLifecycleListeners.push(device.onDeviceRestored(invalidate));
+        this.hasLossAndRestoreListeners = !!device.onDeviceLost && !!device.onDeviceRestored;
+      } catch (error) {
+        for (const remove of this.removeLifecycleListeners) {
+          try { remove(); } catch { /* Preserve the registration error. */ }
         }
+        try { this.buffer.dispose(); } catch { /* Preserve the registration error. */ }
+        throw error;
       }
+    }
+  }
+
+  private assertAlive(): void {
+    if (this.disposed) throw new RenderDeviceError(`Uniform block "${this.name}" is disposed`, "UNIFORM_BLOCK_DISPOSED");
+  }
+
+  /** Set the complete field: scalar, vector, column-major matrix, array or struct. */
+  set(name: string, value: ShaderDataValue): void {
+    this.assertAlive();
+    const field = this.layout.fields.find((entry) => entry.name === name);
+    if (!field) throw new RenderDeviceError(`Unknown uniform block field "${name}"`, "UNIFORM_BLOCK_UNKNOWN_FIELD", { block: this.name, field: name });
+    // The original API took ArrayLike<number> even for scalar fields.
+    if (typeof field.layout.type === "string" && value != null && typeof value === "object" && "length" in value) {
+      const scalarValues = value as ArrayLike<number | boolean>;
+      if (scalarValues.length === 1) value = scalarValues[0];
+    }
+    writeShaderData(field.layout, value, this.bytes, field.offset);
+  }
+
+  /** Force the next tracked upload to replace the whole buffer. */
+  invalidateUploadCache(): void {
+    this.assertAlive();
+    this.forgetUploadedBytes();
+  }
+
+  private forgetUploadedBytes(): void {
+    this.uploadedBytes = undefined;
+    this.uploadedGeneration = undefined;
+    this.uploadEpoch += 1;
+  }
+
+  upload(): void {
+    this.assertAlive();
+    if (!this.trackPartialUpdates) {
+      this.device.updateBuffer(this.buffer, 0, this.bytes);
       return;
     }
-    for (let i = 0; i < shape.floats; i += 1) {
-      this.data[offset + i] = value[i];
+    if (this.uploading) throw new RenderDeviceError(`Uniform block "${this.name}" upload is reentrant`, "UNIFORM_BLOCK_UPLOAD_REENTRANT");
+
+    const generation = this.device.generation;
+    const hasGeneration = typeof generation === "number" && Number.isSafeInteger(generation) && generation >= 0;
+    // A device without either a stable generation or both lifecycle events
+    // cannot prove that a previously uploaded buffer survived a context loss.
+    if ((!hasGeneration && !this.hasLossAndRestoreListeners)
+      || this.uploadedGeneration !== generation
+      || this.device.contextLost || this.device.disposed || this.buffer.disposed
+      || (this.device as RenderDevice & { isDeviceLost?: () => boolean }).isDeviceLost?.()) {
+      this.forgetUploadedBytes();
+    }
+
+    let first = 0;
+    let end = this.bytes.length;
+    if (this.uploadedBytes) {
+      while (first < end && this.bytes[first] === this.uploadedBytes[first]) first += 1;
+      if (first === end) return;
+      while (end > first && this.bytes[end - 1] === this.uploadedBytes[end - 1]) end -= 1;
+      // Both WebGL2 and WebGPU accept aligned subranges; std140 sizes are a
+      // multiple of four. Include unchanged neighbors instead of padding.
+      first = Math.floor(first / 4) * 4;
+      end = Math.ceil(end / 4) * 4;
+    }
+    const sent = this.bytes.slice(first, end);
+    const epoch = this.uploadEpoch;
+    this.uploading = true;
+    try {
+      this.device.updateBuffer(this.buffer, first, sent);
+      if (this.uploadEpoch !== epoch || this.device.generation !== generation || this.device.contextLost
+        || this.device.disposed || this.buffer.disposed) {
+        this.forgetUploadedBytes();
+      } else {
+        if (!this.uploadedBytes) this.uploadedBytes = new Uint8Array(this.bytes.length);
+        this.uploadedBytes.set(sent, first);
+        this.uploadedGeneration = generation;
+      }
+    } catch (error) {
+      // A failed backend call can already have written some bytes.
+      this.forgetUploadedBytes();
+      throw error;
+    } finally {
+      this.uploading = false;
     }
   }
 
-  /** Push the staging image to the GPU once (bufferSubData over the whole block). */
-  upload(): void {
-    this.device.updateBuffer(this.buffer, 0, this.data);
-  }
-
-  /** `bindBufferBase(UNIFORM_BUFFER, binding, buffer)`. */
   bind(): void {
+    this.assertAlive();
     this.device.bindUniformBuffer?.(this.buffer, this.binding);
   }
 
   dispose(): void {
-    this.buffer.dispose();
+    if (!this.disposed) {
+      this.disposed = true;
+      this.forgetUploadedBytes();
+      let cleanupError: unknown;
+      for (const remove of this.removeLifecycleListeners) {
+        try { remove(); } catch (error) { cleanupError ??= error; }
+      }
+      try { this.buffer.dispose(); } catch (error) { cleanupError ??= error; }
+      if (cleanupError !== undefined) throw cleanupError;
+    }
   }
 }
 

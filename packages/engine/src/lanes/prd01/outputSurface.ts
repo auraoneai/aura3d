@@ -16,10 +16,12 @@
 import type { AuraApp, AuraCreateAppOptions } from "../../agent-api/index";
 import type { AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface } from "../../contracts/output";
 import type { QrFlags } from "@aura3d/rendering/contracts";
-import { qrCoreOutputOn } from "@aura3d/rendering";
+import { qrCoreOutputOn, RenderDeviceError } from "@aura3d/rendering";
 import type { AuraToneMappingOperator } from "../../contracts/output";
 import { PRD01_OUTPUT_STATE, type Prd01OutputState } from "./diagnostics";
 import { appCanvasOf } from "../../agent-api/app/screenshot.js";
+import { resolveAppOutputColorPolicy } from "../../agent-api/app/colorManagement.js";
+import { updateAuthoredPostOutput } from "../../agent-api/postBridge.js";
 
 /**
  * C-05 URL reader (Phase 5, §14): games opt in to the tonemap A/B with
@@ -51,6 +53,9 @@ interface Prd01OutputRenderer {
     readonly exposure?: number;
     readonly dithering?: boolean;
     readonly backgroundCoverage?: boolean;
+    readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+    readonly alphaMode?: AuraOutputOptions["alphaMode"];
+    readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
     readonly overlay?: AuraOutputOverlay;
   }): void;
   setOutputOverlay(overlay: AuraOutputOverlay | null): void;
@@ -70,13 +75,33 @@ function toRendererOutput(output: Partial<AuraOutputOptions>): {
   readonly exposure?: number;
   readonly dithering?: boolean;
   readonly backgroundCoverage?: boolean;
+  readonly outputColorSpace?: AuraOutputOptions["outputColorSpace"];
+  readonly alphaMode?: AuraOutputOptions["alphaMode"];
+  readonly inputAlphaMode?: AuraOutputOptions["inputAlphaMode"];
 } {
   return {
     ...(output.toneMapping !== undefined ? { toneMapping: output.toneMapping } : {}),
     ...(output.exposure !== undefined ? { exposure: output.exposure } : {}),
     ...(output.dither !== undefined ? { dithering: output.dither } : {}),
-    ...(output.backgroundPassthrough !== undefined ? { backgroundCoverage: output.backgroundPassthrough } : {})
+    ...(output.backgroundPassthrough !== undefined ? { backgroundCoverage: output.backgroundPassthrough } : {}),
+    ...(output.outputColorSpace !== undefined ? { outputColorSpace: output.outputColorSpace } : {}),
+    ...(output.alphaMode !== undefined ? { alphaMode: output.alphaMode } : {}),
+    ...(output.inputAlphaMode !== undefined ? { inputAlphaMode: output.inputAlphaMode } : {})
   };
+}
+
+/** Check the merged policy even while there is no renderer to validate it. */
+function validateInputAlphaPolicy(alphaMode: AuraOutputOptions["alphaMode"], inputAlphaMode: unknown): void {
+  if (inputAlphaMode !== undefined && inputAlphaMode !== "premultiplied") {
+    throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED: expected premultiplied scene-linear opacity", "OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED", { inputAlphaMode });
+  }
+  if (alphaMode === "straight" || alphaMode === "premultiplied") {
+    if (inputAlphaMode !== "premultiplied") {
+      throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNAVAILABLE: alpha-preserving output requires a premultiplied scene-linear source", "OUTPUT_INPUT_ALPHA_MODE_UNAVAILABLE");
+    }
+  } else if (inputAlphaMode !== undefined) {
+    throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED: opaque output uses the legacy coverage contract", "OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED");
+  }
 }
 
 type RendererErrorListener = (e: { readonly code: string; readonly message: string; readonly cause?: unknown }) => void;
@@ -103,7 +128,11 @@ export function createPrd01OutputSurface(
   app: AuraApp,
   ctx: { readonly flags: QrFlags; readonly options: AuraCreateAppOptions }
 ): AuraOutputSurface {
-  const requested: Record<string, unknown> = { ...(ctx.options.output ?? {}), ...readAura3dTonemapQuery() };
+  const initialOutput = { ...ctx.options.renderer?.output, ...ctx.options.output };
+  const initialPolicy = resolveAppOutputColorPolicy(initialOutput);
+  let currentPolicy = initialPolicy;
+  let currentInputAlphaMode = initialOutput.inputAlphaMode;
+  const requested: Record<string, unknown> = { ...initialOutput, ...readAura3dTonemapQuery() };
   const applied: Record<string, unknown> = {};
   const outputPath = qrCoreOutputOn(ctx.flags);
   const directPathMessage = (what: string): string =>
@@ -191,19 +220,37 @@ export function createPrd01OutputSurface(
   const surface = {
     [PRD01_OUTPUT_STATE]: state,
     setOutput(output: Partial<AuraOutputOptions>): void {
-      Object.assign(requested, output);
+      // Renderer forwarding already treats undefined as omitted. Do the same
+      // for policy state and the post bridge, rather than dropping a warranty
+      // from one route while retaining it in another.
+      const patch = { ...output };
+      if (patch.outputColorSpace === undefined) delete patch.outputColorSpace;
+      if (patch.alphaMode === undefined) delete patch.alphaMode;
+      if (patch.inputAlphaMode === undefined) delete patch.inputAlphaMode;
+      const nextPolicy = resolveAppOutputColorPolicy({ ...currentPolicy, ...patch });
+      if (nextPolicy.alphaMode !== initialPolicy.alphaMode) {
+        throw new Error(`OUTPUT_ALPHA_MODE_UNAVAILABLE: canvas was created for ${initialPolicy.alphaMode}`);
+      }
+      const nextInputAlphaMode = patch.inputAlphaMode !== undefined ? patch.inputAlphaMode : currentInputAlphaMode;
+      validateInputAlphaPolicy(nextPolicy.alphaMode, nextInputAlphaMode);
       const renderer = outputPath ? laneRenderer(app) : undefined;
+      const pending = { ...(pendingOutput ?? {}), ...patch };
+      if (renderer && renderer.outputPathActive !== false) renderer.setOutput(toRendererOutput(pending));
+      currentPolicy = nextPolicy;
+      currentInputAlphaMode = nextInputAlphaMode;
+      Object.assign(requested, patch);
+      updateAuthoredPostOutput(app, patch);
       if (!renderer) {
         // Mount pending: the watch interval flushes when PRD01_RENDERER attaches.
-        pendingOutput = { ...(pendingOutput ?? {}), ...output };
+        pendingOutput = pending;
         return;
       }
+      pendingOutput = null;
       if (renderer.outputPathActive === false) {
         warnDirectPath("app.setOutput()");
         return;
       }
-      renderer.setOutput(toRendererOutput(output));
-      Object.assign(applied, output);
+      Object.assign(applied, pending);
     },
     setOutputOverlay(overlay: AuraOutputOverlay): { readonly applied: boolean; readonly reason?: "no-post-pass" | "disposed" | "dom-fallback" } {
       if (disposed) return { applied: false, reason: "disposed" };

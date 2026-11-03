@@ -3,6 +3,7 @@ import type { RenderDeviceDiagnostics, RenderTarget } from "../RenderDevice";
 import { Texture } from "../Texture";
 import { analyzePixels } from "./renderProofs";
 import type { ProductionWebGL2RendererOptions } from "./backendSelection";
+import { NativeRenderBundleCache, type NativeRenderBundleKey, type NativeRenderBundleOwner, type NativeRenderBundleRequest, type NativeRenderBundleResult } from "./NativeRenderBundleCache";
 import type {
   ProductionPixelMetrics,
   ProductionProductionRenderer,
@@ -29,8 +30,32 @@ export interface ProductionWebGPURendererOptions extends Omit<RendererOptions, "
 
 export class ProductionWebGPURenderer implements ProductionProductionRenderer {
   readonly backend = "webgpu" as const;
+  private nativeRenderBundles?: NativeRenderBundleCache;
+  private readonly nativeRenderBundleOwner: NativeRenderBundleOwner;
 
-  private constructor(private readonly renderer: Renderer, private readonly width: number, private readonly height: number) {}
+  private constructor(
+    private readonly renderer: Renderer,
+    private readonly width: number,
+    private readonly height: number,
+    initialNativeDevice: object | undefined
+  ) {
+    const owner = renderer.device as unknown as NativeRenderBundleOwner;
+    let nativeDevice = initialNativeDevice;
+    let generation = owner.generation;
+    this.nativeRenderBundleOwner = {
+      get nativeGpuDevice() {
+        if (owner.generation !== generation) {
+          nativeDevice = owner.nativeGpuDevice;
+          generation = owner.generation;
+        }
+        return nativeDevice;
+      },
+      get generation() { return owner.generation; },
+      get disposed() { return owner.disposed; },
+      get contextLost() { return owner.contextLost; },
+      onDeviceLost: (listener) => owner.onDeviceLost?.(listener) ?? (() => undefined)
+    };
+  }
 
   static async create(options: ProductionWebGPURendererOptions | ProductionWebGL2RendererOptions): Promise<ProductionWebGPURenderer> {
     const renderer = await Renderer.create({
@@ -49,7 +74,13 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
       renderer.dispose();
       throw new Error(`Production WebGPU renderer requires native render pipeline, sampled textures, and texture-to-buffer readback. Missing: ${missing.join(", ") || "readPixelsAsync"}.`);
     }
-    return new ProductionWebGPURenderer(renderer, options.width, options.height);
+    try {
+      const nativeDevice = (renderer.device as unknown as NativeRenderBundleOwner).nativeGpuDevice;
+      return new ProductionWebGPURenderer(renderer, options.width, options.height, nativeDevice);
+    } catch (error) {
+      try { renderer.dispose(); } catch {}
+      throw error;
+    }
   }
 
   onDeviceLost(listener: () => void): () => void {
@@ -66,6 +97,15 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
 
   deviceLost(): boolean {
     return this.renderer.getDiagnostics().contextLost;
+  }
+
+  encodeNativeRenderBundle(request: NativeRenderBundleRequest): NativeRenderBundleResult {
+    this.nativeRenderBundles ??= new NativeRenderBundleCache(this.nativeRenderBundleOwner);
+    return this.nativeRenderBundles.encode(request);
+  }
+
+  invalidateNativeRenderBundle(key?: NativeRenderBundleKey): void {
+    this.nativeRenderBundles?.invalidate(key);
   }
 
   renderFrame(input: ProductionRendererInput): RendererFrameResult {
@@ -157,12 +197,16 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
     const capabilities = new Set(this.renderer.device.info.capabilities ?? []);
     const feature = (id: string, state: ProductionRendererFeature["state"], detail: string): ProductionRendererFeature => ({ id, state, detail });
     const nativePbrSubmissions = diagnostics.nativePbrSubmissions ?? 0;
+    const materialCount = input?.metadata.runtimeMaterialCount ?? input?.metadata.materialCount ?? 0;
+    const materialDetail = !input ? "Awaiting imported asset metadata."
+      : input.metadata.runtimeMaterialCount === undefined ? `${input.metadata.materialCount} authored materials in render metadata`
+        : `${input.metadata.materialCount} authored materials; ${materialCount} runtime-bound materials`;
     return [
       feature("real-webgpu-context", this.renderer.device.kind === "webgpu" ? "supported" : "blocked", `backend=${this.renderer.device.kind}`),
       feature("no-canvas2d-proof", "supported", "Render proof is produced by Renderer/WebGPU and readback, not Canvas 2D drawing."),
       feature("no-mock-device", this.renderer.device.kind === "mock" ? "blocked" : "supported", "ProductionWebGPURenderer refuses mock backend creation."),
       feature("imported-gltf-render-source", input && input.metadata.primitiveCount > 0 ? "supported" : "partial", input ? `${input.metadata.assetId}: ${input.metadata.primitiveCount} primitives` : "Awaiting imported asset render input."),
-      feature("pbr-materials", input && input.metadata.materialCount > 0 ? "supported" : "partial", input ? `${input.metadata.materialCount} glTF materials in render metadata` : "Awaiting imported asset metadata."),
+      feature("pbr-materials", Number.isSafeInteger(materialCount) && materialCount > 0 ? "supported" : "partial", materialDetail),
       feature("texture-upload-diagnostics", (diagnostics.textures ?? 0) > 0 || (diagnostics.nativeTextureBindings ?? 0) > 0 ? "supported" : "partial", `${diagnostics.textures ?? 0} live textures, ${diagnostics.nativeTextureBindings ?? 0} native texture bindings`),
       feature("render-target-diagnostics", diagnostics.renderTargets !== undefined ? "supported" : "partial", `${diagnostics.renderTargets ?? 0} live render targets`),
       feature("draw-call-diagnostics", diagnostics.drawCalls > 0 ? "supported" : "partial", `${diagnostics.drawCalls} draw calls in last frame`),
@@ -196,14 +240,19 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
   }
 
   dispose(): void {
-    this.renderer.dispose();
+    try {
+      this.nativeRenderBundles?.dispose();
+    } finally {
+      this.renderer.dispose();
+    }
   }
 
   private validateImportedAsset(input: ProductionRendererInput): void {
     if (input.metadata.primitiveCount <= 0 || input.metadata.meshCount <= 0) {
       throw new Error("WebGPU imported-asset render proof requires real glTF mesh primitives.");
     }
-    if (input.metadata.materialCount <= 0) {
+    const materialCount = input.metadata.runtimeMaterialCount ?? input.metadata.materialCount;
+    if (!Number.isSafeInteger(materialCount) || materialCount <= 0) {
       throw new Error("WebGPU imported-asset render proof requires real material data.");
     }
   }
@@ -341,7 +390,7 @@ export const WEBGPU_PARITY_PLAN: readonly WebGPUParityFeatureRow[] = [
     wgslFoundation: "n/a (API-level prototype, no new shader)",
     evidence: "Measured 2026-09-04 on Apple Metal 3: 4096 static draws, median bundle-execute 0.60ms vs re-encoded 0.80ms, "
       + "ratio 0.75 (<1, adopt-candidate per screen). tests/reports/webgpu-parity/render-bundle-measurement.json. "
-      + "Zero renderBundle call sites exist in the engine backend — adoption still needs engine implementation."
+      + "An opt-in native-pass bundle cache is source-tested; automatic scene submission and current adapter/pixel evidence remain outstanding."
   },
   {
     id: "compute-particles",

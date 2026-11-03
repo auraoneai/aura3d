@@ -11,6 +11,12 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./helpers": {
+      "types": "./dist/helpers.d.ts",
+      "browser": "./dist/helpers.js",
+      "import": "./dist/helpers.js",
+      "default": "./dist/helpers.js"
     }
   },
   "main": "./dist/index.js",

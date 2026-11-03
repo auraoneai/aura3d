@@ -4,27 +4,24 @@ import type { AuraAssetDefinition, AuraAssetRef, AuraModelOptions, AuraModelNode
 import { AuraNodeBuilder } from "./builder.js";
 import { defineAuraAssets } from "./assets.js";
 import { material } from "./material.js";
-import { physics } from "./physics.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { formatIgnoredOptions, unreadOptionKeys } from "./optionDiagnostics.js";
+import { currentWorkerAssets } from "@aura3d/core";
+import { assertValidPivot } from "../pivotGuard.js";
 
 /**
  * Every top-level option `model()` reads, plus the transform extras it forwards to the node
  * (the render path reads `renderOrder`, `frustumCulled`, `layers`, `userData`; the scene graph
- * reads `rotationOrder`, `quaternion`). `lod` and `collider` are typed but not applied by
- * `model()`: `false` (the default behaviour) is accepted, any other value is OPTION_IGNORED
- * (anim-phys-06).
+ * reads `rotationOrder`, `quaternion`). LOD and collider settings are retained on the
+ * model snapshot; the renderer and physics bridge consume them independently.
  */
 export const MODEL_OPTION_KEYS: readonly string[] = [
-  "name", "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
+  "name", "position", "pivot", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
   "renderOrder", "frustumCulled", "layers", "userData",
   "material", "castShadow", "receiveShadow", "visible", "role", "scaleMode",
   "targetHeight", "targetMaxDimension", "targetLength", "physics", "hiddenNodeNames",
-  "materialOverrides", "variant", "wrinkle"
+  "materialOverrides", "variant", "wrinkle", "lod", "collider"
 ];
-
-/** Typed model options that are honoured only when `false` (nothing to build). */
-const MODEL_FALSE_ONLY_KEYS: readonly string[] = ["lod", "collider"];
 
 /** Builder label and readable keys for the OPTION_IGNORED note; `instances.model` passes its own. */
 export interface ModelOptionGuard {
@@ -33,11 +30,42 @@ export interface ModelOptionGuard {
 }
 
 function modelIgnoredOptions(options: AuraModelOptions, guard: ModelOptionGuard): { readonly ignoredOptions?: readonly string[] } {
-  const record = options as Record<string, unknown>;
-  const unread = unreadOptionKeys(options, [...guard.validKeys, ...MODEL_FALSE_ONLY_KEYS]);
-  const falseOnly = MODEL_FALSE_ONLY_KEYS.filter((key) => !guard.validKeys.includes(key) && record[key] !== undefined && record[key] !== false);
-  const all = [...unread, ...falseOnly];
+  const all = unreadOptionKeys(options, guard.validKeys);
   return all.length === 0 ? {} : { ignoredOptions: [formatIgnoredOptions(guard.builder, all, guard.validKeys)] };
+}
+
+function modelOptionError(message: string): never {
+  const error = new Error(`MODEL_OPTION_UNSUPPORTED: ${message}`);
+  Object.assign(error, { code: "MODEL_OPTION_UNSUPPORTED" });
+  throw error;
+}
+
+function validateModelOptions(asset: AuraAssetRef<"model">, options: AuraModelOptions): void {
+  const lod = options.lod;
+  if (lod !== undefined && lod !== false && lod !== "auto") {
+    if (!lod || typeof lod !== "object" || "levels" in lod) {
+      modelOptionError("model.lod accepts false, 'auto', or an MSFT_lod policy with bias and crossFadeSeconds; use distanceLod for authored primitive levels");
+    }
+    for (const key of Object.keys(lod)) {
+      if (key !== "bias" && key !== "crossFadeSeconds") modelOptionError(`unknown model.lod field '${key}'`);
+    }
+    if (lod.bias !== undefined && (!Number.isFinite(lod.bias) || lod.bias <= 0)) {
+      modelOptionError("model.lod.bias must be a finite positive number");
+    }
+    if (lod.crossFadeSeconds !== undefined && (!Number.isFinite(lod.crossFadeSeconds) || lod.crossFadeSeconds < 0)) {
+      modelOptionError("model.lod.crossFadeSeconds must be a finite non-negative number");
+    }
+  }
+  const collider = options.collider;
+  if (collider !== undefined && collider !== false && collider !== "auto" && collider !== "bounds") {
+    modelOptionError("model.collider accepts false, 'auto', or 'bounds'");
+  }
+  if (collider === "auto" && asset.colliderUrl) {
+    modelOptionError("model.collider 'auto' cannot load a collider sidecar in the synchronous scene physics bridge; use 'bounds' or an explicit physics shape");
+  }
+  if (collider && options.physics && (options.physics.shape !== undefined || options.physics.halfExtents !== undefined || options.physics.radius !== undefined || options.physics.halfHeight !== undefined)) {
+    modelOptionError("model.collider cannot be combined with an explicit physics shape");
+  }
 }
 
 
@@ -54,12 +82,18 @@ export function buildModel<TAsset extends AuraAssetRef<"model">>(
   options: AuraModelOptions,
   guard: ModelOptionGuard
 ): AuraNodeBuilder<AuraModelNode> {
+  assertValidPivot(options.pivot);
+  const pivot = options.pivot === undefined ? undefined : [...options.pivot] as [number, number, number];
+  // instances.model has its own per-instance LOD contract; do not reinterpret it
+  // as an imported-model MSFT_lod policy.
+  if (guard.builder === "model") validateModelOptions(asset, options);
   const ignored = modelIgnoredOptions(options, guard);
   return new AuraNodeBuilder({
     kind: "model",
     asset,
     name: options.name,
     position: options.position,
+    ...(pivot === undefined ? {} : { pivot }),
     rotation: options.rotation,
     scale: options.scale,
     lookAt: options.lookAt,
@@ -80,10 +114,12 @@ export function buildModel<TAsset extends AuraAssetRef<"model">>(
     targetHeight: options.targetHeight,
     targetMaxDimension: options.targetMaxDimension,
     targetLength: options.targetLength,
-    physics: options.physics,
+    physics: options.physics ?? (guard.builder === "model" && options.collider ? { type: "static" } : undefined),
     hiddenNodeNames: options.hiddenNodeNames,
     ...(options.materialOverrides !== undefined ? { materialOverrides: options.materialOverrides } : {}),
     ...(options.variant !== undefined ? { variant: options.variant } : {}),
+    ...(guard.builder === "model" && options.lod !== undefined ? { lod: options.lod } : {}),
+    ...(guard.builder === "model" && options.collider !== undefined ? { collider: options.collider } : {}),
     wrinkle: options.wrinkle
   });
 }
@@ -108,7 +144,7 @@ export const builtInCharacterAssets = lazyNamespace(() => defineAuraAssets({
   humanoid: {
     type: "model",
     format: "glb",
-    url: new URL("./assets/humanoid-fixture.glb", import.meta.url).href,
+    url: currentWorkerAssets()?.humanoid ?? new URL("../assets/humanoid-fixture.glb", import.meta.url).href,
     bounds: [0.7, 1.7, 0.6],
     hash: "sha256-dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
     metadata: {

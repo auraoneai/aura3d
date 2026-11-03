@@ -91,7 +91,7 @@ Browser runs belong on a remote or CI runner when your environment forbids local
 | hand mulberry32 | `createCountedRng(seed)` |
 | hand `window.__test` hooks | `installQaHooks(...)` |
 
-Not mapped: Matcap, Lambert, Phong and Toon materials (toon is `effects.toon`, a screen pass), SSAO/SSR/SSGI, WebGPU renderer. See `docs/workflows/aura3d-vs-threejs-matrix.md` and the `aura3d-threejs-migration` skill.
+`material.toon(...)` creates a toon surface; `effects.toon()` is a separate screen pass. Matcap, Lambert and Phong material mappings, and SSAO/SSR/SSGI, are not established by this quickstart. The native WebGPU renderer has bounded feature coverage, so verify the intended route before use. See `docs/workflows/aura3d-vs-threejs-matrix.md` and the `aura3d-threejs-migration` skill.
 
 ## 6. Mistakes agents make (all observed)
 
@@ -103,9 +103,9 @@ Not mapped: Matcap, Lambert, Phong and Toon materials (toon is `effects.toon`, a
 | Any `as never` / `as any` on an Aura3D call | The type error was the real answer; the call is wrong | Fix the call to match the declared options |
 | `model("robot")`, a raw `.glb` URL or `unsafeModelUrl(...)` | Fails the boundary check; in production nothing draws | `model(assets.robot)` from `src/aura-assets.ts`, with a `sha256-...` `hash` |
 | Writing `hash` or entries by hand | Wrong hash means the production bridge refuses the model | Admit with `assets add`; regenerate, do not edit |
-| `import { createGame } from "@aura3d/engine"` | Root `createGame` is a headless stub (`CREATE_GAME_STUB` warning, no HUD or sound) | `import { createGame } from "@aura3d/engine/game"` |
+| `import { createGame } from "@aura3d/engine"` | Root `createGame` throws `CREATE_GAME_ROOT_UNAVAILABLE_V1` before mounting | `import { createGame } from "@aura3d/engine/game"` |
 | `vite build` fails with `"readFileSync" is not exported by "__vite-browser-external"` | A Node-only asset module was reachable from the browser entry in 4.1.2 | Use `@aura3d/engine` 4.1.3 or newer (see `CHANGELOG.md`) |
-| Console `ENV_FETCH_FAILED:/aura-environments/neutral.manifest.json:404` | Falls back to a neutral floor; frames differ from the authored look | Serve the repo `public/aura-environments/` files at `/aura-environments/` |
+| Console `ENV_FETCH_FAILED:/aura-environments/neutral.manifest.json:404` | The published 4.1.2 lineage requested a missing neutral manifest and fell back to the analytic floor | Upgrade to a version with the embedded neutral probe; see [environment troubleshooting](troubleshooting.md) for non-neutral presets and custom HDRIs |
 | Frame 25 to 40% darker with `effects.vignette()` on (4.2.x; console `POSTPROCESS_V2_UNMIGRATED`) | The vignette ran on display-referred bytes; fixed in 4.3.0 (about 6 to 18% now) | Upgrade, or lower the vignette `intensity`; do not retune every light to compensate |
 | Copying three.js light intensities | Aura3D renders brighter at equal intensities | Start from the look preset; adjust one value at a time |
 

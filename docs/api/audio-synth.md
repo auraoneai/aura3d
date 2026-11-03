@@ -86,6 +86,12 @@ slices.play("hit", { gain: 0.6, pan: -0.2, lowpass: 4400, rate: 1.01 });
 
 A play never repeats the previous take of the same sprite (`(previous + 1 + floor(random * (takes - 1))) % takes`), plays only that slice, and builds `source -> low-pass (if `lowpass`) -> gain -> panner (if `pan`) -> bus`. Before the sheet is decoded, or if it fails, the `fallback` buffer is played whole. `play()` returns the take index (`-1` for the fallback) or `null` when nothing sounded (locked, muted, not running, no buffer). `stopAll()` silences sounding takes; `setBuffer(name, buffer)` supplies an already-decoded sheet.
 
+Sprite URLs, offsets and durations are copied when the slices are created; create a new instance to change them. Preloading can start before audio unlock, and overlapping calls wait for the same downloads. A failed download remains absent until the instance is invalidated.
+
+If a sheet may depend on cookies or other authorization, its owner must call `slices.setSecurityContext(generation)` whenever that authorization changes, including on sign-out. Use a non-secret, nonempty generation string, or omit it to clear on sign-out. Every call invalidates the previous downloads and decoded buffers, stops and disconnects active slice voices, and allows a fresh `preload()` or `prepare()`; even reusing the same string invalidates. The instance cannot detect cookie changes or changes hidden inside a custom fetch function, so callers must signal them. This explicit lifecycle does not provide automatic isolation when those calls are missed. Custom fetch functions may accept a second argument containing an abort signal; late responses are discarded even if they ignore it.
+
+Call `slices.dispose()` before disposing its bank to stop voices and invalidate pending work. Disposal is idempotent and leaves the bank under its owner's control.
+
 How a game maps a contact to gain, pan, filter and rate stays in the game; the kit only plays slices. `CuePlayParams.data` carries a free-form payload to a cue's layer function (a frequency, a contact record).
 
 ## Notes

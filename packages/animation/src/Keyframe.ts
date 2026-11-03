@@ -11,7 +11,21 @@ export type NumberArray = readonly number[];
 
 export type AnimationValue = number | boolean | string | Vec3 | Quat | NumberArray;
 
-export type InterpolationMode = "step" | "linear" | "cubicspline";
+/** Structured input error for an animation field that cannot be evaluated. */
+export class AnimationValidationError extends Error {
+  constructor(readonly code: string, readonly field: string, message: string) {
+    super(`${code}: ${field}: ${message}`);
+    this.name = "AnimationValidationError";
+  }
+}
+
+/**
+ * Interpolation is selected by the key at the beginning of each interval.
+ * `cubicspline` uses glTF-style derivatives per second. `smooth` also uses
+ * derivatives, estimating any missing derivative from neighboring keys.
+ * `bezier` interprets outTangent/inTangent as absolute value-space controls.
+ */
+export type InterpolationMode = "step" | "linear" | "cubicspline" | "smooth" | "bezier";
 
 export type Keyframe<T extends AnimationValue = AnimationValue> = {
   readonly time: number;
@@ -34,15 +48,37 @@ export function validateKeyframes<T extends AnimationValue>(keyframes: readonly 
     throw new Error("Animation track requires at least one keyframe.");
   }
   let previous = -Number.MAX_VALUE;
-  for (const keyframe of keyframes) {
+  for (const [index, keyframe] of keyframes.entries()) {
     if (!Number.isFinite(keyframe.time) || keyframe.time < 0) {
       throw new Error("Keyframe time must be finite and non-negative.");
     }
     if (keyframe.time <= previous) {
       throw new Error("Keyframes must be sorted by strictly increasing time.");
     }
+    if (keyframe.interpolation !== undefined && !["step", "linear", "cubicspline", "smooth", "bezier"].includes(keyframe.interpolation)) {
+      throw new AnimationValidationError("ANIMATION_INTERPOLATION_INVALID", `keyframes[${index}].interpolation`, `Unknown keyframe interpolation: ${String(keyframe.interpolation)}.`);
+    }
     previous = keyframe.time;
   }
+}
+
+/** One-sided endpoint and time-weighted centered interior derivatives for smooth tracks. */
+export function smoothKeyframeTangent(keyframes: readonly Keyframe[], index: number, side: "in" | "out"): AnimationValue {
+  const key = keyframes[index]!;
+  const authored = side === "in" ? key.inTangent : key.outTangent;
+  if (authored !== undefined) return cloneAnimationValue(authored);
+  const before = keyframes[Math.max(0, index - 1)]!;
+  const after = keyframes[Math.min(keyframes.length - 1, index + 1)]!;
+  const span = after.time - before.time;
+  if (typeof key.value === "number") {
+    return span === 0 ? 0 : ((after.value as number) - (before.value as number)) / span;
+  }
+  if (Array.isArray(key.value)) {
+    const a = before.value as readonly number[];
+    const b = after.value as readonly number[];
+    return key.value.map((_, component) => span === 0 ? 0 : (b[component]! - a[component]!) / span);
+  }
+  throw new Error("Smooth interpolation requires numeric values.");
 }
 
 export function serializeKeyframe<T extends AnimationValue>(keyframe: Keyframe<T>): SerializedKeyframe<T> {

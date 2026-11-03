@@ -50,6 +50,42 @@ npx create-aura3d@latest --help
 
 Each scaffold pins the matching `@aura3d/engine` release in its `package.json`, so a new project starts on a consistent set of Aura3D packages.
 
+## Add Look Assets To An Existing Project
+
+Templates that initially use a look receive the packaged HDRIs, attribution and
+environment probes during scaffolding. If you add a look later to a template
+that did not initially use one, install that same asset set into the existing
+project. From the project directory, run a locally available
+`create-aura3d` executable that includes this command:
+
+```bash
+create-aura3d install-look-assets .
+```
+
+The project directory may be omitted to use the current directory, or supplied
+as a path from elsewhere. The command requires a `package.json` declaring an
+`@aura3d/*` dependency and copies the packaged files to `public/hdri/` and
+`public/aura-environments/`. It performs no asset downloads. The source assets
+are verified before copying; identical destination files are kept, and a
+conflicting file is reported rather than overwritten. The command does not
+modify the scene, so add the desired `looks.preset(...)` separately.
+
+Use a local copy matching the project's Aura3D version. If the exact
+`create-aura3d` version is already in npm's cache, npm can run it offline; replace
+`<version>` with that version:
+
+```bash
+npx --offline --yes "create-aura3d@<version>" install-look-assets .
+```
+
+The synchronous API is also available when `create-aura3d` is installed:
+
+```ts
+import { installLookAssets } from "create-aura3d";
+
+const { targetDir, files } = installLookAssets({ targetDir: "." });
+```
+
 ## Add A Real Model
 
 Add a local GLB/glTF asset:

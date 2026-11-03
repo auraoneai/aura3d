@@ -20,6 +20,7 @@
 import type { AnimationPose, AnimationPoseTransform, AnimationQuaternion, AnimationVector3 } from "../AnimationController.js";
 import { AnimationClip } from "../AnimationClip.js";
 import { AnimationTrack } from "../AnimationTrack.js";
+import type { AnimationValue, InterpolationMode, Keyframe } from "../Keyframe.js";
 import {
   HUMANOID_BONES,
   createHumanoidRetargetingMap,
@@ -371,29 +372,45 @@ function bakeRetargetedClip(
   }));
   return {
     name,
-    clip: compileClip(new AnimationClip({ name, duration: sourceClip.duration, tracks }))
+    clip: compileClip(new AnimationClip({ name, duration: sourceClip.duration, tracks, events: sourceClip.events }))
   };
 }
 
 /**
- * Convert a baked `CompiledClip` back into an `AnimationClip` — baked clips are
- * authored as linear keys (cubic tangents are flattened at bake time), so the
- * raw form loses nothing and can register into `clipsByName`/the mixer.
+ * Convert compiled tracks into their editable representation. Retarget-baked
+ * clips contain linear keys; directly compiled clips can additionally carry
+ * discrete values, nonlinear segments, authored tangents and clip markers.
+ * Precision sidecars preserve authored numbers where Float32 storage rounds.
  */
 export function decompileCompiledClip(name: string, compiled: CompiledClip): AnimationClip {
   const tracks = compiled.tracks.map((track) => {
-    const keyframes = [];
-    for (let k = 0; k < track.keyframeCount; k += 1) {
-      const base = k * track.stride;
-      keyframes.push({
-        time: track.times[k]!,
-        value: Array.from(track.values.slice(base, base + track.stride)),
-        ...(track.interpolation[k] === 1 ? { interpolation: "step" as const } : {})
-      });
-    }
-    return new AnimationTrack({ target: track.target, valueType: track.valueType, keyframes });
+    const modes: readonly (InterpolationMode | undefined)[] = [undefined, "step", "cubicspline", "smooth", "bezier"];
+    const numericValue = (buffer: Float32Array | Float64Array, index: number): AnimationValue => {
+      const start = index * track.stride;
+      return track.valueType === "scalar" ? buffer[start]! : Array.from(buffer.subarray(start, start + track.stride));
+    };
+    const keyframes: Keyframe[] = Array.from({ length: track.keyframeCount }, (_, index) => {
+      const code = track.interpolation[index]!;
+      if (code >= modes.length) throw new Error(`ANIMATION_INTERPOLATION_INVALID: interpolation[${index}]: unknown compiled interpolation ${code}.`);
+      const flags = track.authoredKeyframeFlags?.[index];
+      const interpolation = code === 0 && flags !== undefined && (flags & 1) !== 0 ? "linear" : modes[code];
+      // Legacy compiled data lacks authored flags. Its tangent arrays still
+      // carry every required curve control, including synthesized smooth ones.
+      const incomingNeeded = index > 0 && track.interpolation[index - 1]! >= 2;
+      const outgoingNeeded = code >= 2;
+      const preserveIn = flags === undefined ? incomingNeeded : (flags & 2) !== 0;
+      const preserveOut = flags === undefined ? outgoingNeeded : (flags & 4) !== 0;
+      return {
+        time: (track.exactTimes ?? track.times)[index]!,
+        value: track.rawValues ? track.rawValues[index]! : numericValue(track.exactValues ?? track.values, index),
+        ...(interpolation === undefined ? {} : { interpolation }),
+        ...(preserveIn && track.inTangents ? { inTangent: numericValue(track.exactInTangents ?? track.inTangents, index) } : {}),
+        ...(preserveOut && track.outTangents ? { outTangent: numericValue(track.exactOutTangents ?? track.outTangents, index) } : {})
+      };
+    });
+    return new AnimationTrack({ target: track.target, valueType: track.valueType, valueSize: track.stride, keyframes });
   });
-  return new AnimationClip({ name, duration: compiled.duration, tracks });
+  return new AnimationClip({ name, duration: compiled.duration, tracks, events: compiled.events });
 }
 
 /**

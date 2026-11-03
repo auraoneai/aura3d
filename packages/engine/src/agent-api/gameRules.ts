@@ -5,7 +5,7 @@
 // whose module graph enters the barrel (Package Tests / editor-runtime). A leaf
 // module breaks the cycle: both the barrel and the carve-out import from here.
 import type { AuraGameRules } from "./nodes/types.js";
-import { createGameFighting2DRules } from "./GameRuntime.js";
+import { createGameFighting2DRules } from "./GameRuntimeCore.js";
 import { lazyCallable } from "./lazyNamespace.js";
 
 

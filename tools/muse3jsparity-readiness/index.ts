@@ -3,8 +3,8 @@ import { ADMIN_PRD, validateAdministrativeCompletion, validateAdministrativeDeci
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
-import { BASELINE_RENDERING_TOTAL, BASELINE_UNIT_FAILED_CEILING, BASELINE_UNIT_TOTAL, executeStages, reduceReadiness, removedAssertions, validateAssertionInventory, REQUIRED_PARTS, validateCaptureOrder, deriveReleaseVerification, ARCHIVE_REQUIREMENT } from './contracts';
-import type { GateResult, Requirement } from './contracts';
+import { BASELINE_RENDERING_TOTAL, BASELINE_UNIT_FAILED_CEILING, BASELINE_UNIT_TOTAL, assessAssertionLineage, executeStages, reduceReadiness, validateAssertionInventory, REQUIRED_PARTS, validateCaptureOrder, deriveReleaseVerification, ARCHIVE_REQUIREMENT } from './contracts';
+import type { BehaviorOnlySuccessor, GateResult, Requirement } from './contracts';
 import { artifact, MAX_COMPARISON_AGE_MS, newRunId, resolveQuarantine, sameSource, sourceIdentity, validateReceipt, writeImmutableJson } from './evidence-lineage';
 import type { Artifact, ProducerReceipt, QuarantineEvent } from './evidence-lineage';
 import { loadMuse301ExecutionRequirements } from './requirements';
@@ -20,31 +20,32 @@ const only = new Set((option('only') ?? '').split(',').filter(Boolean));
 const scope = process.argv.some(a => a.startsWith('--only=')) ? 'partial' : 'full';
 if (scope === 'partial' && only.size === 0) throw new Error('--only requires at least one gate');
 const readJson = (path: string): any => JSON.parse(readFileSync(resolve(ROOT, path), 'utf8'));
-interface Stage { gate: string; group: string; part: string; command: string[]; report?: string; browser?: boolean; evidenceRefresh?: string; check?: (data: any) => string[] }
-const assertionIds = (report: any): string[] => (report.testResults ?? []).flatMap((suite: any) =>
-  (suite.assertionResults ?? []).map((test: any) => `${relative(ROOT, suite.name).replace(/^.*?(tests\/)/, '$1')}::${test.fullName ?? [...(test.ancestorTitles ?? []), test.title].join(' ')}`));
+interface Stage { gate: string; group: string; part: string; command: string[]; report?: string; browser?: boolean; evidenceRefresh?: string; check?: (data: any, root?: string) => string[]; behaviorOnlySuccessors?: (data: any) => BehaviorOnlySuccessor[] }
+const baselineLineage = (report: any, root = ROOT) => {
+  const historical = JSON.parse(readFileSync(resolve(root, 'tools/muse3jsparity-readiness/baseline-unit-inventory.json'), 'utf8'));
+  if (historical.total !== BASELINE_UNIT_TOTAL || historical.renderingTotal !== BASELINE_RENDERING_TOTAL || historical.assertions.length !== BASELINE_UNIT_TOTAL) throw new Error('baseline inventory altered');
+  const lineage = JSON.parse(readFileSync(resolve(root, 'tools/muse3jsparity-readiness/baseline-assertion-lineage.json'), 'utf8'));
+  const observations = (report.testResults ?? []).flatMap((suite: any) =>
+    (suite.assertionResults ?? []).map((test: any) => ({
+      id: `${relative(root, suite.name).replace(/^.*?(tests\/)/, '$1')}::${test.fullName ?? [...(test.ancestorTitles ?? []), test.title].join(' ')}`,
+      status: test.status
+    })));
+  return assessAssertionLineage(historical.assertions, observations, lineage);
+};
 const baseline: Stage[] = [
   { gate: 'R-typecheck', group: 'typecheck', part: 'R', command: ['pnpm', 'exec', 'tsc', '-p', 'tsconfig.build.json', '--noEmit'] },
-  { gate: 'R-unit', group: 'unit', part: 'R', command: ['pnpm', 'exec', 'vitest', 'run', 'tests/unit', '--maxWorkers=2', '--reporter=default', '--reporter=json'], check: data => {
+  { gate: 'R-unit', group: 'unit', part: 'R', command: ['pnpm', 'exec', 'vitest', 'run', 'tests/unit', '--maxWorkers=2', '--reporter=default', '--reporter=json'], check: (data, root) => {
     const errors: string[] = validateAssertionInventory(data, BASELINE_UNIT_TOTAL);
     if (!Number.isInteger(data.numTotalTests) || data.numTotalTests < BASELINE_UNIT_TOTAL) errors.push('unit count below 4417');
     if (data.numFailedTests !== 0 || data.numPendingTests !== 0 || (data.numTodoTests ?? 0) !== 0) errors.push('failed, pending, todo or malformed unit results');
     const rendering = (data.testResults ?? []).filter((x: any) => x.name?.includes('/rendering/')).flatMap((x: any) => x.assertionResults ?? []);
     if (rendering.length < BASELINE_RENDERING_TOTAL || rendering.some((x: any) => x.status !== 'passed')) errors.push('rendering inventory below 983 or not all passed');
     try {
-      const historical = readJson('tools/muse3jsparity-readiness/baseline-unit-inventory.json');
-      if (historical.total !== BASELINE_UNIT_TOTAL || historical.renderingTotal !== BASELINE_RENDERING_TOTAL || historical.assertions.length !== BASELINE_UNIT_TOTAL) throw new Error('baseline inventory altered');
-      const lineage = readJson('tools/muse3jsparity-readiness/baseline-assertion-lineage.json');
-      if (lineage.schema !== 'muse3jsparity-baseline-assertion-lineage/v1' || !lineage.replacements || typeof lineage.replacements !== 'object') throw new Error('baseline assertion lineage malformed');
-      const replacementEntries = Object.entries(lineage.replacements) as [string, string][];
-      if (new Set(replacementEntries.map(([, successor]) => successor)).size !== replacementEntries.length) throw new Error('baseline assertion lineage reuses a successor');
-      if (replacementEntries.some(([predecessor, successor]) => !historical.assertions.includes(predecessor) || predecessor === successor)) throw new Error('baseline assertion lineage contains an invalid predecessor');
-      const currentAssertions = assertionIds(data);
-      const removed = removedAssertions(historical.assertions, currentAssertions, lineage.replacements);
+      const { removed } = baselineLineage(data, root);
       if (removed.length) errors.push(`removed baseline assertions: ${removed.join(', ')}`);
     } catch (error) { errors.push(`cannot verify baseline assertion inventory: ${String(error)}`); }
     return errors;
-  } },
+  }, behaviorOnlySuccessors: data => baselineLineage(data).behaviorOnly },
   { gate: 'R-integration', group: 'integration', part: 'R', command: ['pnpm', 'exec', 'vitest', 'run', 'tests/integration', '--maxWorkers=2', '--reporter=default', '--reporter=json'], check: data =>
     validateAssertionInventory(data, 11) }
 ];
@@ -167,6 +168,7 @@ const execute = (stage: Stage): GateResult => {
       env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME: `${path}.report.json`, AURA_MUSE_RUN_ID: runId, AURA_MUSE_GATE: stage.gate, AURA_MUSE_OUTPUT_DIR: gateDir }, stdio: ['ignore', 'pipe', 'pipe'] }); }
     catch (error) { const e = error as { status?: number; stdout?: string; stderr?: string; message: string }; exitCode = e.status ?? 1; stdout = String(e.stdout ?? ''); stderr = String(e.stderr ?? e.message); }
     const errors: string[] = [];
+    let behaviorOnlySuccessors: BehaviorOnlySuccessor[] | undefined;
     // An evidence-refresh stage exists to regenerate retained artifacts, and its own
     // acceptance is proven elsewhere (see the stage's `evidenceRefresh` rationale), so a
     // nonzero exit does not become this gate's verdict. The report check below still
@@ -182,10 +184,12 @@ const execute = (stage: Stage): GateResult => {
           if (!(data.stats?.expected > 0) && !(data.stats?.unexpected > 0)) errors.push('evidence-refresh suite did not execute');
         } else if (stage.browser && (!(data.stats?.expected > 0) || data.stats.unexpected !== 0 || data.stats.skipped !== 0 || data.errors?.length)) errors.push('browser suite missing, failed, or skipped');
         errors.push(...(stage.check?.(data) ?? []));
+        behaviorOnlySuccessors = stage.behaviorOnlySuccessors?.(data);
       } catch (error) { errors.push(`invalid producer report: ${String(error)}`); }
     }
     if (!sameSource(source, sourceIdentity(ROOT))) errors.push('source changed during execution');
-    writeFileSync(`${path}.log`, `${stdout}\n${stderr}\n${errors.join('\n')}\n`, { flag: 'wx' });
+    const lineageLog = behaviorOnlySuccessors?.map(item => `behavior-only assertion lineage: ${JSON.stringify(item)}`).join('\n') ?? '';
+    writeFileSync(`${path}.log`, `${stdout}\n${stderr}\n${errors.join('\n')}\n${lineageLog}\n`, { flag: 'wx' });
     const packagePaths = execFileSync('git', ['ls-files', '-z', 'package.json', 'packages/**/package.json'], { cwd: ROOT, encoding: 'utf8' }).split('\0').filter(Boolean)
       .filter(file => { try { const pkg = readJson(file); return pkg.private !== true && (pkg.name?.startsWith('@aura3d/') || pkg.name === 'create-aura3d'); } catch { return false; } });
     const tarballDir = resolve(ROOT, 'tests/reports/release-tarballs');
@@ -206,7 +210,8 @@ const execute = (stage: Stage): GateResult => {
     const written = writeImmutableJson(`${path}.receipt.json`, receipt);
     const ref = { ...written, path: relative(ROOT, written.path) }; receiptRefs[stage.gate] = ref;
     const verified = validateReceipt(ROOT, ref, { source, gate: stage.gate, tasks, now: Date.now() });
-    result = { gate: stage.gate, parts: [stage.part], tasks, verdict: verified.valid ? 'pass' : 'fail', detail: [...errors, ...verified.errors].join('; ') || 'command and producer receipt verified', receipt: ref.path, receiptHash: ref.sha256, receiptValid: verified.valid };
+    result = { gate: stage.gate, parts: [stage.part], tasks, verdict: verified.valid ? 'pass' : 'fail', detail: [...errors, ...verified.errors].join('; ') || 'command and producer receipt verified', receipt: ref.path, receiptHash: ref.sha256, receiptValid: verified.valid,
+      ...(behaviorOnlySuccessors === undefined ? {} : { behaviorOnlySuccessors }) };
     if (result.verdict === 'pass') { quarantine = resolveQuarantine(quarantine, stage.gate, ref, source, ROOT, Date.now()); break; }
     if (stage.browser) quarantine.push({ gate: stage.gate, failedAt: receipt.endedAt, source, failureReceipt: ref });
   }
@@ -240,7 +245,7 @@ if (option('administrative-completion')) {
         else try {
           const data=JSON.parse(readFileSync(resolve(evidenceRoot,reports[0].path),'utf8'));
           if(stage.browser&&(!(data.stats?.expected>0)||data.stats.unexpected!==0||data.stats.skipped!==0||data.errors?.length))errors.push('Browser suite missing, failed, or skipped');
-          errors.push(...stage.check?.(data)??[]);
+          errors.push(...stage.check?.(data,evidenceRoot)??[]);
         }catch{errors.push('Unreadable infrastructure report');}
       }
       return errors;

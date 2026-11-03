@@ -33,6 +33,38 @@ export interface QrFlags {
   on(name: QrFlagName): boolean;
 }
 
+const trustedQrFlags = new WeakSet<object>();
+
+/** Construct a stable flag identity whose `on` method uses only its copied values. */
+export function createTrustedQrFlags(values: Readonly<Partial<Record<QrFlagName, QrFlagValue>>>): QrFlags {
+  const copy: Record<string, QrFlagValue> = Object.create(null) as Record<string, QrFlagValue>;
+  for (const key of Reflect.ownKeys(values)) {
+    if (typeof key !== "string") throw new TypeError("Flag names must be strings");
+    const descriptor = Reflect.getOwnPropertyDescriptor(values, key);
+    if (!descriptor || !descriptor.enumerable) continue;
+    if (!("value" in descriptor)) throw new TypeError(`Flag ${key} must be a data property`);
+    const value: unknown = descriptor.value;
+    if (value === undefined) continue;
+    if (typeof value !== "boolean" && typeof value !== "string") throw new TypeError(`Flag ${key} must be a boolean or string`);
+    copy[key] = value;
+  }
+  const frozen = Object.freeze(copy);
+  const result: QrFlags = Object.freeze({
+    values: frozen,
+    on(name: QrFlagName): boolean {
+      const value = frozen[name];
+      return value !== undefined && value !== false && value !== "0" && value !== "off" && value !== "";
+    }
+  });
+  trustedQrFlags.add(result);
+  return result;
+}
+
+/** Trust is attached to the factory-created identity, not to a frozen values object. */
+export function isTrustedQrFlags(flags: QrFlags): boolean {
+  return trustedQrFlags.has(flags);
+}
+
 export interface ContractSlot<T> {
   readonly id: ContractId;
   readonly owner: PrdId;
@@ -91,51 +123,93 @@ export interface Registry<E extends RegistryEntry> {
   register(entry: E): () => void;
   /** entries whose flag is on, sorted by (order ?? 0, id) */
   active(flags: QrFlags): readonly E[];
+  /** True if a provider may be active; untrusted flag objects fail closed. */
+  hasPotentiallyActive(flags: QrFlags): boolean;
+  /** Unsorted provider identities that may activate, without reading provider metadata. */
+  potentiallyActiveEntries(flags: QrFlags): readonly E[];
   all(): readonly E[];
 }
 
+interface RegisteredEntry<E> {
+  readonly entry: E;
+  /** Null means activation could not be captured without invoking an accessor. */
+  readonly flag: QrFlagName | null;
+}
+
 class RegistryImpl<E extends RegistryEntry> implements Registry<E> {
-  private readonly entries = new Map<string, E>();
+  private readonly entries = new Map<string, RegisteredEntry<E>>();
   /** Bumped by every register/unregister so a memoised `active()` list never outlives a registry change. */
   private version = 0;
   /**
    * `active(flags)` runs several times per frame (frame contributors, shader features, material lobes) and rebuilt, filtered
-   * and sorted the registry each time. Resolved `QrFlags` are immutable (their `values` map is frozen), so the list for one
-   * flags object only changes when the registry does. Flags objects without a frozen `values` map (test doubles) are never cached.
+   * and sorted the registry each time. Only factory-created flag identities
+   * have a proven stable `on` method; custom flag objects are never cached.
    */
   private readonly activeMemo = new WeakMap<QrFlags, { readonly version: number; readonly result: readonly E[] }>();
   constructor(public readonly name: string) {}
 
   register(entry: E): () => void {
-    if (this.entries.has(entry.id)) {
-      throw new Error(`REGISTRY_DUPLICATE:${entry.id}`);
+    const id = entry.id;
+    if (this.entries.has(id)) {
+      throw new Error(`REGISTRY_DUPLICATE:${id}`);
     }
-    this.entries.set(entry.id, entry);
+    let flag: QrFlagName | null = null;
+    try {
+      // Inspect only at explicit registration time. Accessors and providers
+      // whose descriptor cannot be inspected are conservatively unknown.
+      const descriptor = Reflect.getOwnPropertyDescriptor(entry, "flag");
+      if (descriptor && "value" in descriptor && typeof descriptor.value === "string" && descriptor.value.length > 0) {
+        flag = descriptor.value as QrFlagName;
+      }
+    } catch {
+      // A Proxy may refuse descriptor access. Preflight must then fail closed.
+    }
+    const registered: RegisteredEntry<E> = { entry, flag };
+    this.entries.set(id, registered);
     this.version += 1;
     return () => {
-      if (this.entries.get(entry.id) === entry) {
-        this.entries.delete(entry.id);
+      if (this.entries.get(id) === registered) {
+        this.entries.delete(id);
         this.version += 1;
       }
     };
   }
 
   active(flags: QrFlags): readonly E[] {
-    const values = (flags as { readonly values?: unknown }).values;
-    const cacheable = typeof values === "object" && values !== null && Object.isFrozen(values);
+    const cacheable = isTrustedQrFlags(flags);
     if (cacheable) {
       const hit = this.activeMemo.get(flags);
       if (hit !== undefined && hit.version === this.version) return hit.result;
     }
     const result = Object.freeze([...this.entries.values()]
-      .filter((entry) => flags.on(entry.flag))
+      // Known flags use the same registration-time snapshot as preflight.
+      // Unknown/accessor-backed flags are read only during actual activation.
+      .filter((record) => flags.on(record.flag ?? record.entry.flag))
+      .map((record) => record.entry)
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
     if (cacheable) this.activeMemo.set(flags, { version: this.version, result });
     return result;
   }
 
+  hasPotentiallyActive(flags: QrFlags): boolean {
+    if (!isTrustedQrFlags(flags)) return this.entries.size > 0;
+    for (const { flag } of this.entries.values()) {
+      if (flag === null || flags.on(flag)) return true;
+    }
+    return false;
+  }
+
+  potentiallyActiveEntries(flags: QrFlags): readonly E[] {
+    if (!isTrustedQrFlags(flags)) return Object.freeze(this.all());
+    const result: E[] = [];
+    for (const { entry, flag } of this.entries.values()) {
+      if (flag === null || flags.on(flag)) result.push(entry);
+    }
+    return Object.freeze(result);
+  }
+
   all(): readonly E[] {
-    return [...this.entries.values()];
+    return [...this.entries.values()].map((record) => record.entry);
   }
 }
 

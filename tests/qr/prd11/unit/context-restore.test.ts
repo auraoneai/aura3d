@@ -173,12 +173,14 @@ describe("RenderTargetPool.rebuildForRestore", () => {
   it("drops pooled targets so acquire recreates them", () => {
     const device = new MockRenderDevice();
     const pool = new RenderTargetPool(device);
-    const t = pool.acquire({ width: 4, height: 4, format: "rgba8", samples: 1, depth: false });
-    pool.release(t);
+    const lease = pool.acquireLease({ width: 4, height: 4, format: "rgba8", samples: 1, depth: false });
+    lease.release();
     expect(pool.poolStats().idle).toBe(1);
     pool.rebuildForRestore();
     expect(pool.poolStats()).toEqual({ idle: 0, inUse: 0, created: 1 });
-    pool.acquire({ width: 4, height: 4, format: "rgba8", samples: 1, depth: false });
+    const next = pool.acquireLease({ width: 4, height: 4, format: "rgba8", samples: 1, depth: false });
     expect(pool.poolStats().created).toBe(2);
+    next.release();
+    pool.dispose();
   });
 });

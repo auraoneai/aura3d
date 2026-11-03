@@ -33,6 +33,29 @@ function toneMappingOperatorFor(op: string | undefined): RendererToneMappingOper
   return op as RendererToneMappingOperator;
 }
 
+// The renderer recognizes this internal link only while both option bags are
+// the exact, unchanged pair emitted for a single root DoF node. The legacy bag
+// remains available to the WebGL fallback, whose focus model differs from v2.
+const ROOT_DOF_TWIN = Symbol.for("@aura3d/root-postprocess/dof-twin/v1");
+
+function rootDofFields(value: unknown): readonly (readonly [string, unknown])[] | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || ![Object.prototype, null].includes(Object.getPrototypeOf(value))) return null;
+  const entries = Object.entries(value);
+  if (Reflect.ownKeys(value).length !== entries.length || entries.some(([, field]) =>
+    field !== null && !["undefined", "boolean", "number", "string"].includes(typeof field))) return null;
+  return Object.freeze(entries.map(entry => Object.freeze(entry)));
+}
+
+function linkRootDofTwin(legacy: RendererPostProcessOptions["depthOfField"], nativeDof: unknown): void {
+  const legacyFields = rootDofFields(legacy);
+  const nativeFields = rootDofFields(nativeDof);
+  if (!legacy || !legacyFields || !nativeFields) return;
+  Object.defineProperty(legacy, ROOT_DOF_TWIN, {
+    value: Object.freeze({ legacy, nativeDof, legacyFields, nativeFields })
+  });
+}
+
 /**
  * The C-27 tier the post chain resolves with. An explicit
  * `post.setQualityTier(tier)` (or a live tiers-lane change) wins; `auto` and
@@ -41,9 +64,15 @@ function toneMappingOperatorFor(op: string | undefined): RendererToneMappingOper
  * (capped at High, `resolvePostOnlyTier`), so phones stop paying for High
  * post while the rest of the tiers lane stays off.
  */
-export function resolvePostQualityTier(requested: AuraQualityTier | "auto" | null, canvas?: HTMLCanvasElement): AuraQualityTier {
+export function resolvePostQualityTier(requested: AuraQualityTier | "auto" | null, canvas?: HTMLCanvasElement | OffscreenCanvas): AuraQualityTier {
   if (requested && requested !== "auto") return requested;
   return postOnlyTierFor(canvas) ?? "high";
+}
+
+/** Stable mounted owner and original scene, before any per-frame wrapper is built. */
+export interface ProductionTemporalSceneIdentity {
+  readonly owner: object;
+  readonly snapshot: AuraSceneSnapshot;
 }
 
 export function createProductionRuntimePostprocess(
@@ -52,7 +81,7 @@ export function createProductionRuntimePostprocess(
   renderWidth = 1280,
   renderHeight = 720,
   temporalSupported = true,
-  attach?: { readonly canvas?: HTMLCanvasElement; readonly frameTime?: number }
+  attach?: { readonly canvas?: HTMLCanvasElement | OffscreenCanvas; readonly frameTime?: number; readonly temporalSceneIdentity?: ProductionTemporalSceneIdentity }
 ): RendererPostProcessOptions {
   // GU47 E-C handoff 1 (EC-5): this app's `app.post.setEffect` /
   // `setEffectEnabled` overrides apply to the compiler bag too (bloom pass
@@ -158,8 +187,7 @@ export function createProductionRuntimePostprocess(
     })
     : null;
   const temporalRequested = temporalSupported && (Boolean(authoredMotionBlur) || authoredAntiAlias?.mode === "taa" || resolvedAa?.mode === "taa");
-  let sceneKey = productionTemporalSceneKeys.get(snapshot);
-  if (!sceneKey) { sceneKey = `root-scene-${++productionTemporalSceneSequence}`; productionTemporalSceneKeys.set(snapshot, sceneKey); }
+  const sceneKey = productionTemporalSceneKey(snapshot, attach?.temporalSceneIdentity);
   const fxaaRequested = resolvedAa ? resolvedAa.mode === "fxaa" : (authoredAntiAlias?.mode ?? "fxaa") === "fxaa";
   const outlineChannels = colorToRgba(authoredOutline?.color ?? "#ff9822");
   let options: RendererPostProcessOptions = {
@@ -352,6 +380,11 @@ export function createProductionRuntimePostprocess(
       },
       v2: true
     };
+    // Multiple authored DoF nodes are not a proven twin: do not authorize
+    // WebGPU to discard one as though it represented the other.
+    if (nodes.filter(node => node.kind === "effect" && node.effect === "depth-of-field").length === 1) {
+      linkRootDofTwin(options.depthOfField, pipelineResult.options.dof);
+    }
   }
   // C-31 feed (lane 03): the post/exposure diagnostics sections report what was
   // actually submitted — including the pinned `toneMapping.exposure: 1` while
@@ -388,5 +421,19 @@ export function createProductionRuntimePostprocess(
 }
 
 const productionTemporalSceneKeys = new WeakMap<AuraSceneSnapshot, string>();
+const compiledTemporalSceneKeys = new WeakMap<object, WeakMap<AuraSceneSnapshot, string>>();
 
 let productionTemporalSceneSequence = 0;
+
+function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: ProductionTemporalSceneIdentity): string {
+  if (!identity) {
+    let key = productionTemporalSceneKeys.get(snapshot);
+    if (!key) { key = `root-scene-${++productionTemporalSceneSequence}`; productionTemporalSceneKeys.set(snapshot, key); }
+    return key;
+  }
+  let scenes = compiledTemporalSceneKeys.get(identity.owner);
+  if (!scenes) { scenes = new WeakMap(); compiledTemporalSceneKeys.set(identity.owner, scenes); }
+  let key = scenes.get(identity.snapshot);
+  if (!key) { key = `root-scene-${++productionTemporalSceneSequence}`; scenes.set(identity.snapshot, key); }
+  return key;
+}

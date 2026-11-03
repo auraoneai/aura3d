@@ -7,41 +7,73 @@ import { Vector3 } from "./Vector3.js";
 import type { Matrix4 } from "./Matrix4.js";
 import type { Ray } from "./Ray.js";
 
-const EPS = 1e-10;
-
-/** Closest points on two finite line segments (three `lineToLineClosestPoints`). */
-function lineToLineClosestPoints(line1: Line3, line2: Line3): { point1: Vector3; point2: Vector3 } {
-  const r = line1.end.subtract(line1.start);
-  const s = line2.end.subtract(line2.start);
-  const w = line2.start.subtract(line1.start);
-  const a = r.dot(s);
-  const b = r.dot(r);
-  const c = s.dot(s);
-  const d = s.dot(w);
-  const e = r.dot(w);
-  let t1: number;
-  let t2: number;
-  const divisor = b * c - a * a;
-  if (Math.abs(divisor) < EPS) {
-    const d1 = -d / c;
-    const d2 = (a - d) / c;
-    if (Math.abs(d1 - 0.5) < Math.abs(d2 - 0.5)) {
-      t1 = 0;
-      t2 = d1;
-    } else {
-      t1 = 1;
-      t2 = d2;
+/** Minimize squared distance over a pair of finite segment parameters. */
+function closestSegments(first: Line3, second: Line3): { point1: Vector3; point2: Vector3 } {
+  const a = first.end.subtract(first.start);
+  const b = second.end.subtract(second.start);
+  const origin = first.start.subtract(second.start);
+  const aa = a.dot(a), bb = b.dot(b), ab = a.dot(b);
+  const ao = a.dot(origin), bo = b.dot(origin);
+  const clamp = (n: number): number => Math.max(0, Math.min(1, n));
+  let bestFirst = first.start;
+  let bestSecond = second.start;
+  let bestDistance = bestFirst.distanceToSquared(bestSecond);
+  const consider = (s: number, t: number): void => {
+    const point1 = first.start.addScaled(a, s);
+    const point2 = second.start.addScaled(b, t);
+    const distance = point1.distanceToSquared(point2);
+    if (distance < bestDistance) {
+      bestFirst = point1;
+      bestSecond = point2;
+      bestDistance = distance;
     }
-  } else {
-    t1 = (d * a + e * c) / divisor;
-    t2 = (t1 * a - d) / c;
-  }
-  t2 = Math.max(0, Math.min(1, t2));
-  t1 = Math.max(0, Math.min(1, t1));
-  return {
-    point1: r.multiplyScalar(t1).add(line1.start),
-    point2: s.multiplyScalar(t2).add(line2.start)
   };
+  // A convex distance function reaches its minimum either in the interior or
+  // on one of the four edges of the [0,1] × [0,1] parameter rectangle.
+  if (bb > 0) { consider(0, clamp(bo / bb)); consider(1, clamp((bo + ab) / bb)); }
+  if (aa > 0) { consider(clamp(-ao / aa), 0); consider(clamp((ab - ao) / aa), 1); }
+  const determinant = aa * bb - ab * ab;
+  if (determinant > Number.EPSILON * aa * bb) {
+    const s = (ab * bo - bb * ao) / determinant;
+    const t = (aa * bo - ab * ao) / determinant;
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1) consider(s, t);
+  }
+  return { point1: bestFirst, point2: bestSecond };
+}
+
+function faceNormal(triangle: Triangle): Vector3 {
+  return triangle.b.subtract(triangle.a).cross(triangle.c.subtract(triangle.a)).normalize();
+}
+
+function triangleEdges(triangle: Triangle): readonly Line3[] {
+  return [new Line3(triangle.a, triangle.b), new Line3(triangle.b, triangle.c), new Line3(triangle.c, triangle.a)];
+}
+
+/** A stable separation direction even for a collapsed face or segment. */
+function fallbackContactNormal(triangle: Triangle, normal: Vector3): Vector3 {
+  if (normal.lengthSquared() > 0) return normal;
+  const ab = triangle.b.subtract(triangle.a);
+  const ac = triangle.c.subtract(triangle.a);
+  const edge = ab.lengthSquared() >= ac.lengthSquared() ? ab : ac;
+  if (edge.lengthSquared() === 0) return Vector3.up;
+  const x = Math.abs(edge.x), y = Math.abs(edge.y), z = Math.abs(edge.z);
+  const axis = x <= y && x <= z ? Vector3.right : y <= z ? Vector3.up : Vector3.forward;
+  return edge.cross(axis).normalize();
+}
+
+/** Parameter interval where a segment projects into a nondegenerate face. */
+function projectedFaceInterval(segment: Line3, triangle: Triangle): readonly [number, number] | undefined {
+  const start = triangle.getBarycoord(segment.start);
+  const end = triangle.getBarycoord(segment.end);
+  if (!start || !end) return undefined;
+  let lower = 0;
+  let upper = 1;
+  for (const [a, b] of [[start.x, end.x], [start.y, end.y], [start.z, end.z]]) {
+    if (a! < 0 && b! < 0) return undefined;
+    if (a! < 0) lower = Math.max(lower, -a! / (b! - a!));
+    else if (b! < 0) upper = Math.min(upper, a! / (a! - b!));
+  }
+  return lower <= upper ? [lower, upper] : undefined;
 }
 
 export interface OctreeCollisionResult {
@@ -207,37 +239,37 @@ export class Octree {
   }
 
   triangleCapsuleIntersect(capsule: Capsule, triangle: Triangle): OctreeTriangleHit | false {
-    const plane = triangle.getPlane();
-    const d1 = plane.distanceToPoint(capsule.start) - capsule.radius;
-    const d2 = plane.distanceToPoint(capsule.end) - capsule.radius;
-    if ((d1 > 0 && d2 > 0) || (d1 < -capsule.radius && d2 < -capsule.radius)) {
-      return false;
-    }
-    const delta = Math.abs(d1 / (Math.abs(d1) + Math.abs(d2)));
-    const intersectPoint = capsule.start.lerp(capsule.end, delta);
-    if (triangle.containsPoint(intersectPoint)) {
-      return { normal: plane.normal, point: intersectPoint, depth: Math.abs(Math.min(d1, d2)) };
-    }
-
-    const r2 = capsule.radius * capsule.radius;
-    const line1 = new Line3(capsule.start, capsule.end);
-    const lines: [Vector3, Vector3][] = [
-      [triangle.a, triangle.b],
-      [triangle.b, triangle.c],
-      [triangle.c, triangle.a]
-    ];
-    for (const [start, end] of lines) {
-      const line2 = new Line3(start, end);
-      const { point1, point2 } = lineToLineClosestPoints(line1, line2);
-      if (point1.distanceToSquared(point2) < r2) {
-        return {
-          normal: point1.subtract(point2).normalize(),
-          point: point2,
-          depth: capsule.radius - point1.distanceTo(point2)
-        };
+    if (capsule.radius < 0) return false;
+    const segment = new Line3(capsule.start, capsule.end);
+    const normal = faceNormal(triangle);
+    let best: OctreeTriangleHit | false = false;
+    if (normal.lengthSquared() > 0) {
+      const startDistance = capsule.start.subtract(triangle.a).dot(normal);
+      const endDistance = capsule.end.subtract(triangle.a).dot(normal);
+      // Preserve the one-sided capsule convention: a capsule wholly behind a
+      // face does not collide with its back, but a crossing capsule is pushed
+      // toward the front until its deepest point clears the plane.
+      if (Math.max(startDistance, endDistance) < 0 || Math.min(startDistance, endDistance) > capsule.radius) return false;
+      const interval = projectedFaceInterval(segment, triangle);
+      if (interval) {
+        const t = startDistance <= endDistance ? interval[0] : interval[1];
+        const axisPoint = segment.at(t);
+        const distance = axisPoint.subtract(triangle.a).dot(normal);
+        if (distance <= capsule.radius) {
+          best = { normal, point: axisPoint.addScaled(normal, -distance), depth: capsule.radius - distance };
+        }
       }
     }
-    return false;
+    for (const edge of triangleEdges(triangle)) {
+      const { point1, point2 } = closestSegments(segment, edge);
+      const offset = point1.subtract(point2);
+      const distance = offset.length();
+      if (distance > capsule.radius) continue;
+      const contactNormal = distance > 0 ? offset.multiplyScalar(1 / distance) : fallbackContactNormal(triangle, normal);
+      const depth = capsule.radius - distance;
+      if (!best || depth > best.depth) best = { normal: contactNormal, point: point2, depth };
+    }
+    return best;
   }
 
   triangleBoxIntersect(box: Box3, triangle: Triangle): OctreeTriangleHit | false {
@@ -255,49 +287,50 @@ export class Octree {
     // expensive check
     if (!box.intersectsTriangle(triangle)) return false;
 
-    const plane = triangle.getPlane();
+    // A collapsed triangle has no face plane or uniquely defined separation
+    // direction for a box. Do not ask Plane to normalize its zero normal.
+    const normal = faceNormal(triangle);
+    if (normal.lengthSquared() === 0) return false;
     // deepest box corner relative to the plane
     const v1 = new Vector3(
-      plane.normal.x > 0 ? box.min.x : box.max.x,
-      plane.normal.y > 0 ? box.min.y : box.max.y,
-      plane.normal.z > 0 ? box.min.z : box.max.z
+      normal.x > 0 ? box.min.x : box.max.x,
+      normal.y > 0 ? box.min.y : box.max.y,
+      normal.z > 0 ? box.min.z : box.max.z
     );
-    const distance = plane.distanceToPoint(v1);
+    const distance = v1.subtract(triangle.a).dot(normal);
     return {
       depth: -distance,
-      normal: plane.normal,
-      point: v1.addScaled(plane.normal, distance)
+      normal,
+      point: v1.addScaled(normal, -distance)
     };
   }
 
   triangleSphereIntersect(sphere: Sphere, triangle: Triangle): OctreeTriangleHit | false {
-    const plane = triangle.getPlane();
-    if (!sphere.intersectsPlane(plane)) return false;
-
-    const depth = Math.abs(plane.distanceToSphere(sphere));
-    const r2 = sphere.radius * sphere.radius - depth * depth;
-    const plainPoint = plane.projectPoint(sphere.center);
-    if (triangle.containsPoint(sphere.center)) {
-      return { normal: plane.normal, point: plainPoint, depth: Math.abs(plane.distanceToSphere(sphere)) };
-    }
-    const lines: [Vector3, Vector3][] = [
-      [triangle.a, triangle.b],
-      [triangle.b, triangle.c],
-      [triangle.c, triangle.a]
-    ];
-    for (const [start, end] of lines) {
-      const line = new Line3(start, end);
-      const v2 = line.closestPointToPoint(plainPoint, true);
-      const d = v2.distanceToSquared(sphere.center);
-      if (d < r2) {
+    if (sphere.radius < 0) return false;
+    const normal = faceNormal(triangle);
+    if (normal.lengthSquared() > 0) {
+      const signedDistance = sphere.center.subtract(triangle.a).dot(normal);
+      if (Math.abs(signedDistance) > sphere.radius) return false;
+      if (triangle.containsPoint(sphere.center)) {
         return {
-          normal: sphere.center.subtract(v2).normalize(),
-          point: v2,
-          depth: sphere.radius - Math.sqrt(d)
+          normal,
+          point: sphere.center.addScaled(normal, -signedDistance),
+          depth: sphere.radius - signedDistance
         };
       }
     }
-    return false;
+    let best: OctreeTriangleHit | false = false;
+    const center = new Line3(sphere.center, sphere.center);
+    for (const edge of triangleEdges(triangle)) {
+      const { point2 } = closestSegments(center, edge);
+      const offset = sphere.center.subtract(point2);
+      const distance = offset.length();
+      if (distance > sphere.radius) continue;
+      const contactNormal = distance > 0 ? offset.multiplyScalar(1 / distance) : fallbackContactNormal(triangle, normal);
+      const depth = sphere.radius - distance;
+      if (!best || depth > best.depth) best = { normal: contactNormal, point: point2, depth };
+    }
+    return best;
   }
 
   getSphereTriangles(sphere: Sphere, triangles: Triangle[]): void {
@@ -339,68 +372,84 @@ export class Octree {
     }
   }
 
-  /**
-   * Resolves `box` against the octree — returns the accumulated collision
-   * normal + depth or `false` (three `Octree.boxIntersect`).
-   */
+  /** Resolve the deepest contact first, gathering new contacts after each move. */
   boxIntersect(box: Box3): OctreeCollisionResult | false {
     let moving = box;
-    const triangles: Triangle[] = [];
-    let hit = false;
-    this.getBoxTriangles(box, triangles);
-    for (const triangle of triangles) {
-      const result = this.triangleBoxIntersect(moving, triangle);
-      if (result) {
-        hit = true;
-        moving = moving.translate(result.normal.multiplyScalar(result.depth));
+    let hit: OctreeTriangleHit | false = false;
+    const size = box.max.subtract(box.min);
+    const tolerance = Math.max(Number.MIN_VALUE, size.length() * 1e-12);
+    for (let pass = 0; pass < 32; pass += 1) {
+      const triangles: Triangle[] = [];
+      this.getBoxTriangles(moving, triangles);
+      let deepest: OctreeTriangleHit | false = false;
+      for (const triangle of triangles) {
+        const result = this.triangleBoxIntersect(moving, triangle);
+        if (result && (!deepest || result.depth > deepest.depth)) deepest = result;
       }
+      if (!deepest) break;
+      hit = deepest;
+      if (deepest.depth <= tolerance) break;
+      moving = moving.translate(deepest.normal.multiplyScalar(deepest.depth));
     }
     if (hit) {
-      const collisionVector = moving.getCenter().subtract(box.getCenter());
+      const collisionVector = moving.min.subtract(box.min);
       const depth = collisionVector.length();
-      return { normal: collisionVector.normalize(), depth };
+      return { normal: depth > 0 ? collisionVector.multiplyScalar(1 / depth) : hit.normal, depth };
     }
     return false;
   }
 
-  /** three.js `Octree.sphereIntersect`. */
+  /** Resolve the deepest current contact first, so coplanar seams cannot push sideways. */
   sphereIntersect(sphere: Sphere): OctreeCollisionResult | false {
     let moving = sphere;
-    const triangles: Triangle[] = [];
-    let hit = false;
-    this.getSphereTriangles(sphere, triangles);
-    for (const triangle of triangles) {
-      const result = this.triangleSphereIntersect(moving, triangle);
-      if (result) {
-        hit = true;
-        moving = moving.translate(result.normal.multiplyScalar(result.depth));
+    let hit: OctreeTriangleHit | false = false;
+    const tolerance = Math.max(Number.MIN_VALUE, Math.abs(sphere.radius) * 1e-12);
+    for (let pass = 0; pass < 32; pass += 1) {
+      const triangles: Triangle[] = [];
+      this.getSphereTriangles(moving, triangles);
+      let deepest: OctreeTriangleHit | false = false;
+      for (const triangle of triangles) {
+        const result = this.triangleSphereIntersect(moving, triangle);
+        if (result && (!deepest || result.depth > deepest.depth)) deepest = result;
       }
+      if (!deepest) break;
+      hit = deepest;
+      if (deepest.depth <= tolerance) break;
+      moving = moving.translate(deepest.normal.multiplyScalar(deepest.depth));
     }
     if (hit) {
       const collisionVector = moving.center.subtract(sphere.center);
       const depth = collisionVector.length();
-      return { normal: collisionVector.normalize(), depth };
+      return { normal: depth > 0 ? collisionVector.multiplyScalar(1 / depth) : hit.normal, depth };
     }
     return false;
   }
 
-  /** three.js `Octree.capsuleIntersect`. */
+  /** Resolve capsule contacts with the same bounded, deepest-first policy. */
   capsuleIntersect(capsule: Capsule): OctreeCollisionResult | false {
     let moving = capsule;
-    const triangles: Triangle[] = [];
-    let hit = false;
-    this.getCapsuleTriangles(capsule, triangles);
-    for (const triangle of triangles) {
-      const result = this.triangleCapsuleIntersect(moving, triangle);
-      if (result) {
-        hit = true;
-        moving = moving.translate(result.normal.multiplyScalar(result.depth));
+    let hit: OctreeTriangleHit | false = false;
+    const tolerance = Math.max(Number.MIN_VALUE, Math.abs(capsule.radius) * 1e-12);
+    for (let pass = 0; pass < 32; pass += 1) {
+      const triangles: Triangle[] = [];
+      this.getCapsuleTriangles(moving, triangles);
+      let deepest: OctreeTriangleHit | false = false;
+      for (const triangle of triangles) {
+        const result = this.triangleCapsuleIntersect(moving, triangle);
+        if (result && (!deepest || result.depth > deepest.depth)) deepest = result;
       }
+      if (!deepest) break;
+      hit = deepest;
+      if (deepest.depth <= tolerance) break;
+      moving = moving.translate(deepest.normal.multiplyScalar(deepest.depth));
     }
     if (hit) {
-      const collisionVector = moving.getCenter().subtract(capsule.getCenter());
+      // Both endpoints are translated by the same correction. Using an
+      // endpoint avoids cancellation when the capsule is long relative to a
+      // small penetration.
+      const collisionVector = moving.start.subtract(capsule.start);
       const depth = collisionVector.length();
-      return { normal: collisionVector.normalize(), depth };
+      return { normal: depth > 0 ? collisionVector.multiplyScalar(1 / depth) : hit.normal, depth };
     }
     return false;
   }

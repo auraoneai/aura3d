@@ -2,6 +2,128 @@
   "package": "@aura3d/engine",
   "specifiers": [
     {
+      "name": "@aura3d/assets/importers",
+      "file": "packages/assets/src/importers.ts"
+    },
+    {
+      "name": "@aura3d/rendering/volumetrics",
+      "file": "packages/rendering/src/volumetrics.ts"
+    },
+    {
+      "name": "@aura3d/engine/geometry-tools",
+      "file": "packages/engine/src/public/geometry-tools.ts"
+    },
+    {
+      "name": "@aura3d/engine/shader-graph-runtime",
+      "file": "packages/engine/src/public/shader-graph-runtime.ts"
+    },
+    {
+      "name": "@aura3d/engine/worker",
+      "file": "packages/engine/src/public/worker.ts"
+    },
+    {
+      "name": "@aura3d/engine/lighting",
+      "file": "packages/rendering/src/lighting/index.ts"
+    },
+    {
+      "name": "@aura3d/engine/v5/internal",
+      "file": "packages/engine/src/public/v5-internal.ts"
+    },
+    {
+      "name": "@aura3d/engine/v5/context",
+      "file": "packages/engine/src/public/v5-context.ts"
+    },
+    {
+      "name": "@aura3d/engine/v5/game",
+      "file": "packages/game/src/v5.ts"
+    },
+    {
+      "name": "@aura3d/engine/v5/math/hull",
+      "file": "packages/math/src/independent/hull-entry.ts"
+    },
+    {
+      "name": "@aura3d/engine/v5",
+      "file": "packages/engine/src/public/v5.ts"
+    },
+    {
+      "name": "@aura3d/engine/scatter",
+      "file": "packages/engine/src/agent-api/nodes/scatter.ts"
+    },
+    {
+      "name": "@aura3d/addons/utils/WorkerPool",
+      "file": "packages/addons/src/utils/WorkerPool.ts"
+    },
+    {
+      "name": "@aura3d/addons/tools/Fracture",
+      "file": "packages/addons/src/tools/Fracture.ts"
+    },
+    {
+      "name": "@aura3d/addons/tools/TubePainter",
+      "file": "packages/addons/src/tools/TubePainter.ts"
+    },
+    {
+      "name": "@aura3d/addons/tools/Sculptor",
+      "file": "packages/addons/src/tools/Sculptor.ts"
+    },
+    {
+      "name": "@aura3d/addons/generators/EnvironmentGenerators",
+      "file": "packages/addons/src/generators/EnvironmentGenerators.ts"
+    },
+    {
+      "name": "@aura3d/addons/objects/SpecializedObjects",
+      "file": "packages/addons/src/objects/SpecializedObjects.ts"
+    },
+    {
+      "name": "@aura3d/addons/objects/MarchingCubes",
+      "file": "packages/addons/src/objects/MarchingCubes.ts"
+    },
+    {
+      "name": "@aura3d/addons/effects/OutlineOutput",
+      "file": "packages/addons/src/effects/OutlineOutput.ts"
+    },
+    {
+      "name": "@aura3d/addons/effects/AsciiOutput",
+      "file": "packages/addons/src/effects/AsciiOutput.ts"
+    },
+    {
+      "name": "@aura3d/addons/effects/StereoOutputs",
+      "file": "packages/addons/src/effects/StereoOutputs.ts"
+    },
+    {
+      "name": "@aura3d/addons/renderers/VectorRenderer",
+      "file": "packages/addons/src/renderers/VectorRenderer.ts"
+    },
+    {
+      "name": "@aura3d/addons/renderers/SpatialDOMRenderer",
+      "file": "packages/addons/src/renderers/SpatialDOMRenderer.ts"
+    },
+    {
+      "name": "@aura3d/addons",
+      "file": "packages/addons/src/index.ts"
+    },
+    {
+      "name": "@aura3d/animation/contracts",
+      "file": "packages/animation/src/contracts/pose.ts",
+      "devOnly": true,
+      "browser301": false
+    },
+    {
+      "name": "@aura3d/assets/exporters",
+      "file": "packages/assets/src/exporters/index.ts"
+    },
+    {
+      "name": "@aura3d/rendering/lighting",
+      "file": "packages/rendering/src/lighting/index.ts"
+    },
+    {
+      "name": "@aura3d/rendering/shader-graph",
+      "file": "packages/rendering/src/program/ShaderGraphCompiler.ts"
+    },
+    {
+      "name": "@aura3d/debug/helpers",
+      "file": "packages/debug/src/helpers.ts"
+    },
+    {
       "name": "@aura3d/engine/rendering/production-runtime",
       "file": "packages/engine/src/deprecated/rendering-production-runtime.ts"
     },
@@ -407,7 +529,8 @@
     {
       "name": "./math",
       "source": "packages/math/src/index.ts",
-      "dist": "./dist/math/index.js"
+      "dist": "./dist/math/index.js",
+      "requireDist": "./dist/math/index.cjs"
     },
     {
       "name": "./scene",
@@ -519,6 +642,66 @@
       "name": "./game/styles.css",
       "source": "packages/game/src/styles.css",
       "dist": "./dist/game/styles.css"
+    },
+    {
+      "name": "./scatter",
+      "source": "packages/engine/src/agent-api/nodes/scatter.ts",
+      "dist": "./dist/engine/agent-api/nodes/scatter.js",
+      "conditions": true
+    },
+    {
+      "name": "./worker",
+      "source": "packages/engine/src/public/worker.ts",
+      "dist": "./dist/engine/public/worker.js",
+      "conditions": true
+    },
+    {
+      "name": "./lighting",
+      "source": "packages/rendering/src/lighting/index.ts",
+      "dist": "./dist/rendering/lighting/index.js",
+      "conditions": true
+    },
+    {
+      "name": "./v5",
+      "source": "packages/engine/src/public/v5.ts",
+      "dist": "./dist/engine/public/v5.js",
+      "conditions": true
+    },
+    {
+      "name": "./v5/context",
+      "source": "packages/engine/src/public/v5-context.ts",
+      "dist": "./dist/engine/public/v5-context.js",
+      "conditions": true
+    },
+    {
+      "name": "./v5/game",
+      "source": "packages/game/src/v5.ts",
+      "dist": "./dist/game/v5.js",
+      "conditions": true
+    },
+    {
+      "name": "./v5/math/hull",
+      "source": "packages/math/src/independent/hull-entry.ts",
+      "dist": "./dist/math/independent/hull-entry.js",
+      "conditions": true
+    },
+    {
+      "name": "./v5/internal",
+      "source": "packages/engine/src/public/v5-internal.ts",
+      "dist": "./dist/engine/public/v5-internal.js",
+      "conditions": true
+    },
+    {
+      "name": "./shader-graph-runtime",
+      "source": "packages/engine/src/public/shader-graph-runtime.ts",
+      "dist": "./dist/engine/public/shader-graph-runtime.js",
+      "conditions": true
+    },
+    {
+      "name": "./geometry-tools",
+      "source": "packages/engine/src/public/geometry-tools.ts",
+      "dist": "./dist/engine/public/geometry-tools.js",
+      "conditions": true
     }
   ],
   "deprecated": [

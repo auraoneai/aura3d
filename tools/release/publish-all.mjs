@@ -40,12 +40,13 @@
 //     from the environment and never logged: `--otp` is appended to the argv of the
 //     child process only.
 
-import { expectedPublicPackageCount } from './release-inventory.mjs';
+import { assertReleaseInventory, releaseInventoryId } from './release-inventory.mjs';
 import { execFileSync, execSync } from "node:child_process";
 import { sourceIdentity, assertCommittedReleaseSource } from "./source-identity.mjs";
+import { bindReleasePlanToCurrentCommit, loadValidatedReleasePlan } from "./exact-release-plan.mjs";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -53,6 +54,10 @@ const PACK_ONLY = process.argv.includes("--pack-only");
 const planArgument = process.argv.indexOf("--from-plan");
 const FROM_PLAN = planArgument < 0 ? null : process.argv[planArgument + 1];
 if (planArgument >= 0 && (!FROM_PLAN || FROM_PLAN.startsWith("--"))) throw new Error("--from-plan requires an exact release-plan path");
+const outPlanArgument = process.argv.indexOf("--out-plan");
+const OUT_PLAN = outPlanArgument < 0 ? null : process.argv[outPlanArgument + 1];
+if (outPlanArgument >= 0 && (!OUT_PLAN || OUT_PLAN.startsWith("--") || !PACK_ONLY)) throw new Error("--out-plan requires --pack-only and an output path");
+if (OUT_PLAN && FROM_PLAN) throw new Error("--out-plan cannot rewrite a retained plan");
 if (DRY_RUN && PACK_ONLY) {
   console.error("Choose either --dry-run or --pack-only, not both.");
   process.exit(1);
@@ -60,7 +65,14 @@ if (DRY_RUN && PACK_ONLY) {
 // Never hardcode or log this. It is a short-lived one-time password, not a token.
 const NPM_OTP = process.env.NPM_OTP?.trim() ?? "";
 const OTP_ARG = NPM_OTP ? ` --otp ${JSON.stringify(NPM_OTP)}` : "";
-const PACK_DIR = join(ROOT, "tests", "reports", "release-tarballs");
+const requestedPackDir = process.env.A3D_RELEASE_PACK_DIR;
+if (requestedPackDir && (!PACK_ONLY || !/^tests\/reports\/native-capabilities\/[A-Za-z0-9][A-Za-z0-9._-]{0,79}\/candidate-tarballs$/.test(requestedPackDir))) {
+  throw new Error("A3D_RELEASE_PACK_DIR requires --pack-only and a safe run-specific candidate directory");
+}
+if (requestedPackDir && process.env.NATIVE_RUN_ID && requestedPackDir !== `tests/reports/native-capabilities/${process.env.NATIVE_RUN_ID}/candidate-tarballs`) {
+  throw new Error("Candidate directory does not match NATIVE_RUN_ID");
+}
+const PACK_DIR = requestedPackDir ? join(ROOT, requestedPackDir) : join(ROOT, "tests", "reports", "release-tarballs");
 
 function sh(command, options = {}) {
   // 64MB buffer: `pnpm pack` of the engine prints thousands of npm-notice lines,
@@ -151,14 +163,9 @@ function publishedRegistryVersion(name, version) {
 }
 
 const packages = dependencyOrder(collectPublishablePackages());
-const EXPECTED_PUBLIC_COUNT = expectedPublicPackageCount(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version);
-if (packages.length !== EXPECTED_PUBLIC_COUNT) {
-  console.error(`Expected exactly ${EXPECTED_PUBLIC_COUNT} publishable packages, found ${packages.length}:`);
-  for (const { manifest } of packages) console.error(`  - ${manifest.name}@${manifest.version}`);
-  process.exit(1);
-}
-
 const version = packages[0].manifest.version;
+const inventoryId = releaseInventoryId(version, packages.some(({ manifest }) => manifest.name === '@aura3d/addons') ? 'native-1' : undefined);
+const EXPECTED_PUBLIC_COUNT = assertReleaseInventory(version, packages.map(({ manifest }) => manifest.name), inventoryId).length;
 const frozenSource = sourceIdentity(ROOT);
 if (!DRY_RUN && !PACK_ONLY) assertCommittedReleaseSource(ROOT);
 const mismatched = packages.filter(({ manifest }) => manifest.version !== version);
@@ -187,12 +194,11 @@ if (DRY_RUN) {
 }
 
 // Reuse the exact validated archive bytes. A publication run must never repack them.
-const retainedPlan = FROM_PLAN ? JSON.parse(readFileSync(resolve(ROOT, FROM_PLAN), "utf8")) : null;
+const retainedPlan = FROM_PLAN ? loadValidatedReleasePlan(ROOT, FROM_PLAN) : null;
 if (!DRY_RUN && !PACK_ONLY && !retainedPlan) throw new Error("Publication requires --from-plan pointing to the validated exact artifact set");
 if (retainedPlan) {
-  if (!retainedPlan.source || Object.keys(frozenSource).some(key=>retainedPlan.source[key] !== frozenSource[key])) throw new Error("Release plan source fingerprint mismatch");
-  if (retainedPlan.version !== version || retainedPlan.commit !== sh("git rev-parse HEAD") || retainedPlan.lockfileSha256 !== createHash("sha256").update(readFileSync(join(ROOT,"pnpm-lock.yaml"))).digest("hex")) throw new Error("Release plan source/version/lock mismatch");
-  if (retainedPlan.packages?.length !== EXPECTED_PUBLIC_COUNT || new Set(retainedPlan.packages.map(p=>p.name)).size !== EXPECTED_PUBLIC_COUNT) throw new Error("Release plan inventory mismatch");
+  if (retainedPlan.version !== version || releaseInventoryId(version, retainedPlan.inventoryId) !== inventoryId || retainedPlan.lockfileSha256 !== frozenSource.lockfileSha256) throw new Error("Release plan source/version/lock mismatch");
+  assertReleaseInventory(version, retainedPlan.packages.map(p => p.name), inventoryId);
   // Validate every archive before making any registry write.
   for (const { manifest } of packages) {
     const entry = retainedPlan.packages.find(p=>p.name===manifest.name && p.version===manifest.version);
@@ -200,9 +206,19 @@ if (retainedPlan) {
     const bytes = readFileSync(resolve(ROOT,entry.tarball));
     if (createHash("sha256").update(bytes).digest("hex") !== entry.sha256 || `sha512-${createHash("sha512").update(bytes).digest("base64")}` !== entry.integrity) throw new Error(`Archive changed: ${entry.tarball}`);
   }
+  if (!DRY_RUN && !PACK_ONLY) bindReleasePlanToCurrentCommit(ROOT, retainedPlan);
 }
-if (!retainedPlan) rmSync(PACK_DIR, { recursive: true, force: true });
-mkdirSync(PACK_DIR, { recursive: true });
+if (!retainedPlan) {
+  mkdirSync(dirname(PACK_DIR), { recursive: true });
+  try {
+    mkdirSync(PACK_DIR);
+  } catch (error) {
+    if (error?.code === "EEXIST") throw new Error("Candidate directory already exists; use a fresh run-specific directory");
+    throw error;
+  }
+} else {
+  mkdirSync(PACK_DIR, { recursive: true });
+}
 
 // Trap 2: move the animation-studio template node_modules aside while packing.
 const STUDIO_NODE_MODULES = join(ROOT, "packages", "create-aura3d", "templates", "animation-studio", "node_modules");
@@ -263,15 +279,18 @@ if (failures.length > 0) {
 const finalSource = sourceIdentity(ROOT);
 if (Object.keys(frozenSource).some(key=>finalSource[key] !== frozenSource[key])) throw new Error("Source changed during packing/publication; discard this run");
 
+const planOutput = OUT_PLAN ? resolve(ROOT, OUT_PLAN) : join(PACK_DIR, "release-plan.json");
+if (!retainedPlan) mkdirSync(resolve(planOutput, ".."), { recursive: true });
 if (!retainedPlan) writeFileSync(
-  join(PACK_DIR, "release-plan.json"),
+  planOutput,
   `${JSON.stringify({
     schema: "aura3d-release-plan/1.0",
     source: frozenSource,
     generatedAt: new Date().toISOString(),
-    commit: sh("git rev-parse HEAD"),
+    commit: frozenSource.commit,
     lockfileSha256: createHash("sha256").update(readFileSync(join(ROOT, "pnpm-lock.yaml"))).digest("hex"),
     version,
+    inventoryId,
     dryRun: DRY_RUN,
     packOnly: PACK_ONLY,
     expectedPackageCount: EXPECTED_PUBLIC_COUNT,
@@ -290,7 +309,7 @@ if (!retainedPlan) writeFileSync(
       };
     })
   }, null, 2)}\n`,
-  "utf8"
+  { encoding: "utf8", flag: "wx" }
 );
 
 // Trap 4: verify against the registry (skipped when no publication occurred).

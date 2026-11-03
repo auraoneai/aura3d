@@ -6,6 +6,7 @@
 
 import { AuraNodeBuilder } from "./builder.js";
 import type { AuraColor, AuraLineNode, AuraMaterialSpec, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
+import { AuraRuntimeError } from "../compiler/errors.js";
 
 /** `positions`/`points` input: a flat tuple array, flat number array, or packed Float32Array. */
 export type AuraLinePositionsInput = readonly AuraVec3[] | readonly number[] | Float32Array;
@@ -15,7 +16,7 @@ export interface AuraLineOptions {
   readonly points?: AuraLinePositionsInput;
   /** Alias for `points` (three's `position` attribute). `points` wins when both are set. */
   readonly positions?: AuraLinePositionsInput;
-  /** Per-point colors — enables vertex coloring on thin lines (SG-06). */
+  /** Per-point colors, interpolated between segment endpoints. */
   readonly colors?: readonly AuraColor[];
   readonly material?: AuraMaterialSpec;
   readonly name?: string;
@@ -34,11 +35,7 @@ export interface AuraLineOptions {
 export interface AuraFatLineOptions extends AuraLineOptions {
   /** Stroke width — CSS pixels (`worldUnits:false`, default) or world units. */
   readonly width?: number;
-  /**
-   * three's `Line2` world-units mode: width is a world-space extent drawn as
-   * camera-facing quads (`Geometry.wideLineSegments`). Unsupported together
-   * with `dashed` — world-space quads carry no `a_lineDistance` attribute.
-   */
+  /** Use camera-facing strokes with a world-space width instead of CSS pixels. */
   readonly worldUnits?: boolean;
 }
 
@@ -51,6 +48,9 @@ export function normalizeLinePositions(input: AuraLinePositionsInput | undefined
     if (flat.length % 3 !== 0) throw new Error(`${label} positions must be a multiple of 3 numbers`);
     out = [];
     for (let i = 0; i < flat.length; i += 3) {
+      if (![flat[i], flat[i + 1], flat[i + 2]].every(Number.isFinite)) {
+        throw new Error(`${label} point ${i / 3} must be a finite [x, y, z]`);
+      }
       out.push([flat[i] as number, flat[i + 1] as number, flat[i + 2] as number]);
     }
   } else {
@@ -79,6 +79,7 @@ export function normalizeLinePositions(input: AuraLinePositionsInput | undefined
  *    a segment's start picks up the previous segment's end distance).
  */
 export function computeLineDistances(positions: readonly AuraVec3[], mode: "line" | "loop" | "segments"): readonly number[] {
+  if (positions.length === 0) return [];
   const distances: number[] = [0];
   if (mode === "segments") {
     if (positions.length % 2 !== 0) throw new Error("segments line distances require an even point count");
@@ -103,15 +104,21 @@ function segmentLength(a: AuraVec3, b: AuraVec3): number {
   return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
 }
 
-function validateDashOptions(options: AuraLineOptions, label: string): void {
+/** @internal Validate both authored builders and restored line snapshots. */
+export function validateLineDashOptions(options: Pick<AuraLineOptions, "dashed" | "dashSize" | "gapSize" | "dashOffset">, label: string): void {
   const dashSize = options.dashSize ?? (options.dashed ? 1 : 0);
   const gapSize = options.gapSize ?? 0;
-  if (options.dashed || dashSize > 0) {
-    if (gapSize <= 0) throw new Error(`${label} dashed lines require a positive gapSize (three's LineDashedMaterial)`);
-    if (dashSize <= 0) throw new Error(`${label} dashSize must be positive when dashed`);
+  if (!Number.isFinite(dashSize) || dashSize < 0 || !Number.isFinite(gapSize) || gapSize < 0) {
+    throw new AuraRuntimeError("invalid-line-spec", `${label} dashSize and gapSize must be non-negative finite numbers`);
   }
   if (options.dashOffset !== undefined && !Number.isFinite(options.dashOffset)) {
-    throw new Error(`${label} dashOffset must be finite`);
+    throw new AuraRuntimeError("invalid-line-spec", `${label} dashOffset must be finite`);
+  }
+  if (options.dashed === true || dashSize > 0) {
+    if (gapSize <= 0) throw new AuraRuntimeError("invalid-line-spec", `${label} dashed lines require a positive gapSize (three's LineDashedMaterial)`);
+    if (dashSize <= 0) throw new AuraRuntimeError("invalid-line-spec", `${label} dashSize must be positive when dashed`);
+  } else if (options.gapSize !== undefined || options.dashOffset !== undefined) {
+    throw new AuraRuntimeError("invalid-line-spec", `${label} gapSize and dashOffset require dashed lines`);
   }
 }
 
@@ -120,7 +127,10 @@ function lineNode(kind: AuraLineNode["line"], options: AuraLineOptions, minCount
   if (kind === "segments" && positions.length % 2 !== 0) {
     throw new Error(`${label} requires an even number of points (segment pairs)`);
   }
-  validateDashOptions(options, label);
+  if (options.colors !== undefined && options.colors.length !== positions.length) {
+    throw new Error(`${label} colors must match positions length (${options.colors.length} colors, ${positions.length} points)`);
+  }
+  validateLineDashOptions(options, label);
   return {
     kind: "line",
     line: kind,
@@ -159,15 +169,12 @@ export function segments(options: AuraLineOptions): AuraNodeBuilder<AuraLineNode
 
 /**
  * `lines.fat({ width, worldUnits, dashed, dashSize, gapSize, dashOffset })`
- * (AD-08): pixel-width strokes via `ScreenSpaceLineMaterial`; `worldUnits`
- * bakes world-space quad geometry instead.
+ * Width is measured in CSS pixels or world units; both support dashes and
+ * per-point color gradients.
  */
 export function fat(options: AuraFatLineOptions): AuraNodeBuilder<AuraLineNode> {
-  if (options.worldUnits === true && (options.dashed === true || (options.dashSize ?? 0) > 0)) {
-    throw new Error("lines.fat worldUnits + dashed is unsupported: world-space quads carry no line distances (use worldUnits:false for dashes)");
-  }
   const width = options.width ?? 1;
-  if (!Number.isFinite(width) || width <= 0) throw new Error("lines.fat width must be a positive finite number");
+  if (!Number.isFinite(width) || width <= 0) throw new AuraRuntimeError("invalid-line-spec", "lines.fat width must be a positive finite number");
   return new AuraNodeBuilder(lineNode("fat", options, 2, "lines.fat"));
 }
 

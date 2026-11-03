@@ -1,626 +1,579 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import ts from "typescript";
-import { classifyPatchDeclarationChange } from "./patch-compatibility.js";
+import { assertReleaseInventory } from "../release/release-inventory.mjs";
+import { loadValidatedReleasePlan, type ExactReleasePlan } from "../release/exact-release-plan.mjs";
+import { classifyReleaseChange, validateReleaseKind, type ReleaseChange, type ReleaseKind } from "./patch-compatibility.js";
+import { declarationList, previousReleaseVersion, readPackageArchive, sha256, sha512, verifyPackedIdentity, type BaselineManifest, type PackedPackage } from "./prepare-baseline.js";
+import { createRuntimeExportAnalyzer, type RuntimeExportSurface } from "./runtime-exports.js";
 
-const PATCH = process.argv.includes("--patch301");
-const CURRENT_VERSION = (JSON.parse(readFileSync("package.json", "utf8")) as { version: string }).version;
-const BASELINE = PATCH ? "v3.0.0" : "v1.5.2";
-const REPORT_PATH = PATCH ? "tests/reports/public-surface-diff-3.0.1.json" : "tests/reports/public-surface-diff.json";
-const DOC_PATH = PATCH ? "tests/reports/public-surface-diff-3.0.1.md" : "docs/project/public-surface-diff-2.0.md";
-
-type SymbolKind = "runtime" | "type";
-interface SurfaceSymbol { name: string; kind: SymbolKind; signature: string }
-interface EntrySurface { subpath: string; source: string | null; symbols: SurfaceSymbol[] }
-interface PackageSurface {
-  name: string;
-  version: string;
-  manifestPath: string;
-  exports: EntrySurface[];
-  bins: string[];
+export interface ExportEntry {
+  subpath: string;
+  conditions: Record<string, string>;
+  declarations: string[];
+  asset: boolean;
+  /** Ordered condition leaves, including null blockers omitted from conditions. */
+  conditionOrder?: string[];
 }
+export interface Change { package: string; subpath: string; name: string; kind: ReleaseChange["kind"]; classification: ReturnType<typeof classifyReleaseChange>; condition?: string; before?: string; after?: string }
+export interface RuntimeCondition {
+  package: string;
+  subpath: string;
+  condition: string;
+  before?: RuntimeExportSurface;
+  after?: RuntimeExportSurface;
+}
+function escapeRegex(text: string): string { return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function flattenConditions(value: unknown, order: { keys: string[]; hasBlocker: boolean }, path: string[] = []): Record<string, string> {
+  if (typeof value === "string") {
+    order.keys.push(path.join("/") || "default");
+    return { [path.join("/") || "default"]: value };
+  }
+  if (value === null) {
+    order.keys.push(path.join("/") || "default");
+    order.hasBlocker = true;
+    return {};
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Unsupported export condition");
+  return Object.assign({}, ...Object.entries(value).map(([key, target]) => {
+    if (key.startsWith(".")) throw new Error(`Nested subpath in export condition: ${key}`);
+    return flattenConditions(target, order, [...path, key]);
+  }));
+}
+function declarationTarget(target: string): string {
+  return target.replace(/\.mjs$/, ".d.mts").replace(/\.cjs$/, ".d.cts").replace(/\.js$/, ".d.ts");
+}
+/** Enumerate exact paths from the packed manifest and file listing, including
+ * wildcard subpaths and nested conditions. Invalid or missing targets fail. */
+export function expandExports(pkg: PackedPackage): ExportEntry[] {
+  const raw = pkg.manifest.exports ?? pkg.manifest.main;
+  if (!raw) return [];
+  const record = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw as Record<string, unknown> : null;
+  const exportsMap = record && Object.keys(record).some((key) => key.startsWith(".")) ? record : { ".": raw };
+  const entries: ExportEntry[] = [];
+  type ExportRule = { subpath: string; wildcard: number; conditions: Record<string, string>; order: { keys: string[]; hasBlocker: boolean } };
+  const exact = new Map<string, ExportRule>(), patterns: ExportRule[] = [], subpaths = new Set<string>();
+  for (const [subpath, value] of Object.entries(exportsMap)) {
+    if (!/^\.(?:\/[^.]|$)/.test(subpath) || subpath.includes("..")) throw new Error(`Invalid export subpath ${subpath}`);
+    if (/[\\%?#\0]/.test(subpath)) throw new Error(`Cannot safely resolve encoded export subpath ${subpath}`);
+    const wildcard = subpath.indexOf("*");
+    if (wildcard !== -1 && wildcard !== subpath.lastIndexOf("*")) throw new Error(`Unsupported export wildcard ${subpath}`);
+    const order = { keys: [] as string[], hasBlocker: false };
+    const conditions = flattenConditions(value, order);
+    for (const target of Object.values(conditions)) {
+      if (!target.startsWith("./") || target.split("/").includes("..")) throw new Error(`Invalid export target ${target}`);
+      if (/[\\%?#\0]/.test(target)) throw new Error(`Cannot safely resolve encoded export target ${target}`);
+    }
+    const rule = { subpath, wildcard, conditions, order };
+    if (wildcard === -1) {
+      exact.set(subpath, rule);
+      subpaths.add(subpath);
+      continue;
+    }
+    patterns.push(rule);
+    if (Object.keys(conditions).length === 0) continue; // retain blocked patterns for precedence
+    let matched = false;
+    for (const target of Object.values(conditions)) {
+      if ((target.match(/\*/g) ?? []).length !== 1) throw new Error(`Cannot enumerate wildcard target ${target} for ${subpath}`);
+      const [prefix, suffix] = target.slice(2).split("*");
+      const pattern = new RegExp(`^${escapeRegex(prefix!)}([\\s\\S]+)${escapeRegex(suffix!)}$`);
+      for (const path of pkg.paths) {
+        const substitution = path.match(pattern)?.[1];
+        if (!substitution) continue;
+        if (/[\\%?#\0]/.test(substitution)) throw new Error(`Cannot safely enumerate wildcard substitution for ${subpath}`);
+        subpaths.add(subpath.replace("*", () => substitution));
+        matched = true;
+      }
+    }
+    if (!matched) throw new Error(`Wildcard export ${subpath} has no packed targets`);
+  }
+  // Node prefers an exact key, then the longest pattern prefix and, for equal
+  // prefixes, the longest full pattern. Null rules still take precedence.
+  patterns.sort((a, b) => b.wildcard - a.wildcard || b.subpath.length - a.subpath.length);
+  for (const subpath of subpaths) {
+    let rule = exact.get(subpath), substitution = "";
+    if (!rule) {
+      rule = patterns.find((candidate) => subpath.startsWith(candidate.subpath.slice(0, candidate.wildcard))
+        && subpath.endsWith(candidate.subpath.slice(candidate.wildcard + 1))
+        && subpath.length >= candidate.subpath.length);
+      if (!rule) throw new Error(`Cannot resolve export subpath ${subpath}`);
+      substitution = subpath.slice(rule.wildcard, subpath.length - (rule.subpath.length - rule.wildcard - 1));
+    }
+    const { conditions, order } = rule;
+    if (Object.keys(conditions).length === 0) continue; // selected subpath is blocked
+    const concreteConditions = Object.fromEntries(Object.entries(conditions).map(([key, target]) =>
+      [key, rule.wildcard === -1 ? target : target.replaceAll("*", () => substitution)]));
+    for (const target of Object.values(concreteConditions)) if (!pkg.paths.includes(target.slice(2))) throw new Error(`Export target missing from ${pkg.manifest.name}: ${target}`);
+    const explicit = Object.entries(concreteConditions).filter(([key]) => key.split("/").includes("types")).map(([, target]) => target.slice(2));
+    let declarations = explicit;
+    if (!declarations.length) declarations = Object.values(concreteConditions).map((target) => declarationTarget(target).slice(2)).filter((target) => pkg.files.has(target));
+    if (!declarations.length && subpath === "." && pkg.manifest.types) declarations = [pkg.manifest.types.replace(/^\.\//, "")];
+    declarations = [...new Set(declarations)].sort();
+    for (const path of declarations) if (!pkg.files.has(path)) throw new Error(`Declaration missing from ${pkg.manifest.name}: ${path}`);
+    const asset = Object.values(concreteConditions).every((target) => !/\.(?:m|c)?js$/.test(target) && !/\.d\.(?:m|c)?ts$/.test(target));
+    if (!asset && declarations.length === 0) throw new Error(`No declarations for ${pkg.manifest.name}:${subpath}`);
+    entries.push({ subpath, conditions: concreteConditions, declarations, asset, ...(order.hasBlocker ? { conditionOrder: [...order.keys] } : {}) });
+  }
+  return entries.sort((a, b) => a.subpath.localeCompare(b.subpath));
+}
+export function verifyBaseline(path: string, candidate: ExactReleasePlan): { manifest: BaselineManifest; packages: Map<string, PackedPackage> } {
+  const absolute = resolve(path), root = realpathSync(dirname(absolute));
+  const manifest = JSON.parse(readFileSync(absolute, "utf8")) as BaselineManifest;
+  if (manifest.schema !== "aura3d.public-api-baseline/1" || manifest.candidatePlanSha256 !== candidate.reference.sha256 || !Array.isArray(manifest.packages) || !manifest.packages.length) throw new Error("Baseline manifest is missing or not bound to candidate plan");
+  assertReleaseInventory(manifest.version, manifest.packages.map((entry) => entry.name));
+  const packages = new Map<string, PackedPackage>();
+  for (const entry of manifest.packages) {
+    if (!entry.name || entry.version !== manifest.version || packages.has(entry.name) || !/^sha512-/.test(entry.integrity) || !/^https:\/\/registry\.npmjs\.org\//.test(entry.metadataOrigin) || !/^https:\/\/registry\.npmjs\.org\//.test(entry.archiveOrigin) || isAbsolute(entry.archive)) throw new Error("Invalid baseline package record");
+    if (!entry.metadata || isAbsolute(entry.metadata) || !/^[a-f0-9]{64}$/.test(entry.metadataSha256) || entry.metadataOrigin !== `https://registry.npmjs.org/${encodeURIComponent(entry.name)}`) throw new Error(`Invalid metadata identity: ${entry.name}`);
+    const metadataPath = realpathSync(resolve(root, entry.metadata));
+    if (!metadataPath.startsWith(`${root}${sep}`)) throw new Error("Baseline metadata escapes its manifest directory");
+    if (statSync(metadataPath).size > 16 * 1024 * 1024) throw new Error(`Baseline metadata exceeds limit: ${entry.name}`);
+    const metadataBytes = readFileSync(metadataPath);
+    if (sha256(metadataBytes) !== entry.metadataSha256) throw new Error(`Baseline metadata digest mismatch: ${entry.name}`);
+    const metadata = JSON.parse(metadataBytes.toString("utf8")) as { name: string; versions: Record<string, { name: string; version: string; dist?: { tarball?: string; integrity?: string } }> };
+    const published = metadata.versions?.[entry.version];
+    if (metadata.name !== entry.name || published?.name !== entry.name || published.version !== entry.version || published.dist?.tarball !== entry.archiveOrigin || published.dist.integrity !== entry.integrity) throw new Error(`Baseline metadata does not bind archive: ${entry.name}`);
+    // The manifest-stored digest binds this snapshot, not its provenance or freshness.
+    if (entry.name === "@aura3d/engine") previousReleaseVersion(metadata.versions, candidate.version, manifest.version);
+    const archivePath = realpathSync(resolve(root, entry.archive));
+    if (!archivePath.startsWith(`${root}${sep}`)) throw new Error("Baseline archive escapes its manifest directory");
+    if (statSync(archivePath).size > 128 * 1024 * 1024) throw new Error(`Baseline archive exceeds limit: ${entry.name}`);
+    const bytes = readFileSync(archivePath);
+    if (sha256(bytes) !== entry.sha256 || sha512(bytes) !== entry.integrity) throw new Error(`Baseline archive digest mismatch: ${entry.name}`);
+    const pkg = readPackageArchive(bytes);
+    verifyPackedIdentity(pkg, entry.name, entry.version);
+    if (JSON.stringify(declarationList(pkg)) !== JSON.stringify(entry.declarations)) throw new Error(`Baseline declaration digest mismatch: ${entry.name}`);
+    packages.set(entry.name, pkg);
+  }
+  return { manifest, packages };
+}
+function candidates(plan: ExactReleasePlan): Map<string, PackedPackage> {
+  const result = new Map<string, PackedPackage>();
+  for (const entry of plan.packages) {
+    if (result.has(entry.name)) throw new Error(`Duplicate candidate package ${entry.name}`);
+    const bytes = readFileSync(resolve(entry.tarball));
+    if (sha256(bytes) !== entry.sha256 || sha512(bytes) !== entry.integrity) throw new Error(`Candidate digest mismatch: ${entry.name}`);
+    const pkg = readPackageArchive(bytes);
+    verifyPackedIdentity(pkg, entry.name, entry.version);
+    result.set(entry.name, pkg);
+  }
+  return result;
+}
+function unpackDeclarations(pkg: PackedPackage, parent: string): string {
+  const dir = join(parent, "node_modules", ...pkg.manifest.name.split("/"));
+  for (const [path, bytes] of pkg.files) {
+    // Runtime source remains archive data: only declarations and package scopes
+    // are materialized for the existing TypeScript declaration comparison.
+    if (path !== "package.json" && !path.endsWith("/package.json") && !/\.d\.(?:m|c)?ts$/i.test(path)) continue;
+    const target = join(dir, path);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, bytes);
+  }
+  return dir;
+}
+type DeclarationValue = "value" | "type-only" | "unknown";
+type SymbolInfo = { name: string; value: boolean; valueVerified: boolean; type: boolean; signature: string; symbol: ts.Symbol; location: ts.Node; removalVersion?: string };
 
-const migrationText = [
-  readFileSync("docs/archive/docs/migration/2.0.md", "utf8"),
-  readFileSync("docs/archive/docs/migration/physics-rapier-2.0.md", "utf8"),
-  readFileSync("docs/archive/docs/migration/navigation-recast-2.0.md", "utf8"),
-  readFileSync("docs/migration/ecs-scripting-compatibility.md", "utf8"),
-  // 4.0.0 removal record (PRD-15 T8.1): 22 removed subpaths, the lean package,
-  // the AdvancedRenderer alias, and the CCR-15-1 mode types.
-  readFileSync("docs/archive/docs/migration-4.0.md", "utf8"),
-  // 4.2.0: the hosted asset index and its adapter/store/refresh exports were retired.
-  readFileSync("docs/migration/4.2.0.md", "utf8")
-].join("\n");
+/** The checker can expose a class behind `export type *` with Value flags.
+ * Follow the actual export route instead of mistaking its target for a value
+ * export. An unresolved route is kept unknown, not guessed from those flags. */
+function declarationValues(checker: ts.TypeChecker): (file: ts.SourceFile, name: string) => DeclarationValue {
+  const exportsByFile = new Map<ts.SourceFile, Map<string, ts.Symbol>>();
+  const cache = new Map<string, DeclarationValue>();
+  const exportsOf = (file: ts.SourceFile): Map<string, ts.Symbol> => {
+    let entries = exportsByFile.get(file);
+    if (!entries) {
+      const module = checker.getSymbolAtLocation(file);
+      entries = new Map(module ? checker.getExportsOfModule(module).map((symbol) => [symbol.name, symbol]) : []);
+      exportsByFile.set(file, entries);
+    }
+    return entries;
+  };
+  const targetOf = (symbol: ts.Symbol): ts.Symbol => symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+  const moduleFile = (specifier: ts.Expression | undefined): ts.SourceFile | undefined => {
+    if (!specifier) return undefined;
+    return checker.getSymbolAtLocation(specifier)?.getDeclarations()?.find(ts.isSourceFile);
+  };
+  const combine = (states: DeclarationValue[]): DeclarationValue =>
+    states.includes("value") ? "value" : states.includes("unknown") ? "unknown" : "type-only";
 
-// PRD-15 §6.6 disposition ledger — the documented keep-set/drop/deprecated
-// verdict for every name that was on the pre-collapse "." surface. Entries are
-// authoritative documentation for engine "." removals (generated by
-// tools/export-surface/scaffold.ts from root-export-inventory.json).
-const ROOT_DISPOSITIONS: Map<string, { to: string; disposition: string }> = (() => {
-  const map = new Map<string, { to: string; disposition: string }>();
-  try {
-    const data = JSON.parse(readFileSync(join(process.cwd(), "docs/architecture/root-export-dispositions.json"), "utf8")) as {
-      entries?: Array<{ name: string; to: string; disposition: string }>;
+  const resolveValue = (file: ts.SourceFile, name: string, seen: Set<string>): DeclarationValue => {
+    const key = `${file.fileName}\0${name}`;
+    const cached = cache.get(key);
+    if (cached) return cached;
+    if (seen.has(key) || seen.size > 256) return "unknown";
+    const nextSeen = new Set(seen).add(key);
+    const exported = exportsOf(file).get(name);
+    if (!exported) return "unknown";
+    const target = targetOf(exported);
+    if (!(target.flags & ts.SymbolFlags.Value)) return "type-only";
+    const own = (exported.getDeclarations() ?? []).filter((node) => node.getSourceFile() === file);
+    const viaImport = (local: ts.Symbol | undefined): DeclarationValue => {
+      if (!local) return "unknown";
+      if (!(local.flags & ts.SymbolFlags.Alias)) return local.flags & ts.SymbolFlags.Value ? "value" : "type-only";
+      const states: DeclarationValue[] = [];
+      for (const node of local.getDeclarations() ?? []) {
+        let declaration: ts.ImportDeclaration | undefined;
+        let imported = "default";
+        let typeOnly = false;
+        if (ts.isImportSpecifier(node)) {
+          const clause = node.parent.parent;
+          declaration = ts.isImportDeclaration(clause.parent) ? clause.parent : undefined;
+          imported = node.propertyName?.text ?? node.name.text;
+          typeOnly = node.isTypeOnly || clause.isTypeOnly;
+        } else if (ts.isImportClause(node)) {
+          declaration = ts.isImportDeclaration(node.parent) ? node.parent : undefined;
+          typeOnly = node.isTypeOnly;
+        } else if (ts.isNamespaceImport(node)) {
+          const clause = node.parent;
+          declaration = ts.isImportDeclaration(clause.parent) ? clause.parent : undefined;
+          typeOnly = clause.isTypeOnly;
+          if (!typeOnly && declaration && moduleFile(declaration.moduleSpecifier)) { states.push("value"); continue; }
+        } else if (ts.isImportEqualsDeclaration(node) && node.isTypeOnly) {
+          states.push("type-only");
+          continue;
+        } else {
+          states.push("unknown");
+          continue;
+        }
+        if (typeOnly) states.push("type-only");
+        else {
+          const child = moduleFile(declaration?.moduleSpecifier);
+          states.push(child ? resolveValue(child, imported, nextSeen) : "unknown");
+        }
+      }
+      return states.length ? combine(states) : "unknown";
     };
-    for (const entry of data.entries ?? []) {
-      if (typeof entry.name === "string") map.set(entry.name, { to: entry.to, disposition: entry.disposition });
-    }
-  } catch {
-    // No ledger (e.g. scanning the baseline archive): "." removals fall back to
-    // the deprecated-stub evidence chain below.
-  }
-  return map;
-})();
-
-function walk(root: string): string[] {
-  if (!existsSync(root)) return [];
-  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(root, entry.name);
-    if (entry.isDirectory()) return walk(path);
-    return entry.isFile() ? [path] : [];
-  });
-}
-
-function manifests(root: string): string[] {
-  const paths = [join(root, "package.json")];
-  const packages = join(root, "packages");
-  if (existsSync(packages)) {
-    for (const entry of readdirSync(packages, { withFileTypes: true })) {
-      const path = join(packages, entry.name, "package.json");
-      if (entry.isDirectory() && existsSync(path)) paths.push(path);
-    }
-  }
-  return paths.filter((path) => (JSON.parse(readFileSync(path, "utf8")) as { private?: boolean }).private !== true);
-}
-
-function exportTarget(value: unknown): string | null {
-  if (typeof value === "string") return value;
-  if (!value || typeof value !== "object") return null;
-  const record = value as Record<string, unknown>;
-  for (const key of ["types", "browser", "import", "default"]) {
-    const target = exportTarget(record[key]);
-    if (target) return target;
-  }
-  return null;
-}
-
-function sourceForTarget(root: string, manifestPath: string, target: string): string[] {
-  const packageDir = dirname(manifestPath);
-  const withoutPrefix = target.replace(/^\.\//, "").replace(/\.d\.(?:m|c)?ts$/, "").replace(/\.(?:m|c)?js$/, "");
-  const candidates: string[] = [];
-  if (withoutPrefix.startsWith("dist/")) {
-    const tail = withoutPrefix.slice(5);
-    if (packageDir === root) {
-      const [owner, ...rest] = tail.split("/");
-      candidates.push(join(root, "packages", owner!, "src", ...rest));
+    let result: DeclarationValue;
+    if (own.length) {
+      result = combine(own.map((node): DeclarationValue => {
+        if (ts.isExportSpecifier(node)) {
+          const declaration = node.parent.parent;
+          if (node.isTypeOnly || declaration.isTypeOnly) return "type-only";
+          if (!declaration.moduleSpecifier) return viaImport(checker.getExportSpecifierLocalTargetSymbol(node));
+          const child = moduleFile(declaration.moduleSpecifier);
+          return child ? resolveValue(child, node.propertyName?.text ?? node.name.text, nextSeen) : "unknown";
+        }
+        if (ts.isNamespaceExport(node)) return node.parent.isTypeOnly ? "type-only" : "value";
+        if (ts.isExportDeclaration(node)) return node.isTypeOnly ? "type-only" : "value";
+        return "value";
+      }));
     } else {
-      candidates.push(join(packageDir, "src", tail));
-    }
-  }
-  candidates.push(join(packageDir, withoutPrefix));
-  const found: string[] = [];
-  for (const candidate of candidates) {
-    if (candidate.includes("*")) {
-      // Wildcard subpath (e.g. `./contracts/*` -> `dist/contracts/*.js`):
-      // collect every matching source file; the subpath's surface is their union.
-      const prefix = candidate.slice(0, candidate.indexOf("*"));
-      const dir = prefix.endsWith("/") ? prefix.slice(0, -1) : dirname(prefix + "_");
-      const stem = prefix.slice(dir.length + 1);
-      if (existsSync(dir)) {
-        for (const file of readdirSync(dir)) {
-          if (/\.tsx?$/.test(file) && file.replace(/\.tsx?$/, "").startsWith(stem)) found.push(join(dir, file));
-        }
+      const states: DeclarationValue[] = [];
+      for (const statement of file.statements) {
+        if (!ts.isExportDeclaration(statement) || statement.exportClause || !statement.moduleSpecifier) continue;
+        const child = moduleFile(statement.moduleSpecifier);
+        if (!child) { states.push("unknown"); continue; }
+        const childSymbol = exportsOf(child).get(name);
+        if (!childSymbol || targetOf(childSymbol) !== target) continue;
+        states.push(statement.isTypeOnly ? "type-only" : resolveValue(child, name, nextSeen));
       }
-      continue;
+      result = states.length ? combine(states) : "unknown";
     }
-    // Non-code export targets (e.g. `./game/styles.css` → `src/styles.css`)
-    // carry no TS symbols; an existing asset resolves the entrypoint.
-    if (/\.(css|json|txt|html|wasm|svg)$/i.test(candidate) && existsSync(candidate)) {
-      found.push(candidate);
-      continue;
+    if (result !== "unknown") cache.set(key, result);
+    return result;
+  };
+  return (file, name) => resolveValue(file, name, new Set());
+}
+
+function symbols(checker: ts.TypeChecker, file: ts.SourceFile, valueOf: (file: ts.SourceFile, name: string) => DeclarationValue): Map<string, SymbolInfo> {
+  const module = checker.getSymbolAtLocation(file);
+  if (!module) throw new Error(`Declaration is not a module: ${file.fileName}`);
+  const result = new Map<string, SymbolInfo>();
+  for (const exported of checker.getExportsOfModule(module)) {
+    const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
+    const aliasDeclarations = exported.getDeclarations() ?? [];
+    const declarations = target.getDeclarations() ?? [];
+    const location = declarations[0] ?? aliasDeclarations[0] ?? file;
+    const signature = declarations.map((d) => d.getText().replace(/\s+/g, " ").trim()).sort().join(" | ");
+    if (!signature) throw new Error(`Unresolved exported symbol ${exported.name} in ${file.fileName}`);
+    const docs = aliasDeclarations.map((node) => {
+      let owner: ts.Node = ts.isExportSpecifier(node) ? node.parent.parent : node;
+      if (ts.isVariableDeclaration(owner) && ts.isVariableDeclarationList(owner.parent) && ts.isVariableStatement(owner.parent.parent)) owner = owner.parent.parent;
+      return owner.getFullText();
+    }).join("\n");
+    const removalVersion = docs.match(/(?:remov(?:al|ed)|until)\D{0,60}(\d+\.\d+\.\d+)/i)?.[1];
+    const constEnum = declarations.length > 0 && declarations.every((node) => ts.isEnumDeclaration(node)
+      && ts.getModifiers(node)?.some((modifier) => modifier.kind === ts.SyntaxKind.ConstKeyword));
+    const value = !constEnum && !!(target.flags & ts.SymbolFlags.Value) ? valueOf(file, exported.name) : "type-only";
+    result.set(exported.name, { name: exported.name, value: value !== "type-only", valueVerified: value !== "unknown", type: !!(target.flags & ts.SymbolFlags.Type), signature, symbol: target, location, removalVersion });
+  }
+  return result;
+}
+/** Compare the declaration dependency closure when TypeScript's nominal private
+ * class members make the two physically separate package copies incompatible.
+ * Equal source text alone is insufficient: referenced hidden types may change. */
+function declarationClosure(checker: ts.TypeChecker, root: ts.Symbol): string {
+  const visited = new Set<ts.Symbol>();
+  const contents: string[] = [];
+  const visitSymbol = (input: ts.Symbol): void => {
+    const symbol = input.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(input) : input;
+    if (visited.has(symbol)) return;
+    visited.add(symbol);
+    if (visited.size > 20_000) throw new Error("Declaration dependency closure exceeds limit");
+    for (const node of symbol.getDeclarations() ?? []) {
+      contents.push(`${symbol.name}:${node.getText().replace(/\s+/g, " ").trim()}`);
+      const visitNode = (child: ts.Node): void => {
+        if (ts.isIdentifier(child)) {
+          const dependency = checker.getSymbolAtLocation(child);
+          if (dependency) visitSymbol(dependency);
+        }
+        ts.forEachChild(child, visitNode);
+      };
+      ts.forEachChild(node, visitNode);
     }
-    for (const path of [`${candidate}.ts`, `${candidate}.tsx`, join(candidate, "index.ts")]) {
-      if (existsSync(path)) { found.push(path); break; }
-    }
-    if (found.length) break;
+  };
+  visitSymbol(root);
+  return contents.sort().join("\n");
+}
+/** A retarget is conservatively treated as a break: matching declarations do
+ * not establish the actual exports of the newly targeted runtime file. */
+export function compareEntryConditions(name: string, before: ExportEntry, after: ExportEntry | undefined, release: ReleaseKind, version: string): Change[] {
+  const changes: Change[] = [];
+  const add = (kind: ReleaseChange["kind"], field: string, beforeTarget?: string, afterTarget?: string) => {
+    const change = { kind, ...(beforeTarget !== undefined ? { before: beforeTarget } : {}), ...(afterTarget !== undefined ? { after: afterTarget } : {}) };
+    changes.push({ package: name, subpath: before.subpath, name: field, ...change, classification: classifyReleaseChange(change, release, version) });
+  };
+  if (!after) { add("subpath-removal", before.subpath); return changes; }
+  for (const [condition, target] of Object.entries(before.conditions)) {
+    if (!Object.hasOwn(after.conditions, condition)) add("condition-removal", condition, target);
+    else if (after.conditions[condition] !== target) add("condition-target-change", condition, target, after.conditions[condition]);
   }
-  return found;
+  // Conditions are ordered: moving or inserting a branch before a retained
+  // branch can select a different target even when every target string matches.
+  const oldOrder = before.conditionOrder ?? Object.keys(before.conditions), newOrder = after.conditionOrder ?? Object.keys(after.conditions);
+  const oldKeys = new Set(oldOrder), newKeys = new Set(newOrder);
+  const oldRetained = oldOrder.filter((key) => newKeys.has(key));
+  const newRetained = newOrder.filter((key) => oldKeys.has(key));
+  const lastRetained = newOrder.reduce((last, key, index) => oldKeys.has(key) ? index : last, -1);
+  const insertedEarlier = newOrder.some((key, index) => index < lastRetained && !oldKeys.has(key));
+  if (insertedEarlier || oldRetained.some((key, index) => key !== newRetained[index])) {
+    add("condition-order-change", "<condition-order>", JSON.stringify(oldOrder), JSON.stringify(newOrder));
+  }
+  return changes;
 }
 
-function declarationKind(node: ts.Node): SymbolKind {
-  return ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node) ? "type" : "runtime";
+/** Select only a declaration whose condition is safely associated with this
+ * runtime branch. Nested type conditions must match the same branch; ambiguous
+ * or later-priority type branches are not silently applied to another one. */
+function declarationForCondition(entry: ExportEntry, condition: string, target: string): string | undefined {
+  const entries = Object.entries(entry.conditions);
+  const runtimeIndex = entries.findIndex(([key]) => key === condition);
+  const parts = condition.split("/");
+  const explicit = entries.flatMap(([key, value], index) => {
+    const components = key.split("/"), typeIndex = components.indexOf("types");
+    return typeIndex < 0 ? [] : [{ value: value.slice(2), index, prefix: components.slice(0, typeIndex), suffix: components.slice(typeIndex + 1) }];
+  });
+  const inferred = declarationTarget(target).slice(2);
+  const matches = explicit.filter((item) => item.suffix.length === 0
+    && item.prefix.every((part, index) => parts[index] === part)
+    && (item.index < runtimeIndex || item.value === inferred));
+  if (matches.length) {
+    const longest = Math.max(...matches.map((item) => item.prefix.length));
+    const choices = [...new Set(matches.filter((item) => item.prefix.length === longest).map((item) => item.value))];
+    return choices.length === 1 ? choices[0] : undefined;
+  }
+  if (explicit.length) return undefined;
+  if (entry.declarations.includes(inferred)) return inferred;
+  return entry.declarations.length === 1 ? entry.declarations[0] : undefined;
 }
 
-function normalize(value: string): string {
-  return value.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "").replace(/\s+/g, " ").replace(/=\s*\|\s*/g, "= ").trim();
-}
-
-function declarationSignature(node: ts.Node, source: ts.SourceFile): string {
-  if (ts.isFunctionDeclaration(node)) {
-    return normalize(`function ${node.name?.text ?? "default"}${node.typeParameters?.map((item) => item.getText(source)).join(",") ?? ""}(${node.parameters.map((item) => item.getText(source)).join(",")}):${node.type?.getText(source) ?? "inferred"}`);
-  }
-  if (ts.isClassDeclaration(node)) {
-    const members = node.members.filter((member) => {
-      const modifiers = ts.canHaveModifiers(member) ? ts.getModifiers(member) : undefined;
-      return !modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.PrivateKeyword || modifier.kind === ts.SyntaxKind.ProtectedKeyword);
-    }).map((member) => {
-      if (ts.isMethodDeclaration(member)) return `${member.name.getText(source)}(${member.parameters.map((item) => item.getText(source)).join(",")}):${member.type?.getText(source) ?? "inferred"}`;
-      if (ts.isPropertyDeclaration(member)) return `${member.name.getText(source)}:${member.type?.getText(source) ?? "inferred"}`;
-      if (ts.isConstructorDeclaration(member)) return `constructor(${member.parameters.map((item) => item.getText(source)).join(",")})`;
-      return member.getText(source).replace(/\{[\s\S]*\}$/, "");
-    });
-    return normalize(`class ${node.name?.text ?? "default"}{${members.join(";")}}`);
-  }
-  if (ts.isVariableStatement(node)) {
-    return normalize(node.declarationList.declarations.map((declaration) => `${declaration.name.getText(source)}:${declaration.type?.getText(source) ?? "inferred"}`).join(";"));
-  }
-  return normalize(node.getText(source));
-}
-
-// Specifier -> source entry file, from aura.exports.json (the single
-// resolution truth produced by tools/generate-resolution-maps). Deprecated
-// stubs re-export package specifiers like `export * from "@aura3d/rendering"`;
-// without this map they would resolve to an empty surface.
-const AURA_PATHS: Map<string, string> = (() => {
-  const map = new Map<string, string>();
+/** Compare packed condition targets, declarations and statically known runtime
+ * export names. Unknown runtime bodies or export mechanisms always fail closed. */
+export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candidate: Map<string, PackedPackage>, version: string, release: ReleaseKind): {
+  pass: boolean;
+  changes: Change[];
+  diagnostics: string[];
+  packagesCompared: number;
+  runtimeExportsVerified: boolean;
+  runtimeDiagnostics: string[];
+  runtimeExports: RuntimeCondition[];
+} {
+  mkdirSync(resolve("tests/reports"), { recursive: true });
+  const temp = mkdtempSync(resolve("tests/reports/aura3d-api-diff-"));
   try {
-    const data = JSON.parse(readFileSync(join(process.cwd(), "aura.exports.json"), "utf8")) as {
-      paths?: Array<[string, string]>;
-    };
-    for (const pair of data.paths ?? []) {
-      if (Array.isArray(pair) && typeof pair[0] === "string" && typeof pair[1] === "string") {
-        map.set(pair[0], pair[1]);
+    const oldDirs = new Map<string, string>(), newDirs = new Map<string, string>();
+    for (const [name, pkg] of baseline) oldDirs.set(name, unpackDeclarations(pkg, join(temp, "before")));
+    for (const [name, pkg] of candidate) newDirs.set(name, unpackDeclarations(pkg, join(temp, "after")));
+    const oldEntriesByPackage = new Map([...baseline].map(([name, pkg]) => [name, expandExports(pkg)]));
+    const newEntriesByPackage = new Map([...candidate].map(([name, pkg]) => [name, expandExports(pkg)]));
+    const oldAnalyzers = new Map([...baseline].map(([name, pkg]) => [name, createRuntimeExportAnalyzer(pkg)]));
+    const newAnalyzers = new Map([...candidate].map(([name, pkg]) => [name, createRuntimeExportAnalyzer(pkg)]));
+    const pairs: { name: string; entry: ExportEntry; before: string; after: string }[] = [];
+    const runtimeWork: { report: RuntimeCondition; beforeDecl?: string; afterDecl?: string }[] = [];
+    const changes: Change[] = [];
+    for (const [name, oldPkg] of baseline) {
+      const newPkg = candidate.get(name);
+      if (!newPkg) {
+        const kind = "package-removal" as const;
+        changes.push({ package: name, subpath: ".", name, kind, classification: classifyReleaseChange({ kind }, release, version) });
       }
-    }
-  } catch {
-    // No aura.exports.json (e.g. scanning the baseline archive): bare
-    // specifiers simply stay unresolved, matching pre-PRD-15 behavior.
-  }
-  return map;
-})();
-
-function localModule(from: string, specifier: string): string | null {
-  if (!specifier.startsWith(".")) {
-    // Package-name re-export (e.g. `export * from "@aura3d/rendering"` inside a
-    // deprecated stub): resolve it through aura.exports.json, but only for the
-    // current checkout — the baseline archive predates the paths map, and
-    // resolving its specifiers against current sources would corrupt the diff.
-    const mapped = AURA_PATHS.get(specifier);
-    if (mapped && from.startsWith(process.cwd())) {
-      const candidate = join(process.cwd(), mapped);
-      if (existsSync(candidate)) return candidate;
-    }
-    return null;
-  }
-  const base = resolve(dirname(from), specifier).replace(/\.(?:m|c)?js$/, "");
-  for (const candidate of [`${base}.ts`, `${base}.tsx`, join(base, "index.ts")]) {
-    if (existsSync(candidate)) return candidate;
-  }
-  return null;
-}
-
-function collectSymbols(entry: string): SurfaceSymbol[] {
-  type SymbolContract = { kind: SymbolKind; signature: string };
-  const memo = new Map<string, Map<string, SymbolContract>>();
-  const active = new Set<string>();
-  const visit = (path: string): Map<string, SymbolContract> => {
-    const cached = memo.get(path);
-    if (cached) return new Map(cached);
-    if (active.has(path)) return new Map();
-    active.add(path);
-    const source = ts.createSourceFile(path, readFileSync(path, "utf8"), ts.ScriptTarget.Latest, true, path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
-    const result = new Map<string, SymbolContract>();
-    const locals = new Map<string, SymbolContract>();
-    // A name declared as both a value and a type (e.g. `const A3DRenderer =
-    // Renderer; type A3DRenderer = Renderer;`) exports both meanings; record
-    // the runtime kind so `export { name }` isn't misread as type-only.
-    const setLocal = (name: string, contract: SymbolContract): void => {
-      const previous = locals.get(name);
-      if (previous?.kind === "runtime" && contract.kind === "type") return;
-      locals.set(name, contract);
-    };
-    for (const statement of source.statements) {
-      if ((ts.isClassDeclaration(statement) || ts.isFunctionDeclaration(statement) || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement) || ts.isEnumDeclaration(statement)) && statement.name) {
-        setLocal(statement.name.text, { kind: declarationKind(statement), signature: declarationSignature(statement, source) });
+      const binNames = (pkg: PackedPackage | undefined): string[] => {
+        if (!pkg?.manifest.bin) return [];
+        return typeof pkg.manifest.bin === "string" ? [pkg.manifest.name.split("/").at(-1)!] : Object.keys(pkg.manifest.bin);
+      };
+      const candidateBins = new Set(binNames(newPkg));
+      for (const bin of binNames(oldPkg)) if (!candidateBins.has(bin)) {
+        const kind = "bin-removal" as const;
+        changes.push({ package: name, subpath: ".", name: bin, kind, classification: classifyReleaseChange({ kind }, release, version) });
       }
-      if (ts.isVariableStatement(statement)) {
-        for (const declaration of statement.declarationList.declarations) if (ts.isIdentifier(declaration.name)) setLocal(declaration.name.text, { kind: "runtime", signature: declarationSignature(statement, source) });
-      }
-      const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined;
-      if (modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) {
-        if ((ts.isClassDeclaration(statement) || ts.isFunctionDeclaration(statement) || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement) || ts.isEnumDeclaration(statement)) && statement.name) {
-          result.set(statement.name.text, { kind: declarationKind(statement), signature: declarationSignature(statement, source) });
-        } else if (ts.isVariableStatement(statement)) {
-          for (const declaration of statement.declarationList.declarations) if (ts.isIdentifier(declaration.name)) result.set(declaration.name.text, { kind: "runtime", signature: declarationSignature(statement, source) });
+      const oldEntries = oldEntriesByPackage.get(name)!;
+      const newEntries = newEntriesByPackage.get(name) ?? [];
+      const byPath = new Map(newEntries.map((entry) => [entry.subpath, entry]));
+      for (const entry of oldEntries) {
+        const replacement = byPath.get(entry.subpath);
+        changes.push(...compareEntryConditions(name, entry, replacement, release, version));
+        if (!replacement || entry.asset || replacement.asset) continue;
+        // Each declared condition must be represented; pair every old declaration
+        // with its matching condition where possible and otherwise the default one.
+        for (const decl of entry.declarations) {
+          const key = Object.keys(entry.conditions).find((k) => entry.conditions[k]?.slice(2) === decl);
+          const mapped = key ? replacement.conditions[key]?.slice(2) : undefined;
+          const newDecl = mapped && replacement.declarations.includes(mapped) ? mapped : replacement.declarations[0];
+          if (!newDecl) throw new Error(`No candidate declaration for ${name}:${entry.subpath}`);
+          pairs.push({ name, entry, before: join(oldDirs.get(name)!, decl), after: join(newDirs.get(name)!, newDecl) });
         }
-        if (modifiers.some((modifier) => modifier.kind === ts.SyntaxKind.DefaultKeyword)) result.set("default", { kind: "runtime", signature: declarationSignature(statement, source) });
       }
     }
-    for (const statement of source.statements) {
-      if (!ts.isExportDeclaration(statement)) continue;
-      const modulePath = statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)
-        ? localModule(path, statement.moduleSpecifier.text)
-        : null;
-      const child = modulePath ? visit(modulePath) : new Map<string, SymbolContract>();
-      if (!statement.exportClause) {
-        for (const [name, contract] of child) result.set(name, statement.isTypeOnly ? { ...contract, kind: "type" } : contract);
-      } else if (ts.isNamedExports(statement.exportClause)) {
-        for (const element of statement.exportClause.elements) {
-          const original = element.propertyName?.text ?? element.name.text;
-          const contract = child.get(original) ?? locals.get(original) ?? { kind: "runtime" as const, signature: `external-or-local-alias:${original}` };
-          result.set(element.name.text, statement.isTypeOnly || element.isTypeOnly ? { ...contract, kind: "type" } : contract);
-        }
-      } else {
-        result.set(statement.exportClause.name.text, { kind: statement.isTypeOnly ? "type" : "runtime", signature: `namespace:${statement.exportClause.name.text}` });
-      }
-    }
-    active.delete(path);
-    memo.set(path, result);
-    return new Map(result);
-  };
-  return [...visit(entry)].map(([name, contract]) => ({ name, ...contract })).sort((a, b) => `${a.kind}:${a.name}`.localeCompare(`${b.kind}:${b.name}`));
-}
-
-function collect(root: string): PackageSurface[] {
-  return manifests(root).map((manifestPath) => {
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as {
-      name: string; version: string; exports?: unknown; main?: string; bin?: string | Record<string, string>;
-    };
-    const rawExports = manifest.exports && typeof manifest.exports === "object" && !Array.isArray(manifest.exports)
-      ? manifest.exports as Record<string, unknown>
-      : { ".": manifest.exports ?? manifest.main ?? "./dist/index.js" };
-    const exports = Object.entries(rawExports)
-      .filter(([key]) => key.startsWith("."))
-      .map(([subpath, value]) => {
-        const target = exportTarget(value);
-        const sources = target ? sourceForTarget(root, manifestPath, target) : [];
-        const seen = new Set<string>();
-        const symbols = sources
-          .flatMap((source) => collectSymbols(source))
-          .filter((symbol) => { const key = `${symbol.kind}:${symbol.name}`; if (seen.has(key)) return false; seen.add(key); return true; });
-        return { subpath, source: sources[0] ? relative(root, sources[0]) : null, symbols };
-      })
-      .sort((a, b) => a.subpath.localeCompare(b.subpath));
-    const bins = typeof manifest.bin === "string" ? [manifest.name.split("/").pop()!] : Object.keys(manifest.bin ?? {}).sort();
-    return { name: manifest.name, version: manifest.version, manifestPath: relative(root, manifestPath), exports, bins };
-  }).sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function cliCommands(root: string): string[] {
-  const cliRoot = join(root, "packages", "aura3d-cli", "src");
-  const commands = new Set<string>();
-  for (const path of walk(cliRoot).filter((item) => /\.[cm]?tsx?$/.test(item))) {
-    const source = readFileSync(path, "utf8");
-    for (const match of source.matchAll(/\.command\(\s*["'`]([^"'`\s]+)/g)) commands.add(match[1]!);
-    for (const match of source.matchAll(/command\s*:\s*["'`]([^"'`\s]+)/g)) commands.add(match[1]!);
-    for (const match of source.matchAll(/\b(?:command|action)\s*===\s*["'`]([^"'`]+)["'`]/g)) commands.add(match[1]!);
-    const actionMap = source.match(/scriptByAction\s*:\s*Record<[^>]+>\s*=\s*\{([\s\S]*?)\};/);
-    if (actionMap) for (const match of actionMap[1]!.matchAll(/\b([a-z][a-z-]+)\s*:/g)) commands.add(match[1]!);
-  }
-  return [...commands].sort();
-}
-
-function publicSchemaIds(root: string): string[] {
-  const ids = new Set<string>();
-  for (const path of walk(join(root, "packages")).filter((item) => /\/src\/.*\.[cm]?tsx?$/.test(item))) {
-    const source = readFileSync(path, "utf8");
-    for (const match of source.matchAll(/\bschema\s*(?::|=|===)\s*["'`]([a-z][a-z0-9.-]*(?:\.[a-z0-9.-]+)*\/\d+(?:\.\d+)+)["'`]/gi)) ids.add(match[1]!);
-  }
-  return [...ids].sort();
-}
-
-function generatedAssetShape(root: string): { manifestSchema: string | null; topLevelFields: string[]; metadataFields: string[]; importOwners: string[] } {
-  const path = join(root, "packages", "aura3d-cli", "src", "asset-manifest.ts");
-  const source = readFileSync(path, "utf8");
-  const topLevelFields = [...source.matchAll(/formatField\(["']([^"']+)["']/g)].map((match) => match[1]!);
-  if (source.includes("sizeBytes:")) topLevelFields.push("sizeBytes");
-  const metadataBlock = source.match(/const metadata\s*=\s*\{([\s\S]*?)\n\s*\};/);
-  const metadataFields = metadataBlock
-    ? [...metadataBlock[1]!.matchAll(/^\s*([A-Za-z_$][\w$]*)\s*:/gm)].map((match) => match[1]!).sort()
-    : [];
-  const importOwners = ["@aura3d/engine"].filter((owner) => source.includes(owner));
-  return {
-    manifestSchema: source.match(/schema:\s*["']([^"']+)["']/)?.[1] ?? null,
-    topLevelFields: [...new Set(topLevelFields)].sort(),
-    metadataFields,
-    importOwners
-  };
-}
-
-function templateNames(root: string): string[] {
-  const sourcePath = join(root, "packages", "create-aura3d", "src", "index.ts");
-  if (!existsSync(sourcePath)) return [];
-  const source = readFileSync(sourcePath, "utf8");
-  const declaration = source.match(/CREATE_AURA3D_TEMPLATES[\s\S]*?=\s*\[([\s\S]*?)\]\s*as const/);
-  return declaration ? [...declaration[1]!.matchAll(/["']([^"']+)["']/g)].map((match) => match[1]!).sort() : [];
-}
-
-// Retired scaffold names still resolve through TEMPLATE_ALIASES (Q-13-4 / #700:
-// each `three-compat-*` starter took its §6.8 name; the CLI scaffolds the
-// current template with a deprecation warning). A removed template that is an
-// alias key is a documented rename, not a lost scaffold.
-function templateAliases(root: string): Map<string, string> {
-  const sourcePath = join(root, "packages", "create-aura3d", "src", "index.ts");
-  const aliases = new Map<string, string>();
-  if (!existsSync(sourcePath)) return aliases;
-  const source = readFileSync(sourcePath, "utf8");
-  const declaration = source.match(/TEMPLATE_ALIASES\s*=\s*Object\.freeze\s*\(\s*\{([\s\S]*?)\}\s*as const/);
-  if (declaration) {
-    for (const match of declaration[1]!.matchAll(/["']([^"']+)["']\s*:\s*["']([^"']+)["']/g)) {
-      aliases.set(match[1]!, match[2]!);
-    }
-  }
-  return aliases;
-}
-
-function classifyRemoval(scope: string, name: string): string {
-  if (name === "AnimationTrack" && ["@aura3d/engine", "@aura3d/engine/engine", "@aura3d/engine/engine-runtime"].includes(scope)) return "documented-2.0-animation-track-relocated-to-@aura3d/animation";
-  if (name === "WebGPUPipelineCache" && ["@aura3d/rendering", "@aura3d/engine/rendering"].includes(scope)) return "documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath";
-  if (scope === "@aura3d/engine" && name === "./three-compat") return "broken-1.5.2-root-alias-replaced-by-@aura3d/three-compat";
-  // PRD-15 T2.2/T4 deleted ProductionEffectsPipeline and the runtime-parity
-  // proof contract outright (descriptor facades, no runtime ownership).
-  if (/^(ProductionEffectsOptions|ProductionEffectsSummary|RuntimeParityFrameRenderResult|createProductionEffectsRenderSource|createProductionRuntimeRenderer|summarizeProductionEffectsProof)$/.test(name)) {
-    return "documented-prd15-t2-t4-production-effects-and-parity-contracts-deleted";
-  }
-  if (scope === "@aura3d/three-compat" && name === "./postprocessing") return "non-rendering-compat-fabrication-removed-with-actionable-warning";
-  // PRD-11 phase-1 WebGPU freeze emptied the webgl2/webgpu backend facade
-  // modules the deprecated rendering barrels re-exported (sources say
-  // "placeholder removed … pending Q-15-5").
-  if (/^(?:WebGL2|WebGPU)(?:Buffer|Capabilities|RenderTarget|Shader|Texture|RendererBackend|StateCache)(?:Descriptor|Options)?$/.test(name)) {
-    return "documented-prd11-webgpu-freeze-backend-facade-removal";
-  }
-  // PRD-04 E34 deleted the GLTF material adapter/compiler descriptor stubs.
-  if (/^(?:adaptGLTFMaterial|adaptGLTFPBRMaterial|compilePBRMaterial|CompiledMaterialProgram|GLTFMaterialLike)$/.test(name)) {
-    return "documented-prd04-e34-gltf-material-adapter-stub-removal";
-  }
-  // PRD-04 P4 moved TransmissionPass.ts to tests/qr/prd04/oracles; the parity
-  // evaluation helper left the public rendering surface with it.
-  if (/^(?:evaluateExternalParityTransmission|ExternalParityTransmissionResult)$/.test(name)) {
-    return "documented-prd04-p4-transmission-pass-moved-to-test-oracles";
-  }
-  // T8.1: the AdvancedRenderer alias (and its options type) removed at 4.0.0;
-  // `Renderer` is the canonical name (docs/archive/docs/migration-4.0.md).
-  if (/^AdvancedRenderer(?:Options)?$/.test(name)) return "documented-4.0-advanced-renderer-alias-removed-use-renderer";
-  // PRD-15 §6 (T6.2/T6.5/T6.6): the three packages are deleted outright — their
-  // real surfaces moved into engine devtools barrels and the aura3d CLI codemod.
-  if (["@aura3d/editor", "@aura3d/environments", "@aura3d/materials"].includes(scope)) {
-    return "documented-prd15-6-honest-packages-deleted";
-  }
-  // WS-2.3/2.6 deliberately removed the public data generators and descriptor
-  // facades that claimed runtime behavior without owning it. Keep this pattern
-  // explicit: a new unrelated removal must remain unclassified and fail.
-  if (/(Fixture|Evidence|Telemetry|Sample|MotionMatching|ThreeCompat|Compat|ProductionEnvironment|ProductionHDR|ProductionPMREM|GLTF(?:SceneAnalysis|Object|Pose|Semantic|ComputerVision)|AssetBundle|WebGPUDevice|SHADER_CHUNKS|THREE_COMPAT|^sample|^createThreeCompat|^diagnoseThreeCompat|^estimateThreeCompat|^findThreeCompat|^inspectProduction|^listThreeCompat|^loadThreeCompat|^loadProduction|^runThreeCompat|^summarizeThreeCompat|Architectural|Adaptive|Analytics|Audio(?:Chorus|Compressor|Delay|Distortion|Occlusion)|Cloud|Cultural|CultureDescriptor|EditorAccessibility|EditorLocale|EditorLocalization|EditorLocalized|EditorPlural|GeneratedContent|GestureHaptics|LearningAgent|Network|Player|ProceduralContent|Proxemic|SpaceEnvironment|Voxel|Weather|XR)/.test(name)) {
-    return "documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge";
-  }
-  if (migrationText.includes(`\`${name}\``) || migrationText.includes(name)) return "documented-major-removal-or-migration";
-  return "unclassified";
-}
-
-const temp = mkdtempSync(join(tmpdir(), "aura3d-public-surface-"));
-try {
-  // Archive only public-manifest and source files. The tag also contains large
-  // example assets that are irrelevant to an API diff and can exceed the
-  // child-process buffer by hundreds of megabytes.
-  const baselinePaths = execFileSync("git", ["ls-tree", "-r", "--name-only", BASELINE], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 })
-    .split("\n")
-    .filter((path) => path === "package.json" || /^packages\/[^/]+\/(?:package\.json|src\/)/.test(path));
-  const archive = execFileSync("git", ["archive", "--format=tar", BASELINE, ...baselinePaths], { maxBuffer: 512 * 1024 * 1024 });
-  execFileSync("tar", ["-xf", "-", "-C", temp], { input: archive, maxBuffer: 256 * 1024 * 1024 });
-  const before = collect(temp);
-  const after = collect(process.cwd());
-  const afterMap = new Map(after.map((pkg) => [pkg.name, pkg]));
-  const mediaNodeSymbols = new Set(afterMap.get("@aura3d/engine")?.exports
-    .find((entry) => entry.subpath === "./media-node")?.symbols.map((symbol) => symbol.name) ?? []);
-  // PRD-15 §6.1: "." is the curated surface; names removed from it must remain
-  // importable on deprecated subpath stubs until their documented removeIn.
-  // The pre-4.0 `./engine` / `./engine-runtime` stubs were removed at 4.0.0
-  // (docs/archive/docs/migration-4.0.md); the current deprecated surface is the set of
-  // subpaths generated from src/deprecated/. A "." removal that still resolves
-  // on one is the documented collapse; anything else stays unclassified and
-  // fails.
-  const engineDeprecatedSymbols = new Set((afterMap.get("@aura3d/engine")?.exports ?? [])
-    .filter((entry) => entry.subpath === "./engine" || entry.subpath === "./engine-runtime" || (entry.source?.includes("/deprecated/") ?? false))
-    .flatMap((entry) => entry.symbols.map((symbol) => symbol.name)));
-  const formatSubpath = (pkg: string, subpath: string): string => `${pkg}${subpath === "." ? "" : `/${subpath.slice(2)}`}`;
-  // Name → current non-deprecated engine subpath, for removals that relocated
-  // rather than disappeared (§6.6 `to` destinations).
-  const engineSubpathLocations = new Map<string, string>();
-  for (const entry of afterMap.get("@aura3d/engine")?.exports ?? []) {
-    if (entry.subpath === "." || entry.source?.includes("/deprecated/")) continue;
-    for (const symbol of entry.symbols) {
-      if (!engineSubpathLocations.has(symbol.name)) engineSubpathLocations.set(symbol.name, formatSubpath("@aura3d/engine", entry.subpath));
-    }
-  }
-  // Name → first current location in any other public package.
-  const otherPackageLocations = new Map<string, string>();
-  for (const pkg of after) {
-    if (pkg.name === "@aura3d/engine") continue;
-    for (const entry of pkg.exports) {
-      for (const symbol of entry.symbols) {
-        if (!otherPackageLocations.has(symbol.name)) otherPackageLocations.set(symbol.name, formatSubpath(pkg.name, entry.subpath));
-      }
-    }
-  }
-  // Names that were importable on the baseline `./engine` / `./engine-runtime`
-  // deprecated stubs — the §6.1 retention path the 4.0.0 stub removal deleted
-  // (docs/archive/docs/migration-4.0.md removed-subpath table).
-  const baselineEngineStubSymbols = new Set((before.find((pkg) => pkg.name === "@aura3d/engine")?.exports ?? [])
-    .filter((entry) => entry.subpath === "./engine" || entry.subpath === "./engine-runtime")
-    .flatMap((entry) => entry.symbols.map((symbol) => symbol.name)));
-  const currentTemplateAliases = templateAliases(process.cwd());
-  const classify = (scope: string, name: string): string => {
-    if (PATCH) return "unclassified";
-    if (mediaNodeSymbols.has(name)) return "relocated-to-@aura3d/engine/media-node";
-    if (scope === "create-aura3d") {
-      const alias = currentTemplateAliases.get(name);
-      if (alias) return `documented-q13-4-template-rename-to-${alias}`;
-    }
-    if (scope === "@aura3d/engine") {
-      if (engineDeprecatedSymbols.has(name)) return "documented-prd15-6.1-root-collapse-remains-on-deprecated-subpath";
-      const specific = classifyRemoval(scope, name);
-      if (specific !== "unclassified") return specific;
-      const engineDestination = engineSubpathLocations.get(name);
-      if (engineDestination) return `relocated-to-${engineDestination}`;
-      const packageDestination = otherPackageLocations.get(name);
-      if (packageDestination) return `relocated-to-${packageDestination}`;
-      const disposition = ROOT_DISPOSITIONS.get(name);
-      if (disposition) return `documented-prd15-6.6-root-${disposition.disposition}-to-${disposition.to === "deleted" ? "deleted" : disposition.to.replace(/^\.\//, "")}`;
-      if (baselineEngineStubSymbols.has(name)) return "documented-prd15-6.1-collapse-name-deleted-with-4.0-stub-removal";
-      return "unclassified";
-    }
-    if (scope === "@aura3d/physics" || scope === "@aura3d/engine/physics") return "documented-2.0-physics-navigation-owner-removal";
-    // A name removed from a non-root subpath that still resolves in another
-    // published package is a relocation, not a deletion — e.g. the @aura3d/input
-    // controls re-export shims deleted at 4.0 (PRD-15 T6.9 "remove in 4.0.0")
-    // whose implementations live in @aura3d/controls.
-    const relocated = otherPackageLocations.get(name);
-    if (relocated) return `relocated-to-${relocated}`;
-    return classifyRemoval(scope, name);
-  };
-  const removals: Array<{ scope: string; category: string; name: string; classification: string }> = [];
-  const contractChanges: Array<{ scope: string; symbol: string; kind: SymbolKind; before: string; after: string; classification: string }> = [];
-  for (const pkg of before) {
-    const current = afterMap.get(pkg.name);
-    if (!current) {
-      removals.push({ scope: pkg.name, category: "package", name: pkg.name, classification: classify(pkg.name, pkg.name) });
-      continue;
-    }
-    const currentExports = new Map(current.exports.map((entry) => [entry.subpath, entry]));
-    for (const entry of pkg.exports) {
-      const currentEntry = currentExports.get(entry.subpath);
-      if (!currentEntry) {
-        removals.push({ scope: pkg.name, category: "export-subpath", name: entry.subpath, classification: classify(pkg.name, entry.subpath) });
-        continue;
-      }
-      const currentSymbols = new Map(currentEntry.symbols.map((symbol) => [`${symbol.kind}:${symbol.name}`, symbol]));
-      for (const symbol of entry.symbols) {
-        const currentSymbol = currentSymbols.get(`${symbol.kind}:${symbol.name}`);
-        if (!currentSymbol) {
-          removals.push({ scope: `${pkg.name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, category: `${symbol.kind}-symbol`, name: symbol.name, classification: classify(`${pkg.name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, symbol.name) });
-        } else if (currentSymbol.signature !== symbol.signature) {
-          const patchCompatibility = PATCH
-            ? classifyPatchDeclarationChange(symbol.signature, currentSymbol.signature)
-            : undefined;
-          contractChanges.push({
-            scope: `${pkg.name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`,
-            symbol: symbol.name,
-            kind: symbol.kind,
-            before: symbol.signature,
-            after: currentSymbol.signature,
-            classification: PATCH
-              ? patchCompatibility === "compatible-addition"
-                ? "compatible-patch-addition"
-                : "patch-declaration-contract-blocker"
-              : "reviewed-2.0-public-declaration-contract-change"
+    for (const name of [...new Set([...baseline.keys(), ...candidate.keys()])].sort()) {
+      const oldEntries = new Map((oldEntriesByPackage.get(name) ?? []).map((entry) => [entry.subpath, entry]));
+      const newEntries = new Map((newEntriesByPackage.get(name) ?? []).map((entry) => [entry.subpath, entry]));
+      for (const subpath of [...new Set([...oldEntries.keys(), ...newEntries.keys()])].sort()) {
+        const oldEntry = oldEntries.get(subpath), newEntry = newEntries.get(subpath);
+        const conditions = [...new Set([...Object.keys(oldEntry?.conditions ?? {}), ...Object.keys(newEntry?.conditions ?? {})])].sort();
+        for (const condition of conditions) {
+          if (condition.split("/").includes("types")) continue;
+          const oldTarget = oldEntry?.conditions[condition], newTarget = newEntry?.conditions[condition];
+          if (!(oldTarget && !oldEntry?.asset) && !(newTarget && !newEntry?.asset)) continue;
+          const before = oldTarget ? oldAnalyzers.get(name)!.analyze(oldTarget, condition) : undefined;
+          const after = newTarget ? newAnalyzers.get(name)!.analyze(newTarget, condition) : undefined;
+          const beforeDecl = oldTarget && oldEntry && !oldEntry.asset ? declarationForCondition(oldEntry, condition, oldTarget) : undefined;
+          const afterDecl = newTarget && newEntry && !newEntry.asset ? declarationForCondition(newEntry, condition, newTarget) : undefined;
+          runtimeWork.push({
+            report: { package: name, subpath, condition, ...(before ? { before } : {}), ...(after ? { after } : {}) },
+            ...(beforeDecl ? { beforeDecl: join(oldDirs.get(name)!, beforeDecl) } : {}),
+            ...(afterDecl ? { afterDecl: join(newDirs.get(name)!, afterDecl) } : {})
           });
         }
       }
     }
-    for (const bin of pkg.bins) if (!current.bins.includes(bin)) removals.push({ scope: pkg.name, category: "cli-bin", name: bin, classification: classify(pkg.name, bin) });
-  }
-  const beforeCommands = cliCommands(temp);
-  const afterCommands = cliCommands(process.cwd());
-  for (const command of beforeCommands) if (!afterCommands.includes(command)) removals.push({ scope: "@aura3d/cli", category: "cli-command", name: command, classification: classify("@aura3d/cli", command) });
-  const beforeTemplates = templateNames(temp);
-  const afterTemplates = templateNames(process.cwd());
-  for (const template of beforeTemplates) if (!afterTemplates.includes(template)) removals.push({ scope: "create-aura3d", category: "scaffold-template", name: template, classification: classify("create-aura3d", template) });
-
-  const unresolved = [...before, ...after].flatMap((pkg) => pkg.exports.filter((entry) => entry.source === null).map((entry) => `${pkg.name}:${entry.subpath}`));
-  const unclassified = removals.filter((removal) => removal.classification === "unclassified");
-  const incompatibleContractChanges = contractChanges.filter((change) => change.classification === "patch-declaration-contract-blocker");
-  const compatibleContractAdditions = contractChanges.filter((change) => change.classification === "compatible-patch-addition");
-  const beforeSchemas = publicSchemaIds(temp);
-  const afterSchemas = publicSchemaIds(process.cwd());
-  const schemas = {
-    before: beforeSchemas,
-    after: afterSchemas,
-    removed: beforeSchemas.filter((id) => !afterSchemas.includes(id)).map((id) => ({ id, classification: PATCH ? "patch-schema-removal-blocker" : "intentional-2.0-schema-retirement" })),
-    added: afterSchemas.filter((id) => !beforeSchemas.includes(id)).map((id) => ({ id, classification: PATCH ? "patch-schema-addition" : "2.0-schema-addition" }))
-  };
-  const assetShapeBefore = generatedAssetShape(temp);
-  const assetShapeAfter = generatedAssetShape(process.cwd());
-  const assetFieldShapeStable = JSON.stringify(assetShapeBefore.topLevelFields) === JSON.stringify(assetShapeAfter.topLevelFields)
-    && JSON.stringify(assetShapeBefore.metadataFields) === JSON.stringify(assetShapeAfter.metadataFields)
-    && assetShapeBefore.manifestSchema === assetShapeAfter.manifestSchema;
-  const generatedAsset = {
-    before: assetShapeBefore,
-    after: assetShapeAfter,
-    classification: assetFieldShapeStable
-      ? (PATCH ? "field-and-schema-compatible" : "field-and-schema-compatible; 2.0 adds workload-aware @aura3d/lean import ownership")
-      : (PATCH ? "patch-generated-asset-shape-blocker" : "intentional-2.0-generated-asset-shape-change")
-  };
-  const report = {
-    schema: "aura3d.public-surface-diff/1.0",
-    generatedAt: new Date().toISOString(),
-    baseline: BASELINE,
-    currentVersion: CURRENT_VERSION,
-    pass: unresolved.length === 0 && unclassified.length === 0 && (!PATCH || (CURRENT_VERSION === "3.0.1" && incompatibleContractChanges.length === 0 && schemas.removed.length === 0 && assetFieldShapeStable)),
-    counts: {
-      baselinePackages: before.length,
-      currentPackages: after.length,
-      baselineExportSubpaths: before.reduce((sum, pkg) => sum + pkg.exports.length, 0),
-      currentExportSubpaths: after.reduce((sum, pkg) => sum + pkg.exports.length, 0),
-      baselineSymbols: before.reduce((sum, pkg) => sum + pkg.exports.reduce((inner, entry) => inner + entry.symbols.length, 0), 0),
-      currentSymbols: after.reduce((sum, pkg) => sum + pkg.exports.reduce((inner, entry) => inner + entry.symbols.length, 0), 0),
-      removals: removals.length,
-      unclassifiedRemovals: unclassified.length,
-      declarationContractChanges: incompatibleContractChanges.length,
-      compatibleDeclarationAdditions: compatibleContractAdditions.length,
-      retainedDeclarationDifferences: contractChanges.length,
-      baselineSchemas: beforeSchemas.length,
-      currentSchemas: afterSchemas.length
-    },
-    unresolvedEntrypoints: unresolved,
-    removals,
-    contractChanges,
-    schemas,
-    generatedAsset,
-    cli: { before: beforeCommands, after: afterCommands },
-    templates: { before: beforeTemplates, after: afterTemplates },
-    packages: { before, after }
-  };
-  mkdirSync(dirname(REPORT_PATH), { recursive: true });
-  writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`);
-  const lines = [
-    `# Aura3D ${CURRENT_VERSION} Public-Surface Diff`,
-    "",
-    `Generated from \`${BASELINE}\` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.`,
-    "",
-    `- Baseline packages: **${report.counts.baselinePackages}**; current packages: **${report.counts.currentPackages}**`,
-    `- Baseline export subpaths: **${report.counts.baselineExportSubpaths}**; current export subpaths: **${report.counts.currentExportSubpaths}**`,
-    `- Baseline symbols: **${report.counts.baselineSymbols}**; current symbols: **${report.counts.currentSymbols}**`,
-    `- Classified removals: **${report.counts.removals - report.counts.unclassifiedRemovals}**; unclassified removals: **${report.counts.unclassifiedRemovals}**`,
-    `- Incompatible retained-symbol declaration changes: **${report.counts.declarationContractChanges}**`,
-    `- Compatible retained-symbol declaration additions: **${report.counts.compatibleDeclarationAdditions}**`,
-    `- Public schema identifiers: **${report.counts.baselineSchemas}** baseline; **${report.counts.currentSchemas}** current`,
-    `- Generated asset shape: **${generatedAsset.classification}**`,
-    `- Verdict: **${report.pass ? "PASS" : "FAIL"}**`,
-    "",
-    "## Removed or relocated surface",
-    "",
-    "| Scope | Category | Name | Classification |",
-    "|---|---|---|---|",
-    ...removals.map((item) => `| \`${item.scope}\` | ${item.category} | \`${item.name}\` | ${item.classification} |`),
-    "",
-    "## Retained declaration-contract changes",
-    "",
-    PATCH ? "The JSON receipt retains normalized before/after signatures. The patch classifier accepts only additions that preserve the complete prior token contract; exported object types may add optional top-level members only. Removed, renamed, narrowed, or newly required input members remain blockers." : "The JSON receipt contains the normalized before/after declaration contract for every retained symbol whose public signature changed. These are classified as reviewed 2.0 major-version contract changes; they are not hidden as compatible aliases.",
-    "",
-    ...contractChanges.map((item) => `- \`${item.scope}:${item.kind}:${item.symbol}\` — ${item.classification}`),
-    "",
-    "## Schemas, CLI, scaffolds, and generated assets",
-    "",
-    `Schema identifiers: ${beforeSchemas.length} baseline, ${afterSchemas.length} current, ${schemas.removed.length} retired, ${schemas.added.length} added. CLI command tokens and all scaffold names are retained in the JSON receipt. The generated asset manifest schema and emitted field sets are compared directly; ${generatedAsset.classification}.`,
-    "",
-    `The machine-readable, per-package and per-symbol inventory is retained in ${REPORT_PATH}.`,
-    ""
-  ];
-  mkdirSync(dirname(DOC_PATH), { recursive: true });
-  writeFileSync(DOC_PATH, lines.join("\n"));
-  console.log(`public surface diff: ${report.pass ? "PASS" : "FAIL"}; ${report.counts.baselinePackages} -> ${report.counts.currentPackages} packages; ${report.counts.unclassifiedRemovals} unclassified removals`);
-  if (!report.pass) process.exitCode = 1;
-} finally {
-  rmSync(temp, { recursive: true, force: true });
+    const paths = [...new Set([
+      ...pairs.flatMap((pair) => [pair.before, pair.after]),
+      ...runtimeWork.flatMap((item) => [item.beforeDecl, item.afterDecl].filter((path): path is string => !!path))
+    ])];
+    const options: ts.CompilerOptions = { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.NodeNext, moduleResolution: ts.ModuleResolutionKind.NodeNext, noEmit: true, skipLibCheck: false, strict: true, types: [], noErrorTruncation: true };
+    const host = ts.createCompilerHost(options);
+    const packedManifests = new Map<string, string>();
+    for (const dir of oldDirs.values()) packedManifests.set(join(dir, "package.json"), "before");
+    for (const dir of newDirs.values()) packedManifests.set(join(dir, "package.json"), "after");
+    const readHostFile = host.readFile.bind(host);
+    host.readFile = (path) => {
+      const contents = readHostFile(path), side = packedManifests.get(resolve(path));
+      if (!contents || !side) return contents;
+      // Prevent TypeScript's same-name/version package redirect from merging
+      // physically different before/after archives. Only the compiler's
+      // in-memory identity is tagged; the packed manifest stays untouched.
+      const manifest = JSON.parse(contents) as { version?: string };
+      if (typeof manifest.version !== "string") return contents;
+      manifest.version += `${manifest.version.includes("+") ? "." : "+"}aura3d-diff.${side}`;
+      return JSON.stringify(manifest);
+    };
+    const program = ts.createProgram(paths, options, host);
+    const checker = program.getTypeChecker();
+    const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error).map((d) => `${d.file ? relative(temp, d.file.fileName) : ""}:${d.start ?? 0} TS${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`);
+    const valueOf = declarationValues(checker);
+    const symbolCache = new Map<string, Map<string, SymbolInfo>>();
+    const symbolsFor = (path: string, name: string, subpath: string): Map<string, SymbolInfo> => {
+      const cached = symbolCache.get(path);
+      if (cached) return cached;
+      const file = program.getSourceFile(path);
+      if (!file) throw new Error(`Cannot load declarations for ${name}:${subpath}`);
+      const result = symbols(checker, file, valueOf);
+      for (const symbol of result.values()) {
+        if (!symbol.valueVerified) diagnostics.push(`${relative(temp, path)}: cannot verify whether declaration ${JSON.stringify(symbol.name)} is a runtime value`);
+      }
+      symbolCache.set(path, result);
+      return result;
+    };
+    for (const pair of pairs) {
+      const before = symbolsFor(pair.before, pair.name, pair.entry.subpath), after = symbolsFor(pair.after, pair.name, pair.entry.subpath);
+      for (const symbol of before.values()) {
+        const next = after.get(symbol.name);
+        const report = (kind: ReleaseChange["kind"], beforeText?: string, afterText?: string) => changes.push({ package: pair.name, subpath: pair.entry.subpath, name: symbol.name, kind, before: beforeText, after: afterText, classification: classifyReleaseChange({ kind, before: beforeText, after: afterText, removalVersion: symbol.removalVersion }, release, version) });
+        if (symbol.value && !next?.value) report("value-removal");
+        if (symbol.type && !next?.type) report("type-removal");
+        if (!next) continue;
+        let compatible = true;
+        if (symbol.value && next.value) compatible &&= checker.isTypeAssignableTo(checker.getTypeOfSymbolAtLocation(next.symbol, next.location), checker.getTypeOfSymbolAtLocation(symbol.symbol, symbol.location));
+        if (symbol.type && next.type) {
+          const oldType = checker.getDeclaredTypeOfSymbol(symbol.symbol), newType = checker.getDeclaredTypeOfSymbol(next.symbol);
+          compatible &&= checker.isTypeAssignableTo(oldType, newType) && checker.isTypeAssignableTo(newType, oldType);
+        }
+        if (!compatible && symbol.signature === next.signature && declarationClosure(checker, symbol.symbol) === declarationClosure(checker, next.symbol)) compatible = true;
+        if (!compatible || diagnostics.length > 0) report("declaration-change", symbol.signature, next.signature);
+      }
+    }
+    const runtimeDiagnostics: string[] = [];
+    for (const { report, beforeDecl, afterDecl } of runtimeWork) {
+      const scope = `${report.package}:${report.subpath} [${report.condition}]`;
+      for (const [side, surface, declaration] of [
+        ["baseline", report.before, beforeDecl],
+        ["candidate", report.after, afterDecl]
+      ] as const) {
+        if (!surface) continue;
+        for (const issue of surface.issues) runtimeDiagnostics.push(`${side} ${scope}: ${issue}`);
+        if (!declaration) {
+          runtimeDiagnostics.push(`${side} ${scope}: cannot safely associate a declaration with this runtime condition`);
+          continue;
+        }
+        if (!surface.verified) continue;
+        const declared = symbolsFor(declaration, report.package, report.subpath);
+        for (const symbol of declared.values()) {
+          if (!symbol.valueVerified) {
+            runtimeDiagnostics.push(`${side} ${scope}: declaration value ${JSON.stringify(symbol.name)} is unverified`);
+          } else if (symbol.value && symbol.name === "export=") {
+            runtimeDiagnostics.push(`${side} ${scope}: export= declaration cannot be safely reconciled with runtime names`);
+          } else if (symbol.value && !surface.names.includes(symbol.name)) {
+            runtimeDiagnostics.push(`${side} ${scope}: declared value ${JSON.stringify(symbol.name)} is missing from ${surface.target}`);
+          }
+        }
+      }
+      if (!report.before?.verified || !report.after?.verified) continue;
+      const afterNames = new Set(report.after.names);
+      const beforeSymbols = beforeDecl ? symbolsFor(beforeDecl, report.package, report.subpath) : undefined;
+      for (const name of report.before.names) {
+        if (afterNames.has(name)) continue;
+        const kind = "runtime-export-removal" as const;
+        const removalVersion = beforeSymbols?.get(name)?.removalVersion;
+        changes.push({
+          package: report.package, subpath: report.subpath, condition: report.condition, name, kind,
+          before: report.before.target, after: report.after.target,
+          classification: classifyReleaseChange({ kind, removalVersion }, release, version)
+        });
+      }
+    }
+    const runtimeExports = runtimeWork.map((item) => item.report);
+    const runtimeExportsVerified = runtimeExports.every((item) => (!item.before || item.before.verified) && (!item.after || item.after.verified));
+    const declarationDiagnostics = [...new Set(diagnostics)], runtimeProblems = [...new Set(runtimeDiagnostics)];
+    const pass = declarationDiagnostics.length === 0 && runtimeProblems.length === 0 && runtimeExportsVerified
+      && changes.every((change) => change.classification.compatible);
+    return { pass, changes, diagnostics: declarationDiagnostics, packagesCompared: baseline.size, runtimeExportsVerified, runtimeDiagnostics: runtimeProblems, runtimeExports };
+  } finally { rmSync(temp, { recursive: true, force: true }); }
+}
+function option(name: string): string | undefined { const i = process.argv.indexOf(name); return i < 0 ? undefined : process.argv[i + 1]; }
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const baselinePath = option("--baseline-manifest"), planPath = option("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN, kind = option("--release-kind"), out = option("--out");
+  if (!baselinePath || !planPath || !out || !["patch", "minor", "major"].includes(kind ?? "")) throw new Error("Usage: public-surface-diff --baseline-manifest <file> --candidate-plan <plan> --release-kind patch|minor|major --out <file>");
+  const plan = loadValidatedReleasePlan(process.cwd(), planPath);
+  if (!plan) throw new Error("Validated candidate plan required");
+  const baseline = verifyBaseline(baselinePath, plan);
+  validateReleaseKind(baseline.manifest.version, plan.version, kind as ReleaseKind);
+  const result = diffPackedSurfaces(baseline.packages, candidates(plan), plan.version, kind as ReleaseKind);
+  const pass = result.pass;
+  const report = { schema: "aura3d.public-surface-diff/2", generatedAt: new Date().toISOString(), baselineVersion: baseline.manifest.version, baselineManifestSha256: sha256(readFileSync(baselinePath)), candidate: plan.reference, candidateVersion: plan.version, releaseKind: kind, ...result };
+  mkdirSync(dirname(resolve(out)), { recursive: true });
+  writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`);
+  if (!pass) process.exitCode = 1;
+  console.log(`packed API diff: ${pass ? "PASS" : "FAIL"}; ${result.changes.filter((change) => change.classification.breaking).length} breaking changes; ${result.diagnostics.length} declaration diagnostics; ${result.runtimeDiagnostics.length} runtime diagnostics; runtime exports ${result.runtimeExportsVerified ? "verified" : "unverified"}`);
 }

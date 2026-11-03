@@ -1,23 +1,26 @@
 /**
- * MikkTSpaceTangents (PRD-04 §7.3, P1-6): injecting r185's real
- * `mikktspace.module.js` reproduces three's
- * `computeMikkTSpaceTangents(geometry, mikktspace, true)` output exactly, and
- * regenerating the stripped TANGENT on NormalTangentMirrorTest lands within
- * 1e-3 per component of the authored attribute.
+ * MikkTSpaceTangents (PRD-04 §7.3, P1-6): compare the adapter with the
+ * standalone MIT-licensed mikktspace@1.1.1 codec, analytical planar triangles,
+ * and the authored NormalTangentMirrorTest tangents. The latter GLB identifies
+ * Copyright 2017-2018 Analytical Graphics, Inc., CC-BY 4.0, mesh and textures
+ * by Ed Mackey. See benchmarks/quality-rebuild/scenes/prd04/assets.ts and
+ * tests/assets/corpus/gltf-100-classification.manifest.json for provenance.
  */
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
-import * as THREE from "three";
-import { computeMikkTSpaceTangents } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-// @ts-expect-error vendored MikkTSpace module ships no types
-import * as mikktspace from "three/examples/jsm/libs/mikktspace.module.js";
+import { describe, expect, it, vi } from "vitest";
 import {
   generateMikkTSpaceTangents,
   mikkTSpaceAvailable,
-  setMikkTSpaceModule
+  setMikkTSpaceModule,
+  setMikkTSpaceWorkerFactory,
+  type MikkTSpaceModule
 } from "../../../../packages/assets/src/MikkTSpaceTangents";
 
+// The package's Node entry is the standalone codec, rather than an engine's
+// bundled copy. Its package LICENSE contains the MIT copyright and permission.
+const mikktspace = createRequire(import.meta.url)("mikktspace") as MikkTSpaceModule;
 const FIXTURE = resolve(__dirname, "../../../../fixtures/asset-corpus/normal-tangent-mirror-test.glb");
 
 const COMP_SIZE: Record<string, number> = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 };
@@ -58,32 +61,62 @@ function readGlbAttributes(path: string) {
 }
 
 describe("generateMikkTSpaceTangents", () => {
-  it("reports availability and equals three's computeMikkTSpaceTangents exactly", async () => {
+  it("awaits the standalone codec and preserves its output for indexed fixtures", async () => {
     const g = readGlbAttributes(FIXTURE);
-    setMikkTSpaceModule(mikktspace);
+    let markReady!: () => void;
+    const ready = new Promise<void>((resolveReady) => { markReady = resolveReady; });
+    const generateTangents = vi.fn(mikktspace.generateTangents);
+    setMikkTSpaceWorkerFactory(undefined);
+    setMikkTSpaceModule({ generateTangents, ready });
     expect(mikkTSpaceAvailable()).toBe(true);
 
-    const out = await generateMikkTSpaceTangents({
+    const pending = generateMikkTSpaceTangents({
       positions: g.positions,
       normals: g.normals,
       uvs: g.uvs,
       indices: g.indices
     });
+    await Promise.resolve();
+    expect(generateTangents).not.toHaveBeenCalled();
+    markReady();
+    const out = await pending;
 
-    // three-side reference on the same primitive
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(g.positions, 3));
-    geo.setAttribute("normal", new THREE.BufferAttribute(g.normals, 3));
-    geo.setAttribute("uv", new THREE.BufferAttribute(g.uvs, 2));
-    if (g.indices) geo.setIndex(new THREE.BufferAttribute(g.indices, 1));
-    const ref = computeMikkTSpaceTangents(geo, mikktspace, true);
-    const refTangents = ref.getAttribute("tangent").array as Float32Array;
+    // Expand by the source index independently of the adapter, then invoke the
+    // codec directly. Only the glTF handedness conversion changes its output.
+    const indices = g.indices ?? Uint32Array.from({ length: g.positions.length / 3 }, (_, i) => i);
+    const expand = (source: Float32Array, stride: number) => Float32Array.from(
+      Array.from(indices).flatMap((index) => Array.from(source.subarray(index * stride, (index + 1) * stride)))
+    );
+    const positions = expand(g.positions, 3);
+    const normals = expand(g.normals, 3);
+    const uvs = expand(g.uvs, 2);
+    expect(generateTangents).toHaveBeenCalledTimes(1);
+    expect(generateTangents).toHaveBeenCalledWith(positions, normals, uvs);
+    const reference = mikktspace.generateTangents(positions, normals, uvs);
 
-    expect(out.length).toBe(refTangents.length);
+    expect(out.length).toBe(reference.length);
     for (let i = 0; i < out.length; i++) {
-      expect(out[i]).toBe(refTangents[i]);
+      expect(out[i]).toBe(i % 4 === 3 ? -reference[i]! : reference[i]);
     }
   }, 30000);
+
+  it("generates the independently calculated tangent directions and mirrored signs", async () => {
+    // Two original planar triangles share a +Z normal. In the first, +U runs
+    // along +X; the second mirrors U, so +U runs along -X and changes parity.
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 3, 0, 0, 2, 1, 0]);
+    const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    const uvs = new Float32Array([0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1]);
+    const expected = [
+      1, 0, 0, -1, 1, 0, 0, -1, 1, 0, 0, -1,
+      -1, 0, 0, 1, -1, 0, 0, 1, -1, 0, 0, 1
+    ];
+    setMikkTSpaceModule(mikktspace);
+    for (const indices of [undefined, new Uint32Array([2, 0, 1, 5, 3, 4])]) {
+      const actual = await generateMikkTSpaceTangents({ positions, normals, uvs, indices });
+      expect(actual.length).toBe(expected.length);
+      expected.forEach((value, index) => expect(actual[index]).toBeCloseTo(value, 6));
+    }
+  });
 
   it("regenerated tangents match the authored TANGENT attribute within 1e-3", async () => {
     const g = readGlbAttributes(FIXTURE);

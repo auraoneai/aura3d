@@ -1,10 +1,13 @@
 import type { EnvironmentLightingOptions } from "../../ForwardPass";
+import type { LinearHdrEnvironmentMapSource } from "../../EnvironmentMapResources";
 import {
   createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromLinear,
   createProductionPbrHdrPipelineFromRadiance,
   parseProductionRadianceHDR,
   type ProductionEnvironmentLightingResources,
   type ProductionPbrHdrPipeline,
+  type ProductionLinearPbrHdrPipeline,
   type ProductionPbrHdrPipelineOptions,
   type ProductionRadianceHDR
 } from "../PBRHDRPipeline";
@@ -29,6 +32,30 @@ export interface ProductionLoadedHdrEnvironment {
   readonly lighting: EnvironmentLightingOptions;
   readonly resources: ProductionEnvironmentLightingResources;
   dispose(): void;
+}
+
+export interface ProductionLoadedLinearHdrEnvironment {
+  readonly id: string;
+  readonly label: string;
+  readonly pipeline: ProductionLinearPbrHdrPipeline;
+  readonly lighting: EnvironmentLightingOptions;
+  readonly resources: ProductionEnvironmentLightingResources;
+  dispose(): void;
+}
+
+/**
+ * Creates lighting from decoded, top-down linear RGBA pixels. Decoding stays
+ * with the caller, so this renderer does not depend on a particular codec.
+ */
+export function loadProductionLinearHdrEnvironment(
+  source: LinearHdrEnvironmentMapSource,
+  options: ProductionHdrEnvironmentLoaderOptions = {}
+): ProductionLoadedLinearHdrEnvironment {
+  const id = options.id ?? "production-runtime-linear-hdr-environment";
+  const label = options.label ?? id;
+  const pipeline = createProductionPbrHdrPipelineFromLinear(source, { ...options, id, label });
+  const resources = createProductionEnvironmentLightingResources(pipeline);
+  return { id, label, pipeline, lighting: resources.lighting, resources, dispose: () => resources.dispose() };
 }
 
 export function loadProductionHdrEnvironment(

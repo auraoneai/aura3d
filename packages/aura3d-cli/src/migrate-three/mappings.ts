@@ -119,11 +119,26 @@ export const THREE_TO_A3D_MAPPINGS: readonly ThreeMapping[] = [
   { construct: "MeshLambertMaterial", target: "material.pbr", engineImport: "material", mapping: "approximate", note: "diffuse-only Lambert collapses into material.pbr with high roughness and zero metalness." },
   { construct: "MeshPhongMaterial", target: "material.pbr", engineImport: "material", mapping: "approximate", note: "Phong specular has no direct slot; shininess/specular highlights approximate onto material.pbr({ clearcoat })." },
   { construct: "MeshNormalMaterial", target: "", mapping: "none", note: "no normal-debug material on the public surface; the closest target is material.custom (SH-02)." },
-  { construct: "MeshDepthMaterial", target: "", mapping: "none", note: "no depth-preview material on the public surface; the closest target is material.custom (SH-02)." },
-  { construct: "MeshDistanceMaterial", target: "", mapping: "none", note: "no point-light depth material on the public surface." },
-  { construct: "MeshMatcapMaterial", target: "", mapping: "none", note: "no matcap material on the public surface; a matcap can ride material.custom (SH-02)." },
-  { construct: "MeshToonMaterial", target: "", mapping: "none", note: "no toon-step material on the public surface; toon shading is a material.custom candidate (SH-02)." },
-  { construct: "ShadowMaterial", target: "", mapping: "none", note: "no shadow-only material on the public surface." },
+  {
+    construct: "MeshDepthMaterial", target: "material.depth", emit: "comment", engineImport: "material", mapping: "approximate",
+    note: "For a manual depth preview use material.depth({ near, far, side }): opaque linear view-distance grayscale, near white and far black, independent of camera clip planes; it is not a packed shadow-depth material. Standard-depth rigid triangle primitives have WebGL2 and WebGPU forward paths with paired GLSL/WGSL; no GLB/model, batches, scene override, clipping or deformation. WebGPU device and pixel acceptance remain unverified."
+  },
+  {
+    construct: "MeshDistanceMaterial", target: "material.distance", emit: "comment", engineImport: "material", mapping: "approximate",
+    note: "For a manual primitive preview use material.distance({ referencePosition: [x, y, z], near, far, side }): clamped world-space radial distance, near black and far white. The position is a snapshot, not a light binding; this is not a packed point-light shadow-depth pass. Paired GLSL/WGSL exist, not a WebGPU route or pixel claim. GLB custom replacement is whole-model; skinned models and PBR slot overrides are unsupported."
+  },
+  {
+    construct: "MeshMatcapMaterial", target: "material.matcap", emit: "comment", engineImport: "material", mapping: "approximate",
+    note: "Manually supply the required map as an Aura texture handle or typed texture asset (port three's matcap, not its separate map), plus optional color, opacity, transparent and side. On primitives with normals it samples view-normal xy; lighting comes from the texture, not scene lights. Paired GLSL/WGSL exist, not a WebGPU route or pixel claim. GLB custom replacement is whole-model; skinned models and PBR slot overrides are unsupported."
+  },
+  {
+    construct: "MeshToonMaterial", target: "material.toon", emit: "comment", engineImport: "material", mapping: "approximate",
+    note: "Manually author material.toon({ color, steps, ramp, shadowColor, rim }) on a primitive; steps are 1..8 and ramp is a typed texture asset, not a direct gradientMap conversion. The GLSL-only shader bands summed direct-light luminance, adds hemisphere fill and supports directional sun shadow; rect-area lights are skipped. No WebGPU program. GLB custom replacement is whole-model; skinned models and PBR slot overrides are unsupported."
+  },
+  {
+    construct: "ShadowMaterial", target: "material.shadow", emit: "comment", engineImport: "material", mapping: "approximate",
+    note: "Manually assign material.shadow({ color, opacity, side, light }) to a receiving primitive with normals and a matching shadow-casting light and packet. It is transparent with depth writes off; light selects one directional (default), point or spot packet, not a light ID or combined shadows. Point/spot require standalone pointLight/spotLight packets; the PRD-02 local atlas does not feed these variants. Paired GLSL/WGSL exist, not a WebGPU route or pixel claim. GLB custom replacement is whole-model; skinned models and PBR slot overrides are unsupported."
+  },
   { construct: "ShaderMaterial", target: "material.custom", emit: "comment", engineImport: "material", mapping: "approximate", note: "material.custom({ glsl: { vertex?, fragment }, wgsl?, uniforms, defines, transparent, side, blending }) is public (SH-02) — GLSL is required (WebGL2 is the live backend); wgsl runs only on the WebGPU backend." },
   { construct: "RawShaderMaterial", target: "material.custom", emit: "comment", engineImport: "material", mapping: "approximate", note: "material.custom({ glsl, uniforms, defines }) is public (SH-02); raw vs. built-in-uniform binding is part of the spec." },
   { construct: "NodeMaterial", target: "material.node", emit: "comment", engineImport: "material", mapping: "approximate", note: "material.node({ colorNode, emissiveNode, opacityNode, positionNode, alphaTest, transparent, side }) (SH-01) lowers a TSL-subset graph to a GLSL material.custom spec; rebuild the graph with tsl.positionLocal/positionWorld/normalLocal/normalWorld/uv/time/cameraPosition/uniform/uniformArray/texture/color/float/int/bool/vec2/vec3/vec4, add/sub/mul/div/mod/mix/smoothstep/clamp/pow/abs/min/max/dot/cross/normalize/length/distance/sin/cos/tan/fract/floor/ceil/sign/sqrt/exp/log/step/atan2/saturate/oneMinus/negate/select, comparisons, Fn/If/Loop. NOT supported (throws tsl-unsupported-node / tsl-unsupported-output): normalNode, roughnessNode, metalnessNode, other three/tsl names (triplanarTexture, viewportUV, screenUV, storage, instanceIndex, bumpMap, normalMap, ...), uv() set 1+, WGSL output, lighting/PBR inputs." },

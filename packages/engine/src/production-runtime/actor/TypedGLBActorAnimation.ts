@@ -6,7 +6,8 @@
 // `createTypedGLBActorAnimationTrack` is the seam factory: the method bodies are verbatim,
 // with the `animation`/`actor` free variables turned into parameters.
 
-import type { Material, RenderItem } from "@aura3d/rendering";
+import { isTextureBinding, type Material, type RenderItem, type Texture, type TextureBinding } from "@aura3d/rendering";
+import { parseGLTFRuntimeMaterialKey } from "@aura3d/assets/gltf-runtime";
 import type {
   GLTFSceneAnimationApplyResult,
   GLTFSceneAnimationMaterialSink,
@@ -16,24 +17,394 @@ import type {
 } from "@aura3d/assets/gltf-runtime";
 import type { TypedGLBActor, TypedGLBActorEvidence, TypedGLBActorMorphApplyResult } from "../TypedGLBActor";
 
+type AnimatedTextureSlot = "baseColor" | "metallicRoughness" | "normal" | "occlusion" | "emissive";
+const ANIMATED_TEXTURE_SLOTS: readonly AnimatedTextureSlot[] = ["baseColor", "metallicRoughness", "normal", "occlusion", "emissive"];
+type TextureSnapshot = { readonly binding: TextureBinding; readonly texture: Texture | null };
+interface TextureAnimationSnapshotState {
+  readonly bindings: Map<Material, Map<AnimatedTextureSlot, TextureSnapshot | undefined>>;
+  readonly sourceTextures: Map<string, Map<AnimatedTextureSlot, Set<Texture>>>;
+}
+interface TextureAnimationRegistry {
+  readonly owners: WeakMap<Material, WeakRef<object>[]>;
+  readonly snapshots: WeakMap<object, TextureAnimationSnapshotState>;
+}
+
+// The same mutable Material in two actor libraries cannot be animated safely. Weak
+// owners do not keep retired actor libraries alive. Repeated resolvers for one library
+// count as a single owner and share their original snapshots. The global symbol also
+// handles applications that have loaded multiple copies of the engine package.
+const textureAnimationRegistryKey = Symbol.for("@aura3d/engine/texture-animation-registry/v1");
+const textureAnimationGlobal = globalThis as unknown as Record<symbol, unknown>;
+const textureAnimationRegistry = (textureAnimationGlobal[textureAnimationRegistryKey] ??= {
+  owners: new WeakMap(), snapshots: new WeakMap()
+}) as TextureAnimationRegistry;
+
+function registerTextureAnimationOwner(material: Material, owner: object): boolean {
+  const owners = (textureAnimationRegistry.owners.get(material) ?? []).filter((entry) => entry.deref() !== undefined);
+  if (!owners.some((entry) => entry.deref() === owner)) owners.push(new WeakRef(owner));
+  textureAnimationRegistry.owners.set(material, owners);
+  return owners.some((entry) => entry.deref() !== owner);
+}
+
+function textureTransformParameter(parameter: string): { slot: AnimatedTextureSlot; component: "Offset" | "Scale" | "Rotation" } | undefined {
+  const match = /^u_(baseColor|metallicRoughness|normal|occlusion|emissive)Texture(Offset|Scale|Rotation)$/.exec(parameter);
+  return match ? { slot: match[1] as AnimatedTextureSlot, component: match[2] as "Offset" | "Scale" | "Rotation" } : undefined;
+}
+
+function textureAnimationValueMatches(actual: unknown, expected: number | readonly [number, number]): boolean {
+  if (typeof expected === "number") return typeof actual === "number" && Math.fround(actual) === Math.fround(expected);
+  return (Array.isArray(actual) || actual instanceof Float32Array) && actual.length === 2
+    && actual.every((component, i) => Math.fround(component) === Math.fround(expected[i]!));
+}
+
 /**
- * Builds the `resolveAnimationMaterial` adapter for animation-pointer `material:*` tracks from
- * a loaded pipeline's material library. First material wins on duplicate names; the library
- * keeps names individually addressable, so pointer tracks always drive a deterministic sink.
+ * Builds an actor-local adapter for animation-pointer tracks. Resource keys carry the source
+ * material identity and a rendering-contract suffix; the material object's name alone is not
+ * sufficient when one source material has several skinned or instanced runtime contracts.
+ * Resolve current bindings on every operation so variants and disposal cannot leave stale sinks.
  */
 export function createGLBActorAnimationMaterialResolver(
-  resources: { readonly materialLibrary?: ReadonlyMap<string, Material> | undefined }
-): (name: string) => GLTFSceneAnimationMaterialSink | undefined {
-  const byName = new Map<string, Material>();
-  for (const material of resources.materialLibrary?.values() ?? []) {
-    if (!byName.has(material.name)) byName.set(material.name, material);
+  resources: {
+    readonly materialLibrary?: ReadonlyMap<string, Material> | undefined;
+    readonly loadIssues?: readonly { readonly code: string; readonly textureIndex?: number; readonly imageIndex?: number }[] | undefined;
+  },
+  asset?: { readonly materials: readonly {
+    readonly name: string; readonly baseColorTexture?: unknown; readonly metallicRoughnessTexture?: unknown;
+    readonly normalTexture?: unknown; readonly occlusionTexture?: unknown; readonly emissiveTexture?: unknown;
+    readonly unlit?: boolean; readonly pbrSpecularGlossiness?: unknown;
+    readonly specular?: unknown; readonly sheen?: unknown; readonly iridescence?: unknown;
+  }[] },
+  options?: {
+    readonly importedMaterialOverridden?: boolean;
+    /** Native resource creation has settled all initial decodes, unlike a foreign adapter. */
+    readonly textureLoadFailuresFinal?: boolean;
   }
+): (name: string) => GLTFSceneAnimationMaterialSink | undefined {
+  type Failure = "missing-map" | "changed-map" | "disposed" | "ambiguous" | "unsupported";
+  const owner = resources.materialLibrary ?? resources;
+  const previousSnapshots = textureAnimationRegistry.snapshots.get(owner);
+  const snapshots = previousSnapshots ?? { bindings: new Map(), sourceTextures: new Map() };
+  const capturedBindings = snapshots.bindings;
+  const sourceTextures = snapshots.sourceTextures;
+  if (!previousSnapshots) textureAnimationRegistry.snapshots.set(owner, snapshots);
+  const rememberSourceTexture = (name: string, slot: AnimatedTextureSlot, texture: Texture): void => {
+    let slots = sourceTextures.get(name);
+    if (!slots) sourceTextures.set(name, slots = new Map());
+    let textures = slots.get(slot);
+    if (!textures) slots.set(slot, textures = new Set());
+    textures.add(texture);
+  };
+  // Record the imported bindings before returning a handle to the actor. A later
+  // replacement, even with a live texture, must not silently become an animation target.
+  for (const [key, material] of previousSnapshots ? [] : resources.materialLibrary?.entries() ?? []) {
+    registerTextureAnimationOwner(material, owner);
+    if (material.disposed) continue;
+    let captured = capturedBindings.get(material);
+    if (!captured) {
+      captured = new Map();
+      for (const slot of ANIMATED_TEXTURE_SLOTS) {
+        const binding = material.getParameter(`u_${slot}Texture`);
+        captured.set(slot, isTextureBinding(binding) ? { binding, texture: binding.texture } : undefined);
+      }
+      capturedBindings.set(material, captured);
+    }
+    const name = parseGLTFRuntimeMaterialKey(key).material;
+    for (const slot of ANIMATED_TEXTURE_SLOTS) {
+      const binding = captured.get(slot)?.binding;
+      if (!binding?.texture || !binding.ready || binding.texture.disposed) continue;
+      rememberSourceTexture(name, slot, binding.texture);
+    }
+  }
+  const boundMaterials = (name: string): Material[] => {
+    const entries = [...(resources.materialLibrary?.entries() ?? [])];
+    const keyed = entries.filter(([key]) => parseGLTFRuntimeMaterialKey(key).material === name).map(([, material]) => material);
+    // The public helper previously also accepted name-only ad hoc libraries.
+    // Do not use that fallback when source definitions are available: doing so
+    // could silently select a different source material after deduplication.
+    return [...new Set(keyed.length || asset ? keyed : entries.map(([, material]) => material).filter((material) => material.name === name))];
+  };
+
+  const inspect = (name: string, parameter: string):
+    | { readonly status: "available"; readonly materials: readonly Material[] }
+    | { readonly status: Failure } => {
+    const transform = textureTransformParameter(parameter);
+    const slot = parameter === "u_normalScale" ? "normalTexture"
+      : parameter === "u_occlusionStrength" ? "occlusionTexture" : undefined;
+    const physical = parameter === "u_specularFactor" ? "specular"
+      : parameter === "u_sheenRoughnessFactor" ? "sheen"
+      : parameter === "u_iridescenceFactor" || parameter === "u_iridescenceIor" ? "iridescence" : undefined;
+    if ((!slot && !physical && !transform) || !asset || options?.importedMaterialOverridden) return { status: "unsupported" };
+    const definitions = asset.materials.filter((material) => material.name === name);
+    if (definitions.length > 1) return { status: "ambiguous" };
+    const definition = definitions[0];
+    if (!definition) return { status: "unsupported" };
+    if (slot && !definition[slot]) return { status: "missing-map" };
+    if (physical && (!definition[physical] || definition.unlit || definition.pbrSpecularGlossiness)) return { status: "unsupported" };
+    const transformSlot = transform ? `${transform.slot}Texture` as const : undefined;
+    if (transformSlot && !definition[transformSlot]) return { status: "missing-map" };
+    const textureInfo = transformSlot ? definition[transformSlot] : undefined;
+    if (textureInfo && typeof textureInfo === "object") {
+      const info = textureInfo as { readonly texture?: number; readonly image?: number };
+      // A failed decode can leave a ready, live 1px fallback bound. Its UVs do
+      // not prove an authored texture is present, including shared-image aliases.
+      if (resources.loadIssues?.some((issue) => issue.code === "texture-load-failed"
+        && ((info.texture !== undefined && issue.textureIndex === info.texture)
+          || (info.image !== undefined && issue.imageIndex === info.image)))) return { status: "missing-map" };
+    }
+    if (transform && ((definition.unlit && transform.slot !== "baseColor")
+      || (definition.pbrSpecularGlossiness && (transform.slot === "baseColor" || transform.slot === "metallicRoughness")))) return { status: "unsupported" };
+
+    const materials = boundMaterials(name);
+    if (materials.length === 0) return { status: "unsupported" };
+    const selected = new Set(materials);
+    // Deduplication can alias different source definitions to the same runtime object.
+    // Mutating that object would animate an unrelated source material as well.
+    for (const [key, material] of resources.materialLibrary?.entries() ?? []) {
+      if (selected.has(material) && parseGLTFRuntimeMaterialKey(key).material !== name) {
+        return { status: "ambiguous" };
+      }
+    }
+    const textureParameter = slot === "normalTexture" ? "u_normalTexture" : "u_occlusionTexture";
+    for (const material of materials) {
+      if (material.disposed) return { status: "disposed" };
+      const sharedOwner = registerTextureAnimationOwner(material, owner);
+      if (transform) {
+        if (sharedOwner) return { status: "ambiguous" };
+        const supportedShader = material.shaderKey === "aura3d/pbr-textured"
+          || (transform.slot === "baseColor" && ["aura3d/textured-unlit", "aura3d/skinned-lit", "aura3d/skinned-lit-8"].includes(material.shaderKey));
+        if (!supportedShader) return { status: "unsupported" };
+        const kind = transform.component === "Rotation" ? "float" : "vec2";
+        const current = material.getParameter(parameter);
+        if (!material.uniformSchema.some((uniform) => uniform.name === parameter && uniform.kind === kind)
+          || (kind === "float" ? typeof current !== "number" || !Number.isFinite(current)
+            : !(Array.isArray(current) || current instanceof Float32Array) || current.length !== 2 || !Array.from(current).every(Number.isFinite))) return { status: "unsupported" };
+        const textureName = `u_${transform.slot}Texture`;
+        const binding = material.getParameter(textureName);
+        if (!isTextureBinding(binding)) return { status: "unsupported" };
+        if (binding.texture?.disposed) return { status: "disposed" };
+        const enabled = material.getParameter(`${textureName}Enabled`);
+        if (!binding.texture || !binding.ready || (enabled !== undefined && enabled !== 1)) return { status: "missing-map" };
+        // Textured-unlit always samples the map and has no Enabled uniform.
+        if (enabled === undefined && material.shaderKey !== "aura3d/textured-unlit") return { status: "unsupported" };
+        let captured = capturedBindings.get(material);
+        if (!captured) {
+          // Lazily-created variants are admissible only if they use the same
+          // imported texture as an already captured contract of this source.
+          if (!sourceTextures.get(name)?.get(transform.slot)?.has(binding.texture)) return { status: "changed-map" };
+          captured = new Map([[transform.slot, { binding, texture: binding.texture }]]);
+          capturedBindings.set(material, captured);
+        } else if (!captured.has(transform.slot)) {
+          if (!sourceTextures.get(name)?.get(transform.slot)?.has(binding.texture)) return { status: "changed-map" };
+          captured.set(transform.slot, { binding, texture: binding.texture });
+        } else {
+          const original = captured.get(transform.slot);
+          if (original?.binding !== binding || original?.texture !== binding.texture) {
+            // A lazy provider may replace an unready binding with a ready
+            // wrapper for the *same* source texture and sampler. Do not
+            // mistake this completion for an unrelated map replacement.
+            if (!original || original.binding.ready || !original.texture ||
+                original.texture !== binding.texture || original.binding.sampler !== binding.sampler) return { status: "changed-map" };
+            captured.set(transform.slot, { binding, texture: binding.texture });
+            rememberSourceTexture(name, transform.slot, binding.texture);
+          }
+        }
+        continue;
+      }
+      if (physical && !["aura3d/pbr-direct", "aura3d/pbr-textured", "aura3d/skinned-lit", "aura3d/skinned-lit-8"].includes(material.shaderKey)) return { status: "unsupported" };
+      if (!material.uniformSchema.some((uniform) => uniform.name === parameter && uniform.kind === "float")
+        || typeof material.getParameter(parameter) !== "number") return { status: "unsupported" };
+      if (!slot) continue;
+      const binding = material.getParameter(textureParameter);
+      if (!isTextureBinding(binding)) return { status: "unsupported" };
+      if (binding.texture?.disposed) return { status: "disposed" };
+      if (!binding.texture || !binding.ready || material.getParameter(`${textureParameter}Enabled`) !== 1) {
+        return { status: "missing-map" };
+      }
+    }
+    return { status: "available", materials };
+  };
+
+  // This is deliberately narrower than the existing missing-map diagnostic.
+  // A null, disabled or not-yet-ready map can be supplied later; only an
+  // authored source failure or an irreversible current resource contract is
+  // evidence for rejecting startup. Older/foreign sinks make no such claim.
+  const availability = (name: string, parameter: string): NonNullable<ReturnType<NonNullable<GLTFSceneAnimationMaterialSink["animationParameterAvailability"]>>> => {
+    if (options?.importedMaterialOverridden) return { status: "unavailable", reason: "imported-material-overridden" };
+    if (!asset) return { status: "unknown", reason: "missing-source-material" };
+    const definitions = asset.materials.filter((material) => material.name === name);
+    if (definitions.length !== 1) return { status: "unknown", reason: "ambiguous-source-material" };
+    const definition = definitions[0]!;
+    const transform = textureTransformParameter(parameter);
+    const slot = parameter === "u_normalScale" ? "normalTexture"
+      : parameter === "u_occlusionStrength" ? "occlusionTexture"
+      : transform ? `${transform.slot}Texture` as const : undefined;
+    const physical = ["u_specularFactor", "u_sheenRoughnessFactor", "u_iridescenceFactor", "u_iridescenceIor"].includes(parameter);
+    const materials = boundMaterials(name);
+    let failedTexture = false;
+    if (slot) {
+      const info = definition[slot];
+      if (!info) return { status: "unavailable", reason: "missing-source-map" };
+      if (typeof info === "object") {
+        const source = info as { readonly texture?: number; readonly image?: number };
+        failedTexture = resources.loadIssues?.some((issue) => issue.code === "texture-load-failed"
+          && ((source.texture !== undefined && issue.textureIndex === source.texture)
+            || (source.image !== undefined && issue.imageIndex === source.image))) === true;
+      }
+    }
+    if (materials.length === 0) return { status: "unknown", reason: "missing-material" };
+    // A provider may replace a disposed material in the library later.
+    if (materials.some((material) => material.disposed)) return { status: "unknown", reason: "disposed" };
+    if (failedTexture) {
+      // A historical load issue alone does not prove a current or final
+      // failure: an adapter or extension can replace the fallback lazily.
+      const textureSlot = transform?.slot ?? (slot === "normalTexture" ? "normal" : "occlusion");
+      const textureName = `u_${textureSlot}Texture`;
+      for (const material of materials) {
+        const current = material.getParameter(textureName);
+        if (isTextureBinding(current) && !current.ready) return { status: "pending", reason: "missing-map" };
+        const enabled = material.getParameter(`${textureName}Enabled`);
+        if (enabled !== undefined && enabled !== 1) return { status: "unknown", reason: "missing-map" };
+        const captured = capturedBindings.get(material)?.get(textureSlot);
+        if (!isTextureBinding(current) || !captured || captured.binding !== current || captured.texture !== current.texture) {
+          return { status: "unknown", reason: "texture-load-failed" };
+        }
+      }
+      return options?.textureLoadFailuresFinal
+        ? { status: "unavailable", reason: "texture-load-failed" }
+        : { status: "unknown", reason: "texture-load-failed" };
+    }
+    if (transform) {
+      const textureName = `u_${transform.slot}Texture`;
+      // An explicitly unready map is pending even if its wrapper differs
+      // from the captured binding; only a ready replacement can be judged.
+      if (materials.some((material) => {
+        const texture = material.getParameter(textureName);
+        return isTextureBinding(texture) && !texture.ready;
+      })) return { status: "pending", reason: "missing-map" };
+
+      const info = definition[`${transform.slot}Texture` as const] as { readonly texCoord?: number } | undefined;
+      const usesOtherCoreMaps = Boolean(definition.normalTexture || definition.metallicRoughnessTexture ||
+        definition.occlusionTexture || definition.emissiveTexture);
+      const incompatibleBuiltin = materials.some((material) => {
+        const skinned = material.shaderKey === "aura3d/skinned-lit" || material.shaderKey === "aura3d/skinned-lit-8";
+        const unlit = material.shaderKey === "aura3d/textured-unlit";
+        // These shaders transform UV0 in the vertex stage. Skinned non-base
+        // maps lack individual uniforms and share that transformed UV, so a
+        // base-color animation would also move any other present core maps.
+        return (skinned || unlit) && (transform.slot !== "baseColor" || (info?.texCoord ?? 0) !== 0 ||
+          (skinned && usesOtherCoreMaps));
+      });
+      if (incompatibleBuiltin) return { status: "unavailable", reason: "unsupported" };
+    }
+    // Legacy material leaves still use the existing setter contract. The
+    // adapter cannot prove a shader consumes every such uniform.
+    if (!slot && !physical && !transform) return { status: "unknown", reason: "legacy-material-contract" };
+    const binding = inspect(name, parameter);
+    if (binding.status === "available") return { status: "available" };
+    // A disposed texture may still be replaced by an asynchronous provider.
+    if (binding.status === "disposed") return { status: "unknown", reason: "disposed" };
+    if (binding.status === "missing-map") {
+      const textureName = transform ? `u_${transform.slot}Texture`
+        : slot === "normalTexture" ? "u_normalTexture" : "u_occlusionTexture";
+      const pending = materials.some((material) => {
+        const texture = material.getParameter(textureName);
+        return isTextureBinding(texture) && !texture.ready;
+      });
+      return { status: pending ? "pending" : "unknown", reason: binding.status };
+    }
+    if (transform && (binding.status === "ambiguous" || binding.status === "changed-map")) {
+      return { status: "unavailable", reason: binding.status };
+    }
+    // An unsupported shader/schema, changed map or shared material may be
+    // replaced by a lazy provider. There is no completion contract for it.
+    return { status: "unknown", reason: binding.status };
+  };
+
   return (name: string) => {
-    const material = byName.get(name);
-    if (!material) return undefined;
+    if (!asset?.materials.some((material) => material.name === name) && boundMaterials(name).length === 0) return undefined;
     return {
-      name: material.name,
-      setAnimationParameter: (parameter, value) => material.setParameter(parameter, value)
+      name,
+      // Preserve the legacy sink for existing leaves. A distinct runtime material
+      // receives one write even if it appears under multiple aliases.
+      setAnimationParameter: (parameter, value) => {
+        for (const material of boundMaterials(name)) material.setParameter(parameter, value);
+      },
+      animationParameterStatus: (parameter) => inspect(name, parameter).status,
+      animationParameterAvailability: (parameter) => availability(name, parameter),
+      applyAnimationParameter: (parameter, value) => {
+        if (!Number.isFinite(value) || !Number.isFinite(Math.fround(value))
+          || (parameter === "u_normalScale" && value < 0)
+          || (["u_occlusionStrength", "u_specularFactor", "u_sheenRoughnessFactor", "u_iridescenceFactor"].includes(parameter) && (value < 0 || value > 1))
+          || (parameter === "u_iridescenceIor" && value < 1)) return "unsupported";
+        const result = inspect(name, parameter);
+        if (result.status !== "available") return result.status;
+        // Snapshot all live variants before writing. Standard Material setters
+        // are synchronous, but a caller-supplied subclass may throw; restore
+        // touched variants instead of leaving a partially applied animation.
+        const previous = result.materials.map((material) => material.getParameter(parameter)!);
+        let touched = 0;
+        try {
+          for (const material of result.materials) { touched += 1; material.setParameter(parameter, value); }
+        } catch (error) {
+          const failures: unknown[] = [];
+          for (let i = touched - 1; i >= 0; i -= 1) {
+            try { result.materials[i]!.setParameter(parameter, previous[i]!); } catch (rollbackError) { failures.push(rollbackError); }
+          }
+          if (failures.length) throw new AggregateError([error, ...failures], "Material animation write and rollback failed.");
+          throw error;
+        }
+        return "applied";
+      },
+      applyAnimationTextureTransform: (parameter, value) => {
+        const transform = textureTransformParameter(parameter);
+        if (!transform) return "unsupported";
+        const validNumber = (entry: unknown): entry is number =>
+          typeof entry === "number" && Number.isFinite(entry) && Number.isFinite(Math.fround(entry));
+        if (transform.component === "Rotation" ? !validNumber(value)
+          : !Array.isArray(value) || value.length !== 2 || !value.every(validNumber)) return "unsupported";
+        const result = inspect(name, parameter);
+        if (result.status !== "available") return result.status;
+        const previous = result.materials.map((material) => material.getParameter(parameter)!);
+        let touched = 0;
+        const rollback = () => {
+          const failures: unknown[] = [];
+          for (let i = touched - 1; i >= 0; i -= 1) {
+            try { result.materials[i]!.setParameter(parameter, previous[i]!); } catch (error) { failures.push(error); }
+          }
+          return failures;
+        };
+        const liveFailure = (): Failure | undefined => {
+          const live = inspect(name, parameter);
+          if (live.status !== "available") return live.status;
+          return live.materials.length !== result.materials.length || live.materials.some((entry, i) => entry !== result.materials[i]) ? "changed-map" : undefined;
+        };
+        const abort = (failure: Failure): Failure => {
+          const failures = rollback();
+          touched = 0;
+          if (failures.length) throw new AggregateError(failures, "Texture animation rollback failed.");
+          return failure;
+        };
+        try {
+          for (const material of result.materials) {
+            // A custom setter may alter the library, binding, or another variant
+            // synchronously. Recheck before each write and roll back on change.
+            const failure = liveFailure();
+            if (failure) return abort(failure);
+            touched += 1;
+            material.setParameter(parameter, typeof value === "number" ? value : [value[0], value[1]]);
+          }
+          const failure = liveFailure();
+          if (failure) return abort(failure);
+          // A custom material may accept a setter call while dropping or
+          // overwriting the value. Count a write only when all variants retain it.
+          if (result.materials.some((material) => !textureAnimationValueMatches(material.getParameter(parameter), value))) return abort("unsupported");
+        } catch (error) {
+          const failures = rollback();
+          if (failures.length) throw new AggregateError([error, ...failures], "Texture animation write and rollback failed.");
+          throw error;
+        }
+        return "applied";
+      }
     };
   };
 }

@@ -1,41 +1,41 @@
+import { GlyphAtlas } from "./text/GlyphAtlas.js";
+import { shapeText, type TextDirection, type TextMeasureContext } from "./text/TextShaper.js";
+import type { LoadedFont } from "./text/FontLoader.js";
+
 /**
  * SDF world text for the rendering package (muse3jsparity-PRD G1).
  *
  * ## What this is
  *
- * CPU-side signed-distance-field text: a font atlas baked from the same
- * uppercase-alphanumeric 5x7 bitmap catalog as root `text3D`, plus layout into
- * textured quads, analytic coverage sampling, LOD fade, and occlusion policy
- * helpers. The GPU half (atlas upload + quad submission) belongs to the
+ * CPU-side signed-distance-field text: a built-in bitmap atlas and a dynamic
+ * platform-shaped font path, plus layout into textured quads, analytic coverage
+ * sampling, LOD fade, and occlusion policy helpers. GPU submission belongs to the
  * production-runtime bridge; this module produces the data it consumes and the
  * diagnostics that prove the swap happened (`textPixelBacked`).
  *
  * ## What this is not
  *
- * - Not a font stack: no font-file loading, no Unicode shaping, no kerning, no
- *   CJK, no paragraph layout. Supported glyphs are exactly `A-Z 0-9 space - .`
- *   (see `SDF_SUPPORTED_GLYPHS`). Anything else is recorded on the layout as
- *   `unsupportedCharacters` and skipped — never silently substituted.
+ * - The built-in fallback supports exactly `A-Z 0-9 space - .` (see
+ *   `SDF_SUPPORTED_GLYPHS`), reporting other characters. Loaded fonts use the
+ *   platform's native text shaper and are rasterized as complete runs.
  * - Not troika-three-text parity and not TextGeometry parity. The claim label
  *   is `production-runtime` SDF text, proven by `textPixelBacked` diagnostics.
  * - Not DOM text. DOM labels (`labels.*` / `ui.*`) stay the accessible
  *   surface; SDF text is the lit/occluded in-world surface. Diagnostics keep
  *   the two counts separate (`summarizeTextSurfaces`).
  *
- * Pure: no DOM, no WebGL, no `three`. Fully unit-testable.
+ * The built-in path is pure; loaded fonts require Canvas2D. No WebGL is used here.
  */
 
 /** Exact glyph scope. Uppercase alphanumeric catalog shared with root `text3D`. */
 export const SDF_SUPPORTED_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789- ." as const;
 
 /**
- * Font-scope honesty note (G1 checklist: "no arbitrary-shaping claim").
- * Shaping beyond this catalog — lowercase mapping aside — is out of scope.
+ * Scope note for the built-in fallback and the platform-shaped font path.
  */
 export const SDF_FONT_SCOPE_NOTE =
-  "SDF text covers the uppercase alphanumeric catalog A-Z 0-9 space hyphen period; " +
-  "lowercase input is uppercased, all other characters are reported as unsupported and skipped. " +
-  "No font-file loading, Unicode shaping, kerning, or CJK.";
+  "The built-in fallback covers A-Z 0-9 space hyphen period and reports unsupported characters; " +
+  "loaded fonts use platform shaping, fallback and rasterization for Unicode text.";
 
 const GLYPH_COLUMNS = 5;
 const GLYPH_ROWS = 7;
@@ -116,8 +116,11 @@ export interface SdfTextLayout {
   readonly kind: "aura-sdf-text-layout";
   readonly text: string;
   readonly quads: readonly SdfTextQuad[];
+  /** Drawable atlas entries: individual glyphs in the built-in atlas, full runs for loaded fonts. */
   readonly glyphCount: number;
   readonly unsupportedCharacters: readonly string[];
+  /** Canvas does not expose the glyph IDs or missing-glyph list selected by its shaper. */
+  readonly glyphCoverage?: "built-in-known" | "platform-unverified";
   readonly widthWorld: number;
   readonly heightWorld: number;
   readonly method: "sdf-atlas-quad";
@@ -224,6 +227,7 @@ export function layoutSdfText(text: string, atlas: SdfFontAtlas, options: SdfTex
     quads,
     glyphCount,
     unsupportedCharacters: [...unsupported],
+    glyphCoverage: "built-in-known",
     widthWorld: cursor - spacing,
     heightWorld: size,
     method: "sdf-atlas-quad",
@@ -413,6 +417,185 @@ export interface SdfTextRasterImage {
   readonly coveredTexels: number;
 }
 
+export interface DynamicSdfTextOptions {
+  readonly font: LoadedFont;
+  readonly fallbackFonts?: readonly LoadedFont[];
+  /** World-space em height. */
+  readonly size?: number;
+  /** World-space maximum line width. */
+  readonly maxWidth?: number;
+  /** World-space line height. */
+  readonly lineHeight?: number;
+  readonly letterSpacing?: number;
+  readonly direction?: TextDirection;
+  readonly maxLines?: number;
+  readonly style?: SdfTextStyle;
+  /** Raster resolution per em, bounded to 16..256. Default 64. */
+  readonly rasterSize?: number;
+}
+
+/** A snapshot suitable for the existing texture and quad compiler. */
+export interface DynamicSdfText {
+  readonly layout: SdfTextLayout;
+  readonly image: SdfTextRasterImage;
+}
+
+/**
+ * Shape complete Unicode runs using the browser text engine, place their
+ * coverage in a bounded temporary atlas, and copy the result into a retained
+ * label texture snapshot. Keeping each run intact preserves contextual glyph
+ * substitution, bidi, kerning, ligatures and platform font fallback.
+ */
+export function createDynamicSdfText(text: string, options: DynamicSdfTextOptions): DynamicSdfText {
+  const size = options.size ?? 1;
+  const rasterSize = options.rasterSize ?? 64;
+  if (!Number.isFinite(size) || size <= 0 || !Number.isInteger(rasterSize) || rasterSize < 16 || rasterSize > 256) {
+    throw new RangeError("Aura3D dynamic text size must be positive and rasterSize must be an integer within 16..256.");
+  }
+  const style = normalizeStyle(options.style ?? {});
+  const scale = rasterSize / size;
+  if (!Number.isFinite(scale) || scale <= 0) throw new RangeError("Aura3D dynamic text size is outside the representable raster range.");
+  const canvas = createTextCanvas();
+  const ctx = canvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+  if (!ctx) throw new Error("Aura3D loaded-font text requires a Canvas2D context.");
+  ctx.textBaseline = "middle";
+  const shaped = shapeText(text, {
+    font: options.font,
+    ...(options.fallbackFonts ? { fallbackFonts: options.fallbackFonts } : {}),
+    sizePx: rasterSize,
+    ...(options.maxWidth === undefined ? {} : { maxWidth: options.maxWidth * scale }),
+    ...(options.lineHeight === undefined ? {} : { lineHeight: options.lineHeight * scale }),
+    ...(options.letterSpacing === undefined ? {} : { letterSpacing: options.letterSpacing * scale }),
+    ...(options.direction === undefined ? {} : { direction: options.direction }),
+    ...(options.maxLines === undefined ? {} : { maxLines: options.maxLines })
+  }, ctx as unknown as TextMeasureContext);
+  const pad = Math.ceil(rasterSize * 0.3);
+  const inkMargin = Math.max(2, Math.ceil(rasterSize / 8));
+  let left = 0;
+  let right = shaped.width;
+  let top = 0;
+  let bottom = shaped.height;
+  shaped.lines.forEach((line, index) => {
+    if (!line.text.trim()) return;
+    ctx.direction = line.direction;
+    ctx.textAlign = line.direction === "rtl" ? "right" : "left";
+    const metrics = ctx.measureText(line.text);
+    const anchor = line.direction === "rtl" ? shaped.width : 0;
+    const baseline = (index + 0.5) * shaped.lineHeight;
+    if (Number.isFinite(metrics.actualBoundingBoxLeft) && Number.isFinite(metrics.actualBoundingBoxRight)) {
+      left = Math.min(left, anchor - metrics.actualBoundingBoxLeft);
+      right = Math.max(right, anchor + metrics.actualBoundingBoxRight);
+    }
+    if (Number.isFinite(metrics.actualBoundingBoxAscent) && Number.isFinite(metrics.actualBoundingBoxDescent)) {
+      top = Math.min(top, baseline - metrics.actualBoundingBoxAscent - inkMargin);
+      bottom = Math.max(bottom, baseline + metrics.actualBoundingBoxDescent + inkMargin);
+    }
+  });
+  const width = Math.max(1, Math.ceil(right - left) + 2 * pad);
+  const height = Math.max(1, Math.ceil(bottom - top));
+  const originX = pad - left;
+  const originY = -top;
+  const boundaries = Array.from({ length: shaped.lines.length + 1 }, (_, index) =>
+    index === 0 ? 0 : index === shaped.lines.length ? height : Math.max(0, Math.min(height, Math.floor(originY + index * shaped.lineHeight))));
+  const rowHeight = Math.max(...shaped.lines.map((_line, index) => boundaries[index + 1]! - boundaries[index]!));
+  const atlasWidth = Math.ceil((width + 2) / 8) * 8;
+  const atlasRowHeight = Math.ceil((rowHeight + 2) / 8) * 8;
+  const atlasHeight = atlasRowHeight * shaped.lines.length;
+  if (width > 2048 || height > 2048 || atlasWidth > 4096 || atlasHeight > 4096 || atlasWidth * atlasHeight > 4_194_304 ||
+      width * height * shaped.lines.length > 16_777_216) {
+    throw new RangeError("Aura3D loaded-font label exceeds its bounded raster/atlas size.");
+  }
+  canvas.width = width;
+  canvas.height = height;
+  // Resizing resets context state.
+  ctx.font = shaped.font;
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "white";
+  if ("fontKerning" in ctx) ctx.fontKerning = "normal";
+  if ("letterSpacing" in ctx) ctx.letterSpacing = `${shaped.letterSpacing}px`;
+  shaped.lines.forEach((line, index) => {
+    ctx.direction = line.direction;
+    ctx.textAlign = line.direction === "rtl" ? "right" : "left";
+    ctx.fillText(line.text, originX + (line.direction === "rtl" ? shaped.width : 0), originY + (index + 0.5) * shaped.lineHeight);
+  });
+  const source = ctx.getImageData(0, 0, width, height).data;
+  const atlas = new GlyphAtlas({ width: atlasWidth, height: atlasHeight, maxEntries: shaped.lines.length });
+  const quads: SdfTextQuad[] = [];
+  try {
+    shaped.lines.forEach((line, index) => {
+      const top = boundaries[index]!;
+      const bottom = boundaries[index + 1]!;
+      if (bottom <= top) return;
+      const pixels = new Uint8Array(width * (bottom - top));
+      for (let y = top; y < bottom; y += 1) for (let x = 0; x < width; x += 1) pixels[(y - top) * width + x] = source[(y * width + x) * 4 + 3] ?? 0;
+      if (!line.text.trim() && !pixels.some((value) => value !== 0)) return;
+      const entry = atlas.acquire(`run-${index}`, { width, height: bottom - top, data: textDistanceField(pixels, width, bottom - top, Math.max(2, rasterSize / 8)) });
+      const y0 = (height - bottom) / scale;
+      const y1 = (height - top) / scale;
+      quads.push({ glyph: line.text, corners: [0, y0, width / scale, y0, width / scale, y1, 0, y1],
+        uv: [entry.uv[0], entry.uv[3], entry.uv[2], entry.uv[1]] });
+      atlas.release(entry.key);
+    });
+    if (!quads.length) throw new Error("Aura3D loaded-font text produced no visible glyphs.");
+    const layout: SdfTextLayout = {
+      kind: "aura-sdf-text-layout", text, quads, glyphCount: quads.length,
+      unsupportedCharacters: [], glyphCoverage: "platform-unverified", widthWorld: width / scale, heightWorld: height / scale,
+      method: "sdf-atlas-quad", style
+    };
+    const snapshot: SdfFontAtlas = {
+      kind: "aura-sdf-font-atlas", width: atlas.width, height: atlas.height,
+      distances: Float32Array.from(atlas.data, (value) => value / 255), glyphs: {}, glyphCount: quads.length,
+      cellResolution: rasterSize / GLYPH_ROWS, padding: pad, spreadPixels: Math.max(2, rasterSize / 8)
+    };
+    const image = rasterizeSdfTextLabelImage(layout, snapshot, {
+      texelsPerWorldUnit: scale,
+      ...(style.outlineWidthEm ? { outline: [1, 0.85, 0.6, 1] as const } : {}),
+      ...(style.glowRadiusEm ? { glow: [0.5, 0.8, 1, 1] as const } : {}),
+      ...(style.shadowOffsetEm ? { shadow: [0, 0, 0, 1] as const } : {})
+    });
+    return { layout, image };
+  } finally { atlas.dispose(); }
+}
+
+function createTextCanvas(): OffscreenCanvas | HTMLCanvasElement {
+  if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(1, 1);
+  if (typeof document !== "undefined") return document.createElement("canvas");
+  throw new Error("Aura3D loaded-font text requires OffscreenCanvas or a DOM canvas.");
+}
+
+/** Two-pass chamfer distance transform; each buffer is bounded by the atlas limit. */
+function textDistanceField(alpha: Uint8Array, width: number, height: number, spread: number): Uint8Array {
+  const count = width * height;
+  const inside = new Float32Array(count);
+  const outside = new Float32Array(count);
+  for (let i = 0; i < count; i += 1) {
+    const ink = (alpha[i] ?? 0) >= 128;
+    inside[i] = ink ? 0 : spread + 1;
+    outside[i] = ink ? spread + 1 : 0;
+  }
+  for (const field of [inside, outside]) {
+    for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
+      const i = y * width + x;
+      let value = field[i]!;
+      if (x) value = Math.min(value, field[i - 1]! + 1);
+      if (y) value = Math.min(value, field[i - width]! + 1);
+      if (x && y) value = Math.min(value, field[i - width - 1]! + Math.SQRT2);
+      if (x + 1 < width && y) value = Math.min(value, field[i - width + 1]! + Math.SQRT2);
+      field[i] = value;
+    }
+    for (let y = height - 1; y >= 0; y -= 1) for (let x = width - 1; x >= 0; x -= 1) {
+      const i = y * width + x;
+      let value = field[i]!;
+      if (x + 1 < width) value = Math.min(value, field[i + 1]! + 1);
+      if (y + 1 < height) value = Math.min(value, field[i + width]! + 1);
+      if (x + 1 < width && y + 1 < height) value = Math.min(value, field[i + width + 1]! + Math.SQRT2);
+      if (x && y + 1 < height) value = Math.min(value, field[i + width - 1]! + Math.SQRT2);
+      field[i] = value;
+    }
+  }
+  return Uint8Array.from(alpha, (_value, i) => Math.round(255 * Math.min(1, Math.max(0, 0.5 + (outside[i]! - inside[i]!) / (2 * spread)))));
+}
+
 /**
  * Native SDF sampler (muse3jsparity-PRD G1).
  *
@@ -441,6 +624,9 @@ export function rasterizeSdfTextLabelImage(
   const shadow = options.shadow ? normalizeRasterColor(options.shadow, "shadow") : undefined;
   const width = Math.max(1, Math.ceil(layout.widthWorld * scale));
   const height = Math.max(1, Math.ceil(layout.heightWorld * scale));
+  if (width > 4096 || height > 4096 || width * height > 4_194_304 || width * height * layout.quads.length > 16_777_216) {
+    throw new RangeError("Aura3D SDF raster exceeds the bounded pixel or sampling budget.");
+  }
   const style = layout.style;
   const outlineWidthEm = outline ? style.outlineWidthEm : 0;
   const glowRadiusEm = glow ? style.glowRadiusEm : 0;
@@ -457,10 +643,14 @@ export function rasterizeSdfTextLabelImage(
         lx, ly, layout, atlas, style, { fill, outline, glow, shadow, outlineWidthEm, glowRadiusEm, shadowOffset }
       );
       const offset = (y * width + x) * 4;
-      data[offset] = Math.round(r * 255);
-      data[offset + 1] = Math.round(g * 255);
-      data[offset + 2] = Math.round(b * 255);
-      data[offset + 3] = Math.round(a * 255);
+      const alphaByte = Math.round(a * 255);
+      if (alphaByte > 0) {
+        const unpremultiply = 255 / a;
+        data[offset] = Math.min(255, Math.max(0, Math.round(r * unpremultiply)));
+        data[offset + 1] = Math.min(255, Math.max(0, Math.round(g * unpremultiply)));
+        data[offset + 2] = Math.min(255, Math.max(0, Math.round(b * unpremultiply)));
+      }
+      data[offset + 3] = alphaByte;
       if (a * 255 > 8) coveredTexels += 1;
     }
   }
@@ -535,8 +725,8 @@ function sampleLayoutSignedEm(
   for (const quad of layout.quads) {
     const x0 = quad.corners[0]!;
     const x1 = quad.corners[2]!;
-    const y0 = 0;
-    const y1 = layout.heightWorld;
+    const y0 = quad.corners[1]!;
+    const y1 = quad.corners[5]!;
     if (lx < x0 || lx > x1 || ly < y0 || ly > y1) continue;
     // Atlas glyph cells are cellHeightPx tall for a 1em glyph: px -> em.
     const cellHeightPx = GLYPH_ROWS * atlas.cellResolution;
@@ -607,7 +797,7 @@ export interface SdfTextQuadMesh {
 
 /**
  * Quad-strip mesh for a rasterized label image (muse3jsparity-PRD G1 quad
- * submission). One quad per layout glyph sharing the label image: uv rects
+ * submission). One quad per layout atlas entry sharing the label image: uv rects
  * are the quad's sub-rect of the image, so the bridge uploads a single
  * texture per text node.
  */
@@ -623,8 +813,8 @@ export function createSdfTextQuadMesh(layout: SdfTextLayout, image: SdfTextRaste
   quads.forEach((quad,qi) => {
     const x0 = quad.corners[0]!;
     const x1 = quad.corners[2]!;
-    const y0 = 0;
-    const y1 = layout.heightWorld;
+    const y0 = quad.corners[1]!;
+    const y1 = quad.corners[5]!;
     const corners: ReadonlyArray<readonly [number, number]> = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
     corners.forEach(([cx, cy], corner) => {
       const vi = qi * 4 + corner;

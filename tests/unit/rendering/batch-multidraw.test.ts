@@ -1,12 +1,15 @@
 /**
  * Parity-L5 L5-03 — the multi-draw route end to end on the CPU side:
  * draw-data flag packing, stable texture identity across updates, synthesized
- * marker items, BatchPlanCache routing + diagnostics, DrawSubmit's deferred
- * `multiDrawElementsInstanced` run, and the loop fallback that keeps identical
- * pixels when `WEBGL_multi_draw` is absent.
+ * marker items, BatchPlanCache routing + diagnostics, and synchronous
+ * uniform-index submission while deferred forward batching is disabled.
  */
 
 import { describe, expect, it } from "vitest";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { IndexBuffer } from "../../../packages/rendering/src/IndexBuffer";
@@ -25,6 +28,7 @@ import {
   packDrawDataFlags,
   unpackDrawDataFlags
 } from "../../../packages/rendering/src/batching/DrawDataTexture";
+import { BatchedGeometryPool } from "../../../packages/rendering/src/batching/BatchedGeometryPool";
 import {
   buildMultiDrawBatch,
   multiDrawCommands,
@@ -36,13 +40,18 @@ import {
 import type { MultiDrawGroup } from "../../../packages/rendering/src/batching/StaticMergePlanner";
 import { BatchPlanCache, deviceSupportsMultiDraw } from "../../../packages/rendering/src/renderer/CullingBatching";
 import { flushMultiDrawQueue, submitDraw } from "../../../packages/rendering/src/forward/DrawSubmit";
+import { ForwardPass } from "../../../packages/rendering/src/ForwardPass";
+import { selectShaderFeatureBits } from "../../../packages/rendering/src/program/FeatureSelect";
+import { QUALITY_TIERS } from "../../../packages/rendering/src/contracts/quality";
 import { generateProgramImpl } from "../../../packages/rendering/src/program/ProgramGenerator";
 import { normalizeProgramFeatures } from "../../../packages/rendering/src/program/ProgramFeatures";
 import type { ProgramFeatures } from "../../../packages/rendering/src/contracts/program";
 import { registerPrd11DrawIdShader } from "../../../packages/rendering/src/batching/shaders/drawId.glsl";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
-import type { QrFlags } from "../../../packages/rendering/src/contracts";
+import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core";
+import { registerBatchedDrawShader } from "../../../packages/engine/src/agent-api/nodes/batched";
+import { createEngineBatchInstanceItem, createEnginePackedBatchItem } from "../../../packages/rendering/src/batching/BatchMembers";
 
 function boxGeometry(dye = 0): Geometry {
   const vb = new VertexBuffer(VertexFormat.P3N3, 4);
@@ -77,6 +86,30 @@ function item(geometry: Geometry, x = 0): RenderItem {
 function groupOf(members: readonly RenderItem[]): MultiDrawGroup {
   return { key: "g", programKey: "p", vertexLayoutKey: "v", members };
 }
+
+describe("BatchedGeometryPool materialization lifetime", () => {
+  it("keeps old materializations live through repacking and releases them with the pool", () => {
+    const first = boxGeometry();
+    const second = boxGeometry(1);
+    const device = new MockRenderDevice();
+    const pool = new BatchedGeometryPool();
+    pool.pack(first);
+    const original = pool.asGeometry();
+    const firstBuffer = original.vertexBuffer.upload(device);
+    pool.pack(second);
+    const repacked = pool.asGeometry();
+    const secondBuffer = repacked.vertexBuffer.upload(device);
+    const customBounds = { min: [-1, -1, -1] as const, max: [1, 1, 1] as const };
+    const rebound = pool.asGeometry(customBounds);
+    const thirdBuffer = rebound.vertexBuffer.upload(device);
+    expect([firstBuffer, secondBuffer, thirdBuffer].map((buffer) => buffer.disposed)).toEqual([false, false, false]);
+    pool.dispose();
+    expect([firstBuffer, secondBuffer, thirdBuffer].map((buffer) => buffer.disposed)).toEqual([true, true, true]);
+    // Source geometry is borrowed; retiring the pool must leave it usable.
+    expect(first.vertexBuffer.upload(device).disposed).toBe(false);
+    first.dispose(); second.dispose(); device.dispose();
+  });
+});
 
 describe("DrawDataTexture flag packing (L5 visibility + geometryId)", () => {
   it("packs visible bit + geometryId losslessly", () => {
@@ -133,6 +166,60 @@ describe("synthesizeMultiDrawItems + refreshMultiDrawBatch (L5-03)", () => {
     refreshMultiDrawBatch(b);
     expect(b.drawData.upload()).toBe(texture);
     expect(b.drawData.drawTexels(1)[12]).toBe(42);
+  });
+
+  it("stores only the member tint alongside the material color and folds single-instance transforms", () => {
+    const materialColor = [0.5, 0.25, 0.75, 0.5] as const;
+    const material = new PBRMaterial({ baseColor: materialColor });
+    const otherMaterial = new PBRMaterial({ baseColor: [0.25, 0.75, 0.5, 1] });
+    const geometries = [boxGeometry(), boxGeometry(1), boxGeometry(2)];
+    const colors = [new Float32Array([0.25, 0.5, 0.75, 0.5]), new Float32Array([0.75, 0.25, 0.5, 1])];
+    const scaledModel = [2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 10, 20, 30, 1];
+    const members: RenderItem[] = [
+      { geometry: geometries[0]!, material, modelMatrix: scaledModel, instanceTransforms: translate(5, 6, 7), instanceColors: colors[0]! },
+      { geometry: geometries[1]!, material, modelMatrix: translate(1), instanceTransforms: translate(2), instanceColors: colors[1]!, instanceCount: 1 },
+      { geometry: geometries[2]!, material: otherMaterial, modelMatrix: translate(0) }
+    ];
+    const packed = buildMultiDrawBatch(groupOf(members));
+    try {
+      const texture = packed.drawData.upload();
+      const markers = synthesizeMultiDrawItems(packed);
+      const rowColor = (index: number) => Array.from(packed.drawData.drawTexels(index).slice(16, 20));
+      expect(rowColor(0)).toEqual([0.25, 0.5, 0.75, 0.5]);
+      expect(rowColor(1)).toEqual([0.75, 0.25, 0.5, 1]);
+      expect(rowColor(2)).toEqual([1, 1, 1, 1]);
+      expect(Array.from(packed.drawData.drawTexels(0).slice(0, 16))).toEqual([
+        2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 20, 38, 58, 1
+      ]);
+      expect(packed.drawData.drawTexels(1)[12]).toBe(3);
+      expect(markers.map((marker) => marker.material)).toEqual([material, material, otherMaterial]);
+      expect(markers.every((marker) => marker.instanceColors === undefined && marker.instanceTransforms === undefined)).toBe(true);
+      expect(Array.from(material.getParameter("u_baseColor") as ArrayLike<number>)).toEqual(materialColor);
+      expect(rowColor(0).map((value, index) => value * materialColor[index]!)).toEqual([0.125, 0.125, 0.5625, 0.25]);
+      expect(rowColor(1).map((value, index) => value * materialColor[index]!)).toEqual([0.375, 0.0625, 0.375, 0.5]);
+
+      colors[0]![0] = 1;
+      (members[0]!.instanceTransforms as number[])[12] = 6;
+      refreshMultiDrawBatch(packed);
+      expect(packed.drawData.upload()).toBe(texture);
+      expect(rowColor(0)).toEqual([1, 0.5, 0.75, 0.5]);
+      expect(packed.drawData.drawTexels(0)[12]).toBe(22);
+    } finally {
+      packed.pool.dispose(); packed.drawData.dispose();
+      geometries.forEach((geometry) => geometry.dispose()); material.dispose(); otherMaterial.dispose();
+    }
+  });
+
+  it("rejects colors or transforms that one draw-data row cannot represent", () => {
+    const geometry = boxGeometry(), material = pbr();
+    const single = { geometry, material, instanceTransforms: translate(0), instanceColors: [1, 0.5, 0.25, 1] };
+    try {
+      expect(() => buildMultiDrawBatch(groupOf([{ ...single, instanceTransforms: [...translate(0), ...translate(1)] }]))).toThrow(/one finite model and instance matrix/);
+      expect(() => buildMultiDrawBatch(groupOf([{ ...single, instanceColors: [1, 0.5, 0.25] }]))).toThrow(/one finite RGBA/);
+      expect(() => buildMultiDrawBatch(groupOf([{ ...single, instanceCount: 2 }]))).toThrow(/single instance/);
+      material.setParameter("u_a3dInstanceColorTarget", 1);
+      expect(() => buildMultiDrawBatch(groupOf([single]))).toThrow(/base color target/);
+    } finally { geometry.dispose(); material.dispose(); }
   });
 
   it("submitMultiDrawBatch: extension → one call; absent → per-draw loop", () => {
@@ -214,11 +301,8 @@ describe("R-10 device-capability gate (WEBGL_multi_draw)", () => {
   });
 
   describe("without an explicit option (generated-program path on)", () => {
-    const generated: QrFlags = {
-      values: { A3D_QR_CORE_GENERATOR: true },
-      on: (name: string) => name === "A3D_QR_CORE_GENERATOR"
-    } as unknown as QrFlags;
-    const none: QrFlags = { values: {}, on: () => false } as unknown as QrFlags;
+    const generated = createTrustedQrFlags({ A3D_QR_CORE_GENERATOR: true });
+    const none = createTrustedQrFlags({});
     function withGeneratedPrograms<T>(run: () => T): T {
       setRendererQrFlags(generated);
       try { return run(); } finally { setRendererQrFlags(none); }
@@ -281,7 +365,7 @@ describe("R-10 device-capability gate (WEBGL_multi_draw)", () => {
   });
 });
 
-describe("DrawSubmit deferred multi-draw run (#181 / L5)", () => {
+describe("DrawSubmit synchronous multi-draw fallback", () => {
   function submitFixture() {
     const device = new MockRenderDevice();
     device.beginFrame(8, 8);
@@ -310,20 +394,27 @@ describe("DrawSubmit deferred multi-draw run (#181 / L5)", () => {
     return { device, multiDrawCalls, pipeline, geometry, vertexBuffer, indexBuffer, drawData, bindingsFor };
   }
 
-  it("consecutive markers sharing a draw-data texture become ONE multiDrawElementsInstanced", () => {
+  it("submits each marked draw before later callbacks and honors a public draw override", () => {
     const { device, multiDrawCalls, pipeline, geometry, vertexBuffer, indexBuffer, bindingsFor } = submitFixture();
+    const events: string[] = [];
+    const draw = device.draw.bind(device);
+    device.draw = (command) => { events.push(`first-draw:${command.firstIndex ?? 0}`); draw(command); };
     submitDraw(device, pipeline, geometry, 1, { start: 0, count: 6 }, bindingsFor(0));
+    events.push("later-callback");
+    device.draw = (command) => { events.push(`replacement-draw:${command.firstIndex ?? 0}`); draw(command); };
     submitDraw(device, pipeline, geometry, 1, { start: 6, count: 6 }, bindingsFor(1));
-    expect(device.drawCommands).toHaveLength(0); // still queued
-    expect(flushMultiDrawQueue(device)).toBe(2);
-    expect(multiDrawCalls).toHaveLength(1);
-    expect(multiDrawCalls[0]).toHaveLength(2);
+    expect(events).toEqual(["first-draw:0", "later-callback", "replacement-draw:6"]);
+    expect(device.drawCommands).toHaveLength(2);
+    expect(flushMultiDrawQueue(device)).toBe(0);
+    expect(multiDrawCalls).toHaveLength(0);
     void vertexBuffer; void indexBuffer;
   });
 
-  it("a non-marker draw flushes the pending run first (order preserved)", () => {
+  it("does not inspect a multi-draw marker for eligibility", () => {
     const { device, multiDrawCalls, pipeline, geometry, vertexBuffer, indexBuffer, bindingsFor, drawData } = submitFixture();
-    submitDraw(device, pipeline, geometry, 1, { start: 0, count: 6 }, bindingsFor(0));
+    const marked = bindingsFor(0);
+    Object.defineProperty(marked.item, "multiDraw", { get: () => { throw new Error("marker getter evaluated"); } });
+    submitDraw(device, pipeline, geometry, 1, { start: 0, count: 6 }, marked);
     submitDraw(device, pipeline, geometry, 1, { start: 0, count: 6 }, {
       item: { geometry, material: pbr(), modelMatrix: translate(0), castShadow: true },
       vertexBuffer,
@@ -332,10 +423,9 @@ describe("DrawSubmit deferred multi-draw run (#181 / L5)", () => {
       uniforms: new Map(),
       instanceBinding: { count: 1 }
     });
-    // Marker flushed (single → device.draw), then the plain draw.
     expect(device.drawCommands).toHaveLength(2);
     expect(multiDrawCalls).toHaveLength(0);
-    flushMultiDrawQueue(device);
+    expect(flushMultiDrawQueue(device)).toBe(0);
     void drawData;
   });
 });
@@ -349,6 +439,85 @@ describe("ProgramGenerator multi-draw pragma (L5-03)", () => {
       { flags }
     );
     expect(program("multi-draw").vertex).toContain("#extension GL_ANGLE_multi_draw");
-    expect(program("uniform").vertex).not.toContain("#extension GL_ANGLE_multi_draw");
+    const loop = program("uniform");
+    expect(loop.vertex).not.toContain("#extension GL_ANGLE_multi_draw");
+    expect(loop.defines.A3D_PRD11_MULTI_DRAW_EXT).toBeUndefined();
+    expect(loop.vertex).toContain("uniform highp int u_drawId;");
+    if (spawnSync("glslangValidator", ["--version"], { stdio: "ignore" }).status === 0) {
+      const dir = mkdtempSync(join(tmpdir(), "aura3d-drawid-loop-"));
+      try {
+        const vertex = join(dir, "source.vert"), fragment = join(dir, "source.frag");
+        writeFileSync(vertex, loop.vertex); writeFileSync(fragment, loop.fragment);
+        const linked = execFileSync("glslangValidator", ["-l", "-q", vertex, fragment], { encoding: "utf8" });
+        expect(linked).toContain("u_drawId");
+      } finally { rmSync(dir, { recursive: true, force: true }); }
+    }
+  });
+
+  it("selects uniform-index variants for forward draw and warmup inputs", () => {
+    registerPrd11DrawIdShader();
+    registerBatchedDrawShader();
+    const geometry = boxGeometry(), material = pbr();
+    const marked = { geometry, material, multiDraw: { mode: "multi-draw", drawIndex: 2 } } as unknown as RenderItem;
+    try {
+      for (const [flag, id] of [["A3D_QR_TIERS_BATCHING", "prd11.drawId"], ["A3D_PARITY_BATCHING", "parity.batchDraw"]] as const) {
+        const flags = createTrustedQrFlags({ [flag]: true });
+        const selected = selectShaderFeatureBits({ item: marked, pass: "forward", flags, tier: QUALITY_TIERS.high });
+        expect(selected[id]).toBe("loop");
+        const generated = generateProgramImpl(normalizeProgramFeatures({ pass: "forward", lighting: "lit", features: selected }), { flags });
+        expect(generated.defines.A3D_L5_MULTI_DRAW).toBeUndefined();
+        expect(generated.defines.A3D_PRD11_MULTI_DRAW_EXT).toBeUndefined();
+        expect(generated.vertex).toContain("uniform highp int u_drawId;");
+      }
+    } finally { geometry.dispose(); material.dispose(); }
+  });
+
+  it("rejects unproven direct packed ForwardPass items before submission", () => {
+    registerPrd11DrawIdShader();
+    const device = new MockRenderDevice(), geometry = boxGeometry(), material = pbr(), drawData = new DrawDataTexture(2);
+    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_TIERS_BATCHING: true });
+    setRendererQrFlags(flags, device);
+    const events: string[] = [];
+    const texture = drawData.upload();
+    const items = [0, 1].map((drawIndex) => ({ geometry, material, modelMatrix: translate(0),
+      multiDraw: { mode: "multi-draw", drawIndex, drawData: texture },
+      onBeforeRender: () => { events.push(`before:${drawIndex}`); } } as unknown as RenderItem));
+    const draw = device.draw.bind(device);
+    device.draw = (command) => { events.push(`draw:${command.uniforms?.get("u_drawId")}`); draw(command); };
+    try {
+      device.beginFrame(8, 8);
+      expect(() => new ForwardPass({ items }).execute({ device, width: 8, height: 8 }))
+        .toThrow(/Packed draw rows require authenticated logical members/);
+      expect(events).toEqual(["before:0"]);
+      expect(device.drawCommands).toHaveLength(0);
+    } finally { geometry.dispose(); material.dispose(); drawData.dispose(); device.dispose(); }
+  });
+
+  it("rejects a known packed carrier before earlier logical callbacks or draws", () => {
+    const device = new MockRenderDevice(), geometry = boxGeometry(), material = pbr();
+    let callbacks = 0;
+    const first = { geometry, material, onBeforeRender: () => { callbacks += 1; } };
+    const packed = createEnginePackedBatchItem({ geometry, material, multiDraw: { mode: "loop", drawIndex: 0 } });
+    try {
+      device.beginFrame(8, 8);
+      expect(() => new ForwardPass({ items: [first, packed] }).execute({ device, width: 8, height: 8 }))
+        .toThrow(/Packed draw rows require authenticated logical members/);
+      expect(callbacks).toBe(0);
+      expect(device.drawCommands).toHaveLength(0);
+    } finally { geometry.dispose(); material.dispose(); device.dispose(); }
+  });
+
+  it("rejects per-member clipping callbacks on instance buckets before any callback or draw", () => {
+    const device = new MockRenderDevice(), geometry = boxGeometry(), material = pbr();
+    let callbacks = 0;
+    const first = { geometry, material, onBeforeRender: () => { callbacks += 1; } };
+    const bucket = createEngineBatchInstanceItem({ geometry, material, instanceTransforms: new Float32Array(translate(0)) });
+    try {
+      device.beginFrame(8, 8);
+      expect(() => new ForwardPass({ items: [first, bucket], materialClippingFor: () => { callbacks += 1; return undefined; } })
+        .execute({ device, width: 8, height: 8 })).toThrow(/Per-member materialClippingFor/);
+      expect(callbacks).toBe(0);
+      expect(device.drawCommands).toHaveLength(0);
+    } finally { geometry.dispose(); material.dispose(); device.dispose(); }
   });
 });

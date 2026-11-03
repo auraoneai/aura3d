@@ -13,7 +13,7 @@ export type { AnimationDebugSnapshot, AnimationVisualEvidence, SkeletonDebugSnap
 export { Profiler } from "./Profiler.js";
 export type { ProfilerMarker, ProfilerSnapshot } from "./Profiler.js";
 export { GPUProfiler } from "./GPUProfiler.js";
-export type { GPUProfilerSnapshot, GPUSample, GPUProfilerTimer } from "./GPUProfiler.js";
+export type { GPUProfilerSnapshot, GPUProfilerDetailedSnapshot, GPUSample, GPUProfilerTimer, GPUProfilerCPUSample, GPUProfilerMeasurement, GPUProfilerStatus, GPUProfilerWebGPUBuffer, GPUProfilerWebGPUQuerySet, GPUProfilerWebGPUDevice, GPUProfilerWebGPUEncoder, GPUProfilerWebGPUPassTimer } from "./GPUProfiler.js";
 export { ChromeTraceExporter } from "./ChromeTraceExporter.js";
 export type { ChromeTrace, ChromeTraceEvent, ChromeTraceExportOptions } from "./ChromeTraceExporter.js";
 export { ResourceLeakError, ResourceTracker } from "./ResourceTracker.js";
@@ -30,18 +30,25 @@ export {
   buildCameraFrustumHelper,
   buildDirectionalLightHelper,
   buildGridHelper,
-  buildSkeletonHelper
+  buildSkeletonHelper,
+  DynamicSceneHelper
 } from "./SceneHelpers.js";
 export type {
   AxesHelperOptions,
   BoundsHelperOptions,
   CameraFrustumHelperOptions,
   DebugColor,
+  DebugHelperMatrix,
   DebugVec3,
   DirectionalLightHelperOptions,
   GridHelperOptions,
   SkeletonHelperJoint
 } from "./SceneHelpers.js";
+export * from "./AdvancedHelpers.js";
+export { FrameInspector } from "./FrameInspector.js";
+export type { InspectedFramePass, FrameInspectionCapture, FrameInspectionSource, FrameInspectionSnapshot } from "./FrameInspector.js";
+export { ShaderGraphInspector } from "./ShaderGraphInspector.js";
+export type { ShaderGraphInspectionSource, InspectedShaderDiagnostic, InspectedShaderBinding, ShaderGraphInspection } from "./ShaderGraphInspector.js";
 export { ReportExporter } from "./ReportExporter.js";
 export type { DebugReport } from "./ReportExporter.js";
 export {

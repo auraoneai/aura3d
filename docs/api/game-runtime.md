@@ -34,6 +34,18 @@ The examples in this page use the public root package. Prefer the `game` facade 
 
 For current skeletal animation, animation events, and viseme/blendshape sync, read `docs/api/animation-runtime-events.md` after this page. The runtime node and frame-loop APIs here are the base layer; visible skinned GLB playback and morph target evidence are separate release gates.
 
+The staged full-game entry, `@aura3d/engine/v5/game`, also exposes `reset()`
+on the game instance. It suspends the runtime, clears game-owned particles, tweens,
+actor freezes and, with the built-in time controllers, that session's global
+hit-stop. It then calls an optional `onReset(game, { signal })` callback to
+restore application-owned scene, physics, HUD, replay, input and audio state.
+The callback must honor the abort signal and must not wait for a scene
+transition that requires presentation while the runtime is suspended.
+Concurrent resets reject, callback errors propagate, and disposal aborts an
+in-flight callback. Custom time controllers without the optional owner-aware
+hit-stop methods retain their existing behavior. This entry and reset path have
+source tests; installed-package and browser behavior remain to be verified.
+
 ## Minimal runtime route
 
 ```ts

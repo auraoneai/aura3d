@@ -1,0 +1,271 @@
+{
+  "kind": "aura3d-game-runtime-browser-evidence-manifest",
+  "version": 1,
+  "scope": "browser-evidence-requirements",
+  "status": "pending-execution",
+  "evidenceOnly": true,
+  "executionRequired": true,
+  "sourceSpecs": [
+    "tests/browser/game-runtime-visible-node-movement.spec.ts",
+    "tests/browser/game-runtime-visual.spec.ts",
+    "tests/browser/game-runtime-mutability.spec.ts",
+    "tests/game-runtime/keyboard-operation-browser.spec.ts"
+  ],
+  "requiredProofs": [
+    {
+      "proofId": "renderedMovement",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "renderedMovementBrowserProof",
+        "app.step",
+        "node.translate",
+        "marker.getBoundingClientRect"
+      ],
+      "requiredArtifacts": [
+        "screenshot.path",
+        "screenshot.sha256",
+        "screenshot.width",
+        "screenshot.height",
+        "metrics.beforeLeft",
+        "metrics.afterLeft",
+        "metrics.afterUnsubscribeLeft",
+        "runtime.frame",
+        "runtime.nodeId"
+      ],
+      "runtimeSignals": [
+        "renderedMovement",
+        "runtimeNodeMutation",
+        "frameLoopAdvance",
+        "webgl2RuntimeNodeContract"
+      ]
+    },
+    {
+      "proofId": "controls",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "keyboard-operation-browser.spec.ts",
+        "controlsProofId",
+        "game.input",
+        "KeyJ",
+        "KeyK",
+        "ShiftLeft"
+      ],
+      "requiredArtifacts": [
+        "browser-report.path",
+        "browser-report.sha256",
+        "metrics.lightPressed",
+        "metrics.lightReleased",
+        "metrics.guardHeld",
+        "metrics.dashPressed",
+        "metrics.moveAxis"
+      ],
+      "runtimeSignals": [
+        "input.update",
+        "pressed",
+        "released",
+        "held",
+        "axes.moveX"
+      ]
+    },
+    {
+      "proofId": "physics",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "collectBrowserRuntimeEventEvidence",
+        "game.kinematicBody",
+        "grounded",
+        "clampedX"
+      ],
+      "requiredArtifacts": [
+        "browser-report.path",
+        "browser-report.sha256",
+        "metrics.physics.grounded",
+        "metrics.physics.landedY",
+        "metrics.physics.clampedX"
+      ],
+      "runtimeSignals": [
+        "gravity",
+        "groundY",
+        "bounds",
+        "dash"
+      ]
+    },
+    {
+      "proofId": "collision",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "game.combatWorld",
+        "combat.beginAttack",
+        "resolved.events",
+        "contact-point"
+      ],
+      "requiredArtifacts": [
+        "browser-report.path",
+        "browser-report.sha256",
+        "metrics.collision.events",
+        "metrics.collision.contactPoints",
+        "metrics.collision.activeAttacks"
+      ],
+      "runtimeSignals": [
+        "hit",
+        "activeAttacks",
+        "contactPoints"
+      ]
+    },
+    {
+      "proofId": "animationStateChanges",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "game.fighting",
+        "stateFor(\"KeyJ\")",
+        "stateFor(\"KeyK\")",
+        "stateFor(\"ShiftLeft\")"
+      ],
+      "requiredArtifacts": [
+        "browser-report.path",
+        "browser-report.sha256",
+        "metrics.animationStateChanges"
+      ],
+      "runtimeSignals": [
+        "light",
+        "guard",
+        "dash"
+      ]
+    },
+    {
+      "proofId": "nonblankVisualOutput",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "canvasPixelStats",
+        "gl.readPixels",
+        "nonBlankPixels",
+        "colorBuckets"
+      ],
+      "requiredArtifacts": [
+        "screenshot.path",
+        "screenshot.sha256",
+        "screenshot.width",
+        "screenshot.height",
+        "metrics.nonBlankPixels",
+        "metrics.colorBuckets"
+      ],
+      "runtimeSignals": [
+        "visualAssetsLoaded",
+        "visualAssetRenderItems",
+        "contactShadowProxy"
+      ]
+    },
+    {
+      "proofId": "hitboxOverlay",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "game.debug.overlay",
+        "game.debug.sceneNodes",
+        "attack-hitbox",
+        "active-frame",
+        "contact-point"
+      ],
+      "requiredArtifacts": [
+        "screenshot.path",
+        "screenshot.sha256",
+        "screenshot.width",
+        "screenshot.height",
+        "metrics.hitboxOverlay.attackHitbox",
+        "metrics.hitboxOverlay.activeFrame",
+        "metrics.hitboxOverlay.contactPoint"
+      ],
+      "runtimeSignals": [
+        "overlay.geometry",
+        "sceneNodeRuntimeTags"
+      ]
+    },
+    {
+      "proofId": "hitSpark",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "game.combatEvents",
+        "effects.snapshot().spawned",
+        "bridge.effectIds"
+      ],
+      "requiredArtifacts": [
+        "screenshot.path",
+        "screenshot.sha256",
+        "screenshot.width",
+        "screenshot.height",
+        "metrics.hitSpark.spawned",
+        "metrics.hitSpark.bridgeEffectIds"
+      ],
+      "runtimeSignals": [
+        "effectIds",
+        "spawned"
+      ]
+    },
+    {
+      "proofId": "cameraShake",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "game.cameraDirector",
+        "bridge.cameraImpacts",
+        "camera.update"
+      ],
+      "requiredArtifacts": [
+        "screenshot.path",
+        "screenshot.sha256",
+        "screenshot.width",
+        "screenshot.height",
+        "metrics.cameraShake.impacts",
+        "metrics.cameraShake.shake"
+      ],
+      "runtimeSignals": [
+        "cameraImpacts",
+        "shake"
+      ]
+    },
+    {
+      "proofId": "hudUpdate",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "game.hud.health",
+        "bridge.hud",
+        "hud:rival:health"
+      ],
+      "requiredArtifacts": [
+        "browser-report.path",
+        "browser-report.sha256",
+        "metrics.hudUpdate.changedIds",
+        "metrics.hudUpdate.rivalHealth"
+      ],
+      "runtimeSignals": [
+        "changedIds",
+        "rivalHealth"
+      ]
+    },
+    {
+      "proofId": "typedGlbRuntimeNodeMutation",
+      "status": "pending-execution",
+      "sourceAssertions": [
+        "typedGlbRuntimeNodeMutationDeclaration",
+        "typed assets from ./src/aura-assets",
+        "model(assets.fighter)",
+        "game.runtimeNode",
+        "app.nodes.require(\"player\")",
+        "playerX changes without createAuraApp route recreation"
+      ],
+      "requiredArtifacts": [
+        "screenshot.path",
+        "screenshot.sha256",
+        "screenshot.width",
+        "screenshot.height",
+        "metrics.playerX.before",
+        "metrics.playerX.after",
+        "runtime.nodeId",
+        "runtime.assetName"
+      ],
+      "runtimeSignals": [
+        "typedGlbRuntimeNodeMutation",
+        "characterController",
+        "cameraFollowUpdates"
+      ]
+    }
+  ]
+}

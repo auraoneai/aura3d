@@ -16,9 +16,8 @@ export async function decodePngTexturePixels(bytes: Uint8Array): Promise<{ width
   }
   const compressed = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
   let offset = 0; for (const chunk of chunks) { compressed.set(chunk, offset); offset += chunk.length; }
-  const raw = new Uint8Array(await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate"))).arrayBuffer());
   const channels = color === 6 ? 4 : 3, stride = width * channels;
-  if (raw.length !== height * (stride + 1)) throw new Error("Invalid PNG data-map scanline length");
+  const raw = await inflatePngScanlines(compressed, height * (stride + 1));
   const decoded = new Uint8Array(height * stride);
   for (let y = 0; y < height; y++) {
     const filter = raw[y * (stride + 1)]!;
@@ -35,4 +34,30 @@ export async function decodePngTexturePixels(bytes: Uint8Array): Promise<{ width
   const data = new Uint8Array(width * height * 4);
   for (let pixel = 0; pixel < width * height; pixel++) { data.set(decoded.subarray(pixel * channels, pixel * channels + 3), pixel * 4); data[pixel * 4 + 3] = channels === 4 ? decoded[pixel * 4 + 3]! : 255; }
   return { width, height, data };
+}
+
+/** Read no more than the declared image can contain, including filter bytes. */
+async function inflatePngScanlines(compressed: Uint8Array, expected: number): Promise<Uint8Array> {
+  const reader = new Blob([compressed as BlobPart]).stream().pipeThrough(new DecompressionStream("deflate")).getReader();
+  let ended = false;
+  try {
+    const output = new Uint8Array(expected);
+    let offset = 0;
+    for (;;) {
+      const part = await reader.read();
+      if (part.done) { ended = true; break; }
+      if (part.value.byteLength > expected - offset) {
+        throw new Error("Invalid PNG data-map scanline length (exceeds expected size)");
+      }
+      output.set(part.value, offset);
+      offset += part.value.byteLength;
+    }
+    if (offset !== expected) throw new Error("Invalid PNG data-map scanline length (truncated)");
+    return output;
+  } finally {
+    // Cancelling the output propagates upstream when decoding fails early.
+    // Do not mask the original decoding error if stream cancellation rejects.
+    if (!ended) { try { await reader.cancel(); } catch { /* the stream may already be errored */ } }
+    reader.releaseLock();
+  }
 }

@@ -1,3 +1,4 @@
+/// <reference path="./export/export-runtime.d.ts" />
 import { EditorShell } from "./EditorShell.js";
 import { installEditorStyles } from "./styles.js";
 
@@ -7,7 +8,9 @@ if (!root) {
 }
 
 installEditorStyles();
-const shell = new EditorShell(root);
+const shell = new EditorShell(root, {
+  loadExportRuntime: async () => (await import("virtual:aura3d-editor-export-runtime")).default
+});
 window.__AURA3D_EDITOR_APP__ = {
   shell,
   getState: () => shell.getState()

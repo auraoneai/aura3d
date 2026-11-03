@@ -3,7 +3,7 @@
  * AuraAnimationSpec (index.ts:1288) gains the PR 0a optional fields.
  */
 
-import type { AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraRuntimeNodeHandle } from "../agent-api/nodes/types/runtime.js";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraQuat } from "./sceneGraph";
 

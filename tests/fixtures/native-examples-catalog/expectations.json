@@ -1,0 +1,1077 @@
+{
+  "schema": "aura3d.native-example-expectations/1",
+  "cases": [
+    {
+      "id": "capability-example:typed-model",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the admitted model's skin-tone and blue-gray texture regions and the authored normalized subject and camera; no reference capture. Rendered color, framing and asset loading remain unverified.",
+      "subject": "Textured barbarian model with skin-tone and blue-gray armor",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
+        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
+        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 450,
+          "y": 140,
+          "width": 200,
+          "height": 235,
+          "minContrast": 6,
+          "colors": [
+            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
+            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:bounds-query",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the admitted model's skin-tone and blue-gray texture regions and the authored normalized subject and camera; no reference capture. The separate generated harness validates the subject bounds hit. Rendered color, framing and asset loading remain unverified.",
+      "subject": "Textured barbarian model targeted by the bounds query",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
+        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
+        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 450,
+          "y": 140,
+          "width": 200,
+          "height": 235,
+          "minContrast": 6,
+          "colors": [
+            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
+            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:postprocess",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the admitted barbarian's skin and armor texture atlas, the authored normalized subject, perspective camera, and color grade; no reference capture. Rendered color, framing, and grade response remain unverified.",
+      "subject": "Textured barbarian model under the authored contrast 1.12 and saturation 0.8 grade",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
+        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
+        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 450,
+          "y": 140,
+          "width": 200,
+          "height": 235,
+          "minContrast": 6,
+          "colors": [
+            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
+            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:animation",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the admitted skinned barbarian's skin and armor atlas, inspected Idle clip, normalized subject and perspective camera; no reference capture. Rendered pose, color, framing and playback remain unverified.",
+      "subject": "Skinned barbarian model playing the admitted Idle clip",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
+        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
+        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 450,
+          "y": 140,
+          "width": 200,
+          "height": 235,
+          "minContrast": 6,
+          "colors": [
+            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
+            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:controls",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the admitted barbarian's skin and armor atlas, the authored normalized subject and the source-derived orbit rig pose; no reference capture. Rendered color, framing and response to orbit input remain unverified.",
+      "subject": "Textured barbarian model named as the orbit interaction target",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/mini-game/public/aura-assets/kaykit-barbarian.glb", "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6" },
+        { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "e2afcfca086adadbf89588985a76529cc7ab149e65f45a504108af8d581cbc00" },
+        { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "8940f015b719fd2570f2c81720e2f9ad85d49af87ba4727f1a0302f656a47cd1" },
+        { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "1821607bb2706a597941b39afb976ca8f06c591b0110f337b23fcd0fe4e1364f" },
+        { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "ae55fd043e9d6d5b379fd8cf7bcdf24b69c50a2d81df6a07a84afe359fd90b8f" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "48ec2c773cf9a2c3c522a164247578cb2d01cc24270fe47b8e00d938642bb757" },
+        { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
+        { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 550,
+          "y": 140,
+          "width": 200,
+          "height": 235,
+          "minContrast": 6,
+          "colors": [
+            { "name": "skin-tone model texture", "red": [170, 255], "green": [110, 230], "blue": [70, 200], "minFraction": 0.01, "maxFraction": 0.65 },
+            { "name": "blue-gray armor texture", "red": [45, 160], "green": [65, 190], "blue": [85, 220], "minFraction": 0.01, "maxFraction": 0.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:arena-shooter",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored north rim rail, emissive color and top-down perspective camera in the identified template source; no reference capture. Rendered color, framing and transient occlusion remain unverified.",
+      "subject": "Light-blue emissive north rim rail above the arena",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/arena-shooter/src/main.ts",
+        "sha256": "25e890719ed3f009614bacfc42149b6fd699ece3e63280f3d71ce11f7f565312"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/arena-shooter/src/aura-assets.ts", "sha256": "ee4bbd9ec5dd21882a26139ea3f929a1071115ccb9bbc55478b486dce42a387c" },
+        { "path": "packages/create-aura3d/templates/arena-shooter/index.html", "sha256": "c73301c01c986f79281275b2ec74f0279123ca4f72fd6951b8a55f70df565930" },
+        { "path": "packages/engine/src/agent-api/nodes/camera.ts", "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 360,
+          "y": 65,
+          "width": 560,
+          "height": 55,
+          "minContrast": 8,
+          "colors": [
+            { "name": "light-blue emissive north rim", "red": [140, 255], "green": [150, 255], "blue": [200, 255], "minFraction": 0.08, "maxFraction": 0.6 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "starter-example:instancing-performance",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored instance-color gradient, base color and grid in the identified starter source; no reference capture. Rendered colors, auto-framing and the animated instance transforms remain unverified.",
+      "subject": "Warm and cool portions of the dense instanced-cube gradient",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "apps/instancing-performance/src/main.ts",
+        "sha256": "ece97d9c50f8a24207704a9454e9c340f55bfa8dc9ae4228cbfb5535501f0271"
+      },
+      "sourceDependencies": [
+        { "path": "apps/instancing-performance/index.html", "sha256": "9c962ca117e323a7d7241c9fc430f547de316e637a2e7e20e1507afbb4694b09" },
+        { "path": "apps/wow-common/src/showcase.css", "sha256": "8ac09e16ad235920a62e636e5def806ce7f659314ef75c04e6d0c590e414a7ce" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 160,
+          "y": 100,
+          "width": 960,
+          "height": 520,
+          "minContrast": 8,
+          "colors": [
+            { "name": "warm instance gradient", "red": [145, 245], "green": [130, 240], "blue": [95, 195], "minFraction": 0.04, "maxFraction": 0.6 },
+            { "name": "cool instance gradient", "red": [85, 185], "green": [130, 240], "blue": [140, 245], "minFraction": 0.04, "maxFraction": 0.6 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:prompt-animation-channel",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored primitive-fallback character colors, bounded stage positions and perspective camera in the identified template source; no reference capture. Rendered colors, framing and playback motion remain unverified.",
+      "subject": "Cyan Miko and gold Luma primitive-fallback character bodies",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/prompt-animation-channel/src/main.ts",
+        "sha256": "d07bdad8922758b0452817e0a58add9f3ea65229f48d28c00e7ee57a8e5a9353"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/prompt-animation-channel/src/aura-assets.ts", "sha256": "7d8dfbe192637c674b37006fdd1a3ac0c59802e4a2e47c922c12a2f686ee9eb9" },
+        { "path": "packages/create-aura3d/templates/prompt-animation-channel/src/episode.ts", "sha256": "a0472b416db31ffb4450bec51469ced29640fa57fa5bc966275bd2c13f4b157a" },
+        { "path": "packages/create-aura3d/templates/prompt-animation-channel/index.html", "sha256": "73e681dbc78277bc8b3e024b37b4455bc8ad6d7e7d3133d551e654e0aca7941f" },
+        { "path": "packages/engine/src/agent-api/ShotTimeline.ts", "sha256": "cd57dcb3b3bd4f5ce6c2d351b11219fbd9904bcc4c287c93af1ef9c0b6db5eb8" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 420,
+          "y": 270,
+          "width": 480,
+          "height": 170,
+          "minContrast": 8,
+          "colors": [
+            { "name": "cyan Miko fallback body", "red": [40, 168], "green": [140, 255], "blue": [170, 255], "minFraction": 0.015, "maxFraction": 0.5 },
+            { "name": "gold Luma fallback body", "red": [170, 255], "green": [140, 255], "blue": [50, 178], "minFraction": 0.015, "maxFraction": 0.5 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:episode-builder",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored primitive-fallback character colors, bounded stage positions and perspective camera in the identified template source; no reference capture. Rendered colors, framing, playback motion and panel occlusion remain unverified.",
+      "subject": "Cyan Miko and gold Luma primitive-fallback character bodies beside the builder panel",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/episode-builder/src/main.ts",
+        "sha256": "d4d7e5e8b86c7e8e6919b05ff90a627ece26feb35d6c14e4d18c7feb359b664d"
+      },
+      "sourceDependencies": [
+        { "path": "packages/create-aura3d/templates/episode-builder/src/aura-assets.ts", "sha256": "7d8dfbe192637c674b37006fdd1a3ac0c59802e4a2e47c922c12a2f686ee9eb9" },
+        { "path": "packages/create-aura3d/templates/episode-builder/src/episode.ts", "sha256": "750e58d533b3a032475b1f4e8d2b572ee031440b6b1e50f36329924179277045" },
+        { "path": "packages/create-aura3d/templates/episode-builder/src/builder.ts", "sha256": "0d8d9f88f3f2802d7d9ba07b3b9778893c830ac515e1d2b06d4d738dd19a4d8c" },
+        { "path": "packages/create-aura3d/templates/episode-builder/index.html", "sha256": "f0ddebcd25b32080568f7d941ca72f45502245cbb744b3e569e5e8dc3323b111" },
+        { "path": "packages/engine/src/agent-api/ShotTimeline.ts", "sha256": "cd57dcb3b3bd4f5ce6c2d351b11219fbd9904bcc4c287c93af1ef9c0b6db5eb8" }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 420,
+          "y": 270,
+          "width": 480,
+          "height": 170,
+          "minContrast": 8,
+          "colors": [
+            { "name": "cyan Miko fallback body", "red": [40, 168], "green": [140, 255], "blue": [170, 255], "minFraction": 0.015, "maxFraction": 0.5 },
+            { "name": "gold Luma fallback body", "red": [170, 255], "green": [140, 255], "blue": [50, 178], "minFraction": 0.015, "maxFraction": 0.5 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:product-viewer",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the framed cabinet geometry, satin-cabinet base-color factor and embedded one-pixel base-color texture in the identified local GLB; no reference capture. Rendered color, lighting, texture decoding and framing remain unverified.",
+      "subject": "Warm satin cabinet of the typed studio product",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/product-viewer/src/main.ts",
+        "sha256": "ad3e98b411179cc0fb4b5f71c4cbb502e81e206349fe2f0db5842323165732fd"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/product-viewer/src/aura-assets.ts",
+          "sha256": "ca4430df05c8b704dd281c957ce4266b3b1b6e8a63cd54f94950186efa329fb8"
+        },
+        {
+          "path": "packages/create-aura3d/templates/product-viewer/index.html",
+          "sha256": "f23a939a6d12be8f78f14a8914e0b9cbef89b346c347bfe3cd7039578c9fe3bf"
+        },
+        {
+          "path": "packages/create-aura3d/templates/product-viewer/public/aura-assets/product-fixture.glb",
+          "sha256": "5613d5ad4ddc538b02c147faf2f87777bfd5a79580297cc6a103fdb7556580d3"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 460,
+          "y": 100,
+          "width": 380,
+          "height": 380,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "warm satin cabinet",
+              "red": [85, 210],
+              "green": [50, 175],
+              "blue": [0, 110],
+              "minFraction": 0.02,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:falling-blocks-starter",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the seeded practice board's yellow settled cells, cyan active cells and orthographic camera in the identified template source; no reference capture. Rendered colors, instanced tint and framing remain unverified.",
+      "subject": "Yellow settled O cells and cyan active I cells near the bottom of the practice board",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/falling-blocks-starter/src/main.ts",
+        "sha256": "dc33e3c55a436e9930eb612437e63c038a85637c373878c72153ab69def29a74"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/falling-blocks-starter/src/aura-assets.ts",
+          "sha256": "dfde256dacf3d7e093241bb87e406b5fcb02f7cbd2a510a00c44483b9d0a4bc3"
+        },
+        {
+          "path": "packages/create-aura3d/templates/falling-blocks-starter/index.html",
+          "sha256": "7e09ca08435046d996880c8ebe3a9e7002d5ca3ef9296ddf3bab58967faf4236"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/CameraController.ts",
+          "sha256": "6440df0bb33ab0095a8d4a402d73d8314715627428dc30965446243f7bffcf59"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 430,
+          "y": 580,
+          "width": 365,
+          "height": 90,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "yellow settled O cells",
+              "red": [190, 255],
+              "green": [140, 235],
+              "blue": [40, 160],
+              "minFraction": 0.08,
+              "maxFraction": 0.45
+            },
+            {
+              "name": "cyan active I cells",
+              "red": [30, 170],
+              "green": [190, 255],
+              "blue": [210, 255],
+              "minFraction": 0.04,
+              "maxFraction": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:material-authoring",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored PBR swatch, camera and layout in the identified template source; no reference capture. Rendered colors and framing remain unverified.",
+      "subject": "Warm red PBR swatch at the left of the material-authoring grid",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/material-authoring/src/main.ts",
+        "sha256": "dc7d0447a13ae7c8f14dc50f0bcee88fa477cb9fa8e8a4d121d94962103d0311"
+      },
+      "regions": [
+        {
+          "label": "subject",
+          "x": 250,
+          "y": 220,
+          "width": 160,
+          "height": 165,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "warm red PBR swatch",
+              "red": [125, 255],
+              "green": [40, 190],
+              "blue": [0, 115],
+              "minFraction": 0.08,
+              "maxFraction": 0.7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:custom-geometry",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored indexed triangle, PBR base color and perspective camera in the identified scenario source; no reference capture. Rendered colors and framing remain unverified.",
+      "subject": "Orange indexed triangle to the right of the admitted model",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "regions": [
+        {
+          "label": "subject",
+          "x": 660,
+          "y": 275,
+          "width": 200,
+          "height": 230,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange indexed triangle",
+              "red": [130, 255],
+              "green": [45, 210],
+              "blue": [0, 115],
+              "minFraction": 0.05,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:material-lighting",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored blue-gray metal sphere, directional light and perspective camera in the identified scenario source; no reference capture. Rendered colors and framing remain unverified.",
+      "subject": "Blue-gray metallic material sample to the right of the admitted model",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "regions": [
+        {
+          "label": "subject",
+          "x": 660,
+          "y": 280,
+          "width": 190,
+          "height": 200,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "blue-gray material sample",
+              "red": [100, 185],
+              "green": [140, 225],
+              "blue": [190, 255],
+              "minFraction": 0.12,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:custom-shader",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored constant teal fragment, unit sphere and perspective camera in the identified scenario source; no reference capture. Rendered colors and framing remain unverified.",
+      "subject": "Teal custom-shader sphere to the right of the admitted model",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "regions": [
+        {
+          "label": "subject",
+          "x": 660,
+          "y": 280,
+          "width": 190,
+          "height": 200,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "teal custom-shader sphere",
+              "red": [15, 120],
+              "green": [105, 225],
+              "blue": [135, 245],
+              "minFraction": 0.12,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:world-text",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored gold AURA3D mesh text, glyph geometry and perspective camera in the identified sources; no reference capture. Rendered colors and framing remain unverified.",
+      "subject": "Gold extruded AURA3D text alongside the admitted model",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/engine/src/agent-api/RootGeometry.ts",
+          "sha256": "e3694c61eb829a818208bf9d1b542c3403b6d4926c92f897dad61efe0e95ac6e"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 640,
+          "y": 275,
+          "width": 250,
+          "height": 140,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "gold text glyphs",
+              "red": [140, 255],
+              "green": [100, 235],
+              "blue": [0, 140],
+              "minFraction": 0.015,
+              "maxFraction": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capability-example:physics",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored orange sphere, initial position, floor and perspective camera in the identified scenario source; no reference capture. Rendered colors, framing and motion remain unverified.",
+      "subject": "Orange sphere over the sample physics floor; this still-image expectation does not prove motion or contact",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "examples/native-capabilities/index.ts",
+        "sha256": "1be69c9d68b266de3dd632b94f17b812329727602a42a9c6a4e16513983ee9ed"
+      },
+      "regions": [
+        {
+          "label": "subject",
+          "x": 660,
+          "y": 160,
+          "width": 190,
+          "height": 310,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange physics sphere",
+              "red": [130, 255],
+              "green": [45, 210],
+              "blue": [0, 115],
+              "minFraction": 0.02,
+              "maxFraction": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "starter-example:hello-world-typed-asset",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored camera and robot transform plus the Main material in the existing hashed robot GLB; no reference capture. Rendered colors, asset visibility and framing remain unverified.",
+      "subject": "Warm-colored torso and head of the typed GLB robot, excluding the separate cyan and amber accent lights",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "apps/hello-world-typed-asset/src/main.ts",
+        "sha256": "440b855baffa6872b986fd115bd3fea5da664ffdb541c444c752d46c39a0582f"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/hello-world-typed-asset/src/aura-assets.ts",
+          "sha256": "302b387e41958a69604b012c9d6d3d3d53655e7c9338b6db7decc7d54cd1cbb2"
+        },
+        {
+          "path": "apps/hello-world-typed-asset/robot-fixture.glb",
+          "sha256": "047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319"
+        },
+        {
+          "path": "apps/hello-world-typed-asset/index.html",
+          "sha256": "f6ced83729e53e87185d18ff3d02f3bc1590f702e358a6b961ca609d3fd0a3f3"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 425,
+          "y": 125,
+          "width": 270,
+          "height": 390,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "warm robot body",
+              "red": [115, 235],
+              "green": [55, 195],
+              "blue": [0, 115],
+              "minFraction": 0.03,
+              "maxFraction": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "starter-example:material-lighting",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored magenta and cyan emissive spheres and perspective camera in the starter source; no reference capture. Rendered colors and framing remain unverified.",
+      "subject": "Magenta and cyan material sample spheres on the studio plinth",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "apps/material-lighting/src/main.ts",
+        "sha256": "1a0a47170f28a26064a37da89db762a168d44f3a9c1b398abe31acbd598befe1"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/material-lighting/index.html",
+          "sha256": "b5be36c3bed137c7e5f90623c6da1f5ce114f1069587cae792d3b39c59f10adb"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 650,
+          "y": 230,
+          "width": 315,
+          "height": 180,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "magenta emissive material sample",
+              "red": [150, 255],
+              "green": [0, 120],
+              "blue": [100, 255],
+              "minFraction": 0.05,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "cyan emissive material sample",
+              "red": [0, 115],
+              "green": [110, 255],
+              "blue": [140, 255],
+              "minFraction": 0.05,
+              "maxFraction": 0.65
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "starter-example:camera-path",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored brass camera faceplate, blue lens and both endpoints of the dolly camera in the starter source; no reference capture. Rendered colors, framing and camera motion remain unverified.",
+      "subject": "Brass camera body and blue lens along the authored camera path",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "apps/camera-path/src/main.ts",
+        "sha256": "3887f2d974e57cd6aa1e1fbd1ffe12c915e59a3e458b9b54c9521b83a55e11d7"
+      },
+      "sourceDependencies": [
+        {
+          "path": "apps/camera-path/index.html",
+          "sha256": "27d589d5df93cfdf419b13887341187e76619bb223e9adeee06df97f74fd8fb8"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 530,
+          "y": 280,
+          "width": 220,
+          "height": 200,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "brass camera faceplate",
+              "red": [100, 220],
+              "green": [65, 190],
+              "blue": [0, 120],
+              "minFraction": 0.015,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "blue camera lens",
+              "red": [0, 140],
+              "green": [110, 255],
+              "blue": [145, 255],
+              "minFraction": 0.015,
+              "maxFraction": 0.65
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:cinematic-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the cinematic plan's compiled, tilted cyan neon sign and initial dolly camera, with the plan, recipe, look and typed hero asset bound by source hashes; no reference capture. Framing, emissive output, asset loading and the candidate's rendered frame remain unverified.",
+      "subject": "Tilted cyan neon sign in the compiled cinematic alley; not a test of the hero helmet",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
+        "sha256": "4638c1c1afe1bb93a1c9d685c800d09a9279c57d3722d573ec05cff3b603ca8f"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/cinematic-scene/src/aura-assets.ts",
+          "sha256": "dc11015450e612a2d40cf09ca327e79d5e00404fc24dc124564d3a2946722618"
+        },
+        {
+          "path": "packages/create-aura3d/templates/cinematic-scene/aura.assets.json",
+          "sha256": "e3aee751013816d1555ad6ec6c3a37f634dd2be6f3c329012d7c9c0420b1da96"
+        },
+        {
+          "path": "packages/create-aura3d/templates/cinematic-scene/index.html",
+          "sha256": "508f8a1ea97c26330bbeef84ed5c0021b67df9c2a6389714306e78002d986f87"
+        },
+        {
+          "path": "packages/create-aura3d/templates/cinematic-scene/public/aura-assets/hero-fixture.glb",
+          "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/prompt/promptPlanV2.ts",
+          "sha256": "2e4a4831e833e5b326fb76763fd7de1b8e9433e48c84ff7f5ce436e8945bb308"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/prompt/promptPlanMappings.ts",
+          "sha256": "e3859d000f43b37625b9943fee057bb5ac55128c13725e9453446c2e24274bf7"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/prompt/promptRecipes.ts",
+          "sha256": "15307159003b96adaf018afb76559cbc2ef91909df86317c86de2c9540aa7128"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779"
+        },
+        {
+          "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
+          "sha256": "c989fc7616ea489e4b0fc1bd1353e28b7ec470e7cc2c76a2f5527c3b54767c9e"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 250,
+          "y": 65,
+          "width": 90,
+          "height": 285,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "tilted cyan neon sign",
+              "red": [0, 200],
+              "green": [150, 255],
+              "blue": [160, 255],
+              "minFraction": 0.01,
+              "maxFraction": 0.45
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:postprocess-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the authored orbit camera, Miko's transform, and body and skin texels sampled at its mesh UVs in the typed GLB; no reference capture. Lighting, bloom, framing and actual rendered colors remain unverified.",
+      "subject": "Blue body and skin-tone regions of the typed Miko model in the postprocess scene",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/postprocess-scene/src/main.ts",
+        "sha256": "fca90bf5d0cfe71db49979604c4a18090f75c7dbc27cb8fce43f9e99a4210d71"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/postprocess-scene/src/aura-assets.ts",
+          "sha256": "292b67a9b435662b628f736c56f4003417a4569b8006352eae79a52be5d2de7f"
+        },
+        {
+          "path": "packages/create-aura3d/templates/postprocess-scene/aura.assets.json",
+          "sha256": "703982cc17a4c0e08adf5d58e9a29ee3b98fd41e655df6b844004d916c7d1800"
+        },
+        {
+          "path": "packages/create-aura3d/templates/postprocess-scene/index.html",
+          "sha256": "095175644f1dff007f8b57df8bf40b36dd78dbd5e65ab48a8a09855c397e4f71"
+        },
+        {
+          "path": "packages/create-aura3d/templates/postprocess-scene/public/aura-assets/showcaseMiko.fcdc2b75.glb",
+          "sha256": "fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65"
+        },
+        {
+          "path": "packages/create-aura3d/templates/postprocess-scene/public/aura-assets/showcaseLuma.ef389217.glb",
+          "sha256": "ef3892179fe70cf2062cdbafcce131d33968a7667e087d630b866a4fd022c74d"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "2f4563906018b4f6c9774c7b1cb9fd44bd750cc634f55cce50fb6b0723753779"
+        },
+        {
+          "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
+          "sha256": "c989fc7616ea489e4b0fc1bd1353e28b7ec470e7cc2c76a2f5527c3b54767c9e"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 635,
+          "y": 285,
+          "width": 175,
+          "height": 285,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "blue Miko body texture",
+              "red": [40, 145],
+              "green": [95, 225],
+              "blue": [130, 255],
+              "minFraction": 0.01,
+              "maxFraction": 0.65
+            },
+            {
+              "name": "skin-tone Miko texture",
+              "red": [170, 255],
+              "green": [105, 220],
+              "blue": [70, 190],
+              "minFraction": 0.005,
+              "maxFraction": 0.65
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "template:racing-starter",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Independently estimated from the no-input starting route state, default-on chase rig after settling, and the orange body and emissive red lamp triangles of the typed car GLB; rechecked against the runtime-owned frame-input matrices and material factors with offline GLB bytes, no reference capture. Early camera transients, occlusion, lighting, postprocessing and actual rendered colors remain unverified.",
+      "subject": "Orange body and red rear lamp of the typed racing sports car, not the checkpoint marker or circuit",
+      "surface": { "kind": "canvas", "selector": "canvas" },
+      "source": {
+        "path": "packages/create-aura3d/templates/racing-starter/src/main.ts",
+        "sha256": "8e3f6fb241780abeca83aceea3af14c82c82f0a886dcc3b0af5e4f9f7258f3d2"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/racing-starter/src/aura-assets.ts",
+          "sha256": "74fe970d999c86fc0ee8cedd7b5231968a963de3827c94d11aecb229f0618503"
+        },
+        {
+          "path": "packages/create-aura3d/templates/racing-starter/aura.assets.json",
+          "sha256": "65808efe0be2be2736366e96c0574c18adf0e3008377a7b973492a892aaf1562"
+        },
+        {
+          "path": "packages/create-aura3d/templates/racing-starter/index.html",
+          "sha256": "992e746788c7802c12519dc919271eb73acd5148fb6796fc985641c452f6ea87"
+        },
+        {
+          "path": "packages/create-aura3d/templates/racing-starter/public/aura-assets/showcaseCleanSportsCar.1c69283f.glb",
+          "sha256": "1c69283fa2b3fb96b3dc3418f2d0dede842e6984f1776a8ca00b099836fc9c14"
+        },
+        {
+          "path": "packages/create-aura3d/templates/racing-starter/public/aura-assets/showcaseReadableKartCircuit.5cbb912e.glb",
+          "sha256": "5cbb912e511e5e82363c347210096d59dd3007db12c363fd0c9f07919f5ebbd0"
+        },
+        {
+          "path": "packages/engine/src/agent-api/GameGenreKits.ts",
+          "sha256": "77b2f859464c124d042eef145dc58d15d3321866bbedf5e4a2712530f802c405"
+        },
+        {
+          "path": "packages/engine/src/agent-api/GameRuntimeCore.ts",
+          "sha256": "91d6c223f14e7586261f3dc339bac05936c8bbcf8ca54126753ac6292d0275b1"
+        },
+        {
+          "path": "packages/engine/src/agent-api/vehicle/BicycleModel.ts",
+          "sha256": "da7c801ff0de5baa685d13c84ddce5525d1fa773662b53567a13c07b784e8a05"
+        },
+        {
+          "path": "packages/engine/src/agent-api/VehicleChassis.ts",
+          "sha256": "65795159a7a61a43a8e5729d1de36c1f20581e5597caa93e17433d7039c5405a"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/chase.ts",
+          "sha256": "e40ec570877700846f17a51b4748bdbce6866ab8cf1a16d026736ceac0f9b23a"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/rigUtils.ts",
+          "sha256": "499e1fcbf0d6e20e07e54bb323c7b5acfb3443dd76358406d96bb9fc9baa58b0"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/Spring.ts",
+          "sha256": "5b2278b849c9b091514adf8608cf81ea8e3c5127b0d5506dcc3834855a07e3be"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/rigs/static.ts",
+          "sha256": "952e4296160ff7a8af73d255888f0be848f2720df66b7f9249b08c2998c5b095"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/subject.ts",
+          "sha256": "f5b8c2ad7ba216a087817fa837c02b1446eab758ca892d6e7bbe7bac8f1c8d0c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/CameraController.ts",
+          "sha256": "6440df0bb33ab0095a8d4a402d73d8314715627428dc30965446243f7bffcf59"
+        },
+        {
+          "path": "packages/engine/src/agent-api/camera/extension.ts",
+          "sha256": "f483ffff016fa757fe234ffc7951b1a2ef1da79236b82b1998d4fb28a9a78c71"
+        },
+        {
+          "path": "packages/rendering/src/contracts/flags.state.ts",
+          "sha256": "2c8c2b318d5f6314c08fee4e4c3c7abe1ea102131886cd6277f054b1760209c1"
+        },
+        {
+          "path": "packages/engine/src/contracts/flags.ts",
+          "sha256": "fe0118ab78dcfd624f26270793ac26b898fab90066f61928653a2d61719cd4bb"
+        },
+        {
+          "path": "packages/engine/src/lanes/prd08.ts",
+          "sha256": "690002afaca8124924794423dc1a5d7b7feb3c0c96b005b382ded4d3ef343d02"
+        },
+        {
+          "path": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
+          "sha256": "af374ce2b2b06ddded5d2e931517a73842037309fc765b5c466245c5a93a39d4"
+        },
+        {
+          "path": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+          "sha256": "319447e7f43b5cf592841e9aba3f5bf63e76daef523257cca589d404f1d56792"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneMath.ts",
+          "sha256": "dc34272225674144754730bf977bca474942218ea4ca422601cf9590c211c9d6"
+        },
+        {
+          "path": "packages/engine/src/agent-api/sceneGraph.ts",
+          "sha256": "2e84808adb109057c1a332cdb58315102358ba4d41054f26270aacfd3145f17c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/SceneGroundingUtils.ts",
+          "sha256": "48e586e930d6f9fbeb023d8ea2512cc5b2fb8a46a2a6e724790948fe01d3600c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/colorUtils.ts",
+          "sha256": "f3efbf552ae6ee85e34376c21d8cdc201a7785ff3ab1f16f506e9e38097b9258"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/color.ts",
+          "sha256": "31e4599d54fab03efa55b52df7469dca2123df2dfeadb8eeb5adf82e72213fab"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/sceneGraph.ts",
+          "sha256": "ce9e44b4ad1ad5f9ac5d010d0a7aa3d63e3273abc0458d12d7893b6464a7a207"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/geometry.ts",
+          "sha256": "c8042f5b76703653cdd2fa15a2412f59f6bd0f3f6b3008a5d701e0a59d5760aa"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/primitives.ts",
+          "sha256": "9b4e26bc6d3b75a03d236cdae2575f4f310caa871d3361f77b6fa14d91e1e09e"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/actors.ts",
+          "sha256": "9e52dc612d62e89abd1f0b8d269420a188774c68a701630f1e9cfdaec409ddcf"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
+          "sha256": "f3bc1195451b6259eda829ff2f68075c472fce1d69404557a4b404eebe04d08e"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/renderer.ts",
+          "sha256": "58355fdd61d9b6421c88c38466cdd639a23328d9ab51d8441a058de01327576c"
+        },
+        {
+          "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
+          "sha256": "26d7fd945c4664c0e3e55872b0e55b8eb856c89cfee55e9d2b2f185db788c316"
+        },
+        {
+          "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
+          "sha256": "fba0ec744e9658abcfab8734ad1f13f5ffd823570e347397bbb00ee09457c0d7"
+        },
+        {
+          "path": "packages/engine/src/production-runtime/actor/extensions.ts",
+          "sha256": "eb79d625ce4090669ee3f1f8ecbf7ae4f691ab08865cab3b868172635061a20d"
+        },
+        {
+          "path": "packages/assets/src/GLTFRenderResources.ts",
+          "sha256": "ac4efae7bace6982b9b8f17daed9897ae4e83ad695e87644afeef8284d66e4da"
+        },
+        {
+          "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
+          "sha256": "c989fc7616ea489e4b0fc1bd1353e28b7ec470e7cc2c76a2f5527c3b54767c9e"
+        },
+        {
+          "path": "packages/game/src/createGameCore.ts",
+          "sha256": "90a7403b73e18d178bbb8fc4435b0a8e794279f1f9803b143a33a998268823a2"
+        },
+        {
+          "path": "packages/game/src/touch/TouchControls.ts",
+          "sha256": "ef9d6156df2188c106ee41b6fce181ee31ea09cda578248aa40ab104b1f65801"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 575,
+          "y": 470,
+          "width": 55,
+          "height": 105,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "orange sports-car body material",
+              "red": [150, 255],
+              "green": [100, 225],
+              "blue": [0, 80],
+              "minFraction": 0.005,
+              "maxFraction": 0.55
+            },
+            {
+              "name": "red sports-car rear lamp",
+              "red": [150, 255],
+              "green": [0, 85],
+              "blue": [0, 85],
+              "minFraction": 0.001,
+              "maxFraction": 0.1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

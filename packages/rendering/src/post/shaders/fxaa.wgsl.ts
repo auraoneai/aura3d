@@ -1,269 +1,100 @@
 /**
- * PRD-03 §6.5 Phase 7 — FXAA WGSL twins (three r185 FXAAShader, Catlike
- * Coding / Dave Hoskins port — NOT the NVIDIA FXAA 3.11 preset).
- *
- * `FXAA_185_FNS_WGSL` is the shared function set. GLSL's two macro hooks map
- * to consumer-provided WGSL items (each including module must define them):
- *   - `AURA_FXAA_SAMPLE(tex, uv)` → the consumer defines
- *     `fn fxaa_sample(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>) -> vec4<f32>`
- *   - `AURA_LUMA_ALPHA` → the consumer declares
- *     `override FXAA_LUMA_ALPHA: i32 = 0 | 1`
- * Standalone (`FXAA_185_FRAGMENT_WGSL`) uses `textureSampleLevel` and
- * `FXAA_LUMA_ALPHA = 0`; the §6.1 fused finalize declares 1 (luma rides in
- * `.a`, written by S10b) and injects the display-grade sample.
+ * WGSL counterpart of Aura3D's contrast-adaptive spatial antialiasing.
+ * Consumers provide `fxaa_sample` and the `FXAA_LUMA_ALPHA` override, allowing
+ * the same filter to operate on straight-alpha colour or fused grade+luma.
+ * Export names remain stable for existing post-chain callers.
  */
 
-export const FXAA_185_FNS_WGSL = /* wgsl */ `const EDGE_STEP_COUNT: i32 = 6;
-const EDGE_GUESS: f32 = 8.0;
-const EDGE_STEPS = array<f32, 6>(1.0, 1.5, 2.0, 2.0, 2.0, 4.0);
+import { POST_COMMON_WGSL } from "./common.wgsl.js";
 
-const CONTRAST_THRESHOLD: f32 = 0.0312;
-const RELATIVE_THRESHOLD: f32 = 0.063;
-const SUBPIXEL_BLENDING: f32 = 1.0;
-
-fn fxaa_sample_color(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>) -> vec4<f32> {
-  return fxaa_sample(tex, smp, uv);
+export const FXAA_185_FNS_WGSL = /* wgsl */ `
+fn aura_fxaa_luma(color: vec4<f32>) -> f32 {
+  if (FXAA_LUMA_ALPHA == 1) { return color.a; }
+  return dot(color.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
 }
 
-fn fxaa_sample_luminance(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>) -> f32 {
-  if (FXAA_LUMA_ALPHA == 1) {
-    return fxaa_sample(tex, smp, uv).a;
-  }
-  return dot(fxaa_sample_color(tex, smp, uv).rgb, vec3<f32>(0.3, 0.59, 0.11));
+fn aura_fxaa_fetch(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>, texel: vec2<f32>) -> vec4<f32> {
+  let half_texel = texel * 0.5;
+  return fxaa_sample(tex, smp, clamp(uv, half_texel, vec2<f32>(1.0) - half_texel));
 }
 
-fn fxaa_sample_luminance_offset(tex: texture_2d<f32>, smp: sampler, tex_size: vec2<f32>, uv: vec2<f32>, u_offset: f32, v_offset: f32) -> f32 {
-  return fxaa_sample_luminance(tex, smp, uv + tex_size * vec2<f32>(u_offset, v_offset));
-}
+fn apply_fxaa(tex: texture_2d<f32>, smp: sampler, texel: vec2<f32>, uv: vec2<f32>) -> vec4<f32> {
+  let center = aura_fxaa_fetch(tex, smp, uv, texel);
+  let west = aura_fxaa_fetch(tex, smp, uv - vec2<f32>(texel.x, 0.0), texel);
+  let east = aura_fxaa_fetch(tex, smp, uv + vec2<f32>(texel.x, 0.0), texel);
+  let south = aura_fxaa_fetch(tex, smp, uv - vec2<f32>(0.0, texel.y), texel);
+  let north = aura_fxaa_fetch(tex, smp, uv + vec2<f32>(0.0, texel.y), texel);
+  let lc = aura_fxaa_luma(center);
+  let lw = aura_fxaa_luma(west); let le = aura_fxaa_luma(east);
+  let ls = aura_fxaa_luma(south); let ln = aura_fxaa_luma(north);
+  let lo = min(lc, min(min(lw, le), min(ls, ln)));
+  let hi = max(lc, max(max(lw, le), max(ls, ln)));
+  let range = hi - lo;
+  if (range <= max(0.0312, hi * 0.063)) { return center; }
 
-struct LuminanceData {
-  m: f32,
-  n: f32,
-  e: f32,
-  s: f32,
-  w: f32,
-  ne: f32,
-  nw: f32,
-  se: f32,
-  sw: f32,
-  highest: f32,
-  lowest: f32,
-  contrast: f32,
-};
-
-fn sample_luminance_neighborhood(tex: texture_2d<f32>, smp: sampler, tex_size: vec2<f32>, uv: vec2<f32>) -> LuminanceData {
-  var l: LuminanceData;
-  l.m = fxaa_sample_luminance(tex, smp, uv);
-  l.n = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, 0.0, 1.0);
-  l.e = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, 1.0, 0.0);
-  l.s = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, 0.0, -1.0);
-  l.w = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, -1.0, 0.0);
-
-  l.ne = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, 1.0, 1.0);
-  l.nw = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, -1.0, 1.0);
-  l.se = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, 1.0, -1.0);
-  l.sw = fxaa_sample_luminance_offset(tex, smp, tex_size, uv, -1.0, -1.0);
-
-  l.highest = max(max(max(max(l.n, l.e), l.s), l.w), l.m);
-  l.lowest = min(min(min(min(l.n, l.e), l.s), l.w), l.m);
-  l.contrast = l.highest - l.lowest;
-  return l;
-}
-
-fn should_skip_pixel(l: LuminanceData) -> bool {
-  let threshold = max(CONTRAST_THRESHOLD, RELATIVE_THRESHOLD * l.highest);
-  return l.contrast < threshold;
-}
-
-fn determine_pixel_blend_factor(l: LuminanceData) -> f32 {
-  var f = 2.0 * (l.n + l.e + l.s + l.w);
-  f = f + l.ne + l.nw + l.se + l.sw;
-  f = f * (1.0 / 12.0);
-  f = abs(f - l.m);
-  f = clamp(f / l.contrast, 0.0, 1.0);
-
-  let blend_factor = smoothstep(0.0, 1.0, f);
-  return blend_factor * blend_factor * SUBPIXEL_BLENDING;
-}
-
-struct EdgeData {
-  is_horizontal: bool,
-  pixel_step: f32,
-  opposite_luminance: f32,
-  gradient: f32,
-};
-
-fn determine_edge(tex_size: vec2<f32>, l: LuminanceData) -> EdgeData {
-  var e: EdgeData;
-  let horizontal =
-    abs(l.n + l.s - 2.0 * l.m) * 2.0 +
-    abs(l.ne + l.se - 2.0 * l.e) +
-    abs(l.nw + l.sw - 2.0 * l.w);
-  let vertical =
-    abs(l.e + l.w - 2.0 * l.m) * 2.0 +
-    abs(l.ne + l.nw - 2.0 * l.n) +
-    abs(l.se + l.sw - 2.0 * l.s);
-  e.is_horizontal = horizontal >= vertical;
-
-  let p_luminance = select(l.e, l.n, e.is_horizontal);
-  let n_luminance = select(l.w, l.s, e.is_horizontal);
-  let p_gradient = abs(p_luminance - l.m);
-  let n_gradient = abs(n_luminance - l.m);
-
-  e.pixel_step = select(tex_size.x, tex_size.y, e.is_horizontal);
-
-  if (p_gradient < n_gradient) {
-    e.pixel_step = -e.pixel_step;
-    e.opposite_luminance = n_luminance;
-    e.gradient = n_gradient;
-  } else {
-    e.opposite_luminance = p_luminance;
-    e.gradient = p_gradient;
-  }
-
-  return e;
-}
-
-fn determine_edge_blend_factor(tex: texture_2d<f32>, smp: sampler, tex_size: vec2<f32>, l: LuminanceData, e: EdgeData, uv: vec2<f32>) -> f32 {
-  var uv_edge = uv;
-  var edge_step: vec2<f32>;
-  if (e.is_horizontal) {
-    uv_edge.y = uv_edge.y + e.pixel_step * 0.5;
-    edge_step = vec2<f32>(tex_size.x, 0.0);
-  } else {
-    uv_edge.x = uv_edge.x + e.pixel_step * 0.5;
-    edge_step = vec2<f32>(0.0, tex_size.y);
-  }
-
-  let edge_luminance = (l.m + e.opposite_luminance) * 0.5;
-  let gradient_threshold = e.gradient * 0.25;
-
-  var puv = uv_edge + edge_step * EDGE_STEPS[0];
-  var p_luminance_delta = fxaa_sample_luminance(tex, smp, puv) - edge_luminance;
-  var p_at_end = abs(p_luminance_delta) >= gradient_threshold;
-
-  for (var i = 1; i < EDGE_STEP_COUNT && !p_at_end; i = i + 1) {
-    puv = puv + edge_step * EDGE_STEPS[i];
-    p_luminance_delta = fxaa_sample_luminance(tex, smp, puv) - edge_luminance;
-    p_at_end = abs(p_luminance_delta) >= gradient_threshold;
-  }
-
-  if (!p_at_end) {
-    puv = puv + edge_step * EDGE_GUESS;
-  }
-
-  var nuv = uv_edge - edge_step * EDGE_STEPS[0];
-  var n_luminance_delta = fxaa_sample_luminance(tex, smp, nuv) - edge_luminance;
-  var n_at_end = abs(n_luminance_delta) >= gradient_threshold;
-
-  for (var i = 1; i < EDGE_STEP_COUNT && !n_at_end; i = i + 1) {
-    nuv = nuv - edge_step * EDGE_STEPS[i];
-    n_luminance_delta = fxaa_sample_luminance(tex, smp, nuv) - edge_luminance;
-    n_at_end = abs(n_luminance_delta) >= gradient_threshold;
-  }
-
-  if (!n_at_end) {
-    nuv = nuv - edge_step * EDGE_GUESS;
-  }
-
-  var p_distance: f32;
-  var n_distance: f32;
-  if (e.is_horizontal) {
-    p_distance = puv.x - uv.x;
-    n_distance = uv.x - nuv.x;
-  } else {
-    p_distance = puv.y - uv.y;
-    n_distance = uv.y - nuv.y;
-  }
-
-  var shortest_distance: f32;
-  var delta_sign: bool;
-  if (p_distance <= n_distance) {
-    shortest_distance = p_distance;
-    delta_sign = p_luminance_delta >= 0.0;
-  } else {
-    shortest_distance = n_distance;
-    delta_sign = n_luminance_delta >= 0.0;
-  }
-
-  if (delta_sign == (l.m - edge_luminance >= 0.0)) {
-    return 0.0;
-  }
-
-  return 0.5 - shortest_distance / (p_distance + n_distance);
-}
-
-fn apply_fxaa(tex: texture_2d<f32>, smp: sampler, tex_size: vec2<f32>, uv_in: vec2<f32>) -> vec4<f32> {
-  let luminance = sample_luminance_neighborhood(tex, smp, tex_size, uv_in);
-  if (should_skip_pixel(luminance)) {
-    return fxaa_sample_color(tex, smp, uv_in);
-  }
-
-  let pixel_blend = determine_pixel_blend_factor(luminance);
-  let edge = determine_edge(tex_size, luminance);
-  let edge_blend = determine_edge_blend_factor(tex, smp, tex_size, luminance, edge, uv_in);
-  let final_blend = max(pixel_blend, edge_blend);
-
-  var uv = uv_in;
-  if (edge.is_horizontal) {
-    uv.y = uv.y + edge.pixel_step * final_blend;
-  } else {
-    uv.x = uv.x + edge.pixel_step * final_blend;
-  }
-
-  return fxaa_sample_color(tex, smp, uv);
+  let gx = abs(le - lw) + abs(le + lw - 2.0 * lc);
+  let gy = abs(ln - ls) + abs(ln + ls - 2.0 * lc);
+  let a = select(south, west, gx >= gy);
+  let b = select(north, east, gx >= gy);
+  let pair_luma = 0.5 * (aura_fxaa_luma(a) + aura_fxaa_luma(b));
+  let amount = 0.5 * clamp(abs(pair_luma - lc) / max(range, 1e-6), 0.0, 1.0);
+  if (FXAA_LUMA_ALPHA == 1) { return mix(center, 0.5 * (a + b), amount); }
+  let alpha = mix(center.a, 0.5 * (a.a + b.a), amount);
+  let premul = mix(center.rgb * center.a, 0.5 * (a.rgb * a.a + b.rgb * b.a), amount);
+  if (alpha <= 1e-6) { return vec4<f32>(0.0, 0.0, 0.0, alpha); }
+  return vec4<f32>(premul / alpha, alpha);
 }
 `;
 
-export const FXAA_185_FRAGMENT_WGSL = /* wgsl */ `// FXAA_NO_DITHER — pipeline-overridable: the v2 unfused tail compiles with
-// true so S12 finalize's single triangular dither isn't doubled.
-override FXAA_NO_DITHER: bool = false;
-override FXAA_LUMA_ALPHA: i32 = 0;
+/** Native device's intermediate-pass binding order; no output dither is applied. */
+export const FXAA_NATIVE_INTERMEDIATE_WGSL = /* wgsl */ `override FXAA_LUMA_ALPHA: i32 = 0;
 
-struct FxaaParams {
-  texel_size: vec2<f32>,   // 1 / source dims (the FXAA tap step)
-  output_texel: vec2<f32>, // 1 / output dims (base uv)
+struct NativeFxaaParams {
+  texel_size: vec2<f32>,
+  _pad: vec2<f32>,
 };
+@group(0) @binding(0) var<uniform> u_params: NativeFxaaParams;
+@group(0) @binding(1) var u_source_smp: sampler;
+@group(0) @binding(2) var u_source_tex: texture_2d<f32>;
 
-@group(0) @binding(0) var<uniform> u_params: FxaaParams;
-@group(0) @binding(1) var u_source_tex: texture_2d<f32>;
-@group(0) @binding(2) var u_source_smp: sampler;
-
-// AURA_FXAA_SAMPLE for the standalone pass: a plain LOD-0 filtered fetch.
 fn fxaa_sample(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>) -> vec4<f32> {
   return textureSampleLevel(tex, smp, uv, 0.0);
 }
 
 ${FXAA_185_FNS_WGSL}
 
-fn pcg2d(v_in: vec2<u32>) -> vec2<u32> {
-  var v = v_in * vec2<u32>(1664525u) + vec2<u32>(1013904223u);
-  v.x = v.x + v.y * 1664525u;
-  v.y = v.y + v.x * 1664525u;
-  v = v ^ (v >> vec2<u32>(16u));
-  v.x = v.x + v.y * 1664525u;
-  v.y = v.y + v.x * 1664525u;
-  v = v ^ (v >> vec2<u32>(16u));
-  return v;
+@fragment
+fn fs_fxaa(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
+  return apply_fxaa(u_source_tex, u_source_smp, u_params.texel_size, uv);
+}
+`;
+
+export const FXAA_185_FRAGMENT_WGSL = /* wgsl */ `override FXAA_NO_DITHER: bool = false;
+override FXAA_LUMA_ALPHA: i32 = 0;
+
+struct FxaaParams {
+  texel_size: vec2<f32>,
+  output_texel: vec2<f32>,
+};
+
+@group(0) @binding(0) var<uniform> u_params: FxaaParams;
+@group(0) @binding(1) var u_source_tex: texture_2d<f32>;
+@group(0) @binding(2) var u_source_smp: sampler;
+
+fn fxaa_sample(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>) -> vec4<f32> {
+  return textureSampleLevel(tex, smp, uv, 0.0);
 }
 
-fn triangular_dither(frag_coord: vec2<f32>, frame: f32) -> f32 {
-  let seed = vec2<u32>(frag_coord) + vec2<u32>(u32(frame) * 747796405u);
-  let rand = vec2<f32>(pcg2d(seed)) / 4294967296.0;
-  return (rand.x + rand.y - 1.0) / 255.0;
-}
+${FXAA_185_FNS_WGSL}
+
+${POST_COMMON_WGSL}
 
 @fragment
 fn fs_fxaa(@builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
   let uv = frag_coord.xy * u_params.output_texel;
   let color = apply_fxaa(u_source_tex, u_source_smp, u_params.texel_size, uv);
-  // S12: the triangular-PDF dither belongs to the last write to the 8-bit
-  // output — on the legacy present this program IS the last write; on the v2
-  // unfused tail S12-finalize follows, so it compiles with FXAA_NO_DITHER.
   var rgb = color.rgb;
-  if (!FXAA_NO_DITHER) {
-    rgb = rgb + vec3<f32>(triangular_dither(frag_coord.xy, 0.0));
-  }
+  if (!FXAA_NO_DITHER) { rgb = rgb + vec3<f32>(triangular_dither(frag_coord.xy, 0.0)); }
   return vec4<f32>(rgb, color.a);
 }
 `;

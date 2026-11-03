@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { nodeHandlers, resolveNodeHandler } from "../../../packages/engine/src/agent-api/compiler/handlers";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
-import { batched } from "../../../packages/engine/src/agent-api/nodes/batched";
+import "../../../packages/engine/src/agent-api/nodes/batched";
 
 describe("batched flag-off fails closed", () => {
   it("pending sentinel compile throws parity-not-implemented", () => {

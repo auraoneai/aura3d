@@ -1,14 +1,15 @@
 import type { MaterialFeatureContext } from "./contracts/materialLobes";
 import { Material, type RenderState } from "./Material";
-import { legacyPhysicalDescriptor, physicalFeatureSet } from "./materials/PhysicalFeatures";
+import { legacyPhysicalDescriptor, physicalFeatureSet, withLivePhysicalMapFeatures } from "./materials/PhysicalFeatures";
 import type { PhysicalFeatureSet } from "./materials/PhysicalMaterial";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
+import { PBR_SURFACE_DETAIL_UNIFORM_SCHEMA, pbrSurfaceDetailParameters, type PBRSurfaceDetailOptions } from "./PBRMaterial";
 import { DEFAULT_INSTANCED_PBR_SHADER_NAME } from "./ShaderLibraryCore";
 import { TextureBinding } from "./TextureBinding";
 
 export const MAX_INSTANCED_PBR_INSTANCES = 64;
 
-export interface InstancedPBRMaterialOptions {
+export interface InstancedPBRMaterialOptions extends PBRSurfaceDetailOptions {
   readonly name?: string;
   readonly baseColor?: readonly [number, number, number, number];
   readonly renderState?: Partial<RenderState>;
@@ -67,6 +68,7 @@ export class InstancedPBRMaterial extends Material {
       renderState: options.renderState,
       fog: options.fog,
       parameters: {
+        ...pbrSurfaceDetailParameters(options),
         u_baseColor: baseColor,
         u_alphaCutoff: 0,
         u_metallic: options.metallic ?? 0,
@@ -99,8 +101,14 @@ export class InstancedPBRMaterial extends Material {
         u_modelViewProjection: identityMatrix(),
         u_normalMatrix: identityMatrix()
       },
-      requiredAttributes: ["a_position", "a_normal"],
+      requiredAttributes: [
+        "a_position", "a_normal",
+        ...(options.diffuseRoughnessTexture?.texture || options.bumpTexture?.texture ? ["a_uv"] : []),
+        ...((options.diffuseRoughnessTexture?.texture && options.diffuseRoughnessTextureTexCoord === 1) ||
+          (options.bumpTexture?.texture && options.bumpTextureTexCoord === 1) ? ["a_uv1"] : [])
+      ],
       uniformSchema: [
+        ...PBR_SURFACE_DETAIL_UNIFORM_SCHEMA,
         { name: "u_baseColor", kind: "vec4" },
         { name: "u_alphaCutoff", kind: "float" },
         { name: "u_metallic", kind: "float" },
@@ -139,7 +147,7 @@ export class InstancedPBRMaterial extends Material {
 
   /** C-03 `ProgramFeatureSource` (PRD-04 P3-1): generated-path features from this material's options. Pure — unread by the legacy path. */
   programFeatures(ctx: MaterialFeatureContext): PhysicalFeatureSet {
-    return physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx, { instancing: { color: false } });
+    return withLivePhysicalMapFeatures(physicalFeatureSet(legacyPhysicalDescriptor(this.prd04Options), ctx, { instancing: { color: false } }), this, ctx);
   }
 }
 

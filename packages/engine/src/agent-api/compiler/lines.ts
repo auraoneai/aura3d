@@ -16,9 +16,8 @@
 //    sampling, billboard reprojection) is contributed by the generated-path
 //    ShaderFeatures `prd15.parityPoints` / `prd15.paritySprite`, gated on
 //    `A3D_PARITY_LINES` and selected by material marker parameters.
-//  - `worldUnits` fat lines bake world-space quads (`wideLineSegments`);
-//    honest limitation: the bake faces a fixed up-axis, so stroke width is
-//    correct only from non-grazing view angles (documented, never silent).
+//  - World-width lines use camera-facing geometry and the same distance and
+//    color attributes as pixel-width lines.
 
 import {
   Geometry,
@@ -38,10 +37,16 @@ import {
 import { registerShaderChunk, registerShaderFeature, type ShaderFeature, type ShaderFeatureSelectInput } from "@aura3d/rendering/contracts";
 import type { NodeHandler, SceneCompileContext } from "../../contracts/compiler.js";
 import type { RenderState } from "@aura3d/rendering";
-import type { AuraLineNode, AuraMaterialTextureInput, AuraPointsNode, AuraSpriteNode, AuraVec3 } from "../nodes/types.js";
+import type { AuraLineNode, AuraMaterialSpec, AuraMaterialTextureInput, AuraPointsNode, AuraSpriteNode, AuraRuntimeNodeHandle, AuraTransformSpec, AuraVec3 } from "../nodes/types.js";
+import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
+import { normalizeGeometryAttributes } from "../RootGeometry.js";
+import { runtimeNodeEffectiveVisibility, runtimeNodeQueryState } from "../app/runtimeNodes.js";
+import { parseAuraColor } from "../../contracts/sceneGraph.js";
 import { colorToLinearRgba } from "../colorUtils.js";
-import { multiply4, rotationXYZ, scaling, translation } from "../sceneMath.js";
-import { normalizeLinePositions } from "../nodes/lines.js";
+import { localMatrixOf } from "../sceneGraph.js";
+import { worldTransformOf } from "./sceneGraph.js";
+import { normalizeLinePositions, validateLineDashOptions } from "../nodes/lines.js";
+import { getMaterialClipping } from "../nodes/scene.js";
 import { AuraRuntimeError } from "./errors.js";
 
 const L6_FLAG = "A3D_PARITY_LINES" as const;
@@ -156,7 +161,11 @@ if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;
     stage: "vertex",
     glsl: `uniform float u_spriteRotation;
 uniform vec2 u_spriteCenter;
-uniform float u_spriteSizeAttenuation;`
+uniform float u_spriteSizeAttenuation;
+#ifdef A3D_CLIPPING
+uniform mat4 u_a3dSpriteViewToWorld;
+uniform mat4 u_a3dSpriteWorldToObject;
+#endif`
   });
   registerShaderChunk({
     name: SPRITE_VERTEX_END,
@@ -182,6 +191,18 @@ uniform float u_spriteSizeAttenuation;`
   a3dSpriteView.xy += a3dSpriteRotated;
   gl_Position = u_projection * a3dSpriteView;
   v_worldPosition = a3dSpriteCenterWorld;
+#ifdef A3D_CLIPPING
+  // The billboard is expanded in view space after the generator's ordinary
+  // clip coordinates have been assigned. Reconstruct the expanded vertex;
+  // clipping the source quad or the centre gives the wrong cut after a camera
+  // rotation, sprite anchor, scale, or screen-plane rotation.
+  // CPU-validated inverses avoid a second, lower-precision determinant test
+  // in the vertex shader. For a global-only group, object-local coordinates
+  // are unused and the pass may bind identity for a singular model.
+  vec4 a3dSpriteClipWorld = u_a3dSpriteViewToWorld * a3dSpriteView;
+  v_a3dClipWorld = a3dSpriteClipWorld.xyz / a3dSpriteClipWorld.w;
+  v_a3dClipLocal = (u_a3dSpriteWorldToObject * vec4(v_a3dClipWorld, 1.0)).xyz;
+#endif
 }`
   });
 
@@ -220,38 +241,62 @@ function canvasDpr(ctx: SceneCompileContext): number {
 
 interface ParityRecord {
   readonly geometry: Geometry;
-  readonly material: UnlitMaterial | ScreenSpaceLineMaterial;
+  material: UnlitMaterial | ScreenSpaceLineMaterial;
   readonly kind: "line" | "fat" | "points" | "sprite";
   readonly label: string;
+  lineSegments?: readonly LineSegment[];
+  lastDistanceMatrix?: Float32Array;
+  lineData?: LineData;
+  appliedGeometry?: AuraCustomGeometrySpec;
   dispose(): void;
 }
 
-function makeRecord(geometry: Geometry, material: UnlitMaterial | ScreenSpaceLineMaterial, kind: ParityRecord["kind"], label: string): ParityRecord {
+function makeRecord(geometry: Geometry, material: UnlitMaterial | ScreenSpaceLineMaterial, kind: ParityRecord["kind"], label: string, lineSegments?: readonly LineSegment[], lastDistanceMatrix?: Float32Array): ParityRecord {
   return {
     geometry,
     material,
     kind,
     label,
+    lineSegments,
+    lastDistanceMatrix,
     dispose() {
       geometry.dispose();
-      material.dispose();
+      this.material.dispose();
     }
   };
 }
 
 /** T·R·S from the node's transform with live handle overrides (SG-09 mutable path). */
 function modelMatrixFor(
-  node: { readonly position?: AuraVec3; readonly rotation?: AuraVec3; readonly scale?: number | AuraVec3 },
+  node: AuraTransformSpec,
   handle: { readonly position?: AuraVec3; readonly rotation?: AuraVec3; readonly scale?: number | AuraVec3 } | undefined
 ): Float32Array {
-  const position = handle?.position ?? node.position ?? [0, 0, 0];
-  const rotation = handle?.rotation ?? node.rotation ?? [0, 0, 0];
-  const scale = handle?.scale ?? node.scale ?? 1;
-  const s = typeof scale === "number" ? [scale, scale, scale] as const : scale;
-  return multiply4(
-    translation(position[0], position[1], position[2]),
-    multiply4(rotationXYZ(rotation), scaling(s[0], s[1], s[2]))
-  );
+  if (handle && "snapshot" in handle) {
+    const world = runtimeNodeQueryState(handle as AuraRuntimeNodeHandle)?.worldMatrix;
+    if (world) return world;
+  }
+  // A true scene-graph flatten can preserve a sheared world matrix that cannot
+  // be reconstructed from the flattened node's decomposed TRS fields.
+  const flattened = !handle ? worldTransformOf(node)?.matrix : undefined;
+  if (flattened) return Float32Array.from(flattened);
+  return localMatrixOf({
+    ...node,
+    position: handle?.position ?? node.position,
+    rotation: handle?.rotation ?? node.rotation,
+    scale: handle?.scale ?? node.scale
+  }, new Float32Array(16));
+}
+
+function isVisible(node: { readonly visible?: boolean }, handle: { readonly visible?: boolean } | undefined): boolean {
+  if (handle && "snapshot" in handle) return runtimeNodeEffectiveVisibility(handle as AuraRuntimeNodeHandle);
+  return (handle?.visible ?? node.visible) !== false;
+}
+
+/** Flattened nodes retain their original material snapshot. Runtime material
+ * replacement belongs to the source node referenced by the live handle. */
+function materialClippingFor(node: { readonly material?: AuraMaterialSpec }, handle: AuraRuntimeNodeHandle | undefined) {
+  const current = handle && "snapshot" in handle ? runtimeNodeQueryState(handle) : undefined;
+  return getMaterialClipping(current ? current.node.material : node.material);
 }
 
 interface MaterialColorInput {
@@ -261,9 +306,8 @@ interface MaterialColorInput {
 
 function materialRgba(spec: MaterialColorInput | undefined, fallback: readonly [number, number, number, number]): readonly [number, number, number, number] {
   if (spec?.color === undefined && spec?.opacity === undefined) return fallback;
-  const [r, g, b] = spec?.color !== undefined ? colorToLinearRgba(spec.color).slice(0, 3) : [fallback[0], fallback[1], fallback[2]];
-  const a = spec?.opacity !== undefined ? Math.min(1, Math.max(0, spec.opacity)) : fallback[3];
-  return [r as number, g as number, b as number, a];
+  const [r, g, b, a] = spec?.color !== undefined ? parseAuraColor(spec.color) : fallback;
+  return [r, g, b, a * (spec?.opacity !== undefined ? Math.min(1, Math.max(0, spec.opacity)) : 1)];
 }
 
 function transparentRenderState(spec: MaterialColorInput | undefined, forceTransparent: boolean | undefined): { blend: boolean; depthWrite: boolean; cullMode?: "none" } | undefined {
@@ -300,23 +344,121 @@ function vertexColorsGeometry(positions: readonly AuraVec3[], colors: readonly s
   const vertices = new VertexBuffer(P3_C4, positions.length);
   positions.forEach((position, index) => {
     vertices.setAttribute(index, "position", position);
-    const [r, g, b] = colorToLinearRgba(colors[index]!).slice(0, 3);
-    vertices.setAttribute(index, "color", [r, g, b, 1]);
+    vertices.setAttribute(index, "color", colorToLinearRgba(colors[index]!));
   });
   return new Geometry(vertices, null, topology);
 }
 
 /** Polyline → segment pairs; `"loop"` appends the closing edge (last → first). */
-function polylineSegments(positions: readonly AuraVec3[], mode: "line" | "loop" | "segments"): { start: AuraVec3; end: AuraVec3 }[] {
+interface LineSegment {
+  readonly start: AuraVec3;
+  readonly end: AuraVec3;
+  readonly startColor?: readonly [number, number, number, number];
+  readonly endColor?: readonly [number, number, number, number];
+}
+
+type LineColor = readonly [number, number, number, number];
+interface LineData {
+  readonly positions: readonly AuraVec3[];
+  readonly colors?: readonly LineColor[];
+  readonly indices?: readonly number[];
+}
+
+function polylineSegments(positions: readonly AuraVec3[], mode: "line" | "loop" | "segments", colors?: readonly LineColor[]): LineSegment[] {
+  const segment = (start: number, end: number): LineSegment => ({
+    start: positions[start]!,
+    end: positions[end]!,
+    ...(colors ? { startColor: colors[start]!, endColor: colors[end]! } : {})
+  });
   if (mode === "segments") {
-    const out: { start: AuraVec3; end: AuraVec3 }[] = [];
-    for (let i = 0; i + 1 < positions.length; i += 2) out.push({ start: positions[i]!, end: positions[i + 1]! });
+    const out: LineSegment[] = [];
+    for (let i = 0; i + 1 < positions.length; i += 2) out.push(segment(i, i + 1));
     return out;
   }
-  const out: { start: AuraVec3; end: AuraVec3 }[] = [];
-  for (let i = 0; i + 1 < positions.length; i += 1) out.push({ start: positions[i]!, end: positions[i + 1]! });
-  if (mode === "loop" && positions.length > 2) out.push({ start: positions[positions.length - 1]!, end: positions[0]! });
+  const out: LineSegment[] = [];
+  for (let i = 0; i + 1 < positions.length; i += 1) out.push(segment(i, i + 1));
+  if (mode === "loop" && positions.length > 2) out.push(segment(positions.length - 1, 0));
   return out;
+}
+
+function segmentsForData(data: LineData, mode: "line" | "loop" | "segments", label: string): LineSegment[] {
+  const order = data.indices ?? data.positions.map((_, i) => i);
+  const positions = order.map((i) => {
+    const point = data.positions[i];
+    if (!point) throw new RangeError(`${label} index ${i} is outside the positions`);
+    return point;
+  });
+  const colors = data.colors ? order.map((i) => data.colors![i]!) : undefined;
+  if (positions.length !== 0 && positions.length < (mode === "loop" ? 3 : 2)) throw new Error(`${label} has too few points`);
+  if (mode === "segments" && positions.length % 2) throw new Error(`${label} requires an even number of points`);
+  return polylineSegments(positions, mode, colors);
+}
+
+function lineDataFromSpec(spec: AuraCustomGeometrySpec): LineData {
+  if (spec.topology !== undefined && spec.topology !== "lines") throw new Error("LINE_GEOMETRY_UNSUPPORTED: line topology must be lines");
+  if (spec.normals || spec.uvs || spec.uv1s || spec.attributes || spec.groups || spec.drawRange || spec.morphTargets) {
+    throw new Error("LINE_GEOMETRY_UNSUPPORTED: line geometry accepts positions, colors and indices only");
+  }
+  // Color strings use the same parser as authored line colors; numeric arrays
+  // are already linear data and are not gamma-converted a second time.
+  const colorStrings = Array.isArray(spec.colors) && typeof spec.colors[0] === "string"
+    ? Float32Array.from((spec.colors as readonly string[]).flatMap((color) => [...parseAuraColor(color)]))
+    : spec.colors;
+  const normalized = normalizeGeometryAttributes({ ...spec, colors: colorStrings });
+  const positions = Array.from({ length: normalized.vertexCount }, (_, i): AuraVec3 => [
+    normalized.positions[i * 3]!, normalized.positions[i * 3 + 1]!, normalized.positions[i * 3 + 2]!
+  ]);
+  const colors = normalized.colors ? Array.from({ length: normalized.vertexCount }, (_, i): LineColor => [
+    normalized.colors![i * 4]!, normalized.colors![i * 4 + 1]!, normalized.colors![i * 4 + 2]!, normalized.colors![i * 4 + 3]!
+  ]) : undefined;
+  return { positions, ...(colors ? { colors } : {}), ...(normalized.indices ? { indices: Array.from(normalized.indices) } : {}) };
+}
+
+interface PendingLineAttribute {
+  readonly name: string;
+  readonly array: ArrayLike<number>;
+  readonly offset: number;
+}
+
+function applyLineUpdates(data: LineData, updates: readonly PendingLineAttribute[]): LineData {
+  const positions = data.positions.map((point) => [...point] as [number, number, number]);
+  let colors = data.colors?.map((color) => [...color] as [number, number, number, number]);
+  for (const update of updates) {
+    const name = update.name.toLowerCase();
+    const isPosition = name === "position" || name === "positions";
+    const isColor = name === "color" || name === "colors";
+    if (!isPosition && !isColor) throw new Error(`LINE_ATTRIBUTE_UNSUPPORTED: ${update.name}`);
+    const width = isPosition ? 3 : 4;
+    if (!Number.isInteger(update.offset) || update.offset < 0 || update.array.length % width !== 0 ||
+        update.offset + update.array.length / width > positions.length) {
+      throw new RangeError(`Line attribute "${update.name}" update exceeds its vertex range or has incomplete items`);
+    }
+    if (isColor && !colors) colors = positions.map(() => [1, 1, 1, 1]);
+    const target = isPosition ? positions : colors!;
+    for (let i = 0; i < update.array.length; i += 1) {
+      const value = update.array[i]!;
+      if (!Number.isFinite(value)) throw new RangeError(`Line attribute "${update.name}" must contain finite values`);
+      target[update.offset + Math.floor(i / width)]![i % width] = value;
+    }
+  }
+  return { positions, ...(colors ? { colors } : {}), ...(data.indices ? { indices: data.indices } : {}) };
+}
+
+/** Dash distances follow the transformed line, including non-uniform scale. */
+function withWorldDistances(segments: readonly LineSegment[], matrix: Float32Array): (LineSegment & { startDistance: number; endDistance: number })[] {
+  let distance = 0;
+  return segments.map((segment) => {
+    const x = segment.end[0] - segment.start[0];
+    const y = segment.end[1] - segment.start[1];
+    const z = segment.end[2] - segment.start[2];
+    const startDistance = distance;
+    distance += Math.hypot(
+      matrix[0]! * x + matrix[4]! * y + matrix[8]! * z,
+      matrix[1]! * x + matrix[5]! * y + matrix[9]! * z,
+      matrix[2]! * x + matrix[6]! * y + matrix[10]! * z
+    );
+    return { ...segment, startDistance, endDistance: distance };
+  });
 }
 
 /**
@@ -368,65 +510,56 @@ function runtimeIdOf(node: { readonly runtime?: { readonly id?: string }; readon
 
 const lineRecords = new WeakMap<object, ParityRecord>();
 
-function compileLineRecord(node: AuraLineNode, ctx: SceneCompileContext): ParityRecord {
+function lineMaterial(node: AuraLineNode, ctx: SceneCompileContext, segmentsList: readonly LineSegment[], label: string): UnlitMaterial | ScreenSpaceLineMaterial {
+  const dashed = node.dashed === true || (node.dashSize ?? 0) > 0;
+  const rgba = materialRgba(node.material, [1, 1, 1, 1]);
+  const hasColorAlpha = segmentsList.some((segment) => (segment.startColor?.[3] ?? 1) < 1 || (segment.endColor?.[3] ?? 1) < 1);
+  const renderState = transparentRenderState(node.material, hasColorAlpha || rgba[3] < 1);
+  if (node.line === "fat" || dashed) {
+    return new ScreenSpaceLineMaterial({
+      name: `${label}.fat`, color: rgba, width: node.line === "fat" ? (node.width ?? 1) : 1,
+      worldUnits: node.worldUnits === true,
+      resolution: [Math.max(1, mountCanvas(ctx).width ?? 1), Math.max(1, mountCanvas(ctx).height ?? 1)],
+      pixelRatio: canvasDpr(ctx),
+      dashSize: dashed ? (node.dashSize ?? 1) : 0, gapSize: dashed ? (node.gapSize ?? 0) : 0,
+      dashOffset: node.dashOffset ?? 0, renderState: fullRenderState(renderState)
+    });
+  }
+  // Geometry always has a white default color, so adding colors later does not
+  // need a shader/layout replacement.
+  return new UnlitMaterial({ name: label, color: rgba, pointSize: 1, vertexColors: true, renderState });
+}
+
+function compileLineRecord(node: AuraLineNode, ctx: SceneCompileContext, initial?: LineData): ParityRecord {
   const label = `l6.line.${runtimeIdOf(node)}`;
   const positions = normalizeLinePositions(node.positions, 2, `line node "${label}"`);
   const mode = node.line === "fat" ? "line" : node.line;
-  const segmentsList = polylineSegments(positions, mode);
+  if (node.colors && node.colors.length !== positions.length) throw new Error(`${label} colors must match positions length`);
+  const data = initial ?? { positions, ...(node.colors ? { colors: node.colors.map(parseAuraColor) } : {}) };
+  const segmentsList = segmentsForData(data, mode, label);
+  validateLineDashOptions(node, label);
   const dashed = node.dashed === true || (node.dashSize ?? 0) > 0;
-  const spec = node.material;
-  const rgba = materialRgba(spec, [1, 1, 1, 1]);
-  const renderState = transparentRenderState(spec, undefined);
-
-  if (node.colors !== undefined && (node.line === "fat" || dashed)) {
-    ctx.degrade({
-      code: "option-ignored",
-      nodeId: runtimeIdOf(node),
-      message: `per-vertex colors on fat/dashed lines are not yet supported — the screen-space line shader has no color attribute; the material color is used`
-    });
+  if (node.line !== "fat" && (node.width !== undefined || node.worldUnits !== undefined)) {
+    throw new AuraRuntimeError("invalid-line-spec", `${label} width and worldUnits are supported only for fat lines`);
   }
-
-  if (node.line === "fat" && node.worldUnits === true) {
-    // World-units mode: baked world-space quads (no a_lineDistance → no dashes;
-    // validated at the factory and re-asserted here for builderless nodes).
-    if (dashed) {
-      throw new Error(`lines.fat worldUnits + dashed is unsupported on node "${label}" (world-space quads carry no line distances)`);
-    }
-    const width = node.width ?? 1;
-    const geometry = Geometry.wideLineSegments(segmentsList.map((s) => ({ start: s.start, end: s.end, width })));
-    const material = new UnlitMaterial({ name: `${label}.worldunits`, color: rgba, renderState: { ...(renderState ?? {}), cullMode: "none" } });
-    return makeRecord(geometry, material, "fat", label);
+  if (node.line === "fat" && (!Number.isFinite(node.width ?? 1) || (node.width ?? 1) <= 0)) {
+    throw new AuraRuntimeError("invalid-line-spec", `${label} width must be positive and finite`);
   }
-
   if (node.line === "fat" || dashed) {
-    const width = node.line === "fat" ? (node.width ?? 1) : 1;
-    const geometry = Geometry.screenSpaceLineSegments(segmentsList);
-    const material = new ScreenSpaceLineMaterial({
-      name: `${label}.fat`,
-      color: rgba,
-      width,
-      resolution: [mountCanvas(ctx).width ?? 1, mountCanvas(ctx).height ?? 1],
-      pixelRatio: canvasDpr(ctx),
-      dashSize: dashed ? (node.dashSize ?? 1) : 0,
-      gapSize: dashed ? (node.gapSize ?? 1) : 0,
-      dashOffset: node.dashOffset ?? 0,
-      renderState: fullRenderState(renderState)
-    });
-    return makeRecord(geometry, material, "fat", label);
+    const initialMatrix = modelMatrixFor(node, undefined);
+    const geometry = Geometry.screenSpaceLineSegments(withWorldDistances(segmentsList, initialMatrix));
+    const record = makeRecord(geometry, lineMaterial(node, ctx, segmentsList, label), "fat", label, segmentsList, initialMatrix);
+    record.lineData = data;
+    return record;
   }
 
-  const hasColors = node.colors !== undefined;
-  const geometry = hasColors
-    ? vertexColorsGeometry(positions, node.colors!, "lines", label)
-    : Geometry.lineSegments(segmentsList.flatMap((s) => [s.start, s.end]));
-  const material = new UnlitMaterial({
-    name: label,
-    color: rgba,
-    pointSize: 1,
-    vertexColors: hasColors,
-    renderState
-  });
-  return makeRecord(geometry, material, "line", label);
+  const geometry = Geometry.lineSegments(
+    segmentsList.flatMap((segment) => [segment.start, segment.end]),
+    data.colors ? segmentsList.flatMap((segment) => [segment.startColor!, segment.endColor!]) : undefined
+  );
+  const record = makeRecord(geometry, lineMaterial(node, ctx, segmentsList, label), "line", label);
+  record.lineData = data;
+  return record;
 }
 
 export const lineNodeHandler: NodeHandler<{ readonly kind: "line" }> = {
@@ -438,6 +571,7 @@ export const lineNodeHandler: NodeHandler<{ readonly kind: "line" }> = {
     const lineNode = node as AuraLineNode;
     if (normalizeLinePositions(lineNode.positions, 2, `line node "l6.line.${runtimeIdOf(lineNode)}"`).length === 0) {
       ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(lineNode), message: "GEOMETRY_EMPTY: line has no points; nothing is drawn" });
+      out.feature("vfx.parityLines");
       return;
     }
     const record = compileLineRecord(lineNode, ctx);
@@ -445,19 +579,75 @@ export const lineNodeHandler: NodeHandler<{ readonly kind: "line" }> = {
     out.feature("vfx.parityLines");
   },
   update(node, handle, ctx, out, _timeSeconds) {
-    const record = lineRecords.get(node);
-    if (!record) return;
-    const visible = (handle?.visible ?? (node as AuraLineNode).visible) !== false;
-    if (!visible) return;
+    type LineHandle = AuraRuntimeNodeHandle & {
+      readonly __parityL2Geometry?: AuraCustomGeometrySpec;
+      __parityL2AttributeUpdates?: PendingLineAttribute[];
+    };
+    const lineNode = node as AuraLineNode;
+    const liveHandle = handle as LineHandle | undefined;
+    const query = liveHandle && "snapshot" in liveHandle ? runtimeNodeQueryState(liveHandle) : undefined;
+    const spec = query?.geometry ?? liveHandle?.__parityL2Geometry;
+    const updates = liveHandle?.__parityL2AttributeUpdates ?? [];
+    let record = lineRecords.get(node);
+    if (!record) {
+      // Empty source lines still acquire resources when populated later via a
+      // handle. No GPU objects are allocated until there is a segment to draw.
+      if (!spec) return;
+      let data = lineDataFromSpec(spec);
+      if (!query?.geometry && updates.length) data = applyLineUpdates(data, updates);
+      if (!segmentsForData(data, lineNode.line === "fat" ? "line" : lineNode.line, runtimeIdOf(lineNode)).length) return;
+      record = compileLineRecord(lineNode, ctx, data);
+      record.appliedGeometry = spec;
+      lineRecords.set(node, record);
+      if (liveHandle) liveHandle.__parityL2AttributeUpdates = [];
+    } else if (record.lineData && ((spec && spec !== record.appliedGeometry) || updates.length > 0)) {
+      let data = spec && spec !== record.appliedGeometry ? lineDataFromSpec(spec) : record.lineData;
+      // Query snapshots incorporate queued writes after setGeometry. Before a
+      // query snapshot exists, replay the handle's copied writes on our data.
+      if (!query?.geometry && updates.length) data = applyLineUpdates(data, updates);
+      const mode = lineNode.line === "fat" ? "line" : lineNode.line;
+      const segments = segmentsForData(data, mode, record.label);
+      const matrix = modelMatrixFor(lineNode, handle);
+      if (record.kind === "fat") {
+        record.geometry.updateScreenSpaceLineSegments(withWorldDistances(segments, matrix));
+        record.lastDistanceMatrix = matrix;
+      } else {
+        record.geometry.updateLineSegments(
+          segments.flatMap((segment) => [segment.start, segment.end]),
+          data.colors ? segments.flatMap((segment) => [segment.startColor!, segment.endColor!]) : undefined
+        );
+      }
+      const needsBlend = segments.some((segment) => (segment.startColor?.[3] ?? 1) < 1 || (segment.endColor?.[3] ?? 1) < 1) ||
+        materialRgba(lineNode.material, [1, 1, 1, 1])[3] < 1;
+      if (needsBlend !== record.material.renderState.blend) {
+        const previous = record.material;
+        record.material = lineMaterial(lineNode, ctx, segments, record.label);
+        previous.dispose();
+      }
+      record.lineData = data;
+      record.lineSegments = segments;
+      record.appliedGeometry = spec;
+      if (liveHandle) liveHandle.__parityL2AttributeUpdates = [];
+    }
+    if (!isVisible(lineNode, handle)) return;
+    if ((record.kind === "line" || record.kind === "fat") && record.geometry.drawRange?.count === 0) return;
+    const modelMatrix = modelMatrixFor(lineNode, handle);
     if (record.material instanceof ScreenSpaceLineMaterial) {
       const canvas = mountCanvas(ctx);
-      record.material.setResolution(canvas.width ?? 1, canvas.height ?? 1, canvasDpr(ctx));
+      record.material.setResolution(Math.max(1, canvas.width ?? 1), Math.max(1, canvas.height ?? 1), canvasDpr(ctx));
+      if (record.lineSegments && (!record.lastDistanceMatrix || modelMatrix.some((value, index) => value !== record.lastDistanceMatrix![index]))) {
+        record.geometry.updateScreenSpaceLineSegments(withWorldDistances(record.lineSegments, modelMatrix));
+        record.lastDistanceMatrix = modelMatrix;
+      }
     }
+    const materialClipping = materialClippingFor(lineNode, handle);
     out.addItems([
       {
         geometry: record.geometry,
         material: record.material,
-        modelMatrix: modelMatrixFor(node as AuraLineNode, handle),
+        ...(materialClipping ? { materialClipping } : {}),
+        modelMatrix,
+        ...(record.material instanceof ScreenSpaceLineMaterial ? { frustumCulled: false } : {}),
         label: record.label
       } satisfies RenderItem
     ]);
@@ -510,18 +700,19 @@ export const pointsNodeHandler: NodeHandler<{ readonly kind: "points" }> = {
   update(node, handle, ctx, out, _timeSeconds) {
     const record = pointsRecords.get(node);
     if (!record) return;
-    const visible = (handle?.visible ?? (node as AuraPointsNode).visible) !== false;
-    if (!visible) return;
+    if (!isVisible(node as AuraPointsNode, handle)) return;
     // A fixed-size point is `size` CSS px, so fold dpr in. An attenuated point scales by
     // 0.5 · render-target height ÷ view depth with that height already in device pixels, so dpr
     // must not be applied a second time: it made attenuated points dpr× too large on retina.
     const n = node as AuraPointsNode;
     const attenuated = n.sizeAttenuation !== false;
     record.material.setParameter("u_pointSize", (n.size ?? 1) * (attenuated ? 1 : canvasDpr(ctx)));
+    const materialClipping = materialClippingFor(n, handle);
     out.addItems([
       {
         geometry: record.geometry,
         material: record.material,
+        ...(materialClipping ? { materialClipping } : {}),
         modelMatrix: modelMatrixFor(n, handle),
         label: record.label
       } satisfies RenderItem
@@ -572,12 +763,13 @@ export const spriteNodeHandler: NodeHandler<{ readonly kind: "sprite" }> = {
   update(node, handle, ctx, out, _timeSeconds) {
     const record = spriteRecords.get(node);
     if (!record) return;
-    const visible = (handle?.visible ?? (node as AuraSpriteNode).visible) !== false;
-    if (!visible) return;
+    if (!isVisible(node as AuraSpriteNode, handle)) return;
+    const materialClipping = materialClippingFor(node as AuraSpriteNode, handle);
     out.addItems([
       {
         geometry: record.geometry,
         material: record.material,
+        ...(materialClipping ? { materialClipping } : {}),
         modelMatrix: modelMatrixFor(node as AuraSpriteNode, handle),
         label: record.label
       } satisfies RenderItem

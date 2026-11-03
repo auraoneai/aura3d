@@ -32,6 +32,18 @@
       "types": "./dist/devtools/index.d.ts",
       "import": "./dist/devtools/index.js"
     },
+    "./v5": {
+      "types": "./dist/public/v5.d.ts",
+      "import": "./dist/public/v5.js"
+    },
+    "./v5/context": {
+      "types": "./dist/public/v5-context.d.ts",
+      "import": "./dist/public/v5-context.js"
+    },
+    "./v5/internal": {
+      "types": "./dist/public/v5-internal.d.ts",
+      "import": "./dist/public/v5-internal.js"
+    },
     "./lanes": {
       "types": "./dist/lanes/index.d.ts",
       "import": "./dist/lanes/index.js"
@@ -54,12 +66,17 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*",
     "@aura3d/scripting": "workspace:*",
-    "@aura3d/workflows": "workspace:*"
+    "@aura3d/workflows": "workspace:*",
+    "@aura3d/debug": "workspace:*"
   },
   "sideEffects": [
     "./src/lanes/**/*.ts",
+    "./src/agent-api/app/render.worker.ts",
+    "./dist/agent-api/app/render.worker.js",
     "./src/public/index.ts",
     "./dist/public/index.js",
+    "./src/public/v5.ts",
+    "./dist/public/v5.js",
     "./src/agent-api/compiler/diagnosticOnly.*.ts",
     "./src/agent-api/compiler/optionCoverage.ts",
     "./src/agent-api/feel/lint/evidenceOnlyFeel.ts",

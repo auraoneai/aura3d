@@ -1,44 +1,7 @@
 import type { AnimationValue } from "./Keyframe.js";
 
-/**
- * SA-03 — three-compatible `PropertyBinding` (`three@0.185.x
- * src/animation/PropertyBinding.js`) adapted to Aura's value-oriented track
- * API: `getValue()`/`setValue()` exchange `AnimationValue`s directly instead of
- * writing into a flat buffer at an offset. The track-name grammar, node lookup
- * (`findNode`), and `sanitizeNodeName` are exact ports, so paths like
- * `nodeName.property[index]`, `.morphTargetInfluences[name]`,
- * `uuid.materials[0].opacity`, `parent/child.position`, and
- * `.bones[Armature.DEF_cog].position` resolve exactly as they do upstream.
- */
-
-// Characters `[].:/` are reserved for track binding syntax.
-const RESERVED_CHARS_RE = "\\[\\]\\.:\\/";
-const RESERVED_RE = new RegExp("[" + RESERVED_CHARS_RE + "]", "g");
-
-// Attempts to allow node names from any language: match everything except the
-// reserved characters (three deliberately avoids `\w`).
-const WORD_CHAR = "[^" + RESERVED_CHARS_RE + "]";
-const WORD_CHAR_OR_DOT = "[^" + RESERVED_CHARS_RE.replace("\\.", "") + "]";
-
-// Parent directories, delimited by '/' or ':'. Currently unused, but must be
-// matched to parse the rest of the track name.
-const DIRECTORY_RE = /((?:WC+[\/:])*)/.source.replace(/WC/g, WORD_CHAR);
-
-// Target node. May contain word characters and '.' (e.g. 'foo.bar.baz').
-const NODE_RE = /(WCOD+)?/.source.replace(/WCOD/g, WORD_CHAR_OR_DOT);
-
-// Object on target node, and accessor (`materials[0]`).
-const OBJECT_RE = /(?:\.(WC+)(?:\[(.+)\])?)?/.source.replace(/WC/g, WORD_CHAR);
-
-// Property and accessor (`morphTargetInfluences[run]`, `position[x]`).
-const PROPERTY_RE = /\.(WC+)(?:\[(.+)\])?/.source.replace(/WC/g, WORD_CHAR);
-
-const TRACK_RE = new RegExp("^" + DIRECTORY_RE + NODE_RE + OBJECT_RE + PROPERTY_RE + "$");
-
-const SUPPORTED_OBJECT_NAMES = ["material", "materials", "bones", "map"];
-
+/** A track's optional hierarchy prefix, node, object and property selectors. */
 export interface ParsedTrackName {
-  /** Directory prefix (`parent/child/` or `scene:name:`) — parsed but unused, matching three. */
   readonly directoryName?: string;
   readonly nodeName?: string;
   readonly objectName?: string;
@@ -47,10 +10,6 @@ export interface ParsedTrackName {
   readonly propertyIndex?: string;
 }
 
-/**
- * Node shape `PropertyBinding` can bind to — structurally compatible with
- * `SceneAnimationNode`, `SceneNode`, and three-style duck-typed objects.
- */
 export interface PropertyBindingNode {
   name?: string;
   uuid?: string;
@@ -72,6 +31,8 @@ export interface AnimationObjectGroupLike {
   readonly isAnimationObjectGroup: true;
   readonly nCachedObjects_: number;
   subscribe_: (path: string, parsedPath?: ParsedTrackName) => readonly PropertyBindingLike[];
+  /** Optional constant-time membership check for an existing subscription. */
+  isBindingActive_?: (path: string, binding: PropertyBindingLike) => boolean;
 }
 
 export interface PropertyBindingLike {
@@ -81,121 +42,224 @@ export interface PropertyBindingLike {
   setValue(value: AnimationValue): void;
 }
 
-export function parseTrackName(trackName: string): ParsedTrackName {
-  const matches = TRACK_RE.exec(trackName);
-  if (matches === null) {
-    throw new Error(`PropertyBinding: Cannot parse trackName: ${trackName}`);
-  }
-  const results = {
-    directoryName: matches[1],
-    nodeName: matches[2],
-    objectName: matches[3],
-    objectIndex: matches[4],
-    propertyName: matches[5],
-    propertyIndex: matches[6]
-  } as {
-    directoryName?: string;
-    nodeName?: string;
-    objectName?: string;
-    objectIndex?: string;
-    propertyName: string;
-    propertyIndex?: string;
-  };
+const OBJECT_SEGMENTS = new Set(["material", "materials", "bones", "map"]);
+const UNSAFE_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 
-  const lastDot = results.nodeName?.lastIndexOf(".");
-  if (lastDot !== undefined && lastDot !== -1) {
-    const objectName = results.nodeName!.substring(lastDot + 1);
-    // Object names must be checked against an allowlist. Otherwise there is no
-    // way to parse 'foo.bar.baz': 'baz' must be a property, but 'bar' could be
-    // the objectName, or part of a nodeName (which can include '.' characters).
-    if (SUPPORTED_OBJECT_NAMES.indexOf(objectName) !== -1) {
-      results.nodeName = results.nodeName!.substring(0, lastDot);
-      results.objectName = objectName;
+/**
+ * Parses `node.property[index]` and `node.object[index].property` paths.
+ * Unescaped `.` separates selectors; `/` and `:` delimit a hierarchy prefix.
+ * Escape any delimiter, bracket, quote or backslash with `\\`. Accessors may
+ * also be quoted, e.g. `.weights["smile.right"]`. Names are Unicode strings.
+ * The prefix is retained for callers; legacy lookup uses its leaf node name.
+ */
+export function parseTrackName(trackName: string): ParsedTrackName {
+  const { dots, directories } = scanPath(trackName);
+  const directoryEnd = directories.length ? directories[directories.length - 1]! + 1 : 0;
+  const propertyDot = dots[dots.length - 1];
+  if (propertyDot === undefined || propertyDot < directoryEnd) throw invalidPath(trackName);
+
+  const property = parseSegment(trackName.slice(propertyDot + 1), trackName);
+  const prefix = trackName.slice(directoryEnd, propertyDot);
+  const precedingDot = dots.filter((position) => position >= directoryEnd && position < propertyDot).pop();
+  let node = prefix;
+  let object: Segment | undefined;
+  if (precedingDot !== undefined) {
+    const candidate = parseSegment(trackName.slice(precedingDot + 1, propertyDot), trackName);
+    if (candidate.index !== undefined || OBJECT_SEGMENTS.has(candidate.name)) {
+      object = candidate;
+      node = trackName.slice(directoryEnd, precedingDot);
     }
   }
+  // No brackets may appear in the remaining node selector; literal brackets
+  // in a name must be escaped so a malformed object selector cannot be ignored.
+  if (hasUnescapedBracket(node)) throw invalidPath(trackName);
+  const result: ParsedTrackName = {
+    directoryName: decodeEscapes(trackName.slice(0, directoryEnd), trackName),
+    nodeName: node ? decodeEscapes(node, trackName) : undefined,
+    objectName: object?.name,
+    objectIndex: object?.index,
+    propertyName: property.name,
+    propertyIndex: property.index
+  };
+  assertSafePath(result, trackName);
+  return result;
+}
 
-  if (results.propertyName === null || results.propertyName === undefined || results.propertyName.length === 0) {
-    throw new Error(`PropertyBinding: can not parse propertyName from trackName: ${trackName}`);
+interface Segment { readonly name: string; readonly index?: string }
+
+function invalidPath(path: string): Error {
+  return new Error(`PropertyBinding: Cannot parse trackName: ${path}`);
+}
+
+function scanPath(path: string): { dots: number[]; directories: number[] } {
+  if (!path) throw invalidPath(path);
+  const dots: number[] = [];
+  const directories: number[] = [];
+  let bracket = -1;
+  let quote: string | undefined;
+  let quoteClosed = false;
+  let afterBracket = false;
+  for (let i = 0; i < path.length; i++) {
+    const char = path[i]!;
+    if (afterBracket && char !== ".") throw invalidPath(path);
+    if (char === "\\") {
+      if (++i >= path.length) throw invalidPath(path);
+      continue;
+    }
+    if (bracket >= 0) {
+      if (quote) {
+        if (char === quote) { quote = undefined; quoteClosed = true; }
+      } else if (i === bracket + 1 && (char === '"' || char === "'")) {
+        quote = char;
+      } else if (char === "]") {
+        bracket = -1;
+        quoteClosed = false;
+        afterBracket = true;
+      } else if (char === "[" || quoteClosed) {
+        throw invalidPath(path);
+      }
+      continue;
+    }
+    if (char === "[") bracket = i;
+    else if (char === "]") throw invalidPath(path);
+    else if (char === ".") { dots.push(i); afterBracket = false; }
+    else if (char === "/" || char === ":") directories.push(i);
   }
+  if (bracket >= 0 || quote) throw invalidPath(path);
+  return { dots, directories };
+}
 
-  return results;
+function decodeEscapes(text: string, path: string): string {
+  let result = "";
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "\\") {
+      if (++i >= text.length) throw invalidPath(path);
+    }
+    result += text[i];
+  }
+  return result;
+}
+
+function hasUnescapedBracket(text: string): boolean {
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "\\") { i++; continue; }
+    if (text[i] === "[" || text[i] === "]") return true;
+  }
+  return false;
+}
+
+function parseSegment(raw: string, path: string): Segment {
+  if (!raw) throw invalidPath(path);
+  let open = -1;
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === "\\") { i++; continue; }
+    if (raw[i] === "[") { open = i; break; }
+  }
+  if (open < 0) return { name: decodeEscapes(raw, path) };
+  if (open === 0 || raw[raw.length - 1] !== "]") throw invalidPath(path);
+  const name = decodeEscapes(raw.slice(0, open), path);
+  let index = raw.slice(open + 1, -1);
+  if (!index) throw invalidPath(path);
+  if (index[0] === '"' || index[0] === "'") {
+    if (index.length < 2 || index[index.length - 1] !== index[0]) throw invalidPath(path);
+    index = index.slice(1, -1);
+  }
+  index = decodeEscapes(index, path);
+  if (!index) throw invalidPath(path);
+  return { name, index };
+}
+
+function assertSafePath(path: ParsedTrackName, source: string): void {
+  const keys = [path.objectName, path.objectIndex, path.propertyName, path.propertyIndex];
+  if (!path.propertyName || keys.some((key) => key !== undefined && UNSAFE_KEYS.has(String(key)))) {
+    throw new Error(`PropertyBinding: Unsafe property path: ${source}`);
+  }
 }
 
 export function sanitizeNodeName(name: string): string {
-  return name.replace(/\s/g, "_").replace(RESERVED_RE, "");
+  return name.replace(/\s/g, "_").replace(/[\[\].:/]/g, "").replace(/\\/g, "");
 }
 
+/** UUIDs take precedence; duplicate names resolve in depth-first child order. */
 export function findNode(root: PropertyBindingNode, nodeName: string | number | undefined): PropertyBindingNode | null {
-  if (nodeName === undefined || nodeName === "" || nodeName === "." || nodeName === -1 || nodeName === root.name || nodeName === root.uuid) {
-    return root;
-  }
-
-  // search into skeleton bones.
-  if (root.skeleton) {
-    const bone = root.skeleton.getBoneByName?.(String(nodeName));
-    if (bone !== undefined) {
-      return bone;
-    }
-    if (root.skeleton.bones) {
-      const named = root.skeleton.bones.find((candidate) => candidate.name === nodeName || candidate.uuid === nodeName);
-      if (named) {
-        return named;
-      }
+  if (nodeName === undefined || nodeName === "" || nodeName === "." || nodeName === -1 || nodeName === root.uuid) return root;
+  const bones = root.skeleton?.bones ?? [];
+  const nodes: PropertyBindingNode[] = [];
+  const pending = [...(root.children ?? [])].reverse();
+  const visited = new Set<PropertyBindingNode>([root]);
+  while (pending.length) {
+    const candidate = pending.pop()!;
+    if (visited.has(candidate)) continue;
+    visited.add(candidate);
+    nodes.push(candidate);
+    if (candidate.children) {
+      for (let i = candidate.children.length - 1; i >= 0; i--) pending.push(candidate.children[i]!);
     }
   }
+  const byUuid = [...bones, ...nodes].find((candidate) => candidate.uuid === nodeName);
+  if (byUuid) return byUuid;
+  if (nodeName === root.name) return root;
+  const bone = root.skeleton?.getBoneByName?.(String(nodeName));
+  return bone ?? bones.find((candidate) => candidate.name === nodeName)
+    ?? nodes.find((candidate) => candidate.name === nodeName) ?? null;
+}
 
-  // search into node subtree.
-  if (root.children) {
-    const subTreeNode = searchNodeSubtree(root.children, nodeName);
-    if (subTreeNode) {
-      return subTreeNode;
+type RecordLike = Record<string | number, unknown>;
+type Lookup = { found: true; value: unknown } | { found: false };
+
+function isObject(value: unknown): value is RecordLike {
+  return value !== null && (typeof value === "object" || typeof value === "function");
+}
+
+/** Own properties and declared class accessors are permitted; prototype data is not. */
+function lookup(object: unknown, key: string | number): Lookup {
+  if (!isObject(object) || UNSAFE_KEYS.has(String(key))) return { found: false };
+  const own = Object.getOwnPropertyDescriptor(object, key);
+  if (own) return { found: true, value: Reflect.get(object, key) };
+  let prototype = Object.getPrototypeOf(object) as object | null;
+  while (prototype && prototype !== Object.prototype && prototype !== Array.prototype) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    if (descriptor) {
+      const constructor = Object.getOwnPropertyDescriptor(prototype, "constructor")?.value as { prototype?: unknown } | undefined;
+      return (descriptor.get || descriptor.set) && typeof constructor === "function" && constructor.prototype === prototype
+        ? { found: true, value: Reflect.get(object, key) }
+        : { found: false };
     }
+    prototype = Object.getPrototypeOf(prototype) as object | null;
   }
-
-  return null;
+  return { found: false };
 }
 
-function searchNodeSubtree(children: readonly PropertyBindingNode[], nodeName: string | number): PropertyBindingNode | null {
-  for (const childNode of children) {
-    if (childNode.name === nodeName || childNode.uuid === nodeName) {
-      return childNode;
-    }
-    if (childNode.children) {
-      const result = searchNodeSubtree(childNode.children, nodeName);
-      if (result) {
-        return result;
-      }
-    }
-  }
-  return null;
+function numericIndex(key: string): number | undefined {
+  if (!/^(0|[1-9]\d*)$/.test(key)) return undefined;
+  const value = Number(key);
+  return Number.isSafeInteger(value) ? value : undefined;
 }
 
-enum BindingType {
-  Direct = 0,
-  EntireArray = 1,
-  ArrayElement = 2,
-  HasFromToArray = 3
+function isNumericArray(value: unknown): value is number[] | Float32Array | Float64Array {
+  return Array.isArray(value) || (ArrayBuffer.isView(value) && !(value instanceof DataView)
+    && !(value instanceof BigInt64Array) && !(value instanceof BigUint64Array));
 }
 
-enum Versioning {
-  None = 0,
-  NeedsUpdate = 1,
-  MatrixWorldNeedsUpdate = 2
+function isArrayConvertible(value: unknown): value is { fromArray(values: ArrayLike<number>): void; toArray(): ArrayLike<number> } {
+  const candidate = value as { fromArray?: unknown; toArray?: unknown } | null;
+  return typeof candidate?.fromArray === "function" && typeof candidate?.toArray === "function";
 }
 
-/**
- * Binds a parsed track path to a concrete property on a node resolved from
- * `rootNode`. `getValue`/`setValue` read and write `AnimationValue`s; on
- * failure to bind they become no-ops (three's unbound state).
- */
-export class PropertyBinding {
+type BindingKind = "direct" | "element" | "array" | "convertible";
+
+// The group can revalidate membership after a lazy bind invokes a user getter.
+// These operations stay internal to the module; the public binding methods
+// retain their original signatures.
+const readForGroup = Symbol("readForGroup");
+const writeForGroup = Symbol("writeForGroup");
+
+/** Resolves a track to an existing property; missing paths remain unbound. */
+export class PropertyBinding implements PropertyBindingLike {
   static parseTrackName = parseTrackName;
   static sanitizeNodeName = sanitizeNodeName;
   static findNode = findNode;
-  /** three's `PropertyBinding.Composite` (lazy so the class can be declared below). */
-  static get Composite(): typeof PropertyBindingComposite {
-    return PropertyBindingComposite;
-  }
+  static get Composite(): typeof PropertyBindingComposite { return PropertyBindingComposite; }
 
   readonly path: string;
   readonly parsedPath: ParsedTrackName;
@@ -205,279 +269,223 @@ export class PropertyBinding {
   resolvedProperty: unknown;
   propertyName: string | undefined;
   propertyIndex: string | number | undefined;
+  private kind: BindingKind = "direct";
   private bound = false;
 
   constructor(rootNode: PropertyBindingNode, path: string, parsedPath?: ParsedTrackName) {
     this.path = path;
-    this.parsedPath = parsedPath ?? parseTrackName(path);
+    // Copy caller-owned descriptors so later mutation cannot redirect a binding.
+    this.parsedPath = parsedPath ? { ...parsedPath } : parseTrackName(path);
+    assertSafePath(this.parsedPath, path);
     this.rootNode = rootNode;
     this.node = findNode(rootNode, this.parsedPath.nodeName);
   }
 
-  /**
-   * Factory matching three's `PropertyBinding.create`: a root marked
-   * `isAnimationObjectGroup` produces a composite binding shared across the
-   * group's objects.
-   */
   static create(root: PropertyBindingNode | AnimationObjectGroupLike, path: string, parsedPath?: ParsedTrackName): PropertyBindingLike {
-    if (!("isAnimationObjectGroup" in root && root.isAnimationObjectGroup)) {
-      return new PropertyBinding(root as PropertyBindingNode, path, parsedPath);
-    }
-    return new PropertyBindingComposite(root as AnimationObjectGroupLike, path, parsedPath);
+    if ("isAnimationObjectGroup" in root && root.isAnimationObjectGroup) return new PropertyBindingComposite(root as AnimationObjectGroupLike, path, parsedPath);
+    return new PropertyBinding(root as PropertyBindingNode, path, parsedPath);
   }
 
   bind(): void {
-    let targetObject = this.node;
-    const parsedPath = this.parsedPath;
-    const objectName = parsedPath.objectName;
-    const propertyName = parsedPath.propertyName;
-    let propertyIndex: string | number | undefined = parsedPath.propertyIndex;
-
-    if (!targetObject) {
-      targetObject = findNode(this.rootNode, parsedPath.nodeName);
-      this.node = targetObject;
-    }
-
     this.bound = false;
-
-    if (!targetObject) {
-      console.warn(`PropertyBinding: No target node found for track: ${this.path}.`);
-      return;
-    }
-
+    this.targetObject = undefined;
+    this.resolvedProperty = undefined;
+    this.propertyName = undefined;
+    this.propertyIndex = undefined;
+    assertSafePath(this.parsedPath, this.path);
+    const node = this.node ?? findNode(this.rootNode, this.parsedPath.nodeName);
+    this.node = node;
+    if (!node) return;
+    let target: unknown = node;
+    const { objectName, propertyName } = this.parsedPath;
+    let objectIndex = this.parsedPath.objectIndex;
+    let propertyIndex: string | number | undefined = this.parsedPath.propertyIndex;
     if (objectName) {
-      let objectIndex: string | number | undefined = parsedPath.objectIndex;
-      switch (objectName) {
-        case "materials": {
-          const material = targetObject.material as { materials?: PropertyBindingNode[] } | undefined;
-          if (!material) {
-            console.error("PropertyBinding: Can not bind to material as node does not have a material.", this);
-            return;
-          }
-          if (!material.materials) {
-            console.error("PropertyBinding: Can not bind to material.materials as node.material does not have a materials array.", this);
-            return;
-          }
-          targetObject = material.materials as unknown as PropertyBindingNode;
-          break;
+      if (objectName === "materials") {
+        const material = lookup(node, "material");
+        const materials = material.found ? lookup(material.value, "materials") : { found: false as const };
+        target = material.found && Array.isArray(material.value) ? material.value : materials.found ? materials.value : undefined;
+      } else if (objectName === "bones") {
+        const skeleton = lookup(node, "skeleton");
+        const bones = skeleton.found ? lookup(skeleton.value, "bones") : { found: false as const };
+        target = bones.found ? bones.value : undefined;
+        if (Array.isArray(target) && objectIndex !== undefined) {
+          let index = target.findIndex((bone: PropertyBindingNode) => bone?.uuid === objectIndex);
+          if (index < 0) index = target.findIndex((bone: PropertyBindingNode) => bone?.name === objectIndex);
+          if (index >= 0) objectIndex = String(index);
         }
-        case "bones": {
-          if (!targetObject.skeleton) {
-            console.error("PropertyBinding: Can not bind to bones as node does not have a skeleton.", this);
-            return;
-          }
-          const bones = (targetObject.skeleton.bones ?? []) as PropertyBindingNode[];
-          targetObject = bones as unknown as PropertyBindingNode;
-          // support resolving bone names into indices.
-          for (let i = 0; i < bones.length; i++) {
-            if (bones[i]!.name === objectIndex) {
-              objectIndex = i;
-              break;
-            }
-          }
-          break;
-        }
-        case "map": {
-          if ("map" in targetObject) {
-            targetObject = targetObject.map as PropertyBindingNode;
-            break;
-          }
-          const material = targetObject.material as { map?: PropertyBindingNode } | undefined;
-          if (!material) {
-            console.error("PropertyBinding: Can not bind to material as node does not have a material.", this);
-            return;
-          }
-          if (!material.map) {
-            console.error("PropertyBinding: Can not bind to material.map as node.material does not have a map.", this);
-            return;
-          }
-          targetObject = material.map;
-          break;
-        }
-        default: {
-          if (targetObject[objectName] === undefined) {
-            console.error("PropertyBinding: Can not bind to objectName of node undefined.", this);
-            return;
-          }
-          targetObject = targetObject[objectName] as PropertyBindingNode;
-        }
+      } else if (objectName === "map") {
+        const direct = lookup(node, "map");
+        const material = lookup(node, "material");
+        const fallback = material.found ? lookup(material.value, "map") : { found: false as const };
+        target = direct.found && direct.value !== undefined ? direct.value : fallback.found ? fallback.value : undefined;
+      } else {
+        const object = lookup(node, objectName);
+        target = object.found ? object.value : undefined;
       }
-
       if (objectIndex !== undefined) {
-        const indexed = (targetObject as unknown as Record<string | number, unknown>)[objectIndex];
-        if (indexed === undefined) {
-          console.error("PropertyBinding: Trying to bind to objectIndex of objectName, but is undefined.", this, targetObject);
-          return;
-        }
-        targetObject = indexed as PropertyBindingNode;
+        const entry = lookup(target, objectIndex);
+        target = entry.found ? entry.value : undefined;
       }
     }
-
-    // resolve property
-    const nodeProperty = targetObject[propertyName];
-    if (nodeProperty === undefined) {
-      console.error(`PropertyBinding: Trying to update property for track: ${parsedPath.nodeName}.${propertyName} but it wasn't found.`, targetObject);
-      return;
-    }
-
-    this.targetObject = targetObject;
-
+    if (!isObject(target)) return;
+    const property = lookup(target, propertyName);
+    if (!property.found || property.value === undefined) return;
     if (propertyIndex !== undefined) {
-      // access a sub element of the property array (only primitives are supported right now)
       if (propertyName === "morphTargetInfluences") {
-        // support resolving morphTarget names into indices.
-        const dictionary = typeof targetObject.morphTargetDictionary === "function"
-          ? targetObject.morphTargetDictionary()
-          : targetObject.morphTargetDictionary;
-        if (dictionary === undefined) {
-          console.error("PropertyBinding: Can not bind to morphTargetInfluences because node does not have a morphTargetDictionary.", this);
-          return;
+        // This is a fixed API hook, not a user-selected property path; class
+        // implementations may provide it as a prototype method.
+        const dictionarySource = (target as PropertyBindingNode).morphTargetDictionary;
+        const dictionary = typeof dictionarySource === "function" ? dictionarySource.call(target) : dictionarySource;
+        const named = lookup(dictionary, propertyIndex);
+        if (named.found && typeof named.value === "number" && Number.isSafeInteger(named.value) && named.value >= 0) propertyIndex = named.value;
+        else {
+          const index = numericIndex(propertyIndex);
+          if (index === undefined) return;
+          propertyIndex = index;
         }
-        if (dictionary[propertyIndex] !== undefined) {
-          propertyIndex = dictionary[propertyIndex];
-        } else if (!Number.isInteger(Number(propertyIndex))) {
-          console.error(`PropertyBinding: Can not bind to morphTargetInfluences[${String(propertyIndex)}] because it is not a known morph target.`, this);
-          return;
-        } else {
-          propertyIndex = Number(propertyIndex);
-        }
+      } else if (typeof propertyIndex === "string" && isNumericArray(property.value)) {
+        const components: Record<string, number> = { x: 0, y: 1, z: 2, w: 3 };
+        const index = Object.hasOwn(components, propertyIndex) ? components[propertyIndex] : numericIndex(propertyIndex);
+        if (index === undefined) return;
+        propertyIndex = index;
       }
-      // Other properties keep the accessor verbatim: `[0]` and `[x]` both
-      // index `resolvedProperty` (three supports named components).
-      this.resolvedProperty = nodeProperty;
+      const entry = lookup(property.value, propertyIndex);
+      if (!entry.found || entry.value === undefined) return;
+      this.kind = "element";
+      this.resolvedProperty = property.value;
       this.propertyIndex = propertyIndex;
-      this.bindingType = BindingType.ArrayElement;
-    } else if (isFromToArrayCapable(nodeProperty)) {
-      this.resolvedProperty = nodeProperty;
-      this.bindingType = BindingType.HasFromToArray;
-      this.propertyName = undefined;
-    } else if (Array.isArray(nodeProperty)) {
-      this.resolvedProperty = nodeProperty;
-      this.bindingType = BindingType.EntireArray;
-      this.propertyName = undefined;
+    } else if (isArrayConvertible(property.value)) {
+      this.kind = "convertible";
+      this.resolvedProperty = property.value;
+    } else if (isNumericArray(property.value)) {
+      this.kind = "array";
+      this.resolvedProperty = property.value;
     } else {
+      this.kind = "direct";
       this.propertyName = propertyName;
-      this.bindingType = BindingType.Direct;
     }
-
-    this.versioning = (targetObject as { isMaterial?: boolean }).isMaterial === true
-      ? Versioning.NeedsUpdate
-      : (targetObject as { isObject3D?: boolean }).isObject3D === true
-        ? Versioning.MatrixWorldNeedsUpdate
-        : Versioning.None;
-
+    this.targetObject = target as PropertyBindingNode;
     this.bound = true;
   }
 
   unbind(): void {
     this.node = null;
+    this.targetObject = undefined;
+    this.resolvedProperty = undefined;
+    this.propertyName = undefined;
+    this.propertyIndex = undefined;
     this.bound = false;
   }
 
   getValue(): AnimationValue | undefined {
-    if (!this.bound) {
-      this.bind();
-      if (!this.bound) {
-        return undefined;
-      }
-    }
-    const target = this.targetObject!;
-    switch (this.bindingType) {
-      case BindingType.ArrayElement:
-        return (this.resolvedProperty as Record<string | number, AnimationValue>)[this.propertyIndex as string | number];
-      case BindingType.EntireArray:
-        return [...(this.resolvedProperty as readonly number[])];
-      case BindingType.HasFromToArray: {
-        const source = (this.resolvedProperty as { toArray(): ArrayLike<number> }).toArray();
-        return Array.from(source as ArrayLike<number>);
-      }
-      default:
-        return target[this.propertyName!] as AnimationValue;
-    }
+    return this[readForGroup]();
+  }
+
+  [readForGroup](isActive?: () => boolean): AnimationValue | undefined {
+    if (!this.bound) this.bind();
+    if (!this.bound || (isActive && !isActive())) return undefined;
+    if (this.kind === "element") return (this.resolvedProperty as RecordLike)[this.propertyIndex!] as AnimationValue;
+    if (this.kind === "array") return Array.from(this.resolvedProperty as ArrayLike<number>);
+    if (this.kind === "convertible") return Array.from((this.resolvedProperty as { toArray(): ArrayLike<number> }).toArray());
+    return this.targetObject![this.propertyName!] as AnimationValue;
   }
 
   setValue(value: AnimationValue): void {
-    if (!this.bound) {
-      this.bind();
-      if (!this.bound) {
-        return;
-      }
-    }
-    const target = this.targetObject!;
-    switch (this.bindingType) {
-      case BindingType.ArrayElement:
-        (this.resolvedProperty as Record<string | number, unknown>)[this.propertyIndex as string | number] = value;
-        break;
-      case BindingType.EntireArray: {
-        const dest = this.resolvedProperty as number[];
-        const source = value as readonly number[];
-        for (let i = 0, n = dest.length; i !== n && i < source.length; i++) {
-          dest[i] = source[i]!;
-        }
-        break;
-      }
-      case BindingType.HasFromToArray:
-        (this.resolvedProperty as { fromArray(values: ArrayLike<number>): void }).fromArray(value as readonly number[]);
-        break;
-      default:
-        target[this.propertyName!] = value;
-    }
-    if (this.versioning === Versioning.NeedsUpdate) {
-      target.needsUpdate = true;
-    } else if (this.versioning === Versioning.MatrixWorldNeedsUpdate) {
-      target.matrixWorldNeedsUpdate = true;
-    }
+    this[writeForGroup](value);
   }
 
-  private bindingType: BindingType = BindingType.Direct;
-  private versioning: Versioning = Versioning.None;
+  [writeForGroup](value: AnimationValue, isActive?: () => boolean): void {
+    if (!this.bound) this.bind();
+    if (!this.bound || (isActive && !isActive())) return;
+    // A setter can uncache or dispose its own group, which unbinds this
+    // binding while the assignment is in progress. Keep the actual target
+    // that received the write so invalidation remains safe and accurate.
+    const target = this.targetObject!;
+    if (this.kind === "element") (this.resolvedProperty as RecordLike)[this.propertyIndex!] = value;
+    else if (this.kind === "array") {
+      if (!Array.isArray(value)) throw new Error(`PropertyBinding: Expected an array for ${this.path}.`);
+      const destination = this.resolvedProperty as number[];
+      for (let i = 0; i < Math.min(destination.length, value.length); i++) destination[i] = value[i]!;
+    } else if (this.kind === "convertible") {
+      if (!Array.isArray(value)) throw new Error(`PropertyBinding: Expected an array for ${this.path}.`);
+      (this.resolvedProperty as { fromArray(values: ArrayLike<number>): void }).fromArray(value);
+    } else target[this.propertyName!] = value;
+    if (target.isMaterial === true) target.needsUpdate = true;
+    else if (target.isObject3D === true) {
+      target.matrixWorldNeedsUpdate = true;
+      // Aura3D scene nodes cache transforms separately from their object fields.
+      // Updating a vector in place must invalidate that cache as well.
+      const transform = target.transform as { markDirty?: () => unknown } | undefined;
+      transform?.markDirty?.();
+    }
+  }
 }
 
-function isFromToArrayCapable(value: unknown): value is { fromArray(values: ArrayLike<number>): void; toArray(): ArrayLike<number> } {
-  const candidate = value as { fromArray?: unknown; toArray?: unknown } | null;
-  return typeof candidate?.fromArray === "function" && typeof candidate?.toArray === "function";
-}
+// Capture the original dispatch methods once so a consumer's later prototype
+// override continues to receive composite calls through its public method.
+const defaultGetValue = PropertyBinding.prototype.getValue;
+const defaultSetValue = PropertyBinding.prototype.setValue;
 
 /**
- * three's `PropertyBinding.Composite`: fans a single track path out over every
- * object in an {@link AnimationObjectGroup}-compatible group. `getValue` reads
- * the first valid object; `setValue` writes all valid objects.
+ * Fans a path out over active group members. Each operation snapshots the
+ * active binding identities at its start. New members wait for the next
+ * operation; members removed, uncached, unsubscribed or disposed before their
+ * turn are skipped. A member removed and reactivated before its turn remains
+ * eligible if it still has the same binding. Nested calls take new snapshots.
  */
 export class PropertyBindingComposite implements PropertyBindingLike {
   private readonly targetGroup: AnimationObjectGroupLike;
   private readonly bindings: readonly PropertyBindingLike[];
+  private readonly path: string;
 
   constructor(targetGroup: AnimationObjectGroupLike, path: string, optionalParsedPath?: ParsedTrackName) {
     const parsedPath = optionalParsedPath ?? parseTrackName(path);
+    assertSafePath(parsedPath, path);
     this.targetGroup = targetGroup;
+    this.path = path;
     this.bindings = targetGroup.subscribe_(path, parsedPath);
   }
 
+  private activeSnapshot(): PropertyBindingLike[] {
+    return [...new Set(this.bindings.slice(this.targetGroup.nCachedObjects_).filter((binding) => binding != null))];
+  }
+
+  private isActive(binding: PropertyBindingLike): boolean {
+    const check = this.targetGroup.isBindingActive_;
+    if (typeof check === "function") return check.call(this.targetGroup, this.path, binding);
+    // Support custom group-like implementations that predate the optional
+    // membership method, using their live array and cached boundary.
+    return this.bindings.indexOf(binding, this.targetGroup.nCachedObjects_) !== -1;
+  }
+
   getValue(): AnimationValue | undefined {
-    this.bind();
-    const firstValidIndex = this.targetGroup.nCachedObjects_;
-    const binding = this.bindings[firstValidIndex];
-    return binding?.getValue();
+    for (const binding of this.activeSnapshot()) {
+      if (!this.isActive(binding)) continue;
+      const value = binding instanceof PropertyBinding && binding.getValue === defaultGetValue
+        ? binding[readForGroup](() => this.isActive(binding))
+        : binding.getValue();
+      if (value !== undefined && this.isActive(binding)) return value;
+    }
+    return undefined;
   }
 
   setValue(value: AnimationValue): void {
-    const bindings = this.bindings;
-    for (let i = this.targetGroup.nCachedObjects_, n = bindings.length; i !== n; ++i) {
-      bindings[i]!.setValue(value);
+    for (const binding of this.activeSnapshot()) {
+      if (!this.isActive(binding)) continue;
+      if (binding instanceof PropertyBinding && binding.setValue === defaultSetValue) {
+        binding[writeForGroup](value, () => this.isActive(binding));
+      } else {
+        binding.setValue(value);
+      }
     }
   }
 
   bind(): void {
-    const bindings = this.bindings;
-    for (let i = this.targetGroup.nCachedObjects_, n = bindings.length; i !== n; ++i) {
-      bindings[i]!.bind();
-    }
+    for (const binding of this.activeSnapshot()) if (this.isActive(binding)) binding.bind();
   }
 
   unbind(): void {
-    const bindings = this.bindings;
-    for (let i = this.targetGroup.nCachedObjects_, n = bindings.length; i !== n; ++i) {
-      bindings[i]!.unbind();
-    }
+    for (const binding of this.activeSnapshot()) if (this.isActive(binding)) binding.unbind();
   }
 }

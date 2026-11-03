@@ -2,8 +2,8 @@
  * C-07 (PRD-01) — the single primitive-geometry factory. Routes every
  * `AuraBuiltinPrimitive` to the extended `Geometry` generators with C-27 tier
  * halving (`primitiveSegments: "half"`), capsule folding of `size ⊙ localScale`
- * (PRD §6.3) and a param-keyed geometry cache so equal parameter sets share
- * one GPU upload.
+ * (PRD §6.3) and a bounded param-keyed CPU template cache. Each caller owns
+ * its geometry and buffers; per-mount pooling handles shared uploads.
  *
  * Engine routing (createProductionPrimitiveMesh, index.ts) is lane 15's
  * bridge behind `A3D_QR_CORE` (request Q-15-2); lane-01 scenes reach this
@@ -13,7 +13,10 @@
  * an engine dependency edge; the union stays string-identical (C-07).
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry, type GeometryMorphTarget } from "../Geometry";
+import { IndexBuffer } from "../IndexBuffer";
+import { VertexBuffer } from "../VertexBuffer";
+import { VertexFormat, type VertexAttributeDescriptor, type VertexStreamDescriptor } from "../VertexFormat";
 import type { AuraPrimitiveTessellation } from "../contracts/geometry";
 import type { AuraQualityTierSettings } from "../contracts/quality";
 import { coneParityMesh } from "./Cone";
@@ -60,6 +63,7 @@ export interface AuraParityPrimitiveParams extends AuraPrimitiveTessellation {
   readonly extrudePath?: unknown;
   readonly points?: readonly (readonly number[])[];
   readonly shape?: unknown;
+  readonly extrusionMode?: "linear";
   readonly depth?: number;
   readonly steps?: number;
   readonly bevelEnabled?: boolean;
@@ -77,19 +81,134 @@ const full = (segments: number | undefined, fallback: number, min: number): numb
 
 /**
  * Cache key: primitive + every resolved generator parameter, so two calls with
- * equal params share one `Geometry` (PRD: "685 boxes produce 1 geometry
- * upload"). The capsule key carries the quantized aspect
+ * equal params reuse one CPU template. Each consumer receives independent
+ * geometry and buffer ownership. The capsule key carries the quantized aspect
  * `(D.y / min(D.x, D.z))` to 0.01 plus the ellipticity ratio.
  */
-const cache = new Map<string, Geometry>();
+interface PrimitiveTemplate {
+  readonly attributes: readonly VertexAttributeDescriptor[];
+  readonly streams: readonly VertexStreamDescriptor[];
+  readonly vertexStreams: readonly { readonly slot: number; readonly count: number; readonly bytes: Uint8Array }[];
+  readonly indices: Uint16Array | Uint32Array | null;
+  readonly topology: Geometry["topology"];
+  readonly bounds: Geometry["bounds"];
+  readonly groups: Geometry["groups"];
+  readonly drawRange: Geometry["drawRange"];
+  readonly morphTargets: Geometry["morphTargets"];
+  readonly byteSize: number;
+}
+
+// Templates contain CPU bytes only and are never exposed or uploaded. Bound
+// both entry count and retained bytes because callers can vary tessellation.
+const MAX_TEMPLATE_COUNT = 128;
+const MAX_TEMPLATE_BYTES = 32 * 1024 * 1024;
+const cache = new Map<string, PrimitiveTemplate>();
+let cachedBytes = 0;
 
 export function primitiveGeometryCacheSize(): number {
   return cache.size;
 }
 
-/** Test/diagnostic hook — entries' `dispose()` is NOT called (shared ownership). */
+/** Clear private CPU templates; existing caller-owned geometries remain valid. */
 export function clearPrimitiveGeometryCache(): void {
   cache.clear();
+  cachedBytes = 0;
+}
+
+/** Copy all present packed channels; a cached template must never alias its source. */
+function copyTemplateMorphTarget(target: GeometryMorphTarget, vertexCount: number): GeometryMorphTarget {
+  if (!target || typeof target !== "object") throw new TypeError("Primitive template has an invalid morph target.");
+  const copy = (channel: GeometryMorphTarget["positions"], label: string): Float32Array | number[] => {
+    if (!(channel instanceof Float32Array) && !Array.isArray(channel)) {
+      throw new TypeError(`Primitive template morph ${label} must be a packed float array.`);
+    }
+    if (channel.length !== vertexCount * 3) {
+      throw new Error(`Primitive template morph ${label} count does not match the vertex count.`);
+    }
+    const result = channel instanceof Float32Array ? new Float32Array(channel.length) : new Array<number>(channel.length);
+    for (let i = 0; i < channel.length; i += 1) {
+      const value = channel[i];
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(`Primitive template morph ${label} data must be finite.`);
+      }
+      result[i] = value;
+    }
+    return result;
+  };
+  const { positions: sourcePositions, normals: sourceNormals, tangents: sourceTangents, ...metadata } = target;
+  return {
+    ...metadata,
+    positions: copy(sourcePositions, "position"),
+    ...(sourceNormals === undefined ? {} : { normals: copy(sourceNormals, "normal") }),
+    ...(sourceTangents === undefined ? {} : { tangents: copy(sourceTangents, "tangent") })
+  };
+}
+
+function morphChannelBytes(channel: GeometryMorphTarget["positions"]): number {
+  // Number arrays use at least eight bytes per numeric element; Float32Array
+  // storage has an exact byteLength. Object overhead is accounted for below.
+  return channel instanceof Float32Array ? channel.byteLength : channel.length * 8;
+}
+
+function snapshotTemplate(source: Geometry): PrimitiveTemplate {
+  const format = source.vertexBuffer.format;
+  const attributes = format.attributes.map((attribute) => ({
+    semantic: attribute.semantic, components: attribute.components, offset: attribute.offset,
+    type: attribute.type, normalized: attribute.normalized, integer: attribute.integer,
+    bufferSlot: attribute.bufferSlot, shaderLocation: attribute.shaderLocation, shaderName: attribute.shaderName
+  }));
+  const streams = format.streams.map((stream) => ({ ...stream }));
+  const vertexStreams = streams.map((stream) => {
+    const buffer = source.getVertexBuffer(stream.slot);
+    return { slot: stream.slot, count: buffer.vertexCount, bytes: buffer.readBytes() };
+  });
+  const indices = source.indexBuffer?.data.slice() ?? null;
+  const bounds = { min: [...source.bounds.min] as [number, number, number], max: [...source.bounds.max] as [number, number, number] };
+  const groups = source.groups?.map((group) => ({ ...group }));
+  const drawRange = source.drawRange ? { ...source.drawRange } : undefined;
+  const morphTargets = source.morphTargets?.map((target) => copyTemplateMorphTarget(target, source.vertexBuffer.vertexCount));
+  const byteSize = vertexStreams.reduce((sum, stream) => sum + stream.bytes.byteLength, indices?.byteLength ?? 0)
+    + attributes.length * 128 + streams.length * 64 + (groups?.length ?? 0) * 32
+    + (morphTargets?.reduce((sum, target) => sum + 64 + morphChannelBytes(target.positions)
+      + (target.normals === undefined ? 0 : morphChannelBytes(target.normals))
+      + (target.tangents === undefined ? 0 : morphChannelBytes(target.tangents)), 0) ?? 0) + 256;
+  return { attributes, streams, vertexStreams, indices, topology: source.topology, bounds, groups, drawRange, morphTargets, byteSize };
+}
+
+function instantiateTemplate(template: PrimitiveTemplate): Geometry {
+  const format = new VertexFormat(template.attributes, template.streams.find((stream) => stream.slot === 0)!.stride, template.streams);
+  const vertices: VertexBuffer[] = [];
+  let indices: IndexBuffer | null = null;
+  try {
+    for (const stream of template.vertexStreams) {
+      const buffer = new VertexBuffer(format, stream.count, stream.slot);
+      vertices.push(buffer);
+      buffer.writeBytes(0, stream.bytes);
+    }
+    if (template.indices) indices = new IndexBuffer(template.indices, vertices[0]!.vertexCount);
+    const bounds = { min: [...template.bounds.min] as [number, number, number], max: [...template.bounds.max] as [number, number, number] };
+    const result = new Geometry(vertices[0]!, indices, template.topology, bounds, vertices.slice(1));
+    result.groups = template.groups?.map((group) => ({ ...group }));
+    result.drawRange = template.drawRange ? { ...template.drawRange } : undefined;
+    result.morphTargets = template.morphTargets?.map((target) => copyTemplateMorphTarget(target, result.vertexBuffer.vertexCount));
+    return result;
+  } catch (error) {
+    for (const buffer of vertices) { try { buffer.dispose(); } catch { /* Preserve the construction error. */ } }
+    try { indices?.dispose(); } catch { /* Preserve the construction error. */ }
+    throw error;
+  }
+}
+
+function cacheTemplate(key: string, template: PrimitiveTemplate): void {
+  if (template.byteSize > MAX_TEMPLATE_BYTES) return;
+  while (cache.size >= MAX_TEMPLATE_COUNT || cachedBytes + template.byteSize > MAX_TEMPLATE_BYTES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cachedBytes -= cache.get(oldest)!.byteSize;
+    cache.delete(oldest);
+  }
+  cache.set(key, template);
+  cachedBytes += template.byteSize;
 }
 
 /**
@@ -264,15 +383,20 @@ export function createPrimitiveGeometry(
       if (params?.shape === undefined) {
         throw new Error('createPrimitiveGeometry: "extrude" requires params.shape');
       }
+      const linear = params.extrusionMode === "linear";
+      if (linear && params.path != null) {
+        throw new RangeError("Linear extrusion does not support path sweeps or bevel settings.");
+      }
       return parityMeshToGeometry(extrudeParityMesh({
         shape: params.shape,
-        steps: Math.max(1, Math.floor(params?.steps ?? 1)),
+        extrusionMode: params.extrusionMode,
+        steps: linear ? params.steps : Math.max(1, Math.floor(params.steps ?? 1)),
         depth: params?.depth ?? 1,
-        bevelEnabled: params?.bevelEnabled ?? true,
+        bevelEnabled: linear ? params.bevelEnabled : params.bevelEnabled ?? true,
         bevelThickness: params?.bevelThickness,
         bevelSize: params?.bevelSize,
         bevelOffset: params?.bevelOffset,
-        bevelSegments: Math.max(0, Math.floor(params?.bevelSegments ?? 3)),
+        bevelSegments: linear ? params.bevelSegments : Math.max(0, Math.floor(params.bevelSegments ?? 3)),
         extrudePath: params?.extrudePath
       }));
     }
@@ -286,9 +410,16 @@ export function createPrimitiveGeometry(
       throw new Error(`createPrimitiveGeometry: unknown primitive "${String(primitive)}"`);
   }
 
-  const existing = cache.get(key);
-  if (existing) return existing;
-  const geometry = build();
-  cache.set(key, geometry);
-  return geometry;
+  let template = cache.get(key);
+  if (template) {
+    // Maintain least-recently-used order without changing the cached payload.
+    cache.delete(key);
+    cache.set(key, template);
+  } else {
+    const source = build();
+    try { template = snapshotTemplate(source); }
+    finally { source.dispose(); }
+    cacheTemplate(key, template);
+  }
+  return instantiateTemplate(template);
 }

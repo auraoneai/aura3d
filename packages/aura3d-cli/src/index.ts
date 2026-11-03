@@ -1,14 +1,16 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, copyFileSync, existsSync, fstatSync, linkSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, readdirSync, realpathSync, renameSync, rmSync, rmdirSync, statSync, writeFileSync, type Stats } from "node:fs";
 import { readSkinAllowlist, skinReleaseFailures } from "./skin/command.js";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { dirname, extname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { inflateSync } from "node:zlib";
 import { writeAgentSkills, type AuraSkillMode } from "create-aura3d";
 import { measureLoudness } from "@aura3d/audio";
+import { inspectNRRDDataReference, OBJLoader, parseModel3MF, parsePLY, parseSTL, type NativeMeshData } from "@aura3d/assets";
 import { admitAssetForRole } from "./asset-role-admission.js";
+import { assertStagedGlbFile, captureGlbSource, checkGlbDependencies, referencedGlbResourcePaths, type CapturedGlb } from "./glb-dependency-validation.js";
 import { CERTIFY_CATEGORY_RULES } from "./commands/assets/certifyCategories.js";
 import { hasStylizedFlatApproval } from "./admission/artDirection.js";
 import { AUDIO_SYNTH_RELEASE_ALLOWLIST, isSynthesizedAudioProvenance } from "./admission/audio.js";
@@ -190,6 +192,7 @@ export type {
   AuraCliAssetManifest,
   AuraCliAssetProvenance,
   AuraCliAudioMetadata,
+  AuraCliModelInspection,
   AuraCliGeneratedAssetProvenance,
   AuraCliAssetRole,
   AuraCliAssetType,
@@ -371,37 +374,333 @@ function measureAudioLoudness(sourcePath: string): Pick<AuraCliAudioMetadata, "l
   }
 }
 
+/** Synchronous admission remains available where inspection is synchronous. */
 export function addAsset(options: AddAssetOptions): AssetCliResult {
+  const sourcePath = resolve(options.projectDir ?? process.cwd(), options.file);
+  const format = extname(sourcePath).slice(1).toLowerCase();
+  if (format === "3mf") throw new Error("Aura3D assets add failed: 3MF archive inspection is asynchronous; use addAssetAsync or the assets add command.");
+  if (format === "pvr") throw new Error("Aura3D assets add failed: PVR texture inspection is asynchronous; use addAssetAsync or the assets add command.");
+  if (format === "vox") throw new Error("Aura3D assets add failed: VOX model inspection is asynchronous; use addAssetAsync or the assets add command.");
+  if (format === "nrrd" || format === "nhdr") throw new Error("Aura3D assets add failed: scalar-volume inspection is asynchronous; use addAssetAsync or the assets add command.");
+  if (format === "glb") {
+    const projectDir = resolve(options.projectDir ?? process.cwd());
+    const captured = captureGlbSource(projectDir, sourcePath);
+    if (captured.dependencies.length > 0) {
+      const inspection = inspectGlb(captured.bytes);
+      return withScalarVolumeAdmissionLock(projectDir, () => addAssetPrepared(options, {
+        bytes: captured.bytes,
+        inspector: "glb",
+        dependencies: captured.dependencies,
+        inspection: { ...inspection, dependencies: captured.dependencies.map((item) => item.uri) },
+        assertSourceUnchanged: captured.assertUnchanged
+      }));
+    }
+    // Keep single-file GLB names and no-copy behavior unchanged, but use the
+    // captured bytes so an embedded document cannot turn into an unchecked
+    // multi-file document between inspection and copy.
+    return addAssetPrepared(options, undefined, captured);
+  }
+  let native = format === "ply" || format === "stl" ? inspectNativeMeshFile(sourcePath, format) : undefined;
+  if (format === "obj" && (options.type === undefined || options.type === "model")) {
+    try {
+      native = inspectNativeObjFile(sourcePath);
+      checkNativeAdmissionDestination(options, native);
+    } catch (error) {
+      if (options.modelInspection === "strict") throw error;
+      // Existing explicit OBJ admission remains usable during deprecation, but
+      // it is explicitly recorded as unverified rather than a parser pass.
+      native = undefined;
+    }
+  }
+  return addAssetPrepared(options, native);
+}
+
+/** Inspect asynchronous formats before publishing any asset, manifest or generated source. */
+export async function addAssetAsync(options: AddAssetOptions): Promise<AssetCliResult> {
+  const sourcePath = resolve(options.projectDir ?? process.cwd(), options.file);
+  const format = extname(sourcePath).slice(1).toLowerCase();
+  if (format === "pvr") {
+    // The parser is asynchronous, so retain the admission destination and
+    // supplied digest chosen when the operation began.
+    const admission = { ...options };
+    if (admission.type !== undefined && admission.type !== "texture") {
+      throw new Error("Aura3D assets add failed: .pvr must use --type texture.");
+    }
+    // Keep one bounded snapshot for inspection, hashing, and the staged copy.
+    // No GPU formats are claimed at admission time; the parser may use its
+    // supported CPU fallback or reject a format needing a device/transcoder.
+    const bytes = readBoundedNativeFile(sourcePath);
+    const { parseImageFormat } = await import("@aura3d/assets/importers");
+    const parsed = await parseImageFormat(bytes, "pvr", {
+      maxFileBytes: NATIVE_IMPORT_MAX_BYTES,
+      maxPixels: 16 * 1024 * 1024,
+      maxDecodedBytes: 64 * 1024 * 1024
+    });
+    const metadata = parsed.metadata.metadata;
+    const pixelFormat = parsed.metadata.pixelFormat;
+    const premultiplied = (typeof parsed.metadata.flags === "number" && (parsed.metadata.flags & 2) !== 0)
+      || (Array.isArray(pixelFormat) && pixelFormat[1] === 0 && (pixelFormat[0] === 8 || pixelFormat[0] === 10));
+    const formatWarnings = [
+      "PVR container inspection does not establish renderer, texture-upload, or device support.",
+      ...(parsed.levels.some((level) => level.encoding !== "rgba8" && level.encoding !== "rgba16")
+        ? ["The parsed PVR pixel encoding may not be supported by the current native texture bridge."] : []),
+      ...(metadata instanceof Uint8Array && metadata.byteLength > 0
+        ? ["The current native texture bridge does not support PVR orientation or other metadata."] : []),
+      ...(premultiplied ? ["Premultiplied PVR conversion supports opaque RGBA8 or UNORM16 pixels and transparent linear RGBA8 pixels; compressed GPU payloads and other cases may be rejected."] : []),
+      ...parsed.diagnostics
+    ];
+    return addAssetPrepared(admission, {
+      bytes,
+      inspector: "pvr",
+      dependencies: [],
+      inspection: { ...inspectAssetFile(sourcePath, format), nativeWarnings: formatWarnings }
+    });
+  }
+  if (format === "vox") {
+    const admission = {
+      ...options,
+      ...(options.provenanceEvidence ? { provenanceEvidence: [...options.provenanceEvidence] } : {})
+    };
+    if (admission.type !== undefined && admission.type !== "model") {
+      throw new Error("Aura3D assets add failed: .vox must use --type model.");
+    }
+    // The parser consumes one bounded snapshot; the same bytes are hashed and
+    // staged below even if the source file changes during the dynamic import.
+    const bytes = readBoundedNativeFile(sourcePath);
+    const { parseVOX } = await import("@aura3d/assets/importers");
+    const parsed = parseVOX(bytes, {
+      frame: 0,
+      maxFileBytes: NATIVE_IMPORT_MAX_BYTES,
+      maxOutputBytes: NATIVE_RENDER_BUFFER_MAX_BYTES,
+      maxVoxelCount: 1_000_000,
+      maxNodes: 100_000,
+      maxElements: 2_000_000,
+      maxListItems: 12_000_000
+    });
+    const prepared = prepareNativeMeshData(sourcePath, "vox", bytes, parsed.mesh, [
+      "VOX inspection uses frame 0 and flattens visible scene transforms into a Y-up mesh; animation and hierarchy are not retained by this adapter.",
+      ...parsed.diagnostics
+    ]);
+    return addAssetPrepared(admission, { ...prepared, formatMetadata: { version: String(parsed.version) } });
+  }
+  if (format === "nrrd" || format === "nhdr") {
+    const admission = {
+      ...options,
+      ...(options.provenanceEvidence ? { provenanceEvidence: [...options.provenanceEvidence] } : {})
+    };
+    if (admission.type !== undefined && admission.type !== "scalar-volume") {
+      throw new Error(`Aura3D assets add failed: .${format} must use --type scalar-volume.`);
+    }
+    // Read and retain the exact root and child snapshots before inspection;
+    // neither staged file is reread from the source after the parser yields.
+    const bytes = readBoundedNativeFile(sourcePath);
+    const reference = inspectNRRDDataReference(bytes, { maxBytes: NATIVE_IMPORT_MAX_BYTES });
+    const dependencies: Array<{ uri: string; path: string; bytes: Buffer }> = [];
+    if (reference !== undefined) {
+      const path = safeNRRDDependencyPath(reference, `volume.${format}`);
+      const sourceDir = dirname(sourcePath);
+      const dependency = resolve(sourceDir, path);
+      assertNoNativeSymlinks(sourceDir, dependency);
+      const remaining = NATIVE_IMPORT_MAX_BYTES - bytes.byteLength;
+      if (remaining <= 0) throw new Error("Aura3D assets add failed: NRRD root and dependency exceed the 64 MiB input budget.");
+      dependencies.push({ uri: reference, path, bytes: readBoundedNativeFile(dependency, remaining) });
+    }
+    const { parseNRRD, inspectScalarVolume } = await import("@aura3d/assets/importers");
+    const parsed = await parseNRRD(bytes, {
+      maxBytes: NATIVE_IMPORT_MAX_BYTES,
+      maxElements: 16_777_216,
+      maxOutputBytes: 256 * 1024 * 1024,
+      ...(dependencies[0] ? { detachedData: dependencies[0].bytes } : {})
+    });
+    const volume = inspectScalarVolume(parsed, { maxVoxels: 16_777_216 });
+    const inspection = inspectScalarVolumeBounds(sourcePath, format, volume.dataToLocal);
+    return withScalarVolumeAdmissionLock(resolve(admission.projectDir ?? process.cwd()), () => addAssetPrepared(admission, {
+      bytes, inspector: "nrrd", dependencies,
+      inspection: { ...inspection, dependencies: reference === undefined ? [] : [reference],
+        nativeWarnings: volume.diagnostics.map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`) }
+    }));
+  }
+  if (format !== "3mf") return addAsset(options);
+  const bytes = readBoundedNativeFile(sourcePath);
+  const parsed = await parseModel3MF(bytes);
+  const inspection = {
+    ...inspectGltf(parsed.gltf as GltfJson),
+    nativeWarnings: parsed.diagnostics.map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`)
+  };
+  return addAssetPrepared(options, { bytes, inspection, inspector: "3mf", dependencies: [] });
+}
+
+interface PreparedNativeAsset {
+  readonly bytes: Buffer;
+  readonly inspection: AssetInspection;
+  readonly inspector: "obj" | "ply" | "stl" | "3mf" | "pvr" | "vox" | "nrrd" | "glb";
+  readonly formatMetadata?: AuraCliAssetEntry["formatMetadata"];
+  readonly dependencies: readonly { readonly uri: string; readonly path: string; readonly bytes: Buffer }[];
+  readonly assertSourceUnchanged?: () => void;
+}
+
+function scalarVolumeNamespace(format: string, rootHash: string, dependencies: PreparedNativeAsset["dependencies"]): string {
+  const members = dependencies.map((item) => [item.uri, createHash("sha256").update(item.bytes).digest("hex")]);
+  const identity = createHash("sha256").update(JSON.stringify(["aura3d.scalar-volume/1", format, rootHash, members])).digest("hex");
+  return `scalar-volumes/${identity}`;
+}
+
+function sameScalarVolumeDependencies(previous: AuraCliAssetEntry, format: string, dependencies: PreparedNativeAsset["dependencies"]): boolean {
+  if (previous.type !== "scalar-volume" || previous.format !== format || previous.integrity?.requireDependencies !== true) return false;
+  const actual = previous.integrity.dependencies ?? {};
+  if (Object.keys(actual).length !== dependencies.length) return false;
+  return dependencies.every((item) => {
+    const expected = createHash("sha256").update(item.bytes).digest("hex");
+    const found = actual[item.uri];
+    return typeof found === "string" && new RegExp(`^(?:sha256-)?${expected}$`, "i").test(found);
+  });
+}
+
+function glbBundleNamespace(rootHash: string, dependencies: PreparedNativeAsset["dependencies"]): string {
+  return glbBundleNamespaceFromHashes(rootHash, dependencies.map((item) => ({
+    uri: item.uri,
+    hash: createHash("sha256").update(item.bytes).digest("hex")
+  })));
+}
+
+function glbBundleNamespaceFromHashes(rootHash: string, dependencies: readonly { readonly uri: string; readonly hash: string }[]): string {
+  const members = dependencies.map((item) => [item.uri, item.hash.replace(/^sha256-/i, "").toLowerCase()] as const)
+    .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
+  const identity = createHash("sha256").update(JSON.stringify(["aura3d.glb-bundle/1", rootHash.replace(/^sha256-/i, "").toLowerCase(), members])).digest("hex");
+  return `glb-bundles/${identity}`;
+}
+
+function glbBundleDocumentName(dependencies: readonly { readonly path: string }[]): string {
+  const paths = dependencies.map((item) => item.path.normalize("NFC").toLowerCase());
+  for (let index = 0; index <= paths.length; index++) {
+    const candidate = index ? `document-${index}.glb` : "document.glb";
+    if (!paths.some((path) => path === candidate || path.startsWith(`${candidate}/`))) return candidate;
+  }
+  throw new Error("Aura3D assets add failed: unable to choose a non-colliding GLB document name.");
+}
+
+function sameGlbDependencies(previous: AuraCliAssetEntry, dependencies: CapturedGlb["dependencies"]): boolean {
+  if (previous.format !== "glb") return false;
+  const actual = previous.integrity?.dependencies ?? {};
+  if (Object.keys(actual).length !== dependencies.length ||
+      (dependencies.length > 0 && previous.integrity?.requireDependencies !== true)) return false;
+  return dependencies.every((item) => {
+    const expected = createHash("sha256").update(item.bytes).digest("hex");
+    const found = actual[item.uri];
+    return typeof found === "string" && new RegExp(`^(?:sha256-)?${expected}$`, "i").test(found);
+  });
+}
+
+function addAssetPrepared(options: AddAssetOptions, native?: PreparedNativeAsset, embeddedGlb?: CapturedGlb): AssetCliResult {
   const projectDir = resolve(options.projectDir ?? process.cwd());
   const sourcePath = resolve(projectDir, options.file);
   if (!existsSync(sourcePath)) {
     throw new Error(`Aura3D assets add failed: "${options.file}" does not exist. Suggested fix: pass a real local GLB/glTF/texture path.`);
   }
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
+  // Capture the shared manifest before reading it; do not read through a link
+  // or overwrite another writer's changes made during this admission.
+  const priorGlbManifest = native?.inspector === "glb" ? captureGlbPublicationTarget(projectDir, manifestPath) : undefined;
   const current = readAssetManifest(projectDir);
+  if (native?.inspector === "glb") assertGlbPublicationTarget(projectDir, manifestPath, priorGlbManifest);
   // Re-adding (e.g. resolve overwriting) must not silently drop hand-authored
   // provenance the new add does not re-supply (license/attribution/author/etc.).
-  const existing = current.assets.find((asset) => asset.id === options.name);
+  const previous = current.assets.find((asset) => asset.id === options.name);
   const outputDir = normalizeRelativePath(options.outputDir ?? current.outputDir ?? DEFAULT_AURA_ASSET_OUTPUT_DIR);
   const publicPath = normalizePublicPath(options.publicPath ?? current.assetBasePath ?? DEFAULT_AURA_ASSET_PUBLIC_PATH);
   const typegen = normalizeRelativePath(options.typegen ?? current.typegen ?? DEFAULT_AURA_ASSET_TYPEGEN);
-  const hash = hashFile(sourcePath);
   const format = extname(sourcePath).slice(1).toLowerCase();
   const type = options.type ?? inferAssetType(format);
-  if (type === "lut") admitCubeLut(sourcePath, format);
-  const inspection = inspectAssetFile(sourcePath, format);
-  const outputFileName = `${options.name}.${hash.slice(0, 8)}.${format}`;
-  const outputPath = join(outputDir, outputFileName);
-  if (options.copy !== false) {
-    mkdirSync(resolve(projectDir, outputDir), { recursive: true });
-    copyFileSync(sourcePath, resolve(projectDir, outputPath));
-    copyAssetDependencies(projectDir, sourcePath, outputDir, inspection.dependencies);
+  if (options.modelInspection !== undefined && options.modelInspection !== "legacy" && options.modelInspection !== "strict") {
+    throw new Error("Aura3D assets add failed: modelInspection must be legacy or strict.");
   }
-  const thumbnailUrl = writeThumbnail(projectDir, outputDir, publicPath, options.name, inspection.bounds);
+  if (native && native.inspector === "pvr" && type !== "texture") throw new Error("Aura3D assets add failed: .pvr must use --type texture.");
+  if (native && native.inspector === "nrrd" && type !== "scalar-volume") throw new Error(`Aura3D assets add failed: .${format} must use --type scalar-volume.`);
+  if (native && native.inspector !== "pvr" && native.inspector !== "nrrd" && type !== "model") throw new Error(`Aura3D assets add failed: .${format} must use --type model.`);
+  if (type === "model" && options.modelInspection === "strict" && (!native || native.inspector === "glb")) {
+    throw new Error(`Aura3D assets add failed: strict bounded parser inspection is unavailable for .${format || "unknown"}; glTF currently has metadata-only inspection.`);
+  }
+  if (native) validateNativeAdmissionPaths(projectDir, options.name, outputDir, typegen, publicPath);
+  if (native?.inspector === "glb") validateGlbPortablePaths(outputDir, typegen, publicPath);
+  const snapshot = native?.bytes ?? embeddedGlb?.bytes;
+  const hash = snapshot ? createHash("sha256").update(snapshot).digest("hex") : hashFile(sourcePath);
+  if (native && options.sha256 !== undefined && !new RegExp(`^(?:sha256-)?${hash}$`, "i").test(options.sha256)) {
+    throw new Error("Aura3D assets add failed: supplied provenance SHA-256 does not match the inspected asset bytes.");
+  }
+  // Rights, render probes and quality from an earlier file do not attest to a
+  // different native asset merely because it is admitted under the same id.
+  const changedRoot = native && previous && (previous.hash ?? previous.sha256 ?? "").replace(/^sha256-/i, "").toLowerCase() !== hash;
+  const changedVolume = native?.inspector === "nrrd" && previous && !sameScalarVolumeDependencies(previous, format, native.dependencies);
+  const glbDependencies = native?.inspector === "glb" ? native.dependencies : embeddedGlb?.dependencies;
+  const previousGlbRootMatches = previous && (previous.hash ?? previous.sha256 ?? "").replace(/^sha256-/i, "").toLowerCase() === hash;
+  const changedGlb = glbDependencies && previous && (
+    previous.type !== type || !previousGlbRootMatches ||
+    !sameGlbDependencies(previous, glbDependencies)
+  );
+  const existing = changedRoot || changedVolume || changedGlb ? undefined : previous;
+  const priorProvenance = (native || embeddedGlb) && existing?.provenance?.sha256 &&
+    !new RegExp(`^(?:sha256-)?${hash}$`, "i").test(existing.provenance.sha256)
+    ? { ...existing.provenance, sha256: undefined }
+    : existing?.provenance;
+  if (type === "lut") admitCubeLut(sourcePath, format);
+  const inspection = native?.inspection ?? (embeddedGlb ? inspectGlb(embeddedGlb.bytes) : inspectAssetFile(sourcePath, format));
+  // An unchanged root cannot supply fresh rights evidence for substituted
+  // sidecars (or an incomplete prior bundle). On later re-adds, use only the
+  // already identity-bound provenance or explicitly supplied new evidence;
+  // otherwise the same embedded text would silently resurrect stale rights.
+  const detectedProvenance = native?.inspector === "glb" && previousGlbRootMatches
+    ? undefined
+    : inspection.provenance;
+  // Keep a detached header and its unmodified relative child under an
+  // immutable namespace bound to both snapshots, not just the header hash.
+  const namespace = native?.inspector === "nrrd" ? scalarVolumeNamespace(format, hash, native.dependencies)
+    : native?.inspector === "glb" ? glbBundleNamespace(hash, native.dependencies) : undefined;
+  const outputFileName = namespace
+    ? `${namespace}/${native?.inspector === "glb" ? glbBundleDocumentName(native.dependencies) : `volume.${format}`}`
+    : `${options.name}.${hash.slice(0, 8)}.${format}`;
+  const outputPath = join(outputDir, outputFileName);
+  const stagedNative = native && namespace ? {
+    ...native,
+    dependencies: native.dependencies.map((item) => ({ ...item, path: `${namespace}/${item.path}` }))
+  } : native;
+  if (stagedNative?.inspector === "nrrd") {
+    assertScalarVolumeTargetLayout(projectDir, outputPath, outputDir, typegen, options.name, stagedNative.dependencies);
+  }
+  const glbTargets = native?.inspector === "glb" && stagedNative && namespace
+    ? assertGlbTargetLayout(projectDir, sourcePath, outputPath, outputDir, typegen, options.name, namespace, native.dependencies, stagedNative.dependencies, current, priorGlbManifest)
+    : undefined;
+  if (native && options.copy === false) {
+    const stagedPath = resolve(projectDir, outputPath);
+    assertNoNativeSymlinks(projectDir, stagedPath);
+    if (native.inspector === "glb") assertStagedGlbFile(projectDir, stagedPath, native.bytes, "copy:false requires the matching hashed file at the output path");
+    else if (!existsSync(stagedPath) || !statSync(stagedPath).isFile() || statSync(stagedPath).size !== native.bytes.length || !readBoundedNativeFile(stagedPath).equals(native.bytes)) {
+      throw new Error("Aura3D assets add failed: copy:false requires the matching hashed file to already exist at the output path.");
+    }
+    for (const dependency of stagedNative!.dependencies) {
+      const stagedDependency = resolve(projectDir, outputDir, dependency.path);
+      assertNoNativeSymlinks(projectDir, stagedDependency);
+      if (native.inspector === "glb") assertStagedGlbFile(projectDir, stagedDependency, dependency.bytes, `copy:false requires the matching dependency ${dependency.uri} at the output path`);
+      else if (!existsSync(stagedDependency) || !statSync(stagedDependency).isFile() || statSync(stagedDependency).size !== dependency.bytes.length || !readBoundedNativeFile(stagedDependency).equals(dependency.bytes)) {
+        throw new Error(`Aura3D assets add failed: copy:false requires the matching dependency ${dependency.uri} at the output path.`);
+      }
+    }
+  }
+  const thumbnailUrl = `${publicPath}${options.name}.thumb.svg`;
   const entry: AuraCliAssetEntry = {
     id: options.name,
     type,
     format,
+    ...(native?.formatMetadata ? { formatMetadata: native.formatMetadata } : {}),
+    ...(type === "model" ? {
+      modelInspection: native && native.inspector !== "pvr" && native.inspector !== "nrrd" && native.inspector !== "glb"
+        ? { version: 1 as const, status: "parser-inspected" as const, inspector: native.inspector, digest: `sha256-${hash}` }
+        : { version: 1 as const, status: (format === "glb" || format === "gltf" ? "metadata-only" : "legacy-unverified") as "metadata-only" | "legacy-unverified" }
+    } : {}),
+    ...(native ? { integrity: {
+      version: 1 as const,
+      digest: `sha256-${hash}`,
+      ...(native.inspector === "obj" || native.inspector === "nrrd" || native.dependencies.length ? { dependencies: Object.fromEntries(native.dependencies.map((item) => [item.uri, `sha256-${createHash("sha256").update(item.bytes).digest("hex")}`])), requireDependencies: true } : {})
+    } } : {}),
     /*
      * Record a source path that still exists after the command finishes.
      *
@@ -421,7 +720,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     outputPath: normalizeRelativePath(outputPath),
     url: `${publicPath}${outputFileName}`,
     hash: `sha256-${hash}`,
-    sizeBytes: statSync(sourcePath).size,
+    sizeBytes: snapshot?.byteLength ?? statSync(sourcePath).size,
     bounds: inspection.bounds,
     boundsMetadata: inspection.boundsMetadata,
     materials: inspection.materials,
@@ -436,7 +735,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
       projectDir,
       sourcePath,
       options,
-      options.replaceProvenanceEvidence ? inspection.provenance : mergeDetectedProvenance(existing?.provenance, inspection.provenance),
+      options.replaceProvenanceEvidence ? detectedProvenance : mergeDetectedProvenance(priorProvenance, detectedProvenance),
       outputPath
     ),
     textures: inspection.textures,
@@ -476,7 +775,13 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     ...(c17AnimationClips(inspection.animation) ?? existing?.animationClips
       ? { animationClips: c17AnimationClips(inspection.animation) ?? existing?.animationClips }
       : {}),
-    warnings: createAssetWarnings(sourcePath, inspection)
+    warnings: [
+      ...createAssetWarnings(sourcePath, inspection, snapshot?.byteLength),
+      ...(inspection.nativeWarnings ?? []),
+      ...(type === "model" && !native && format !== "gltf" && format !== "glb"
+        ? [`Legacy model admission: .${format || "unknown"} bytes were not parser-inspected; this behavior is deprecated and does not establish adapter or format support.`]
+        : [])
+    ]
   };
   if (options.orientation) {
     if (options.orientation.source !== "manifest-override") {
@@ -499,8 +804,27 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
       entry
     ]
   });
-  writeAssetManifest(projectDir, manifest);
-  writeTypedAssets(projectDir, manifest);
+  if (native) {
+    const glbBeforeCommit = native.inspector === "glb" ? () => {
+      native.assertSourceUnchanged?.();
+      assertStagedGlbFile(projectDir, resolve(projectDir, outputPath), native.bytes, "staged GLB changed during admission");
+      for (const dependency of stagedNative!.dependencies) {
+        assertStagedGlbFile(projectDir, resolve(projectDir, outputDir, dependency.path), dependency.bytes, `staged GLB dependency ${dependency.uri} changed during admission`);
+      }
+    } : undefined;
+    publishNativeAdmission(projectDir, manifest, outputPath, sourcePath, options.name, inspection.bounds, options.copy === false ? undefined : stagedNative, glbBeforeCommit, glbTargets);
+  } else {
+    embeddedGlb?.assertUnchanged();
+    if (options.copy !== false) {
+      mkdirSync(resolve(projectDir, outputDir), { recursive: true });
+      if (embeddedGlb) writeFileSync(resolve(projectDir, outputPath), embeddedGlb.bytes);
+      else copyFileSync(sourcePath, resolve(projectDir, outputPath));
+      copyAssetDependencies(projectDir, sourcePath, outputDir, inspection.dependencies);
+    }
+    writeThumbnail(projectDir, outputDir, publicPath, options.name, inspection.bounds);
+    writeAssetManifest(projectDir, manifest);
+    writeTypedAssets(projectDir, manifest);
+  }
   return {
     ok: true,
     manifestPath,
@@ -508,7 +832,11 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     messages: [
       `Added ${entry.id} -> ${entry.url}`,
       `Wrote ${DEFAULT_AURA_ASSET_MANIFEST}`,
-      `Wrote ${manifest.typegen}`
+      `Wrote ${manifest.typegen}`,
+      ...(native && native.inspector !== "pvr" && native.inspector !== "nrrd" && native.inspector !== "glb" ? [`Register a renderer-capable ${format.toUpperCase()} adapter in the app's FormatRegistry before loading this asset.`] : []),
+      ...(native?.inspector === "pvr" ? ["PVR bytes were parser-inspected; texture upload and device support have not been established by admission."] : []),
+      ...(native?.inspector === "obj" ? ["OBJ inspection covers geometry, material references, and image signatures; image decoding and rendered fidelity remain unverified."] : []),
+      ...(type === "model" && !native && format !== "gltf" && format !== "glb" ? ["Legacy model admission is unverified and deprecated; use --model-inspection strict after a bounded parser is available."] : [])
     ]
   };
 }
@@ -985,8 +1313,52 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
       failures.push(`Missing asset output for "${asset.id}": ${asset.outputPath}`);
       continue;
     }
-    const actualHash = `sha256-${hashFile(outputPath)}`;
-    if (actualHash !== asset.hash) failures.push(`Hash mismatch for "${asset.id}": expected ${asset.hash}, found ${actualHash}`);
+    let scalarRoot: Buffer | undefined;
+    let glbJson: GltfJson | undefined;
+    let actualHash: string;
+    if (asset.format === "glb") {
+      try {
+        const checked = checkGlbDependencies(projectDir, outputPath, asset);
+        actualHash = checked.hash;
+        glbJson = checked.json as GltfJson;
+        failures.push(...checked.failures);
+        validateGlbBundleNamespace(projectDir, outputPath, asset, checked, failures);
+      } catch (error) {
+        failures.push(`${asset.id}: GLB dependency validation failed: ${error instanceof Error ? error.message : String(error)}`);
+        continue;
+      }
+    } else if (asset.type === "scalar-volume" && (asset.format === "nrrd" || asset.format === "nhdr")) {
+      try {
+        assertNoNativeSymlinks(projectDir, outputPath);
+        scalarRoot = readBoundedNativeFile(outputPath);
+        actualHash = `sha256-${createHash("sha256").update(scalarRoot).digest("hex")}`;
+      } catch (error) {
+        failures.push(`${asset.id}: asset output could not be read safely: ${error instanceof Error ? error.message : String(error)}`);
+        continue;
+      }
+    } else actualHash = `sha256-${hashFile(outputPath)}`;
+    const expectedHash = asset.format === "glb" ? asset.integrity?.digest ?? asset.hash ?? asset.sha256 : asset.hash;
+    if (actualHash !== expectedHash) failures.push(`Hash mismatch for "${asset.id}": expected ${expectedHash}, found ${actualHash}`);
+    if (scalarRoot) failures.push(...validateScalarVolumeDependencies(projectDir, manifest.outputDir, asset, outputPath, scalarRoot));
+    if (asset.format === "obj" && asset.modelInspection?.status === "parser-inspected") {
+      if (!asset.integrity?.requireDependencies) failures.push(`${asset.id}: inspected OBJ must require dependency integrity.`);
+      const digests = asset.integrity?.dependencies ?? {};
+      for (const uri of asset.dependencies ?? []) {
+        if (!Object.hasOwn(digests, uri)) failures.push(`${asset.id}: missing dependency integrity for ${uri}.`);
+      }
+      for (const [uri, digest] of Object.entries(digests)) {
+        try {
+          const url = new URL(uri, "https://aura3d.invalid/project/model.obj");
+          const { path } = nativeObjDependencyPath(url);
+          const dependency = resolve(dirname(outputPath), path);
+          assertNoNativeSymlinks(projectDir, dependency);
+          if (!existsSync(dependency) || !statSync(dependency).isFile()) failures.push(`${asset.id}: missing OBJ dependency ${uri}.`);
+          else if (`sha256-${createHash("sha256").update(readBoundedNativeFile(dependency)).digest("hex")}` !== digest.toLowerCase()) failures.push(`${asset.id}: OBJ dependency hash mismatch for ${uri}.`);
+        } catch {
+          failures.push(`${asset.id}: invalid or unsafe OBJ dependency ${uri}.`);
+        }
+      }
+    }
     const provenance = resolveAssetProvenance(asset, externalProvenance);
     if (noPlaceholders && isPlaceholderAsset(asset, provenance)) {
       failures.push(`Placeholder asset is not allowed in strict release validation: "${asset.id}". Replace it with a real typed asset and provenance.`);
@@ -1019,7 +1391,7 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
       skinAllow ??= readSkinAllowlist(projectDir);
       failures.push(...skinReleaseFailures(projectDir, asset, skinAllow).failures);
     }
-    warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset));
+    warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset, glbJson));
     if (release) warnings.push(...createReleaseStructuredQualityWarnings(projectDir, asset));
     if (release) warnings.push(...createReleaseAssetQualityWarnings(projectDir, asset));
     if (release) warnings.push(...createReleaseRenderedProbeWarnings(projectDir, manifest, asset));
@@ -1062,6 +1434,78 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
     warnings,
     messages: failures.length === 0 ? [release ? "Asset manifest is release-valid." : "Asset manifest is valid."] : failures
   };
+}
+
+/** A bundle path is an immutable identity of the actual document and sidecars. */
+function validateGlbBundleNamespace(
+  projectDir: string,
+  outputPath: string,
+  asset: AuraCliAssetEntry,
+  checked: ReturnType<typeof checkGlbDependencies>,
+  failures: string[]
+): void {
+  const parts = relative(projectDir, outputPath).split(sep);
+  const marker = parts.lastIndexOf("glb-bundles");
+  if (marker < 0 || parts[0] === ".." || isAbsolute(relative(projectDir, outputPath))) return;
+  // Only reserve the layout emitted by admission. An unrelated legacy asset
+  // may happen to live in a directory named "glb-bundles".
+  if (parts.length !== marker + 3 || !/^[a-f0-9]{64}$/.test(parts[marker + 1] ?? "") ||
+      !/^document(?:-[1-9][0-9]*)?\.glb$/.test(parts[marker + 2] ?? "")) return;
+  const recorded = asset.integrity?.dependencies ?? {};
+  if (!checked.uris.length || asset.integrity?.requireDependencies !== true ||
+      Object.keys(recorded).length !== checked.uris.length ||
+      checked.uris.some((uri) => !Object.hasOwn(recorded, uri))) {
+    failures.push(`${asset.id}: GLB bundle dependency integrity must exactly match the document references.`);
+  }
+  // Missing or unreadable children already have their own failures; never
+  // invent bytes or calculate a namespace from an incomplete bundle.
+  if (checked.references.length !== checked.uris.length) return;
+  const outputDir = resolve(projectDir, ...parts.slice(0, marker));
+  const expected = resolve(outputDir, glbBundleNamespaceFromHashes(checked.hash, checked.references), glbBundleDocumentName(checked.references));
+  if (expected !== outputPath) failures.push(`${asset.id}: GLB bundle namespace does not match its root and dependency bytes.`);
+}
+
+/** Re-read the declared child reference from the same root bytes being hashed. */
+function validateScalarVolumeDependencies(projectDir: string, outputDir: string, asset: AuraCliAssetEntry, outputPath: string, root: Buffer): string[] {
+  const failures: string[] = [];
+  try {
+    const reference = inspectNRRDDataReference(root, { maxBytes: NATIVE_IMPORT_MAX_BYTES });
+    const integrity = asset.integrity;
+    const digests = integrity?.dependencies ?? {};
+    const keys = Object.keys(digests);
+    const listed = asset.dependencies ?? [];
+    if (integrity?.requireDependencies !== true) failures.push(`${asset.id}: scalar volume must require dependency integrity.`);
+    if (reference === undefined) {
+      if (keys.length || listed.length) failures.push(`${asset.id}: embedded NRRD has unexpected dependency metadata.`);
+      validateScalarVolumeNamespace(projectDir, outputDir, asset, outputPath, root, [], failures);
+      return failures;
+    }
+    const path = safeNRRDDependencyPath(reference, basename(outputPath));
+    if (keys.length !== 1 || !Object.hasOwn(digests, reference) || listed.length !== 1 || listed[0] !== reference) {
+      failures.push(`${asset.id}: NRRD dependency metadata does not match the declared reference.`);
+      return failures;
+    }
+    const child = resolve(dirname(outputPath), path);
+    assertNoNativeSymlinks(projectDir, child);
+    const remaining = NATIVE_IMPORT_MAX_BYTES - root.byteLength;
+    if (remaining <= 0) throw new Error("NRRD root and dependency exceed the 64 MiB input budget");
+    const bytes = readBoundedNativeFile(child, remaining);
+    const digest = `sha256-${createHash("sha256").update(bytes).digest("hex")}`;
+    if (digest !== digests[reference]!.toLowerCase()) failures.push(`${asset.id}: NRRD dependency hash mismatch for ${reference}.`);
+    validateScalarVolumeNamespace(projectDir, outputDir, asset, outputPath, root, [{ uri: reference, path, bytes }], failures);
+  } catch (error) {
+    failures.push(`${asset.id}: NRRD dependency validation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  return failures;
+}
+
+function validateScalarVolumeNamespace(projectDir: string, outputDir: string, asset: AuraCliAssetEntry, outputPath: string, root: Buffer, dependencies: PreparedNativeAsset["dependencies"], failures: string[]): void {
+  const base = resolve(projectDir, outputDir, "scalar-volumes");
+  const rel = relative(base, outputPath);
+  if (rel.startsWith(`..${sep}`) || rel === ".." || isAbsolute(rel)) return;
+  const rootHash = createHash("sha256").update(root).digest("hex");
+  const expected = resolve(projectDir, outputDir, scalarVolumeNamespace(asset.format, rootHash, dependencies), `volume.${asset.format}`);
+  if (expected !== outputPath) failures.push(`${asset.id}: scalar-volume namespace does not match its root and dependency bytes.`);
 }
 
 export function createAssetThumbnails(options: { readonly projectDir?: string } = {}): AssetCliResult {
@@ -2047,16 +2491,22 @@ function createDuplicateHashWarnings(
 ): readonly string[] {
   const byHash = new Map<string, AuraCliAssetEntry[]>();
   for (const asset of manifest.assets) {
-    const existing = byHash.get(asset.hash) ?? [];
+    // A document can be byte-identical while its referenced resources differ.
+    // For admitted multi-file assets, the complete identity defines duplication.
+    const multiFile = asset.type === "scalar-volume" || (asset.format === "glb" && asset.integrity?.requireDependencies === true);
+    const key = multiFile
+      ? JSON.stringify([asset.type, asset.format, asset.hash, Object.entries(asset.integrity?.dependencies ?? {}).sort(([a], [b]) => a.localeCompare(b))])
+      : JSON.stringify(["root", asset.hash]);
+    const existing = byHash.get(key) ?? [];
     existing.push(asset);
-    byHash.set(asset.hash, existing);
+    byHash.set(key, existing);
   }
   const warnings: string[] = [];
-  for (const [hash, assets] of byHash) {
+  for (const assets of byHash.values()) {
     if (assets.length < 2) continue;
     const unexplained = assets.filter((asset) => !hasDuplicateHashAllowlist(resolveAssetProvenance(asset, externalProvenance)));
     if (unexplained.length > 0) {
-      warnings.push(`duplicate asset hash ${hash} used by ${assets.map((asset) => `"${asset.id}"`).join(", ")} without duplicate-ok provenance evidence.`);
+      warnings.push(`duplicate asset hash ${assets[0]!.hash} used by ${assets.map((asset) => `"${asset.id}"`).join(", ")} without duplicate-ok provenance evidence.`);
     }
   }
   return warnings;
@@ -2137,6 +2587,479 @@ interface AssetInspection {
   readonly orientation: AuraCliOrientationInspection;
   readonly nodeNames: readonly string[];
   readonly dependencies: readonly string[];
+  readonly nativeWarnings?: readonly string[];
+}
+
+const NATIVE_IMPORT_MAX_BYTES = 64 * 1024 * 1024;
+const NATIVE_RENDER_BUFFER_MAX_BYTES = 32 * 1024 * 1024;
+
+function readBoundedNativeFile(path: string, maxBytes = NATIVE_IMPORT_MAX_BYTES): Buffer {
+  if (!existsSync(path)) throw new Error(`Aura3D assets add failed: "${path}" does not exist.`);
+  const descriptor = openSync(path, "r");
+  try {
+    const stat = fstatSync(descriptor);
+    if (!stat.isFile() || stat.size > maxBytes) {
+      throw new Error(`Aura3D assets add failed: native asset must be a regular file within the ${maxBytes}-byte remaining input budget (at most 64 MiB).`);
+    }
+    const bytes = Buffer.allocUnsafe(stat.size);
+    let offset = 0;
+    while (offset < bytes.length) {
+      const count = readSync(descriptor, bytes, offset, bytes.length - offset, offset);
+      if (!count) throw new Error("Aura3D assets add failed: native file changed while being read.");
+      offset += count;
+    }
+    const extra = Buffer.alloc(1);
+    if (readSync(descriptor, extra, 0, 1, offset) !== 0) throw new Error("Aura3D assets add failed: native file grew while being read.");
+    return bytes;
+  } finally {
+    closeSync(descriptor);
+  }
+}
+
+/** Only local, portable relative NRRD children can be staged unchanged. */
+function safeNRRDDependencyPath(reference: string, rootName: string): string {
+  if (!reference || reference.length > 2048 || reference.normalize("NFC") !== reference ||
+      isAbsolute(reference) || reference.startsWith("/") || /[\0-\x1f\x7f\\?#%:]/.test(reference)) {
+    throw new Error("Aura3D assets add failed: NRRD dependency must be a safe local relative path.");
+  }
+  const segments = reference.split("/");
+  if (segments.some((part) => !part || part === "." || part === ".." || part.endsWith(".") || part.endsWith(" ") ||
+      Buffer.byteLength(part, "utf8") > 255 || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(part))) {
+    throw new Error("Aura3D assets add failed: NRRD dependency path is not portable or contains traversal.");
+  }
+  if (segments.length === 1 && reference.toLowerCase() === rootName.toLowerCase()) {
+    throw new Error("Aura3D assets add failed: NRRD dependency collides with its staged header.");
+  }
+  return reference;
+}
+
+function assertScalarVolumeTargetLayout(projectDir: string, outputPath: string, outputDir: string, typegen: string, name: string, dependencies: PreparedNativeAsset["dependencies"]): void {
+  const targets = [
+    resolve(projectDir, outputPath),
+    ...dependencies.map((item) => resolve(projectDir, outputDir, item.path)),
+    resolve(projectDir, outputDir, `${name}.thumb.svg`),
+    resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
+    resolve(projectDir, typegen),
+    resolve(projectDir, ".aura3d-scalar-admission.lock")
+  ].map((path) => path.normalize("NFC").replaceAll("\\", "/").toLowerCase());
+  for (let i = 0; i < targets.length; i++) for (let j = i + 1; j < targets.length; j++) {
+    const a = targets[i]!, b = targets[j]!;
+    if (a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)) {
+      throw new Error("Aura3D assets add failed: scalar-volume output, dependency, thumbnail, manifest and typegen paths collide.");
+    }
+  }
+}
+
+function captureGlbPublicationTarget(projectDir: string, path: string): Stats | undefined {
+  assertNoNativeSymlinks(projectDir, path);
+  try {
+    const stat = lstatSync(path);
+    if (!stat.isFile()) throw new Error(`Aura3D assets add failed: generated output is not a regular file: ${path}`);
+    return stat;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    throw error;
+  }
+}
+
+function validateGlbPortablePaths(outputDir: string, typegen: string, publicPath: string): void {
+  for (const [label, path] of [["output", outputDir], ["typegen", typegen]] as const) {
+    if (path.split("/").some((part) => /[\u0000-\u001f\u007f\uD800-\uDFFF<>:"|*]/u.test(part) ||
+        part.endsWith(".") || part.endsWith(" ") || Buffer.byteLength(part, "utf8") > 255 ||
+        /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(part))) {
+      throw new Error(`Aura3D assets add failed: GLB ${label} path contains a nonportable name.`);
+    }
+  }
+  if (/[\u0000-\u001f\u007f\uD800-\uDFFF]/u.test(publicPath)) {
+    throw new Error("Aura3D assets add failed: GLB public path contains an unsafe character.");
+  }
+}
+
+function sameGlbPublicationTarget(left: Stats, right: Stats): boolean {
+  return left.dev === right.dev && left.ino === right.ino && left.size === right.size &&
+    left.mtimeMs === right.mtimeMs && left.ctimeMs === right.ctimeMs;
+}
+
+function assertGlbPublicationTarget(projectDir: string, path: string, expected: Stats | undefined): void {
+  const actual = captureGlbPublicationTarget(projectDir, path);
+  if ((!expected && actual) || (expected && (!actual || !sameGlbPublicationTarget(expected, actual)))) {
+    throw new Error(`Aura3D assets add failed: generated output changed or was created during GLB admission: ${path}`);
+  }
+}
+
+function assertGlbTargetLayout(
+  projectDir: string,
+  sourcePath: string,
+  outputPath: string,
+  outputDir: string,
+  typegen: string,
+  name: string,
+  namespace: string,
+  dependencies: PreparedNativeAsset["dependencies"],
+  stagedDependencies: PreparedNativeAsset["dependencies"],
+  current: AuraCliAssetManifest,
+  priorManifest: Stats | undefined
+): ReadonlyMap<string, Stats | undefined> {
+  const canonicalProject = realpathSync(projectDir);
+  const projectPath = (path: string): string => resolve(canonicalProject, relative(projectDir, path));
+  const folded = (path: string): string => path.normalize("NFC").replaceAll("\\", "/").toLowerCase();
+  const overlaps = (left: string, right: string): boolean => left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
+  const assetPaths = [...new Set([
+    resolve(projectDir, outputPath),
+    ...stagedDependencies.map((item) => resolve(projectDir, outputDir, item.path))
+  ])].map((path) => folded(projectPath(path)));
+  const generatedFiles = [
+    resolve(projectDir, outputDir, `${name}.thumb.svg`),
+    resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
+    resolve(projectDir, typegen),
+    resolve(projectDir, ".aura3d-scalar-admission.lock")
+  ];
+  const generatedPaths = generatedFiles.map((path) => folded(projectPath(path)));
+  const generatedSnapshots = new Map(generatedFiles.slice(0, 3).map((path) => [path, captureGlbPublicationTarget(projectDir, path)]));
+  assertGlbPublicationTarget(projectDir, generatedFiles[1]!, priorManifest);
+  const targets = [...assetPaths, ...generatedPaths];
+  for (let left = 0; left < targets.length; left++) for (let right = left + 1; right < targets.length; right++) {
+    if (overlaps(targets[left]!, targets[right]!)) {
+      throw new Error("Aura3D assets add failed: GLB output, dependency, thumbnail, manifest, typegen or lock paths collide.");
+    }
+  }
+  const bundleDir = folded(projectPath(resolve(projectDir, outputDir, namespace)));
+  if (generatedPaths.some((path) => overlaps(path, bundleDir))) {
+    throw new Error("Aura3D assets add failed: generated files cannot be placed inside a GLB bundle namespace.");
+  }
+  const sourcePaths = [sourcePath, ...dependencies.map((item) => resolve(dirname(sourcePath), item.path))]
+    .map((path) => folded(realpathSync(path)));
+  if (sourcePaths.some((source) => generatedPaths.some((target) => overlaps(source, target)))) {
+    throw new Error("Aura3D assets add failed: generated files cannot overwrite a GLB source or dependency.");
+  }
+  const previous = current.assets.find((asset) => asset.id === name);
+  const previousThumbnail = previous?.thumbnailUrl && resolvePublicArtifactPath(projectDir, current, previous.thumbnailUrl);
+  if (generatedSnapshots.get(generatedFiles[0]!) &&
+      (!previousThumbnail || folded(projectPath(previousThumbnail)) !== generatedPaths[0])) {
+    throw new Error("Aura3D assets add failed: cannot overwrite an existing unowned thumbnail.");
+  }
+  if (generatedSnapshots.get(generatedFiles[2]!) &&
+      (!priorManifest || folded(projectPath(resolve(projectDir, current.typegen))) !== generatedPaths[2])) {
+    throw new Error("Aura3D assets add failed: cannot overwrite an existing unowned typed asset module.");
+  }
+  for (const asset of current.assets) {
+    const priorOutput = resolve(projectDir, asset.outputPath);
+    const priorPath = folded(projectPath(priorOutput));
+    if (generatedPaths.some((target) => overlaps(target, priorPath))) {
+      throw new Error("Aura3D assets add failed: generated files cannot overwrite an existing asset.");
+    }
+    const priorDir = dirname(priorOutput);
+    if (["glb-bundles", "scalar-volumes"].includes(basename(dirname(priorDir))) &&
+        /^[a-f0-9]{64}$/.test(basename(priorDir))) {
+      const priorBundle = folded(projectPath(priorDir));
+      if (generatedPaths.some((target) => overlaps(target, priorBundle))) {
+        throw new Error("Aura3D assets add failed: generated files cannot overwrite an existing asset namespace.");
+      }
+    } else if (asset.format === "glb" &&
+        generatedPaths.some((target) => overlaps(target, folded(projectPath(priorDir))))) {
+      // A legacy GLB's recorded `dependencies` may be stale or absent. Read
+      // its bounded JSON so generating a thumbnail or typed module cannot
+      // overwrite (or fabricate) an actually referenced sidecar.
+      let references: readonly string[];
+      try {
+        references = referencedGlbResourcePaths(projectDir, priorOutput);
+      } catch (error) {
+        throw new Error(`Aura3D assets add failed: cannot protect existing GLB dependencies for "${asset.id}".`, { cause: error });
+      }
+      if (references.some((path) => generatedPaths.some((target) => overlaps(target, folded(projectPath(path)))))) {
+        throw new Error("Aura3D assets add failed: generated files cannot overwrite an existing GLB dependency.");
+      }
+    }
+    if (asset.id !== name && asset.thumbnailUrl) {
+      const priorThumbnail = resolvePublicArtifactPath(projectDir, current, asset.thumbnailUrl);
+      if (priorThumbnail && folded(projectPath(priorThumbnail)) === generatedPaths[0]) {
+        throw new Error("Aura3D assets add failed: thumbnail collides with another asset.");
+      }
+    }
+  }
+  return generatedSnapshots;
+}
+
+/** Serialize scalar and external-GLB admissions before reading their shared manifest. */
+function withScalarVolumeAdmissionLock<T>(projectDir: string, operation: () => T): T {
+  const path = resolve(projectDir, ".aura3d-scalar-admission.lock");
+  let descriptor: number;
+  try {
+    descriptor = openSync(path, "wx", 0o600);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+      throw new Error("Aura3D assets add failed: another scalar-volume admission or external GLB admission is in progress or its lock remains.");
+    }
+    throw error;
+  }
+  const identity = fstatSync(descriptor);
+  try {
+    return operation();
+  } finally {
+    closeSync(descriptor);
+    // Do not remove a lock file replaced by another owner.
+    try {
+      const current = lstatSync(path);
+      if (current.dev === identity.dev && current.ino === identity.ino) rmSync(path);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+  }
+}
+
+/** The scalar loader maps the sample-center unit cube into node-local space. */
+function inspectScalarVolumeBounds(path: string, format: string, matrix: Float32Array): AssetInspection {
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let corner = 0; corner < 8; corner++) {
+    for (let axis = 0; axis < 3; axis++) {
+      const value = matrix[12 + axis]! + ((corner & 1) ? matrix[axis]! : 0)
+        + ((corner & 2) ? matrix[4 + axis]! : 0) + ((corner & 4) ? matrix[8 + axis]! : 0);
+      min[axis] = Math.min(min[axis]!, value);
+      max[axis] = Math.max(max[axis]!, value);
+    }
+  }
+  const canonical = (value: number): number => {
+    const rounded = round(value);
+    return rounded === 0 ? 0 : rounded;
+  };
+  const size = min.map((value, axis) => canonical(max[axis]! - value)) as [number, number, number];
+  const boundsMetadata: AuraCliAssetBoundsInspection = {
+    min: min.map(canonical) as [number, number, number],
+    max: max.map(canonical) as [number, number, number],
+    size,
+    center: min.map((value, axis) => canonical((value + max[axis]!) / 2)) as [number, number, number],
+    maxDimension: Math.max(...size),
+    grounded: Math.abs(canonical(min[1])) <= 0.08
+  };
+  return { ...inspectAssetFile(path, format), bounds: size, boundsMetadata };
+}
+
+function inspectNativeMeshFile(path: string, format: "ply" | "stl"): PreparedNativeAsset {
+  const bytes = readBoundedNativeFile(path);
+  const mesh = format === "ply" ? parsePLY(bytes) : parseSTL(bytes);
+  if (format === "ply" && "elements" in mesh) {
+    const properties = mesh.elements.vertex?.properties ?? {};
+    const splatFields = ["scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2", "rot_3", "opacity", "f_dc_0", "f_dc_1", "f_dc_2"];
+    if (splatFields.every((field) => Object.hasOwn(properties, field))) {
+      throw new Error("Aura3D assets add failed: Gaussian splat PLY needs a splat pipeline; mesh admission would discard its splat attributes.");
+    }
+  }
+  return prepareNativeMeshData(path, format, bytes, mesh);
+}
+
+function prepareNativeMeshData(path: string, format: "ply" | "stl" | "vox", bytes: Buffer, mesh: NativeMeshData, warnings: readonly string[] = []): PreparedNativeAsset {
+  validateNativeMeshRenderBudget(mesh);
+  // Bounds are serialized into JSON, where -0 is written as 0. Return the
+  // same canonical value in memory so a fresh admission and a reloaded
+  // manifest have identical public metadata.
+  const roundBound = (value: number): number => {
+    const rounded = round(value);
+    return rounded === 0 ? 0 : rounded;
+  };
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let offset = 0; offset < mesh.positions.length; offset += 3) {
+    for (let axis = 0; axis < 3; axis++) {
+      min[axis] = Math.min(min[axis]!, mesh.positions[offset + axis]!);
+      max[axis] = Math.max(max[axis]!, mesh.positions[offset + axis]!);
+    }
+  }
+  const size = min.map((value, axis) => roundBound(max[axis]! - value)) as [number, number, number];
+  const boundsMetadata: AuraCliAssetBoundsInspection = {
+    min: min.map(roundBound) as [number, number, number],
+    max: max.map(roundBound) as [number, number, number],
+    size,
+    center: min.map((value, axis) => roundBound((value + max[axis]!) / 2)) as [number, number, number],
+    maxDimension: Math.max(...size),
+    grounded: Math.abs(roundBound(min[1])) <= 0.08
+  };
+  return {
+    bytes,
+    inspector: format,
+    dependencies: [],
+    inspection: {
+      ...inspectAssetFile(path, format),
+      vertexCount: mesh.positions.length / 3,
+      bounds: size,
+      boundsMetadata,
+      nativeWarnings: [...mesh.diagnostics, ...warnings]
+    }
+  };
+}
+
+/** Inspect OBJ and exactly the material resources consumed by its runtime loader. */
+function inspectNativeObjFile(path: string): PreparedNativeAsset {
+  const bytes = readBoundedNativeFile(path);
+  const decode = (value: Buffer): string => new TextDecoder("utf-8", { fatal: true }).decode(value);
+  const loader = new OBJLoader();
+  const parsed = loader.inspect(decode(bytes));
+  if (parsed.materialLibraries.length > 256) throw new Error("OBJ_DEPENDENCY_LIMIT: more than 256 material references");
+  const usedMaterials = new Set(parsed.materialNames);
+  const rootUrl = "https://aura3d.invalid/project/";
+  const documentUrl = `${rootUrl}model.obj`;
+  const sourceDir = dirname(path);
+  const dependencies = new Map<string, { uri: string; path: string; bytes: Buffer }>();
+  const paths = new Map<string, string>();
+  const materials = new Map<string, ReturnType<OBJLoader["inspectMaterialLibrary"]>[number]>();
+  let totalBytes = 0;
+
+  const readDependency = (url: URL): { uri: string; path: string; bytes: Buffer } => {
+    const { uri, path: local } = nativeObjDependencyPath(url);
+    const existing = dependencies.get(uri);
+    if (existing) return existing;
+    const folded = local.toLowerCase();
+    if (paths.has(folded)) throw new Error("OBJ_DEPENDENCY_PATH: distinct resource URLs collide on the local filesystem");
+    if (dependencies.size >= 256) throw new Error("OBJ_DEPENDENCY_LIMIT: more than 256 dependencies");
+    const file = resolve(sourceDir, local);
+    assertNoNativeSymlinks(sourceDir, file);
+    const remaining = NATIVE_IMPORT_MAX_BYTES - totalBytes;
+    if (statSync(file).size > remaining) throw new Error("OBJ_DEPENDENCY_LIMIT: aggregate dependencies exceed 64 MiB");
+    const input = readBoundedNativeFile(file, remaining);
+    totalBytes += input.byteLength;
+    if (totalBytes > NATIVE_IMPORT_MAX_BYTES) throw new Error("OBJ_DEPENDENCY_LIMIT: aggregate dependencies exceed 64 MiB");
+    const result = { uri, path: local, bytes: input };
+    dependencies.set(uri, result);
+    paths.set(folded, uri);
+    return result;
+  };
+  const dependencyUrl = (reference: string, base: string): URL => {
+    if (!reference || /[\\\0]/.test(reference) || /%(?:2e|2f|5c)/i.test(reference)) throw new Error("OBJ_DEPENDENCY_PATH: unsafe dependency reference");
+    try { return new URL(reference, base); } catch { throw new Error("OBJ_DEPENDENCY_PATH: invalid dependency URL"); }
+  };
+  const requireRelativeReference = (reference: string): void => {
+    if (reference.startsWith("/") || /^[a-z][a-z0-9+.-]*:/i.test(reference)) {
+      throw new Error("OBJ_DEPENDENCY_PATH: resource references must be relative to their source file");
+    }
+  };
+  for (const library of parsed.materialLibraries) {
+    requireRelativeReference(library);
+    const url = dependencyUrl(library, documentUrl);
+    const mtl = readDependency(url);
+    for (const material of loader.inspectMaterialLibrary(decode(mtl.bytes), url.href)) {
+      materials.set(material.name, material);
+      if (materials.size > 65_536) throw new Error("OBJ_DEPENDENCY_LIMIT: more than 65536 material definitions");
+    }
+  }
+  let textureReferences = 0;
+  for (const material of materials.values()) {
+    if (!usedMaterials.has(material.name)) continue;
+    if (material.textures.length && !parsed.hasTexcoords) throw new Error(`OBJ material ${material.name} uses a texture but the mesh has no texture coordinates.`);
+    for (let index = 0; index < material.textures.length; index++) {
+      const texture = material.textures[index]!;
+      requireRelativeReference(material.textureReferences[index]!);
+      if (++textureReferences > 4096) throw new Error("OBJ_DEPENDENCY_LIMIT: more than 4096 texture references");
+      const item = readDependency(dependencyUrl(texture, rootUrl));
+      const png = item.bytes.length >= 8 && [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => item.bytes[index] === value);
+      const jpeg = item.bytes.length >= 3 && item.bytes[0] === 255 && item.bytes[1] === 216 && item.bytes[2] === 255;
+      if (!png && !jpeg) throw new Error(`OBJ_TEXTURE_FORMAT: ${item.uri} is not a PNG or JPEG`);
+    }
+  }
+  const min = parsed.min.map(round) as [number, number, number];
+  const max = parsed.max.map(round) as [number, number, number];
+  const size = parsed.min.map((value, axis) => round(parsed.max[axis]! - value)) as [number, number, number];
+  const boundsMetadata: AuraCliAssetBoundsInspection = {
+    min, max, size,
+    center: parsed.min.map((value, axis) => round((value + parsed.max[axis]!) / 2)) as [number, number, number],
+    maxDimension: Math.max(...size),
+    grounded: Math.abs(min[1]) <= 0.08
+  };
+  return {
+    bytes,
+    inspector: "obj",
+    dependencies: [...dependencies.values()],
+    inspection: {
+      ...inspectAssetFile(path, "obj"),
+      vertexCount: parsed.vertexCount,
+      bounds: size,
+      boundsMetadata,
+      materials: parsed.materialNames,
+      textures: [...materials.values()].filter((item) => usedMaterials.has(item.name)).flatMap((item) => item.textures.map((value) => new URL(value).pathname.slice("/project/".length))),
+      dependencies: [...dependencies.values()].map((item) => item.uri),
+      nativeWarnings: [...parsed.diagnostics, ...[...materials.values()].flatMap((item) => item.diagnostics)]
+    }
+  };
+}
+
+function nativeObjDependencyPath(url: URL): { uri: string; path: string } {
+  if (url.origin !== "https://aura3d.invalid" || !url.pathname.startsWith("/project/") || url.search || url.hash || url.username || url.password || /%(?:2e|2f|5c)/i.test(url.pathname)) {
+    throw new Error("OBJ_DEPENDENCY_PATH: dependencies must be local and remain inside the source directory");
+  }
+  const uri = url.pathname.slice("/project/".length);
+  let path: string;
+  try { path = decodeURIComponent(uri); } catch { throw new Error("OBJ_DEPENDENCY_PATH: invalid URI encoding"); }
+  if (!path || /[\\\0]/.test(path) || path.split("/").some((part) => !part || part === "." || part === "..")) throw new Error("OBJ_DEPENDENCY_PATH: invalid local path");
+  return { uri, path };
+}
+
+function checkNativeAdmissionDestination(options: AddAssetOptions, native: PreparedNativeAsset): void {
+  const projectDir = resolve(options.projectDir ?? process.cwd());
+  const current = readAssetManifest(projectDir);
+  const outputDir = normalizeRelativePath(options.outputDir ?? current.outputDir ?? DEFAULT_AURA_ASSET_OUTPUT_DIR);
+  const typegen = normalizeRelativePath(options.typegen ?? current.typegen ?? DEFAULT_AURA_ASSET_TYPEGEN);
+  const publicPath = normalizePublicPath(options.publicPath ?? current.assetBasePath ?? DEFAULT_AURA_ASSET_PUBLIC_PATH);
+  validateNativeAdmissionPaths(projectDir, options.name, outputDir, typegen, publicPath);
+  const hash = createHash("sha256").update(native.bytes).digest("hex");
+  const output = resolve(projectDir, outputDir, `${options.name}.${hash.slice(0, 8)}.obj`);
+  const generatedTargets = [
+    output,
+    ...native.dependencies.map((item) => resolve(projectDir, outputDir, item.path)),
+    resolve(projectDir, outputDir, `${options.name}.thumb.svg`),
+    resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
+    resolve(projectDir, typegen)
+  ];
+  if (new Set(generatedTargets.map((target) => target.toLowerCase())).size !== generatedTargets.length) {
+    throw new Error("Aura3D assets add failed: native output paths collide.");
+  }
+  const sourcePath = resolve(projectDir, options.file);
+  if (generatedTargets.some((target) => target === sourcePath && target !== output)) throw new Error("Aura3D assets add failed: generated files cannot overwrite the source asset.");
+  for (const target of generatedTargets) {
+    assertNoNativeSymlinks(projectDir, target);
+    if (existsSync(target) && !statSync(target).isFile()) throw new Error(`Aura3D assets add failed: output is not a regular file: ${target}`);
+    let parent = dirname(target);
+    while (!existsSync(parent)) parent = dirname(parent);
+    if (!statSync(parent).isDirectory()) throw new Error(`Aura3D assets add failed: output parent is not a directory: ${parent}`);
+  }
+  if (options.copy === false) {
+    const paths = [
+      { path: resolve(projectDir, outputDir, `${options.name}.${hash.slice(0, 8)}.obj`), bytes: native.bytes },
+      ...native.dependencies.map((item) => ({ path: resolve(projectDir, outputDir, item.path), bytes: item.bytes }))
+    ];
+    for (const item of paths) {
+      assertNoNativeSymlinks(projectDir, item.path);
+      if (!existsSync(item.path) || !statSync(item.path).isFile() || statSync(item.path).size !== item.bytes.length || !readBoundedNativeFile(item.path).equals(item.bytes)) {
+        throw new Error("Aura3D assets add failed: copy:false requires identical pre-staged native files.");
+      }
+    }
+  }
+}
+
+// The parser's allocation limits are wider than its render bridge's 32 MiB
+// buffer and 4096-group limits. Check the same bridge constraints at admission.
+function validateNativeMeshRenderBudget(mesh: NativeMeshData): void {
+  const vertexCount = mesh.positions.length / 3;
+  if (!vertexCount || !mesh.indices.length) throw new Error("MESH_GEOMETRY: no renderable vertices or indices");
+  const groups = (mesh.groups ?? [{ name: "mesh", start: 0, count: mesh.indices.length }]).filter((group) => group.count > 0);
+  if (groups.length > 4096) throw new Error("MESH_ADAPTER_LIMIT: more than 4096 nonempty groups");
+  const vertexStride = 4 * (3 + (mesh.normals ? 3 : 0) + (mesh.texcoords ? 2 : 0) + (mesh.colors ? 4 : 0));
+  let bytes = 0;
+  for (const group of groups) {
+    // The bridge remaps multiple groups, duplicating only referenced vertices.
+    if (bytes + group.count * 4 > NATIVE_RENDER_BUFFER_MAX_BYTES) throw new Error("MESH_ADAPTER_LIMIT: glTF buffer exceeds 32 MiB");
+    let count = vertexCount;
+    if (groups.length > 1) {
+      const referenced = new Set<number>();
+      for (let index = group.start; index < group.start + group.count; index++) {
+        referenced.add(mesh.indices[index]!);
+        if (bytes + group.count * 4 + referenced.size * vertexStride > NATIVE_RENDER_BUFFER_MAX_BYTES) {
+          throw new Error("MESH_ADAPTER_LIMIT: glTF buffer exceeds 32 MiB");
+        }
+      }
+      count = referenced.size;
+    }
+    bytes += count * vertexStride + group.count * 4;
+    if (bytes > NATIVE_RENDER_BUFFER_MAX_BYTES) throw new Error("MESH_ADAPTER_LIMIT: glTF buffer exceeds 32 MiB");
+  }
 }
 
 function inspectAssetFile(path: string, format: string): AssetInspection {
@@ -2910,9 +3833,9 @@ function createGlbComplexityWarnings(sizeBytes: number, vertexCount: number | un
   return warnings;
 }
 
-function createAssetWarnings(path: string, inspection: AssetInspection): readonly string[] {
+function createAssetWarnings(path: string, inspection: AssetInspection, inspectedSize?: number): readonly string[] {
   const warnings: string[] = [];
-  const size = statSync(path).size;
+  const size = inspectedSize ?? statSync(path).size;
   const format = extname(path).slice(1).toLowerCase();
   warnings.push(...createGlbComplexityWarnings(size, inspection.vertexCount, format));
   if (size > 25 * 1024 * 1024) warnings.push("asset exceeds 25 MB; consider compression before deployment");
@@ -3167,13 +4090,15 @@ function createDurableReleaseProvenanceWarnings(asset: AuraCliAssetEntry, proven
  * Reported as warnings rather than failures because release validation already promotes
  * warnings to blocking failures for release candidates, while non-release callers keep working.
  */
-function createDerivedMetadataDriftWarnings(outputPath: string, asset: AuraCliAssetEntry): readonly string[] {
+function createDerivedMetadataDriftWarnings(outputPath: string, asset: AuraCliAssetEntry, glbJson?: GltfJson): readonly string[] {
   if (asset.type !== "model") return [];
   if (asset.format !== "glb" && asset.format !== "gltf") return [];
   if (!existsSync(outputPath)) return [];
   let inspection: AssetInspection;
   try {
-    inspection = inspectAssetFile(outputPath, asset.format);
+    // The GLB was already inspected and hashed from a bounded JSON read above;
+    // do not read the whole binary container again just to compare metadata.
+    inspection = glbJson ? inspectGltf(glbJson) : inspectAssetFile(outputPath, asset.format);
   } catch {
     // A file we cannot inspect is already reported by the hash and dependency checks.
     return [];
@@ -3414,6 +4339,9 @@ function hasValidManifestOrientationOverride(asset: AuraCliAssetEntry): boolean 
 
 function releaseStoredAssetWarnings(projectDir: string, asset: AuraCliAssetEntry): readonly string[] {
   let warnings = asset.warnings ?? [];
+  // Older native admissions stored this informational notice as a warning.
+  // Registry selection is an app runtime concern, so it is not a release gate.
+  warnings = warnings.filter((warning) => !/^(?:OBJ|PLY|STL|3MF) requires explicit registration of a renderer-capable adapter in the app's FormatRegistry\.$/.test(warning));
   if (hasValidManifestOrientationOverride(asset)) {
     warnings = warnings.filter((warning) => !/orientation metadata missing; facing direction cannot be validated/i.test(warning));
   }
@@ -3835,9 +4763,228 @@ function writeThumbnail(projectDir: string, outputDir: string, publicPath: strin
   const fileName = `${id}.thumb.svg`;
   const outputPath = resolve(projectDir, outputDir, fileName);
   mkdirSync(dirname(outputPath), { recursive: true });
-  const label = `${id}${bounds ? ` ${bounds.join("x")}` : ""}`;
-  writeFileSync(outputPath, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">${escapeXml(label)}</text></svg>`);
+  writeFileSync(outputPath, thumbnailContents(id, bounds));
   return `${publicPath}${fileName}`;
+}
+
+function thumbnailContents(id: string, bounds?: readonly [number, number, number]): string {
+  const label = `${id}${bounds ? ` ${bounds.join("x")}` : ""}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#101720"/><path d="M80 126 160 46l80 80-80 28z" fill="#77a7ff"/><text x="160" y="160" text-anchor="middle" font-family="Arial" font-size="18" fill="#f4f7fb">${escapeXml(label)}</text></svg>`;
+}
+
+function validateNativeAdmissionPaths(projectDir: string, name: string, outputDir: string, typegen: string, publicPath: string): void {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(name) || name === "__proto__") {
+    throw new Error("Aura3D assets add failed: native asset name must contain only letters, digits, underscores, or hyphens.");
+  }
+  for (const [label, path] of [["output", outputDir], ["typegen", typegen]] as const) {
+    if (!path || isAbsolute(path) || /^[A-Za-z]:/.test(path) || path.split("/").some((part) => !part || part === "." || part === "..") || /[\0?#%]/.test(path)) {
+      throw new Error(`Aura3D assets add failed: ${label} must be a safe project-relative path.`);
+    }
+  }
+  if ([DEFAULT_AURA_ASSET_MANIFEST, "package.json"].includes(typegen)) throw new Error("Aura3D assets add failed: typegen cannot overwrite the manifest or package.json.");
+  let decoded: string;
+  try { decoded = decodeURIComponent(publicPath); } catch { decoded = ""; }
+  if (!publicPath.startsWith("/") || publicPath.startsWith("//") || /[\\?#\0]/.test(publicPath) || decoded !== publicPath ||
+      (publicPath !== "/" && publicPath.slice(1, -1).split("/").some((part) => !part || part === "." || part === ".."))) {
+    throw new Error("Aura3D assets add failed: native asset public path must be a same-origin absolute path without traversal.");
+  }
+  assertNoNativeSymlinks(projectDir, resolve(projectDir, outputDir));
+  assertNoNativeSymlinks(projectDir, resolve(projectDir, typegen));
+  assertNoNativeSymlinks(projectDir, resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST));
+}
+
+function assertNoNativeSymlinks(projectDir: string, path: string): void {
+  const relativePath = relative(projectDir, path);
+  if (!relativePath || relativePath.startsWith(`..${sep}`) || relativePath === ".." || isAbsolute(relativePath)) {
+    throw new Error("Aura3D assets add failed: native output path must remain inside the project.");
+  }
+  let cursor = projectDir;
+  for (const segment of relativePath.split(sep)) {
+    cursor = join(cursor, segment);
+    try {
+      if (lstatSync(cursor).isSymbolicLink()) throw new Error("Aura3D assets add failed: native output paths may not contain symbolic links.");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      break;
+    }
+  }
+}
+
+/** Stage every generated file, then roll back already-published paths if a later write fails. */
+function publishNativeAdmission(
+  projectDir: string,
+  manifest: AuraCliAssetManifest,
+  outputPath: string,
+  sourcePath: string,
+  name: string,
+  bounds: readonly [number, number, number] | undefined,
+  native: PreparedNativeAsset | undefined,
+  beforeCommit?: () => void,
+  glbTargets?: ReadonlyMap<string, Stats | undefined>
+): void {
+  const immutable = native?.inspector === "nrrd" || native?.inspector === "glb";
+  const suppliedAssets = native ? [
+    { target: resolve(projectDir, outputPath), bytes: native.bytes },
+    ...native.dependencies.map((item) => ({ target: resolve(projectDir, manifest.outputDir, item.path), bytes: item.bytes }))
+  ] : [];
+  // Distinct URI spellings can resolve to the same local resource. Publish it
+  // only once, while retaining every original URI in the integrity map.
+  const assetsByTarget = new Map<string, Buffer>();
+  for (const item of suppliedAssets) {
+    const prior = assetsByTarget.get(item.target);
+    if (prior && !prior.equals(item.bytes)) throw new Error("Aura3D assets add failed: dependency paths resolve to different bytes.");
+    assetsByTarget.set(item.target, item.bytes);
+  }
+  const assetFiles = [...assetsByTarget].map(([target, bytes]) => ({ target, bytes }));
+  const assertImmutable = (target: string, bytes: Buffer): void => {
+    if (native?.inspector === "glb") assertStagedGlbFile(projectDir, target, bytes, "existing GLB namespace contains different or unsafe bytes");
+    else assertImmutableScalarFile(target, bytes);
+  };
+  const pendingAssets = assetFiles.filter((item) => {
+    if (!immutable) return true;
+    assertNoNativeSymlinks(projectDir, item.target);
+    if (!existsSync(item.target)) return true;
+    assertImmutable(item.target, item.bytes);
+    return false;
+  });
+  const targets = [
+    ...pendingAssets.map((item) => item.target),
+    resolve(projectDir, manifest.outputDir, `${name}.thumb.svg`),
+    resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
+    resolve(projectDir, manifest.typegen)
+  ];
+  if (new Set(targets).size !== targets.length) throw new Error("Aura3D assets add failed: output, thumbnail, manifest and typegen paths must be distinct.");
+  if (targets.some((target) => target === sourcePath && target !== resolve(projectDir, outputPath))) {
+    throw new Error("Aura3D assets add failed: generated files cannot overwrite the source asset.");
+  }
+  for (const target of targets) {
+    assertNoNativeSymlinks(projectDir, target);
+    if (existsSync(target) && !statSync(target).isFile()) throw new Error(`Aura3D assets add failed: output is not a regular file: ${target}`);
+  }
+  const stage = mkdtempSync(join(projectDir, ".aura3d-admission-"));
+  const createdDirs: string[] = [];
+  const published: Array<{ target: string; backup?: string; identity?: { dev: number; ino: number } }> = [];
+  let retainStage = false;
+  try {
+    const packagePath = resolve(projectDir, "package.json");
+    if (existsSync(packagePath)) copyFileSync(packagePath, join(stage, "package.json"));
+    writeAssetManifest(stage, manifest);
+    const generated = writeTypedAssets(stage, { ...manifest, typegen: "native-generated.ts" });
+    const thumb = join(stage, "thumbnail.svg");
+    writeFileSync(thumb, thumbnailContents(name, bounds));
+    const stagedFiles: string[] = [];
+    for (let index = 0; index < pendingAssets.length; index++) {
+      const file = join(stage, `asset-${index}`);
+      writeFileSync(file, pendingAssets[index]!.bytes);
+      stagedFiles.push(file);
+    }
+    stagedFiles.push(thumb, join(stage, DEFAULT_AURA_ASSET_MANIFEST), generated);
+
+    for (const target of targets) {
+      let parent = dirname(target);
+      const missing: string[] = [];
+      while (!existsSync(parent)) { missing.push(parent); parent = dirname(parent); }
+      if (!statSync(parent).isDirectory()) throw new Error(`Aura3D assets add failed: output parent is not a directory: ${parent}`);
+      for (const dir of missing.reverse()) {
+        if (glbTargets) assertNoNativeSymlinks(projectDir, dir);
+        mkdirSync(dir);
+        createdDirs.push(dir);
+      }
+    }
+    for (let index = 0; index < targets.length; index++) {
+      // All asset hard-links now exist, but no thumbnail, manifest, or typed
+      // module has been changed. A failed recheck rolls those links back.
+      if (index === pendingAssets.length) beforeCommit?.();
+      const target = targets[index]!;
+      assertNoNativeSymlinks(projectDir, target);
+      if (immutable && index < pendingAssets.length) {
+        try {
+          // An exclusive hard link publishes complete bytes without replacing
+          // another writer's existing content-addressed file.
+          const identity = native?.inspector === "glb" ? lstatSync(stagedFiles[index]!) : undefined;
+          linkSync(stagedFiles[index]!, target);
+          published.push({ target, ...(identity ? { identity: { dev: identity.dev, ino: identity.ino } } : {}) });
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+          assertNoNativeSymlinks(projectDir, target);
+          assertImmutable(target, pendingAssets[index]!.bytes);
+        }
+        continue;
+      }
+      if (glbTargets) {
+        if (!glbTargets.has(target)) throw new Error("Aura3D assets add failed: unplanned GLB publication target.");
+        const expected = glbTargets.get(target);
+        assertGlbPublicationTarget(projectDir, target, expected);
+        const staged = lstatSync(stagedFiles[index]!);
+        const record: { target: string; backup?: string; identity?: { dev: number; ino: number } } = { target };
+        if (expected) {
+          record.backup = join(stage, `backup-${index}`);
+          renameSync(target, record.backup);
+          published.push(record);
+          const saved = lstatSync(record.backup);
+          // Renaming can update ctime; the inode, size and mtime must still be
+          // the same file that was approved before the transaction began.
+          if (saved.dev !== expected.dev || saved.ino !== expected.ino ||
+              saved.size !== expected.size || saved.mtimeMs !== expected.mtimeMs) {
+            throw new Error(`Aura3D assets add failed: generated output changed during GLB publication: ${target}`);
+          }
+        }
+        // Never replace a file created after the snapshot, even for generated
+        // outputs. A failed exclusive link leaves that other writer's file intact.
+        linkSync(stagedFiles[index]!, target);
+        record.identity = { dev: staged.dev, ino: staged.ino };
+        if (!expected) published.push(record);
+        continue;
+      }
+      const backup = existsSync(target) ? join(stage, `backup-${index}`) : undefined;
+      if (backup) renameSync(target, backup);
+      published.push({ target, backup });
+      renameSync(stagedFiles[index]!, target);
+    }
+  } catch (error) {
+    const rollbackFailures: string[] = [];
+    for (const { target, backup, identity } of published.reverse()) {
+      try {
+        if (glbTargets) {
+          if (identity) {
+            let current: Stats | undefined;
+            try { current = lstatSync(target); } catch (error) {
+              if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+            }
+            if (current) {
+              if (current.dev !== identity.dev || current.ino !== identity.ino) throw new Error("published file was replaced");
+              rmSync(target);
+            }
+          }
+          // Linking the backup is exclusive: rollback never erases another
+          // writer's replacement. Retain the stage if restoration is blocked.
+          if (backup) linkSync(backup, target);
+        } else {
+          if (existsSync(target)) rmSync(target);
+          if (backup) renameSync(backup, target);
+        }
+      } catch {
+        rollbackFailures.push(target);
+      }
+    }
+    for (const dir of createdDirs.reverse()) {
+      try { rmdirSync(dir); } catch { /* Leave unrelated concurrent content intact. */ }
+    }
+    if (rollbackFailures.length) {
+      // A failed restore must never delete the original backups with the stage.
+      retainStage = true;
+      throw new Error(`Aura3D assets add rollback could not restore ${rollbackFailures.join(", ")}; original files remain in ${stage}.`, { cause: error });
+    }
+    throw error;
+  } finally {
+    if (!retainStage) rmSync(stage, { recursive: true, force: true });
+  }
+}
+
+function assertImmutableScalarFile(path: string, bytes: Buffer): void {
+  if (!statSync(path).isFile() || statSync(path).size !== bytes.length || !readBoundedNativeFile(path).equals(bytes)) {
+    throw new Error("Aura3D assets add failed: existing scalar-volume namespace contains different bytes.");
+  }
 }
 
 /** GU47 E-C: `--type lut` admits only a valid 3-D `.cube` (the S10b display-grade LUT). */
@@ -3853,13 +5000,14 @@ function admitCubeLut(sourcePath: string, format: string): void {
 }
 
 function inferAssetType(format: string): AuraCliAssetType {
-  if (["glb", "gltf"].includes(format)) return "model";
-  if (["png", "jpg", "jpeg", "webp", "ktx2"].includes(format)) return "texture";
+  if (["glb", "gltf", "obj", "ply", "stl", "3mf", "vox"].includes(format)) return "model";
+  if (["png", "jpg", "jpeg", "webp", "ktx2", "pvr"].includes(format)) return "texture";
   if (["hdr", "exr"].includes(format)) return "environment";
   if (["mp3", "wav", "ogg"].includes(format)) return "audio";
+  if (format === "nrrd" || format === "nhdr") return "scalar-volume";
   if (format === "navmesh") return "navigation";
   if (format === "cube") return "lut";
-  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, ogg, navmesh, or cube.`);
+  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, obj, ply, stl, 3mf, vox, png, jpg, webp, ktx2, pvr, hdr, exr, mp3, wav, ogg, nrrd, nhdr, navmesh, or cube.`);
 }
 
 function hashFile(path: string): string {

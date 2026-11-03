@@ -1,7 +1,9 @@
 import { PointerLockControls as InputPointerLockControls } from "./engine/PointerLockControls.js";
-import type { FirstPersonControlsOptions } from "./engine/FirstPersonControls.js";
+import type { PointerLockControlsOptions } from "./engine/PointerLockControls.js";
 import { FirstPersonControls } from "./FirstPersonControls";
 import type { FlyCameraLike } from "./FlyControls";
+
+export type { PointerLockControlsOptions } from "./engine/PointerLockControls.js";
 
 /**
  * Pointer-lock navigation delegated to `@aura3d/input`. `lock()` and
@@ -10,7 +12,7 @@ import type { FlyCameraLike } from "./FlyControls";
 export class PointerLockControls extends FirstPersonControls {
   private readonly pointerLockDelegate: InputPointerLockControls;
 
-  constructor(camera?: FlyCameraLike, options: FirstPersonControlsOptions = {}) {
+  constructor(camera?: FlyCameraLike, options: PointerLockControlsOptions = {}) {
     super(camera, options);
     this.pointerLockDelegate = new InputPointerLockControls(this.controlledCamera, {
       ...options,

@@ -1,0 +1,19 @@
+{
+  "schema": "aura3d.vendor-provenance/1",
+  "artifact": "Zstandard one-shot decoder WebAssembly embedded in src/workers/zstd.worker.ts",
+  "sourcePackage": "zstddec@0.3.4",
+  "sourceTarball": "https://registry.npmjs.org/zstddec/-/zstddec-0.3.4.tgz",
+  "sourcePackageIntegrity": "sha512-3Y/NMP6MNdp9b0fWhjCUGiybog7RC3EbUSIJLWnfjylOvnbuGykeu4zYUuH4IRLy5xI7NytXTHN3CWQKIN3cSg==",
+  "sourceRepository": "https://github.com/donmccurdy/zstddec",
+  "sourceCommit": "ff24d680cc36af645d1e06d027f861e16ff79bf0",
+  "sourceFile": "src/zstddec.ts",
+  "wasmSha256": "8b093c4c144273776d511f3baaa0fec32c111500c2798cb4569a71479020e72a",
+  "wasmBytes": 54394,
+  "licenses": [
+    "MIT",
+    "BSD-3-Clause"
+  ],
+  "upstreamBuildClaim": "zstd 1.5.7 at f8745da6 (f8745da6ff1ad1e7bab384bd1f9d742439278e99), built with Emscripten 4.0.10; described in the pinned zstddec README",
+  "reproducibility": "The published package and pinned source literal were matched and hashed. The upstream source-to-binary build was not independently reproduced or attested.",
+  "integration": "Aura3D's worker and bounded ABI adapter are independently authored. The upstream JavaScript decoder wrapper is not imported."
+}

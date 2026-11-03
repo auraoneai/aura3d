@@ -1,0 +1,53 @@
+{
+  "schema": "aura3d.exr-fixture-provenance/1",
+  "fixture": "wp08-chroma-layout.exr",
+  "sha256": "f38ee348c7e447ab5848472d016c87a4a265001009d86eeb434b49c29088d1b3",
+  "sizeBytes": 934,
+  "origin": "Original analytic pixel values authored for this Aura3D source test; no external image or engine asset was used.",
+  "fixtureLicense": "MIT",
+  "fixtureLicenseUrl": "https://spdx.org/licenses/MIT.html",
+  "generator": "generate-wp08-chroma-layout.cpp",
+  "generationCommand": "clang++ -std=c++17 -O1 tests/fixtures/exr/generate-wp08-chroma-layout.cpp $(pkg-config --cflags --libs OpenEXR) -o /tmp/chroma-layout-gen && /tmp/chroma-layout-gen tests/fixtures/exr/wp08-chroma-layout.exr",
+  "generatorCompiler": "Apple clang 21.0.0 (clang-2100.4.1.1)",
+  "encoder": {
+    "name": "OpenEXR",
+    "version": "3.4.6",
+    "license": "BSD-3-Clause",
+    "licenseUrl": "https://spdx.org/licenses/BSD-3-Clause.html"
+  },
+  "formatVersion": 2,
+  "compression": "ZIP",
+  "dataWindow": [-4, -2, 27, 13],
+  "dimensions": [32, 16],
+  "channels": {
+    "look.Y": "FLOAT, full resolution",
+    "look.RY": "FLOAT, 2x2 subsampled",
+    "look.BY": "FLOAT, 2x2 subsampled",
+    "look.A": "FLOAT, full resolution",
+    "R": "FLOAT, full resolution, unrelated root layer"
+  },
+  "chromaticities": {
+    "red": [0.5, 0.25],
+    "green": [0.25, 0.5],
+    "blue": [0.125, 0.125],
+    "white": [0.25, 0.25],
+    "luminanceWeights": [0.25, 0.5, 0.25]
+  },
+  "expectations": {
+    "coordinates": "x and y are zero-based within the data window; sx and sy are the stored 2x2 sample coordinates nearest to x and y, with ties toward the higher coordinate and edge clamping.",
+    "Y": "0.5 + x / 64 + y / 128",
+    "RY": "-0.25 + sx / 64",
+    "BY": "0.125 + sy / 64",
+    "A": "0.75",
+    "rootR": "2 + x / 16",
+    "red": "Y * (1 + RY)",
+    "blue": "Y * (1 + BY)",
+    "green": "2 * Y - (red + blue) / 2",
+    "outputRowOrder": "decreasing source Y"
+  },
+  "referenceVerification": {
+    "encoderReadback": "OpenEXR 3.4.6 InputFile read every Y, RY, BY, A and root R sample exactly after ZIP encoding.",
+    "header": "exrheader 3.4.6 reported version 2, the named channels and sampling, chromaticities, ZIP compression and the data window recorded above.",
+    "reproducibility": "Two consecutive generator invocations produced the same SHA-256."
+  }
+}

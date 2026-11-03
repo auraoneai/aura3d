@@ -1,0 +1,29 @@
+{
+  "name": "sunset",
+  "source": "hdr",
+  "faceSize": 256,
+  "mipCount": 5,
+  "format": "E5B9G9R9_UFLOAT_PACK32",
+  "specular": "sunset.specular.ktx2",
+  "sh9": "sunset.sh9.f32",
+  "sha256": {
+    "specular": "afeda3c0ae0fbe666f7da4a6df6f9b40599e7b48fdd51ee46b12fc798ce3170c",
+    "sh9": "e0f6db7d6314634893a49bbcc73a1635b987e8eecc0ef69e5872327e356a21f7"
+  },
+  "license": "CC0",
+  "tags": [
+    "stand-in"
+  ],
+  "bakedBy": "aura3d environments bake",
+  "samplesPerTexel": 128,
+  "provenance": {
+    "sourceAsset": "../hdri/kloppenheim_06_puresky_1k.hdr",
+    "sourceAssetSha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+    "sourceLicense": "CC0-1.0",
+    "sourceUri": "https://polyhaven.com/a/kloppenheim_06_puresky",
+    "bakeOrigin": "historical-aura-bake",
+    "sourceRecord": "packages/engine/src/devtools/environments/EnvironmentRegistry.ts",
+    "bakeCommit": "45b2923f52f829fad700127befa035706780f2de",
+    "pipelineIndependenceVerified": false
+  }
+}

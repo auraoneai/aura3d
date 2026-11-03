@@ -1,4 +1,4 @@
-import type { AuraRuntimeNodeHandle } from "../index";
+import type { AuraRuntimeNodeHandle } from "../nodes/types/runtime.js";
 import { racketAthleteRig, type RacketAthleteRigKit } from "./racketAthleteRig";
 import { directionToEulerXYZ, localDirToWorld, localToWorld, orientCylinderBetween, solveArmElbow, type RacketVec3 } from "./racketGeometry";
 import { createBallFlight, type BallFlightConfig, type BallFlightKit } from "./ballFlight";

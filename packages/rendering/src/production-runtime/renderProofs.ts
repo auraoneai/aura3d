@@ -188,7 +188,8 @@ export function validateProductionRendererInput(input: ProductionRendererInput, 
   if (!hasMeshes && !hasContributorContent) {
     throw new Error("Production render path requires at least one real mesh primitive.");
   }
-  if (hasMeshes && input.metadata.materialCount <= 0) {
+  const materialCount = input.metadata.runtimeMaterialCount ?? input.metadata.materialCount;
+  if (hasMeshes && (!Number.isSafeInteger(materialCount) || materialCount <= 0)) {
     throw new Error("Production render path requires at least one real material.");
   }
 }
@@ -201,12 +202,16 @@ export function rendererFeatureReport(
 ): readonly ProductionRendererFeature[] {
   const capabilities = new Set(renderer.device.info.capabilities ?? []);
   const feature = (id: string, state: ProductionRendererFeature["state"], detail: string): ProductionRendererFeature => ({ id, state, detail });
+  const materialCount = input?.metadata.runtimeMaterialCount ?? input?.metadata.materialCount ?? 0;
+  const materialDetail = !input ? "Awaiting imported asset metadata."
+    : input.metadata.runtimeMaterialCount === undefined ? `${input.metadata.materialCount} authored materials in render metadata`
+      : `${input.metadata.materialCount} authored materials; ${materialCount} runtime-bound materials`;
   return [
     feature("real-webgl2-context", renderer.device.kind === "webgl2" ? "supported" : "blocked", `backend=${renderer.device.kind}`),
     feature("no-canvas2d-proof", "supported", "Render proof is produced by Renderer/WebGL2 and readPixels, not Canvas 2D drawing."),
     feature("no-mock-device", renderer.device.kind === "mock" ? "blocked" : "supported", "Production renderer creation refuses mock backend creation."),
     feature("imported-gltf-render-source", input && input.metadata.primitiveCount > 0 ? "supported" : "partial", input ? `${input.metadata.assetId}: ${input.metadata.primitiveCount} primitives` : "Awaiting imported asset render input."),
-    feature("pbr-materials", input && input.metadata.materialCount > 0 ? "supported" : "partial", input ? `${input.metadata.materialCount} glTF materials in render metadata` : "Awaiting imported asset metadata."),
+    feature("pbr-materials", Number.isSafeInteger(materialCount) && materialCount > 0 ? "supported" : "partial", materialDetail),
     feature("texture-upload-diagnostics", (diagnostics.textures ?? 0) > 0 ? "supported" : "partial", `${diagnostics.textures ?? 0} live textures, ${diagnostics.textureBytes ?? 0} bytes`),
     feature("render-target-diagnostics", diagnostics.renderTargets !== undefined ? "supported" : "partial", `${diagnostics.renderTargets ?? 0} live render targets`),
     feature("draw-call-diagnostics", diagnostics.drawCalls > 0 ? "supported" : "partial", `${diagnostics.drawCalls} draw calls in last frame`),

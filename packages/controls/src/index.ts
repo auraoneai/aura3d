@@ -1,7 +1,7 @@
 export { OrbitControls } from "./OrbitControls";
 export type { OrbitCameraLike, OrbitControlsOptions } from "./OrbitControls";
 export { ArcballControls } from "./ArcballControls";
-export type { ArcballCameraLike, ArcballControlsOptions } from "./ArcballControls";
+export type { ArcballCameraLike, ArcballControlsOptions, ArcballViewport, ArcballRay, ArcballPointer } from "./ArcballControls";
 export { TrackballControls } from "./TrackballControls";
 export { FlyControls } from "./FlyControls";
 export type { FlyCameraLike, FlyControlsOptions } from "./FlyControls";
@@ -9,8 +9,9 @@ export { FirstPersonControls } from "./FirstPersonControls";
 export type { FirstPersonControlsOptions } from "./FirstPersonControls";
 export { MapControls } from "./MapControls";
 export { PointerLockControls } from "./PointerLockControls";
+export type { PointerLockControlsOptions } from "./PointerLockControls";
 export { DRAG_CONTROLS_DEPRECATION, DragControls } from "./DragControls";
-export type { DragControlsDeprecation, DragControlsOptions } from "./DragControls";
+export type { DragControlsDeprecation, DragControlsOptions, DragObject, DragRay, DragHit, DragEventType, DragEvent, DragListener } from "./DragControls";
 export { TransformControls } from "./TransformControls";
 export type {
   TransformControlDragUpdate,
@@ -25,6 +26,13 @@ export type {
 } from "./TransformControls";
 export { SelectionManager } from "./SelectionManager";
 export type { SelectionManagerChange, SelectionManagerListener } from "./SelectionManager";
+export { SelectionBox } from "./SelectionBox";
+export type {
+  SelectionBoxPoint, SelectionBoxBounds, SelectionBoxHit, SelectionBoxBoundsProvider, SelectionBoxOptions,
+  SelectionBoxConnectionOptions, SelectionBoxMarquee, SelectionBoxEventType, SelectionBoxEvent, SelectionBoxListener
+} from "./SelectionBox";
+export { InteractiveGroup } from "./InteractiveGroup";
+export type { InteractiveGroupRay, InteractiveGroupHit, InteractiveGroupEventType, InteractiveGroupEvent, InteractiveGroupListener, InteractiveGroupOptions } from "./InteractiveGroup";
 export { HoverOutline } from "./HoverOutline";
 export type { HoverOutlineEntry, HoverOutlineOptions, HoverOutlineStyle, HoverOutlineTone } from "./HoverOutline";
 export { frameSelection, frameTarget } from "./FocusFrame";
@@ -43,7 +51,7 @@ export type {
   InteractionRootProvider
 } from "./InteractionControls";
 export { Picking } from "./Picking";
-export type { PickingDiagnostics, PickingOptions, PickingReport, ThreeCompatPickResult } from "./Picking";
+export type { ExactScenePickHit, ExactScenePickQuery, PickingDiagnostics, PickingOptions, PickingReport, ThreeCompatPickResult } from "./Picking";
 export {
   annotationFromPickHit,
   createDistrictPickingAnnotations,

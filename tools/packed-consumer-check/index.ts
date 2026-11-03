@@ -19,9 +19,12 @@
  *   --only <substr>     restrict to templates whose dir name contains <substr>
  *   --skip-build        run install + tsc only (no vite build)
  *   --keep-tmp          keep the temp dir for debugging
+ *   --candidate-plan    use validated candidate archives, without repacking
  */
 
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import { builtinModules } from "node:module";
+import { createHash } from "node:crypto";
 import {
   cpSync,
   existsSync,
@@ -36,16 +39,139 @@ import {
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 const ENGINE_PACKAGE = "@aura3d/engine";
 const SKIP_DIRS = new Set(["node_modules", "dist", "test-results", "playwright-report", ".cache"]);
 
-interface TemplateCheckResult {
+export interface ConsumerChange {
+  readonly path: string;
+  readonly beforeSha256: string | null;
+  readonly afterSha256: string | null;
+  readonly allowed: boolean;
+  readonly reason: string;
+}
+
+export interface TemplateCheckResult {
   readonly template: string;
-  readonly steps: Record<"specifiers" | "install" | "typecheck" | "build", "pass" | "fail" | "skip">;
+  readonly steps: Record<"specifiers" | "install" | "typecheck" | "build", "pass" | "fail" | "skip" | "not-applicable">;
+  readonly changes: readonly ConsumerChange[];
   readonly detail?: string;
+}
+
+type ConsumerPackage = {
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+};
+const DEPENDENCY_SECTIONS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"] as const;
+const HASH = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
+const BUILTINS = new Set(builtinModules.map((name) => name.replace(/^node:/, "")));
+
+/** Collect the original consumer files; generated output and installed dependencies are not inputs. */
+function consumerFiles(root: string): Map<string, Buffer> {
+  const files = new Map<string, Buffer>();
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (SKIP_DIRS.has(entry.name)) continue;
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (entry.isFile()) files.set(relative(root, path).split(sep).join("/"), readFileSync(path));
+      else throw new Error(`Unsupported consumer input (not a regular file): ${path}`);
+    }
+  };
+  walk(root);
+  return files;
+}
+
+function substitutedPackage(original: ConsumerPackage, replacements: Readonly<Record<string, string>>): ConsumerPackage {
+  const result = structuredClone(original);
+  for (const section of DEPENDENCY_SECTIONS) {
+    for (const [name, value] of Object.entries(replacements)) {
+      if (!name.startsWith("@aura3d/") || !value.startsWith("file:")) {
+        throw new Error(`Only candidate Aura3D package substitutions are allowed: ${name}`);
+      }
+      if (Object.hasOwn(result[section] ?? {}, name)) result[section]![name] = value;
+    }
+  }
+  return result;
+}
+
+/** Detect every changed input, allowing only explicit candidate substitutions and install-created locks. */
+export function auditConsumerCopy(
+  originalDir: string,
+  copyDir: string,
+  replacements: Readonly<Record<string, string>>,
+  options: { readonly afterInstall?: boolean } = {}
+): ConsumerChange[] {
+  const original = consumerFiles(originalDir);
+  const copy = consumerFiles(copyDir);
+  const changes: ConsumerChange[] = [];
+  for (const path of [...new Set([...original.keys(), ...copy.keys()])].sort()) {
+    const before = original.get(path);
+    const after = copy.get(path);
+    const beforeSha256 = before ? HASH(before) : null;
+    const afterSha256 = after ? HASH(after) : null;
+    if (beforeSha256 === afterSha256) continue;
+    let allowed = false;
+    let reason = "consumer input changed outside the candidate substitution";
+    if (path === "package.json" && before && after) {
+      try {
+        const expected = substitutedPackage(JSON.parse(before.toString("utf8")) as ConsumerPackage, replacements);
+        const actual = JSON.parse(after.toString("utf8")) as ConsumerPackage;
+        allowed = JSON.stringify(expected) === JSON.stringify(actual);
+        if (allowed) reason = "candidate package specifiers substituted; manifest formatting normalized";
+      } catch { /* malformed or unapproved substitutions fail closed */ }
+    } else if (options.afterInstall && ["pnpm-lock.yaml", "package-lock.json", "yarn.lock"].includes(path) && after) {
+      allowed = true;
+      reason = "package manager generated or updated lockfile during install";
+    }
+    changes.push({ path, beforeSha256, afterSha256, allowed, reason });
+  }
+  return changes;
+}
+
+/** Validate declared inputs before an install; a harness never supplies missing packages or config. */
+export function consumerPreflight(dir: string): string[] {
+  const path = join(dir, "package.json");
+  if (!existsSync(path)) return ["consumer package.json is missing"];
+  let pkg: ConsumerPackage;
+  try { pkg = JSON.parse(readFileSync(path, "utf8")) as ConsumerPackage; }
+  catch { return ["consumer package.json is invalid"]; }
+  const deps = Object.assign({}, ...DEPENDENCY_SECTIONS.map((section) => pkg[section] ?? {})) as Record<string, string>;
+  const errors: string[] = [];
+  if (!deps[ENGINE_PACKAGE]) errors.push(`${ENGINE_PACKAGE} is not declared`);
+  if (!pkg.scripts?.build?.trim()) errors.push("required build script is missing");
+  const files = consumerFiles(dir);
+  const typed = [...files.keys()].some((name) => /\.[cm]?tsx?$/.test(name) && !name.endsWith(".d.ts"));
+  if (typed && !deps.typescript) errors.push("typescript is not declared");
+  if (typed && !existsSync(join(dir, "tsconfig.json"))) errors.push("tsconfig.json is missing");
+  // The build command runs from the consumer; using a workspace binary would conceal a missing dependency.
+  if (/\bvite\b/.test(pkg.scripts?.build ?? "") && !deps.vite) errors.push("vite is not declared");
+  for (const [name, bytes] of files) {
+    if (!/\.[cm]?[jt]sx?$/.test(name)) continue;
+    const source = bytes.toString("utf8");
+    const matches = source.matchAll(/(?:\b(?:import|export)\s+(?:[^"'`]*?\s+from\s+)?|\b(?:import|require)\s*\()\s*["']([^"']+)["']/g);
+    for (const match of matches) {
+      const specifier = match[1]!;
+      if (/^(?:[./#]|[a-z]+:)/i.test(specifier) && !specifier.startsWith("node:")) continue;
+      const packageName = specifier.startsWith("@") ? specifier.split("/").slice(0, 2).join("/") : specifier.split("/")[0]!;
+      if (BUILTINS.has(packageName.replace(/^node:/, ""))) {
+        if (/\.[cm]?tsx?$/.test(name) && !deps["@types/node"]) errors.push(`${name}: @types/node is not declared for ${specifier}`);
+      } else if (!deps[packageName] && packageName !== pkgName(pkg)) {
+        errors.push(`${name}: dependency ${packageName} is not declared`);
+      }
+    }
+  }
+  return [...new Set(errors)];
+}
+
+function pkgName(pkg: ConsumerPackage): string | undefined {
+  return (pkg as ConsumerPackage & { name?: string }).name;
 }
 
 function collectTemplateDirs(): readonly string[] {
@@ -88,7 +214,12 @@ export function specifierAllowed(specifier: string, exportsKeys: ReadonlySet<str
   if (specifier === ENGINE_PACKAGE) return exportsKeys.has(".") || [...exportsKeys].some((k) => !k.startsWith("."));
   const sub = specifier.slice(ENGINE_PACKAGE.length);
   if (!sub.startsWith("/")) return false;
-  return exportsKeys.has(`.${sub}`);
+  const key = `.${sub}`;
+  return exportsKeys.has(key) || [...exportsKeys].some((pattern) => {
+    if (!pattern.includes("*")) return false;
+    const [prefix, suffix, ...extra] = pattern.split("*");
+    return extra.length === 0 && key.startsWith(prefix!) && key.endsWith(suffix!) && key.length >= prefix!.length + suffix!.length;
+  });
 }
 
 export interface DistUrlViolation {
@@ -162,57 +293,12 @@ function packEngineTarball(tmp: string): string {
 }
 
 export function prepareConsumerCopy(templateDir: string, dest: string, tarball: string, extraDeps?: Readonly<Record<string, string>>): void {
-  cpSync(templateDir, dest, {
-    recursive: true,
-    filter: (src) => !SKIP_DIRS.has(basename(src))
-  });
+  if (existsSync(dest)) throw new Error(`consumer destination already exists: ${dest}`);
+  const replacements = { [ENGINE_PACKAGE]: `file:${tarball}`, ...(extraDeps ?? {}) };
+  cpSync(templateDir, dest, { recursive: true, filter: (src) => !SKIP_DIRS.has(basename(src)) });
   const pkgPath = join(dest, "package.json");
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
-    dependencies?: Record<string, string>;
-    devDependencies?: Record<string, string>;
-  };
-  const rewrites: Record<string, string> = { [ENGINE_PACKAGE]: `file:${tarball}`, ...(extraDeps ?? {}) };
-  for (const section of [pkg.dependencies, pkg.devDependencies]) {
-    for (const [name, spec] of Object.entries(rewrites)) {
-      if (section?.[name]) section[name] = spec;
-    }
-  }
-  // Templates with playwright tests import node:fs/node:path but several
-  // don't declare @types/node (Q-13-7). The consumer is the gate's own
-  // harness — inject it so the check measures the packed surface, not a
-  // template manifest gap a real consumer would fill from its own deps.
-  if (!pkg.devDependencies?.["@types/node"]) {
-    pkg.devDependencies = { ...pkg.devDependencies, "@types/node": "^22.15.30" };
-  }
-  writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
-  // Consumers stand alone — pnpm refuses install-time build scripts without
-  // explicit approval (ERR_PNPM_IGNORED_BUILDS). Mirror the root workspace's
-  // allowBuilds list so esbuild (vite's optimizer) can run its postinstall.
-  writeFileSync(join(dest, "pnpm-workspace.yaml"), "allowBuilds:\n  esbuild: true\n  sharp: true\n");
-  // Optional peer imports that ship a runtime fallback (try/catch → CDN) must
-  // not be required in the consumer's dependency tree for the build to pass —
-  // that is what "optional" means. `@loaders.gl/*` is dynamically imported by
-  // @aura3d/assets' KTX2 transcoder with exactly that fallback; until owner 05
-  // declares it (Q-05-8), externalize it here so the gate measures the packed
-  // surface rather than an unrelated missing optional dep.
-  if (!existsSync(join(dest, "vite.config.ts"))) {
-    writeFileSync(
-      join(dest, "vite.config.ts"),
-      [
-        'import { defineConfig } from "vite";',
-        "",
-        "export default defineConfig({",
-        "  build: {",
-        "    rollupOptions: {",
-        "      // Optional peers with runtime CDN fallbacks — not required to build.",
-        "      external: [/^@loaders\\.gl\\//]",
-        "    }",
-        "  }",
-        "});",
-        ""
-      ].join("\n")
-    );
-  }
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as ConsumerPackage;
+  writeFileSync(pkgPath, `${JSON.stringify(substitutedPackage(pkg, replacements), null, 2)}\n`);
 }
 
 function step(label: string, cwd: string, command: string, args: readonly string[]): string | undefined {
@@ -235,40 +321,44 @@ export function checkTemplate(
 ): TemplateCheckResult {
   const template = basename(templateDir);
   const steps: TemplateCheckResult["steps"] = { specifiers: "skip", install: "skip", typecheck: "skip", build: "skip" };
-
-  prepareConsumerCopy(templateDir, dest, tarball, options.extraDeps);
+  let changes: ConsumerChange[] = [];
+  const replacements = { [ENGINE_PACKAGE]: `file:${tarball}`, ...(options.extraDeps ?? {}) };
+  const fail = (detail: string): TemplateCheckResult => ({ template, steps, changes, detail });
+  try {
+    prepareConsumerCopy(templateDir, dest, tarball, options.extraDeps);
+    changes = auditConsumerCopy(templateDir, dest, replacements);
+  } catch (error) { return fail(`consumer preparation failed: ${String(error)}`); }
+  const unauthorized = changes.filter((change) => !change.allowed);
+  if (unauthorized.length) return fail(`unauthorized harness changes: ${unauthorized.map((change) => change.path).join(", ")}`);
 
   const badSpecifiers = [...collectEngineSpecifiers(dest)].filter((s) => !specifierAllowed(s, exportsKeys));
   steps.specifiers = badSpecifiers.length === 0 ? "pass" : "fail";
-  if (badSpecifiers.length > 0) {
-    return { template, steps, detail: `repo-alias-only specifiers not in packed exports: ${badSpecifiers.join(", ")}` };
-  }
+  if (badSpecifiers.length > 0) return fail(`repo-alias-only specifiers not in packed exports: ${badSpecifiers.join(", ")}`);
+  const preflight = consumerPreflight(dest);
+  if (preflight.length) return fail(`consumer preflight failed: ${preflight.join("; ")}`);
+  if (options.skipBuild) return fail("required build check was skipped (--skip-build)");
 
   let failure = step("install", dest, "pnpm", ["install", "--offline=false"]);
   steps.install = failure ? "fail" : "pass";
   if (!failure) {
-    // `tsc --noEmit` only makes sense against the template's own tsconfig —
-    // without one there is no project to check (vite build below is the
-    // bundler-level check for those templates).
-    const hasTsc = existsSync(join(dest, "node_modules/.bin/tsc")) && existsSync(join(dest, "tsconfig.json"));
-    const hasVite = existsSync(join(dest, "node_modules/.bin/vite"));
-    if (!hasTsc) {
-      steps.typecheck = "skip";
-    } else {
-      failure = step("typecheck", dest, "pnpm", ["exec", "tsc", "--noEmit"]);
+    const typed = [...consumerFiles(dest).keys()].some((name) => /\.[cm]?tsx?$/.test(name) && !name.endsWith(".d.ts"));
+    if (typed) {
+      if (!existsSync(join(dest, "node_modules/.bin/tsc"))) failure = "typecheck failed: installed typescript executable is missing";
+      else failure = step("typecheck", dest, "pnpm", ["exec", "tsc", "--noEmit"]);
       steps.typecheck = failure ? "fail" : "pass";
-    }
-    if (!failure && !options.skipBuild) {
-      if (!hasVite || !existsSync(join(dest, "index.html"))) {
-        steps.build = "skip";
-      } else {
-        failure = step("build", dest, "pnpm", ["exec", "vite", "build"]);
-        steps.build = failure ? "fail" : "pass";
-      }
+    } else steps.typecheck = "not-applicable";
+    if (!failure) {
+      failure = step("build", dest, "pnpm", ["run", "build"]);
+      steps.build = failure ? "fail" : "pass";
     }
   }
+  try {
+    changes = auditConsumerCopy(templateDir, dest, replacements, { afterInstall: true });
+    const unexpected = changes.filter((change) => !change.allowed);
+    if (unexpected.length) failure = `${failure ? `${failure}; ` : ""}unauthorized harness changes: ${unexpected.map((change) => change.path).join(", ")}`;
+  } catch (error) { failure = `${failure ? `${failure}; ` : ""}consumer audit failed: ${String(error)}`; }
+  return failure ? fail(failure) : { template, steps, changes };
 
-  return failure ? { template, steps, detail: failure } : { template, steps };
 }
 
 function main(): void {
@@ -288,7 +378,13 @@ function main(): void {
   const tmp = mkdtempSync(join(tmpdir(), "a3d-pack-check-"));
   console.log(`packed-consumer-check: ${templates.length} templates, temp dir ${tmp}`);
 
-  const tarball = packEngineTarball(tmp);
+  const planIndex = args.indexOf("--candidate-plan");
+  if (planIndex >= 0 && !args[planIndex + 1]) throw new Error("--candidate-plan requires a validated release plan path");
+  const candidatePath = planIndex >= 0 ? args[planIndex + 1] : process.env.A3D_RELEASE_PLAN;
+  const candidate = candidatePath ? loadValidatedReleasePlan(REPO_ROOT, candidatePath) : null;
+  const engine = candidate?.packages.find((item) => item.name === ENGINE_PACKAGE);
+  if (candidate && !engine) throw new Error(`Candidate plan does not contain ${ENGINE_PACKAGE}`);
+  const tarball = engine ? resolve(REPO_ROOT, engine.tarball) : packEngineTarball(tmp);
   const exportsKeys = readTarballExports(tarball, join(tmp, "tarball-meta"));
   console.log(`tarball ${basename(tarball)} with ${exportsKeys.size} export keys`);
   const urlViolations = checkTarballDistUrls(tarball, join(tmp, "tarball-full"));
@@ -300,6 +396,10 @@ function main(): void {
   // rewrites that specifier to its tarball in consumer package.json files
   // (PRD-15 T4.7: fixtures may depend on additional workspace packages.)
   const extraDeps: Record<string, string> = {};
+  if (candidate) {
+    for (const item of candidate.packages) if (item.name.startsWith("@aura3d/") && item.name !== ENGINE_PACKAGE) extraDeps[item.name] = `file:${resolve(REPO_ROOT, item.tarball)}`;
+    if (extraPkgs.length) throw new Error("--extra-pkg is not allowed with a validated candidate plan; all substitutions come from that plan");
+  }
   for (const entry of extraPkgs) {
     const sep = entry.lastIndexOf(":");
     const dir = entry.slice(0, sep);
@@ -320,10 +420,12 @@ function main(): void {
     const result = checkTemplate(join(REPO_ROOT, templateDir), dest, tarball, exportsKeys, { skipBuild, extraDeps });
     results.push(result);
     console.log(`${result.detail ? "FAIL" : "PASS"} ${result.template}${result.detail ? ` — ${result.detail}` : ""}`);
+    for (const change of result.changes) console.log(`  ${change.allowed ? "RECORDED" : "UNAUTHORIZED"} ${change.path}: ${change.reason} (${change.beforeSha256 ?? "missing"} -> ${change.afterSha256 ?? "missing"})`);
   }
 
   const failures = results.filter((r) => r.detail);
-  if (!keepTmp) execSync(`rm -rf "${tmp}"`);
+  if (templates.length === 0) { console.error("packed-consumer-check: no templates selected"); process.exitCode = 1; }
+  if (!keepTmp) rmSync(tmp, { recursive: true, force: true });
   if (urlViolations.length > 0) {
     console.error(`packed-consumer-check: ${urlViolations.length} dist new URL(...) references point at TypeScript sources or missing workers`);
     process.exitCode = 1;
@@ -331,7 +433,7 @@ function main(): void {
   if (failures.length > 0) {
     console.error(`packed-consumer-check: ${failures.length}/${results.length} templates failed`);
     process.exitCode = 1;
-  } else if (urlViolations.length === 0) {
+  } else if (urlViolations.length === 0 && templates.length > 0) {
     console.log(`packed-consumer-check: all ${results.length} templates pass`);
   }
 }

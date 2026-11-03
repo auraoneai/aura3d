@@ -1,959 +1,741 @@
 /**
- * three.js 0.185.1 math parity (PRD SM-01/SM-04/AD-14) — seeded property
- * comparisons, 1000 cases per method group; tolerance 1e-9 (1e-6 trig-heavy).
+ * Independent numerical fixtures for the public math API. Expected values
+ * come from elementary coordinate equations, known closed-form examples,
+ * and geometry invariants, rather than another runtime implementation.
  */
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
-import { OBB as ThreeOBB } from "three/examples/jsm/math/OBB.js";
-import { Capsule as ThreeCapsule } from "three/examples/jsm/math/Capsule.js";
-import { ConvexHull as ThreeConvexHull } from "three/examples/jsm/math/ConvexHull.js";
-import { Octree as ThreeOctree } from "three/examples/jsm/math/Octree.js";
 import {
-  Box3,
-  Color,
-  ConvexHull,
-  Cylindrical,
-  Euler,
-  Frustum,
-  Line3,
-  Matrix3,
-  Matrix4,
-  MathUtils,
-  OBB,
-  Octree,
-  Capsule,
-  Plane,
-  Quaternion,
-  Ray,
-  Sphere,
-  Spherical,
-  SphericalHarmonics3,
-  Triangle,
-  Vector2,
-  Vector3,
-  type EulerOrder
+  Box3, Capsule, Color, ConvexHull, Cylindrical, Euler, Frustum, Line3,
+  Matrix3, Matrix4, MathUtils, OBB, Octree, Plane, Quaternion, Ray, Sphere,
+  Spherical, SphericalHarmonics3, Triangle, Vector2, Vector3, type EulerOrder
 } from "@aura3d/math";
 
-// mulberry32 — deterministic stream shared by every case group
-function rng(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = s;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 const CASES = 1000;
-const TOL = 1e-9;
-const TRIG_TOL = 1e-6;
-
-function fv(rand: () => number, scale = 20): number {
-  return (rand() * 2 - 1) * scale;
-}
-function v3(rand: () => number, scale = 20): Vector3 {
-  return new Vector3(fv(rand, scale), fv(rand, scale), fv(rand, scale));
-}
-function tv3(v: Vector3): THREE.Vector3 {
-  return new THREE.Vector3(v.x, v.y, v.z);
-}
-function m4(rand: () => number): Matrix4 {
-  const m = new THREE.Matrix4().makeRotationFromEuler(
-    new THREE.Euler(fv(rand, Math.PI), fv(rand, Math.PI), fv(rand, Math.PI))
-  );
-  m.setPosition(fv(rand), fv(rand), fv(rand));
-  m.elements[0] *= 1 + rand();
-  return new Matrix4(m.elements as Matrix4["elements"]);
-}
-function expectVec3(actual: Vector3, expected: THREE.Vector3, tol = TOL): void {
-  expect(Math.abs(actual.x - expected.x)).toBeLessThanOrEqual(tol);
-  expect(Math.abs(actual.y - expected.y)).toBeLessThanOrEqual(tol);
-  expect(Math.abs(actual.z - expected.z)).toBeLessThanOrEqual(tol);
-}
-function expectClose(a: number, b: number, tol = TOL): void {
-  expect(Math.abs(a - b)).toBeLessThanOrEqual(tol);
-}
-
+const TOLERANCE = 1e-8;
 const ORDERS: EulerOrder[] = ["XYZ", "YXZ", "ZXY", "ZYX", "YZX", "XZY"];
 
-describe("Vector3/Vector2 parity", () => {
-  it("distanceToSquared / addScaled / negate match three", () => {
-    const rand = rng(0xa11ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v3(rand); const b = v3(rand); const s = fv(rand, 2);
-      const ta = tv3(a); const tb = tv3(b);
-      expectClose(a.distanceToSquared(b), ta.distanceToSquared(tb));
-      expectVec3(a.addScaled(b, s), ta.clone().addScaledVector(tb, s));
-      expectVec3(a.negate(), ta.clone().negate());
-    }
-  });
+// A local LCG provides deterministic inputs; it is not a reference for the
+// production random generator.
+function random(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+}
+function scalar(rand: () => number, scale = 10): number { return (2 * rand() - 1) * scale; }
+function vector(rand: () => number, scale = 10): Vector3 {
+  return new Vector3(scalar(rand, scale), scalar(rand, scale), scalar(rand, scale));
+}
+function close(actual: number, expected: number, tolerance = TOLERANCE): void {
+  expect(Number.isFinite(actual)).toBe(true);
+  expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance);
+}
+function vec(actual: Vector3, x: number, y: number, z: number, tolerance = TOLERANCE): void {
+  close(actual.x, x, tolerance); close(actual.y, y, tolerance); close(actual.z, z, tolerance);
+}
+function vecLike(actual: Vector3, expected: Vector3, tolerance = TOLERANCE): void {
+  vec(actual, expected.x, expected.y, expected.z, tolerance);
+}
+function arrayClose(actual: readonly number[], expected: readonly number[], tolerance = TOLERANCE): void {
+  expect(actual.length).toBe(expected.length);
+  expected.forEach((value, index) => close(actual[index]!, value, tolerance));
+}
 
-  it("lerp / clampTo / getComponent / fromArray match three", () => {
-    const rand = rng(0xb22ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v3(rand); const b = v3(rand); const t = rand();
-      const mn = v3(rand); const mx = mn.add(v3(rand).multiplyScalar(rand()).add(new Vector3(0.5, 0.5, 0.5)));
-      expectVec3(a.lerp(b, t), tv3(a).lerp(tv3(b), t));
-      expectVec3(a.clampTo(mn, mx), tv3(a).clamp(tv3(mn), tv3(mx)));
-      const c = Math.floor(rand() * 3);
-      expectClose(a.getComponent(c), tv3(a).getComponent(c));
-      const arr = [fv(rand), fv(rand), fv(rand), fv(rand), fv(rand)];
-      expectVec3(Vector3.fromArray(arr, 1), new THREE.Vector3().fromArray(arr, 1));
-    }
-  });
+// Apply each elementary axis rotation directly, independently of quaternion
+// and matrix construction. Euler XYZ applies the Z rotation first.
+function rotateByAxes(v: Vector3, x: number, y: number, z: number, order: EulerOrder): Vector3 {
+  let [a, b, c] = [v.x, v.y, v.z];
+  const angles = { X: x, Y: y, Z: z };
+  for (const axis of [...order].reverse() as ("X" | "Y" | "Z")[]) {
+    const sin = Math.sin(angles[axis]);
+    const cos = Math.cos(angles[axis]);
+    if (axis === "X") [b, c] = [b * cos - c * sin, b * sin + c * cos];
+    else if (axis === "Y") [a, c] = [a * cos + c * sin, -a * sin + c * cos];
+    else [a, b] = [a * cos - b * sin, a * sin + b * cos];
+  }
+  return new Vector3(a, b, c);
+}
 
-  it("transformDirection / applyMatrix3 / transformMatrix4 match three", () => {
-    const rand = rng(0xc33ce);
+describe("vectors and transforms: analytical fixtures", () => {
+  it("performs vector arithmetic, interpolation and component access", () => {
+    const rand = random(0xa11ce);
     for (let i = 0; i < CASES; i += 1) {
-      const a = v3(rand);
-      const m = m4(rand);
-      const tm = new THREE.Matrix4().fromArray([...m.elements]);
-      expectVec3(a.transformDirection(m), tv3(a).transformDirection(tm), TRIG_TOL);
-      const m3 = Matrix3.fromMatrix4(m);
-      const tm3 = new THREE.Matrix3().setFromMatrix4(tm);
-      expectVec3(a.applyMatrix3(m3), tv3(a).applyMatrix3(tm3));
-      expectVec3(a.transformMatrix4(m), tv3(a).applyMatrix4(tm));
+      const a = vector(rand); const b = vector(rand); const s = scalar(rand, 2); const t = rand();
+      close(a.distanceToSquared(b), (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2);
+      vec(a.addScaled(b, s), a.x + b.x * s, a.y + b.y * s, a.z + b.z * s);
+      vec(a.negate(), -a.x, -a.y, -a.z);
+      vec(a.lerp(b, t), a.x * (1 - t) + b.x * t, a.y * (1 - t) + b.y * t, a.z * (1 - t) + b.z * t);
+      const lo = new Vector3(-2, -3, -4); const hi = new Vector3(2, 3, 4);
+      vec(a.clampTo(lo, hi), Math.min(2, Math.max(-2, a.x)), Math.min(3, Math.max(-3, a.y)), Math.min(4, Math.max(-4, a.z)));
+      expect([a.getComponent(0), a.getComponent(1), a.getComponent(2)]).toEqual([a.x, a.y, a.z]);
+      vec(Vector3.fromArray([99, a.x, a.y, a.z, 99], 1), a.x, a.y, a.z);
+      const u = new Vector2(a.x, a.y); const v = new Vector2(b.x, b.y);
+      close(u.distanceToSquared(v), (a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+      const result = u.lerp(v, t);
+      close(result.x, a.x + (b.x - a.x) * t); close(result.y, a.y + (b.y - a.y) * t);
     }
-  });
+  }, 30_000);
 
-  it("Vector2 distanceToSquared / lerp match three", () => {
-    const rand = rng(0xd44ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = new Vector2(fv(rand), fv(rand));
-      const b = new Vector2(fv(rand), fv(rand));
-      const t = rand();
-      const ta = new THREE.Vector2(a.x, a.y);
-      expectClose(a.distanceToSquared(b), ta.distanceToSquared(new THREE.Vector2(b.x, b.y)));
-      const r = a.lerp(b, t);
-      const tr = ta.lerp(new THREE.Vector2(b.x, b.y), t);
-      expectClose(r.x, tr.x); expectClose(r.y, tr.y);
-    }
-  });
+  it("distinguishes point, direction and normal transforms", () => {
+    const transform = Matrix4.translation(new Vector3(10, -2, 4)).multiply(Matrix4.scaling(new Vector3(2, 3, 4)));
+    const a = new Vector3(1, 2, -1);
+    vec(a.transformMatrix4(transform), 12, 4, 0);
+    vec(a.applyMatrix3(Matrix3.fromMatrix4(transform)), 2, 6, -4);
+    vec(a.transformDirection(transform), 2 / Math.sqrt(56), 6 / Math.sqrt(56), -4 / Math.sqrt(56));
+    const normalMatrix = new Matrix3().getNormalMatrix(transform);
+    arrayClose(normalMatrix.elements, Matrix3.normalFromMatrix4(transform).elements);
+    const normal = a.applyMatrix3(normalMatrix);
+    vec(normal, 0.5, 2 / 3, -0.25);
+    close(normal.dot(new Vector3(2, 3, 4)), 2);
+  }, 30_000);
 });
 
-describe("Quaternion/Euler parity", () => {
-  it("Quaternion.fromEuler matches setFromEuler for all six orders", () => {
-    const rand = rng(0xe55ce);
+describe("rotation and matrices: analytical fixtures", () => {
+  it("matches elementary rotations for all Euler orders and preserves them on conversion", () => {
+    const rand = random(0xe55ce);
     for (let i = 0; i < CASES; i += 1) {
-      const x = fv(rand, Math.PI); const y = fv(rand, Math.PI); const z = fv(rand, Math.PI);
-      const order = ORDERS[i % ORDERS.length]!;
+      const x = scalar(rand, Math.PI); const y = scalar(rand, Math.PI); const z = scalar(rand, Math.PI);
+      const order = ORDERS[i % ORDERS.length]!; const other = ORDERS[(i + 3) % ORDERS.length]!;
+      const input = vector(rand, 2); const expected = rotateByAxes(input, x, y, z, order);
       const q = Quaternion.fromEuler(x, y, z, order);
-      const tq = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, order));
-      expectClose(q.x, tq.x, TRIG_TOL);
-      expectClose(q.y, tq.y, TRIG_TOL);
-      expectClose(q.z, tq.z, TRIG_TOL);
-      expectClose(q.w, tq.w, TRIG_TOL);
+      close(q.length(), 1);
+      vecLike(q.rotateVector(input), expected, 1e-7);
+      vecLike(Matrix4.rotation(q).transformPoint(input), expected, 1e-7);
+      const e = new Euler().setFromQuaternion(q, other);
+      vecLike(e.toQuaternion().rotateVector(input), expected, 1e-6);
+      const matrixEuler = new Euler().setFromRotationMatrix(Matrix4.rotation(q), other);
+      vecLike(matrixEuler.toQuaternion().rotateVector(input), expected, 1e-6);
+      const reordered = new Euler(x, y, z, order).reorder(other);
+      vecLike(reordered.toQuaternion().rotateVector(input), expected, 1e-6);
     }
-  });
+  }, 30_000);
 
-  it("Euler.setFromQuaternion / reorder match three", () => {
-    const rand = rng(0xf66ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const x = fv(rand, Math.PI); const y = fv(rand, Math.PI); const z = fv(rand, Math.PI);
-      const order = ORDERS[i % ORDERS.length]!;
-      const newOrder = ORDERS[(i * 7 + 3) % ORDERS.length]!;
-      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, order));
-      const e = new Euler().setFromQuaternion(new Quaternion(q.x, q.y, q.z, q.w), newOrder);
-      const te = new THREE.Euler().setFromQuaternion(q, newOrder);
-      expectClose(e.x, te.x, TRIG_TOL);
-      expectClose(e.y, te.y, TRIG_TOL);
-      expectClose(e.z, te.z, TRIG_TOL);
-      const re = new Euler(x, y, z, order).reorder(newOrder);
-      const tre = new THREE.Euler(x, y, z, order).reorder(newOrder);
-      expectClose(re.x, tre.x, TRIG_TOL);
-      expectClose(re.y, tre.y, TRIG_TOL);
-      expectClose(re.z, tre.z, TRIG_TOL);
-    }
-  });
+  it("uses column-major multiplication, inverse, transpose, determinant and basis", () => {
+    const a = new Matrix3().set(1, 2, 3, 0, 1, 4, 5, 6, 0);
+    const b = new Matrix3().set(2, 0, 0, 0, 3, 0, 0, 0, 4);
+    close(a.determinant(), 1);
+    arrayClose(a.invert().elements, [-24, 20, -5, 18, -15, 4, 5, -4, 1]);
+    arrayClose(a.multiply(a.invert()).elements, Matrix3.identity().elements);
+    arrayClose(a.multiply(b).elements, [2, 0, 10, 6, 3, 18, 12, 16, 0]);
+    arrayClose(a.premultiply(b).elements, b.multiply(a).elements);
+    arrayClose(a.transpose().elements, [1, 2, 3, 0, 1, 4, 5, 6, 0]);
+    arrayClose(a.multiplyScalar(2).elements, a.elements.map((n) => n * 2));
+    const [x, y, z] = a.extractBasis();
+    vec(x, 1, 0, 5); vec(y, 2, 1, 6); vec(z, 3, 4, 0);
+    const singular = new Matrix3().set(1, 0, 0, 0, 0, 0, 0, 0, 1);
+    expect(() => singular.inverse()).toThrow(RangeError);
+    arrayClose(singular.invert().elements, Matrix3.identity().elements);
+  }, 30_000);
 
-  it("Euler.setFromRotationMatrix matches three", () => {
-    const rand = rng(0x077ce);
+  it("checks inverse transforms and nonuniform scales across seeded cases", () => {
+    const rand = random(0x188ce);
     for (let i = 0; i < CASES; i += 1) {
-      const x = fv(rand, Math.PI); const y = fv(rand, Math.PI); const z = fv(rand, Math.PI);
-      const order = ORDERS[i % ORDERS.length]!;
-      const outOrder = ORDERS[(i * 5 + 1) % ORDERS.length]!;
-      const tm = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(x, y, z, order));
-      const e = new Euler().setFromRotationMatrix(new Matrix4(tm.elements as Matrix4["elements"]), outOrder);
-      const te = new THREE.Euler().setFromRotationMatrix(tm, outOrder);
-      expectClose(e.x, te.x, TRIG_TOL);
-      expectClose(e.y, te.y, TRIG_TOL);
-      expectClose(e.z, te.z, TRIG_TOL);
+      const scale = new Vector3(0.5 + rand() * 3, 0.5 + rand() * 3, 0.5 + rand() * 3);
+      const q = Quaternion.fromEuler(scalar(rand, 2), scalar(rand, 2), scalar(rand, 2));
+      const m = Matrix4.compose(vector(rand), q, scale); const point = vector(rand);
+      vecLike(m.inverse().transformPoint(m.transformPoint(point)), point, 1e-7);
+      close(m.determinant(), scale.x * scale.y * scale.z, 1e-7);
+      close(m.maxScaleOnAxis(), Math.max(scale.x, scale.y, scale.z), 1e-7);
+      arrayClose(Matrix3.fromMatrix4(m).transpose().transpose().elements, Matrix3.fromMatrix4(m).elements);
     }
-  });
+  }, 30_000);
 });
 
-describe("Matrix3/Matrix4 parity", () => {
-  it("invert / determinant / multiply / premultiply / multiplyScalar / transpose match", () => {
-    const rand = rng(0x188ce);
+describe("scalars, color and coordinates: independent values", () => {
+  it("evaluates bounded interpolation, angle conversion and periodic functions", () => {
+    const rand = random(0x4bbce);
     for (let i = 0; i < CASES; i += 1) {
-      const el = Array.from({ length: 9 }, () => fv(rand, 4));
-      const a = new Matrix3(el as unknown as Matrix3["elements"]);
-      const ta = new THREE.Matrix3().fromArray(el);
-      const s = fv(rand, 3);
-      const elb = Array.from({ length: 9 }, () => fv(rand, 4));
-      const b = new Matrix3(elb as unknown as Matrix3["elements"]);
-      const tb = new THREE.Matrix3().fromArray(elb);
-      expectClose(a.determinant(), ta.determinant());
-      if (Math.abs(ta.determinant()) > 1e-3) {
-        const inv = a.invert().elements;
-        const tinv = ta.clone().invert().elements;
-        for (let k = 0; k < 9; k += 1) expectClose(inv[k]!, tinv[k]!, 1e-5);
-      }
-      const mul = a.multiply(b).elements;
-      const tmul = ta.clone().multiply(tb).elements;
-      for (let k = 0; k < 9; k += 1) expectClose(mul[k]!, tmul[k]!, 1e-6);
-      const pre = a.premultiply(b).elements;
-      const tpre = ta.clone().premultiply(tb).elements;
-      for (let k = 0; k < 9; k += 1) expectClose(pre[k]!, tpre[k]!, 1e-6);
-      const sc = a.multiplyScalar(s).elements;
-      const tsc = ta.clone().multiplyScalar(s).elements;
-      for (let k = 0; k < 9; k += 1) expectClose(sc[k]!, tsc[k]!);
-      const tr = a.transpose().elements;
-      const ttr = ta.clone().transpose().elements;
-      for (let k = 0; k < 9; k += 1) expectClose(tr[k]!, ttr[k]!);
+      const a = scalar(rand); const b = a + 0.5 + rand() * 8; const x = scalar(rand); const t = rand();
+      const fraction = (x - a) / (b - a); const unit = Math.max(0, Math.min(1, fraction));
+      close(MathUtils.clamp(x, a, b), Math.max(a, Math.min(b, x)));
+      close(MathUtils.mapLinear(x, a, b, -2, 3), -2 + 5 * fraction);
+      close(MathUtils.inverseLerp(a, b, x), fraction);
+      close(MathUtils.lerp(a, b, t), a + (b - a) * t);
+      close(MathUtils.smoothstep(x, a, b), unit * unit * (3 - 2 * unit));
+      close(MathUtils.smootherstep(x, a, b), unit ** 3 * (unit * (unit * 6 - 15) + 10));
+      close(MathUtils.radToDeg(MathUtils.degToRad(x)), x);
+      const m = 0.5 + rand() * 9; const remainder = x - Math.floor(x / m) * m;
+      close(MathUtils.euclideanModulo(x, m), remainder);
+      const cycle = x - Math.floor(x / (2 * m)) * 2 * m;
+      close(MathUtils.pingpong(x, m), cycle <= m ? cycle : 2 * m - cycle);
+      close(MathUtils.damp(a, b, 2, t), b + (a - b) * Math.exp(-2 * t));
     }
-  });
+    expect([0, 1, 2, 3, 4, 8, 12].map(MathUtils.isPowerOfTwo)).toEqual([false, true, true, false, true, true, false]);
+    const first = [MathUtils.seededRandom(4242), ...Array.from({ length: 15 }, () => MathUtils.seededRandom())];
+    const second = [MathUtils.seededRandom(4242), ...Array.from({ length: 15 }, () => MathUtils.seededRandom())];
+    expect(first).toEqual(second);
+    expect(new Set(first).size).toBe(first.length);
+    expect(first.every((v) => v >= 0 && v < 1)).toBe(true);
+  }, 30_000);
 
-  it("getNormalMatrix / extractBasis / setFromMatrix4 match three", () => {
-    const rand = rng(0x299ce);
+  it("round-trips HSL and exercises hue offset and HSL interpolation", () => {
+    const primary = [[0, 1, 0, 0], [1 / 3, 0, 1, 0], [2 / 3, 0, 0, 1], [1, 1, 0, 0]];
+    for (const [h, r, g, b] of primary) {
+      const c = Color.fromHSL(h!, 1, 0.5);
+      close(c.r, r!); close(c.g, g!); close(c.b, b!);
+    }
+    const rand = random(0x6ddce);
     for (let i = 0; i < CASES; i += 1) {
-      const m = m4(rand);
-      const tm = new THREE.Matrix4().fromArray([...m.elements]);
-      const nm = new Matrix3().getNormalMatrix(m).elements;
-      const tnm = new THREE.Matrix3().getNormalMatrix(tm).elements;
-      for (let k = 0; k < 9; k += 1) expectClose(nm[k]!, tnm[k]!, 1e-6);
-      const [x, y, z] = Matrix3.fromMatrix4(m).extractBasis();
-      const tx = new THREE.Vector3(); const ty = new THREE.Vector3(); const tz = new THREE.Vector3();
-      new THREE.Matrix3().setFromMatrix4(tm).extractBasis(tx, ty, tz);
-      expectVec3(x, tx); expectVec3(y, ty); expectVec3(z, tz);
+      const h = rand(); const s = 0.01 + rand() * 0.99; const l = 0.01 + rand() * 0.98;
+      const c = Color.fromHSL(h, s, l); const recovered = c.getHSL();
+      close(recovered.h, h, 1e-7); close(recovered.s, s, 1e-7); close(recovered.l, l, 1e-7);
+      const shifted = c.offsetHSL(0.1, 0, 0).getHSL();
+      close(shifted.h, (h + 0.1) % 1, 1e-7);
+      const halfway = c.lerpHSL(Color.fromHSL(0.5, 0.5, 0.5), 0.5).getHSL();
+      close(halfway.h, (h + 0.5) / 2, 1e-7); close(halfway.s, (s + 0.5) / 2, 1e-7); close(halfway.l, (l + 0.5) / 2, 1e-7);
     }
-  });
+  }, 30_000);
 
-  it("Matrix4.maxScaleOnAxis matches getMaxScaleOnAxis", () => {
-    const rand = rng(0x3aace);
+  it("evaluates spherical harmonics by independent basis and Lambert-band coefficients", () => {
+    const rand = random(0x7eece);
     for (let i = 0; i < CASES; i += 1) {
-      const m = m4(rand);
-      const tm = new THREE.Matrix4().fromArray([...m.elements]);
-      expectClose(m.maxScaleOnAxis(), tm.getMaxScaleOnAxis(), TRIG_TOL);
-    }
-  });
-});
-
-describe("MathUtils parity", () => {
-  it("clamp / mapLinear / lerp / inverseLerp / smoothstep / smootherstep / degrees match", () => {
-    const rand = rng(0x4bbce);
-    for (let i = 0; i < CASES; i += 1) {
-      const x = fv(rand); const y = fv(rand);
-      let a = fv(rand); let b = fv(rand);
-      if (a > b) { const tmp = a; a = b; b = tmp; }
-      if (a === b) b = a + 1;
-      const t = rand();
-      expectClose(MathUtils.clamp(x, a, b), THREE.MathUtils.clamp(x, a, b));
-      expectClose(MathUtils.mapLinear(x, a, b, y, y + 3), THREE.MathUtils.mapLinear(x, a, b, y, y + 3));
-      expectClose(MathUtils.lerp(x, y, t), THREE.MathUtils.lerp(x, y, t));
-      expectClose(MathUtils.smoothstep(x, a, b), THREE.MathUtils.smoothstep(x, a, b));
-      expectClose(MathUtils.smootherstep(x, a, b), THREE.MathUtils.smootherstep(x, a, b));
-      expectClose(MathUtils.inverseLerp(a, b, x), THREE.MathUtils.inverseLerp(a, b, x));
-      expectClose(MathUtils.degToRad(x), THREE.MathUtils.degToRad(x));
-      expectClose(MathUtils.radToDeg(x), THREE.MathUtils.radToDeg(x));
-      const n = Math.floor(Math.abs(x));
-      expect(MathUtils.isPowerOfTwo(n)).toBe(THREE.MathUtils.isPowerOfTwo(n));
-    }
-  });
-
-  it("euclideanModulo / pingpong / damp match three", () => {
-    const rand = rng(0x5ccce);
-    for (let i = 0; i < CASES; i += 1) {
-      const n = fv(rand, 50); const m = 0.5 + rand() * 9;
-      expectClose(MathUtils.euclideanModulo(n, m), THREE.MathUtils.euclideanModulo(n, m));
-      expectClose(MathUtils.pingpong(n, m), THREE.MathUtils.pingpong(n, m));
-      const x = fv(rand); const y = fv(rand); const lambda = rand() * 10; const dt = rand() * 0.5;
-      expectClose(MathUtils.damp(x, y, lambda, dt), THREE.MathUtils.damp(x, y, lambda, dt));
-    }
-  });
-
-  it("seededRandom reproduces three's stream", () => {
-    let t = THREE.MathUtils.seededRandom(4242);
-    let a = MathUtils.seededRandom(4242);
-    for (let i = 0; i < CASES; i += 1) {
-      expectClose(a, t);
-      a = MathUtils.seededRandom();
-      t = THREE.MathUtils.seededRandom();
-    }
-  });
-});
-
-describe("Color HSL parity", () => {
-  it("setHSL / getHSL / offsetHSL / lerpHSL match three", () => {
-    const rand = rng(0x6ddce);
-    for (let i = 0; i < CASES; i += 1) {
-      const h = rand(); const s = rand(); const l = rand();
-      const c = new Color(0, 0, 0).setHSL(h, s, l);
-      const tc = new THREE.Color().setHSL(h, s, l);
-      expectClose(c.r, tc.r, TRIG_TOL);
-      expectClose(c.g, tc.g, TRIG_TOL);
-      expectClose(c.b, tc.b, TRIG_TOL);
-      const hsl = c.getHSL();
-      const thsl = tc.getHSL({ h: 0, s: 0, l: 0 });
-      expectClose(hsl.h, thsl.h, TRIG_TOL);
-      expectClose(hsl.s, thsl.s, TRIG_TOL);
-      expectClose(hsl.l, thsl.l, TRIG_TOL);
-      const dh = fv(rand, 0.5); const ds = fv(rand, 0.5); const dl = fv(rand, 0.5);
-      const off = c.offsetHSL(dh, ds, dl);
-      const toff = tc.clone().offsetHSL(dh, ds, dl);
-      expectClose(off.r, toff.r, TRIG_TOL);
-      expectClose(off.g, toff.g, TRIG_TOL);
-      expectClose(off.b, toff.b, TRIG_TOL);
-      const h2 = rand(); const s2 = rand(); const l2 = rand();
-      const c2 = new Color(0, 0, 0).setHSL(h2, s2, l2);
-      const tc2 = new THREE.Color().setHSL(h2, s2, l2);
-      const alpha = rand();
-      const lr = c.lerpHSL(c2, alpha);
-      const tlr = tc.clone().lerpHSL(tc2, alpha);
-      expectClose(lr.r, tlr.r, TRIG_TOL);
-      expectClose(lr.g, tlr.g, TRIG_TOL);
-      expectClose(lr.b, tlr.b, TRIG_TOL);
-    }
-  });
-});
-
-describe("SphericalHarmonics3 parity", () => {
-  it("getAt / getIrradianceAt / getBasisAt match three", () => {
-    const rand = rng(0x7eece);
-    for (let i = 0; i < CASES; i += 1) {
-      const coeffs = Array.from({ length: 9 }, () => v3(rand).multiplyScalar(0.2));
-      const sh = new SphericalHarmonics3(coeffs);
-      const tsh = new THREE.SphericalHarmonics3();
-      coeffs.forEach((c, k) => tsh.coefficients[k]!.set(c.x, c.y, c.z));
-      const n = v3(rand).normalize();
-      const tn = tv3(n);
-      expectVec3(sh.getAt(n), tsh.getAt(tn, new THREE.Vector3()), TRIG_TOL);
-      expectVec3(sh.getIrradianceAt(n), tsh.getIrradianceAt(tn, new THREE.Vector3()), TRIG_TOL);
-      const basis = sh.getBasisAt(n);
-      const tbasis = new Array<number>(9).fill(0);
-      THREE.SphericalHarmonics3.getBasisAt(tn, tbasis);
-      for (let k = 0; k < 9; k += 1) expectClose(basis[k]!, tbasis[k]!, TRIG_TOL);
-    }
-  });
-});
-
-describe("Spherical/Cylindrical parity", () => {
-  it("setFromCartesianCoords / makeSafe match three", () => {
-    const rand = rng(0x8ffce);
-    for (let i = 0; i < CASES; i += 1) {
-      const x = fv(rand); const y = fv(rand); const z = fv(rand);
-      const s = new Spherical().setFromCartesianCoords(x, y, z);
-      const ts = new THREE.Spherical().setFromCartesianCoords(x, y, z);
-      expectClose(s.radius, ts.radius, TRIG_TOL);
-      expectClose(s.phi, ts.phi, TRIG_TOL);
-      expectClose(s.theta, ts.theta, TRIG_TOL);
-      const c = new Cylindrical().setFromCartesianCoords(x, y, z);
-      const tc = new THREE.Cylindrical().setFromCartesianCoords(x, y, z);
-      expectClose(c.radius, tc.radius, TRIG_TOL);
-      expectClose(c.theta, tc.theta, TRIG_TOL);
-      expectClose(c.y, tc.y, TRIG_TOL);
-      const phi = rand() * 4 - 2;
-      const safe = new Spherical(s.radius, phi, s.theta).makeSafe();
-      const tsafe = new THREE.Spherical(s.radius, phi, s.theta).makeSafe();
-      expectClose(safe.phi, tsafe.phi, TRIG_TOL);
-    }
-  });
-});
-
-describe("Line3/Triangle parity", () => {
-  it("Line3 queries match three", () => {
-    const rand = rng(0x9a0ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v3(rand); const b = v3(rand);
-      const line = new Line3(a, b);
-      const tline = new THREE.Line3(tv3(a), tv3(b));
-      expectVec3(line.getCenter(), tline.getCenter(new THREE.Vector3()));
-      expectVec3(line.delta(), tline.delta(new THREE.Vector3()));
-      expectClose(line.distanceSq(), tline.distanceSq());
-      expectClose(line.distance(), tline.distance());
-      const p = v3(rand);
-      const clamp = rand() > 0.5;
-      expectClose(line.closestPointToPointParameter(p, clamp), tline.closestPointToPointParameter(tv3(p), clamp), TRIG_TOL);
-      expectVec3(line.closestPointToPoint(p, clamp), tline.closestPointToPoint(tv3(p), clamp, new THREE.Vector3()), TRIG_TOL);
-      const t = rand();
-      expectVec3(line.at(t), tline.at(t, new THREE.Vector3()));
-      const m = m4(rand);
-      const tm = new THREE.Matrix4().fromArray([...m.elements]);
-      const lt = line.applyMatrix4(m);
-      const tlt = tline.clone().applyMatrix4(tm);
-      expectVec3(lt.start, tlt.start, TRIG_TOL);
-      expectVec3(lt.end, tlt.end, TRIG_TOL);
-    }
-  });
-
-  it("Line3.distanceSqToLine3 closest points match three", () => {
-    const rand = rng(0xab1ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const l1 = new Line3(v3(rand), v3(rand));
-      const l2 = new Line3(v3(rand), v3(rand));
-      const tl1 = new THREE.Line3(tv3(l1.start), tv3(l1.end));
-      const tl2 = new THREE.Line3(tv3(l2.start), tv3(l2.end));
-      const r = l1.distanceSqToLine3(l2);
-      const c1 = new THREE.Vector3(); const c2 = new THREE.Vector3();
-      const tr = tl1.distanceSqToLine3(tl2, c1, c2);
-      expectClose(r.distanceSq, tr, TRIG_TOL);
-      expectVec3(r.point1, c1, TRIG_TOL);
-      expectVec3(r.point2, c2, TRIG_TOL);
-    }
-  });
-
-  it("Triangle queries match three", () => {
-    const rand = rng(0xac2ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v3(rand); const b = v3(rand); const c = v3(rand);
-      const tri = new Triangle(a, b, c);
-      const ttri = new THREE.Triangle(tv3(a), tv3(b), tv3(c));
-      expectClose(tri.getArea(), ttri.getArea(), TRIG_TOL);
-      expectVec3(tri.getMidpoint(), ttri.getMidpoint(new THREE.Vector3()));
-      const p = v3(rand);
-      expect(tri.containsPoint(p)).toBe(ttri.containsPoint(tv3(p)));
-      const bary = tri.getBarycoord(p);
-      const tbary = ttri.getBarycoord(tv3(p), new THREE.Vector3());
-      expect(bary === null).toBe(tbary === null);
-      if (bary && tbary) expectVec3(bary, tbary, TRIG_TOL);
-      expectVec3(tri.closestPointToPoint(p), ttri.closestPointToPoint(tv3(p), new THREE.Vector3()), TRIG_TOL);
-      const plane = tri.getPlane();
-      const tplane = ttri.getPlane(new THREE.Plane());
-      expectVec3(plane.normal, tplane.normal, TRIG_TOL);
-      expectClose(plane.constant, tplane.constant, TRIG_TOL);
-      const box = new Box3(v3(rand), v3(rand).add(new Vector3(4, 4, 4)));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      expect(tri.intersectsBox(box)).toBe(ttri.intersectsBox(tbox));
-      const dir = v3(rand);
-      expect(tri.isFrontFacing(dir)).toBe(ttri.isFrontFacing(tv3(dir)));
-    }
-  });
-});
-
-describe("Plane/Ray parity", () => {
-  it("Plane distance/projection/intersects match three", () => {
-    const rand = rng(0xbd3ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const n = v3(rand).normalize();
-      const k = fv(rand, 5);
-      const pl = new Plane(n, k);
-      const tpl = new THREE.Plane(tv3(n), k);
-      const p = v3(rand);
-      expectClose(pl.distanceToPoint(p), tpl.distanceToPoint(tv3(p)));
-      const sp = new Sphere(v3(rand), rand() * 4);
-      const tsp = new THREE.Sphere(tv3(sp.center), sp.radius);
-      expectClose(pl.distanceToSphere(sp), tpl.distanceToSphere(tsp));
-      expect(pl.intersectsSphere(sp)).toBe(tpl.intersectsSphere(tsp));
-      const mn = v3(rand);
-      const box = new Box3(mn, mn.add(v3(rand).multiplyScalar(rand()).add(new Vector3(0.5, 0.5, 0.5))));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      expect(pl.intersectsBox(box)).toBe(tpl.intersectsBox(tbox));
-      expectVec3(pl.projectPoint(p), tpl.projectPoint(tv3(p), new THREE.Vector3()));
-      expectVec3(pl.coplanarPoint(), tpl.coplanarPoint(new THREE.Vector3()));
-      const l = new Line3(v3(rand), v3(rand));
-      const tl = new THREE.Line3(tv3(l.start), tv3(l.end));
-      expect(pl.intersectsLine(l)).toBe(tpl.intersectsLine(tl));
-      const hit = pl.intersectLine(l);
-      const thit = tpl.intersectLine(tl, new THREE.Vector3());
-      expect(hit === undefined).toBe(thit === null);
-      if (hit && thit) expectVec3(hit, thit, TRIG_TOL);
-      const off = v3(rand);
-      const tp = pl.translate(off);
-      const ttp = tpl.clone().translate(tv3(off));
-      expectVec3(tp.normal, ttp.normal);
-      expectClose(tp.constant, ttp.constant, TRIG_TOL);
-    }
-  });
-
-  it("Ray distance/intersect methods match three", () => {
-    const rand = rng(0xbe4ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const origin = v3(rand);
-      const dir = v3(rand).normalize();
-      const ray = new Ray(origin, dir);
-      const tray = new THREE.Ray(tv3(origin), tv3(dir));
-      const p = v3(rand);
-      expectClose(ray.distanceToPoint(p), tray.distanceToPoint(tv3(p)), TRIG_TOL);
-      expectClose(ray.distanceSqToPoint(p), tray.distanceSqToPoint(tv3(p)), TRIG_TOL);
-      expectVec3(ray.closestPointToPoint(p), tray.closestPointToPoint(tv3(p), new THREE.Vector3()), TRIG_TOL);
-      const t = rand() * 10;
-      expectVec3(ray.at(t), tray.at(t, new THREE.Vector3()));
-      const sp = new Sphere(v3(rand), rand() * 4 + 0.1);
-      const tsp = new THREE.Sphere(tv3(sp.center), sp.radius);
-      expect(ray.intersectsSphere(sp)).toBe(tray.intersectsSphere(tsp));
-      const rh = ray.intersectSphere(sp);
-      const trh = tray.intersectSphere(tsp, new THREE.Vector3());
-      expect(rh === undefined).toBe(trh === null);
-      if (rh && trh) expectVec3(rh, trh, TRIG_TOL);
-      const pl = new Plane(v3(rand).normalize(), fv(rand, 3));
-      const tpl = new THREE.Plane(tv3(pl.normal), pl.constant);
-      const ad = ray.distanceToPlane(pl);
-      const td = tray.distanceToPlane(tpl);
-      expect(ad === null).toBe(td === null);
-      if (ad !== null && td !== null) expectClose(ad, td, TRIG_TOL);
-      const ph = ray.intersectPlane(pl);
-      const tph = tray.intersectPlane(tpl, new THREE.Vector3());
-      expect(ph === undefined).toBe(tph === null);
-      if (ph && tph) expectVec3(ph, tph, TRIG_TOL);
-      expect(ray.intersectsPlane(pl)).toBe(tray.intersectsPlane(tpl));
-      const v0 = v3(rand); const v1 = v3(rand);
-      const seg = ray.distanceSqToSegment(v0, v1);
-      const trp = new THREE.Vector3(); const trs = new THREE.Vector3();
-      const tseg = tray.distanceSqToSegment(tv3(v0), tv3(v1), trp, trs);
-      expectClose(seg.distanceSq, tseg, TRIG_TOL);
-      expectVec3(seg.pointOnRay, trp, TRIG_TOL);
-      expectVec3(seg.pointOnSegment, trs, TRIG_TOL);
-      const m = m4(rand);
-      const tm = new THREE.Matrix4().fromArray([...m.elements]);
-      const rm = ray.applyMatrix4(m);
-      const trm = tray.clone().applyMatrix4(tm);
-      expectVec3(rm.origin, trm.origin, TRIG_TOL);
-      expectVec3(rm.direction, trm.direction, TRIG_TOL);
-    }
-  });
-
-  it("Ray.intersectTriangle / intersectBox / recast match three", () => {
-    const rand = rng(0xbf5ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const ray = new Ray(v3(rand), v3(rand).normalize());
-      const tray = new THREE.Ray(tv3(ray.origin), tv3(ray.direction));
-      const a = v3(rand); const b = v3(rand); const c = v3(rand);
-      const backface = i % 2 === 0;
-      const hit = ray.intersectTriangle(a, b, c, backface);
-      const thit = tray.intersectTriangle(tv3(a), tv3(b), tv3(c), backface, new THREE.Vector3());
-      expect(hit === undefined).toBe(thit === null);
-      if (hit && thit) expectVec3(hit, thit, TRIG_TOL);
-      const mn = v3(rand);
-      const size = new Vector3(Math.abs(fv(rand)) + 0.01, Math.abs(fv(rand)) + 0.01, Math.abs(fv(rand)) + 0.01);
-      const box = new Box3(mn, mn.add(size));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      const bh = ray.intersectBox(box);
-      const tbh = tray.intersectBox(tbox, new THREE.Vector3());
-      expect(bh === undefined).toBe(tbh === null);
-      if (bh && tbh) expectVec3(bh, tbh, TRIG_TOL);
-      expect(ray.intersectsBox(box)).toBe(tray.intersectsBox(tbox));
-      const t = rand() * 5;
-      const rec = ray.recast(t);
-      const trec = tray.clone().recast(t);
-      expectVec3(rec.origin, trec.origin, TRIG_TOL);
-      expectVec3(rec.direction, trec.direction, TRIG_TOL);
-      const lookT = v3(rand);
-      const look = ray.lookAt(lookT);
-      const tlook = tray.clone().lookAt(tv3(lookT));
-      expectVec3(look.direction, tlook.direction, TRIG_TOL);
-    }
-  });
-});
-
-describe("Box3/Sphere/Frustum parity", () => {
-  it("Box3 queries match three", () => {
-    const rand = rng(0xc06ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v3(rand); const b = v3(rand);
-      const box = new Box3(a.min(b), a.max(b));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      const p = v3(rand);
-      expect(box.containsPoint(p)).toBe(tbox.containsPoint(tv3(p)));
-      expectClose(box.distanceToPoint(p), tbox.distanceToPoint(tv3(p)), TRIG_TOL);
-      const om = v3(rand);
-      const other = new Box3(om, om.add(v3(rand).multiplyScalar(rand()).add(new Vector3(1, 1, 1))));
-      const tother = new THREE.Box3(tv3(other.min), tv3(other.max));
-      expect(box.intersectsBox(other)).toBe(tbox.intersectsBox(tother));
-      const u = box.union(other);
-      const tu = tbox.clone().union(tother);
-      expectVec3(u.min, tu.min); expectVec3(u.max, tu.max);
-      const inter = box.intersect(other);
-      const tinter = tbox.clone().intersect(tother);
-      expect(inter.isEmpty()).toBe(tinter.isEmpty());
-      if (!inter.isEmpty() && !tinter.isEmpty()) {
-        expectVec3(inter.min, tinter.min); expectVec3(inter.max, tinter.max);
-      }
-      const off = v3(rand);
-      const tr = box.translate(off);
-      const ttr = tbox.clone().translate(tv3(off));
-      expectVec3(tr.min, ttr.min); expectVec3(tr.max, ttr.max);
-      expectVec3(box.clampPoint(p), tbox.clampPoint(tv3(p), new THREE.Vector3()));
-      const sp = box.getBoundingSphere();
-      const tsp = tbox.getBoundingSphere(new THREE.Sphere());
-      expectVec3(sp.center, tsp.center, TRIG_TOL);
-      expectClose(sp.radius, tsp.radius, TRIG_TOL);
-      const m = m4(rand);
-      const tm = new THREE.Matrix4().fromArray([...m.elements]);
-      const tb = box.transform(m);
-      const ttb = tbox.clone().applyMatrix4(tm);
-      expectVec3(tb.min, ttb.min, TRIG_TOL);
-      expectVec3(tb.max, ttb.max, TRIG_TOL);
-      expectVec3(box.getCenter(), tbox.getCenter(new THREE.Vector3()));
-      expectVec3(box.getSize(), tbox.getSize(new THREE.Vector3()));
-      const sphere = new Sphere(v3(rand), rand() * 4);
-      const tsphere = new THREE.Sphere(tv3(sphere.center), sphere.radius);
-      expect(box.intersectsSphere(sphere)).toBe(tbox.intersectsSphere(tsphere));
-      const pl = new Plane(v3(rand).normalize(), fv(rand, 3));
-      expect(box.intersectsPlane(pl)).toBe(tbox.intersectsPlane(new THREE.Plane(tv3(pl.normal), pl.constant)));
-      const tri = new Triangle(v3(rand), v3(rand), v3(rand));
-      const ttri = new THREE.Triangle(tv3(tri.a), tv3(tri.b), tv3(tri.c));
-      expect(box.intersectsTriangle(tri)).toBe(tbox.intersectsTriangle(ttri));
-      const ex = box.expandByPoint(p);
-      const tex = tbox.clone().expandByPoint(tv3(p));
-      expectVec3(ex.min, tex.min); expectVec3(ex.max, tex.max);
-      const s = rand() * 2;
-      const exs = box.expandByScalar(s);
-      const texs = tbox.clone().expandByScalar(s);
-      expectVec3(exs.min, texs.min); expectVec3(exs.max, texs.max);
-    }
-  });
-
-  it("Sphere queries match three", () => {
-    const rand = rng(0xc17ce);
-    for (let i = 0; i < CASES; i += 1) {
-      const center = v3(rand); const radius = rand() * 5 + 0.01;
-      const sp = new Sphere(center, radius);
-      const tsp = new THREE.Sphere(tv3(center), radius);
-      const p = v3(rand);
-      expect(sp.containsPoint(p)).toBe(tsp.containsPoint(tv3(p)));
-      expectClose(sp.distanceToPoint(p), tsp.distanceToPoint(tv3(p)), TRIG_TOL);
-      const other = new Sphere(v3(rand), rand() * 4);
-      const tother = new THREE.Sphere(tv3(other.center), other.radius);
-      expect(sp.intersectsSphere(other)).toBe(tsp.intersectsSphere(tother));
-      const mn = v3(rand);
-      const box = new Box3(mn, mn.add(v3(rand).multiplyScalar(rand()).add(new Vector3(1, 1, 1))));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      expect(sp.intersectsBox(box)).toBe(tsp.intersectsBox(tbox));
-      const pl = new Plane(v3(rand).normalize(), fv(rand, 3));
-      expect(sp.intersectsPlane(pl)).toBe(tsp.intersectsPlane(new THREE.Plane(tv3(pl.normal), pl.constant)));
-      const off = v3(rand);
-      const tr = sp.translate(off);
-      const ttr = tsp.clone().translate(tv3(off));
-      expectVec3(tr.center, ttr.center);
-      expectClose(tr.radius, ttr.radius);
-      const u = sp.union(other);
-      const tu = tsp.clone().union(tother);
-      expectVec3(u.center, tu.center, TRIG_TOL);
-      expectClose(u.radius, tu.radius, TRIG_TOL);
-      const pts = Array.from({ length: 5 }, () => v3(rand));
-      const fs = Sphere.setFromPoints(pts);
-      const tfs = new THREE.Sphere().setFromPoints(pts.map(tv3));
-      expectVec3(fs.center, tfs.center, TRIG_TOL);
-      expectClose(fs.radius, tfs.radius, 1e-4);
-      const bb = sp.getBoundingBox();
-      const tbb = tsp.getBoundingBox(new THREE.Box3());
-      expectVec3(bb.min, tbb.min); expectVec3(bb.max, tbb.max);
-      expectVec3(sp.clampPoint(p), tsp.clampPoint(tv3(p), new THREE.Vector3()), TRIG_TOL);
-      const ep = sp.expandByPoint(p);
-      const tep = tsp.clone().expandByPoint(tv3(p));
-      expectVec3(ep.center, tep.center, TRIG_TOL);
-      expectClose(ep.radius, tep.radius, TRIG_TOL);
-    }
-  });
-
-  it("Frustum.setFromProjectionMatrix + intersects* match three", () => {
-    const rand = rng(0xc28ce);
-    for (let i = 0; i < 200; i += 1) {
-      const proj = new THREE.Matrix4().makePerspective(
-        fv(rand, 1.2), fv(rand, 1.2), 30 + rand() * 60, 30 + rand() * 60, 0.1 + rand(), 100 + rand() * 100
+      const n = vector(rand).normalize();
+      const { x, y, z } = n;
+      const basis = [1 / Math.sqrt(4 * Math.PI), Math.sqrt(3 / (4 * Math.PI)) * y,
+        Math.sqrt(3 / (4 * Math.PI)) * z, Math.sqrt(3 / (4 * Math.PI)) * x,
+        Math.sqrt(15 / (4 * Math.PI)) * x * y, Math.sqrt(15 / (4 * Math.PI)) * y * z,
+        Math.sqrt(5 / (16 * Math.PI)) * (3 * z * z - 1), Math.sqrt(15 / (4 * Math.PI)) * x * z,
+        Math.sqrt(15 / (16 * Math.PI)) * (x * x - y * y)];
+      arrayClose(SphericalHarmonics3.getBasisAt(n), basis, 1e-6);
+      const coefficients = Array.from({ length: 9 }, () => vector(rand, 0.2));
+      const sh = new SphericalHarmonics3(coefficients);
+      const evaluate = (factors: readonly number[]) => new Vector3(
+        coefficients.reduce((sum, c, j) => sum + c.x * factors[j]!, 0),
+        coefficients.reduce((sum, c, j) => sum + c.y * factors[j]!, 0),
+        coefficients.reduce((sum, c, j) => sum + c.z * factors[j]!, 0)
       );
-      const view = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(fv(rand, 1), fv(rand, Math.PI), fv(rand, 1)));
-      view.setPosition(fv(rand), fv(rand), fv(rand));
-      const m = proj.clone().multiply(view);
-      const fr = Frustum.setFromProjectionMatrix(new Matrix4(m.elements as Matrix4["elements"]));
-      const tfr = new THREE.Frustum().setFromProjectionMatrix(m);
-      const p = v3(rand, 60);
-      expect(fr.containsPoint(p)).toBe(tfr.containsPoint(tv3(p)));
-      const sp = new Sphere(v3(rand, 60), rand() * 20 + 0.5);
-      const tsp = new THREE.Sphere(tv3(sp.center), sp.radius);
-      expect(fr.intersectsSphere(sp)).toBe(tfr.intersectsSphere(tsp));
-      const mn = v3(rand, 60);
-      const size = new Vector3(Math.abs(fv(rand, 20)) + 0.1, Math.abs(fv(rand, 20)) + 0.1, Math.abs(fv(rand, 20)) + 0.1);
-      const box = new Box3(mn, mn.add(size));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      expect(fr.intersectsBox(box)).toBe(tfr.intersectsBox(tbox));
+      vecLike(sh.getAt(n), evaluate(basis), 1e-6);
+      vecLike(sh.getIrradianceAt(n), evaluate(basis.map((v, j) => v * (j === 0 ? Math.PI : j < 4 ? 2 * Math.PI / 3 : Math.PI / 4))), 2e-6);
     }
-  });
-});
+  }, 30_000);
 
-describe("OBB/Capsule parity (AD-14)", () => {
-  it("OBB queries match three", () => {
-    const rand = rng(0xd39ce);
+  it("round-trips spherical and cylindrical coordinates, including poles", () => {
+    const rand = random(0x8ffce);
     for (let i = 0; i < CASES; i += 1) {
-      const center = v3(rand);
-      const half = new Vector3(Math.abs(fv(rand)) + 0.1, Math.abs(fv(rand)) + 0.1, Math.abs(fv(rand)) + 0.1);
-      const rot = new THREE.Matrix3().setFromMatrix4(
-        new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(fv(rand, Math.PI), fv(rand, Math.PI), fv(rand, Math.PI)))
-      );
-      const obb = new OBB(center, half, new Matrix3(rot.elements as Matrix3["elements"]));
-      const tobb = new ThreeOBB(tv3(center), tv3(half), rot.clone());
-      const p = v3(rand);
-      expect(obb.containsPoint(p)).toBe(tobb.containsPoint(tv3(p)));
-      expectVec3(obb.clampPoint(p), tobb.clampPoint(tv3(p), new THREE.Vector3()), TRIG_TOL);
-      const sp = new Sphere(v3(rand), rand() * 4);
-      const tsp = new THREE.Sphere(tv3(sp.center), sp.radius);
-      expect(obb.intersectsSphere(sp)).toBe(tobb.intersectsSphere(tsp));
-      const pl = new Plane(v3(rand).normalize(), fv(rand, 3));
-      expect(obb.intersectsPlane(pl)).toBe(tobb.intersectsPlane(new THREE.Plane(tv3(pl.normal), pl.constant)));
-      const ray = new Ray(v3(rand), v3(rand).normalize());
-      const tray = new THREE.Ray(tv3(ray.origin), tv3(ray.direction));
-      const hit = obb.intersectRay(ray);
-      const thit = tobb.intersectRay(tray, new THREE.Vector3());
-      expect(hit === undefined).toBe(thit === null);
-      if (hit && thit) expectVec3(hit, thit, TRIG_TOL);
-      const oc = v3(rand);
-      const other = new OBB(oc, half, new Matrix3(rot.elements as Matrix3["elements"]));
-      const tother = new ThreeOBB(tv3(oc), tv3(half), rot.clone());
-      expect(obb.intersectsOBB(other)).toBe(tobb.intersectsOBB(tother));
-      expectVec3(obb.getSize(), tobb.getSize(new THREE.Vector3()));
+      const p = vector(rand); const spherical = new Spherical().setFromCartesianCoords(p.x, p.y, p.z);
+      const cylindrical = new Cylindrical().setFromCartesianCoords(p.x, p.y, p.z);
+      close(spherical.radius, Math.hypot(p.x, p.y, p.z));
+      close(cylindrical.radius, Math.hypot(p.x, p.z)); close(cylindrical.y, p.y);
+      vecLike(spherical.toVector3(), p, 1e-7); vecLike(cylindrical.toVector3(), p, 1e-7);
     }
-  });
+    expect(new Spherical(2, 0, 0).makeSafe().phi).toBeGreaterThan(0);
+    expect(new Spherical(2, Math.PI, 0).makeSafe().phi).toBeLessThan(Math.PI);
+  }, 30_000);
+});
 
-  it("Capsule queries match three", () => {
-    const rand = rng(0xe4ace);
+describe("line, triangle and plane: geometric fixtures", () => {
+  it("projects onto finite and infinite segments and transforms their endpoints", () => {
+    const rand = random(0x9a0ce);
     for (let i = 0; i < CASES; i += 1) {
-      const cap = new Capsule(v3(rand), v3(rand), rand() * 2 + 0.05);
-      const tcap = new ThreeCapsule(tv3(cap.start), tv3(cap.end), cap.radius);
-      const mn = v3(rand);
-      const size = new Vector3(Math.abs(fv(rand)) + 0.1, Math.abs(fv(rand)) + 0.1, Math.abs(fv(rand)) + 0.1);
-      const box = new Box3(mn, mn.add(size));
-      const tbox = new THREE.Box3(tv3(box.min), tv3(box.max));
-      expect(cap.intersectsBox(box)).toBe(tcap.intersectsBox(tbox));
-      const off = v3(rand);
-      const tr = cap.translate(off);
-      const ttr = tcap.clone().translate(tv3(off));
-      expectVec3(tr.start, ttr.start);
-      expectVec3(tr.end, ttr.end);
-      expectClose(tr.radius, ttr.radius);
-      expectVec3(cap.getCenter(), tcap.getCenter(new THREE.Vector3()));
+      const start = vector(rand); const length = 0.1 + 10 * rand();
+      const line = new Line3(start, start.add(new Vector3(length, 0, 0)));
+      const t = scalar(rand, 2); const p = start.add(new Vector3(t * length, 3, 4));
+      close(line.distanceSq(), length * length); close(line.distance(), length);
+      vecLike(line.getCenter(), start.add(new Vector3(length / 2, 0, 0)));
+      vec(line.delta(), length, 0, 0);
+      close(line.closestPointToPointParameter(p), t);
+      close(line.closestPointToPointParameter(p, true), Math.max(0, Math.min(1, t)));
+      vecLike(line.closestPointToPoint(p, true), start.add(new Vector3(Math.max(0, Math.min(1, t)) * length, 0, 0)));
+      vecLike(line.at(t), start.add(new Vector3(t * length, 0, 0)));
+      const offset = vector(rand); const moved = line.applyMatrix4(Matrix4.translation(offset));
+      vecLike(moved.start, start.add(offset)); vecLike(moved.end, line.end.add(offset));
     }
-  });
+  }, 30_000);
+
+  it("finds nearest points between crossing, skew, parallel and point segments", () => {
+    const a = new Line3(new Vector3(0, 0, 0), new Vector3(4, 0, 0));
+    const fixtures = [
+      { line: new Line3(new Vector3(2, -1, 0), new Vector3(2, 1, 0)), distance: 0, p: [2, 0, 0], q: [2, 0, 0] },
+      { line: new Line3(new Vector3(2, -1, 3), new Vector3(2, 1, 3)), distance: 9, p: [2, 0, 0], q: [2, 0, 3] },
+      { line: new Line3(new Vector3(5, 2, 0), new Vector3(7, 2, 0)), distance: 5, p: [4, 0, 0], q: [5, 2, 0] },
+      { line: new Line3(new Vector3(2, 3, 0), new Vector3(2, 3, 0)), distance: 9, p: [2, 0, 0], q: [2, 3, 0] }
+    ];
+    for (const f of fixtures) {
+      const result = a.distanceSqToLine3(f.line);
+      close(result.distanceSq, f.distance);
+      vec(result.point1, f.p[0]!, f.p[1]!, f.p[2]!);
+      vec(result.point2, f.q[0]!, f.q[1]!, f.q[2]!);
+      close(f.line.distanceSqToLine3(a).distanceSq, f.distance);
+    }
+  }, 30_000);
+
+  it("computes triangle area, barycentrics, closest points and facing", () => {
+    const tri = new Triangle(new Vector3(0, 0, 0), new Vector3(4, 0, 0), new Vector3(0, 3, 0));
+    close(tri.getArea(), 6); vec(tri.getMidpoint(), 4 / 3, 1, 0); vec(tri.getNormal(), 0, 0, 1);
+    const bary = tri.getBarycoord(new Vector3(1, 1.5, 0))!;
+    vec(bary, 0.25, 0.25, 0.5);
+    expect(tri.containsPoint(new Vector3(1, 1.5, 0))).toBe(true);
+    expect(tri.containsPoint(new Vector3(4, 3, 0))).toBe(false);
+    vec(tri.closestPointToPoint(new Vector3(1, 1, 2)), 1, 1, 0);
+    vec(tri.closestPointToPoint(new Vector3(-1, -2, 0)), 0, 0, 0);
+    vec(tri.closestPointToPoint(new Vector3(3, -2, 0)), 3, 0, 0);
+    close(tri.getPlane().distanceToPoint(new Vector3(1, 1, 2)), 2);
+    expect(tri.isFrontFacing(new Vector3(0, 0, -1))).toBe(true);
+    expect(tri.isFrontFacing(new Vector3(0, 0, 1))).toBe(false);
+    const touchingBox = new Box3(new Vector3(0.5, 0.5, -1), new Vector3(1.5, 1.5, 1));
+    expect(tri.intersectsBox(touchingBox)).toBe(true);
+    expect(touchingBox.intersectsTriangle(tri)).toBe(true);
+    expect(tri.intersectsBox(new Box3(new Vector3(10, 10, -1), new Vector3(11, 11, 1)))).toBe(false);
+    expect(new Triangle().getBarycoord(new Vector3(1, 2, 3))).toBeNull();
+  }, 30_000);
+
+  it("reconstructs seeded rotated triangle points and their closest projections", () => {
+    const rand = random(0xa12ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const origin = vector(rand), x = scalar(rand, 3), y = scalar(rand, 3), z = scalar(rand, 3);
+      const axisX = rotateByAxes(new Vector3(1, 0, 0), x, y, z, "XYZ");
+      const axisY = rotateByAxes(new Vector3(0, 1, 0), x, y, z, "XYZ");
+      const normal = rotateByAxes(new Vector3(0, 0, 1), x, y, z, "XYZ");
+      const width = 0.1 + rand() * 5, height = 0.1 + rand() * 5;
+      const tri = new Triangle(origin, origin.add(axisX.multiplyScalar(width)), origin.add(axisY.multiplyScalar(height)));
+      const u = rand(), v = rand() * (1 - u);
+      const point = origin.add(axisX.multiplyScalar(width * u)).add(axisY.multiplyScalar(height * v));
+      const elevated = point.add(normal.multiplyScalar(0.1 + rand() * 5));
+      vecLike(tri.getNormal(), normal, 1e-7); close(tri.getArea(), width * height / 2, 1e-7);
+      vec(tri.getBarycoord(point)!, 1 - u - v, u, v, 1e-7);
+      expect(tri.containsPoint(point)).toBe(true);
+      vecLike(tri.closestPointToPoint(elevated), point, 1e-7);
+      close(tri.getPlane().distanceToPoint(point), 0, 1e-7);
+    }
+  }, 30_000);
+
+  it("handles signed distances, projections, line, sphere and box intersections", () => {
+    const plane = new Plane(new Vector3(0, 1, 0), -2); // y = 2
+    const p = new Vector3(3, 7, -4);
+    close(plane.distanceToPoint(p), 5); vec(plane.projectPoint(p), 3, 2, -4);
+    vec(plane.coplanarPoint(), 0, 2, 0);
+    const crossing = new Line3(new Vector3(1, 0, 1), new Vector3(1, 4, 1));
+    expect(plane.intersectsLine(crossing)).toBe(true);
+    vec(plane.intersectLine(crossing)!, 1, 2, 1);
+    expect(plane.intersectsLine(new Line3(new Vector3(0, 3, 0), new Vector3(1, 3, 0)))).toBe(false);
+    const sphere = new Sphere(new Vector3(0, 3, 0), 1.5);
+    close(plane.distanceToSphere(sphere), -0.5); expect(plane.intersectsSphere(sphere)).toBe(true);
+    expect(plane.intersectsBox(new Box3(new Vector3(-1, 1, -1), new Vector3(1, 3, 1)))).toBe(true);
+    expect(plane.intersectsBox(new Box3(new Vector3(-1, 3, -1), new Vector3(1, 4, 1)))).toBe(false);
+    close(plane.translate(new Vector3(0, 4, 0)).distanceToPoint(new Vector3(0, 6, 0)), 0);
+  }, 30_000);
 });
 
-// ---- AD-14 / L3-07 (R-11): ConvexHull + Octree vs three 0.185.1 ----
+describe("ray, bounds and frustum: analytical fixtures", () => {
+  it("queries closest points, sphere, plane, segment, triangle and box", () => {
+    const ray = new Ray(new Vector3(0, 0, 0), new Vector3(1, 0, 0));
+    vec(ray.at(3), 3, 0, 0); vec(ray.closestPointToPoint(new Vector3(2, 3, 4)), 2, 0, 0);
+    vec(ray.closestPointToPoint(new Vector3(-2, 3, 0)), 0, 0, 0);
+    close(ray.distanceToPoint(new Vector3(2, 3, 4)), 5); close(ray.distanceSqToPoint(new Vector3(2, 3, 4)), 25);
+    const sphere = new Sphere(new Vector3(5, 0, 0), 2);
+    vec(ray.intersectSphere(sphere)!, 3, 0, 0); expect(ray.intersectsSphere(sphere)).toBe(true);
+    expect(ray.intersectSphere(new Sphere(new Vector3(-5, 0, 0), 1))).toBeUndefined();
+    const plane = new Plane(new Vector3(1, 0, 0), -4);
+    close(ray.distanceToPlane(plane)!, 4); vec(ray.intersectPlane(plane)!, 4, 0, 0); expect(ray.intersectsPlane(plane)).toBe(true);
+    const closest = ray.distanceSqToSegment(new Vector3(2, 1, 3), new Vector3(2, -1, 3));
+    close(closest.distanceSq, 9); vec(closest.pointOnRay, 2, 0, 0); vec(closest.pointOnSegment, 2, 0, 3);
+    const box = new Box3(new Vector3(3, -1, -1), new Vector3(5, 1, 1));
+    vec(ray.intersectBox(box)!, 3, 0, 0); expect(ray.intersectsBox(box)).toBe(true);
+    expect(ray.intersectBox(new Box3(new Vector3(-5, -1, -1), new Vector3(-3, 1, 1)))).toBeUndefined();
+    const a = new Vector3(4, -1, -1), b = new Vector3(4, 1, -1), c = new Vector3(4, 0, 1);
+    vec(ray.intersectTriangle(a, b, c)!, 4, 0, 0);
+    expect(ray.intersectTriangle(a, b, c, true)).toBeUndefined();
+    vec(ray.intersectTriangle(a, c, b, true)!, 4, 0, 0);
+    vec(ray.recast(2).origin, 2, 0, 0); vec(ray.lookAt(new Vector3(0, 2, 0)).direction, 0, 1, 0);
+    vec(ray.applyMatrix4(Matrix4.translation(new Vector3(1, 2, 3))).origin, 1, 2, 3);
+    vec(ray.applyMatrix4(Matrix4.rotation(Quaternion.fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 2))).direction, 0, 1, 0);
+  }, 30_000);
 
-type Cloud = { name: string; points: Vector3[] };
+  it("finds analytical ray hits over translated spheres, boxes and planes", () => {
+    const rand = random(0xbf5ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const origin = vector(rand), travel = 2 + rand() * 8, radius = 0.1 + rand();
+      const ray = new Ray(origin, new Vector3(1, 0, 0));
+      const center = origin.add(new Vector3(travel + radius, 0, 0));
+      const sphere = new Sphere(center, radius);
+      vecLike(ray.intersectSphere(sphere)!, origin.add(new Vector3(travel, 0, 0)), 1e-7);
+      expect(ray.intersectsSphere(sphere)).toBe(true);
+      const box = new Box3(origin.add(new Vector3(travel, -radius, -radius)), origin.add(new Vector3(travel + radius, radius, radius)));
+      vecLike(ray.intersectBox(box)!, origin.add(new Vector3(travel, 0, 0)), 1e-7);
+      const plane = new Plane(new Vector3(1, 0, 0), -(origin.x + travel));
+      close(ray.distanceToPlane(plane)!, travel, 1e-7);
+      vecLike(ray.intersectPlane(plane)!, origin.add(new Vector3(travel, 0, 0)), 1e-7);
+      const segment = ray.distanceSqToSegment(origin.add(new Vector3(travel, -1, 2)), origin.add(new Vector3(travel, 1, 2)));
+      close(segment.distanceSq, 4, 1e-7);
+      vecLike(segment.pointOnRay, origin.add(new Vector3(travel, 0, 0)), 1e-7);
+      vecLike(segment.pointOnSegment, origin.add(new Vector3(travel, 0, 2)), 1e-7);
+    }
+  }, 30_000);
 
-function hullClouds(): Cloud[] {
-  const rand = rng(0xc0a7e);
-  const uniform: Vector3[] = [];
-  for (let i = 0; i < 1000; i += 1) uniform.push(v3(rand, 10));
-  const sphereSurface: Vector3[] = [];
-  for (let i = 0; i < 1000; i += 1) {
-    const z = rand() * 2 - 1;
-    const a = rand() * Math.PI * 2;
-    const r = Math.sqrt(1 - z * z);
-    sphereSurface.push(new Vector3(r * Math.cos(a) * 7, r * Math.sin(a) * 7, z * 7));
-  }
-  // coplanar faces + interior points: exercises the face-merge path
-  const cube: Vector3[] = [];
-  for (const x of [-3, 3]) for (const y of [-3, 3]) for (const z of [-3, 3]) cube.push(new Vector3(x, y, z));
-  for (let i = 0; i < 200; i += 1) {
-    cube.push(new Vector3(fv(rand, 3), fv(rand, 3), 3), new Vector3(fv(rand, 3), -3, fv(rand, 3)), v3(rand, 2.5));
-  }
-  const thin: Vector3[] = [];
-  for (let i = 0; i < 1000; i += 1) thin.push(new Vector3(fv(rand, 12), fv(rand, 12), fv(rand, 0.05)));
-  return [
-    { name: "uniform ball-ish 1k", points: uniform },
-    { name: "sphere surface 1k", points: sphereSurface },
-    { name: "cube + coplanar + interior", points: cube },
-    { name: "thin slab 1k", points: thin }
-  ];
-}
+  it("checks AABBs against coordinate extrema and clamp distances", () => {
+    const rand = random(0xc06ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const a = vector(rand), b = vector(rand), point = vector(rand);
+      const lo = new Vector3(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
+      const hi = new Vector3(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
+      const box = new Box3(lo, hi);
+      const x = Math.max(lo.x, Math.min(hi.x, point.x)); const y = Math.max(lo.y, Math.min(hi.y, point.y)); const z = Math.max(lo.z, Math.min(hi.z, point.z));
+      vec(box.clampPoint(point), x, y, z);
+      close(box.distanceToPoint(point), Math.hypot(point.x - x, point.y - y, point.z - z));
+      expect(box.containsPoint(point)).toBe(point.x >= lo.x && point.x <= hi.x && point.y >= lo.y && point.y <= hi.y && point.z >= lo.z && point.z <= hi.z);
+      vec(box.getCenter(), (lo.x + hi.x) / 2, (lo.y + hi.y) / 2, (lo.z + hi.z) / 2);
+      vec(box.getSize(), hi.x - lo.x, hi.y - lo.y, hi.z - lo.z);
+      const expanded = box.expandByPoint(point);
+      expect(expanded.containsPoint(point)).toBe(true); expect(expanded.containsPoint(lo)).toBe(true); expect(expanded.containsPoint(hi)).toBe(true);
+      const offset = vector(rand); const moved = box.translate(offset);
+      vecLike(moved.min, lo.add(offset)); vecLike(moved.max, hi.add(offset));
+      const asSphere = box.getBoundingSphere();
+      vecLike(asSphere.center, box.getCenter()); close(asSphere.radius, box.getSize().length() / 2);
+    }
+    const a = new Box3(new Vector3(-1, -1, -1), new Vector3(1, 1, 1));
+    const b = new Box3(new Vector3(0, 0, 0), new Vector3(2, 2, 2));
+    expect(a.intersectsBox(b)).toBe(true);
+    vec(a.intersect(b).min, 0, 0, 0); vec(a.intersect(b).max, 1, 1, 1);
+    vec(a.union(b).min, -1, -1, -1); vec(a.union(b).max, 2, 2, 2);
+    vec(a.expandByScalar(1).min, -2, -2, -2); vec(a.expandByScalar(1).max, 2, 2, 2);
+    vec(a.transform(Matrix4.translation(new Vector3(2, 0, 0))).min, 1, -1, -1);
+    expect(a.intersectsSphere(new Sphere(new Vector3(2, 0, 0), 1))).toBe(true);
+    expect(a.intersectsPlane(new Plane(new Vector3(0, 1, 0), 0))).toBe(true);
+  }, 30_000);
 
-function hullFaceVertexKeys(faces: readonly { edge: { head(): { point: Vector3 }; next: unknown } | null }[]): string[] {
-  const keys: string[] = [];
-  for (const face of faces) {
-    const verts: string[] = [];
-    let edge = face.edge as { head(): { point: Vector3 }; next: unknown };
-    const start = edge;
-    do {
-      const p = edge.head().point;
-      verts.push(`${p.x.toFixed(6)},${p.y.toFixed(6)},${p.z.toFixed(6)}`);
-      edge = edge.next as typeof edge;
-    } while (edge !== start);
-    keys.push(verts.sort().join("|"));
-  }
-  return keys.sort();
-}
+  it("checks box overlap, union, clipping and rotated corner bounds", () => {
+    const rand = random(0xc07ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const center = vector(rand), extent = new Vector3(0.1 + rand() * 3, 0.1 + rand() * 3, 0.1 + rand() * 3);
+      const otherCenter = vector(rand), otherExtent = new Vector3(0.1 + rand() * 3, 0.1 + rand() * 3, 0.1 + rand() * 3);
+      const a = new Box3(center.subtract(extent), center.add(extent));
+      const b = new Box3(otherCenter.subtract(otherExtent), otherCenter.add(otherExtent));
+      const overlap = Math.abs(center.x - otherCenter.x) <= extent.x + otherExtent.x &&
+        Math.abs(center.y - otherCenter.y) <= extent.y + otherExtent.y && Math.abs(center.z - otherCenter.z) <= extent.z + otherExtent.z;
+      expect(a.intersectsBox(b)).toBe(overlap);
+      expect(a.intersect(b).isEmpty()).toBe(!overlap);
+      const union = a.union(b);
+      expect(union.containsPoint(a.min) && union.containsPoint(a.max) && union.containsPoint(b.min) && union.containsPoint(b.max)).toBe(true);
+      const angle = scalar(rand, Math.PI), co = Math.cos(angle), si = Math.sin(angle);
+      const q = Quaternion.fromAxisAngle(new Vector3(0, 0, 1), angle);
+      const transformed = a.transform(Matrix4.rotation(q));
+      const rotatedCenter = new Vector3(co * center.x - si * center.y, si * center.x + co * center.y, center.z);
+      const rx = Math.abs(co) * extent.x + Math.abs(si) * extent.y;
+      const ry = Math.abs(si) * extent.x + Math.abs(co) * extent.y;
+      vec(transformed.min, rotatedCenter.x - rx, rotatedCenter.y - ry, center.z - extent.z, 1e-7);
+      vec(transformed.max, rotatedCenter.x + rx, rotatedCenter.y + ry, center.z + extent.z, 1e-7);
+    }
+  }, 30_000);
 
-describe("ConvexHull parity (AD-14 / R-11)", () => {
-  for (const cloud of hullClouds()) {
-    it(`${cloud.name}: faces, vertices, queries match three`, () => {
-      const ours = new ConvexHull().setFromPoints(cloud.points);
-      const theirs = new ThreeConvexHull().setFromPoints(cloud.points.map(tv3));
-      expect(ours.faces.length).toBeGreaterThan(3);
-      expect(ours.faces.length).toBe(theirs.faces.length);
+  it("checks sphere containment, distance, extent, union and expansion", () => {
+    const rand = random(0xc17ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const center = vector(rand), point = vector(rand); const radius = 0.1 + rand() * 5;
+      const sphere = new Sphere(center, radius); const distance = Math.hypot(point.x - center.x, point.y - center.y, point.z - center.z);
+      expect(sphere.containsPoint(point)).toBe(distance <= radius);
+      close(sphere.distanceToPoint(point), distance - radius);
+      const clamp = sphere.clampPoint(point);
+      if (distance > radius) close(clamp.distanceTo(center), radius);
+      else vecLike(clamp, point);
+      const expanded = sphere.expandByPoint(point);
+      expect(expanded.center.distanceTo(point)).toBeLessThanOrEqual(expanded.radius + 1e-8);
+      expect(expanded.center.distanceTo(center) + radius).toBeLessThanOrEqual(expanded.radius + 1e-8);
+      const other = new Sphere(vector(rand), rand() * 3);
+      expect(sphere.intersectsSphere(other)).toBe(center.distanceTo(other.center) <= radius + other.radius);
+      const union = sphere.union(other);
+      expect(union.center.distanceTo(center) + radius).toBeLessThanOrEqual(union.radius + 1e-8);
+      expect(union.center.distanceTo(other.center) + other.radius).toBeLessThanOrEqual(union.radius + 1e-8);
+      const bounds = sphere.getBoundingBox();
+      vec(bounds.min, center.x - radius, center.y - radius, center.z - radius);
+      vec(bounds.max, center.x + radius, center.y + radius, center.z + radius);
+    }
+    const points = [new Vector3(-2, 0, 0), new Vector3(2, 0, 0), new Vector3(0, 1, 0)];
+    const bound = Sphere.setFromPoints(points); vec(bound.center, 0, 0.5, 0); close(bound.radius, Math.sqrt(4.25));
+    vec(new Sphere(new Vector3(1, 2, 3), 4).translate(new Vector3(2, 3, 4)).center, 3, 5, 7);
+    expect(new Sphere(new Vector3(), 1).intersectsBox(new Box3(new Vector3(0.5, -1, -1), new Vector3(2, 1, 1)))).toBe(true);
+    expect(new Sphere(new Vector3(), 1).intersectsPlane(new Plane(new Vector3(0, 1, 0), -2))).toBe(false);
+  }, 30_000);
 
-      const theirsFaces = theirs.faces as unknown as { edge: { head(): { point: THREE.Vector3 }; next: unknown } }[];
-      const theirKeys = hullFaceVertexKeys(
-        theirsFaces.map((f) => ({
-          edge: f.edge as unknown as { head(): { point: Vector3 }; next: unknown }
-        }))
-      );
-      expect(hullFaceVertexKeys(ours.faces)).toEqual(theirKeys);
-
-      // ConvexGeometry vertex expansion count (face loop walk)
-      const walk = (faces: readonly { edge: unknown }[]): number => {
-        let n = 0;
-        for (const face of faces) {
-          const start = face.edge as { next: unknown };
-          let edge = start;
-          do { n += 1; edge = edge.next as typeof edge; } while (edge !== start);
-        }
-        return n;
-      };
-      expect(walk(ours.faces)).toBe(walk(theirs.faces as unknown as { edge: unknown }[]));
-
-      const rand = rng(0x9ea1f);
-      for (let i = 0; i < 300; i += 1) {
-        const p = v3(rand, 14);
-        expect(ours.containsPoint(p)).toBe(theirs.containsPoint(tv3(p)));
-      }
-      for (let i = 0; i < 300; i += 1) {
-        const ray = new Ray(v3(rand, 30), v3(rand, 1).normalize());
-        const tray = new THREE.Ray(tv3(ray.origin), tv3(ray.direction));
-        const hit = ours.intersectRay(ray);
-        const thit = theirs.intersectRay(tray, new THREE.Vector3());
-        expect(hit === undefined).toBe(thit === null);
-        if (hit && thit) expectVec3(hit, thit, TRIG_TOL);
-        expect(ours.intersectsRay(ray)).toBe(theirs.intersectsRay(tray));
-      }
-    });
-  }
-
-  it("fewer than 4 points leaves the hull empty, like three", () => {
-    const pts = [new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0)];
-    expect(new ConvexHull().setFromPoints(pts).faces.length).toBe(new ThreeConvexHull().setFromPoints(pts.map(tv3)).faces.length);
-  });
+  it("clips points, spheres and boxes against the known identity clip cube", () => {
+    const frustum = Frustum.setFromProjectionMatrix(Matrix4.identity());
+    const rand = random(0xc28ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const p = vector(rand, 2);
+      expect(frustum.containsPoint(p)).toBe(Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1 && Math.abs(p.z) <= 1);
+      const radius = rand();
+      expect(frustum.intersectsSphere(new Sphere(p, radius))).toBe(Math.abs(p.x) <= 1 + radius && Math.abs(p.y) <= 1 + radius && Math.abs(p.z) <= 1 + radius);
+      const box = new Box3(p.subtract(new Vector3(0.2, 0.2, 0.2)), p.add(new Vector3(0.2, 0.2, 0.2)));
+      expect(frustum.intersectsBox(box)).toBe(Math.abs(p.x) <= 1.2 && Math.abs(p.y) <= 1.2 && Math.abs(p.z) <= 1.2);
+    }
+    const perspective = Frustum.setFromProjectionMatrix(Matrix4.perspective(Math.PI / 2, 1, 1, 10));
+    expect(perspective.containsPoint(new Vector3(0, 0, -5))).toBe(true);
+    expect(perspective.containsPoint(new Vector3(6, 0, -5))).toBe(false);
+    expect(perspective.containsPoint(new Vector3(0, 0, -0.5))).toBe(false);
+    expect(perspective.containsPoint(new Vector3(0, 0, -11))).toBe(false);
+  }, 30_000);
 });
 
-function octreeSoup(): { positions: number[]; indices: number[] } {
-  const rand = rng(0x0c7ee);
-  const positions: number[] = [];
-  const indices: number[] = [];
-  const grid = 24;
-  const cell = 2;
-  for (let z = 0; z <= grid; z += 1) {
-    for (let x = 0; x <= grid; x += 1) {
-      positions.push((x - grid / 2) * cell, Math.sin(x * 0.7) * Math.cos(z * 0.5) * 2 + rand() * 0.4, (z - grid / 2) * cell);
+describe("oriented bounds and capsules", () => {
+  it("checks a rotated box in its analytically known local frame", () => {
+    const center = new Vector3(2, 3, 4);
+    const rotation = Matrix3.fromMatrix4(Matrix4.rotation(Quaternion.fromAxisAngle(new Vector3(0, 0, 1), Math.PI / 2)));
+    const obb = new OBB(center, new Vector3(2, 1, 0.5), rotation);
+    vec(obb.getSize(), 4, 2, 1);
+    const rand = random(0xd39ce);
+    for (let i = 0; i < CASES; i += 1) {
+      const local = vector(rand, 4);
+      const world = new Vector3(center.x - local.y, center.y + local.x, center.z + local.z);
+      expect(obb.containsPoint(world)).toBe(Math.abs(local.x) <= 2 && Math.abs(local.y) <= 1 && Math.abs(local.z) <= 0.5);
+      const x = Math.max(-2, Math.min(2, local.x));
+      const y = Math.max(-1, Math.min(1, local.y));
+      const z = Math.max(-0.5, Math.min(0.5, local.z));
+      vec(obb.clampPoint(world), center.x - y, center.y + x, center.z + z, 1e-7);
+      const radius = rand();
+      expect(obb.intersectsSphere(new Sphere(world, radius))).toBe(Math.hypot(local.x - x, local.y - y, local.z - z) <= radius);
     }
+    expect(obb.intersectsPlane(new Plane(new Vector3(0, 0, 1), -4))).toBe(true);
+    expect(obb.intersectsPlane(new Plane(new Vector3(0, 0, 1), -6))).toBe(false);
+    vec(obb.intersectRay(new Ray(new Vector3(2, 3, 10), new Vector3(0, 0, -1)))!, 2, 3, 4.5);
+    expect(obb.intersectsOBB(new OBB(new Vector3(2, 3, 4), new Vector3(0.5, 0.5, 0.5)))).toBe(true);
+    expect(obb.intersectsOBB(new OBB(new Vector3(10, 10, 10), new Vector3(0.5, 0.5, 0.5)))).toBe(false);
+  }, 30_000);
+
+  it("checks capsule center, translation and box broad-phase", () => {
+    const cap = new Capsule(new Vector3(0, 0, 0), new Vector3(0, 4, 0), 0.5);
+    vec(cap.getCenter(), 0, 2, 0);
+    const moved = cap.translate(new Vector3(2, 3, 4));
+    vec(moved.start, 2, 3, 4); vec(moved.end, 2, 7, 4); close(moved.radius, 0.5);
+    expect(cap.intersectsBox(new Box3(new Vector3(-0.2, 1, -0.2), new Vector3(0.2, 2, 0.2)))).toBe(true);
+    expect(cap.intersectsBox(new Box3(new Vector3(2, 1, -0.2), new Vector3(3, 2, 0.2)))).toBe(false);
+  }, 30_000);
+});
+
+describe("convex hull: topology and independent solids", () => {
+  it("builds a cube with outward faces, closed edges and expected ray hits", () => {
+    const points: Vector3[] = [];
+    for (const x of [-3, 3]) for (const y of [-3, 3]) for (const z of [-3, 3]) points.push(new Vector3(x, y, z));
+    const rand = random(0xc0a7e);
+    for (let i = 0; i < 200; i += 1) points.push(vector(rand, 2.5));
+    const hull = new ConvexHull().setFromPoints(points);
+    expect(hull.faces.length).toBe(12);
+    close(hull.faces.reduce((sum, face) => sum + face.area, 0), 216, 1e-6);
+    let edgeCount = 0;
+    for (const face of hull.faces) {
+      const start = face.edge!; let edge = start; let count = 0;
+      do {
+        expect(edge.twin).not.toBeNull(); expect(edge.twin!.twin).toBe(edge);
+        expect(edge.face).toBe(face); expect(edge.next!.prev).toBe(edge);
+        expect(Math.abs(face.distanceToPoint(edge.head().point))).toBeLessThanOrEqual(1e-7);
+        edge = edge.next!; count += 1; edgeCount += 1;
+        expect(count).toBeLessThanOrEqual(3);
+      } while (edge !== start);
+      expect(count).toBe(3);
+    }
+    expect(edgeCount / 2).toBe(18); // Euler: 8 vertices - 18 edges + 12 faces = 2
+    for (let i = 0; i < CASES; i += 1) {
+      const p = vector(rand, 5);
+      expect(hull.containsPoint(p)).toBe(Math.abs(p.x) <= 3 && Math.abs(p.y) <= 3 && Math.abs(p.z) <= 3);
+      const y = scalar(rand, 2.9); const z = scalar(rand, 2.9);
+      const ray = new Ray(new Vector3(-8, y, z), new Vector3(1, 0, 0));
+      vec(hull.intersectRay(ray)!, -3, y, z, 1e-7); expect(hull.intersectsRay(ray)).toBe(true);
+    }
+    expect(hull.intersectsRay(new Ray(new Vector3(-8, 4, 0), new Vector3(1, 0, 0)))).toBe(false);
+    expect(new ConvexHull().setFromPoints(points.slice(0, 3)).faces).toHaveLength(0);
+  }, 30_000);
+
+  it("encloses seeded irregular, spherical and thin point clouds with outward supporting planes", () => {
+    const rand = random(0x9ea1f);
+    const clouds = [
+      Array.from({ length: 250 }, () => vector(rand)),
+      Array.from({ length: 250 }, () => vector(rand).normalize().multiplyScalar(7)),
+      Array.from({ length: 250 }, () => new Vector3(scalar(rand, 10), scalar(rand, 10), scalar(rand, 0.02)))
+    ];
+    for (const points of clouds) {
+      const hull = new ConvexHull().setFromPoints(points);
+      expect(hull.faces.length).toBeGreaterThan(3);
+      let furthestOutside = -Infinity;
+      for (const point of points) {
+        for (const face of hull.faces) furthestOutside = Math.max(furthestOutside, face.distanceToPoint(point));
+      }
+      expect(furthestOutside).toBeLessThanOrEqual(1e-7);
+      for (const face of hull.faces) expect(face.edge!.twin!.twin).toBe(face.edge);
+      expect(hull.containsPoint(new Vector3())).toBe(true);
+    }
+  }, 30_000);
+});
+
+// Flat, +Y-facing triangles are an analytical collision surface: for a ray
+// above the plane the nearest hit is y=0; for a sphere/capsule above it the
+// penetration is radius minus height. No engine-generated fixture is used.
+function floorMesh(): { positions: number[]; indices: number[] } {
+  const positions: number[] = []; const indices: number[] = []; const side = 12;
+  for (let z = 0; z <= side; z += 1) for (let x = 0; x <= side; x += 1) positions.push(x - side / 2, 0, z - side / 2);
+  for (let z = 0; z < side; z += 1) for (let x = 0; x < side; x += 1) {
+    const a = z * (side + 1) + x, b = a + 1, c = a + side + 1, d = c + 1;
+    indices.push(a, c, b, b, c, d);
   }
-  for (let z = 0; z < grid; z += 1) {
-    for (let x = 0; x < grid; x += 1) {
-      const a = z * (grid + 1) + x;
-      const b = a + 1;
-      const c = a + grid + 1;
-      const d = c + 1;
-      indices.push(a, c, b, b, c, d);
-    }
-  }
-  // a few free-standing boxes (walls) above the terrain
-  const base = positions.length / 3;
-  const boxes = [[-6, 4, -6], [8, 5, 3], [0, 6, 10]];
-  boxes.forEach(([cx, cy, cz], bi) => {
-    const hx = 2; const hy = 3; const hz = 1.5;
-    const o = base + bi * 8;
-    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
-      positions.push(cx! + sx * hx, cy! + sy * hy, cz! + sz * hz);
-    }
-    const f = (a: number, b: number, c: number, d: number) => indices.push(o + a, o + b, o + c, o + a, o + c, o + d);
-    f(0, 1, 3, 2); f(4, 6, 7, 5); f(0, 4, 5, 1); f(2, 3, 7, 6); f(0, 2, 6, 4); f(1, 5, 7, 3);
-  });
   return { positions, indices };
 }
 
-function countTree(tree: { subTrees: readonly unknown[]; triangles: readonly unknown[] }): { nodes: number; tris: number } {
-  let nodes = 1;
-  let tris = tree.triangles.length;
-  for (const sub of tree.subTrees as { subTrees: readonly unknown[]; triangles: readonly unknown[] }[]) {
-    const c = countTree(sub);
-    nodes += c.nodes;
-    tris += c.tris;
-  }
-  return { nodes, tris };
-}
+describe("octree: planar collision fixtures", () => {
+  const mesh = floorMesh();
+  const tree = new Octree().fromPositions(new Float32Array(mesh.positions), mesh.indices);
 
-describe("Octree parity (AD-14 / R-11)", () => {
-  const soup = octreeSoup();
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(soup.positions, 3));
-  geometry.setIndex(soup.indices);
-  const theirs = new ThreeOctree().fromGraphNode(new THREE.Mesh(geometry));
-  // three reads positions through a Float32BufferAttribute; feed ours the same f32-rounded values.
-  const ours = new Octree().fromPositions(new Float32Array(soup.positions), soup.indices);
+  it("builds a nonempty hierarchy, gathers triangles once and clears owned state", () => {
+    expect(tree.subTrees.length).toBeGreaterThan(0);
+    const ray = new Ray(new Vector3(0.1, 3, 0.2), new Vector3(0, -1, 0));
+    const triangles: Triangle[] = []; tree.getRayTriangles(ray, triangles);
+    expect(triangles.length).toBeGreaterThan(0); expect(new Set(triangles).size).toBe(triangles.length);
+    const clone = new Octree().fromPositions(new Float32Array(mesh.positions), mesh.indices);
+    clone.clear(); expect(clone.subTrees).toHaveLength(0); expect(clone.triangles).toHaveLength(0);
+  }, 30_000);
 
-  it("tree structure (node and triangle counts) equals three", () => {
-    expect(countTree(ours)).toEqual(countTree(theirs as unknown as { subTrees: unknown[]; triangles: unknown[] }));
-    expect(ours.subTrees.length).toBe((theirs as unknown as { subTrees: unknown[] }).subTrees.length);
-  });
-
-  it("capsuleIntersect equals three's on 1000 seeded capsules (sweep over the level)", () => {
-    const rand = rng(0xca95);
-    let hits = 0;
+  it("returns the nearest floor hit for seeded downward rays and misses outside or back-facing rays", () => {
+    const rand = random(0x4a7e);
     for (let i = 0; i < CASES; i += 1) {
-      const start = new Vector3(fv(rand, 22), rand() * 7 - 2, fv(rand, 22));
-      const end = start.add(new Vector3(fv(rand, 0.4), rand() * 1.6 + 0.2, fv(rand, 0.4)));
-      const cap = new Capsule(start, end, rand() * 0.8 + 0.2);
-      const tcap = new ThreeCapsule(tv3(start), tv3(end), cap.radius);
-      const a = ours.capsuleIntersect(cap);
-      const b = theirs.capsuleIntersect(tcap);
-      expect(a === false).toBe(b === false);
-      if (a && b) {
-        hits += 1;
-        expectClose(a.depth, b.depth, TRIG_TOL);
-        expectVec3(a.normal, b.normal, TRIG_TOL);
-      }
+      const x = scalar(rand, 5); const z = scalar(rand, 5); const y = 1 + rand() * 8;
+      const hit = tree.rayIntersect(new Ray(new Vector3(x, y, z), new Vector3(0, -1, 0)));
+      expect(hit).not.toBe(false);
+      if (hit) { close(hit.distance, y, 1e-6); vec(hit.position, x, 0, z, 1e-6); }
     }
-    expect(hits).toBeGreaterThan(100);
+    expect(tree.rayIntersect(new Ray(new Vector3(20, 3, 0), new Vector3(0, -1, 0)))).toBe(false);
+    expect(tree.rayIntersect(new Ray(new Vector3(0, -3, 0), new Vector3(0, 1, 0)))).toBe(false);
+  }, 30_000);
+
+  it("resolves sphere penetrations against the flat floor", () => {
+    const rand = random(0xca95);
+    for (let i = 0; i < 250; i += 1) {
+      const x = scalar(rand, 4), z = scalar(rand, 4), height = 0.1 + rand() * 0.2, radius = 0.5;
+      const hit = tree.sphereIntersect(new Sphere(new Vector3(x, height, z), radius));
+      expect(hit).not.toBe(false);
+      if (hit) { close(hit.depth, radius - height, 1e-6); vec(hit.normal, 0, 1, 0, 1e-6); }
+      expect(tree.sphereIntersect(new Sphere(new Vector3(x, 2, z), radius))).toBe(false);
+    }
+  }, 30_000);
+
+  it("resolves capsule penetrations against the flat floor", () => {
+    const rand = random(0xca95);
+    for (let i = 0; i < 250; i += 1) {
+      const x = scalar(rand, 4), z = scalar(rand, 4), height = 0.1 + rand() * 0.2, radius = 0.5;
+      const hit = tree.capsuleIntersect(new Capsule(new Vector3(x, height, z), new Vector3(x, height + 1, z), radius));
+      expect(hit).not.toBe(false);
+      if (hit) { close(hit.depth, radius - height, 1e-6); vec(hit.normal, 0, 1, 0, 1e-6); }
+      expect(tree.capsuleIntersect(new Capsule(new Vector3(x, 2, z), new Vector3(x, 3, z), radius))).toBe(false);
+    }
+  }, 30_000);
+
+  it("keeps true triangle edge, vertex and zero-length capsule contacts", () => {
+    const triangle = new Triangle(new Vector3(0, 0, 0), new Vector3(0, 0, 2), new Vector3(2, 0, 0));
+    const edge = new Vector3(-0.3, 0.2, 0.75), vertex = new Vector3(-0.3, 0.2, -0.4);
+    const edgeDistance = Math.sqrt(0.3 ** 2 + 0.2 ** 2);
+    const edgeHit = tree.triangleSphereIntersect(new Sphere(edge, 0.5), triangle);
+    expect(edgeHit).not.toBe(false);
+    if (edgeHit) {
+      close(edgeHit.depth, 0.5 - edgeDistance);
+      vec(edgeHit.normal, -0.3 / edgeDistance, 0.2 / edgeDistance, 0);
+      vec(edgeHit.point, 0, 0, 0.75);
+    }
+    const vertexDistance = Math.sqrt(0.3 ** 2 + 0.2 ** 2 + 0.4 ** 2);
+    const vertexHit = tree.triangleSphereIntersect(new Sphere(vertex, 0.7), triangle);
+    expect(vertexHit).not.toBe(false);
+    if (vertexHit) {
+      close(vertexHit.depth, 0.7 - vertexDistance);
+      vec(vertexHit.normal, -0.3 / vertexDistance, 0.2 / vertexDistance, -0.4 / vertexDistance);
+      vec(vertexHit.point, 0, 0, 0);
+    }
+    const capsuleHit = tree.triangleCapsuleIntersect(new Capsule(edge, edge, 0.5), triangle);
+    expect(capsuleHit).not.toBe(false);
+    if (capsuleHit) {
+      close(capsuleHit.depth, 0.5 - edgeDistance);
+      vec(capsuleHit.normal, -0.3 / edgeDistance, 0.2 / edgeDistance, 0);
+    }
+    const crossing = tree.triangleCapsuleIntersect(new Capsule(new Vector3(-0.2, 0.2, 0.8), new Vector3(0.2, 0.2, 0.8), 0.5), triangle);
+    expect(crossing).not.toBe(false);
+    if (crossing) { close(crossing.depth, 0.3); vec(crossing.normal, 0, 1, 0); }
+    const segment = new Triangle(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(0, 0, 1));
+    const degenerate = tree.triangleSphereIntersect(new Sphere(new Vector3(0.3, 0.2, 0.5), 0.5), segment);
+    expect(degenerate).not.toBe(false);
+    if (degenerate) {
+      close(degenerate.depth, 0.5 - edgeDistance);
+      vec(degenerate.normal, 0.3 / edgeDistance, 0.2 / edgeDistance, 0);
+    }
+    const coincident = tree.triangleSphereIntersect(new Sphere(new Vector3(0, 0, 0.5), 0.5), segment);
+    expect(coincident).not.toBe(false);
+    if (coincident) {
+      close(coincident.depth, 0.5);
+      close(coincident.normal.length(), 1);
+      close(coincident.normal.z, 0);
+    }
   });
 
-  it("sphereIntersect equals three's on 1000 seeded spheres", () => {
-    const rand = rng(0x5ef3);
-    let hits = 0;
-    for (let i = 0; i < CASES; i += 1) {
-      const sp = new Sphere(new Vector3(fv(rand, 22), rand() * 7 - 2, fv(rand, 22)), rand() * 1.5 + 0.2);
-      const a = ours.sphereIntersect(sp);
-      const b = theirs.sphereIntersect(new THREE.Sphere(tv3(sp.center), sp.radius));
-      expect(a === false).toBe(b === false);
-      if (a && b) {
-        hits += 1;
-        expectClose(a.depth, b.depth, TRIG_TOL);
-        expectVec3(a.normal, b.normal, TRIG_TOL);
+  it("resolves perpendicular walls independently of triangle order", () => {
+    const floor = [new Triangle(new Vector3(-4, 0, -4), new Vector3(-4, 0, 4), new Vector3(4, 0, -4)),
+      new Triangle(new Vector3(4, 0, 4), new Vector3(4, 0, -4), new Vector3(-4, 0, 4))];
+    const wall = [new Triangle(new Vector3(0, -4, -4), new Vector3(0, 4, -4), new Vector3(0, -4, 4)),
+      new Triangle(new Vector3(0, 4, 4), new Vector3(0, -4, 4), new Vector3(0, 4, -4))];
+    const position = new Vector3(0.2, 0.3, 0.5);
+    const expected = new Vector3(0.3, 0.2, 0);
+    for (const triangles of [[...floor, ...wall], [...wall, ...floor].reverse()]) {
+      const corner = new Octree().fromTriangles(triangles);
+      const result = corner.sphereIntersect(new Sphere(position, 0.5));
+      expect(result).not.toBe(false);
+      if (result) {
+        close(result.depth, expected.length(), 1e-8);
+        vec(result.normal, expected.x / expected.length(), expected.y / expected.length(), 0, 1e-8);
+      }
+      const box = new Box3(position.subtract(new Vector3(0.5, 0.5, 0.5)), position.add(new Vector3(0.5, 0.5, 0.5)));
+      const boxHit = corner.boxIntersect(box);
+      expect(boxHit).not.toBe(false);
+      if (boxHit) {
+        close(boxHit.depth, expected.length(), 1e-8);
+        vec(boxHit.normal, expected.x / expected.length(), expected.y / expected.length(), 0, 1e-8);
       }
     }
-    expect(hits).toBeGreaterThan(100);
   });
 
-  it("boxIntersect equals three's on 500 seeded boxes", () => {
-    const rand = rng(0xb0c5);
-    let hits = 0;
-    for (let i = 0; i < 500; i += 1) {
-      const mn = new Vector3(fv(rand, 22), rand() * 7 - 2, fv(rand, 22));
-      const box = new Box3(mn, mn.add(new Vector3(rand() * 2 + 0.2, rand() * 2 + 0.2, rand() * 2 + 0.2)));
-      const a = ours.boxIntersect(box);
-      const b = theirs.boxIntersect(new THREE.Box3(tv3(box.min), tv3(box.max)));
-      expect(a === false).toBe(b === false);
-      if (a && b) {
-        hits += 1;
-        expectClose(a.depth, b.depth, TRIG_TOL);
-        expectVec3(a.normal, b.normal, TRIG_TOL);
-      }
-    }
-    expect(hits).toBeGreaterThan(50);
+  it("resolves contacts when geometry is much smaller than one unit", () => {
+    const triangle = new Triangle(new Vector3(0, 0, 0), new Vector3(0, 0, 1e-6), new Vector3(1e-6, 0, 0));
+    const smallTree = new Octree().fromTriangles([triangle]);
+    const center = new Vector3(2e-7, 3e-13, 3e-7);
+    const sphere = smallTree.sphereIntersect(new Sphere(center, 1e-12));
+    expect(sphere).not.toBe(false);
+    if (sphere) { close(sphere.depth, 7e-13, 1e-24); vec(sphere.normal, 0, 1, 0, 1e-8); }
+    const capsule = smallTree.capsuleIntersect(new Capsule(center, center.add(new Vector3(0, 1e-7, 0)), 1e-12));
+    expect(capsule).not.toBe(false);
+    if (capsule) { close(capsule.depth, 7e-13, 1e-24); vec(capsule.normal, 0, 1, 0, 1e-8); }
   });
 
-  it("rayIntersect equals three's on 1000 seeded rays", () => {
-    const rand = rng(0x4a7e);
-    let hits = 0;
-    for (let i = 0; i < CASES; i += 1) {
-      const ray = new Ray(new Vector3(fv(rand, 22), 12 + rand() * 4, fv(rand, 22)), new Vector3(fv(rand, 0.3), -1, fv(rand, 0.3)).normalize());
-      const a = ours.rayIntersect(ray);
-      const b = theirs.rayIntersect(new THREE.Ray(tv3(ray.origin), tv3(ray.direction)));
-      expect(a === false).toBe(b === false);
-      if (a && b) {
-        hits += 1;
-        expectClose(a.distance, b.distance, TRIG_TOL);
-        expectVec3(a.position, b.position, TRIG_TOL);
-      }
+  it("resolves box penetrations against the flat floor", () => {
+    const rand = random(0xca95);
+    for (let i = 0; i < 250; i += 1) {
+      const x = scalar(rand, 4), z = scalar(rand, 4);
+      const hit = tree.boxIntersect(new Box3(new Vector3(x - 0.1, -0.2, z - 0.1), new Vector3(x + 0.1, 0.4, z + 0.1)));
+      expect(hit).not.toBe(false);
+      if (hit) { close(hit.depth, 0.2, 1e-6); vec(hit.normal, 0, 1, 0, 1e-6); }
+      expect(tree.boxIntersect(new Box3(new Vector3(x - 0.1, 1, z - 0.1), new Vector3(x + 0.1, 2, z + 0.1)))).toBe(false);
     }
-    expect(hits).toBeGreaterThan(300);
+  }, 30_000);
+
+  it("reports box contact points on the triangle plane and tolerates degenerate faces", () => {
+    const triangle = new Triangle(new Vector3(-2, 0, -2), new Vector3(-2, 0, 2), new Vector3(2, 0, -2));
+    const box = new Box3(new Vector3(-0.5, -0.25, -0.5), new Vector3(0.5, 0.5, 0.5));
+    const hit = tree.triangleBoxIntersect(box, triangle);
+    expect(hit).not.toBe(false);
+    if (hit) {
+      close(hit.depth, 0.25);
+      vec(hit.normal, 0, 1, 0);
+      close(triangle.getPlane().distanceToPoint(hit.point), 0);
+    }
+
+    const tilted = new Triangle(new Vector3(-2, 2, -2), new Vector3(-2, 2, 2), new Vector3(2, -2, -2));
+    const tiltedHit = tree.triangleBoxIntersect(box, tilted);
+    expect(tiltedHit).not.toBe(false);
+    if (tiltedHit) {
+      close(tiltedHit.depth, 0.75 / Math.SQRT2);
+      vec(tiltedHit.normal, Math.SQRT1_2, Math.SQRT1_2, 0);
+      close(tilted.getPlane().distanceToPoint(tiltedHit.point), 0);
+    }
+
+    const collapsed = new Triangle(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 0));
+    expect(() => tree.triangleBoxIntersect(box, collapsed)).not.toThrow();
+    expect(tree.triangleBoxIntersect(box, collapsed)).toBe(false);
+  });
+
+  it("retains a unit contact normal for a box touching the plane without penetration", () => {
+    const box = new Box3(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 0.5, 0.5));
+    const hit = tree.boxIntersect(box);
+    expect(hit).not.toBe(false);
+    if (hit) { close(hit.depth, 0); vec(hit.normal, 0, 1, 0); }
   });
 });

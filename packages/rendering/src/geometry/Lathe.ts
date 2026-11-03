@@ -1,12 +1,3 @@
-/**
- * threejs-parity (§5.2, lane L2-02) — `LatheGeometry` verbatim port.
- *
- * The xy profile is revolved about +Y: vertex = (px·sin φ, py, px·cos φ).
- * Meridian normals are pre-computed (edge bisectors, first/last clamped),
- * then rotated with the profile. UVs = (i/segments, j/(points−1)).
- * Indices per quad: (a,b,d)(c,d,b).
- */
-
 import type { ParityMesh } from "./Support";
 
 export interface LatheParityParams {
@@ -16,93 +7,66 @@ export interface LatheParityParams {
   readonly phiLength?: number;
 }
 
+/** Revolve a radius/height polyline around the Y axis. */
 export function latheParityMesh(params: LatheParityParams): ParityMesh {
-  const points = params.points.map((p) => {
-    if (Array.isArray(p)) {
-      const arr = p as readonly number[];
-      return { x: arr[0]!, y: arr[1]! };
-    }
-    const obj = p as { readonly x: number; readonly y: number };
-    return { x: obj.x, y: obj.y };
+  const profile = params.points.map((point): [number, number] => {
+    if (Array.isArray(point)) return [point[0] as number, point[1] as number];
+    const objectPoint = point as { readonly x: number; readonly y: number };
+    return [objectPoint.x, objectPoint.y];
   });
-  const segments = Math.floor(params.segments ?? 12);
-  const phiStart = params.phiStart ?? 0;
-  const phiLength = Math.min(Math.max(params.phiLength ?? Math.PI * 2, 0), Math.PI * 2);
-
-  if (points.length < 2) {
-    throw new Error("Aura3D lathe requires a profile of at least two points.");
+  if (profile.length < 2) throw new Error("Aura3D lathe requires a profile of at least two points.");
+  const requested = params.segments ?? 12;
+  const start = params.phiStart ?? 0;
+  const length = params.phiLength ?? 2 * Math.PI;
+  if (![requested, start, length, ...profile.flat()].every(Number.isFinite)) {
+    throw new RangeError("latheParityMesh requires finite parameters and profile points");
   }
-
-  const indices: number[] = [];
-  const vertices: number[] = [];
-  const uvs: number[] = [];
-  const initNormals: number[] = [];
+  const divisions = Math.max(3, Math.floor(requested));
+  const sweep = Math.min(2 * Math.PI, Math.max(0, length));
+  const edgeNormals = profile.slice(1).map((point, index): [number, number] => {
+    const previous = profile[index]!;
+    return [point[1] - previous[1], previous[0] - point[0]];
+  });
+  const profileNormals = profile.map((_, index): [number, number] => {
+    const previous = edgeNormals[Math.max(0, index - 1)]!;
+    const next = edgeNormals[Math.min(edgeNormals.length - 1, index)]!;
+    let x = previous[0] + next[0];
+    let y = previous[1] + next[1];
+    let magnitude = Math.hypot(x, y);
+    if (magnitude === 0) {
+      // At a doubled point or a reversal use a neighboring valid edge normal.
+      const fallback = Math.hypot(...next) ? next : Math.hypot(...previous)
+        ? previous
+        : edgeNormals.find((normal) => Math.hypot(...normal) > 0) ?? [1, 0];
+      [x, y] = fallback;
+      magnitude = Math.hypot(x, y);
+    }
+    return magnitude ? [x / magnitude, y / magnitude] : [0, 0];
+  });
+  const positions: number[] = [];
   const normals: number[] = [];
-
-  const inverseSegments = 1.0 / segments;
-
-  // Pre-compute normals for the initial meridian.
-  let prevNx = 0;
-  let prevNy = 0;
-  let prevNz = 0;
-  for (let j = 0; j <= points.length - 1; j += 1) {
-    if (j === 0) {
-      const dx = points[j + 1]!.x - points[j]!.x;
-      const dy = points[j + 1]!.y - points[j]!.y;
-      let nx = dy;
-      let ny = -dx;
-      const nz = 0;
-      prevNx = nx;
-      prevNy = ny;
-      prevNz = nz;
-      const l = Math.hypot(nx, ny, nz);
-      nx /= l;
-      ny /= l;
-      initNormals.push(nx, ny, nz / l);
-    } else if (j === points.length - 1) {
-      initNormals.push(prevNx, prevNy, prevNz);
-    } else {
-      const dx = points[j + 1]!.x - points[j]!.x;
-      const dy = points[j + 1]!.y - points[j]!.y;
-      const curNx = dy;
-      const curNy = -dx;
-      const curNz = 0;
-      let nx = curNx + prevNx;
-      let ny = curNy + prevNy;
-      let nz = curNz + prevNz;
-      const l = Math.hypot(nx, ny, nz);
-      nx /= l;
-      ny /= l;
-      nz /= l;
-      initNormals.push(nx, ny, nz);
-      prevNx = curNx;
-      prevNy = curNy;
-      prevNz = curNz;
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  const stride = profile.length;
+  for (let col = 0; col <= divisions; col += 1) {
+    const u = col / divisions;
+    const angle = start + u * sweep;
+    const sine = Math.sin(angle);
+    const cosine = Math.cos(angle);
+    for (let row = 0; row < profile.length; row += 1) {
+      const [radius, height] = profile[row]!;
+      const [radialNormal, verticalNormal] = profileNormals[row]!;
+      positions.push(radius * sine, height, radius * cosine);
+      normals.push(radialNormal * sine, verticalNormal, radialNormal * cosine);
+      uvs.push(u, row / (profile.length - 1));
+      if (col > 0 && row > 0) {
+        const lowerRight = col * stride + row;
+        const lowerLeft = lowerRight - 1;
+        const upperRight = lowerRight - stride;
+        const upperLeft = upperRight - 1;
+        indices.push(upperLeft, lowerLeft, upperRight, lowerRight, upperRight, lowerLeft);
+      }
     }
   }
-
-  for (let i = 0; i <= segments; i += 1) {
-    const phi = phiStart + i * inverseSegments * phiLength;
-    const sin = Math.sin(phi);
-    const cos = Math.cos(phi);
-    for (let j = 0; j <= points.length - 1; j += 1) {
-      vertices.push(points[j]!.x * sin, points[j]!.y, points[j]!.x * cos);
-      uvs.push(i / segments, j / (points.length - 1));
-      normals.push(initNormals[3 * j]! * sin, initNormals[3 * j + 1]!, initNormals[3 * j]! * cos);
-    }
-  }
-
-  for (let i = 0; i < segments; i += 1) {
-    for (let j = 0; j < points.length - 1; j += 1) {
-      const base = j + i * points.length;
-      const a = base;
-      const b = base + points.length;
-      const c = base + points.length + 1;
-      const d = base + 1;
-      indices.push(a, b, d);
-      indices.push(c, d, b);
-    }
-  }
-
-  return { positions: vertices, normals, uvs, indices };
+  return { positions, normals, uvs, indices };
 }

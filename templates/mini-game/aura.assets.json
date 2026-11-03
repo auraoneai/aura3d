@@ -145,7 +145,12 @@
         "colormap"
       ],
       "animations": [],
-      "textures": [],
+      "textures": [
+        "Textures/colormap.png"
+      ],
+      "dependencies": [
+        "Textures/colormap.png"
+      ],
       "thumbnailUrl": ""
     },
     {
@@ -189,7 +194,12 @@
         "colormap"
       ],
       "animations": [],
-      "textures": [],
+      "textures": [
+        "Textures/colormap.png"
+      ],
+      "dependencies": [
+        "Textures/colormap.png"
+      ],
       "thumbnailUrl": ""
     }
   ]

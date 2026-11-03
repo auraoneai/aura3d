@@ -149,7 +149,7 @@ export type Prd04Vec4 = readonly [number, number, number, number];
 
 /** Texture slots a generated physical program can sample (mirrors KHR/glTF). */
 export type PhysicalMapSlot =
-  | "baseColor" | "normal" | "metallicRoughness" | "occlusion" | "emissive"
+  | "baseColor" | "normal" | "metallicRoughness" | "occlusion" | "emissive" | "diffuseRoughness" | "bump"
   | "clearcoat" | "clearcoatRoughness" | "clearcoatNormal"
   | "transmission" | "diffuseTransmission" | "diffuseTransmissionColor"
   | "volumeThickness" | "specular" | "specularColor"

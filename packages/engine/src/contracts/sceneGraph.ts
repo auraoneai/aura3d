@@ -4,7 +4,7 @@
  * `agent-api/color.ts`; the PR 0a stubs delegate to today's math.
  */
 
-import type { AuraVec3, AuraTransformSpec, AuraColor } from "../agent-api/index";
+import type { AuraVec3, AuraTransformSpec, AuraColor } from "../agent-api/nodes/types.js";
 import { srgbToLinearChannel } from "@aura3d/rendering";
 
 export type AuraEulerOrder = "XYZ" | "XZY" | "YXZ" | "YZX" | "ZXY" | "ZYX";
@@ -12,15 +12,33 @@ export type AuraQuat = readonly [number, number, number, number];         // sha
 export interface AuraWorldTransform { readonly matrix: Float32Array; readonly position: AuraVec3; readonly quaternion: AuraQuat; readonly scale: AuraVec3; readonly sheared: boolean; }
 
 /**
+ * Optional local-space pivot. The default [0, 0, 0] preserves existing TRS
+ * behavior. Local matrices compose as T(position) · T(pivot) · R · S ·
+ * T(-pivot), then are multiplied by the parent's world matrix.
+ */
+export interface AuraPivotTransformSpec extends AuraTransformSpec {
+  readonly pivot?: AuraVec3;
+}
+
+/** A partial transform update: omitted fields retain their current values. */
+export interface AuraTransformUpdate extends AuraPivotTransformSpec {}
+
+/**
  * PR 0a stub: composes parent * local with ZYX order via the same math as
  * `eulerToQuat` (index.ts:5345); `rotationOrder` and `quaternion` are ignored
  * (listed in DIAGNOSTIC_ONLY_FIELDS, ownerPrd 1).
  */
-export function composeWorldMatrix(parent: Float32Array, local: AuraTransformSpec, out: Float32Array): Float32Array {
+export function composeWorldMatrix(parent: Float32Array, local: AuraPivotTransformSpec, out: Float32Array): Float32Array {
   const [px, py, pz] = local.position ?? [0, 0, 0];
   const q = eulerToQuaternion(local.rotation ?? [0, 0, 0], "ZYX");
   const s = local.scale === undefined ? [1, 1, 1] : typeof local.scale === "number" ? [local.scale, local.scale, local.scale] : local.scale;
   const localM = composeTRS(px, py, pz, q, s as AuraVec3);
+  if (local.pivot) {
+    const [x, y, z] = local.pivot;
+    localM[12] += x - (localM[0] * x + localM[4] * y + localM[8] * z);
+    localM[13] += y - (localM[1] * x + localM[5] * y + localM[9] * z);
+    localM[14] += z - (localM[2] * x + localM[6] * y + localM[10] * z);
+  }
   multiplyMat4Into(out, parent, localM);
   return out;
 }

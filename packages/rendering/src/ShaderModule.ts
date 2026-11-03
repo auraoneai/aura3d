@@ -24,6 +24,12 @@ export class ShaderModule {
     return new ShaderModule(library.compileVariant(name, variantName));
   }
 
+  /** Return a live cached program without allocating or changing the cache. */
+  peek(device: RenderDevice): RenderShaderProgram | undefined {
+    const program = this.programs.get(device);
+    return !device.disposed && !device.contextLost && program && !program.disposed ? program : undefined;
+  }
+
   compile(device: RenderDevice): RenderShaderProgram {
     // Drop programs whose device or program is gone so a disposed device is not retained.
     for (const [owner, program] of this.programs) {

@@ -41,7 +41,6 @@ import {
   type AnimationViewport
 } from "./AnimationRenderQueue.js";
 import { createShotTimeline, type ShotTimelineArtifact, type ShotTimelineShot } from "./ShotTimeline.js";
-import { character } from "./humanoid-walk-runtime.js";
 import { camera } from "./nodes/camera.js";
 
 export interface AnimationDirectorCharacterInput {

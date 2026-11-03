@@ -50,6 +50,9 @@ import {
 
 class MockParam {
   value = 0;
+  cancelScheduledValues(): this { return this; }
+  setValueAtTime(value: number): this { this.value = value; return this; }
+  linearRampToValueAtTime(value: number): this { this.value = value; return this; }
 }
 
 class MockNode {

@@ -44,7 +44,8 @@ export interface TimelineRuntimeSignalDispatch {
 
 export interface TimelineRuntimeTarget {
   readonly id: string;
-  applyTimelineAnimation?(application: TimelineRuntimeAnimationApplication): void;
+  /** Return false when the target is not ready or could not apply the clip. */
+  applyTimelineAnimation?(application: TimelineRuntimeAnimationApplication): void | boolean;
   applyTimelineSignal?(dispatch: TimelineRuntimeSignalDispatch): void;
   snapshot?(): unknown;
 }
@@ -114,7 +115,28 @@ export class TimelineRuntimeBridge {
   }
 
   step(deltaSeconds: number): TimelineRuntimeBridgeSnapshot {
-    this.timeline.tick(deltaSeconds);
+    if (this.timeline.isPlaying && Number.isFinite(deltaSeconds) && deltaSeconds > 0) {
+      const { duration, loopMode, speed } = this.timeline;
+      const span = duration / speed;
+      if (loopMode === "pingpong" && Number.isFinite(span) && span > 0) {
+        // TimelineModel reflects one boundary per tick. Reduce complete cycles
+        // and split the rest so a backgrounded tab cannot skip a reflection.
+        const period = span * 2;
+        const remainder = Number.isFinite(period) ? deltaSeconds % period : deltaSeconds;
+        if (deltaSeconds >= period) this.resetSignalCursor();
+        const first = Math.min(span, remainder);
+        this.timeline.tick(first);
+        if (remainder > first) this.timeline.tick(remainder - first);
+      } else {
+        this.timeline.tick(deltaSeconds);
+      }
+      if (loopMode === "none" && speed > 0 && this.timeline.isPlaying) {
+        const direction = this.timeline.snapshot().direction;
+        if ((direction > 0 && this.timeline.currentTime >= duration) || (direction < 0 && this.timeline.currentTime <= 0)) {
+          this.timeline.pause();
+        }
+      }
+    }
     return this.applyCurrent();
   }
 
@@ -177,7 +199,14 @@ export class TimelineRuntimeBridge {
         playback: snapshot.playback,
         properties: { ...clip.properties }
       };
-      target.applyTimelineAnimation?.(application);
+      if (!target.applyTimelineAnimation) {
+        this.warnOrThrow(`Runtime target cannot apply timeline animation: ${targetId}`, warnings);
+        continue;
+      }
+      if (target.applyTimelineAnimation(application) === false) {
+        warnings.push(`Runtime target did not apply timeline animation: ${targetId}`);
+        continue;
+      }
       this.counters.get(targetId)!.appliedAnimationCount += 1;
       applications.push(application);
     }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { RectAreaLight, Scene, PointLight, SpotLight } from "@aura3d/scene";
 import { Vector3 } from "@aura3d/math";
 import {
@@ -306,7 +306,11 @@ describe("PBR material and direct light contracts", () => {
     expect(() => new TexturedPBRMaterial({ anisotropyRotation: Number.NaN })).toThrow(/anisotropyRotation/);
     expect(() => new TexturedPBRMaterial({ iridescenceFactor: 1.1 })).toThrow(/iridescenceFactor/);
     expect(() => new TexturedPBRMaterial({ iridescenceIor: 0.9 })).toThrow(/iridescenceIor/);
-    expect(() => new TexturedPBRMaterial({ iridescenceThicknessMinimum: 600, iridescenceThicknessMaximum: 200 })).toThrow(/iridescenceThicknessMaximum/);
+    const reversedFilm = new TexturedPBRMaterial({ iridescenceIor: 4, iridescenceThicknessMinimum: 600, iridescenceThicknessMaximum: 200 });
+    expect(reversedFilm.getParameter("u_iridescenceIor")).toBe(4);
+    expect(reversedFilm.getParameter("u_iridescenceThicknessMinimum")).toBe(600);
+    expect(reversedFilm.getParameter("u_iridescenceThicknessMaximum")).toBe(200);
+    reversedFilm.dispose();
     expect(() => new TexturedPBRMaterial({ dispersion: -0.1 })).toThrow(/dispersion/);
     expect(() => new PBRMaterial({ emissiveStrength: Number.NaN })).toThrow(/emissiveStrength/);
     expect(() => new PBRMaterial({ emissiveStrength: -0.1 })).toThrow(/emissiveStrength/);
@@ -828,7 +832,7 @@ describe("PBR material and direct light contracts", () => {
     expect(isTextureBinding(peerCopy)).toBe(true);
   });
 
-  it("validates PBR texture color-space contracts", () => {
+  it("accepts linear color textures while validating linear data-map contracts", () => {
     const library = createDefaultShaderLibrary();
     const device = new MockRenderDevice();
     const shader = device.createShaderProgram(library.compileSource("aura3d/pbr-textured"));
@@ -847,7 +851,7 @@ describe("PBR material and direct light contracts", () => {
       diagnostics = (error as MaterialBindingError).diagnostics;
     }
 
-    expect(diagnostics).toContain("Texture u_baseColorTexture colorSpace must be srgb, got linear");
+    expect((material.getParameter("u_baseColorTexture") as TextureBinding).validate().ok).toBe(true);
     expect(diagnostics).toContain("Texture u_normalTexture colorSpace must be linear, got srgb");
     expect(new TextureBinding({
       name: "metallicRoughness",
@@ -1059,7 +1063,7 @@ describe("PBR material and direct light contracts", () => {
 	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorFactor")).toEqual([0.55, 0.65, 0.75]);
 	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTexture")).toBeInstanceOf(TextureBinding);
 	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureEnabled")).toBe(1);
-	    expect((transmissionBinding.uniforms.get("u_diffuseTransmissionColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
+    expect((transmissionBinding.uniforms.get("u_diffuseTransmissionColorTexture") as TextureBinding).texture?.colorSpace).toBe("srgb");
 	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureOffset")).toEqual([0.57, 0.58]);
 	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureScale")).toEqual([1.85, 1.95]);
 	    expect(transmissionBinding.uniforms.get("u_diffuseTransmissionColorTextureRotation")).toBe(0.59);
@@ -1086,7 +1090,7 @@ describe("PBR material and direct light contracts", () => {
 	    expect(specularBinding.uniforms.get("u_specularColorFactor")).toEqual([0.8, 0.9, 1]);
     expect(specularBinding.uniforms.get("u_specularColorTexture")).toBeInstanceOf(TextureBinding);
     expect(specularBinding.uniforms.get("u_specularColorTextureEnabled")).toBe(1);
-    expect((specularBinding.uniforms.get("u_specularColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
+    expect((specularBinding.uniforms.get("u_specularColorTexture") as TextureBinding).texture?.colorSpace).toBe("srgb");
     expect(specularBinding.uniforms.get("u_specularColorTextureOffset")).toEqual([0.61, 0.62]);
 	    expect(specularBinding.uniforms.get("u_specularColorTextureScale")).toEqual([2.1, 2.2]);
 	    expect(specularBinding.uniforms.get("u_specularColorTextureRotation")).toBe(0.63);
@@ -1094,7 +1098,7 @@ describe("PBR material and direct light contracts", () => {
 	    expect(specularBinding.uniforms.get("u_sheenColorFactor")).toEqual([0.2, 0.3, 0.4]);
     expect(specularBinding.uniforms.get("u_sheenColorTexture")).toBeInstanceOf(TextureBinding);
     expect(specularBinding.uniforms.get("u_sheenColorTextureEnabled")).toBe(1);
-    expect((specularBinding.uniforms.get("u_sheenColorTexture") as TextureBinding).expectedColorSpace).toBe("srgb");
+    expect((specularBinding.uniforms.get("u_sheenColorTexture") as TextureBinding).texture?.colorSpace).toBe("srgb");
     expect(specularBinding.uniforms.get("u_sheenColorTextureOffset")).toEqual([0.71, 0.72]);
 	    expect(specularBinding.uniforms.get("u_sheenColorTextureScale")).toEqual([2.3, 2.4]);
 	    expect(specularBinding.uniforms.get("u_sheenColorTextureRotation")).toBe(0.73);
@@ -1561,39 +1565,84 @@ describe("PBR material and direct light contracts", () => {
 
   it("routes more than 16 scene lights through clustered PBR texture bindings", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 130, height: 66 });
-    const scene = new Scene();
-    for (let index = 1; index <= MAX_DIRECT_LIGHTS + 1; index += 1) {
-      const light = scene.createLight("directional", `renderer-cluster-light-${index}`);
-      light.intensity = index;
-      light.color = [1, index / (MAX_DIRECT_LIGHTS + 1), 0.25];
-      scene.root.addChild(light);
-    }
-
-    renderer.render({
-      scene,
-      renderItems: [{
-        geometry: Geometry.litTriangle(),
-        material: new PBRMaterial({ baseColor: [0.7, 0.4, 0.2, 1] }),
-        label: "clustered-pbr-light-uniforms"
-      }]
+    const device = renderer.device as MockRenderDevice;
+    const draw = device.draw.bind(device);
+    const snapshots: Array<{
+      uniforms: Map<string, unknown>;
+      dataDisposed: boolean | undefined;
+      indicesDisposed: boolean | undefined;
+      dataPixels: Float32Array | undefined;
+      indexPixels: Float32Array | undefined;
+    }> = [];
+    const drawSpy = vi.spyOn(device, "draw").mockImplementation((command) => {
+      draw(command);
+      if (command.label !== "clustered-pbr-light-uniforms") return;
+      const uniforms = new Map<string, unknown>(command.uniforms);
+      const dataBinding = uniforms.get("u_clusterLightData");
+      const indexBinding = uniforms.get("u_clusterLightIndices");
+      const dataTexture = isTextureBinding(dataBinding) ? dataBinding.texture : null;
+      const indexTexture = isTextureBinding(indexBinding) ? indexBinding.texture : null;
+      const dataPixels = dataTexture?.textureLevels[0]?.data;
+      const indexPixels = indexTexture?.textureLevels[0]?.data;
+      // ForwardPass owns these textures only for the current pass. Snapshot the
+      // draw-command pixels while live, before its finally block retires them.
+      snapshots.push({
+        uniforms,
+        dataDisposed: dataTexture?.disposed,
+        indicesDisposed: indexTexture?.disposed,
+        dataPixels: dataPixels instanceof Float32Array ? dataPixels.slice() : undefined,
+        indexPixels: indexPixels instanceof Float32Array ? indexPixels.slice() : undefined
+      });
     });
-    const command = (renderer.device as MockRenderDevice).drawCommands[0];
-    const clusteredData = command?.uniforms?.get("u_clusterLightData") as TextureBinding;
-    const clusteredIndices = command?.uniforms?.get("u_clusterLightIndices") as TextureBinding;
-    const dataPixels = clusteredData.texture?.textureLevels[0]?.data as Float32Array;
-    const indexPixels = clusteredIndices.texture?.textureLevels[0]?.data as Float32Array;
+    try {
+      const scene = new Scene();
+      for (let index = 1; index <= MAX_DIRECT_LIGHTS + 1; index += 1) {
+        const light = scene.createLight("directional", `renderer-cluster-light-${index}`);
+        light.intensity = index;
+        light.color = [1, index / (MAX_DIRECT_LIGHTS + 1), 0.25];
+        scene.root.addChild(light);
+      }
 
-    expect(command?.uniforms?.get("u_lightCount")).toBe(MAX_DIRECT_LIGHTS);
-    expect(command?.uniforms?.get("u_clusteredLightEnabled")).toBe(1);
-    expect(command?.uniforms?.get("u_clusterGridSize")).toEqual([3, 2]);
-    expect(command?.uniforms?.get("u_clusterViewportSize")).toEqual([130, 66]);
-    expect(clusteredData.texture).toMatchObject({ width: 6, height: 17, format: "rgba32f" });
-    expect(clusteredIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });
-    expect(dataPixels[3]).toBe(17);
-    expect(dataPixels[(16 * 24) + 3]).toBe(1);
-    expect(indexPixels[1]).toBe(17);
+      renderer.render({
+        scene,
+        renderItems: [{
+          geometry: Geometry.litTriangle(),
+          material: new PBRMaterial({ baseColor: [0.7, 0.4, 0.2, 1] }),
+          label: "clustered-pbr-light-uniforms"
+        }]
+      });
+      expect(device.drawCommands).toHaveLength(1);
+      expect(snapshots).toHaveLength(1);
+      const snapshot = snapshots[0]!;
+      const clusteredData = snapshot.uniforms.get("u_clusterLightData") as TextureBinding;
+      const clusteredIndices = snapshot.uniforms.get("u_clusterLightIndices") as TextureBinding;
 
-    renderer.dispose();
+      expect(snapshot.uniforms.get("u_lightCount")).toBe(MAX_DIRECT_LIGHTS);
+      expect(snapshot.uniforms.get("u_clusteredLightEnabled")).toBe(1);
+      expect(snapshot.uniforms.get("u_clusterGridSize")).toEqual([3, 2]);
+      expect(snapshot.uniforms.get("u_clusterViewportSize")).toEqual([130, 66]);
+      expect(clusteredData).toBeInstanceOf(TextureBinding);
+      expect(clusteredIndices).toBeInstanceOf(TextureBinding);
+      expect(clusteredData.texture).toMatchObject({ width: 6, height: 17, format: "rgba32f" });
+      expect(clusteredIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });
+      expect(snapshot.dataDisposed).toBe(false);
+      expect(snapshot.indicesDisposed).toBe(false);
+      expect(snapshot.dataPixels).toBeInstanceOf(Float32Array);
+      expect(snapshot.indexPixels).toBeInstanceOf(Float32Array);
+      expect(snapshot.dataPixels?.[3]).toBe(17);
+      expect(snapshot.dataPixels?.[(16 * 24) + 3]).toBe(1);
+      expect(snapshot.indexPixels?.[1]).toBe(17);
+      expect(snapshot.indexPixels?.[16 * 4]).toBe(16);
+      expect(clusteredData.texture?.disposed).toBe(true);
+      expect(clusteredIndices.texture?.disposed).toBe(true);
+      expect(clusteredData.texture?.textureLevels).toEqual([]);
+      expect(clusteredIndices.texture?.textureLevels).toEqual([]);
+      expect(clusteredData.texture?.cpuByteLength).toBe(0);
+      expect(clusteredIndices.texture?.cpuByteLength).toBe(0);
+    } finally {
+      drawSpy.mockRestore();
+      renderer.dispose();
+    }
   });
 });
 
@@ -1602,14 +1651,14 @@ function createCubeEnvironmentBinding(): TextureBinding {
   return new TextureBinding({
     name: "u_environmentCubeMapTexture",
     texture: new Texture({
-      width: 1,
-      height: 1,
+      width: 2,
+      height: 2,
       dimension: "cube",
       colorSpace: "linear",
       cubeFaces: faces.map((face, index) => ({
         face,
         mipLevels: [
-          { width: 1, height: 1, data: new Uint8Array([32 + index * 20, 80 + index * 10, 160 + index * 8, 255]) },
+          { width: 2, height: 2, data: new Uint8Array(Array(4).fill([32 + index * 20, 80 + index * 10, 160 + index * 8, 255]).flat()) },
           { width: 1, height: 1, data: new Uint8Array([180, 190, 220, 255]) }
         ]
       }))

@@ -45,3 +45,18 @@ export { buildMeshBVH, raycastMesh, raycastMeshBruteForce } from "./MeshBVH.js";
 export type { MeshBVH, MeshBVHBuildOptions, MeshRayHit, RaycastMeshOptions } from "./MeshBVH.js";
 export { createMeshSurfaceQuery } from "./SurfaceQuery.js";
 export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from "./SurfaceQuery.js";
+/*
+ * A collider, its pose, and the geometry queries can also be used without a world.
+ * These are the same classes and query implementations exported by the compatibility
+ * entry; no simulation or optional backend is initialized by this entry.
+ */
+export { Collider } from "./Collider.js";
+export type { ColliderDescriptor, ColliderMaterial, CollisionFilter } from "./Collider.js";
+export { RigidBody } from "./RigidBody.js";
+export type { Quat, RigidBodyDescriptor, RigidBodySnapshot, RigidBodyType } from "./RigidBody.js";
+export { raycastCollider, sphereCastCollider } from "./Raycast.js";
+export type { RaycastHit, RaycastOptions, SphereCastHit } from "./Raycast.js";
+
+// Preserve the original physics declaration identities without exposing the
+// world entry's optional-backend initialization exports.
+export type * from "./types.js";

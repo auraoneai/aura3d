@@ -16,8 +16,12 @@ import type {
   AuraSceneNode,
   AuraSceneSnapshot,
   AuraVec3
-} from "../index.js";
-import { AuraNodeBuilder, defineAuraAssets, effects, environments, lights } from "../index.js";
+} from "../nodes/types.js";
+import { defineAuraAssets } from "../nodes/assets.js";
+import { AuraNodeBuilder } from "../nodes/builder.js";
+import { effects } from "../nodes/effects.composite.js";
+import { environments } from "../nodes/environments.composite.js";
+import { lights } from "../nodes/lights.js";
 import type { AuraHdriId, AuraLookDiagnostics, AuraLookId, AuraLookNode, AuraLookOverrides } from "../../contracts/looks.js";
 import type { AuraDirectionalShadowOptions } from "../../contracts/lighting.js";
 import type { AuraHeightFogSpec } from "../../contracts/atmosphere.js";
@@ -288,9 +292,8 @@ function sunAngles(position: readonly [number, number, number]): { elevationDeg:
  * and admits it via `aura3d assets add --type texture` under the same id —
  * so the engine can reference it by name at authoring time.
  */
-// Built lazily on first use — a module-level `defineAuraAssets` here runs
-// during `agent-api/index.ts` import evaluation (via promptRecipes → looks)
-// and hits `auraAssetRefBrand`'s TDZ.
+// Build lazily so asset refs are not initialized during cyclic module
+// evaluation or on paths that never use an HDRI.
 type LookHdriAssets = ReturnType<typeof buildLookHdriAssets>;
 let lookHdriAssetsCache: LookHdriAssets | undefined;
 function buildLookHdriAssets() {

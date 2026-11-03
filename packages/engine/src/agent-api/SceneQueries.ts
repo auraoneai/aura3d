@@ -16,13 +16,22 @@
  * scene-geometry queries a route usually actually wants: a downward ground probe, and a
  * query against declarative scene nodes rather than a constructed physics world.
  *
- * The pure paths are dependency-free and unit-testable; the physics-backed path adapts a
+ * The scene paths need no initialized physics world or solver; static triangle
+ * queries can reuse the solverless mesh BVH. The physics-backed path adapts a
  * `PhysicsWorld` when a route has one.
  */
 
-import type { AuraPrimitiveNode, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
-import { placedBounds, type PlacedBounds } from "./SpatialAnchoring.js";
-import { eulerToQuaternion } from "./sceneGraph.js";
+import type { AuraPrimitiveNode, AuraRuntimeNodeHandle, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
+import type { PlacedBounds } from "./SpatialAnchoring.js";
+import { eulerToQuaternion, identityMat4Into, localMatrixOf, multiplyMat4Into } from "./sceneGraph.js";
+import { normalizeGeometryAttributes } from "./RootGeometry.js";
+import { hasPositionQueryCertificate } from "./compiler/customMaterial.js";
+import { createProductionPrimitiveGeometry, productionPrimitiveCullMode, resolveProductionPrimitiveScalars } from "./compiler/primitives.js";
+import { sourceSceneNodeOf, worldTransformOf } from "./compiler/sceneGraph.js";
+import { batchedStateForNode } from "./nodes/batchedState.js";
+import { runtimeNodeQueryState } from "./app/runtimeNodes.js";
+import { forgetSceneQueryTree, sceneQueryTriangleCandidates } from "./SceneQueryBVH.js";
+import { MaterialInstance, type Geometry, type RenderItem } from "@aura3d/rendering";
 
 export interface SceneRay {
   readonly origin: AuraVec3;
@@ -34,17 +43,30 @@ export interface SceneRay {
 export interface SceneQueryHit {
   /** Name of the node that was hit, when the target carries one. */
   readonly nodeName: string | undefined;
+  readonly nodeId?: string;
   readonly point: AuraVec3;
   readonly normal: AuraVec3;
   readonly distance: number;
+  readonly uv?: readonly [number, number];
+  readonly faceIndex?: number;
+  readonly instanceId?: number;
+  /** Identifies the batch whose member was hit. */
+  readonly batchId?: string;
+  /** Identity of this member's lifetime, scoped to its originating batch state. */
+  readonly batchMemberId?: string | number;
+  /** Opaque state identity for lifetime-checked mutation; not serializable. */
+  readonly batchStateToken?: object;
+  /** Reusable slot at query time; validate the lifetime before later mutation. */
+  readonly batchMemberSlot?: number;
+  readonly barycentric?: readonly [number, number, number];
 }
 
 /**
  * Axis-aligned box a query can test against.
  *
  * Scene nodes are reduced to these, which is exact for boxes and planes and a conservative
- * bound for spheres, cylinders and models. Stated rather than implied: a route needing
- * exact mesh intersection must use a physics world with real colliders.
+ * bound for spheres, cylinders and models. Use `raycast` in mesh mode when actual
+ * submitted triangles are required.
  */
 export interface SceneQueryTarget {
   readonly nodeName: string | undefined;
@@ -54,49 +76,89 @@ export interface SceneQueryTarget {
    * `raycast` filters targets against `options.layers` when both are set.
    */
   readonly layers?: number;
+  /** Internal source retained for exact mesh queries. */
+  readonly node?: AuraSceneNode;
+  readonly worldMatrix?: Float32Array;
+}
+
+function batchStateForQuery(node: Extract<AuraSceneNode, { kind: "batched" }>) {
+  const source = sourceSceneNodeOf(node);
+  return batchedStateForNode(source?.kind === "batched" ? source : node);
+}
+
+function batchBounds(node: Extract<AuraSceneNode, { kind: "batched" }>, world: Float32Array): PlacedBounds | undefined {
+  const batch = batchStateForQuery(node);
+  if (batch.disposed || !isAffineMatrix(world)) return undefined;
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (const slot of batch.liveSlots()) {
+    const geometry = batch.geometries[batch.geometryIdAt(slot)];
+    if (!geometry) continue;
+    try {
+      // The public matrix array and borrowed geometries can change without a
+      // batch-version write; do not reuse the batch's cached local union here.
+      geometry.vertexBuffer.readBytes(0, 0);
+      const member = batch.matrices.slice(slot * 16, slot * 16 + 16);
+      if (!isAffineMatrix(member)) continue;
+      const bounds = transformedBounds(geometry.bounds.min, geometry.bounds.max, combine(world, member));
+      if (![...bounds.min, ...bounds.max].every(Number.isFinite)) continue;
+      for (let axis = 0; axis < 3; axis += 1) {
+        min[axis] = Math.min(min[axis]!, bounds.min[axis]!);
+        max[axis] = Math.max(max[axis]!, bounds.max[axis]!);
+      }
+    } catch (error) {
+      if (error instanceof Error && /disposed/i.test(error.message)) continue;
+      throw error;
+    }
+  }
+  if (!Number.isFinite(min[0])) return undefined;
+  return { min, max, center: [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2],
+    size: [max[0] - min[0], max[1] - min[1], max[2] - min[2]], floorY: min[1] };
 }
 
 /**
  * Reduce declarative scene nodes to query targets.
  *
- * Only nodes with a resolvable position and scale participate. A model's bounds are its
- * node scale, which is a conservative approximation: the caller is told so by
- * {@link SceneQueryTarget}'s documentation rather than discovering it from a wrong result.
+ * Missing transforms use their defaults, including a position at the origin.
+ * Model bounds use the node's transformed unit box and are approximate.
  */
 export function sceneQueryTargets(nodes: readonly AuraSceneNode[], options: { readonly recursive?: boolean } = {}): readonly SceneQueryTarget[] {
   const targets: SceneQueryTarget[] = [];
-  const visit = (node: AuraSceneNode): void => {
+  const visit = (node: AuraSceneNode, parent: Float32Array): void => {
+    if ("visible" in node && node.visible === false) return;
+    const local = worldTransformOf(node)?.matrix ?? localMatrixOf(node as import("./nodes/types.js").AuraTransformSpec, new Float32Array(16));
+    const world = new Float32Array(16);
+    multiplyMat4Into(world, parent, local);
     if (node.kind === "group") {
       // Opt-in descent (three's `intersectObjects(objects, recursive)`); the
       // historical default stays flat for callers that already flattened.
       if (options.recursive === true) {
-        for (const child of node.children) visit(child);
+        for (const child of node.children) visit(child, world);
       }
       return;
     }
-    if (node.kind !== "primitive" && node.kind !== "model") return;
-    const positioned = node as AuraPrimitiveNode;
-    const position = positioned.position;
-    if (!position) return;
-    const scale = positioned.scale;
-    const size: AuraVec3 = scale === undefined
-      ? [1, 1, 1]
-      : typeof scale === "number"
-        ? [scale, scale, scale]
-        : [scale[0], scale[1], scale[2]];
+    if (node.kind !== "primitive" && node.kind !== "model" && node.kind !== "batched") return;
+    if (node.kind === "batched") {
+      const bounds = batchBounds(node, world);
+      if (bounds) targets.push({ nodeName: node.name, layers: node.layers, bounds, node, worldMatrix: world });
+      return;
+    }
+    const size = node.kind === "primitive" ? primitiveSize(node) : [1, 1, 1] as const;
+    const matrix = withScale(world, size);
+    let min: AuraVec3 = [-0.5, -0.5, -0.5];
+    let max: AuraVec3 = [0.5, 0.5, 0.5];
+    if (node.kind === "primitive" && node.geometry) {
+      const positions = normalizeGeometryAttributes(node.geometry).positions;
+      [min, max] = positionsBounds(positions);
+    }
     targets.push({
-      nodeName: (node as { name?: string }).name,
-      layers: positioned.layers,
-      // Primitive nodes are centred on their position, so the placed bounds' floor is half
-      // a height below it.
-      bounds: placedBounds({
-        position: [position[0], position[1] - size[1] / 2, position[2]],
-        size,
-        floorY: position[1] - size[1] / 2
-      })
+      nodeName: node.name,
+      layers: node.layers,
+      bounds: transformedBounds(min, max, matrix),
+      node, worldMatrix: world
     });
   };
-  for (const node of nodes) visit(node);
+  for (const node of nodes) visit(node, identityMat4Into(new Float32Array(16)));
   return targets;
 }
 
@@ -119,13 +181,18 @@ export function raycastSceneTargetsAll(
   ray: SceneRay
 ): readonly SceneQueryHit[] {
   const direction = normalize(ray.direction);
-  if (direction === undefined) return [];
+  if (direction === undefined || !ray.origin.every(Number.isFinite)) return [];
   const maxDistance = ray.maxDistance ?? Number.POSITIVE_INFINITY;
   const hits: SceneQueryHit[] = [];
   for (const target of targets) {
-    const hit = intersectAabb(ray.origin, direction, target.bounds, maxDistance);
+    // A target may have been captured before its batch was disposed.
+    const bounds = target.node?.kind === "batched" && target.worldMatrix
+      ? batchBounds(target.node, target.worldMatrix)
+      : target.node?.kind === "batched" && batchStateForQuery(target.node).disposed ? undefined : target.bounds;
+    if (!bounds) continue;
+    const hit = intersectAabb(ray.origin, direction, bounds, maxDistance);
     if (!hit) continue;
-    hits.push({ nodeName: target.nodeName, point: hit.point, normal: hit.normal, distance: hit.distance });
+    hits.push({ nodeName: target.nodeName, ...(target.node && "runtime" in target.node && target.node.runtime?.id ? { nodeId: target.node.runtime.id } : {}), point: hit.point, normal: hit.normal, distance: hit.distance });
   }
   return hits.sort((a, b) => a.distance - b.distance);
 }
@@ -166,10 +233,12 @@ export function sphereCastSceneTargets(
   ray: SceneRay,
   radius: number
 ): SceneQueryHit | undefined {
-  const inflated = targets.map((target) => ({
-    nodeName: target.nodeName,
-    bounds: inflateBounds(target.bounds, Math.max(0, radius))
-  }));
+  const inflated = targets.flatMap((target) => {
+    const bounds = target.node?.kind === "batched" && target.worldMatrix
+      ? batchBounds(target.node, target.worldMatrix)
+      : target.node?.kind === "batched" && batchStateForQuery(target.node).disposed ? undefined : target.bounds;
+    return bounds ? [{ nodeName: target.nodeName, bounds: inflateBounds(bounds, Math.max(0, radius)) }] : [];
+  });
   return raycastSceneTargets(inflated, ray);
 }
 
@@ -336,6 +405,10 @@ export interface SceneRaycastOptions {
   readonly targets?: readonly (SceneQueryTarget | AuraSceneNode)[];
   /** Scene nodes to query (equivalent to passing them via `targets`). */
   readonly nodes?: readonly AuraSceneNode[];
+  /** Mounted handles carry current geometry, instances and animation data. */
+  readonly handles?: readonly AuraRuntimeNodeHandle[];
+  /** Bounds preserves the historical approximate behavior; mesh tests actual triangles. */
+  readonly mode?: "bounds" | "mesh";
   /** Return only the nearest hit (three's `intersectObject` semantics). */
   readonly firstHitOnly?: boolean;
   /** Descend into group children (three's `intersectObjects` recursive flag). Default true. */
@@ -353,8 +426,8 @@ export interface SceneRaycastOptions {
  * through a camera — against scene query targets. Returns every hit nearest
  * first (`firstHitOnly` truncates to the closest, three's `intersectObject`).
  *
- * Targets are AABBs (see {@link SceneQueryTarget}); routes needing exact mesh
- * intersection go through `raycastPhysicsWorld`.
+ * Bounds mode uses AABBs (see {@link SceneQueryTarget}). Mesh mode intersects
+ * triangles and uses published render items for mounted models and primitives.
  */
 export function raycast(
   input: SceneRaycastInput,
@@ -362,18 +435,41 @@ export function raycast(
 ): readonly SceneQueryHit[] {
   const ray = "ndc" in input ? rayFromCameraNdc(input.camera, input.ndc) : input;
   if (!ray) return [];
+  if (options.mode !== undefined && options.mode !== "bounds" && options.mode !== "mesh") throw new RangeError("SCENE_QUERY_INVALID_OPTION: mode must be bounds or mesh.");
+  const near = options.near ?? 0;
+  const far = Math.min(options.far ?? Number.POSITIVE_INFINITY, ray.maxDistance ?? Number.POSITIVE_INFINITY);
+  if (!Number.isFinite(near) || near < 0) throw new RangeError("SCENE_QUERY_INVALID_OPTION: near must be finite and non-negative.");
+  if (!(Number.isFinite(far) || far === Number.POSITIVE_INFINITY) || far < near) throw new RangeError("SCENE_QUERY_INVALID_OPTION: far must be at least near.");
+  const direction = normalize(ray.direction);
+  if (!direction || !ray.origin.every(Number.isFinite)) return [];
   const targets = normalizeRaycastTargets(options);
   const mask = options.layers;
   const filtered = mask === undefined
     ? targets
     : targets.filter((target) => ((target.layers ?? 1) & mask) !== 0);
-  const near = options.near ?? 0;
-  const far = options.far ?? ray.maxDistance ?? Number.POSITIVE_INFINITY;
-  const hits = raycastSceneTargetsAll(filtered, {
-    origin: ray.origin,
-    direction: ray.direction,
-    maxDistance: far
-  }).filter((hit) => hit.distance >= near);
+  const hits: SceneQueryHit[] = options.mode === "mesh"
+    ? filtered.flatMap((target) => target.node && target.worldMatrix
+      ? queryNodeMesh(target.node, target.worldMatrix, ray.origin, direction, near, far)
+      : [])
+    : [...raycastSceneTargetsAll(filtered, { origin: ray.origin, direction, maxDistance: far }).filter((hit) => hit.distance >= near)];
+  for (const handle of options.handles ?? []) {
+    const state = runtimeNodeQueryState(handle);
+    if (!state) continue;
+    const itemLayers = options.mode === "mesh" && (state.node.kind === "model" || state.node.kind === "primitive") && state.renderItems !== undefined;
+    if (!itemLayers && mask !== undefined && ((state.node.layers ?? 1) & mask) === 0) continue;
+    if (state.node.kind === "batched" && batchStateForQuery(state.node).disposed) continue;
+    if (options.mode === "mesh") {
+      hits.push(...queryNodeMesh(state.node, state.worldMatrix, ray.origin, direction, near, far, handle, mask));
+    } else {
+      const bounds = state.node.kind === "batched" ? batchBounds(state.node, state.worldMatrix) : handle.bounds();
+      if (!bounds) continue;
+      const target: SceneQueryTarget = { nodeName: handle.name, bounds: { ...bounds, floorY: bounds.min[1] } };
+      const hit = raycastSceneTargets([target], { origin: ray.origin, direction, maxDistance: far });
+      if (hit && hit.distance >= near) hits.push({ ...hit, nodeId: handle.id });
+    }
+  }
+  // ECMAScript stable sorting preserves traversal/face order for equal distances.
+  hits.sort((a, b) => a.distance - b.distance);
   return options.firstHitOnly ? hits.slice(0, 1) : hits;
 }
 
@@ -397,6 +493,375 @@ function normalizeRaycastTargets(options: SceneRaycastOptions): readonly SceneQu
     targets.push(...sceneQueryTargets(nodeBucket, { recursive: options.recursive !== false }));
   }
   return targets;
+}
+
+function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {
+  const size = node.size ?? 1;
+  return typeof size === "number" ? [size, size, size] : size;
+}
+
+function withScale(matrix: Float32Array, size: AuraVec3): Float32Array {
+  const out = matrix.slice();
+  for (let col = 0; col < 3; col += 1) for (let row = 0; row < 4; row += 1) out[col * 4 + row] *= size[col]!;
+  return out;
+}
+
+function positionsBounds(positions: Float32Array): readonly [AuraVec3, AuraVec3] {
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < positions.length; i += 3) for (let axis = 0; axis < 3; axis += 1) {
+    min[axis] = Math.min(min[axis]!, positions[i + axis]!);
+    max[axis] = Math.max(max[axis]!, positions[i + axis]!);
+  }
+  return [min, max];
+}
+
+function transformPoint(matrix: ArrayLike<number>, point: AuraVec3): AuraVec3 {
+  return [
+    matrix[0]! * point[0] + matrix[4]! * point[1] + matrix[8]! * point[2] + matrix[12]!,
+    matrix[1]! * point[0] + matrix[5]! * point[1] + matrix[9]! * point[2] + matrix[13]!,
+    matrix[2]! * point[0] + matrix[6]! * point[1] + matrix[10]! * point[2] + matrix[14]!
+  ];
+}
+
+function transformedBounds(min: AuraVec3, max: AuraVec3, matrix: Float32Array): PlacedBounds {
+  const low: [number, number, number] = [Infinity, Infinity, Infinity];
+  const high: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let bits = 0; bits < 8; bits += 1) {
+    const point = transformPoint(matrix, [bits & 1 ? max[0] : min[0], bits & 2 ? max[1] : min[1], bits & 4 ? max[2] : min[2]]);
+    for (let axis = 0; axis < 3; axis += 1) {
+      low[axis] = Math.min(low[axis]!, point[axis]!);
+      high[axis] = Math.max(high[axis]!, point[axis]!);
+    }
+  }
+  return { min: low, max: high, center: [(low[0] + high[0]) / 2, (low[1] + high[1]) / 2, (low[2] + high[2]) / 2], size: [high[0] - low[0], high[1] - low[1], high[2] - low[2]], floorY: low[1] };
+}
+
+function combine(a: Float32Array, b: Float32Array): Float32Array {
+  const out = new Float32Array(16);
+  multiplyMat4Into(out, a, b);
+  return out;
+}
+
+function queryNodeMesh(node: AuraSceneNode, world: Float32Array, origin: AuraVec3, direction: AuraVec3, near: number, far: number, handle?: AuraRuntimeNodeHandle, layerMask?: number): SceneQueryHit[] {
+  const state = handle ? runtimeNodeQueryState(handle) : undefined;
+  const nodeId = handle?.id ?? ("runtime" in node ? node.runtime?.id : undefined);
+  if (!isAffineMatrix(world)) return [];
+  if ((node.kind === "model" || node.kind === "primitive") && state?.renderItems !== undefined) {
+    // An empty published list means this frame submitted nothing. Only an
+    // absent snapshot permits a primitive's pre-frame declarative fallback.
+    return state.renderItems.flatMap((item) => layerMask === undefined || (((item.layerMask ?? node.layers ?? 1) & layerMask) !== 0)
+      ? intersectRenderItem(item, node.name, nodeId, origin, direction, near, far) : []);
+  }
+  // Before a submitted material exists there is no compiler-issued proof:
+  // authored custom programs, including batched ones, remain unqueryable.
+  if ((node.kind === "primitive" || node.kind === "batched") && (node.material?.kind === "custom" || node.material?.custom)) return [];
+  if (node.kind === "model") {
+    // A model with no loaded and submitted geometry is not a mesh hit.
+    return [];
+  }
+  if (node.kind === "batched") {
+    const batch = batchStateForQuery(node);
+    if (batch.disposed) return [];
+    const hits: SceneQueryHit[] = [];
+    const materialNode: AuraPrimitiveNode = { kind: "primitive", primitive: "box", material: node.material };
+    const side = productionPrimitiveCullMode(materialNode, resolveProductionPrimitiveScalars(materialNode).opacity) === "none" ? "double" : "front";
+    for (const slot of batch.liveSlots()) {
+      const geometry = batch.geometries[batch.geometryIdAt(slot)];
+      if (!geometry) continue;
+      const batchMemberId = batch.queryMemberIdAt(slot);
+      if (!batch.instanced && batchMemberId === undefined) continue;
+      const matrix = combine(world, batch.matrices.slice(slot * 16, slot * 16 + 16));
+      hits.push(...intersectGeometry(geometry, matrix, origin, direction, near, far, {
+        nodeName: node.name, nodeId, side: sideForMatrix(side, matrix),
+        ...(batch.instanced ? { instanceId: slot } : {
+          batchId: batch.id, batchMemberId, batchStateToken: batch.memberReferenceToken, batchMemberSlot: slot
+        })
+      }));
+    }
+    return hits;
+  }
+  if (node.kind !== "primitive") return [];
+  const geometrySpec = state?.geometry ?? node.geometry;
+  const currentNode = geometrySpec ? { ...node, geometry: geometrySpec, primitive: "custom" as const } : node;
+  const geometry = createProductionPrimitiveGeometry(currentNode);
+  try {
+    const weights = state?.morphTargets ?? {};
+    const morph = geometrySpec?.morphTargets?.map((target) => ({ positions: target.positions }));
+    const morphWeights = geometrySpec?.morphTargets?.map((target, index) => {
+      const key = target.name ?? String(index);
+      return Object.hasOwn(weights, key) ? weights[key]! : 0;
+    });
+    const side = productionPrimitiveCullMode(node, resolveProductionPrimitiveScalars(node).opacity) === "none" ? "double" : "front";
+    const hits: SceneQueryHit[] = [];
+    const dense = state?.instanceMatrices;
+    if (dense !== undefined || node.instances !== undefined) {
+      const count = dense ? dense.length / 16 : node.instances!.length;
+      for (let index = 0; index < count; index += 1) {
+        const local = dense ? dense.slice(index * 16, index * 16 + 16) : localMatrixOf(node.instances![index]!, new Float32Array(16));
+        const matrix = withScale(combine(world, local), primitiveSize(node));
+        hits.push(...intersectGeometry(geometry, matrix, origin, direction, near, far, { nodeName: node.name, nodeId, side: sideForMatrix(side, matrix), instanceId: index, morph, morphWeights, temporary: true }));
+      }
+    } else {
+      const matrix = withScale(world, primitiveSize(node));
+      hits.push(...intersectGeometry(geometry, matrix, origin, direction, near, far, { nodeName: node.name, nodeId, side: sideForMatrix(side, matrix), morph, morphWeights, temporary: true }));
+    }
+    return hits;
+  } finally {
+    geometry.dispose();
+  }
+}
+
+type QuerySide = "front" | "back" | "double";
+
+/** The forward renderer flips culling for a reflected model/instance matrix. */
+function sideForMatrix(side: QuerySide, matrix: Float32Array): QuerySide {
+  if (side === "double") return side;
+  return hasNegativeHandedness(matrix) ? (side === "front" ? "back" : "front") : side;
+}
+
+function hasNegativeHandedness(matrix: Float32Array): boolean {
+  const determinant = matrix[0]! * (matrix[5]! * matrix[10]! - matrix[9]! * matrix[6]!)
+    - matrix[4]! * (matrix[1]! * matrix[10]! - matrix[9]! * matrix[2]!)
+    + matrix[8]! * (matrix[1]! * matrix[6]! - matrix[5]! * matrix[2]!);
+  return Number.isFinite(determinant) && determinant < -1e-8;
+}
+
+function isAffineMatrix(matrix: ArrayLike<number> | null | undefined): boolean {
+  if (!matrix || matrix.length !== 16 || matrix[3] !== 0 || matrix[7] !== 0 || matrix[11] !== 0 || matrix[15] !== 1) return false;
+  for (let i = 0; i < 16; i += 1) if (!Number.isFinite(matrix[i])) return false;
+  return true;
+}
+
+function queryMatrix(value: Float32Array | readonly number[] | undefined): Float32Array | undefined {
+  if (value === undefined) return identityMat4Into(new Float32Array(16));
+  if (!isAffineMatrix(value)) return undefined;
+  const matrix = value instanceof Float32Array ? value : Float32Array.from(value);
+  return isAffineMatrix(matrix) ? matrix : undefined;
+}
+
+interface QueryMeshOptions {
+  readonly nodeName?: string;
+  readonly nodeId?: string;
+  readonly side: QuerySide;
+  readonly instanceId?: number;
+  readonly batchId?: string;
+  readonly batchMemberId?: string | number;
+  readonly batchStateToken?: object;
+  readonly batchMemberSlot?: number;
+  readonly drawRange?: { readonly start: number; readonly count: number };
+  readonly morph?: readonly { readonly positions?: ArrayLike<number> | readonly (readonly [number, number, number])[] }[];
+  readonly morphWeights?: readonly number[];
+  readonly skinning?: RenderItem["skinning"];
+  /** Declarative primitive fallback owns and disposes this geometry per query. */
+  readonly temporary?: boolean;
+}
+
+function intersectRenderItem(item: RenderItem, nodeName: string | undefined, nodeId: string | undefined, origin: AuraVec3, direction: AuraVec3, near: number, far: number): SceneQueryHit[] {
+  const material = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
+  if (material && (material.disposed || !material.renderState)) return [];
+  const customShader = material && ("sources" in material || "shaderAuthoredSource" in material
+    || (typeof material.shaderKey === "string" && material.shaderKey.startsWith("aura3d/portable/")));
+  // Only the actual submitted adapter material can prove its vertex program;
+  // an instance can override frame uniforms independently of the base material.
+  if (customShader && (item.material !== material || !hasPositionQueryCertificate(material))) return [];
+  if (item.instanceAttributes?.length || item.label?.startsWith("prd10.wind:")) return [];
+  if (customShader && (item.skinning || item.onBeforeRender || item.modelViewProjectionMatrix !== undefined
+    || (item.instanceTransforms && item.geometry.vertexBuffer.format.streams.some((stream) => stream.stepMode === "instance")))) return [];
+  let cullMode: "none" | "front" | "back" | undefined;
+  if (customShader && material) {
+    const cull = Object.getOwnPropertyDescriptor(material.renderState, "cullMode");
+    if (!cull || !("value" in cull) || !["none", "front", "back"].includes(cull.value)) return [];
+    cullMode = cull.value;
+  } else cullMode = material?.renderState.cullMode;
+  const side: QuerySide = cullMode === "none" ? "double" : cullMode === "front" ? "back" : "front";
+  const model = queryMatrix(item.modelMatrix);
+  const geometryMatrix = queryMatrix(item.geometryMatrix);
+  if (!model || !geometryMatrix) return [];
+  // The certified program reads model/MVP, not u_geometryMatrix. Do not apply
+  // an unrepresented geometry transform or pretend it was applied by the GPU.
+  if (customShader && geometryMatrix.some((value, index) => value !== (index % 5 === 0 ? 1 : 0))) return [];
+  const finish = (hits: SceneQueryHit[]): SceneQueryHit[] => {
+    if (!customShader || !material) return hits;
+    try {
+      // Geometry readers may be user-overridden and can mutate a program or
+      // render state during the scan. Do not publish a hit from a stale proof.
+      if (item.material !== material || !hasPositionQueryCertificate(material)) return [];
+      const cull = Object.getOwnPropertyDescriptor(material.renderState, "cullMode");
+      return cull && "value" in cull && cull.value === cullMode ? hits : [];
+    } catch {
+      return [];
+    }
+  };
+  const base = { nodeName, nodeId, drawRange: item.drawRange, morph: item.morphTargets, morphWeights: item.morphWeights, skinning: item.skinning };
+  if (item.instanceTransforms !== undefined || item.instanceCount !== undefined) {
+    const hits: SceneQueryHit[] = [];
+    if (item.instanceTransforms !== undefined && item.instanceTransforms.length % 16 !== 0) return [];
+    const count = item.instanceTransforms ? item.instanceTransforms.length / 16 : item.instanceCount!;
+    if (!Number.isSafeInteger(count) || count < 0 || (item.instanceCount !== undefined && item.instanceCount !== count)) return [];
+    for (let index = 0; index < count; index += 1) {
+      const local = identityMat4Into(new Float32Array(16));
+      if (item.instanceTransforms) for (let i = 0; i < 16; i += 1) local[i] = item.instanceTransforms[index * 16 + i]!;
+      if (!isAffineMatrix(local)) return [];
+      const instanceModel = combine(model, local);
+      const matrix = combine(instanceModel, geometryMatrix);
+      hits.push(...intersectGeometry(item.geometry, matrix, origin, direction, near, far, { ...base, side: sideForMatrix(side, matrix), instanceId: index }));
+    }
+    return finish(hits);
+  }
+  const matrix = combine(model, geometryMatrix);
+  return finish(intersectGeometry(item.geometry, matrix, origin, direction, near, far, { ...base, side: sideForMatrix(side, matrix) }));
+}
+
+/** Read the values presented to a floating-point shader attribute. */
+function queryVertexAttribute(geometry: Geometry, index: number, semantic: "position" | "uv" | "joints" | "joints1" | "weights" | "weights1", instanceId = 0): readonly number[] {
+  const buffer = geometry.getAttributeBuffer(semantic);
+  const stream = buffer.format.streams.find((candidate) => candidate.slot === buffer.bufferSlot)!;
+  const record = stream.stepMode === "instance" ? Math.floor(instanceId / stream.divisor) : index;
+  return buffer.getDecodedAttribute(record, semantic);
+}
+
+function intersectGeometry(geometry: Geometry, matrix: Float32Array, origin: AuraVec3, direction: AuraVec3, near: number, far: number, options: QueryMeshOptions): SceneQueryHit[] {
+  try {
+    return intersectReadableGeometry(geometry, matrix, origin, direction, near, far, options);
+  } catch (error) {
+    // Retired resources and malformed stream lengths are not queryable. Do not
+    // turn unrelated programming errors into apparent geometric misses.
+    if (error instanceof Error && /disposed|out of (?:range|bounds)|no vertex buffer|does not match/i.test(error.message)) {
+      forgetSceneQueryTree(geometry);
+      return [];
+    }
+    throw error;
+  }
+}
+
+function intersectReadableGeometry(geometry: Geometry, matrix: Float32Array, origin: AuraVec3, direction: AuraVec3, near: number, far: number, options: QueryMeshOptions): SceneQueryHit[] {
+  if (!isAffineMatrix(matrix)) return [];
+  if (geometry.topology !== "triangles" || !geometry.vertexBuffer.format.hasAttribute("position")) return [];
+  const vertices = geometry.vertexBuffer;
+  if (vertices.format.getAttribute("position").components < 3) return [];
+  geometry.indexBuffer?.assertReadable();
+  const indices = geometry.indexBuffer?.data;
+  const count = indices?.length ?? vertices.vertexCount;
+  const validRange = (range: QueryMeshOptions["drawRange"]): boolean => range === undefined ||
+    (Number.isSafeInteger(range.start) && range.start >= 0 && (range.count === Infinity || (Number.isSafeInteger(range.count) && range.count >= 0)));
+  if (!validRange(geometry.drawRange) || !validRange(options.drawRange)) return [];
+  if ((options.morph === undefined) !== (options.morphWeights === undefined) || (options.morph && options.morph.length !== options.morphWeights!.length)) return [];
+  if (options.morph?.some((target, index) => {
+    const weight = options.morphWeights![index]!;
+    if (!target) return true;
+    const values = target.positions;
+    if (!Number.isFinite(weight)) return true;
+    if (!values || weight === 0) return false;
+    const tuple = Array.isArray(values[0]);
+    if (values.length !== vertices.vertexCount * (tuple ? 1 : 3)) return true;
+    for (let i = 0; i < vertices.vertexCount; i += 1) {
+      const point = tuple ? values[i] as readonly number[] : [values[i * 3], values[i * 3 + 1], values[i * 3 + 2]];
+      if (!point || point.length !== 3 || !point.every(Number.isFinite)) return true;
+    }
+    return false;
+  })) return [];
+  if (options.skinning) {
+    const skin = options.skinning;
+    const names = skin.extraInfluences ? ["joints", "weights", "joints1", "weights1"] as const : ["joints", "weights"] as const;
+    if (!Number.isSafeInteger(skin.jointCount) || skin.jointCount <= 0 || !(skin.matrices instanceof Float32Array) || skin.matrices.length < skin.jointCount * 16 ||
+      names.some((name) => !vertices.format.hasAttribute(name) || vertices.format.getAttribute(name).components !== 4)) return [];
+    for (let joint = 0; joint < skin.jointCount; joint += 1) {
+      if (!isAffineMatrix(skin.matrices.subarray(joint * 16, joint * 16 + 16))) return [];
+    }
+  }
+  // The renderer intersects an item's draw range with the geometry's own
+  // range; an item override does not make hidden geometry triangles visible.
+  const geometryStart = Math.max(0, geometry.drawRange?.start ?? 0);
+  const geometryEnd = geometry.drawRange
+    ? Math.min(count, geometryStart + Math.max(0, geometry.drawRange.count))
+    : count;
+  const start = Math.max(geometryStart, options.drawRange?.start ?? 0);
+  const end = Math.min(geometryEnd, options.drawRange ? options.drawRange.start + options.drawRange.count : count);
+  // The cached tree only rejects impossible static triangles; all accepted
+  // triangles still use the same world-space sidedness, UV and hit calculation.
+  // Live deformation and temporary geometries retain the original full scan.
+  const candidates = !options.temporary && !options.skinning && !options.morph?.length
+    ? sceneQueryTriangleCandidates(geometry, matrix, origin, direction, start, end)
+    : undefined;
+  const hitList: SceneQueryHit[] = [];
+  const vertex = (index: number): AuraVec3 | undefined => {
+    const p = queryVertexAttribute(geometry, index, "position", options.instanceId);
+    let x = p[0]!, y = p[1]!, z = p[2]!;
+    options.morph?.forEach((target, targetIndex) => {
+      const values = target.positions;
+      const weight = options.morphWeights?.[targetIndex] ?? 0;
+      if (!values || !weight) return;
+      const first = values[index];
+      if (Array.isArray(first)) { x += first[0]! * weight; y += first[1]! * weight; z += first[2]! * weight; }
+      else { const flat = values as ArrayLike<number>; x += (flat[index * 3] ?? 0) * weight; y += (flat[index * 3 + 1] ?? 0) * weight; z += (flat[index * 3 + 2] ?? 0) * weight; }
+    });
+    if (options.skinning && vertices.format.hasAttribute("joints") && vertices.format.hasAttribute("weights")) {
+      let sx = 0, sy = 0, sz = 0, totalWeight = 0, valid = true;
+      const apply = (jointName: "joints" | "joints1", weightName: "weights" | "weights1") => {
+        if (!vertices.format.hasAttribute(jointName) || !vertices.format.hasAttribute(weightName)) return;
+        const joints = queryVertexAttribute(geometry, index, jointName, options.instanceId), weights = queryVertexAttribute(geometry, index, weightName, options.instanceId);
+        for (let i = 0; i < weights.length; i += 1) {
+          const weight = weights[i] ?? 0, joint = joints[i] ?? 0;
+          if (!weight) continue;
+          if (!Number.isFinite(weight) || !Number.isInteger(joint) || joint < 0 || joint >= options.skinning!.jointCount) { valid = false; continue; }
+          const point = transformPoint(options.skinning!.matrices.subarray(joint * 16, joint * 16 + 16), [x, y, z]);
+          sx += point[0] * weight; sy += point[1] * weight; sz += point[2] * weight;
+          totalWeight += weight;
+        }
+      };
+      apply("joints", "weights");
+      if (options.skinning.extraInfluences) apply("joints1", "weights1");
+      if (!valid || !Number.isFinite(totalWeight) || Math.abs(totalWeight) < 1e-12) return undefined;
+      // The shader blends homogeneous matrices; after perspective division,
+      // a non-unit weight sum divides the blended xyz by the same sum.
+      x = sx / totalWeight; y = sy / totalWeight; z = sz / totalWeight;
+    }
+    const result = transformPoint(matrix, [x, y, z]);
+    return result.every(Number.isFinite) ? result : undefined;
+  };
+  for (let index = 0; ; index += 1) {
+    const offset = candidates ? candidates[index] : start + index * 3;
+    if (offset === undefined || offset + 2 >= end) break;
+    const a = indices?.[offset] ?? offset, b = indices?.[offset + 1] ?? offset + 1, c = indices?.[offset + 2] ?? offset + 2;
+    if (a >= vertices.vertexCount || b >= vertices.vertexCount || c >= vertices.vertexCount) continue;
+    const pa = vertex(a), pb = vertex(b), pc = vertex(c);
+    if (!pa || !pb || !pc) continue;
+    const edge1: AuraVec3 = [pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]];
+    const edge2: AuraVec3 = [pc[0] - pa[0], pc[1] - pa[1], pc[2] - pa[2]];
+    const geometricNormal = cross(edge1, edge2);
+    const orientation = hasNegativeHandedness(matrix) ? -1 : 1;
+    const normal = normalize([geometricNormal[0] * orientation, geometricNormal[1] * orientation, geometricNormal[2] * orientation]);
+    if (!normal) continue;
+    const pvec = cross(direction, edge2);
+    const determinant = edge1[0] * pvec[0] + edge1[1] * pvec[1] + edge1[2] * pvec[2];
+    if (Math.abs(determinant) < 1e-12 || (options.side === "front" && determinant <= 0) || (options.side === "back" && determinant >= 0)) continue;
+    const inverse = 1 / determinant;
+    const tvec: AuraVec3 = [origin[0] - pa[0], origin[1] - pa[1], origin[2] - pa[2]];
+    const u = (tvec[0] * pvec[0] + tvec[1] * pvec[1] + tvec[2] * pvec[2]) * inverse;
+    if (u < 0 || u > 1) continue;
+    const qvec = cross(tvec, edge1);
+    const v = (direction[0] * qvec[0] + direction[1] * qvec[1] + direction[2] * qvec[2]) * inverse;
+    if (v < 0 || u + v > 1) continue;
+    const distance = (edge2[0] * qvec[0] + edge2[1] * qvec[1] + edge2[2] * qvec[2]) * inverse;
+    if (!Number.isFinite(distance) || distance < near || distance > far) continue;
+    const w = 1 - u - v;
+    let uv: readonly [number, number] | undefined;
+    if (vertices.format.hasAttribute("uv") && vertices.format.getAttribute("uv").components >= 2) {
+      const ua = queryVertexAttribute(geometry, a, "uv", options.instanceId), ub = queryVertexAttribute(geometry, b, "uv", options.instanceId), uc = queryVertexAttribute(geometry, c, "uv", options.instanceId);
+      uv = [ua[0]! * w + ub[0]! * u + uc[0]! * v, ua[1]! * w + ub[1]! * u + uc[1]! * v];
+      if (!uv.every(Number.isFinite)) continue;
+    }
+    hitList.push({ nodeName: options.nodeName, ...(options.nodeId === undefined ? {} : { nodeId: options.nodeId }),
+      distance, point: [origin[0] + direction[0] * distance, origin[1] + direction[1] * distance, origin[2] + direction[2] * distance],
+      normal, faceIndex: Math.floor(offset / 3), barycentric: [w, u, v], ...(uv ? { uv } : {}),
+      ...(options.instanceId === undefined ? {} : { instanceId: options.instanceId }),
+      ...(options.batchId === undefined ? {} : { batchId: options.batchId }),
+      ...(options.batchMemberId === undefined ? {} : { batchMemberId: options.batchMemberId }),
+      ...(options.batchStateToken === undefined ? {} : { batchStateToken: options.batchStateToken }),
+      ...(options.batchMemberSlot === undefined ? {} : { batchMemberSlot: options.batchMemberSlot }) });
+  }
+  return hitList;
 }
 
 /**

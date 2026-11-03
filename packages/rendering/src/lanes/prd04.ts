@@ -47,6 +47,7 @@ export {
 } from "../forward/Transmission.js";
 export {
   applyTextureBudget,
+  releaseTextureBudget,
   resetTextureBudgetLedger,
   textureBudgetReport,
   DEFAULT_TEXTURE_BUDGET_POLICY,

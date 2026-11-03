@@ -119,13 +119,13 @@ describe("GU47 E-B height-fog binding without A3D_QR_VFX_SKY", () => {
     const app = { scene: { nodes: [fog] }, onFrame: () => () => undefined } as unknown as AuraApp;
     const atmosphere = createAtmosphereExtension(app, { flags });
     expect(atmosphere).not.toBeInstanceOf(StubAppAtmosphere);
-    const bound = prd07FogRuntimeState();
+    const bound = prd07FogRuntimeState(app);
     expect(bound?.flags.on("A3D_QR_VFX_FOG")).toBe(true);
     bound!.atmosphere.trackFogNodes([fog as unknown as EffectNodeLike]);
     bound!.atmosphere.updateFogVisibility(visibleAll("fog"));
     atmosphere.setFog({ mode: "exp", density: 0.25 });
     const snapshot = { nodes: [fog] } as unknown as AuraSceneSnapshot;
-    const out = createProductionRuntimeEnvironmentFog(snapshot, [], 1280, 720) as { mode: string; density: number };
+    const out = createProductionRuntimeEnvironmentFog(snapshot, [], 1280, 720, app) as { mode: string; density: number };
     expect(out.mode).toBe("exponential");
     expect(out.density).toBeCloseTo(0.25, 6);
   });

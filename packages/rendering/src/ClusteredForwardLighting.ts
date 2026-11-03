@@ -92,7 +92,7 @@ export function createClusteredForwardLighting(
     ], offset + 12);
     // GU47 eint (EB-3): right.w carries the light's first PRD-02 local shadow tile + 1 (0 = none), as in LightUniforms.pack.
     lightPixels.set([...(light.right ?? [1, 0, 0]), packedLocalShadowSlot(light)], offset + 16);
-    lightPixels.set([...(light.up ?? [0, 1, 0]), 0], offset + 20);
+    lightPixels.set([...(light.up ?? [0, 1, 0]), light.twoSided === true ? 1 : 0], offset + 20);
   }
   const indexPixels = new Float32Array(MAX_LIGHTS_PER_CLUSTER * clusterCount * 4);
   const clusterLists = Array.from({ length: clusterCount }, () => [] as number[]);

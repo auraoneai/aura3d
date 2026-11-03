@@ -46,16 +46,52 @@ export interface ShaderFailureSources {
 }
 
 const MAX_RECORDS = 64;
-const records = new Map<string, ShaderFailureRecord>();
-let configuredMode: ShaderFailureMode | undefined;
+const MAX_DIAGNOSTIC_TEXT = 4096;
 
-/** Process-wide override (an app in strict mode sets `throw`; `undefined` restores the default). */
-export function setShaderFailureMode(mode: ShaderFailureMode | undefined): void {
-  configuredMode = mode;
+/** Failure mode and bounded records owned by one app or rendering device. */
+export class ShaderFailureStore {
+  mode: ShaderFailureMode | undefined;
+  readonly records = new Map<string, ShaderFailureRecord>();
 }
 
-export function resolveShaderFailureMode(strict: boolean): ShaderFailureMode {
-  if (configuredMode) return configuredMode;
+const legacyStore = new ShaderFailureStore();
+const storesByOwner = new WeakMap<object, ShaderFailureStore>();
+
+export function createShaderFailureStore(): ShaderFailureStore {
+  return new ShaderFailureStore();
+}
+
+/** Bind the same store to an app's canvas and every device created for that app. */
+export function bindShaderFailureStore(owner: object, store: ShaderFailureStore): void {
+  storesByOwner.set(owner, store);
+}
+
+/** Unbound standalone renderer callers retain the legacy diagnostic scope. */
+export function shaderFailureStoreFor(owner: object): ShaderFailureStore {
+  return storesByOwner.get(owner) ?? legacyStore;
+}
+
+/** Driver logs and source excerpts can include URLs or header-like literals. */
+export function sanitizeShaderDiagnosticText(value: string): string {
+  const limited = value.slice(0, MAX_DIAGNOSTIC_TEXT * 2);
+  const redacted = limited
+    .replace(/\bhttps?:\/\/[^\s<>"']+/gi, (url) => url.replace(/\/\/[^/@\s]+@/, "//[redacted]@").replace(/[?#].*$/, "?[redacted]"))
+    .replace(/((?:\/|\.\.?\/|[a-z0-9_-]+\/)[^\s"'<>?#]*|[a-z0-9_.-]+\.[a-z0-9]{1,10})[?#][^\s"'<>]*/gi, "$1?[redacted]")
+    .replace(/([?&](?:token|access_token|api[_-]?key|signature|sig|x-amz-[^=&#\s]+|x-goog-[^=&#\s]+)=)[^&#\s]*/gi, "$1[redacted]")
+    .replace(/\b(bearer|basic)\s+[^\s,;"']+/gi, "$1 [redacted]")
+    .replace(/(["']?)(?:request[-_ ]?)?headers?\1\s*[:=]\s*(?:\{[^}]*\}|\[[^\]]*\]|[^\r\n]*)/gi, "headers=[redacted]")
+    .replace(/\b(authorization|proxy-authorization|cookie|set-cookie)\s*[:=]\s*[^\r\n]*/gi, "$1=[redacted]")
+    .replace(/(["']?)(authorization|proxy-authorization|cookie|set-cookie|password|passwd|secret|token|api[-_]?key|credential|signature)\1\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;}]+)/gi, "$2=[redacted]");
+  return redacted.length > MAX_DIAGNOSTIC_TEXT ? `${redacted.slice(0, MAX_DIAGNOSTIC_TEXT)}…` : redacted;
+}
+
+/** The optional store scopes the override; omission keeps the standalone legacy API. */
+export function setShaderFailureMode(mode: ShaderFailureMode | undefined, store: ShaderFailureStore = legacyStore): void {
+  store.mode = mode;
+}
+
+export function resolveShaderFailureMode(strict: boolean, store: ShaderFailureStore = legacyStore): ShaderFailureMode {
+  if (store.mode) return store.mode;
   if (strict) return "throw";
   return diagRequested() ? "magenta" : "skip";
 }
@@ -69,12 +105,12 @@ function diagRequested(): boolean {
   }
 }
 
-export function getShaderFailures(): readonly ShaderFailureRecord[] {
-  return [...records.values()];
+export function getShaderFailures(store: ShaderFailureStore = legacyStore): readonly ShaderFailureRecord[] {
+  return [...store.records.values()];
 }
 
-export function clearShaderFailures(): void {
-  records.clear();
+export function clearShaderFailures(store: ShaderFailureStore = legacyStore): void {
+  store.records.clear();
 }
 
 /** One-line summary, stable for `diagnostics().errors`, route health and the ?diag=1 panel. */
@@ -85,16 +121,28 @@ export function formatShaderFailure(record: ShaderFailureRecord): string {
 }
 
 /** Records a failure; returns true the first time this (shader, stage) fails (callers log once). */
-export function recordShaderFailure(record: ShaderFailureRecord): { readonly first: boolean; readonly record: ShaderFailureRecord } {
-  const key = `${record.shaderKey}|${record.stage}`;
-  const existing = records.get(key);
+export function recordShaderFailure(record: ShaderFailureRecord, store: ShaderFailureStore = legacyStore): { readonly first: boolean; readonly record: ShaderFailureRecord } {
+  const safeRecord: ShaderFailureRecord = {
+    ...record,
+    material: sanitizeShaderDiagnosticText(record.material),
+    shaderKey: sanitizeShaderDiagnosticText(record.shaderKey),
+    message: sanitizeShaderDiagnosticText(record.message),
+    log: sanitizeShaderDiagnosticText(record.log),
+    locations: record.locations.slice(0, 5).map((location) => ({
+      ...location,
+      message: sanitizeShaderDiagnosticText(location.message),
+      window: location.window.slice(0, 7).map((row) => ({ ...row, text: sanitizeShaderDiagnosticText(row.text) }))
+    }))
+  };
+  const key = `${safeRecord.shaderKey}|${safeRecord.stage}`;
+  const existing = store.records.get(key);
   if (existing) {
     existing.count += 1;
     return { first: false, record: existing };
   }
-  if (records.size >= MAX_RECORDS) records.delete(records.keys().next().value as string);
-  records.set(key, record);
-  return { first: true, record };
+  if (store.records.size >= MAX_RECORDS) store.records.delete(store.records.keys().next().value as string);
+  store.records.set(key, safeRecord);
+  return { first: true, record: safeRecord };
 }
 
 /**
@@ -142,8 +190,12 @@ interface DeviceErrorLike {
 }
 
 export function isShaderFailureError(error: unknown): boolean {
-  const code = (error as DeviceErrorLike | null)?.code;
-  return code === "SHADER_COMPILE_FAILED" || code === "SHADER_LINK_FAILED" || code === "WGSL_PROGRAM_MISSING";
+  try {
+    const code = (error as DeviceErrorLike | null)?.code;
+    return code === "SHADER_COMPILE_FAILED" || code === "SHADER_LINK_FAILED" || code === "WGSL_PROGRAM_MISSING";
+  } catch {
+    return false;
+  }
 }
 
 /** Builds the structured record from a device error plus the program sources that produced it. */
@@ -153,19 +205,32 @@ export function buildShaderFailure(
   sources: ShaderFailureSources,
   mode: ShaderFailureMode
 ): ShaderFailureRecord {
-  const err = error as DeviceErrorLike;
-  const details = err.details ?? {};
-  const log = typeof details.log === "string" ? details.log : String(err.message ?? error);
-  const stageDetail = details.stage;
+  let err: DeviceErrorLike = {};
+  let details: Readonly<Record<string, unknown>> = {};
+  let rawLog: unknown;
+  let stageDetail: unknown;
+  let marker: unknown;
+  let errorCode: unknown;
+  try {
+    err = error && typeof error === "object" ? error as DeviceErrorLike : {};
+    details = err.details ?? {};
+    rawLog = details.log ?? err.message ?? (typeof error === "string" ? error : "Shader failure");
+    stageDetail = details.stage;
+    marker = details.marker;
+    errorCode = err.code;
+  } catch {
+    rawLog = "Shader failure (details unavailable)";
+  }
+  const log = sanitizeShaderDiagnosticText(typeof rawLog === "string" ? rawLog : "Shader failure");
   const stage: ShaderFailureRecord["stage"] =
-    err.code === "SHADER_LINK_FAILED" ? "link" : stageDetail === "vertex" || stageDetail === "fragment" ? stageDetail : "unknown";
+    errorCode === "SHADER_LINK_FAILED" ? "link" : stageDetail === "vertex" || stageDetail === "fragment" ? stageDetail : "unknown";
   const code: ShaderFailureCode =
-    err.code === "SHADER_LINK_FAILED" ? "CUSTOM_SHADER_LINK_FAILED" : err.code === "WGSL_PROGRAM_MISSING" ? "CUSTOM_SHADER_WGSL_MISSING" : "CUSTOM_SHADER_COMPILE_FAILED";
+    errorCode === "SHADER_LINK_FAILED" ? "CUSTOM_SHADER_LINK_FAILED" : errorCode === "WGSL_PROGRAM_MISSING" ? "CUSTOM_SHADER_WGSL_MISSING" : "CUSTOM_SHADER_COMPILE_FAILED";
   const locations: ShaderFailureLocation[] = [];
   if (code === "CUSTOM_SHADER_COMPILE_FAILED") {
     for (const parsed of parseShaderLog(log).slice(0, 5)) {
-      const source = stage === "vertex" ? sources.vertex : stage === "fragment" ? sources.fragment : sources.fragment ?? sources.vertex;
-      const authored = stage === "vertex" ? sources.authored?.vertex : sources.authored?.fragment;
+      const source = (stage === "vertex" ? sources.vertex : stage === "fragment" ? sources.fragment : sources.fragment ?? sources.vertex)?.slice(0, 65536);
+      const authored = (stage === "vertex" ? sources.authored?.vertex : sources.authored?.fragment)?.slice(0, 65536);
       const offset = source && authored ? authoredLineOffset(source, authored) : undefined;
       const authoredLine = offset !== undefined && parsed.line > offset ? parsed.line - offset : undefined;
       locations.push({
@@ -178,7 +243,7 @@ export function buildShaderFailure(
   }
   const message =
     code === "CUSTOM_SHADER_WGSL_MISSING"
-      ? `material "${material.name}" has no WGSL program, so it cannot draw on WebGPU (marker ${String(details.marker ?? "unknown")})`
+      ? `material "${material.name}" has no WGSL program, so it cannot draw on WebGPU (marker ${typeof marker === "string" ? marker : "unknown"})`
       : log.split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 3).join(" | ");
   return { code, material: material.name, shaderKey: material.shaderKey, stage, message, log, locations, mode, count: 1 };
 }
@@ -198,9 +263,10 @@ export function reportShaderFailure(
   material: { readonly name: string; readonly shaderKey: string },
   sources: ShaderFailureSources,
   mode: ShaderFailureMode,
-  consequence: string
+  consequence: string,
+  store: ShaderFailureStore = legacyStore
 ): ShaderFailureRecord {
-  const { first, record } = recordShaderFailure(buildShaderFailure(error, material, sources, mode));
-  if (first) console.error(describeShaderFailure(record, consequence));
+  const { first, record } = recordShaderFailure(buildShaderFailure(error, material, sources, mode), store);
+  if (first) console.error(describeShaderFailure(record, sanitizeShaderDiagnosticText(consequence)));
   return record;
 }

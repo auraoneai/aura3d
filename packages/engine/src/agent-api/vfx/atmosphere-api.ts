@@ -7,16 +7,49 @@ import type { QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraSetFogOptions, AuraSetFogSpec, AuraSkySpec } from "../../contracts/atmosphere";
 import { StubAppAtmosphere } from "../../contracts/atmosphere";
 import { ProductionEffectSystem, type AppLike } from "../../production-runtime/effects/ProductionEffectSystem";
-import { attachVfxBridge } from "./bridge";
-import { bindPrd07FogRuntime } from "../compiler/fog";
-import { prd07SystemFor } from "./effects-api";
+import { bindPrd07FogRuntime, type Prd07FogRuntime } from "../compiler/fog";
+import { attachPrd07SystemBridge, disposePrd07SystemFor, prd07SystemFor, registerPrd07System } from "./effects-api";
+
+interface FogBinding {
+  readonly runtime: Prd07FogRuntime;
+  releaseOwner: (() => void) | null;
+  release(): void;
+}
+
+const fogBindings = new WeakMap<AuraApp, FogBinding>();
+const fogRuntimeOwners = new WeakMap<AuraApp, object>();
+const onSystemDispose = ProductionEffectSystem.prototype.onDispose;
+
+function bindFogOwner(app: AuraApp, binding: FogBinding): void {
+  binding.releaseOwner?.();
+  const owner = fogRuntimeOwners.get(app);
+  // The app registration already covers this identity; a second registration
+  // would replace it and make its original disposer stale.
+  binding.releaseOwner = owner && owner !== app ? bindPrd07FogRuntime(binding.runtime, owner) : null;
+}
+
+/** Associate the app-private renderer owner even if the atmosphere is installed later. */
+export function bindAtmosphereRuntimeOwner(app: AuraApp, owner: object): void {
+  fogRuntimeOwners.set(app, owner);
+  const binding = fogBindings.get(app);
+  if (binding) bindFogOwner(app, binding);
+}
+
+/** Drop only this app's fog binding and effects system. */
+export function disposeAtmosphereExtension(app: AuraApp): void {
+  fogRuntimeOwners.delete(app);
+  fogBindings.get(app)?.release();
+  disposePrd07SystemFor(app);
+}
 
 export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags }): import("../../contracts/atmosphere").AuraAppAtmosphere {
+  // Rebinding fog must not tear down the effects system the app already owns.
+  fogBindings.get(app)?.release();
   if (!ctx.flags.on("A3D_QR_VFX_SKY") && !ctx.flags.on("A3D_QR_VFX") && !ctx.flags.on("A3D_QR_VFX_FOG")) {
     return new StubAppAtmosphere();
   }
   const existing = prd07SystemFor(app);
-  const system = existing ?? new ProductionEffectSystem(app as unknown as AppLike);
+  const system = existing ?? registerPrd07System(app, () => new ProductionEffectSystem(app as unknown as AppLike));
   // §6.5 — flag-on hides the tagged prd07.legacySky.* primitives.
   system.setSkyFlagOn(ctx.flags.on("A3D_QR_VFX_SKY"));
   // §8.6 — flag-on hides the tagged prd07.legacyWeather.* primitives.
@@ -24,10 +57,28 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
   system.setDecalFlagOn(ctx.flags.on("A3D_QR_VFX_DECALS"));
   // §6.6 — A3D_QR_VFX_FOG makes the carved compiler/fog.ts read this app's live fog. GU47 E-B: the binding is made for
   // every real atmosphere (A3D_QR_VFX, A3D_QR_VFX_SKY or A3D_QR_VFX_FOG alone); it never depends on the sky flag.
-  bindPrd07FogRuntime({ flags: ctx.flags, atmosphere: system.atmosphere });
+  const runtime = { flags: ctx.flags, atmosphere: system.atmosphere };
+  const releaseFog = bindPrd07FogRuntime(runtime, app);
+  let unsubscribeSystem = (): void => {};
+  const binding: FogBinding = {
+    runtime,
+    releaseOwner: null,
+    release: () => {
+      if (fogBindings.get(app) === binding) fogBindings.delete(app);
+      unsubscribeSystem();
+      binding.releaseOwner?.();
+      binding.releaseOwner = null;
+      releaseFog();
+    }
+  };
+  fogBindings.set(app, binding);
+  bindFogOwner(app, binding);
+  // The system can be disposed through the effects extension before the app's
+  // atmosphere cleanup runs. Its real lifecycle revokes the fog binding too.
+  unsubscribeSystem = onSystemDispose.call(system, binding.release);
   // The effects extension already bridged this app's system; a second attach
   // of the same system only recorded a spurious VFX_APP_BINDING_AMBIGUOUS.
-  if (app.canvas && !existing) attachVfxBridge(app.canvas, system);
+  if (!existing) attachPrd07SystemBridge(app, system);
   const atmosphere = system.atmosphere;
   return {
     setFog: (spec: AuraSetFogSpec | null, o?: AuraSetFogOptions) => atmosphere.setFog(spec, o),

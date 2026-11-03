@@ -4,8 +4,8 @@
 // `look/fake-effect-names` → prd07, `look/capture-branch` → prd09). The
 // `look/evidence-only-feel` code stays reserved for prd08 — no default emits.
 
-import type { AuraColor, AuraEffectNode, AuraLightNode, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot } from "../index.js";
-import { groups } from "../index.js";
+import type { AuraColor, AuraEffectNode, AuraLightNode, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot } from "../nodes/types.js";
+import { groups } from "../nodes/groups.js";
 import type { AuraLookId, AuraLookLintFinding, AuraLookLintRule } from "../../contracts/looks.js";
 import {
   lookLintRegisteredCodes,

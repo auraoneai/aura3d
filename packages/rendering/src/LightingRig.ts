@@ -16,9 +16,29 @@ export type LightingRigPreset =
 export type LightingRigUnsupportedFeature =
   | "rectangular-area-light"
   | "ies-photometric-profile"
+  | "projected-light-image"
   | "contact-shadow-map"
   | "cascaded-shadow-map"
   | "global-illumination";
+
+/** The subset of parsed Type-C IES data needed by the light evaluator. */
+export interface LightingRigProfileData {
+  readonly verticalAngles: readonly number[];
+  readonly horizontalAngles: readonly number[];
+  readonly candela: readonly number[];
+  readonly symmetry: "rotational" | "quadrant" | "bilateral" | "none";
+}
+export interface LightingRigPhotometricProfile {
+  readonly profile: LightingRigProfileData;
+  readonly scale?: number;
+  readonly rotation?: number;
+}
+export interface LightingRigProjectedImage {
+  readonly texture: { readonly kind: "aura-asset-ref"; readonly type: "texture"; readonly id: string; readonly url: string };
+  readonly offset?: readonly [number, number];
+  readonly scale?: readonly [number, number];
+  readonly rotation?: number;
+}
 
 export interface LightingRigLightDescriptor {
   readonly id: string;
@@ -34,6 +54,8 @@ export interface LightingRigLightDescriptor {
   readonly width: number;
   readonly height: number;
   readonly castsShadow: boolean;
+  readonly photometricProfile?: LightingRigPhotometricProfile;
+  readonly projectedImage?: LightingRigProjectedImage;
   readonly claimBoundary: string;
 }
 
@@ -72,6 +94,12 @@ export interface LightingRigOptions {
   readonly intensityScale?: number;
   readonly shadows?: boolean;
   readonly includeUnsupportedDiagnostics?: boolean;
+  /** Optional profiles keyed by a point/spot preset light's id. */
+  readonly photometricProfiles?: Readonly<Record<string, LightingRigPhotometricProfile>>;
+  /** Optional projected textures keyed by a spot preset light's id. */
+  readonly projectedImages?: Readonly<Record<string, LightingRigProjectedImage>>;
+  /** Until a backend advertises native binding, choose an explicit unmodified forward fallback or error. */
+  readonly unsupportedFallback?: "error" | "unmodified";
   /**
    * Scale light *placements* to the rendered subject, keeping the rig's geometry across asset swaps.
    *
@@ -108,17 +136,39 @@ export function createLightingRig(options: LightingRigOptions = {}): LightingRig
   const preset = options.preset ?? "key-fill-rim";
   const intensityScale = positive(options.intensityScale ?? 1, "lighting rig intensityScale");
   const shadows = options.shadows ?? true;
-  const lights = lightingRigDescriptors(preset).map((light) => ({
-    ...light,
-    intensity: round3(light.intensity * intensityScale),
-    position: scaleRigPosition(light.position, options.subject),
-    castsShadow: shadows && light.castsShadow
-  }));
+  const descriptors = lightingRigDescriptors(preset);
+  const knownIds = new Set(descriptors.map((light) => light.id));
+  for (const id of [...Object.keys(options.photometricProfiles ?? {}), ...Object.keys(options.projectedImages ?? {})]) {
+    if (!knownIds.has(id)) throw new RangeError(`Unknown lighting rig light: ${id}`);
+  }
+  const lights = descriptors.map((light) => {
+    const photometricProfile = options.photometricProfiles?.[light.id];
+    const projectedImage = options.projectedImages?.[light.id];
+    if (photometricProfile && light.kind !== "point" && light.kind !== "spot") throw new RangeError(`Photometric profile requires a point or spot light: ${light.id}`);
+    if (projectedImage && light.kind !== "spot") throw new RangeError(`Projected image requires a spot light: ${light.id}`);
+    if (photometricProfile) validateRigProfile(photometricProfile);
+    if (projectedImage) validateRigProjection(projectedImage);
+    return {
+      ...light,
+      intensity: round3(light.intensity * intensityScale),
+      position: scaleRigPosition(light.position, options.subject),
+      castsShadow: shadows && light.castsShadow,
+      ...(photometricProfile ? { photometricProfile: intensityScale === 1 ? photometricProfile : { ...photometricProfile, scale: (photometricProfile.scale ?? 1) * intensityScale } } : {}),
+      ...(projectedImage ? { projectedImage } : {})
+    };
+  });
+  const hasProfile = lights.some((light) => light.photometricProfile !== undefined);
+  const hasProjection = lights.some((light) => light.projectedImage !== undefined);
+  if ((hasProfile || hasProjection) && options.unsupportedFallback !== "unmodified") {
+    throw new Error("Forward light profile/image binding is unavailable; set unsupportedFallback to 'unmodified' for explicit scalar-light fallback");
+  }
   const softboxes = lightingRigSoftboxes(preset).map((softbox) => ({
     ...softbox,
     intensity: round3(softbox.intensity * intensityScale)
   }));
-  const unsupportedFeatures = unsupportedFeaturesForRig(preset, options.includeUnsupportedDiagnostics ?? true);
+  const unsupportedFeatures = [...unsupportedFeaturesForRig(preset, options.includeUnsupportedDiagnostics ?? true)];
+  if (hasProfile && !unsupportedFeatures.includes("ies-photometric-profile")) unsupportedFeatures.push("ies-photometric-profile");
+  if (hasProjection && !unsupportedFeatures.includes("projected-light-image")) unsupportedFeatures.push("projected-light-image");
   return {
     preset,
     lights,
@@ -490,6 +540,8 @@ function lightingDisclosure(feature: LightingRigUnsupportedFeature): string {
       return "Rectangular area-light shading is implemented for finite emitters; this diagnostic is reserved for callers that explicitly require rectangular-light shadow maps or three.js LTC lookup-table identity.";
     case "ies-photometric-profile":
       return "IES photometric profiles are unsupported; point and spot practicals use bounded cone/range descriptors only.";
+    case "projected-light-image":
+      return "Projected images are not bound by this forward rig; the explicit fallback leaves the direct light unmodified.";
     case "contact-shadow-map":
       return "Contact shadows require the separate contact-shadow pipeline and visual grounding evidence; direct-light rigs do not claim it.";
     case "cascaded-shadow-map":
@@ -497,6 +549,98 @@ function lightingDisclosure(feature: LightingRigUnsupportedFeature): string {
     case "global-illumination":
       return "Global illumination/light bounce is unsupported; rigs expose direct lights plus environment-light approximations only.";
   }
+}
+
+function validateRigProfile(value: LightingRigPhotometricProfile): void {
+  const { verticalAngles: v, horizontalAngles: h, candela } = value.profile;
+  if (!v.length || v.length > 4096 || !h.length || h.length > 4096 || v.length * h.length > 1048576 || candela.length !== v.length * h.length) throw new RangeError("Invalid photometric profile table dimensions");
+  for (const [list, max] of [[v, 180], [h, 360]] as const) {
+    for (let i = 0; i < list.length; i++) if (!Number.isFinite(list[i]) || list[i]! < 0 || list[i]! > max || (i > 0 && list[i]! <= list[i - 1]!)) throw new RangeError("Photometric angles must be finite and strictly increasing");
+  }
+  const end = h[h.length - 1];
+  const expected = h.length === 1 ? "rotational" : end === 90 ? "quadrant" : end === 180 ? "bilateral" : end === 360 ? "none" : undefined;
+  if (h[0] !== 0 || value.profile.symmetry !== expected) throw new RangeError("Photometric symmetry and horizontal angles disagree");
+  if (candela.some((x) => !Number.isFinite(x) || x < 0)) throw new RangeError("Photometric candelas must be finite and non-negative");
+  if (value.scale !== undefined && (!Number.isFinite(value.scale) || value.scale < 0)) throw new RangeError("Photometric scale must be finite and non-negative");
+  if (value.rotation !== undefined && !Number.isFinite(value.rotation)) throw new RangeError("Photometric rotation must be finite");
+}
+
+function validateRigProjection(value: LightingRigProjectedImage): void {
+  if (value.texture?.kind !== "aura-asset-ref" || value.texture.type !== "texture") throw new TypeError("Projected image requires an admitted texture");
+  if (value.rotation !== undefined && !Number.isFinite(value.rotation)) throw new RangeError("Projection rotation must be finite");
+  if (value.offset && (value.offset.length !== 2 || value.offset.some((x) => !Number.isFinite(x)))) throw new RangeError("Projection offset must contain two finite values");
+  if (value.scale && (value.scale.length !== 2 || value.scale.some((x) => !Number.isFinite(x) || x === 0))) throw new RangeError("Projection scale must contain two finite non-zero values");
+}
+
+function sampleProfile(profile: LightingRigProfileData, vertical: number, horizontal: number): number {
+  const v = profile.verticalAngles, h = profile.horizontalAngles;
+  if (vertical < v[0]! || vertical > v[v.length - 1]!) return 0;
+  let angle = ((horizontal % 360) + 360) % 360;
+  if (profile.symmetry === "quadrant") {
+    if (angle > 180) angle = 360 - angle;
+    if (angle > 90) angle = 180 - angle;
+  } else if (profile.symmetry === "bilateral" && angle > 180) angle = 360 - angle;
+  const bracket = (array: readonly number[], target: number): readonly [number, number, number] => {
+    if (array.length === 1 || target <= array[0]!) return [0, 0, 0];
+    const last = array.length - 1;
+    if (target >= array[last]!) return [last, last, 0];
+    let lo = 0, hi = last;
+    while (hi - lo > 1) { const mid = (hi + lo) >> 1; if (array[mid]! <= target) lo = mid; else hi = mid; }
+    return [lo, hi, (target - array[lo]!) / (array[hi]! - array[lo]!)];
+  };
+  const [v0, v1, vt] = bracket(v, vertical), [h0, h1, ht] = bracket(h, angle);
+  const a = profile.candela[h0 * v.length + v0]!, b = profile.candela[h0 * v.length + v1]!;
+  const c = profile.candela[h1 * v.length + v0]!, d = profile.candela[h1 * v.length + v1]!;
+  return (a + (b - a) * vt) * (1 - ht) + (c + (d - c) * vt) * ht;
+}
+
+/**
+ * CPU reference for point/spot profile direction and projected-image mapping.
+ * The returned linear RGB is candela multiplied by the image and shadow term;
+ * range, cone penumbra, BRDF and inverse-square distance falloff are separate.
+ * The image callback must sample the admitted texture in linear RGB.
+ */
+export function evaluateLightingRigLightAt(
+  light: LightingRigLightDescriptor,
+  point: readonly [number, number, number],
+  options: { readonly shadowVisibility?: number; readonly sampleProjection?: (u: number, v: number) => readonly [number, number, number] } = {}
+): { readonly candela: number; readonly uv: readonly [number, number] | null; readonly rgb: readonly [number, number, number] } {
+  if (light.kind !== "point" && light.kind !== "spot") throw new RangeError("Reference evaluation requires a point or spot light");
+  if (point.length !== 3 || point.some((v) => !Number.isFinite(v))) throw new RangeError("Point must contain three finite coordinates");
+  const visibility = options.shadowVisibility ?? 1;
+  if (!Number.isFinite(visibility) || visibility < 0 || visibility > 1) throw new RangeError("shadowVisibility must be in [0, 1]");
+  if (light.photometricProfile) validateRigProfile(light.photometricProfile);
+  if (light.projectedImage) validateRigProjection(light.projectedImage);
+  const delta = [point[0] - light.position[0], point[1] - light.position[1], point[2] - light.position[2]] as const;
+  const distance = Math.hypot(...delta);
+  if (distance === 0) throw new RangeError("Reference point cannot coincide with the light");
+  const direction = normalize(light.direction);
+  const reference: readonly [number, number, number] = Math.abs(direction[1]) < 0.99 ? [0, 1, 0] : [0, 0, 1];
+  const right = normalize(cross(direction, reference)), up = normalize(cross(right, direction));
+  const dot = (a: readonly number[], b: readonly number[]): number => a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]!;
+  const x = dot(delta, right), y = dot(delta, up), z = dot(delta, direction);
+  const vertical = Math.acos(clamp(z / distance, -1, 1)) * 180 / Math.PI;
+  const rotation = light.photometricProfile?.rotation ?? 0;
+  const horizontal = (Math.atan2(y, x) - rotation) * 180 / Math.PI;
+  const candela = light.photometricProfile
+    ? sampleProfile(light.photometricProfile.profile, vertical, horizontal) * (light.photometricProfile.scale ?? 1)
+    : light.intensity;
+  let uv: readonly [number, number] | null = null;
+  let image: readonly [number, number, number] = [1, 1, 1];
+  if (light.projectedImage) {
+    if (!options.sampleProjection) throw new Error("A projected image requires a linear texture sampler");
+    if (z <= 0 || !(light.spotAngle > 0 && light.spotAngle < Math.PI / 2)) return { candela, uv: null, rgb: [0, 0, 0] };
+    const t = Math.tan(light.spotAngle) * z;
+    // Top-left image origin: world-space up projects toward decreasing v.
+    const qx = x / (2 * t), qy = -y / (2 * t);
+    const rot = light.projectedImage.rotation ?? 0, cs = Math.cos(rot), sn = Math.sin(rot);
+    const sx = light.projectedImage.scale?.[0] ?? 1, sy = light.projectedImage.scale?.[1] ?? 1;
+    uv = [0.5 + (cs * qx - sn * qy) * sx + (light.projectedImage.offset?.[0] ?? 0), 0.5 + (sn * qx + cs * qy) * sy + (light.projectedImage.offset?.[1] ?? 0)];
+    if (uv[0] < 0 || uv[0] > 1 || uv[1] < 0 || uv[1] > 1) return { candela, uv, rgb: [0, 0, 0] };
+    image = options.sampleProjection(...uv);
+    if (image.length !== 3 || image.some((v) => !Number.isFinite(v) || v < 0)) throw new RangeError("Projection sampler must return three finite non-negative linear components");
+  }
+  return { candela, uv, rgb: [candela * light.color[0] * image[0] * visibility, candela * light.color[1] * image[1] * visibility, candela * light.color[2] * image[2] * visibility] };
 }
 
 function normalize(value: readonly [number, number, number]): readonly [number, number, number] {

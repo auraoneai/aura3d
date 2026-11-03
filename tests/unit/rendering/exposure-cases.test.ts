@@ -7,7 +7,7 @@
  * exposure-parity.test.ts and names the cause of each gap.
  *
  * Two kinds of check, kept apart on purpose:
- *   - engine-backed: values read from the engine itself (the ACES constants in the generated output chunk, the runtime
+ *   - engine-backed: values read from the engine itself (the ACES expressions in the generated output chunk, the runtime
  *     environment the compiler builds, the SH9 irradiance, the probe bind). These fail when Lighting, colour management or
  *     environment compilation change.
  *   - measurement-backed: the remote rows in evidence/exposure-parity/wp6/cases.json (written by
@@ -16,17 +16,21 @@
  * The decisions are in evidence/exposure-parity/README.md. The bench sources are not pinned here: the bench lane may fix them.
  */
 import { readFileSync } from "node:fs";
+import * as ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { scene } from "@aura3d/engine";
 import type { AuraSceneSnapshot } from "@aura3d/engine";
 import { createProductionRuntimeEnvironment, explicitEnvironmentResolution, prd02ProbeBindIntensities } from "../../../packages/engine/src/agent-api/compiler/environment";
 import { qrPrimitiveMeshFor } from "../../../packages/engine/src/agent-api/compiler/primitives";
+import { linearToSrgbChannel, srgbToLinearChannel } from "../../../packages/rendering/src/ColorManagement";
 import { ambientToExitRadiance } from "../../../packages/rendering/src/LightUniforms";
 import { decodeHdrEquirect } from "../../../packages/rendering/src/environment/HdrEquirect";
 import { evaluateSH9Irradiance, projectEquirectToSH9 } from "../../../packages/rendering/src/environment/SphericalHarmonics";
-import { OUTPUT_SRGB_CHUNK_GLSL } from "../../../packages/rendering/src/program/ProgramGenerator";
+import { outputFragmentGlsl } from "../../../packages/rendering/src/output/ToneMappingOperators.glsl";
+import { acesFilmicToneMapping } from "../../../packages/rendering/src/post/ToneOperators";
+import { OUTPUT_SRGB_CHUNK_GLSL, generateProgramImpl } from "../../../packages/rendering/src/program/ProgramGenerator";
+import { normalizeProgramFeatures, PROGRAM_OUTPUT_SRGB_FEATURE } from "../../../packages/rendering/src/program/ProgramFeatures";
 import { a3dHemisphereIrradiance } from "../../../packages/rendering/src/shaders/chunks/lighting_mirrors";
-import { linearToSrgbChannel, lumaOfSrgb255, srgbHexToLinear, threeAcesFilmic, threeAcesLuma255, THREE_RECIPROCAL_PI } from "../../browser/exposure-reference";
 
 type Vec3 = [number, number, number];
 
@@ -51,44 +55,180 @@ const snapshot = (nodes: readonly unknown[]): AuraSceneSnapshot => ({
 });
 
 const encode255 = (linear: Vec3): Vec3 => [linearToSrgbChannel(linear[0]) * 255, linearToSrgbChannel(linear[1]) * 255, linearToSrgbChannel(linear[2]) * 255];
+const lumaOfSrgb255 = (rgb: Vec3): number => rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+const srgbHexToLinear = (hex: string): Vec3 => {
+  const value = Number.parseInt(hex.replace("#", ""), 16);
+  return [16, 8, 0].map((shift) => srgbToLinearChannel(((value >> shift) & 255) / 255)) as Vec3;
+};
+const referenceAcesLuma255 = (linear: Vec3): number => lumaOfSrgb255(encode255([...acesFilmicToneMapping(linear, 1)]));
 const lambert = (albedo: Vec3, radiance: Vec3): Vec3 => [albedo[0] * radiance[0], albedo[1] * radiance[1], albedo[2] * radiance[2]];
 const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const unit = (v: Vec3): Vec3 => { const l = Math.hypot(...v); return [v[0] / l, v[1] / l, v[2] / l]; };
 
 /**
- * The engine's own ACES operator, read from the GLSL chunk the generated programs contain (`OUTPUT_SRGB_CHUNK_GLSL`):
- * the two mat3 constants, the RRT fit coefficients and the 1/0.6 pre-scale are parsed out of the source text and applied
- * with the same structure. If someone edits the operator in the engine, this changes with it.
+ * Execute the actual straight-line GLSL expressions rather than extracting
+ * constants and silently assuming an operator structure. This deliberately
+ * small interpreter fails on unsupported syntax; it is not a GPU compiler and
+ * uses JS numbers rather than shader f32 rounding.
  */
-function engineAcesFilmic(linear: Vec3): Vec3 {
-  const glsl = OUTPUT_SRGB_CHUNK_GLSL;
-  const mat3Columns = (name: string): Vec3[] => {
-    const body = new RegExp(`${name}\\s*=\\s*mat3\\(([\\s\\S]*?)\\);`).exec(glsl)?.[1];
-    if (!body) throw new Error(`no ${name} in OUTPUT_SRGB_CHUNK_GLSL`);
-    const cols = [...body.matchAll(/vec3\(([^)]*)\)/g)].map((m) => m[1]!.split(",").map(Number) as Vec3);
-    if (cols.length !== 3) throw new Error(`${name} is not three columns`);
-    return cols;
+type ShaderValue = number | Vec3;
+const vectorOp = (a: ShaderValue, b: ShaderValue, op: (x: number, y: number) => number): ShaderValue => {
+  if (typeof a === "number" && typeof b === "number") return op(a, b);
+  return [0, 1, 2].map((i) => op(typeof a === "number" ? a : a[i]!, typeof b === "number" ? b : b[i]!)) as Vec3;
+};
+
+function executeShader(source: string, entry: string, input: Vec3): Vec3 {
+  const clean = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  const call = (name: string, args: ShaderValue[]): ShaderValue => {
+    if (name === "vec3") {
+      if (args.length === 1 && typeof args[0] === "number") return [args[0], args[0], args[0]];
+      if (args.length === 3 && args.every((v) => typeof v === "number")) return args as Vec3;
+      throw new Error("Unsupported vec3 constructor");
+    }
+    if (name === "dot") {
+      if (!Array.isArray(args[0]) || !Array.isArray(args[1])) throw new Error("dot requires vectors");
+      return dot(args[0], args[1]);
+    }
+    if (name === "max") return vectorOp(args[0]!, args[1]!, Math.max);
+    if (name === "pow") return vectorOp(args[0]!, args[1]!, Math.pow);
+    if (name === "step") return vectorOp(args[0]!, args[1]!, (edge, x) => x < edge ? 0 : 1);
+    if (name === "clamp") return vectorOp(vectorOp(args[0]!, args[1]!, Math.max), args[2]!, Math.min);
+    if (name === "mix") {
+      const difference = vectorOp(args[1]!, args[0]!, (x, y) => x - y);
+      return vectorOp(args[0]!, vectorOp(difference, args[2]!, (x, y) => x * y), (x, y) => x + y);
+    }
+    const declaration = new RegExp(`\\bvec3\\s+${name}\\s*\\(([^)]*)\\)\\s*\\{([^{}]*)\\}`, "g");
+    const matches = [...clean.matchAll(declaration)];
+    if (matches.length !== 1) throw new Error(`Expected one straight-line GLSL function ${name}, found ${matches.length}`);
+    const parameters = matches[0]![1]!.split(",").map((parameter) => parameter.trim().split(/\s+/).at(-1)!);
+    if (parameters.length !== args.length) throw new Error(`Wrong argument count for ${name}`);
+    const variables = new Map<string, ShaderValue>(parameters.map((parameter, i) => [parameter, args[i]!]));
+    const body = matches[0]![2]!.replace(/\bvec3\s+(\w+)\s*=/g, "const $1 =");
+    const parsed = ts.createSourceFile("output-shader.ts", `{${body}}`, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
+    const diagnostics = (parsed as ts.SourceFile & { parseDiagnostics: readonly ts.Diagnostic[] }).parseDiagnostics;
+    if (diagnostics.length > 0) throw new Error(ts.flattenDiagnosticMessageText(diagnostics[0]!.messageText, "\n"));
+    const block = parsed.statements[0];
+    if (!block || !ts.isBlock(block)) throw new Error(`Invalid body for ${name}`);
+    const evaluate = (node: ts.Expression): ShaderValue => {
+      if (ts.isNumericLiteral(node)) return Number(node.text);
+      if (ts.isParenthesizedExpression(node)) return evaluate(node.expression);
+      if (ts.isIdentifier(node)) {
+        const value = variables.get(node.text);
+        if (value === undefined) throw new Error(`Unknown GLSL identifier ${node.text}`);
+        return value;
+      }
+      if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
+        return vectorOp(0, evaluate(node.operand), (x, y) => x - y);
+      }
+      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+        return call(node.expression.text, node.arguments.map(evaluate));
+      }
+      if (ts.isBinaryExpression(node)) {
+        const operation = node.operatorToken.kind === ts.SyntaxKind.PlusToken ? (x: number, y: number) => x + y
+          : node.operatorToken.kind === ts.SyntaxKind.MinusToken ? (x: number, y: number) => x - y
+          : node.operatorToken.kind === ts.SyntaxKind.AsteriskToken ? (x: number, y: number) => x * y
+          : node.operatorToken.kind === ts.SyntaxKind.SlashToken ? (x: number, y: number) => x / y : undefined;
+        if (operation) return vectorOp(evaluate(node.left), evaluate(node.right), operation);
+      }
+      throw new Error(`Unsupported GLSL expression: ${node.getText(parsed)}`);
+    };
+    for (const statement of block.statements) {
+      if (ts.isVariableStatement(statement)) {
+        for (const variable of statement.declarationList.declarations) {
+          if (!ts.isIdentifier(variable.name) || !variable.initializer) throw new Error(`Unsupported GLSL variable in ${name}`);
+          variables.set(variable.name.text, evaluate(variable.initializer));
+        }
+      } else if (ts.isReturnStatement(statement) && statement.expression) {
+        return evaluate(statement.expression);
+      } else throw new Error(`Unsupported GLSL statement in ${name}: ${statement.getText(parsed)}`);
+    }
+    throw new Error(`Missing return in ${name}`);
   };
-  const apply = (cols: Vec3[], v: Vec3): Vec3 => [0, 1, 2].map((r) => cols[0]![r]! * v[0] + cols[1]![r]! * v[1] + cols[2]![r]! * v[2]) as Vec3;
-  const rrt = /v \* \(v \+ ([0-9.]+)\) - ([0-9.]+);[\s\S]*?v \* \(([0-9.]+) \* v \+ ([0-9.]+)\) \+ ([0-9.]+);/.exec(glsl);
-  const prescale = /color \/= ([0-9.]+);/.exec(glsl);
-  if (!rrt || !prescale) throw new Error("operator constants not found in OUTPUT_SRGB_CHUNK_GLSL");
-  const [a1, a2, b1, b2, b3] = rrt.slice(1).map(Number) as [number, number, number, number, number];
-  const fit = (x: number): number => (x * (x + a1) - a2) / (x * (b1 * x + b2) + b3);
-  const scaled = linear.map((c) => c / Number(prescale[1])) as Vec3;
-  const mapped = apply(mat3Columns("ACESInputMat"), scaled).map(fit) as Vec3;
-  return apply(mat3Columns("ACESOutputMat"), mapped).map((c) => Math.min(1, Math.max(0, c))) as Vec3;
+  const result = call(entry, [input]);
+  if (!Array.isArray(result) || result.length !== 3 || result.some((value) => !Number.isFinite(value))) {
+    throw new Error(`${entry} did not return a finite vec3`);
+  }
+  return result;
 }
-/** Display bytes after Aura3D's default encode: the engine's ACES, then the sRGB OETF. */
-const engineAcesBytes = (linear: Vec3): Vec3 => encode255(engineAcesFilmic(linear));
+
+const engineAcesFilmic = (linear: Vec3): Vec3 => executeShader(OUTPUT_SRGB_CHUNK_GLSL, "ACESFilmicToneMapping", linear);
+/** Display bytes after Aura3D's default encode, evaluated from its GLSL. */
+const engineAcesBytes = (linear: Vec3): Vec3 => executeShader(OUTPUT_SRGB_CHUNK_GLSL, "a3dEncodeForCanvas", linear).map((v) => v * 255) as Vec3;
 
 describe("engine output operator", () => {
-  it("is r185 ACESFilmic: the engine chunk and the reference operator agree on a spread of linear colours", () => {
-    const samples: Vec3[] = [[0.02, 0.02, 0.02], [0.18, 0.18, 0.18], [0.686, 0.144, 0.042], [1, 1, 1], [3, 2, 0.5], [0.05, 0.4, 0.1]];
-    for (const c of samples) {
-      const engine = engineAcesFilmic(c);
-      const reference = threeAcesFilmic(c);
-      for (let i = 0; i < 3; i += 1) expect(engine[i]!).toBeCloseTo(reference[i]!, 4);
+  const samples: Vec3[] = [[0, 0, 0], [0.02, 0.02, 0.02], [0.18, 0.18, 0.18], [0.686, 0.144, 0.042], [1, 1, 1], [3, 2, 0.5], [0.05, 0.4, 0.1], [-0.1, 0.18, 8]];
+
+  it("evaluates the emitted ACES expressions against the independent CPU fit across scene-linear colours", () => {
+    for (const color of samples) {
+      const engine = engineAcesFilmic(color);
+      const reference = acesFilmicToneMapping(color, 1);
+      for (let i = 0; i < 3; i += 1) expect(engine[i]!).toBeCloseTo(reference[i]!, 10);
+    }
+  });
+
+  it("matches fixed decimal evaluations of the published fit and Aura3D viewing scale", () => {
+    // Independent high-precision evaluation of the fit, including the 1/0.6
+    // viewing scale. These are Aura3D contract values, not the ACES standard's
+    // full reference rendering transform.
+    const cases: [Vec3, Vec3][] = [
+      [[0.18, 0.18, 0.18], [0.213105445714345, 0.213105445714345, 0.213103314659888]],
+      [[1, 0, 0], [0.957333401755674, 0.005323721430323, 0.007157749298928]],
+      [[0, 1, 0], [0.293359256012289, 0.774607322032973, 0.099433903982684]],
+      [[0, 0, 1], [0, 0, 0.772829523633324]],
+      [[3, 2, 0.5], [0.942936934750068, 0.88958134981237, 0.681064790727651]]
+    ];
+    for (const [input, expected] of cases) {
+      const actual = engineAcesFilmic(input);
+      for (let i = 0; i < 3; i += 1) expect(actual[i]!).toBeCloseTo(expected[i]!, 10);
+    }
+  });
+
+  it("preserves the direct and post output curve, exposure, and sRGB transfer in generated shaders", () => {
+    const direct = generateProgramImpl(normalizeProgramFeatures({ features: { [PROGRAM_OUTPUT_SRGB_FEATURE]: true } })).fragment;
+    const linear = generateProgramImpl(normalizeProgramFeatures({})).fragment;
+    const post = outputFragmentGlsl({ toneMapping: "aces", backgroundCoverage: false, overlay: false });
+    expect(direct).toContain("a3dColor = a3dEncodeForCanvas(a3dColor);");
+    expect(linear).not.toContain("a3dEncodeForCanvas");
+    expect(post).toContain("#define TONE_MAP(c) ACESFilmicToneMapping(c)");
+    expect(post).toContain("TONE_MAP(hdr * u_exposure)");
+    expect(post).toContain("a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0))");
+    for (const color of samples) for (const exposure of [0, 0.25, 1, 2, 4]) {
+      const exposed = color.map((v) => v * exposure) as Vec3;
+      const expected = encode255([...acesFilmicToneMapping(color, exposure)]).map((v) => v / 255);
+      const fromDirect = executeShader(direct, "a3dEncodeForCanvas", exposed);
+      const fromPost = executeShader(post, "a3dLinearToSRGB", executeShader(post, "ACESFilmicToneMapping", exposed));
+      for (let i = 0; i < 3; i += 1) {
+        expect(fromDirect[i]!).toBeCloseTo(expected[i]!, 10);
+        expect(fromPost[i]!).toBeCloseTo(expected[i]!, 10);
+      }
+    }
+    for (const value of [0, 0.00313079, 0.0031308, 0.00313081, 0.18, 1]) {
+      const encoded = executeShader(post, "a3dLinearToSRGB", [value, value, value]);
+      expect(encoded[0]).toBeCloseTo(linearToSrgbChannel(value), 6);
+    }
+    // W3C CSS Color 4 §19: independently evaluated sRGB transfer points.
+    // https://www.w3.org/TR/css-color-4/#color-conversion-code
+    for (const [value, expected] of [[0, 0], [0.0031308, 0.040449936], [0.18, 0.461356129500442], [1, 1]]) {
+      const encoded = executeShader(post, "a3dLinearToSRGB", [value!, value!, value!]);
+      expect(encoded[0]).toBeCloseTo(expected!, 6);
+    }
+  });
+
+  it("detects changes to shader arithmetic, not just its coefficients", () => {
+    // This independent synthetic pair has identical coefficients. A helper
+    // that merely reads those coefficients and assumes an equation would give
+    // both programs the same answer.
+    const source = `vec3 probe(vec3 value) {
+      vec3 scaled = value * vec3(0.5, 1.0, 2.0);
+      return (scaled + 0.25) * scaled - 0.125;
+    }`;
+    const mutant = source.replace("- 0.125", "+ 0.125");
+    const sample: Vec3 = [0.2, 0.4, 0.8];
+    const actual = executeShader(source, "probe", sample);
+    const changed = executeShader(mutant, "probe", sample);
+    for (const [i, expected] of [-0.09, 0.135, 2.835].entries()) {
+      expect(actual[i]!).toBeCloseTo(expected, 12);
+      expect(changed[i]! - actual[i]!).toBeCloseTo(0.25, 12);
     }
   });
 });
@@ -113,7 +253,7 @@ describe("cube: ambient only (lights.ambient 1 on #d86a3a)", () => {
   const face = lambert(albedo, ambientToExitRadiance(env.lighting.color ?? [1, 1, 1], env.lighting.intensity ?? 0));
 
   it("face radiance is A * 1 / PI, the three r185 value (computed from the engine's compiled lighting)", () => {
-    for (let i = 0; i < 3; i += 1) expect(face[i]! / (albedo[i]! * THREE_RECIPROCAL_PI)).toBeCloseTo(1, 6);
+    for (let i = 0; i < 3; i += 1) expect(face[i]! / (albedo[i]! / Math.PI)).toBeCloseTo(1, 6);
   });
 
   // Cause 1 (tone map): the bench's three source leaves toneMapping at its default (NoToneMapping); Aura3D's default is ACES.
@@ -202,7 +342,7 @@ describe("PBR viewer: HDRI environment + directional light", () => {
   const groundLuma = (sun: number, environment: number, radianceUp: Vec3): number => {
     const direct = sunColor.map((c) => (c * sun * Math.max(0, dot([0, 1, 0], sunDir))) / Math.PI) as Vec3;
     const indirect = radianceUp.map((c) => c * environment) as Vec3;
-    return threeAcesLuma255(lambert(ground, [direct[0] + indirect[0], direct[1] + indirect[1], direct[2] + indirect[2]]));
+    return referenceAcesLuma255(lambert(ground, [direct[0] + indirect[0], direct[1] + indirect[1], direct[2] + indirect[2]]));
   };
   const auraGround = (sun: number, authoredEnvironment: number): number => groundLuma(sun, hdriEnv(authoredEnvironment).lighting.environmentMapIntensity ?? 0, engineUp);
   const threeGround = (sun: number, authoredEnvironment: number): number => groundLuma(sun, authoredEnvironment, bruteForceUp);
@@ -263,7 +403,7 @@ describe("PBR viewer: HDRI environment + directional light", () => {
 
   it("the background gap is a tone-map difference: three's composer maps #1a1d24 down to luma 11, Aura3D shows the authored colour (29)", () => {
     const bg = srgbHexToLinear("#1a1d24");
-    expect(Math.abs(threeAcesLuma255(bg) - region("pbr:three:1.1:0.7:nobloom", "top"))).toBeLessThan(1.5);
+    expect(Math.abs(referenceAcesLuma255(bg) - region("pbr:three:1.1:0.7:nobloom", "top"))).toBeLessThan(1.5);
     expect(Math.abs(lumaOfSrgb255([0x1a, 0x1d, 0x24]) - region("pbr:aura:1.1:0.7:nobloom:ref", "top"))).toBeLessThan(1.5);
   });
 });
@@ -350,7 +490,7 @@ describe("forest: hemisphere light + sun", () => {
     }
   });
 
-  const displayLuma = (radiance: Vec3): number => threeAcesLuma255(radiance);
+  const displayLuma = (radiance: Vec3): number => referenceAcesLuma255(radiance);
   const groundAlbedo = srgbHexToLinear("#566b4a");
   const sunOnlyRadiance = (): Vec3 => lambert(groundAlbedo, sunColor.map((c) => c * sunIntensity * sunDir[1] / Math.PI) as Vec3);
   const hemiOnlyEngine = (): Vec3 => lambert(groundAlbedo, engineAmbient);

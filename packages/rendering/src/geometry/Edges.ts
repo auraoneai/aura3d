@@ -1,12 +1,3 @@
-/**
- * threejs-parity (§5.2, lane L2-06) — `EdgesGeometry` verbatim port.
- *
- * Every triangle's three edges are hashed on 4-decimal quantized vertex
- * positions; when the reverse edge is later seen, the shared edge is emitted
- * iff the two face normals' dot ≤ cos(thresholdAngle). Unmatched (boundary)
- * edges are appended in insertion order. Output = line-segment vertex pairs.
- */
-
 import type { ParityMesh } from "./Support";
 
 export interface EdgesInput {
@@ -14,105 +5,78 @@ export interface EdgesInput {
   readonly indices?: ArrayLike<number>;
 }
 
-const DEG2RAD = Math.PI / 180;
+type Point = readonly [number, number, number];
+interface Edge {
+  readonly incidents: { readonly normal: Point; readonly endpoints: readonly [Point, Point]; readonly order: number }[];
+}
 
+/**
+ * Extract boundary edges and edges whose incident face normals differ by at
+ * least `thresholdAngle` degrees. Vertices are identified by coordinates
+ * rounded to 1e-4, allowing duplicated vertices at material or UV seams to
+ * meet. For non-manifold edges, any qualifying pair includes the edge once.
+ */
 export function edgesParityMesh(input: EdgesInput, thresholdAngle = 1): ParityMesh {
-  const precision = Math.pow(10, 4);
-  const thresholdDot = Math.cos(DEG2RAD * thresholdAngle);
-  const position = input.positions;
-  const indexAttr = input.indices;
-  const indexCount = indexAttr ? indexAttr.length : position.length / 3;
-
-  const hashes: string[] = ["", "", ""];
-  const edgeData = new Map<string, { index0: number; index1: number; normal: readonly [number, number, number] } | null>();
-  const vertices: number[] = [];
-
-  const readVertex = (i: number): readonly [number, number, number] => [
-    position[i * 3]!,
-    position[i * 3 + 1]!,
-    position[i * 3 + 2]!
-  ];
-
-  const triangleNormal = (a: readonly [number, number, number], b: readonly [number, number, number], c: readonly [number, number, number]): readonly [number, number, number] => {
-    // three's Triangle.getNormal: (c−b) × (a−b), normalized (or zero).
-    const cbx = c[0] - b[0];
-    const cby = c[1] - b[1];
-    const cbz = c[2] - b[2];
-    const abx = a[0] - b[0];
-    const aby = a[1] - b[1];
-    const abz = a[2] - b[2];
-    let nx = cby * abz - cbz * aby;
-    let ny = cbz * abx - cbx * abz;
-    let nz = cbx * aby - cby * abx;
-    const lenSq = nx * nx + ny * ny + nz * nz;
-    if (lenSq > 0) {
-      const s = 1 / Math.sqrt(lenSq);
-      nx *= s;
-      ny *= s;
-      nz *= s;
-    } else {
-      nx = 0;
-      ny = 0;
-      nz = 0;
-    }
-    return [nx, ny, nz];
+  if (!Number.isFinite(thresholdAngle)) throw new RangeError("Edge angle must be finite.");
+  if (input.positions.length % 3 !== 0) throw new RangeError("Position data must contain complete 3D vertices.");
+  const cornerCount = input.indices?.length ?? input.positions.length / 3;
+  if (cornerCount % 3 !== 0) throw new RangeError("Edge input must contain complete triangles.");
+  const vertexCount = input.positions.length / 3;
+  const pointAt = (corner: number): Point => {
+    const index = input.indices ? input.indices[corner]! : corner;
+    if (!Number.isInteger(index) || index < 0 || index >= vertexCount) throw new RangeError("Edge index is outside the position buffer.");
+    const point: Point = [input.positions[index * 3]!, input.positions[index * 3 + 1]!, input.positions[index * 3 + 2]!];
+    if (!point.every(Number.isFinite)) throw new RangeError("Edge positions must be finite.");
+    return point;
   };
-
-  const hashOf = (v: readonly [number, number, number]): string =>
-    `${Math.round(v[0] * precision)},${Math.round(v[1] * precision)},${Math.round(v[2] * precision)}`;
-
-  for (let i = 0; i < indexCount; i += 3) {
-    const i0 = indexAttr ? indexAttr[i]! : i;
-    const i1 = indexAttr ? indexAttr[i + 1]! : i + 1;
-    const i2 = indexAttr ? indexAttr[i + 2]! : i + 2;
-
-    const a = readVertex(i0);
-    const b = readVertex(i1);
-    const c = readVertex(i2);
-    const normal = triangleNormal(a, b, c);
-    const verts = [a, b, c] as const;
-
-    hashes[0] = hashOf(a);
-    hashes[1] = hashOf(b);
-    hashes[2] = hashOf(c);
-
-    if (hashes[0] === hashes[1] || hashes[1] === hashes[2] || hashes[2] === hashes[0]) {
-      continue;
-    }
-
-    for (let j = 0; j < 3; j += 1) {
-      const jNext = (j + 1) % 3;
-      const vecHash0 = hashes[j]!;
-      const vecHash1 = hashes[jNext]!;
-      const v0 = verts[j]!;
-      const v1 = verts[jNext]!;
-      const indexJ = [i0, i1, i2][j]!;
-      const indexJNext = [i0, i1, i2][jNext]!;
-
-      const hash = `${vecHash0}_${vecHash1}`;
-      const reverseHash = `${vecHash1}_${vecHash0}`;
-
-      const sibling = edgeData.get(reverseHash);
-      if (edgeData.has(reverseHash) && sibling) {
-        if (normal[0] * sibling.normal[0] + normal[1] * sibling.normal[1] + normal[2] * sibling.normal[2] <= thresholdDot) {
-          vertices.push(v0[0], v0[1], v0[2]);
-          vertices.push(v1[0], v1[1], v1[2]);
-        }
-        edgeData.set(reverseHash, null);
-      } else if (!edgeData.has(hash)) {
-        edgeData.set(hash, { index0: indexJ, index1: indexJNext, normal });
+  const keyOf = (p: Point): string => p.map((v) => Math.round(v * 10_000)).join(",");
+  const edges = new Map<string, Edge>();
+  let order = 0;
+  for (let i = 0; i < cornerCount; i += 3) {
+    const triangle = [pointAt(i), pointAt(i + 1), pointAt(i + 2)] as const;
+    const keys = triangle.map(keyOf);
+    if (new Set(keys).size !== 3) continue;
+    const u: Point = [triangle[1][0] - triangle[0][0], triangle[1][1] - triangle[0][1], triangle[1][2] - triangle[0][2]];
+    const v: Point = [triangle[2][0] - triangle[0][0], triangle[2][1] - triangle[0][1], triangle[2][2] - triangle[0][2]];
+    const cross: Point = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    const magnitude = Math.hypot(...cross);
+    if (magnitude === 0) continue;
+    const normal: Point = [cross[0] / magnitude, cross[1] / magnitude, cross[2] / magnitude];
+    for (let side = 0; side < 3; side += 1) {
+      const next = (side + 1) % 3;
+      const key = keys[side]! < keys[next]! ? `${keys[side]}|${keys[next]}` : `${keys[next]}|${keys[side]}`;
+      const pair = [triangle[side]!, triangle[next]!] as const;
+      const edge = edges.get(key);
+      const incident = { normal, endpoints: pair, order: order++ };
+      if (edge) {
+        edge.incidents.push(incident);
+      } else {
+        edges.set(key, { incidents: [incident] });
       }
     }
   }
-
-  for (const entry of edgeData.values()) {
-    if (entry) {
-      const v0 = readVertex(entry.index0);
-      const v1 = readVertex(entry.index1);
-      vertices.push(v0[0], v0[1], v0[2]);
-      vertices.push(v1[0], v1[1], v1[2]);
+  const threshold = Math.cos(thresholdAngle * Math.PI / 180);
+  const shared: { readonly order: number; readonly endpoints: readonly [Point, Point] }[] = [];
+  const boundary: number[] = [];
+  for (const edge of edges.values()) {
+    if (edge.incidents.length === 1) {
+      const pair = edge.incidents[0]!.endpoints;
+      boundary.push(...pair[0], ...pair[1]);
+      continue;
     }
+    let closingIncident: Edge["incidents"][number] | undefined;
+    for (let b = 1; b < edge.incidents.length && !closingIncident; b += 1) {
+      for (let a = 0; a < b; a += 1) {
+        const first = edge.incidents[a]!.normal;
+        const second = edge.incidents[b]!.normal;
+        if (first[0] * second[0] + first[1] * second[1] + first[2] * second[2] <= threshold) {
+          closingIncident = edge.incidents[b];
+          break;
+        }
+      }
+    }
+    if (closingIncident) shared.push(closingIncident);
   }
-
-  return { positions: vertices };
+  shared.sort((a, b) => a.order - b.order);
+  return { positions: [...shared.flatMap(({ endpoints }) => [...endpoints[0], ...endpoints[1]]), ...boundary] };
 }

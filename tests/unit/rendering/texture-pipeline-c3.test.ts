@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ensureCompressedTextureSupport } from "../../../packages/assets/src";
+import { assets as engineAssets } from "../../../packages/engine/src/agent-api/AssetDecoders";
 import {
   findThreeCompatTextureSet,
   listThreeCompatPbrMaterials,
@@ -19,7 +20,7 @@ import {
 
 /** muse3jsparity-PRD C3: one-call decoder setup, anisotropy control, sRGB discipline. */
 describe("C3 one-call decoder setup with diagnostics", () => {
-  it("keeps draco/meshopt opt-in and fails closed without probe confirmation", async () => {
+  it("reports explicitly requested decoders and fails closed without probe confirmation", async () => {
     const diagnostics = await ensureCompressedTextureSupport(
       { draco: true, meshopt: true, ktx2: true },
       { dracoAvailable: false, meshoptAvailable: false, ktx2Available: false }
@@ -32,14 +33,53 @@ describe("C3 one-call decoder setup with diagnostics", () => {
     expect(diagnostics.chosenKtx2Target).toBe("rgba8");
   });
 
-  it("defaults draco/meshopt to unrequested and ktx2 to requested", async () => {
+  it.each([false, true])("defaults meshopt and KTX2 on, with lazy Draco, when probe availability is %s", async (available) => {
+    const probes = { dracoAvailable: available, meshoptAvailable: available, ktx2Available: available };
+    // Both omitted request and empty options use the same policy, independent of probe success.
+    for (const request of [undefined, {}]) {
+      const diagnostics = await ensureCompressedTextureSupport(request, probes);
+      expect(diagnostics.draco).toMatchObject({ requested: false, available });
+      expect(diagnostics.meshopt).toMatchObject({ requested: true, available });
+      expect(diagnostics.ktx2).toMatchObject({ requested: true, available });
+      expect(diagnostics.chosenKtx2Target).toBe(available ? "etc2-rgba8unorm" : "rgba8");
+      if (!available) expect(diagnostics.meshopt.detail).toMatch(/fail closed/);
+    }
+  });
+
+  it("preserves the default policy and mixed probe results through the engine decoder facade", async () => {
+    const probes = {
+      dracoAvailable: true,
+      meshoptAvailable: false,
+      ktx2Available: true,
+      gpuCompressedFormats: ["etc2"]
+    };
+    const diagnostics = await engineAssets.ensureDecoders(undefined, probes);
+    expect(diagnostics).toMatchObject({
+      draco: { requested: false, available: true },
+      meshopt: { requested: true, available: false },
+      ktx2: { requested: true, available: true },
+      chosenKtx2Target: "etc2-rgba8unorm"
+    });
+    expect(diagnostics).toEqual(await ensureCompressedTextureSupport(undefined, probes));
+  });
+
+  it("honors explicit opt-outs while reporting probed availability separately", async () => {
+    const dracoAvailable = vi.fn(() => true);
+    const meshoptAvailable = vi.fn(() => true);
+    const ktx2Available = vi.fn(async () => true);
     const diagnostics = await ensureCompressedTextureSupport(
-      {},
-      { dracoAvailable: false, meshoptAvailable: false, ktx2Available: false }
+      { draco: true, meshopt: false, ktx2: false, targetFormat: "astc-4x4-rgba-unorm" },
+      { dracoAvailable, meshoptAvailable, ktx2Available, gpuCompressedFormats: ["astc"] }
     );
-    expect(diagnostics.draco.requested).toBe(false);
-    expect(diagnostics.meshopt.requested).toBe(false);
-    expect(diagnostics.ktx2.requested).toBe(true);
+    expect(diagnostics.draco).toMatchObject({ requested: true, available: true });
+    expect(diagnostics.meshopt).toMatchObject({ requested: false, available: true });
+    expect(diagnostics.ktx2).toMatchObject({ requested: false, available: true });
+    expect(diagnostics.meshopt.detail).toMatch(/not requested/i);
+    expect(diagnostics.ktx2.detail).toMatch(/not requested/i);
+    expect(diagnostics.chosenKtx2Target).toBe("rgba8");
+    expect(dracoAvailable).toHaveBeenCalledOnce();
+    expect(meshoptAvailable).toHaveBeenCalledOnce();
+    expect(ktx2Available).toHaveBeenCalledOnce();
   });
 
   it("never reports success for a decoder no probe confirmed", async () => {
@@ -130,7 +170,7 @@ describe("C3 sRGB/linear discipline across presets", () => {
     }
   });
 
-  it("binds disciplined color spaces on TexturedPBRMaterial and rejects mistags", () => {
+  it("accepts color textures in their declared color space and rejects sRGB data maps", () => {
     const rgba8 = (fill: number): Uint8Array => new Uint8Array(2 * 2 * 4).fill(fill);
     const material = new TexturedPBRMaterial({
       baseColorTexture: new Texture({ width: 2, height: 2, colorSpace: "srgb", data: rgba8(128) }),
@@ -148,15 +188,14 @@ describe("C3 sRGB/linear discipline across presets", () => {
     const baseColor = material.getParameter("u_baseColorTexture");
     expect(isTextureBinding(baseColor) && baseColor.sampler.maxAnisotropy).toBe(8);
 
-    const mistagged = new TexturedPBRMaterial({
-      baseColorTexture: new Texture({ width: 2, height: 2, colorSpace: "linear", data: rgba8(128) })
-    });
-    const mistaggedBinding = mistagged.getParameter("u_baseColorTexture");
-    expect(isTextureBinding(mistaggedBinding)).toBe(true);
-    if (isTextureBinding(mistaggedBinding)) {
-      const validation = mistaggedBinding.validate();
-      expect(validation.ok).toBe(false);
-      expect(validation.diagnostics.join(" ")).toMatch(/must be srgb, got linear/);
+    const linearColor = new Texture({ width: 2, height: 2, colorSpace: "linear", data: rgba8(128) });
+    const linearMaterial = new TexturedPBRMaterial({ baseColorTexture: linearColor });
+    const linearBinding = linearMaterial.getParameter("u_baseColorTexture");
+    expect(isTextureBinding(linearBinding)).toBe(true);
+    if (isTextureBinding(linearBinding)) {
+      expect(linearBinding.validate().ok).toBe(true);
+      expect(linearBinding.texture).toBe(linearColor);
+      expect(linearBinding.texture?.colorSpace).toBe("linear");
     }
 
     const srgbNormal = new TextureBinding({

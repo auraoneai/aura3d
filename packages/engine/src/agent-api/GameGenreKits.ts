@@ -19,7 +19,7 @@ import {
 export interface GameKitFeelPort {
   emit(name: string, options?: { readonly strength?: number }): unknown;
 }
-import { createGameArcadeVehicle, createGameKinematicBody, type GameArcadeVehicleOptions, type GameKinematicBody } from "./GameRuntime.js";
+import { createGameArcadeVehicle, createGameKinematicBody, type GameArcadeVehicleOptions, type GameKinematicBody } from "./GameRuntimeCore.js";
 export interface GameKitVec2 {
   readonly x: number;
   readonly y: number;

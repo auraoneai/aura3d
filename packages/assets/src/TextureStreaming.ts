@@ -58,8 +58,19 @@ export function evaluateDistancePrioritizedMipResidency(
   if (!Number.isFinite(maxTextureBytes) || maxTextureBytes < 0) {
     throw new Error("Texture streaming maxTextureBytes must be finite and non-negative.");
   }
+  const ids = new Set<string>();
+  for (const candidate of candidates) {
+    if (!candidate.id || ids.has(candidate.id)) throw new Error(`Texture streaming candidate has a duplicate or empty id: ${candidate.id}`);
+    ids.add(candidate.id);
+    if (!Number.isFinite(candidate.distanceMeters) || candidate.distanceMeters < 0 || !Number.isFinite(candidate.priority ?? 0)) {
+      throw new Error("Texture streaming distance and priority must be finite, and distance must be non-negative.");
+    }
+    if (candidate.mipBytesCoarseToFine.some((bytes) => !Number.isSafeInteger(bytes) || bytes < 0)) {
+      throw new Error("Texture streaming mip sizes must be non-negative safe integers.");
+    }
+  }
   const ordered = [...candidates].sort((a, b) =>
-    (b.priority ?? 0) - (a.priority ?? 0) || a.distanceMeters - b.distanceMeters || (a.id < b.id ? -1 : 1)
+    (b.priority ?? 0) - (a.priority ?? 0) || a.distanceMeters - b.distanceMeters || a.id.localeCompare(b.id)
   );
   const requestedBytes = ordered.reduce(
     (total, candidate) => total + candidate.mipBytesCoarseToFine.reduce((sum, bytes) => sum + Math.max(0, bytes), 0),

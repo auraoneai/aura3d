@@ -1,0 +1,10 @@
+import type { BuildOptions, BuildResult } from "esbuild";
+export function licenseBanner(name: string, ...licenses: string[]): string;
+export function moduleCodec(source: string, name: string, banner: string): string;
+export function workerBundleOptions(root: string, entry: string, outfile: string): BuildOptions;
+export function assertSelfContainedWorker(source: string, label: string, marker: string): void;
+export function assertZstdWorkerPayload(source: string, license: string, provenance: unknown): void;
+export function assertZstdWorkerFactory(source: string): void;
+export function assertZstdPackageMetadata(rootManifest: Record<string, unknown>, assetsManifest: Record<string, unknown>): void;
+export function assertPackagedWorkerFactory(source: string): void;
+export function emitPackagedWorker(root: string, buildOverride?: (options: BuildOptions) => Promise<BuildResult<BuildOptions>>): Promise<void>;

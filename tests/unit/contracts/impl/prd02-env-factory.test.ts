@@ -148,11 +148,11 @@ describe("EnvironmentCache", () => {
 
   it("double acquire returns the same probe and ref-counts", async () => {
     const cache = new EnvironmentCache(new MockRenderDevice(), fakeFactory, async (k) => stubProbe(k.url ?? "x"));
-    const a = await cache.acquire({ url: "u1", tier: "high" });
-    const b = await cache.acquire({ url: "u1", tier: "high" });
+    const a = await cache.acquire({ url: "u1", tier: "high", identity: { key: "opaque-u1", reusable: true } });
+    const b = await cache.acquire({ url: "u1", tier: "high", identity: { key: "opaque-u1", reusable: true } });
     expect(a).toBe(b);
     expect(cache.refCount(a)).toBe(2);
-    const c = await cache.acquire({ url: "u2", tier: "high" });
+    const c = await cache.acquire({ url: "u2", tier: "high", identity: { key: "opaque-u2", reusable: true } });
     expect(c).not.toBe(a);
     expect(cache.residentCount).toBe(2);
   });
@@ -162,11 +162,11 @@ describe("EnvironmentCache", () => {
     expect(environmentCacheLimit("medium", true)).toBe(2);
     expect(environmentCacheLimit("ultra", false)).toBe(2);
     const cache = new EnvironmentCache(new MockRenderDevice(), fakeFactory, async (k) => stubProbe(k.url ?? "x"));
-    const a = await cache.acquire({ url: "a", tier: "medium" });
-    const b = await cache.acquire({ url: "b", tier: "medium" });
+    const a = await cache.acquire({ url: "a", tier: "medium", identity: { key: "opaque-a", reusable: true } });
+    const b = await cache.acquire({ url: "b", tier: "medium", identity: { key: "opaque-b", reusable: true } });
     cache.release(a);
     cache.release(b);
-    const c = await cache.acquire({ url: "c", tier: "medium" });
+    const c = await cache.acquire({ url: "c", tier: "medium", identity: { key: "opaque-c", reusable: true } });
     cache.release(c);
     // limit 2 on medium with rgba16f residents → oldest ("a") evicted+disposed
     expect(cache.residentCount).toBe(2);

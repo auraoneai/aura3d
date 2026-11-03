@@ -37,7 +37,7 @@ import type {
   PhysicsWorld,
   RaycastHit,
   RigidBody
-} from "@aura3d/physics";
+} from "@aura3d/physics/solverless";
 
 export type PhysicsVec3 = readonly [number, number, number];
 
@@ -290,7 +290,7 @@ export interface AuraCollisionLayers {
 export function createCollisionLayers(matrix: Readonly<Record<string, readonly string[]>>): AuraCollisionLayers {
   const names = Object.keys(matrix);
   if (names.length === 0) throw new Error("createCollisionLayers requires at least one layer.");
-  if (names.length > 32) throw new Error("createCollisionLayers supports at most 32 layers.");
+  if (names.length > 16) throw new Error("createCollisionLayers supports at most 16 layers on the active physics backend.");
   for (const [layer, against] of Object.entries(matrix)) {
     for (const other of against) {
       if (!names.includes(other)) {
@@ -480,8 +480,8 @@ export function contactRelativeSpeed(
 }
 
 /** Internal: adapt a `@aura3d/physics` body to the public handle. */
-export function createBodyHandle(body: RigidBody, nodeName?: string): AuraBodyHandle {
-  const snapshot = () => body.snapshot();
+export function createBodyHandle(body: RigidBody, nodeName?: string, assertActive: () => void = () => {}): AuraBodyHandle {
+  const snapshot = () => { assertActive(); return body.snapshot(); };
   const handle: AuraBodyHandle = {
     id: body.id,
     nodeName,
@@ -491,26 +491,28 @@ export function createBodyHandle(body: RigidBody, nodeName?: string): AuraBodyHa
     velocity: () => [...snapshot().velocity] as unknown as PhysicsVec3,
     angularVelocity: () => [...snapshot().angularVelocity] as unknown as PhysicsVec3,
     sleeping: () => snapshot().sleeping,
-    applyForce: (force) => { body.applyForce([...force]); return handle; },
-    applyTorque: (torque) => { body.applyTorque([...torque]); return handle; },
-    applyImpulse: (impulse) => { body.wake(); body.applyImpulse([...impulse]); return handle; },
-    applyAngularImpulse: (impulse) => { body.wake(); body.applyAngularImpulse([...impulse]); return handle; },
+    applyForce: (force) => { assertActive(); body.applyForce([...force]); return handle; },
+    applyTorque: (torque) => { assertActive(); body.applyTorque([...torque]); return handle; },
+    applyImpulse: (impulse) => { assertActive(); body.wake(); body.applyImpulse([...impulse]); return handle; },
+    applyAngularImpulse: (impulse) => { assertActive(); body.wake(); body.applyAngularImpulse([...impulse]); return handle; },
     applyImpulseAtPoint: (impulse, point) => {
+      assertActive();
       body.wake();
       body.applyImpulseAtPoint([...impulse], [...point]);
       return handle;
     },
-    setVelocity: (velocity) => { body.wake(); body.setVelocity([...velocity]); return handle; },
-    setAngularVelocity: (velocity) => { body.wake(); body.setAngularVelocity([...velocity]); return handle; },
-    setPosition: (position) => { body.setPosition([...position]); return handle; },
+    setVelocity: (velocity) => { assertActive(); body.wake(); body.setVelocity([...velocity]); return handle; },
+    setAngularVelocity: (velocity) => { assertActive(); body.wake(); body.setAngularVelocity([...velocity]); return handle; },
+    setPosition: (position) => { assertActive(); body.setPosition([...position]); return handle; },
     teleport: (position) => {
+      assertActive();
       body.setPosition([...position]);
       body.setVelocity([0, 0, 0]);
       body.setAngularVelocity([0, 0, 0]);
       return handle;
     },
-    wake: () => { body.wake(); return handle; },
-    sleep: () => { body.sleep(); return handle; }
+    wake: () => { assertActive(); body.wake(); return handle; },
+    sleep: () => { assertActive(); body.sleep(); return handle; }
   };
   return handle;
 }
@@ -584,7 +586,7 @@ export function createPhysicsRuntime(
   const handles = new Map<number, AuraBodyHandle>();
   const namesById = new Map<number, string>();
   const idsByName = new Map<string, number>();
-  const layerByBodyId = new Map<number, string>();
+  let nextJointId = 1;
 
   const collisionHandlers = new Set<AuraCollisionHandler>();
   const namedHandlers = new Map<string, Set<AuraCollisionHandler>>();
@@ -597,19 +599,31 @@ export function createPhysicsRuntime(
   }
 
   function resolveBody(id: number): AuraBodyHandle | undefined {
+    const body = world.getBody(id);
+    if (!body) {
+      handles.delete(id);
+      return undefined;
+    }
     const existing = handles.get(id);
     if (existing) return existing;
-    const body = world.getBody(id);
-    if (!body) return undefined;
-    const handle = createBodyHandle(body, nodeNameFor(id));
+    const handle = ownedBodyHandle(body, nodeNameFor(id));
     handles.set(id, handle);
     return handle;
+  }
+
+  function ownedBodyHandle(body: RigidBody, name?: string): AuraBodyHandle {
+    return createBodyHandle(body, name, () => {
+      if (world.getBody(body.id) !== body) throw new Error(`Physics body ${body.id} has been removed.`);
+    });
   }
 
   function resolveId(id: number | string): number | undefined {
     if (typeof id === "number") return id;
     const known = idsByName.get(id);
-    if (known !== undefined) return known;
+    if (known !== undefined) {
+      if (world.getBody(known) && nodeNameFor(known) === id) return known;
+      idsByName.delete(id);
+    }
     /*
      * Fall back to the host's node-name resolver for bodies this runtime did not create.
      *
@@ -636,21 +650,27 @@ export function createPhysicsRuntime(
   function toRaycastOptions(options?: AuraRaycastOptions) {
     if (!options) return {};
     let mask: number | undefined;
-    if (options.layers && layers) {
+    if (options.layers) {
+      if (!layers) throw new Error("Query layers require createCollisionLayers when creating the runtime.");
       mask = 0;
       for (const name of options.layers) mask |= layerMask(layers, name);
-    }
-    const ignoreColliders: number[] = [];
-    for (const bodyId of options.ignore ?? []) {
-      for (const collider of world.colliders()) {
-        if (collider.bodyId === bodyId) ignoreColliders.push(collider.id);
-      }
     }
     return {
       ...(options.maxDistance === undefined ? {} : { maxDistance: options.maxDistance }),
       ...(mask === undefined ? {} : { mask }),
-      ...(ignoreColliders.length === 0 ? {} : { ignore: ignoreColliders })
+      ...(options.ignore === undefined ? {} : { ignoreBodies: options.ignore })
     };
+  }
+
+  function overlapBodies(center: PhysicsVec3, shape: Extract<PhysicsShape, { kind: "sphere" | "box" }>, opts?: AuraRaycastOptions): readonly AuraBodyHandle[] {
+    const out: AuraBodyHandle[] = [];
+    const seen = new Set<number>();
+    for (const collider of world.overlapShape([...center], shape, toRaycastOptions(opts))) {
+      if (seen.has(collider.bodyId)) continue;
+      const handle = resolveBody(collider.bodyId);
+      if (handle) { seen.add(collider.bodyId); out.push(handle); }
+    }
+    return out;
   }
 
   const queries: AuraPhysicsQueries = {
@@ -672,51 +692,10 @@ export function createPhysicsRuntime(
       return hit ? toAuraRaycastResult(hit, resolveBody) : undefined;
     },
     overlapSphere(center, radius, opts) {
-      // Implemented as a bounds test against every collider rather than a solver query,
-      // because `PhysicsWorld` exposes casts but not a standing overlap test. Filtering by
-      // layer here keeps the public semantics identical to the cast paths.
-      const allowed = opts?.layers && layers
-        ? new Set(opts.layers)
-        : undefined;
-      const ignore = new Set(opts?.ignore ?? []);
-      const out: AuraBodyHandle[] = [];
-      const r2 = radius * radius;
-      for (const body of world.bodies()) {
-        if (ignore.has(body.id)) continue;
-        if (allowed) {
-          const layerName = layerByBodyId.get(body.id);
-          if (!layerName || !allowed.has(layerName)) continue;
-        }
-        const dx = body.position[0] - center[0];
-        const dy = body.position[1] - center[1];
-        const dz = body.position[2] - center[2];
-        if (dx * dx + dy * dy + dz * dz <= r2) {
-          const handle = resolveBody(body.id);
-          if (handle) out.push(handle);
-        }
-      }
-      return out;
+      return overlapBodies(center, Shape.sphere(radius), opts);
     },
     overlapBox(center, halfExtents, opts) {
-      const allowed = opts?.layers && layers ? new Set(opts.layers) : undefined;
-      const ignore = new Set(opts?.ignore ?? []);
-      const out: AuraBodyHandle[] = [];
-      for (const body of world.bodies()) {
-        if (ignore.has(body.id)) continue;
-        if (allowed) {
-          const layerName = layerByBodyId.get(body.id);
-          if (!layerName || !allowed.has(layerName)) continue;
-        }
-        if (
-          Math.abs(body.position[0] - center[0]) <= halfExtents[0] &&
-          Math.abs(body.position[1] - center[1]) <= halfExtents[1] &&
-          Math.abs(body.position[2] - center[2]) <= halfExtents[2]
-        ) {
-          const handle = resolveBody(body.id);
-          if (handle) out.push(handle);
-        }
-      }
-      return out;
+      return overlapBodies(center, Shape.box(halfExtents[0], halfExtents[1], halfExtents[2]), opts);
     }
   };
 
@@ -780,6 +759,17 @@ export function createPhysicsRuntime(
       const type = spec.type ?? "dynamic";
       const shape = spec.shape ?? "box";
       assertShapeSupported(shape, type);
+      if (spec.name && resolveId(spec.name) !== undefined) throw new Error(`Physics body "${spec.name}" already exists.`);
+      if (spec.layer && !layers) {
+        throw new Error(
+          `Body layer "${spec.layer}" was declared, but the runtime has no layers. ` +
+          "Pass layers: createCollisionLayers({...}) when creating the app."
+        );
+      }
+      const filter = spec.layer && layers
+        ? { layer: layerMask(layers, spec.layer), mask: collisionMaskFor(layers, spec.layer) }
+        : undefined;
+      const resolvedShape = toPhysicsShape(shape, spec);
       const body = world.createRigidBody({
         type,
         position: spec.position ? [...spec.position] : [0, 0, 0],
@@ -789,44 +779,45 @@ export function createPhysicsRuntime(
         ...(spec.linearDamping === undefined ? {} : { linearDamping: spec.linearDamping }),
         ...(spec.angularDamping === undefined ? {} : { angularDamping: spec.angularDamping })
       });
-      const filter = spec.layer && layers
-        ? { layer: layerMask(layers, spec.layer), mask: collisionMaskFor(layers, spec.layer) }
-        : undefined;
-      if (spec.layer) {
-        if (!layers) {
-          throw new Error(
-            `Body layer "${spec.layer}" was declared, but the runtime has no layers. ` +
-            "Pass layers: createCollisionLayers({...}) when creating the app."
-          );
-        }
-        layerByBodyId.set(body.id, spec.layer);
+      try {
+        world.createCollider(body, {
+          shape: resolvedShape,
+          ...(spec.sensor === undefined ? {} : { sensor: spec.sensor }),
+          ...(filter ? { filter } : {}),
+          material: {
+            friction: spec.friction ?? 0.5,
+            restitution: spec.restitution ?? 0
+          }
+        });
+      } catch (error) {
+        world.removeRigidBody(body.id);
+        throw error;
       }
-      world.createCollider(body, {
-        shape: toPhysicsShape(shape, spec),
-        ...(spec.sensor === undefined ? {} : { sensor: spec.sensor }),
-        ...(filter ? { filter } : {}),
-        material: {
-          friction: spec.friction ?? 0.5,
-          restitution: spec.restitution ?? 0
-        }
-      });
       if (spec.name) {
         namesById.set(body.id, spec.name);
         idsByName.set(spec.name, body.id);
       }
-      const handle = createBodyHandle(body, spec.name);
+      const handle = ownedBodyHandle(body, spec.name);
       handles.set(body.id, handle);
       return handle;
     },
     removeBody(id) {
       const resolved = resolveId(id);
-      if (resolved === undefined) return;
+      if (resolved === undefined || !world.getBody(resolved)) return;
+      // Preserve both handles while translating contacts; the underlying world
+      // retires these pairs immediately when its colliders are removed.
+      const exiting: AuraCollisionEvent[] = [];
+      for (const contact of world.snapshot().contacts) {
+        if (contact.bodyA !== resolved && contact.bodyB !== resolved) continue;
+        const event = toAuraCollisionEvent({ type: "end", pairKey: `${contact.colliderA}:${contact.colliderB}`, contact }, resolveBody);
+        if (event) exiting.push(event);
+      }
       world.removeRigidBody(resolved);
       handles.delete(resolved);
-      layerByBodyId.delete(resolved);
-      const name = namesById.get(resolved);
+      const name = nodeNameFor(resolved);
       if (name) idsByName.delete(name);
       namesById.delete(resolved);
+      dispatch(exiting);
     },
     createJoint(spec) {
       validateJointSpec(spec);
@@ -851,28 +842,33 @@ export function createPhysicsRuntime(
         type: constraintType,
         bodyA,
         bodyB,
-        localAnchorA: [anchor[0] - bodyA.position[0], anchor[1] - bodyA.position[1], anchor[2] - bodyA.position[2]],
-        localAnchorB: [anchor[0] - bodyB.position[0], anchor[1] - bodyB.position[1], anchor[2] - bodyB.position[2]],
-        ...(spec.axis ? { axis: [...spec.axis] as [number, number, number] } : {}),
-        ...(spec.stiffness === undefined ? {} : { stiffness: Math.min(1, spec.stiffness) }),
+        localAnchorA: worldPointToLocal(anchor, bodyA),
+        localAnchorB: worldPointToLocal(anchor, bodyB),
+        ...(["hinge", "revolute", "slider", "prismatic", "motorised-hinge"].includes(spec.kind)
+          ? { axis: [...(spec.axis ?? [0, 1, 0])] as [number, number, number] }
+          : spec.axis ? { axis: [...spec.axis] as [number, number, number] } : {}),
+        ...(spec.stiffness === undefined ? {} : { stiffness: spec.stiffness }),
         ...(spec.damping === undefined ? {} : { damping: spec.damping }),
         ...(spec.restLength === undefined ? {} : { restLength: spec.restLength }),
         ...(spec.motorSpeed === undefined ? {} : { motorSpeed: spec.motorSpeed }),
         ...(spec.maxMotorTorque === undefined ? {} : { maxMotorTorque: spec.maxMotorTorque }),
         ...(spec.limits ? { limits: spec.limits } : {})
       });
-      let jointId = 0;
-      for (const [index, candidate] of world.constraints().entries()) {
-        if (candidate === constraint) jointId = index + 1;
-      }
+      const jointId = nextJointId++;
+      let removed = false;
+      const assertJointActive = () => {
+        if (removed || !world.constraints().includes(constraint)) throw new Error(`Physics joint ${jointId} has been removed.`);
+      };
       const handle: AuraJointHandle = {
         id: jointId,
         kind: spec.kind,
         setEnabled(enabled) {
+          assertJointActive();
           constraint.setEnabled(enabled);
           return handle;
         },
         setMotorSpeed(speed) {
+          assertJointActive();
           if (spec.kind !== "motorised-hinge") {
             throw new Error(`setMotorSpeed is only valid on a motorised-hinge joint, not "${spec.kind}".`);
           }
@@ -880,7 +876,9 @@ export function createPhysicsRuntime(
           return handle;
         },
         remove() {
-          constraint.setEnabled(false);
+          if (removed) return;
+          world.removeConstraint(constraint);
+          removed = true;
         }
       };
       return handle;
@@ -946,6 +944,17 @@ export function createPhysicsRuntime(
   return runtime;
 }
 
+/** Transform a world-space anchor into the rigid body's local frame. */
+function worldPointToLocal(point: PhysicsVec3, body: RigidBody): [number, number, number] {
+  const v: PhysicsVec3 = [point[0] - body.position[0], point[1] - body.position[1], point[2] - body.position[2]];
+  const [x, y, z, w] = body.rotation;
+  const qx = -x, qy = -y, qz = -z;
+  const tx = 2 * (qy * v[2] - qz * v[1]);
+  const ty = 2 * (qz * v[0] - qx * v[2]);
+  const tz = 2 * (qx * v[1] - qy * v[0]);
+  return [v[0] + w * tx + qy * tz - qz * ty, v[1] + w * ty + qz * tx - qx * tz, v[2] + w * tz + qx * ty - qy * tx];
+}
+
 /**
  * Translate public debug options onto the solverless draw options, preserving the
  * previous exact behavior when the new toggle/budget fields are absent.
@@ -985,7 +994,7 @@ function toPhysicsShape(shape: AuraColliderShape, spec: AuraBodySpec): PhysicsSh
     case "capsule":
       return Shape.capsule(spec.radius ?? 0.25, spec.halfHeight ?? 0.5);
     case "plane":
-      return Shape.plane([0, 1, 0], spec.position?.[1] ?? 0);
+      return Shape.plane([0, 1, 0], 0);
     case "box":
       return Shape.box(half[0], half[1], half[2]);
     case "convexHull": {

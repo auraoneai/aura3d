@@ -4,8 +4,20 @@
  * near-plane rule. All lane-local (rigs must not import the index barrel).
  */
 import type { AuraVec3 } from "../../index.js";
-import type { AuraCameraSubject } from "../../../contracts/camera.js";
+import type { AuraCameraProbe, AuraCameraSubject } from "../../../contracts/camera.js";
+import type { AuraRuntimeNodeHandle } from "../../nodes/types/runtime.js";
 import { springDamp } from "../Spring.js";
+
+/** Internal, optional seam: a probe can bind a cast to one rig's subject. */
+export const CAMERA_SUBJECT_PROBE = Symbol("camera-subject-probe");
+export type CameraSubjectRef = string | AuraRuntimeNodeHandle;
+export type SubjectAwareCameraProbe = AuraCameraProbe & {
+  readonly [CAMERA_SUBJECT_PROBE]?: (target: CameraSubjectRef) => AuraCameraProbe;
+};
+
+export function probeForSubject(probe: AuraCameraProbe, target: CameraSubjectRef): AuraCameraProbe {
+  return (probe as SubjectAwareCameraProbe)[CAMERA_SUBJECT_PROBE]?.(target) ?? probe;
+}
 
 export const sub = (a: AuraVec3, b: AuraVec3): AuraVec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 export const add = (a: AuraVec3, b: AuraVec3): AuraVec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];

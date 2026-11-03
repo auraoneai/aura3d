@@ -1,160 +1,114 @@
 /**
- * WGSL twin of a3d_prd04_iridescence (PRD-04 §8.12): same `a3d_` names,
- * identical math (r185 iridescence_fragment.glsl.js:5-116,
- * lights_physical_fragment.glsl.js:88-109, lights_fragment_begin.glsl.js:30-50).
+ * WGSL companion to Aura's KHR_materials_iridescence implementation.
+ * The Airy reflectance is integrated over 41 visible wavelengths using the
+ * analytic CIE 1931 fits of Wyman, Sloan & Shirley, JCGT 2013. The substrate
+ * index is estimated from RGB F0; complex conductor indices are not modeled.
  */
 const wgsl = /* wgsl */ `
-const a3d_prd04_XYZ_TO_REC709 = mat3x3f(
-	vec3f( 3.2404542, -0.9692660,  0.0556434),
-	vec3f(-1.5371385,  1.8760108, -0.2040259),
-	vec3f(-0.4985314,  0.0415560,  1.0572252)
-);
-
-// Fresnel0 -> IOR (r185 iridescence_fragment.glsl.js:14-19).
-fn a3dPrd04IridescenceFresnel0ToIor(fresnel0: vec3f) -> vec3f {
-	let sqrtF0 = sqrt(fresnel0);
-	return (vec3f(1.0) + sqrtF0) / (vec3f(1.0) - sqrtF0);
+fn a3dPrd04IridescenceFresnel0ToIor(f0: vec3f) -> vec3f {
+  let root = sqrt(clamp(f0, vec3f(0.0), vec3f(0.9999)));
+  return (vec3f(1.0) + root) / (vec3f(1.0) - root);
 }
 
-fn a3dPrd04IridescenceIorToFresnel0(transmittedIor: vec3f, incidentIor: f32) -> vec3f {
-	return pow2v((transmittedIor - vec3f(incidentIor)) / (transmittedIor + vec3f(incidentIor)));
+fn a3dPrd04IridescenceIorToFresnel0(transmitted: vec3f, incident: f32) -> vec3f {
+  let ratio = (transmitted - vec3f(incident)) / max(transmitted + vec3f(incident), vec3f(1e-6));
+  return ratio * ratio;
 }
 
-fn a3dPrd04IridescenceIorToFresnel0f(transmittedIor: f32, incidentIor: f32) -> f32 {
-	return pow2((transmittedIor - incidentIor) / (transmittedIor + incidentIor));
+fn a3dPrd04IridescenceIorToFresnel0f(transmitted: f32, incident: f32) -> f32 {
+  let ratio = (transmitted - incident) / max(transmitted + incident, 1e-6);
+  return ratio * ratio;
 }
 
-// XYZ sensitivity curves in Fourier space — Belcour & Barla 2017
-// (r185 evalSensitivity, iridescence_fragment.glsl.js:38-52).
-fn a3dPrd04EvalSensitivity(OPD: f32, shift: vec3f) -> vec3f {
-	let phase = 2.0 * PI * OPD * 1.0e-9;
-	let val = vec3f(5.4856e-13, 4.4201e-13, 5.2481e-13);
-	let pos = vec3f(1.6810e+06, 1.7953e+06, 2.2084e+06);
-	let var_ = vec3f(4.3278e+09, 9.3046e+09, 6.6121e+09);
-
-	var xyz = val * sqrt(2.0 * PI * var_) * cos(pos * phase + shift) * exp(-pow2(phase) * var_);
-	xyz.x += 9.7470e-14 * sqrt(2.0 * PI * 4.5282e+09) * cos(2.2399e+06 * phase + shift[0]) * exp(-4.5282e+09 * pow2(phase));
-	xyz /= 1.0685e-7;
-
-	let rgb = a3d_prd04_XYZ_TO_REC709 * xyz;
-	return rgb;
+// Analytic approximation of the CIE 1931 2-degree color matching functions.
+fn a3dPrd04CieXyz(wavelength: f32) -> vec3f {
+  let x1 = (wavelength - 442.0) * select(0.0374, 0.0624, wavelength < 442.0);
+  let x2 = (wavelength - 599.8) * select(0.0323, 0.0264, wavelength < 599.8);
+  let x3 = (wavelength - 501.1) * select(0.0382, 0.0490, wavelength < 501.1);
+  let y1 = (wavelength - 568.8) * select(0.0247, 0.0213, wavelength < 568.8);
+  let y2 = (wavelength - 530.9) * select(0.0322, 0.0613, wavelength < 530.9);
+  let z1 = (wavelength - 437.0) * select(0.0278, 0.0845, wavelength < 437.0);
+  let z2 = (wavelength - 459.0) * select(0.0725, 0.0385, wavelength < 459.0);
+  return vec3f(
+    0.362 * exp(-0.5*x1*x1) + 1.056 * exp(-0.5*x2*x2) - 0.065 * exp(-0.5*x3*x3),
+    0.821 * exp(-0.5*y1*y1) + 0.286 * exp(-0.5*y2*y2),
+    1.217 * exp(-0.5*z1*z1) + 0.681 * exp(-0.5*z2*z2)
+  );
 }
 
-// Thin-film Fresnel (r185 evalIridescence, iridescence_fragment.glsl.js:54-116).
-fn a3dPrd04EvalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness: f32, baseF0: vec3f) -> vec3f {
-	var I: vec3f;
-
-	// Force iridescenceIOR -> outsideIOR when thinFilmThickness -> 0.0
-	let iridescenceIOR = mix(outsideIOR, eta2, smoothstep(0.0, 0.03, thinFilmThickness));
-	// Evaluate the cosTheta on the base layer (Snell law)
-	let sinTheta2Sq = pow2(outsideIOR / iridescenceIOR) * (1.0 - pow2(cosTheta1));
-
-	// Handle TIR:
-	let cosTheta2Sq = 1.0 - sinTheta2Sq;
-	if (cosTheta2Sq < 0.0) {
-		return vec3f(1.0);
-	}
-
-	let cosTheta2 = sqrt(cosTheta2Sq);
-
-	// First interface
-	let R0 = a3dPrd04IridescenceIorToFresnel0f(iridescenceIOR, outsideIOR);
-	let R12 = F_Schlick(vec3f(R0), 1.0, cosTheta1).x;
-	let T121 = 1.0 - R12;
-	var phi12 = 0.0;
-	if (iridescenceIOR < outsideIOR) {
-		phi12 = PI;
-	}
-	let phi21 = PI - phi12;
-
-	// Second interface
-	let baseIOR = a3dPrd04IridescenceFresnel0ToIor(clamp(baseF0, vec3f(0.0), vec3f(0.9999))); // guard against 1.0
-	let R1 = a3dPrd04IridescenceIorToFresnel0(baseIOR, iridescenceIOR);
-	let R23 = F_Schlick(R1, 1.0, cosTheta2);
-	var phi23 = vec3f(0.0);
-	if (baseIOR[0] < iridescenceIOR) {
-		phi23[0] = PI;
-	}
-	if (baseIOR[1] < iridescenceIOR) {
-		phi23[1] = PI;
-	}
-	if (baseIOR[2] < iridescenceIOR) {
-		phi23[2] = PI;
-	}
-
-	// Phase shift
-	let OPD = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;
-	let phi = vec3f(phi21) + phi23;
-
-	// Compound terms
-	let R123 = clamp(R12 * R23, vec3f(1e-5), vec3f(0.9999));
-	let r123 = sqrt(R123);
-	let Rs = pow2(T121) * R23 / (vec3f(1.0) - R123);
-
-	// Reflectance term for m = 0 (DC term amplitude)
-	let C0 = R12 + Rs;
-	I = C0;
-
-	// Reflectance term for m > 0 (pairs of diracs)
-	var Cm = Rs - T121;
-	for (var m = 1; m <= 2; m++) {
-		Cm *= r123;
-		let Sm = 2.0 * a3dPrd04EvalSensitivity(f32(m) * OPD, f32(m) * phi);
-		I += Cm * Sm;
-	}
-
-	// Since out of gamut colors might be produced, negative color values are clamped to 0.
-	return max(I, vec3f(0.0));
+fn a3dPrd04EvalIridescence(outsideIOR: f32, filmIOR: f32, cosine: f32, thickness: f32, baseF0: vec3f) -> vec3f {
+  let n1 = max(outsideIOR, 1e-4);
+  let n2 = max(filmIOR, 1e-4);
+  let c1 = clamp(cosine, 0.0001, 1.0);
+  if (thickness <= 0.0) {
+    // Match the fifth-power Schlick term used by Aura's GLSL BRDF.
+    let grazing = 1.0 - c1;
+    let grazing2 = grazing * grazing;
+    return baseF0 + (vec3f(1.0) - baseF0) * (grazing2 * grazing2 * grazing);
+  }
+  let sin1Squared = max(1.0 - c1*c1, 0.0);
+  let c2Squared = 1.0 - (n1*n1/(n2*n2))*sin1Squared;
+  if (c2Squared <= 0.0) { return vec3f(1.0); }
+  let c2 = sqrt(c2Squared);
+  let n3 = n1 * a3dPrd04IridescenceFresnel0ToIor(baseF0);
+  let c3 = sqrt(max(vec3f(1.0) - vec3f(n1*n1*sin1Squared)/(n3*n3), vec3f(0.0)));
+  let r12s = (n1*c1 - n2*c2) / max(n1*c1 + n2*c2, 1e-6);
+  let r12p = (n2*c1 - n1*c2) / max(n2*c1 + n1*c2, 1e-6);
+  let r23s = (vec3f(n2*c2) - n3*c3) / max(vec3f(n2*c2) + n3*c3, vec3f(1e-6));
+  let r23p = (n3*c2 - n2*c3) / max(n3*c2 + n2*c3, vec3f(1e-6));
+  let xyzToRgb = mat3x3f(
+    vec3f( 3.2404542, -0.9692660,  0.0556434),
+    vec3f(-1.5371385,  1.8760108, -0.2040259),
+    vec3f(-0.4985314,  0.0415560,  1.0572252)
+  );
+  var total = vec3f(0.0);
+  var normalization = vec3f(0.0);
+  for (var i = 0; i <= 40; i++) {
+    let wavelength = 380.0 + 10.0 * f32(i);
+    let interference = cos(4.0 * PI * n2 * thickness * c2 / wavelength);
+    let ps = r12s * r23s;
+    let pp = r12p * r23p;
+    let reflectedS = (vec3f(r12s*r12s) + r23s*r23s + 2.0*ps*interference)
+      / max(vec3f(1.0) + ps*ps + 2.0*ps*interference, vec3f(1e-6));
+    let reflectedP = (vec3f(r12p*r12p) + r23p*r23p + 2.0*pp*interference)
+      / max(vec3f(1.0) + pp*pp + 2.0*pp*interference, vec3f(1e-6));
+    let weight = xyzToRgb * a3dPrd04CieXyz(wavelength);
+    total += weight * 0.5 * (reflectedS + reflectedP);
+    normalization += weight;
+  }
+  return clamp(total / max(normalization, vec3f(1e-6)), vec3f(0.0), vec3f(1.0));
 }
 
-// Factor resolution (r185 lights_physical_fragment.glsl.js:88-109 +
-// lights_fragment_begin.glsl.js:30-40).
-fn a3dPrd04IridescenceInit(lobes: ptr<function, A3DPrd04Lobes>, iridescenceFactor: f32, iridescenceIOR: f32, iridescenceTex: vec4f, thicknessTex: vec4f, thicknessMin: f32, thicknessMax: f32, specularColor: vec3f, diffuseColor: vec3f, metalness: f32, dotNV: f32) {
-	(*lobes).iridescence = iridescenceFactor * iridescenceTex.r;
-	(*lobes).iridescenceIOR = iridescenceIOR;
-	(*lobes).iridescenceThickness = (thicknessMax - thicknessMin) * thicknessTex.g + thicknessMin;
-
-	if ((*lobes).iridescenceThickness == 0.0) {
-		(*lobes).iridescence = 0.0;
-	} else {
-		(*lobes).iridescence = saturate((*lobes).iridescence);
-	}
-
-	if ((*lobes).iridescence > 0.0) {
-		let fresnelDielectric = a3dPrd04EvalIridescence(1.0, (*lobes).iridescenceIOR, dotNV, (*lobes).iridescenceThickness, specularColor);
-		let fresnelMetallic = a3dPrd04EvalIridescence(1.0, (*lobes).iridescenceIOR, dotNV, (*lobes).iridescenceThickness, diffuseColor);
-
-		(*lobes).iridescenceFresnel = mix(fresnelDielectric, fresnelMetallic, metalness);
-		(*lobes).iridescenceF0 = Schlick_to_F0((*lobes).iridescenceFresnel, 1.0, dotNV);
-	} else {
-		(*lobes).iridescenceFresnel = vec3f(0.0);
-		(*lobes).iridescenceF0 = vec3f(0.0);
-	}
+fn a3dPrd04IridescenceInit(lobes: ptr<function, A3DPrd04Lobes>, factor: f32, ior: f32, factorTex: vec4f, thicknessTex: vec4f, thicknessMin: f32, thicknessMax: f32, specularColor: vec3f, diffuseColor: vec3f, metalness: f32, dotNV: f32) {
+  (*lobes).iridescence = saturate(factor * factorTex.r);
+  (*lobes).iridescenceIOR = max(ior, 1e-4);
+  (*lobes).iridescenceThickness = mix(thicknessMin, thicknessMax, saturate(thicknessTex.g));
+  if ((*lobes).iridescenceThickness <= 0.0) { (*lobes).iridescence = 0.0; }
+  if ((*lobes).iridescence > 0.0) {
+    let dielectric = a3dPrd04EvalIridescence(1.0, (*lobes).iridescenceIOR, dotNV, (*lobes).iridescenceThickness, specularColor);
+    let metallic = a3dPrd04EvalIridescence(1.0, (*lobes).iridescenceIOR, dotNV, (*lobes).iridescenceThickness, diffuseColor);
+    (*lobes).iridescenceFresnel = mix(dielectric, metallic, saturate(metalness));
+    (*lobes).iridescenceF0 = clamp(Schlick_to_F0((*lobes).iridescenceFresnel, 1.0, dotNV), vec3f(0.0), vec3f(1.0));
+  } else {
+    (*lobes).iridescenceFresnel = vec3f(0.0);
+    (*lobes).iridescenceF0 = vec3f(0.0);
+  }
 }
 
-// Direct-lobe Fresnel blend (r185 lights_physical_pars_fragment.glsl.js:170-174).
-fn a3dPrd04IridescenceFresnelMix(F: vec3f, iridescenceFresnel: vec3f, iridescence: f32) -> vec3f {
-	return mix(F, iridescenceFresnel, iridescence);
+fn a3dPrd04IridescenceFresnelMix(fresnel: vec3f, filmFresnel: vec3f, strength: f32) -> vec3f {
+  return mix(fresnel, filmFresnel, saturate(strength));
 }
 
-// IBL multiscattering with thin-film F0 (r185 computeMultiscatteringIridescence,
-// lights_physical_pars_fragment.glsl.js:389-419).
+// The same bounded DFG energy allocation as Aura's GLSL a3dMultiscatter.
 fn a3dPrd04ComputeMultiscatteringIridescence(normal: vec3f, viewDir: vec3f, specularColor: vec3f, specularF90: f32, iridescence: f32, iridescenceF0: vec3f, roughness: f32, singleScatter: ptr<function, vec3f>, multiScatter: ptr<function, vec3f>) {
-	let dotNV = saturate(dot(normal, viewDir));
-	let fab = a3dDFG(roughness, dotNV);
-
-	let Fr = mix(specularColor, iridescenceF0, iridescence);
-
-	let FssEss = Fr * fab.x + specularF90 * fab.y;
-
-	let Ess = fab.x + fab.y;
-	let Ems = 1.0 - Ess;
-
-	let Favg = Fr + (1.0 - Fr) * 0.047619; // 1/21
-	let Fms = FssEss * Favg / (1.0 - Ems * Favg);
-
-	*singleScatter += FssEss;
-	*multiScatter += Fms * Ems;
+  let f0 = mix(specularColor, iridescenceF0, saturate(iridescence));
+  let coefficients = saturate(a3dDFG(saturate(roughness), saturate(dot(normal, viewDir))));
+  let single = saturate(f0 * coefficients.x + vec3f(specularF90 * coefficients.y));
+  let missing = 1.0 - saturate(coefficients.x + coefficients.y);
+  let average = saturate(f0 + (vec3f(specularF90) - f0) / 21.0);
+  let multiple = min(vec3f(1.0) - single, missing * average);
+  *singleScatter += single;
+  *multiScatter += multiple;
 }
 `;
 

@@ -11,11 +11,27 @@ import {
   resolveSdfTextFrameOpacity,
   sampleSdfCoverage,
   sdfTextLodFade,
-  summarizeTextSurfaces
+  summarizeTextSurfaces,
+  type SdfFontAtlas,
+  type SdfTextLayout
   // Direct module import: the rendering barrel is currently unresolvable
   // (sibling worktree file shadows/SpotShadowMaps.ts imports "./ShadowMap",
   // which does not exist there). See the phase report blocker.
 } from "../../../packages/rendering/src/SdfText";
+
+function rasterFixture(distances: readonly [number, number] = [0.5, 0]): { atlas: SdfFontAtlas; layout: SdfTextLayout } {
+  const atlas: SdfFontAtlas = {
+    kind: "aura-sdf-font-atlas", width: 2, height: 1, distances: Float32Array.from(distances),
+    glyphs: {}, glyphCount: 1, cellResolution: 1, padding: 0, spreadPixels: 3.5
+  };
+  const layout: SdfTextLayout = {
+    kind: "aura-sdf-text-layout", text: "x",
+    quads: [{ glyph: "x", corners: [0, 0, 2, 0, 2, 1, 0, 1], uv: [0, 0, 1, 1] }],
+    glyphCount: 1, unsupportedCharacters: [], widthWorld: 2, heightWorld: 1, method: "sdf-atlas-quad",
+    style: { outlineWidthEm: 0, glowRadiusEm: 0, shadowOpacity: 0.45, smoothingEm: 0.1 }
+  };
+  return { atlas, layout };
+}
 
 describe("G1 SDF text", () => {
   it("bakes an atlas covering exactly the documented catalog", () => {
@@ -131,6 +147,35 @@ describe("G1 SDF text", () => {
     }
     expect(bright).toBeGreaterThan(0);
   }, 60000);
+
+  it("stores straight-alpha fill colors at partial coverage", () => {
+    const { atlas, layout } = rasterFixture();
+    const white = rasterizeSdfTextLabelImage(layout, atlas, { texelsPerWorldUnit: 1, fill: [1, 1, 1, 0.5] });
+    expect([...white.data]).toEqual([255, 255, 255, 64, 0, 0, 0, 0]);
+    expect(white.data[0]! * white.data[3]! / (255 * 255)).toBeCloseTo(0.25, 2);
+    const colored = rasterizeSdfTextLabelImage(layout, atlas, { texelsPerWorldUnit: 1, fill: [0.25, 0.5, 0.75, 0.5] });
+    expect([...colored.data]).toEqual([64, 128, 191, 64, 0, 0, 0, 0]);
+    expect(colored.coveredTexels).toBe(1);
+  });
+
+  it("canonicalizes sub-byte alpha to transparent black", () => {
+    const { atlas, layout } = rasterFixture([0.402, 1]);
+    const image = rasterizeSdfTextLabelImage(layout, atlas, { texelsPerWorldUnit: 1 });
+    expect([...image.data]).toEqual([0, 0, 0, 0, 255, 255, 255, 255]);
+    expect(image.coveredTexels).toBe(1);
+  });
+
+  it("stores straight-alpha colors after compositing shadow, glow, outline and fill", () => {
+    const { atlas, layout } = rasterFixture();
+    const styled: SdfTextLayout = { ...layout, style: {
+      ...layout.style, outlineWidthEm: 0.1, glowRadiusEm: 0.1, shadowOffsetEm: [0, 0], shadowOpacity: 0.5
+    } };
+    const image = rasterizeSdfTextLabelImage(styled, atlas, {
+      texelsPerWorldUnit: 1, fill: [1, 0, 0, 0.5], outline: [1, 1, 0, 0.5],
+      glow: [0, 0, 1, 0.5], shadow: [0, 1, 0, 0.5]
+    });
+    expect([...image.data]).toEqual([170, 92, 66, 167, 0, 0, 0, 0]);
+  });
 
   it("adds outline/glow/shadow texels beyond the fill silhouette", () => {
     const atlas = createSdfFontAtlas();

@@ -1,183 +1,111 @@
 /**
- * PRD-03 — tone-operator golden generator.
+ * Generate independent equation references for the Aura3D output operators.
+ * Run with `node evidence/prd03/goldens/generate-tone-goldens.mjs`.
  *
- *   pnpm exec tsx --tsconfig tsconfig.base.json evidence/prd03/goldens/generate-tone-goldens.mjs
- *
- * Writes `tone-operators.json`: 64 input triples × the five output operators
- * (linear, reinhard, aces, agx, neutral) at exposure 1, plus an 8-case ACES
- * exposure sweep. Two independent implementations are computed:
- *
- *   - `port`:     the shipped `post/ToneOperators.ts` port.
- *   - `reference`: a second implementation below, re-derived from the three r185
- *                  GLSL chunk with a different structure (component loops over
- *                  math.mjs-style helpers instead of the port's Vec3 ops).
- *
- * The run fails if they disagree beyond float error — the goldens therefore
- * pin the *math*, not a bug.
+ * This program imports neither the renderer nor another engine. The formulas
+ * come from Reinhard et al. (2002), Stephen Hill's published ACES RRT/ODT fit,
+ * the published AgX log-domain contrast fit, and Khronos PBR Neutral. The ACES
+ * viewing scale 1/0.6 is the existing Aura3D presentation contract. Calculated
+ * values are rounded to eight decimal places; the tests allow 1e-6.
  */
-
 import { writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { applyToneOperator, POST_TONE_OPERATORS } from "../../../packages/rendering/src/post/ToneOperators.ts";
+import { fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url));
+const clip = (x) => Math.max(0, Math.min(1, x));
+const times = (a, b) => a.map((x) => x * b);
+const vectorMatrix = (v, rows) => rows.map((row) => row.reduce((sum, n, i) => sum + n * v[i], 0));
+const fitted = (x) => (x * x + 0.0245786 * x - 0.000090537) / (0.983729 * x * x + 0.432951 * x + 0.238081);
 
-/* ---------------- independent reference (from the GLSL source) ------------ */
-
-const saturate3 = (c) => c.map((x) => Math.min(1, Math.max(0, x)));
-
-// GLSL `mat3 * vec3` expanded row-wise; matrices stored row-major below.
-const mv = (rows, v) => rows.map((r) => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]);
-
-// Row-major transposes of the GLSL column-major literals.
-const ACES_IN = [
-  [0.59719, 0.35458, 0.04823],
-  [0.07600, 0.90834, 0.01566],
-  [0.02840, 0.13383, 0.83777]
-];
-const ACES_OUT = [
-  [1.60475, -0.53108, -0.07367],
-  [-0.10208, 1.10813, -0.00605],
-  [-0.00327, -0.07276, 1.07602]
-];
-const R2020_TO_SRGB = [
-  [1.6605, -0.5876, -0.0728],
-  [-0.1246, 1.1329, -0.0083],
-  [-0.0182, -0.1006, 1.1187]
-];
-const SRGB_TO_R2020 = [
-  [0.6274, 0.3293, 0.0433],
-  [0.0691, 0.9195, 0.0113],
-  [0.0164, 0.0880, 0.8956]
-];
-const AGX_INSET = [
-  [0.856627153315983, 0.0951212405381588, 0.0482516061458583],
-  [0.137318972929847, 0.761241990602591, 0.101439036467562],
-  [0.11189821299995, 0.0767994186031903, 0.811302368396859]
-];
-const AGX_OUTSET = [
-  [1.1271005818144368, -0.11060664309660323, -0.016493938717834573],
-  [-0.1413297634984383, 1.157823702216272, -0.016493938717834257],
-  [-0.14132976349843826, -0.11060664309660294, 1.2519364065950405]
-];
-
-const ref = {
-  linear: (c, e) => saturate3(c.map((x) => x * e)),
-  reinhard: (c, e) => saturate3(c.map((x) => { const v = x * e; return v / (1 + v); })),
-  aces: (c, e) => {
-    let v = c.map((x) => (x * e) / 0.6);
-    v = mv(ACES_IN, v);
-    v = v.map((x) => (x * (x + 0.0245786) - 0.000090537) / (x * (0.983729 * x + 0.432951) + 0.238081));
-    v = mv(ACES_OUT, v);
-    return saturate3(v);
-  },
-  agx: (c, e) => {
-    let v = c.map((x) => x * e);
-    v = mv(SRGB_TO_R2020, v);
-    v = mv(AGX_INSET, v);
-    v = v.map((x) => Math.max(x, 1e-10));
-    v = v.map(Math.log2);
-    const [mn, mx] = [-12.47393, 4.026069];
-    v = v.map((x) => Math.min(1, Math.max(0, (x - mn) / (mx - mn))));
-    v = v.map((x) => 15.5 * x ** 6 - 40.14 * x ** 5 + 31.96 * x ** 4 - 6.868 * x ** 3 + 0.4298 * x ** 2 + 0.1191 * x - 0.00232);
-    v = mv(AGX_OUTSET, v);
-    v = v.map((x) => Math.pow(Math.max(0, x), 2.2));
-    v = mv(R2020_TO_SRGB, v);
-    return v.map((x) => Math.min(1, Math.max(0, x)));
-  },
-  neutral: (c, e) => {
-    const color = c.map((x) => x * e);
-    const x = Math.min(color[0], Math.min(color[1], color[2]));
-    const offset = x < 0.08 ? x - 6.25 * x * x : 0.04;
-    const cc = color.map((v) => v - offset);
-    const peak = Math.max(cc[0], Math.max(cc[1], cc[2]));
-    if (peak < 0.76) return cc;
-    const d = 0.24;
-    const newPeak = 1 - (d * d) / (peak + d - 0.76);
-    const scaled = cc.map((v) => (v * newPeak) / peak);
-    const g = 1 - 1 / (0.15 * (peak - newPeak) + 1);
-    return scaled.map((v) => v + (newPeak - v) * g);
-  }
+const matrices = {
+  acesInput: [[0.59719, 0.35458, 0.04823], [0.076, 0.90834, 0.01566], [0.0284, 0.13383, 0.83777]],
+  acesOutput: [[1.60475, -0.53108, -0.07367], [-0.10208, 1.10813, -0.00605], [-0.00327, -0.07276, 1.07602]],
+  wideInput: [[0.6274, 0.3293, 0.0433], [0.0691, 0.9195, 0.0113], [0.0164, 0.088, 0.8956]],
+  wideOutput: [[1.6605, -0.5876, -0.0728], [-0.1246, 1.1329, -0.0083], [-0.0182, -0.1006, 1.1187]],
+  inset: [
+    [0.856627153315983, 0.0951212405381588, 0.0482516061458583],
+    [0.137318972929847, 0.761241990602591, 0.101439036467562],
+    [0.11189821299995, 0.0767994186031903, 0.811302368396859]
+  ],
+  outset: [
+    [1.1271005818144368, -0.11060664309660323, -0.016493938717834573],
+    [-0.1413297634984383, 1.157823702216272, -0.016493938717834257],
+    [-0.14132976349843826, -0.11060664309660294, 1.2519364065950405]
+  ]
 };
 
-/* ------------------------------ cases ------------------------------------ */
-
-const cases = [];
-const push = (label, rgb) => cases.push({ label, rgb });
-
-// achromatic ramp — 20 stops incl. mid-gray and deep HDR
-for (const v of [0, 1e-4, 1e-3, 0.005, 0.01, 0.02, 0.05, 0.08, 0.1, 0.18, 0.25, 0.36, 0.5, 0.64, 0.76, 1, 1.4, 2, 4, 8]) {
-  push(`gray-${v}`, [v, v, v]);
+function linear(rgb, exposure) {
+  return times(rgb, exposure).map(clip);
 }
-// per-channel ramps
-for (const v of [0.01, 0.1, 0.18, 0.35, 0.5, 0.75, 1, 2, 8, 32]) {
-  push(`r-${v}`, [v, 0, 0]);
-  push(`g-${v}`, [0, v, 0]);
-  push(`b-${v}`, [0, 0, v]);
+function reinhard(rgb, exposure) {
+  return times(rgb, exposure).map((x) => clip(x / (1 + x)));
 }
-// mixed + saturated
-for (const [label, rgb] of [
-  ["warm-mid", [0.9, 0.55, 0.2]],
-  ["cool-mid", [0.12, 0.4, 0.9]],
-  ["neon-magenta", [1.4, 0.05, 1.1]],
-  ["teal-shadow", [0.02, 0.09, 0.1]],
-  ["fire-hdr", [6, 1.8, 0.4]],
-  ["snow-hdr", [3.2, 3.4, 3.8]],
-  ["sunset", [1.2, 0.4, 0.08]],
-  ["foliage", [0.08, 0.5, 0.15]],
-  ["skin", [0.62, 0.42, 0.32]],
-  ["deep-ocean", [0.01, 0.05, 0.3]],
-  ["emissive-blue", [0.02, 0.3, 4]],
-  ["brass", [0.7, 0.45, 0.12]],
-  ["flare-white", [12, 10, 8]],
-  ["near-black", [0.002, 0.0015, 0.001]]
-]) push(label, rgb);
-
-if (cases.length !== 64) throw new Error(`expected 64 cases, got ${cases.length}`);
-
-/* ------------------------------ generate --------------------------------- */
-
-const TOL = 1e-7;
-const operators = {};
-for (const op of POST_TONE_OPERATORS) {
-  const rows = cases.map(({ rgb }) => {
-    const p = applyToneOperator(op, rgb, 1);
-    const r = ref[op](rgb, 1);
-    for (let i = 0; i < 3; i += 1) {
-      if (Math.abs(p[i] - r[i]) > TOL) {
-        throw new Error(`${op} disagrees with reference on ${rgb}: ${p} vs ${r}`);
-      }
-    }
-    return [Number(p[0].toFixed(8)), Number(p[1].toFixed(8)), Number(p[2].toFixed(8))];
+function aces(rgb, exposure) {
+  const working = vectorMatrix(times(rgb, exposure / 0.6), matrices.acesInput);
+  return vectorMatrix(working.map(fitted), matrices.acesOutput).map(clip);
+}
+function agx(rgb, exposure) {
+  const wide = vectorMatrix(times(rgb, exposure), matrices.wideInput);
+  const inset = vectorMatrix(wide, matrices.inset);
+  const polynomial = [-0.00232, 0.1191, 0.4298, -6.868, 31.96, -40.14, 15.5];
+  const curved = inset.map((v) => {
+    const normalized = clip((Math.log2(Math.max(v, 1e-10)) + 12.47393) / 16.499999);
+    return polynomial.reduce((sum, coefficient, power) => sum + coefficient * normalized ** power, 0);
   });
-  operators[op] = rows;
+  const output = vectorMatrix(curved, matrices.outset).map((x) => Math.max(x, 0) ** 2.2);
+  return vectorMatrix(output, matrices.wideOutput).map(clip);
+}
+function neutral(rgb, exposure) {
+  const exposed = times(rgb, exposure);
+  const least = Math.min(...exposed);
+  const offset = least < 0.08 ? least - 6.25 * least * least : 0.04;
+  const shifted = exposed.map((value) => value - offset);
+  const peak = Math.max(...shifted);
+  const compressionStart = 0.76;
+  if (peak < compressionStart) return shifted;
+  const shoulder = 1 - compressionStart;
+  const compressed = 1 - shoulder ** 2 / (peak + shoulder - compressionStart);
+  const desaturation = 1 - 1 / (1 + 0.15 * (peak - compressed));
+  return shifted.map((value) => value * compressed / peak * (1 - desaturation) + compressed * desaturation);
 }
 
+const curves = { linear, reinhard, aces, agx, neutral };
+const cases = [];
+for (const value of [0, 1e-4, 1e-3, 0.005, 0.01, 0.02, 0.05, 0.08, 0.1, 0.18, 0.25, 0.36, 0.5, 0.64, 0.76, 1, 1.4, 2, 4, 8]) {
+  cases.push({ label: `gray-${value}`, rgb: [value, value, value] });
+}
+for (const value of [0.01, 0.1, 0.18, 0.35, 0.5, 0.75, 1, 2, 8, 32]) {
+  for (let channel = 0; channel < 3; channel++) {
+    const rgb = [0, 0, 0];
+    rgb[channel] = value;
+    cases.push({ label: `${"rgb"[channel]}-${value}`, rgb });
+  }
+}
+for (const [label, rgb] of [
+  ["warm-mid", [0.9, 0.55, 0.2]], ["cool-mid", [0.12, 0.4, 0.9]], ["neon-magenta", [1.4, 0.05, 1.1]],
+  ["teal-shadow", [0.02, 0.09, 0.1]], ["fire-hdr", [6, 1.8, 0.4]], ["snow-hdr", [3.2, 3.4, 3.8]],
+  ["sunset", [1.2, 0.4, 0.08]], ["foliage", [0.08, 0.5, 0.15]], ["skin", [0.62, 0.42, 0.32]],
+  ["deep-ocean", [0.01, 0.05, 0.3]], ["emissive-blue", [0.02, 0.3, 4]], ["brass", [0.7, 0.45, 0.12]],
+  ["flare-white", [12, 10, 8]], ["near-black", [0.002, 0.0015, 0.001]]
+]) cases.push({ label, rgb });
+if (cases.length !== 64) throw new Error(`Expected 64 input vectors; got ${cases.length}.`);
+
+const rounded = (v) => v.map((value) => Number(value.toFixed(8)));
+const operators = Object.fromEntries(Object.entries(curves).map(([name, curve]) =>
+  [name, cases.map(({ rgb }) => rounded(curve(rgb, 1)))]));
+const exposures = [0.5, 1.6];
 const exposureSweep = {
   operator: "aces",
-  exposures: [0.5, 1.6],
-  cases: cases.slice(0, 8).map(({ rgb }) => ({
-    rgb,
-    out: [0.5, 1.6].map((exposure) => {
-      const p = applyToneOperator("aces", rgb, exposure);
-      const r = ref.aces(rgb, exposure);
-      for (let i = 0; i < 3; i += 1) {
-        if (Math.abs(p[i] - r[i]) > TOL) throw new Error(`aces@${exposure} disagrees on ${rgb}`);
-      }
-      return [Number(p[0].toFixed(8)), Number(p[1].toFixed(8)), Number(p[2].toFixed(8))];
-    })
-  }))
+  exposures,
+  cases: cases.slice(0, 8).map(({ rgb }) => ({ rgb, out: exposures.map((exposure) => rounded(aces(rgb, exposure))) }))
 };
-
-const doc = {
+const result = {
   schema: "prd03/tone-operators@1",
-  source: "three@0.185.1 tonemapping_pars_fragment.glsl.js (CPU port; exposure applied inside each operator)",
+  source: "Independent published-equation reference: Reinhard 2002; Hill ACES RRT/ODT fit; AgX log/contrast fit; Khronos PBR Neutral. JS double, 8 decimals; ACES view scale 1/0.6.",
   exposure: 1,
-  cases: cases.map(({ label, rgb }) => ({ label, rgb })),
+  cases,
   operators,
   exposureSweep
 };
-
-writeFileSync(join(here, "tone-operators.json"), `${JSON.stringify(doc, null, 2)}\n`);
-console.log(`wrote tone-operators.json: ${cases.length} cases × ${POST_TONE_OPERATORS.length} operators + ${exposureSweep.exposures.length}-exposure ACES sweep`);
+writeFileSync(join(dirname(fileURLToPath(import.meta.url)), "tone-operators.json"), `${JSON.stringify(result, null, 2)}\n`);
+console.log(`Generated ${cases.length} input vectors for ${Object.keys(curves).length} independent tone equations.`);

@@ -1,37 +1,68 @@
-import { describe, expect, it } from "vitest";
+import { webcrypto } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AssetLoadError, AssetManager, type AssetLoader } from "../../packages/assets/src";
+
+beforeEach(() => { vi.stubGlobal("crypto", webcrypto); });
+afterEach(() => { vi.unstubAllGlobals(); });
 
 describe("asset cache scale behavior", () => {
   it("deduplicates a burst of duplicate in-flight loads and exposes cache diagnostics", async () => {
     let loads = 0;
-    let releaseLoad: (() => void) | undefined;
+    let releaseLoad!: () => void;
+    const heldLoad = new Promise<void>((resolve) => { releaseLoad = resolve; });
+    let allSubscribersJoined!: () => void;
+    const joined = new Promise<void>((resolve) => { allSubscribersJoined = resolve; });
+    const joinedSubscribers = new Set<number>();
+    const publishProgress: Array<() => void> = [];
     const loader: AssetLoader<{ readonly url: string }> = {
       type: "mock",
       canLoad: () => true,
       async load(request) {
         loads += 1;
-        await new Promise<void>((resolve) => {
-          releaseLoad = resolve;
-        });
+        publishProgress.push(() => request.onProgress?.({ url: request.url, phase: "document", loadedBytes: 0 }));
+        await heldLoad;
         return { url: request.url };
       }
     };
-    const manager = new AssetManager({ baseUrl: "https://assets.example.test/" });
+    const manager = new AssetManager({ baseUrl: "https://assets.example.test/", credentials: "omit" });
     manager.register(loader);
 
-    const pending = Array.from({ length: 64 }, () => manager.load("shared.mesh", { type: "mock" }));
-    await Promise.resolve();
-
-    expect(loads).toBe(1);
-    expect(manager.cache.snapshot()).toMatchObject({
-      cachedEntries: 0,
-      inFlightEntries: 1,
-      totalEntries: 1
+    const pending = Array.from({ length: 64 }, (_, index) => manager.load("shared.mesh", {
+      type: "mock",
+      onProgress: () => {
+        joinedSubscribers.add(index);
+        if (joinedSubscribers.size === 64) allSubscribersJoined();
+      }
+    }));
+    const completed = Promise.all(pending);
+    // Progress is broadcast to actual subscribers by the manager. Repeating it
+    // until every distinct caller observes it avoids assumptions about async
+    // digest ordering or how many microtasks are needed to join the flight.
+    const ticker = setInterval(() => { for (const publish of publishProgress) publish(); }, 1);
+    let deadline: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = new Promise<never>((_resolve, reject) => {
+      deadline = setTimeout(() => reject(new Error("Not all 64 asset subscribers joined the held load")), 5000);
     });
-    expect(manager.cache.snapshot().keys).toEqual(["mock:https://assets.example.test/shared.mesh"]);
+    try {
+      await Promise.race([
+        joined,
+        timedOut,
+        completed.then(() => { throw new Error("The held asset load completed before its subscribers joined"); })
+      ]);
+      expect(loads).toBe(1);
+      expect(manager.cache.snapshot()).toMatchObject({
+        cachedEntries: 0,
+        inFlightEntries: 1,
+        totalEntries: 1
+      });
+      expect(manager.cache.snapshot().keys).toEqual([expect.stringMatching(/^asset-cache-\d+$/)]);
+    } finally {
+      clearInterval(ticker);
+      if (deadline !== undefined) clearTimeout(deadline);
+      releaseLoad();
+    }
 
-    releaseLoad?.();
-    const handles = await Promise.all(pending);
+    const handles = await completed;
 
     expect(new Set(handles).size).toBe(1);
     expect(handles[0]?.refCount).toBe(64);
@@ -49,7 +80,7 @@ describe("asset cache scale behavior", () => {
       inFlightEntries: 0,
       totalEntries: 0
     });
-  });
+  }, 10000);
 
   it("keeps failed scale loads out of the cache so retries can recover", async () => {
     let attempts = 0;
@@ -95,7 +126,7 @@ describe("asset cache scale behavior", () => {
         disposed.push(value);
       }
     };
-    const manager = new AssetManager();
+    const manager = new AssetManager({ credentials: "omit" });
     manager.register(leaf);
     manager.register(parent);
 

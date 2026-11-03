@@ -12,6 +12,8 @@
 
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { encodeRgb9e5ProbeKTX2 } from "@aura3d/assets/exporters";
+import { requireStandardProbePrimaries, type StandardProbePrimaries } from "../prd02/probeFormatOptions.js";
 import { createGltfIo, loadGltfToolkit, type GltfToolkit, type Loose } from "./gltfToolkit.js";
 
 export type OptimizeRole = "hero" | "vehicle" | "character" | "prop" | "background";
@@ -153,6 +155,8 @@ export interface OptimizeHdriOptions {
   readonly width?: number;
   /** Also write `<output stem>.rgb9e5.ktx2`: a radiance cube, face = output width / 8, box-filtered mip chain. */
   readonly rgb9e5Cube?: boolean;
+  /** Emit standard KTX2 with explicitly declared source primaries; no conversion occurs. */
+  readonly standardKtx2Primaries?: StandardProbePrimaries;
 }
 
 export interface OptimizeHdriResult {
@@ -166,7 +170,12 @@ export interface OptimizeHdriResult {
   readonly width: number;
   readonly height: number;
   readonly resized: boolean;
-  readonly cube?: { readonly output: string; readonly faceSize: number; readonly mipCount: number; readonly bytes: number };
+  readonly cube?: {
+    readonly output: string; readonly faceSize: number; readonly mipCount: number; readonly bytes: number;
+    readonly container?: "standard-ktx2";
+    readonly colorPrimaries?: StandardProbePrimaries;
+    readonly auraProbeReaderSupportsPrimaries?: boolean;
+  };
 }
 
 /** Per-axis box filter taps: destination pixel `d` averages its fractional source footprint `[d*r, (d+1)*r)`. */
@@ -338,10 +347,16 @@ function halveFace(face: Float32Array, size: number): Float32Array {
 export function encodeRgb9e5CubeKtx2(
   lanes: Pick<RenderingLanes, "equirectToCubeFaces" | "packRgb9e5" | "KTX2_MAGIC" | "VK_FORMAT_E5B9G9R9_UFLOAT_PACK32">,
   image: HdrImage,
-  faceSize: number
+  faceSize: number,
+  options?: { readonly standardKtx2Primaries: StandardProbePrimaries }
 ): { readonly bytes: Uint8Array; readonly mipCount: number } {
+  const standardPrimaries = options === undefined ? undefined : requireStandardProbePrimaries(options.standardKtx2Primaries);
   const levels: Float32Array[][] = [lanes.equirectToCubeFaces(image, faceSize)];
   for (let size = faceSize; size > 1; size >>= 1) levels.push(levels[levels.length - 1]!.map((face) => halveFace(face, size)));
+  if (standardPrimaries !== undefined) {
+    const mips = levels.map((faces, level) => ({ size: Math.max(1, faceSize >> level), channels: 4 as const, faces }));
+    return { bytes: encodeRgb9e5ProbeKTX2(mips, { colorPrimaries: standardPrimaries }), mipCount: levels.length };
+  }
   const header = 68;
   const indexBytes = levels.length * 24;
   const levelBytes = levels.map((_, level) => 6 * Math.max(1, faceSize >> level) ** 2 * 4);
@@ -378,6 +393,11 @@ export function hdriCubePath(output: string): string {
 }
 
 export async function optimizeHdriFile(options: OptimizeHdriOptions): Promise<OptimizeHdriResult> {
+  const standardPrimaries = options.standardKtx2Primaries === undefined
+    ? undefined : requireStandardProbePrimaries(options.standardKtx2Primaries);
+  if (standardPrimaries !== undefined && !options.rgb9e5Cube) {
+    throw new Error("--standard-ktx2-primaries requires --rgb9e5-cube");
+  }
   if (!isHdriSize(options.size)) throw new Error(`--hdri must be 1k or 2k (got ${String(options.size)}).`);
   const projectDir = resolve(options.projectDir ?? process.cwd());
   const input = resolve(projectDir, options.input);
@@ -392,15 +412,27 @@ export async function optimizeHdriFile(options: OptimizeHdriOptions): Promise<Op
   const encoded = encodeRadianceHdr(image, [
     `aura3d assets optimize --hdri ${options.size}: ${source.width}x${source.height} -> ${image.width}x${image.height} box filter`
   ]);
+  // The standard encoder has stricter numeric/alpha bounds than the legacy
+  // packer. Complete it before writing either output so a validation failure
+  // does not leave a partial result from the newly selected mode.
+  const preparedStandard = standardPrimaries === undefined ? undefined : (() => {
+    const faceSize = Math.max(1, 2 ** Math.floor(Math.log2(Math.max(1, image.width / 8))));
+    return { faceSize, ...encodeRgb9e5CubeKtx2(lanes, image, faceSize, { standardKtx2Primaries: standardPrimaries }) };
+  })();
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, encoded);
   let cube: OptimizeHdriResult["cube"];
   if (options.rgb9e5Cube) {
-    const faceSize = Math.max(1, 2 ** Math.floor(Math.log2(Math.max(1, image.width / 8))));
-    const { bytes, mipCount } = encodeRgb9e5CubeKtx2(lanes, image, faceSize);
+    const faceSize = preparedStandard?.faceSize ?? Math.max(1, 2 ** Math.floor(Math.log2(Math.max(1, image.width / 8))));
+    const { bytes, mipCount } = preparedStandard ?? encodeRgb9e5CubeKtx2(lanes, image, faceSize);
     const cubeOutput = hdriCubePath(output);
     writeFileSync(cubeOutput, bytes);
-    cube = { output: cubeOutput, faceSize, mipCount, bytes: bytes.byteLength };
+    cube = { output: cubeOutput, faceSize, mipCount, bytes: bytes.byteLength,
+      ...(standardPrimaries === undefined ? {} : {
+        container: "standard-ktx2" as const,
+        colorPrimaries: standardPrimaries,
+        auraProbeReaderSupportsPrimaries: standardPrimaries === "bt709"
+      }) };
   }
   return {
     input,
@@ -418,5 +450,5 @@ export async function optimizeHdriFile(options: OptimizeHdriOptions): Promise<Op
 }
 
 export function optimizeHdriUsage(): string {
-  return "aura3d assets optimize --file in.hdr --out out_1k.hdr --hdri 1k|2k [--rgb9e5-cube] [--json]";
+  return "aura3d assets optimize --file in.hdr --out out_1k.hdr --hdri 1k|2k [--rgb9e5-cube [--standard-ktx2-primaries bt709|unspecified]] [--json]";
 }

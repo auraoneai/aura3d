@@ -48,6 +48,10 @@ export type {
   GLTFootPlantingApplyResult,
   GLTFootPlantingConfig,
   GLTFootPlantingLegConfig,
+  GLTFSceneAnimationMaterialApplyStatus,
+  GLTFSceneAnimationMaterialBindingFailure,
+  GLTFSceneAnimationMaterialBindingIssue,
+  GLTFSceneAnimationMaterialBindingStatus,
   GLTFSceneAnimationMaterialSink,
   GLTFSceneAnimationMixerOptions,
   GLTFSceneAnimationPlayOptions,
@@ -62,11 +66,12 @@ export type {
 } from "./GLTFAnimationRuntime";
 export { AssetHandle } from "./AssetHandle";
 export type { AssetHandleOptions, AssetHandleStatus } from "./AssetHandle";
-export { AssetLoadError } from "./AssetLoader";
-export type { AssetLoader, AssetLoadProgress, AssetLoadRequest } from "./AssetLoader";
+export { AssetLoadError, mergeAssetRequestOptions, requestIdentity, requestIdentityDetails, redactAssetUrl } from "./AssetLoader";
+export type { AssetLoader, AssetLoadProgress, AssetLoadRequest, AssetRequestOptions, AssetRequestIdentity, AssetIntegrity } from "./AssetLoader";
 export { AssetManager } from "./AssetManager";
 export type { AssetLoadOptions, AssetManagerOptions } from "./AssetManager";
 export { AssetRegistry } from "./AssetRegistry";
+export { inspectNRRDDataReference } from "./NRRDHeader";
 export { createAssetImportPreflightReport, detectAssetImportFormat } from "./AssetImportPreflight";
 export type {
   AssetImportPreflightFormat,
@@ -261,6 +266,7 @@ export {
   DEFAULT_GLTF_STUDIO_PREVIEW_FRAME,
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS,
+  GLTFTextureLoadError,
   createDefaultGLTFHdrStudioPreviewEnvironmentLighting,
   createGLTFRenderResourceDiagnostics,
   createGLTFRenderResources,
@@ -269,6 +275,7 @@ export {
 } from "./GLTFRenderResources";
 export type {
   DecodedGLTFImage,
+  GLTFImageDecodeContext,
   GLTFImageDecoder,
   GLTFMaterialRenderStateOverride,
   GLTFMaterialOverrideQuery,
@@ -276,6 +283,7 @@ export type {
   GLTFRenderableBinding,
   GLTFRenderResourceDiagnostics,
   GLTFRenderResourceDiagnosticsOptions,
+  GLTFRenderResourceLoadIssue,
   GLTFRenderResourceTextureSlotDiagnostic,
   GLTFRenderQualityPreset,
   GLTFRendererInput,
@@ -296,7 +304,7 @@ export { selectKTX2TargetFormat } from "./KTX2TargetSelection";
 export { AssetDecoderUnavailable, createAssetDecoderRegistry, probeKTX2Header } from "./AssetDecoderRegistry";
 export type { AssetDecoderId, AssetDecoderRegistry, AssetDecoderRegistryDiagnostics, AssetDecoderRegistryOptions, AuraAssetDecoderSet } from "./AssetDecoderRegistry";
 export { ImportPipeline, ImportPipelineError } from "./ImportPipeline";
-export type { ImportPipelineContext, ImportPipelineProgressEvent, ImportPipelineProgressStatus, ImportStage } from "./ImportPipeline";
+export type { ImportPipelineContext, ImportPipelineProgressEvent, ImportPipelineProgressStatus, ImportPipelineRun, ImportStage } from "./ImportPipeline";
 export { LoadContext } from "./LoadContext";
 export type { LoadContextOptions } from "./LoadContext";
 export { MaterialLoader, createMaterialFromDescriptor } from "./MaterialLoader";
@@ -313,17 +321,31 @@ export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
 // threejs-parity ST-04/AD-03 (lane L4): three-signature real loaders.
 export { FileLoader } from "./FileLoader";
-export type { FileLoaderResponseType } from "./FileLoader";
+export type { FileLoaderResponseType, FileLoaderOptions } from "./FileLoader";
 export { ImageBitmapLoader } from "./ImageBitmapLoader";
-export type { ImageBitmapLoaderOptions } from "./ImageBitmapLoader";
+export type { ImageBitmapLoaderOptions, ImageBitmapLoadRequest } from "./ImageBitmapLoader";
 export { DataTextureLoader } from "./DataTextureLoader";
-export { EXRLoader, EXRLoaderThreeCompat, parseEXR } from "./EXRLoader";
-export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData } from "./EXRLoader";
-export { fetchBytes } from "./LoaderFetch";
+export { EXRLoader, EXRLoaderThreeCompat, parseEXR, parseDeepEXR, compositeDeepEXR } from "./EXRLoader";
+export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData, AuraEXRDeepChannel, AuraEXRDeepData, AuraEXRDeepOptions } from "./EXRLoader";
+export { fetchBytes, verifyAssetBytes, AssetIntegrityError, AssetPolicyError, AssetSizeError, isNonRetryableAssetError } from "./LoaderFetch";
 export type { AuraLoaderProgress } from "./LoaderFetch";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
-export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
+export type { WorkerAssetJob, WorkerAssetJobRunner, WorkerAssetJobsOptions } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";
 export * from "./TextureStreaming.js";
 export { GLTFSharedTextureCache } from "./GLTFSharedTextureCache.js";
 export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
+export { IESLoader, parseIES, sampleIESProfile } from "./IESLoader.js";
+export type { IESProfile, IESParseOptions } from "./IESLoader.js";
+export { GaussianSplatLoader, parseGaussianSplat, validateGaussianSplat } from "./loaders/GaussianSplatLoader.js";
+export type { GaussianSplatData, GaussianSplatFormat, GaussianSplatDegree, GaussianSplatColorSpace, GaussianSplatParseOptions, GaussianSplatCodec } from "./loaders/GaussianSplatLoader.js";
+export { PLYLoader, STLLoader, parsePLY, parseSTL } from "./loaders/MeshFormatLoaders.js";
+export type { MeshImportLimits, NativeMeshData, PlyMeshData, StlMeshData } from "./loaders/MeshFormatLoaders.js";
+export { Model3MFLoader, parseModel3MF, read3MFPackageEntries } from "./loaders/Model3MFLoader.js";
+export type { Model3MFLimits, Model3MFArchiveLimits, Model3MFAsset } from "./loaders/Model3MFLoader.js";
+export { exportOBJ } from "./exporters/OBJExporter.js";
+export type { OBJExportOptions } from "./exporters/OBJExporter.js";
+export { exportSTL } from "./exporters/STLExporter.js";
+export type { STLExportOptions } from "./exporters/STLExporter.js";
+export { FormatRegistry, createDefaultFormatRegistry, createGLTFFormatAdapter } from "./FormatRegistry.js";
+export type { FormatAdapter, RegisteredFormatAsset, FormatMetadata, FormatSelection } from "./FormatRegistry.js";

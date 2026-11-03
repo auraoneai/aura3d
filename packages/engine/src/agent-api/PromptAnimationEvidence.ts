@@ -12,7 +12,6 @@ import {
 } from "./PromptAnimationContract.js";
 import type { AuraVoiceBridgePackage } from "./AuraVoiceBridge.js";
 import type { AnimationPerformanceCoverage } from "./AnimationPerformance.js";
-import { character } from "./humanoid-walk-runtime.js";
 import { storyboard } from "./PromptAnimationContract.js";
 import { shotTimeline } from "./ShotTimeline.js";
 

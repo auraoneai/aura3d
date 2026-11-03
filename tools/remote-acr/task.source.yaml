@@ -1,0 +1,15 @@
+version: v1.1.0
+# All values are non-secret, validated by run-source.sh. The image is selected
+# by digest, not by a mutable tag. Authentication stays in the task identity.
+steps:
+  - id: source
+    cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}}
+    workingDirectory: /repo
+    env:
+      - CI=1
+      - NATIVE_RUN_ID={{.Values.RUN_ID}}
+      - NATIVE_RELEASE_KIND={{.Values.RELEASE_KIND}}
+      - NATIVE_SOURCE_PHASE={{.Values.SOURCE_PHASE}}
+      - NATIVE_BUILD_REPORT_SHA256={{.Values.BUILD_REPORT_SHA256}}
+      - AURA3D_ARTIFACTS_BLOB_URL={{.Values.ARTIFACTS_BLOB_URL}}
+    timeout: 7200

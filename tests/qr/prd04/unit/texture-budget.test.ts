@@ -1,94 +1,94 @@
-/**
- * TextureBudget (PRD-04 §7.3, P1-7): power-of-2 downscale under
- * maxDimension (4096² → 2048² at the Medium tier), KTX2 chains dropping
- * leading mips, and the per-device ledger keeping bytes ≤ maxBytes with
- * largest-first top-mip loss.
- */
 import { describe, expect, it } from "vitest";
+import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
+import type { TextureDescriptor } from "../../../../packages/rendering/src/Texture";
 import {
   applyTextureBudget,
-  resetTextureBudgetLedger,
+  releaseTextureBudget,
   textureBudgetReport
 } from "../../../../packages/rendering/src/textures/TextureBudget";
-import type { TextureDescriptor } from "../../../../packages/rendering/src/Texture";
-import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
 
-const MEDIUM = { maxDimension: 2048, maxBytes: 512 * 1024 * 1024 } as const;
-
-function rgba8(width: number, height: number, label: string): TextureDescriptor {
-  return { width, height, format: "rgba8", label, data: new Uint8Array(width * height * 4) };
+function rgba(width: number, height: number, label = "texture"): TextureDescriptor {
+  return { width, height, format: "rgba8", label, data: new Uint8Array(width * height * 4).fill(25), generateMipmaps: false };
 }
 
-function ktx2Chain(base: number, levels: number, label: string): TextureDescriptor {
-  const mips = [];
-  for (let i = 0; i < levels; i++) {
-    const w = Math.max(4, base >> i);
-    const h = Math.max(4, base >> i);
-    // bc7-rgba-unorm: 16 bytes per 4x4 block
-    mips.push({ width: w, height: h, data: new Uint8Array((w / 4) * (h / 4) * 16) });
+function rgbaMipChain(size: number, label = "texture"): TextureDescriptor {
+  const mipLevels: NonNullable<TextureDescriptor["mipLevels"]>[number][] = [];
+  for (let width = size; ; width = Math.max(1, Math.floor(width / 2))) {
+    mipLevels.push({ width, height: width, data: new Uint8Array(width * width * 4).fill(width) });
+    if (width === 1) break;
   }
-  return { width: base, height: base, format: "bc7-rgba-unorm", label, mipLevels: mips };
+  return { width: size, height: size, format: "rgba8", label, mipLevels, generateMipmaps: false };
 }
 
-describe("applyTextureBudget — maxDimension", () => {
-  it("downscales uncompressed 4096² rgba8 to 2048² under the Medium policy", () => {
+function allocatedBytes(texture: TextureDescriptor): number {
+  return texture.mipLevels?.reduce((sum, mip) => sum + mip.data.byteLength, 0) ?? texture.data?.byteLength ?? 0;
+}
+
+describe("texture budget admission", () => {
+  it("reduces RGBA data to meet maxDimension while keeping the original pixels intact", () => {
     const device = new MockRenderDevice();
-    resetTextureBudgetLedger(device);
-    const out = applyTextureBudget(rgba8(4096, 4096, "albedo"), MEDIUM, device);
-    expect(Math.max(out.width, out.height)).toBeLessThanOrEqual(2048);
-    expect(out.width).toBe(2048);
-    expect(out.mipLevels?.[0].width).toBe(2048);
+    const original = rgba(4, 4, "albedo");
+    const returned = applyTextureBudget(original, { maxDimension: 2, maxBytes: 64 }, device);
+    expect([returned.width, returned.height, allocatedBytes(returned)]).toEqual([2, 2, 16]);
+    expect([...returned.data!]).toEqual(new Array(16).fill(25));
+    expect([original.width, original.height, original.data?.byteLength]).toEqual([4, 4, 64]);
+    expect(textureBudgetReport(device)).toEqual({ textureBytes: 16, downscaled: [{ id: "albedo", from: 64, to: 16 }] });
+    releaseTextureBudget(returned, device);
+    expect(textureBudgetReport(device).textureBytes).toBe(0);
   });
 
-  it("drops leading mip levels on a 5-level KTX2 4096² chain (starts at level 1)", () => {
+  it("drops BC7 top mips using whole blocks, including sub-4-pixel levels", () => {
     const device = new MockRenderDevice();
-    resetTextureBudgetLedger(device);
-    const out = applyTextureBudget(ktx2Chain(4096, 5, "albedo-ktx2"), MEDIUM, device);
-    expect(out.width).toBe(2048);
-    expect(out.mipLevels).toHaveLength(4);
-    expect(out.mipLevels?.[0].width).toBe(2048);
-  });
-});
-
-describe("applyTextureBudget — maxBytes ledger", () => {
-  it("300 MiB of inputs under 256 MiB: largest lose top mips first, ledger ≤ 256 MiB", () => {
-    const device = new MockRenderDevice();
-    resetTextureBudgetLedger(device);
-    const policy = { maxBytes: 256 * 1024 * 1024, maxDimension: 4096 };
-    const MiB = 1024 * 1024;
-    // five 60 MiB textures (mip chains: 48 MiB base + 12 MiB of mips)
-    for (let i = 0; i < 5; i++) {
-      const base = 48 * MiB;
-      applyTextureBudget(
-        {
-          width: 4096,
-          height: 4096,
-          format: "rgba8",
-          label: `tex-${i}`,
-          mipLevels: [
-            { width: 4096, height: 4096, data: new Uint8Array(base) },
-            { width: 2048, height: 2048, data: new Uint8Array(base / 4) }
-          ]
-        },
-        policy,
-        device
-      );
-    }
-    const report = textureBudgetReport(device);
-    expect(report.textureBytes).toBeLessThanOrEqual(256 * MiB);
-    // largest entries dropped their top mip first
-    expect(report.downscaled.length).toBeGreaterThanOrEqual(1);
-    expect(report.downscaled[0].from).toBe(60 * MiB);
-    expect(report.downscaled[0].to).toBe(12 * MiB);
+    const original: TextureDescriptor = {
+      width: 16, height: 8, format: "bc7-rgba-unorm", label: "compressed",
+      mipLevels: [
+        { width: 16, height: 8, data: new Uint8Array(128).fill(1) },
+        { width: 8, height: 4, data: new Uint8Array(32).fill(2) },
+        { width: 4, height: 2, data: new Uint8Array(16).fill(3) },
+        { width: 2, height: 1, data: new Uint8Array(16).fill(4) },
+        { width: 1, height: 1, data: new Uint8Array(16).fill(5) }
+      ]
+    };
+    const returned = applyTextureBudget(original, { maxDimension: 8, maxBytes: 80 }, device);
+    expect([returned.width, returned.height]).toEqual([8, 4]);
+    expect(returned.mipLevels?.map((mip) => mip.data[0])).toEqual([2, 3, 4, 5]);
+    expect(allocatedBytes(returned)).toBe(80);
+    expect(textureBudgetReport(device).textureBytes).toBe(80);
+    releaseTextureBudget(original, device);
+    expect(textureBudgetReport(device).textureBytes).toBe(0);
   });
 
-  it("ledgers are per-device (WeakMap) and reported via textureBudgetReport", () => {
+  it("reduces only a new admission and never alters a texture already returned", () => {
+    const device = new MockRenderDevice();
+    const first = applyTextureBudget(rgbaMipChain(4, "first"), { maxBytes: 104 }, device);
+    const second = applyTextureBudget(rgbaMipChain(4, "second"), { maxBytes: 104 }, device);
+    expect(first.mipLevels?.map((mip) => mip.width)).toEqual([4, 2, 1]);
+    expect(second.mipLevels?.map((mip) => mip.width)).toEqual([2, 1]);
+    expect([allocatedBytes(first), allocatedBytes(second), textureBudgetReport(device).textureBytes]).toEqual([84, 20, 104]);
+    expect(() => applyTextureBudget(rgba(1, 1, "third"), { maxBytes: 104 }, device)).toThrow(/cannot fit/);
+    expect(textureBudgetReport(device).textureBytes).toBe(104);
+    releaseTextureBudget(first, device);
+    releaseTextureBudget(second, device);
+    expect(textureBudgetReport(device).textureBytes).toBe(0);
+  });
+
+  it("deduplicates one identity per device and keeps equal labels independently owned", () => {
     const a = new MockRenderDevice();
     const b = new MockRenderDevice();
-    resetTextureBudgetLedger(a);
-    resetTextureBudgetLedger(b);
-    applyTextureBudget(rgba8(1024, 1024, "only-a"), { maxBytes: 1 << 30 }, a);
-    expect(textureBudgetReport(a).textureBytes).toBe(1024 * 1024 * 4);
-    expect(textureBudgetReport(b).textureBytes).toBe(0);
+    const first = rgba(2, 2, "shared-label");
+    const second = rgba(2, 2, "shared-label");
+    const firstOnA = applyTextureBudget(first, { maxBytes: 32 }, a);
+    expect(applyTextureBudget(first, { maxBytes: 32 }, a)).toBe(firstOnA);
+    applyTextureBudget(second, { maxBytes: 32 }, a);
+    applyTextureBudget(first, { maxBytes: 32 }, b);
+    expect(textureBudgetReport(a).textureBytes).toBe(32);
+    expect(textureBudgetReport(b).textureBytes).toBe(16);
+    releaseTextureBudget(firstOnA, a);
+    releaseTextureBudget(first, a);
+    expect(textureBudgetReport(a).textureBytes).toBe(16);
+    expect(textureBudgetReport(b).textureBytes).toBe(16);
+    releaseTextureBudget(second, a);
+    releaseTextureBudget(first, b);
+    expect([textureBudgetReport(a).textureBytes, textureBudgetReport(b).textureBytes]).toEqual([0, 0]);
   });
 });

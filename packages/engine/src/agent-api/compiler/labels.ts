@@ -1,13 +1,12 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraVec3, AuraLabelNode, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "../nodes/types.js";
+import type { AuraVec3, AuraLabelNode, AuraPrimitiveNode, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "../nodes/types.js";
 import type { WorldLabel, WorldLabelLayer } from "../WorldLabelRenderer.js";
 import { createWorldLabelLayer } from "../WorldLabelRenderer.js";
 import { groups } from "../nodes/groups.js";
 import { isRenderableModelNode } from "./observations.js";
 import { labelTelemetryRoleFor } from "../LabelTelemetry.js";
 import { primitiveGeometryBounds } from "./primitives.js";
-import { round } from "../GameRuntime.js";
 
 /**
  * Translate scene label nodes into world-anchored labels for the label layer.
@@ -19,8 +18,9 @@ import { round } from "../GameRuntime.js";
  * path public routes actually use.
  */
 export function worldLabelsFromSnapshot(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRuntimeNodeRegistry): readonly WorldLabel[] {
-  const labelNodes = groups.flatten(snapshot.nodes).filter((node): node is AuraLabelNode => node.kind === "label");
-  return labelNodes.map((node, index) => {
+  const flattened = groups.flatten(snapshot.nodes);
+  const labelNodes = flattened.filter((node): node is AuraLabelNode => node.kind === "label");
+  const labels: WorldLabel[] = labelNodes.map((node, index) => {
     const runtimeId = node.runtime?.id;
     const runtimeSnapshot = runtimeId ? runtimeNodes?.get(runtimeId)?.snapshot() : undefined;
     if (runtimeSnapshot?.visible === false) {
@@ -64,22 +64,87 @@ export function worldLabelsFromSnapshot(snapshot: AuraSceneSnapshot, runtimeNode
       ...(node.label === "hud" && !node.screenAnchor ? { screenAnchor: "top-left" as const } : {})
     } satisfies WorldLabel & { readonly leaderAnchor?: readonly [number, number, number] };
   });
+  flattened.forEach((node, index) => {
+    if (node.kind !== "primitive") return;
+    const handle = node.runtime?.id ? runtimeNodes?.get(node.runtime.id) as (NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>> & { readonly __auraText3D?: AuraPrimitiveNode["text3D"] }) | undefined : undefined;
+    const text = handle?.__auraText3D ?? node.text3D;
+    if (!text || text.sdfAccessibleLabel === undefined || text.sdfAccessibleLabel === false) return;
+    const runtime = handle?.snapshot();
+    if (runtime?.visible === false || (node as { visible?: boolean }).visible === false) return;
+    const label: AccessibleTextLabel = {
+      id: `aura-world-text-${index}`, text: text.sdfAccessibleLabel,
+      anchor: (runtime?.position ?? node.position ?? [0, 0, 0]) as AuraVec3,
+      accessibleOnly: true
+    };
+    labels.push(label);
+  });
+  return labels;
+}
+
+type AccessibleTextLabel = WorldLabel & { readonly accessibleOnly: true };
+function isAccessibleTextLabel(label: WorldLabel): label is AccessibleTextLabel {
+  return (label as Partial<AccessibleTextLabel>).accessibleOnly === true;
+}
+
+/** A layout-capable canvas, including elements from another DOM realm. */
+export function isHtmlCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
+  return "getBoundingClientRect" in canvas && typeof canvas.getBoundingClientRect === "function";
 }
 
 /**
  * Mount the world-label layer for a canvas, if the scene has any label nodes.
  *
- * Returns `undefined` in headless or label-free scenes so nothing is created that
- * would then need disposing.
+ * The label and accessible-text layers require a DOM canvas and are unavailable
+ * on an OffscreenCanvas even when a `document` happens to exist in the realm.
+ * Returns `undefined` for those, headless or label-free scenes.
  */
 export function createSceneLabelLayer(
-  canvas: HTMLCanvasElement | undefined,
+  canvas: HTMLCanvasElement | OffscreenCanvas | undefined,
   snapshot: AuraSceneSnapshot
 ): WorldLabelLayer | undefined {
-  if (!canvas || typeof document === "undefined") return undefined;
-  const hasLabels = groups.flatten(snapshot.nodes).some((node) => node.kind === "label");
+  if (!canvas || typeof document === "undefined" || !isHtmlCanvas(canvas)) return undefined;
+  const hasLabels = groups.flatten(snapshot.nodes).some((node) => node.kind === "label" ||
+    (node.kind === "primitive" && typeof node.text3D?.sdfAccessibleLabel === "string"));
   if (!hasLabels) return undefined;
-  return createWorldLabelLayer({ container: canvas.parentElement ?? document.body, canvas });
+  const container = canvas.parentElement ?? document.body;
+  const layer = createWorldLabelLayer({ container, canvas });
+  const accessible = document.createElement("div");
+  accessible.setAttribute("data-aura-world-text-accessibility", "");
+  accessible.style.cssText = "position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0";
+  container.append(accessible);
+  const elements = new Map<string, HTMLElement>();
+  let disposed = false;
+  return {
+    setLabels(labels) {
+      if (disposed) return;
+      const current = new Set<string>();
+      for (const label of labels) {
+        if (!isAccessibleTextLabel(label)) continue;
+        current.add(label.id);
+        let element = elements.get(label.id);
+        if (!element) {
+          element = document.createElement("div");
+          element.setAttribute("role", "note");
+          element.setAttribute("data-aura-world-text-id", label.id);
+          accessible.append(element);
+          elements.set(label.id, element);
+        }
+        if (element.textContent !== label.text) element.textContent = label.text;
+      }
+      for (const [id, element] of elements) if (!current.has(id)) { element.remove(); elements.delete(id); }
+      layer.setLabels(labels.filter((label) => !isAccessibleTextLabel(label)));
+    },
+    update: (matrix) => { if (!disposed) layer.update(matrix); },
+    setOcclusionTest: (test) => { if (!disposed) layer.setOcclusionTest(test); },
+    snapshot: () => layer.snapshot(),
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      layer.dispose();
+      elements.clear();
+      accessible.remove();
+    }
+  };
 }
 
 /**

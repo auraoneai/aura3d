@@ -513,7 +513,7 @@ export function createImportedAnimationRuntime(scene: A3DGltfScene): A3DImported
     scene: scene.resources.scene,
     clips: scene.asset.animations,
     asset: scene.asset,
-    resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(scene.resources)
+    resolveAnimationMaterial: createGLBActorAnimationMaterialResolver(scene.resources, scene.asset)
   });
   return {
     scene,

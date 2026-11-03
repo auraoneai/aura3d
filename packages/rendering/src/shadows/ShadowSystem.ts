@@ -1,9 +1,9 @@
 /**
  * ShadowSystem — PRD-02 Phase 4 flag-path shadow orchestration: stable-fit
  * CSM for the sun (DirectionalCascadeFitter) + a depth atlas of spot/point
- * tiles (ShadowAtlas), rendered through DepthPass into one 2D depth target
- * per cascade (depth-only targets via Q-01-5 when the device supports depth
- * textures, 02-T1946). Produces the C-11
+ * tiles (ShadowAtlas), rendered through DepthPass into one 2D target per
+ * cascade. Targets expose depth textures on WebGL and encoded color on WebGPU.
+ * Produces the C-11
  * `ShadowFrameUniforms` for the `prd02.shadowFrameUniforms` blackboard key;
  * the flag-path forward binding reads the extra `cascadeTextures` /
  * `localShadowMatrices` fields on the same object.
@@ -14,8 +14,9 @@
  */
 
 import type { ShadowPcfTapTier } from "./ShadowFilterTier";
-import { DepthPass } from "../DepthPass";
-import type { RenderDevice, RenderTarget, RenderTargetDescriptor } from "../RenderDevice";
+import { DepthPass, assertStableDepthClippingInputs, depthAlphaVariantForItem, type PreparedDepthPlan } from "../DepthPass";
+import { RenderDeviceError, type RenderDevice, type RenderTarget, type RenderTargetDescriptor } from "../RenderDevice";
+import type { RenderPassContext } from "../RenderPass";
 import type { Texture } from "../Texture";
 import type { RenderItem } from "../contracts/renderItem";
 import type { ShadowCasterVariantKey, ShadowFrameUniforms } from "../contracts/shadows";
@@ -32,12 +33,17 @@ import {
   depthDeformIncompatibility,
   ensurePrd02DepthFeatures,
   prd02DepthFeatures,
+  prd02DepthVariantForVertexFormat,
   resolvePrd02ShadowCasterVariant,
   precompilePrd02DepthVariants,
   registerPrd02DepthShader
 } from "./Prd02DepthShaderLibrary";
 import type { ShaderLibrary } from "../ShaderLibraryCore";
 import { createLeanCoreShaderLibrary } from "../ShaderLibraryCore";
+import { resolveRenderGeometry } from "../forward/Deform";
+import { createClippingBinding, type ClippingGroupInput } from "../ClippingPlanes";
+import { MaterialInstance } from "../MaterialInstance";
+import { expandLogicalBatchItems } from "../batching/BatchMembers";
 
 /** Structural match of the compiler's ShadowSystemConfig (engine-side type). */
 export interface ShadowSystemConfigInput {
@@ -70,6 +76,10 @@ export interface ShadowSystemLocalLight {
 
 export interface ShadowSystemFrame {
   readonly camera: CascadeFitterCamera | FrameCamera;
+  /** The same scene eye used for forward custom-vertex displacement. */
+  readonly cameraPosition?: readonly [number, number, number];
+  /** The same frame time used for forward custom-vertex displacement. */
+  readonly timeSeconds?: number;
   readonly sun?: ShadowSystemSun | null;
   readonly casters: readonly RenderItem[];
   readonly localLights?: readonly ShadowSystemLocalLight[];
@@ -88,7 +98,7 @@ export interface ShadowSystemFrame {
 
 /** ShadowFrameUniforms plus the extra bindings the PRD-02 forward path needs. */
 export interface Prd02ShadowFrameUniforms extends ShadowFrameUniforms {
-  /** One depth texture per active cascade (index = cascade). */
+  /** One sampled shadow texture per cascade: depth on WebGL, encoded color on WebGPU. */
   readonly cascadeTextures: readonly (Texture | null)[];
   /** Column-major tile sample VPs, 6 × mat4 (point faces/spots). */
   readonly localShadowMatrices: Float32Array;
@@ -101,6 +111,26 @@ export interface Prd02ShadowFrameUniforms extends ShadowFrameUniforms {
 const ATLAS_SIZE = 1024;
 const MAX_CASCADE_TEXTURES = 4;
 const MAX_LOCAL_TILES = 6;
+
+interface PreparedShadowDraw {
+  readonly pass: DepthPass;
+  readonly plan: PreparedDepthPlan;
+  readonly context: RenderPassContext;
+}
+
+interface PreparedShadowFrame {
+  readonly cascades: ReadonlyMap<number, PreparedShadowDraw>;
+  readonly tiles: readonly PreparedShadowDraw[];
+  readonly all: readonly PreparedShadowDraw[];
+}
+
+function disposePreparedShadowDraws(draws: readonly PreparedShadowDraw[]): void {
+  const errors: unknown[] = [];
+  for (const draw of draws) {
+    try { draw.plan.dispose(); } catch (error) { errors.push(error); }
+  }
+  if (errors.length) throw new AggregateError(errors, "Prepared shadow depth cleanup failed");
+}
 
 export class Prd02ShadowSystem {
   private cascadeTargets: (RenderTarget | null)[] = [];
@@ -126,6 +156,29 @@ export class Prd02ShadowSystem {
   }
 
   update(frame: ShadowSystemFrame): Prd02ShadowFrameUniforms {
+    this.resetFrameState();
+    try {
+      if (this.device.kind === "webgpu" && typeof this.device.getRenderTarget !== "function") {
+        throw new RenderDeviceError("WebGPU shadow passes require render-target state restoration.", "SHADOW_TARGET_STATE_UNAVAILABLE");
+      }
+      return this.updateFrame(frame);
+    } catch (error) {
+      // No diagnostics or cascade fits from a partially submitted frame may
+      // be mistaken for a completed set. Targets remain owned for retry.
+      this.resetFrameState();
+      throw error;
+    }
+  }
+
+  private resetFrameState(): void {
+    this.lastFits = [];
+    this.lastTiles = [];
+    this.lastVariants = [];
+    this.lastDropped = [];
+    this.lastSkippedCascades = [];
+  }
+
+  private updateFrame(frame: ShadowSystemFrame): Prd02ShadowFrameUniforms {
     const { camera } = frame;
     const shadowDistance = Math.min(camera.far ?? Infinity, this.config.maxDistance);
     // The oversize-caster skip is part of the 4.3.0 fit; legacy mode (the default) keeps every caster as 4.2.0 did.
@@ -170,6 +223,14 @@ export class Prd02ShadowSystem {
       }
     }
 
+    const skip = frame.cascadeUse
+      ? unusedCascadeIndices(this.lastFits, frame.cascadeUse.receivers, frame.cascadeUse.camera)
+      : undefined;
+    // Feature selectors are caller-extensible. Reject existing clipping
+    // accessors before they can be observed by a selector, then check again
+    // immediately before plans in case a selector changes an input.
+    this.assertStableMultiTargetClipping(casters, skip);
+
     // 02-DEPTH: compose every active C-11 depth feature (all lanes), not only
     // prd02's own; deform features without a C-18 entry point are reported.
     this.depthFeatures = activeDepthFeatures(frame.flags);
@@ -187,13 +248,21 @@ export class Prd02ShadowSystem {
     }
     this.lastVariants = [...variantKeys.keys()].sort();
 
-    const skip = frame.cascadeUse
-      ? unusedCascadeIndices(this.lastFits, frame.cascadeUse.receivers, frame.cascadeUse.camera)
-      : undefined;
     this.lastSkippedCascades = skip ? [...skip].sort() : [];
-    this.renderCascades(casters, resolve, skip);
-    this.renderAtlas(casters, resolve);
-    return this.frameUniforms();
+    const cameraPosition = frame.cameraPosition ?? (camera as Partial<FrameCamera>).position ?? frame.cascadeUse?.camera.eye;
+    const prepared = this.prepareShadowFrame(casters, resolve, cameraPosition, frame.timeSeconds, skip);
+    let uniforms: Prd02ShadowFrameUniforms;
+    try {
+      this.renderCascades(casters, resolve, cameraPosition, frame.timeSeconds, skip, prepared);
+      this.renderAtlas(casters, resolve, cameraPosition, frame.timeSeconds, prepared);
+      uniforms = this.frameUniforms();
+    } catch (error) {
+      try { disposePreparedShadowDraws(prepared?.all ?? []); }
+      catch (cleanup) { throw new AggregateError([error, cleanup], "Shadow rendering and prepared depth cleanup failed"); }
+      throw error;
+    }
+    disposePreparedShadowDraws(prepared?.all ?? []);
+    return uniforms;
   }
 
   /** One-time async warm-up so steady-state `programCompileCount` delta is 0. */
@@ -201,8 +270,42 @@ export class Prd02ShadowSystem {
     this.depthFeatures = activeDepthFeatures(frame.flags);
     const variants = new Map<string, { key: ShadowCasterVariantKey; features: readonly DepthVariantFeature[] }>();
     for (const caster of frame.casters) {
-      const key = resolvePrd02ShadowCasterVariant(caster, frame.flags, frame.tier, this.depthFeatures);
-      variants.set(shadowCasterVariantId(key), { key, features: this.depthFeatures });
+      // DepthPass skips empty instance sets and applies CPU morphs before it
+      // selects a variant. Mirror that preparation here: a morph-aware feature
+      // must see the same geometry and cleared morph fields as the actual draw.
+      if (caster.instanceTransforms !== undefined && caster.instanceTransforms.length === 0) continue;
+      const hasMorph = caster.morphTargets !== undefined || caster.morphWeights !== undefined;
+      const geometry = hasMorph ? resolveRenderGeometry(caster) : caster.geometry;
+      try {
+        const prepared = hasMorph
+          ? { ...caster, geometry, shadowGeometry: undefined, morphTargets: undefined, morphWeights: undefined }
+          : caster;
+        let key = resolvePrd02ShadowCasterVariant(prepared, frame.flags, frame.tier, this.depthFeatures);
+        // ShadowSystem supplies no pass-wide clipping override, so mirror the
+        // item/material groups DepthPass reads and the shadow-only opt-in.
+        const clipItem = prepared as RenderItem & { readonly globalClipping?: ClippingGroupInput; readonly materialClipping?: ClippingGroupInput };
+        const base = prepared.material instanceof MaterialInstance ? prepared.material.baseMaterial : prepared.material;
+        const clipping = createClippingBinding({
+          global: clipItem.globalClipping,
+          material: clipItem.materialClipping ?? (base as (typeof base & { readonly clipping?: ClippingGroupInput }))?.clipping,
+          pass: "shadow",
+          primitive: prepared.geometry.topology === "lines" ? "line" : prepared.geometry.topology === "points" ? "point" : "mesh",
+          backend: this.device.kind
+        });
+        if (clipping.groups.length > 0) key = { ...key, features: { ...key.features, "a3d.clipping": true } };
+        // Match the depth draw after morph preparation and clipping selection,
+        // including UV0 (whose feature value is zero) and vertex-alpha inputs.
+        key = depthAlphaVariantForItem(prepared, key, this.device);
+        // Masked depth must use the original geometry to preserve coverage.
+        // Unmasked casters may instead draw a shadow proxy, so do not validate
+        // their original layout as if it were necessarily the submitted one.
+        if (key.alphaTest && (this.device.kind === "webgpu" || this.device.kind === "webgl2")) {
+          key = prd02DepthVariantForVertexFormat(key, prepared.geometry.vertexBuffer.format, this.device.kind);
+        }
+        variants.set(shadowCasterVariantId(key), { key, features: this.depthFeatures });
+      } finally {
+        if (geometry !== caster.geometry) geometry.dispose();
+      }
     }
     await precompilePrd02DepthVariants(this.device, this.shaderLibrary, variants);
     this.precompiled = true;
@@ -272,6 +375,7 @@ export class Prd02ShadowSystem {
   }
 
   dispose(): void {
+    this.resetFrameState();
     for (const target of this.cascadeTargets) target?.dispose();
     this.cascadeTargets = [];
     this.atlasTarget?.dispose();
@@ -279,12 +383,15 @@ export class Prd02ShadowSystem {
   }
 
   /**
-   * 02-T1946: shadow maps only need the sampled depth surface. With
-   * `depth-textures` the targets are depth-only (Q-01-5) — no rgba8 colour
-   * attachment, saving 4·size² bytes per target; otherwise keep the rgba8 +
-   * depth-texture target the device can always build.
+   * WebGL uses depth-only targets when depth textures are available, saving
+   * the color attachment. WebGPU graph receivers use the encoded color
+   * attachment and an ordinary depth attachment for raster depth testing.
    */
   private depthTargetDescriptor(size: number, label: string): RenderTargetDescriptor {
+    // WebGPU graph receivers sample encoded depth through texture_2d<f32>.
+    // The GPU depth attachment is still used for raster depth testing, but is
+    // not bound as a float texture or an unsupported comparison sampler.
+    if (this.device.kind === "webgpu") return { width: size, height: size, label, format: "rgba8", depth: true };
     return this.device.info.capabilities?.includes("depth-textures")
       ? { width: size, height: size, label, depthOnly: true }
       : { width: size, height: size, label, format: "rgba8", depth: "texture" };
@@ -309,19 +416,79 @@ export class Prd02ShadowSystem {
     casters: readonly RenderItem[],
     resolve: (item: RenderItem) => ShadowCasterVariantKey,
     viewProjection: Float32Array,
+    cameraPosition: readonly [number, number, number] | undefined,
+    timeSeconds: number | undefined,
     scissor?: { x: number; y: number; width: number; height: number }
   ) {
     return {
       casters,
       shaderLibrary: this.shaderLibrary,
       viewProjectionMatrix: viewProjection,
+      cameraPosition,
+      timeSeconds,
+      checkedSubmission: this.device.kind === "webgpu",
       variantResolver: resolve,
       depthVariantFeatures: this.depthFeatures,
       ...(scissor ? { scissor } : {})
     };
   }
 
-  private renderCascades(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey, skip?: ReadonlySet<number>): void {
+  private assertStableMultiTargetClipping(casters: readonly RenderItem[], skip?: ReadonlySet<number>): void {
+    const fits = this.lastFits.filter((fit) => !skip?.has(fit.index));
+    if (fits.length + this.lastTiles.length <= 1) return;
+    // Each target receives its own single-use plan. Reject accessor-backed
+    // clipping before any plan can observe a different value; ordinary data
+    // groups are copied by each synchronous preparation before target clears.
+    for (const caster of expandLogicalBatchItems(casters)) {
+      if (caster.instanceTransforms !== undefined && caster.instanceTransforms.length === 0) continue;
+      assertStableDepthClippingInputs(caster);
+    }
+  }
+
+  private prepareShadowFrame(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey,
+    cameraPosition: readonly [number, number, number] | undefined, timeSeconds: number | undefined,
+    skip?: ReadonlySet<number>): PreparedShadowFrame | undefined {
+    if (casters.length === 0) return undefined;
+    const fits = this.lastFits.filter((fit) => !skip?.has(fit.index));
+    if (fits.length === 0 && this.lastTiles.length === 0) return undefined;
+    const firstProjection = fits[0]?.drawViewProjection ?? this.lastTiles[0]!.drawViewProjection;
+    this.assertStableMultiTargetClipping(casters, skip);
+    if (this.device.activeFrameToken === undefined) {
+      // Preserve the legacy third-party path for unclipped casters only; it
+      // cannot guarantee preflight across the entire shadow frame.
+      const pass = new DepthPass(this.depthPassOptions(casters, resolve, firstProjection, cameraPosition, timeSeconds));
+      pass.assertLegacyDepthFallback({ device: this.device, width: this.config.mapSize, height: this.config.mapSize });
+      return undefined;
+    }
+    const cascades = new Map<number, PreparedShadowDraw>();
+    const tiles: PreparedShadowDraw[] = [];
+    const all: PreparedShadowDraw[] = [];
+    const prepare = (viewProjection: Float32Array, size: number, scissor?: AtlasTile["scissor"]): PreparedShadowDraw => {
+      const pass = new DepthPass(this.depthPassOptions(casters, resolve, viewProjection, cameraPosition, timeSeconds, scissor));
+      const context = { device: this.device, width: size, height: size };
+      const plan = pass.prepare(context);
+      const draw = { pass, plan, context };
+      all.push(draw);
+      pass.validatePrepared(context, plan);
+      return draw;
+    };
+    try {
+      for (const fit of fits) cascades.set(fit.index, prepare(fit.drawViewProjection, this.config.mapSize));
+      for (const tile of this.lastTiles) tiles.push(prepare(tile.drawViewProjection, ATLAS_SIZE, tile.scissor));
+      // A later preparation can invalidate an earlier plan through shared
+      // resources. Recheck the whole set before clearing the first target.
+      for (const draw of all) draw.pass.validatePrepared(draw.context, draw.plan);
+      return { cascades, tiles, all };
+    } catch (error) {
+      try { disposePreparedShadowDraws(all); }
+      catch (cleanup) { throw new AggregateError([error, cleanup], "Shadow preparation and prepared depth cleanup failed"); }
+      throw error;
+    }
+  }
+
+  private renderCascades(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey,
+    cameraPosition: readonly [number, number, number] | undefined, timeSeconds: number | undefined,
+    skip: ReadonlySet<number> | undefined, prepared: PreparedShadowFrame | undefined): void {
     if (casters.length === 0) return;
     const prevTarget = this.device.getRenderTarget?.() ?? null;
     try {
@@ -329,9 +496,14 @@ export class Prd02ShadowSystem {
         const target = this.ensureCascadeTarget(fit.index);
         // Allocated (the frame uniforms need its texture) but never sampled this frame: no clear, no casters.
         if (skip?.has(fit.index)) continue;
+        const draw = prepared?.cascades.get(fit.index);
+        if (prepared && !draw) throw new RenderDeviceError("Prepared cascade depth is missing", "SHADOW_PREPARED_PLAN_MISSING", { cascade: fit.index });
+        if (draw) draw.pass.validatePrepared(draw.context, draw.plan);
         this.device.setRenderTarget(target);
+        if (draw) draw.pass.validatePrepared(draw.context, draw.plan);
         this.device.clearRenderTarget?.([1, 1, 1, 1]);
-        new DepthPass(this.depthPassOptions(casters, resolve, fit.drawViewProjection))
+        if (draw) draw.pass.executePrepared(draw.context, draw.plan);
+        else new DepthPass(this.depthPassOptions(casters, resolve, fit.drawViewProjection, cameraPosition, timeSeconds))
           .execute({ device: this.device, width: this.config.mapSize, height: this.config.mapSize });
       }
     } finally {
@@ -339,15 +511,22 @@ export class Prd02ShadowSystem {
     }
   }
 
-  private renderAtlas(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey): void {
+  private renderAtlas(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey,
+    cameraPosition: readonly [number, number, number] | undefined, timeSeconds: number | undefined,
+    prepared: PreparedShadowFrame | undefined): void {
     if (this.lastTiles.length === 0 || casters.length === 0) return;
     const target = this.ensureAtlasTarget();
     const prevTarget = this.device.getRenderTarget?.() ?? null;
     try {
+      for (const draw of prepared?.tiles ?? []) draw.pass.validatePrepared(draw.context, draw.plan);
       this.device.setRenderTarget(target);
+      for (const draw of prepared?.tiles ?? []) draw.pass.validatePrepared(draw.context, draw.plan);
       this.device.clearRenderTarget?.([1, 1, 1, 1]);
-      for (const tile of this.lastTiles) {
-        new DepthPass(this.depthPassOptions(casters, resolve, tile.drawViewProjection, tile.scissor))
+      for (const [index, tile] of this.lastTiles.entries()) {
+        const draw = prepared?.tiles[index];
+        if (prepared && !draw) throw new RenderDeviceError("Prepared atlas depth is missing", "SHADOW_PREPARED_PLAN_MISSING", { tile: index });
+        if (draw) draw.pass.executePrepared(draw.context, draw.plan);
+        else new DepthPass(this.depthPassOptions(casters, resolve, tile.drawViewProjection, cameraPosition, timeSeconds, tile.scissor))
           .execute({ device: this.device, width: ATLAS_SIZE, height: ATLAS_SIZE });
       }
     } finally {
@@ -382,7 +561,8 @@ export class Prd02ShadowSystem {
     }
     const cascadeTextures: (Texture | null)[] = [];
     for (let i = 0; i < MAX_CASCADE_TEXTURES; i += 1) {
-      cascadeTextures.push(this.cascadeTargets[i]?.depthTexture ?? null);
+      const target = this.cascadeTargets[i];
+      cascadeTextures.push(target ? (this.device.kind === "webgpu" ? target.colorTexture : target.depthTexture ?? null) : null);
     }
     return {
       cascadeTexture: cascadeTextures[0] ?? null,
@@ -390,7 +570,7 @@ export class Prd02ShadowSystem {
       cascadeMatrices,
       cascadeSplits,
       cascadeTexelWorld,
-      atlasTexture: this.atlasTarget?.depthTexture ?? null,
+      atlasTexture: this.atlasTarget ? (this.device.kind === "webgpu" ? this.atlasTarget.colorTexture : this.atlasTarget.depthTexture ?? null) : null,
       localShadowData,
       localShadowMatrices,
       localShadowIndexData,

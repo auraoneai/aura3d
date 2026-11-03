@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 
 import { InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial } from "../../../packages/rendering/src";
 import { batched, batchedNodeHandler } from "../../../packages/engine/src/agent-api/nodes/batched";
+import "../../../packages/engine/src/agent-api/nodes/instancedMesh";
 import { instances } from "../../../packages/engine/src/agent-api/nodes/instances";
 import { material } from "../../../packages/engine/src/agent-api/nodes/material";
 import { texture } from "../../../packages/engine/src/agent-api/nodes/texture";

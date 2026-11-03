@@ -2,12 +2,18 @@
 
 import type { AuraAppTarget } from "../nodes/types.js";
 import { AuraRuntimeError } from "./errors.js";
-import { round } from "../GameRuntime.js";
+/** A transferred canvas has no DOM layout and is sized by the owner through a resize message. */
+export function isOffscreenCanvas(target: unknown): target is OffscreenCanvas {
+  return typeof OffscreenCanvas !== "undefined" && target instanceof OffscreenCanvas;
+}
 
-export function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement | undefined {
+export function resolveCanvas(target: OffscreenCanvas): OffscreenCanvas;
+export function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement | undefined;
+export function resolveCanvas(target: AuraAppTarget | OffscreenCanvas): HTMLCanvasElement | OffscreenCanvas | undefined {
   if (!target) {
     return undefined;
   }
+  if (isOffscreenCanvas(target)) return target;
   if (typeof target === "string") {
     if (typeof document === "undefined") {
       throw new AuraRuntimeError(
@@ -22,14 +28,16 @@ export function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement | undefi
         `Aura3D could not find canvas target "${target}". Suggested fix: add <canvas id="${target.replace(/^#/, "")}"></canvas> or pass an existing element.`
       );
     }
-    if (element instanceof HTMLCanvasElement) return element;
-    if (element instanceof HTMLElement) return appendCanvas(element);
+    if (typeof HTMLCanvasElement !== "undefined" && element instanceof HTMLCanvasElement) return element;
+    if (typeof HTMLElement !== "undefined" && element instanceof HTMLElement) return appendCanvas(element);
     throw new AuraRuntimeError(
       "missing-canvas",
       `Aura3D target "${target}" is not an HTMLElement. Suggested fix: pass a canvas or container element.`
     );
   }
-  return target instanceof HTMLCanvasElement ? target : appendCanvas(target);
+  if (typeof HTMLCanvasElement !== "undefined" && target instanceof HTMLCanvasElement) return target;
+  if (typeof HTMLElement !== "undefined" && target instanceof HTMLElement) return appendCanvas(target);
+  throw new AuraRuntimeError("missing-canvas", "Aura3D requires a canvas, OffscreenCanvas, or DOM container target.");
 }
 
 function appendCanvas(target: HTMLElement): HTMLCanvasElement {
@@ -82,12 +90,17 @@ function applyDefaultCanvasMountLayout(target: HTMLElement): void {
   target.style.overflow ||= "hidden";
 }
 
+export function configureCanvas(canvas: OffscreenCanvas, pixelRatio: number, resize: boolean, minimum?: { readonly width: number; readonly height: number }): void;
+export function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, resize: boolean, minimum?: { readonly width: number; readonly height: number }): void;
 export function configureCanvas(
-  canvas: HTMLCanvasElement,
+  canvas: HTMLCanvasElement | OffscreenCanvas,
   pixelRatio: number,
   resize: boolean,
   minimum: { readonly width: number; readonly height: number } = { width: 320, height: 220 }
 ): void {
+  // Offscreen dimensions already describe the backing store. Scaling them here
+  // would apply DPR twice; resize messages carry the CSS dimensions and DPR.
+  if (isOffscreenCanvas(canvas)) return;
   // A second app on the same canvas starts from the page's own inline size, not the pixel size the previous app wrote.
   const previous = engineInlineSize.get(canvas);
   if (previous) {
@@ -120,6 +133,38 @@ export function configureCanvas(
   const height = Math.max(minimum.height, Math.round(cssHeight * pixelRatio));
   canvas.width = keepAuthoredSize ? canvas.width : width;
   canvas.height = keepAuthoredSize ? canvas.height : height;
+}
+
+export interface OffscreenCanvasSize {
+  /** CSS pixels measured by the canvas owner. */
+  readonly width: number;
+  readonly height: number;
+  readonly pixelRatio: number;
+}
+
+/** Worker backing stores are capped to prevent unbounded allocations from CSS size or DPR. */
+export const MAX_WORKER_CANVAS_DIMENSION = 16384;
+export const MAX_WORKER_CANVAS_PIXELS = 33_554_432;
+
+/** Validate CSS size and DPR before allocating or transferring the canvas. */
+export function workerCanvasBackingSize(size: OffscreenCanvasSize): { readonly width: number; readonly height: number } {
+  if (!Number.isFinite(size.width) || size.width <= 0 || !Number.isFinite(size.height) || size.height <= 0 || !Number.isFinite(size.pixelRatio) || size.pixelRatio <= 0) {
+    throw new RangeError("OffscreenCanvas resize requires positive finite width, height and pixelRatio.");
+  }
+  const width = Math.max(1, Math.round(size.width * size.pixelRatio));
+  const height = Math.max(1, Math.round(size.height * size.pixelRatio));
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width > MAX_WORKER_CANVAS_DIMENSION || height > MAX_WORKER_CANVAS_DIMENSION || width * height > MAX_WORKER_CANVAS_PIXELS) {
+    throw new RangeError(`OffscreenCanvas backing size exceeds ${MAX_WORKER_CANVAS_DIMENSION} pixels per axis or ${MAX_WORKER_CANVAS_PIXELS} total pixels.`);
+  }
+  return { width, height };
+}
+
+/** Apply an owner-provided CSS size and DPR to a worker-owned backing store. */
+export function resizeOffscreenCanvas(canvas: OffscreenCanvas, size: OffscreenCanvasSize): { readonly width: number; readonly height: number } {
+  const { width, height } = workerCanvasBackingSize(size);
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
+  return { width, height };
 }
 
 /**

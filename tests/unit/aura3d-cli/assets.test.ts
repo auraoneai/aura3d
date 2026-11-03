@@ -464,7 +464,7 @@ describe("@aura3d/cli assets", () => {
     expect(strict.failures.join("\n")).toContain("Missing license/provenance evidence");
   });
 
-  test("source validation rejects raw model ids, raw GLB URLs, unsafe loaders, and three imports", () => {
+  test("source validation rejects raw model ids, raw GLB URLs, and unsafe loaders", () => {
     const projectDir = createProject();
     mkdirSync(join(projectDir, "src"), { recursive: true });
     writeFileSync(join(projectDir, "assets", "fighter.gltf"), JSON.stringify(createAnimatedCharacterGltf()));
@@ -477,14 +477,12 @@ describe("@aura3d/cli assets", () => {
       sourceFamily: "test-fixture"
     });
     writeFileSync(join(projectDir, "src", "main.ts"), `
-      import * as THREE from "three";
-      import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+      import { GLTFLoader } from "@aura3d/assets";
       import { model } from "@aura3d/engine";
       model("fighter");
-      const badUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb";
+      const badUrl = "https://example.invalid/assets/fighter.glb";
       const localUrl = "/models/scene.gltf";
       const escape = unsafeModelUrl(badUrl);
-      void THREE;
       void GLTFLoader;
       void localUrl;
       void escape;
@@ -498,7 +496,6 @@ describe("@aura3d/cli assets", () => {
     expect(report.failures.join("\n")).toContain("raw GLB/glTF URL or path");
     expect(report.failures.join("\n")).toContain("unsafeModelUrl is not allowed");
     expect(report.failures.join("\n")).toContain("GLTFLoader is not allowed");
-    expect(report.failures.join("\n")).toContain("direct three imports are not allowed");
   });
 
   test("source validation reports typed asset usage by file", () => {
@@ -593,7 +590,7 @@ describe("@aura3d/cli assets", () => {
     const projectDir = createProject();
     addSourceFixtureAsset(projectDir, "releaseFighter");
     writeFileSync(join(projectDir, "src", "main.ts"), `
-      import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+      import { GLTFLoader } from "@aura3d/assets";
       void GLTFLoader;
     `);
 

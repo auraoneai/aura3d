@@ -179,6 +179,17 @@ describe("xr view override seam", () => {
 });
 
 describe("app.xr runtime lifecycle", () => {
+  it("samples a native-shaped viewer transform with typed eye matrices", async () => {
+    const rig = makeRig();
+    await rig.runtime.enter();
+    const view = makeView("left", -0.03);
+    const nativeView = { ...view, projectionMatrix: Float32Array.from(view.projectionMatrix), transform: { matrix: Float32Array.from(view.transform.matrix), inverse: { matrix: Float32Array.from(view.transform.inverse.matrix) } } };
+    rig.session.rafCallback?.(100, { getViewerPose: () => ({ transform: { position: { x: 0, y: 1.6, z: 0 }, orientation: { x: 0, y: 0, z: 0, w: 1 } }, views: [nativeView] }) });
+    expect(rig.runtime.lastSample?.camera).toMatchObject({ tracked: true, position: [0, 1.6, 0], orientation: [0, 0, 0, 1] });
+    expect(rig.seen[0]?.camera?.eye).toBe("left");
+    await rig.runtime.exit();
+  });
+
   it("enters a session: requests the mode, binds a layer, pauses the window loop, emits sessionstart", async () => {
     const rig = makeRig();
     const started = vi.fn();
@@ -193,7 +204,7 @@ describe("app.xr runtime lifecycle", () => {
     expect(rig.calls.pause).toHaveBeenCalledOnce();
     expect(rig.runtime.isPresenting).toBe(true);
     expect(rig.runtime.mode).toBe("immersive-vr");
-    expect(started).toHaveBeenCalledWith({ mode: "immersive-vr" });
+    expect(started).toHaveBeenCalledWith({ mode: "immersive-vr", provenance: "injected" });
     expect((await rig.runtime.enter()).reason).toBe("already-presenting");
   });
 

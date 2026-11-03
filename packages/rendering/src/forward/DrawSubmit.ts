@@ -1,20 +1,22 @@
-// PR 0b-2 carve-out (CONTRACTS.md §3.3) — moved from ForwardPass.ts; #181 adds the
-// PRD 11 multi-draw fast path (inert unless an item carries `multiDraw`).
+// PR 0b-2 carve-out (CONTRACTS.md §3.3) — moved from ForwardPass.ts.
 
 import type { Geometry } from "../Geometry.js";
-import type { RenderDevice, DrawCommand, InstanceVertexAttribute, RenderBuffer, UniformValue } from "../RenderDevice.js";
+import { RenderDeviceError, type RenderDevice, type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type UniformValue } from "../RenderDevice.js";
 import type { RenderPipeline } from "../RenderPipeline.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { RenderItemDrawRange } from "../ForwardPass.js";
-import type { Prd11MultiDrawItem } from "../batching/shaders/drawId.glsl.js";
 
 /** Free variables of the moved draw-issuance block, per §3.1. */
 export interface SubmitDrawBindings {
   readonly item: RenderItem;
   readonly vertexBuffer: RenderBuffer;
+  readonly vertexBuffers?: DrawCommand["vertexBuffers"];
   readonly indexBuffer: RenderBuffer | undefined;
   readonly drawRange: RenderItemDrawRange;
   readonly uniforms: Map<string, UniformValue>;
+  readonly nativeStorageBindings?: DrawCommand["nativeStorageBindings"];
+  /** Require an actual native submission; such a draw cannot be deferred. */
+  readonly checked?: boolean;
   readonly instanceBinding: { readonly count: number; readonly attributes?: readonly InstanceVertexAttribute[] };
 }
 
@@ -23,24 +25,24 @@ export interface SubmitDrawBindings {
  * are the PRD 11 contract surface (the verbatim block carries today's values
  * through `bindings`).
  */
-export function submitDraw(
-  device: RenderDevice,
+export function createForwardDrawCommand(
   pipeline: RenderPipeline,
   geometry: Geometry,
   instanceCount: number,
   ranges: RenderItemDrawRange,
   bindings: SubmitDrawBindings
-): void {
-  const { item, vertexBuffer, indexBuffer, drawRange, uniforms, instanceBinding } = bindings;
-  void instanceCount;
+): DrawCommand {
+  const { item, vertexBuffer, vertexBuffers, indexBuffer, drawRange, uniforms, instanceBinding, nativeStorageBindings } = bindings;
   void ranges;
   const command: DrawCommand = pipeline.createDrawCommand({
     label: item.label,
     vertexBuffer,
+    ...(vertexBuffers !== undefined ? { vertexBuffers } : {}),
     vertexCount: indexBuffer !== undefined ? geometry.vertexBuffer.vertexCount : drawRange.count,
     ...(indexBuffer === undefined && drawRange.start > 0 ? { firstVertex: drawRange.start } : {}),
     uniforms,
-    ...(item.instanceTransforms ? { instanceCount: instanceBinding.count } : {}),
+    ...(nativeStorageBindings !== undefined ? { nativeStorageBindings } : {}),
+    ...(item.instanceTransforms ? { instanceCount: instanceBinding.count } : instanceCount !== 1 ? { instanceCount } : {}),
     ...(instanceBinding.attributes ? { instanceAttributes: instanceBinding.attributes } : {})
   });
   if (indexBuffer !== undefined) {
@@ -51,53 +53,27 @@ export function submitDraw(
       ...(drawRange.start > 0 ? { firstIndex: drawRange.start } : {})
     });
   }
-  // #181: a PRD 11 multi-draw member (`item.multiDraw.mode === "multi-draw"`,
-  // set by `buildMultiDrawBatch` consumers) is deferred so the whole run of
-  // consecutive members becomes one `device.multiDrawElementsInstanced` call.
-  // Any other draw flushes the run first, so submission order is unchanged.
-  const marker = (item as RenderItem & Prd11MultiDrawItem).multiDraw;
-  if (marker?.mode === "multi-draw" && typeof device.multiDrawElementsInstanced === "function") {
-    enqueueMultiDraw(device, command, marker.drawData ?? item.material);
+  return command;
+}
+
+export function submitDraw(
+  device: RenderDevice,
+  pipeline: RenderPipeline,
+  geometry: Geometry,
+  instanceCount: number,
+  ranges: RenderItemDrawRange,
+  bindings: SubmitDrawBindings
+): void {
+  const command = createForwardDrawCommand(pipeline, geometry, instanceCount, ranges, bindings);
+  if (bindings.checked) {
+    if (!device.drawChecked) throw new RenderDeviceError("Checked forward submission is unavailable", "FORWARD_CHECKED_SUBMISSION_UNAVAILABLE", { label: bindings.item.label });
+    device.drawChecked(command);
     return;
   }
-  flushMultiDrawQueue(device);
+  // Submit each logical draw immediately. Deferred batching can run an earlier
+  // draw after a later callback and bypass a public device.draw override.
   device.draw(command);
 }
 
-interface MultiDrawRun {
-  groupKey: unknown;
-  readonly commands: DrawCommand[];
-}
-
-const multiDrawRuns = new WeakMap<RenderDevice, MultiDrawRun>();
-
-function enqueueMultiDraw(device: RenderDevice, command: DrawCommand, groupKey: unknown): void {
-  let run = multiDrawRuns.get(device);
-  if (!run) {
-    run = { groupKey, commands: [] };
-    multiDrawRuns.set(device, run);
-  }
-  if (run.commands.length > 0 && run.groupKey !== groupKey) flushMultiDrawQueue(device);
-  run.groupKey = groupKey;
-  run.commands.push(command);
-}
-
-/**
- * #181: issue the pending multi-draw run on `device` (no-op when empty). One
- * member draws through `device.draw`; two or more go through
- * `device.multiDrawElementsInstanced`, which itself falls back to a per-entry
- * loop when `WEBGL_multi_draw` is absent or the entries are not compatible.
- * `ForwardPass.execute` calls this after its item loop.
- */
-export function flushMultiDrawQueue(device: RenderDevice): number {
-  const run = multiDrawRuns.get(device);
-  if (!run || run.commands.length === 0) return 0;
-  const commands = run.commands.splice(0, run.commands.length);
-  run.groupKey = undefined;
-  if (commands.length === 1 || typeof device.multiDrawElementsInstanced !== "function") {
-    for (const command of commands) device.draw(command);
-  } else {
-    device.multiDrawElementsInstanced(commands);
-  }
-  return commands.length;
-}
+/** Compatibility hook for callers that used to flush deferred forward draws. */
+export function flushMultiDrawQueue(_device: RenderDevice): number { return 0; }

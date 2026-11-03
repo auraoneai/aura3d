@@ -11,6 +11,9 @@ import { renderer, createRendererDiagnosticReport } from "./rendererDiagnostics.
 import { assets } from "./AssetDecoders.js";
 import { formatShaderFailure, getShaderFailures, type ShaderFailureRecord } from "@aura3d/rendering";
 
+import { sanitizeDiagnosticValue } from "./sanitizeDiagnostics.js";
+export { formatDiagnosticError, sanitizeDiagnosticText, sanitizeDiagnosticValue } from "./sanitizeDiagnostics.js";
+
 export function resolveAssetManifestHash(asset: AuraAssetRef): string | undefined {
   if (typeof asset.hash === "string" && asset.hash.length > 0) return asset.hash;
   const sha256 = (asset as { readonly sha256?: string }).sha256;
@@ -22,21 +25,40 @@ export function formatSkippedInlineModelWarning(node: { readonly name?: string; 
   return `Model node "${node.name ?? node.asset.id}" (asset "${node.asset.id}") has no manifest hash/sha256 and was skipped by the production GLTF bridge`;
 }
 
-export function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAssetLoadState[]): void {
-  for (const node of snapshot.nodes) {
-    if (node.kind !== "model") continue;
+export function validateSceneAssets(
+  snapshot: AuraSceneSnapshot,
+  assets: AuraAssetLoadState[],
+  formatRegistry?: import("@aura3d/assets").FormatRegistry
+): void {
+  const pending = [...snapshot.nodes].reverse();
+  while (pending.length) {
+    const node = pending.pop()!;
+    if (node.kind === "group") {
+      for (let index = node.children.length - 1; index >= 0; index -= 1) pending.push(node.children[index]!);
+      continue;
+    }
+    if (node.kind !== "model" && node.kind !== "gaussian-splat" && node.kind !== "scalar-volume") continue;
     const asset = node.asset;
     if (!asset.url && !asset.optional) {
       throw new AuraRuntimeError(
         "missing-asset",
-        `Aura3D asset "${asset.id}" is missing a URL. Suggested fix: run aura3d assets add ./asset.glb --name ${asset.id}.`
+        node.kind === "model"
+          ? `Aura3D asset "${asset.id}" is missing a URL. Suggested fix: run aura3d assets add ./asset.glb --name ${asset.id}.`
+          : `Aura3D asset "${asset.id}" is missing a URL. Suggested fix: admit the asset with aura3d assets add --name ${asset.id}.`
       );
     }
-    if (asset.type === "model" && !["glb", "gltf"].includes(asset.format)) {
-      throw new AuraRuntimeError(
-        "failed-glb-load",
-        `Aura3D model "${asset.id}" uses unsupported format "${asset.format}". Suggested fix: export GLB/glTF or add an explicit loader before using model(assets.${asset.id}).`
-      );
+    if (asset.type === "model" && asset.url && !["glb", "gltf"].includes(asset.format.toLowerCase())) {
+      if (!formatRegistry) {
+        throw new AuraRuntimeError(
+          "failed-glb-load",
+          `Aura3D model "${asset.id}" uses unsupported format "${asset.format}". Suggested fix: export GLB/glTF or add an explicit loader before using model(assets.${asset.id}).`
+        );
+      }
+      const selection = { format: asset.format, formatMetadata: asset.formatMetadata };
+      const adapter = formatRegistry.select({ url: asset.url, format: asset.format }, selection);
+      if (!adapter.buildGLTFResources) {
+        throw new AuraRuntimeError("failed-glb-load", `Native model adapter "${adapter.id}" cannot build Aura3D model resources.`);
+      }
     }
     const resolvedHash = resolveAssetManifestHash(asset);
     assets.push({
@@ -48,7 +70,7 @@ export function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAss
       ...(resolvedHash ? { hash: resolvedHash } : {}),
       message: asset.url ? undefined : "Optional placeholder asset has no URL yet."
     });
-    validateMaterialTexture(node.material);
+    if (node.kind === "model") validateMaterialTexture(node.material);
   }
 }
 
@@ -95,7 +117,9 @@ export function createAssetProvenance(asset: AuraAssetRef): AuraAssetProvenance 
 
 function validateMaterialTexture(materialSpec?: AuraMaterialSpec): void {
   const texture = materialSpec?.texture;
-  if (!texture) return;
+  // Live texture handles are validated by their backing texture and renderer;
+  // the image-format check below applies only to admitted asset references.
+  if (!texture || texture.kind === "aura-texture-ref") return;
   if (!["png", "jpg", "jpeg", "webp", "ktx2"].includes(texture.format)) {
     throw new AuraRuntimeError(
       "unsupported-texture",
@@ -261,9 +285,9 @@ export function rethrowShaderFailure(error: unknown): never {
   throw error;
 }
 
-export function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics {
-  const shaderFailures: readonly ShaderFailureRecord[] = getShaderFailures();
-  return {
+export function snapshotDiagnostics(value: MutableDiagnostics, shaderFailureStore?: Parameters<typeof getShaderFailures>[0]): AuraDiagnostics {
+  const shaderFailures: readonly ShaderFailureRecord[] = getShaderFailures(shaderFailureStore);
+  const report: AuraDiagnostics = {
     backend: value.backend,
     fps: value.fps,
     drawCalls: value.drawCalls,
@@ -281,4 +305,7 @@ export function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics 
     ...(value.triangles !== undefined ? { triangles: value.triangles } : {}),
     ...(value.textureBytes !== undefined ? { textureBytes: value.textureBytes } : {})
   };
+  // Each section receives a separate budget so a large scene/evidence report
+  // cannot suppress later warnings or errors.
+  return Object.fromEntries(Object.entries(report).map(([key, entry]) => [key, sanitizeDiagnosticValue(entry)])) as unknown as AuraDiagnostics;
 }

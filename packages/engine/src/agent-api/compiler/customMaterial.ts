@@ -22,7 +22,8 @@
  * resolves it at compile time.
  *
  * Known honest limits (documented, not silently applied):
- *   - `i32`/`bool` ride the float uniform channel; GLSL aliases emit int()/bool() casts.
+ *   - `i32`/`u32` use integer bindings; `bool` uses a bool uniform in GLSL and
+ *     the host-shareable u32 representation in WGSL.
  *   - `mat3` is padded into a mat4 slot; its alias emits `mat3(u_x)`.
  *   - `texture2d` accepts a `TextureBinding`, a `texture.*` handle
  *     (`AuraTextureRef`, resolved to its real device texture with the handle's
@@ -46,21 +47,30 @@ import {
   A3D_AUTHOR_GLSL_CHUNKS,
   Texture,
   TextureBinding,
+  assertPortableUniformData,
+  cloneMaterialUniformValue,
+  materialUniformValuesEqual,
   globalShaderChunkEntries,
+  globalShaderSource,
   globalShaderWgslChunkSource,
   isTextureBinding,
   registerGlobalShaderSource,
   unregisterGlobalShaderSource,
   type PortableShaderSources,
   type PortableShaderUniform,
+  type ShaderSourcePair,
+  type NativeShaderStorageLayout,
+  type NativeStorageBinding,
   type MaterialUniformKind,
   type RenderState,
+  type ShaderDataType,
+  type UniformDataValue,
   type UniformValue
 } from "@aura3d/rendering";
 import type { BlendMode } from "@aura3d/rendering/contracts";
 import { AuraRuntimeError } from "./errors.js";
 import { assertCustomAttributeName } from "../RootGeometry.js";
-import { auraTextureRefTexture } from "../nodes/texture.js";
+import { auraTextureRefBackingStatus, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraAssetRef, AuraCustomMaterialSpec, AuraCustomUniformType, AuraTextureRef, AuraUniformValue } from "../nodes/types.js";
 import { auraTextureRefSampler, auraTextureRefTransform, isAuraTextureRef } from "./textures.js";
 
@@ -76,12 +86,70 @@ const RESERVED_UNIFORM_NAMES = new Set([
   "position", "normal", "uv", "gl_Position", "gl_FragCoord", "gl_FragColor"
 ]);
 
-const CUSTOM_UNIFORM_TYPES: readonly AuraCustomUniformType[] = [
-  "f32", "i32", "bool", "vec2", "vec3", "vec4", "color3", "mat3", "mat4", "texture2d"
-];
+const CUSTOM_UNIFORM_TYPES = [
+  "f32", "i32", "u32", "bool", "vec2", "vec3", "vec4", "color3", "mat3", "mat4", "texture2d", "texture3d", "depth2d"
+] as const satisfies readonly AuraCustomUniformType[];
+type SupportedCustomUniformType = typeof CUSTOM_UNIFORM_TYPES[number];
+type CustomTextureUniformType = "texture2d" | "texture3d" | "depth2d";
+const isSupportedCustomUniformType = (type: string): type is SupportedCustomUniformType =>
+  (CUSTOM_UNIFORM_TYPES as readonly string[]).includes(type);
+const isCustomTextureUniformType = (type: string): type is CustomTextureUniformType =>
+  type === "texture2d" || type === "texture3d" || type === "depth2d";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+type GraphDepthSpec = { readonly glsl: { readonly vertex: string; readonly fragment: string }; readonly wgsl: { readonly vertex: string; readonly fragment: string } };
+const graphDepthOf = (spec: AuraCustomMaterialSpec): GraphDepthSpec | undefined =>
+  (spec as AuraCustomMaterialSpec & { readonly graphDepth?: GraphDepthSpec }).graphDepth;
+type GraphSkinningSpec = Readonly<Record<"four" | "eight", { readonly forward: GraphDepthSpec; readonly depth: GraphDepthSpec }>>;
+const graphSkinningOf = (spec: AuraCustomMaterialSpec): GraphSkinningSpec | undefined =>
+  (spec as AuraCustomMaterialSpec & { readonly graphSkinning?: GraphSkinningSpec }).graphSkinning;
+type GraphStorageSpec = {
+  readonly forward: readonly NativeStorageBinding[];
+  readonly depth: readonly NativeStorageBinding[];
+  readonly forwardLayouts: readonly NativeShaderStorageLayout[];
+  readonly depthLayouts: readonly NativeShaderStorageLayout[];
+};
+const graphStorageOf = (spec: AuraCustomMaterialSpec): GraphStorageSpec | undefined =>
+  (spec as AuraCustomMaterialSpec & { readonly graphStorage?: GraphStorageSpec }).graphStorage;
+
+// Only specs returned by the graph adapter receive a clipping certificate.
+// Keep the source-affecting parts in the fingerprint: a copied or edited
+// custom spec must not inherit the adapter's forward/depth guarantee.
+const compiledGraphSpecs = new WeakMap<object, string>();
+const compiledGraphDataSpecs = new WeakSet<object>();
+function graphSpecFingerprint(spec: AuraCustomMaterialSpec): string {
+  const uniforms = Object.entries(spec.uniforms ?? {}).map(([name, uniform]) =>
+    [name, typeof uniform === "string" ? uniform : uniform.type,
+      typeof uniform !== "string" && uniform.type === "data" ? uniform.dataType : undefined]);
+  const storage = graphStorageOf(spec);
+  return JSON.stringify({ glsl: spec.glsl, wgsl: spec.wgsl, depth: graphDepthOf(spec), skinning: graphSkinningOf(spec),
+    defines: spec.defines, patch: spec.patch, uniforms, aliases: spec.uniformAliases,
+    fog: spec.fog, receiveShadow: spec.receiveShadow, castShadow: spec.castShadow,
+    storageLayouts: storage ? [storage.forwardLayouts, storage.depthLayouts] : undefined });
+}
+
+/** Internal: record the exact validated graph adapter program before exposing it. */
+export function certifyCompiledGraphMaterialSpec(spec: AuraCustomMaterialSpec): void {
+  compiledGraphSpecs.set(spec, graphSpecFingerprint(spec));
+  if (Object.values(spec.uniforms ?? {}).some((uniform) => typeof uniform !== "string" && uniform.type === "data")) {
+    compiledGraphDataSpecs.add(spec);
+  }
+}
+
+function isCertifiedGraphSpec(spec: AuraCustomMaterialSpec): boolean {
+  const expected = compiledGraphSpecs.get(spec);
+  // Arbitrary GLSL defines can rewrite generated clipping control flow. They
+  // remain usable for ordinary draws but cannot certify this paired contract.
+  return expected !== undefined && Object.keys(spec.defines ?? {}).length === 0 && expected === graphSpecFingerprint(spec);
+}
+
+const isGraphStagePair = (value: unknown): value is GraphDepthSpec => {
+  if (!isRecord(value) || !isRecord(value.glsl) || !isRecord(value.wgsl)) return false;
+  return [value.glsl.vertex, value.glsl.fragment, value.wgsl.vertex, value.wgsl.fragment]
+    .every((source) => typeof source === "string" && source.trim().length > 0);
+};
 
 function invalidSpec(owner: string, message: string): never {
   throw new AuraRuntimeError("invalid-material-spec", `${owner}: ${message}`);
@@ -105,6 +173,25 @@ export function assertAuraCustomMaterialSpec(spec: unknown, owner = "material.cu
     if (wgsl.vertex !== undefined && typeof wgsl.vertex !== "string") invalidSpec(owner, "spec.wgsl.vertex must be a string");
     if (wgsl.fragment !== undefined && typeof wgsl.fragment !== "string") invalidSpec(owner, "spec.wgsl.fragment must be a string");
     if (wgsl.vertex === undefined && wgsl.fragment === undefined) invalidSpec(owner, "spec.wgsl must contain at least one stage");
+  }
+  const graphDepth = spec.graphDepth;
+  if (graphDepth !== undefined && !isGraphStagePair(graphDepth)) {
+    invalidSpec(owner, "graphDepth requires paired GLSL/WGSL vertex and fragment stages");
+  }
+  const graphSkinning = spec.graphSkinning;
+  if (graphSkinning !== undefined) {
+    if (!isRecord(graphSkinning) || !isRecord(graphSkinning.four) || !isRecord(graphSkinning.eight)
+      || !isGraphStagePair(graphSkinning.four.forward) || !isGraphStagePair(graphSkinning.four.depth)
+      || !isGraphStagePair(graphSkinning.eight.forward) || !isGraphStagePair(graphSkinning.eight.depth)) {
+      invalidSpec(owner, "graphSkinning requires paired forward and depth stages for four and eight influences");
+    }
+  }
+  if (spec.graphStorage !== undefined) {
+    const storage = spec.graphStorage;
+    if (!isRecord(storage) || !Array.isArray(storage.forward) || !Array.isArray(storage.depth)
+      || !Array.isArray(storage.forwardLayouts) || !Array.isArray(storage.depthLayouts)) {
+      invalidSpec(owner, "graphStorage requires forward/depth resources and native shader layouts");
+    }
   }
   const uniforms = spec.uniforms ?? {};
   if (!isRecord(uniforms)) invalidSpec(owner, "spec.uniforms must be a record of uniform specs");
@@ -131,11 +218,26 @@ export function assertAuraCustomMaterialSpec(spec: unknown, owner = "material.cu
     }
     loweredOwners.set(lowered, name);
     const type = isRecord(uniform) ? uniform.type : uniform;
-    if (typeof type !== "string" || !CUSTOM_UNIFORM_TYPES.includes(type as AuraCustomUniformType)) {
+    if (type === "data") {
+      if (!isRecord(uniform) || !Object.hasOwn(uniform, "dataType") || !Object.hasOwn(uniform, "value")) {
+        invalidSpec(owner, `uniform "${name}" (data) requires dataType and an initial value`);
+      }
+      if (!wgsl) invalidSpec(owner, `uniform "${name}" (data) requires paired WGSL stages`);
+      normalizeCustomDataValue(uniform.dataType as ShaderDataType, uniform.value, name, owner);
+      continue;
+    }
+    if (typeof type !== "string" || !isSupportedCustomUniformType(type)) {
       invalidSpec(owner, `uniform "${name}" has unsupported type ${String(type)} (expected one of ${CUSTOM_UNIFORM_TYPES.join(", ")})`);
     }
     if (isRecord(uniform) && uniform.value !== undefined) {
       normalizeCustomUniformValue(type as AuraCustomUniformType, uniform.value, name);
+    }
+  }
+  const aliases = spec.uniformAliases ?? {};
+  if (!isRecord(aliases)) invalidSpec(owner, "spec.uniformAliases must be a record of public names to declared uniform names");
+  for (const [name, target] of Object.entries(aliases)) {
+    if (!/^[A-Za-z_]\w*$/.test(name) || typeof target !== "string" || !Object.prototype.hasOwnProperty.call(uniforms, target)) {
+      invalidSpec(owner, `uniform alias "${name}" must name a declared uniform`);
     }
   }
   const defines = spec.defines ?? {};
@@ -171,8 +273,10 @@ export function assertAuraCustomMaterialSpec(spec: unknown, owner = "material.cu
 interface LoweredUniform extends PortableShaderUniform {
   /** The authored key — aliased to `name` (u_-prefixed) in generated GLSL. */
   readonly publicName: string;
-  readonly auraType: AuraCustomUniformType;
+  readonly auraType: AuraCustomUniformType | "data";
   readonly glslType: string;
+  /** Retain a certified graph's logical schema when its mat4 uses the flat binder. */
+  readonly graphDataType?: ShaderDataType;
 }
 
 const isTextureRef = (value: unknown): value is { readonly kind: "aura-texture-ref"; readonly id: string } =>
@@ -183,13 +287,17 @@ const isAssetTextureRef = (value: unknown): value is AuraAssetRef<"texture"> =>
   isRecord(value) && value.kind === "aura-asset-ref" && value.type === "texture";
 
 /**
- * A `texture.*` handle → a binding over its real device texture with the
- * handle's sampler state. A ref with no backing texture (never uploaded) keeps
- * the fallback-sampling placeholder so the material still compiles.
+ * A `texture.*` handle → a binding over its live device texture with the
+ * handle's sampler state. Asset references use a separate deferred placeholder.
  */
 function bindingForTextureRef(ref: AuraTextureRef, name: string): TextureBinding {
   const texture = auraTextureRefTexture(ref);
-  if (!texture) return new TextureBinding({ name, texture: null, required: false });
+  if (!texture) {
+    if (auraTextureRefBackingStatus(ref) === "disposed") invalidSpec("material.custom", `uniform "${name}" has no live backing texture`);
+    // An unbacked reference retains the established optional placeholder;
+    // a disposed owned handle above must never silently become a fallback.
+    return new TextureBinding({ name, texture: null, required: false });
+  }
   return new TextureBinding({ name, texture, sampler: auraTextureRefSampler(ref), transform: auraTextureRefTransform(ref), required: false });
 }
 
@@ -222,8 +330,8 @@ const padMat3 = (values: readonly number[]): readonly number[] => {
   ];
 };
 
-const scalarCount = (type: AuraCustomUniformType): number =>
-  type === "f32" || type === "i32" || type === "bool" ? 1
+const scalarCount = (type: SupportedCustomUniformType): number =>
+  type === "f32" || type === "i32" || type === "u32" || type === "bool" ? 1
     : type === "vec2" ? 2
       : type === "vec3" || type === "color3" ? 3
         : type === "vec4" ? 4
@@ -236,13 +344,23 @@ const scalarCount = (type: AuraCustomUniformType): number =>
  * `invalid-material-spec` on wrong arity / non-finite numbers / bad texture.
  */
 export function normalizeCustomUniformValue(type: AuraCustomUniformType, value: unknown, name = "uniform"): UniformValue {
-  if (type === "texture2d") {
-    if (isTextureBinding(value)) return value;
-    if (value instanceof Texture) return new TextureBinding({ name, texture: value, required: false });
-    if (isAuraTextureRef(value)) return bindingForTextureRef(value, name);
+  if (!isSupportedCustomUniformType(type)) invalidSpec("material.custom", `uniform "${name}" has unsupported type ${type}`);
+  if (isCustomTextureUniformType(type)) {
+    let binding: TextureBinding | undefined;
+    if (isTextureBinding(value)) binding = value;
+    else if (value instanceof Texture) binding = new TextureBinding({ name, texture: value, required: type !== "texture2d" });
+    else if (isAuraTextureRef(value)) binding = bindingForTextureRef(value, name);
     // Placeholder until `upgradeCustomMaterialTextures` loads the asset's url.
-    if (isAssetTextureRef(value)) return new TextureBinding({ name, texture: null, required: false });
-    invalidSpec("material.custom", `uniform "${name}" expects a TextureBinding, a texture handle (texture.*), a Texture (for example a render-target colour attachment) or a texture asset ref`);
+    else if (type === "texture2d" && isAssetTextureRef(value)) binding = new TextureBinding({ name, texture: null, required: false });
+    if (!binding) invalidSpec("material.custom", `uniform "${name}" (${type}) expects a TextureBinding, a texture handle or a Texture${type === "texture2d" ? ", or a texture asset ref" : ""}`);
+    const texture = binding.texture;
+    if (!texture && type !== "texture2d") invalidSpec("material.custom", `uniform "${name}" requires a bound ${type} texture`);
+    if (texture && (texture.disposed || !texture.usage.includes("sampled"))) invalidSpec("material.custom", `uniform "${name}" requires a live texture with sampled usage`);
+    if (texture && type === "texture2d" && (texture.dimension !== "2d" || texture.format === "depth24")) invalidSpec("material.custom", `uniform "${name}" expects a 2d color texture`);
+    if (texture && type === "texture3d" && (texture.dimension !== "3d" || texture.format === "depth24")) invalidSpec("material.custom", `uniform "${name}" expects a 3d texture`);
+    if (texture && type === "depth2d" && (texture.dimension !== "2d" || texture.format !== "depth24")) invalidSpec("material.custom", `uniform "${name}" expects a 2d depth texture`);
+    if (type === "depth2d" && binding.sampler.compare !== undefined) invalidSpec("material.custom", `uniform "${name}" requires a non-comparison depth binding`);
+    return binding;
   }
   if (type === "color3" && typeof value === "string") {
     const color = parseColor3(value);
@@ -258,24 +376,45 @@ export function normalizeCustomUniformValue(type: AuraCustomUniformType, value: 
     invalidSpec("material.custom", `uniform "${name}" (${type}) expects ${expected} scalar values, got ${scalars.length}`);
   }
   if (!normalized.every(Number.isFinite)) invalidSpec("material.custom", `uniform "${name}" contains non-finite values`);
+  if (type === "u32" && (typeof value === "boolean" || !Number.isInteger(normalized[0]) || normalized[0]! < 0 || normalized[0]! > 0xffffffff)) {
+    invalidSpec("material.custom", `uniform "${name}" (u32) must be an integer between 0 and 4294967295`);
+  }
+  if (type === "i32" && (typeof value === "boolean" || !Number.isInteger(normalized[0]) || normalized[0]! < -0x80000000 || normalized[0]! > 0x7fffffff)) {
+    invalidSpec("material.custom", `uniform "${name}" (i32) must be an integer between -2147483648 and 2147483647`);
+  }
+  if (type === "bool" && normalized[0] !== 0 && normalized[0] !== 1) {
+    invalidSpec("material.custom", `uniform "${name}" (bool) must be a boolean or 0 or 1`);
+  }
   return normalized.length === 1 ? normalized[0]! : [...normalized];
 }
 
-const LOWERED_TYPES: Record<AuraCustomUniformType, { kind: MaterialUniformKind; glsl: string }> = {
+function normalizeCustomDataValue(type: ShaderDataType, value: unknown, name: string, owner = "material.custom"): UniformDataValue {
+  try {
+    assertPortableUniformData(type, value, `uniform "${name}"`);
+    return value;
+  } catch (error) {
+    return invalidSpec(owner, error instanceof Error ? error.message : `uniform "${name}" has invalid data`);
+  }
+}
+
+const LOWERED_TYPES: Record<SupportedCustomUniformType, { kind: MaterialUniformKind; glsl: string }> = {
   f32: { kind: "float", glsl: "float" },
-  i32: { kind: "float", glsl: "float" },   // f32-carried; alias emits int(u_x)
-  bool: { kind: "float", glsl: "float" },  // 0/1 — alias emits bool(u_x)
+  i32: { kind: "i32", glsl: "int" },
+  u32: { kind: "u32", glsl: "uint" },
+  bool: { kind: "bool", glsl: "bool" },
   vec2: { kind: "vec2", glsl: "vec2" },
   vec3: { kind: "vec3", glsl: "vec3" },
   vec4: { kind: "vec4", glsl: "vec4" },
   color3: { kind: "vec3", glsl: "vec3" },
   mat3: { kind: "mat4", glsl: "mat4" },    // padded — alias emits mat3(u_x)
   mat4: { kind: "mat4", glsl: "mat4" },
-  texture2d: { kind: "texture2d", glsl: "sampler2D" }
+  texture2d: { kind: "texture2d", glsl: "sampler2D" },
+  texture3d: { kind: "texture3d", glsl: "sampler3D" },
+  depth2d: { kind: "depth2d", glsl: "sampler2D" }
 };
 
-const DEFAULT_VALUES: Record<Exclude<AuraCustomUniformType, "texture2d">, UniformValue> = {
-  f32: 0, i32: 0, bool: 0,
+const DEFAULT_VALUES: Record<Exclude<SupportedCustomUniformType, CustomTextureUniformType>, UniformValue> = {
+  f32: 0, i32: 0, u32: 0, bool: 0,
   vec2: [0, 0], vec3: [0, 0, 0], color3: [1, 1, 1], vec4: [0, 0, 0, 0],
   mat3: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
   mat4: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
@@ -284,13 +423,31 @@ const DEFAULT_VALUES: Record<Exclude<AuraCustomUniformType, "texture2d">, Unifor
 function lowerUniforms(spec: AuraCustomMaterialSpec): readonly LoweredUniform[] {
   const out: LoweredUniform[] = [];
   for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
+    if (typeof uniform !== "string" && uniform.type === "data") {
+      const uniformName = customUniformNameFor(publicName);
+      // A top-level 4x4 graph matrix has exactly the flat mat4 ABI on both
+      // backends. Other data schemas stay on the WebGPU-only recursive path.
+      const type = uniform.dataType;
+      const flatGraphMat4 = compiledGraphDataSpecs.has(spec) && typeof type === "object"
+        && type.kind === "matrix" && type.columns === 4 && type.rows === 4;
+      out.push({
+        name: uniformName, publicName, auraType: "data", kind: flatGraphMat4 ? "mat4" : "data", glslType: "",
+        ...(flatGraphMat4
+          ? { graphDataType: Object.freeze({ kind: "matrix" as const, columns: 4 as const, rows: 4 as const }) }
+          : { dataType: uniform.dataType }),
+        required: true, optimizable: true,
+        value: normalizeCustomDataValue(uniform.dataType, uniform.value, publicName)
+      });
+      continue;
+    }
     const auraType = (isRecord(uniform) ? uniform.type : uniform) as AuraCustomUniformType;
+    if (!isSupportedCustomUniformType(auraType)) invalidSpec("material.custom", `uniform "${publicName}" has unsupported type ${auraType}`);
     const lowered = LOWERED_TYPES[auraType];
     const uniformName = publicName.startsWith("u_") ? publicName : `u_${publicName}`;
     const value = isRecord(uniform) && uniform.value !== undefined
       ? normalizeCustomUniformValue(auraType, uniform.value, publicName)
-      : auraType === "texture2d"
-        ? new TextureBinding({ name: uniformName, texture: null, required: false })
+      : isCustomTextureUniformType(auraType)
+        ? new TextureBinding({ name: uniformName, texture: null, required: auraType !== "texture2d", expectedDimension: auraType === "texture3d" ? "3d" : "2d" })
         : DEFAULT_VALUES[auraType];
     out.push({
       name: uniformName,
@@ -338,7 +495,11 @@ function builtinLoweredUniformNames(): ReadonlySet<string> {
 }
 
 function uniformDeclLines(uniforms: readonly LoweredUniform[]): string[] {
-  return uniforms.map((uniform) => `uniform ${uniform.glslType} ${uniform.name};`);
+  // The fragment-stage default integer precision can be mediump. Explicit highp
+  // preserves all 32 bits of integer uniforms before any author precision line.
+  // Graph-generated GLSL already declares aggregates after their struct types.
+  // Hand-authored data uniforms must likewise supply their own declaration.
+  return uniforms.filter((uniform) => uniform.auraType !== "data").map((uniform) => `uniform ${uniform.auraType === "u32" || uniform.auraType === "i32" || uniform.auraType === "texture3d" || uniform.auraType === "depth2d" ? "highp " : ""}${uniform.glslType} ${uniform.name};`);
 }
 
 /**
@@ -467,6 +628,16 @@ function declaredCustomAttributes(vertexSource: string): readonly string[] {
   return [...names].sort();
 }
 
+/** The graph compiler declares the built-in attributes its reachable nodes use. */
+function declaredGraphAttributes(vertexSource: string): readonly string[] {
+  const line = /^\s*\/\/ @aura3d-graph-attributes:([A-Za-z0-9_,]+)\s*$/m.exec(vertexSource);
+  if (!line) return [];
+  const allowed = new Set(["a_position", "a_normal", "a_uv", "a_uv1"]);
+  const attributes = line[1]!.split(",");
+  if (attributes.some((name) => !allowed.has(name))) invalidSpec("material.node", "graph declares an unsupported geometry attribute");
+  return attributes;
+}
+
 const DEFAULT_GLSL_VERTEX = `void main() {
   gl_Position = u_modelViewProjection * vec4(position, 1.0);
 }`;
@@ -494,6 +665,7 @@ function injectPreamble(source: string, preamble: string, stage: "vertex" | "fra
   // Always declared: the prelude below uses `float` before the author's code, so an author-written `precision` line alone
   // (placed after the prelude) left it without a default and the shader failed to compile. A later author declaration wins.
   if (stage === "fragment") head += "precision highp float;\n";
+  head += "precision highp int;\n";
   return `${head}${preamble}\n${body}`;
 }
 
@@ -556,7 +728,7 @@ export function customFragmentOutputName(source: string): string | undefined {
  * material sets `fog: false`) into the author's colour output, at the fragment's reconstructed world position. Returns
  * the source unchanged (and `applied: false`) when the stage has no `void main()` or no `out vec4` to fog.
  */
-function withSceneFog(spec: AuraCustomMaterialSpec, source: string): { readonly source: string; readonly applied: boolean } {
+function withSceneFog(spec: AuraCustomMaterialSpec, source: string, graphWorldPosition = false): { readonly source: string; readonly applied: boolean } {
   if (spec.fog !== true) return { source, applied: false };
   const output = customFragmentOutputName(source);
   if (!output || !AUTHOR_MAIN_PATTERN.test(source)) return { source, applied: false };
@@ -564,12 +736,12 @@ function withSceneFog(spec: AuraCustomMaterialSpec, source: string): { readonly 
     applied: true,
     source: [
       source.replace(AUTHOR_MAIN_PATTERN, "void a3dAuthorMain()"),
-      "#include <a3d_shadow>",
+      ...(graphWorldPosition ? [] : ["#include <a3d_shadow>"]),
       ...SCENE_FOG_UNIFORM_DECLS,
       "#include <environment_fog_common>",
       "void main() {",
       "  a3dAuthorMain();",
-      `  ${output}.rgb = a3dApplyEnvironmentFog(${output}.rgb, a3dFragWorldPosition());`,
+      `  ${output}.rgb = a3dApplyEnvironmentFog(${output}.rgb, ${graphWorldPosition ? "auraGraph_surfaceWorldPosition" : "a3dFragWorldPosition()"});`,
       "}"
     ].join("\n")
   };
@@ -646,10 +818,15 @@ export function customMaterialCacheKey(spec: AuraCustomMaterialSpec): string {
   const canonical = stableSpecStringify({
     glsl: spec.glsl,
     wgsl: spec.wgsl ?? null,
+    graphDepth: graphDepthOf(spec) ?? null,
+    graphSkinning: graphSkinningOf(spec) ?? null,
+    graphStorageLayouts: graphStorageOf(spec) ? { forward: graphStorageOf(spec)!.forwardLayouts, depth: graphStorageOf(spec)!.depthLayouts } : null,
     defines: spec.defines ?? {},
     uniforms: Object.fromEntries(Object.entries(spec.uniforms ?? {}).map(([name, uniform]) => [
       name,
-      isRecord(uniform) ? { type: uniform.type, value: normalizeHashableValue(uniform.value) } : uniform
+      typeof uniform !== "string" && uniform.type === "data"
+        ? { type: uniform.type, dataType: uniform.dataType, value: uniform.value }
+        : isRecord(uniform) ? { type: uniform.type, value: normalizeHashableValue(uniform.value) } : uniform
     ])),
     patch: spec.patch ?? {},
     receiveShadow: spec.receiveShadow === true,
@@ -673,6 +850,8 @@ const adapterPreprocessor = new ShaderPreprocessor();
 const globalSourceRefs = new Map<string, number>();
 /** material → authored-name → lowered uniform descriptor (runtime setUniform lookup). */
 const publicUniformsByMaterial = new WeakMap<PortableShaderMaterial, ReadonlyMap<string, LoweredUniform>>();
+/** Optional public aliases resolve to declared names without changing shader bindings. */
+const publicUniformAliasesByMaterial = new WeakMap<PortableShaderMaterial, ReadonlyMap<string, string>>();
 /** material → lowered uniform name → live `texture.*` handle bound there (sampler state re-syncs each frame). */
 const liveTextureRefsByMaterial = new WeakMap<PortableShaderMaterial, Map<string, { readonly publicName: string; readonly ref: AuraTextureRef }>>();
 
@@ -693,6 +872,170 @@ function adapterLibraryFor(_name: string): ShaderLibrary {
   return new ShaderLibrary();
 }
 
+interface GraphProgramStamp {
+  readonly vertex: string;
+  readonly fragment: string;
+  readonly gpuVertex: string | undefined;
+  readonly gpuFragment: string | undefined;
+  readonly layout: string;
+}
+
+function graphProgramStamp(vertex: string, fragment: string, gpu: PortableShaderSources["wgsl"], bindings?: ShaderSourcePair["portableBindings"]): GraphProgramStamp {
+  return { vertex, fragment, gpuVertex: gpu?.vertex, gpuFragment: gpu?.fragment,
+    layout: JSON.stringify([gpu?.storageBindings, bindings]) };
+}
+
+function graphProgramStampMatches(a: GraphProgramStamp, b: GraphProgramStamp): boolean {
+  return a.vertex === b.vertex && a.fragment === b.fragment && a.gpuVertex === b.gpuVertex
+    && a.gpuFragment === b.gpuFragment && a.layout === b.layout;
+}
+
+// A mesh query cannot execute arbitrary shader code. Only the adapter may
+// certify these complete, position-only programs, and only after checking the
+// baked program and both shader registries. In particular this is not a
+// certificate for an unmounted, mutable material spec.
+const POSITION_ONLY_VERTEX = /^\s*void\s+main\s*\(\s*(?:void\s*)?\)\s*\{\s*gl_Position\s*=\s*(?:u_modelViewProjection|modelViewProjectionMatrix|projectionMatrix\s*\*\s*modelViewMatrix|projectionMatrix\s*\*\s*viewMatrix\s*\*\s*modelMatrix)\s*\*\s*vec4\s*\(\s*position\s*,\s*1\.0\s*\)\s*;\s*\}\s*$/;
+const POSITION_PROGRAM_IDENTIFIERS = new Set([
+  "void", "main", "gl_Position", "u_modelViewProjection", "modelViewProjectionMatrix",
+  "projectionMatrix", "viewMatrix", "modelMatrix", "modelViewMatrix", "vec4", "position", "a_position"
+]);
+const POSITION_FRAME_UNIFORMS = ["u_modelViewProjection", "u_modelMatrix", "u_viewMatrix", "u_projectionMatrix"] as const;
+const shaderLibraryGet = ShaderLibrary.prototype.get;
+
+interface PositionQueryPrototype {
+  readonly value: object;
+  readonly parent: object | null;
+  readonly descriptors: PropertyDescriptorMap;
+}
+
+interface PositionQueryCertificate {
+  readonly key: string;
+  readonly library: ShaderLibrary;
+  readonly sources: string;
+  readonly pair: string;
+  readonly prototypes: readonly PositionQueryPrototype[];
+}
+
+const positionQueryCertificates = new WeakMap<object, PositionQueryCertificate>();
+
+function dataRecord(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== "object" || Object.getPrototypeOf(value) !== Object.prototype) return undefined;
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  if (Reflect.ownKeys(descriptors).some((key) => typeof key !== "string" || !("value" in descriptors[key]!))) return undefined;
+  return value as Record<string, unknown>;
+}
+
+function positionSourcesStamp(value: unknown): string | undefined {
+  const sources = dataRecord(value);
+  const glsl = dataRecord(sources?.glsl);
+  if (!sources || !Object.hasOwn(sources, "glsl") || !glsl || !Object.hasOwn(glsl, "vertex") || !Object.hasOwn(glsl, "fragment")
+    || typeof glsl.vertex !== "string" || typeof glsl.fragment !== "string") return undefined;
+  const wgsl = sources.wgsl === undefined ? undefined : dataRecord(sources.wgsl);
+  if (sources.wgsl !== undefined && (!Object.hasOwn(sources, "wgsl") || !wgsl || !Object.hasOwn(wgsl, "vertex")
+    || !Object.hasOwn(wgsl, "fragment") || typeof wgsl.vertex !== "string" || typeof wgsl.fragment !== "string"
+    || wgsl.storageBindings !== undefined)) return undefined;
+  return JSON.stringify([glsl.vertex, glsl.fragment, wgsl?.vertex, wgsl?.fragment]);
+}
+
+function positionPairStamp(value: unknown, key: string, sourcesValue: unknown): string | undefined {
+  const pair = dataRecord(value);
+  const sources = dataRecord(sourcesValue);
+  const glsl = dataRecord(sources?.glsl);
+  if (!pair || !sources || !glsl || !["name", "marker", "vertex", "fragment"].every((name) => Object.hasOwn(pair, name))
+    || !Object.hasOwn(glsl, "vertex") || !Object.hasOwn(glsl, "fragment")
+    || typeof glsl.vertex !== "string" || typeof glsl.fragment !== "string" || pair.variants !== undefined) return undefined;
+  const marker = `@aura3d-portable:${key}`;
+  if (pair.name !== key || pair.marker !== marker || pair.vertex !== withSourceMarker(glsl.vertex, marker)
+    || pair.fragment !== withSourceMarker(glsl.fragment, marker)) return undefined;
+  const wgsl = sources.wgsl === undefined ? undefined : dataRecord(sources.wgsl);
+  const gpu = pair.webgpu === undefined ? undefined : dataRecord(pair.webgpu);
+  if (wgsl) {
+    if (!gpu || !Object.hasOwn(pair, "webgpu") || !Object.hasOwn(pair, "portableBindings")
+      || !Object.hasOwn(gpu, "vertex") || !Object.hasOwn(gpu, "fragment")
+      || typeof wgsl.vertex !== "string" || typeof wgsl.fragment !== "string"
+      || gpu.vertex !== withSourceMarker(wgsl.vertex, marker) || gpu.fragment !== withSourceMarker(wgsl.fragment, marker)
+      || gpu.storageBindings !== undefined || !Array.isArray(pair.portableBindings) || !Object.isFrozen(pair.portableBindings)) return undefined;
+    // The adapter's binding array and entries are frozen. Reject nested
+    // schemas/accessors instead of trusting a mutable serialized layout.
+    for (const entry of pair.portableBindings) {
+      const binding = dataRecord(entry);
+      if (!binding || !Object.isFrozen(binding) || Object.values(binding).some((field) =>
+        field !== undefined && typeof field !== "string" && typeof field !== "number" && typeof field !== "boolean")) return undefined;
+    }
+  } else if (pair.webgpu !== undefined || pair.portableBindings !== undefined) return undefined;
+  return JSON.stringify([pair.name, pair.marker, pair.vertex, pair.fragment, gpu?.vertex, gpu?.fragment, pair.portableBindings]);
+}
+
+function positionQueryPrototypes(material: object): readonly PositionQueryPrototype[] {
+  const result: PositionQueryPrototype[] = [];
+  for (let value = Object.getPrototypeOf(material) as object | null; value && value !== Object.prototype; value = Object.getPrototypeOf(value) as object | null) {
+    result.push({ value, parent: Object.getPrototypeOf(value) as object | null, descriptors: Object.getOwnPropertyDescriptors(value) });
+  }
+  return result;
+}
+
+function positionQueryPrototypesMatch(prototypes: readonly PositionQueryPrototype[]): boolean {
+  return prototypes.every(({ value, parent, descriptors }) => {
+    if (Object.getPrototypeOf(value) !== parent || Reflect.ownKeys(value).length !== Reflect.ownKeys(descriptors).length) return false;
+    return Reflect.ownKeys(descriptors).every((key) => {
+      const before = Reflect.get(descriptors, key) as PropertyDescriptor;
+      const after = Object.getOwnPropertyDescriptor(value, key);
+      return after !== undefined && after.value === before.value && after.get === before.get && after.set === before.set
+        && after.writable === before.writable && after.enumerable === before.enumerable && after.configurable === before.configurable;
+    });
+  });
+}
+
+function positionOnlyProgram(spec: AuraCustomMaterialSpec, vertexSource: string, uniforms: readonly LoweredUniform[], sources: PortableShaderSources): boolean {
+  if (!POSITION_ONLY_VERTEX.test(vertexSource) || Object.keys(spec.defines ?? {}).length || Object.keys(spec.patch ?? {}).length
+    || graphDepthOf(spec) || graphSkinningOf(spec) || graphStorageOf(spec)
+    || uniforms.some((uniform) => POSITION_PROGRAM_IDENTIFIERS.has(uniform.publicName))
+    || (sources.wgsl !== undefined && sources.wgsl.vertex !== DEFAULT_WGSL_VERTEX)) return false;
+  // No authored directives/includes are admitted. Reconstruct the exact
+  // preprocessor output and adapter-owned prelude; an injected define, patch,
+  // or unexpected lowering cannot inherit the certificate.
+  const cleanVertex = vertexSource.split(/\r?\n/).filter(Boolean).join("\n");
+  return sources.glsl.vertex === injectPreamble(cleanVertex, vertexPreamble(uniforms, vertexSource), "vertex");
+}
+
+function certifyPositionQueryMaterial(material: AuraCustomShaderMaterial, library: ShaderLibrary, sources: PortableShaderSources): void {
+  if (Object.getPrototypeOf(material) !== AuraCustomShaderMaterial.prototype) return;
+  const stamp = positionSourcesStamp(sources);
+  const localPair = positionPairStamp(shaderLibraryGet.call(library, material.shaderKey), material.shaderKey, sources);
+  const globalPair = positionPairStamp(globalShaderSource(material.shaderKey), material.shaderKey, sources);
+  if (stamp && localPair && localPair === globalPair) {
+    positionQueryCertificates.set(material, { key: material.shaderKey, library, sources: stamp, pair: localPair, prototypes: positionQueryPrototypes(material) });
+  }
+}
+
+/** Internal: the currently submitted compiled program still has the position-only contract. */
+export function hasPositionQueryCertificate(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  try {
+    const certificate = positionQueryCertificates.get(value);
+    if (!certificate || Object.getPrototypeOf(value) !== certificate.prototypes[0]?.value
+      || !positionQueryPrototypesMatch(certificate.prototypes)) return false;
+    if (Reflect.ownKeys(value).some((key) => {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      return !descriptor || !("value" in descriptor) || typeof descriptor.value === "function";
+    })) return false;
+    const own = (key: string): unknown => Object.getOwnPropertyDescriptor(value, key)?.value;
+    if (own("disposed") !== false || own("shaderKey") !== certificate.key || own("shaderVariant") !== undefined
+      || own("shaderLibrary") !== certificate.library || certificate.library.get !== shaderLibraryGet
+      || own("graphMaterial") !== false || own("graphDisplaced") !== false || own("graphRequiresWebGPU") !== false
+      || own("graphSkinningShaderKeys") !== undefined || own("graphSkinningDepthShaderKeys") !== undefined) return false;
+    const parameters = own("parameters");
+    if (!(parameters instanceof Map) || Object.getPrototypeOf(parameters) !== Map.prototype || Reflect.ownKeys(parameters).length
+      || POSITION_FRAME_UNIFORMS.some((name) => Map.prototype.has.call(parameters, name))) return false;
+    const sources = own("sourcesValue");
+    return positionSourcesStamp(sources) === certificate.sources
+      && positionPairStamp(shaderLibraryGet.call(certificate.library, certificate.key), certificate.key, sources) === certificate.pair
+      && positionPairStamp(globalShaderSource(certificate.key), certificate.key, sources) === certificate.pair;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * The compiled custom material. `sources` may omit WGSL — such materials are
  * WebGL2-only and the WebGPU device fails closed with `WGSL_PROGRAM_MISSING`.
@@ -705,57 +1048,117 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
    * depth-only fragment). `DepthPass` draws shadow casters with it, so vertex displacement moves the shadow too.
    */
   readonly customDepthShaderKey: string | undefined;
+  override readonly graphSkinningShaderKeys: Readonly<{ four: string; eight: string }> | undefined = undefined;
+  override readonly graphSkinningDepthShaderKeys: Readonly<{ four: string; eight: string }> | undefined = undefined;
+  private readonly typedGraphSkinningKeys = new Map<string, string>();
+  private readonly graphShadowKeys = new Map<string, string>();
+  private readonly graphShadowTemplate: PortableShaderSources | undefined;
+  private readonly graphClippingSourceStamps = new Map<string, { readonly stamp: GraphProgramStamp; readonly pass: "forward" | "depth" }>();
+  private graphClippingTemplateStamp: GraphProgramStamp | undefined;
   private readonly unusedUniformNames: readonly string[];
   /** The author's own GLSL per stage, so a compile error in the assembled program can be mapped back to the author's line (best effort: exact when no `#include` expands before the error line). Read by the renderer's shader-failure diagnostics. */
   readonly shaderAuthoredSource: { readonly vertex: string; readonly fragment: string };
 
   constructor(spec: AuraCustomMaterialSpec, options: { readonly name?: string } = {}) {
     assertAuraCustomMaterialSpec(spec, options.name ?? "material.custom");
+    if (compiledGraphDataSpecs.has(spec) && compiledGraphSpecs.get(spec) !== graphSpecFingerprint(spec)) {
+      invalidSpec(options.name ?? "material.custom", "compiled graph data schema or shader sources changed; rebuild the graph material");
+    }
+    const certifiedGraphSpec = isCertifiedGraphSpec(spec);
     const cacheName = customMaterialCacheKey(spec);
     const name = options.name ? `${options.name}-${cacheName}` : cacheName;
     const uniforms = lowerUniforms(spec);
+    const graphStorage = graphStorageOf(spec);
     const includes = bakeIncludes(spec.patch);
     const vertexSource = modernizeVertexAttributes(spec.glsl.vertex ?? DEFAULT_GLSL_VERTEX);
     const customAttributes = declaredCustomAttributes(vertexSource);
+    const graphAttributes = declaredGraphAttributes(vertexSource);
     const glslVertex = injectPreamble(
       adapterPreprocessor.preprocess(vertexSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source,
       vertexPreamble(uniforms, vertexSource),
       "vertex"
     );
-    const fogged = withSceneFog(spec, withShadowInclude(spec));
+    const fogged = withSceneFog(spec, withShadowInclude(spec), graphAttributes.length > 0);
     const fragmentSource = fogged.source;
     const glslFragment = injectPreamble(
       adapterPreprocessor.preprocess(fragmentSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source,
       fragmentPreamble(uniforms, fragmentSource),
       "fragment"
     );
-    const sources: PortableShaderSources = {
+    const fullSources: PortableShaderSources = {
       glsl: { vertex: glslVertex, fragment: glslFragment },
       ...(spec.wgsl
         ? {
           wgsl: {
             vertex: wgslStage(spec.wgsl.vertex, DEFAULT_WGSL_VERTEX, spec.patch),
-            fragment: wgslStage(spec.wgsl.fragment, "", spec.patch)
+            fragment: wgslStage(spec.wgsl.fragment, "", spec.patch),
+            ...(graphStorage ? { storageBindings: graphStorage.forwardLayouts } : {})
           }
         }
         : {})
     };
+    const sources = graphAttributes.length ? graphEnvironmentSources(graphShadowSources(fullSources, 0), 0) : fullSources;
+    const shaderLibrary = adapterLibraryFor(name);
     super({
       name,
-      shaderLibrary: adapterLibraryFor(name),
+      shaderLibrary,
       sources,
       uniforms,
       renderState: customRenderState(spec),
-      requiredAttributes: ["a_position", ...customAttributes]
+      requiredAttributes: [...new Set(["a_position", ...customAttributes, ...graphAttributes])],
+      ...(graphAttributes.length ? { graphMaterial: true } : {}),
+      ...(graphAttributes.length && graphDepthOf(spec) ? { graphDisplaced: true } : {}),
+      ...(graphStorage ? { graphStorage: { forward: graphStorage.forward, depth: graphStorage.depth } } : {}),
+      ...(/^\s*\/\/ @aura3d-graph-lighting:metallic-roughness\s*$/m.test(vertexSource) ? { graphLightingModel: "metallic-roughness" as const } : {})
     });
+    this.graphShadowTemplate = graphAttributes.length ? fullSources : undefined;
     this.fogUnapplied = spec.fog === true && !fogged.applied;
-    this.customDepthShaderKey = spec.castShadow === true ? acquireCustomDepthSource(this.shaderKey, glslVertex) : undefined;
+    const depth = graphDepthOf(spec);
+    if (graphAttributes.length && spec.castShadow === true && !depth) invalidSpec("material.node", "displaced graph is missing its paired shadow stages");
+    const depthVertexSource = depth ? modernizeVertexAttributes(depth.glsl.vertex) : undefined;
+    // Alpha-tested graph depth stages read the same uniforms and sampled
+    // textures as the forward fragment. Existing opaque depth fragments need
+    // no added declarations, preserving their established reflection surface.
+    const bakeDepthFragment = (source: string): string => source.includes("// @aura3d-graph-alpha-test")
+      ? injectPreamble(adapterPreprocessor.preprocess(source, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source, fragmentPreamble(uniforms, source), "fragment")
+      : source;
+    const graphDepthSources: PortableShaderSources | undefined = depth && depthVertexSource
+      ? {
+        glsl: {
+          vertex: injectPreamble(adapterPreprocessor.preprocess(depthVertexSource, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source, vertexPreamble(uniforms, depthVertexSource), "vertex"),
+          fragment: bakeDepthFragment(depth.glsl.fragment)
+        },
+        wgsl: { vertex: wgslStage(depth.wgsl.vertex, "", spec.patch), fragment: wgslStage(depth.wgsl.fragment, "", spec.patch), ...(graphStorage ? { storageBindings: graphStorage.depthLayouts } : {}) }
+      }
+      : undefined;
+    this.customDepthShaderKey = spec.castShadow === true
+      ? acquireCustomDepthSource(this.shaderKey, graphDepthSources?.glsl.vertex ?? glslVertex, graphDepthSources ? this.sourcePair(graphDepthSources, this.bindingsForSources(graphDepthSources)) : undefined)
+      : undefined;
+    const graphSkinning = graphSkinningOf(spec);
+    if (graphSkinning) {
+      const bakeVertex = (source: string): string => {
+        const modern = modernizeVertexAttributes(source);
+        return injectPreamble(adapterPreprocessor.preprocess(modern, { defines: spec.defines ?? {}, includes: new AuthorIncludeOnceMap(includes) }).source, vertexPreamble(uniforms, modern), "vertex");
+      };
+      const registerVariant = (variant: "four" | "eight", pass: "forward" | "depth"): string => {
+        const pair = graphSkinning[variant][pass];
+        const variantSources: PortableShaderSources = {
+          glsl: { vertex: bakeVertex(pair.glsl.vertex), fragment: pass === "forward" ? glslFragment : bakeDepthFragment(pair.glsl.fragment) },
+          wgsl: { vertex: wgslStage(pair.wgsl.vertex, "", spec.patch), fragment: wgslStage(pair.wgsl.fragment, "", spec.patch), ...(graphStorage ? { storageBindings: pass === "forward" ? graphStorage.forwardLayouts : graphStorage.depthLayouts } : {}) }
+        };
+        const selected = pass === "forward" ? graphEnvironmentSources(graphShadowSources(variantSources, 0), 0) : variantSources;
+        return acquirePortableVariant(`${this.shaderKey}/skin-${variant}-${pass}`, selected, this.bindingsForSources(selected));
+      };
+      this.graphSkinningShaderKeys = { four: registerVariant("four", "forward"), eight: registerVariant("eight", "forward") };
+      this.graphSkinningDepthShaderKeys = { four: registerVariant("four", "depth"), eight: registerVariant("eight", "depth") };
+    }
     this.shaderAuthoredSource = { vertex: vertexSource, fragment: spec.glsl.fragment };
     const authoredSource = `${spec.glsl.vertex ?? ""}\n${spec.glsl.fragment}`;
     this.unusedUniformNames = uniforms
       .filter((uniform) => !new RegExp(`\\b(?:${uniform.publicName}|${uniform.name})\\b`).test(authoredSource))
       .map((uniform) => uniform.publicName);
     publicUniformsByMaterial.set(this, new Map(uniforms.map((uniform) => [uniform.publicName, uniform])));
+    publicUniformAliasesByMaterial.set(this, new Map(Object.entries(spec.uniformAliases ?? {})));
     const liveRefs = new Map<string, { readonly publicName: string; readonly ref: AuraTextureRef }>();
     for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
       const value = isRecord(uniform) ? uniform.value : undefined;
@@ -764,13 +1167,117 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     if (liveRefs.size > 0) liveTextureRefsByMaterial.set(this, liveRefs);
     registerGlobalShaderSource(this.sourcePair(this.sources));
     globalSourceRefs.set(this.shaderKey, (globalSourceRefs.get(this.shaderKey) ?? 0) + 1);
+    // Certification is optional and must never change whether a shader can
+    // render. A malformed/mutated candidate simply remains unqueryable.
+    try {
+      if (positionOnlyProgram(spec, vertexSource, uniforms, this.sources)) certifyPositionQueryMaterial(this, shaderLibrary, this.sources);
+    } catch {
+      // Fail closed for hostile or concurrently edited source objects.
+    }
+    if (certifiedGraphSpec && graphAttributes.length && this.graphShadowTemplate && Object.getPrototypeOf(this) === AuraCustomShaderMaterial.prototype) {
+      this.graphClippingTemplateStamp = graphProgramStamp(this.graphShadowTemplate.glsl.vertex, this.graphShadowTemplate.glsl.fragment, this.graphShadowTemplate.wgsl);
+      this.rememberGraphClippingSource(this.shaderKey, "forward");
+      if (this.customDepthShaderKey) this.rememberGraphClippingSource(this.customDepthShaderKey, "depth");
+      if (this.graphSkinningShaderKeys) for (const key of Object.values(this.graphSkinningShaderKeys)) this.rememberGraphClippingSource(key, "forward");
+      if (this.graphSkinningDepthShaderKeys) for (const key of Object.values(this.graphSkinningDepthShaderKeys)) this.rememberGraphClippingSource(key, "depth");
+      const verify = this.graphClippingSourcesValid.bind(this);
+      super.certifyGraphClipping((key, pass) => verify(key, pass));
+    }
+  }
+
+  private rememberGraphClippingSource(key: string, pass: "forward" | "depth"): void {
+    if (!this.graphClippingTemplateValid()) return;
+    const pair = globalShaderSource(key);
+    if (pair?.name === key) this.graphClippingSourceStamps.set(key, { stamp: graphProgramStamp(pair.vertex, pair.fragment, pair.webgpu, pair.portableBindings), pass });
+  }
+
+  private graphClippingTemplateValid(): boolean {
+    const template = this.graphShadowTemplate, stamp = this.graphClippingTemplateStamp;
+    return !!template && !!stamp && graphProgramStampMatches(stamp, graphProgramStamp(template.glsl.vertex, template.glsl.fragment, template.wgsl));
+  }
+
+  private graphClippingSourcesValid(key?: string, pass: "forward" | "depth" = "forward"): boolean {
+    if (!this.graphClippingTemplateValid()) return false;
+    if (key !== undefined && this.graphClippingSourceStamps.get(key)?.pass !== pass) return false;
+    for (const [name, recorded] of this.graphClippingSourceStamps) {
+      const pair = globalShaderSource(name);
+      if (!pair || pair.name !== name || !graphProgramStampMatches(recorded.stamp, graphProgramStamp(pair.vertex, pair.fragment, pair.webgpu, pair.portableBindings))) return false;
+    }
+    return this.graphClippingSourceStamps.has(this.shaderKey);
   }
 
   override dispose(): void {
+    positionQueryCertificates.delete(this);
     if (this.disposed) return;
     super.dispose();
     releaseGlobalSource(this.shaderKey);
     if (this.customDepthShaderKey) releaseGlobalSource(this.customDepthShaderKey);
+    if (this.graphSkinningShaderKeys) for (const key of Object.values(this.graphSkinningShaderKeys)) releaseGlobalSource(key);
+    if (this.graphSkinningDepthShaderKeys) for (const key of Object.values(this.graphSkinningDepthShaderKeys)) releaseGlobalSource(key);
+    for (const key of this.typedGraphSkinningKeys.values()) releaseGlobalSource(key);
+    this.typedGraphSkinningKeys.clear();
+    for (const key of this.graphShadowKeys.values()) releaseGlobalSource(key);
+    this.graphShadowKeys.clear();
+    this.graphClippingSourceStamps.clear();
+  }
+
+  override hotReload(sources: PortableShaderSources): void {
+    // A reload can replace the material-local program even while the renderer's
+    // process-wide pair remains unchanged; require a newly compiled material.
+    positionQueryCertificates.delete(this);
+    super.hotReload(sources);
+  }
+
+  override graphSkinningVariant(influences: 4 | 8, first: GraphJointKind, second: GraphJointKind, pass: "forward" | "depth"): string | undefined {
+    if (this.disposed || !this.graphSkinningShaderKeys || !this.graphSkinningDepthShaderKeys) return undefined;
+    if (!["float", "uint", "sint"].includes(first) || !["float", "uint", "sint"].includes(second)
+      || (influences !== 4 && influences !== 8) || (pass !== "forward" && pass !== "depth")) return undefined;
+    const variant = influences === 4 ? "four" : "eight";
+    const next = influences === 4 ? "float" : second;
+    const keys = pass === "forward" ? this.graphSkinningShaderKeys : this.graphSkinningDepthShaderKeys;
+    if (first === "float" && next === "float") return keys[variant];
+    const id = `${variant}-${first}-${next}-${pass}`;
+    const cached = this.typedGraphSkinningKeys.get(id);
+    if (cached) return cached;
+    const base = globalShaderSource(keys[variant]);
+    if (!base?.webgpu || !base.portableBindings) return undefined;
+    const certifiedBase = this.graphClippingSourcesValid(keys[variant], pass);
+    const typed: PortableShaderSources = {
+      glsl: { vertex: graphTypedJointVertex(base.vertex, "glsl", influences, first, next), fragment: base.fragment },
+      wgsl: { ...base.webgpu, vertex: graphTypedJointVertex(base.webgpu.vertex, "wgsl", influences, first, next), fragment: base.webgpu.fragment }
+    };
+    const key = acquirePortableVariant(`${this.shaderKey}/typed-skin-${id}`, typed, base.portableBindings);
+    this.typedGraphSkinningKeys.set(id, key);
+    if (certifiedBase) this.rememberGraphClippingSource(key, pass);
+    return key;
+  }
+
+  override graphShadowVariant(baseShaderKey: string, features: number): string | undefined {
+    return this.graphLightingVariant(baseShaderKey, features, 0);
+  }
+
+  override graphLightingVariant(baseShaderKey: string, features: number, environment: number): string | undefined {
+    if (this.disposed || !this.graphShadowTemplate || !Number.isInteger(features) || features < 0 || features > 255
+      || (features & 1) !== 0 && (features & 16) !== 0 || (features & 16) === 0 && (features & 96) !== 0
+      || !Number.isInteger(environment) || environment < 0 || environment > 7
+      || !baseShaderKey.startsWith(this.shaderKey)) return undefined;
+    if (features === 0 && environment === 0) return baseShaderKey;
+    const id = `${baseShaderKey}:${features}:${environment}`;
+    const cached = this.graphShadowKeys.get(id);
+    if (cached) return cached;
+    const base = globalShaderSource(baseShaderKey);
+    const template = this.graphShadowTemplate;
+    if (!base?.webgpu || !template.wgsl) return undefined;
+    const certifiedBase = this.graphClippingSourcesValid(baseShaderKey);
+    const selected = graphEnvironmentSources(graphShadowSources({
+      glsl: { vertex: base.vertex, fragment: template.glsl.fragment },
+      wgsl: { ...base.webgpu, vertex: base.webgpu.vertex, fragment: template.wgsl.fragment }
+    }, features), environment);
+    const suffix = environment === 0 ? `shadows-${features}` : `lighting-${features}-${environment}`;
+    const key = acquirePortableVariant(`${baseShaderKey}/${suffix}`, selected, this.bindingsForSources(selected));
+    this.graphShadowKeys.set(id, key);
+    if (certifiedBase) this.rememberGraphClippingSource(key, "forward");
+    return key;
   }
 
   /**
@@ -806,8 +1313,8 @@ function releaseGlobalSource(key: string): void {
   }
 }
 
-/** Depth-only fragment of a `castShadow` custom material: the shadow map stores depth; colour is never read. */
-export const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(1.0);\n}\n";
+/** Color-encoded depth is consumed when the shadow target has no sampleable depth attachment. */
+export const CUSTOM_DEPTH_FRAGMENT_GLSL = "#version 300 es\nprecision highp float;\nout vec4 a3dDepthColor;\nvoid main() {\n  a3dDepthColor = vec4(vec3(gl_FragCoord.z), 1.0);\n}\n";
 
 /** Same marker placement as `PortableShaderMaterial` (after `#version`): the device requires the marker in both stages. */
 function withSourceMarker(source: string, marker: string): string {
@@ -815,15 +1322,111 @@ function withSourceMarker(source: string, marker: string): string {
   return version ? `${version[1]}// ${marker}\n${source.slice(version[1].length)}` : `// ${marker}\n${source}`;
 }
 
+type GraphJointKind = "float" | "uint" | "sint";
+
+/** Strip inactive shadow features before reflection and portable binding layout. */
+function graphShadowSources(sources: PortableShaderSources, features: number): PortableShaderSources {
+  const cascadeCount = (features & 16) !== 0 ? 1 + ((features >> 5) & 3) : 0;
+  const enabled: Readonly<Record<string, boolean>> = {
+    directional: (features & 1) !== 0, point: (features & 2) !== 0, spot: (features & 4) !== 0,
+    local: (features & 8) !== 0, cascade: cascadeCount > 0, punctual: (features & 6) !== 0, contact: (features & 128) !== 0,
+    cascade2: cascadeCount >= 2, cascade3: cascadeCount >= 3, cascade4: cascadeCount >= 4
+  };
+  const select = (source: string): string => {
+    const pattern = /^[ \t]*\/\/ @graph-shadow begin (directional|point|spot|local|cascade|punctual|contact|cascade2|cascade3|cascade4)[ \t]*\n([\s\S]*?)^[ \t]*\/\/ @graph-shadow end \1[ \t]*(?:\n|$)/gm;
+    let previous: string;
+    do {
+      previous = source;
+      source = source.replace(pattern, (_match, name: string, body: string) => enabled[name] ? body : "");
+    } while (source !== previous);
+    if (cascadeCount > 0) {
+      source = withSourceMarker(source, `@aura3d-graph-cascades:${cascadeCount}`);
+      source = source.replace("uniform mat4 u_graphCascadeMatrices[4];", `uniform mat4 u_graphCascadeMatrices[${cascadeCount}];`)
+        .replace("uniform vec4 u_graphCascadeParams[4];", `uniform vec4 u_graphCascadeParams[${cascadeCount}];`)
+        .replace("uniform vec4 u_graphCascadeTexels[4];", `uniform vec4 u_graphCascadeTexels[${cascadeCount}];`)
+        .replace("uniform vec4 u_graphCascadeSamples[128];", `uniform vec4 u_graphCascadeSamples[${cascadeCount * 32}];`);
+    }
+    return source;
+  };
+  return {
+    glsl: { vertex: sources.glsl.vertex, fragment: select(sources.glsl.fragment) },
+    ...(sources.wgsl ? { wgsl: { ...sources.wgsl, vertex: sources.wgsl.vertex, fragment: select(sources.wgsl.fragment) } } : {})
+  };
+}
+
+/** Strip environment resources and calculations absent from a draw. */
+function graphEnvironmentSources(sources: PortableShaderSources, features: number): PortableShaderSources {
+  const enabled: Readonly<Record<string, boolean>> = { probe: (features & 1) !== 0, volume: (features & 2) !== 0, cube: (features & 4) !== 0 };
+  const select = (source: string): string => source.replace(
+    /^[ \t]*\/\/ @graph-environment begin (probe|volume|cube)[ \t]*\n([\s\S]*?)^[ \t]*\/\/ @graph-environment end \1[ \t]*(?:\n|$)/gm,
+    (_match, name: string, body: string) => enabled[name] ? body : ""
+  );
+  return { glsl: { vertex: sources.glsl.vertex, fragment: select(sources.glsl.fragment) },
+    ...(sources.wgsl ? { wgsl: { ...sources.wgsl, vertex: sources.wgsl.vertex, fragment: select(sources.wgsl.fragment) } } : {}) };
+}
+
+/** Integer joint IDs are bounded before conversion to the palette helper's
+ * float input, preserving the correct clamp for full-width uint/sint values. */
+function graphTypedJointVertex(source: string, target: "glsl" | "wgsl", influences: 4 | 8, first: GraphJointKind, second: GraphJointKind): string {
+  let result = source;
+  const update = (index: 0 | 1, kind: GraphJointKind): void => {
+    if (kind === "float") return;
+    const variable = target === "glsl" ? (index === 0 ? "a_joints" : "a_joints1") : (index === 0 ? "joints" : "joints1");
+    const location = index === 0 ? 5 : 8;
+    const vector = kind === "uint" ? "uvec4" : "ivec4";
+    const scalar = kind === "uint" ? "u32" : "i32";
+    const declaration = target === "glsl" ? `layout(location = ${location}) in vec4 ${variable};` : `@location(${location}) ${variable}: vec4<f32>`;
+    const replacement = target === "glsl" ? `layout(location = ${location}) in ${vector} ${variable};` : `@location(${location}) ${variable}: vec4<${scalar}>`;
+    if (!result.includes(declaration)) throw new Error(`Graph skinning vertex is missing ${variable} declaration`);
+    result = result.replace(declaration, replacement);
+    const maxIndex = target === "glsl" ? `max(u_jointCount - 1.0, 0.0)` : `max(aura.u_jointCount - 1.0, 0.0)`;
+    const bounded = target === "glsl"
+      ? kind === "uint" ? `vec4(min(${variable}, uvec4(uint(${maxIndex}))))` : `vec4(clamp(${variable}, ivec4(0), ivec4(int(${maxIndex}))))`
+      : kind === "uint" ? `vec4<f32>(min(${variable}, vec4<u32>(u32(${maxIndex}))))` : `vec4<f32>(clamp(${variable}, vec4<i32>(0), vec4<i32>(i32(${maxIndex}))))`;
+    const call = target === "glsl"
+      ? index === 0 ? `a3dSkinMatrix${influences}(${variable},` : `, ${variable}, a_weights1)`
+      : `auraGraphSkin4(${variable}, ${index === 0 ? "weights" : "weights1"})`;
+    const updated = target === "glsl"
+      ? index === 0 ? `a3dSkinMatrix${influences}(${bounded},` : `, ${bounded}, a_weights1)`
+      : `auraGraphSkin4(${bounded}, ${index === 0 ? "weights" : "weights1"})`;
+    if (!result.includes(call)) throw new Error(`Graph skinning vertex is missing ${variable} palette access`);
+    result = result.replace(call, updated);
+  };
+  update(0, first);
+  if (influences === 8) update(1, second);
+  return result;
+}
+
+function acquirePortableVariant(name: string, sources: PortableShaderSources, bindings: NonNullable<ShaderSourcePair["portableBindings"]>): string {
+  const marker = `@aura3d-portable:${name}`;
+  registerGlobalShaderSource({
+    name, marker, vertex: withSourceMarker(sources.glsl.vertex, marker), fragment: withSourceMarker(sources.glsl.fragment, marker),
+    ...(sources.wgsl ? { webgpu: { ...sources.wgsl, vertex: withSourceMarker(sources.wgsl.vertex, marker), fragment: withSourceMarker(sources.wgsl.fragment, marker) }, portableBindings: bindings } : {})
+  });
+  globalSourceRefs.set(name, (globalSourceRefs.get(name) ?? 0) + 1);
+  return name;
+}
+
 /**
  * GU47 E-D: publishes the depth program of a `castShadow: true` material (the material's baked vertex stage, so author
  * displacement, uniforms and `instanceMatrix` work in the shadow pass, plus `CUSTOM_DEPTH_FRAGMENT_GLSL`) under
  * `<shaderKey>/depth`, ref-counted like the colour program. Returns the key `DepthPass` resolves.
  */
-function acquireCustomDepthSource(shaderKey: string, glslVertex: string): string {
+function acquireCustomDepthSource(shaderKey: string, glslVertex: string, graphPair?: ShaderSourcePair): string {
   const name = `${shaderKey}/depth`;
   const marker = `@aura3d-portable:${name}`;
-  registerGlobalShaderSource({ name, marker, vertex: withSourceMarker(glslVertex, marker), fragment: withSourceMarker(CUSTOM_DEPTH_FRAGMENT_GLSL, marker) });
+  registerGlobalShaderSource({
+    name, marker, vertex: withSourceMarker(glslVertex, marker),
+    fragment: withSourceMarker(graphPair?.fragment ?? CUSTOM_DEPTH_FRAGMENT_GLSL, marker),
+    ...(graphPair?.webgpu && graphPair.portableBindings ? {
+      webgpu: {
+        ...graphPair.webgpu,
+        vertex: withSourceMarker(graphPair.webgpu.vertex, marker),
+        fragment: withSourceMarker(graphPair.webgpu.fragment, marker)
+      },
+      portableBindings: graphPair.portableBindings
+    } : {})
+  });
   globalSourceRefs.set(name, (globalSourceRefs.get(name) ?? 0) + 1);
   return name;
 }
@@ -841,12 +1444,16 @@ export function createCustomShaderMaterial(spec: AuraCustomMaterialSpec, name?: 
 const customUniformWrites = new Map<string, Map<string, AuraUniformValue>>();
 
 export function recordCustomUniformWrite(runtimeId: string, name: string, value: AuraUniformValue): void {
+  // Values may be applied on a later frame. Keep authored numeric/aggregate
+  // data owned by the queue; live texture handles intentionally stay borrowed.
+  const snapshot = value instanceof Texture || isAuraTextureRef(value) || isAssetTextureRef(value)
+    ? value : cloneMaterialUniformValue(value);
   let writes = customUniformWrites.get(runtimeId);
   if (!writes) {
     writes = new Map();
     customUniformWrites.set(runtimeId, writes);
   }
-  writes.set(name, value);
+  writes.set(name, snapshot);
 }
 
 export function customUniformWritesFor(runtimeId: string): ReadonlyMap<string, AuraUniformValue> | undefined {
@@ -877,24 +1484,29 @@ const inferTypeFromValue = (value: unknown): AuraCustomUniformType => {
  */
 export function applyCustomUniformWrites(material: PortableShaderMaterial, writes: ReadonlyMap<string, AuraUniformValue>): number {
   const publics = publicUniformsByMaterial.get(material);
+  const aliases = publicUniformAliasesByMaterial.get(material);
   let applied = 0;
   for (const [publicName, value] of writes) {
-    const lowered = publics?.get(publicName);
+    const lowered = publics?.get(aliases?.get(publicName) ?? publicName);
     const type = lowered?.auraType ?? inferTypeFromValue(value);
     const uniformName = lowered?.name ?? customUniformNameFor(publicName);
     if (!material.uniformSchema.some((uniform) => uniform.name === uniformName)) continue;
-    const normalized = normalizeCustomUniformValue(type, value, publicName);
-    if (type === "texture2d") {
+    const normalized = type === "data"
+      ? normalizeCustomDataValue(lowered!.graphDataType ?? lowered!.dataType!, value, publicName)
+      : normalizeCustomUniformValue(type, value, publicName);
+    if (isCustomTextureUniformType(type)) {
       // A newly written handle becomes the live ref; any other texture value stops the per-frame sync.
       let refs = liveTextureRefsByMaterial.get(material);
       if (isAuraTextureRef(value)) {
         if (!refs) { refs = new Map(); liveTextureRefsByMaterial.set(material, refs); }
-        refs.set(uniformName, { publicName, ref: value });
+        refs.set(uniformName, { publicName: lowered?.publicName ?? publicName, ref: value });
       } else {
         refs?.delete(uniformName);
       }
     }
-    if (uniformValuesEqual(material.getParameters().get(uniformName), normalized)) continue;
+    if (type === "data"
+      ? materialUniformValuesEqual(material.getRecursiveParameter(uniformName), normalized)
+      : uniformValuesEqual(material.getParameters().get(uniformName), normalized)) continue;
     material.setParameter(uniformName, normalized);
     applied += 1;
   }
@@ -912,7 +1524,13 @@ export function syncCustomTextureRefs(material: PortableShaderMaterial): number 
   if (!refs?.size) return 0;
   let applied = 0;
   for (const [uniformName, { publicName, ref }] of refs) {
-    const next = bindingForTextureRef(ref, publicName);
+    // Staged writes are applied after this sync. Retain an existing binding
+    // for a missing or disposed ref so a pending replacement can take effect;
+    // an old disposed binding still fails draw validation if none arrives.
+    if (!auraTextureRefTexture(ref)) continue;
+    const type = publicUniformsByMaterial.get(material)?.get(publicName)?.auraType ?? "texture2d";
+    if (!isCustomTextureUniformType(type)) continue;
+    const next = normalizeCustomUniformValue(type, ref, publicName);
     if (textureBindingsEqual(material.getParameters().get(uniformName), next)) continue;
     material.setParameter(uniformName, next);
     applied += 1;
@@ -952,9 +1570,17 @@ export function assertCustomUniformWrite(material: { readonly kind?: string; rea
   if (material?.kind !== "custom" || !material.custom) {
     throw new AuraRuntimeError("invalid-material-spec", "setUniform requires a node material created by material.custom(spec)");
   }
-  const entry = material.custom.uniforms?.[name];
+  const aliases = material.custom.uniformAliases;
+  const target = aliases && Object.prototype.hasOwnProperty.call(aliases, name) ? aliases[name]! : name;
+  const entry = material.custom.uniforms && Object.prototype.hasOwnProperty.call(material.custom.uniforms, target)
+    ? material.custom.uniforms[target]
+    : undefined;
   if (entry === undefined) {
     throw new AuraRuntimeError("invalid-material-spec", `setUniform: custom material has no declared uniform "${name}"`);
+  }
+  if (typeof entry !== "string" && entry.type === "data") {
+    normalizeCustomDataValue(entry.dataType, value, name);
+    return;
   }
   const type = (isRecord(entry) ? entry.type : entry) as AuraCustomUniformType;
   normalizeCustomUniformValue(type, value, name);

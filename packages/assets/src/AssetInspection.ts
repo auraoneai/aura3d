@@ -18,6 +18,7 @@ import {
 import {
   evaluateGLTFExtensionSupport,
   getGLTFExtensionSupport,
+  type GLTFExtensionSupportEntry,
   type GLTFExtensionSupportEvaluation,
   type GLTFExtensionSupportFamily,
   type GLTFExtensionSupportStatus
@@ -76,6 +77,9 @@ export interface GLTFMaterialExtensionSupportInspection {
   readonly name: string;
   readonly family: GLTFExtensionSupportFamily;
   readonly status: GLTFExtensionSupportStatus;
+  readonly parseSupport?: GLTFExtensionSupportEntry["parseSupport"];
+  readonly runtimeSupport?: GLTFExtensionSupportEntry["runtimeSupport"];
+  readonly renderSupport?: GLTFExtensionSupportEntry["renderSupport"];
   readonly requiredAccepted: boolean;
   readonly knownLimits: readonly string[];
 }
@@ -88,6 +92,8 @@ export interface GLTFMaterialFeatureInspection {
     readonly roughnessFactor: number;
     readonly normalScale?: number;
   };
+  readonly diffuseRoughness?: { readonly factor: number };
+  readonly bump?: { readonly factor: number };
   readonly transmission?: {
     readonly factor: number;
   };
@@ -299,6 +305,9 @@ function inspectMaterialExtensionSupport(name: string): GLTFMaterialExtensionSup
     name: support.name,
     family: support.family,
     status: support.status,
+    parseSupport: support.parseSupport,
+    runtimeSupport: support.runtimeSupport,
+    renderSupport: support.renderSupport,
     requiredAccepted: support.requiredAccepted,
     knownLimits: support.knownLimits
   };
@@ -315,6 +324,8 @@ function materialFeatures(material: GLTFMaterialAsset): GLTFMaterialFeatureInspe
         ...(material.clearcoat.normalTexture ? { normalScale: material.clearcoat.normalTexture.scale } : {})
       }
     } : {}),
+    ...(material.diffuseRoughness ? { diffuseRoughness: { factor: material.diffuseRoughness.factor } } : {}),
+    ...(material.bump ? { bump: { factor: material.bump.factor } } : {}),
     ...(material.transmission ? { transmission: { factor: material.transmission.factor } } : {}),
     ...(material.diffuseTransmission ? {
       diffuseTransmission: {
@@ -370,6 +381,8 @@ function materialTextureSlots(material: GLTFMaterialAsset): readonly GLTFMateria
     textureSlot("clearcoat", material.clearcoat?.texture),
     textureSlot("clearcoatRoughness", material.clearcoat?.roughnessTexture),
     textureSlot("clearcoatNormal", material.clearcoat?.normalTexture),
+    textureSlot("diffuseRoughness", material.diffuseRoughness?.texture),
+    textureSlot("bump", material.bump?.texture),
     textureSlot("transmission", material.transmission?.texture),
     textureSlot("diffuseTransmission", material.diffuseTransmission?.texture),
     textureSlot("diffuseTransmissionColor", material.diffuseTransmission?.colorTexture),
@@ -382,6 +395,16 @@ function materialTextureSlots(material: GLTFMaterialAsset): readonly GLTFMateria
     textureSlot("iridescence", material.iridescence?.texture),
     textureSlot("iridescenceThickness", material.iridescence?.thicknessTexture)
   ].filter((slot): slot is GLTFMaterialTextureSlotInspection => slot !== undefined);
+}
+
+function renderedMaterialTextureSlots(material: GLTFMaterialAsset): readonly GLTFMaterialTextureSlotInspection[] {
+  // Inspection includes parse-only textures, but they do not establish a
+  // rendered multi-UV path until their extension has render support.
+  return materialTextureSlots(material).filter(({ slot }) => {
+    if (slot === "diffuseRoughness") return getGLTFExtensionSupport("KHR_materials_diffuse_roughness").renderSupport !== "unsupported";
+    if (slot === "bump") return getGLTFExtensionSupport("EXT_materials_bump").renderSupport !== "unsupported";
+    return true;
+  });
 }
 
 function textureSlot(
@@ -403,6 +426,8 @@ function materialExtensions(material: GLTFMaterialAsset): readonly string[] {
     material.unlit ? "KHR_materials_unlit" : undefined,
     material.emissiveStrength !== 1 ? "KHR_materials_emissive_strength" : undefined,
     material.clearcoat ? "KHR_materials_clearcoat" : undefined,
+    material.diffuseRoughness ? "KHR_materials_diffuse_roughness" : undefined,
+    material.bump ? "EXT_materials_bump" : undefined,
     material.transmission ? "KHR_materials_transmission" : undefined,
     material.diffuseTransmission ? "KHR_materials_diffuse_transmission" : undefined,
     material.volume ? "KHR_materials_volume" : undefined,
@@ -528,13 +553,13 @@ function createGLTFInspectionWarnings(
   }
 
   const hasMorphTargets = asset.meshes.some((mesh) => mesh.morphTargets.length > 0);
-  const hasMultiUvMaterial = asset.materials.some((material) => new Set(materialTextureSlots(material).map((slot) => slot.texCoord)).size > 1);
+  const hasMultiUvMaterial = asset.materials.some((material) => new Set(renderedMaterialTextureSlots(material).map((slot) => slot.texCoord)).size > 1);
   const hasSupportedMultiUvMaterial = asset.materials.some((material) => {
-    const texCoordSets = new Set(materialTextureSlots(material).map((slot) => slot.texCoord));
+    const texCoordSets = new Set(renderedMaterialTextureSlots(material).map((slot) => slot.texCoord));
     return texCoordSets.size > 1 && [...texCoordSets].every((texCoord) => texCoord === 0 || texCoord === 1);
   });
   const hasUnsupportedMultiUvMaterial = asset.materials.some((material) =>
-    materialTextureSlots(material).some((slot) => slot.texCoord > 1)
+    renderedMaterialTextureSlots(material).some((slot) => slot.texCoord > 1)
   );
   const hasMorphWeightAnimation = asset.animations.some((clip) => clip.tracks.some((track) => track.target.endsWith(".weights") && track.valueType === "number-array"));
   const hasRootMotionTrack = asset.animations.some((clip) => clip.tracks.some((track) =>

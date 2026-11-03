@@ -36,6 +36,23 @@ export interface PackedLightUniforms {
   readonly diagnostics: DirectLightSelectionDiagnostics;
 }
 
+/** The exact input occurrence assigned to a packed direct-light slot. */
+export interface SelectedDirectLight {
+  readonly light: CollectedLight;
+  readonly inputIndex: number;
+}
+
+/** Selection and packed uniforms produced by the same packing pass. */
+export interface PackedLightsWithSelection {
+  readonly packed: PackedLightUniforms;
+  readonly selected: readonly SelectedDirectLight[];
+  /** A frozen occurrence snapshot; input light objects themselves are not frozen. */
+  readonly inputLights: readonly CollectedLight[];
+}
+
+const EMPTY_SELECTED_LIGHTS: readonly SelectedDirectLight[] = Object.freeze([]);
+const EMPTY_INPUT_LIGHTS: readonly CollectedLight[] = Object.freeze([]);
+
 /**
  * GU47 eint (E-B handoff EB-3): a collected light as the forward pass packs it on a PRD-02 bridge frame
  * (`forwardShadedLights`). `localShadowSlot` is the first PRD-02 atlas tile of a shadowed spot / point light.
@@ -63,6 +80,20 @@ export class LightUniforms {
   ]);
 
   static pack(lights: readonly CollectedLight[], maxLights = MAX_DIRECT_LIGHTS): PackedLightUniforms {
+    return LightUniforms.packInternal(lights, maxLights, false).packed;
+  }
+
+  /** Pack uniforms and retain their exact input-to-slot mapping. */
+  static packWithSelection(lights: readonly CollectedLight[], maxLights = MAX_DIRECT_LIGHTS): PackedLightsWithSelection {
+    for (let i = 0; i < lights.length; i += 1) {
+      if (!Object.prototype.hasOwnProperty.call(lights, i)) throw new TypeError("Light selection does not accept sparse input arrays");
+    }
+    // Selection, uniform bytes and the occurrence snapshot must use the same
+    // array even if a caller-owned light getter mutates the original array.
+    return LightUniforms.packInternal([...lights], maxLights, true);
+  }
+
+  private static packInternal(lights: readonly CollectedLight[], maxLights: number, retainSelection: boolean): PackedLightsWithSelection {
     if (!Number.isInteger(maxLights) || maxLights <= 0) {
       throw new RangeError("maxLights must be a positive integer");
     }
@@ -90,7 +121,9 @@ export class LightUniforms {
         light.layerMask
       ], offset + 12);
       data.set([...(light.right ?? [1, 0, 0]), packedLocalShadowSlot(light)], offset + 16);
-      data.set([...(light.up ?? [0, 1, 0]), 0], offset + 20);
+      // up.w is unused by the legacy layout. Keep one light slot for both
+      // faces (or both legacy proxy cones), rather than spending two slots.
+      data.set([...(light.up ?? [0, 1, 0]), light.twoSided === true ? 1 : 0], offset + 20);
     });
     const selectedEntries = selected.map(selectionEntry);
     const droppedEntries = dropped.map(selectionEntry);
@@ -106,7 +139,7 @@ export class LightUniforms {
         ? `Direct-light limit applied: selected ${selectedEntries.length} of ${lights.length} by ${DIRECT_LIGHT_SELECTION_STRATEGY}, dropped ${droppedCount}. Selected: ${selectedNames}.`
         : `Direct-light selection kept all ${selectedEntries.length} requested lights in input order; dropped 0. Contribution scores use ${DIRECT_LIGHT_SELECTION_STRATEGY}. Selected: ${selectedNames || "none"}.`
     ) + capacityMessage;
-    return {
+    const packed: PackedLightUniforms = {
       lightCount: selected.length,
       data,
       layout: LightUniforms.layout,
@@ -126,6 +159,11 @@ export class LightUniforms {
         message
       }
     };
+    return {
+      packed,
+      selected: retainSelection ? Object.freeze(selected.map(({ light, inputIndex }) => Object.freeze({ light, inputIndex }))) : EMPTY_SELECTED_LIGHTS,
+      inputLights: retainSelection ? Object.freeze([...lights]) : EMPTY_INPUT_LIGHTS
+    };
   }
 }
 
@@ -137,7 +175,7 @@ export class LightUniforms {
  *   [0] position.xyz, w = kind (0 dir, 1 point, 2 spot, 3 rect)
  *   [1] direction.xyz, w = range (0 = infinite)
  *   [2] color.rgb,        w = intensity
- *   [3] spot: cosOuter, cosInner, decay, shadowIndex
+ *   [3] spot: cosOuter, cosInner, decay, shadowIndex; rect: x = twoSided
  *   [4] rect: right.xyz, width   (else 0)
  *   [5] rect: up.xyz,    height  (else 0)
  */
@@ -151,6 +189,7 @@ export interface AuraLightData {
   readonly spotAngle: number;
   readonly penumbra: number;
   readonly decay: number;
+  readonly twoSided?: boolean;
   /** Index into the shadow map array (-1/undefined = unshadowed). */
   readonly shadowIndex?: number;
   readonly right?: readonly [number, number, number];
@@ -193,7 +232,7 @@ export function packAuraLightsStd140(lights: readonly AuraLightData[]): AuraLigh
     data[base + 11] = light.intensity;
     const halfOuter = light.spotAngle / 2;
     const halfInner = halfOuter * Math.max(0, 1 - Math.min(1, light.penumbra));
-    data[base + 12] = light.kind === "spot" ? Math.cos(halfOuter) : 0;
+    data[base + 12] = light.kind === "spot" ? Math.cos(halfOuter) : light.kind === "rect-area" && light.twoSided === true ? 1 : 0;
     data[base + 13] = light.kind === "spot" ? Math.cos(halfInner) : 0;
     data[base + 14] = light.decay;
     data[base + 15] = light.shadowIndex ?? -1;
@@ -309,7 +348,8 @@ function stableLightKey(light: CollectedLight): string {
     light.spotAngle,
     light.penumbra,
     light.castsShadow ? 1 : 0,
-    light.layerMask
+    light.layerMask,
+    light.twoSided === true ? 1 : 0
   ].join("|");
 }
 

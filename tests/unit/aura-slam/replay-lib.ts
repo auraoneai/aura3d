@@ -140,17 +140,31 @@ export function replayScenario(sc: ReferenceScenario, make: EngineFactory, optio
   };
 }
 
-/** First sampled step whose row differs from the reference by more than `tolerance` (one unit of the 1e-6 rounding), or -1; also reports the column. */
+/** First sampled row difference, including missing or malformed rows. */
 export function firstRowDivergence(rows: Map<number, Array<number | string | null>>, sc: ReferenceScenario, tolerance: number): { step: number; column: string; got: unknown; want: unknown } | null {
+  if (!Number.isFinite(tolerance) || tolerance < 0) throw new RangeError("Replay tolerance must be finite and non-negative");
+  const columns = sc.sampled.columns;
+  if (!Array.isArray(columns) || columns.length < 2 || columns[0] !== "step" || columns.some((column) => typeof column !== "string" || !column)) {
+    throw new TypeError("Replay columns must start with step and include named values");
+  }
+  if (!Array.isArray(sc.sampled.rows) || sc.sampled.rows.length === 0) throw new RangeError("Replay reference must contain sampled rows");
   const slack = tolerance + 1e-9;
+  const validValue = (value: unknown): boolean => value === null || typeof value === "string" || (typeof value === "number" && Number.isFinite(value));
+  const seenSteps = new Set<number>();
   for (const ref of sc.sampled.rows) {
-    const step = ref[0] as number;
+    if (!Array.isArray(ref) || ref.length !== columns.length) throw new RangeError("Replay reference row width must match its columns");
+    const step = ref[0];
+    if (typeof step !== "number" || !Number.isSafeInteger(step) || step < 0) throw new RangeError("Replay reference step must be a non-negative safe integer");
+    if (seenSteps.has(step)) throw new RangeError(`Replay reference step ${step} is duplicated`);
+    seenSteps.add(step);
     const got = rows.get(step);
     if (!got) return { step, column: "(row missing)", got: null, want: null };
+    if (!Array.isArray(got)) throw new TypeError("Replay actual row must be an array");
+    if (got.length !== ref.length - 1) return { step, column: "(row width)", got: got.length, want: ref.length - 1 };
     for (let j = 0; j < got.length; j++) {
       const a = got[j], b = ref[j + 1];
-      const bad = typeof a === "number" && typeof b === "number" ? Math.abs(a - b) > slack : a !== b;
-      if (bad) return { step, column: sc.sampled.columns[j + 1]!, got: a, want: b };
+      const differs = typeof a === "number" && typeof b === "number" ? Math.abs(a - b) > slack : a !== b;
+      if (!validValue(a) || !validValue(b) || differs) return { step, column: columns[j + 1]!, got: a, want: b };
     }
   }
   return null;

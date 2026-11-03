@@ -3,12 +3,17 @@
  * Flag: A3D_QR_CAMERA.
  */
 
-import type { AuraVec3, AuraRuntimeNodeHandle } from "../agent-api/index";
+import type { AuraVec3 } from "../agent-api/nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "../agent-api/nodes/types/runtime.js";
 
 export interface AuraTimeController {
   scale: number;
   scaleTo(value: number, halflife: number): void;
   hitStop(seconds: number, o?: { scope?: "global" | readonly (string | AuraRuntimeNodeHandle)[] }): void;
+  /** Optional owner-scoped global stop; overlapping owners expire independently. */
+  hitStopOwned?(seconds: number, owner: object): void;
+  /** Clears only the matching owner's global stop, retaining legacy/other owners. */
+  clearOwnedHitStop?(owner: object): void;
   slowMo(scale: number, seconds: number, o?: { easeOut?: number }): void;
   readonly simTime: number; readonly realTime: number; readonly hitStopRemaining: number;
 }
@@ -29,16 +34,36 @@ export class StubTimeController implements AuraTimeController {
   public scale = 1;
   public simTime = 0;
   public realTime = 0;
-  public hitStopRemaining = 0;
+  private unownedHitStopRemaining = 0;
+  private readonly ownedHitStops = new Map<object, number>();
   private ramp: { from: number; to: number; halflife: number; startedAt: number } | null = null;
   private slowMoState: { scale: number; remaining: number; easeOut: number } | null = null;
+
+  get hitStopRemaining(): number {
+    let remaining = this.unownedHitStopRemaining;
+    for (const owned of this.ownedHitStops.values()) remaining = Math.max(remaining, owned);
+    return remaining;
+  }
+
+  /** Preserve the historical writable property as the unowned stop channel. */
+  set hitStopRemaining(value: number) { this.unownedHitStopRemaining = value; }
 
   scaleTo(value: number, halflife: number): void {
     this.ramp = { from: this.scale, to: value, halflife: Math.max(1e-6, halflife), startedAt: this.realTime };
   }
 
   hitStop(seconds: number, _o?: { scope?: "global" | readonly (string | AuraRuntimeNodeHandle)[] }): void {
-    this.hitStopRemaining = Math.max(this.hitStopRemaining, seconds);
+    this.unownedHitStopRemaining = Math.max(this.unownedHitStopRemaining, seconds);
+  }
+
+  hitStopOwned(seconds: number, owner: object): void {
+    const duration = Math.max(0, seconds);
+    if (!(duration > 0)) return;
+    this.ownedHitStops.set(owner, Math.max(this.ownedHitStops.get(owner) ?? 0, duration));
+  }
+
+  clearOwnedHitStop(owner: object): void {
+    this.ownedHitStops.delete(owner);
   }
 
   slowMo(scale: number, seconds: number, o?: { easeOut?: number }): void {
@@ -64,7 +89,14 @@ export class StubTimeController implements AuraTimeController {
       }
     }
     if (this.hitStopRemaining > 0) {
-      this.hitStopRemaining = Math.max(0, this.hitStopRemaining - realDt);
+      if (this.unownedHitStopRemaining > 0) {
+        this.unownedHitStopRemaining = Math.max(0, this.unownedHitStopRemaining - realDt);
+      }
+      for (const [owner, remaining] of this.ownedHitStops) {
+        const next = Math.max(0, remaining - realDt);
+        if (next <= 0) this.ownedHitStops.delete(owner);
+        else this.ownedHitStops.set(owner, next);
+      }
       this.simTime += 0;
       return 0;
     }

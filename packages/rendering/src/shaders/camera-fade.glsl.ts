@@ -9,9 +9,8 @@
  * keeps the occluder casting shadows (depth/distance variants never select it)
  * and disables early-Z only on the faded variant.
  *
- * `u_cameraFadeOffset` cycles (0,0) (2,2) (2,0) (0,2) frame-by-frame only when
- * a C-13 TAA pass is registered — a static Bayer pattern does not resolve
- * under TAA; without TAA the offset holds (0,0) and the stipple is accepted.
+ * `u_cameraFadeOffset` cycles (0,0) (2,2) (2,0) (0,2) for frames using
+ * temporal AA; without it the offset holds (0,0).
  *
  * The frozen legacy `ShaderLibrary.ts` is not edited (Q-01-1); the WebGPU
  * packed-uniform wiring is Q-11-1.
@@ -65,18 +64,26 @@ export const cameraFadeDiscardChunk: ShaderChunk = {
 };
 
 /**
- * Per-frame pattern offset (px). The `prd08.occluderFade` contributor sets it
- * from `FrameContributorContext.frameIndex` when a registered C-13 pass has
- * "taa" in its id; otherwise it stays (0,0). Module state is the only channel
- * between a collect-phase contributor and per-draw `bindUniforms`.
+ * The legacy offset channel remains available to unscoped callers. Renderer
+ * frames instead attach their own immutable offset to each collected draw.
  */
 export const cameraFadeOffset: [number, number] = [0, 0];
 
 const OFFSET_CYCLE: readonly (readonly [number, number])[] = [[0, 0], [2, 2], [2, 0], [0, 2]];
+const frameOffset: unique symbol = Symbol("aura.cameraFade.frameOffset");
+type ScopedFadeItem = RenderItem & {
+  readonly [frameOffset]?: readonly [number, number];
+  readonly temporalObjectKey?: object | string | number | symbol;
+};
+
+function offsetForFrame(frameIndex: number, taaActive: boolean): readonly [number, number] {
+  const index = Number.isFinite(frameIndex) ? Math.abs(Math.trunc(frameIndex)) % OFFSET_CYCLE.length : 0;
+  return taaActive ? OFFSET_CYCLE[index]! : OFFSET_CYCLE[0]!;
+}
 
 /** Called once per frame by the `prd08.cameraFadeOffset` contributor. */
 export function setCameraFadeOffset(frameIndex: number, taaActive: boolean): void {
-  const next = taaActive ? OFFSET_CYCLE[Math.abs(frameIndex | 0) % OFFSET_CYCLE.length] : OFFSET_CYCLE[0];
+  const next = offsetForFrame(frameIndex, taaActive);
   cameraFadeOffset[0] = next[0];
   cameraFadeOffset[1] = next[1];
 }
@@ -86,10 +93,9 @@ function taaRegistered(): boolean {
 }
 
 /**
- * S-2 offset channel: advances `u_cameraFadeOffset` from
- * `FrameContributorContext.frameIndex` only when a registered C-13 pass has
- * "taa" in its id. Registered from `lanes/prd08.ts` (rendering side) so the
- * engine-side occluder-fade contributor never needs to reach this module.
+ * Scoped frames snapshot their own offset onto the draw so overlapping
+ * renderers and repeated views cannot replace a pending frame's uniforms.
+ * Unscoped callers retain the historical registered-pass lookup.
  */
 export function createCameraFadeOffsetContributor(): FrameContributor {
   return {
@@ -98,9 +104,17 @@ export function createCameraFadeOffsetContributor(): FrameContributor {
     flag: "A3D_QR_CAMERA",
     phases: ["collect"],
     collect(items, ctx) {
-      if (ctx.flags.on("A3D_QR_CAMERA")) setCameraFadeOffset(ctx.frameIndex, taaRegistered());
-      else setCameraFadeOffset(0, false);
-      return items;
+      const taa = ctx.flags.on("A3D_QR_CAMERA")
+        && (ctx.postScopeId ? ctx.temporalAntialiasing === true : taaRegistered());
+      setCameraFadeOffset(ctx.frameIndex, taa);
+      if (!ctx.postScopeId) return items;
+      const offset = offsetForFrame(ctx.frameIndex, taa);
+      return items.map((item) => ({
+        ...item,
+        // Preserve the stable source identity through this frame-local copy.
+        temporalObjectKey: (item as ScopedFadeItem).temporalObjectKey ?? item,
+        [frameOffset]: offset
+      }));
     }
   };
 }
@@ -126,7 +140,8 @@ export const cameraFadeFeature: ShaderFeature = {
   },
   bindUniforms(_value, item: RenderItem, set) {
     set("u_cameraFade", item.cameraFade ?? 1);
-    set("u_cameraFadeOffset", [cameraFadeOffset[0], cameraFadeOffset[1]]);
+    const offset = (item as ScopedFadeItem)[frameOffset] ?? cameraFadeOffset;
+    set("u_cameraFadeOffset", [offset[0], offset[1]]);
   }
 };
 

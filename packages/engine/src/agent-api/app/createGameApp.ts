@@ -1,17 +1,11 @@
-// PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
-
+// 4.x compatibility entry: its static bootstrap preserves synchronous physics.
 import type { AuraApp, AuraAppTarget, AuraCreateGameAppOptions } from "../nodes/types.js";
-import { createGameAppRuntime, type GameAppRuntime } from "../GameAppRuntime.js";
-import { createAuraApp } from "./createAuraApp.js";
+import type { GameAppRuntime } from "../GameAppRuntime.js";
+import { legacyPhysicsWorldAccess } from "../../public/legacy-physics-access.js";
+import { createGameAppWithPhysicsWorldAccess } from "./createGameAppCore.js";
+
+export { createGameAppWithPhysicsWorldAccess } from "./createGameAppCore.js";
 
 export function createGameApp(target: AuraAppTarget, options: AuraCreateGameAppOptions): GameAppRuntime<AuraApp> {
-  const { input, loop, runtimeEvidence, ...appOptions } = options;
-  const app = createAuraApp(target, { ...appOptions, autoStart: false });
-  return createGameAppRuntime(app, {
-    autoStart: options.autoStart,
-    loop,
-    input,
-    evidence: runtimeEvidence,
-    qualityRebuild: options.qualityRebuild
-  });
+  return createGameAppWithPhysicsWorldAccess(legacyPhysicsWorldAccess, target, options);
 }

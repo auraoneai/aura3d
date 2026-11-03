@@ -1,111 +1,70 @@
-/**
- * PRD-06 T1.4 — convert a clip to additive form by subtracting a reference
- * pose per track, matching three r185 `AnimationUtils.makeClipAdditive`:
- *
- *  - quaternion tracks: `delta = normalize(ref⁻¹ · sample)`
- *  - translation **and scale** tracks: `delta = sample − ref`
- *  - scalar/number-array tracks: `delta = sample − ref`
- *  - boolean/string tracks: passed through (no additive semantics)
- *
- * The reference is frame 0 of the same clip by default, or an explicit
- * `{ clip, time }` pair (e.g. a bind clip). Tracks absent from the reference
- * clip fall back to their own first keyframe, as three does.
- */
-
+/** Convert values and controls into a reference-relative animation space. */
 import { AnimationClip } from "../AnimationClip.js";
-import { AnimationTrack } from "../AnimationTrack.js";
-import type { AnimationValue, Keyframe, Quat } from "../Keyframe.js";
+import { AnimationTrack, type TrackValueType } from "../AnimationTrack.js";
+import { AnimationValidationError, cloneAnimationValue, type AnimationValue, type Keyframe, type Quat } from "../Keyframe.js";
 
 export type AdditiveReference = number | { readonly clip: AnimationClip; readonly time?: number };
-
 const additiveClips = new WeakSet<AnimationClip>();
 
-/** Whether a clip was produced by `makeClipAdditive` (three r185 `clip.blendMode`). */
+/** Whether this clip was produced by the additive conversion. */
 export function isClipAdditive(clip: AnimationClip): boolean {
   return additiveClips.has(clip);
 }
 
+/**
+ * Translate numeric channels and rotate quaternion channels into a reference
+ * pose's coordinate system. Derivatives are vectors; Bézier handles are
+ * points, so the two must be transformed differently.
+ */
 export function makeClipAdditive(clip: AnimationClip, reference?: AdditiveReference): AnimationClip {
   const referenceClip = typeof reference === "object" && reference !== null ? reference.clip : clip;
-  const referenceTime = typeof reference === "number"
-    ? reference
-    : typeof reference === "object" && reference !== null && reference.time !== undefined
-      ? reference.time
-      : 0;
-
-  const referenceTracks = new Map<string, AnimationTrack>();
-  for (const track of referenceClip.tracks) referenceTracks.set(track.target, track);
-
-  const tracks = clip.tracks.map((track) => {
-    const referenceTrack = referenceTracks.get(track.target);
-    const referenceValue = referenceTrack
-      ? referenceTrack.sample(referenceTime)
-      : track.keyframes[0]!.value;
-    const keyframes = track.keyframes.map((keyframe) => ({
-      ...keyframe,
-      value: subtractValue(track.valueType, keyframe.value, referenceValue)
-    })) as Keyframe<AnimationValue>[];
-    return new AnimationTrack({ target: track.target, valueType: track.valueType, keyframes });
-  });
-
-  const additive = new AnimationClip({
-    name: `${clip.name}.additive`,
-    duration: clip.duration,
-    tracks,
-    events: clip.events
-  });
-  additiveClips.add(additive);
-  return additive;
-}
-
-function subtractValue(valueType: string, value: AnimationValue, reference: AnimationValue): AnimationValue {
-  switch (valueType) {
-    case "quaternion": {
-      const r = reference as Quat;
-      const q = value as Quat;
-      const inv = quatInvertNormalized(r);
-      return quatNormalize(quatMultiply(inv, q));
-    }
-    case "vector3": {
-      const r = reference as readonly number[];
-      const v = value as readonly number[];
-      return [v[0]! - r[0]!, v[1]! - r[1]!, v[2]! - r[2]!] as const;
-    }
-    case "scalar":
-      return (value as number) - (reference as number);
-    case "number-array": {
-      const r = reference as readonly number[];
-      const v = value as readonly number[];
-      return v.map((component, index) => component - (r[index] ?? 0));
-    }
-    case "boolean":
-    case "string":
-      return value;
-    default:
-      return value;
+  const referenceTime = typeof reference === "number" ? reference : reference?.time ?? 0;
+  if (!Number.isFinite(referenceTime)) {
+    throw new AnimationValidationError("ANIMATION_REFERENCE_INVALID", "reference.time", "Reference time must be finite.");
   }
+  const referenceTracks = new Map(referenceClip.tracks.map((track) => [track.target, track]));
+  const tracks = clip.tracks.map((track) => {
+    const matching = referenceTracks.get(track.target);
+    if (matching && (matching.valueType !== track.valueType || matching.valueSize !== track.valueSize)) {
+      throw new AnimationValidationError("ANIMATION_REFERENCE_INCOMPATIBLE", "reference.clip", `Reference track ${track.target} has an incompatible value type or width.`);
+    }
+    const referenceValue = matching ? matching.sample(referenceTime) : track.keyframes[0]!.value;
+    const transformed = track.keyframes.map((key, index): Keyframe => {
+      const previousMode = index > 0 ? track.keyframes[index - 1]!.interpolation : undefined;
+      return {
+        ...key,
+        value: changeBasis(track.valueType, key.value, referenceValue, true),
+        ...(key.inTangent === undefined ? {} : { inTangent: changeBasis(track.valueType, key.inTangent, referenceValue, previousMode === "bezier") }),
+        ...(key.outTangent === undefined ? {} : { outTangent: changeBasis(track.valueType, key.outTangent, referenceValue, key.interpolation === "bezier") })
+      };
+    });
+    return new AnimationTrack({ target: track.target, valueType: track.valueType, valueSize: track.valueSize, keyframes: transformed });
+  });
+  const result = new AnimationClip({ name: `${clip.name}.additive`, duration: clip.duration, tracks, events: clip.events });
+  additiveClips.add(result);
+  return result;
 }
 
-function quatInvertNormalized(q: Quat): Quat {
-  // Inverse of a unit quaternion is its conjugate; normalize first so
-  // non-unit inputs still produce a true inverse (as three does not need to).
-  const length = Math.hypot(q[0], q[1], q[2], q[3]);
-  if (length <= 1e-9) return [0, 0, 0, 1];
-  const invLengthSq = 1 / (length * length);
-  return [-q[0] * invLengthSq, -q[1] * invLengthSq, -q[2] * invLengthSq, q[3] * invLengthSq];
+function changeBasis(type: TrackValueType, value: AnimationValue, reference: AnimationValue, point: boolean): AnimationValue {
+  if (type === "quaternion") return rotateQuaternion(value as Quat, reference as Quat);
+  if (!point || type === "boolean" || type === "string") return cloneAnimationValue(value);
+  if (type === "scalar") return (value as number) - (reference as number);
+  const origin = reference as readonly number[];
+  return (value as readonly number[]).map((component, index) => component - origin[index]!);
 }
 
-function quatMultiply(a: Quat, b: Quat): Quat {
+/** Multiply by the unit conjugate of the reference without normalizing derivatives. */
+function rotateQuaternion(value: Quat, reference: Quat): Quat {
+  const magnitude = Math.hypot(...reference);
+  if (magnitude < 1e-9) return [...value];
+  const [x, y, z, w] = reference.map((part) => part / magnitude) as unknown as Quat;
+  const [vx, vy, vz, vw] = value;
+  // Scalar-vector form of (w, -v) × (vw, vv):
+  // vector = w·vv - vw·v - v×vv; scalar = w·vw + dot(v,vv).
   return [
-    a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
-    a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
-    a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
-    a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+    w * vx - vw * x - (y * vz - z * vy),
+    w * vy - vw * y - (z * vx - x * vz),
+    w * vz - vw * z - (x * vy - y * vx),
+    w * vw + x * vx + y * vy + z * vz
   ];
-}
-
-function quatNormalize(q: Quat): Quat {
-  const length = Math.hypot(q[0], q[1], q[2], q[3]);
-  if (length <= 1e-9) return [0, 0, 0, 1];
-  return [q[0] / length, q[1] / length, q[2] / length, q[3] / length];
 }

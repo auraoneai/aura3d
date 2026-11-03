@@ -9,8 +9,8 @@ import {
   type GameInputController,
   type GameKinematicBody,
   type GameVec3
-} from "../GameRuntime";
-import type { AuraRuntimeNodeSpec, AuraSceneNode } from "../index";
+} from "../GameRuntimeCore.js";
+import type { AuraRuntimeNodeSpec, AuraSceneNode } from "../nodes/types.js";
 
 export interface FightingControls {
   readonly actions: Record<string, readonly string[]>;

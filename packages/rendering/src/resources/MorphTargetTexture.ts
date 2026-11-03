@@ -4,9 +4,8 @@
  * (E-17/E-19). Layout follows §8.2: texel index `j = vertexId * stride + attr`
  * flattens into `(x = j % width, y = j / width)` and `z = target` (one array
  * layer per morph target), where `attr` is 0 = position delta, 1 = normal
- * delta, 2 = tangent delta and `stride` the layer count. Target counts are
- * bucketed into {4, 8, 16, 32}; beyond 32 the set is truncated with a
- * `MORPH_TARGETS_TRUNCATED` warning (C-18 invariants).
+ * delta, 2 = tangent delta and `stride` the texel count per vertex. Target counts are
+ * bucketed into {4, 8, 16, 32}; beyond 32 the full set requires CPU fallback.
  *
  * The result is a `Texture` with `dimension: "2d-array"`: on `update()`
  * revision bumps `webgl2/TextureUpload.ts` re-uploads per layer via
@@ -36,11 +35,24 @@ export type MorphTargetTextureResult =
       readonly targetCount: number;
       readonly hasNormals: boolean;
       readonly hasTangents: boolean;
-      /** Texels per vertex (1 = positions, 2 = +normals, 3 = +tangents) — shader `u_morphStride`. */
+      /** Texels per vertex: 1 = positions, 2 = +normals, 3 = +tangents (normal slot may be empty). */
       readonly stride: number;
       readonly bucket: MorphTargetCountBucket;
-      /** Bucketed targets actually packed (index order preserved, truncation applied). */
+      /** Targets actually packed, preserving the full input and its index order. */
       readonly targets: readonly MorphTargetDelta[];
+    }
+  | { readonly fallback: "cpu"; readonly reason: string };
+
+/** Allocation-free layout decision shared by shader selection and the builder. */
+export type MorphTargetTextureLayout =
+  | {
+      readonly vertexCount: number;
+      readonly bucket: MorphTargetCountBucket;
+      readonly hasNormals: boolean;
+      readonly hasTangents: boolean;
+      readonly stride: number;
+      readonly width: number;
+      readonly height: number;
     }
   | { readonly fallback: "cpu"; readonly reason: string };
 
@@ -52,20 +64,12 @@ export function morphTargetBucket(count: number): MorphTargetCountBucket | null 
   return null;
 }
 
-let truncationsWarned = 0;
-
-/**
- * Build the morph-delta array texture for a geometry/target set. Contract-doc
- * signature (`geometry, targets, limits, format`); the PR-0a
- * `contracts/deform.ts` stub keeps `PRD06_PENDING` until owner 01 re-points it
- * (qr-request Q-01-CCR-06-6).
- */
-export function buildMorphTargetTexture(
+/** Decide whether all targets fit before selecting a texture-backed shader. */
+export function planMorphTargetTexture(
   geometry: Geometry,
   targets: readonly MorphTargetDelta[],
-  limits: MorphTextureLimits,
-  format: "rgba16f" | "rgba32f" = "rgba16f"
-): MorphTargetTextureResult {
+  limits: MorphTextureLimits
+): MorphTargetTextureLayout {
   const vertexCount = geometry.vertexBuffer.vertexCount;
   if (vertexCount <= 0) {
     return { fallback: "cpu", reason: "geometry has no vertices" };
@@ -73,24 +77,18 @@ export function buildMorphTargetTexture(
   if (vertexCount > limits.maxTextureSize) {
     return { fallback: "cpu", reason: `vertexCount ${vertexCount} exceeds maxTextureSize ${limits.maxTextureSize}` };
   }
-  let packedTargets: readonly MorphTargetDelta[] = targets;
-  if (targets.length > 32) {
-    packedTargets = targets.slice(0, 32);
-    if (truncationsWarned < 8 && typeof console !== "undefined") {
-      truncationsWarned += 1;
-      console.warn(`MORPH_TARGETS_TRUNCATED:${targets.length}->32`);
-    }
-  }
-  const bucket = morphTargetBucket(packedTargets.length);
+  const bucket = morphTargetBucket(targets.length);
   if (!bucket) {
-    return { fallback: "cpu", reason: `targetCount ${packedTargets.length} exceeds the {4,8,16,32} bucket ceiling` };
+    return { fallback: "cpu", reason: `targetCount ${targets.length} exceeds the {4,8,16,32} bucket ceiling` };
   }
   if (bucket > limits.maxArrayLayers) {
     return { fallback: "cpu", reason: `target bucket ${bucket} exceeds maxArrayLayers ${limits.maxArrayLayers}` };
   }
-  const hasNormals = packedTargets.some((target) => (target.normals?.length ?? 0) > 0);
-  const hasTangents = packedTargets.some((target) => (target.tangents?.length ?? 0) > 0);
-  const stride = 1 + (hasNormals ? 1 : 0) + (hasTangents ? 1 : 0);
+  const hasNormals = targets.some((target) => (target.normals?.length ?? 0) > 0);
+  const hasTangents = targets.some((target) => (target.tangents?.length ?? 0) > 0);
+  // Shader readers use fixed slots 0/1/2, so tangent-only targets still need
+  // the normal slot. Its zero-filled texel leaves the normal unchanged.
+  const stride = hasTangents ? MORPH_LAYER_TANGENT + 1 : hasNormals ? MORPH_LAYER_NORMAL + 1 : MORPH_LAYER_POSITION + 1;
   // §8.2: texel j = vertexId*stride+attr flattened over (width, height); z = target.
   const texelsPerLayer = vertexCount * stride;
   const width = Math.min(limits.maxTextureSize, texelsPerLayer);
@@ -98,10 +96,23 @@ export function buildMorphTargetTexture(
   if (height > limits.maxTextureSize) {
     return { fallback: "cpu", reason: `morph texel height ${height} exceeds maxTextureSize ${limits.maxTextureSize}` };
   }
+  return { vertexCount, bucket, hasNormals, hasTangents, stride, width, height };
+}
+
+/** Build the complete planned array texture, or retain every target for CPU fallback. */
+export function buildMorphTargetTexture(
+  geometry: Geometry,
+  targets: readonly MorphTargetDelta[],
+  limits: MorphTextureLimits,
+  format: "rgba16f" | "rgba32f" = "rgba16f"
+): MorphTargetTextureResult {
+  const layout = planMorphTargetTexture(geometry, targets, limits);
+  if ("fallback" in layout) return layout;
+  const { vertexCount, bucket, hasNormals, hasTangents, stride, width, height } = layout;
   const data = new Float32Array(width * height * 4 * bucket);
   const layerStride = width * height * 4;
-  for (let t = 0; t < packedTargets.length; t += 1) {
-    const target = packedTargets[t]!;
+  for (let t = 0; t < targets.length; t += 1) {
+    const target = targets[t]!;
     const layerOffset = t * layerStride;
     for (let v = 0; v < vertexCount; v += 1) {
       writeDelta(data, layerOffset + (v * stride + MORPH_LAYER_POSITION) * 4, target.positions?.[v]);
@@ -127,12 +138,12 @@ export function buildMorphTargetTexture(
   });
   return {
     texture,
-    targetCount: packedTargets.length,
+    targetCount: targets.length,
     hasNormals,
     hasTangents,
     stride,
     bucket,
-    targets: packedTargets
+    targets
   };
 }
 
@@ -143,7 +154,10 @@ function writeDelta(out: Float32Array, offset: number, delta: readonly number[] 
   out[offset + 3] = delta?.[3] ?? 0;
 }
 
-/** IEEE-754 binary32 → binary16 for every element (round-half-up; subnormals flush to zero). */
+/**
+ * Encode binary16, rounding magnitude half-up. Values below the minimum normal
+ * flush to signed zero; overflow and non-finite values saturate to signed max.
+ */
 export function float32ArrayToFloat16(input: Float32Array): Uint16Array {
   const out = new Uint16Array(input.length);
   const f32 = new Float32Array(1);
@@ -154,12 +168,14 @@ export function float32ArrayToFloat16(input: Float32Array): Uint16Array {
     const sign = (x >>> 16) & 0x8000;
     const exponent = ((x >>> 23) & 0xff) - 112;
     if (exponent <= 0) {
-      out[i] = sign; // underflow to signed zero (morph deltas are small; subnormals unnecessary)
+      out[i] = sign;
     } else if (exponent >= 31) {
       out[i] = sign | 0x7bff; // saturate to max half
     } else {
       const mantissa = (x & 0x7fffff) + 0x1000; // round-half-up on the dropped bits
-      out[i] = sign | (exponent << 10) | (mantissa >> 13);
+      // Add, rather than OR, so a mantissa carry increments the exponent.
+      const rounded = (exponent << 10) + (mantissa >> 13);
+      out[i] = sign | Math.min(rounded, 0x7bff);
     }
   }
   return out;

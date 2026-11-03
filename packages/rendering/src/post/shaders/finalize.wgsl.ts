@@ -4,9 +4,8 @@
  * `FINALIZE_WGSL`: film grain (luma-gated), FSR1 RCAS sharpen (limit 0.25),
  * triangular-PDF dither — the last write to the 8-bit output.
  * `FINALIZE_FXAA_FUSED_WGSL`: the §6.1 fuse — S10b (LUT + vignette) + S11
- * r185 FXAA + S12 in one draw; the FXAA taps sample the display-graded
- * source through the consumer-side `fxaa_sample` hook with
- * `FXAA_LUMA_ALPHA = 1` (luma rides in `.a`, never re-runs the grade).
+ * antialiasing + S12 in one draw; the FXAA taps sample the display-graded
+ * RGB through the `fxaa_sample` hook while alpha remains input opacity.
  */
 
 import { FXAA_185_FNS_WGSL } from "./fxaa.wgsl.js";
@@ -16,16 +15,19 @@ const FINALIZE_FNS_WGSL = /* wgsl */ `
 fn luma709(c: vec3<f32>) -> f32 { return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)); }
 
 fn rcas(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>, texel: vec2<f32>, sharpness: f32) -> vec3<f32> {
-  // FSR1 RCAS: single-pass adaptive sharpen over the 4-ring neighbourhood.
-  let e = textureSampleLevel(tex, smp, uv, 0.0).rgb;
-  let cross = (
-    textureSampleLevel(tex, smp, uv + vec2<f32>(0.0, -texel.y), 0.0).rgb +
-    textureSampleLevel(tex, smp, uv + vec2<f32>(0.0, texel.y), 0.0).rgb +
-    textureSampleLevel(tex, smp, uv + vec2<f32>(-texel.x, 0.0), 0.0).rgb +
-    textureSampleLevel(tex, smp, uv + vec2<f32>(texel.x, 0.0), 0.0).rgb
-  ) * 0.25;
+  // Ignore hidden RGB in transparent neighbors when estimating the cross.
+  let e = textureSampleLevel(tex, smp, uv, 0.0);
+  let south = textureSampleLevel(tex, smp, uv + vec2<f32>(0.0, -texel.y), 0.0);
+  let north = textureSampleLevel(tex, smp, uv + vec2<f32>(0.0, texel.y), 0.0);
+  let west = textureSampleLevel(tex, smp, uv + vec2<f32>(-texel.x, 0.0), 0.0);
+  let east = textureSampleLevel(tex, smp, uv + vec2<f32>(texel.x, 0.0), 0.0);
+  let alpha_sum = south.a + north.a + west.a + east.a;
+  var cross = e.rgb;
+  if (alpha_sum > 1e-8) {
+    cross = (south.rgb * south.a + north.rgb * north.a + west.rgb * west.a + east.rgb * east.a) / alpha_sum;
+  }
   let sharp = min(sharpness, 0.25);
-  return clamp(e + (e - cross) * sharp, vec3<f32>(0.0), vec3<f32>(1.0));
+  return clamp(e.rgb + (e.rgb - cross) * sharp, vec3<f32>(0.0), vec3<f32>(1.0));
 }
 
 fn film_grain(frag_coord: vec2<f32>, frame: f32, intensity: f32, size: f32, luminance_response: f32, luma_value: f32) -> f32 {
@@ -54,20 +56,19 @@ ${FINALIZE_FNS_WGSL}
 
 @fragment
 fn fs_finalize(@location(0) uv: vec2<f32>, @builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4<f32> {
-  var disp = select(textureSampleLevel(u_source_tex, u_source_smp, uv, 0.0).rgb,
+  let source = textureSampleLevel(u_source_tex, u_source_smp, uv, 0.0);
+  var disp = select(source.rgb,
                     rcas(u_source_tex, u_source_smp, uv, u_params.texel_size, u_params.rcas_sharpness),
                     u_params.rcas_sharpness > 0.0);
   disp = disp + vec3<f32>(film_grain(frag_coord.xy, u_params.frame, u_params.grain_intensity,
     u_params.grain_size, u_params.grain_luminance_response, luma709(disp)));
   disp = disp + vec3<f32>(triangular_dither(frag_coord.xy, u_params.frame));
-  return vec4<f32>(clamp(disp, vec3<f32>(0.0), vec3<f32>(1.0)), 1.0);
+  return vec4<f32>(clamp(disp, vec3<f32>(0.0), vec3<f32>(1.0)), source.a);
 }
 `;
 
-export const FINALIZE_FXAA_FUSED_WGSL = /* wgsl */ `// FXAA_LUMA_ALPHA = 1: the FXAA taps read luma from the alpha channel
-// (the S10b grade writes luma(disp) there) — the fix for the legacy per-tap
-// finalColorAt re-evaluation (WebGL2Device.ts:3611-3631).
-override FXAA_LUMA_ALPHA: i32 = 1;
+export const FINALIZE_FXAA_FUSED_WGSL = /* wgsl */ `// Luminance comes from RGB; alpha carries input opacity.
+override FXAA_LUMA_ALPHA: i32 = 0;
 
 struct FinalizeFusedParams {
   texel_size: vec2<f32>,
@@ -111,7 +112,7 @@ fn fxaa_sample(tex: texture_2d<f32>, smp: sampler, uv: vec2<f32>) -> vec4<f32> {
     let len = length(p) * u_params.vignette_intensity;
     disp = disp * mix(vec3<f32>(1.0), u_params.vignette_color, pow(clamp(len, 0.0, 1.0), u_params.vignette_smoothness));
   }
-  return vec4<f32>(disp, luma709(disp));
+  return vec4<f32>(disp, c.a);
 }
 
 @fragment
@@ -122,6 +123,6 @@ fn fs_finalize_fxaa_fused(@builtin(position) frag_coord: vec4<f32>) -> @location
   disp = disp + vec3<f32>(film_grain(frag_coord.xy, u_params.frame, u_params.grain_intensity,
     u_params.grain_size, u_params.grain_luminance_response, luma709(disp)));
   disp = disp + vec3<f32>(triangular_dither(frag_coord.xy, u_params.frame));
-  return vec4<f32>(clamp(disp, vec3<f32>(0.0), vec3<f32>(1.0)), 1.0);
+  return vec4<f32>(clamp(disp, vec3<f32>(0.0), vec3<f32>(1.0)), color.a);
 }
 `;

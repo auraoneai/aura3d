@@ -11,6 +11,10 @@
  *
  * The method bodies follow the three.js r185 reference implementation
  * (MIT License, Copyright (c) 2010-2025 three.js authors).
+ * All public mutable classes remain reference-following. The internal
+ * candidates need implementation-provenance and 4.x compatibility review;
+ * known differences include Vector2 branding/errors/numerics, extended Color
+ * transfers, and projection validation and reversed-depth conventions.
  */
 export { Vector2, type Vector2Like, type BufferAttributeLike2 } from "./Vector2.js";
 export { Vector3, type Vector3Like, type BufferAttributeLike3, type ProjectionCameraLike } from "./Vector3.js";

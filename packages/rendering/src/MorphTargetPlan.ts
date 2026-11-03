@@ -3,7 +3,7 @@
 //
 //   - "uniform": small counts (<= the uniform cap) pack into the fixed uniform arrays the
 //     morph-unlit shader already reads (fast path, no texture).
-//   - "texture": larger counts pack position (and optional normal) deltas into an RGBA float data
+//   - "texture": larger counts or tangent deltas pack position, normal and tangent deltas into an RGBA float data
 //     texture indexed by (vertex, target), lifting the flat 4-target / 64-vertex uniform ceiling up
 //     to the device's texture-size limit. This is the path that lets a real facial rig (ARKit ≈ 52
 //     blendshapes over thousands of vertices) run on the GPU.
@@ -101,7 +101,10 @@ export function planMorphTargets(
 ): MorphPlanDecision {
   const morphsTangents = options.morphsTangents ?? false;
   const rowsPerTarget = morphsTangents ? 3 : morphsNormals ? 2 : 1;
-  if (targetCount <= MORPH_UNIFORM_MAX_TARGETS && vertexCount <= MORPH_UNIFORM_MAX_VERTICES) {
+  // The fixed uniform shader exposes position and normal arrays only. A
+  // tangent-bearing plan must retain its tangent rows even when its current
+  // weight is zero: a caller can subsequently update the packed weights.
+  if (!morphsTangents && targetCount <= MORPH_UNIFORM_MAX_TARGETS && vertexCount <= MORPH_UNIFORM_MAX_VERTICES) {
     return {
       mode: "uniform",
       targetCount,
@@ -126,7 +129,7 @@ export function planMorphTargets(
       rowsPerTarget,
       textureWidth,
       textureHeight,
-      reason: `texture-backed (${textureWidth}x${textureHeight} <= ${limits.maxTextureSize})`
+      reason: `texture-backed (${textureWidth}x${textureHeight} <= ${limits.maxTextureSize})${morphsTangents ? "; tangent deltas require texture storage" : ""}`
     };
   }
   return {

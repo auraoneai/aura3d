@@ -9,6 +9,12 @@ export function reparent(node: SceneNode, newParent: SceneNode, options: AddChil
   newParent.addChild(node, options);
 }
 
+/**
+ * Reparent nodes in order, stopping at the first failure. Earlier moves remain
+ * applied and later nodes are not attempted. A preflight failure leaves the
+ * failing node unchanged. A listener error with `committed: true` means that
+ * node's edit was committed; the error is propagated unchanged.
+ */
 export function batchReparent(nodes: readonly SceneNode[], newParent: SceneNode, options: AddChildOptions = {}): void {
   for (const node of nodes) reparent(node, newParent, options);
 }

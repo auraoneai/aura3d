@@ -27,6 +27,14 @@ const BUDGETS: readonly BudgetSpec[] = [
   { subpath: "./devtools" },
 ];
 
+// Explicit domain and opt-in entrypoints. Keep this list exact: root and
+// renderer export budgets still apply, and unknown subpaths remain rejected.
+export const ALLOWED_ENGINE_SUBPATHS = [
+  ".", "./renderer", "./devtools", "./assets", "./animation", "./physics", "./audio", "./input", "./controls", "./scene", "./math", "./scripting", "./editor-runtime", "./workflows", "./ecs",
+  "./game", "./game/capture", "./game/art", "./game/util", "./game/styles.css", "./scene/math", "./physics/solverless", "./physics/world",
+  "./scatter", "./worker", "./shader-graph-runtime", "./lighting", "./v5", "./v5/context", "./v5/game", "./v5/internal", "./v5/math/hull"
+] as const;
+
 // The public entries emit deprecated names as `/** @deprecated ... *\/ export { X }` /
 // `export type { X }` blocks — read them off the source (JSDoc does not
 // propagate to the export symbol through the alias).
@@ -93,10 +101,8 @@ export function checkExportBudget(root: string): GateFinding[] {
     }
   }
 
-  // §6.1 topology: exactly the listed subpaths. "./game*" is a domain-package
-  // subpath (packages/game) in the same class as ./animation etc. — added when
-  // lane 09 split the game package; the §6.1 table predates it.
-  const allowed = new Set([".", "./renderer", "./devtools", "./assets", "./animation", "./physics", "./audio", "./input", "./controls", "./scene", "./math", "./scripting", "./editor-runtime", "./workflows", "./ecs", "./game", "./game/capture", "./game/art", "./game/util", "./game/styles.css", "./scene/math", "./physics/solverless", "./physics/world"]);
+  // §6.1 topology plus explicitly declared domain and opt-in subpaths.
+  const allowed: ReadonlySet<string> = new Set(ALLOWED_ENGINE_SUBPATHS);
   for (const subpath of Object.keys(entries)) {
     if (!allowed.has(subpath)) {
       findings.push({ rule: "export-budget", file: "aura.exports.json", detail: `non-§6.1 subpath "${subpath}" still live (move to deprecated map)`, enforced: true });

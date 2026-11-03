@@ -75,3 +75,49 @@ export function classifyPatchDeclarationChange(
   }
   return "compatible-addition";
 }
+
+export type ReleaseKind = "patch" | "minor" | "major";
+export type SurfaceChangeKind = "value-removal" | "type-removal" | "runtime-export-removal" | "subpath-removal" | "package-removal" | "bin-removal" | "condition-removal" | "condition-target-change" | "condition-order-change" | "declaration-change" | "addition";
+export interface ReleaseChange {
+  kind: SurfaceChangeKind;
+  before?: string;
+  after?: string;
+  /** Earliest version expressly promised for removal, when present. */
+  removalVersion?: string;
+}
+export interface ReleaseChangeClassification {
+  compatible: boolean;
+  breaking: boolean;
+  disposition: "compatible" | "major-break" | "breaking" | "deprecation-window";
+}
+function compareVersions(a: string, b: string): number {
+  if (!/^\d+\.\d+\.\d+$/.test(a) || !/^\d+\.\d+\.\d+$/.test(b)) throw new Error("Versions must be stable semver triples");
+  const left = a.split(".").map(Number), right = b.split(".").map(Number);
+  return left[0]! - right[0]! || left[1]! - right[1]! || left[2]! - right[2]!;
+}
+/**
+ * Report breaks at every release level. Patch/minor cannot contain them; a major
+ * may, except before a previously announced earliest removal version. A
+ * declaration edit without proof of compatibility is treated as breaking.
+ */
+export function classifyReleaseChange(change: ReleaseChange, release: ReleaseKind, candidateVersion: string): ReleaseChangeClassification {
+  if (!(["patch", "minor", "major"] as const).includes(release)) throw new Error(`Unknown release kind: ${release}`);
+  if (change.kind === "addition") {
+    return { compatible: true, breaking: false, disposition: "compatible" };
+  }
+  // The old token subsequence test is retained for its existing patch report;
+  // it cannot prove variance or exhaustiveness, so a new diff fails closed on
+  // an altered signature unless TypeScript consumer assignments proved it.
+  if (change.removalVersion && compareVersions(candidateVersion, change.removalVersion) < 0) {
+    return { compatible: false, breaking: true, disposition: "deprecation-window" };
+  }
+  return release === "major"
+    ? { compatible: true, breaking: true, disposition: "major-break" }
+    : { compatible: false, breaking: true, disposition: "breaking" };
+}
+export function validateReleaseKind(before: string, after: string, kind: ReleaseKind): void {
+  if (compareVersions(before, after) >= 0) throw new Error("Candidate version must be newer than baseline");
+  const a = before.split(".").map(Number), b = after.split(".").map(Number);
+  const actual = b[0] !== a[0] ? "major" : b[1] !== a[1] ? "minor" : "patch";
+  if (actual !== kind) throw new Error(`Release kind ${kind} does not match ${before} -> ${after} (${actual})`);
+}

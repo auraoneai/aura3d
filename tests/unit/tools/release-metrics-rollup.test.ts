@@ -1,6 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { validateAcceptanceGate } from "../../../tools/native-capability-gate/index.mjs";
+import { historicalAdditionIssues, historicalComplexityIssues, historicalEngineLayerIssues, historicalFrictionFieldsIssues } from "../../../tools/native-evidence-analysis/historical-checks";
+
+const acceptanceGate = process.env.AURA3D_CODE_COMPLETE_GATE;
+if (process.env.AURA3D_SOURCE_PROCESS_GUARD === "1" || !acceptanceGate) {
+  throw new Error("Historical evidence checks require the global code-complete gate");
+}
+validateAcceptanceGate({ gatePath: acceptanceGate });
 
 /**
  * §10 — the §B release success metrics, as **conditions** rather than reports.
@@ -50,6 +58,7 @@ describe("§B.2 — developer friction is complete for both engines", () => {
       };
       readonly unmeasured: readonly { readonly field: string; readonly reason: string }[];
     }>("tests/reports/developer-friction.json");
+    expect(historicalFrictionFieldsIssues(report)).toEqual([]);
     expect(report.scenarios.length).toBe(3);
     for (const scenario of report.scenarios) {
       for (const field of ["authoredLines", "imports", "dependencyCount", "typecheckMs"]) {
@@ -77,6 +86,7 @@ describe("§B.3 — negative complexity", () => {
       readonly baseline: { readonly packageSourceLines: number };
       readonly current: { readonly packageSourceLines: number; readonly duplicateOwnershipViolations: number };
     }>("tests/reports/negative-complexity.json");
+    expect(historicalComplexityIssues(report)).toEqual([]);
     expect(
       report.current.packageSourceLines,
       "package source lines exceed the frozen 1.6 baseline"
@@ -90,6 +100,7 @@ describe("§B.4 — engine-layer fix ratio", () => {
     const report = json<{ readonly ratio: number; readonly threshold: number; readonly pass: boolean }>(
       "tests/reports/engine-layer-ratio.json"
     );
+    expect(historicalEngineLayerIssues(report)).toEqual([]);
     expect(report.pass).toBe(true);
     expect(report.ratio).toBeGreaterThanOrEqual(report.threshold);
   });
@@ -135,6 +146,7 @@ describe("R11 — architecture lock", () => {
       "A\tpackages/rendering/src/lean/LeanProductionRenderer.ts",
       ...Object.keys(phase2.addedPackageSource).map((path) => `A\t${path}`)
     ])].sort();
+    expect(historicalAdditionIssues(addedFiles, allowed)).toEqual([]);
     expect(addedFiles.sort(), `unexpected source additions during 1.6: ${addedFiles.join(", ")}`).toEqual(allowed);
 
     const addedPackages = execFileSync(
@@ -145,6 +157,7 @@ describe("R11 — architecture lock", () => {
       .split("\n")
       .filter((line) => line.startsWith("A\t"));
     const allowedPackages = Object.keys(phase2.addedPackages).map((path) => `A\t${path}`).sort();
+    expect(historicalAdditionIssues(addedPackages, allowedPackages)).toEqual([]);
     expect(addedPackages.sort(), `unreviewed new packages during 2.0: ${addedPackages.join(", ")}`)
       .toEqual(allowedPackages);
   });

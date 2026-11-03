@@ -44,18 +44,10 @@ export function createResultsMenu(
     }))
   });
   const panel = menu.el.children[0];
-  const itemsList = panel.children.find((c) => String(c.className).includes("a3g-menu-items"));
-  if (itemsList) {
-    const idx = panel.children.indexOf(itemsList);
-    panel.appendChild(host);
-    // keep results above the action list
-    panel.removeChild(host);
-    panel.children.length;
-    // insert before items
-    panel.appendChild(host);
-  } else {
-    panel.appendChild(host);
-  }
+  const itemsList = Array.from(panel.children).find((c) => String(c.className).includes("a3g-menu-items"));
+  if (itemsList) panel.removeChild(itemsList);
+  panel.appendChild(host);
+  if (itemsList) panel.appendChild(itemsList);
 
   return Object.assign(menu, {
     setResults(values: Readonly<Record<string, number>>) {
@@ -81,8 +73,10 @@ export function createResultsMenu(
       if (best && opts.storage) {
         const v = values[best.key];
         if (v !== undefined) {
-          const prev = Number(opts.storage.getItem(bestKey));
-          const better = Number.isNaN(prev) || (best.compare === "max" ? v > prev : v < prev);
+          let raw: string | null = null;
+          try { raw = opts.storage.getItem(bestKey); } catch { /* private mode */ }
+          const prev = raw === null || raw.trim() === "" ? NaN : Number(raw);
+          const better = !Number.isFinite(prev) || (best.compare === "max" ? v > prev : v < prev);
           if (better) {
             newBest = true;
             try { opts.storage.setItem(bestKey, String(v)); } catch { /* private mode */ }

@@ -1,14 +1,21 @@
 import { type VertexFormat } from "./VertexFormat";
-import { type TextureBinding } from "./TextureBinding";
-import { Texture, type TextureFormat } from "./Texture";
+import { isTextureBinding, type TextureBinding } from "./TextureBinding";
+import { Texture, claimRenderTargetTextureOwner, getRenderTargetTextureOwner, type TextureFormat } from "./Texture";
 import { reflectShaderSources, type ShaderReflection } from "./ShaderReflection";
 import type { RendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
+import type { NativePostEffect } from "./post/NativeEffectShaders";
+import type { GeneratedProgramDescriptor } from "./contracts/program";
+import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph";
+import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
+import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
+import { hasAttachmentRenderOverrides, validateRenderCommandState } from "./contracts/blend";
+import type { ShaderDataType } from "./webgpu/ShaderDataLayout";
 
 export type { ShaderAttributeReflection, ShaderReflection, ShaderUniformReflection } from "./ShaderReflection";
 
 export type RenderBackendKind = "mock" | "webgl2" | "webgpu";
 
-export type BufferUsage = "vertex" | "index" | "uniform" | "readback";
+export type BufferUsage = "vertex" | "index" | "uniform" | "storage" | "readback";
 
 export type IndexType = "uint16" | "uint32";
 
@@ -25,26 +32,46 @@ export interface RenderBuffer extends DisposableResource {
   readonly byteLength: number;
 }
 
+/** A native WGSL storage declaration. Groups start at 1; group 0 is reserved
+ * for the portable draw layout. Visibility and access describe the actual
+ * declaration and stage use, and are validated by the native backend. */
+export type NativeShaderStorageLayout = {
+  readonly group: number;
+  readonly binding: number;
+  readonly visibility: "vertex" | "fragment" | "vertex-fragment";
+} & (
+  | { readonly kind: "storage-buffer"; readonly access: "read" | "read_write" }
+  | { readonly kind: "storage-texture"; readonly access: "read" | "write" | "read_write"; readonly format: string; readonly viewDimension?: "2d" }
+);
+
+export interface NativeShaderStages {
+  readonly vertex: string;
+  readonly fragment: string;
+  readonly storageBindings?: readonly NativeShaderStorageLayout[];
+}
+
 export interface ShaderSources {
   readonly label: string;
   readonly vertex: string;
   readonly fragment: string;
   readonly marker: string;
+  /** Resolved generated-program semantics for native backends. */
+  readonly generatedProgram?: GeneratedProgramDescriptor;
   /** Native WGSL stages for a public portable shader. GLSL remains the reflection source. */
-  readonly webgpu?: {
-    readonly vertex: string;
-    readonly fragment: string;
-  };
+  readonly webgpu?: NativeShaderStages;
   /** Schema used to build and bind a portable WebGPU draw group. */
   readonly portableBindings?: readonly PortableShaderBinding[];
 }
 
-export type PortableShaderBindingKind = "float" | "vec2" | "vec3" | "vec4" | "mat4" | "texture2d";
+export type PortableShaderBindingKind = "float" | "i32" | "u32" | "bool" | "vec2" | "vec3" | "vec4" | "mat4" | "data" | "texture2d" | "texture2d-array" | "texture3d" | "texture-cube" | "depth2d" | "depth2d-multisampled";
 
 export interface PortableShaderBinding {
   readonly name: string;
   readonly kind: PortableShaderBindingKind;
   readonly required?: boolean;
+  /** Fixed-length array of this numeric element type. Textures cannot be arrays here. */
+  readonly arrayLength?: number;
+  readonly dataType?: ShaderDataType;
 }
 
 export interface RenderShaderProgram extends DisposableResource {
@@ -69,6 +96,8 @@ export interface RenderTargetDescriptor {
   readonly format?: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">;
   readonly depth?: boolean | "renderbuffer" | "texture";
   readonly sampleCount?: number;
+  /** Number of allocated color mip levels, including level zero (default 1). */
+  readonly mipLevelCount?: number;
   /** PR 0a (CONTRACTS §3.4): texture dimensionality. "cube" renders 6 faces; "2d-array" renders `layers` slices. */
   readonly dimension?: "2d" | "cube" | "2d-array";
   /** Layer count for dimension "2d-array" (cube targets always have 6 faces). */
@@ -88,6 +117,8 @@ export interface RenderTarget extends DisposableResource {
   readonly label: string;
   readonly colorTexture: Texture;
   readonly depthTexture?: Texture;
+  /** Native multisampled depth attachment, distinct from any resolved depth texture. */
+  readonly multisampledDepthTexture?: Texture;
   readonly sampleCount?: number;
   /** Texture dimensionality (default "2d"). */
   readonly dimension?: "2d" | "cube" | "2d-array";
@@ -97,6 +128,111 @@ export interface RenderTarget extends DisposableResource {
   readonly colorTextures?: readonly Texture[];
   /** Cube/array targets: one child target per face/layer; callers render into `layerTargets[i]`. */
   readonly layerTargets?: readonly RenderTarget[];
+  readonly depthOnly?: boolean;
+  /** Subresource represented by a per-layer/mip target view. */
+  readonly attachmentLayer?: number;
+  readonly attachmentMipLevel?: number;
+}
+
+/** Unscaled color-copy rectangle in bottom-left target coordinates. */
+export interface RenderTargetColorRegion {
+  readonly sourceX: number;
+  readonly sourceY: number;
+  readonly destinationX: number;
+  readonly destinationY: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export type RenderOutputColorSpace = "srgb" | "display-p3";
+export interface RenderOutputColorSpaceNegotiation {
+  readonly requested: RenderOutputColorSpace;
+  readonly active: RenderOutputColorSpace;
+  readonly supported: readonly RenderOutputColorSpace[];
+  readonly fallbackReason?: string;
+}
+
+/** A concrete attachment view, including the subresource and sample count. */
+export interface RenderAttachmentIdentity {
+  readonly texture: Texture;
+  readonly aspect: "color" | "depth";
+  readonly format: TextureFormat;
+  readonly mipLevel: number;
+  readonly layer: number;
+  readonly sampleCount: number;
+}
+
+/** Ownership stays with the device; cancellation never disposes either target. */
+export interface RenderResourceCopyOptions {
+  readonly source: RenderTarget;
+  readonly destination: RenderTarget;
+  readonly aspect?: "color" | "depth";
+  readonly sourceAttachment?: number;
+  readonly destinationAttachment?: number;
+  readonly signal?: AbortSignal;
+}
+
+/** Attachment-specific transfer. Results are caller-owned; abort discards staging/results. */
+export interface RenderResourceReadbackOptions {
+  readonly target: RenderTarget;
+  readonly attachment?: number;
+  readonly signal?: AbortSignal;
+}
+
+/** Validate backend-independent target constraints before allocating GPU objects. */
+export function validateRenderTargetDescriptor(descriptor: RenderTargetDescriptor): void {
+  if (!Number.isInteger(descriptor.width) || descriptor.width < 1 || !Number.isInteger(descriptor.height) || descriptor.height < 1) {
+    throw new RenderDeviceError("Render target dimensions must be positive integers", "INVALID_RENDER_TARGET_SIZE");
+  }
+  const dimension = descriptor.dimension ?? "2d";
+  if (!["2d", "cube", "2d-array"].includes(dimension)) throw new RenderDeviceError("Unsupported render target dimension", "INVALID_RENDER_TARGET_SIZE", { dimension });
+  if (dimension === "cube" && descriptor.width !== descriptor.height) throw new RenderDeviceError("Cube render targets must be square", "INVALID_RENDER_TARGET_SIZE");
+  if (descriptor.layers !== undefined && (dimension !== "2d-array" || !Number.isInteger(descriptor.layers) || descriptor.layers < 1)) {
+    throw new RenderDeviceError("Render target layers require a positive 2d-array layer count", "INVALID_RENDER_TARGET_SIZE");
+  }
+  if (!Number.isInteger(descriptor.sampleCount ?? 1) || (descriptor.sampleCount ?? 1) < 1) throw new RenderDeviceError("Render target sampleCount must be a positive integer", "INVALID_RENDER_TARGET_SAMPLE_COUNT");
+  const mipLevelCount = descriptor.mipLevelCount ?? 1;
+  const maxMipLevels = Math.floor(Math.log2(Math.max(descriptor.width, descriptor.height))) + 1;
+  if (!Number.isSafeInteger(mipLevelCount) || mipLevelCount < 1 || mipLevelCount > maxMipLevels) {
+    throw new RenderDeviceError("Render target mipLevelCount exceeds its dimensions", "INVALID_RENDER_TARGET_MIP_COUNT", { mipLevelCount, maxMipLevels });
+  }
+  if (descriptor.depthOnly && ((descriptor.colorAttachments?.length ?? 0) > 0 || descriptor.depth === false)) {
+    throw new RenderDeviceError("Depth-only targets require depth and cannot have color attachments", "INVALID_RENDER_TARGET_SIZE");
+  }
+  const formats = [descriptor.format, ...(descriptor.colorAttachments ?? []).map((entry) => entry.format)].filter((format) => format !== undefined);
+  if (formats.some((format) => format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f")) throw new RenderDeviceError("Unsupported render target color format", "INVALID_RENDER_TARGET_FORMAT");
+}
+
+export function getRenderAttachmentIdentity(target: RenderTarget, aspect: "color" | "depth" = "color", attachment = 0): RenderAttachmentIdentity {
+  if (target.disposed) throw new RenderDeviceError("Cannot access a disposed render target", "DISPOSED_RESOURCE", { targetId: target.id });
+  if (!Number.isInteger(attachment) || attachment < 0) throw new RenderDeviceError("Attachment index must be a non-negative integer", "INVALID_RENDER_ATTACHMENT");
+  const texture = aspect === "depth" ? (attachment === 0 ? target.depthTexture : undefined) : target.depthOnly ? undefined : (target.colorTextures ?? [target.colorTexture])[attachment];
+  if (!texture || texture.disposed) throw new RenderDeviceError(`Render target has no live ${aspect} attachment ${attachment}`, "INVALID_RENDER_ATTACHMENT");
+  const mipLevel = target.attachmentMipLevel ?? 0;
+  const layer = target.attachmentLayer ?? 0;
+  const layerCount = texture.dimension === "cube" ? 6 : texture.dimension === "2d-array" ? texture.layers : texture.dimension === "3d" ? Math.max(1, Math.floor(texture.depth / 2 ** mipLevel)) : 1;
+  const sampleCount = target.sampleCount ?? 1;
+  if (!Number.isInteger(mipLevel) || mipLevel < 0 || mipLevel >= texture.mipLevelCount || !Number.isInteger(layer) || layer < 0 || layer >= layerCount || !Number.isInteger(sampleCount) || sampleCount < 1) {
+    throw new RenderDeviceError("Invalid attachment mip, layer or sample count", "INVALID_RENDER_ATTACHMENT", { mipLevel, layer, sampleCount });
+  }
+  if ((aspect === "depth") !== (texture.format === "depth24")) throw new RenderDeviceError("Attachment format does not match its aspect", "INVALID_RENDER_ATTACHMENT");
+  if (!texture.usage.includes("render-attachment")) throw new RenderDeviceError("Attachment texture lacks render-attachment usage", "INVALID_RENDER_ATTACHMENT");
+  if (target.width !== Math.max(1, Math.floor(texture.width / 2 ** mipLevel)) || target.height !== Math.max(1, Math.floor(texture.height / 2 ** mipLevel))) {
+    throw new RenderDeviceError("Attachment dimensions do not match the target mip", "INVALID_RENDER_ATTACHMENT");
+  }
+  return { texture, format: texture.format, aspect, mipLevel, layer, sampleCount };
+}
+
+/** Reject conflicting access to the same attachment subresource in one pass. */
+export function validateRenderAttachmentAccess(reads: readonly RenderAttachmentIdentity[], writes: readonly RenderAttachmentIdentity[]): void {
+  for (let i = 0; i < writes.length; i += 1) {
+    const write = writes[i]!;
+    for (const other of [...reads, ...writes.slice(0, i)]) {
+      if (write.texture === other.texture && write.mipLevel === other.mipLevel && write.layer === other.layer && write.aspect === other.aspect) {
+        throw new RenderDeviceError("Render pass has overlapping attachment read/write or write/write access", "RENDER_ATTACHMENT_HAZARD");
+      }
+    }
+  }
 }
 
 export type LdrPostprocessPassName = "bloom" | "tone-mapping" | "color-grade" | "depth-of-field" | "motion-blur" | "ssao" | "ssr" | "taa" | "outline" | "fxaa";
@@ -106,10 +242,61 @@ export interface LdrPostprocessPassDescriptor {
   readonly options: Readonly<Record<string, unknown>>;
 }
 
+/**
+ * Renderer-supplied inputs for a device-tracked native DoF frame. The device
+ * must establish the color/depth/coverage relationship from actual frame
+ * clears and draws; these fields are not evidence by themselves.
+ */
+export interface NativeWebGPUDofFrameDescriptor {
+  readonly source: RenderTarget;
+  readonly coverage: WebGPULinearDepthCoverage;
+  readonly projection: WebGPULinearDepthProjection;
+  readonly maxGeometryDepthMeters: number;
+  readonly skyDepthMeters: number;
+  readonly alpha: "opaque";
+  readonly depthModel: "single-surface";
+  readonly scopeId: object;
+  readonly viewId: string | number;
+  readonly frameId: number;
+}
+
+/** Device-issued, frame-scoped token. Structural lookalikes are not proof. */
+export interface NativeWebGPUDofFrame extends NativeWebGPUDofFrameDescriptor {
+  readonly deviceGeneration: number;
+  isCurrent(): boolean;
+}
+
+export interface NativeWebGPUDofRequest {
+  readonly options: Partial<DofOptions>;
+  readonly frame: NativeWebGPUDofFrame;
+}
+
+/** Submission state retained by the issuing device for one exact DoF frame. */
+export interface NativeWebGPUDofFrameSubmission {
+  readonly depthSubmitted: boolean;
+  readonly effectSubmitted: boolean;
+}
+
 export interface LdrPostprocessPresentationOptions {
   readonly passes: readonly LdrPostprocessPassDescriptor[];
   readonly outputTarget?: RenderTarget;
   readonly toneMappingDefaults?: Readonly<Record<string, unknown>>;
+  /** Absent disables auto exposure; an empty object selects its defaults. */
+  readonly autoExposure?: Partial<AutoExposureOptionsV2>;
+  /** Native HDR DoF before exposure, bloom and output conversion. */
+  readonly nativeDepthOfField?: NativeWebGPUDofRequest;
+  /** Ordered native display effects; texture inputs remain borrowed. */
+  readonly nativeEffects?: readonly NativePostEffect[];
+  /** Stable scope/view identity for temporal effects and explicit camera cuts. */
+  readonly postFrameContext?: {
+    readonly scopeId: object;
+    readonly viewId: string | number;
+    readonly frameId: number;
+    readonly cameraCut?: boolean;
+    /** Monotonic renderer frame time in seconds; required by auto exposure. */
+    readonly timeSeconds?: number;
+    readonly diagnosticToken?: PostDiagnosticToken;
+  };
   /**
    * Camera depth range used to linearize sampleable depth for the native
    * SSR/depth-of-field programs (muse3jsparity-PRD A3). Raw GL depth is
@@ -120,11 +307,13 @@ export interface LdrPostprocessPresentationOptions {
   readonly depthRange?: { readonly near: number; readonly far: number };
 }
 
-export interface DrawCommand {
+export interface DrawCommand<TUniform extends RecursiveUniformValue = UniformValue> {
   readonly label?: string;
   readonly topology: PrimitiveTopology;
   readonly renderState?: RenderCommandState;
   readonly vertexBuffer: RenderBuffer;
+  /** Multiple vertex streams; absent slot zero falls back to vertexBuffer. */
+  readonly vertexBuffers?: readonly (RenderBuffer | undefined)[];
   readonly vertexFormat?: VertexFormat;
   readonly vertexCount: number;
   readonly firstVertex?: number;
@@ -135,8 +324,19 @@ export interface DrawCommand {
   readonly indexCount?: number;
   readonly firstIndex?: number;
   readonly shader?: RenderShaderProgram;
-  readonly uniforms?: ReadonlyMap<string, UniformValue>;
+  readonly uniforms?: ReadonlyMap<string, TUniform>;
+  /** Device-owned storage resources; this command borrows them until submitted work completes. */
+  readonly nativeStorageBindings?: readonly NativeStorageBinding[];
 }
+
+export type NativeStorageBinding = {
+  readonly name: string;
+  readonly group: number;
+  readonly binding: number;
+} & (
+  | { readonly kind: "storage-buffer"; readonly buffer: RenderBuffer; readonly offset?: number; readonly size?: number }
+  | { readonly kind: "storage-texture"; readonly texture: Texture; readonly format?: string }
+);
 
 export interface InstanceVertexAttribute {
   readonly buffer: RenderBuffer;
@@ -148,12 +348,22 @@ export interface InstanceVertexAttribute {
   readonly divisor?: number;
 }
 
+export type UniformDataValue = number | boolean | Float32Array | Int32Array | Uint32Array
+  | readonly UniformDataValue[] | { readonly [name: string]: UniformDataValue };
 export type UniformValue = number | readonly number[] | Float32Array | Int32Array | Uint32Array | TextureBinding;
+export type RecursiveUniformValue = UniformValue | UniformDataValue;
+
+/** Overrides for one color attachment; omitted fields inherit the draw state. */
+export interface RenderColorAttachmentState {
+  readonly colorWrite?: readonly [boolean, boolean, boolean, boolean];
+  readonly blendMode?: import("./contracts/blend").BlendMode;
+}
 
 export interface RenderCommandState {
   readonly depthTest: boolean;
   readonly depthWrite: boolean;
   readonly cullMode: "none" | "back" | "front";
+  readonly frontFace?: "ccw" | "cw";
   readonly blend: boolean;
   readonly depthCompare: "always" | "less-equal";
   /** C-04 (PR 0a): named blend state; wins over `blend` when set. */
@@ -162,7 +372,12 @@ export interface RenderCommandState {
   readonly depthCompareV2?: import("./contracts/blend").DepthCompare;
   /** PR 0a (PRD 04): MSAA alpha-to-coverage. */
   readonly alphaToCoverage?: boolean;
+  readonly sampleMask?: number;
+  readonly blendConstant?: readonly [number, number, number, number];
+  readonly blendedDepthWrite?: "allow";
   readonly colorWrite?: readonly [boolean, boolean, boolean, boolean];
+  /** Per-color-attachment overrides. Entries and fields omitted here inherit the global draw state. */
+  readonly colorAttachments?: readonly (RenderColorAttachmentState | undefined)[];
   readonly scissor?: {
     readonly x: number;
     readonly y: number;
@@ -172,6 +387,7 @@ export interface RenderCommandState {
   readonly polygonOffset?: {
     readonly factor: number;
     readonly units: number;
+    readonly clamp?: number;
   } | null;
   readonly stencil?: {
     readonly compare?: "never" | "less" | "less-equal" | "greater" | "greater-equal" | "equal" | "not-equal" | "always";
@@ -198,6 +414,8 @@ export type RenderDeviceCapability =
   | "native-texture-readback"
   | "canvas-surface"
   | "hdr-render-targets"
+  /** Blending into floating-point color attachments is available. */
+  | "float-blending"
   | "float-readback"
   | "depth-render-targets"
   | "depth-textures"
@@ -214,12 +432,25 @@ export interface RenderDeviceInfo {
   readonly backend: RenderBackendKind;
   readonly vendor: string;
   readonly renderer: string;
+  /** Reported per-fragment-stage sampled texture-unit limit, when known. */
+  readonly maxFragmentTextureUnits?: number;
   readonly capabilities?: readonly RenderDeviceCapability[];
   readonly limitations?: readonly string[];
 }
 
 export interface RenderDeviceDiagnostics {
   readonly drawCalls: number;
+  readonly drawingPath?: {
+    readonly requested: "forward" | "deferred" | "meshlet" | "visibility";
+    readonly active: "forward" | "deferred" | "meshlet" | "visibility";
+    readonly fallbackReason?: string;
+    readonly drawCalls?: number;
+    readonly triangles?: number;
+    readonly trianglesAreUpperBound?: boolean;
+    readonly computeDispatches?: number;
+    readonly submittedMeshlets?: number;
+    readonly culledMeshlets?: number;
+  };
   /** Primitives submitted through `draw` and `multiDrawElementsInstanced` since the frame began: index (or vertex) count / 3 per triangle draw, times the instance count. */
   readonly triangles?: number;
   /** Same count for `lines` draws (count / 2) and `points` draws (count). */
@@ -314,6 +545,13 @@ export interface RenderDeviceDiagnostics {
   readonly postprocessTargetHeight?: number;
   readonly maxRenderTargetSampleCount?: number;
   readonly postprocessPlan?: RendererPostprocessPlanDiagnostics;
+  /** Frame-scoped native DoF submission; this does not establish rendered pixels. */
+  readonly nativeDepthOfField?: {
+    readonly requested: true;
+    readonly depthPreparation: "submitted" | "not-observed";
+    readonly effect: "submitted" | "not-observed";
+    readonly pixelValidation: "not-established";
+  };
   /**
    * PART U: live GPU target inventory — every render target, pyramid mip,
    * ping-pong pair, LUT, and history/scratch texture with bytes + lane owner,
@@ -463,6 +701,33 @@ export interface RenderDevice {
   readonly info: RenderDeviceInfo;
   readonly disposed: boolean;
   readonly contextLost: boolean;
+  /** Identity of the current successful frame; absent on devices without this capability. */
+  readonly activeFrameToken?: object | null;
+  /** Increments when the native context/device and all its resources change. */
+  readonly generation?: number;
+  /** Listener registration returns a function which removes that listener. */
+  onDeviceLost?(listener: () => void): () => void;
+  onDeviceRestored?(listener: () => void): () => void;
+  /** Select an output color space when supported, otherwise report the active fallback. */
+  negotiateOutputColorSpace?(requested?: RenderOutputColorSpace): RenderOutputColorSpaceNegotiation;
+  /** Select verified sRGB for a presentation route that cannot encode the requested gamut. */
+  negotiateSrgbOutputFallback?(requested: "display-p3", reason: string): RenderOutputColorSpaceNegotiation;
+  /** Inspect the last negotiation without changing the output context. */
+  getOutputColorSpaceNegotiation?(): RenderOutputColorSpaceNegotiation | undefined;
+  /** Alpha association of the presentation surface, if verified by the backend. */
+  getPresentationAlphaMode?(): "opaque" | "straight" | "premultiplied" | undefined;
+  /** Present only after the backend implements native DoF and its frame proof. */
+  canPresentNativeDepthOfField?(): boolean;
+  beginNativeDepthOfFieldFrame?(descriptor: NativeWebGPUDofFrameDescriptor): NativeWebGPUDofFrame;
+  sealNativeDepthOfFieldFrame?(frame: NativeWebGPUDofFrame): void;
+  cancelNativeDepthOfFieldFrame?(frame: NativeWebGPUDofFrame): void;
+  /** Validate the device-issued token, tracked frame and native source identity. */
+  validateNativeDepthOfFieldFrame?(frame: NativeWebGPUDofFrame, source: RenderTarget): boolean;
+  /** Read this device's submission state for the exact issued frame, including after cancellation. */
+  getNativeDepthOfFieldFrameSubmission?(frame: NativeWebGPUDofFrame): NativeWebGPUDofFrameSubmission | undefined;
+  /** Set the convention for subsequently encoded scene/shadow passes. */
+  setDepthConvention?(convention: import("./DepthConvention").DepthConvention): void;
+  getDepthConvention?(): import("./DepthConvention").DepthConvention;
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer;
   updateBuffer(buffer: RenderBuffer, byteOffset: number, data: ArrayBufferView): void;
@@ -473,6 +738,30 @@ export interface RenderDevice {
   /** Optional native asynchronous validation, currently implemented by WebGPU. */
   getShaderCompilationDiagnostics?(sources: ShaderSources): Promise<readonly ShaderCompilationDiagnostic[]>;
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget;
+  /** Generate the target's allocated color mips after level zero has been written. */
+  generateRenderTargetMipmaps?(target: RenderTarget): void;
+  /** Draw a transmission copy, verifying backend submission where supported. */
+  drawTransmissionCapture?(command: DrawCommand): void;
+  /** Draw and verify that the backend accepted a real submission. */
+  drawChecked?(command: DrawCommand): void;
+  /** Optional portable-schema draw. Unsupported backends must omit this capability. */
+  drawPortable?(command: DrawCommand<RecursiveUniformValue>, checked?: boolean): void;
+  /** Internal, forward-only point-quad submission; unsupported backends omit it. */
+  drawNativePointQuads?(command: DrawCommand, context: import("./webgpu/NativePointQuads").NativePointQuadSubmission): void;
+  /** Synchronous, same-device 2D single-sample color copy; does not alter target state. */
+  copyRenderTargetColorRegion?(source: RenderTarget, destination: RenderTarget, region: RenderTargetColorRegion): void;
+  /** Async transfers retain device ownership of inputs; abort discards staging/results. */
+  copyRenderTarget?(options: RenderResourceCopyOptions): Promise<void>;
+  resolveRenderTarget?(options: RenderResourceCopyOptions): Promise<void>;
+  /** Read a single-sample RGBA8 attachment without changing the active target. */
+  readRenderTarget?(options: RenderResourceReadbackOptions): Promise<Uint8Array>;
+  /**
+   * Read a resolved rgba16f/rgba32f color attachment without changing the
+   * active target. Rows are bottom-to-top, as in readFloatPixels. The target
+   * must be an owned, live 2D target or a concrete layer view. Cancellation
+   * discards the result, not the target or already submitted GPU work.
+   */
+  readFloatRenderTarget?(options: RenderResourceReadbackOptions): Promise<Float32Array>;
   setRenderTarget(target: RenderTarget | null): void;
   /** The currently bound render target, or null for the default framebuffer.
    *  Optional (PRD-07 P6-T4): offscreen mini-passes that divert mid-frame need
@@ -499,6 +788,8 @@ export interface RenderDevice {
    * `null`. Optional — devices without it can only draw to the canvas.
    */
   setExternalFramebuffer?(framebuffer: unknown | null, width: number, height: number): void;
+  /** True when a retained viewport or external framebuffer overrides default output. */
+  hasDefaultOutputOverride?(): boolean;
   /** threejs-parity L7/SC-01 (P2): scissor rect in target pixels; gated by `setScissorTest`. */
   setScissor?(x: number, y: number, width: number, height: number): void;
   /** threejs-parity L7/SC-01 (P2): enables/disables scissor clipping (three's `setScissorTest`). */
@@ -506,12 +797,21 @@ export interface RenderDevice {
   writeRenderTargetPixels?(target: RenderTarget, pixels: Uint8Array): void;
   presentRenderTarget?(source: RenderTarget): void;
   presentLdrPostprocess?(source: RenderTarget, options: LdrPostprocessPresentationOptions): void;
+  /** Release one view's native temporal-effect history when its owner retires. */
+  releaseNativePostEffectView?(scopeId: object, viewId: string | number): void;
+  /** Release all native temporal-effect histories for one renderer scope. */
+  releaseNativePostEffectScope?(scopeId: object): void;
   readPixels(x: number, y: number, width: number, height: number, attachment?: number): Uint8Array;
   readPixelsAsync?(x: number, y: number, width: number, height: number): Promise<Uint8Array>;
   /** Resolve only when all previously submitted native GPU work has completed. */
   waitForSubmittedWork?(): Promise<void>;
-  readFloatPixels(x: number, y: number, width: number, height: number): Float32Array;
-  readFloatPixelsAsync?(x: number, y: number, width: number, height: number): Promise<Float32Array>;
+  /**
+   * Read the active target in bottom-left coordinates, returning bottom-to-top
+   * RGBA rows. Attachment defaults to 0; rgba8 values are normalized. Real
+   * WebGPU only supports the asynchronous variant.
+   */
+  readFloatPixels(x: number, y: number, width: number, height: number, attachment?: number): Float32Array;
+  readFloatPixelsAsync?(x: number, y: number, width: number, height: number, attachment?: number): Promise<Float32Array>;
   readDepthPixels?(x: number, y: number, width: number, height: number): Float32Array;
   beginFrame(width: number, height: number): void;
   clear(color: readonly [number, number, number, number]): void;
@@ -522,6 +822,12 @@ export interface RenderDevice {
   captureState(): ReadonlyMap<string, string | number | boolean | null>;
   getDiagnostics(): RenderDeviceDiagnostics;
   dispose(): void;
+  /**
+   * Observe the current device disposal attempt, including native retirement.
+   * This does not initiate disposal or retry failed cleanup. Devices without
+   * asynchronous retirement may omit it.
+   */
+  whenDisposed?(): Promise<void>;
   /** C-13 (PR 0a): run a post graph natively; undefined until PRD 03 provides it. */
   executePostGraph?(graph: unknown): void;
   /** C-28 (PR 0a): device capability probe. */
@@ -630,8 +936,12 @@ export class MockRenderTarget implements RenderTarget {
   public readonly layers?: number;
   public readonly colorTextures?: readonly Texture[];
   public layerTargets?: readonly RenderTarget[];
+  public readonly attachmentLayer: number;
+  public readonly attachmentMipLevel = 0;
+  public readonly depthOnly: boolean;
   /** MRT attachments 1..n (attachment 0 lives in colorPixels/colorFloatPixels). */
   public readonly attachmentPixels: readonly Uint8Array[];
+  public readonly attachmentFloatPixels: readonly (Float32Array | null)[];
   private readonly layerChild: boolean;
 
   constructor(
@@ -646,20 +956,32 @@ export class MockRenderTarget implements RenderTarget {
       readonly dimension?: "2d" | "cube" | "2d-array";
       readonly layers?: number;
       readonly colorTextures?: readonly Texture[];
+      readonly colorPixels?: Uint8Array;
+      readonly colorFloatPixels?: Float32Array | null;
+      readonly depthPixels?: Float32Array | null;
       readonly attachmentPixels?: readonly Uint8Array[];
+      readonly attachmentFloatPixels?: readonly (Float32Array | null)[];
       readonly layerChild?: boolean;
+      readonly attachmentLayer?: number;
+      readonly depthOnly?: boolean;
     } = {}
   ) {
-    this.colorPixels = new Uint8Array(width * height * 4);
-    this.colorFloatPixels = colorTexture.format === "rgba16f" || colorTexture.format === "rgba32f"
-      ? new Float32Array(width * height * 4)
-      : null;
-    this.depthPixels = depthTexture ? new Float32Array(width * height).fill(1) : null;
+    this.colorPixels = options.colorPixels ?? new Uint8Array(width * height * 4);
+    this.colorFloatPixels = options.colorFloatPixels !== undefined ? options.colorFloatPixels
+      : colorTexture.format === "rgba16f" || colorTexture.format === "rgba32f"
+        ? new Float32Array(width * height * 4) : null;
+    this.depthPixels = options.depthPixels !== undefined ? options.depthPixels
+      : depthTexture ? new Float32Array(width * height).fill(1) : null;
     this.dimension = options.dimension ?? "2d";
     this.layers = options.layers;
     this.colorTextures = options.colorTextures;
-    this.attachmentPixels = options.attachmentPixels ?? [];
+    const extras = (options.colorTextures ?? []).slice(1);
+    this.attachmentPixels = options.attachmentPixels ?? extras.map(() => new Uint8Array(width * height * 4));
+    this.attachmentFloatPixels = options.attachmentFloatPixels ?? extras.map((texture) =>
+      texture.format === "rgba16f" || texture.format === "rgba32f" ? new Float32Array(width * height * 4) : null);
     this.layerChild = options.layerChild === true;
+    this.attachmentLayer = options.attachmentLayer ?? 0;
+    this.depthOnly = options.depthOnly === true;
   }
 
   dispose(): void {
@@ -708,7 +1030,16 @@ export class MockRenderDevice implements RenderDevice {
   };
 
   public disposed = false;
-  public contextLost = false;
+  private contextLostValue = false;
+  private frameToken: object | null = null;
+  get contextLost(): boolean { return this.contextLostValue; }
+  set contextLost(value: boolean) {
+    this.contextLostValue = value;
+    if (value) this.frameToken = null;
+  }
+  get activeFrameToken(): object | null {
+    return this.frameActive && !this.disposed && !this.contextLost ? this.frameToken : null;
+  }
   public readonly drawCommands: DrawCommand[] = [];
   private nextId = 1;
   private buffers = new Set<MockRenderBuffer>();
@@ -740,6 +1071,19 @@ export class MockRenderDevice implements RenderDevice {
   /** C-28 (PRD 11): per-frame fields; zeroed by resetFrameCounters(). Live gauges come from getDiagnostics(). */
   private frameCounters = { drawCalls: 0, bufferCreates: 0, textureUploads: 0, readbacks: 0, renderTargetsCreated: 0, programCompiles: 0 };
   public readonly uniformBufferBindings: { bufferId: number; binding: number }[] = [];
+  private outputColorSpaceNegotiation: RenderOutputColorSpaceNegotiation | undefined;
+
+  negotiateOutputColorSpace(requested: RenderOutputColorSpace = "srgb"): RenderOutputColorSpaceNegotiation {
+    const result: RenderOutputColorSpaceNegotiation = requested === "srgb"
+      ? { requested, active: "srgb", supported: ["srgb"] }
+      : { requested, active: "srgb", supported: ["srgb"], fallbackReason: "Mock device supports sRGB only" };
+    this.outputColorSpaceNegotiation = result;
+    return result;
+  }
+
+  getOutputColorSpaceNegotiation(): RenderOutputColorSpaceNegotiation | undefined {
+    return this.outputColorSpaceNegotiation;
+  }
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {
     this.assertAlive();
@@ -758,7 +1102,7 @@ export class MockRenderDevice implements RenderDevice {
     if (mockBuffer.disposed) {
       throw new RenderDeviceError("Cannot update a disposed buffer", "DISPOSED_RESOURCE", { bufferId: buffer.id });
     }
-    if (byteOffset < 0 || byteOffset + data.byteLength > mockBuffer.byteLength) {
+    if (!Number.isSafeInteger(byteOffset) || byteOffset < 0 || byteOffset + data.byteLength > mockBuffer.byteLength) {
       throw new RenderDeviceError("Buffer update range is out of bounds", "BUFFER_RANGE_OUT_OF_BOUNDS", {
         byteOffset,
         dataByteLength: data.byteLength,
@@ -774,7 +1118,7 @@ export class MockRenderDevice implements RenderDevice {
     if (mockBuffer.disposed) {
       throw new RenderDeviceError("Cannot read a disposed buffer", "DISPOSED_RESOURCE", { bufferId: buffer.id });
     }
-    if (byteOffset < 0 || byteLength < 0 || byteOffset + byteLength > mockBuffer.byteLength) {
+    if (!Number.isSafeInteger(byteOffset) || !Number.isSafeInteger(byteLength) || byteOffset < 0 || byteLength < 0 || byteOffset + byteLength > mockBuffer.byteLength) {
       throw new RenderDeviceError("Buffer read range is out of bounds", "BUFFER_RANGE_OUT_OF_BOUNDS", {
         byteOffset,
         byteLength,
@@ -812,6 +1156,8 @@ export class MockRenderDevice implements RenderDevice {
 
   createRenderTarget(descriptor: RenderTargetDescriptor): RenderTarget {
     this.assertAlive();
+    validateRenderTargetDescriptor(descriptor);
+    if ((descriptor.mipLevelCount ?? 1) > 1) throw new RenderDeviceError("Mock render targets do not support mip generation", "RENDER_TARGET_MIPMAP_UNSUPPORTED");
     if (
       !Number.isInteger(descriptor.width) ||
       descriptor.width <= 0 ||
@@ -826,6 +1172,9 @@ export class MockRenderDevice implements RenderDevice {
     }
     const label = descriptor.label ?? "render-target";
     const dimension = descriptor.dimension ?? "2d";
+    if (!Number.isInteger(descriptor.sampleCount ?? 1) || (descriptor.sampleCount ?? 1) < 1) {
+      throw new RenderDeviceError("Render target sampleCount must be a positive integer", "INVALID_RENDER_TARGET_SAMPLE_COUNT");
+    }
     if (descriptor.layers !== undefined && (!Number.isInteger(descriptor.layers) || descriptor.layers < 1)) {
       throw new RenderDeviceError("Render target layer count must be a positive integer", "INVALID_RENDER_TARGET_SIZE", {
         layers: descriptor.layers,
@@ -876,9 +1225,14 @@ export class MockRenderDevice implements RenderDevice {
         dimension,
         layers: layerCount > 1 ? layerCount : undefined,
         colorTextures: colorTextures.length > 1 ? colorTextures : undefined,
-        attachmentPixels
+        attachmentPixels,
+        depthOnly
       }
     );
+    // Children below share these same attachment identities with the parent.
+    for (const texture of new Set([target.colorTexture, ...(target.colorTextures ?? []), ...(target.depthTexture ? [target.depthTexture] : [])])) {
+      claimRenderTargetTextureOwner(texture, this);
+    }
     if (layerCount > 1) {
       const children: RenderTarget[] = [];
       for (let layer = 0; layer < layerCount; layer += 1) {
@@ -889,8 +1243,15 @@ export class MockRenderDevice implements RenderDevice {
           `${label}-layer-${layer}`,
           colorTexture,
           depthTexture,
-          1,
-          { dimension, layers: 1, colorTextures: target.colorTextures, layerChild: true }
+          descriptor.sampleCount ?? 1,
+          {
+            dimension, layers: 1, colorTextures: target.colorTextures, layerChild: true, attachmentLayer: layer, depthOnly,
+            // The parent framebuffer represents layer zero, just like WebGL.
+            ...(layer === 0 ? {
+              colorPixels: target.colorPixels, colorFloatPixels: target.colorFloatPixels, depthPixels: target.depthPixels,
+              attachmentPixels: target.attachmentPixels, attachmentFloatPixels: target.attachmentFloatPixels
+            } : {})
+          }
         );
         children.push(child);
         this.renderTargets.add(child);
@@ -900,6 +1261,111 @@ export class MockRenderDevice implements RenderDevice {
     this.renderTargets.add(target);
     this.frameCounters.renderTargetsCreated += 1;
     return target;
+  }
+
+  copyRenderTargetColorRegion(sourceTarget: RenderTarget, destinationTarget: RenderTarget, region: RenderTargetColorRegion): void {
+    this.assertAlive();
+    const source = this.requireMockRenderTarget(sourceTarget);
+    const destination = this.requireMockRenderTarget(destinationTarget);
+    const { sourceX, sourceY, destinationX, destinationY, width, height } = region;
+    if (![sourceX, sourceY, destinationX, destinationY, width, height].every(Number.isSafeInteger)
+      || sourceX < 0 || sourceY < 0 || destinationX < 0 || destinationY < 0 || width <= 0 || height <= 0
+      || sourceX > source.width || sourceY > source.height || destinationX > destination.width || destinationY > destination.height
+      || width > source.width - sourceX || height > source.height - sourceY
+      || width > destination.width - destinationX || height > destination.height - destinationY) {
+      throw new RenderDeviceError("Color-copy rectangle is invalid or out of bounds", "INVALID_RESOURCE_COPY", { region });
+    }
+    if (source === destination || source.colorTexture === destination.colorTexture || source.depthOnly || destination.depthOnly
+      || source.colorTexture.disposed || destination.colorTexture.disposed
+      || source.dimension !== "2d" || destination.dimension !== "2d" || source.sampleCount !== 1 || destination.sampleCount !== 1
+      || source.colorTexture.format !== destination.colorTexture.format) {
+      throw new RenderDeviceError("Color-copy targets must be distinct, live, single-sampled 2D attachments of equal format", "INVALID_RESOURCE_COPY");
+    }
+    for (let row = 0; row < height; row += 1) {
+      const src = ((sourceY + row) * source.width + sourceX) * 4;
+      const dst = ((destinationY + row) * destination.width + destinationX) * 4;
+      destination.colorPixels.set(source.colorPixels.subarray(src, src + width * 4), dst);
+      if (source.colorFloatPixels && destination.colorFloatPixels) {
+        destination.colorFloatPixels.set(source.colorFloatPixels.subarray(src, src + width * 4), dst);
+      }
+    }
+  }
+
+  async copyRenderTarget(options: RenderResourceCopyOptions): Promise<void> {
+    this.assertAlive();
+    throwIfResourceTransferAborted(options.signal);
+    const source = this.requireMockRenderTarget(options.source);
+    const destination = this.requireMockRenderTarget(options.destination);
+    const aspect = options.aspect ?? "color";
+    const srcIdentity = getRenderAttachmentIdentity(source, aspect, options.sourceAttachment ?? 0);
+    const dstIdentity = getRenderAttachmentIdentity(destination, aspect, options.destinationAttachment ?? 0);
+    if (source.width !== destination.width || source.height !== destination.height || srcIdentity.format !== dstIdentity.format) {
+      throw new RenderDeviceError("Copy attachments must have identical size and format", "INVALID_RESOURCE_COPY");
+    }
+    if (dstIdentity.sampleCount !== 1 || (srcIdentity.sampleCount > 1 && aspect !== "color")) {
+      throw new RenderDeviceError("Copy requires a single-sample destination and can resolve only multisampled color", "INVALID_RESOURCE_COPY");
+    }
+    validateRenderAttachmentAccess([srcIdentity], [dstIdentity]);
+    // Yield before taking the copy so an aborted call cannot alter destination.
+    await Promise.resolve();
+    throwIfResourceTransferAborted(options.signal);
+    this.assertAlive();
+    this.requireMockRenderTarget(source);
+    this.requireMockRenderTarget(destination);
+    if (aspect === "depth") {
+      if (!source.depthPixels || !destination.depthPixels) throw new RenderDeviceError("Depth copy requires depth textures", "INVALID_RESOURCE_COPY");
+      destination.depthPixels.set(source.depthPixels);
+    } else {
+      const src = mockAttachmentPixels(source, options.sourceAttachment ?? 0);
+      const dst = mockAttachmentPixels(destination, options.destinationAttachment ?? 0);
+      dst.set(src);
+      const srcFloat = mockAttachmentFloatPixels(source, options.sourceAttachment ?? 0);
+      const dstFloat = mockAttachmentFloatPixels(destination, options.destinationAttachment ?? 0);
+      if (srcFloat && dstFloat) dstFloat.set(srcFloat);
+    }
+  }
+
+  async resolveRenderTarget(options: RenderResourceCopyOptions): Promise<void> {
+    if ((options.source.sampleCount ?? 1) <= 1 || (options.destination.sampleCount ?? 1) !== 1 || (options.aspect ?? "color") !== "color") {
+      throw new RenderDeviceError("Resolve requires multisampled color source and single-sampled destination", "INVALID_RESOURCE_RESOLVE");
+    }
+    await this.copyRenderTarget(options);
+  }
+
+  async readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array> {
+    this.assertAlive();
+    throwIfResourceTransferAborted(options.signal);
+    const target = this.requireMockRenderTarget(options.target);
+    const identity = getRenderAttachmentIdentity(target, "color", options.attachment ?? 0);
+    if (identity.format !== "rgba8") throw new RenderDeviceError("Byte readback requires rgba8; use float readback for float targets", "INVALID_RESOURCE_READBACK");
+    if ((target.sampleCount ?? 1) !== 1) throw new RenderDeviceError("Resolve multisampled targets before readback", "INVALID_RESOURCE_READBACK");
+    await Promise.resolve();
+    throwIfResourceTransferAborted(options.signal);
+    this.assertAlive();
+    this.requireMockRenderTarget(target);
+    this.frameCounters.readbacks += 1;
+    return mockAttachmentPixels(target, options.attachment ?? 0).slice();
+  }
+
+  async readFloatRenderTarget(options: RenderResourceReadbackOptions): Promise<Float32Array> {
+    this.assertAlive();
+    throwIfResourceTransferAborted(options.signal);
+    const target = this.requireMockRenderTarget(options.target);
+    const attachment = options.attachment ?? 0;
+    const identity = getRenderAttachmentIdentity(target, "color", attachment);
+    if (identity.format !== "rgba16f" && identity.format !== "rgba32f") {
+      throw new RenderDeviceError("Float target readback requires an rgba16f or rgba32f color attachment", "INVALID_RESOURCE_READBACK");
+    }
+    if (target.layerTargets?.length) {
+      throw new RenderDeviceError("Select a concrete render-target layer before readback", "INVALID_RESOURCE_READBACK");
+    }
+    await Promise.resolve();
+    throwIfResourceTransferAborted(options.signal);
+    this.assertAlive();
+    this.requireMockRenderTarget(target);
+    getRenderAttachmentIdentity(target, "color", attachment);
+    this.frameCounters.readbacks += 1;
+    return this.readFloatPixelsImpl(target, 0, 0, target.width, target.height, attachment);
   }
 
   setRenderTarget(target: RenderTarget | null): void {
@@ -1011,17 +1477,21 @@ export class MockRenderDevice implements RenderDevice {
     return output;
   }
 
-  readFloatPixels(x: number, y: number, width: number, height: number): Float32Array {
+  readFloatPixels(x: number, y: number, width: number, height: number, attachment?: number): Float32Array {
     this.frameCounters.readbacks += 1;
     this.assertAlive();
-    if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
+    return this.readFloatPixelsImpl(this.activeRenderTarget, x, y, width, height, attachment);
+  }
+
+  private readFloatPixelsImpl(target: MockRenderTarget | null, x: number, y: number, width: number, height: number, attachment?: number): Float32Array {
+    if (![x, y, width, height].every(Number.isSafeInteger) || x < 0 || y < 0 || width <= 0 || height <= 0 ||
+        !Number.isSafeInteger(width * height * 4)) {
       throw new RenderDeviceError("Float readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
     }
-    const output = new Float32Array(width * height * 4);
-    const target = this.activeRenderTarget;
     if (!target) {
+      if (attachment !== undefined) throw new RenderDeviceError("Attachment readback requires an active render target", "INVALID_RENDER_ATTACHMENT", { attachment });
       if (this.backbufferPixels) {
-        if (x + width > this.backbufferWidth || y + height > this.backbufferHeight) {
+        if (width > this.backbufferWidth - x || height > this.backbufferHeight - y) {
           throw new RenderDeviceError("Float readback rectangle exceeds backbuffer bounds", "READBACK_OUT_OF_BOUNDS", {
             x,
             y,
@@ -1031,6 +1501,7 @@ export class MockRenderDevice implements RenderDevice {
             boundsHeight: this.backbufferHeight
           });
         }
+        const output = new Float32Array(width * height * 4);
         for (let row = 0; row < height; row += 1) {
           const sourceOffset = ((y + row) * this.backbufferWidth + x) * 4;
           const destOffset = row * width * 4;
@@ -1040,6 +1511,7 @@ export class MockRenderDevice implements RenderDevice {
         }
         return output;
       }
+      const output = new Float32Array(width * height * 4);
       for (let index = 0; index < output.length; index += 4) {
         output[index] = this.clearColor[0];
         output[index + 1] = this.clearColor[1];
@@ -1048,19 +1520,24 @@ export class MockRenderDevice implements RenderDevice {
       }
       return output;
     }
-    if (x + width > target.width || y + height > target.height) {
+    this.requireMockRenderTarget(target);
+    const index = attachment ?? 0;
+    getRenderAttachmentIdentity(target, "color", index);
+    if (width > target.width - x || height > target.height - y) {
       throw new RenderDeviceError("Float readback rectangle exceeds render target bounds", "READBACK_OUT_OF_BOUNDS", { x, y, width, height });
     }
-    if (target.colorFloatPixels) {
-      for (let row = 0; row < height; row += 1) {
-        const sourceOffset = ((y + row) * target.width + x) * 4;
-        const destOffset = row * width * 4;
-        output.set(target.colorFloatPixels.subarray(sourceOffset, sourceOffset + width * 4), destOffset);
+    const output = new Float32Array(width * height * 4);
+    const floats = mockAttachmentFloatPixels(target, index);
+    const bytes = floats ? null : mockAttachmentPixels(target, index);
+    for (let row = 0; row < height; row += 1) {
+      const sourceOffset = ((y + row) * target.width + x) * 4;
+      const destOffset = row * width * 4;
+      if (floats) {
+        output.set(floats.subarray(sourceOffset, sourceOffset + width * 4), destOffset);
+      } else if (bytes) {
+        for (let column = 0; column < width * 4; column += 1) output[destOffset + column] = bytes[sourceOffset + column]! / 255;
       }
-      return output;
     }
-    const bytes = this.readPixelsImpl(x, y, width, height);
-    for (let index = 0; index < bytes.length; index += 1) output[index] = bytes[index]! / 255;
     return output;
   }
 
@@ -1095,6 +1572,7 @@ export class MockRenderDevice implements RenderDevice {
       throw new RenderDeviceError("Frame dimensions must be positive", "INVALID_FRAME_SIZE", { width, height });
     }
     this.frameActive = true;
+    this.frameToken = {};
     this.viewportWidth = width;
     this.viewportHeight = height;
     // threejs-parity L7/SC-01: viewport/scissor state is per-frame —
@@ -1152,6 +1630,10 @@ export class MockRenderDevice implements RenderDevice {
     return this.externalFramebuffer;
   }
 
+  hasDefaultOutputOverride(): boolean {
+    return this.persistentViewportRect !== null || this.externalFramebuffer !== null;
+  }
+
   /** threejs-parity L7/SC-01 (P2): scissor rect, target pixels. */
   setScissor(x: number, y: number, width: number, height: number): void {
     this.assertAlive();
@@ -1203,6 +1685,9 @@ export class MockRenderDevice implements RenderDevice {
           attachmentPixels.set(bytes, i);
         }
       }
+      for (const floats of this.activeRenderTarget.attachmentFloatPixels) {
+        if (floats) for (let i = 0; i < floats.length; i += 4) floats.set(color, i);
+      }
       this.activeRenderTarget.depthPixels?.fill(1);
     }
   }
@@ -1212,6 +1697,8 @@ export class MockRenderDevice implements RenderDevice {
     this.assertFrame();
     const previous = this.clearColor;
     if (attachment !== undefined && this.activeRenderTarget) {
+      this.requireMockRenderTarget(this.activeRenderTarget);
+      getRenderAttachmentIdentity(this.activeRenderTarget, "color", attachment);
       const bytes = rgbaBytes(color);
       const pixels = attachment === 0 ? this.activeRenderTarget.colorPixels : this.activeRenderTarget.attachmentPixels[attachment - 1];
       if (!pixels) {
@@ -1223,6 +1710,8 @@ export class MockRenderDevice implements RenderDevice {
       for (let i = 0; i < pixels.length; i += 4) {
         pixels.set(bytes, i);
       }
+      const floats = mockAttachmentFloatPixels(this.activeRenderTarget, attachment);
+      if (floats) for (let i = 0; i < floats.length; i += 4) floats.set(color, i);
       return;
     }
     this.clear(color);
@@ -1232,6 +1721,45 @@ export class MockRenderDevice implements RenderDevice {
   draw(command: DrawCommand): void {
     this.assertAlive();
     this.assertFrame();
+    if (command.renderState?.colorAttachments !== undefined) {
+      const target = this.activeRenderTarget;
+      const count = target?.depthOnly ? 0 : target ? (target.colorTextures?.length ?? 1) : 1;
+      validateRenderCommandState(command.renderState, count);
+      // The mock records draws but does not implement independent attachment
+      // blend/write behavior; it must not present an override as executed.
+      if (hasAttachmentRenderOverrides(command.renderState)) {
+        throw new RenderDeviceError("Mock rendering cannot apply independent color attachment state", "UNSUPPORTED_RENDER_STATE");
+      }
+    }
+    const validateTextureOwner = (texture: Texture): void => {
+      const owner = getRenderTargetTextureOwner(texture);
+      if (owner !== undefined && owner !== this) {
+        throw new RenderDeviceError("Render-target texture belongs to another device", "FOREIGN_RESOURCE", { label: texture.label });
+      }
+      if (texture.disposed) throw new RenderDeviceError("Texture is disposed", "DISPOSED_RESOURCE", { label: texture.label });
+    };
+    for (const value of command.uniforms?.values() ?? []) {
+      if (isTextureBinding(value) && value.texture) validateTextureOwner(value.texture);
+    }
+    for (const binding of command.nativeStorageBindings ?? []) {
+      if (binding.kind === "storage-texture") validateTextureOwner(binding.texture);
+    }
+    if (this.activeRenderTarget) {
+      const attached = new Set<Texture>([
+        ...(this.activeRenderTarget.depthOnly ? [] : this.activeRenderTarget.colorTextures ?? [this.activeRenderTarget.colorTexture]),
+        ...(this.activeRenderTarget.depthTexture ? [this.activeRenderTarget.depthTexture] : [])
+      ]);
+      for (const value of command.uniforms?.values() ?? []) {
+        if (isTextureBinding(value) && value.texture && attached.has(value.texture)) {
+          throw new RenderDeviceError("A draw cannot sample an active render attachment", "RENDER_ATTACHMENT_HAZARD");
+        }
+      }
+      for (const binding of command.nativeStorageBindings ?? []) {
+        if (binding.kind === "storage-texture" && attached.has(binding.texture)) {
+          throw new RenderDeviceError("A draw cannot use an active render attachment as storage", "RENDER_ATTACHMENT_HAZARD");
+        }
+      }
+    }
     if (command.vertexBuffer.disposed) {
       throw new RenderDeviceError("Cannot draw with a disposed vertex buffer", "DISPOSED_RESOURCE", {
         bufferId: command.vertexBuffer.id
@@ -1308,6 +1836,7 @@ export class MockRenderDevice implements RenderDevice {
     this.assertAlive();
     this.assertFrame();
     this.frameActive = false;
+    this.frameToken = null;
   }
 
   /** C-28 (PRD 11): native measured counters. Per-frame fields describe the frame in progress; live gauges come from diagnostics. */
@@ -1402,6 +1931,7 @@ export class MockRenderDevice implements RenderDevice {
       target.dispose();
     }
     this.frameActive = false;
+    this.frameToken = null;
     this.disposed = true;
   }
 
@@ -1434,6 +1964,25 @@ export class MockRenderDevice implements RenderDevice {
       });
     }
     return target;
+  }
+}
+
+function mockAttachmentPixels(target: MockRenderTarget, attachment: number): Uint8Array {
+  const pixels = attachment === 0 ? target.colorPixels : target.attachmentPixels[attachment - 1];
+  if (!pixels) throw new RenderDeviceError("Render target has no such color attachment", "INVALID_RENDER_ATTACHMENT");
+  return pixels;
+}
+
+function mockAttachmentFloatPixels(target: MockRenderTarget, attachment: number): Float32Array | null {
+  return attachment === 0 ? target.colorFloatPixels : target.attachmentFloatPixels[attachment - 1] ?? null;
+}
+
+function throwIfResourceTransferAborted(signal: AbortSignal | undefined): void {
+  if (signal?.aborted) {
+    if (signal.reason !== undefined) throw signal.reason;
+    const error = new Error("Resource transfer was aborted");
+    error.name = "AbortError";
+    throw error;
   }
 }
 

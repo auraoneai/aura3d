@@ -1,5 +1,6 @@
+import { createHash, webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createTypedGLBActor,
   type TypedGLBActor
@@ -18,12 +19,14 @@ import { GLB_RESOURCE_CACHE_DEFAULTS, configureGlbResourceCache } from "../../..
  */
 
 const GLB_BYTES = new Uint8Array(readFileSync("tests/fixtures/gltf-multipart/body-and-four-wheels.glb"));
+const GLB_HASH = `sha256-${createHash("sha256").update(GLB_BYTES).digest("hex")}`;
 
 let fetchCalls: string[] = [];
 const nativeFetch = globalThis.fetch;
 
 beforeEach(() => {
   fetchCalls = [];
+  vi.stubGlobal("crypto", webcrypto);
   globalThis.fetch = (async (input: unknown) => {
     fetchCalls.push(String(input));
     return new Response(new Uint8Array(GLB_BYTES), { status: 200 });
@@ -32,6 +35,7 @@ beforeEach(() => {
 
 afterEach(() => {
   globalThis.fetch = nativeFetch;
+  vi.unstubAllGlobals();
 });
 
 function typedAsset(name: string) {
@@ -39,12 +43,12 @@ function typedAsset(name: string) {
     url: `https://assets.invalid/aura-assets/deepRecovery${name}.glb`,
     type: "model",
     format: "glb",
-    hash: `sha256-${name.toLowerCase()}`
+    hash: GLB_HASH
   } as const;
 }
 
 function createActor(asset: ReturnType<typeof typedAsset>, id: string, options: Record<string, unknown> = {}): Promise<TypedGLBActor> {
-  return createTypedGLBActor({ asset, id, width: 512, height: 512, ...options }) as Promise<TypedGLBActor>;
+  return createTypedGLBActor({ asset, id, width: 512, height: 512, request: { credentials: "omit" }, ...options }) as Promise<TypedGLBActor>;
 }
 
 function renderNodeNames(actor: TypedGLBActor): string[] {

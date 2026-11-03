@@ -6,7 +6,7 @@ import { prd06IkSlope, PRD06_IK_SLOPE_TERRAIN } from "../../../../benchmarks/qua
 import { rampStairsHeightAt, rampStairsRise } from "../../../../benchmarks/quality-rebuild/shared/terrain";
 import { scenes as sharedScenes } from "../../../../benchmarks/quality-rebuild/scenes/prd06/index";
 import { scenes as auraScenes } from "../../../../benchmarks/quality-rebuild/aura3d/scenes/prd06/index";
-import { scenes as threeScenes } from "../../../../benchmarks/quality-rebuild/three/scenes/prd06/index";
+import { historicalRegistrations } from "./historical-registry-source";
 
 const T = PRD06_IK_SLOPE_TERRAIN;
 const RISE = T.rampLength * Math.tan((T.slopeDeg * Math.PI) / 180);
@@ -61,6 +61,7 @@ describe("prd06-ik-slope spec (T3.9)", () => {
   });
 
   it("stays non-reference on every scene index (acceptance = engine metric)", () => {
+    const threeScenes = historicalRegistrations();
     expect(prd06IkSlope.admittedAsReference).toBe(false);
     for (const registration of [...sharedScenes, ...auraScenes, ...threeScenes].filter((s) => s.id === "prd06-ik-slope")) {
       expect(registration.admittedAsReference).toBe(false);

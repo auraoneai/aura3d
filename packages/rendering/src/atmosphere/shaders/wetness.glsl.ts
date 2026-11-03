@@ -7,6 +7,8 @@
 // once via noteWetnessPending().
 
 import type { Texture } from "../../Texture";
+import type { FrameContributorContext } from "../../contracts/frameGraph";
+import { hasPrd07ManagedFrameContext, requirePrd07ManagedFrame } from "../../vfx/Prd07FrameState";
 
 export const PRD07_WETNESS_CHUNK_GLSL = `
 // a3d_prd07_wetness — §6.8 wet-look material response.
@@ -62,9 +64,9 @@ export const PRD07_WETNESS_APPLY_CHUNK_GLSL = `
 `;
 
 /* ------------------------------------------------------------------ *
- * Global wetness state — driven by the engine (`atmosphere.setWetness`,
- * WeatherVolume). bindUniforms on the prd07.wetness feature reads this
- * store; the CPU mirror below is the vitest oracle for the GLSL math.
+ * Standalone wetness state. Contexts explicitly registered for managed mode
+ * resolve their packet instead and never fall back after registration. Other
+ * contexts retain legacy behavior until renderer integration is complete.
  * ------------------------------------------------------------------ */
 
 export interface WetnessUniformState {
@@ -101,8 +103,8 @@ export function setPrd07WetnessState(state: Partial<WetnessUniformState>): void 
   wetnessState = { ...wetnessState, ...state };
 }
 
-export function prd07WetnessState(): WetnessUniformState {
-  return wetnessState;
+export function prd07WetnessState(frame?: FrameContributorContext): WetnessUniformState {
+  return frame === undefined || !hasPrd07ManagedFrameContext(frame) ? wetnessState : requirePrd07ManagedFrame(frame).wetness;
 }
 
 /**

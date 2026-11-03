@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { Fragment, createElement } from "react";
 import { describe, expect, test, vi } from "vitest";
 import { defineAuraAssets } from "../../../packages/engine/src";
 import {
@@ -81,5 +81,39 @@ describe("buildSceneFromChildren passes only model options to model()", () => {
     const node = snapshot.nodes.find((entry) => entry.kind === "model") as { ignoredOptions?: readonly string[]; name?: string };
     expect(node.name).toBe("product");
     expect(node.ignoredOptions).toBeUndefined();
+  });
+});
+
+describe("declarative scene composition", () => {
+  test("keeps camera and light siblings of Scene when the camera changes", () => {
+    const first = buildSceneFromChildren(tree(4)).toJSON();
+    const updated = buildSceneFromChildren(tree(6)).toJSON();
+    expect(first.camera).toMatchObject({ mode: "orbit", distance: 4 });
+    expect(updated.camera).toMatchObject({ mode: "orbit", distance: 6 });
+    expect(updated.nodes.some((node) => node.kind === "model" && node.name === "product")).toBe(true);
+    expect(updated.nodes.some((node) => node.kind === "light")).toBe(true);
+  });
+
+  test("traverses fragments for scene contents, siblings and updates", () => {
+    const fragmentTree = (name: string) => createElement(
+      Fragment,
+      null,
+      createElement(Scene, { background: "#123456" },
+        createElement(Fragment, null, createElement(Model, { asset: assets.product, name }))
+      ),
+      createElement(Fragment, null, createElement(Lights, { type: "ambient", intensity: 0.4 }))
+    );
+    const first = fragmentTree("first");
+    const second = fragmentTree("second");
+    const snapshot = buildSceneFromChildren(first).toJSON();
+    expect(snapshot.background).toBe("#123456");
+    expect(snapshot.nodes.some((node) => node.kind === "model" && node.name === "first")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "ambient")).toBe(true);
+    expect(sceneChildrenKey(first)).not.toBe(sceneChildrenKey(second));
+    const setScene = vi.fn();
+    const updated = buildSceneFromChildren(second);
+    applySceneChange({ setScene }, sceneChildrenKey(first), sceneChildrenKey(second), updated);
+    expect(setScene).toHaveBeenCalledWith(updated);
+    expect(updated.toJSON().nodes.some((node) => node.name === "second")).toBe(true);
   });
 });

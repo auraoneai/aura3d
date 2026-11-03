@@ -3,7 +3,6 @@
 import type { AuraColor, AuraEffectNode, AuraParticleBudgetDiagnostics, AuraParticleMaterialMode, AuraSceneNode } from "./types.js";
 import { groups } from "./groups.js";
 import { prefabs } from "./prefabs/index.js";
-import { particleFountain } from "../particle-fountain-runtime.js";
 
 // arch-gates layering: nodes/ may not value-import @aura3d/rendering. The
 // measured `particles` scope ms is injected by the lane-07 barrel

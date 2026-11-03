@@ -8,6 +8,7 @@
 // the top-left cell — the particle program's `u_grid` lookup convention.
 
 import { Texture } from "@aura3d/rendering";
+import { currentWorkerAssets } from "@aura3d/core";
 import type { AuraVfxBuiltinSequence } from "../../agent-api/vfx/atlas";
 import { mulberry32 } from "./CpuEmitter";
 
@@ -222,6 +223,8 @@ export const browserVfxSpriteLoader: VfxSpriteLoader = async (url, rect) => {
  * `packages/engine/assets/vfx/`; `src/` and `dist/` sit at the same depth, so the package dist resolves it too.
  */
 export function defaultVfxSpritePageUrl(pageSize: 1024 | 2048): string {
+  const bundled = currentWorkerAssets();
+  if (bundled) return pageSize >= 2048 ? bundled.vfx2048 : bundled.vfx1024;
   return pageSize >= 2048
     ? new URL("../../../assets/vfx/aura-vfx-2k.png", import.meta.url).href
     : new URL("../../../assets/vfx/aura-vfx-1k.png", import.meta.url).href;

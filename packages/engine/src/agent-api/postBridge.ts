@@ -8,7 +8,8 @@
  * `RendererPostProcessOptions` it hands the renderer on every mount. The
  * sections read this store instead of `app.diagnostics()` — sections run
  * *inside* `diagnostics()`, so calling back into it would recurse. Anything
- * not measurable engine-side is `null`, never guessed. Recording never alters
+ * not measurable engine-side is either `null` or explicitly marked unavailable
+ * when its existing shape includes placeholder counts. Recording never alters
  * the submitted options and runs identically flag-off: the `post` section must
  * report what the legacy chain executes today.
  */
@@ -38,11 +39,19 @@ import {
 import type { BloomOptionsV2, PostTierResolution } from "@aura3d/rendering";
 import type { AuraCustomPostPass, AuraPostPassOrder, AuraPostSurface } from "../contracts/post.js";
 import type { AuraOutputOptions } from "../contracts/output.js";
-import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
+import { AuraRuntimeError } from "./compiler/errors.js";
+import { groups } from "./nodes/groups.js";
+import type { AuraApp, AuraCreateAppOptions, AuraEffectNode, AuraSceneNode, AuraSceneSnapshot } from "./nodes/types.js";
 import { expandPostPreset } from "./postPresets.js";
 import { mergeLookColorGrade } from "./looks/lookGrade.js";
 import { lookOutputPreset } from "./looks/looks.js";
 import { colorToRgba } from "./colorUtils.js";
+import { auraTextureRefTexture } from "./nodes/texture.js";
+import { resolveAppOutputColorPolicy } from "./app/colorManagement.js";
+
+// These stores only use canvas identity. DOM diagnostics overlays are mounted
+// elsewhere and do not exist for an OffscreenCanvas.
+type PostCanvas = HTMLCanvasElement | OffscreenCanvas;
 
 /* ------------------------------------------------------------------------- */
 /* Submitted postprocess telemetry                                           */
@@ -100,7 +109,29 @@ let latest: SubmittedPostprocessRecord | null = null;
  * `collectPostSection(app)`/`collectExposureSection(app)` resolve the record
  * through `app.canvas`. Headless apps (no canvas) keep reading `latest`.
  */
-const canvasRecords = new WeakMap<HTMLCanvasElement, SubmittedPostprocessRecord>();
+const canvasRecords = new WeakMap<PostCanvas, SubmittedPostprocessRecord>();
+interface ScopedPostDiagnosticView {
+  readonly viewId: string | number;
+  readonly frameId: number;
+  readonly skipped: readonly string[];
+  readonly stagesRan: readonly string[];
+  readonly outcome: string | null;
+}
+interface CanvasPostBinding {
+  readonly reader: () => readonly ScopedPostDiagnosticView[];
+  readonly scopeId?: object;
+  owner?: object;
+}
+const canvasDiagnosticReaders = new WeakMap<PostCanvas, CanvasPostBinding>();
+const canvasPostOwners = new WeakMap<PostCanvas, object>();
+const scopedPassOwners = new WeakMap<PostPassDescriptor, { readonly canvas: PostCanvas; readonly logicalId: string }>();
+
+/** Bind the renderer mounted on this canvas; an old unmount cannot remove a newer binding. */
+export function bindPostDiagnosticReader(canvas: PostCanvas, reader: () => readonly ScopedPostDiagnosticView[], scopeId?: object): () => void {
+  const binding: CanvasPostBinding = { reader, scopeId, owner: canvasPostOwners.get(canvas) };
+  canvasDiagnosticReaders.set(canvas, binding);
+  return () => { if (canvasDiagnosticReaders.get(canvas) === binding) canvasDiagnosticReaders.delete(canvas); };
+}
 let sequence = 0;
 
 export function recordSubmittedPostprocess(
@@ -110,7 +141,7 @@ export function recordSubmittedPostprocess(
     readonly renderHeight: number;
     readonly temporalRequested: boolean;
     readonly authored: AuthoredPostSummary;
-    readonly canvas?: HTMLCanvasElement;
+    readonly canvas?: PostCanvas;
   }
 ): void {
   sequence += 1;
@@ -170,36 +201,46 @@ let authoredContext: MutableAuthoredPostContext | null = null;
  * either async mount compiles, so a global context would hand the SECOND
  * app's flags/options to the first app's compile. Keyed by `app.canvas`.
  */
-const canvasAuthored = new WeakMap<HTMLCanvasElement, MutableAuthoredPostContext>();
+const canvasAuthored = new WeakMap<PostCanvas, MutableAuthoredPostContext>();
 
 /** Called by the `prd03.post` app extension once per `createAuraApp`. */
 export function recordAuthoredPostContext(ctx: { readonly flags: QrFlags; readonly options: unknown }, app?: AuraApp): void {
   const options = (ctx.options ?? {}) as AuraCreateAppOptions;
+  const authoredOutput = options.output !== undefined || options.renderer?.output !== undefined
+    ? { ...options.renderer?.output, ...options.output }
+    : undefined;
   authoredContext = {
     flags: { post: ctx.flags.on("A3D_QR_POST") },
-    output: options.output ?? options.renderer?.output,
-    qualityTier: authoredContext?.qualityTier ?? null,
+    output: authoredOutput ? { ...authoredOutput, ...resolveAppOutputColorPolicy(authoredOutput) } : undefined,
+    qualityTier: app?.canvas ? null : authoredContext?.qualityTier ?? null,
     compatPost3: options.compat?.post === "3.0"
   };
   if (app?.canvas) canvasAuthored.set(app.canvas, authoredContext);
+}
+
+/** Runtime output updates belong only to the app whose canvas owns the bridge. */
+export function updateAuthoredPostOutput(app: AuraApp, output: Partial<AuraOutputOptions>): void {
+  const context = app.canvas ? canvasAuthored.get(app.canvas) : undefined;
+  if (context) context.output = { ...context.output, ...output };
 }
 
 export function latestAuthoredPostContext(): AuthoredPostContext | null {
   return authoredContext;
 }
 
-/** The context for the app that owns `canvas` — falls back to `latest`. */
-export function authoredPostContextFor(canvas?: HTMLCanvasElement): AuthoredPostContext | null {
-  return (canvas ? canvasAuthored.get(canvas) : undefined) ?? authoredContext;
+/** Resolve a canvas independently; only canvas-less callers use the legacy latest context. */
+export function authoredPostContextFor(canvas?: PostCanvas): AuthoredPostContext | null {
+  return canvas ? canvasAuthored.get(canvas) ?? null : authoredContext;
 }
 
-function recordPostQualityTier(tier: AuraQualityTier | "auto", canvas?: HTMLCanvasElement): void {
-  const target = (canvas ? canvasAuthored.get(canvas) : undefined) ?? authoredContext;
+function recordPostQualityTier(tier: AuraQualityTier | "auto", canvas?: PostCanvas): void {
+  const target = canvas ? canvasAuthored.get(canvas) : authoredContext;
   if (target) {
     target.qualityTier = tier;
   } else {
-    authoredContext = { flags: { post: false }, output: undefined, qualityTier: tier, compatPost3: false };
-    if (canvas) canvasAuthored.set(canvas, authoredContext);
+    const context = { flags: { post: false }, output: undefined, qualityTier: tier, compatPost3: false };
+    if (canvas) canvasAuthored.set(canvas, context);
+    else authoredContext = context;
   }
 }
 
@@ -227,14 +268,27 @@ export interface PostSectionReport {
   readonly temporalRequested: boolean;
   /** Phase 1 (flag-on): the tier-AA resolution that produced the submit, with its reason. */
   readonly antiAlias: { readonly mode: string; readonly sampleCount: number; readonly reason?: string; readonly tier: string } | null;
-  /** Phase 4 (C-14): items tracked by the velocity binder and how many carry
-   * previous-frame data. `moving/movingWithHistory` drive the TAA coverage
-   * gate; `items/withVelocity` is the §7.2 contract shape. `null` pre-frame. */
-  readonly velocityCoverage: { readonly items: number; readonly withVelocity: number; readonly moving: number; readonly movingWithHistory: number } | null;
+  /**
+   * Velocity-binder counts track rigid-model transform history, not pixel
+   * writes. `available: true` indicates a scoped observation; `false` or an
+   * absent flag means the counts are not established measurements. The current
+   * bridge has no item context, so its zero counts are unavailable placeholders,
+   * not evidence of a static scene. `null` means no submission or no enabled
+   * post context.
+   */
+  readonly velocityCoverage: {
+    readonly items: number;
+    readonly withVelocity: number;
+    readonly moving: number;
+    readonly movingWithHistory: number;
+    readonly available?: boolean;
+  } | null;
   /** Things the submit intentionally did not run (PRD §7.2 reasons + dropped passes + §6.9 runtime skips). */
   readonly skipped: readonly string[];
   /** C-31 stage trace (flag on): v2 HDR stages executed on the last frame. */
   readonly stagesRan?: readonly string[];
+  /** Per-view reports for this mounted renderer; absent for legacy unscoped callers. */
+  readonly views?: readonly ScopedPostDiagnosticView[];
   readonly customPasses: readonly { readonly id: string; readonly status: string }[];
   readonly warnings: readonly string[];
   readonly source: "agent-api/postBridge.ts + RendererPostprocessPlanDiagnostics";
@@ -281,8 +335,11 @@ function planForSubmitted(options: RendererPostProcessOptions, width: number, he
 }
 
 export function collectPostSection(app: AuraApp): PostSectionReport {
-  const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
-  const authoredContext = authoredPostContextFor(app.canvas ?? undefined);
+  const submitted = app.canvas ? canvasRecords.get(app.canvas) ?? null : latestSubmittedPostprocess();
+  const authoredContext = app.canvas ? canvasAuthored.get(app.canvas) ?? null : latestAuthoredPostContext();
+  const scopedViews = app.canvas ? canvasDiagnosticReaders.get(app.canvas)?.reader() ?? [] : null;
+  const outcomes = scopedViews ? [...new Set(scopedViews.map(view => view.outcome ?? "not-executed"))] : [];
+  const scopedOutcome = outcomes.length === 0 ? "not-executed" : outcomes.length === 1 ? outcomes[0]! : "multiple-views";
   // 03-S18c: report what the renderer executed, not what was authored.
   // Registered C-13 passes run only when the v2 seam ran the stages
   // (`postGraphV2LastOutcome() === "v2"`); otherwise the reason names the
@@ -293,8 +350,11 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
     ? "legacy-chain:A3D_QR_POST-off"
     : authoredContext.compatPost3
       ? "legacy-chain:compat.post-3.0"
-      : postGraphV2LastOutcome() ?? "not-executed";
-  const custom = registeredPostPasses().map((pass) => ({ id: pass.id, status: customStatus }));
+      : scopedViews ? scopedOutcome : postGraphV2LastOutcome() ?? "not-executed";
+  const custom = registeredPostPasses().filter(pass => {
+    const owner = scopedPassOwners.get(pass);
+    return !app.canvas || !owner || owner.canvas === app.canvas;
+  }).map(pass => ({ id: scopedPassOwners.get(pass)?.logicalId ?? pass.id, status: customStatus }));
   const empty = {
     present: false,
     requestedPasses: [],
@@ -357,9 +417,10 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
         ? plan.pixelBackedPassNames.map((name) => `POSTPROCESS_PASS_NOT_GPU:${name}`)
         : []),
       // §6.9: runtime record-and-skip reasons from the renderer / v2 drivers.
-      ...(authoredContext?.flags.post ? postSkippedReasons() : [])
+      ...(authoredContext?.flags.post ? scopedViews ? [...new Set(scopedViews.flatMap(view => view.skipped))] : postSkippedReasons() : [])
     ],
-    ...(authoredContext?.flags.post ? { stagesRan: postStagesRan() } : {}),
+    ...(authoredContext?.flags.post ? { stagesRan: scopedViews ? scopedViews.flatMap(view => view.stagesRan) : postStagesRan() } : {}),
+    ...(scopedViews ? { views: scopedViews } : {}),
     customPasses: custom,
     warnings: [
       ...plan.clarityWarnings,
@@ -377,8 +438,8 @@ export function collectPostSection(app: AuraApp): PostSectionReport {
 }
 
 export function collectExposureSection(app: AuraApp): ExposureSectionReport {
-  const submitted = (app.canvas ? canvasRecords.get(app.canvas) : undefined) ?? latestSubmittedPostprocess();
-  const authoredContext = authoredPostContextFor(app.canvas ?? undefined);
+  const submitted = app.canvas ? canvasRecords.get(app.canvas) ?? null : latestSubmittedPostprocess();
+  const authoredContext = app.canvas ? canvasAuthored.get(app.canvas) ?? null : latestAuthoredPostContext();
   const toneMapping = submitted?.options.toneMapping;
   const toneMappingOptions = typeof toneMapping === "object" && toneMapping !== null ? toneMapping : undefined;
   return {
@@ -429,12 +490,17 @@ const passUniformOverrides = new Map<string, Map<string, number | readonly numbe
  * `AuraCustomPostPass` → `PostPassDescriptor`. Custom fragments are GPU-only by
  * contract (`AuraCustomPostPass` carries fragment/uniforms, never a cpu run).
  */
-function customPassToDescriptor(pass: AuraCustomPostPass): PostPassDescriptor {
+function customPassToDescriptor(pass: AuraCustomPostPass, canvas: PostCanvas | undefined, owner: object,
+  scopedOverrides: Map<string, Map<string, number | readonly number[]>>): PostPassDescriptor {
   customPassSequence += 1;
-  const id = `prd03.custom.${pass.name || `pass-${customPassSequence}`}`;
+  const logicalId = `prd03.custom.${pass.name || `pass-${customPassSequence}`}`;
+  let id = logicalId;
+  while (canvas && registeredPostPasses().some(existing => existing.id === id)) {
+    id = `${logicalId}.scope-${customPassSequence++}`;
+  }
   const uniforms = pass.uniforms;
   const order = descriptorOrder(pass.order);
-  return {
+  const descriptor: PostPassDescriptor = {
     id,
     owner: "prd03",
     flag: "A3D_QR_POST",
@@ -443,15 +509,21 @@ function customPassToDescriptor(pass: AuraCustomPostPass): PostPassDescriptor {
     inputs: pass.inputs ?? ["color"],
     fragment: { glsl: pass.fragment.glsl, ...(pass.fragment.wgsl ? { wgsl: pass.fragment.wgsl } : {}) },
     uniforms: () => {
-      const overrides = passUniformOverrides.get(id);
+      const overrides = (canvas ? scopedOverrides : passUniformOverrides).get(logicalId);
       return overrides?.size ? { ...uniforms, ...Object.fromEntries(overrides) } : uniforms ?? {};
     },
     // SH-03: `enabled:false` stays registered but skips execution (v2Stages /
     // WebGPU both evaluate this callback each frame).
     enabled: () => pass.enabled !== false,
+    ...(canvas ? { postScopeMatches: (scopeId: object | undefined) => {
+      const binding = canvasDiagnosticReaders.get(canvas);
+      return scopeId !== undefined && binding?.scopeId === scopeId && binding.owner === owner;
+    } } : {}),
     ...(order !== undefined ? { order } : {}),
     gpuOnly: true
   };
+  if (canvas) scopedPassOwners.set(descriptor, { canvas, logicalId });
+  return descriptor;
 }
 
 /**
@@ -467,24 +539,47 @@ export class Prd03PostSurface implements AuraPostSurface {
   private readonly runtimeOverrides: RuntimePostOverrides;
   /** Releases of the passes this surface registered and that are still live. */
   private readonly releases = new Set<() => void>();
+  private readonly scopeOwner = {};
+  private readonly scopedPassNames = new Set<string>();
+  private readonly scopedUniformOverrides = new Map<string, Map<string, number | readonly number[]>>();
+  private authoredPostContext: MutableAuthoredPostContext | undefined;
+  private readonly unsubscribeQuality: (() => void) | undefined;
+  private disposed = false;
 
   constructor(
     private readonly flags: QrFlags,
-    private readonly canvas?: HTMLCanvasElement,
+    private readonly canvas?: PostCanvas,
     private readonly app?: AuraApp
   ) {
     this.runtimeOverrides = adoptRuntimePostOverrides(canvas);
+    if (canvas) {
+      this.authoredPostContext = canvasAuthored.get(canvas);
+      canvasRecords.delete(canvas);
+      canvasPostOwners.set(canvas, this.scopeOwner);
+      const binding = canvasDiagnosticReaders.get(canvas);
+      if (binding && binding.owner === undefined) binding.owner = this.scopeOwner;
+    }
+    this.unsubscribeQuality = qualityControllerOf(app)?.onChange((event) => {
+      if (!this.disposed && (!this.canvas || canvasPostOwners.get(this.canvas) === this.scopeOwner)) {
+        recordPostQualityTier(event.to, this.canvas);
+        if (this.canvas) this.authoredPostContext = canvasAuthored.get(this.canvas);
+      }
+    });
   }
 
   addPostPass(pass: AuraCustomPostPass): () => void {
     if (!this.flags.on("A3D_QR_POST")) return () => { /* stub chain: release is a no-op */ };
-    const descriptor = customPassToDescriptor(pass);
+    const descriptor = customPassToDescriptor(pass, this.canvas, this.scopeOwner, this.scopedUniformOverrides);
+    const logicalId = scopedPassOwners.get(descriptor)?.logicalId ?? descriptor.id;
+    if (this.canvas && this.scopedPassNames.has(logicalId)) throw new Error(`REGISTRY_DUPLICATE:${logicalId}`);
     const unregister = registerPostPass(descriptor);
+    if (this.canvas) this.scopedPassNames.add(logicalId);
     const release = () => {
       if (!this.releases.delete(release)) return;
       // SH-03: removing a pass leaves no residue — registry entry AND staged
       // setPassUniform overrides both go away.
-      passUniformOverrides.delete(descriptor.id);
+      (this.canvas ? this.scopedUniformOverrides : passUniformOverrides).delete(logicalId);
+      this.scopedPassNames.delete(logicalId);
       unregister();
     };
     this.releases.add(release);
@@ -500,7 +595,24 @@ export class Prd03PostSurface implements AuraPostSurface {
    * dispose may both run).
    */
   dispose(): void {
-    for (const release of [...this.releases]) release();
+    if (this.disposed) return;
+    this.disposed = true;
+    const failures: unknown[] = [];
+    for (const release of [...this.releases]) {
+      try { release(); } catch (error) { failures.push(error); }
+    }
+    try { this.unsubscribeQuality?.(); } catch (error) { failures.push(error); }
+    this.scopedUniformOverrides.clear();
+    if (latestRuntimeOverrides === this.runtimeOverrides) latestRuntimeOverrides = new Map();
+    if (this.canvas && canvasPostOwners.get(this.canvas) === this.scopeOwner) {
+      canvasPostOwners.delete(this.canvas);
+      if (canvasRuntimeOverrides.get(this.canvas) === this.runtimeOverrides) canvasRuntimeOverrides.delete(this.canvas);
+      if (canvasAuthored.get(this.canvas) === this.authoredPostContext) canvasAuthored.delete(this.canvas);
+      canvasRecords.delete(this.canvas);
+    }
+    if (this.authoredPostContext && authoredContext === this.authoredPostContext) authoredContext = null;
+    if (failures.length === 1) throw failures[0];
+    if (failures.length > 1) throw new AggregateError(failures, "POST_SURFACE_DISPOSE_FAILED");
   }
 
   /**
@@ -523,10 +635,11 @@ export class Prd03PostSurface implements AuraPostSurface {
       throw new AuraRuntimeError("invalid-material-spec", `setPassUniform(${passName}, ${key}) expects a finite number or a 1–4 number array`);
     }
     const id = `prd03.custom.${passName}`;
-    let overrides = passUniformOverrides.get(id);
+    const store = this.canvas ? this.scopedUniformOverrides : passUniformOverrides;
+    let overrides = store.get(id);
     if (!overrides) {
       overrides = new Map();
-      passUniformOverrides.set(id, overrides);
+      store.set(id, overrides);
     }
     overrides.set(key, value);
   }
@@ -550,9 +663,11 @@ export class Prd03PostSurface implements AuraPostSurface {
   }
 
   setQualityTier(tier: AuraQualityTier | "auto"): void {
+    if (this.disposed || (this.canvas && canvasPostOwners.get(this.canvas) !== this.scopeOwner)) return;
     this.requestedTier = tier;
     // The compiler reads the shared context store when resolving tier AA (Phase 1).
     recordPostQualityTier(tier, this.canvas);
+    if (this.canvas) this.authoredPostContext = canvasAuthored.get(this.canvas);
     // §6.8: delegate to the C-27 controller when lane 11 exposes `app.quality`;
     // `quality.onChange` re-records below so the next compile/frame re-resolves
     // the post tier. On this build's surface the recorded tier is the channel.
@@ -580,9 +695,6 @@ export function createPrd03PostSurface(app: AuraApp, ctx: { readonly flags: QrFl
   // Phase-1 behaviour (exposure product, operator, tier AA) without reaching
   // back into `createAuraApp` scope.
   recordAuthoredPostContext(ctx, app);
-  // §6.8 re-resolution: a C-27 tier change re-records the authored tier so the
-  // next postpipeline resolve reads the new `QUALITY_TIERS` row.
-  qualityControllerOf(app)?.onChange((event) => recordPostQualityTier(event.to, app.canvas ?? undefined));
   // Start the deferred v2 stage load at mount, not on the first frame, so the
   // first frames after `app.ready()` run the real v2 chain (S1–S12 and C-13
   // custom passes). A failed load is retried by the frame path.
@@ -622,7 +734,8 @@ interface RuntimePostEffectState {
 /** Effect node id → runtime state, per app. */
 export type RuntimePostOverrides = Map<string, RuntimePostEffectState>;
 
-const canvasRuntimeOverrides = new WeakMap<HTMLCanvasElement, RuntimePostOverrides>();
+const canvasRuntimeOverrides = new WeakMap<PostCanvas, RuntimePostOverrides>();
+const emptyRuntimeOverrides: RuntimePostOverrides = new Map();
 /**
  * The store a canvas-less derivation reads: the most recently created or
  * written app's. Exact for one app per page (every live game); the compiler
@@ -632,15 +745,15 @@ const canvasRuntimeOverrides = new WeakMap<HTMLCanvasElement, RuntimePostOverrid
 let latestRuntimeOverrides: RuntimePostOverrides = new Map();
 
 /** A fresh store for a new post surface; it becomes the canvas-less default. */
-function adoptRuntimePostOverrides(canvas: HTMLCanvasElement | undefined): RuntimePostOverrides {
+function adoptRuntimePostOverrides(canvas: PostCanvas | undefined): RuntimePostOverrides {
   const store: RuntimePostOverrides = new Map();
   if (canvas) canvasRuntimeOverrides.set(canvas, store);
   latestRuntimeOverrides = store;
   return store;
 }
 
-function runtimePostOverridesFor(canvas: HTMLCanvasElement | undefined): RuntimePostOverrides {
-  return (canvas ? canvasRuntimeOverrides.get(canvas) : undefined) ?? latestRuntimeOverrides;
+function runtimePostOverridesFor(canvas: PostCanvas | undefined): RuntimePostOverrides {
+  return canvas ? canvasRuntimeOverrides.get(canvas) ?? emptyRuntimeOverrides : latestRuntimeOverrides;
 }
 
 /** Test hook: forgets the canvas-less runtime overrides (per-canvas stores go with their canvas). */
@@ -751,7 +864,7 @@ function patchedEffectNode(node: AuraEffectNode, state: RuntimePostEffectState):
  * Non-effect nodes pass through; with no overrides the input is returned as
  * is. Idempotent, so the compiler and the bridge may both apply it.
  */
-export function applyRuntimePostOverrides<TNode extends AuraSceneNode>(nodes: readonly TNode[], canvas?: HTMLCanvasElement): readonly TNode[] {
+export function applyRuntimePostOverrides<TNode extends AuraSceneNode>(nodes: readonly TNode[], canvas?: PostCanvas): readonly TNode[] {
   const store = runtimePostOverridesFor(canvas);
   if (store.size === 0) return nodes;
   const result: TNode[] = [];
@@ -785,7 +898,7 @@ export function applyRuntimePostOverrides<TNode extends AuraSceneNode>(nodes: re
  */
 export const POST_EFFECT_COMMON_FIELDS: readonly string[] = [
   "kind", "effect", "name", "id", "intensity", "enabled", "animation", "postAuthored", "postIntensity",
-  "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion"
+  "position", "pivot", "rotation", "scale", "lookAt", "rotationOrder", "quaternion"
 ];
 
 /**
@@ -812,6 +925,15 @@ export const POST_EFFECT_FIELDS: Readonly<Record<string, readonly string[]>> = {
   "motion-blur": ["shutter", "maxBlur", "samples", "tileSize", "timeScale"],
   // GU47 E-C (EC-6): S3 roughness hint (cutoff 0.5) and hit thickness.
   "screen-space-reflections": ["maxDistance", "intensity", "roughness", "thickness"],
+  pixelation: ["size"],
+  halftone: ["size", "angle", "strength"],
+  "dot-screen": ["size", "angle", "strength"],
+  glitch: ["intensity", "seed"],
+  transition: ["texture", "progress"],
+  "lens-dirt": ["texture", "intensity"],
+  mask: ["texture", "invert", "opacity"],
+  "clear-mask": [],
+  afterimage: ["decay"],
   // GU47 E-E (WP-5): `targets` names the nodes whose silhouettes get ink
   // (compiled to renderer match keys by `nodes/outlineTargets.ts`).
   outline: ["color", "width", "threshold", "targets"]
@@ -885,6 +1007,45 @@ const V2_BLOOM_DEFAULTS = { threshold: 1.0, knee: 0.25, intensity: 0.25, scatter
 function numberField(node: AuraEffectNode, field: string, fallback: number): number {
   const value = (node as unknown as Record<string, unknown>)[field];
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+type NativePostEffect = NonNullable<PostPipelineOptions["nativeEffects"]>[number];
+
+/** Lower authored display effects without reordering duplicates or mask boundaries. */
+function lowerNativePostEffects(nodes: readonly AuraEffectNode[]): NativePostEffect[] {
+  const effects: NativePostEffect[] = [];
+  const bounded = (node: AuraEffectNode, field: string, fallback: number, min: number, max: number): number => {
+    const raw = (node as unknown as Record<string, unknown>)[field];
+    const value = raw === undefined ? fallback : raw;
+    if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max) {
+      throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", `effects.${node.effect} ${field} must be finite and in [${min}, ${max}]`);
+    }
+    return value;
+  };
+  const texture = (node: AuraEffectNode) => {
+    const backing = auraTextureRefTexture(node.texture);
+    if (!backing || backing.disposed || backing.dimension !== "2d") {
+      throw new AuraRuntimeError("POSTPROCESS_INPUT_UNAVAILABLE", `effects.${node.effect} requires a live 2D texture`);
+    }
+    return backing;
+  };
+  for (const node of nodes) {
+    switch (node.effect) {
+      case "pixelation": effects.push({ kind: node.effect, size: bounded(node, "size", 6, 1, 4096) }); break;
+      case "halftone":
+      case "dot-screen": effects.push({ kind: node.effect, size: bounded(node, "size", 8, 1, 4096), angle: bounded(node, "angle", Math.PI / 4, -1e6, 1e6), strength: bounded(node, "strength", 1, 0, 1) }); break;
+      case "glitch": effects.push({ kind: node.effect, intensity: bounded(node, "intensity", 0.15, 0, 1), seed: bounded(node, "seed", 0, -1e6, 1e6) }); break;
+      case "transition": effects.push({ kind: node.effect, texture: texture(node), progress: bounded(node, "progress", 0, 0, 1) }); break;
+      case "lens-dirt": effects.push({ kind: node.effect, texture: texture(node), intensity: bounded(node, "intensity", 1, 0, 1) }); break;
+      case "mask":
+        if (node.invert !== undefined && typeof node.invert !== "boolean") throw new AuraRuntimeError("POST_FIELD_UNSUPPORTED", "effects.mask invert must be boolean");
+        effects.push({ kind: node.effect, texture: texture(node), invert: node.invert ?? false, opacity: bounded(node, "opacity", 1, 0, 1) });
+        break;
+      case "clear-mask": effects.push({ kind: node.effect }); break;
+      case "afterimage": effects.push({ kind: node.effect, decay: bounded(node, "decay", 0.85, 0, 1) }); break;
+    }
+  }
+  return effects;
 }
 
 function authoredNumber(node: AuraEffectNode, field: string, fallback: number): number {
@@ -1137,7 +1298,7 @@ export function createRootPostPipeline(
   tierSettings: AuraQualityTierSettings,
   lights: readonly CollectedLight[] = [],
   tierResolution?: PostTierResolution,
-  canvas?: HTMLCanvasElement
+  canvas?: PostCanvas
 ): { readonly options: PostPipelineOptions; readonly diagnostics: readonly PostFieldDiagnostic[] } {
   const nodes = groups.flatten(snapshot.nodes);
   const diagnostics: PostFieldDiagnostic[] = [];
@@ -1165,6 +1326,7 @@ export function createRootPostPipeline(
   const expansion = expandPostPreset(lookPreset === undefined ? output : { ...output, preset: lookPreset }, authoredEffectNodes);
   const effectiveOutput = expansion.output;
   const effectNodes = applyRuntimePostOverrides(expansion.nodes, canvas);
+  const nativeEffects = lowerNativePostEffects(effectNodes);
 
   const tierDisabled = (stage: string, reason: string): void => {
     diagnostics.push({
@@ -1239,6 +1401,7 @@ export function createRootPostPipeline(
 
   const exposure = (effectiveOutput?.exposure ?? 1) * authoredNumber(gradeNode ?? ({} as AuraEffectNode), "exposure", 1);
   const toneMapping = effectiveOutput?.toneMapping ?? "aces";
+  const { outputColorSpace, alphaMode } = resolveAppOutputColorPolicy(effectiveOutput);
 
   // §6.8 tier gates (Phase 5): `resolvePostTier` decides which authored or
   // preset-contributed stages the resolved tier can afford. Disabled stages
@@ -1276,6 +1439,7 @@ export function createRootPostPipeline(
   const lutBag = gradeNode ? resolvePipelineLut(gradeNode, diagnostics) : undefined;
 
   const options: PostPipelineOptions = {
+    ...(nativeEffects.length ? { nativeEffects } : {}),
     antiAliasing: "off", // resolved by the caller through resolvePostAntiAlias
     depthRange: {
       near: camera?.near ?? 0.1,
@@ -1293,6 +1457,11 @@ export function createRootPostPipeline(
     ...(bloom ? { bloom: bloom.options } : {}),
     exposure,
     toneMapping: toneMapping as PostPipelineOptions["toneMapping"],
+    outputColorSpace,
+    alphaMode,
+    // This is the caller's warranty, not something a preset or the requested
+    // destination alpha association can establish.
+    ...(output?.inputAlphaMode !== undefined ? { inputAlphaMode: output.inputAlphaMode } : {}),
     dither: effectiveOutput?.dither !== false,
     backgroundPassthrough: effectiveOutput?.backgroundPassthrough === true,
     ...(aoNode && aoEnabled ? {

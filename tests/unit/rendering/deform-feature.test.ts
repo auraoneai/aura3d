@@ -78,6 +78,11 @@ function item(overrides: Partial<RenderItem>): RenderItem {
 }
 
 describe("prd06.deform forward feature — select", () => {
+  // Selection now checks the actual texture provider before choosing a
+  // generated shader, so its ambient flag must match the supplied flags.
+  beforeEach(() => setRendererQrFlags(FLAGS_ON));
+  afterEach(() => setRendererQrFlags(flagsOf({})));
+
   it("returns undefined for a rigid item", () => {
     expect(selectPrd06DeformValue(item({}), "forward", TIER_HIGH, FLAGS_ON)).toBeUndefined();
   });

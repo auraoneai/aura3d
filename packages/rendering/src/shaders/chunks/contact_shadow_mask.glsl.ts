@@ -13,8 +13,9 @@ export const CONTACT_SHADOW_MASK_GLSL = /* glsl */ `
 uniform sampler2D u_contactShadowMask;
 uniform float u_contactShadowMaskStrength;
 uniform vec2 u_contactShadowMaskViewport;
+uniform float u_contactShadowLightIndex;
 float a3dContactShadowMaskFactor(float kind) {
-  if (kind > 0.5 || u_contactShadowMaskStrength < 0.001) return 1.0;
+  if (kind > 0.5 || u_contactShadowMaskStrength <= 0.0) return 1.0;
   float mask = texture(u_contactShadowMask, gl_FragCoord.xy / u_contactShadowMaskViewport).r;
   return mix(1.0, mask, clamp(u_contactShadowMaskStrength, 0.0, 1.0));
 }

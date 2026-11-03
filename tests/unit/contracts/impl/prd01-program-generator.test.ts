@@ -4,12 +4,13 @@
  * key canonicalization, hook splicing, and extension-lobe-pending (C-36).
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 import "../../../../packages/rendering/src/lanes/prd01";
 import { generateProgram, computeProgramKey, registerShaderChunk, registerShaderFeature } from "../../../../packages/rendering/src/contracts/program";
 import { registerMaterialLobe } from "../../../../packages/rendering/src/contracts/materialLobes";
 import type { ProgramFeatures } from "../../../../packages/rendering/src/contracts/program";
+import type { RenderDevice, ShaderSources } from "../../../../packages/rendering/src/RenderDevice";
 import { generateProgramImpl, programDegradationLog, GENERATED_PROGRAM_MARKER } from "../../../../packages/rendering/src/program/ProgramGenerator";
 import { normalizeProgramFeatures } from "../../../../packages/rendering/src/program/ProgramFeatures";
 import { programKey } from "../../../../packages/rendering/src/program/ProgramKey";
@@ -91,8 +92,54 @@ describe("generateProgram (C-02 real)", () => {
     expect(dist.fragment).toContain("u_distanceLight");
   });
 
-  it("WGSL target throws WGSL_PROGRAM_MISSING without a lane-11 emitter", () => {
-    expect(() => gen({ target: "wgsl" })).toThrow(/WGSL_PROGRAM_MISSING/);
+  it("emits a deterministic native WGSL program through the public C-02 generator", () => {
+    const features = normalizeProgramFeatures({ target: "wgsl" });
+    const out = generateProgram(features);
+    expect(out).toEqual(generateProgram(features));
+    expect(out.key).toBe(programKey(features));
+    expect(out.vertex).toContain(GENERATED_PROGRAM_MARKER);
+    expect(out.vertex).toContain("@vertex fn vs_main");
+    expect(out.fragment).toContain("@fragment fn fs_main");
+    expect(out.vertex).toContain("@group(0) @binding(0) var<uniform> material");
+    expect(out.vertex).toContain("@group(1) @binding(0) var<uniform> frame");
+    expect(out.descriptor?.features.features["a3d.nativePrimitive"]).toBe("triangles");
+    assertBalanced(out.vertex);
+    assertBalanced(out.fragment);
+  });
+
+  it("generates different WGSL resources and calculations for selected material features", () => {
+    const plain = gen({ target: "wgsl" });
+    const textured = gen({ target: "wgsl", alphaMode: "mask", vertexColors: true,
+      maps: { baseColor: { uvSet: 1, transform: true }, emissive: { uvSet: 0, transform: true } },
+      features: { "a3d.nativePrimitive": "lines", "a3d.clipping": true } });
+    expect(textured.key).not.toBe(plain.key);
+    expect(textured.vertex).toContain("@location(7) uv1: vec2f");
+    expect(textured.vertex).toContain("@location(4) color: vec4f");
+    expect(textured.fragment).toContain("@group(0) @binding(1) var u_baseColorMapSampler");
+    expect(textured.fragment).toContain("@group(0) @binding(2) var u_baseColorMapTexture");
+    expect(textured.fragment).toContain("@group(0) @binding(3) var u_emissiveMapSampler");
+    expect(textured.fragment).toContain("@group(0) @binding(4) var u_emissiveMapTexture");
+    expect(textured.fragment).toContain("generatedUnlitClipRetains");
+    expect(textured.fragment).toContain("discard");
+    expect(plain.fragment).not.toContain("u_baseColorMapTexture");
+  });
+
+  it("rejects unimplemented WGSL passes, material axes and unresolved contributors", () => {
+    expect(() => gen({ target: "wgsl", pass: "depth" })).toThrow(/WGSL_PROGRAM_UNSUPPORTED.*depth/);
+    expect(() => gen({ target: "wgsl", pass: "velocity" })).toThrow(/WGSL_PROGRAM_UNSUPPORTED.*velocity/);
+    expect(() => gen({ target: "wgsl", maps: { normal: { uvSet: 0, transform: false } } })).toThrow(/map normal/);
+    expect(() => gen({ target: "wgsl", drawId: "uniform" })).toThrow(/draw IDs/);
+    expect(() => generateProgram(normalizeProgramFeatures({ target: "wgsl", lighting: "lit",
+      features: { "prd06.deform": "skin4" } }))).toThrow(/prd06\.deform.*no active contributor/);
+  });
+
+  it("selects the native point-quad shader and refuses instanced points", () => {
+    const point = gen({ target: "wgsl", features: { "a3d.nativePrimitive": "points" } });
+    expect(point.vertex).toContain("@location(3) pointCorner: vec2f");
+    expect(point.vertex).toContain("a3dPointExpandSceneClip");
+    expect(point.fragment).toContain("input.pointInvalid");
+    expect(() => gen({ target: "wgsl", features: { "a3d.nativePrimitive": "points" },
+      instancing: { color: false } })).toThrow(/instanced point quads/);
   });
 });
 
@@ -211,5 +258,37 @@ describe("hook splicing + extension lobes", () => {
   it("contract generateProgram delegates to the installed lane-01 impl", () => {
     const out = generateProgram(normalizeProgramFeatures({}));
     expect(out.vertex).toContain(GENERATED_PROGRAM_MARKER);
+  });
+
+  it("retains an explicitly registered WGSL emitter when lane setup is imported", async () => {
+    vi.resetModules();
+    const isolated = await import("../../../../packages/rendering/src/program/ProgramGenerator");
+    const features = normalizeProgramFeatures({ target: "wgsl" });
+    const priorBuiltin = isolated.generateProgramImpl(features);
+    const external = { key: "external", vertex: "external vertex", fragment: "external fragment", defines: {} };
+    const emitter = vi.fn(() => external);
+    isolated.registerProgramWgslEmitter(emitter);
+    await import("../../../../packages/rendering/src/lanes/prd01");
+    expect(isolated.generateProgramImpl(features)).toBe(external);
+    expect(emitter).toHaveBeenCalledOnce();
+
+    // Even when an external emitter intentionally returns an earlier built-in
+    // result, the native-cache reflection bridge must not replace its sources.
+    isolated.registerProgramWgslEmitter(() => priorBuiltin);
+    const { ProgramCache } = await import("../../../../packages/rendering/src/program/ProgramCache");
+    let captured: ShaderSources | undefined;
+    const device = {
+      kind: "webgpu", disposed: false, contextLost: false,
+      createShaderProgram(sources: ShaderSources) {
+        captured = sources;
+        return { id: 1, label: sources.label, marker: sources.marker, disposed: false, dispose() {} };
+      }
+    } as unknown as RenderDevice;
+    const cache = new ProgramCache(device, { parallelCompile: false });
+    try {
+      expect(cache.acquire(features).status).toBe("ready");
+      expect(captured?.vertex).toBe(priorBuiltin.vertex);
+      expect(captured?.fragment).toBe(priorBuiltin.fragment);
+    } finally { cache.dispose(); }
   });
 });

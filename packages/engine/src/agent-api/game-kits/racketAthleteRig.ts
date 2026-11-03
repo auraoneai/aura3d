@@ -1,4 +1,4 @@
-import type { AuraRuntimeNodeHandle } from "../index";
+import type { AuraRuntimeNodeHandle } from "../nodes/types/runtime.js";
 import { directionToEulerXYZ, localDirToWorld, localToWorld, orientCylinderBetween, solveArmElbow } from "./racketGeometry";
 
 /**

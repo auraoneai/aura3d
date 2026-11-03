@@ -19,8 +19,6 @@
  * the receiver along its normal before the lookup; 0 keeps the legacy result.
  */
 
-import { CONTACT_SHADOW_MASK_GLSL } from "../../shaders/chunks/contact_shadow_mask.glsl";
-
 export const SHADOW_FORWARD_FACTOR_GLSL = /* glsl */ `float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
   if (u_shadowMapEnabled < 0.5) return 1.0;
   vec4 lightPosition = u_shadowMapMatrix * vec4(worldPosition, 1.0);
@@ -52,7 +50,6 @@ export const SHADOW_FORWARD_FACTOR_GLSL = /* glsl */ `float a3dForwardShadowFact
 }`;
 
 export const SHADOW_FORWARD_CHUNK_GLSL = /* glsl */ `
-${CONTACT_SHADOW_MASK_GLSL}
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -71,11 +68,100 @@ ${SHADOW_FORWARD_FACTOR_GLSL}
 // forward map, point (kind 1) and rect (> 2.5, packed z = 0) do not.
 float a3dForwardLightShadow(float kind, float castsShadow, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
   if (castsShadow < 0.5 || (kind > 0.5 && kind < 1.5) || kind > 2.5) return 1.0;
+#ifdef A3D_LEGACY_SPOT_SHADOW
+  // A separate spot packet identifies its own light; the shared map must not
+  // also shadow it (or apply the sun's map to other spots).
+  if (kind > 1.5) return 1.0;
+#endif
   vec3 offsetPosition = worldPosition + normalize(normal) * u_shadowMapNormalBias;
-  // WP-4: the contact-shadow mask rides the shadow-casting directional light's visibility only (kind 0).
-  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind);
+  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection);
 }
 `;
+
+/** Independent point/spot packets use one 2D depth atlas each. Only selected
+ * packets are declared so an inactive map consumes no texture unit. */
+export function legacyPunctualShadowChunk(point: boolean, spot: boolean): string {
+  if (!point && !spot) return "";
+  return /* glsl */ `
+float a3dLegacyPunctualPcf(sampler2D map, vec2 uv, float depth, vec3 normal, vec3 toLight,
+    float bias, float slopeBias, vec2 texel, float count, vec4 taps[32], float strength) {
+  float cosine = clamp(abs(dot(normalize(normal), normalize(toLight))), 0.0, 1.0);
+  float tangent = min(sqrt(max(1.0 - cosine * cosine, 0.0)) / max(cosine, 0.05), 8.0);
+  float slope = tangent * slopeBias * max(texel.x, texel.y);
+  float blocked = 0.0, total = 0.0;
+  for (int i = 0; i < 32; ++i) {
+    if (i >= clamp(int(count), 1, 32)) break;
+    vec4 tap = taps[i];
+    float weight = max(tap.z, 0.0);
+    float receiver = depth - bias - slope * max(1.0, length(tap.xy));
+    blocked += (receiver > texture(map, uv + tap.xy * texel).r ? 1.0 : 0.0) * weight;
+    total += weight;
+  }
+  return mix(1.0, 1.0 - (total > 0.0 ? blocked / total : 0.0), clamp(strength, 0.0, 1.0));
+}
+${point ? /* glsl */ `
+uniform sampler2D u_pointShadowMapTexture;
+uniform float u_pointShadowMapEnabled;
+uniform vec3 u_pointShadowLightPosition;
+uniform float u_pointShadowRange;
+uniform mat4 u_pointShadowFaceMatrices[6];
+uniform vec4 u_pointShadowFaceRects[6];
+uniform float u_pointShadowStrength;
+uniform float u_pointShadowBias;
+uniform float u_pointShadowSlopeBias;
+uniform vec2 u_pointShadowTexelSize;
+uniform float u_pointShadowPcfSampleCount;
+uniform vec4 u_pointShadowPcfSamples[32];
+float a3dLegacyPointShadow(float kind, float castsShadow, vec3 lightPosition, vec3 world, vec3 normal, vec3 toLight) {
+  if (u_pointShadowMapEnabled < 0.5 || castsShadow < 0.5 || kind < 0.5 || kind > 1.5 ||
+      distance(lightPosition, u_pointShadowLightPosition) > 0.0001) return 1.0;
+  vec3 delta = world - u_pointShadowLightPosition;
+  if (length(delta) > u_pointShadowRange) return 1.0;
+  vec3 a = abs(delta);
+  int face = a.x >= a.y && a.x >= a.z ? (delta.x >= 0.0 ? 0 : 1) : (a.y >= a.z ? (delta.y >= 0.0 ? 2 : 3) : (delta.z >= 0.0 ? 4 : 5));
+  vec4 clip = u_pointShadowFaceMatrices[face] * vec4(world, 1.0);
+  vec3 projected = clip.xyz / max(clip.w, 0.0001);
+  vec2 localUv = projected.xy * 0.5 + 0.5;
+  if (any(lessThan(localUv, vec2(0.0))) || any(greaterThan(localUv, vec2(1.0)))) return 1.0;
+  vec4 rect = u_pointShadowFaceRects[face];
+  return a3dLegacyPunctualPcf(u_pointShadowMapTexture, rect.xy + localUv * rect.zw, projected.z * 0.5 + 0.5,
+    normal, toLight, u_pointShadowBias, u_pointShadowSlopeBias, u_pointShadowTexelSize,
+    u_pointShadowPcfSampleCount, u_pointShadowPcfSamples, u_pointShadowStrength);
+}
+` : ""}
+${spot ? /* glsl */ `
+uniform sampler2D u_spotShadowMapTexture;
+uniform float u_spotShadowMapEnabled;
+uniform vec3 u_spotShadowLightPosition;
+uniform vec3 u_spotShadowLightDirection;
+uniform mat4 u_spotShadowMatrix;
+uniform vec2 u_spotShadowCone;
+uniform float u_spotShadowRange;
+uniform float u_spotShadowStrength;
+uniform float u_spotShadowBias;
+uniform float u_spotShadowSlopeBias;
+uniform vec2 u_spotShadowTexelSize;
+uniform float u_spotShadowPcfSampleCount;
+uniform vec4 u_spotShadowPcfSamples[32];
+float a3dLegacySpotShadow(float kind, float castsShadow, vec3 lightPosition, vec3 lightDirection, vec3 world, vec3 normal, vec3 toLight) {
+  vec3 axis = u_spotShadowLightDirection / max(length(u_spotShadowLightDirection), 0.0001);
+  vec3 lightAxis = lightDirection / max(length(lightDirection), 0.0001);
+  if (u_spotShadowMapEnabled < 0.5 || castsShadow < 0.5 || kind < 1.5 || kind > 2.5 ||
+      distance(lightPosition, u_spotShadowLightPosition) > 0.0001 || dot(axis, lightAxis) < 0.9999) return 1.0;
+  vec3 delta = world - u_spotShadowLightPosition;
+  float distanceToLight = max(length(delta), 0.0001);
+  if (distanceToLight > u_spotShadowRange || dot(delta / distanceToLight, axis) < cos(u_spotShadowCone.x)) return 1.0;
+  vec4 clip = u_spotShadowMatrix * vec4(world, 1.0);
+  vec3 projected = clip.xyz / max(clip.w, 0.0001);
+  vec2 uv = projected.xy * 0.5 + 0.5;
+  if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) return 1.0;
+  return a3dLegacyPunctualPcf(u_spotShadowMapTexture, uv, projected.z * 0.5 + 0.5,
+    normal, toLight, u_spotShadowBias, u_spotShadowSlopeBias, u_spotShadowTexelSize,
+    u_spotShadowPcfSampleCount, u_spotShadowPcfSamples, u_spotShadowStrength);
+}
+` : ""}
+`;
+}
 
 /**
  * GU47 eint (E-B handoff EB-3): `shadow_local` chunk — PRD-02 local-light (spot / point) shadow tiles on the default

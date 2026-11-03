@@ -7,9 +7,9 @@ import type { AuraNodeBuilder } from "../builder.js";
 import type { AuraPerformanceQuality } from "../../RootRuntimeSupport.js";
 import type { AuraRuntimeNodeAnimationPoseBindingMetadata, AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeBounds, AuraRuntimeNodeEffectAttachment, RuntimeNodeBoundsInput, RuntimeNodeMorphTargetWeights } from "../../RuntimeNodeHandle";
 import type { AuraSceneBuilder, scene } from "../scene.js";
-import type { PhysicsContinuousCollisionDescriptor } from "@aura3d/physics";
+import type { PhysicsContinuousCollisionDescriptor } from "@aura3d/physics/solverless";
 import type { GameAppRuntimeOptions } from "../../GameAppRuntime";
-import type { createGameInput, GameInputOptions } from "../../GameRuntime";
+import type { createGameInput, GameInputOptions } from "../../GameRuntimeCore";
 import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, PortableShaderMaterial, TexturedPBRMaterial, CollectedLight } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../../production-runtime/TypedGLBActor.js";
 import type { animation } from "../animation.js";
@@ -18,7 +18,6 @@ import type { geometry } from "../geometry.js";
 import type { interactions } from "../interactions.js";
 import type { labels } from "../labels.js";
 import type { performance } from "../../performanceEvidence.js";
-import type { physics } from "../physics.js";
 import type { primitives } from "../primitives.js";
 import type { renderer } from "../../rendererDiagnostics.js";
 import type { camera } from "../camera.js";
@@ -119,6 +118,7 @@ export interface AuraRuntimeNodeSnapshot {
   readonly name?: string;
   readonly tags: readonly string[];
   readonly position: AuraVec3;
+  readonly pivot: AuraVec3;
   readonly rotation: AuraVec3;
   readonly scale: number | AuraVec3;
   readonly visible: boolean;
@@ -159,14 +159,20 @@ export interface AuraRuntimeNodeHandle {
   /** C-37 (PRD 15): per-node version counter, incremented by every mutator on the handle. */
   readonly version: number;
   position: AuraVec3;
+  /** Rotation and scale origin in local coordinates. */
+  readonly pivot: AuraVec3;
   rotation: AuraVec3;
   scale: number | AuraVec3;
   visible: boolean;
   setPosition(x: number, y: number, z: number): this;
+  setPivot(x: number, y: number, z: number): this;
+  setTransform(transform: { readonly position?: AuraVec3; readonly rotation?: AuraVec3; readonly scale?: number | AuraVec3; readonly pivot?: AuraVec3 }): this;
   translate(x: number, y: number, z: number): this;
   setRotation(x: number, y: number, z: number): this;
   setScale(scale: number | AuraVec3): this;
   setVisible(visible: boolean): this;
+  /** Reshape font-backed world text and update its mounted resources on the next frame. */
+  setText(text: string): this;
   setMaterial(material: AuraMaterialSpec): this;
   /**
    * GU47 E-B (light nodes; attached under A3D_QR_LIGHTING): retune the light at runtime. Every field is optional and
@@ -332,10 +338,32 @@ export interface AuraRuntimeState {
   readonly alpha: number;
 }
 
+/** Observable outcome of waiting for a requested mount stage. */
+export type AuraReadyOutcome =
+  | { readonly state: "ready"; readonly stage: "renderer" | "first-frame"; readonly backend: "webgl2" | "webgpu" }
+  | { readonly state: "failed"; readonly code: string; readonly message: string }
+  | { readonly state: "cancelled" | "disposed" }
+  | { readonly state: "superseded" };
+
+/** The terminal state of one renderer mount, identified by its app-local revision. */
+export type AuraRenderTermination =
+  | { readonly state: "failed"; readonly revision: number; readonly code: string; readonly message: string }
+  | { readonly state: "device-lost" | "superseded" | "disposed"; readonly revision: number };
+
+export interface AuraReadinessOptions {
+  readonly stage?: "renderer" | "first-frame";
+  readonly signal?: AbortSignal;
+}
+
 export interface AuraApp {
   readonly canvas?: HTMLCanvasElement;
   readonly scene: AuraSceneSnapshot;
   readonly backend: AuraBackend;
+  readonly execution?: {
+    readonly requested: "worker";
+    readonly active: "worker" | "main-thread";
+    readonly fallbackReason?: string;
+  };
   readonly nodes: AuraRuntimeNodeRegistry;
   /** SH-04 (L1-12): WebGPU-only compute (WGSL). Every call throws `compute-requires-webgpu` until a WebGPU device is bound with `app.compute.bind(...)`. */
   readonly compute: import("../compute.js").AuraComputeSurface;
@@ -358,6 +386,8 @@ export interface AuraApp {
   onFrame(callback: AuraFrameCallback): () => void;
   offFrame(callback: AuraFrameCallback): void;
   input(options: GameInputOptions): ReturnType<typeof createGameInput>;
+  workerInput?(): Pick<import("../../app/workerProtocol.js").AuraWorkerInput, "pointers" | "keys" | "timestamp">;
+  recoverWorker?(): Promise<void>;
   pause(): void;
   resume(): void;
   /**
@@ -382,6 +412,20 @@ export interface AuraApp {
    * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
    */
   ready(): Promise<void>;
+  /** Wait for an explicit mount outcome without converting failure to success. */
+  readiness(options?: AuraReadinessOptions): Promise<AuraReadyOutcome>;
+  /** Resolve only on readiness; rejects on failure, cancellation, disposal or supersession. */
+  readyStrict(options?: AuraReadinessOptions): Promise<Extract<AuraReadyOutcome, { readonly state: "ready" }>>;
+  /**
+   * Subscribe to terminal outcomes of renderer mounts, including a render failure
+   * after an earlier blank frame. Subscriptions persist across scene remounts and
+   * do not replay; subscribe first, then inspect `renderTermination()` to avoid
+   * missing an already-recorded outcome. The event revision identifies the mount
+   * which ended. Supersession is reported after the replacement mount becomes current.
+   */
+  onRenderTermination?(listener: (event: AuraRenderTermination) => void): () => void;
+  /** Current mount's terminal outcome, or the final disposal outcome. */
+  renderTermination?(): AuraRenderTermination | undefined;
   /**
    * Subscribe to WebGL context loss. Returns an unsubscribe function.
    *
@@ -470,6 +514,11 @@ export interface AuraCreateAppOptions {
   /** Native asynchronous presentation for the automatic loop; synchronous remains the default. */
   readonly frameMode?: "sync" | "async";
   readonly scene: AuraSceneBuilder | AuraSceneSnapshot;
+  readonly worker?: {
+    readonly createWorker: () => Worker;
+    readonly fallback?: "error" | "main-thread";
+    readonly disposeTimeoutMs?: number;
+  };
   /**
    * Configuration for {@link AuraApp.physics}.
    *
@@ -526,6 +575,8 @@ export interface AuraCreateAppOptions {
   readonly lighting?: import("../../../contracts/lighting").AuraLightingOptions;
   readonly output?: import("../../../contracts/output").AuraOutputOptions;
   readonly assets?: import("../../../contracts/assets").AuraAssetsOption;
+  /** Optional per-app native model adapters. Install only the formats this app uses. */
+  readonly formatRegistry?: import("@aura3d/assets").FormatRegistry;
   readonly animation?: import("../../../contracts/animation").AuraCreateAppAnimationOptions;
   readonly camera?: import("../../../contracts/camera").AuraCameraOption;
   readonly accessibility?: { readonly reducedMotion?: boolean; readonly reducedFlash?: boolean; readonly highContrast?: boolean };
@@ -582,6 +633,7 @@ export interface AuraPrecompileResult {
 }
 
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
+  readonly worker?: never;
   readonly loop?: GameAppRuntimeOptions["loop"];
   readonly input?: GameAppRuntimeOptions["input"];
   readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
@@ -636,6 +688,8 @@ export interface WebGLRenderController {
   renderAsync?(time: () => number): Promise<void>;
   busy?(): boolean;
   whenIdle?(): Promise<void>;
+  /** Coalesce a single frame for an externally invalidated static scene. */
+  invalidate?(): void;
   resetTemporalHistory?(reason: string): void;
   pause?(): void;
   resume?(): void;
@@ -760,6 +814,7 @@ export interface ProductionRuntimeLightDescriptor {
   readonly authoredLight: AuraLightType | "fallback";
   readonly authoredWidth?: number;
   readonly authoredHeight?: number;
+  readonly twoSided?: boolean;
 }
 
 export type AuraFountainParticleLayer = "plume" | "splash" | "mist";
@@ -771,6 +826,8 @@ export interface WebGLSceneRenderer {
   update?(time: number): void;
   render(time: number): number;
   renderAsync?(time: number): Promise<number>;
+  /** Device-owned asynchronous resources changed their sampled bindings. */
+  onResourceChange?(listener: () => void): () => void;
   resetTemporalHistory?(reason: string): void;
   /**
    * View-projection matrix for a frame.
@@ -806,6 +863,8 @@ export interface WebGLSceneRenderer {
    */
   readonly auraRenderer?: unknown;
   dispose(): void;
+  /** Completion of renderer-owned asynchronous resource retirement after disposal. */
+  whenDisposed?(): Promise<void>;
 }
 
 /**
@@ -866,4 +925,3 @@ export interface WebGLModel {
   readonly modelMatrix?: Float32Array;
   readonly update?: (time: number) => void;
 }
-

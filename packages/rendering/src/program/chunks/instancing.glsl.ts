@@ -4,17 +4,23 @@
  * `u_geometryMatrix` and never scales instance translation.
  */
 
-export const INSTANCING_VERTEX_PARS_GLSL = /* glsl */ `
+function instancingVertexPars(firstLocation: 8 | 10): string {
+  return /* glsl */ `
 #ifdef USE_INSTANCING
-layout(location = 8) in vec4 a_instanceMatrix0;
-layout(location = 9) in vec4 a_instanceMatrix1;
-layout(location = 10) in vec4 a_instanceMatrix2;
-layout(location = 11) in vec4 a_instanceMatrix3;
+layout(location = ${firstLocation}) in vec4 a_instanceMatrix0;
+layout(location = ${firstLocation + 1}) in vec4 a_instanceMatrix1;
+layout(location = ${firstLocation + 2}) in vec4 a_instanceMatrix2;
+layout(location = ${firstLocation + 3}) in vec4 a_instanceMatrix3;
 #ifdef USE_INSTANCING_COLOR
-layout(location = 12) in vec4 a_instanceColor;
+layout(location = ${firstLocation + 4}) in vec4 a_instanceColor;
 #endif
 #endif
 `;
+}
+
+export const INSTANCING_VERTEX_PARS_GLSL = instancingVertexPars(8);
+// JOINTS_1/WEIGHTS_1 keep their existing locations 8/9 in this variant.
+export const INSTANCING_VERTEX_PARS_EIGHT_INFLUENCES_GLSL = instancingVertexPars(10);
 
 export const INSTANCING_VERTEX_BODY_GLSL = /* glsl */ `
   mat4 instanceMatrix = mat4(1.0);

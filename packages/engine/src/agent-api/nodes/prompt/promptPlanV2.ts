@@ -13,8 +13,10 @@ import type {
   AuraPromptPlan,
   AuraPromptPlanReport,
   AuraSceneNode
-} from "../../index.js";
-import { effects, groups, scene } from "../../index.js";
+} from "../types.js";
+import { effects } from "../effects.composite.js";
+import { groups } from "../groups.js";
+import { scene } from "../scene.js";
 import { pixelBackedEffectsAvailable, promptContractAvailable } from "../../looks/contractAvailability.js";
 import { resolveQrFlags } from "../../../contracts/flags.js";
 import type { AuraLookId } from "../../../contracts/looks.js";

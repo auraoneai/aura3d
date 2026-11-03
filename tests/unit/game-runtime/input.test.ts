@@ -116,6 +116,290 @@ describe("game.input", () => {
   });
 });
 
+describe("game input replay sequencing", () => {
+  const dt = 1 / 60;
+  const createInput = () => game.input({
+    actions: { left: ["KeyA"], right: ["KeyD"], jump: ["Space"] },
+    axes: { moveX: { negative: "left", positive: "right", smoothing: 12 } },
+    bufferMs: 120,
+    autoListen: false,
+    gamepad: false
+  });
+
+  it("applies each event in a cumulative direct replay only once", () => {
+    const input = createInput();
+    const press = { frame: 0, time: 0, type: "press", binding: "KeyD" } as const;
+    const release = { frame: 1, time: dt, type: "release", binding: "KeyD" } as const;
+    const again = { frame: 3, time: 3 * dt, type: "press", binding: "KeyD" } as const;
+
+    expect(input.replay([press], dt).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    expect(input.replay([{ ...press }, release], dt).actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    expect(input.replay([press, release], dt).actions.right).toMatchObject({ pressed: false, held: false, released: false });
+    expect(input.replay([press, release, again], dt).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    expect(input.recorded()).toEqual([]);
+    input.dispose();
+  });
+
+  it("reconstructs a first cumulative prefix and a shorter prefix without resurfacing historical presses", () => {
+    const input = createInput();
+    const press = { frame: 0, time: 0, type: "press", binding: "KeyD" } as const;
+    const release = { frame: 1, time: dt, type: "release", binding: "KeyD" } as const;
+
+    expect(input.replay([press, release], dt).actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    expect(input.replay([press, release], dt).actions.right).toMatchObject({ pressed: false, held: false, released: false });
+    expect(input.replay([press], dt).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    expect(input.replay([], dt).actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    input.dispose();
+  });
+
+  it("preserves ordered same-frame taps and release-then-press sequences", () => {
+    const press = { frame: 0, time: 0, type: "press", binding: "Space" } as const;
+    const release = { frame: 0, time: 0, type: "release", binding: "Space" } as const;
+    const tapPlan = game.inputReplay([press, release]);
+    const heldPlan = game.inputReplay([release, press]);
+    const tapInput = createInput();
+    const heldInput = createInput();
+
+    expect(tapPlan.events.map((event) => event.type)).toEqual(["press", "release"]);
+    expect(heldPlan.events.map((event) => event.type)).toEqual(["release", "press"]);
+    expect(tapPlan.checksum).not.toBe(heldPlan.checksum);
+    expect(game.inputReplayDriver(tapInput, tapPlan).seek(0, dt).actions.jump)
+      .toMatchObject({ pressed: true, held: false, released: false });
+    expect(game.inputReplayDriver(heldInput, heldPlan).seek(0, dt).actions.jump)
+      .toMatchObject({ pressed: true, held: true, released: false });
+    tapInput.dispose();
+    heldInput.dispose();
+  });
+
+  it("starts at frame zero, consumes signed and large dt one frame at a time, and never repeats an edge", () => {
+    const input = createInput();
+    const plan = game.inputReplay([
+      { frame: 0, time: 0, type: "press", binding: "KeyD" },
+      { frame: 1, time: dt, type: "release", binding: "KeyD" },
+      { frame: 2, time: 2 * dt, type: "press", binding: "KeyD" }
+    ]);
+    const driver = game.inputReplayDriver(input, plan);
+
+    expect(driver.snapshot()).toMatchObject({ frame: 0, time: 0, complete: false });
+    expect(driver.step(-1).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    expect(driver.snapshot()).toMatchObject({ frame: 0, time: 0, complete: false });
+    expect(driver.step(120).actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    expect(driver.snapshot()).toMatchObject({ frame: 1, time: 120, complete: false });
+    expect(driver.step(0).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    expect(driver.snapshot()).toMatchObject({ frame: 2, time: 120, complete: true });
+    expect(driver.step(dt).actions.right).toMatchObject({ pressed: false, held: true, released: false });
+    input.dispose();
+  });
+
+  it("replays action overrides and preserves buffered combo history without duplicating presses", () => {
+    const recorder = createInput();
+    recorder.setAction("jump", true);
+    const first = recorder.update(dt);
+    recorder.setAction("jump", false);
+    const second = recorder.update(dt);
+    recorder.press("KeyD");
+    const third = recorder.update(dt);
+    const fourth = recorder.update(dt);
+    const plan = game.inputReplay(recorder.recorded());
+    const imported = game.importReplay(JSON.stringify(game.exportReplay(plan)));
+    const replay = createInput();
+    const driver = game.inputReplayDriver(replay, imported);
+
+    for (const expected of [first, second, third, fourth]) {
+      expect(driver.step(dt).actions).toEqual(expected.actions);
+    }
+    expect(replay.combo(["jump", "right"], 200)).toBe(true);
+    expect(replay.combo(["jump", "jump"], 200)).toBe(false);
+    expect(replay.recorded()).toEqual([]);
+    recorder.dispose();
+    replay.dispose();
+  });
+
+  it("distinguishes recorded action overrides from bindings with the same name", () => {
+    const make = () => game.input({
+      actions: { jump: ["Space"], alias: ["jump"] },
+      autoListen: false,
+      gamepad: false
+    });
+    const recorder = make();
+    recorder.setAction("jump", true);
+    const pressed = recorder.update(dt);
+    recorder.setAction("jump", false);
+    const released = recorder.update(dt);
+    const events = recorder.recorded();
+    const plan = game.inputReplay(events);
+    const imported = game.importReplay(JSON.stringify(game.exportReplay(plan)));
+    const replay = make();
+    const driver = game.inputReplayDriver(replay, imported);
+
+    expect(events.map((event) => event.source)).toEqual(["action", "action"]);
+    expect(imported.events).toEqual(plan.events);
+    expect(imported.checksum).toBe(plan.checksum);
+    const replayPressed = driver.step(dt);
+    const replayReleased = driver.step(dt);
+    expect(replayPressed.actions).toEqual(pressed.actions);
+    expect(replayPressed.activeBindings).toEqual(pressed.activeBindings);
+    expect(replayReleased.actions).toEqual(released.actions);
+    expect(replayReleased.activeBindings).toEqual(released.activeBindings);
+
+    const bindingRecorder = make();
+    bindingRecorder.press("jump");
+    const bindingPressed = bindingRecorder.update(dt);
+    const bindingReplay = make();
+    const bindingDriver = game.inputReplayDriver(bindingReplay, game.inputReplay(bindingRecorder.recorded()));
+    expect(bindingDriver.step(dt).actions).toEqual(bindingPressed.actions);
+    expect(bindingPressed.actions.alias.held).toBe(true);
+    expect(game.inputReplay(events.slice(0, 1)).checksum).not.toBe(game.inputReplay(bindingRecorder.recorded()).checksum);
+    recorder.dispose();
+    replay.dispose();
+    bindingRecorder.dispose();
+    bindingReplay.dispose();
+  });
+
+  it("reconstructs backward and forward seeks with the same edges, buffers, and smoothed axes as live input", () => {
+    const recorder = createInput();
+    const snapshots = [];
+    for (let frame = 0; frame <= 8; frame += 1) {
+      if (frame === 0 || frame === 5) recorder.press("KeyD");
+      if (frame === 1 || frame === 6) recorder.release("KeyD");
+      if (frame === 3) {
+        recorder.press("Space");
+        recorder.release("Space");
+      }
+      snapshots.push(recorder.update(dt));
+    }
+    const replay = createInput();
+    const driver = game.inputReplayDriver(replay, game.inputReplay(recorder.recorded()));
+
+    for (const frame of [8, 1, 3, 0, 5, 7, 6, 2, 8]) {
+      const actual = driver.seek(frame, dt);
+      const expected = snapshots[frame]!;
+      expect(actual.frame).toBe(expected.frame);
+      expect(actual.time).toBeCloseTo(expected.time, 10);
+      expect(actual.actions).toEqual(expected.actions);
+      expect(actual.axes?.moveX).toBeCloseTo(expected.axes?.moveX ?? 0, 10);
+      expect(replay.buffered("jump")).toBe(expected.actions.jump.buffered);
+    }
+    recorder.dispose();
+    replay.dispose();
+  });
+
+  it("matches fixed-step buffer and combo boundaries when a seek skips idle frames", () => {
+    const make = () => game.input({ actions: { right: ["KeyD"] }, bufferMs: 500, autoListen: false, gamepad: false });
+    const recorder = make();
+    recorder.press("KeyD");
+    recorder.update(dt);
+    for (let frame = 1; frame <= 30; frame += 1) recorder.update(dt);
+    const replay = make();
+    const driver = game.inputReplayDriver(replay, game.inputReplay(recorder.recorded()));
+
+    const atBoundary = driver.seek(30, dt);
+    expect(atBoundary.time).toBe(recorder.snapshot().time);
+    expect(atBoundary.actions.right.buffered).toBe(recorder.snapshot().actions.right.buffered);
+    expect(replay.combo(["right"], 500)).toBe(recorder.combo(["right"], 500));
+    const nextLive = recorder.update(dt);
+    expect(driver.step(dt).actions.right.buffered).toBe(nextLive.actions.right.buffered);
+    expect(replay.combo(["right"], 500)).toBe(recorder.combo(["right"], 500));
+    recorder.dispose();
+    replay.dispose();
+  });
+
+  it("keeps live input, recordings, other controllers, and other replay drivers independently owned", () => {
+    const input = createInput();
+    const other = createInput();
+    input.press("KeyA");
+    input.update(dt);
+    other.press("Space");
+    other.update(dt);
+    const originalRecording = input.recorded();
+    const first = game.inputReplayDriver(input, game.inputReplay([
+      { frame: 0, time: 0, type: "press", binding: "KeyD" },
+      { frame: 1, time: dt, type: "release", binding: "KeyD" }
+    ]));
+    const second = game.inputReplayDriver(input, game.inputReplay([
+      { frame: 0, time: 0, type: "press", binding: "Space" }
+    ]));
+
+    expect(first.seek(0, dt).actions.right.held).toBe(true);
+    expect(second.seek(0, dt).actions.jump.held).toBe(true);
+    expect(first.step(dt).actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    second.reset();
+    expect(input.snapshot().actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    first.reset();
+    expect(input.snapshot().actions.left.held).toBe(true);
+    expect(input.recorded()).toEqual(originalRecording);
+    expect(other.snapshot().actions.jump.held).toBe(true);
+    expect(first.snapshot()).toMatchObject({ frame: 0, time: 0, complete: false });
+    expect(first.step(dt).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    input.dispose();
+    other.dispose();
+  });
+
+  it("keeps live target events and a driver's input state separate until playback is reset", () => {
+    const target = createTarget();
+    const input = game.input({ actions: { left: ["KeyA"], right: ["KeyD"] }, target, gamepad: false });
+    const driver = game.inputReplayDriver(input, game.inputReplay([
+      { frame: 0, time: 0, type: "press", binding: "KeyD" },
+      { frame: 1, time: dt, type: "release", binding: "KeyD" }
+    ]));
+
+    const beforeInvalidStep = input.snapshot();
+    expect(() => driver.step(Number.MAX_VALUE)).toThrow(RangeError);
+    expect(input.snapshot()).toBe(beforeInvalidStep);
+    expect(driver.step(dt).actions.right.held).toBe(true);
+    target.emit("keydown", { code: "KeyA", key: "a", repeat: false });
+    expect(input.snapshot().actions.right.held).toBe(true);
+    expect(driver.step(dt).actions.right).toMatchObject({ pressed: false, held: false, released: true });
+    expect(input.recorded().some((event) => event.binding === "KeyA")).toBe(true);
+    driver.reset();
+    expect(input.update(dt).actions.left).toMatchObject({ pressed: true, held: true, released: false });
+    input.dispose();
+    expect(input.snapshot().actions.left).toMatchObject({ pressed: false, held: false, released: false, buffered: false });
+    expect(input.held("left")).toBe(false);
+    expect(() => driver.step(dt)).toThrow(/disposed/i);
+    expect(() => driver.reset()).not.toThrow();
+  });
+
+  it("handles negative and very large seeks without iterating through empty frames", () => {
+    const input = createInput();
+    const plan = game.inputReplay([
+      { frame: 0, time: 0, type: "press", binding: "KeyD" },
+      { frame: 1, time: dt, type: "release", binding: "KeyD" }
+    ]);
+    const driver = game.inputReplayDriver(input, plan);
+    const target = 2 ** 31 + 7;
+
+    expect(driver.seek(-42, dt).actions.right).toMatchObject({ pressed: true, held: true, released: false });
+    const settled = driver.seek(target, dt);
+    expect(settled.frame).toBe(target + 1);
+    expect(settled.actions.right).toMatchObject({ pressed: false, held: false, released: false, buffered: false });
+    expect(driver.snapshot()).toMatchObject({ frame: target, complete: true });
+    const before = driver.snapshot();
+    expect(() => driver.seek(Number.POSITIVE_INFINITY)).toThrow(RangeError);
+    expect(() => driver.step(Number.NaN)).toThrow(RangeError);
+    expect(() => driver.step(Number.MAX_VALUE)).toThrow(RangeError);
+    expect(() => game.inputReplay([], { fps: Number.NaN })).toThrow(RangeError);
+    expect(() => game.inputReplay([{ frame: Number.POSITIVE_INFINITY, time: 0, type: "press", binding: "KeyD" }])).toThrow(RangeError);
+    expect(driver.snapshot()).toEqual(before);
+    input.dispose();
+  });
+
+  it("does not mark frame-zero input complete before it is consumed", () => {
+    const input = createInput();
+    const driver = game.inputReplayDriver(input, game.inputReplay([
+      { frame: 0, time: 0, type: "press", binding: "Space" }
+    ]));
+    expect(driver.snapshot().complete).toBe(false);
+    expect(driver.step(dt).actions.jump).toMatchObject({ pressed: true, held: true });
+    expect(driver.snapshot()).toMatchObject({ frame: 0, time: 0, complete: true });
+    driver.reset();
+    expect(driver.snapshot().complete).toBe(false);
+    expect(driver.seek(0, dt).actions.jump.pressed).toBe(true);
+    expect(driver.snapshot()).toMatchObject({ frame: 0, time: 0, complete: true });
+    input.dispose();
+  });
+});
+
 describe("game.input pointer delta (E5)", () => {
   afterEach(() => vi.unstubAllGlobals());
 

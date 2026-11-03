@@ -2,7 +2,7 @@
 
 Version: 4.7.1
 
-Status: verified against `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 rows: 48 exact, 150 approximate, 47 none, 0 pending) and against `tools/bench-vs-threejs` on current main, 2026-10-24.
+Status: `packages/aura3d-cli/src/migrate-three/mappings.ts` contains 245 rows: 48 exact, 155 approximate, 42 none, 0 pending. The benchmark notes below were recorded on 2026-10-24.
 
 ## What you get with Aura3D
 
@@ -39,7 +39,7 @@ npx @aura3d/cli@latest migrate three "<glob>" [--write] [--report]
 
 ## 3. Mapping for the 40 most common APIs
 
-Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in. `approximate` means semantics survive but options, units or framing differ, so check the note. `none` means no rewrite is emitted, only a TODO.
+Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in. `approximate` names a bounded alternative, not equivalence: options, shading, units or framing may differ, so check the note. Some approximate rows emit guidance rather than a replacement. `none` means no equivalent rewrite is emitted.
 
 | # | three.js | Aura3D target | Verdict | What to know |
 |---|---|---|---|---|
@@ -57,7 +57,8 @@ Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in
 | 12 | `MeshStandardMaterial` | `material.pbr(...)` | approximate | |
 | 13 | `MeshPhysicalMaterial` | `material.physical(...)` | approximate | |
 | 14 | `MeshBasicMaterial`, `MeshLambertMaterial`, `MeshPhongMaterial` | `material.pbr(...)` | approximate | Shading model changes (Phong specular becomes GGX): write the delta down |
-| 15 | `MeshToonMaterial`, `MeshMatcapMaterial`, `MeshNormalMaterial`, `MeshDepthMaterial` | none | none | For a toon look use `effects.toon(...)` (screen pass); others are manual |
+| 15 | `MeshToonMaterial`, `MeshMatcapMaterial`, `MeshDepthMaterial` | `material.toon`, `material.matcap`, `material.depth` | approximate | Manual alternatives with backend and target limits; see below |
+| — | `MeshNormalMaterial` | none | none | This codemod row is not mapped; inspect the public material APIs separately |
 | 16 | `ShaderMaterial` / `RawShaderMaterial` | `material.custom({ glsl, uniforms })` | approximate | Uniforms auto-declared; prelude names are documented in examples |
 | 17 | `DirectionalLight` | `lights.directional({ shadow: true })` | approximate | Shadow camera extents are derived |
 | 18 | `PointLight` / `SpotLight` | `lights.point` / `lights.spot` | approximate | |
@@ -85,6 +86,20 @@ Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in
 | 40 | `FBXLoader`, `STLLoader`, `PLYLoader`, `ColladaLoader` and other non-glTF loaders | none | none | glTF is the supported interchange format; convert first |
 
 Also `none`: `GlitchPass`, `HalftonePass`, `AfterimagePass`, `MaskPass`, `GPUComputationRenderer` and the exporters. `Layers` is `approximate`: node specs take `layers` bitmasks.
+
+### Specialized materials: manual alternatives
+
+These five mappings emit an `// a3d:` comment and an approximate report row; they **leave the original constructor itself in place** rather than translating its arguments. Independently recognized constructs nested in those arguments may still be rewritten. The scanner recognizes `new THREE.MeshToonMaterial(...)` and `new MeshToonMaterial(...)`, for example, but does not resolve renamed imports such as `MeshToonMaterial as Toon`. The three import may also be replaced, so inventory aliases and finish the port by hand. The alternatives below are not three.js materials, and the source-level tests do not establish pixel equivalence.
+
+| three.js | Manual Aura3D alternative | Boundary |
+|---|---|---|
+| `MeshMatcapMaterial` | `material.matcap({ map, color?, opacity?, transparent?, side? })` | `map` is required and must be an Aura texture handle or typed texture asset. Port three's `matcap` texture, not its separate base-colour `map`. A primitive needs normals; the shader samples view-normal xy and does not use scene lights. No direct normal/bump-map port. |
+| `MeshDepthMaterial` | `material.depth({ near?, far?, side? })` | Opaque, linear camera-view-distance grayscale (near white, far black); the range is independent of the camera's clip planes. Standard-depth rigid triangle primitives have WebGL2 and WebGPU forward paths. It rejects GLB/model, batched and non-mesh targets, scene overrides, clipping, deformation and instance colours; it is not a packed shadow-depth pass. WebGPU device and pixel acceptance remain unverified. |
+| `MeshDistanceMaterial` | `material.distance({ referencePosition?, near?, far?, side? })` | A primitive's world-space radial-distance grayscale, near black and far white. `referencePosition` is a snapshotted `[x, y, z]` tuple (default `[0, 0, 0]`), not a live light binding; defaults are near `0`, far `100`. This is not the packed point-light shadow-depth pass. |
+| `ShadowMaterial` | `material.shadow({ color?, opacity?, side?, light? })` | Transparent receiver with depth writes off; use a primitive with normals, a matching shadow-casting light and a shadow packet. `light` selects one `directional` (default), `point` or `spot` packet, not a light ID or a combination of all lights. Point/spot variants need standalone `pointLight`/`spotLight` packets; the PRD-02 `localShadows` atlas does not supply those packets, so a root route cannot be assumed to supply them. Without the selected packet the receiver is transparent. |
+| `MeshToonMaterial` | `material.toon({ color?, steps?, ramp?, shadowColor?, rim? })` | A surface material, distinct from the screen pass `effects.toon`. `steps` is 1–8 (default 3); `ramp` is a typed texture asset, not an automatic `gradientMap` conversion. The GLSL shader bands summed direct-light luminance and adds hemisphere fill; rect-area lights are skipped and only directional sun shadow is sampled. No WGSL/WebGPU program. |
+
+Matcap, distance and shadow provide paired GLSL/WGSL sources, but that alone does not establish a root WebGPU route or pixels; depth has a source-tested WebGPU forward path. For all four custom-shader alternatives (matcap, distance, shadow and toon), a model material is a whole-model replacement rather than a glTF PBR slot override; skinned models are rejected and PBR `materialOverrides` cannot be combined with it. Do not assume arbitrary GLB features or three.js options survive. Depth is more restrictive and rejects model materials outright. Verify the particular target, lighting and backend when completing the port.
 
 ## 4. What the codemod cannot do (measured)
 

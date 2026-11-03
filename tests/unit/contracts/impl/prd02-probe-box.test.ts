@@ -36,6 +36,10 @@ describe("02-S12 box projection", () => {
     expect(e[2]).toBeCloseTo(1, 6);
   });
 
+  it("uses a capture origin distinct from the authored box center", () => {
+    expect(boxProjectDirection([11, 0, 0], [1, 0, 0], [11, 0, 0], [1, 2, 3], [9, 0, 0])).toEqual([3, 0, 0]);
+  });
+
   it("the chunk is registered and mirrors the CPU twin's math", () => {
     const glsl = shaderChunk(PROBE_BOX_CHUNK)?.glsl ?? "";
     expect(glsl).toContain("vec3 a3d_boxProjectDirection(vec3 worldPos, vec3 R, vec3 center, vec3 halfExtents)");
@@ -72,6 +76,19 @@ describe("02-S12 per-item bindings", () => {
     expect(b.u_prd02ProbeCubeB).toBeNull();
     expect(Array.from(b.u_prd02ProbeCenterB as Float32Array)).toEqual([0, 0, 0, 0]);
     expect((b.u_prd02ProbeWeights as Float32Array)[1]).toBe(0);
+  });
+
+  it("binds the actual box center and separate capture position; unboxed probes skip projection", () => {
+    const offset: ReflectionProbeSpec = { ...spec("offset", [9, 0, 0]), box: { min: [10, -2, -3], max: [12, 2, 3] } };
+    const unboxed: ReflectionProbeSpec = { ...spec("unboxed", [0, 0, 0]), infinite: true };
+    const b = prd02ProbeBindings({
+      a: { probe: probe(4), spec: offset, weight: 1 },
+      b: { probe: probe(4), spec: unboxed, weight: 1 }, globalWeight: 0
+    });
+    expect(Array.from(b.u_prd02ProbeCenterA as Float32Array)).toEqual([11, 0, 0, 1]);
+    expect(Array.from(b.u_prd02ProbeOriginA as Float32Array)).toEqual([9, 0, 0, 1]);
+    expect(Array.from(b.u_prd02ProbeHalfA as Float32Array)).toEqual([1, 2, 3, 0]);
+    expect((b.u_prd02ProbeCenterB as Float32Array)[3]).toBe(0);
   });
 });
 

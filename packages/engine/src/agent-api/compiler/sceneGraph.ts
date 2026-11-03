@@ -32,7 +32,8 @@ import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraSceneNode, A
 import type { GltfBounds } from "../nodes/types/runtime.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../../contracts/sceneGraph.js";
 import { SCENE_GRAPH_SHEAR, composeTRSInto, decomposeMatrix, eulerToQuaternion, localMatrixOf, multiplyMat4Into, quaternionMultiply } from "../sceneGraph.js";
-import { animatedPosition, animatedRotation, flattenSceneNodes as legacyFlattenSceneNodes, createModelMatrix as legacyCreateModelMatrix, lowerLookNode, markLookNodeLowered, primitiveSize, resolveModelFitScale } from "../sceneMath.js";
+import { animatedPosition, animatedRotation, captureFlattenSceneNodes, flattenSceneNodes as legacyFlattenSceneNodes, createModelMatrix as legacyCreateModelMatrix, lowerLookNode, markLookNodeLowered, primitiveSize, resolveModelFitScale, type SceneFlattenOptions, type SceneFlattenVisit, type SceneGroupSpan } from "../sceneMath.js";
+import { assertValidPivot, assertValidPivotTree, hasNonzeroPivot } from "../pivotGuard.js";
 
 export { SCENE_GRAPH_SHEAR };
 
@@ -46,7 +47,7 @@ export interface Prd01SceneGraphDegradation {
   readonly ownerPrd: 1;
 }
 
-export interface Prd01SceneGraphOptions {
+export interface Prd01SceneGraphOptions extends SceneFlattenOptions {
   readonly cache?: Prd01SceneGraphCache;
   readonly onDegradation?: (degradation: Prd01SceneGraphDegradation) => void;
 }
@@ -59,17 +60,37 @@ export function isPrd01SceneGraphOn(flag: Prd01SceneGraphFlag): boolean {
 /* World transform side table (flattened node -> composed world transform). */
 
 const worldTransforms = new WeakMap<object, AuraWorldTransform>();
+const sourceSceneNodes = new WeakMap<object, AuraSceneNode>();
+const parentTransforms = new WeakMap<object, ParentedSourceTransform>();
+
+export interface ParentedSourceTransform {
+  readonly source: AuraSceneNode;
+  /** Snapshot of ancestors only; retained by the compiler and not mutable by callers. */
+  readonly parentWorldMatrix: Float32Array;
+  /** The source leaf or at least one ancestor supplied a nonzero pivot. */
+  readonly hasPivot: boolean;
+}
 
 /** The composed world transform attached by the flag-on flatten (undefined for root or flag-off nodes). */
 export function worldTransformOf(node: object | undefined): AuraWorldTransform | undefined {
   return node === undefined ? undefined : worldTransforms.get(node);
 }
 
+/** The original authored node retained across hierarchical flatten passes. */
+export function sourceSceneNodeOf(node: AuraSceneNode): AuraSceneNode | undefined {
+  return sourceSceneNodes.get(node);
+}
+
+/** Source-local identity and parent matrix retained during hierarchical flattening. */
+export function parentTransformOf(node: AuraSceneNode | undefined): ParentedSourceTransform | undefined {
+  return node === undefined ? undefined : parentTransforms.get(node);
+}
+
 /* ------------------------------------------------------------------------ */
 /* Dirty cache.                                                              */
 
 const ORDER_CODE: Readonly<Record<AuraEulerOrder, number>> = { XYZ: 1, XZY: 2, YXZ: 3, YZX: 4, ZXY: 5, ZYX: 6 };
-const FP_LEN = 14;
+const FP_LEN = 17;
 
 interface WorldEntry {
   readonly fp: Float64Array;
@@ -94,11 +115,13 @@ function fillTransformFingerprint(out: Float64Array, spec: AuraTransformSpec): v
   const r = spec.rotation ?? [0, 0, 0];
   const s = spec.scale === undefined ? [1, 1, 1] : typeof spec.scale === "number" ? [spec.scale, spec.scale, spec.scale] : spec.scale;
   const q = spec.quaternion;
+  const pivot = spec.pivot ?? [0, 0, 0];
   out[0] = p[0]; out[1] = p[1]; out[2] = p[2];
   out[3] = r[0]; out[4] = r[1]; out[5] = r[2];
   out[6] = s[0]; out[7] = s[1]; out[8] = s[2];
   out[9] = q ? q[0] : Number.NaN; out[10] = q ? q[1] : 0; out[11] = q ? q[2] : 0; out[12] = q ? q[3] : 0;
   out[13] = ORDER_CODE[spec.rotationOrder ?? "ZYX"];
+  out[14] = pivot[0]; out[15] = pivot[1]; out[16] = pivot[2];
 }
 
 function sameFingerprint(a: Float64Array, b: Float64Array): boolean {
@@ -122,6 +145,7 @@ export function createPrd01SceneGraphCache(): Prd01SceneGraphCache {
   const entries = new WeakMap<AuraTransformSpec, WorldEntry>();
   const scratchFp = new Float64Array(FP_LEN);
   const scratchLocal = new Float32Array(16);
+  const scratchWorld = new Float32Array(16);
   let composed = 0;
   let hits = 0;
   return {
@@ -139,26 +163,32 @@ export function createPrd01SceneGraphCache(): Prd01SceneGraphCache {
       entries.delete(node);
     },
     world(node, parentWorld) {
+      assertValidPivot(node.pivot);
       fillTransformFingerprint(scratchFp, node);
       let entry = entries.get(node);
       if (entry !== undefined && sameFingerprint(entry.fp, scratchFp) && sameParent(entry, parentWorld)) {
         hits += 1;
         return entry.world;
       }
+      // Compose and validate before replacing a retained cache entry.
+      localMatrixOf(node, scratchLocal);
+      if (parentWorld !== null) multiplyMat4Into(scratchWorld, parentWorld, scratchLocal);
+      const candidate = parentWorld === null ? scratchLocal : scratchWorld;
+      if (hasNonzeroPivot(node.pivot) && !candidate.every(Number.isFinite)) {
+        throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted world matrix must be finite.");
+      }
       if (entry === undefined) {
         entry = { fp: new Float64Array(FP_LEN), parent: new Float32Array(16), hasParent: false, world: new Float32Array(16) };
         entries.set(node, entry);
       }
       entry.fp.set(scratchFp);
-      localMatrixOf(node, scratchLocal);
       if (parentWorld === null) {
         entry.hasParent = false;
-        entry.world.set(scratchLocal);
       } else {
         entry.hasParent = true;
         entry.parent.set(parentWorld);
-        multiplyMat4Into(entry.world, parentWorld, scratchLocal);
       }
+      entry.world.set(candidate);
       composed += 1;
       return entry.world;
     }
@@ -190,7 +220,7 @@ function isPassThrough(node: AuraSceneNode): node is Extract<AuraSceneNode, { re
 }
 
 function hasTransform(spec: AuraTransformSpec): boolean {
-  return Boolean(spec.position || spec.rotation || spec.scale || spec.quaternion || spec.lookAt);
+  return Boolean(spec.position || spec.rotation || spec.scale || spec.quaternion || spec.lookAt || hasNonzeroPivot(spec.pivot));
 }
 
 function nodeIdOf(node: AuraSceneNode): string | undefined {
@@ -204,13 +234,22 @@ function applyParentWorld(
   parentWorld: Float32Array | null,
   parentLookAt: AuraVec3 | undefined,
   cache: Prd01SceneGraphCache,
-  options: Prd01SceneGraphOptions
+  options: Prd01SceneGraphOptions,
+  ancestorHasPivot: boolean
 ): AuraSceneNode {
   if (isPassThrough(node)) return node;
+  const pivot = "pivot" in node ? node.pivot : undefined;
+  assertValidPivot(pivot);
   if (parentWorld === null) {
     // Root (or transform-free ancestors): unchanged, except an inherited world-space lookAt target.
     if (parentLookAt === undefined || node.lookAt !== undefined) return node;
-    return { ...node, lookAt: parentLookAt } as AuraSceneNode;
+    const result = { ...node, lookAt: parentLookAt } as AuraSceneNode;
+    const world = worldTransforms.get(node);
+    if (world) worldTransforms.set(result, world);
+    const parent = parentTransforms.get(node);
+    if (parent) parentTransforms.set(result, parent);
+    sourceSceneNodes.set(result, sourceSceneNodeOf(node) ?? node);
+    return result;
   }
   const world = Float32Array.from(cache.world(node, parentWorld));
   const decomposed = decomposeMatrix(world);
@@ -238,6 +277,15 @@ function applyParentWorld(
     } as AuraSceneNode;
   }
   worldTransforms.set(result, decomposed);
+  const source = sourceSceneNodeOf(node) ?? node;
+  sourceSceneNodes.set(result, source);
+  if (node.kind === "model" || node.kind === "primitive") {
+    parentTransforms.set(result, {
+      source,
+      parentWorldMatrix: Float32Array.from(parentWorld),
+      hasPivot: ancestorHasPivot || hasNonzeroPivot(pivot)
+    });
+  }
   return result;
 }
 
@@ -247,30 +295,111 @@ function flattenInto(
   parentLookAt: AuraVec3 | undefined,
   cache: Prd01SceneGraphCache,
   options: Prd01SceneGraphOptions,
-  out: AuraSceneNode[]
+  out: AuraSceneNode[],
+  parentVisible = true,
+  visits?: readonly SceneFlattenVisit[],
+  spans?: Array<{ group: SceneGroupSpan["group"]; ancestors: SceneGroupSpan["ancestors"]; start: number; end: number }>,
+  ancestors: SceneGroupSpan["ancestors"] = [],
+  authored = true,
+  ancestorHasPivot = false
 ): void {
-  for (const node of nodes) {
+  for (let index = 0; index < (visits?.length ?? nodes.length); index += 1) {
+    const captured = visits?.[index];
+    const node = captured?.node ?? nodes[index]!;
     // A3D_QR_LOOKS: v1 look node keeps its slot; its lowered children follow.
-    const lowered = lowerLookNode(node);
-    if (lowered !== undefined) {
+    // In the hybrid path the legacy pass captured the actual traversed look
+    // occurrences. Replaying those visits must not call the lowerer again.
+    const lowered = visits === undefined ? lowerLookNode(node) : undefined;
+    const capturedLowering = captured?.lowered;
+    if (lowered !== undefined || capturedLowering !== undefined) {
       out.push(markLookNodeLowered(node));
-      flattenInto(lowered, parentWorld, parentLookAt, cache, options, out);
+      flattenInto(lowered ?? [], parentWorld, parentLookAt, cache, options, out, parentVisible, capturedLowering, spans, ancestors, false, ancestorHasPivot);
       continue;
     }
     if (node.kind === "group") {
+      assertValidPivot(node.pivot);
+      const span = authored && spans
+        ? { group: node, ancestors: [...ancestors], start: out.length, end: out.length }
+        : undefined;
+      if (span) spans!.push(span);
       const groupWorld = hasTransform(node) ? cache.world(node, parentWorld) : parentWorld;
-      flattenInto(node.children, groupWorld, node.lookAt ?? parentLookAt, cache, options, out);
+      const visible = parentVisible && (node as typeof node & { readonly visible?: boolean }).visible !== false;
+      flattenInto(visits === undefined ? node.children : [], groupWorld, node.lookAt ?? parentLookAt, cache, options, out, visible,
+        captured?.children, spans, authored && spans ? [...ancestors, node] : ancestors, authored,
+        ancestorHasPivot || hasNonzeroPivot(node.pivot));
+      if (span) span.end = out.length;
       continue;
     }
-    out.push(applyParentWorld(node, parentWorld, parentLookAt, cache, options));
+    let flattened = applyParentWorld(node, parentWorld, parentLookAt, cache, options, ancestorHasPivot);
+    if (!parentVisible && (node.kind === "line" || node.kind === "points" || node.kind === "sprite" || node.kind === "batched" || node.kind === "gaussian-splat" || node.kind === "scalar-volume")) {
+      const hidden = { ...flattened, visible: false } as AuraSceneNode;
+      const world = worldTransforms.get(flattened);
+      if (world) worldTransforms.set(hidden, world);
+      const parent = parentTransforms.get(flattened);
+      if (parent) parentTransforms.set(hidden, parent);
+      sourceSceneNodes.set(hidden, sourceSceneNodeOf(flattened) ?? node);
+      flattened = hidden;
+    }
+    out.push(flattened);
   }
 }
 
 /** C-06 flag-on flatten (true hierarchical composition). */
 export function flattenSceneNodesV2(nodes: readonly AuraSceneNode[], options: Prd01SceneGraphOptions = {}): AuraSceneNode[] {
+  assertValidPivotTree(nodes);
   const out: AuraSceneNode[] = [];
-  flattenInto(nodes, null, undefined, options.cache ?? createPrd01SceneGraphCache(), options, out);
+  const spans: Array<{ group: SceneGroupSpan["group"]; ancestors: SceneGroupSpan["ancestors"]; start: number; end: number }> | undefined = options.onGroupSpan ? [] : undefined;
+  flattenInto(nodes, null, undefined, options.cache ?? createPrd01SceneGraphCache(), options, out, true, undefined, spans);
+  if (options.onGroupSpan && spans) for (const span of spans) options.onGroupSpan(span);
   return out;
+}
+
+/**
+ * Lines and billboards need the full composed matrix even when the legacy
+ * scene-graph flag is off. Batched nodes likewise need composed transforms and
+ * inherited visibility, while anonymous batches retain their authored identity
+ * so compile/update and scene queries address the same live state.
+ */
+export function flattenNodesWithLineWorldMatrices(nodes: readonly AuraSceneNode[], options: SceneFlattenOptions = {}): AuraSceneNode[] {
+  const captured = captureFlattenSceneNodes(nodes, {}, options.onGroupSpan !== undefined);
+  const legacy = captured.nodes;
+  const isLineLike = (node: AuraSceneNode): boolean => node.kind === "line" || node.kind === "points" || node.kind === "sprite" || node.kind === "gaussian-splat" || node.kind === "scalar-volume";
+  const isBatch = (node: AuraSceneNode): boolean => node.kind === "batched";
+  const isProfiledLight = (node: AuraSceneNode): boolean => node.kind === "light" && (node.photometricProfile !== undefined || (node.light === "spot" && node.projectedImage !== undefined));
+  if (!legacy.some((node) => isLineLike(node) || isBatch(node) || isProfiledLight(node))) {
+    if (options.onGroupSpan) for (const span of captured.spans) options.onGroupSpan(span);
+    return legacy;
+  }
+  const hierarchical: AuraSceneNode[] = [];
+  flattenInto([], null, undefined, createPrd01SceneGraphCache(), {}, hierarchical, true, captured.visits);
+  if (hierarchical.length !== legacy.length || hierarchical.some((node, index) => node.kind !== legacy[index]?.kind)) {
+    throw new Error("LINE_WORLD_FLATTEN_MISMATCH: legacy and hierarchical scene lowering produced different nodes");
+  }
+  const result = legacy.map((node, index) => {
+    const hierarchicalNode = hierarchical[index]!;
+    if (isBatch(node)) {
+      const source = sourceSceneNodeOf(hierarchicalNode) ?? hierarchicalNode;
+      // The hierarchical TRS already includes a child's pivot. The legacy
+      // batch renderer consumes that TRS, so do not apply the pivot a second
+      // time. Keep the full matrix in the side table for queries.
+      const world = worldTransforms.get(hierarchicalNode);
+      const rendered = world && "pivot" in hierarchicalNode && hierarchicalNode.pivot
+        ? { ...hierarchicalNode, pivot: undefined } as AuraSceneNode : hierarchicalNode;
+      if (world && rendered !== hierarchicalNode) worldTransforms.set(rendered, world);
+      if (source !== rendered) sourceSceneNodes.set(rendered, source);
+      return rendered;
+    }
+    if (isProfiledLight(node)) {
+      // Keep the existing legacy transform while retaining authored identity
+      // for the private runtime handle that tracks inherited visibility.
+      const source = sourceSceneNodeOf(hierarchicalNode) ?? hierarchicalNode;
+      if (source !== node) sourceSceneNodes.set(node, source);
+      return node;
+    }
+    return isLineLike(node) ? hierarchicalNode : node;
+  });
+  if (options.onGroupSpan) for (const span of captured.spans) options.onGroupSpan(span);
+  return result;
 }
 
 /** Flag-gated flatten: flag off = legacy `sceneMath.flattenSceneNodes`, verbatim. */
@@ -279,7 +408,7 @@ export function flattenAuraSceneNodes(
   flag: Prd01SceneGraphFlag,
   options: Prd01SceneGraphOptions = {}
 ): AuraSceneNode[] {
-  return isPrd01SceneGraphOn(flag) ? flattenSceneNodesV2(nodes, options) : legacyFlattenSceneNodes(nodes);
+  return isPrd01SceneGraphOn(flag) ? flattenSceneNodesV2(nodes, options) : legacyFlattenSceneNodes(nodes, {}, options);
 }
 
 /** Flag-gated snapshot flatten: flag off = legacy `sceneMath.flattenSceneSnapshot`. */
@@ -302,6 +431,7 @@ const M_S = new Float32Array(16);
 const M_O = new Float32Array(16);
 const M_A = new Float32Array(16);
 const M_B = new Float32Array(16);
+const M_PIVOT_RESULT = new Float32Array(16);
 const M_RX = new Float32Array(16);
 const M_RY = new Float32Array(16);
 const M_RZ = new Float32Array(16);
@@ -347,7 +477,8 @@ function rotationDelta(node: MatrixNode | undefined, time: number): AuraVec3 | u
 }
 
 /**
- * C-06 flag-on model matrix: `T · R · S(nodeScale ⊙ size ⊙ fit) · normalizeOffset`
+ * C-06 flag-on model matrix: `T(position) · T(pivot) · R · S(nodeScale) ·
+ * T(-pivot) · S(size ⊙ fit) · normalizeOffset`.
  * written into `out`. R honours `quaternion` (animation spins compose as a local
  * "ZYX" delta) and `rotationOrder`; a sheared group world matrix (attached by
  * `flattenSceneNodesV2`) replaces T·R·S(nodeScale).
@@ -359,6 +490,19 @@ export function createModelMatrixV2(
   time = 0,
   out: Float32Array = new Float32Array(16)
 ): Float32Array {
+  const pivot = node?.pivot;
+  assertValidPivot(pivot);
+  const pivoted = hasNonzeroPivot(pivot);
+  const parented = node ? parentTransformOf(node) : undefined;
+  if ((pivoted || parented?.hasPivot === true) && node?.lookAt !== undefined) {
+    throw new Error("PIVOT_UNSUPPORTED_LOOK_AT: pivoted model matrices cannot use lookAt.");
+  }
+  if (parented?.hasPivot && node?.animation !== undefined) {
+    throw new Error("PIVOT_UNSUPPORTED_NESTED_ANIMATION: pivoted static hierarchy animation requires a live parent transform.");
+  }
+  // Stage pivoted results so invalid float32 output never changes the caller's target.
+  const checked = pivoted || parented?.hasPivot === true;
+  const destination = checked ? M_PIVOT_RESULT : out;
   const extent = [
     Math.max(0.001, bounds.max[0] - bounds.min[0]),
     Math.max(0.001, bounds.max[1] - bounds.min[1]),
@@ -381,11 +525,15 @@ export function createModelMatrixV2(
       setRotationZYX(M_R, delta);
       multiplyMat4Into(M_B, M_R, M_B);
     }
-    multiplyMat4Into(out, world.matrix, M_B);
+    multiplyMat4Into(destination, world.matrix, M_B);
     const base = node?.position ?? [0, 0, 0];
-    out[12] = out[12]! + (position[0] - base[0]);
-    out[13] = out[13]! + (position[1] - base[1]);
-    out[14] = out[14]! + (position[2] - base[2]);
+    destination[12] = destination[12]! + (position[0] - base[0]);
+    destination[13] = destination[13]! + (position[1] - base[1]);
+    destination[14] = destination[14]! + (position[2] - base[2]);
+    if (checked) {
+      if (!destination.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted model matrix must be finite.");
+      out.set(destination);
+    }
     return out;
   }
   const nodeScale = typeof node?.scale === "number" ? [node.scale, node.scale, node.scale] as const : node?.scale ?? [1, 1, 1] as const;
@@ -401,9 +549,20 @@ export function createModelMatrixV2(
   }
   setScaling(M_S, nodeScale[0] * baseSize[0] * fitScale, nodeScale[1] * baseSize[1] * fitScale, nodeScale[2] * baseSize[2] * fitScale);
   setTranslation(M_T, position[0], position[1], position[2]);
+  if (pivoted && pivot && !world) {
+    // Flattened world transforms have already applied the source pivot.
+    const x = pivot[0] * nodeScale[0], y = pivot[1] * nodeScale[1], z = pivot[2] * nodeScale[2];
+    M_T[12] += pivot[0] - (M_R[0]! * x + M_R[4]! * y + M_R[8]! * z);
+    M_T[13] += pivot[1] - (M_R[1]! * x + M_R[5]! * y + M_R[9]! * z);
+    M_T[14] += pivot[2] - (M_R[2]! * x + M_R[6]! * y + M_R[10]! * z);
+  }
   multiplyMat4Into(M_B, M_S, M_O);
   multiplyMat4Into(M_A, M_R, M_B);
-  multiplyMat4Into(out, M_T, M_A);
+  multiplyMat4Into(destination, M_T, M_A);
+  if (checked) {
+    if (!destination.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted model matrix must be finite.");
+    out.set(destination);
+  }
   return out;
 }
 

@@ -12,13 +12,7 @@ import type {
   GameInputController,
   GameKinematicBody,
   GameRuntimeSubsystemOwnership
-} from "./GameRuntime";
-import { assets } from "./AssetDecoders.js";
-import { animation } from "./nodes/animation.js";
-import { camera } from "./nodes/camera.js";
-import { effects } from "./nodes/effects.composite.js";
-import { physics } from "./nodes/physics.js";
-import { renderer } from "./rendererDiagnostics.js";
+} from "./GameRuntimeCore.js";
 
 export interface GameRuntimeEvidenceApp {
   readonly runtime?: {

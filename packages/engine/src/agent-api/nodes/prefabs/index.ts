@@ -1,7 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3, AuraColor, AuraAssetRef, AuraAnimationSpec, AuraSceneNode, AuraSolarSystemPrefabOptions, AuraNeonTunnelOptions, AuraPrimitiveHumanoidPrefabOptions, AuraDataBars3DPrefabOptions, AuraProductStageStyle, AuraProductViewerOptions } from "../types.js";
-import { animation } from "../animation.js";
 import { chartThemePalette, dataBarColor } from "../charts.js";
 import { cityBlock } from "./cityBlock.js";
 import { objectiveMarker, objectiveMarkerPoses } from "./objectiveMarker.js";
@@ -13,17 +12,11 @@ import { lights } from "../lights.js";
 import { material } from "../material.js";
 import { model } from "../model.js";
 import { neonPalette } from "../neon.js";
-import { normalizeAuraVec3 } from "../games.js";
-import { particles } from "../particles.js";
-import { physics } from "../physics.js";
+import { normalizeAuraVec3 } from "../games-core.js";
 import { primitives } from "../primitives.js";
 import { productPlacement } from "../product.js";
 import { seededRange, mix3 } from "../../sceneMath.js";
 import { solarPlanetMaterial } from "../solar.js";
-import { water } from "../water.js";
-import { round } from "../../GameRuntime.js";
-import { particleFountain } from "../../particle-fountain-runtime.js";
-import { productViewer } from "../../product-viewer-runtime.js";
 import { lazyNamespace } from "../../lazyNamespace.js";
 
 

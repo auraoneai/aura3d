@@ -1,17 +1,27 @@
-// Phase-1 type-check config (PRD-15 §7, T1.0). noEmit over the same roots as
-// tsconfig.build.json plus tests/qr/** and the three root configs — every
-// later lane task checks with `tsc --noEmit -p tsconfig.check.json`.
-// tests/browser/** is deliberately out of scope: those specs were never
-// type-checked (other lanes own them) and carry ~1.8k pre-existing errors.
+// Source check for production, tests and tooling. Native browser sources have
+// their own tsconfig.browser-tests.json check; neither check runs a browser.
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true
   },
+  // Roadmap source tests inside legacy lane trees must still be checked.
+  // Explicit files are retained even when their containing tree is excluded.
+  "files": [
+    "tests/qr/prd04/unit/mikktspace-tangents.test.ts",
+    "tests/qr/prd04/unit/native-physical-shader-contract.test.ts",
+    "tests/qr/prd04/unit/texture-budget.test.ts",
+    "tests/qr/prd04/unit/uv-transform-matrix.test.ts",
+    "tests/qr/prd04/unit/wgsl-twins.test.ts",
+    "tests/qr/prd07/unit/effects-builders.test.ts",
+    "tests/qr/prd07/unit/preetham-cpu-reference.test.ts",
+    "tests/qr/prd11/unit/render-target-pool.test.ts"
+  ],
   "include": [
     "packages/*/src/**/*.ts",
     "tests/unit/**/*.ts",
     "tests/integration/**/*.ts",
+    "tests/assets/**/*.ts",
     "tests/performance/**/*.ts",
     "tests/visual/**/*.ts",
     "tests/qr/**/*.ts",
@@ -33,6 +43,36 @@
     "tests/qr/prd07",
     "tests/qr/prd08",
     "tests/qr/prd11",
-    "tests/qr/prd14"
+    "tests/qr/prd14",
+    // Historical comparison browser entrypoints depend on an external engine
+    // that is no longer part of the independent source dependency graph.
+    // Preserve their source and evidence, but do not claim these roots are
+    // typechecked here. Include their importers as well: exclude only affects
+    // root discovery, not transitive imports. Native tests, production paths,
+    // metadata tests, and the remaining comparison tooling stay included.
+    // Some retained historical tools already have @ts-nocheck and do not
+    // become typechecked merely by appearing among these roots.
+    "tests/qr/prd01/harness/main.ts",
+    "tests/qr/prd01/harness/specTools.ts",
+    "tests/qr/prd01/harness/specKit.ts",
+    "tests/qr/prd01/harness/blendTools.ts",
+    "tests/qr/prd01/harness/captureTools.ts",
+    "tests/qr/prd01/harness/frameGraphTools.ts",
+    "tests/qr/prd01/harness/outputSceneTools.ts",
+    "tests/qr/prd01/harness/outputTools.ts",
+    "tests/qr/prd01/harness/primitiveTools.ts",
+    "tests/qr/prd01/harness/temporalDollyTools.ts",
+    "tests/qr/prd05/harness/prd05-capture.ts",
+    "tests/qr/prd06/browser/character-hero-harness.ts",
+    "tests/qr/prd06/browser/crossfade-filmstrip-harness.ts",
+    "tests/qr/prd06/browser/ik-slope-harness.ts",
+    "tests/qr/prd06/browser/skinning-parity-flag-on-harness.ts",
+    "tools/bundle-scenarios/entries/scenario-*-threejs.ts",
+    "tools/bench-vs-threejs/*/three*/main.ts",
+    "tools/bench-vs-threejs/*/three*/scene.ts",
+    "tools/bench-vs-threejs/full-game/three/src/main.ts",
+    "tools/bench-vs-threejs/full-game/three/src/game.ts",
+    "tools/bench-vs-threejs/full-game/three/src/scene.ts",
+    "tools/current-routes-threejs-parity/index.ts"
   ]
 }

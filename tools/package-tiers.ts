@@ -45,6 +45,8 @@ export const PACKAGE_TIERS: Record<string, number> = {
   // 5 — aggregates. Nothing may depend on these except other aggregates.
   engine: 5,
   game: 5,
+  // Optional outputs compose rendering and other lower-level packages.
+  addons: 5,
   react: 6,
   "three-compat": 6,
   "aura3d-cli": 6,

@@ -1,7 +1,7 @@
 // C-29 seam (PR 0b) — renderer-side device lifecycle delegates.
 // File: packages/rendering/src/renderer/DeviceLifecycle.ts — owner lane 11.
 
-import type { RenderDevice } from "../RenderDevice";
+import { RenderDeviceError, type RenderDevice } from "../RenderDevice";
 import type { ProgramFeatures } from "../contracts/program";
 import { programCacheSlot } from "../contracts/program";
 import type { QrFlags } from "../contracts/core";
@@ -60,10 +60,13 @@ export function installDeviceRestoreRebuild(device: RenderDevice, options: Devic
     if (invalidator) {
       invalidator.call(host);
     }
-    await options.registry.rebuild(device);
+    const result = await options.registry.rebuild(device);
     const features = await options.activeProgramFeatures?.();
     if (features && features.length > 0) {
       await programCacheSlot.get(options.flags)(device).precompile(features);
+    }
+    if (result.failed.length > 0) {
+      throw new RenderDeviceError("Registered resources failed to rebuild after context restoration", "RESOURCE_REBUILD_FAILED", { failed: result.failed });
     }
   });
 }

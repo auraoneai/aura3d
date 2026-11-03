@@ -1,6 +1,6 @@
 {
   "schema": "prd03/tone-operators@1",
-  "source": "three@0.185.1 tonemapping_pars_fragment.glsl.js (CPU port; exposure applied inside each operator)",
+  "source": "Independent published-equation reference: Reinhard 2002; Hill ACES RRT/ODT fit; AgX log/contrast fit; Khronos PBR Neutral. JS double, 8 decimals; ACES view scale 1/0.6.",
   "exposure": 1,
   "cases": [
     {

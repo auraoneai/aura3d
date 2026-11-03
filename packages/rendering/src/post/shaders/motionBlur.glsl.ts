@@ -8,15 +8,13 @@
  *   Pass 3 MB_RECONSTRUCT_GLSL — per pixel: taps along the neighbor-max
  *                               direction, soft depth compare (0.05 m) to
  *                               keep background from being smeared by an
- *                               unrelated foreground vector, IGN jitter.
+ *                               unrelated foreground vector.
  *
  * Velocity enters in UV units per frame; the driver scales it by
  * `shutter · (targetFrameTime / actualFrameTime)` (C-23 timeScale goes into
  * the authored shutter before it reaches this pass) and clamps to
  * `maxBlurPx`.
  */
-
-import { POST_COMMON_GLSL } from "./common.glsl.js";
 
 const HEADER = `#version 300 es
 precision highp float;
@@ -67,48 +65,65 @@ uniform highp sampler2D u_neighbor;     // 3x3 tile max
 uniform highp sampler2D u_linearDepth;  // .r = viewZ metres
 uniform float u_shutter;                // authored shutter · frameTime scale
 uniform float u_maxBlurPx;
-uniform int u_samples;                  // 8 | 12 | 16
+uniform int u_samples;                  // bounded to [1, 16]
 uniform int u_tileSize;
-uniform int u_frameIndex;
+uniform int u_frameIndex;               // reserved for binding compatibility
 out vec4 o_color;
 
-${POST_COMMON_GLSL}
-
-float ign(vec2 pixel) {
-  // Interleaved gradient noise — per-pixel tap phase.
-  return fract(52.9829189 * fract(dot(pixel, vec2(0.06711056, 0.00583715)) + float(u_frameIndex) * 0.618034));
-}
-
 void main() {
-  ivec2 pixel = ivec2(gl_FragCoord.xy);
   ivec2 size = textureSize(u_color, 0);
-  vec2 uv = (vec2(pixel) + 0.5) / vec2(size);
-  vec3 src = texelFetch(u_color, pixel, 0).rgb;
-  float zSelf = texelFetch(u_linearDepth, pixel, 0).r;
+  ivec2 pixel = clamp(ivec2(gl_FragCoord.xy), ivec2(0), size - 1);
+  vec4 src = texelFetch(u_color, pixel, 0);
+  int samples = clamp(u_samples, 1, 16);
+  // Avoid a zero denominator, extra reads, and any change to a one-tap image.
+  if (samples == 1) { o_color = src; return; }
 
-  // Shutter·frame-time scale and pixel clamp happen once, on the tile vector.
-  vec2 tileV = texelFetch(u_neighbor, pixel / u_tileSize, 0).rg * u_shutter;
-  float maxLen = u_maxBlurPx / float(size.y);
-  if (length(tileV) > maxLen) tileV *= maxLen / length(tileV);
+  ivec2 depthSize = textureSize(u_linearDepth, 0);
+  ivec2 depthMax = depthSize - 1;
+  ivec2 depthPixel = clamp(ivec2((vec2(pixel) + 0.5) * vec2(depthSize) / vec2(size)), ivec2(0), depthMax);
+  float zSelf = texelFetch(u_linearDepth, depthPixel, 0).r;
+  ivec2 neighborMax = textureSize(u_neighbor, 0) - 1;
+  ivec2 tile = clamp(depthPixel / max(u_tileSize, 1), ivec2(0), neighborMax);
+  // Velocity is UV/frame; clamp its magnitude in actual pixels, so the cap
+  // also holds on non-square targets. Scale via the largest component to avoid
+  // overflow while normalizing very large, finite velocities.
+  vec2 velocity = clamp(texelFetch(u_neighbor, tile, 0).rg, vec2(-1e10), vec2(1e10));
+  vec2 velocityPx = velocity * clamp(u_shutter, -1e10, 1e10) * vec2(size);
+  float component = max(abs(velocityPx.x), abs(velocityPx.y));
+  if (component == 0.0) { o_color = src; return; }
+  vec2 direction = velocityPx / component;
+  float maxLen = clamp(u_maxBlurPx, 0.0, 2.0 * length(vec2(size)));
+  velocityPx = direction * min(component, maxLen / length(direction));
 
-  float jitter = ign(vec2(pixel));
-  vec3 sum = src;
-  float wsum = 1.0;
+  vec4 sum = vec4(0.0);
+  float wsum = 0.0;
   for (int i = 0; i < 16; i += 1) {
-    if (i >= u_samples) break;
-    float t = (float(i) + jitter) / float(u_samples - 1) - 0.5;
-    vec2 offset = tileV * t;
-    ivec2 tapPx = clamp(ivec2(floor((uv + offset) * vec2(size))), ivec2(0), size - 1);
-    vec3 c = texelFetch(u_color, tapPx, 0).rgb;
-    float zTap = texelFetch(u_linearDepth, tapPx, 0).r;
-    // Soft depth compare (0.05 m): taps on a different surface don't smear.
-    float depthW = clamp(1.0 - abs(zTap - zSelf) / 0.05, 0.0, 1.0);
-    // Coverage weight: a tap counts while the tile vector reaches it.
-    float reach = length(tileV) * abs(t);
-    float w = depthW * clamp(1.0 + length(tileV) * 0.5 - reach, 0.0, 1.0);
-    sum += c * w;
-    wsum += w;
+    if (i >= samples) break;
+    // Midpoints form symmetric pairs around zero for odd and even counts.
+    float t = (float(i) + 0.5) / float(samples) - 0.5;
+    // Manually bilinear-sample with per-texel depth rejection: unlike rounding
+    // to a nearest texel, this keeps paired samples centered at half pixels.
+    vec2 pos = clamp(vec2(pixel) + velocityPx * t, vec2(0.0), vec2(size - 1));
+    ivec2 base = ivec2(floor(pos));
+    vec2 fraction = fract(pos);
+    for (int y = 0; y < 2; y += 1) for (int x = 0; x < 2; x += 1) {
+      float coverage = (x == 0 ? 1.0 - fraction.x : fraction.x)
+                     * (y == 0 ? 1.0 - fraction.y : fraction.y);
+      if (coverage <= 0.0) continue;
+      ivec2 tapPx = clamp(base + ivec2(x, y), ivec2(0), size - 1);
+      ivec2 depthTap = clamp(ivec2((vec2(tapPx) + 0.5) * vec2(depthSize) / vec2(size)), ivec2(0), depthMax);
+      float zTap = texelFetch(u_linearDepth, depthTap, 0).r;
+      // Soft depth compare (0.05 m): different surfaces do not smear.
+      float w = coverage * clamp(1.0 - abs(zTap - zSelf) / 0.05, 0.0, 1.0);
+      vec4 sampleColor = texelFetch(u_color, tapPx, 0);
+      if (src.a <= 1.0) sampleColor.a = clamp(sampleColor.a, 0.0, 1.0);
+      sum += sampleColor * w;
+      wsum += w;
+    }
   }
-  o_color = vec4(sum / wsum, 1.0);
+  // Values above one carry the renderer's indirect-light tag, not opacity.
+  // Keep that tag at the center while filtering ordinary premultiplied alpha.
+  vec4 filtered = wsum > 0.0 ? sum / wsum : src;
+  o_color = src.a > 1.0 ? vec4(filtered.rgb, src.a) : filtered;
 }
 `;

@@ -1,18 +1,19 @@
 import { ShaderPreprocessor, type ShaderPreprocessOptions } from "./ShaderPreprocessor";
-import type { PortableShaderBinding } from "./RenderDevice";
-export { DEFAULT_PBR_SHADER_MARKER, DEFAULT_PBR_SHADER_NAME } from "./PBRMaterial";
-import { DEFAULT_PBR_SHADER_MARKER, DEFAULT_PBR_SHADER_NAME } from "./PBRMaterial";
+import type { NativeShaderStages, PortableShaderBinding } from "./RenderDevice";
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
+import { abortTrustedVariantCompile, beginTrustedVariantCompile, completeTrustedVariantCompile, completeTrustedVariantHit, trustedShaderVariantOptions } from "./renderer/TrustedShaderVariants";
+
+// Kept with the shader library so importing the library never evaluates a
+// concrete Material subclass (which itself depends on the program registry).
+export const DEFAULT_PBR_SHADER_NAME = "aura3d/pbr-direct";
+export const DEFAULT_PBR_SHADER_MARKER = "@aura3d-shader:pbr-direct";
 
 export interface ShaderSourcePair {
   readonly name: string;
   readonly marker: string;
   readonly vertex: string;
   readonly fragment: string;
-  readonly webgpu?: {
-    readonly vertex: string;
-    readonly fragment: string;
-  };
+  readonly webgpu?: NativeShaderStages;
   readonly portableBindings?: readonly PortableShaderBinding[];
   readonly variants?: readonly ShaderVariantDescriptor[];
 }
@@ -27,10 +28,7 @@ export interface CompiledShaderSource {
   readonly marker: string;
   readonly vertex: string;
   readonly fragment: string;
-  readonly webgpu?: {
-    readonly vertex: string;
-    readonly fragment: string;
-  };
+  readonly webgpu?: NativeShaderStages;
   readonly portableBindings?: readonly PortableShaderBinding[];
 }
 
@@ -123,28 +121,36 @@ export class ShaderLibrary {
     };
   }
 
-  compileVariant(name: string, variantName: string, options: ShaderPreprocessOptions = {}): CompiledShaderSource {
-    const shader = this.get(name);
-    const variant = shader.variants?.find((candidate) => candidate.name === variantName);
-    if (!variant) {
-      throw new Error(`Shader variant is not registered: ${name}:${variantName}`);
-    }
-    const compileOptions: ShaderPreprocessOptions = {
-      ...options,
-      defines: {
-        ...(variant.defines ?? {}),
-        ...(options.defines ?? {})
+  compileVariant(name: string, variantName: string, options: ShaderPreprocessOptions = trustedShaderVariantOptions({})): CompiledShaderSource {
+    const token = beginTrustedVariantCompile(this, name, variantName, options);
+    try {
+      const shader = this.get(name);
+      const variant = shader.variants?.find((candidate) => candidate.name === variantName);
+      if (!variant) {
+        throw new Error(`Shader variant is not registered: ${name}:${variantName}`);
       }
-    };
-    const cacheKey = variantCacheKey(name, variantName, compileOptions);
-    const cached = this.variantCache.get(cacheKey);
-    if (cached) {
-      return cached;
+      const compileOptions: ShaderPreprocessOptions = {
+        ...options,
+        defines: {
+          ...(variant.defines ?? {}),
+          ...(options.defines ?? {})
+        }
+      };
+      const cacheKey = variantCacheKey(name, variantName, compileOptions);
+      const cached = this.variantCache.get(cacheKey);
+      if (cached) {
+        completeTrustedVariantHit(token, cacheKey, cached);
+        return cached;
+      }
+      const compiled = this.compileSource(name, compileOptions);
+      const labeled = { ...compiled, label: `${name}:${variantName}` };
+      this.variantCache.set(cacheKey, labeled);
+      completeTrustedVariantCompile(token, cacheKey, labeled);
+      return labeled;
+    } catch (error) {
+      abortTrustedVariantCompile(token);
+      throw error;
     }
-    const compiled = this.compileSource(name, compileOptions);
-    const labeled = { ...compiled, label: `${name}:${variantName}` };
-    this.variantCache.set(cacheKey, labeled);
-    return labeled;
   }
 
   names(): readonly string[] {
@@ -239,6 +245,63 @@ export const DEFAULT_DEPTH_SHADER_MARKER = "@aura3d-shader:depth";
 export const DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME = "aura3d/environment-background";
 export const DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER = "@aura3d-shader:environment-background";
 
+/** Shared legacy PBR detail sampling. Texture data is linear and uses the red
+ * channel; UV transforms are applied after choosing the authored UV set. */
+export const LEGACY_PBR_SURFACE_DETAIL_GLSL = `
+uniform float u_diffuseRoughness;
+uniform float u_retroreflection;
+#ifdef A3D_PBR_DIFFUSE_ROUGHNESS_MAP
+uniform sampler2D u_diffuseRoughnessTexture;
+uniform float u_diffuseRoughnessTextureEnabled;
+uniform vec2 u_diffuseRoughnessTextureOffset;
+uniform vec2 u_diffuseRoughnessTextureScale;
+uniform float u_diffuseRoughnessTextureRotation;
+uniform float u_diffuseRoughnessTextureTexCoord;
+#endif
+#ifdef A3D_PBR_BUMP_MAP
+uniform sampler2D u_bumpTexture;
+uniform float u_bumpTextureEnabled;
+uniform vec2 u_bumpTextureOffset;
+uniform vec2 u_bumpTextureScale;
+uniform float u_bumpTextureRotation;
+uniform float u_bumpTextureTexCoord;
+uniform float u_bumpFactor;
+#endif
+in vec2 v_a3dDetailUv0;
+in vec2 v_a3dDetailUv1;
+vec2 a3dLegacyDetailUv(float setIndex, vec2 offset, vec2 scale, float rotation) {
+  vec2 p = (setIndex > 0.5 ? v_a3dDetailUv1 : v_a3dDetailUv0) * scale;
+  float c = cos(rotation), s = sin(rotation);
+  return vec2(c * p.x - s * p.y, s * p.x + c * p.y) + offset;
+}
+void a3dLegacySetDiffuseDetail() {
+  a3dPbrDiffuseRoughness = clamp(u_diffuseRoughness, 0.0, 1.0);
+  a3dPbrRetroreflection = clamp(u_retroreflection, 0.0, 1.0);
+#ifdef A3D_PBR_DIFFUSE_ROUGHNESS_MAP
+  if (u_diffuseRoughnessTextureEnabled > 0.5) {
+    vec2 uv = a3dLegacyDetailUv(u_diffuseRoughnessTextureTexCoord, u_diffuseRoughnessTextureOffset, u_diffuseRoughnessTextureScale, u_diffuseRoughnessTextureRotation);
+    a3dPbrDiffuseRoughness *= clamp(texture(u_diffuseRoughnessTexture, uv).r, 0.0, 1.0);
+  }
+#endif
+}
+vec3 a3dLegacyBumpNormal(vec3 position, vec3 geometryNormal, vec3 shadingNormal) {
+#ifdef A3D_PBR_BUMP_MAP
+  if (u_bumpTextureEnabled < 0.5 || u_bumpFactor == 0.0) return shadingNormal;
+  vec2 uv = a3dLegacyDetailUv(u_bumpTextureTexCoord, u_bumpTextureOffset, u_bumpTextureScale, u_bumpTextureRotation);
+  float height = texture(u_bumpTexture, uv).r * u_bumpFactor;
+  vec3 dx = dFdx(position), dy = dFdy(position);
+  float dhdx = dFdx(height), dhdy = dFdy(height);
+  vec3 dualX = cross(dy, geometryNormal), dualY = cross(geometryNormal, dx);
+  float determinant = dot(dx, dualX);
+  if (abs(determinant) < 1e-8) return shadingNormal;
+  vec3 perturbed = shadingNormal - (dualX * dhdx + dualY * dhdy) / determinant;
+  float lengthSquared = dot(perturbed, perturbed);
+  return lengthSquared > 1e-12 ? perturbed * inversesqrt(lengthSquared) : shadingNormal;
+#else
+  return shadingNormal;
+#endif
+}`;
+
 export function registerLeanUnlitShader(library: ShaderLibrary): void {
   library.register({
     name: DEFAULT_UNLIT_SHADER_NAME,
@@ -308,6 +371,8 @@ export function registerLeanPbrShader(library: ShaderLibrary): void {
 precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;
+layout(location = 2) in vec2 a_uv;
+layout(location = 7) in vec2 a_uv1;
 layout(location = 4) in vec4 a_color;
 layout(location = 8) in vec4 a_instanceMatrix0;
 layout(location = 9) in vec4 a_instanceMatrix1;
@@ -322,8 +387,12 @@ uniform float u_instanceCount;
 uniform float u_instanceAttributeMode;
 out vec3 v_normal;
 out vec3 v_worldPosition;
+out vec2 v_a3dDetailUv0;
+out vec2 v_a3dDetailUv1;
 out vec4 v_vertexColor;
 void main() {
+  v_a3dDetailUv0 = a_uv;
+  v_a3dDetailUv1 = a_uv1;
   // P2 instanced-GLB path (muse3jsparity-PRD): the u_instanceCount branch is
   // taken only for items carrying instanceTransforms; every other draw keeps
   // the legacy math bit-exact. Mirrors the instanced-PBR vertex convention.
@@ -349,6 +418,7 @@ void main() {
 precision highp float;
 #include <lighting_common>
 #include <pbr_common>
+${LEGACY_PBR_SURFACE_DETAIL_GLSL}
 uniform vec4 u_baseColor;
 uniform float u_alphaCutoff;
 uniform float u_metallic;
@@ -604,8 +674,10 @@ vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   return mix(color, srgb, step(0.5, u_outputColorSpace));
 }
 void main() {
+  a3dLegacySetDiffuseDetail();
   vec3 normal = normalize(v_normal);
   if (!gl_FrontFacing) normal = -normal;
+  normal = a3dLegacyBumpNormal(v_worldPosition, normal, normal);
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec3 materialBase = a3dApplyAdvancedPbrLobes(
     u_baseColor.rgb * v_vertexColor.rgb,
@@ -712,7 +784,7 @@ void main() {
     vec3 refractionRadiance = (refractedEnvironment + vec3(causticEnergy)) * volumeTint * u_environmentMapTextureIntensity * transmissionAmount * fallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness) * roughVolumeIorLift;
     shaded = mix(shaded, shaded * 0.72 + refractionRadiance, transmissionAmount * mix(0.08, 0.58, fallbackEnvironmentTransmissionEnergy));
   }
-  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  ivec2 clusterTile = clamp(ivec2(floor(min(gl_FragCoord.xy, u_clusterViewportSize) / vec2(64.0))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
   int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
   int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
   for (int i = 0; i < 64; ++i) {
@@ -729,7 +801,7 @@ void main() {
     if (kind > 2.5) {
       shaded += a3dPbrRectAreaLight(
         v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
-        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w, areaUp.w,
         normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
         materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor
       );
@@ -750,11 +822,12 @@ void main() {
     if (kind > 1.5) {
       vec3 lightToFragment = normalize(v_worldPosition - positionRange.xyz);
       float cone = dot(normalize(directionKind.xyz), lightToFragment);
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadowLayer.x);
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z));
+    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * (lightIndex == int(u_contactShadowLightIndex) ? a3dContactShadowMaskFactor(kind) : 1.0), step(0.5, spotShadowLayer.z));
     shaded += a3dPbrDirectLight(
       normal,
       viewDirection,
@@ -803,16 +876,79 @@ export function registerLeanDepthShader(library: ShaderLibrary): void {
 precision highp float;
 layout(location = 0) in vec3 a_position;
 uniform mat4 u_modelViewProjection;
+#ifdef A3D_DEPTH_CLIPPING
+uniform mat4 u_a3dClipModel;
+out vec3 v_a3dClipLocal;
+out vec3 v_a3dClipWorld;
+#else
+#ifdef A3D_DEPTH_LOGARITHMIC
+uniform mat4 u_a3dClipModel;
+#endif
+#endif
+#ifdef A3D_DEPTH_LOGARITHMIC
+uniform mat4 u_a3dLogDepthView;
+out float v_a3dLogDepth;
+#endif
 void main() {
+#ifdef A3D_DEPTH_CLIPPING
+  vec4 a3dDepthWorld = u_a3dClipModel * vec4(a_position, 1.0);
+  v_a3dClipLocal = a_position;
+  v_a3dClipWorld = a3dDepthWorld.xyz;
+#else
+#ifdef A3D_DEPTH_LOGARITHMIC
+  vec4 a3dDepthWorld = u_a3dClipModel * vec4(a_position, 1.0);
+#endif
+#endif
+#ifdef A3D_DEPTH_LOGARITHMIC
+  v_a3dLogDepth = -(u_a3dLogDepthView * a3dDepthWorld).z;
+#endif
   gl_Position = u_modelViewProjection * vec4(a_position, 1.0);
 }
 `,
     fragment: `#version 300 es
 // ${DEFAULT_DEPTH_SHADER_MARKER}
 precision highp float;
+#ifdef A3D_DEPTH_CLIPPING
+in vec3 v_a3dClipLocal;
+in vec3 v_a3dClipWorld;
+uniform vec4 u_a3dClipPlanes[8];
+uniform vec4 u_a3dClipGroups[2];
+uniform float u_a3dClipGroupCount;
+#endif
+#ifdef A3D_DEPTH_LOGARITHMIC
+in float v_a3dLogDepth;
+uniform vec2 u_a3dLogDepthRange;
+#endif
 out vec4 outColor;
 void main() {
+#ifdef A3D_DEPTH_CLIPPING
+  // Each group is a union or intersection of retained half-spaces. The two
+  // groups themselves are intersected, matching the forward-pass binding.
+  for (int groupIndex = 0; groupIndex < 2; groupIndex++) {
+    if (float(groupIndex) >= u_a3dClipGroupCount) break;
+    vec4 group = u_a3dClipGroups[groupIndex];
+    vec3 position = group.w > 0.5 ? v_a3dClipLocal : v_a3dClipWorld;
+    bool useUnion = group.z > 0.5;
+    bool retained = !useUnion;
+    for (int planeIndex = 0; planeIndex < 8; planeIndex++) {
+      if (float(planeIndex) < group.x || float(planeIndex) >= group.x + group.y) continue;
+      bool inside = dot(u_a3dClipPlanes[planeIndex], vec4(position, 1.0)) >= 0.0;
+      retained = useUnion ? (retained || inside) : (retained && inside);
+    }
+    if (!retained) discard;
+  }
+#endif
+#ifdef A3D_DEPTH_LOGARITHMIC
+  float a3dDepth = clamp(
+    (log(max(v_a3dLogDepth, u_a3dLogDepthRange.x)) - log(u_a3dLogDepthRange.x)) /
+      (log(u_a3dLogDepthRange.y) - log(u_a3dLogDepthRange.x)),
+    0.0, 1.0
+  );
+  gl_FragDepth = a3dDepth;
+  outColor = vec4(vec3(a3dDepth), 1.0);
+#else
   outColor = vec4(vec3(gl_FragCoord.z), 1.0);
+#endif
 }
 `
   });

@@ -168,15 +168,23 @@ describe("prd01 C-07 primitive geometry conformance", () => {
     expect(fullSphere.vertexBuffer.vertexCount).toBe(65 * 33);
   });
 
-  it("shares geometry across equal (primitive, params) — cache hit", () => {
+  it("reuses a cached template while returning independent equal geometries", () => {
     clearPrimitiveGeometryCache();
     const before = primitiveGeometryCacheSize();
     const a = createPrimitiveGeometry("box", undefined, FULL);
     const b = createPrimitiveGeometry("box", undefined, FULL);
-    expect(a).toBe(b);
+    expect(a).not.toBe(b);
+    expect(a.vertexBuffer).not.toBe(b.vertexBuffer);
+    expect(a.indexBuffer).not.toBe(b.indexBuffer);
+    expect(Array.from(a.vertexBuffer.floats)).toEqual(Array.from(b.vertexBuffer.floats));
+    expect(Array.from(a.indexBuffer!.data)).toEqual(Array.from(b.indexBuffer!.data));
     expect(primitiveGeometryCacheSize()).toBe(before + 1);
     const c = createPrimitiveGeometry("box", { widthSegments: 2 }, FULL);
     expect(c).not.toBe(a);
+    a.dispose();
+    expect(b.vertexBuffer.getAttribute(0, "position")).toHaveLength(3);
+    b.dispose();
+    c.dispose();
   });
 
   it("promotes to Uint32 indices above 65,535 vertices", () => {

@@ -2,7 +2,8 @@
  * C-20 — effects surface (engine side, CONTRACTS.md). Provider: PRD 07. Flag: A3D_QR_VFX.
  */
 
-import type { AuraVec3, AuraColor, AuraRuntimeNodeHandle, AuraAssetRef } from "../agent-api/index";
+import type { AuraVec3, AuraColor, AuraAssetRef } from "../agent-api/nodes/types.js";
+import type { AuraRuntimeNodeHandle } from "../agent-api/nodes/types/runtime.js";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { AuraBlendMode } from "@aura3d/rendering/contracts";
 import type { AuraVfxBuiltinSequence } from "../agent-api/vfx/atlas";

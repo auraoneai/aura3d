@@ -29,6 +29,8 @@ export class AuraRuntimeError extends Error {
     | "invalid-camera-spec"
     // AD-15 (P2): `lights.lensFlare` option violations (element size/distance, occlusion, edgeFade, intensity).
     | "invalid-lens-flare"
+    // Line geometry, width, and dash option validation.
+    | "invalid-line-spec"
     // SH-04 (L1-12): `compute.*` / `app.compute` is WebGPU-only (WGSL). Every
     // call without a bound WebGPU device fails with this code, never a silent no-op.
     | "compute-requires-webgpu"
@@ -44,6 +46,8 @@ export class AuraRuntimeError extends Error {
     | "tsl-requires-glsl-backend"
     // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
     | "POST_FIELD_UNSUPPORTED"
+    // A native post effect requires a live, compatible texture input.
+    | "POSTPROCESS_INPUT_UNAVAILABLE"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,
     // including "renderer-mount-failed" from the T4.2 mount path.
     | import("../../contracts/compiler.js").AuraDegradationCode;

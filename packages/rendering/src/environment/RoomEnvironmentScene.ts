@@ -1,22 +1,21 @@
 /**
- * PRD-02 §7.1 — the neutral-room environment scene, ported verbatim from
- * three.js r185 examples/jsm/environments/RoomEnvironment.js (MIT).
- * Geometry/emissive values match the r185 file (node_modules/three, pinned
- * 0.185.1) so the CPU prefilter and the GPU path render the same neutral
- * studio, including the scene's y = -3.5 offset and the point-lit walls.
+ * Aura3D's neutral studio, used when baking the optional procedural room.
+ * Dimensions are in metres; panel emissive values are linear radiance and the
+ * point source intensity is expressed in candela. The capture is at the
+ * origin. The intentionally simple room is independently authored so its
+ * geometry and light values can be changed and reproduced by Aura3D.
  */
 export interface RoomBox {
   readonly position: readonly [number, number, number];
   readonly scale: readonly [number, number, number];
   readonly rotationY: number;
-  /** Lambertian reflectance: r185 uses default (white) `MeshStandardMaterial`s → 1. */
   readonly albedo: readonly [number, number, number];
 }
 export interface RoomEmissivePanel {
   readonly position: readonly [number, number, number];
   readonly scale: readonly [number, number, number];
   readonly rotationY: number;
-  readonly emissive: readonly [number, number, number]; // color × emissiveIntensity
+  readonly emissive: readonly [number, number, number];
 }
 export interface RoomPointLight {
   readonly color: readonly [number, number, number];
@@ -32,179 +31,93 @@ export interface RoomEnvironmentSceneDescriptor {
   readonly light: RoomPointLight;
 }
 
-/** r185 `RoomEnvironment` sets `this.position.y = -3.5`: the whole room sits 3.5 below the capture point. */
-export const ROOM_ENVIRONMENT_SCENE_OFFSET_Y = -3.5;
-
-/** Panel emissive intensities, r185 verbatim. */
-export const ROOM_ENVIRONMENT_PANEL_RADIANCES: readonly number[] = [50, 50, 17, 43, 20, 100];
+export const ROOM_ENVIRONMENT_SCENE_OFFSET_Y = 0;
+export const ROOM_ENVIRONMENT_PANEL_RADIANCES: readonly number[] = [64, 32, 24, 16, 48];
 
 export function createRoomEnvironmentScene(): RoomEnvironmentSceneDescriptor {
-  const room: RoomBox = {
-    position: [-0.757, 13.219, 0.717],
-    scale: [31.713, 28.305, 28.591],
-    rotationY: 0,
-    albedo: [1, 1, 1]
+  return {
+    room: { position: [0, 1, 0], scale: [24, 20, 24], rotationY: 0, albedo: [0.8, 0.8, 0.8] },
+    boxes: [
+      { position: [-6, -5.5, 5], scale: [3, 7, 3], rotationY: 0.35, albedo: [0.65, 0.65, 0.65] },
+      { position: [7, -6.5, -4], scale: [4, 5, 3], rotationY: -0.4, albedo: [0.72, 0.72, 0.72] }
+    ],
+    panels: [
+      { position: [0, 10.8, 0], scale: [8, 0.1, 5], rotationY: 0, emissive: [64, 64, 64] },
+      { position: [-11.8, 3, 0], scale: [0.1, 5, 6], rotationY: 0, emissive: [32, 32, 32] },
+      { position: [11.8, 5, -3], scale: [0.1, 4, 5], rotationY: 0, emissive: [24, 24, 24] },
+      { position: [0, 2, -11.8], scale: [6, 4, 0.1], rotationY: 0, emissive: [16, 16, 16] },
+      { position: [4, 5, 11.8], scale: [3, 3, 0.1], rotationY: 0, emissive: [48, 48, 48] }
+    ],
+    light: { color: [1, 1, 1], intensity: 240, distance: 40, decay: 2, position: [0, 7, 0] }
   };
-  const boxes: RoomBox[] = [
-    { position: [-10.906, 2.009, 1.846], scale: [2.328, 7.905, 4.651], rotationY: -0.195, albedo: [1, 1, 1] },
-    { position: [-5.607, -0.754, -0.758], scale: [1.970, 1.534, 3.955], rotationY: 0.994, albedo: [1, 1, 1] },
-    { position: [6.167, 0.857, 7.803], scale: [3.927, 6.285, 3.687], rotationY: 0.561, albedo: [1, 1, 1] },
-    { position: [-2.017, 0.018, 6.124], scale: [2.002, 4.566, 2.064], rotationY: 0.333, albedo: [1, 1, 1] },
-    { position: [2.291, -0.756, -2.621], scale: [1.546, 1.552, 1.496], rotationY: -0.286, albedo: [1, 1, 1] },
-    { position: [-2.193, -0.369, -5.547], scale: [3.875, 3.487, 2.986], rotationY: 0.516, albedo: [1, 1, 1] }
-  ];
-  const panels: RoomEmissivePanel[] = [
-    { position: [-16.116, 14.37, 8.208], scale: [0.1, 2.428, 2.739], rotationY: 0, emissive: [50, 50, 50] },   // -x right
-    { position: [-16.109, 18.021, -8.207], scale: [0.1, 2.425, 2.751], rotationY: 0, emissive: [50, 50, 50] }, // -x left
-    { position: [14.904, 12.198, -1.832], scale: [0.15, 4.265, 6.331], rotationY: 0, emissive: [17, 17, 17] }, // +x
-    { position: [-0.462, 8.89, 14.520], scale: [4.38, 5.441, 0.088], rotationY: 0, emissive: [43, 43, 43] },  // +z
-    { position: [3.235, 11.486, -12.541], scale: [2.5, 2.0, 0.1], rotationY: 0, emissive: [20, 20, 20] },      // -z
-    { position: [0.0, 20.0, 0.0], scale: [1.0, 0.1, 1.0], rotationY: 0, emissive: [100, 100, 100] }            // +y
-  ];
-  const light: RoomPointLight = {
-    color: [1, 1, 1],
-    intensity: 900,
-    distance: 28,
-    decay: 2,
-    position: [0.418, 16.199, 0.300]
-  };
-  return { room, boxes, panels, light };
 }
 
-/* ---------------- analytic sampling (CPU prefilter input) ---------------- */
+type Vec3 = [number, number, number];
+type BoxShape = Pick<RoomBox, "position" | "scale" | "rotationY">;
+interface Hit { readonly distance: number; readonly normal: Vec3 }
 
-type Vec3Tuple = [number, number, number];
-const sub = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const add = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const scale = (a: Vec3Tuple, s: number): Vec3Tuple => [a[0] * s, a[1] * s, a[2] * s];
-const dot = (a: Vec3Tuple, b: Vec3Tuple): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-
-/**
- * World → box-local for a box with three's `rotation.y = angle`. three's
- * `makeRotationY(a)` maps local → world as x' = c·x + s·z, z' = −s·x + c·z,
- * so the inverse is x = c·x' − s·z', z = s·x' + c·z'.
- */
-function rotateYInv(p: Vec3Tuple, angle: number): Vec3Tuple {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-  return [p[0] * c - p[2] * s, p[1], p[0] * s + p[2] * c];
-}
-
-/** Slab test vs an axis-aligned box (in the box's local frame). Returns hit t or -1. */
-function slabHit(origin: Vec3Tuple, dir: Vec3Tuple, half: Vec3Tuple): number {
-  let tMin = -Infinity;
-  let tMax = Infinity;
-  for (let i = 0; i < 3; i += 1) {
-    const o = origin[i]!;
-    const d = dir[i]!;
-    if (Math.abs(d) < 1e-9) {
-      if (Math.abs(o) > half[i]!) return -1;
+/** Intersect a ray with the three independent box intervals in local space. */
+function intersectBox(direction: Vec3, box: BoxShape): Hit | null {
+  const c = Math.cos(box.rotationY), s = Math.sin(box.rotationY);
+  const center = box.position;
+  const origin: Vec3 = [-center[0] * c + center[2] * s, -center[1], -center[0] * s - center[2] * c];
+  const ray: Vec3 = [direction[0] * c - direction[2] * s, direction[1], direction[0] * s + direction[2] * c];
+  let enter = -Infinity, exit = Infinity, enterAxis = -1, exitAxis = -1;
+  let enterSign = 0, exitSign = 0;
+  for (let axis = 0; axis < 3; axis += 1) {
+    const half = box.scale[axis]! / 2;
+    const o = origin[axis]!, d = ray[axis]!;
+    if (Math.abs(d) < 1e-12) {
+      if (Math.abs(o) > half) return null;
       continue;
     }
-    const t1 = (-half[i]! - o) / d;
-    const t2 = (half[i]! - o) / d;
-    tMin = Math.max(tMin, Math.min(t1, t2));
-    tMax = Math.min(tMax, Math.max(t1, t2));
+    const first = (-half - o) / d, second = (half - o) / d;
+    const near = Math.min(first, second), far = Math.max(first, second);
+    if (near > enter) { enter = near; enterAxis = axis; enterSign = d > 0 ? -1 : 1; }
+    if (far < exit) { exit = far; exitAxis = axis; exitSign = d > 0 ? 1 : -1; }
+    if (enter > exit) return null;
   }
-  // Inside the box (tMin < 0 < tMax) the exit face is at tMax; outside it is tMin.
-  if (tMax < tMin || tMax <= 0) return -1;
-  return tMin > 0 ? tMin : tMax;
+  const outside = enter > 1e-7;
+  const distance = outside ? enter : exit;
+  const axis = outside ? enterAxis : exitAxis;
+  if (axis < 0 || distance <= 1e-7 || !Number.isFinite(distance)) return null;
+  const local: Vec3 = [0, 0, 0];
+  // Room walls are viewed from inside, so their normal faces the camera.
+  local[axis] = outside ? enterSign : -exitSign;
+  return { distance, normal: [local[0] * c + local[2] * s, local[1], -local[0] * s + local[2] * c] };
 }
 
-function boxHit(origin: Vec3Tuple, dir: Vec3Tuple, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): number {
-  const o = rotateYInv(sub(origin, box.position as Vec3Tuple), box.rotationY);
-  const d = rotateYInv(dir, box.rotationY);
-  return slabHit(o, d, [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2]);
-}
-
-/** Physical point-light distance falloff, three r185 `getDistanceAttenuation`. */
-function distanceAttenuation(d: number, cutoff: number, decay: number): number {
-  let falloff = 1 / Math.max(d ** decay, 0.01);
-  if (cutoff > 0) {
-    const x = Math.min(Math.max(1 - (d / cutoff) ** 4, 0), 1);
-    falloff *= x * x;
-  }
-  return falloff;
-}
-
-interface SurfaceHit {
-  readonly t: number;
-  readonly normal: Vec3Tuple;
-}
-
-/** Ray vs a Y-rotated box: hit distance and the world-space normal facing the ray. */
-function boxSurfaceHit(origin: Vec3Tuple, dir: Vec3Tuple, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): SurfaceHit | null {
-  const o = rotateYInv(sub(origin, box.position as Vec3Tuple), box.rotationY);
-  const d = rotateYInv(dir, box.rotationY);
-  const half: Vec3Tuple = [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2];
-  const t = slabHit(o, d, half);
-  if (t <= 0) return null;
-  // The hit face is the slab whose plane the local hit point lies on.
-  const p = add(o, scale(d, t));
-  let axis = 0;
-  let best = Infinity;
-  for (let i = 0; i < 3; i += 1) {
-    const gap = Math.abs(Math.abs(p[i]!) - half[i]!);
-    if (gap < best) { best = gap; axis = i; }
-  }
-  // Facing the ray: outside faces (props) and the room's inner faces (BackSide) alike.
-  const local: Vec3Tuple = [0, 0, 0];
-  local[axis] = d[axis]! > 0 ? -1 : 1;
-  const c = Math.cos(box.rotationY);
-  const s = Math.sin(box.rotationY);
-  return { t, normal: [local[0] * c + local[2] * s, local[1], -local[0] * s + local[2] * c] };
-}
-
-let cachedScene: RoomEnvironmentSceneDescriptor | null = null;
+const scene = createRoomEnvironmentScene();
 
 /**
- * Analytic radiance of the r185 room along `dir`, seen from the PMREM capture
- * point. three's `RoomEnvironment` shifts the whole scene by y = -3.5
- * (`this.position.y`), so the capture point sits at y = +3.5 in scene space.
- *
- *  - emissive panels (`MeshLambertMaterial`, black colour, white emissive ×
- *    intensity) → their emissive radiance;
- *  - room walls (BackSide) and prop boxes are default `MeshStandardMaterial`s
- *    (white, roughness 1, metalness 0): Lambertian albedo 1 lit only by the
- *    `PointLight(0xffffff, 900, 28, 2)`, i.e. `(1/π) · 900 · max(0, n·l) ·
- *    attenuation(d)`. No shadows: PMREM capture renders without shadow maps.
- *
- * Deterministic. Used by `environments bake` for the neutral preset, by the
- * neutral floor constants, and by tests against the pinned three file.
+ * Trace the capture ray against the room and luminous panels. Diffuse surfaces
+ * use Lambertian reflectance L = albedo / pi * I * cos(theta) / r^decay,
+ * with a smooth finite range. Results are linear, nonnegative HDR radiance.
  */
-export function sampleRoomEnvironment(dir: readonly [number, number, number]): Vec3Tuple {
-  const scene = (cachedScene ??= createRoomEnvironmentScene());
-  const origin: Vec3Tuple = [0, -ROOM_ENVIRONMENT_SCENE_OFFSET_Y, 0];
-  const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
-  const ray: Vec3Tuple = [dir[0] / len, dir[1] / len, dir[2] / len];
-  let bestT = Infinity;
-  let radiance: Vec3Tuple = [0, 0, 0];
+export function sampleRoomEnvironment(dir: readonly [number, number, number]): Vec3 {
+  const length = Math.hypot(...dir);
+  if (!Number.isFinite(length) || length < 1e-12) return [0, 0, 0];
+  const ray: Vec3 = [dir[0] / length, dir[1] / length, dir[2] / length];
+  let nearest = Infinity;
+  let result: Vec3 = [0, 0, 0];
   for (const panel of scene.panels) {
-    const t = boxHit(origin, ray, panel);
-    if (t > 0 && t < bestT) {
-      bestT = t;
-      radiance = [panel.emissive[0], panel.emissive[1], panel.emissive[2]];
+    const hit = intersectBox(ray, panel);
+    if (hit && hit.distance < nearest) {
+      nearest = hit.distance;
+      result = [...panel.emissive];
     }
   }
-  let surface: { hit: SurfaceHit; albedo: readonly [number, number, number] } | null = null;
   for (const box of [scene.room, ...scene.boxes]) {
-    const hit = boxSurfaceHit(origin, ray, box);
-    if (hit && hit.t < bestT) {
-      bestT = hit.t;
-      surface = { hit, albedo: box.albedo };
-    }
+    const hit = intersectBox(ray, box);
+    if (!hit || hit.distance >= nearest) continue;
+    nearest = hit.distance;
+    const point: Vec3 = [ray[0] * nearest, ray[1] * nearest, ray[2] * nearest];
+    const toLight: Vec3 = [scene.light.position[0] - point[0], scene.light.position[1] - point[1], scene.light.position[2] - point[2]];
+    const distance = Math.hypot(...toLight);
+    const cosine = distance > 0 ? Math.max(0, (hit.normal[0] * toLight[0] + hit.normal[1] * toLight[1] + hit.normal[2] * toLight[2]) / distance) : 0;
+    const range = Math.max(0, 1 - distance / scene.light.distance);
+    const irradiance = scene.light.intensity * cosine * range * range / Math.max(0.01, distance ** scene.light.decay);
+    result = [0, 1, 2].map((i) => box.albedo[i]! * scene.light.color[i]! * irradiance / Math.PI) as Vec3;
   }
-  if (surface) {
-    const p = add(origin, scale(ray, surface.hit.t));
-    const toLight = sub(scene.light.position as Vec3Tuple, p);
-    const d = Math.hypot(toLight[0], toLight[1], toLight[2]);
-    const nDotL = Math.max(0, dot(surface.hit.normal, scale(toLight, 1 / d)));
-    const e = scene.light.intensity * nDotL * distanceAttenuation(d, scene.light.distance, scene.light.decay);
-    radiance = [
-      (surface.albedo[0] / Math.PI) * e * scene.light.color[0],
-      (surface.albedo[1] / Math.PI) * e * scene.light.color[1],
-      (surface.albedo[2] / Math.PI) * e * scene.light.color[2]
-    ];
-  }
-  return radiance;
+  return result;
 }

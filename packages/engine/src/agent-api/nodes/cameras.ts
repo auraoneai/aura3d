@@ -10,6 +10,7 @@
  */
 
 import type { AuraCameraSpec, AuraSceneNode, AuraTransformSpec, AuraVec3 } from "./types.js";
+import type { RendererPostProcessOptions } from "@aura3d/rendering";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
 import { STEREO_DEFAULT_EYE_SEPARATION, STEREO_DEFAULT_FOCUS } from "../stereoMath.js";
@@ -25,10 +26,24 @@ export interface AuraCameraViewport {
   readonly height: number;
 }
 
-export interface AuraCameraArrayEntry {
-  /** Overrides applied on top of the scene camera (position/target/fov/near/far/mode/layers). Unset fields inherit the scene camera. */
+export interface AuraCameraViewSettings {
+  /** Stable identity for view-specific temporal and postprocess resources. */
+  readonly id?: string;
+  /** Overrides applied on top of the scene camera. Unset fields inherit it. */
   readonly camera?: Partial<AuraCameraSpec>;
+  /** A normalized target-space clip rectangle; defaults to the viewport. */
+  readonly scissor?: AuraCameraViewport;
+  /** Inherit the scene's postprocessing when omitted; false disables it for this view. */
+  readonly postprocess?: RendererPostProcessOptions | boolean;
+}
+
+export interface AuraCameraArrayEntry extends AuraCameraViewSettings {
   readonly viewport: AuraCameraViewport;
+}
+
+/** Per-eye overrides; an omitted viewport uses the selected stereo layout. */
+export interface AuraStereoViewSettings extends AuraCameraViewSettings {
+  readonly viewport?: AuraCameraViewport;
 }
 
 export interface AuraCameraArrayOptions {
@@ -49,6 +64,8 @@ export interface AuraStereoCameraOptions {
   readonly zoom?: number;
   /** Eye placement: side-by-side (left eye left) or over-under (left eye on top). */
   readonly layout?: AuraStereoLayout;
+  /** Independent left and right eye settings, in that order. */
+  readonly views?: readonly [AuraStereoViewSettings, AuraStereoViewSettings];
 }
 
 export interface AuraCameraArrayNode {
@@ -66,6 +83,7 @@ export interface AuraCameraStereoNode {
   readonly aspect?: number;
   readonly zoom: number;
   readonly layout: AuraStereoLayout;
+  readonly views?: readonly [AuraStereoViewSettings, AuraStereoViewSettings];
 }
 
 export function isAuraCameraArrayNode(node: { readonly kind: string }): node is AuraCameraArrayNode & AuraSceneNode {
@@ -91,6 +109,36 @@ function validateViewport(label: string, viewport: AuraCameraViewport | undefine
   }
   if (x < 0 || y < 0 || x + width > 1 + 1e-9 || y + height > 1 + 1e-9) {
     throw new AuraRuntimeError("invalid-camera-spec", `${label} viewport must lie inside the unit square (normalized 0..1, origin bottom-left)`);
+  }
+}
+
+function validateViewSettings(label: string, entry: AuraCameraViewSettings): void {
+  if (!entry || typeof entry !== "object") {
+    throw new AuraRuntimeError("invalid-camera-spec", `${label} must be a view settings object`);
+  }
+  if (entry.id !== undefined && (typeof entry.id !== "string" || entry.id.trim().length === 0)) {
+    throw new AuraRuntimeError("invalid-camera-spec", `${label} id must be a non-empty string`);
+  }
+  if (entry.scissor !== undefined) validateViewport(`${label} scissor`, entry.scissor);
+  if (entry.postprocess !== undefined && typeof entry.postprocess !== "boolean"
+    && (!entry.postprocess || typeof entry.postprocess !== "object" || Array.isArray(entry.postprocess))) {
+    throw new AuraRuntimeError("invalid-camera-spec", `${label} postprocess must be a boolean or options object`);
+  }
+}
+
+function copyViewSettings<T extends AuraCameraViewSettings>(entry: T): T {
+  return {
+    ...entry,
+    ...(entry.camera ? { camera: { ...entry.camera } } : {}),
+    ...(entry.scissor ? { scissor: { ...entry.scissor } } : {}),
+    ...(entry.postprocess && typeof entry.postprocess === "object" ? { postprocess: { ...entry.postprocess } } : {})
+  };
+}
+
+function validateUniqueViewIds(views: readonly AuraCameraViewSettings[], label: string): void {
+  const ids = views.map((view) => view.id).filter((id): id is string => id !== undefined);
+  if (new Set(ids).size !== ids.length) {
+    throw new AuraRuntimeError("invalid-camera-spec", `${label} view ids must be unique`);
   }
 }
 
@@ -150,26 +198,34 @@ export const cameras = {
   /**
    * three's `ArrayCamera`: the scene renders once per entry into its normalized
    * viewport of the same target. Unlike three, viewports are fractions of the
-   * target (the authoring code does not know the canvas size). Not supported
-   * together with postprocess.
+   * target (the authoring code does not know the canvas size). Each view has
+   * its own camera, clip rectangle and optional postprocess override.
    */
   array: (options: AuraCameraArrayOptions) => {
     if (!options || !Array.isArray(options.cameras) || options.cameras.length === 0) {
       throw new AuraRuntimeError("invalid-camera-spec", "cameras.array requires a non-empty `cameras` list");
     }
-    options.cameras.forEach((entry, index) => validateViewport(`cameras.array cameras[${index}]`, entry?.viewport));
+    options.cameras.forEach((entry, index) => {
+      validateViewSettings(`cameras.array cameras[${index}]`, entry);
+      validateViewport(`cameras.array cameras[${index}]`, entry.viewport);
+    });
+    validateUniqueViewIds(options.cameras, "cameras.array");
     return new AuraNodeBuilder<AuraSceneNode>({
       kind: "camera-array",
       name: options.name ?? "camera-array",
-      cameras: options.cameras.map((entry) => ({ ...(entry.camera ? { camera: entry.camera } : {}), viewport: { ...entry.viewport } }))
+      cameras: options.cameras.map((entry) => ({ ...copyViewSettings(entry), viewport: { ...entry.viewport } }))
     } as unknown as AuraSceneNode);
   },
 
   /**
-   * three's `StereoCamera` (off-axis, eyes shifted along the camera x axis):
-   * renders the scene as a left/right eye pair into viewport halves of the
-   * target. Requires a perspective scene camera. Not supported together with
-   * postprocess.
+   * Render a left/right eye pair into the selected viewport layout. Perspective
+   * eyes use off-axis projection. Orthographic and isometric eyes have parallel
+   * axes and projection shifts that converge on each base camera's plane at
+   * `focus`; nearer and farther points have opposing disparity. Optional per-eye
+   * settings can intentionally use different projections, viewports, scissors
+   * and postprocessing. For the bounded orthographic route, zoom scales the
+   * orthographic size; mixed projection types, explicit stereo or per-eye FOV,
+   * and depth conventions other than standard minus-one-to-one are rejected.
    */
   stereo: (options: AuraStereoCameraOptions = {}) => {
     const { eyeSeparation = STEREO_DEFAULT_EYE_SEPARATION, focus = STEREO_DEFAULT_FOCUS, zoom = 1 } = options;
@@ -185,6 +241,16 @@ export const cameras = {
     if (options.layout !== undefined && options.layout !== "side-by-side" && options.layout !== "over-under") {
       throw new AuraRuntimeError("invalid-camera-spec", `cameras.stereo layout must be "side-by-side" or "over-under"`);
     }
+    if (options.views !== undefined) {
+      if (!Array.isArray(options.views) || options.views.length !== 2) {
+        throw new AuraRuntimeError("invalid-camera-spec", "cameras.stereo views must contain left and right eye settings");
+      }
+      options.views.forEach((entry, index) => {
+        validateViewSettings(`cameras.stereo views[${index}]`, entry);
+        if (entry.viewport !== undefined) validateViewport(`cameras.stereo views[${index}]`, entry.viewport);
+      });
+      validateUniqueViewIds(options.views, "cameras.stereo");
+    }
     return new AuraNodeBuilder<AuraSceneNode>({
       kind: "camera-stereo",
       name: options.name ?? "camera-stereo",
@@ -193,7 +259,8 @@ export const cameras = {
       zoom,
       layout: options.layout ?? "side-by-side",
       ...(options.fov !== undefined ? { fov: options.fov } : {}),
-      ...(options.aspect !== undefined ? { aspect: options.aspect } : {})
+      ...(options.aspect !== undefined ? { aspect: options.aspect } : {}),
+      ...(options.views ? { views: options.views.map((view) => ({ ...copyViewSettings(view), ...(view.viewport ? { viewport: { ...view.viewport } } : {}) })) } : {})
     } as unknown as AuraSceneNode);
   }
 } as const;

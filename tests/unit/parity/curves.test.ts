@@ -1,11 +1,9 @@
 /**
- * three.js 0.185.1 curve parity (PRD SM-02) — seeded `getPoint` comparisons
- * within 1e-6, `getLength` within 0.1 %, `getPointAt` uniform in arc length,
- * Frenet frames orthonormal, plus the full 2D/3D curve family, CurvePath,
- * Path, Shape (+holes) and ShapeUtils triangulation.
+ * Independent numerical fixtures for Aura3D's curve family. References use
+ * de Casteljau interpolation, knot-space interpolation and polygon geometry;
+ * they do not import another rendering engine or depend on its output.
  */
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
 import {
   ArcCurve,
   CatmullRomCurve3,
@@ -29,480 +27,566 @@ import {
   type CatmullRomCurveType
 } from "@aura3d/math";
 
-function rng(seed: number): () => number {
-  let s = seed >>> 0;
+type XY = readonly [number, number];
+type XYZ = readonly [number, number, number];
+type Point = readonly number[];
+const NUMERICAL_TIMEOUT_MS = 30_000;
+
+function random(seed: number): () => number {
+  let state = seed >>> 0;
   return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = s;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 0x100000000;
   };
 }
+function coordinate(rand: () => number): number { return 20 * rand() - 10; }
+function point2(rand: () => number): XY { return [coordinate(rand), coordinate(rand)]; }
+function point3(rand: () => number): XYZ { return [coordinate(rand), coordinate(rand), coordinate(rand)]; }
+function vec2(p: XY): Vector2 { return new Vector2(...p); }
+function vec3(p: XYZ): Vector3 { return new Vector3(...p); }
+function expect2(actual: { x: number; y: number }, expected: Point, tolerance = 1e-7): void {
+  expect(Math.hypot(actual.x - expected[0]!, actual.y - expected[1]!)).toBeLessThanOrEqual(tolerance);
+}
+function expect3(actual: { x: number; y: number; z: number }, expected: Point, tolerance = 1e-7): void {
+  expect(Math.hypot(actual.x - expected[0]!, actual.y - expected[1]!, actual.z - expected[2]!)).toBeLessThanOrEqual(tolerance);
+}
+function mix(a: Point, b: Point, t: number): number[] {
+  return a.map((value, axis) => value * (1 - t) + b[axis]! * t);
+}
+function distance(a: Point, b: Point): number {
+  return Math.hypot(...a.map((value, axis) => value - b[axis]!));
+}
+function normalize(a: Point): number[] {
+  const length = Math.hypot(...a);
+  return a.map((value) => length ? value / length : 0);
+}
+/** Repeated linear interpolation yields the Bézier point without polynomial coefficients. */
+function bezier(controls: readonly Point[], t: number): number[] {
+  let layer = controls.map((p) => [...p]);
+  while (layer.length > 1) {
+    layer = layer.slice(1).map((p, i) => mix(layer[i]!, p, t));
+  }
+  return layer[0]!;
+}
+function bezierDirection(controls: readonly Point[], t: number): number[] {
+  const deltas = controls.slice(1).map((p, i) => p.map((value, axis) => value - controls[i]![axis]!));
+  return normalize(bezier(deltas, t));
+}
+function uniformSpline2(points: readonly XY[], t: number): number[] {
+  const scaled = t * (points.length - 1);
+  const index = Math.min(points.length - 2, Math.floor(scaled)), s = scaled - index;
+  const p0 = points[Math.max(0, index - 1)]!, p1 = points[index]!, p2 = points[index + 1]!, p3 = points[Math.min(points.length - 1, index + 2)]!;
+  const m1 = p2.map((v, axis) => (v - p0[axis]!) / 2), m2 = p3.map((v, axis) => (v - p1[axis]!) / 2);
+  return hermite(p1, p2, m1, m2, s);
+}
+/** Hermite basis values with endpoint positions and endpoint derivatives. */
+function hermite(p1: Point, p2: Point, m1: Point, m2: Point, s: number): number[] {
+  const h00 = (1 + 2 * s) * (1 - s) ** 2;
+  const h10 = s * (1 - s) ** 2;
+  const h01 = s * s * (3 - 2 * s);
+  const h11 = s * s * (s - 1);
+  return p1.map((value, axis) => h00 * value + h10 * m1[axis]! + h01 * p2[axis]! + h11 * m2[axis]!);
+}
+/** Evaluate one nonuniform segment by knot-space linear interpolation (Barry-Goldman form). */
+function knotSegment(p0: Point, p1: Point, p2: Point, p3: Point, s: number, alpha: number): number[] {
+  const k0 = 0;
+  const k1 = k0 + distance(p0, p1) ** alpha;
+  const k2 = k1 + distance(p1, p2) ** alpha;
+  const k3 = k2 + distance(p2, p3) ** alpha;
+  const k = k1 + s * (k2 - k1);
+  const a = mix(p0, p1, (k - k0) / (k1 - k0));
+  const b = mix(p1, p2, (k - k1) / (k2 - k1));
+  const c = mix(p2, p3, (k - k2) / (k3 - k2));
+  return mix(mix(a, b, (k - k0) / (k2 - k0)), mix(b, c, (k - k1) / (k3 - k1)), s);
+}
+function splineReference(
+  points: readonly Point[], t: number, closed: boolean,
+  mode: CatmullRomCurveType | "clamped", tension = 0.5, alpha = 0.5
+): number[] {
+  const spans = closed ? points.length : points.length - 1;
+  const scaled = Math.max(0, Math.min(1, t)) * spans;
+  const i = Math.min(spans - 1, Math.floor(scaled));
+  const s = scaled - i;
+  const pointAt = (index: number): Point => {
+    if (closed) return points[(index + points.length) % points.length]!;
+    if (index < 0) return mode === "clamped" ? points[0]! : mix(points[1]!, points[0]!, 2);
+    if (index >= points.length) return mode === "clamped" ? points[points.length - 1]! : mix(points[points.length - 2]!, points[points.length - 1]!, 2);
+    return points[index]!;
+  };
+  const p0 = pointAt(i - 1), p1 = pointAt(i), p2 = pointAt(i + 1), p3 = pointAt(i + 2);
+  if (mode === "catmullrom") {
+    return hermite(p1, p2, p2.map((v, j) => (v - p0[j]!) * tension), p3.map((v, j) => (v - p1[j]!) * tension), s);
+  }
+  return knotSegment(p0, p1, p2, p3, s, mode === "clamped" ? alpha : mode === "chordal" ? 1 : 0.5);
+}
+function numericalLengths(point: (t: number) => Point, divisions: number): { lengths: number[]; points: Point[] } {
+  const points = Array.from({ length: divisions + 1 }, (_, i) => point(i / divisions));
+  const lengths = [0];
+  for (let i = 1; i <= divisions; i += 1) lengths.push(lengths[i - 1]! + distance(points[i - 1]!, points[i]!));
+  return { lengths, points };
+}
+function atDistance(reference: { lengths: number[]; points: Point[] }, fraction: number): number[] {
+  const target = reference.lengths[reference.lengths.length - 1]! * fraction;
+  let low = 0, high = reference.lengths.length - 1;
+  while (low + 1 < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (reference.lengths[mid]! < target) low = mid;
+    else high = mid;
+  }
+  const span = reference.lengths[high]! - reference.lengths[low]!;
+  return mix(reference.points[low]!, reference.points[high]!, span ? (target - reference.lengths[low]!) / span : 0);
+}
 
-const CASES = 1000;
-
-function fv(rand: () => number, scale = 10): number {
-  return (rand() * 2 - 1) * scale;
-}
-function v3(rand: () => number): Vector3 {
-  return new Vector3(fv(rand), fv(rand), fv(rand));
-}
-function v2(rand: () => number): Vector2 {
-  return new Vector2(fv(rand), fv(rand));
-}
-function tv3(v: Vector3): THREE.Vector3 {
-  return new THREE.Vector3(v.x, v.y, v.z);
-}
-function tv2(v: Vector2): THREE.Vector2 {
-  return new THREE.Vector2(v.x, v.y);
-}
-type Vec2Like = { x: number; y: number };
-type Vec3Like = { x: number; y: number; z: number };
-function dist3(a: Vec3Like, b: Vec3Like): number {
-  return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
-}
-function dist2(a: Vec2Like, b: Vec2Like): number {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-function expectVec2(actual: Vec2Like, expected: Vec2Like, tol = 1e-6): void {
-  expect(dist2(actual, expected)).toBeLessThanOrEqual(tol);
-}
-function expectVec3(actual: Vec3Like, expected: Vec3Like, tol = 1e-6): void {
-  expect(dist3(actual, expected)).toBeLessThanOrEqual(tol);
-}
-
-describe("CatmullRomCurve3 parity", () => {
-  it("getPoint matches three for centripetal/chordal/catmullrom, open+closed", () => {
-    const rand = rng(0xc0ffee);
-    const types: CatmullRomCurveType[] = ["centripetal", "chordal", "catmullrom"];
-    let checked = 0;
-    while (checked < CASES) {
-      const n = 4 + Math.floor(rand() * 4);
-      const pts = Array.from({ length: n }, () => v3(rand));
-      const closed = rand() > 0.5;
-      const type = types[Math.floor(rand() * 3)]!;
-      const tension = rand();
-      const curve = new CatmullRomCurve3(pts, closed, type, tension);
-      const tcurve = new THREE.CatmullRomCurve3(pts.map(tv3), closed, type, tension);
-      for (let k = 0; k < 10 && checked < CASES; k += 1, checked += 1) {
-        const t = rand();
-        expectVec3(curve.getPoint(t), tcurve.getPoint(t));
+describe("Catmull–Rom curves", () => {
+  const types: readonly CatmullRomCurveType[] = ["centripetal", "chordal", "catmullrom"];
+  it("matches knot-space references for all modes, open and closed", () => {
+    const rand = random(0x842ad3);
+    for (let i = 0; i < 180; i += 1) {
+      const points = Array.from({ length: 4 + Math.floor(rand() * 4) }, () => point3(rand));
+      const closed = i % 2 === 0, mode = types[i % types.length]!, tension = 0.2 + rand() * 0.6;
+      const curve = new CatmullRomCurve3(points.map(vec3), closed, mode, tension);
+      for (let j = 0; j <= 8; j += 1) {
+        const t = j / 8;
+        expect3(curve.getPoint(t), splineReference(points, t, closed, mode, tension), 1e-6);
       }
+      const spans = closed ? points.length : points.length - 1;
+      for (let j = 0; j < points.length; j += 1) expect3(curve.getPoint(j / spans), points[j]!, 1e-7);
+      if (closed) expect3(curve.getPoint(1), points[0]!);
     }
   });
 
-  it("interpolates control points exactly at knots (open + closed)", () => {
-    const rand = rng(0x1eaf);
+  it("retains finite points for repeated control points", () => {
+    for (const mode of types) {
+      const curve = new CatmullRomCurve3([new Vector3(0, 0, 0), new Vector3(1, 1, 0), new Vector3(1, 1, 0), new Vector3(2, 0, 0)], false, mode);
+      for (let i = 0; i <= 20; i += 1) expect(curve.getPoint(i / 20).toArray().every(Number.isFinite)).toBe(true);
+    }
+  });
+
+  it("approximates independent dense arc lengths and inverse arc mapping", () => {
+    const rand = random(0x51f9ab);
+    for (let i = 0; i < 35; i += 1) {
+      const points = Array.from({ length: 5 }, () => point3(rand));
+      const closed = i % 2 === 0, mode = types[i % types.length]!;
+      const curve = new CatmullRomCurve3(points.map(vec3), closed, mode);
+      curve.arcLengthDivisions = 400;
+      const reference = numericalLengths((t) => splineReference(points, t, closed, mode), 4000);
+      const length = reference.lengths.at(-1)!;
+      expect(Math.abs(curve.getLength() - length) / length).toBeLessThan(0.0015);
+      for (let j = 0; j <= 12; j += 1) expect3(curve.getPointAt(j / 12), atDistance(reference, j / 12), length * 0.002);
+      const lengths = curve.getLengths();
+      expect(lengths[0]).toBe(0);
+      expect(lengths.every((value, j) => j === 0 || value >= lengths[j - 1]!)).toBe(true);
+      expect(curve.getPoints(12)).toHaveLength(13);
+      expect(curve.getSpacedPoints(12)).toHaveLength(13);
+    }
+  }, NUMERICAL_TIMEOUT_MS);
+
+  it("returns tangents consistent with independent numerical derivatives", () => {
+    const rand = random(0x974123);
     for (let i = 0; i < 100; i += 1) {
-      const n = 3 + Math.floor(rand() * 5);
-      const pts = Array.from({ length: n }, () => v3(rand));
-      const closed = rand() > 0.5;
-      const curve = new CatmullRomCurve3(pts, closed, "centripetal");
-      const tcurve = new THREE.CatmullRomCurve3(pts.map(tv3), closed, "centripetal");
-      const spans = closed ? n : n - 1;
-      for (let s = 0; s < spans; s += 1) {
-        expectVec3(curve.getPoint(s / spans), tcurve.getPoint(s / spans));
+      const points = Array.from({ length: 5 }, () => point3(rand));
+      const closed = i % 2 === 0, mode = types[i % 3]!;
+      const curve = new CatmullRomCurve3(points.map(vec3), closed, mode);
+      const t = 0.05 + rand() * 0.9, h = 1e-6;
+      const before = splineReference(points, t - h, closed, mode), after = splineReference(points, t + h, closed, mode);
+      const derivative = normalize(after.map((v, axis) => v - before[axis]!));
+      expect3(curve.getTangent(t), derivative, 0.001);
+      const sample = curve.sample(t);
+      expect3(sample.point, splineReference(points, t, closed, mode), 1e-6);
+      expect3(sample.tangent, derivative, 0.001);
+      expect(curve.getTangentAt(rand()).length()).toBeCloseTo(1, 6);
+    }
+  });
+
+  it("generates orthonormal, right-handed frames and closes loop frames", () => {
+    const rand = random(0x92ab21);
+    for (let i = 0; i < 40; i += 1) {
+      const points = Array.from({ length: 5 }, () => vec3(point3(rand)));
+      const closed = i % 2 === 0, segments = 24;
+      const frame = new CatmullRomCurve3(points, closed).computeFrenetFrames(segments, closed)!;
+      expect(frame.tangents).toHaveLength(segments + 1);
+      expect(frame.normals).toHaveLength(segments + 1);
+      expect(frame.binormals).toHaveLength(segments + 1);
+      for (let j = 0; j <= segments; j += 1) {
+        const t = frame.tangents[j]!, n = frame.normals[j]!, b = frame.binormals[j]!;
+        for (const vector of [t, n, b]) expect(vector.length()).toBeCloseTo(1, 6);
+        expect(Math.abs(t.dot(n))).toBeLessThan(1e-6);
+        expect(Math.abs(t.dot(b))).toBeLessThan(1e-6);
+        expect(Math.abs(n.dot(b))).toBeLessThan(1e-6);
+        expect3(t.cross(n), b.toArray(), 1e-6);
       }
     }
-  });
+    // A regular closed loop has a well-conditioned seam. Tangents in the
+    // implementation are one-sided finite differences at the two endpoints.
+    const loop = new CatmullRomCurve3([
+      new Vector3(1, 0, 0), new Vector3(0, 1, 0),
+      new Vector3(-1, 0, 0), new Vector3(0, -1, 0)
+    ], true);
+    const frame = loop.computeFrenetFrames(24, true)!;
+    expect3(frame.tangents[24]!, frame.tangents[0]!.toArray(), 0.002);
+    expect3(frame.normals[24]!, frame.normals[0]!.toArray(), 0.002);
+  }, NUMERICAL_TIMEOUT_MS);
 
-  it("getLength within 0.1% of three", () => {
-    const rand = rng(0x2babe);
-    for (let i = 0; i < 200; i += 1) {
-      const n = 3 + Math.floor(rand() * 6);
-      const pts = Array.from({ length: n }, () => v3(rand));
-      const closed = rand() > 0.5;
-      const type = (["centripetal", "chordal", "catmullrom"] as const)[i % 3]!;
-      const curve = new CatmullRomCurve3(pts, closed, type);
-      const tcurve = new THREE.CatmullRomCurve3(pts.map(tv3), closed, type);
-      const a = curve.getLength();
-      const b = tcurve.getLength();
-      expect(Math.abs(a - b) / Math.max(b, 1e-9)).toBeLessThanOrEqual(0.001);
+  it("uses one periodic tangent at both ends of irregular closed curves", () => {
+    const points = [new Vector3(0, 0, 0), new Vector3(2, 0.5, 1), new Vector3(3, 3, 0),
+      new Vector3(-1, 4, 2), new Vector3(-2, 1, -1)];
+    for (const curve of [new CatmullRomCurve3(points, true), new ClampedCatmullRomCurve3(points, true)]) {
+      const start = curve.getTangent(0), end = curve.getTangent(1);
+      expect(start.distanceTo(end)).toBeLessThan(1e-12);
+      const frame = curve.computeFrenetFrames(32, true)!;
+      expect(frame.tangents[0]!.distanceTo(frame.tangents[32]!)).toBeLessThan(1e-12);
+      expect(frame.normals[0]!.distanceTo(frame.normals[32]!)).toBeLessThan(1e-6);
+      expect(frame.binormals[0]!.distanceTo(frame.binormals[32]!)).toBeLessThan(1e-6);
     }
   });
+});
 
-  it("getPointAt is uniform in arc length and matches three", () => {
-    const rand = rng(0x3cafe);
-    for (let i = 0; i < 100; i += 1) {
-      const n = 4 + Math.floor(rand() * 4);
-      const pts = Array.from({ length: n }, () => v3(rand));
-      const closed = rand() > 0.5;
-      const curve = new CatmullRomCurve3(pts, closed, "centripetal");
-      const tcurve = new THREE.CatmullRomCurve3(pts.map(tv3), closed, "centripetal");
-      curve.arcLengthDivisions = tcurve.arcLengthDivisions;
-      const length = curve.getLength();
-
-      // uniformity: consecutive getSpacedPoints segments have near-equal
-      // length. The LUT approach shares three's sampling error, so compare
-      // Aura's worst deviation against three's on the same curve.
-      const spaced = curve.getSpacedPoints(24);
-      const tspaced = tcurve.getSpacedPoints(24);
-      const dev = (pts: (Vector3 | THREE.Vector3)[]): number => {
-        const lens: number[] = [];
-        for (let k = 1; k < pts.length; k += 1) {
-          const a = pts[k]!; const b = pts[k - 1]!;
-          lens.push(Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z));
-        }
-        const mean = lens.reduce((x, y) => x + y, 0) / lens.length;
-        return Math.max(...lens.map((d) => Math.abs(d - mean)));
-      };
-      const devA = dev(spaced);
-      const devT = dev(tspaced);
-      expect(devA).toBeLessThanOrEqual(Math.max(devT * 1.1, length * 0.01) + 1e-6);
-
-      // parity vs three at arc-length fractions
-      for (let k = 0; k <= 10; k += 1) {
-        const u = k / 10;
-        const pa = curve.getPointAt(u);
-        const pb = tcurve.getPointAt(u);
-        expect(dist3(pa, pb)).toBeLessThanOrEqual(Math.max(length * 0.005, 1e-4));
-      }
-    }
-  });
-
-  it("getTangent / getTangentAt are unit and match three direction", () => {
-    const rand = rng(0x4d00d);
+describe("lines and Bézier curves", () => {
+  it("interpolates lines, uniform distance and tangents in two and three dimensions", () => {
+    const rand = random(0x1293aa);
     for (let i = 0; i < 500; i += 1) {
-      const n = 4 + Math.floor(rand() * 4);
-      const pts = Array.from({ length: n }, () => v3(rand));
-      const closed = rand() > 0.5;
-      const curve = new CatmullRomCurve3(pts, closed, "centripetal");
-      const tcurve = new THREE.CatmullRomCurve3(pts.map(tv3), closed, "centripetal");
-      const t = 0.02 + rand() * 0.96;
-      const tan = curve.getTangent(t);
-      const ttan = tcurve.getTangent(t);
-      expect(Math.abs(tan.length() - 1)).toBeLessThanOrEqual(1e-6);
-      // tangents may differ where the secant straddles a knot — compare to 1e-3
-      expect(dist3(tan, ttan)).toBeLessThanOrEqual(1e-3);
-      const u = rand();
-      const tanU = curve.getTangentAt(u);
-      const ttanU = tcurve.getTangentAt(u);
-      expect(Math.abs(tanU.length() - 1)).toBeLessThanOrEqual(1e-6);
-      expect(dist3(tanU, ttanU)).toBeLessThanOrEqual(Math.max(curve.getLength() * 0.01, 1e-3));
+      const a = point2(rand), b = point2(rand), a3 = point3(rand), b3 = point3(rand), t = rand();
+      const line = new LineCurve(vec2(a), vec2(b)), line3 = new LineCurve3(vec3(a3), vec3(b3));
+      expect2(line.getPoint(t), mix(a, b, t));
+      expect2(line.getPointAt(t), mix(a, b, t));
+      expect2(line.getTangent(t), normalize(b.map((v, j) => v - a[j]!)));
+      expect3(line3.getPoint(t), mix(a3, b3, t));
+      expect3(line3.getPointAt(t), mix(a3, b3, t));
+      expect3(line3.getTangentAt(t), normalize(b3.map((v, j) => v - a3[j]!)));
+      expect(line.getLength()).toBeCloseTo(distance(a, b), 8);
+      expect(line3.getLength()).toBeCloseTo(distance(a3, b3), 8);
+    }
+    expect2(new LineCurve(new Vector2(1, 2), new Vector2(1, 2)).getTangent(0.5), [0, 0]);
+  });
+
+  it("matches de Casteljau positions and derivative directions for quadratic and cubic curves", () => {
+    const rand = random(0x1392bd);
+    for (let i = 0; i < 500; i += 1) {
+      const p = Array.from({ length: 4 }, () => point2(rand));
+      const q = Array.from({ length: 4 }, () => point3(rand));
+      const t = 0.02 + 0.96 * rand();
+      const quadratic = new QuadraticBezierCurve(vec2(p[0]!), vec2(p[1]!), vec2(p[2]!));
+      const quadratic3 = new QuadraticBezierCurve3(vec3(q[0]!), vec3(q[1]!), vec3(q[2]!));
+      const cubic = new CubicBezierCurve(vec2(p[0]!), vec2(p[1]!), vec2(p[2]!), vec2(p[3]!));
+      const cubic3 = new CubicBezierCurve3(vec3(q[0]!), vec3(q[1]!), vec3(q[2]!), vec3(q[3]!));
+      expect2(quadratic.getPoint(t), bezier(p.slice(0, 3), t));
+      expect3(quadratic3.getPoint(t), bezier(q.slice(0, 3), t));
+      expect2(cubic.getPoint(t), bezier(p, t));
+      expect3(cubic3.getPoint(t), bezier(q, t));
+      expect2(quadratic.getTangent(t), bezierDirection(p.slice(0, 3), t), 0.001);
+      expect3(quadratic3.getTangent(t), bezierDirection(q.slice(0, 3), t), 0.001);
+      expect2(cubic.getTangent(t), bezierDirection(p, t), 0.001);
+      expect3(cubic3.getTangent(t), bezierDirection(q, t), 0.001);
     }
   });
 
-  it("computeFrenetFrames returns orthonormal frames (incl. closed)", () => {
-    const rand = rng(0x5f00d);
-    for (let i = 0; i < 100; i += 1) {
-      const n = 4 + Math.floor(rand() * 4);
-      const pts = Array.from({ length: n }, () => v3(rand));
-      const closed = rand() > 0.5;
-      const curve = new CatmullRomCurve3(pts, closed, "centripetal");
-      const segments = 16 + Math.floor(rand() * 16);
-      const frames = curve.computeFrenetFrames(segments, closed);
-      expect(frames).not.toBeNull();
-      const { tangents, normals, binormals } = frames!;
-      expect(tangents.length).toBe(segments + 1);
-      expect(normals.length).toBe(segments + 1);
-      expect(binormals.length).toBe(segments + 1);
-      for (let k = 0; k <= segments; k += 1) {
-        const t = tangents[k]!; const nn = normals[k]!; const b = binormals[k]!;
-        expect(Math.abs(t.length() - 1)).toBeLessThanOrEqual(1e-6);
-        expect(Math.abs(nn.length() - 1)).toBeLessThanOrEqual(1e-6);
-        expect(Math.abs(b.length() - 1)).toBeLessThanOrEqual(1e-6);
-        expect(Math.abs(t.dot(nn))).toBeLessThanOrEqual(1e-6);
-        expect(Math.abs(t.dot(b))).toBeLessThanOrEqual(1e-6);
-        expect(Math.abs(nn.dot(b))).toBeLessThanOrEqual(1e-6);
+  it("evaluates 2D uniform spline segments with endpoint clamping", () => {
+    const rand = random(0x66241);
+    for (let i = 0; i < 150; i += 1) {
+      const points = Array.from({ length: 5 }, () => point2(rand));
+      const curve = new SplineCurve(points.map(vec2));
+      for (let j = 0; j <= 10; j += 1) {
+        const t = j / 10;
+        expect2(curve.getPoint(t), uniformSpline2(points, t));
       }
     }
   });
 });
 
-describe("Bezier + line curve parity", () => {
-  it("LineCurve / LineCurve3 getPoint, getTangent match three", () => {
-    const rand = rng(0x6a1a);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v2(rand); const b = v2(rand);
-      const l = new LineCurve(a, b);
-      const tl = new THREE.LineCurve(tv2(a), tv2(b));
-      const t = rand();
-      expectVec2(l.getPoint(t), tl.getPoint(t));
-      expectVec2(l.getTangent(t), tl.getTangent(t));
-      expectVec2(l.getPointAt(t), tl.getPointAt(t));
-      const a3 = v3(rand); const b3 = v3(rand);
-      const l3 = new LineCurve3(a3, b3);
-      const tl3 = new THREE.LineCurve3(tv3(a3), tv3(b3));
-      expectVec3(l3.getPoint(t), tl3.getPoint(t));
-      expectVec3(l3.getTangent(t), tl3.getTangent(t));
-      expectVec3(l3.getPointAt(t), tl3.getPointAt(t));
+describe("ellipses and circular arcs", () => {
+  it("evaluates rotation, both directions, wrapped angles and coincident endpoints", () => {
+    const rand = random(0xa71dc9), turn = 2 * Math.PI;
+    for (let i = 0; i < 400; i += 1) {
+      const center = point2(rand), rx = 0.2 + rand() * 5, ry = 0.2 + rand() * 5;
+      const start = (rand() - 0.5) * 8 * Math.PI, end = i % 23 === 0 ? start : start + (rand() - 0.5) * 8 * Math.PI;
+      const clockwise = i % 2 === 0, rotation = (rand() - 0.5) * 2 * Math.PI, t = rand();
+      const raw = end - start;
+      let span = Math.abs(raw) < Number.EPSILON ? 0 : ((raw % turn) + turn) % turn || turn;
+      if (clockwise && span) span -= turn === span ? 2 * turn : turn;
+      const angle = start + t * span;
+      const x = rx * Math.cos(angle), y = ry * Math.sin(angle);
+      expect2(new EllipseCurve(center[0], center[1], rx, ry, start, end, clockwise, rotation).getPoint(t), [
+        center[0] + x * Math.cos(rotation) - y * Math.sin(rotation),
+        center[1] + x * Math.sin(rotation) + y * Math.cos(rotation)
+      ], 1e-5);
+      expect2(new ArcCurve(center[0], center[1], rx, start, end, clockwise).getPoint(t), [center[0] + rx * Math.cos(angle), center[1] + rx * Math.sin(angle)], 1e-5);
     }
-  });
-
-  it("QuadraticBezierCurve(3) getPoint/getTangent match three", () => {
-    const rand = rng(0x7b2b);
-    for (let i = 0; i < CASES; i += 1) {
-      const a = v2(rand); const b = v2(rand); const c = v2(rand);
-      const q = new QuadraticBezierCurve(a, b, c);
-      const tq = new THREE.QuadraticBezierCurve(tv2(a), tv2(b), tv2(c));
-      const t = rand();
-      expectVec2(q.getPoint(t), tq.getPoint(t));
-      const q3 = new QuadraticBezierCurve3(v3(rand), v3(rand), v3(rand));
-      const tq3 = new THREE.QuadraticBezierCurve3(tv3(q3.v0), tv3(q3.v1), tv3(q3.v2));
-      expectVec3(q3.getPoint(t), tq3.getPoint(t));
-      // three's tangent: derivative normalized
-      const tt = tq3.getTangent(t, new THREE.Vector3());
-      expectVec3(q3.getTangent(t), tt, 1e-4);
+    const circle = new ArcCurve(2, -1, 3, 0, turn);
+    // The cached length is a 200-edge inscribed polygon, rather than an
+    // analytic integral. Its chord sum has this independent closed form.
+    expect(circle.getLength()).toBeCloseTo(2 * 200 * 3 * Math.sin(Math.PI / 200), 8);
+    expect(Math.abs(circle.getLength() - 6 * Math.PI)).toBeLessThan(0.001);
+    for (let i = 0; i <= 8; i += 1) {
+      const angle = turn * i / 8;
+      expect2(circle.getPointAt(i / 8), [2 + 3 * Math.cos(angle), -1 + 3 * Math.sin(angle)], 1e-5);
     }
-  });
-
-  it("CubicBezierCurve(3) getPoint/getTangent match three", () => {
-    const rand = rng(0x8c3c);
-    for (let i = 0; i < CASES; i += 1) {
-      const c2 = new CubicBezierCurve(v2(rand), v2(rand), v2(rand), v2(rand));
-      const tc2 = new THREE.CubicBezierCurve(tv2(c2.v0), tv2(c2.v1), tv2(c2.v2), tv2(c2.v3));
-      const c3 = new CubicBezierCurve3(v3(rand), v3(rand), v3(rand), v3(rand));
-      const tc3 = new THREE.CubicBezierCurve3(tv3(c3.v0), tv3(c3.v1), tv3(c3.v2), tv3(c3.v3));
-      const t = rand();
-      expectVec2(c2.getPoint(t), tc2.getPoint(t));
-      expectVec3(c3.getPoint(t), tc3.getPoint(t));
-      expectVec2(c2.getTangent(t), tc2.getTangent(t, new THREE.Vector2()), 1e-4);
-      expectVec3(c3.getTangent(t), tc3.getTangent(t, new THREE.Vector3()), 1e-4);
-    }
-  });
-
-  it("SplineCurve getPoint matches three", () => {
-    const rand = rng(0x9d4d);
-    for (let i = 0; i < CASES; i += 1) {
-      const n = 3 + Math.floor(rand() * 5);
-      const pts = Array.from({ length: n }, () => v2(rand));
-      const sc = new SplineCurve(pts);
-      const tsc = new THREE.SplineCurve(pts.map(tv2));
-      const t = rand();
-      expectVec2(sc.getPoint(t), tsc.getPoint(t));
-    }
+    expect(new ArcCurve().computeFrenetFrames(4)).toBeNull();
   });
 });
 
-describe("EllipseCurve / ArcCurve parity", () => {
-  it("getPoint matches three for all parameter combos", () => {
-    const rand = rng(0xae5e);
-    for (let i = 0; i < CASES; i += 1) {
-      const aX = fv(rand); const aY = fv(rand);
-      const xr = rand() * 5 + 0.01; const yr = rand() * 5 + 0.01;
-      const a0 = fv(rand, Math.PI * 3); const a1 = a0 + fv(rand, Math.PI * 3);
-      const cw = rand() > 0.5;
-      const rot = fv(rand, Math.PI);
-      const e = new EllipseCurve(aX, aY, xr, yr, a0, a1, cw, rot);
-      const te = new THREE.EllipseCurve(aX, aY, xr, yr, a0, a1, cw, rot);
-      const t = rand();
-      expectVec2(e.getPoint(t), te.getPoint(t), 1e-5);
-      const arc = new ArcCurve(aX, aY, xr, a0, a1, cw);
-      const tarc = new THREE.ArcCurve(aX, aY, xr, a0, a1, cw);
-      expectVec2(arc.getPoint(t), tarc.getPoint(t), 1e-5);
-    }
-  });
-});
-
-describe("CurvePath / Path / Shape parity", () => {
-  it("Path chaining and getPoint/getLength match three", () => {
-    const rand = rng(0xbf6f);
-    for (let i = 0; i < 200; i += 1) {
-      // Build identical paths on both sides with the same coordinates.
-      const a = new Path();
-      const t = new THREE.Path();
-      const moves: [number, number][] = [[fv(rand), fv(rand)]];
-      a.moveTo(moves[0]![0], moves[0]![1]);
-      t.moveTo(moves[0]![0], moves[0]![1]);
-      const l1: [number, number] = [fv(rand), fv(rand)];
-      a.lineTo(l1[0], l1[1]); t.lineTo(l1[0], l1[1]);
-      const q = [fv(rand), fv(rand), fv(rand), fv(rand)] as const;
-      a.quadraticCurveTo(q[0], q[1], q[2], q[3]); t.quadraticCurveTo(q[0], q[1], q[2], q[3]);
-      const c = [fv(rand), fv(rand), fv(rand), fv(rand), fv(rand), fv(rand)] as const;
-      a.bezierCurveTo(c[0], c[1], c[2], c[3], c[4], c[5]); t.bezierCurveTo(c[0], c[1], c[2], c[3], c[4], c[5]);
-      const spts = Array.from({ length: 3 }, () => v2(rand));
-      a.splineThru(spts); t.splineThru(spts.map(tv2));
-      const arcCx = fv(rand); const arcCy = fv(rand); const arcR = 1 + rand() * 3;
-      const arcA0 = fv(rand, Math.PI); const arcA1 = arcA0 + fv(rand, Math.PI * 2);
-      const arcCw = rand() > 0.5;
-      a.absarc(arcCx, arcCy, arcR, arcA0, arcA1, arcCw);
-      t.absarc(arcCx, arcCy, arcR, arcA0, arcA1, arcCw);
-      const el = [fv(rand), fv(rand), 1 + rand() * 3, 1 + rand() * 3, fv(rand, Math.PI), fv(rand, Math.PI * 2)] as const;
-      const elCw = rand() > 0.5; const elRot = fv(rand, Math.PI);
-      a.absellipse(el[0], el[1], el[2], el[3], el[4], el[5], elCw, elRot);
-      t.absellipse(el[0], el[1], el[2], el[3], el[4], el[5], elCw, elRot);
-
-      const lenA = a.getLength();
-      const lenT = t.getLength();
-      expect(Math.abs(lenA - lenT) / Math.max(lenT, 1e-9)).toBeLessThanOrEqual(0.001);
-      for (let k = 0; k <= 8; k += 1) {
-        const u = k / 8;
-        const pa = a.getPoint(u);
-        const pt = t.getPoint(u, new THREE.Vector2());
-        expect(dist2(pa, pt)).toBeLessThanOrEqual(Math.max(lenT * 0.01, 1e-4));
-      }
-      const ptsA = a.getPoints(12);
-      const ptsT = t.getPoints(12);
-      expect(ptsA.length).toBe(ptsT.length);
-      for (let k = 0; k < ptsA.length; k += 1) {
-        expect(dist2(ptsA[k]!, ptsT[k]!)).toBeLessThanOrEqual(1e-4);
-      }
-    }
+describe("curve paths and shape contours", () => {
+  it("parameterizes connected segments by length and closes paths", () => {
+    const path = new CurvePath<Vector2>();
+    path.add(new LineCurve(new Vector2(0, 0), new Vector2(3, 0)));
+    path.add(new LineCurve(new Vector2(3, 0), new Vector2(3, 4)));
+    expect(path.getCurveLengths()).toEqual([3, 7]);
+    expect2(path.getPoint(0.5), [3, 0.5]);
+    path.closePath();
+    const lengths = path.getCurveLengths();
+    expect(lengths).toHaveLength(3);
+    expect(lengths[0]).toBeCloseTo(3, 10);
+    expect(lengths[1]).toBeCloseTo(7, 10);
+    expect(lengths[2]).toBeCloseTo(12, 10);
+    expect2(path.getPoint(0.75), [1.8, 2.4]);
+    path.closePath();
+    expect(path.curves).toHaveLength(3);
+    expect(path.getLength()).toBeCloseTo(12, 8);
+    expect(path.getPoints(4).map((p) => p.toArray())).toEqual([[0, 0], [3, 0], [3, 4], [0, 0]]);
+    path.autoClose = true;
+    const spaced = path.getSpacedPoints(4);
+    expect(spaced).toHaveLength(6);
+    expect2(spaced[0]!, [0, 0]);
+    expect2(spaced.at(-1)!, [0, 0]);
+    expect(() => new CurvePath<Vector2>().getPoint(0.5)).toThrow(/empty/);
   });
 
-  it("CurvePath closePath/autoClose and getCurveLengths match three", () => {
-    const rand = rng(0xc770);
-    for (let i = 0; i < 200; i += 1) {
-      const a = new CurvePath<Vector2>();
-      const t = new THREE.CurvePath<THREE.Vector2>();
-      const segs = 2 + Math.floor(rand() * 3);
-      let cur = v2(rand);
-      for (let s = 0; s < segs; s += 1) {
-        const nxt = v2(rand);
-        a.add(new LineCurve(cur, nxt));
-        t.add(new THREE.LineCurve(tv2(cur), tv2(nxt)));
-        cur = nxt;
-      }
-      a.closePath();
-      t.closePath();
-      const lenA = a.getCurveLengths();
-      const lenT = t.getCurveLengths();
-      expect(lenA.length).toBe(lenT.length);
-      for (let k = 0; k < lenA.length; k += 1) {
-        expect(Math.abs(lenA[k]! - lenT[k]!)).toBeLessThanOrEqual(1e-6);
-      }
-      a.autoClose = true; t.autoClose = true;
-      const spA = a.getSpacedPoints(10);
-      const spT = t.getSpacedPoints(10);
-      expect(spA.length).toBe(spT.length);
-      for (let k = 0; k < spA.length; k += 1) {
-        expect(dist2(spA[k]!, spT[k]!)).toBeLessThanOrEqual(1e-4);
-      }
+  it("chains line, quadratic, cubic, spline and absolute/relative arcs with continuous endpoints", () => {
+    const path = new Path();
+    expect(path.moveTo(0, 0)).toBe(path);
+    path.lineTo(2, 0).quadraticCurveTo(3, 1, 4, 0).bezierCurveTo(5, -1, 6, 1, 7, 0)
+      .splineThru([new Vector2(8, 1), new Vector2(9, 0)]).absarc(9, 1, 1, -Math.PI / 2, 0)
+      .absellipse(10, 2, 1, 2, -Math.PI / 2, 0, false, Math.PI / 2)
+      .arc(2, 0, 1, Math.PI, Math.PI / 2, true)
+      .ellipse(0, 1, 1, 2, -Math.PI / 2, 0);
+    expect(path.curves.length).toBeGreaterThanOrEqual(8);
+    expect2(path.curves[0]!.getPoint(0.5), [1, 0]);
+    expect2(path.curves[1]!.getPoint(0.5), [3, 0.5]);
+    expect2(path.curves[2]!.getPoint(0.5), [5.5, 0]);
+    expect2(path.curves[3]!.getPoint(1), [9, 0]);
+    for (let i = 1; i < path.curves.length; i += 1) {
+      expect2(path.curves[i]!.getPoint(0), path.curves[i - 1]!.getPoint(1).toArray(), 1e-7);
     }
+    expect2(path.currentPoint, path.curves.at(-1)!.getPoint(1).toArray());
+    const sampled = path.getPoints(8);
+    expect(sampled.length).toBeGreaterThan(40);
+    expect2(sampled[0]!, [0, 0]);
+    expect2(sampled.at(-1)!, path.currentPoint.toArray());
+    expect(path.getLength()).toBeGreaterThan(10);
   });
 
-  it("Shape with holes: extractPoints + triangulateShape match three", () => {
-    const rand = rng(0xd881);
-    for (let i = 0; i < 100; i += 1) {
-      // outer square + inner square hole, jittered
-      const j = () => (rand() - 0.5) * 0.2;
-      const a = new Shape();
-      const t = new THREE.Shape();
-      const outer: [number, number][] = [
-        [j(), j()], [8 + j(), j()], [8 + j(), 8 + j()], [j(), 8 + j()]
-      ];
-      a.moveTo(outer[0]![0], outer[0]![1]);
-      t.moveTo(outer[0]![0], outer[0]![1]);
-      for (let k = 1; k < outer.length; k += 1) {
-        a.lineTo(outer[k]![0], outer[k]![1]);
-        t.lineTo(outer[k]![0], outer[k]![1]);
-      }
-      const holePts: [number, number][] = [
-        [2 + j(), 2 + j()], [6 + j(), 2 + j()], [6 + j(), 6 + j()], [2 + j(), 6 + j()]
-      ];
-      const aHole = new Path();
-      const tHole = new THREE.Path();
-      aHole.moveTo(holePts[0]![0], holePts[0]![1]);
-      tHole.moveTo(holePts[0]![0], holePts[0]![1]);
-      for (let k = 1; k < holePts.length; k += 1) {
-        aHole.lineTo(holePts[k]![0], holePts[k]![1]);
-        tHole.lineTo(holePts[k]![0], holePts[k]![1]);
-      }
-      a.holes.push(aHole);
-      t.holes.push(tHole);
-
-      const exA = a.extractPoints(8);
-      const exT = t.extractPoints(8);
-      expect(exA.shape.length).toBe(exT.shape.length);
-      expect(exA.holes.length).toBe(exT.holes.length);
-      expect(exA.holes[0]!.length).toBe(exT.holes[0]!.length);
-      for (let k = 0; k < exA.shape.length; k += 1) {
-        expect(dist2(exA.shape[k]!, exT.shape[k]!)).toBeLessThanOrEqual(1e-6);
-      }
-      for (let k = 0; k < exA.holes[0]!.length; k += 1) {
-        expect(dist2(exA.holes[0]![k]!, exT.holes[0]![k]!)).toBeLessThanOrEqual(1e-6);
-      }
-
-      // triangulateShape on the extracted contours — identical topology
-      const trisA = ShapeUtils.triangulateShape(exA.shape, exA.holes);
-      const trisT = THREE.ShapeUtils.triangulateShape(exT.shape, exT.holes);
-      expect(trisA.length).toBe(trisT.length);
-      const sortedA = trisA.map((x) => [...x].sort((p, q) => p - q).join(",")).sort();
-      const sortedT = trisT.map((x) => [...x].sort((p, q) => p - q).join(",")).sort();
-      expect(sortedA).toEqual(sortedT);
-
-      // area / winding
-      const areaA = ShapeUtils.area(exA.shape);
-      const areaT = THREE.ShapeUtils.area(exT.shape);
-      expect(Math.abs(areaA - areaT)).toBeLessThanOrEqual(1e-6);
-      expect(ShapeUtils.isClockWise(exA.shape)).toBe(THREE.ShapeUtils.isClockWise(exT.shape));
-    }
-  });
-
-  it("sample() returns {point, tangent} matching getPoint/getTangent", () => {
-    const rand = rng(0xe992);
-    const pts = Array.from({ length: 5 }, () => v3(rand));
-    const curve = new CatmullRomCurve3(pts, false, "centripetal");
-    for (let i = 0; i < 100; i += 1) {
-      const t = rand();
-      const s = curve.sample(t);
-      expectVec3(s.point, curve.getPoint(t));
-      expectVec3(s.tangent, curve.getTangent(t));
-    }
-  });
-});
-
-describe("ClampedCatmullRomCurve3 + catmullRomSegmentDerivative (R-14)", () => {
-  it("segment derivative equals a central finite difference of catmullRomSegment, any alpha", () => {
-    const rand = rng(0x14d3);
-    for (let i = 0; i < CASES; i += 1) {
-      const pts = Array.from({ length: 4 }, () => v3(rand));
-      const alpha = [0, 0.25, 0.5, 0.75, 1][i % 5]!;
-      const w = 0.05 + rand() * 0.9;
-      const h = 1e-6;
-      const d = catmullRomSegmentDerivative(pts[0]!, pts[1]!, pts[2]!, pts[3]!, w, alpha);
-      const a = catmullRomSegment(pts[0]!, pts[1]!, pts[2]!, pts[3]!, w + h, alpha);
-      const b = catmullRomSegment(pts[0]!, pts[1]!, pts[2]!, pts[3]!, w - h, alpha);
-      const fd = a.subtract(b).multiplyScalar(1 / (2 * h));
-      const scale = Math.max(1, d.length());
-      expect(d.subtract(fd).length() / scale).toBeLessThanOrEqual(1e-5);
-    }
-  });
-
-  it("matches three's centripetal/chordal CatmullRomCurve3 on closed splines (interior, non-degenerate)", () => {
-    const rand = rng(0xc10ed);
-    for (const [alpha, type] of [[0.5, "centripetal"], [1, "chordal"]] as const) {
-      for (let i = 0; i < 100; i += 1) {
-        const pts = Array.from({ length: 6 }, () => v3(rand));
-        const ours = new ClampedCatmullRomCurve3(pts, true, alpha);
-        const theirs = new THREE.CatmullRomCurve3(pts.map(tv3), true, type);
-        for (let k = 0; k < 20; k += 1) {
-          const t = rand();
-          expectVec3(ours.getPoint(t), theirs.getPoint(t), 1e-6);
+  it("matches independent arc-length references for varied chained curves", () => {
+    const rand = random(0x4dced);
+    for (let trial = 0; trial < 40; trial += 1) {
+      const a = point2(rand), b = point2(rand), q = point2(rand), c = point2(rand);
+      const h1 = point2(rand), h2 = point2(rand), d = point2(rand);
+      const s1 = point2(rand), s2 = point2(rand), s3 = point2(rand);
+      const radius = 0.5 + 3 * rand(), rx = 0.5 + 3 * rand(), ry = 0.5 + 3 * rand(), rotation = rand() * Math.PI;
+      const arcEnd: XY = [s3[0] + radius, s3[1] + radius];
+      const ellipseCenter: XY = [arcEnd[0] - rx * Math.cos(rotation), arcEnd[1] - rx * Math.sin(rotation)];
+      const path = new Path();
+      path.moveTo(...a).lineTo(...b).quadraticCurveTo(...q, ...c).bezierCurveTo(...h1, ...h2, ...d)
+        .splineThru([vec2(s1), vec2(s2), vec2(s3)])
+        .absarc(s3[0], s3[1] + radius, radius, -Math.PI / 2, 0)
+        .absellipse(ellipseCenter[0], ellipseCenter[1], rx, ry, 0, Math.PI / 2, false, rotation);
+      expect(path.curves).toHaveLength(6);
+      for (const curve of path.curves) curve.arcLengthDivisions = 400;
+      const references: ((t: number) => Point)[] = [
+        (t) => mix(a, b, t),
+        (t) => bezier([b, q, c], t),
+        (t) => bezier([c, h1, h2, d], t),
+        (t) => uniformSpline2([d, s1, s2, s3], t),
+        (t) => [s3[0] + radius * Math.cos((t - 1) * Math.PI / 2), s3[1] + radius + radius * Math.sin((t - 1) * Math.PI / 2)],
+        (t) => {
+          const x = rx * Math.cos(t * Math.PI / 2), y = ry * Math.sin(t * Math.PI / 2);
+          return [ellipseCenter[0] + x * Math.cos(rotation) - y * Math.sin(rotation), ellipseCenter[1] + x * Math.sin(rotation) + y * Math.cos(rotation)];
         }
+      ];
+      const dense = references.map((fn) => numericalLengths(fn, 2000));
+      const lengths = dense.map((r) => r.lengths.at(-1)!);
+      const total = lengths.reduce((sum, length) => sum + length, 0);
+      expect(Math.abs(path.getLength() - total) / total).toBeLessThan(0.001);
+      for (let i = 0; i <= 12; i += 1) {
+        let remaining = total * i / 12, segment = 0;
+        while (segment < lengths.length - 1 && remaining > lengths[segment]!) remaining -= lengths[segment++]!;
+        expect2(path.getPoint(i / 12), atDistance(dense[segment]!, remaining / lengths[segment]!), total * 0.0015);
+      }
+      const sampled = path.getPoints(4);
+      expect(sampled).toHaveLength(42);
+      expect2(sampled[0]!, a);
+      expect2(sampled.at(-1)!, references.at(-1)!(1));
+      for (let i = 1; i < sampled.length; i += 1) expect(sampled[i]!.distanceTo(sampled[i - 1]!)).toBeGreaterThan(1e-10);
+    }
+  }, NUMERICAL_TIMEOUT_MS);
+
+  it("extracts and triangulates a contour with a hole without filling the hole", () => {
+    const outer: XY[] = [[0, 0], [8, 0], [8, 8], [0, 8]];
+    const hole: XY[] = [[2, 2], [2, 6], [6, 6], [6, 2]];
+    const shape = new Shape(outer.map(vec2));
+    const holePath = new Path(hole.map(vec2));
+    shape.closePath();
+    holePath.closePath();
+    shape.holes.push(holePath);
+    const extracted = shape.extractPoints(8);
+    expect(extracted.shape.map((p) => p.toArray())).toEqual([...outer, outer[0]]);
+    expect(extracted.holes[0]!.map((p) => p.toArray())).toEqual([...hole, hole[0]]);
+    expect(ShapeUtils.area(extracted.shape)).toBe(64);
+    expect(ShapeUtils.area(extracted.holes[0]!)).toBe(-16);
+    expect(ShapeUtils.isClockWise(extracted.shape)).toBe(false);
+    expect(ShapeUtils.isClockWise(extracted.holes[0]!)).toBe(true);
+    const triangles = ShapeUtils.triangulateShape(extracted.shape, extracted.holes);
+    expect(triangles).toHaveLength(8);
+    const vertices = [...outer, ...hole];
+    let area = 0;
+    for (const indices of triangles) {
+      expect(new Set(indices).size).toBe(3);
+      expect(indices.every((i) => i >= 0 && i < vertices.length)).toBe(true);
+      const points = indices.map((i) => vertices[i]!) as [XY, XY, XY];
+      const [a, b, c] = points;
+      const triangleArea = Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2;
+      expect(triangleArea).toBeGreaterThan(0);
+      area += triangleArea;
+      expect(clippedRectangleArea(points, 2, 2, 6, 6)).toBeCloseTo(0, 9);
+    }
+    expect(area).toBeCloseTo(48, 9);
+    expect(extracted.shape).toHaveLength(5); // triangulation does not mutate inputs
+    expect(extracted.holes[0]).toHaveLength(5);
+  });
+
+  it("preserves polygon area and excludes jittered holes without overlapping triangles", () => {
+    const rand = random(0xd881);
+    const jitter = () => (rand() - 0.5) * 0.2;
+    for (let i = 0; i < 100; i += 1) {
+      const outer: XY[] = [[jitter(), jitter()], [8 + jitter(), jitter()], [8 + jitter(), 8 + jitter()], [jitter(), 8 + jitter()]];
+      const hole: XY[] = [[2 + jitter(), 2 + jitter()], [2 + jitter(), 6 + jitter()], [6 + jitter(), 6 + jitter()], [6 + jitter(), 2 + jitter()]];
+      const shape = new Shape(outer.map(vec2));
+      shape.holes.push(new Path(hole.map(vec2)));
+      const extracted = shape.extractPoints(8);
+      expect(extracted.shape.map((p) => p.toArray())).toEqual(outer);
+      expect(extracted.holes[0]!.map((p) => p.toArray())).toEqual(hole);
+      const faces = ShapeUtils.triangulateShape(extracted.shape, extracted.holes);
+      expect(faces).toHaveLength(8);
+      const vertices = [...outer, ...hole];
+      const triangles = faces.map((face) => face.map((index) => vertices[index]!) as [XY, XY, XY]);
+      const area = triangles.reduce((sum, triangle) => sum + Math.abs(polygonArea(triangle)), 0);
+      expect(area).toBeCloseTo(Math.abs(polygonArea(outer)) - Math.abs(polygonArea(hole)), 8);
+      for (let j = 0; j < triangles.length; j += 1) {
+        expect(clippedConvexArea(triangles[j]!, hole)).toBeLessThan(1e-8);
+        for (let k = 0; k < j; k += 1) expect(clippedConvexArea(triangles[j]!, triangles[k]!)).toBeLessThan(1e-8);
       }
     }
   });
+});
 
-  it("open spline clamps ends: interpolates every control point at t = i/segments", () => {
-    const rand = rng(0x0ae17);
+function polygonArea(points: readonly XY[]): number {
+  return points.reduce((sum, a, i) => {
+    const b = points[(i + 1) % points.length]!;
+    return sum + a[0] * b[1] - a[1] * b[0];
+  }, 0) / 2;
+}
+
+/** Independent convex-polygon intersection for detecting hole fill and overlapping faces. */
+function clippedConvexArea(polygon: readonly XY[], clip: readonly XY[]): number {
+  let vertices = [...polygon];
+  const orientation = Math.sign(polygonArea(clip));
+  for (let edge = 0; edge < clip.length && vertices.length; edge += 1) {
+    const a = clip[edge]!, b = clip[(edge + 1) % clip.length]!;
+    const side = (p: XY) => orientation * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]));
+    const output: XY[] = [];
+    for (let i = 0; i < vertices.length; i += 1) {
+      const start = vertices[i]!, end = vertices[(i + 1) % vertices.length]!;
+      const startSide = side(start), endSide = side(end);
+      if (startSide >= 0) output.push(start);
+      if ((startSide < 0 && endSide > 0) || (startSide > 0 && endSide < 0)) {
+        const t = startSide / (startSide - endSide);
+        output.push([start[0] + t * (end[0] - start[0]), start[1] + t * (end[1] - start[1])]);
+      }
+    }
+    vertices = output;
+  }
+  return Math.abs(polygonArea(vertices));
+}
+
+/** Clip a convex polygon against four rectangle half-planes, then use shoelace area. */
+function clippedRectangleArea(polygon: readonly XY[], left: number, bottom: number, right: number, top: number): number {
+  let vertices = [...polygon];
+  for (const [axis, value, keepGreater] of [[0, left, true], [0, right, false], [1, bottom, true], [1, top, false]] as const) {
+    const output: XY[] = [];
+    for (let i = 0; i < vertices.length; i += 1) {
+      const a = vertices[i]!, b = vertices[(i + 1) % vertices.length]!;
+      const insideA = keepGreater ? a[axis] >= value : a[axis] <= value;
+      const insideB = keepGreater ? b[axis] >= value : b[axis] <= value;
+      if (insideA) output.push(a);
+      if (insideA !== insideB) {
+        const t = (value - a[axis]) / (b[axis] - a[axis]);
+        output.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+      }
+    }
+    vertices = output;
+  }
+  return Math.abs(vertices.reduce((sum, a, i) => {
+    const b = vertices[(i + 1) % vertices.length]!;
+    return sum + a[0] * b[1] - a[1] * b[0];
+  }, 0)) / 2;
+}
+
+describe("clamped Catmull–Rom and segment derivatives", () => {
+  it("matches independent knot interpolation for closed splines and arbitrary knot exponents", () => {
+    const rand = random(0x9ee23);
     for (const alpha of [0, 0.25, 0.5, 0.75, 1]) {
-      const pts = Array.from({ length: 5 }, () => v3(rand));
-      const curve = new ClampedCatmullRomCurve3(pts, false, alpha);
-      expect(curve.segments).toBe(4);
-      for (let i = 0; i < pts.length; i += 1) {
-        expectVec3(curve.getPoint(i / 4), new THREE.Vector3(pts[i]!.x, pts[i]!.y, pts[i]!.z), 1e-9);
+      for (let i = 0; i < 35; i += 1) {
+        const points = Array.from({ length: 6 }, () => point3(rand));
+        const curve = new ClampedCatmullRomCurve3(points.map(vec3), true, alpha);
+        expect(curve.segments).toBe(6);
+        for (let j = 0; j <= 12; j += 1) expect3(curve.getPoint(j / 12), splineReference(points, j / 12, true, "clamped", 0.5, alpha), 1e-6);
+        expect3(curve.getPoint(-1), points[0]!);
+        expect3(curve.getPoint(2), points[0]!);
       }
     }
   });
 
-  it("open-spline arc length is constant-speed under getPointAt (no end-span overshoot)", () => {
-    const pts = [new Vector3(0, 0, 0), new Vector3(2, 1, 0), new Vector3(5, 1, 3), new Vector3(8, 0, 3)];
-    const curve = new ClampedCatmullRomCurve3(pts, false, 0.5);
+  it("clamps open spline endpoints and interpolates every knot", () => {
+    const rand = random(0x781ac);
+    for (const alpha of [0, 0.25, 0.5, 0.75, 1]) {
+      const points = Array.from({ length: 5 }, () => point3(rand));
+      const curve = new ClampedCatmullRomCurve3(points.map(vec3), false, alpha);
+      expect(curve.segments).toBe(4);
+      for (let i = 0; i < points.length; i += 1) expect3(curve.getPoint(i / 4), points[i]!, 1e-8);
+      expect3(curve.getPoint(-1), points[0]!);
+      expect3(curve.getPoint(2), points.at(-1)!);
+      expect3(new ClampedCatmullRomCurve3([vec3(points[0]!)]).getPoint(0.5), points[0]!);
+    }
+  });
+
+  it("differentiates a segment against finite differences of the independent knot reference", () => {
+    const rand = random(0xff1cc);
+    for (let i = 0; i < 500; i += 1) {
+      const points = Array.from({ length: 4 }, () => point3(rand));
+      const alpha = [0, 0.25, 0.5, 0.75, 1][i % 5]!, s = 0.05 + 0.9 * rand(), h = 1e-6;
+      const expected = knotSegment(points[0]!, points[1]!, points[2]!, points[3]!, s, alpha);
+      expect3(catmullRomSegment(vec3(points[0]!), vec3(points[1]!), vec3(points[2]!), vec3(points[3]!), s, alpha), expected, 1e-6);
+      const before = knotSegment(points[0]!, points[1]!, points[2]!, points[3]!, s - h, alpha);
+      const after = knotSegment(points[0]!, points[1]!, points[2]!, points[3]!, s + h, alpha);
+      const derivative = after.map((value, axis) => (value - before[axis]!) / (2 * h));
+      const actual = catmullRomSegmentDerivative(vec3(points[0]!), vec3(points[1]!), vec3(points[2]!), vec3(points[3]!), s, alpha);
+      expect3(actual, derivative, Math.max(1, Math.hypot(...derivative)) * 1e-6);
+    }
+  });
+
+  it("samples the open curve approximately uniformly in arc length", () => {
+    const points: XYZ[] = [[0, 0, 0], [2, 1, 0], [5, 1, 3], [8, 0, 3]];
+    const curve = new ClampedCatmullRomCurve3(points.map(vec3), false, 0.5);
     curve.arcLengthDivisions = 256;
     const total = curve.getLength();
-    const n = 6;
-    const sub = 32;
-    for (let i = 0; i < n; i += 1) {
-      let arc = 0;
-      let prev = curve.getPointAt(i / n);
-      for (let k = 1; k <= sub; k += 1) {
-        const p = curve.getPointAt((i + k / sub) / n);
-        arc += p.distanceTo(prev);
-        prev = p;
+    for (let i = 0; i < 6; i += 1) {
+      let arc = 0, previous = curve.getPointAt(i / 6);
+      for (let j = 1; j <= 32; j += 1) {
+        const point = curve.getPointAt((i + j / 32) / 6);
+        arc += point.distanceTo(previous);
+        previous = point;
       }
-      expect(Math.abs(arc - total / n) / (total / n)).toBeLessThan(0.02);
+      expect(Math.abs(arc - total / 6) / (total / 6)).toBeLessThan(0.02);
     }
   });
 });

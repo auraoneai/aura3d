@@ -1,6 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3, AuraMaterialSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraSceneNode, AuraNodePhysicsSpec } from "./types.js";
+import { assertDepthPreviewTargetTree } from "./depthPreviewTarget.js";
 
 /**
  * GU47 E-G phase 2: unwrap a node builder to its plain node. `AuraNodeBuilder`
@@ -10,14 +11,17 @@ import type { AuraVec3, AuraMaterialSpec, AuraAnimationSpec, AuraRuntimeNodeSpec
  * belongs and the compiler never saw `kind: "water"`.
  */
 export function toSceneNode(node: AuraNodeBuilder<AuraSceneNode> | AuraSceneNode): AuraSceneNode {
-  if (node instanceof AuraNodeBuilder) return node.toJSON();
   const candidate = node as unknown as { readonly toJSON?: unknown };
-  if (typeof candidate.toJSON === "function" && !("kind" in node)) return (candidate.toJSON as () => AuraSceneNode).call(node);
-  return node;
+  const resolved = node instanceof AuraNodeBuilder ? node.toJSON()
+    : typeof candidate.toJSON === "function" && !("kind" in node) ? (candidate.toJSON as () => AuraSceneNode).call(node) : node;
+  assertDepthPreviewTargetTree(resolved);
+  return resolved;
 }
 
 export class AuraNodeBuilder<TNode extends AuraSceneNode> {
-  constructor(private readonly value: TNode) {}
+  constructor(private readonly value: TNode) {
+    assertDepthPreviewTargetTree(value);
+  }
 
   /** `position(x, y, z)` or `position([x, y, z])` (the array form matches `scale` and the scene option shapes). */
   position(x: number, y: number, z: number): AuraNodeBuilder<TNode & { readonly position: AuraVec3 }>;

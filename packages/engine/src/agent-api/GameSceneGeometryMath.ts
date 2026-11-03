@@ -4,7 +4,6 @@ import type {
   GameKitVec2,
   GamePlatformerPlayableSurfaceMap
 } from "./GameGenreKits";
-import { round } from "./GameRuntime.js";
 
 export interface SceneGeometryTransform {
   readonly scale: number;

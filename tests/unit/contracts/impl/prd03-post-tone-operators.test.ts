@@ -5,14 +5,14 @@ import { dirname, join } from "node:path";
 import { applyToneOperator, POST_TONE_OPERATORS } from "@aura3d/rendering";
 
 /**
- * Golden test: the shipped operators reproduce `tone-operators.json`, which the
- * generator only writes when the port and an independently structured
- * implementation of the same r185 GLSL agree (see
- * evidence/prd03/goldens/generate-tone-goldens.mjs).
+ * Reference vectors from independent published equations. The generator does
+ * not import the renderer; its input and output coverage includes 64 colours
+ * and a separate ACES exposure sweep (see evidence/prd03/goldens).
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
 const goldens = JSON.parse(readFileSync(join(here, "../../../../evidence/prd03/goldens/tone-operators.json"), "utf8")) as {
+  source: string;
   exposure: number;
   cases: { label: string; rgb: readonly [number, number, number] }[];
   operators: Record<string, readonly (readonly [number, number, number])[]>;
@@ -21,7 +21,11 @@ const goldens = JSON.parse(readFileSync(join(here, "../../../../evidence/prd03/g
 
 const TOL = 1e-6;
 
-describe("post/ToneOperators goldens (r185 port)", () => {
+describe("post/ToneOperators independent equation references", () => {
+  it("records independent source provenance", () => {
+    expect(goldens.source).toContain("Independent published-equation reference");
+    expect(goldens.source).not.toMatch(/three|port/i);
+  });
   it("operator list is the v2 OutputPass set", () => {
     expect([...POST_TONE_OPERATORS].sort()).toEqual(["aces", "agx", "linear", "neutral", "reinhard"]);
   });

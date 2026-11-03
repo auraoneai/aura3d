@@ -7,8 +7,8 @@
  * light gets the built-in attenuation (range window, inverse-square, spot cone); the shadow-casting directional light is
  * darkened by `a3dSunShadow` (1 when the scene has no shadow map). The BRDF is GGX specular (correlated Smith visibility,
  * Schlick Fresnel with a dielectric F0 of 0.04) plus Lambert diffuse, with the built-ins' `albedo / pi * radiance * N·L`
- * convention, so a custom surface lit this way sits next to a built-in PBR one at the same exposure. Rect-area lights are
- * skipped. The 4-argument form reconstructs the world position from `gl_FragCoord` (`a3dFragWorldPosition`, exact for
+ * convention, so a custom surface lit this way sits next to a built-in PBR one at the same exposure. One-sided rect-area
+ * lights keep the prior skipped behavior; explicitly two-sided rects use four area samples. The 4-argument form reconstructs the world position from `gl_FragCoord` (`a3dFragWorldPosition`, exact for
  * any author vertex displacement); the 5-argument form takes the author's own world position.
  * The forward pass binds every uniform here only when the program declares it.
  */
@@ -64,20 +64,43 @@ vec3 a3dDirect(vec3 N, vec3 V, vec3 albedo, float roughness, vec3 worldPos) {
     vec4 positionRange;
     vec4 directionKind;
     vec4 spotShadow;
+    vec4 areaRight;
+    vec4 areaUp;
     if (clustered) {
       colorIntensity = texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0);
       positionRange = texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0);
       directionKind = texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0);
       spotShadow = texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0);
+      areaRight = texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0);
+      areaUp = texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0);
     } else {
       int base = lightIndex * 6;
       colorIntensity = u_lightData[base];
       positionRange = u_lightData[base + 1];
       directionKind = u_lightData[base + 2];
       spotShadow = u_lightData[base + 3];
+      areaRight = u_lightData[base + 4];
+      areaUp = u_lightData[base + 5];
     }
     float kind = directionKind.w;
-    if (kind > 2.5) continue;
+    if (kind > 2.5) {
+      if (areaUp.w < 0.5) continue;
+      vec3 axis = directionKind.xyz / max(length(directionKind.xyz), 0.0001);
+      vec3 r = areaRight.xyz / max(length(areaRight.xyz), 0.0001);
+      vec3 u = areaUp.xyz / max(length(areaUp.xyz), 0.0001);
+      float width = max(spotShadow.x, 0.0), height = max(spotShadow.y, 0.0);
+      for (int sampleIndex = 0; sampleIndex < 4; ++sampleIndex) {
+        vec2 sampleSign = vec2((sampleIndex == 0 || sampleIndex == 2) ? -1.0 : 1.0, sampleIndex < 2 ? -1.0 : 1.0);
+        vec3 samplePosition = positionRange.xyz + 0.28867513459 * (r * width * sampleSign.x + u * height * sampleSign.y);
+        vec3 delta = samplePosition - worldPos;
+        float distanceToLight = length(delta);
+        vec3 l = distanceToLight > 0.0001 ? delta / distanceToLight : -axis;
+        float window = positionRange.w <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToLight / positionRange.w, 4.0), 0.0, 1.0);
+        float geometry = width * height * 0.25 * abs(dot(axis, -l)) * window * window / max(distanceToLight * distanceToLight, 0.01);
+        total += a3dDirectLight(N, V, l, colorIntensity.rgb * colorIntensity.a * geometry, albedo, roughness);
+      }
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {
@@ -95,6 +118,7 @@ vec3 a3dDirect(vec3 N, vec3 V, vec3 albedo, float roughness, vec3 worldPos) {
       vec3 fromLight = worldPos - positionRange.xyz;
       vec3 axis = directionKind.xyz / max(length(directionKind.xyz), 1e-4);
       float cone = dot(axis, fromLight / max(length(fromLight), 1e-4));
+      if (areaUp.w > 0.5) cone = abs(cone);
       float outer = cos(spotShadow.x);
       float inner = cos(spotShadow.x * max(1.0 - spotShadow.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);

@@ -153,16 +153,25 @@ export function buildMeshBVH(
 /** Slab test. `tMax` lets a caller reject nodes beyond an existing best hit. */
 function rayHitsAabb(
   origin: Vec3,
-  inverseDirection: Vec3,
+  direction: Vec3,
   node: BVHNode,
   tMax: number
 ): boolean {
   let tMin = 0;
   let tFar = tMax;
   for (let axis = 0; axis < 3; axis += 1) {
-    const inv = inverseDirection[axis]!;
-    let tNear = (node.min[axis] - origin[axis]!) * inv;
-    let tFarAxis = (node.max[axis] - origin[axis]!) * inv;
+    const component = direction[axis]!;
+    const position = origin[axis]!;
+    if (component === 0) {
+      // A truly parallel ray never leaves an enclosing slab. Substituting a
+      // small component incorrectly limits how far the ray can travel.
+      if (position < node.min[axis] || position > node.max[axis]) return false;
+      continue;
+    }
+    // Divide directly so an origin on a slab boundary remains at t = 0 even
+    // when the reciprocal of a nonzero subnormal component would overflow.
+    let tNear = (node.min[axis] - position) / component;
+    let tFarAxis = (node.max[axis] - position) / component;
     if (tNear > tFarAxis) {
       const swap = tNear;
       tNear = tFarAxis;
@@ -173,6 +182,23 @@ function rayHitsAabb(
     if (tMin > tFar) return false;
   }
   return true;
+}
+
+/** Normalize any finite nonzero direction without overflowing or underflowing its length. */
+function normalizedRayDirection(direction: Vec3): Vec3 | undefined {
+  const [x, y, z] = direction;
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return undefined;
+  // Preserve the ordinary path's rounding and cost for inputs it already
+  // accepted. Scaling is needed for tiny values and an overflowing length.
+  const directLength = Math.hypot(x, y, z);
+  if (Number.isFinite(directLength) && directLength >= 1e-12) {
+    return [x / directLength, y / directLength, z / directLength];
+  }
+  const scale = Math.max(Math.abs(x), Math.abs(y), Math.abs(z));
+  if (scale === 0) return undefined;
+  const sx = x / scale, sy = y / scale, sz = z / scale;
+  const length = Math.hypot(sx, sy, sz);
+  return [sx / length, sy / length, sz / length];
 }
 
 export interface MeshRayHit {
@@ -261,7 +287,8 @@ export interface RaycastMeshOptions {
  *
  * The direction is normalised internally so `distance` is always in world units; a
  * caller passing an unnormalised direction otherwise gets a distance scaled by its
- * length, which is a silent and very confusing error.
+ * length, which is a silent and very confusing error. Exact equal-distance hits
+ * resolve to the lowest triangle index, independent of BVH traversal order.
  */
 export function raycastMesh(
   bvh: MeshBVH,
@@ -269,15 +296,9 @@ export function raycastMesh(
   direction: Vec3,
   options: RaycastMeshOptions = {}
 ): MeshRayHit | undefined {
-  const length = Math.hypot(direction[0]!, direction[1]!, direction[2]!);
-  if (!Number.isFinite(length) || length < 1e-12) return undefined;
-  const dir: Vec3 = [direction[0]! / length, direction[1]! / length, direction[2]! / length];
+  const dir = normalizedRayDirection(direction);
+  if (!dir) return undefined;
   const maxDistance = options.maxDistance ?? Infinity;
-  const inverse: Vec3 = [
-    1 / (dir[0] === 0 ? 1e-30 : dir[0]),
-    1 / (dir[1] === 0 ? 1e-30 : dir[1]),
-    1 / (dir[2] === 0 ? 1e-30 : dir[2])
-  ];
 
   let best: MeshRayHit | undefined;
   let bestDistance = maxDistance;
@@ -286,12 +307,12 @@ export function raycastMesh(
     const nodeIndex = stack.pop()!;
     const node = bvh.nodes[nodeIndex];
     if (!node) continue;
-    if (!rayHitsAabb(origin, inverse, node, bestDistance)) continue;
+    if (!rayHitsAabb(origin, dir, node, bestDistance)) continue;
     if (node.triangles) {
       for (const triangle of node.triangles) {
         const hit = intersectTriangle(bvh.positions, bvh.indices, triangle, origin, dir);
         if (!hit) continue;
-        if (hit.distance > bestDistance) continue;
+        if (hit.distance > bestDistance || (best && hit.distance === bestDistance && hit.triangle >= best.triangle)) continue;
         if (options.cullBackFaces && hit.backFace) continue;
         best = hit;
         bestDistance = hit.distance;
@@ -311,9 +332,8 @@ export function raycastMeshBruteForce(
   direction: Vec3,
   options: RaycastMeshOptions = {}
 ): MeshRayHit | undefined {
-  const length = Math.hypot(direction[0]!, direction[1]!, direction[2]!);
-  if (!Number.isFinite(length) || length < 1e-12) return undefined;
-  const dir: Vec3 = [direction[0]! / length, direction[1]! / length, direction[2]! / length];
+  const dir = normalizedRayDirection(direction);
+  if (!dir) return undefined;
   const maxDistance = options.maxDistance ?? Infinity;
   let best: MeshRayHit | undefined;
   for (let triangle = 0; triangle < bvh.triangleCount; triangle += 1) {

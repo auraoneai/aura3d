@@ -1,0 +1,41 @@
+{
+  "kind": "aura3d-game-runtime-command-gates-manifest",
+  "version": 1,
+  "scope": "game-runtime-command-report-requirements",
+  "status": "pending-execution",
+  "evidenceOnly": true,
+  "executionRequired": true,
+  "requiredCommands": [
+    "pnpm typecheck",
+    "pnpm game-runtime:unit",
+    "pnpm game-runtime:browser",
+    "pnpm game-runtime:template",
+    "pnpm game-runtime:docs",
+    "pnpm game-runtime:evidence",
+    "pnpm game-runtime:package",
+    "pnpm game-runtime:release",
+    "pnpm build"
+  ],
+  "requiredReports": [
+    "tests/reports/aura3d104/typecheck.json",
+    "tests/reports/game-runtime/unit.json",
+    "tests/reports/game-runtime/browser.json",
+    "tests/reports/game-runtime/template.json",
+    "tests/reports/game-runtime/docs.json",
+    "tests/reports/game-runtime/game-runtime-evidence.json",
+    "tests/reports/game-runtime/package-smoke.json",
+    "tests/reports/game-runtime/release.json",
+    "tests/reports/aura3d104/build.json"
+  ],
+  "requiredLogs": [
+    "tests/reports/game-runtime/typecheck.log",
+    "tests/reports/game-runtime/unit.log",
+    "tests/reports/game-runtime/browser.log",
+    "tests/reports/game-runtime/template.log",
+    "tests/reports/game-runtime/docs.log",
+    "tests/reports/game-runtime/evidence.log",
+    "tests/reports/game-runtime/package.log",
+    "tests/reports/game-runtime/release.log",
+    "tests/reports/game-runtime/build.log"
+  ]
+}

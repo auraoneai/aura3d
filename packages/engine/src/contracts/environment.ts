@@ -4,7 +4,7 @@
 
 import type { RegistryEntry, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
-import type { AuraVec3, AuraColor, AuraSceneSnapshot } from "../agent-api/index";
+import type { AuraVec3, AuraColor, AuraSceneSnapshot } from "../agent-api/nodes/types.js";
 import { createRegistry } from "@aura3d/rendering/contracts";
 
 export type AuraEnvironmentSourceKind = "explicit" | "biome" | "look" | "time-of-day" | "scene-signal" | "neutral-room" | "legacy";

@@ -3,10 +3,22 @@ export const assetRoleUsage =
 
 export function assetsAddHelp(): string {
   return `Usage: aura3d assets add ./model.glb --name robot [options]
+       aura3d assets add ./model.3mf --name model [options]
+       aura3d assets add ./scan.nrrd --name scan --type scalar-volume
        aura3d assets add ./grade.cube --name venueGrade --type lut   (3-D .cube LUT for effects.colorGrade({ lut: assets.venueGrade }))
 
+OBJ, PLY, STL and 3MF can be inspected with bounded native parsers. Register the
+corresponding renderer-capable adapter in the app's FormatRegistry before use;
+the default registry contains glTF only. Inspection does not imply full format parity.
+For 3MF, use adapter id "model3mf" with extension "3mf" and Model3MFLoader.
+Legacy inspection remains the default during migration. Strict rejects formats
+without an available bounded parser pass, including the current metadata-only glTF path.
+NRRD/NHDR scalar volumes require three spatial axes, supported scalar types and
+explicit supported orientation. Detached data must be a safe local relative file.
+
 Options:
-  --type model|texture|environment|audio|navigation|lut
+  --type model|texture|environment|audio|navigation|lut|scalar-volume
+  --model-inspection legacy|strict
   --license CC0-1.0
   --license-name "CC0 1.0 Universal"
   --license-url URL
@@ -28,7 +40,7 @@ Options:
   --rendered-probe-json tests/reports/asset.probe.json
   --rendered-probe /aura-assets/probe.png
   --orientation-json tests/reports/asset.orientation.json
-  --public-path /aura-assets/name.glb
+  --public-path /aura-assets/
   --output public/aura-assets`;
 }
 
@@ -36,7 +48,7 @@ export function mainHelp(profileUsage: string): string {
   return `Aura3D CLI
 
 Commands:
-  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio|navigation|lut] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--retrieved-at ISO-8601] [--quality ungraded|blocked|prototype|candidate] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png] [--orientation-json tests/reports/asset.orientation.json]
+  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio|navigation|lut|scalar-volume] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--retrieved-at ISO-8601] [--quality ungraded|blocked|prototype|candidate] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png] [--orientation-json tests/reports/asset.orientation.json]
   aura3d assets admit <id> --quality prototype|candidate|release
   aura3d assets import-meshy artifacts/meshy/run --name assetKey --rights-evidence artifacts/meshy/run/rights.json [--file model.glb] [--thumbnail thumbnail.png] [--profile prop|environment|vehicle|humanoid] [--allowed-root artifacts/meshy] [--quality candidate] [--role ${assetRoleUsage}]
       Local-only candidate ingestion: confines paths, validates GLB/metadata, reports profile budgets, retains a local thumbnail without signed URLs, and never certifies release quality.
@@ -45,6 +57,7 @@ Commands:
   aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background] [--max-verts N] [--tex N] [--no-simplify] [--meshopt] [--json]
   aura3d assets optimize --hdri <1k|2k> [--rgb9e5-cube] --file in.hdr --out out_1k.hdr [--json]
       HDRI delivery: writes a downsized .hdr (2k sources to <= 1.5 MB at 1k) and, with --rgb9e5-cube, an RGB9E5 cube map for environments.hdri(...).
+      Add --standard-ktx2-primaries <bt709|unspecified> with --rgb9e5-cube to write standard KTX2. This declares input primaries; it does not convert color. The Aura3D probe reader currently requires BT.709.
   aura3d assets merge-clips --base rigged.glb --out hero.glb run=animation_run.glb idle=animation_idle.glb [--keep-base-animations] [--tex 1024] [--json]
   aura3d meshy ledger status|reserve|settle|reconcile|baseline|list [--ledger path] [--global-cap N] [--game-cap N]   (caps are opt-in; default uncapped)
       Spend is uncapped by owner decision (2026-10-25): credits are tracked for visibility, caps are opt-in; reserve --game <tag> --op preview|refine|remesh|rigging|animate|retexture [--cap N] [--est N] [--dry-run] (a cap you set is a hard stop that prints the flag that raises it; config --global-cap N|off --game-cap N|off persists or removes one); settle --rid <id> --status ok|failed|unconfirmed|--exit-code N [--task-id T] [--task-status S] [--error-text text] [--actual N] [--note text]; reconcile --rid <id> --status ok|failed; reconcile [--apply] [--pool-json file] (ledger vs the Prism pool); baseline [--pool-json file]; list [--game <tag>]. It never calls Meshy; only reconcile/baseline read the Prism pool balance (AURA3D_PRISM_KEY or AURA3D_PRISM_KEY_FILE, never printed).

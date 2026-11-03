@@ -5,7 +5,7 @@
  * subject roll × `bankGain` (default 0.6), clamped (default 25°) and springed.
  */
 import type { AuraVec3 } from "../../index.js";
-import type { AuraCameraRig, AuraCameraSubject } from "../../../contracts/camera.js";
+import type { AuraCameraProbe, AuraCameraRig, AuraCameraSubject } from "../../../contracts/camera.js";
 import { springDamp, springDampVec3 } from "../Spring.js";
 import { quatRotateVec3, type AuraQuat } from "../quat.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
@@ -18,15 +18,17 @@ import {
   mul,
   nearForDistance,
   normalize,
+  probeForSubject,
   resolvePerSpeed,
   subjectHeight,
-  yawDir
+  yawDir,
+  type CameraSubjectRef
 } from "./rigUtils.js";
 
 const DEG = Math.PI / 180;
 
 export interface FlightRigOptions {
-  readonly target: string;
+  readonly target: CameraSubjectRef;
   readonly distance?: number | { readonly base: number; readonly perSpeed?: number; readonly max?: number };
   readonly height?: number;
   readonly lookHeight?: number;
@@ -78,6 +80,7 @@ export function createFlightRig(o: FlightRigOptions): AuraCameraRig {
   let dist = Number.NaN;
   let fovVal = Number.NaN;
   let damper: CollisionDamper | undefined;
+  let damperProbe: AuraCameraProbe | undefined;
 
   return {
     id: "flight",
@@ -132,10 +135,11 @@ export function createFlightRig(o: FlightRigOptions): AuraCameraRig {
 
       let finalEye = eye;
       if (o.collision) {
-        damper ??= createCollisionDamper(
-          ctx.probe,
-          typeof o.collision === "object" ? o.collision : {}
-        );
+        const probe = probeForSubject(ctx.probe, o.target);
+        if (!damper || damperProbe !== probe) {
+          damperProbe = probe;
+          damper = createCollisionDamper(probe, typeof o.collision === "object" ? o.collision : {});
+        }
         finalEye = damper.resolve(look, eye, ctx.dt);
       }
       return {

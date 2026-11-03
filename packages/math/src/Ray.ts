@@ -148,6 +148,7 @@ export class Ray {
 
   /** Ray–sphere hit point (closest to the origin), or `undefined`. */
   intersectSphere(sphere: Sphere): Vector3 | undefined {
+    if (sphere.radius < 0) return undefined;
     const l = sphere.center.subtract(this.origin);
     const tca = l.dot(this.direction);
     const d2 = l.dot(l) - tca * tca;
@@ -204,13 +205,15 @@ export class Ray {
       const direction = this.direction[axis];
       const min = box.min[axis];
       const max = box.max[axis];
-      if (Math.abs(direction) < 1e-12) {
+      // A small nonzero component can still cross a slab at a large distance.
+      if (direction === 0) {
         if (origin < min || origin > max) return undefined;
         continue;
       }
-      const invD = 1 / direction;
-      let t1 = (min - origin) * invD;
-      let t2 = (max - origin) * invD;
+      // Divide directly: a subnormal direction can have an infinite
+      // reciprocal, and multiplying it by a zero slab offset yields NaN.
+      let t1 = (min - origin) / direction;
+      let t2 = (max - origin) / direction;
       if (t1 > t2) [t1, t2] = [t2, t1];
       tmin = Math.max(tmin, t1);
       tmax = Math.min(tmax, t2);

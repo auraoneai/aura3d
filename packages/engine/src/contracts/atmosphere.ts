@@ -3,7 +3,7 @@
  * Flag: A3D_QR_VFX.
  */
 
-import type { AuraColor, AuraVec3, AuraAssetRef } from "../agent-api/index";
+import type { AuraColor, AuraVec3, AuraAssetRef } from "../agent-api/nodes/types.js";
 
 export interface AuraSkySunSpec { readonly elevationDeg: number; readonly azimuthDeg: number; readonly intensity?: number; readonly color?: AuraColor; readonly discSize?: number; }
 /** PRD-10 §6.3 Q-07-2 — ordered additive emission band on a gradient sky

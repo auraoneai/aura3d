@@ -78,7 +78,7 @@ class FakeTimerGl {
   }
 }
 
-const FAKE_EXT = { TIME_ELAPSED_EXT: EXT_TIME_ELAPSED, GPU_DISJOINT_EXT: EXT_DISJOINT, TIMESTAMP_EXT: EXT_TIMESTAMP } as unknown as EXTDisjointTimerQueryWebGL2;
+const FAKE_EXT = { TIME_ELAPSED_EXT: EXT_TIME_ELAPSED, GPU_DISJOINT_EXT: EXT_DISJOINT, TIMESTAMP_EXT: EXT_TIMESTAMP } as const;
 
 function makeBackend(gl = new FakeTimerGl()): { backend: RendererGpuScopedTimingBackend; gl: FakeTimerGl } {
   const backend = createWebGL2GpuTimingBackend(gl as unknown as WebGL2RenderingContext);

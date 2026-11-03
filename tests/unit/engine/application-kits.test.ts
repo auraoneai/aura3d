@@ -17,8 +17,7 @@ import { placedBounds } from "../../../packages/engine/src/agent-api/SpatialAnch
  *
  * These tests hold the kits to the property that makes them worth having: a route declares
  * what it is configuring and the kit owns the rest, including the invariants a gate checks.
- * They also pin each kit's honest limits -- a kit that quietly faked measurement or
- * section views would be worse than one that declares it does not own them.
+ * They also pin each kit's honest limits, including unsupported measurement.
  */
 
 const PRODUCT = placedBounds({ position: [0, 0, 0], size: [1.4, 0.8, 0.9], floorY: 0 });
@@ -210,10 +209,17 @@ describe("architecture kit", () => {
     expect(kit().frame().spatialInvariants.passes).toBe(true);
   });
 
-  it("declares measurement and section views as unsupported rather than faking them", () => {
-    const unsupported = kit().capabilities.unsupported.map((entry) => entry.capability);
+  it("supports section planes while declaring measurement unsupported", () => {
+    const architecture = kit();
+    const unsupported = architecture.capabilities.unsupported.map((entry) => entry.capability);
     expect(unsupported).toContain("measurement");
-    expect(unsupported).toContain("clipping/section views");
+    expect(unsupported).not.toContain("clipping/section views");
+    expect(architecture.capabilities.supported).toContain("clipping/section views");
+    const section = architecture.setSection({ planes: [[1, 0, 0, -2]], clipShadows: true }).clipping;
+    expect(section.enabled).toBe(true);
+    expect(section.planes).toEqual([[1, 0, 0, -2]]);
+    expect(architecture.setSection(undefined).clipping).toBe(section);
+    expect(section.enabled).toBe(false);
   });
 
   it("reset clears focus and returns the first mood", () => {

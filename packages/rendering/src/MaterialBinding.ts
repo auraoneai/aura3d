@@ -1,7 +1,7 @@
 import { Material } from "./Material";
 import { MaterialInstance } from "./MaterialInstance";
 import { PortableShaderMaterial } from "./PortableShaderMaterial";
-import { type RenderShaderProgram, type UniformValue } from "./RenderDevice";
+import { type RecursiveUniformValue, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { TextureBinding, isTextureBinding } from "./TextureBinding";
 import type { ProgramFeatures } from "./contracts/program";
 import { dfgLutBinding } from "./program/DFGLut";
@@ -24,20 +24,23 @@ const GENERATED_MAP_SAMPLERS: Readonly<Record<string, string>> = {
   normal: "u_normalMap",
   metallicRoughness: "u_metallicRoughnessMap",
   occlusion: "u_occlusionMap",
-  emissive: "u_emissiveMap"
+  emissive: "u_emissiveMap",
+  diffuseRoughness: "u_diffuseRoughnessTexture",
+  bump: "u_bumpTexture"
 };
 
-export interface MaterialBindingResult {
+export interface MaterialBindingResult<T extends RecursiveUniformValue = UniformValue> {
   readonly shader: RenderShaderProgram;
-  readonly uniforms: ReadonlyMap<string, UniformValue>;
+  readonly uniforms: ReadonlyMap<string, T>;
   readonly diagnostics: readonly string[];
   readonly warnings: readonly string[];
 }
 
 export class MaterialBinding {
-  bind(materialLike: Material | MaterialInstance, shader: RenderShaderProgram): MaterialBindingResult {
+  /** Bind schema-validated recursive values for an explicitly capable portable backend. */
+  bindRecursive(materialLike: Material<RecursiveUniformValue> | MaterialInstance, shader: RenderShaderProgram): MaterialBindingResult<RecursiveUniformValue> {
     const material = materialLike instanceof MaterialInstance ? materialLike.baseMaterial : materialLike;
-    const uniforms = materialLike.getParameters();
+    const uniforms = new Map(materialLike.getRecursiveParameters());
     const diagnostics: string[] = [];
     const warnings: string[] = [];
 
@@ -71,7 +74,9 @@ export class MaterialBinding {
         }
         continue;
       }
-      const typeDiagnostic = validateUniformSchemaValue(uniform.name, uniform.kind, value);
+      const typeDiagnostic = material instanceof PortableShaderMaterial
+        ? material.uniformValueDiagnostic(uniform.name, value)
+        : validateUniformSchemaValue(uniform.name, uniform.kind, value);
       if (typeDiagnostic) {
         diagnostics.push(typeDiagnostic);
       }
@@ -81,7 +86,7 @@ export class MaterialBinding {
         const validation = value.validate();
         diagnostics.push(...validation.diagnostics);
         warnings.push(...validation.warnings);
-      } else {
+      } else if (!(material instanceof PortableShaderMaterial && material.uniformSchema.some((uniform) => uniform.name === name))) {
         const valueDiagnostics = uniformValueDiagnostics(name, value);
         if (valueDiagnostics.length > 0) {
           diagnostics.push(...valueDiagnostics);
@@ -97,7 +102,37 @@ export class MaterialBinding {
     if (optimizedOut.length > 0) {
       warnings.push(`[CUSTOM_UNIFORM_UNUSED] material "${material.name}": declared uniform(s) ${optimizedOut.join(", ")} not active in the linked program (unused or optimised out); not uploaded`);
     }
+    // Legacy PBR programs declare both optional detail samplers. Bind the
+    // device's neutral 2D fallback when a map is absent so the sampler cannot
+    // accidentally alias a cube-map unit, without allocating a material texture.
+    for (const name of ["u_diffuseRoughnessTexture", "u_bumpTexture"]) {
+      if (shader.reflection.uniforms.has(name) && !uniforms.has(name)) {
+        uniforms.set(name, new TextureBinding({ name, required: false, expectedDimension: "2d", expectedColorSpace: "linear" }));
+      }
+    }
     return { shader, uniforms, diagnostics: warnings, warnings };
+  }
+
+  /** The established flat binding contract; reject rather than flatten portable data. */
+  bind(materialLike: Material<RecursiveUniformValue> | MaterialInstance, shader: RenderShaderProgram): MaterialBindingResult {
+    const result = this.bindRecursive(materialLike, shader);
+    const material = materialLike instanceof MaterialInstance ? materialLike.baseMaterial : materialLike;
+    const data = material instanceof PortableShaderMaterial
+      ? material.uniformSchema.find((uniform) => uniform.kind === "data") : undefined;
+    if (data) throw new MaterialBindingError("Material binding validation failed", [`WebGL legacy drawing cannot bind portable data uniform ${data.name}`]);
+    const uniforms = new Map<string, UniformValue>();
+    for (const [name, value] of result.uniforms) {
+      if (!isFlatUniformValue(value)) {
+        throw new MaterialBindingError("Material binding validation failed", [`Legacy drawing cannot bind structured uniform ${name}`]);
+      }
+      uniforms.set(name, value);
+    }
+    return { ...result, uniforms };
+  }
+
+  /** Compatibility alias for callers that explicitly request a flat binding. */
+  bindLegacy(materialLike: Material<RecursiveUniformValue> | MaterialInstance, shader: RenderShaderProgram): MaterialBindingResult {
+    return this.bind(materialLike, shader);
   }
 
   /**
@@ -110,6 +145,17 @@ export class MaterialBinding {
    */
   bindGenerated(materialLike: Material | MaterialInstance, shader: RenderShaderProgram, features?: ProgramFeatures, into?: Map<string, UniformValue>): MaterialBindingResult {
     const material = materialLike instanceof MaterialInstance ? materialLike.baseMaterial : materialLike;
+    if (material instanceof PortableShaderMaterial && material.uniformSchema.some((uniform) => uniform.kind === "data")) {
+      const values = materialLike.getRecursiveParameters();
+      for (const uniform of material.uniformSchema) {
+        const value = values.get(uniform.name);
+        if (value !== undefined) {
+          const diagnostic = material.uniformValueDiagnostic(uniform.name, value);
+          if (diagnostic) throw new MaterialBindingError("Material binding validation failed", [diagnostic]);
+        }
+      }
+      throw new MaterialBindingError("Material binding validation failed", ["Generated programs do not support portable uniform data schemas"]);
+    }
     const uniforms = into ?? new Map<string, UniformValue>();
     const diagnostics: string[] = [];
     const warnings: string[] = [];
@@ -120,7 +166,11 @@ export class MaterialBinding {
       uniforms.set("u_dfgLut", dfgLutBinding());
     }
 
-    for (const [name, value] of materialLike.getParameters()) {
+    for (const [name, value] of materialLike.getRecursiveParameters()) {
+      if (!isFlatUniformValue(value)) {
+        diagnostics.push(`Generated programs cannot bind structured uniform ${name}`);
+        continue;
+      }
       const renamed = GENERATED_UNIFORM_RENAMES[name];
       if (renamed && isTextureBinding(value)) {
         uniforms.set(renamed, new TextureBinding({
@@ -135,6 +185,38 @@ export class MaterialBinding {
         }));
       } else {
         uniforms.set(renamed ?? name, value);
+      }
+    }
+    if (features?.maps.occlusion && !uniforms.has("u_occlusionStrength")) uniforms.set("u_occlusionStrength", 1);
+
+    // Core map transforms travel with the texture binding for materials that
+    // do not expose separate fields. Explicit live fields take precedence.
+    for (const name of ["u_baseColorTexture", "u_normalTexture", "u_metallicRoughnessTexture", "u_occlusionTexture", "u_emissiveTexture"]) {
+      const value = materialLike.getParameter(name);
+      if (!isTextureBinding(value)) continue;
+      if (!uniforms.has(`${name}Offset`)) uniforms.set(`${name}Offset`, value.offset);
+      if (!uniforms.has(`${name}Scale`)) uniforms.set(`${name}Scale`, value.scale);
+      if (!uniforms.has(`${name}Rotation`)) uniforms.set(`${name}Rotation`, value.rotation);
+    }
+
+    // Lobe maps use a mat3 so descriptor-backed and live bindings share the
+    // same complete transform, while changing a transform never recompiles.
+    for (const ext of features?.extensions ?? []) {
+      for (const slot of ext.maps) {
+        const name = `u_${slot}Texture`;
+        const value = materialLike.getParameter(name);
+        if (!isTextureBinding(value)) continue;
+        const offset = uniforms.get(`${name}Offset`) ?? value.offset;
+        const scale = uniforms.get(`${name}Scale`) ?? value.scale;
+        const rotation = uniforms.get(`${name}Rotation`) ?? value.rotation;
+        if ((!Array.isArray(offset) && !(offset instanceof Float32Array)) ||
+            (!Array.isArray(scale) && !(scale instanceof Float32Array)) || typeof rotation !== "number") continue;
+        const c = Math.cos(rotation), s = Math.sin(rotation);
+        uniforms.set(`${name}UvTransform`, new Float32Array([
+          c * scale[0]!, s * scale[0]!, 0,
+          -s * scale[1]!, c * scale[1]!, 0,
+          offset[0]!, offset[1]!, 1
+        ]));
       }
     }
 
@@ -154,12 +236,26 @@ export class MaterialBinding {
         diagnostics.push(`Missing material parameter for generated uniform: ${sampler}`);
       }
     }
+    // Generated programs intentionally ignore legacy schemas, but a portable
+    // material's authored data schema is still authoritative for overrides.
+    if (material instanceof PortableShaderMaterial) {
+      for (const uniform of material.uniformSchema) {
+        const value = uniforms.get(GENERATED_UNIFORM_RENAMES[uniform.name] ?? uniform.name);
+        if (value === undefined) {
+          if (uniform.required !== false) diagnostics.push(`Missing material parameter declared by schema: ${uniform.name}`);
+          continue;
+        }
+        const diagnostic = material.uniformValueDiagnostic(uniform.name, value);
+        if (diagnostic) diagnostics.push(diagnostic);
+      }
+    }
     for (const [name, value] of uniforms) {
       if (isTextureBinding(value)) {
         const validation = value.validate();
         diagnostics.push(...validation.diagnostics);
         warnings.push(...validation.warnings);
-      } else {
+      } else if (!(material instanceof PortableShaderMaterial && material.uniformSchema.some((uniform) =>
+        (GENERATED_UNIFORM_RENAMES[uniform.name] ?? uniform.name) === name))) {
         const valueDiagnostics = uniformValueDiagnostics(name, value);
         if (valueDiagnostics.length > 0) {
           diagnostics.push(...valueDiagnostics);
@@ -183,6 +279,13 @@ export class MaterialBindingError extends Error {
   }
 }
 
+/** The legacy draw path accepts only numeric scalars, flat numeric vectors, and textures. */
+export function isFlatUniformValue(value: RecursiveUniformValue): value is UniformValue {
+  return typeof value === "number" || isTextureBinding(value)
+    || value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array
+    || (Array.isArray(value) && value.every((entry) => typeof entry === "number"));
+}
+
 function uniformValueDiagnostics(name: string, value: unknown): readonly string[] {
   if (typeof value === "number") {
     return Number.isFinite(value) ? [] : [`Unsupported uniform value for ${name}: non-finite number`];
@@ -202,24 +305,40 @@ function uniformValueDiagnostics(name: string, value: unknown): readonly string[
   return [`Unsupported uniform value for ${name}`];
 }
 
-function validateUniformSchemaValue(name: string, kind: string, value: UniformValue): string | null {
+function validateUniformSchemaValue(name: string, kind: string, value: RecursiveUniformValue): string | null {
   if (kind === "any") {
     return null;
   }
-  if (kind === "texture2d" || kind === "textureCube") {
-    return isTextureBinding(value) ? null : `Material uniform ${name} must be ${kind}`;
+  if (kind === "texture2d" || kind === "texture3d" || kind === "depth2d" || kind === "textureCube") {
+    if (!isTextureBinding(value)) return `Material uniform ${name} must be ${kind}`;
+    if ((kind === "texture3d" || kind === "depth2d") && !value.texture) return `Material uniform ${name} requires a bound ${kind} texture`;
+    if (value.texture && kind === "texture3d" && value.texture.dimension !== "3d") return `Material uniform ${name} must be a 3d texture`;
+    if (value.texture && kind === "depth2d" && (value.texture.dimension !== "2d" || value.texture.format !== "depth24")) return `Material uniform ${name} must be a 2d depth texture`;
+    return null;
   }
   if (isTextureBinding(value)) {
     return `Material uniform ${name} must be ${kind}, got texture binding`;
   }
+  if (kind === "u32") {
+    return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 0xffffffff
+      ? null : `Material uniform ${name} must be a u32 integer between 0 and 4294967295`;
+  }
+  if (kind === "i32") {
+    return typeof value === "number" && Number.isInteger(value) && value >= -0x80000000 && value <= 0x7fffffff
+      ? null : `Material uniform ${name} must be an i32 integer between -2147483648 and 2147483647`;
+  }
+  if (kind === "bool") return value === 0 || value === 1 ? null : `Material uniform ${name} must be a boolean encoded as 0 or 1`;
+  if (kind === "data") return `Material uniform ${name} needs a portable data schema`;
   const numbers = typeof value === "number"
     ? [value]
-    : ArrayBuffer.isView(value)
-      ? Array.from(value as Float32Array | Int32Array | Uint32Array)
-      : Array.from(value);
+    : value instanceof Float32Array || value instanceof Int32Array || value instanceof Uint32Array
+      ? Array.from(value)
+      : Array.isArray(value) && value.every((entry) => typeof entry === "number")
+        ? value
+        : null;
   const expected = scalarCount(kind);
-  if (numbers.length !== expected) {
-    return `Material uniform ${name} must be ${kind} with ${expected} scalar values, got ${numbers.length}`;
+  if (!numbers || numbers.length !== expected) {
+    return `Material uniform ${name} must be ${kind} with ${expected} scalar values, got ${numbers?.length ?? 0}`;
   }
   return numbers.every(Number.isFinite) ? null : `Material uniform ${name} must contain finite ${kind} scalar values`;
 }

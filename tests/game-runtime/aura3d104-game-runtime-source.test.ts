@@ -221,10 +221,36 @@ describe("Aura3D 1.0.4 game runtime source-backed gates", () => {
   });
 
   it("declares browser and runtime evidence manifest expectations for PRD evidence-only gates", () => {
-    const browserManifest = readEvidenceManifest("tests/reports/game-runtime/browser-evidence.manifest.json");
-    const runtimeManifest = readEvidenceManifest("tests/reports/game-runtime/runtime-evidence.manifest.json");
-    const commandManifest = readEvidenceManifest("tests/reports/game-runtime/command-gates.manifest.json");
+    const browserManifest = readEvidenceManifest("tests/fixtures/game-runtime/browser-evidence.manifest.json");
+    const runtimeManifest = readEvidenceManifest("tests/fixtures/game-runtime/runtime-evidence.manifest.json");
+    const commandManifest = readEvidenceManifest("tests/fixtures/game-runtime/command-gates.manifest.json");
     const browserProofIds = browserManifest.requiredProofs?.map((proof) => proof.proofId) ?? [];
+
+    expect(browserManifest).toMatchObject({
+      kind: "aura3d-game-runtime-browser-evidence-manifest",
+      version: 1,
+      scope: "browser-evidence-requirements",
+      evidenceOnly: true,
+      executionRequired: true
+    });
+    expect(runtimeManifest).toMatchObject({
+      kind: "aura3d-game-runtime-runtime-evidence-manifest",
+      version: 1,
+      scope: "runtime-evidence-requirements",
+      evidenceOnly: true,
+      executionRequired: true
+    });
+    expect(commandManifest).toMatchObject({
+      kind: "aura3d-game-runtime-command-gates-manifest",
+      version: 1,
+      scope: "game-runtime-command-report-requirements",
+      evidenceOnly: true,
+      executionRequired: true
+    });
+    for (const manifest of [browserManifest, runtimeManifest, commandManifest]) {
+      expect(manifest).not.toHaveProperty("ok");
+      expect(manifest).not.toHaveProperty("generatedAt");
+    }
 
     expect(browserManifest.status).toBe("pending-execution");
     expect(browserProofIds).toEqual(expect.arrayContaining([...requiredBrowserEvidenceProofIds]));
@@ -239,7 +265,25 @@ describe("Aura3D 1.0.4 game runtime source-backed gates", () => {
       expect.arrayContaining(["tests/reports/game-runtime/game-runtime-evidence.json"])
     );
     expect(runtimeManifest.requiredSystems).toEqual(expect.arrayContaining([...requiredRuntimeEvidenceSystems]));
+    expect(runtimeManifest.requiredProofs?.length).toBeGreaterThan(0);
+    for (const proof of runtimeManifest.requiredProofs ?? []) {
+      expect(proof.status).toBe("pending-execution");
+      expect(proof.requiredArtifacts?.length).toBeGreaterThan(0);
+    }
     expect(commandManifest.status).toBe("pending-execution");
+    expect(commandManifest.requiredCommands).toEqual(
+      expect.arrayContaining([
+        "pnpm typecheck",
+        "pnpm game-runtime:unit",
+        "pnpm game-runtime:browser",
+        "pnpm game-runtime:template",
+        "pnpm game-runtime:docs",
+        "pnpm game-runtime:evidence",
+        "pnpm game-runtime:package",
+        "pnpm game-runtime:release",
+        "pnpm build"
+      ])
+    );
     expect(commandManifest.requiredReports).toEqual(
       expect.arrayContaining([
         "tests/reports/aura3d104/typecheck.json",

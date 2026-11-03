@@ -20,6 +20,8 @@ export interface RenderPipelineDescriptor {
 export interface PipelineDrawDescriptor {
   readonly label?: string;
   readonly vertexBuffer: RenderBuffer;
+  /** Buffers indexed by the vertex format's stream slot; slot zero falls back to vertexBuffer. */
+  readonly vertexBuffers?: DrawCommand["vertexBuffers"];
   readonly vertexCount: number;
   readonly firstVertex?: number;
   readonly instanceCount?: number;
@@ -29,6 +31,7 @@ export interface PipelineDrawDescriptor {
   readonly indexCount?: number;
   readonly firstIndex?: number;
   readonly uniforms?: DrawCommand["uniforms"];
+  readonly nativeStorageBindings?: DrawCommand["nativeStorageBindings"];
 }
 
 export class RenderPipeline {
@@ -72,11 +75,13 @@ export class RenderPipeline {
       topology: this.topology,
       renderState: this.renderState,
       vertexBuffer: descriptor.vertexBuffer,
+      ...(descriptor.vertexBuffers !== undefined ? { vertexBuffers: descriptor.vertexBuffers } : {}),
       vertexFormat: this.vertexFormat,
       vertexCount: descriptor.vertexCount,
       ...(descriptor.firstVertex !== undefined ? { firstVertex: descriptor.firstVertex } : {}),
       ...(descriptor.instanceCount !== undefined ? { instanceCount: descriptor.instanceCount } : {}),
       ...(descriptor.instanceAttributes !== undefined ? { instanceAttributes: descriptor.instanceAttributes } : {}),
+      ...(descriptor.nativeStorageBindings !== undefined ? { nativeStorageBindings: descriptor.nativeStorageBindings } : {}),
       shader: this.shader,
       uniforms: descriptor.uniforms
     };

@@ -1,7 +1,8 @@
+import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadProductionGLTFRenderPipeline } from "../../../packages/assets/src/asset-corpus";
-import { parsedGLTFAssetCacheKey, snapshotParsedGLTFAssetCache } from "../../../packages/assets/src/GLTFAssetParseCache";
+import { acquireParsedGLTFAsset, parsedGLTFAssetCacheKey, snapshotParsedGLTFAssetCache } from "../../../packages/assets/src/GLTFAssetParseCache";
 
 /**
  * Performance mission section 27 (asset reuse) / section 38 (fix once in the reusable layer).
@@ -79,7 +80,7 @@ function serveBroken(status = 500): Response {
 const imageDecoder = () => ({ width: 1, height: 1, data: new Uint8Array(4).fill(255), colorSpace: "srgb" as const });
 
 function loadPipeline(url: string, assetId: string, extra: Record<string, unknown> = {}) {
-  return loadProductionGLTFRenderPipeline({ url, assetId, imageDecoder, ...extra });
+  return loadProductionGLTFRenderPipeline({ url, assetId, imageDecoder, request: { credentials: "omit" }, ...extra });
 }
 
 function sceneNodeNames(pipeline: Awaited<ReturnType<typeof loadPipeline>>): string[] {
@@ -91,12 +92,12 @@ function cachedKeyCount(url: string): number {
 }
 
 /**
- * A disposed `VertexBuffer` refuses attribute reads, which is the observable signal that one
- * pipeline's own GPU resource was freed. Returns `null` while the buffer is still live.
+ * Capture a buffer before its geometry is disposed: the geometry accessor itself rejects
+ * reads after disposal. A dead buffer independently rejects attribute reads.
  */
-function vertexBufferState(geometry: { vertexBuffer: { getAttribute(index: number, semantic: string): unknown } }): string | null {
+function vertexBufferState(buffer: { getAttribute(index: number, semantic: "position"): unknown }): string | null {
   try {
-    geometry.vertexBuffer.getAttribute(0, "position");
+    buffer.getAttribute(0, "position");
     return null;
   } catch (error) {
     return error instanceof Error ? error.message : String(error);
@@ -104,15 +105,59 @@ function vertexBufferState(geometry: { vertexBuffer: { getAttribute(index: numbe
 }
 
 beforeEach(() => {
+  vi.stubGlobal("crypto", webcrypto);
   fetchResponder = serveGlb;
   installFetchStub();
 });
 
 afterEach(() => {
   globalThis.fetch = nativeFetch;
+  vi.unstubAllGlobals();
 });
 
 describe("shared parsed GLB reuse in loadProductionGLTFRenderPipeline", () => {
+  it("keeps credentialed default requests private even while the first parsed asset is live", async () => {
+    fetchResponder = (_url, index) => new Response(GLTF_TEXT.replace('"name":"pylon"', `"name":"session-${index}"`));
+    const first = await acquireParsedGLTFAsset({ url: GLTF_URL });
+    const second = await acquireParsedGLTFAsset({ url: GLTF_URL });
+    try {
+      expect(first.asset.meshes[0]?.name).toBe("session-0");
+      expect(second.asset.meshes[0]?.name).toBe("session-1");
+      expect(first.asset).not.toBe(second.asset);
+      expect(fetchCalls.filter((url) => url === GLTF_URL)).toHaveLength(2);
+      expect(cachedKeyCount(GLTF_URL)).toBe(0);
+      first.release();
+      first.release();
+      expect(first.asset.disposed).toBe(true);
+      expect(second.asset.disposed).toBe(false);
+    } finally { first.release(); second.release(); }
+    expect(second.asset.disposed).toBe(true);
+  });
+
+  it("shares one generation, isolates a rotated generation, and removes each last lease", async () => {
+    fetchResponder = (_url, index) => new Response(GLTF_TEXT.replace('"name":"pylon"', `"name":"generation-${index}"`));
+    const request = (securityContext: string) => ({ credentials: "include" as const, securityContext });
+    const first = await acquireParsedGLTFAsset({ url: GLTF_URL, request: request("generation-private-a") });
+    const same = await acquireParsedGLTFAsset({ url: GLTF_URL, request: request("generation-private-a") });
+    const rotated = await acquireParsedGLTFAsset({ url: GLTF_URL, request: request("generation-private-b") });
+    try {
+      expect(same.asset).toBe(first.asset);
+      expect(rotated.asset).not.toBe(first.asset);
+      expect(first.asset.meshes[0]?.name).toBe("generation-0");
+      expect(rotated.asset.meshes[0]?.name).toBe("generation-1");
+      expect(fetchCalls.filter((url) => url === GLTF_URL)).toHaveLength(2);
+      expect(cachedKeyCount(GLTF_URL)).toBe(2);
+      expect(JSON.stringify(snapshotParsedGLTFAssetCache())).not.toMatch(/generation-private/);
+      first.release();
+      expect(first.asset.disposed).toBe(false);
+      same.release();
+      expect(first.asset.disposed).toBe(true);
+      expect(rotated.asset.disposed).toBe(false);
+      expect(cachedKeyCount(GLTF_URL)).toBe(1);
+    } finally { first.release(); same.release(); rotated.release(); }
+    expect(cachedKeyCount(GLTF_URL)).toBe(0);
+  });
+
   it("fetches and parses one GLB once for two pipelines that share a URL", async () => {
     const first = await loadPipeline(GLB_URL, "wreck-a");
     const second = await loadPipeline(GLB_URL, "wreck-b");
@@ -191,17 +236,25 @@ describe("shared parsed GLB reuse in loadProductionGLTFRenderPipeline", () => {
   it("keys the parse on the decoders that change it", async () => {
     const decoderA = (() => ({ attributes: { POSITION: [0, 0, 0] }, indices: [0, 1, 2] })) as never;
     const decoderB = (() => ({ attributes: { POSITION: [0, 0, 0] }, indices: [0, 1, 2] })) as never;
+    const meshoptA = (() => new Uint8Array()) as never;
+    const meshoptB = (() => new Uint8Array()) as never;
 
     const first = await loadPipeline(GLB_URL, "draco-1", { dracoDecoder: decoderA });
     const same = await loadPipeline(GLB_URL, "draco-1-again", { dracoDecoder: decoderA });
     const other = await loadPipeline(GLB_URL, "draco-2", { dracoDecoder: decoderB });
     const plain = await loadPipeline(GLB_URL, "no-draco");
+    const mesh = await loadPipeline(GLB_URL, "meshopt-1", { meshoptDecoder: meshoptA });
+    const sameMesh = await loadPipeline(GLB_URL, "meshopt-1-again", { meshoptDecoder: meshoptA });
+    const otherMesh = await loadPipeline(GLB_URL, "meshopt-2", { meshoptDecoder: meshoptB });
 
-    expect(fetchCalls.filter((url) => url === GLB_URL)).toHaveLength(3);
+    expect(fetchCalls.filter((url) => url === GLB_URL)).toHaveLength(5);
     expect(same.asset).toBe(first.asset);
     expect(other.asset).not.toBe(first.asset);
     expect(plain.asset).not.toBe(first.asset);
-    for (const pipeline of [first, same, other, plain]) pipeline.dispose();
+    expect(sameMesh.asset).toBe(mesh.asset);
+    expect(otherMesh.asset).not.toBe(mesh.asset);
+    expect(mesh.asset).not.toBe(plain.asset);
+    for (const pipeline of [first, same, other, plain, mesh, sameMesh, otherMesh]) pipeline.dispose();
   });
 
   it("does not cache a failed fetch, for a single caller or for concurrent callers", async () => {
@@ -272,19 +325,28 @@ describe("shared parsed GLB reuse in loadProductionGLTFRenderPipeline", () => {
     const sharedAsset = first.asset;
     const firstGeometries = [...first.resources.geometryLibrary.values()];
     const peerGeometries = [...second.resources.geometryLibrary.values()];
+    const firstBuffers = firstGeometries.map((geometry) => geometry.vertexBuffer);
+    const peerBuffers = peerGeometries.map((geometry) => geometry.vertexBuffer);
     expect(firstGeometries.length).toBeGreaterThan(0);
+    expect(peerGeometries.length).toBeGreaterThan(0);
+    for (const buffer of firstBuffers) expect(peerBuffers).not.toContain(buffer);
 
     first.dispose();
     first.dispose(); // idempotent: a double dispose must not underflow the reference count
 
-    expect(firstGeometries.every((geometry) => vertexBufferState(geometry) === "VertexBuffer is disposed")).toBe(true);
-    expect(peerGeometries.every((geometry) => vertexBufferState(geometry) === null)).toBe(true);
+    for (const geometry of firstGeometries) expect(() => geometry.vertexBuffer).toThrow("Geometry is disposed");
+    expect(firstBuffers.every((buffer) => vertexBufferState(buffer) === "VertexBuffer is disposed")).toBe(true);
+    expect(peerBuffers.every((buffer) => vertexBufferState(buffer) === null)).toBe(true);
     expect(second.asset).toBe(sharedAsset);
+    expect(second.asset.disposed).toBe(false);
     expect(second.resources.scene.collectRenderables().length).toBeGreaterThan(0);
     expect(cachedKeyCount(GLB_URL)).toBe(1);
 
     second.dispose();
     expect(cachedKeyCount(GLB_URL)).toBe(0);
+    for (const geometry of peerGeometries) expect(() => geometry.vertexBuffer).toThrow("Geometry is disposed");
+    expect(peerBuffers.every((buffer) => vertexBufferState(buffer) === "VertexBuffer is disposed")).toBe(true);
+    expect(second.asset.disposed).toBe(true);
 
     // The released parse is gone: the next load fetches again instead of serving a dead asset.
     const reloaded = await loadPipeline(GLB_URL, "after-full-release");

@@ -16,8 +16,9 @@
  */
 
 import type { AuraEffectNode, AuraModelNode, AuraPrimitiveNode, AuraVec3, AuraTransformSpec } from "./index";
-import { createModelMatrix } from "./index.js";
+import { createModelMatrix } from "./sceneMath.js";
 import type { AuraEulerOrder, AuraQuat, AuraWorldTransform } from "../contracts/sceneGraph";
+import { assertValidPivot, hasNonzeroPivot } from "./pivotGuard.js";
 
 export type { AuraEulerOrder, AuraQuat, AuraWorldTransform };
 
@@ -188,6 +189,8 @@ export function identityMat4Into(out: Float32Array): Float32Array {
 }
 
 export function localMatrixOf(local: AuraTransformSpec, out: Float32Array): Float32Array {
+  assertValidPivot(local.pivot);
+  const pivoted = hasNonzeroPivot(local.pivot);
   const position = local.position ?? [0, 0, 0];
   const scale = local.scale === undefined
     ? ([1, 1, 1] as const)
@@ -195,7 +198,25 @@ export function localMatrixOf(local: AuraTransformSpec, out: Float32Array): Floa
       ? ([local.scale, local.scale, local.scale] as const)
       : local.scale;
   const quaternion = local.quaternion ?? eulerToQuaternion(local.rotation ?? [0, 0, 0], local.rotationOrder ?? "ZYX");
-  return composeTRSInto(out, position, quaternion, scale);
+  // Stage pivoted output so non-finite float32 results do not alter the target.
+  const target = pivoted ? new Float32Array(16) : out;
+  composeTRSInto(target, position, quaternion, scale);
+  applyPivot(target, local.pivot);
+  if (pivoted) {
+    if (!target.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted local matrix must be finite.");
+    out.set(target);
+  }
+  return out;
+}
+
+/** Translate the composed T·R·S by pivot - R·S·pivot, in local space. */
+function applyPivot(out: Float32Array, pivot: AuraVec3 | undefined): Float32Array {
+  if (!pivot) return out;
+  const [x, y, z] = pivot;
+  out[12] += x - (out[0] * x + out[4] * y + out[8] * z);
+  out[13] += y - (out[1] * x + out[5] * y + out[9] * z);
+  out[14] += z - (out[2] * x + out[6] * y + out[10] * z);
+  return out;
 }
 
 /**
@@ -208,7 +229,14 @@ export function composeWorldMatrix(parent: Float32Array | null, local: AuraTrans
     out.set(localM);
     return out;
   }
-  multiplyMat4Into(out, parent, localM);
+  if (hasNonzeroPivot(local.pivot)) {
+    const staged = new Float32Array(16);
+    multiplyMat4Into(staged, parent, localM);
+    if (!staged.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted world matrix must be finite.");
+    out.set(staged);
+  } else {
+    multiplyMat4Into(out, parent, localM);
+  }
   return out;
 }
 
@@ -296,7 +324,7 @@ export function lookAtWorldQuaternion(eye: AuraVec3, target: AuraVec3, up: AuraV
 
 /**
  * Compose a world matrix honoring `local.lookAt`: the node is placed at its
- * world position (parent · localPosition) and oriented to face `lookAt` in
+ * world pivot (parent · (position + pivot)) and oriented to face `lookAt` in
  * world space. Parent rotation is factored out of the orientation so the
  * resulting matrix is still parent · local.
  */
@@ -305,17 +333,20 @@ export function composeWorldMatrixWithLookAt(
   local: AuraTransformSpec,
   out: Float32Array
 ): Float32Array {
+  assertValidPivot(local.pivot);
   if (!local.lookAt) return composeWorldMatrix(parent, local, out);
   const position = local.position ?? [0, 0, 0];
+  const pivot = local.pivot ?? [0, 0, 0];
+  const anchor: AuraVec3 = [position[0] + pivot[0], position[1] + pivot[1], position[2] + pivot[2]];
   const eye = SCRATCH_B;
   if (parent === null) {
-    eye[0] = position[0];
-    eye[1] = position[1];
-    eye[2] = position[2];
+    eye[0] = anchor[0];
+    eye[1] = anchor[1];
+    eye[2] = anchor[2];
   } else {
-    eye[0] = parent[0] * position[0] + parent[4] * position[1] + parent[8] * position[2] + parent[12];
-    eye[1] = parent[1] * position[0] + parent[5] * position[1] + parent[9] * position[2] + parent[13];
-    eye[2] = parent[2] * position[0] + parent[6] * position[1] + parent[10] * position[2] + parent[14];
+    eye[0] = parent[0] * anchor[0] + parent[4] * anchor[1] + parent[8] * anchor[2] + parent[12];
+    eye[1] = parent[1] * anchor[0] + parent[5] * anchor[1] + parent[9] * anchor[2] + parent[13];
+    eye[2] = parent[2] * anchor[0] + parent[6] * anchor[1] + parent[10] * anchor[2] + parent[14];
   }
   const worldRot = lookAtWorldQuaternion([eye[0], eye[1], eye[2]], local.lookAt);
   let localRot = worldRot;
@@ -329,11 +360,22 @@ export function composeWorldMatrixWithLookAt(
     localRot,
     local.scale === undefined ? [1, 1, 1] : typeof local.scale === "number" ? [local.scale, local.scale, local.scale] : local.scale
   );
+  applyPivot(localM, local.pivot);
+  if (hasNonzeroPivot(local.pivot) && !localM.every(Number.isFinite)) {
+    throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted local matrix must be finite.");
+  }
   if (parent === null) {
     out.set(localM);
     return out;
   }
-  multiplyMat4Into(out, parent, localM);
+  if (hasNonzeroPivot(local.pivot)) {
+    const staged = new Float32Array(16);
+    multiplyMat4Into(staged, parent, localM);
+    if (!staged.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted world matrix must be finite.");
+    out.set(staged);
+  } else {
+    multiplyMat4Into(out, parent, localM);
+  }
   return out;
 }
 
@@ -369,11 +411,12 @@ const SCRATCH_B = new Float32Array(16);
 
 function fingerprintOf(spec: AuraTransformSpec): string {
   const p = spec.position ?? [0, 0, 0];
+  const pivot = spec.pivot ?? [0, 0, 0];
   const r = spec.rotation ?? [0, 0, 0];
   const s = spec.scale === undefined ? [1, 1, 1] : typeof spec.scale === "number" ? [spec.scale, spec.scale, spec.scale] : spec.scale;
   const q = spec.quaternion ?? [0, 0, 0, 1];
   const l = spec.lookAt ?? [0, 0, 0];
-  return `${p[0]},${p[1]},${p[2]}|${r[0]},${r[1]},${r[2]}|${s[0]},${s[1]},${s[2]}|${q[0]},${q[1]},${q[2]},${q[3]}|${spec.rotationOrder ?? ""}|${l[0]},${l[1]},${l[2]}`;
+  return `${p[0]},${p[1]},${p[2]}|${pivot[0]},${pivot[1]},${pivot[2]}|${r[0]},${r[1]},${r[2]}|${s[0]},${s[1]},${s[2]}|${q[0]},${q[1]},${q[2]},${q[3]}|${spec.rotationOrder ?? ""}|${spec.lookAt === undefined ? "none" : `${l[0]},${l[1]},${l[2]}`}`;
 }
 
 function parentSignature(m: Float32Array | null): number {
@@ -417,7 +460,7 @@ export interface AuraStaticModelMatrixCache {
 
 type MatrixNode = AuraModelNode | AuraPrimitiveNode | AuraEffectNode;
 
-const MODEL_FP_LEN = 19;
+const MODEL_FP_LEN = 27;
 
 function fillModelFingerprint(out: Float64Array, node: MatrixNode, bounds: AuraModelBounds, normalizeToUnit: boolean): void {
   const position = node.position ?? [0, 0, 0];
@@ -443,6 +486,16 @@ function fillModelFingerprint(out: Float64Array, node: MatrixNode, bounds: AuraM
   out[16] = model?.targetHeight ?? 0;
   out[17] = model?.targetLength ?? 0;
   out[18] = model?.targetMaxDimension ?? 0;
+  const pivot = node.pivot ?? [0, 0, 0];
+  out[19] = pivot[0];
+  out[20] = pivot[1];
+  out[21] = pivot[2];
+  const quaternion = node.quaternion;
+  out[22] = quaternion === undefined ? 0 : 1;
+  out[23] = quaternion?.[0] ?? 0;
+  out[24] = quaternion?.[1] ?? 0;
+  out[25] = quaternion?.[2] ?? 0;
+  out[26] = quaternion?.[3] ?? 0;
 }
 
 interface ModelMatrixEntry {
@@ -476,6 +529,7 @@ export function createModelMatrixCache(compose: AuraModelMatrixFn = createModelM
       hits = 0;
     },
     modelMatrix(node, bounds, normalizeToUnit, time = 0) {
+      if (node !== undefined) assertValidPivot(node.pivot);
       if (node === undefined || node.animation !== undefined) {
         return compose(node, bounds, normalizeToUnit, time);
       }
@@ -543,6 +597,7 @@ export function createWorldMatrixCache(): AuraWorldMatrixCache {
       composed = 0;
     },
     local(node, out) {
+      assertValidPivot(node.pivot);
       const entry = entryFor(node);
       const fp = fingerprintOf(node);
       if (entry.fingerprint === fp) {
@@ -557,11 +612,30 @@ export function createWorldMatrixCache(): AuraWorldMatrixCache {
       return out;
     },
     world(node, parentWorld, out) {
+      assertValidPivot(node.pivot);
       const entry = entryFor(node);
       const fp = fingerprintOf(node);
       const sig = parentSignature(parentWorld);
       if (!entry.worldDirty && entry.fingerprint === fp && entry.parentSignature === sig) {
         out.set(entry.world);
+        return out;
+      }
+      if (hasNonzeroPivot(node.pivot)) {
+        // Stage both matrices before committing fingerprint or parent state.
+        const local = new Float32Array(16);
+        const world = new Float32Array(16);
+        composeWorldMatrixWithLookAt(null, node, local);
+        if (node.lookAt) composeWorldMatrixWithLookAt(parentWorld, node, world);
+        else if (parentWorld === null) world.set(local);
+        else multiplyMat4Into(world, parentWorld, local);
+        if (!world.every(Number.isFinite)) throw new RangeError("PIVOT_UNSUPPORTED_NONFINITE: pivoted world matrix must be finite.");
+        entry.local.set(local);
+        entry.world.set(world);
+        entry.fingerprint = fp;
+        entry.worldDirty = false;
+        entry.parentSignature = sig;
+        composed += 1;
+        out.set(world);
         return out;
       }
       if (entry.fingerprint !== fp) {
@@ -570,7 +644,9 @@ export function createWorldMatrixCache(): AuraWorldMatrixCache {
       }
       entry.worldDirty = false;
       entry.parentSignature = sig;
-      if (parentWorld === null) {
+      if (node.lookAt) {
+        composeWorldMatrixWithLookAt(parentWorld, node, entry.world);
+      } else if (parentWorld === null) {
         entry.world.set(entry.local);
       } else {
         multiplyMat4Into(entry.world, parentWorld, entry.local);

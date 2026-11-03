@@ -1,144 +1,173 @@
 /**
- * `brdf` chunk (PRD-01 §8.3) — PhysicalMaterial + r185 GGX multiscatter.
+ * Aura's layered dielectric/metal BRDF.
  *
- * Ports three.js r185 `lights_physical_fragment`/`lights_physical_pars_fragment`
- * per the PRD: IOR-derived F0, Lambert default (Burley behind DIFFUSE_BURLEY),
- * specular AA behind SPECULAR_AA, verbatim `BRDF_GGX_Multiscatter`, and the
- * dielectric/metallic indirect split. `u_dfgLut` is a renderer-owned r185
- * DFGLUTData 16x16 RG16F texture, always bound for lit generated programs and
- * sampled at (roughness, dotNV) — opposite of the legacy Aura lookup.
+ * The direct lobe uses a GGX microfacet distribution, Smith masking and
+ * Schlick's fifth-power Fresnel approximation. The optional rough diffuse
+ * response follows the Oren–Nayar angular model (sigma in radians); a bounded
+ * retroreflection control redistributes that diffuse response toward the
+ * light/view alignment. Layer budgets are kept in [0, 1].
+ *
+ * The DFG texture stores the independently integrated split-sum coefficients
+ * at (roughness, N dot V). The missing single-scatter energy is returned as a
+ * bounded, broad multiple-scatter lobe. This deliberately uses no external
+ * renderer implementation or lookup values.
  */
-
 export const BRDF_CHUNK_GLSL = /* glsl */ `
 struct PhysicalMaterial {
-  vec3 diffuseContribution;   // baseColor * (1 - metallic)
+  vec3 diffuseContribution;
   vec3 baseColor; float metallic; float roughness;
-  vec3 specularColor;         // dielectric F0 (IBL dielectric path)
-  vec3 specularColorBlended;  // mix(F0, baseColor, metallic) (direct light; IBL metallic path uses baseColor)
+  vec3 specularColor;
+  vec3 specularColorBlended;
+  float diffuseRoughness;
   float specularF90; float ior; float specularIntensity;
 };
+
+uniform sampler2D u_dfgLut;
+// Both default to zero in WebGL when omitted. Values outside [0,1] are clamped.
+uniform float u_diffuseRoughness;
+uniform float u_retroreflection;
+
+float a3dPow5(float x) { float x2 = x * x; return x2 * x2 * x; }
+vec3 a3dHalfVector(vec3 a, vec3 b, vec3 fallback) {
+  vec3 sum = a + b;
+  float lengthSquared = dot(sum, sum);
+  return lengthSquared > EPSILON ? sum * inversesqrt(lengthSquared) : fallback;
+}
 
 PhysicalMaterial a3dMakeMaterial(vec3 baseColor, float metallic, float roughness, float ior,
                                  float specularIntensity, vec3 specularColorFactor, vec3 geometryNormal) {
   PhysicalMaterial m;
-  m.baseColor = baseColor; m.metallic = metallic;
-  m.diffuseContribution = baseColor * (1.0 - metallic);
+  m.baseColor = max(baseColor, vec3(0.0));
+  m.metallic = saturate(metallic);
+  m.diffuseContribution = min(m.baseColor, vec3(1.0)) * (1.0 - m.metallic);
+  float aa = 0.0;
 #ifdef SPECULAR_AA
-  vec3 dxy = max(abs(dFdx(geometryNormal)), abs(dFdy(geometryNormal)));   // non-normal-mapped normal
-  float geometryRoughness = max(max(dxy.x, dxy.y), dxy.z);
-  m.roughness = min(max(roughness, 0.0525) + geometryRoughness, 1.0);
-#else
-  m.roughness = clamp(roughness, 0.0525, 1.0);
+  vec3 grad = max(abs(dFdx(geometryNormal)), abs(dFdy(geometryNormal)));
+  aa = max(grad.x, max(grad.y, grad.z));
 #endif
-  m.specularColor = min(vec3(pow2((ior - 1.0) / (ior + 1.0))) * specularColorFactor, vec3(1.0)) * specularIntensity;
-  m.specularColorBlended = mix(m.specularColor, baseColor, metallic);
-  m.specularF90 = mix(specularIntensity, 1.0, metallic);
-  m.ior = ior; m.specularIntensity = specularIntensity;
+  m.roughness = clamp(roughness + aa, 0.0525, 1.0);
+  m.diffuseRoughness = saturate(u_diffuseRoughness);
+  m.ior = max(ior, 0.0001);
+  m.specularIntensity = saturate(specularIntensity);
+  float reflectance = (m.ior - 1.0) / (m.ior + 1.0);
+  m.specularColor = saturate(reflectance * reflectance * max(specularColorFactor, vec3(0.0))) * m.specularIntensity;
+  m.specularColorBlended = mix(m.specularColor, min(m.baseColor, vec3(1.0)), m.metallic);
+  m.specularF90 = mix(m.specularIntensity, 1.0, m.metallic);
   return m;
 }
 
-// r185 common.glsl.js F_Schlick: Epic's exp2 fit (SIGGRAPH '13), not pow5 (01-S8).
-vec3 F_Schlick(vec3 f0, float f90, float dotVH) { float f = exp2((-5.55473 * dotVH - 6.98316) * dotVH); return f0 * (1.0 - f) + f90 * f; }
-// Scalar overload + inverse (r185 bsdfs.glsl.js F_Schlick / Schlick_to_F0) for
-// the C-03 iridescence lobe (lane 04 Q-01-5).
-float F_Schlick(float f0, float f90, float dotVH) { float f = exp2((-5.55473 * dotVH - 6.98316) * dotVH); return f0 * (1.0 - f) + f90 * f; }
-vec3 Schlick_to_F0(vec3 f, float f90, float dotVH) {
-  float x = clamp(1.0 - dotVH, 0.0, 1.0);
-  float x2 = x * x;
-  float x5 = clamp(x * x2 * x2, 0.0, 0.9999);
-  return (f - vec3(f90) * x5) / (1.0 - x5);
+vec3 F_Schlick(vec3 f0, float f90, float cosine) {
+  return f0 + (vec3(f90) - f0) * a3dPow5(1.0 - saturate(cosine));
+}
+float F_Schlick(float f0, float f90, float cosine) {
+  return f0 + (f90 - f0) * a3dPow5(1.0 - saturate(cosine));
+}
+vec3 Schlick_to_F0(vec3 reflected, float f90, float cosine) {
+  float grazing = min(a3dPow5(1.0 - saturate(cosine)), 0.9999);
+  return clamp((reflected - vec3(f90 * grazing)) / (1.0 - grazing), 0.0, 1.0);
 }
 
-float V_GGX_SmithCorrelated(float a, float dotNL, float dotNV) {
-  float a2 = pow2(a);
-  float gv = dotNL * sqrt(a2 + (1.0 - a2) * pow2(dotNV));
-  float gl = dotNV * sqrt(a2 + (1.0 - a2) * pow2(dotNL));
-  return 0.5 / max(gv + gl, EPSILON);
+float D_GGX(float alpha, float nDotH) {
+  float a = max(alpha, 0.0001);
+  float c = saturate(nDotH);
+  float denominator = 1.0 + c * c * (a * a - 1.0);
+  return (a * a * RECIPROCAL_PI) / max(denominator * denominator, 1e-12);
+}
+float V_GGX_SmithCorrelated(float alpha, float nDotL, float nDotV) {
+  float a2 = max(alpha * alpha, 1e-8);
+  float nl = saturate(nDotL), nv = saturate(nDotV);
+  float lambdaV = nl * sqrt(a2 + (1.0 - a2) * nv * nv);
+  float lambdaL = nv * sqrt(a2 + (1.0 - a2) * nl * nl);
+  return 0.5 / max(lambdaV + lambdaL, EPSILON);
+}
+vec2 a3dDFG(float roughness, float nDotV) {
+  return clamp(texture(u_dfgLut, vec2(saturate(roughness), saturate(nDotV))).rg, 0.0, 1.0);
 }
 
-float D_GGX(float a, float dotNH) { float a2 = pow2(a); float d = pow2(dotNH) * (a2 - 1.0) + 1.0; return RECIPROCAL_PI * a2 / pow2(d); }
-
-uniform sampler2D u_dfgLut; // renderer-owned r185 DFGLUTData (16x16 RG16F, linear, clamp); bound for every lit program
-vec2 a3dDFG(float roughness, float dotNV) { return texture(u_dfgLut, vec2(roughness, dotNV)).rg; } // x=roughness, y=dotNV (three r185)
+// Conservative Oren–Nayar angular response. Clamping prevents the diffuse
+// layer from borrowing energy from its specular layer at grazing angles.
+float a3dRoughDiffuse(vec3 N, vec3 V, vec3 L, float roughness, float retroreflection) {
+  float nl = saturate(dot(N, L));
+  float nv = saturate(dot(N, V));
+  float sinL = sqrt(max(1.0 - nl * nl, 0.0));
+  float sinV = sqrt(max(1.0 - nv * nv, 0.0));
+  float tangentAlignment = 0.0;
+  if (sinL * sinV > EPSILON) {
+    tangentAlignment = max(dot(L - N * nl, V - N * nv) / (sinL * sinV), 0.0);
+  }
+  float sigma = saturate(roughness) * (0.5 * PI);
+  float sigma2 = sigma * sigma;
+  float a = 1.0 - 0.5 * sigma2 / (sigma2 + 0.33);
+  float b = 0.45 * sigma2 / (sigma2 + 0.09);
+  float sinAlpha = max(sinL, sinV);
+  float tanBeta = min(sinL, sinV) / max(max(nl, nv), EPSILON);
+  float diffuse = clamp(a + b * tangentAlignment * sinAlpha * tanBeta, 0.0, 1.0);
+  float retro = saturate(retroreflection);
+  // Aligned L/V receives the original energy, other directions decrease.
+  float alignment = pow(saturate(dot(L, V)), 8.0);
+  return diffuse * (1.0 - retro * (1.0 - alignment));
+}
 
 #ifdef DIFFUSE_BURLEY
-// Disney Burley (normalized form used by three r185 BRDF_Burley).
 float a3dBurleyTerm(vec3 N, vec3 V, vec3 L, float roughness) {
-  vec3 H = normalize(V + L);
-  float dotNL = saturate(dot(N, L));
-  float dotNV = saturate(dot(N, V));
-  float dotLH = saturate(dot(L, H));
-  float fd90 = 0.5 + 2.0 * dotLH * dotLH * roughness;
-  float lightScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - dotNL, 5.0));
-  float viewScatter = (1.0 + (fd90 - 1.0) * pow(1.0 - dotNV, 5.0));
-  return lightScatter * viewScatter;
+  vec3 H = a3dHalfVector(V, L, N);
+  float grazing = 0.5 + 2.0 * pow2(saturate(dot(L, H))) * saturate(roughness);
+  float lightResponse = 1.0 + (grazing - 1.0) * a3dPow5(1.0 - saturate(dot(N, L)));
+  float viewResponse = 1.0 + (grazing - 1.0) * a3dPow5(1.0 - saturate(dot(N, V)));
+  return clamp(lightResponse * viewResponse, 0.0, 1.0);
 }
 #endif
 
 vec3 a3dDirectSpecular(vec3 L, vec3 V, vec3 N, PhysicalMaterial m) {
-  vec3 H = normalize(L + V);
-  float dotNL = saturate(dot(N, L));
-  float dotNV = saturate(dot(N, V));
-  float dotNH = saturate(dot(N, H));
-  float dotVH = saturate(dot(V, H));
-  float a = pow2(m.roughness);
-  vec3 F = F_Schlick(m.specularColorBlended, m.specularF90, dotVH);
-  vec3 single = F * (V_GGX_SmithCorrelated(a, dotNL, dotNV) * D_GGX(a, dotNH));
-  // Verbatim port of three r185 BRDF_GGX_Multiscatter (lights_physical_pars_fragment.glsl.js:424-460).
-  vec2 dfgV = a3dDFG(m.roughness, dotNV);
-  vec2 dfgL = a3dDFG(m.roughness, dotNL);
-  vec3 FssEss_V = m.specularColorBlended * dfgV.x + m.specularF90 * dfgV.y;
-  vec3 FssEss_L = m.specularColorBlended * dfgL.x + m.specularF90 * dfgL.y;
-  float Ems_V = 1.0 - (dfgV.x + dfgV.y);
-  float Ems_L = 1.0 - (dfgL.x + dfgL.y);
-  vec3 Favg = m.specularColorBlended + (1.0 - m.specularColorBlended) * 0.047619;
-  vec3 Fms = FssEss_V * FssEss_L * Favg / (1.0 - Ems_V * Ems_L * Favg + EPSILON);
-  return single + Fms * (Ems_V * Ems_L);
+  float nl = saturate(dot(N, L)), nv = saturate(dot(N, V));
+  if (nl <= 0.0 || nv <= 0.0) return vec3(0.0);
+  vec3 H = a3dHalfVector(L, V, N);
+  float alpha = m.roughness * m.roughness;
+  vec3 fresnel = F_Schlick(m.specularColorBlended, m.specularF90, dot(V, H));
+  vec3 single = fresnel * D_GGX(alpha, dot(N, H)) * V_GGX_SmithCorrelated(alpha, nl, nv);
+  // Return part of the single-scatter deficit as a broad energy-bounded lobe.
+  vec2 viewLut = a3dDFG(m.roughness, nv);
+  vec2 lightLut = a3dDFG(m.roughness, nl);
+  float viewMissing = 1.0 - saturate(viewLut.x + viewLut.y);
+  float lightMissing = 1.0 - saturate(lightLut.x + lightLut.y);
+  vec3 meanFresnel = m.specularColorBlended + (vec3(m.specularF90) - m.specularColorBlended) / 21.0;
+  return single + saturate(meanFresnel) * (viewMissing * lightMissing * RECIPROCAL_PI);
 }
 
 void a3dDirectLight(vec3 L, vec3 radiance, vec3 V, vec3 N, PhysicalMaterial m, inout vec3 diffuseOut, inout vec3 specularOut) {
-  float dotNL = saturate(dot(N, L));
-  vec3 irradiance = radiance * dotNL;
+  float nl = saturate(dot(N, L)), nv = saturate(dot(N, V));
+  if (nl <= 0.0 || nv <= 0.0) return;
+  vec3 irradiance = max(radiance, vec3(0.0)) * nl;
+  vec3 viewFresnel = F_Schlick(m.specularColorBlended, m.specularF90, nv);
+  vec3 lightFresnel = F_Schlick(m.specularColorBlended, m.specularF90, nl);
+  vec3 available = vec3(1.0) - saturate(max(viewFresnel, lightFresnel));
+  float diffuse = a3dRoughDiffuse(N, V, L, m.diffuseRoughness, u_retroreflection);
 #ifdef DIFFUSE_BURLEY
-  diffuseOut += irradiance * BRDF_Lambert(m.diffuseContribution) * a3dBurleyTerm(N, V, L, m.roughness);
-#else
-  diffuseOut += irradiance * BRDF_Lambert(m.diffuseContribution);
+  diffuse *= a3dBurleyTerm(N, V, L, m.roughness);
 #endif
+  diffuseOut += irradiance * m.diffuseContribution * available * (diffuse * RECIPROCAL_PI);
   specularOut += irradiance * a3dDirectSpecular(L, V, N, m);
 }
 
-// Indirect: verbatim three r185 computeMultiscattering + RE_IndirectSpecular_Physical
-// (lights_physical_pars_fragment.glsl.js:392-421, 590-627; no clearcoat/sheen/
-// iridescence). Multiscatter runs for the dielectric specularColor and the
-// metallic base colour (both with specularF90), mixed by metallic. 'radiance' is
-// the prefiltered env sample, 'irradiance' the pi-scaled diffuse irradiance
-// (probe normalization is lane 02 C-09).
 void a3dMultiscatter(vec3 N, vec3 V, vec3 specularColor, float specularF90, float roughness, inout vec3 singleScatter, inout vec3 multiScatter) {
-  vec2 fab = a3dDFG(roughness, saturate(dot(N, V)));
-  vec3 FssEss = specularColor * fab.x + specularF90 * fab.y;
-  float Ems = 1.0 - (fab.x + fab.y);
-  vec3 Favg = specularColor + (1.0 - specularColor) * 0.047619; // 1/21
-  vec3 Fms = FssEss * Favg / (1.0 - Ems * Favg);
-  singleScatter += FssEss;
-  multiScatter += Fms * Ems;
+  vec2 coefficients = a3dDFG(roughness, dot(N, V));
+  vec3 single = saturate(specularColor * coefficients.x + specularF90 * coefficients.y);
+  float missing = 1.0 - saturate(coefficients.x + coefficients.y);
+  vec3 average = saturate(specularColor + (vec3(specularF90) - specularColor) / 21.0);
+  // The broad lobe receives at most the energy absent from the first bounce.
+  vec3 multiple = min(vec3(1.0) - single, missing * average);
+  singleScatter += single;
+  multiScatter += multiple;
 }
-
 vec3 a3dIndirectSpecular(vec3 radiance, vec3 irradiance, vec3 V, vec3 N, PhysicalMaterial m) {
-  vec3 singleDielectric = vec3(0.0), multiDielectric = vec3(0.0);
-  vec3 singleMetallic = vec3(0.0), multiMetallic = vec3(0.0);
-  a3dMultiscatter(N, V, m.specularColor, m.specularF90, m.roughness, singleDielectric, multiDielectric);
-  a3dMultiscatter(N, V, m.baseColor, m.specularF90, m.roughness, singleMetallic, multiMetallic);
-  vec3 single = mix(singleDielectric, singleMetallic, m.metallic);
-  vec3 multi = mix(multiDielectric, multiMetallic, m.metallic);
-  return radiance * single + multi * (irradiance * RECIPROCAL_PI);
+  vec3 single = vec3(0.0), multiple = vec3(0.0);
+  a3dMultiscatter(N, V, m.specularColorBlended, m.specularF90, m.roughness, single, multiple);
+  return max(radiance, vec3(0.0)) * single + max(irradiance, vec3(0.0)) * RECIPROCAL_PI * multiple;
 }
-
-// Indirect diffuse: r185 diffuse energy conservation uses the dielectric path only
-// (diffuseContribution is already 0 for metals).
 vec3 a3dIndirectDiffuse(vec3 irradiance, vec3 V, vec3 N, PhysicalMaterial m) {
-  vec3 singleDielectric = vec3(0.0), multiDielectric = vec3(0.0);
-  a3dMultiscatter(N, V, m.specularColor, m.specularF90, m.roughness, singleDielectric, multiDielectric);
-  vec3 remaining = m.diffuseContribution * (vec3(1.0) - (singleDielectric + multiDielectric));
-  return remaining * (irradiance * RECIPROCAL_PI);
+  vec3 single = vec3(0.0), multiple = vec3(0.0);
+  a3dMultiscatter(N, V, m.specularColor, m.specularF90, m.roughness, single, multiple);
+  vec3 available = max(vec3(1.0) - single - multiple, vec3(0.0));
+  return max(irradiance, vec3(0.0)) * RECIPROCAL_PI * m.diffuseContribution * available;
 }
 `;

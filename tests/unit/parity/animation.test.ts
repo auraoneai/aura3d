@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { PropertyBinding as ThreePropertyBinding } from "three";
 import {
   AnimationAction,
   AnimationClip,
@@ -186,48 +185,40 @@ describe("SA-01 AnimationMixer finished/loop events", () => {
   });
 });
 
-describe("SA-03 PropertyBinding.parseTrackName parity with three", () => {
-  const TABLE: readonly string[] = [
-    "nodeName.property",
-    "nodeName.property[accessor]",
-    "nodeName.material.property[accessor]",
-    "nodeName.material.opacity",
-    "a1b2c3d4-e5f6-7890-abcd-ef1234567890.property[accessor]",
-    "uuid.materials[0].opacity",
-    "parentName/nodeName.property",
-    "parentName/parentName/nodeName.property[index]",
-    ".bone[Armature.DEF_cog].position",
-    "scene:helium_balloon_model:helium_balloon_model.position",
-    "mesh.morphTargetInfluences[smile]",
-    ".morphTargetInfluences[run]",
-    "node.position[x]",
-    "foo.bar.baz",
-    "model.materials[2].emissiveMap"
+describe("SA-03 PropertyBinding.parseTrackName", () => {
+  const TABLE = [
+    ["nodeName.property", "nodeName", undefined, undefined, "property", undefined],
+    ["nodeName.property[accessor]", "nodeName", undefined, undefined, "property", "accessor"],
+    ["nodeName.material.property[accessor]", "nodeName", "material", undefined, "property", "accessor"],
+    ["nodeName.material.opacity", "nodeName", "material", undefined, "opacity", undefined],
+    ["a1b2c3d4-e5f6-7890-abcd-ef1234567890.property[accessor]", "a1b2c3d4-e5f6-7890-abcd-ef1234567890", undefined, undefined, "property", "accessor"],
+    ["uuid.materials[0].opacity", "uuid", "materials", "0", "opacity", undefined],
+    ["parentName/nodeName.property", "nodeName", undefined, undefined, "property", undefined],
+    ["parentName/parentName/nodeName.property[index]", "nodeName", undefined, undefined, "property", "index"],
+    [".bone[Armature.DEF_cog].position", undefined, "bone", "Armature.DEF_cog", "position", undefined],
+    ["scene:helium_balloon_model:helium_balloon_model.position", "helium_balloon_model", undefined, undefined, "position", undefined],
+    ["mesh.morphTargetInfluences[smile]", "mesh", undefined, undefined, "morphTargetInfluences", "smile"],
+    [".morphTargetInfluences[run]", undefined, undefined, undefined, "morphTargetInfluences", "run"],
+    ["node.position[x]", "node", undefined, undefined, "position", "x"],
+    ["foo.bar.baz", "foo.bar", undefined, undefined, "baz", undefined],
+    ["model.materials[2].emissiveMap", "model", "materials", "2", "emissiveMap", undefined]
   ];
 
-  for (const trackName of TABLE) {
-    test(`"${trackName}" parses identically to three`, () => {
-      const theirs = ThreePropertyBinding.parseTrackName(trackName);
-      const ours = parseTrackName(trackName);
-      expect(ours.nodeName).toBe(theirs.nodeName);
-      expect(ours.objectName).toBe(theirs.objectName);
-      expect(ours.objectIndex).toBe(theirs.objectIndex);
-      expect(ours.propertyName).toBe(theirs.propertyName);
-      expect(ours.propertyIndex).toBe(theirs.propertyIndex);
+  for (const [trackName, nodeName, objectName, objectIndex, propertyName, propertyIndex] of TABLE) {
+    test(`parses "${trackName}"`, () => {
+      expect(parseTrackName(trackName!)).toMatchObject({ nodeName, objectName, objectIndex, propertyName, propertyIndex });
     });
   }
 
-  test("invalid track names throw like three's", () => {
+  test("invalid track names throw", () => {
     expect(() => parseTrackName("")).toThrow();
     expect(() => parseTrackName("node")).toThrow();
-    expect(() => ThreePropertyBinding.parseTrackName("")).toThrow();
   });
 
-  test("sanitizeNodeName matches three", () => {
-    const inputs = ["mixamorig Hips", "Armature|Left Arm", "a.b:c/d[e]f"];
-    for (const input of inputs) {
-      expect(sanitizeNodeName(input)).toBe(ThreePropertyBinding.sanitizeNodeName(input));
-    }
+  test("sanitizeNodeName replaces spaces and removes separators", () => {
+    expect(sanitizeNodeName("mixamorig Hips")).toBe("mixamorig_Hips");
+    expect(sanitizeNodeName("Armature|Left Arm")).toBe("Armature|Left_Arm");
+    expect(sanitizeNodeName("a.b:c/d[e]f")).toBe("abcdef");
   });
 
   test("findNode resolves root, children, uuid and skeleton bones like three", () => {

@@ -2,7 +2,12 @@ export type {
   BufferUsage,
   DrawCommand,
   IndexType,
+  NativeShaderStages,
+  NativeShaderStorageLayout,
+  PortableShaderBinding,
+  PortableShaderBindingKind,
   PrimitiveTopology,
+  RecursiveUniformValue,
   RenderBackendKind,
   RenderBuffer,
   RenderDeviceCapability,
@@ -16,9 +21,20 @@ export type {
   ShaderReflection,
   ShaderUniformReflection,
   ShaderSources,
+  UniformDataValue,
   UniformValue
 } from "./RenderDevice";
-export { MockRenderBuffer, MockRenderDevice, MockRenderTarget, MockShaderProgram, RenderDeviceError } from "./RenderDevice";
+export type {
+  ShaderDataField,
+  ShaderDataLayout,
+  ShaderDataMemberLayout,
+  ShaderDataScalar,
+  ShaderDataTarget,
+  ShaderDataType,
+  ShaderDataValue
+} from "./webgpu/ShaderDataLayout";
+export { MockRenderBuffer, MockRenderDevice, MockRenderTarget, MockShaderProgram, RenderDeviceError, getRenderAttachmentIdentity, validateRenderAttachmentAccess, validateRenderTargetDescriptor } from "./RenderDevice";
+export type { RenderAttachmentIdentity, RenderResourceCopyOptions, RenderResourceReadbackOptions, RenderOutputColorSpace, RenderOutputColorSpaceNegotiation, NativeStorageBinding } from "./RenderDevice";
 export {
   buildGpuTargetInventory,
   GPU_TARGET_BUDGET_BYTES,
@@ -62,8 +78,8 @@ export type {
 } from "./WebGPURenderToTextureProof";
 export type { AdvancedRendererSource } from "./advanced-runtime";
 
-export { VertexAttribute, VertexFormat } from "./VertexFormat";
-export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
+export { VertexAttribute, VertexFormat, vertexAttributeComponentBytes } from "./VertexFormat";
+export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType, VertexStream, VertexStreamDescriptor, VertexStepMode } from "./VertexFormat";
 export { CUSTOM_ATTRIBUTE_LOCATION_POOL, assignCustomAttributeLocations, customAttributeSemantic, isCustomAttributeSemantic } from "./VertexFormat";
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
@@ -71,7 +87,7 @@ export { Geometry, computeBounds } from "./Geometry";
 export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeometryOptions, GeometryDrawRange, GeometryGroup, GeometryMorphTarget, PlaneGeometryOptions, ScreenSpaceLineSegment, TorusGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
 export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
 export type { AuraPrimitiveKind, AuraParityPrimitiveParams } from "./geometry/Primitives";
-// threejs-parity L2 — three 0.185.1-exact parity mesh generators (SG-03/04).
+// Geometry generators retain their existing public signatures and topology contracts.
 export { parityMeshToGeometry, resolveCurve3, resolveShape2D, triangulateShape, isClockWise, shapeArea, earcut, Curve3Adapter, computeVertexNormals, computeParityBounds } from "./geometry/Support";
 export type { ParityMesh, ParityBounds, ResolvedShape2D } from "./geometry/Support";
 export { coneParityMesh, cylinderParityMesh } from "./geometry/Cone";
@@ -107,7 +123,7 @@ export { normalizeProgramFeatures, DEFAULT_PROGRAM_FEATURES, totalLightCount } f
 export { programKey } from "./program/ProgramKey";
 export { generateProgramImpl, registerProgramWgslEmitter, programDegradationLog, GENERATED_PROGRAM_MARKER } from "./program/ProgramGenerator";
 export type { ProgramDegradation, GenerateProgramOptions } from "./program/ProgramGenerator";
-export { ProgramCache } from "./program/ProgramCache";
+export { ProgramCache, subscribeProgramReadiness } from "./program/ProgramCache";
 export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
 export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
@@ -136,7 +152,7 @@ export type { MorphTargetDelta } from "./MorphTarget";
 export { computeAnimatedSkinnedBoundsUnion, computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
 export type { SkinningBoundsPalette } from "./SkinningBounds";
 export { Texture, bytesPerPixel, compressedBlockByteLength, compressedTextureByteLength, isCompressedTextureFormat } from "./Texture";
-export type { TextureColorSpace, TextureCompressedFormat, TextureCubeFace, TextureCubeFaceDescriptor, TextureCubeFaceLevel, TextureDescriptor, TextureDimension, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TexturePixelData } from "./Texture";
+export type { TextureColorSpace, TextureCompressedFormat, TextureCubeFace, TextureCubeFaceDescriptor, TextureCubeFaceLevel, TextureDescriptor, TextureDimension, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TextureMipUpdateOptions, TexturePixelData, TextureUpdateRegion, TextureUsage } from "./Texture";
 export {
   createEnvironmentMapResourceSet,
   decodeRgba8EnvironmentToLinear,
@@ -221,17 +237,31 @@ export type {
 } from "./EnvironmentLighting";
 export {
   EXTERNAL_PARITY_TEXTURE_COLOR_POLICY,
+  convertColorPrimaries,
   convertColorSpace,
+  convertManagedColor,
+  convertManagedTextureColor,
   createColorConversionSamples,
   createExternalParityColorManagementPolicy,
+  decodeColorTransfer,
+  encodeColorTransfer,
   linearToSrgbChannel,
   srgbToLinearChannel,
+  transformColorForOutput,
   validateTextureColorSpace
 } from "./ColorManagement";
 export type {
   A3DColorConversionSample,
+  A3DColorGamutMapping,
   A3DColorManagementPolicy,
+  A3DColorOutputOptions,
+  A3DColorPrimaries,
   A3DColorSpace,
+  A3DColorToneMapping,
+  A3DColorTransfer,
+  A3DAlphaMode,
+  A3DManagedColorConversionOptions,
+  A3DManagedColorSpace,
   A3DTextureColorSpaceValidation,
   A3DTextureSemantic
 } from "./ColorManagement";
@@ -338,12 +368,15 @@ export type {
 } from "./EnvironmentPipeline";
 export {
   EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT,
+  analyzeMaterialExtensionCombination,
   createExternalParityMaterialExtensionDiagnostics,
   getExternalParityMaterialExtensionState
 } from "./materials/MaterialExtensions";
 export type {
   ExternalParityMaterialExtension,
-  ExternalParityMaterialExtensionState
+  ExternalParityMaterialExtensionState,
+  MaterialExtensionCombinationOptions,
+  MaterialExtensionCombinationDiagnostics
 } from "./materials/MaterialExtensions";
 export {
   EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX,
@@ -373,6 +406,8 @@ export { runExternalParityDepthOfField } from "./postprocess/DepthOfFieldPass";
 export { runExternalParityColorGrade } from "./postprocess/ColorGradingPass";
 export type { ExternalParityColorGradePreset } from "./postprocess/ColorGradingPass";
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./postprocess/EffectComposer";
+export type { PostGraphReport, PostInsertAt, PostPassDescriptor, PostPipelineOptions, PostSpace } from "./contracts/post";
+export type { NativePostEffect } from "./post/NativeEffectShaders";
 export {
   bloomPyramidCompositeGain,
   normalizeBloomQualityPreset,
@@ -545,13 +580,16 @@ export type {
 } from "./production-runtime";
 
 export { ShaderModule } from "./ShaderModule";
-export { PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
+export { assertPortableUniformData, PortableShaderCompilationError, PortableShaderMaterial } from "./PortableShaderMaterial";
+export { DepthPreviewMaterial, depthPreviewValue, resolveDepthPreviewMaterialOptions } from "./DepthPreviewMaterial";
+export type { DepthPreviewMaterialOptions, ResolvedDepthPreviewMaterialOptions } from "./DepthPreviewMaterial";
 export type {
   PortableShaderCompilationResult,
   PortableShaderMaterialOptions,
   PortableShaderSources,
   PortableShaderStagePair,
-  PortableShaderUniform
+  PortableShaderUniform,
+  PortableShaderUniformDescriptor
 } from "./PortableShaderMaterial";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
@@ -621,7 +659,7 @@ export type {
   MaterialUniformKind,
   RenderState
 } from "./Material";
-export { MaterialInstance } from "./MaterialInstance";
+export { cloneMaterialUniformValue, materialUniformValuesEqual, MaterialInstance } from "./MaterialInstance";
 export { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 export type { MaterialBindingResult } from "./MaterialBinding";
 export { UnlitMaterial } from "./UnlitMaterial";
@@ -698,7 +736,7 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
-export { authoredLineOffset, buildShaderFailure, describeShaderFailure, reportShaderFailure, clearShaderFailures, formatShaderFailure, getShaderFailures, isShaderFailureError, parseShaderLog, recordShaderFailure, resolveShaderFailureMode, setShaderFailureMode, sourceWindow, type ShaderFailureCode, type ShaderFailureLocation, type ShaderFailureMode, type ShaderFailureRecord, type ShaderFailureSourceLine, type ShaderFailureSources } from "./ShaderFailures";
+export { authoredLineOffset, buildShaderFailure, describeShaderFailure, reportShaderFailure, clearShaderFailures, formatShaderFailure, getShaderFailures, isShaderFailureError, parseShaderLog, recordShaderFailure, resolveShaderFailureMode, setShaderFailureMode, sourceWindow, ShaderFailureStore, createShaderFailureStore, shaderFailureStoreFor, bindShaderFailureStore, sanitizeShaderDiagnosticText, type ShaderFailureCode, type ShaderFailureLocation, type ShaderFailureMode, type ShaderFailureRecord, type ShaderFailureSourceLine, type ShaderFailureSources } from "./ShaderFailures";
 export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export { ensureMorphTargetTexture, releaseMorphScratchGeometry, releaseMorphTargetTexture, morphTextureDiagnostics } from "./ForwardPass";
@@ -817,6 +855,7 @@ export {
   SDF_OCCLUDED_OPACITY,
   SDF_SUPPORTED_GLYPHS,
   applySdfTextOcclusion,
+  createDynamicSdfText,
   createSdfFontAtlas,
   createSdfTextQuadMesh,
   describeSdfTextPixelBacking,
@@ -828,6 +867,8 @@ export {
   summarizeTextSurfaces
 } from "./SdfText";
 export type {
+  DynamicSdfText,
+  DynamicSdfTextOptions,
   SdfFontAtlas,
   SdfFontAtlasOptions,
   SdfGlyphMetrics,
@@ -847,6 +888,12 @@ export type {
   SdfTextStyle,
   TextSurfaceSummary
 } from "./SdfText";
+export { loadFont } from "./text/FontLoader";
+export type { FontAsset, FontAssetMetadata, FontLoadOptions, FontLoaderPlatform, LoadedFont } from "./text/FontLoader";
+export { shapeText } from "./text/TextShaper";
+export type { TextDirection, TextMeasureContext, TextShapingOptions, ShapedText, ShapedTextLine } from "./text/TextShaper";
+export { GlyphAtlas } from "./text/GlyphAtlas";
+export type { GlyphAtlasOptions, GlyphAtlasTexture, GlyphBitmap, GlyphAtlasEntry, GlyphAtlasUpdate } from "./text/GlyphAtlas";
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
@@ -887,7 +934,7 @@ export type {
 export { ShadowPass } from "./ShadowPass";
 export type { ShadowPassOptions, ShadowPassReason, ShadowPassResult, ShadowTextureKind } from "./ShadowPass";
 export { ShadowProjectionBuilder } from "./ShadowProjection";
-export type { ShadowProjection, ShadowProjectionOptions, Vec3Tuple } from "./ShadowProjection";
+export type { ShadowProjection, ShadowProjectionOptions, ShadowTriangleProjection, ShadowTriangleProjectionOptions, Vec3Tuple } from "./ShadowProjection";
 export {
   BloomPass,
   DepthVisualizationPass,
@@ -1034,7 +1081,7 @@ export type {
   PrimitiveSubmissionBlocker,
   PrimitiveSubmissionRecord
 } from "./PrimitiveSubmissionAudit";
-export { arenaShowdown, cinematicNight, createLightingRig, listLightingRigPresets, productHero, resolveSubjectRimPlacement } from "./LightingRig";
+export { arenaShowdown, cinematicNight, createLightingRig, evaluateLightingRigLightAt, listLightingRigPresets, productHero, resolveSubjectRimPlacement } from "./LightingRig";
 export type {
   LightingRig,
   LightingRigDiagnostics,
@@ -1042,6 +1089,9 @@ export type {
   SubjectRimPlacement,
   SubjectRimPlacementOptions,
   LightingRigLightDescriptor,
+  LightingRigProfileData,
+  LightingRigPhotometricProfile,
+  LightingRigProjectedImage,
   LightingRigOptions,
   LightingRigPreset,
   LightingRigUnsupportedFeature
@@ -1135,6 +1185,8 @@ export type {
   ShadowCascade
 } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
+export { GaussianSplatRenderer, gaussianSphericalHarmonicBasis, gaussianSplatGpuInstanceBytes, GAUSSIAN_SPLAT_DEFAULT_MAX_GPU_BYTES, GAUSSIAN_SPLAT_DEFAULT_MAX_SPLATS, GAUSSIAN_SPLAT_SHADER } from "./GaussianSplatRenderer.js";
+export type { GaussianSplatCloud, GaussianSplatDrawInput, GaussianSplatFrame, GaussianSplatPreparedFrame, GaussianSplatRenderOptions, GaussianSplatTransparentRun } from "./GaussianSplatRenderer.js";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
 export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererRect, RendererView, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
@@ -1285,6 +1337,7 @@ export {
   materialSpecKey,
   materialKeyExcludesParameter,
   REASONS_NOT_BATCHED,
+  BatchPlanBuildError,
   planBatches,
   BatchedGeometryPool,
   DRAW_DATA_TEXELS_PER_DRAW,
@@ -1389,6 +1442,8 @@ export type { OctreeNode } from "./performance/Octree.js";
 // SH-04 / L1-12: public WebGPU-only compute surface (WGSL required).
 export { COMPUTE_BUFFER_USAGE, ComputeBuffer, ComputeContext, ComputeError, ComputeLimits, ComputePipeline, createComputeContext } from "./compute/index.js";
 export type { ComputeBindingSpec, ComputeBindingType, ComputeBufferSpec, ComputeBufferUsage, ComputeDispatchInput, ComputeDispatchResult, ComputeErrorCode, ComputeGPUBufferLike, ComputeGPUDeviceLike, ComputePipelineSpec, ComputeWorkgroups, ComputeWorkgroupSize } from "./compute/index.js";
+export { ComputeSampler } from "./compute/ComputeContext.js";
+export type { ComputeRenderOwner, ComputeSamplerSpec } from "./compute/types.js";
 export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalRay, ProjectedDecalRaycastHit, ProjectedDecalRaycastResult, ProjectedDecalShape } from "./production-runtime/geometry/ProjectedDecalGeometry.js";
 // beat-three.js L-P1: direct (single-pass canvas MSAA) vs HDR multisampled render path.
 export { QUALITY_MODES, directPathItemBlockers, isQualityMode, resolveRenderPath, withDirectPath } from "./quality/DirectPath.js";
@@ -1396,3 +1451,19 @@ export type { AuraQualityMode, AuraRenderPath, DirectPathItemLike, RenderPathDec
 // PRD beat-threejs-2 WP-1: bloom pass-fusion selection (`AuraBloomFusion` lives in contracts/quality).
 export { FUSED_2D_BLOOM_FUSION, SEPARABLE_BLOOM_FUSION, bloomLevelBlursIn2d, resolveBloomFusionConfig } from "./webgl2/BloomFusion.js";
 export type { BloomFusionConfig } from "./webgl2/BloomFusion.js";
+export { DEFAULT_CLIPPING_PLANE_LIMIT, normalizeClippingPlane, validateClippingGroup, transformClippingPlane, createClippingBinding, createClippingUniforms, clippingRetainsPoint, classifyClippingBounds } from "./ClippingPlanes";
+export type { ClippingPlane, ClippingSpace, ClippingCombination, ClippingScope, ClippingPass, ClippingPrimitive, ClippingGroupInput, ClippingGroup, ClippingGroupBinding, ClippingBinding, ClippingBindingOptions, ClippingBounds } from "./ClippingPlanes";
+export { negotiateDepthConvention, encodeViewDepth, linearizeDepth, reconstructViewPosition } from "./DepthConvention";
+export type { DepthMode, DepthClipRange, DepthOptions, DepthCapabilities, DepthConvention, DepthDistanceRange } from "./DepthConvention";
+export { parametricGeometry } from "./geometry/ParametricGeometry";
+export type { ParametricGeometryOptions, SurfacePoint } from "./geometry/ParametricGeometry";
+export { loftGeometry } from "./geometry/LoftGeometry";
+export type { LoftGeometryOptions, LoftPoint2 } from "./geometry/LoftGeometry";
+export { teapotGeometry } from "./geometry/TeapotGeometry";
+export type { TeapotGeometryOptions } from "./geometry/TeapotGeometry";
+export { WeightedTransparency, weightedTransparencyState, weightedTransparencyIneligibility, weightedTransparencyWeight, accumulateWeightedTransparency, resolveWeightedTransparency } from "./transparency/WeightedTransparency";
+export { createEngineBatchInstanceItem, createEnginePackedBatchItem, rememberPackedLoopMember, packedLoopMemberFor, transferPackedLoopMember, PackedLoopProducerState, registerPackedLoopProducerSnapshot, packedLoopProducerMemberCurrent } from "./batching/BatchMembers.js";
+export { registerBatchedDrawShader } from "./batching/shaders/ParityBatchDraw.js";
+export type { PackedLoopMemberInput, PackedLoopMember, PackedLoopProducerSnapshot } from "./batching/BatchMembers.js";
+export type { PackedGeometryLease } from "./batching/BatchedGeometryPool.js";
+export type { WeightedTransparencyPhase, WeightedTransparencyViewId, WeightedTransparencyDepth, WeightedTransparencyRect, WeightedTransparencyView, WeightedTransparencySupport, WeightedTransparencyBindings, WeightedTransparencyRequest, WeightedTransparencyResult, WeightedTransparencyAccumulator, WeightedTransparencyFragment } from "./transparency/WeightedTransparency";

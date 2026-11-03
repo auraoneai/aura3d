@@ -44,7 +44,7 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: [
       "tests/unit/controls/interaction-controls.test.ts",
       "tests/unit/controls/picking-contract.test.ts",
-      "tests/unit/controls/transform-controls-three-parity.test.ts",
+      "tests/unit/controls/native-transform-controls.test.ts",
       "tests/qr/prd15/controls/controls-equivalence.test.ts"
     ],
     edgeTerms: [/pointer/i, /drag/i, /dispose/i, /invalid/i, /selection/i]
@@ -320,8 +320,8 @@ describe("runtime edge-case coverage audit", () => {
       "packages/aura3d-cli/src/codemods/renderer-imports.ts:// toBlob stub after a synchronous render. Removed with its comma.",
       "packages/aura3d-cli/src/codemods/renderer-imports.ts:note: \"removed on Renderer.create — capture goes through the C-05 toBlob stub after a synchronous render\"",
       "packages/engine/src/agent-api/app/canvas.ts:`Aura3D could not find canvas target \"${target}\" because document is unavailable. Suggested fix: run createAuraApp in a browser or pass an HTMLCanvasElement.`",
-      "packages/engine/src/agent-api/app/createAuraApp.ts:\"Aura3D cannot render this scene on the canvas you supplied: it has renderable nodes but WebGL2 is unavailable in this context. It will NOT fall back to the Canvas 2D diagnostic preview, because that draws a gradient schematic rather than your scene and has silently hidden defects before — world labels once reached the scene graph but were drawn only in that path. Suggested fix: run in a browser context with WebGL2 available, or inspect diagnostics().errors for the underlying device failure.\"",
-      "packages/engine/src/agent-api/app/createAuraApp.ts:throw new Error(`Aura3D asynchronous submission unavailable: ${diagnosticsState.errors.join(\"; \" ) || \"a production renderer is required\"}`);",
+      "packages/engine/src/agent-api/app/createAuraAppCore.ts:\"Aura3D cannot render this scene on the canvas you supplied: it has renderable nodes but WebGL2 is unavailable in this context. It will NOT fall back to the Canvas 2D diagnostic preview, because that draws a gradient schematic rather than your scene and has silently hidden defects before — world labels once reached the scene graph but were drawn only in that path. Suggested fix: run in a browser context with WebGL2 available, or inspect diagnostics().errors for the underlying device failure.\"",
+      "packages/engine/src/agent-api/app/createAuraAppCore.ts:throw new Error(`Aura3D asynchronous submission unavailable: ${diagnosticsState.errors.join(\"; \") || \"a production renderer is required\"}`);",
       "packages/engine/src/agent-api/compiler/actors.ts:* 2. Manifest `boundsMetadata` min/max, when loaded bounds are unavailable.",
       "packages/engine/src/agent-api/compiler/textures.ts:if (!context) throw new Error(\"2d canvas unavailable for texture compositing\");",
       "packages/engine/src/agent-api/compiler/textures.ts:if (!context) throw fail(\"2d canvas unavailable for texture compositing\");",

@@ -1,6 +1,9 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
+import { stageCandidatePackages } from "../docs-codeblocks/index.js";
 
 export interface PublicPackageApi {
   readonly packageName: string;
@@ -8,6 +11,9 @@ export interface PublicPackageApi {
   readonly packagePath: string;
   readonly entrypointPath: string;
   readonly exportStatements: readonly string[];
+  /** Present for entries derived from the exact packed release candidate. */
+  readonly conditions?: readonly { readonly condition: string; readonly target: string | null }[];
+  readonly declarations?: readonly { readonly path: string; readonly text: string }[];
 }
 
 export interface ApiDocsReport {
@@ -21,6 +27,130 @@ export interface ApiDocsReport {
 const defaultOutputPath = "docs/api/public-api.md";
 const defaultReportPath = "tests/reports/api-docs.json";
 const defaultAppendixPath = "docs/api/public-api.appendix.md";
+
+type ExportTarget = string | null | readonly ExportTarget[] | { readonly [condition: string]: ExportTarget };
+type PackedManifest = { readonly name: string; readonly version: string; readonly exports?: ExportTarget; readonly main?: string; readonly types?: string };
+export interface PackedPackage { readonly name: string; readonly version: string; readonly sha256: string }
+
+function flattenConditions(target: ExportTarget, condition = "default"): { condition: string; target: string | null }[] {
+  if (target === null || typeof target === "string") return [{ condition, target }];
+  if (Array.isArray(target)) return target.flatMap((item, index) => flattenConditions(item, `${condition}[${index}]`));
+  if (typeof target !== "object") throw new Error(`invalid package export condition ${condition}`);
+  return Object.entries(target).flatMap(([name, value]) => flattenConditions(value, condition === "default" ? name : `${condition}.${name}`));
+}
+
+function safeTarget(packageDir: string, target: string): string {
+  if (!target.startsWith("./") || target.includes("\\") || target.split("/").includes("..")) throw new Error(`invalid packed export target ${target}`);
+  const path = resolve(packageDir, target);
+  if (!path.startsWith(`${resolve(packageDir)}${sep}`)) throw new Error(`packed export escapes package: ${target}`);
+  return path;
+}
+
+function listFiles(dir: string, base = dir): string[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isSymbolicLink()) throw new Error(`unexpected link in packed package: ${path}`);
+    return entry.isDirectory() ? listFiles(path, base) : entry.isFile() ? [`./${normalizePath(relative(base, path))}`] : [];
+  });
+}
+
+function wildcardCaptures(target: string, files: readonly string[]): string[] {
+  if ((target.match(/\*/g) ?? []).length !== 1) throw new Error(`unsupported export pattern ${target}`);
+  const [prefix, suffix] = target.split("*");
+  return files.filter((file) => file.startsWith(prefix!) && file.endsWith(suffix!) && file.length >= prefix!.length + suffix!.length)
+    .map((file) => file.slice(prefix!.length, file.length - suffix!.length || undefined));
+}
+
+function declarationFor(target: string): string | undefined {
+  if (/\.d\.(?:ts|mts|cts)$/.test(target)) return target;
+  if (/\.mjs$/.test(target)) return target.replace(/\.mjs$/, ".d.mts");
+  if (/\.cjs$/.test(target)) return target.replace(/\.cjs$/, ".d.cts");
+  if (/\.js$/.test(target)) return target.replace(/\.js$/, ".d.ts");
+  if (target.endsWith("/")) return `${target}index.d.ts`;
+  return undefined;
+}
+
+function resolveDeclaration(packageDir: string, from: string, specifier: string): string | undefined {
+  if (!specifier.startsWith(".")) return undefined;
+  const base = resolve(dirname(safeTarget(packageDir, from)), specifier);
+  const converted = base.replace(/\.mjs$/, ".d.mts").replace(/\.cjs$/, ".d.cts").replace(/\.js$/, ".d.ts");
+  for (const candidate of [converted, `${converted}.d.ts`, join(converted, "index.d.ts")]) {
+    if (!candidate.startsWith(`${resolve(packageDir)}${sep}`)) throw new Error(`declaration reference escapes package: ${from} -> ${specifier}`);
+    if (existsSync(candidate) && statSync(candidate).isFile() && /\.d\.(?:ts|mts|cts)$/.test(candidate)) return `./${normalizePath(relative(packageDir, candidate))}`;
+  }
+  throw new Error(`packed declaration ${from} references missing declaration ${specifier}`);
+}
+
+/** Include re-exported declarations, not only the barrel that mentions them. */
+function collectDeclarations(packageDir: string, roots: readonly string[]): { path: string; text: string }[] {
+  const seen = new Set<string>();
+  const result: { path: string; text: string }[] = [];
+  const visit = (path: string): void => {
+    if (seen.has(path)) return;
+    seen.add(path);
+    const text = readFileSync(safeTarget(packageDir, path), "utf8");
+    result.push({ path, text });
+    const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+    for (const statement of source.statements) {
+      if (!ts.isExportDeclaration(statement) || !statement.moduleSpecifier || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+      const dependency = resolveDeclaration(packageDir, path, statement.moduleSpecifier.text);
+      if (dependency) visit(dependency);
+    }
+  };
+  roots.forEach(visit);
+  return result;
+}
+
+/**
+ * Inspect packages already staged from verified archives. This is separately
+ * testable with a synthetic package tree; the CLI only obtains it through
+ * stageCandidatePackages, never from workspace source aliases.
+ */
+export function collectPackedPackageApis(projectDir: string, packages: readonly PackedPackage[]): readonly PublicPackageApi[] {
+  const entries: PublicPackageApi[] = [];
+  for (const packed of packages) {
+    const packageDir = join(projectDir, "node_modules", ...packed.name.split("/"));
+    const manifest = JSON.parse(readFileSync(join(packageDir, "package.json"), "utf8")) as PackedManifest;
+    if (manifest.name !== packed.name || manifest.version !== packed.version) throw new Error(`packed package identity mismatch: ${packed.name}`);
+    const field = manifest.exports ?? (manifest.main ? { ".": { ...(manifest.types ? { types: manifest.types } : {}), default: manifest.main } } : undefined);
+    if (!field) throw new Error(`packed package has no public export: ${packed.name}`);
+    const object = typeof field === "object" && field !== null && !Array.isArray(field) ? field as Record<string, ExportTarget> : undefined;
+    const keys = object ? Object.keys(object) : [];
+    if (keys.some((key) => key.startsWith(".")) && keys.some((key) => !key.startsWith("."))) throw new Error(`mixed export subpaths and conditions: ${packed.name}`);
+    const subpaths = keys.some((key) => key.startsWith(".")) ? Object.entries(object!) : [[".", field] as [string, ExportTarget]];
+    const files = listFiles(packageDir);
+    for (const [pattern, target] of subpaths) {
+      if (pattern !== "." && !pattern.startsWith("./")) throw new Error(`invalid export subpath ${pattern}`);
+      const conditions = flattenConditions(target);
+      const hasStar = pattern.includes("*");
+      if (hasStar && (pattern.match(/\*/g) ?? []).length !== 1) throw new Error(`unsupported export pattern ${pattern}`);
+      const matches = hasStar ? [...new Set(conditions.flatMap(({ target }) => target?.includes("*") ? wildcardCaptures(target, files) : []))].sort() : [""];
+      if (hasStar && matches.length === 0) throw new Error(`packed export pattern matches no files: ${packed.name}/${pattern}`);
+      for (const match of matches) {
+        const subpath = hasStar ? pattern.replace("*", match) : pattern;
+        const resolved = conditions.map(({ condition, target }) => ({ condition, target: target === null ? null : target.replace("*", match) }));
+        const declarationRoots = new Set<string>();
+        const explicitTypes = resolved.some(({ condition }) => condition.split(".").some((part) => part === "types"));
+        for (const { condition, target } of resolved) {
+          if (target === null) continue;
+          const absolute = safeTarget(packageDir, target);
+          if (!existsSync(absolute)) throw new Error(`missing packed export target ${packed.name} ${subpath} (${condition}): ${target}`);
+          const declaration = declarationFor(target);
+          if (declaration && existsSync(safeTarget(packageDir, declaration))) declarationRoots.add(declaration);
+          else if ((condition.split(".").includes("types") || (/\.(?:mjs|cjs|js)$/.test(target) && !explicitTypes)) && !declarationRoots.size) {
+            throw new Error(`missing packed declaration for ${packed.name} ${subpath}: ${target}`);
+          }
+        }
+        const declarations = collectDeclarations(packageDir, [...declarationRoots].sort());
+        const name = subpath === "." ? packed.name : `${packed.name}/${subpath.slice(2)}`;
+        entries.push({ packageName: name, version: manifest.version, packagePath: `archive:${packed.name}@${packed.version}#sha256=${packed.sha256}`,
+          entrypointPath: [...declarationRoots].sort().join(", ") || "non-code or disabled export", exportStatements: declarations.flatMap((entry) => collectExportStatements(entry.text)), conditions: resolved, declarations });
+      }
+    }
+  }
+  return entries.sort((a, b) => apiDocsPackageSortKey(a.packageName).localeCompare(apiDocsPackageSortKey(b.packageName)));
+}
 
 export function collectPublicPackageApis(root = process.cwd()): readonly PublicPackageApi[] {
   const packagesRoot = join(root, "packages");
@@ -126,18 +256,20 @@ export function readApiDocsAppendix(root = process.cwd(), appendixPath = default
 }
 
 export function renderApiDocs(packages: readonly PublicPackageApi[], appendix?: string): string {
+  const packed = packages.some((pkg) => pkg.conditions !== undefined);
   const lines: string[] = [
     "# Aura3D Public API Reference",
     "",
-    "This file is generated from every non-private package entrypoint under `packages/*/src/index.ts`.",
-    "It documents the public export surface that package consumers can import today.",
+    packed ? "This file is generated from verified packed package export conditions and declarations." : "This file is a generated inventory of source export declarations.",
+    packed ? "Each section identifies its candidate archive and every published condition; declarations include relative re-exports." : "Installed availability requires the matching packed-candidate consumer checks.",
     "",
-    "**Agents: do not read this file whole.** It is the exhaustive declaration dump (roughly 40k tokens) kept for gates and diffs. For `@aura3d/engine` start at [`root-exports.md`](root-exports.md) (generated from the real root entry `packages/engine/src/public/index.ts`; the `@aura3d/engine` section below lists a legacy entry file). For tasks, use `docs/agents/api-surface.md`.",
+    packed ? "**Agents: do not read this file whole.** It is the exhaustive declaration inventory for gates and diffs. For tasks, use `docs/agents/api-surface.md`." : "**Agents: do not read this file whole.** It is the exhaustive declaration dump (roughly 40k tokens) kept for gates and diffs. For `@aura3d/engine` start at [`root-exports.md`](root-exports.md) (generated from the real root entry `packages/engine/src/public/index.ts`; the `@aura3d/engine` section below lists a legacy entry file). For tasks, use `docs/agents/api-surface.md`.",
     "",
-    "Regenerate and verify it with:",
+    "Generate and verify the packed reference using a reviewed candidate plan:",
     "",
     "```sh",
-    "pnpm verify:api-docs",
+    "pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json --write",
+    "pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json",
     "```",
     "",
     "## Packages",
@@ -151,6 +283,13 @@ export function renderApiDocs(packages: readonly PublicPackageApi[], appendix?: 
   }
 
   for (const pkg of packages) {
+    if (pkg.conditions) {
+      lines.push("", `## ${pkg.packageName}`, "", `- Version: \`${pkg.version}\``, `- Packed identity: \`${pkg.packagePath}\``, "", "### Export conditions", "");
+      for (const { condition, target } of pkg.conditions) lines.push(`- \`${condition}\`: ${target === null ? "blocked" : `\`${target}\``}`);
+      if (!pkg.declarations?.length) lines.push("", "This export has no TypeScript declaration (non-code or explicitly blocked target).");
+      for (const declaration of pkg.declarations ?? []) lines.push("", `### \`${declaration.path}\``, "", "```ts", declaration.text.trimEnd(), "```");
+      continue;
+    }
     lines.push(
       "",
       `## ${pkg.packageName}`,
@@ -172,8 +311,7 @@ export function renderApiDocs(packages: readonly PublicPackageApi[], appendix?: 
   return appendix ? `${rendered}\n${appendix.trimEnd()}\n` : rendered;
 }
 
-export function validateApiDocs(root = process.cwd(), outputPath = defaultOutputPath): ApiDocsReport {
-  const packages = collectPublicPackageApis(root);
+export function validateApiDocs(root = process.cwd(), outputPath = defaultOutputPath, packages = collectPublicPackageApis(root)): ApiDocsReport {
   const rendered = renderApiDocs(packages, readApiDocsAppendix(root));
   const absoluteOutputPath = join(root, outputPath);
   const current = existsSync(absoluteOutputPath) ? readFileSync(absoluteOutputPath, "utf8") : "";
@@ -183,7 +321,7 @@ export function validateApiDocs(root = process.cwd(), outputPath = defaultOutput
     violations.push(`${outputPath} is not current with package entrypoint exports. Run pnpm verify:api-docs -- --write.`);
   }
   for (const pkg of packages) {
-    if (pkg.exportStatements.length === 0) {
+    if (pkg.exportStatements.length === 0 && !pkg.conditions) {
       violations.push(`${pkg.entrypointPath} has no public export declarations.`);
     }
   }
@@ -197,8 +335,8 @@ export function validateApiDocs(root = process.cwd(), outputPath = defaultOutput
   };
 }
 
-export function writeApiDocs(root = process.cwd(), outputPath = defaultOutputPath): void {
-  const rendered = renderApiDocs(collectPublicPackageApis(root), readApiDocsAppendix(root));
+export function writeApiDocs(root = process.cwd(), outputPath = defaultOutputPath, packages = collectPublicPackageApis(root)): void {
+  const rendered = renderApiDocs(packages, readApiDocsAppendix(root));
   const absoluteOutputPath = join(root, outputPath);
   mkdirSync(dirname(absoluteOutputPath), { recursive: true });
   writeFileSync(absoluteOutputPath, rendered);
@@ -257,18 +395,24 @@ function normalizePath(path: string): string {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const shouldWrite = process.argv.includes("--write");
-  if (shouldWrite) {
-    writeApiDocs();
+  try {
+    const root = process.cwd();
+    const planIndex = process.argv.indexOf("--candidate-plan");
+    const plan = planIndex >= 0 ? process.argv[planIndex + 1] : process.env.A3D_RELEASE_PLAN;
+    if (!plan || plan.startsWith("--")) throw new Error("--candidate-plan or A3D_RELEASE_PLAN is required to generate documentation from packed declarations");
+    const scratch = mkdtempSync(join(tmpdir(), "aura3d-api-docs-"));
+    try {
+      const candidate = stageCandidatePackages(root, plan, scratch);
+      const packages = collectPackedPackageApis(scratch, candidate.packages);
+      if (process.argv.includes("--write")) writeApiDocs(root, defaultOutputPath, packages);
+      const report = validateApiDocs(root, defaultOutputPath, packages);
+      writeApiDocsReport(report, root);
+      console.log(JSON.stringify({ ok: report.ok, candidatePlan: candidate.candidatePlan, candidatePlanSha256: candidate.candidatePlanSha256,
+        outputPath: report.outputPath, packages: report.packages.length, violations: report.violations }, null, 2));
+      if (!report.ok) process.exitCode = 1;
+    } finally { rmSync(scratch, { recursive: true, force: true }); }
+  } catch (error) {
+    console.error(`api-docs: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
   }
-  const report = validateApiDocs();
-  writeApiDocsReport(report);
-  console.log(JSON.stringify({
-    ok: report.ok,
-    outputPath: report.outputPath,
-    packages: report.packages.length,
-    exportDeclarations: report.packages.reduce((total, pkg) => total + pkg.exportStatements.length, 0),
-    violations: report.violations
-  }, null, 2));
-  if (!report.ok) process.exitCode = 1;
 }

@@ -1,11 +1,17 @@
 # Aura3D Bundle Sizes
 
-Generated reproducibly by `pnpm check:bundle-size` from the current source and `tests/reports/bundle-size.json`.
+**Historical measurement, not a result for the current candidate.** The table
+below was last committed in `3bce07cb79d11c3630672e997db27f03aa1a55f2` on
+2026-10-22. It must not be used to assert the size or outcome of later source
+changes. Run `pnpm check:bundle-size` in the approved remote source job against
+the staged candidate to regenerate this report and
+`tests/reports/bundle-size.json`; retain the staged-source and candidate hashes
+with the job output. No candidate measurement has been made in this phase yet.
 
 Measurement method: esbuild ESM splitting, minify, statically reachable critical-path
 chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenated gzip members.
 
-| Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
+| Target | JavaScript Bytes | Gzip Bytes | Budget | Historical result |
 |---|---:|---:|---:|---:|
 | `@aura3d/engine "." core primitive critical path` | 3,924,895 | 1,141,998 | 190,000 | fail |
 | `@aura3d/engine compatibility root (informational, not the new-app entry)` | 3,988,384 | 1,157,256 | 80,000 | informational |

@@ -6,6 +6,7 @@
 import type { RegistryEntry, ContractSlot, QrFlags, PrdId } from "./core";
 import { StructuralMemo } from "./structuralMemo";
 import type { RenderItem } from "./renderItem";
+import type { FrameContributorContext } from "./frameGraph";
 import type { AuraQualityTierSettings } from "./quality";
 import type { UniformValue, RenderDevice, RenderShaderProgram } from "../RenderDevice";
 
@@ -15,7 +16,7 @@ export interface ProgramFeatures {
   readonly pass: "forward" | "depth" | "distance" | "velocity";
   readonly target: "glsl300es" | "wgsl";
   readonly lighting: "lit" | "unlit";
-  readonly maps: { readonly baseColor?: TextureSlotFeature; readonly normal?: TextureSlotFeature; readonly metallicRoughness?: TextureSlotFeature; readonly occlusion?: TextureSlotFeature; readonly emissive?: TextureSlotFeature };
+  readonly maps: { readonly baseColor?: TextureSlotFeature; readonly normal?: TextureSlotFeature; readonly metallicRoughness?: TextureSlotFeature; readonly occlusion?: TextureSlotFeature; readonly emissive?: TextureSlotFeature; readonly diffuseRoughness?: TextureSlotFeature; readonly bump?: TextureSlotFeature };
   readonly extensions: readonly MaterialExtensionFeature[];        // C-03
   readonly alphaMode: "opaque" | "mask" | "blend";
   readonly doubleSided: boolean;
@@ -35,7 +36,13 @@ export interface ProgramFeatures {
   /** Open feature bits contributed by registered ShaderFeatures; key = ShaderFeature.id. */
   readonly features: Readonly<Record<string, string | number | boolean>>;
 }
-export interface MaterialExtensionFeature { readonly lobe: string; readonly maps: readonly string[]; readonly bits: Readonly<Record<string, string | number | boolean>>; }
+export interface MaterialExtensionFeature {
+  readonly lobe: string;
+  readonly maps: readonly string[];
+  /** UV selection is structural; per-slot transforms remain live uniforms. */
+  readonly mapUvSets?: Readonly<Record<string, 0 | 1>>;
+  readonly bits: Readonly<Record<string, string | number | boolean>>;
+}
 
 /** Deterministic, order-independent program key: canonical JSON with sorted keys at every level. */
 function stableSerialize(value: unknown): string {
@@ -77,13 +84,20 @@ export interface ShaderFeature extends RegistryEntry {
   defines(value: string | number | boolean): Readonly<Record<string, string | number | true>>;
   readonly chunks: readonly string[];        // inserted at hook points
   readonly hooks: readonly ShaderHookPoint[];
-  bindUniforms?(value: string | number | boolean, item: RenderItem, set: (name: string, v: UniformValue) => void): void;
+  bindUniforms?(value: string | number | boolean, item: RenderItem, set: (name: string, v: UniformValue) => void, frame?: FrameContributorContext): void;
 }
 export type ShaderHookPoint =
   | "vertex:pars" | "vertex:deform" | "vertex:world" | "vertex:end"
   | "fragment:pars" | "fragment:alpha" | "fragment:normal" | "fragment:material"
   | "fragment:lights" | "fragment:indirect" | "fragment:emissive" | "fragment:fog" | "fragment:end";
-export interface ShaderFeatureSelectInput { readonly item: RenderItem; readonly pass: ProgramFeatures["pass"]; readonly tier: AuraQualityTierSettings; readonly flags: QrFlags; }
+export interface ShaderFeatureSelectInput {
+  readonly item: RenderItem;
+  readonly pass: ProgramFeatures["pass"];
+  readonly tier: AuraQualityTierSettings;
+  readonly flags: QrFlags;
+  /** The same device/view/frame snapshot used by the eventual uniform bind. */
+  readonly frameContext?: FrameContributorContext;
+}
 
 import { createRegistry } from "./core";
 
@@ -121,7 +135,36 @@ export function shaderFeaturesFor(flags: QrFlags): readonly ShaderFeature[] {
   return shaderFeatures.active(flags);
 }
 
-export interface GeneratedProgram { readonly key: string; readonly vertex: string; readonly fragment: string; readonly defines: Readonly<Record<string, string | number | true>>; }
+/** Unfiltered registry snapshot for callback-free trust preflight. */
+export function allShaderFeatures(): readonly ShaderFeature[] {
+  return shaderFeatures.all();
+}
+
+/** Whether any provider is registered, without reading provider metadata. */
+export function hasRegisteredShaderFeatures(): boolean {
+  return shaderFeatures.all().length > 0;
+}
+
+/** Conservative activation check using the registry's captured metadata. */
+export function hasPotentiallyActiveShaderFeatures(flags: QrFlags): boolean {
+  return shaderFeatures.hasPotentiallyActive(flags);
+}
+
+/** Unsorted active identities, without reading provider metadata. */
+export function potentiallyActiveShaderFeatures(flags: QrFlags): readonly ShaderFeature[] {
+  return shaderFeatures.potentiallyActiveEntries(flags);
+}
+
+/** The resolved material and hook inputs used to generate a particular shader.
+ * Devices consume this descriptor rather than inferring behavior from GLSL. */
+export interface GeneratedProgramDescriptor {
+  readonly features: ProgramFeatures;
+  readonly activeFeatures: readonly { readonly id: string; readonly value: string | number | boolean }[];
+  readonly activeExtensions: readonly MaterialExtensionFeature[];
+  readonly defines: Readonly<Record<string, string | number | true>>;
+  readonly lighting: { readonly compilerLightingConjunction: boolean; readonly iblReplacesIndirect: boolean };
+}
+export interface GeneratedProgram { readonly key: string; readonly vertex: string; readonly fragment: string; readonly defines: Readonly<Record<string, string | number | true>>; readonly descriptor?: GeneratedProgramDescriptor; }
 export type ProgramGeneratorImpl = (features: ProgramFeatures) => GeneratedProgram;
 let programGeneratorImpl: ProgramGeneratorImpl | undefined;
 /** PRD 01's program/ProgramGenerator.ts installs the real C-02 generator (lane 01). */
@@ -147,8 +190,7 @@ export interface ProgramCacheLike {
   dispose(): void;
 }
 import { defineContractSlot } from "./core";
-import { createLeanCoreShaderLibrary, DEFAULT_UNLIT_SHADER_NAME, DEFAULT_DEPTH_SHADER_NAME, type ShaderLibrary } from "../ShaderLibraryCore";
-import { DEFAULT_PBR_SHADER_NAME } from "../PBRMaterial";
+import { createLeanCoreShaderLibrary, DEFAULT_UNLIT_SHADER_NAME, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_PBR_SHADER_NAME, type ShaderLibrary } from "../ShaderLibraryCore";
 
 /**
  * PR 0a stub: wraps the existing ShaderLibrary lookups and ignores registered

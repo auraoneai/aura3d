@@ -20,6 +20,7 @@ import type { ResourceRegistryLike } from "../contracts/rendererFactory";
 
 export interface ResourceDescriptor {
   readonly kind: string;
+  readonly device?: RenderDevice;
   /** Re-create the GPU resource from the recorded descriptor/CPU source. */
   readonly rebuild: () => Promise<void> | void;
   /** Re-fetch a released CPU source before rebuild (network/decoded data). */
@@ -84,18 +85,26 @@ export class ResourceRegistry implements ResourceRegistryLike {
     return this.entries.size;
   }
 
-  async rebuild(_device: RenderDevice): Promise<{ readonly rebuilt: number; readonly refetched: number; readonly failed: readonly string[] }> {
+  async rebuild(device: RenderDevice): Promise<{ readonly rebuilt: number; readonly refetched: number; readonly failed: readonly string[] }> {
     let rebuilt = 0;
     let refetched = 0;
     const failed: string[] = [];
-    for (const entry of this.entries.values()) {
+    for (const [handle, entry] of [...this.entries]) {
+      if (this.entries.get(handle) !== entry) continue;
       const { descriptor } = entry;
       try {
-        if (entry.sourceReleased && descriptor.refetch) {
+        const owner = descriptor.device;
+        if (this.entries.get(handle) !== entry || (owner && owner !== device)) continue;
+        if (entry.sourceReleased) {
+          if (!descriptor.refetch) throw new Error("Released resource source cannot be restored without refetch.");
           await descriptor.refetch();
-          entry.sourceReleased = false;
           refetched += 1;
+          if (this.entries.get(handle) !== entry) continue;
+          entry.sourceReleased = false;
         }
+        // An asynchronous refetch can outlive a device migration.
+        const currentOwner = descriptor.device;
+        if (this.entries.get(handle) !== entry || currentOwner !== owner) continue;
         await descriptor.rebuild();
         rebuilt += 1;
       } catch {

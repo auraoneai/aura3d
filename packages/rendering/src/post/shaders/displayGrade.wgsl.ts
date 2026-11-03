@@ -1,7 +1,7 @@
 /**
  * PRD-03 §6.7 S10b Phase 7 — display-grade WGSL twins.
  * DISPLAY_GRADE: trilinear 33³ LUT + vignette on display-referred rgba8;
- * alpha carries `luma(disp)` so S11 FXAA reads luminance from `.a`.
+ * alpha remains the input opacity; antialiasing derives luminance from RGB.
  * LUT_BAKE: per-slice grade bake into the TEXTURE_3D.
  */
 
@@ -22,11 +22,10 @@ export const DISPLAY_GRADE_WGSL = /* wgsl */ `struct DisplayGradeParams {
 @group(0) @binding(3) var u_lut3d_tex: texture_3d<f32>;
 @group(0) @binding(4) var u_lut3d_smp: sampler;
 
-fn display_luma(c: vec3<f32>) -> f32 { return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722)); }
-
 @fragment
 fn fs_display_grade(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
-  var disp = textureSampleLevel(u_source_tex, u_source_smp, uv, 0.0).rgb;
+  let source = textureSampleLevel(u_source_tex, u_source_smp, uv, 0.0);
+  var disp = source.rgb;
   if (u_params.has_lut != 0) {
     disp = textureSampleLevel(u_lut3d_tex, u_lut3d_smp, clamp(disp, vec3<f32>(0.0), vec3<f32>(1.0)), 0.0).rgb;
   }
@@ -37,7 +36,7 @@ fn fs_display_grade(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
     let len = length(p) * u_params.vignette_intensity;
     disp = disp * mix(vec3<f32>(1.0), u_params.vignette_color, pow(clamp(len, 0.0, 1.0), u_params.vignette_smoothness));
   }
-  return vec4<f32>(disp, display_luma(disp));
+  return vec4<f32>(disp, source.a);
 }
 `;
 

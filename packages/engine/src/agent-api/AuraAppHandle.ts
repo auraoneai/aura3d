@@ -1,5 +1,5 @@
 import type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from "./GameEvidence";
-import type { GameInputController, GameInputOptions } from "./GameRuntime";
+import type { GameInputController, GameInputOptions } from "./GameRuntimeCore.js";
 import { scene } from "./nodes/scene.js";
 
 export interface AuraAppRuntimeState {

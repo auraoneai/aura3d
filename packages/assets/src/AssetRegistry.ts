@@ -1,11 +1,11 @@
-import type { AssetLoadRequest, AssetLoader } from "./AssetLoader";
+import { redactAssetUrl, type AssetLoadRequest, type AssetLoader } from "./AssetLoader";
 
 export class AssetRegistry {
   private readonly loaders = new Map<string, AssetLoader>();
 
   register(loader: AssetLoader): void {
     if (this.loaders.has(loader.type)) {
-      throw new Error(`Asset loader type already registered: ${loader.type}`);
+      throw new Error(`Asset loader type already registered: ${redactAssetUrl(loader.type)}`);
     }
 
     this.loaders.set(loader.type, loader);
@@ -18,7 +18,7 @@ export class AssetRegistry {
   get(type: string): AssetLoader {
     const loader = this.loaders.get(type);
     if (!loader) {
-      throw new Error(`No asset loader registered for type: ${type}`);
+      throw new Error(`No asset loader registered for type: ${redactAssetUrl(type)}`);
     }
 
     return loader;
@@ -35,7 +35,7 @@ export class AssetRegistry {
       }
     }
 
-    throw new Error(`No asset loader can load ${request.url}`);
+    throw new Error(`No asset loader can load ${redactAssetUrl(request.url)}`);
   }
 
   list(): readonly string[] {

@@ -4,7 +4,9 @@ import { closeSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'nod
 import { hostname } from 'node:os';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { artifact, newRunId, sameSource, sourceIdentity, validateReceipt, writeImmutableJson, type Artifact, type ProducerReceipt } from '../muse3jsparity-readiness/evidence-lineage';
+import { artifact, newRunId, sameSource, validateReceipt, writeImmutableJson, type Artifact, type ProducerReceipt } from '../muse3jsparity-readiness/evidence-lineage';
+// @ts-expect-error The release identity module is JavaScript.
+import { sourceIdentity } from './source-identity.mjs';
 import { loadMuse301ExecutionRequirements } from '../muse3jsparity-readiness/requirements';
 // @ts-expect-error Existing release module is JavaScript and has no declaration file.
 import { buildReleaseArtifactManifest } from './build-artifact-manifest.mjs';
@@ -57,6 +59,16 @@ const manifestRef = reference('docs/project/release-artifacts.json');
 const versioned = run(['pnpm','verify:versioned-release'], 'versioned-release');
 if (versioned.code !== 0) throw new Error('Versioned release manifest verification failed');
 
+// Tree-shaking consumes the untouched source-phase projects created for this
+// exact candidate, not a previous browser receipt or another pack run.
+const sourceReportPath = `tests/reports/native-consumers/${runId}/source.json`;
+const sourceConsumer = run([
+  'pnpm', 'exec', 'tsx', '--tsconfig', 'tsconfig.base.json',
+  'tools/package-clean-install/index.ts', '--phase', 'source', '--run-id', runId,
+  '--candidate-plan', planPath,
+], 'source-consumer');
+if (sourceConsumer.code !== 0) throw new Error('Exact source consumer creation failed');
+
 const kinds = ['frozenLock','source','installed','compatibility','optionalPeers','imports','exports','smoke','provenance','bundleBudgets','leanIsolation'] as const;
 const reportPaths: Record<(typeof kinds)[number], string> = {
   frozenLock:'tests/reports/release-frozen-lock.json', source:'tests/reports/agent-templates.json', installed:'tests/reports/installed-template-lifecycle.json',
@@ -66,7 +78,7 @@ const reportPaths: Record<(typeof kinds)[number], string> = {
 };
 for (const kind of kinds) {
   const outputPath = pathInRoot(resolve(output, `command-${kind}.json`));
-  const receipt = recordCommand(root, {kind, planPath, reportPath: reportPaths[kind], outputPath});
+  const receipt = recordCommand(root, {kind, planPath, reportPath: reportPaths[kind], outputPath, ...(kind === 'leanIsolation' ? { sourceReportPath } : {})});
   if (receipt.exitCode !== 0) throw new Error(`${kind} failed: ${receipt.validationErrors.join('; ')}`);
   commandReceipts[kind] = outputPath;
 }
@@ -82,7 +94,7 @@ const acceptance = packageAcceptanceDocument(replay, validationRef);
 const acceptancePath = pathInRoot(resolve(output, 'package-acceptance.json'));
 const acceptanceRef = writeJson(acceptancePath, acceptance);
 
-const allInputs = [...new Map([...replay.artifacts, validationRef, manifestRef, pack.log, versioned.log].map(item => [item.path, item])).values()];
+const allInputs = [...new Map([...replay.artifacts, validationRef, manifestRef, pack.log, versioned.log, sourceConsumer.log].map(item => [item.path, item])).values()];
 const packagePaths = new Set(replay.acceptance.packages.map((item: PackageAcceptanceEntry) => item.manifest));
 const tarballPaths = new Set(replay.acceptance.packages.map((item: PackageAcceptanceEntry) => item.tarball));
 const packageRefs = allInputs.filter(item => packagePaths.has(item.path));

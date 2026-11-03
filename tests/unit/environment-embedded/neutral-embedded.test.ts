@@ -11,6 +11,8 @@ import {
 import { quantizeCube } from "../../../tools/environments/embed-neutral.mjs";
 import { readRgb9e5Cube } from "../../../packages/rendering/src/environment/Rgb9e5Cube.js";
 import { buildNeutralFloorProbe } from "../../../packages/rendering/src/environment/probeBuild.js";
+import { createRoomEnvironmentScene, sampleRoomEnvironment } from "../../../packages/rendering/src/environment/RoomEnvironmentScene.js";
+import { KTX2_MAGIC, VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 } from "../../../packages/rendering/src/environment/Rgb9e5Cube.js";
 
 const file = readFileSync("public/aura-environments/neutral.specular.ktx2");
 const manifest = JSON.parse(readFileSync("public/aura-environments/neutral.manifest.json", "utf8")) as { sha256: { specular: string } };
@@ -75,11 +77,73 @@ describe("embedded neutral environment", () => {
     expect(Array.from(probe.sh9!.slice(0, 3))).toEqual(Array.from(buildNeutralFloorProbe(128).sh9!.slice(0, 3)));
   });
 
-  it("still fetches other presets from /aura-environments", async () => {
+  it("reports how to provide an unavailable optional preset", async () => {
     const fetchSpy = vi.fn(() => Promise.resolve(new Response("nope", { status: 404 })));
     vi.stubGlobal("fetch", fetchSpy);
     const loader = defaultProbeLoader(() => ({}) as never);
-    await expect(loader({ preset: "studio", tier: "balanced" } as never)).rejects.toThrow(/ENV_FETCH_FAILED/);
+    await expect(loader({ preset: "studio", tier: "balanced" } as never)).rejects.toThrow(/ENV_PRESET_UNAVAILABLE:studio:.*\/aura-environments.*ENV_FETCH_FAILED/);
     expect(fetchSpy).toHaveBeenCalledWith("/aura-environments/studio.manifest.json");
+  });
+
+  it("loads an admitted optional preset and its independent SH data", async () => {
+    const manifest = { name: "fixture", faceSize: 128, mipCount: 1, specular: "fixture.ktx2", sh9: "fixture.sh9" };
+    // Independently authored, uncompressed 128-square black cube with one mip.
+    const cube = new Uint8Array(92 + 6 * 128 * 128 * 4);
+    cube.set(KTX2_MAGIC);
+    const header = new DataView(cube.buffer);
+    header.setUint32(12, VK_FORMAT_E5B9G9R9_UFLOAT_PACK32, true);
+    header.setUint32(16, 4, true);
+    header.setUint32(20, 128, true);
+    header.setUint32(24, 128, true);
+    header.setUint32(36, 6, true);
+    header.setUint32(40, 1, true);
+    header.setBigUint64(68, 92n, true);
+    header.setBigUint64(76, BigInt(cube.byteLength - 92), true);
+    const sh = new Uint8Array(27 * 4);
+    new DataView(sh.buffer).setFloat32(0, 0.75, true);
+    const fetchSpy = vi.fn((input: string) => {
+      if (input.endsWith("fixture.manifest.json")) return Promise.resolve(new Response(JSON.stringify(manifest)));
+      if (input.endsWith("fixture.ktx2")) return Promise.resolve(new Response(cube));
+      if (input.endsWith("fixture.sh9")) return Promise.resolve(new Response(sh));
+      return Promise.resolve(new Response("missing", { status: 404 }));
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+    const probe = await defaultProbeLoader(() => ({}) as never)({ preset: "fixture", tier: "high" });
+    expect(probe.faceSize).toBe(128);
+    expect(probe.mipCount).toBe(1);
+    expect(probe.sh9[0]).toBe(0.75);
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
+    probe.dispose();
+  });
+
+  it("rejects unsafe preset names and malformed manifests before loading assets", async () => {
+    const fetchSpy = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ name: "fixture", faceSize: 128, mipCount: 1, specular: "../outside", sh9: "fixture.sh9" }))));
+    vi.stubGlobal("fetch", fetchSpy);
+    const loader = defaultProbeLoader(() => ({}) as never);
+    await expect(loader({ preset: "../outside", tier: "high" })).rejects.toThrow(/ENV_PRESET_INVALID/);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    await expect(loader({ preset: "fixture", tier: "high" })).rejects.toThrow(/ENV_PRESET_INVALID:fixture/);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("explains how to fix a preset whose manifest exists but an asset is missing", async () => {
+    const manifest = { name: "fixture", faceSize: 128, mipCount: 1, specular: "fixture.ktx2", sh9: "fixture.sh9" };
+    vi.stubGlobal("fetch", vi.fn((input: string) => Promise.resolve(
+      input.endsWith(".manifest.json") ? new Response(JSON.stringify(manifest)) : new Response("missing", { status: 404 })
+    )));
+    await expect(defaultProbeLoader(() => ({}) as never)({ preset: "fixture", tier: "high" }))
+      .rejects.toThrow(/ENV_PRESET_UNAVAILABLE:fixture: install both assets.*ENV_FETCH_FAILED/);
+  });
+
+  it("samples the independently designed room from panel and diffuse surfaces", () => {
+    const room = createRoomEnvironmentScene();
+    expect(room.panels).toHaveLength(5);
+    expect(sampleRoomEnvironment([0, 1, 0])).toEqual([64, 64, 64]);
+    const floor = sampleRoomEnvironment([0, -1, 0]);
+    // From the origin the floor is y=-9, source is y=7: r=16, cos(theta)=1.
+    const expected = 0.8 / Math.PI * 240 * (1 - 16 / 40) ** 2 / 16 ** 2;
+    expect(floor[0]).toBeCloseTo(expected, 12);
+    expect(floor[1]).toBeCloseTo(expected, 12);
+    expect(sampleRoomEnvironment([0, 0, 0])).toEqual([0, 0, 0]);
   });
 });

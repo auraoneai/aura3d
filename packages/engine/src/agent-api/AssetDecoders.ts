@@ -14,6 +14,7 @@ import type { CompressedTextureCapabilities, QrFlags } from "@aura3d/rendering/c
 import type { AuraAssetDefinition } from "./index.js";
 import type { AuraAssetDecodersOption, AuraAssetsOption, AuraAssetRequiredDecoder } from "../contracts/assets.js";
 import type { AuraQualityTierSettings } from "@aura3d/rendering/contracts";
+import { currentWorkerAssets } from "@aura3d/core";
 
 /**
  * C-16 §7.3 — one AssetDecoderRegistry per app.
@@ -42,16 +43,23 @@ export interface AppAssetDecoders {
   readonly diagnostics: AssetDecoderRegistry["diagnostics"];
 }
 
+/** Build-scoped plugin value; non-Vite and separately bundled callers retain the root default. */
+function defaultDecoderBasePath(): string {
+  const base = (import.meta as ImportMeta & { env?: { AURA3D_DECODER_BASE_PATH?: unknown } }).env?.AURA3D_DECODER_BASE_PATH;
+  return typeof base === "string" ? base : "/aura-decoders/";
+}
+
 export function createAppAssetDecoders(
   options: AuraAssetsOption | undefined,
   caps: CompressedTextureCapabilities,
   tier: Pick<AuraQualityTierSettings, "maxTextureSize">
-): AssetDecoderRegistry {
+): AssetDecoderRegistry & { disposeAsync(): Promise<void> } {
   const decoderOptions = options?.decoders ?? {};
-  const basePath = decoderOptions.basePath ?? "/aura-decoders/";
+  const basePath = decoderOptions.basePath ?? defaultDecoderBasePath();
   const maxTextureSize = options?.maxTextureSize ?? tier.maxTextureSize;
   const workerCount = decoderOptions.workerCount ?? (maxTextureSize <= 1024 ? 1 : 2);
-  const inner = createAssetDecoderRegistry({ basePath, capabilities: caps, maxTextureSize, workerCount });
+  const workerAssets = decoderOptions.basePath === undefined ? currentWorkerAssets() : undefined;
+  const inner = createAssetDecoderRegistry({ basePath, capabilities: caps, maxTextureSize, workerCount, ...(workerAssets ? { workerAssets } : {}) });
   const disabled = new Set<AssetDecoderId>();
   if (decoderOptions.meshopt === false) disabled.add("meshopt");
   if (decoderOptions.draco === false) disabled.add("draco");
@@ -66,7 +74,8 @@ export function createAppAssetDecoders(
       return inner.require(ids);
     },
     diagnostics: () => inner.diagnostics(),
-    dispose: () => inner.dispose()
+    dispose: () => inner.dispose(),
+    disposeAsync: () => inner.disposeAsync()
   };
 }
 

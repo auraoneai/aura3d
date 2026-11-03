@@ -3,6 +3,7 @@
 import type { AuraEffectType, AuraEffectNode, AuraEnvironmentNode, AuraSceneCategory, AuraRendererColorManagementPreset, AuraSceneExposurePreset, AuraRendererQualityPreset, AuraRendererQualityProfileId, AuraRendererQualityProfile, AuraCreateAppRendererOptions, AuraRendererDiagnosticReport, AuraRendererRuntimeObservation, AuraSceneSnapshot } from "./nodes/types.js";
 import { AuraSceneBuilder } from "./nodes/scene.js";
 import { analyzeProductionBridgeEligibility } from "./compiler/observations.js";
+import { resolveProductionCameraDepth } from "./compiler/cameraDepth.js";
 import { colorToClearColor } from "./colorUtils.js";
 import { createMaterialCapabilityDiagnostics } from "./nodes/materialTools.js";
 import { flattenSceneSnapshot, normalizeSceneSnapshot } from "./sceneMath.js";
@@ -30,6 +31,12 @@ export function createRendererDiagnosticReport(
   rendererOptions?: AuraCreateAppRendererOptions
 ): AuraRendererDiagnosticReport {
   const flattened = groups.flatten(snapshot.nodes);
+  // This reports the negotiated root camera contract, not proof of pixels.
+  // Unsupported requests have no negotiated result to report.
+  let depth: AuraRendererDiagnosticReport["depth"];
+  if (runtime?.mounted && runtime.backend === "production-runtime") {
+    try { depth = resolveProductionCameraDepth(snapshot.camera).depthConvention; } catch { /* preflight reports the unsupported request */ }
+  }
   const names = flattened.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
   const rendererSelection = normalizeCreateAppRendererOptions(rendererOptions);
   const productionEligibility = analyzeProductionBridgeEligibility(flattened);
@@ -135,6 +142,7 @@ export function createRendererDiagnosticReport(
         : `runtime fell back without a pixel-backed composer: ${runtimePostprocess?.fallbackPasses.join(", ") || "direct render"}`;
   return {
     kind: "aura-renderer-diagnostics",
+    ...(depth ? { depth } : {}),
     colorManagement: rendererColorManagementPreset,
     rendererMode: rendererSelection.mode,
     fallbackMode: rendererSelection.fallback,
@@ -142,7 +150,8 @@ export function createRendererDiagnosticReport(
     sceneCategory,
     exposure,
     toneMapping: "aces-filmic",
-    outputColorSpace: "srgb",
+    outputColorSpace: runtime?.mounted && (runtime.outputColorSpace === "srgb" || runtime.outputColorSpace === "display-p3")
+      ? runtime.outputColorSpace : "unknown",
     linearWorkflow: true,
     bloom: {
       enabled: Boolean(bloom),

@@ -12,14 +12,15 @@ never masquerade as 3D proof).
   placed-vs-offscreen telemetry (`collectLabelTelemetry`), computed from the
   projected set — not from counting nodes.
 - SDF text draws **lit/occluded in-world quads** from a signed-distance atlas
-  (`packages/rendering/src/SdfText.ts`, G1). Same uppercase alphanumeric
-  catalog as `text3D`, with outline/glow/drop-shadow styling, LOD fade, and
+  (`packages/rendering/src/SdfText.ts`). Its built-in fallback uses the same
+  uppercase alphanumeric catalog as `text3D`. A loaded font uses the platform
+  text shaper and a bounded dynamic atlas, with outline/glow/drop-shadow styling, LOD fade, and
   dim/hide occlusion handling. Pixel proof is `textPixelBacked`, which is true
   only when the atlas is uploaded AND quads were submitted this frame.
   Sampling is a deterministic bake (`rasterizeSdfTextLabelImage`: per-texel
   atlas coverage through `sampleSdfCoverage`, once per mount — not a
   per-pixel shader SDF loop); the production bridge uploads the label image
-  as a native texture and submits one quad per glyph, replaying the recorded
+  as a native texture and submits one quad per atlas entry, replaying the recorded
   `text3D(backend: "sdf")` descriptor fail-closed with the extruded mesh as
   the diagnosed fallback. LOD fade and occlusion resolve per frame from the
   live camera distance and the shared scene occlusion test
@@ -32,6 +33,118 @@ never masquerade as 3D proof).
 
 `labels.*`, `ui.*`, and `text3D` come from `@aura3d/engine`. Do not import
 `three`, `TextGeometry`, or `troika-three-text` in public routes.
+
+## Loaded fonts and shaped world text
+
+`loadFont` accepts bytes from an asset the caller is licensed to use, together
+with its family and license metadata. It validates the signature, font-table
+bounds and declared decoded size before asking `FontFace` to decode it; the
+metadata is an attribution supplied by the caller, not an automated license
+verification. Bytes are limited to 16 MiB. The returned font handle registers
+its face with the document or worker font set and must be disposed after the
+last text that needs to be created with it.
+
+```ts
+import { loadFont, scene, text3D } from "@aura3d/engine";
+
+// These bytes and metadata come from the application's admitted font asset.
+async function makeCaption(bytes: Uint8Array, licenseUrl: string) {
+  const font = await loadFont({
+    data: bytes,
+    metadata: { family: "My licensed font", license: "My license", licenseUrl }
+  });
+  const caption = text3D("Welcome\nمرحبا", {
+    font,
+    size: 0.6,
+    maxWidth: 4,
+    lineHeight: 0.8,
+    direction: "auto",
+    accessibleLabel: "Welcome"
+  }).runtime({ id: "caption" });
+  // Keep the handle until the app is disposed or no more updates are needed.
+  return { scene: scene().add(caption), font };
+}
+```
+
+Use `fallbackFonts` for an ordered list of additional loaded font handles.
+Canvas shapes complete runs, including the platform's kerning, ligature,
+joining and bidirectional handling; paragraphs wrap at word boundaries and
+long words at grapheme boundaries. `direction` may be `auto`, `ltr`, or `rtl`.
+For `auto`, each paragraph's base direction follows Unicode 16.0 first-strong
+classes, skipping isolated text when choosing the surrounding direction. The
+platform still supplies glyph shaping and bidirectional reordering; newer
+Unicode character properties require a data update. Wrapped lines are painted
+separately. A wrap across an open embedding, override, or isolate fails with
+`AURA_TEXT_BIDI_WRAP_UNSUPPORTED`, and neutral or bracket resolution may
+still differ from a full paragraph-wide bidi layout. A controls-only wrapped
+line can trigger this rejection even where another line break could work.
+`maxWidth`, `lineHeight` and `letterSpacing` use world units, and `maxLines`
+and `rasterSize` bound layout. A nonzero `letterSpacing` fails explicitly when
+the Canvas implementation does not expose that property. Font-backed SDF text
+does not accept extrusion `depth`. Its material supports color, opacity,
+roughness, metallic, emissive and texture anisotropy; custom shaders, texture
+maps and other unsupported material fields raise `AURA_TEXT_MATERIAL_UNSUPPORTED`.
+The browser may use its own fallback when
+none of the supplied fonts covers a character; Canvas does not expose chosen
+glyph IDs or a reliable missing-glyph list. `glyphCoverage` therefore says
+`platform-unverified` and an empty `unsupportedCharacters` list is not proof
+that every glyph came from the supplied fonts.
+
+The root builder creates a texture snapshot when the node is built. A runtime
+node can reshape new text with `app.nodes.require("caption").setText("...")`;
+keep its font handles loaded until the final update. Rebuilding a label swaps
+the compiled texture and geometry, then disposes the old resources. Serialized
+snapshots retain their pixels but do not retain live font handles, so recreate
+them with loaded fonts before calling `setText`. The bounded `GlyphAtlas` package API
+also supports retained entries, dirty-region updates, LRU eviction of released
+entries, and idempotent disposal. The temporary atlas used for the snapshot is
+released immediately; the compiled label texture is released with its material.
+The default accessible counterpart is a visually hidden DOM note containing the
+original text; `accessibleLabel` overrides it and `accessibleLabel: false`
+omits it. It is removed when the scene layer is disposed. `labels.*` remains
+available for visible DOM annotations. These source paths have unit tests;
+multilingual browser pixels and real font coverage remain Phase B acceptance.
+
+## Shared text atlas
+
+Built-in SDF text can explicitly request the shared glyph atlas:
+
+```ts
+const label = text3D("AURA 3D", {
+  backend: "sdf",
+  sdfGlyphAtlas: "shared",
+  accessibleLabel: "Aura 3D"
+});
+```
+
+The request is recorded in the text descriptor. The renderer may use the
+shared atlas when its bounded layout and device path are available. A loaded
+font can request the same option: its complete shaped, rasterized label is
+stored in the atlas when its RGBA pixels are monochrome, it fits, and capacity
+is available. The font still shapes whole runs, and every text change creates
+a new label snapshot; individual loaded-font glyphs are not cached. Identical
+shaped label pixels can reuse an atlas entry, including a released entry that
+remains in the bounded cache. The cache retains at most 38 snapshots and
+256 KiB of alpha pixels and compares pixels before reuse; text is still shaped
+and rasterized on each update. Colored
+snapshots, incompatible sampling settings, oversized labels, a full atlas, or
+an unavailable device path retain the per-label SDF rendering path. Omitting
+the option preserves the current default. It is valid only with the SDF
+backend; an invalid value or an extruded backend is rejected. Accessible
+labels retain the same defaults and overrides as other world text.
+
+With an admitted atlas scope, both shared entries and separate-texture
+fallbacks are retained until pending frames release them. When the device path
+cannot admit an atlas scope, the existing per-label texture lifetime behavior
+applies instead; this option does not add frame retention to that path.
+
+For an opted-in built-in label, both the initial text and each `setText` value
+are limited to 64 UTF-16 code units, before and after uppercasing. Longer text
+is rejected before the label changes. This bounds the geometry needed if SDF
+construction falls back to extruded text; loaded-font text keeps its own limits.
+
+This opt-in is source-level functionality. It does not establish browser or GPU
+rendering results; those remain separate acceptance work.
 
 Explicit 2.1 decision: NO `CSS2DRenderer` / `CSS3DRenderer` parity. Game
 annotation needs are covered by world-anchored labels + SDF text; the
@@ -130,8 +243,9 @@ Supported glyphs: uppercase `A–Z`, digits `0–9`, space, `-`, and `.`.
 Unsupported characters are recorded on the node as `unsupportedCharacters` and
 skipped. An empty string, or a string with no supported glyphs, throws.
 
-This is not font loading, Unicode shaping, kerning, SDF/MSDF, curved text, or
-troika-three-text parity. For accessible annotations, use `labels.*`.
+The extruded path does not load fonts or shape Unicode. Use the font-backed
+SDF path above for platform-shaped text, or `labels.*` for visible accessible
+annotations. Curved text and MSDF are not provided here.
 
 Root evidence: `pnpm renderer:geometry-instancing-lod-text` and
 `docs/rendering/geometry-instancing-lod-text.md`.
@@ -144,7 +258,7 @@ Root evidence: `pnpm renderer:geometry-instancing-lod-text` and
 | Selectable / screen-reader text | `labels.*` / `ui.*` (DOM) | mesh or SDF text |
 | Lit in-world signage with outline/glow, LOD fade | SDF text (G1) | DOM labels |
 | Title card, signage, extruded logo from the built-in catalog | `text3D` | DOM labels |
-| Arbitrary typeface, CJK, or paragraph layout | not shipped | any API as a substitute |
+| Licensed typeface, platform-shaped Unicode, or wrapped layout | font-backed `text3D` SDF | built-in extruded catalog |
 
 ## Per-route proof (N4 contract)
 

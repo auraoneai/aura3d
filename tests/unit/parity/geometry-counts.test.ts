@@ -1,375 +1,484 @@
 /**
- * threejs-parity §5.2 lane L2-01/02/06 (SG-03/SG-04) — for every widened
- * primitive kind × 3 parameter sets: vertex count, index count and bounds
- * equal three.js 0.185.1, positions within 1e-6 (index/uv compared exactly).
- *
- * Curve inputs use three's own `CatmullRomCurve3`: `resolveCurve3` wraps any
- * `{ getPoint(t) }` sampler in the three-exact `Curve3Adapter`
- * (arc-length table + Frenet frames), so identical curve objects on both
- * sides keep the comparison honest.
+ * Independently specified geometry contracts: analytical coordinates, topology,
+ * areas and normal directions. These fixtures do not depend on another engine's
+ * implementation or its buffer ordering.
  */
-
 import { describe, expect, it } from "vitest";
-import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 import {
-  circleParityMesh,
-  coneParityMesh,
-  convexParityMesh,
-  edgesParityMesh,
-  extrudeParityMesh,
-  latheParityMesh,
-  polyhedronParityMesh,
-  ringParityMesh,
-  roundedBoxParityMesh,
-  shapeParityMesh,
-  torusKnotParityMesh,
-  tubeParityMesh,
-  wireframeParityMesh,
-  createPrimitiveGeometry,
-  type ParityMesh,
-  type PolyhedronVariant
+  circleParityMesh, coneParityMesh, cylinderParityMesh, convexParityMesh,
+  edgesParityMesh, extrudeParityMesh, latheParityMesh, polyhedronParityMesh,
+  ringParityMesh, roundedBoxParityMesh, shapeParityMesh, torusKnotParityMesh,
+  tubeParityMesh, wireframeParityMesh, createPrimitiveGeometry, parityMeshToGeometry,
+  polyhedronParityMeshFromBase, boxParityMesh, meshToNonIndexed, earcut, Curve3Adapter,
+  type ParityMesh, type PolyhedronVariant
 } from "@aura3d/rendering";
+import { Vector3 } from "@aura3d/math";
 import { geometry } from "../../../packages/engine/src/agent-api/nodes/geometry";
 import { primitives } from "../../../packages/engine/src/agent-api/nodes/primitives";
 import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors";
 import { normalizeGeometryAttributes } from "../../../packages/engine/src/agent-api/RootGeometry";
 
-const EPS = 1e-6;
-
-function arr(source: ArrayLike<number>): number[] {
-  return Array.from(source as ArrayLike<number>);
+function point(values: ArrayLike<number>, i: number): [number, number, number] {
+  return [values[3 * i]!, values[3 * i + 1]!, values[3 * i + 2]!];
 }
-
+function expectPoint(actual: ArrayLike<number>, expected: readonly number[], precision = 6): void {
+  expect(actual.length).toBe(expected.length);
+  expected.forEach((value, i) => expect(actual[i]).toBeCloseTo(value, precision));
+}
+function checkMesh(mesh: ParityMesh): void {
+  expect(mesh.positions.length % 3).toBe(0);
+  expect(mesh.positions.every(Number.isFinite)).toBe(true);
+  const count = mesh.positions.length / 3;
+  if (mesh.normals) {
+    expect(mesh.normals).toHaveLength(mesh.positions.length);
+    expect(mesh.normals.every(Number.isFinite)).toBe(true);
+  }
+  if (mesh.uvs) {
+    expect(mesh.uvs).toHaveLength(count * 2);
+    expect(mesh.uvs.every(Number.isFinite)).toBe(true);
+  }
+  if (mesh.indices) {
+    expect(mesh.indices.length % 3).toBe(0);
+    expect(mesh.indices.every((i) => Number.isInteger(i) && i >= 0 && i < count)).toBe(true);
+  }
+}
 function bounds(positions: ArrayLike<number>): { min: number[]; max: number[] } {
   const min = [Infinity, Infinity, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < positions.length; i += 3) {
     for (let c = 0; c < 3; c += 1) {
-      const value = positions[i + c]!;
-      if (value < min[c]!) min[c] = value;
-      if (value > max[c]!) max[c] = value;
+      min[c] = Math.min(min[c]!, positions[i + c]!);
+      max[c] = Math.max(max[c]!, positions[i + c]!);
     }
   }
   return { min, max };
 }
-
-function assertParity(name: string, mesh: ParityMesh, geo: THREE.BufferGeometry): void {
-  const threePos = arr((geo.getAttribute("position") as THREE.BufferAttribute).array);
-  const threeUv = geo.getAttribute("uv") ? arr((geo.getAttribute("uv") as THREE.BufferAttribute).array) : undefined;
-  const threeIdx = geo.getIndex() ? arr((geo.getIndex() as THREE.BufferAttribute).array).map(Number) : undefined;
-
-  // counts
-  expect(mesh.positions.length, `${name}: vertex component count`).toBe(threePos.length);
-  if (threeIdx !== undefined) {
-    expect(mesh.indices?.length ?? 0, `${name}: index count`).toBe(threeIdx.length);
-  } else {
-    expect(mesh.indices === undefined || mesh.indices.length === 0, `${name}: three is non-indexed`).toBe(true);
+function triangleXYArea(mesh: ParityMesh): number {
+  const order = mesh.indices ?? Array.from({ length: mesh.positions.length / 3 }, (_, i) => i);
+  let area = 0;
+  for (let i = 0; i < order.length; i += 3) {
+    const a = point(mesh.positions, order[i]!);
+    const b = point(mesh.positions, order[i + 1]!);
+    const c = point(mesh.positions, order[i + 2]!);
+    area += ((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2;
   }
-
-  // bounds
-  const ours = bounds(mesh.positions);
-  const theirs = bounds(threePos);
-  for (let c = 0; c < 3; c += 1) {
-    expect(ours.min[c], `${name}: bounds.min[${c}]`).toBeCloseTo(theirs.min[c]!, 6);
-    expect(ours.max[c], `${name}: bounds.max[${c}]`).toBeCloseTo(theirs.max[c]!, 6);
+  return area;
+}
+function expectUnitNormals(mesh: ParityMesh): void {
+  expect(mesh.normals).toBeDefined();
+  for (let i = 0; i < mesh.normals!.length; i += 3) {
+    expect(Math.hypot(mesh.normals![i]!, mesh.normals![i + 1]!, mesh.normals![i + 2]!)).toBeCloseTo(1, 5);
   }
-
-  // positions within 1e-6
-  for (let i = 0; i < threePos.length; i += 1) {
-    expect(Math.abs(mesh.positions[i]! - threePos[i]!), `${name}: position[${i}]`).toBeLessThanOrEqual(EPS);
+}
+function expectOutwardWinding(mesh: ParityMesh): void {
+  const order = mesh.indices ?? Array.from({ length: mesh.positions.length / 3 }, (_, i) => i);
+  for (let i = 0; i < order.length; i += 3) {
+    const a = point(mesh.positions, order[i]!);
+    const b = point(mesh.positions, order[i + 1]!);
+    const c = point(mesh.positions, order[i + 2]!);
+    const ab = b.map((v, k) => v - a[k]!);
+    const ac = c.map((v, k) => v - a[k]!);
+    const cross = [ab[1]! * ac[2]! - ab[2]! * ac[1]!, ab[2]! * ac[0]! - ab[0]! * ac[2]!, ab[0]! * ac[1]! - ab[1]! * ac[0]!];
+    // A collapsed edge can be intentional when the rounding radius reaches an axis.
+    if (Math.hypot(...cross) < 1e-10) continue;
+    const normal = point(mesh.normals!, order[i]!);
+    expect(cross[0]! * normal[0] + cross[1]! * normal[1] + cross[2]! * normal[2]).toBeGreaterThan(0);
   }
-
-  // uvs within 1e-6
-  if (threeUv !== undefined && mesh.uvs !== undefined) {
-    expect(mesh.uvs.length, `${name}: uv component count`).toBe(threeUv.length);
-    for (let i = 0; i < threeUv.length; i += 1) {
-      expect(Math.abs(mesh.uvs[i]! - threeUv[i]!), `${name}: uv[${i}]`).toBeLessThanOrEqual(EPS);
-    }
-  }
-
-  // index order exact
-  if (threeIdx !== undefined && mesh.indices !== undefined) {
-    for (let i = 0; i < threeIdx.length; i += 1) {
-      expect(mesh.indices[i], `${name}: index[${i}]`).toBe(threeIdx[i]);
-    }
+}
+function expectNormalsAwayFrom(mesh: ParityMesh, center: readonly number[]): void {
+  for (let i = 0; i < mesh.positions.length; i += 9) {
+    const centroid = [0, 1, 2].map((axis) => (mesh.positions[i + axis]! + mesh.positions[i + axis + 3]! + mesh.positions[i + axis + 6]!) / 3);
+    const normal = mesh.normals!.slice(i, i + 3);
+    expect(centroid.reduce((sum, value, axis) => sum + (value - center[axis]!) * normal[axis]!, 0)).toBeGreaterThan(0);
   }
 }
 
-function assertNormalsParity(name: string, mesh: ParityMesh, geo: THREE.BufferGeometry, eps = 1e-5): void {
-  if (!mesh.normals) return;
-  const threeNor = arr((geo.getAttribute("normal") as THREE.BufferAttribute).array);
-  expect(mesh.normals.length, `${name}: normal component count`).toBe(threeNor.length);
-  for (let i = 0; i < threeNor.length; i += 1) {
-    expect(Math.abs(mesh.normals[i]! - threeNor[i]!), `${name}: normal[${i}]`).toBeLessThanOrEqual(eps);
-  }
-}
-
-describe("SG-03 primitive parity vs three 0.185.1", () => {
-  it("cone ×3 param sets", () => {
-    assertParity("cone(1,2,8,2)", coneParityMesh({ radius: 1, height: 2, radialSegments: 8, heightSegments: 2 }), new THREE.ConeGeometry(1, 2, 8, 2));
-    assertParity("cone(0.5,1,32,1,open)", coneParityMesh({ radius: 0.5, height: 1, radialSegments: 32, heightSegments: 1, openEnded: true }), new THREE.ConeGeometry(0.5, 1, 32, 1, true));
-    assertParity("cone(2,3,5,4,θ)", coneParityMesh({ radius: 2, height: 3, radialSegments: 5, heightSegments: 4, thetaStart: 0.5, thetaLength: 4 }), new THREE.ConeGeometry(2, 3, 5, 4, false, 0.5, 4));
-    assertNormalsParity("cone(1,2,8,2)", coneParityMesh({ radius: 1, height: 2, radialSegments: 8, heightSegments: 2 }), new THREE.ConeGeometry(1, 2, 8, 2));
-  });
-
-  it("circle ×3 param sets", () => {
-    assertParity("circle(1,16)", circleParityMesh({ radius: 1, segments: 16 }), new THREE.CircleGeometry(1, 16));
-    assertParity("circle(2.5,8,0.3,4)", circleParityMesh({ radius: 2.5, segments: 8, thetaStart: 0.3, thetaLength: 4 }), new THREE.CircleGeometry(2.5, 8, 0.3, 4));
-    assertParity("circle(0.5,64)", circleParityMesh({ radius: 0.5, segments: 64 }), new THREE.CircleGeometry(0.5, 64));
-  });
-
-  it("ring ×3 param sets", () => {
-    assertParity("ring(0.5,1,8)", ringParityMesh({ innerRadius: 0.5, outerRadius: 1, thetaSegments: 8 }), new THREE.RingGeometry(0.5, 1, 8));
-    assertParity("ring(0.2,2,16,3,0.4,5)", ringParityMesh({ innerRadius: 0.2, outerRadius: 2, thetaSegments: 16, phiSegments: 3, thetaStart: 0.4, thetaLength: 5 }), new THREE.RingGeometry(0.2, 2, 16, 3, 0.4, 5));
-    assertParity("ring(1,1.5,32,2)", ringParityMesh({ innerRadius: 1, outerRadius: 1.5, thetaSegments: 32, phiSegments: 2 }), new THREE.RingGeometry(1, 1.5, 32, 2));
-  });
-
-  it("torusKnot ×3 param sets", () => {
-    assertParity("torusKnot(1,0.4,64,8)", torusKnotParityMesh({ radius: 1, tube: 0.4, tubularSegments: 64, radialSegments: 8 }), new THREE.TorusKnotGeometry(1, 0.4, 64, 8));
-    assertParity("torusKnot(0.7,0.2,48,6,3,4)", torusKnotParityMesh({ radius: 0.7, tube: 0.2, tubularSegments: 48, radialSegments: 6, p: 3, q: 4 }), new THREE.TorusKnotGeometry(0.7, 0.2, 48, 6, 3, 4));
-    assertParity("torusKnot(2,0.5,24,10,4,5)", torusKnotParityMesh({ radius: 2, tube: 0.5, tubularSegments: 24, radialSegments: 10, p: 4, q: 5 }), new THREE.TorusKnotGeometry(2, 0.5, 24, 10, 4, 5));
-  });
-
-  const variants: Record<PolyhedronVariant, (r: number, d: number) => THREE.BufferGeometry> = {
-    tetrahedron: (r, d) => new THREE.TetrahedronGeometry(r, d),
-    octahedron: (r, d) => new THREE.OctahedronGeometry(r, d),
-    icosahedron: (r, d) => new THREE.IcosahedronGeometry(r, d),
-    dodecahedron: (r, d) => new THREE.DodecahedronGeometry(r, d)
-  };
-
-  it.each(Object.keys(variants) as PolyhedronVariant[])("polyhedron %s ×3 param sets", (variant) => {
-    const make = variants[variant];
-    for (const [radius, detail] of [[1, 0], [0.7, 2], [1.5, 3]] as const) {
-      const mesh = polyhedronParityMesh({ radius, detail, variant });
-      const geo = make(radius, detail);
-      assertParity(`polyhedron(${variant},${radius},${detail})`, mesh, geo);
-      assertNormalsParity(`polyhedron(${variant},${radius},${detail})`, mesh, geo);
+describe("native disk, ring, cylinder and lathe contracts", () => {
+  it("constructs circular sectors with the requested endpoints, winding and UVs", () => {
+    for (const segments of [3, 8, 32]) {
+      const mesh = circleParityMesh({ radius: 2, segments, thetaStart: 0, thetaLength: Math.PI / 2 });
+      checkMesh(mesh);
+      expect(mesh.positions.length / 3).toBe(segments + 2);
+      expect(mesh.indices).toHaveLength(3 * segments);
+      expectPoint(point(mesh.positions, 1), [2, 0, 0]);
+      expectPoint(point(mesh.positions, segments + 1), [0, 2, 0]);
+      expectPoint(mesh.uvs!.slice(0, 2), [0.5, 0.5]);
+      expect(triangleXYArea(mesh)).toBeGreaterThan(0);
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
     }
+    const offset = circleParityMesh({ radius: 2.5, segments: 8, thetaStart: 0.3, thetaLength: 4 });
+    expectPoint(point(offset.positions, 1), [2.5 * Math.cos(0.3), 2.5 * Math.sin(0.3), 0]);
+    expectPoint(point(offset.positions, 9), [2.5 * Math.cos(4.3), 2.5 * Math.sin(4.3), 0]);
+    checkMesh(circleParityMesh({ radius: 0 }));
   });
 
-  it("roundedBox ×3 param sets", () => {
-    assertParity("roundedBox(1,1,1,2,0.1)", roundedBoxParityMesh({ width: 1, height: 1, depth: 1, segments: 2, radius: 0.1 }), new RoundedBoxGeometry(1, 1, 1, 2, 0.1));
-    assertParity("roundedBox(2,1,0.5,3,0.2)", roundedBoxParityMesh({ width: 2, height: 1, depth: 0.5, segments: 3, radius: 0.2 }), new RoundedBoxGeometry(2, 1, 0.5, 3, 0.2));
-    assertParity("roundedBox(1.5,2,1,4,0.15)", roundedBoxParityMesh({ width: 1.5, height: 2, depth: 1, segments: 4, radius: 0.15 }), new RoundedBoxGeometry(1.5, 2, 1, 4, 0.15));
+  it("constructs annular sectors with radial subdivision and positive winding", () => {
+    for (const [thetaSegments, phiSegments] of [[4, 1], [8, 3], [16, 2]] as const) {
+      const mesh = ringParityMesh({ innerRadius: 1, outerRadius: 2, thetaSegments, phiSegments, thetaLength: Math.PI / 2 });
+      checkMesh(mesh);
+      expect(mesh.positions.length / 3).toBe((thetaSegments + 1) * (phiSegments + 1));
+      expect(mesh.indices).toHaveLength(thetaSegments * phiSegments * 6);
+      expectPoint(point(mesh.positions, 0), [1, 0, 0]);
+      expectPoint(point(mesh.positions, thetaSegments), [0, 1, 0]);
+      expect(triangleXYArea(mesh)).toBeGreaterThan(0);
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+    }
+    const offset = ringParityMesh({ innerRadius: 0.2, outerRadius: 2, thetaSegments: 16, phiSegments: 3, thetaStart: 0.4, thetaLength: 5 });
+    expectPoint(point(offset.positions, 0), [0.2 * Math.cos(0.4), 0.2 * Math.sin(0.4), 0]);
+    expectPoint(point(offset.positions, 16), [0.2 * Math.cos(5.4), 0.2 * Math.sin(5.4), 0]);
+  });
+
+  it("emits correctly grouped cylinder sides and caps, including open and tapered cases", () => {
+    for (const radialSegments of [3, 8, 17]) {
+      const mesh = cylinderParityMesh({ radiusTop: 1, radiusBottom: 1, height: 2, radialSegments, heightSegments: 2 });
+      checkMesh(mesh);
+      expect(mesh.groups?.map((g) => g.count)).toEqual([radialSegments * 12, radialSegments * 3, radialSegments * 3]);
+      expect(mesh.indices).toHaveLength(radialSegments * 18);
+      expect(mesh.groups!.map((g) => g.start)).toEqual([0, radialSegments * 12, radialSegments * 15]);
+      expect(parityMeshToGeometry(mesh).groups).toEqual(mesh.groups);
+      expect(bounds(mesh.positions).min[1]).toBeCloseTo(-1);
+      expect(bounds(mesh.positions).max[1]).toBeCloseTo(1);
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+      const open = cylinderParityMesh({ radialSegments, openEnded: true });
+      expect(open.groups).toHaveLength(1);
+      expect(open.indices).toHaveLength(radialSegments * 6);
+      const cone = coneParityMesh({ radius: 2, height: 3, radialSegments });
+      expect(cone.groups?.map((g) => g.count)).toEqual([radialSegments * 3, radialSegments * 3]);
+      checkMesh(cone);
+      expectUnitNormals(cone);
+      expectOutwardWinding(cone);
+    }
+    const partial = cylinderParityMesh({ radiusTop: 0.5, radiusBottom: 1, radialSegments: 5, heightSegments: 4, thetaStart: 0.5, thetaLength: 4, openEnded: true });
+    expectPoint(point(partial.positions, 0), [0.5 * Math.sin(0.5), 0.5, 0.5 * Math.cos(0.5)]);
+    expectPoint(point(partial.positions, 5), [0.5 * Math.sin(4.5), 0.5, 0.5 * Math.cos(4.5)]);
+    expect(partial.groups!.map((g) => g.count)).toEqual([5 * 4 * 6]);
+    expect(coneParityMesh({ radialSegments: 5, heightSegments: 4, openEnded: true }).indices).toHaveLength(5 * (4 * 2 - 1) * 3);
+  });
+
+  it("revolves a profile with matching seam positions and outward normals", () => {
+    for (const segments of [4, 12, 24]) {
+      const mesh = latheParityMesh({ points: [[1, 0], [1, 2]], segments });
+      checkMesh(mesh);
+      expect(mesh.positions.length / 3).toBe((segments + 1) * 2);
+      expect(mesh.indices).toHaveLength(segments * 6);
+      expectPoint(point(mesh.positions, 0), point(mesh.positions, segments * 2));
+      expectPoint(point(mesh.positions, 1), point(mesh.positions, segments * 2 + 1));
+      for (let i = 0; i < mesh.positions.length / 3; i += 1) {
+        const [x, , z] = point(mesh.positions, i);
+        const [nx, ny, nz] = point(mesh.normals!, i);
+        expect(nx * x + nz * z).toBeCloseTo(1, 6);
+        expect(ny).toBeCloseTo(0, 6);
+      }
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+    }
+    const partial = latheParityMesh({ points: [[0.5, 0], [0.5, 2]], segments: 4, phiStart: Math.PI / 2, phiLength: Math.PI });
+    expectPoint(point(partial.positions, 0), [0.5, 0, 0]);
+    expectPoint(point(partial.positions, 8), [-0.5, 0, 0]);
+    expect(() => latheParityMesh({ points: [[1, 0]] })).toThrow();
   });
 });
 
-describe("SG-03 curve/shape primitive parity vs three 0.185.1", () => {
-  const lathePts = [
-    [0, 0], [0.4, 0.1], [0.5, 0.4], [0.2, 0.9], [0.35, 1.2], [0, 1.3]
-  ] as const;
-
-  it("lathe ×3 param sets", () => {
-    const vec2 = lathePts.map((p) => new THREE.Vector2(p[0], p[1]));
-    assertParity("lathe(6pt,12)", latheParityMesh({ points: lathePts as unknown as readonly (readonly [number, number])[], segments: 12 }), new THREE.LatheGeometry(vec2, 12));
-    assertParity("lathe(6pt,24,0.5,4)", latheParityMesh({ points: lathePts as unknown as readonly (readonly [number, number])[], segments: 24, phiStart: 0.5, phiLength: 4 }), new THREE.LatheGeometry(vec2, 24, 0.5, 4));
-    assertParity("lathe(6pt,4,π/2)", latheParityMesh({ points: lathePts as unknown as readonly (readonly [number, number])[], segments: 4, phiStart: Math.PI / 2, phiLength: Math.PI }), new THREE.LatheGeometry(vec2, 4, Math.PI / 2, Math.PI));
+describe("native swept and polyhedral geometry contracts", () => {
+  it("sweeps a constant radius around a line with independent arc-length positions", () => {
+    // Quadratic parameter speed catches an implementation using raw t instead of arc length.
+    const path = { getPoint: (t: number) => ({ x: 0, y: 0, z: 4 * t * t }) };
+    for (const [segments, radial] of [[8, 4], [16, 8], [32, 12]] as const) {
+      const mesh = tubeParityMesh({ path, tubularSegments: segments, radialSegments: radial, radius: 0.25 });
+      checkMesh(mesh);
+      expect(mesh.indices).toHaveLength(segments * radial * 6);
+      expect(mesh.positions.length / 3).toBe((segments + 1) * (radial + 1));
+      for (let row = 0; row <= segments; row += 1) {
+        const first = point(mesh.positions, row * (radial + 1));
+        const last = point(mesh.positions, row * (radial + 1) + radial);
+        expectPoint(first, last);
+        expect(Math.hypot(first[0], first[1])).toBeCloseTo(0.25, 5);
+        expect(first[2]).toBeCloseTo(4 * row / segments, 3);
+      }
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+    }
+    const closedPath = { getPoint: (t: number) => ({ x: Math.cos(t * Math.PI * 2), y: Math.sin(t * Math.PI * 2), z: 0 }) };
+    const closed = tubeParityMesh({ path: closedPath, tubularSegments: 24, radialSegments: 8, radius: 0.1, closed: true });
+    expectPoint(point(closed.positions, 0), point(closed.positions, 24 * 9));
+    expectUnitNormals(closed);
   });
 
-  const star: [number, number][] = [];
-  for (let i = 0; i < 10; i += 1) {
-    const a = (i / 10) * Math.PI * 2;
-    const r = i % 2 === 0 ? 1 : 0.45;
-    star.push([Math.cos(a) * r, Math.sin(a) * r]);
-  }
-  const starShape = new THREE.Shape(star.map((p) => new THREE.Vector2(p[0], p[1])));
-
-  const square: [number, number][] = [[0, 0], [2, 0], [2, 1.5], [1, 1.8], [0, 1.5]];
-  const squareShape = new THREE.Shape(square.map((p) => new THREE.Vector2(p[0], p[1])));
-
-  const outer: [number, number][] = [[0, 0], [4, 0], [4, 3], [0, 3]];
-  const hole: [number, number][] = [[1, 1], [3, 1], [3, 2], [1, 2]];
-  const holedShape = new THREE.Shape(outer.map((p) => new THREE.Vector2(p[0], p[1])));
-  holedShape.holes.push(new THREE.Path(hole.map((p) => new THREE.Vector2(p[0], p[1]))));
-  const holedInput = { points: outer as readonly (readonly [number, number])[], holes: [hole as readonly (readonly [number, number])[]] };
-
-  it("shape ×3 param sets", () => {
-    assertParity("shape(star)", shapeParityMesh({ shape: star }), new THREE.ShapeGeometry(starShape));
-    assertParity("shape(square)", shapeParityMesh({ shape: square }), new THREE.ShapeGeometry(squareShape));
-    assertParity("shape(holed)", shapeParityMesh({ shape: holedInput }), new THREE.ShapeGeometry(holedShape));
-    assertNormalsParity("shape(star)", shapeParityMesh({ shape: star }), new THREE.ShapeGeometry(starShape));
+  it("sweeps the requested tube around a closed torus-knot centerline", () => {
+    const tube = 0.2;
+    const radius = 1.3;
+    const p = 2;
+    const q = 3;
+    for (const [segments, radial] of [[24, 6], [48, 8], [64, 12]] as const) {
+      const mesh = torusKnotParityMesh({ radius, tube, p, q, tubularSegments: segments, radialSegments: radial });
+      checkMesh(mesh);
+      expect(mesh.indices).toHaveLength(segments * radial * 6);
+      for (let row = 0; row <= segments; row += 1) {
+        const t = row / segments;
+        const a = 2 * Math.PI * p * t;
+        const b = 2 * Math.PI * q * t;
+        const center = [radius * (1 + 0.5 * Math.cos(b)) * Math.cos(a), radius * (1 + 0.5 * Math.cos(b)) * Math.sin(a), radius * 0.5 * Math.sin(b)];
+        for (let col = 0; col <= radial; col += 1) {
+          const v = point(mesh.positions, row * (radial + 1) + col);
+          expect(Math.hypot(v[0] - center[0]!, v[1] - center[1]!, v[2] - center[2]!)).toBeCloseTo(tube, 5);
+        }
+        expectPoint(point(mesh.positions, row * (radial + 1)), point(mesh.positions, row * (radial + 1) + radial));
+      }
+      expectPoint(point(mesh.positions, 0), point(mesh.positions, segments * (radial + 1)));
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+    }
+    for (const [p, q] of [[3, 4], [4, 5]] as const) {
+      const mesh = torusKnotParityMesh({ radius: 0.7, tube: 0.2, tubularSegments: 48, radialSegments: 6, p, q });
+      expectPoint(point(mesh.positions, 0), point(mesh.positions, 48 * 7));
+      expectUnitNormals(mesh);
+    }
   });
 
-  it("extrude ×3 param sets", () => {
-    assertParity(
-      "extrude(star,depth1,noBevel)",
-      extrudeParityMesh({ shape: star, depth: 1, steps: 1, bevelEnabled: false }),
-      new THREE.ExtrudeGeometry(starShape, { depth: 1, steps: 1, bevelEnabled: false })
-    );
-    assertParity(
-      "extrude(star,depth2,bevel)",
-      extrudeParityMesh({ shape: star, depth: 2, steps: 2, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.2, bevelSegments: 2 }),
-      new THREE.ExtrudeGeometry(starShape, { depth: 2, steps: 2, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.2, bevelSegments: 2 })
-    );
-    assertParity(
-      "extrude(holed,defaults)",
-      extrudeParityMesh({ shape: holedInput }),
-      new THREE.ExtrudeGeometry(holedShape, {})
-    );
-    assertNormalsParity("extrude(star,depth2,bevel)", extrudeParityMesh({ shape: star, depth: 2, steps: 2, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.2, bevelSegments: 2 }), new THREE.ExtrudeGeometry(starShape, { depth: 2, steps: 2, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.2, bevelSegments: 2 }));
+  it.each([['tetrahedron', 4], ['octahedron', 8], ['icosahedron', 20], ['dodecahedron', 36]] as const)("subdivides %s faces on the requested sphere", (variant: PolyhedronVariant, faces) => {
+    for (const detail of [0, 1, 2]) {
+      const radius = 2;
+      const mesh = polyhedronParityMesh({ variant, detail, radius });
+      checkMesh(mesh);
+      expect(mesh.positions.length / 9).toBe(faces * (detail + 1) ** 2);
+      for (let i = 0; i < mesh.positions.length; i += 3) {
+        expect(Math.hypot(mesh.positions[i]!, mesh.positions[i + 1]!, mesh.positions[i + 2]!)).toBeCloseTo(radius, 5);
+      }
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+      for (let i = 0; i < mesh.uvs!.length; i += 6) {
+        const u = [mesh.uvs![i]!, mesh.uvs![i + 2]!, mesh.uvs![i + 4]!];
+        expect(Math.max(...u) - Math.min(...u)).toBeLessThanOrEqual(0.75);
+      }
+    }
   });
 
-  it("extrude with extrudePath matches three", () => {
-    const pathPoints = [
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0, 0.5, 0.8),
-      new THREE.Vector3(0.4, 1.2, 1.4),
-      new THREE.Vector3(-0.3, 2, 2)
+  it("preserves rounded box extents, unit normals, groups and tessellation", () => {
+    for (const segments of [1, 2, 3]) {
+      const mesh = roundedBoxParityMesh({ width: 2, height: 1.5, depth: 1, radius: 0.2, segments });
+      checkMesh(mesh);
+      expectPoint(bounds(mesh.positions).min, [-1, -0.75, -0.5]);
+      expectPoint(bounds(mesh.positions).max, [1, 0.75, 0.5]);
+      expect(mesh.positions.length / 3).toBe(36 * (2 * segments + 1) ** 2);
+      expect(mesh.groups).toHaveLength(6);
+      expectUnitNormals(mesh);
+      expectOutwardWinding(mesh);
+    }
+    checkMesh(roundedBoxParityMesh({ segments: 0 }));
+    const zero = roundedBoxParityMesh({ width: 2, height: 1, depth: 1, radius: 0, segments: 2 });
+    expectPoint(bounds(zero.positions).min, [-1, -0.5, -0.5]);
+    expectUnitNormals(zero);
+    const clamped = roundedBoxParityMesh({ width: 2, height: 1, depth: 1, radius: 10, segments: 2 });
+    expectPoint(bounds(clamped.positions).max, [1, 0.5, 0.5]);
+    expectOutwardWinding(clamped);
+    expect(() => roundedBoxParityMesh({ radius: -1 })).toThrow();
+    expect(() => polyhedronParityMeshFromBase([0, 0, 0], [1, 2, 3])).toThrow();
+  });
+
+  it("retains all box triangles, face groups and attributes when deindexing", () => {
+    const box = boxParityMesh(2, 1, 3, 2, 1, 1);
+    checkMesh(box);
+    expect(box.groups).toHaveLength(6);
+    expect(box.indices!.length).toBe(60);
+    expect(box.groups!.map((g) => g.materialIndex)).toEqual([0, 1, 2, 3, 4, 5]);
+    const expanded = meshToNonIndexed(box);
+    checkMesh(expanded);
+    expect(expanded.indices).toBeUndefined();
+    expect(expanded.groups).toEqual(box.groups);
+    expect(expanded.positions).toEqual(box.indices!.flatMap((i) => box.positions.slice(i * 3, i * 3 + 3)));
+    expect(expanded.normals).toEqual(box.indices!.flatMap((i) => box.normals!.slice(i * 3, i * 3 + 3)));
+    expect(expanded.uvs).toEqual(box.indices!.flatMap((i) => box.uvs!.slice(i * 2, i * 2 + 2)));
+    expectOutwardWinding(expanded);
+  });
+});
+
+describe("native shapes, extrusion and topology contracts", () => {
+  const outer = [[0, 0], [4, 0], [4, 3], [0, 3]] as const;
+  const hole = [[1, 1], [3, 1], [3, 2], [1, 2]] as const;
+  const shape = { points: outer, holes: [hole] };
+  it("triangulates concave contours and holes with positive winding and exact area", () => {
+    const shapes = [
+      { shape: outer, area: 12 },
+      { shape, area: 10 },
+      { shape: [[0, 0], [2, 0], [2, 1], [1, 0.5], [0, 1]], area: 1.5 }
     ];
-    const pathA = new THREE.CatmullRomCurve3(pathPoints);
-    const pathB = new THREE.CatmullRomCurve3(pathPoints);
-    assertParity(
-      "extrude(square,path,steps6)",
-      extrudeParityMesh({ shape: square, steps: 6, extrudePath: pathA }),
-      new THREE.ExtrudeGeometry(squareShape, { steps: 6, extrudePath: pathB, bevelEnabled: false })
-    );
-  });
-
-  it("tube ×3 param sets", () => {
-    const mkPath = () => new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-1, 0, 0),
-      new THREE.Vector3(-0.5, 0.6, 0.4),
-      new THREE.Vector3(0.4, -0.3, -0.5),
-      new THREE.Vector3(1, 0.2, 0.3)
-    ]);
-    assertParity("tube(cr,32,0.2,8)", tubeParityMesh({ path: mkPath(), tubularSegments: 32, radius: 0.2, radialSegments: 8 }), new THREE.TubeGeometry(mkPath(), 32, 0.2, 8));
-    assertParity("tube(cr,16,0.35,5,closed)", tubeParityMesh({ path: mkPath(), tubularSegments: 16, radius: 0.35, radialSegments: 5, closed: true }), new THREE.TubeGeometry(mkPath(), 16, 0.35, 5, true));
-    assertParity("tube(cr,48,0.1,12)", tubeParityMesh({ path: mkPath(), tubularSegments: 48, radius: 0.1, radialSegments: 12 }), new THREE.TubeGeometry(mkPath(), 48, 0.1, 12));
-    assertNormalsParity("tube(cr,32,0.2,8)", tubeParityMesh({ path: mkPath(), tubularSegments: 32, radius: 0.2, radialSegments: 8 }), new THREE.TubeGeometry(mkPath(), 32, 0.2, 8));
-  });
-});
-
-describe("SG-04 edges/wireframe parity vs three 0.185.1", () => {
-  const boxGeo = new THREE.BoxGeometry(2, 1, 1, 2, 1, 1);
-  const boxPos = arr((boxGeo.getAttribute("position") as THREE.BufferAttribute).array);
-  const boxIdx = arr((boxGeo.getIndex() as THREE.BufferAttribute).array);
-
-  const sphereGeo = new THREE.SphereGeometry(1, 12, 8);
-  const spherePos = arr((sphereGeo.getAttribute("position") as THREE.BufferAttribute).array);
-  const sphereIdx = arr((sphereGeo.getIndex() as THREE.BufferAttribute).array);
-
-  const icosa = new THREE.IcosahedronGeometry(1, 0);
-  const icosaPos = arr((icosa.getAttribute("position") as THREE.BufferAttribute).array);
-
-  it("edges segment counts + positions equal three", () => {
-    for (const angle of [1, 30, 60]) {
-      const ours = edgesParityMesh({ positions: boxPos, indices: boxIdx }, angle);
-      const theirs = new THREE.EdgesGeometry(boxGeo, angle);
-      const theirPos = arr((theirs.getAttribute("position") as THREE.BufferAttribute).array);
-      expect(ours.positions.length, `edges(box,${angle}) vertex count`).toBe(theirPos.length);
-      for (let i = 0; i < theirPos.length; i += 1) {
-        expect(Math.abs(ours.positions[i]! - theirPos[i]!), `edges(box,${angle}) pos[${i}]`).toBeLessThanOrEqual(EPS);
-      }
+    for (const fixture of shapes) {
+      const mesh = shapeParityMesh({ shape: fixture.shape });
+      checkMesh(mesh);
+      expect(triangleXYArea(mesh)).toBeCloseTo(fixture.area, 6);
+      expectUnitNormals(mesh);
     }
-    // non-indexed input path
-    const oursN = edgesParityMesh({ positions: icosaPos }, 1);
-    const theirsN = new THREE.EdgesGeometry(icosa, 1);
-    const theirN = arr((theirsN.getAttribute("position") as THREE.BufferAttribute).array);
-    expect(oursN.positions.length).toBe(theirN.length);
+    const multi = shapeParityMesh({ shape: { points: [[0,0], [8,0], [8,6], [5,6], [5,4], [3,4], [3,6], [0,6]], holes: [[[1,1], [2,1], [2,2], [1,2]], [[6,1], [7,1], [7,3], [6,3]]] } });
+    expect(triangleXYArea(multi)).toBeCloseTo(41, 6);
+    checkMesh(multi);
+    const coords = [0,0,9, 4,0,9, 4,3,9, 0,3,9, 1,1,9, 3,1,9, 3,2,9, 1,2,9];
+    const triangles = earcut(coords, [4], 3);
+    expect(triangles.length).toBeGreaterThan(0);
+    expect(triangles.every((i) => Number.isInteger(i) && i >= 0 && i < 8)).toBe(true);
+    const fromStride: ParityMesh = { positions: Array.from({ length: 8 }, (_, i) => [coords[3*i]!, coords[3*i+1]!, 0]).flat(), indices: triangles };
+    expect(triangleXYArea(fromStride)).toBeCloseTo(10, 6);
+    expect(() => shapeParityMesh({ shape: { points: outer, holes: [[[6,6], [7,6], [7,7], [6,7]]] } })).toThrow(/inside|hole/i);
   });
 
-  it("wireframe segment counts + positions equal three", () => {
-    const ours = wireframeParityMesh({ positions: boxPos, indices: boxIdx });
-    const theirs = new THREE.WireframeGeometry(boxGeo);
-    const theirPos = arr((theirs.getAttribute("position") as THREE.BufferAttribute).array);
-    expect(ours.positions.length).toBe(theirPos.length);
-    for (let i = 0; i < theirPos.length; i += 1) {
-      expect(Math.abs(ours.positions[i]! - theirPos[i]!), `wireframe(box) pos[${i}]`).toBeLessThanOrEqual(EPS);
+  it("transports orthonormal curve frames and handles a zero-length curve safely", () => {
+    const curve = new Curve3Adapter((t) => new Vector3(Math.cos(t), Math.sin(t), t));
+    const frames = curve.computeFrenetFrames(12, false);
+    for (let i = 0; i <= 12; i += 1) {
+      const tangent = frames.tangents[i]!;
+      const normal = frames.normals[i]!;
+      const binormal = frames.binormals[i]!;
+      expect(tangent.length()).toBeCloseTo(1, 6);
+      expect(normal.length()).toBeCloseTo(1, 6);
+      expect(binormal.length()).toBeCloseTo(1, 6);
+      expect(tangent.dot(normal)).toBeCloseTo(0, 6);
+      expect(tangent.dot(binormal)).toBeCloseTo(0, 6);
+      expect(normal.dot(binormal)).toBeCloseTo(0, 6);
     }
-
-    const oursS = wireframeParityMesh({ positions: spherePos, indices: sphereIdx });
-    const theirsS = new THREE.WireframeGeometry(sphereGeo);
-    const theirS = arr((theirsS.getAttribute("position") as THREE.BufferAttribute).array);
-    expect(oursS.positions.length).toBe(theirS.length);
-
-    const oursN = wireframeParityMesh({ positions: icosaPos });
-    const theirsN = new THREE.WireframeGeometry(icosa);
-    const theirN = arr((theirsN.getAttribute("position") as THREE.BufferAttribute).array);
-    expect(oursN.positions.length).toBe(theirN.length);
+    const fixed = new Curve3Adapter(() => new Vector3(1, 2, 3));
+    expect(fixed.getLength()).toBe(0);
+    expect(fixed.getPointAt(0.5).toArray()).toEqual([1, 2, 3]);
+    const stationary = tubeParityMesh({ path: fixed, tubularSegments: 4, radialSegments: 4 });
+    checkMesh(stationary);
+    expectPoint(point(stationary.positions, 0), point(stationary.positions, 4 * 5));
+    expectUnitNormals(stationary);
+    const loop = new Curve3Adapter((t) => new Vector3(Math.cos(2 * Math.PI * t), Math.sin(2 * Math.PI * t), 0.2 * Math.sin(4 * Math.PI * t)));
+    const loopFrames = loop.computeFrenetFrames(32, true);
+    expectPoint(loopFrames.normals[0]!.toArray(), loopFrames.normals[32]!.toArray(), 5);
+    expectPoint(loopFrames.binormals[0]!.toArray(), loopFrames.binormals[32]!.toArray(), 5);
   });
-});
 
-describe("AD-07 convex geometry parity vs three 0.185.1 (L2-07)", () => {
-  function seededPoints(seed: number, count: number, scale: number): THREE.Vector3[] {
-    let st = seed >>> 0;
-    const rand = (): number => {
-      st = (st + 0x6d2b79f5) >>> 0;
-      let t = st;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-    const out: THREE.Vector3[] = [];
-    for (let i = 0; i < count; i += 1) out.push(new THREE.Vector3((rand() * 2 - 1) * scale, (rand() * 2 - 1) * scale, (rand() * 2 - 1) * scale));
-    return out;
-  }
+  it("builds caps and sidewalls, including bevels on straight and path extrusions", () => {
+    const square = [[0, 0], [2, 0], [2, 1], [0, 1]] as const;
+    const flat = extrudeParityMesh({ shape: square, depth: 2, steps: 1, bevelEnabled: false });
+    checkMesh(flat);
+    expect(flat.positions.length / 3).toBe(36);
+    expectPoint(bounds(flat.positions).min, [0, 0, 0]);
+    expectPoint(bounds(flat.positions).max, [2, 1, 2]);
+    expect(flat.groups).toHaveLength(2);
+    expect(flat.groups!.reduce((sum, g) => sum + g.count, 0)).toBe(36);
+    expect(parityMeshToGeometry(flat).groups).toEqual(flat.groups);
+    expect(flat.normals!.some((n, i) => i % 3 === 2 && n < -0.99)).toBe(true);
+    expect(flat.normals!.some((n, i) => i % 3 === 2 && n > 0.99)).toBe(true);
+    expectUnitNormals(flat);
+    expectNormalsAwayFrom(flat, [1, 0.5, 1]);
+    const bevel = extrudeParityMesh({ shape: square, depth: 2, steps: 1, bevelEnabled: true, bevelThickness: 0.2, bevelSize: 0.1, bevelSegments: 2 });
+    checkMesh(bevel);
+    expect(bevel.positions.length).toBeGreaterThan(flat.positions.length);
+    expect(bounds(bevel.positions).min[2]).toBeCloseTo(-0.2);
+    expect(bounds(bevel.positions).max[2]).toBeCloseTo(2.2);
+    const holed = extrudeParityMesh({ shape, depth: 1, bevelEnabled: false });
+    checkMesh(holed);
+    expect(holed.positions.length).toBeGreaterThan(flat.positions.length);
+    const capCount = holed.groups![0]!.count;
+    const capHalf = capCount / 2;
+    const cap1: ParityMesh = { positions: holed.positions.slice(0, capHalf * 3) };
+    const cap2: ParityMesh = { positions: holed.positions.slice(capHalf * 3, capCount * 3) };
+    expect(Math.abs(triangleXYArea(cap1))).toBeCloseTo(10, 6);
+    expect(Math.abs(triangleXYArea(cap2))).toBeCloseTo(10, 6);
+    const path = { getPoint: (t: number) => ({ x: 0, y: 0, z: 2 * t }) };
+    const sweep = extrudeParityMesh({ shape: square, extrudePath: path, steps: 4, bevelEnabled: false });
+    checkMesh(sweep);
+    expect(sweep.positions.length).toBeGreaterThan(flat.positions.length);
+    const bevelSweep = extrudeParityMesh({ shape: square, extrudePath: path, steps: 4, bevelEnabled: true, bevelSize: 0.1, bevelThickness: 0.2, bevelSegments: 2 });
+    checkMesh(bevelSweep);
+    expect(bounds(bevelSweep.positions).min[2]).toBeCloseTo(-0.2);
+    expect(bounds(bevelSweep.positions).max[2]).toBeCloseTo(2.2);
+    expect(bevelSweep.positions.length).toBeGreaterThan(sweep.positions.length);
+    const negative = extrudeParityMesh({ shape: square, depth: -2, steps: 1, bevelEnabled: false });
+    expectPoint(bounds(negative.positions).min, [0, 0, -2]);
+    expectPoint(bounds(negative.positions).max, [2, 1, 0]);
+    expectUnitNormals(negative);
+    expectOutwardWinding(negative);
+    expectNormalsAwayFrom(negative, [1, 0.5, -1]);
+    expect(() => extrudeParityMesh({ shape: [[0,0], [1,0], [2,0]], bevelEnabled: false })).toThrow(/area|ring/i);
+  });
 
-  for (const [seed, count, scale] of [[0x1c0de, 1000, 10], [0xbeef, 64, 3], [0x5eed, 300, 25]] as const) {
-    it(`convexParityMesh ${count} pts: vertex count, normals and positions equal ConvexGeometry`, () => {
-      const pts = seededPoints(seed, count, scale);
-      const theirs = new ConvexGeometry(pts);
-      const theirPos = arr((theirs.getAttribute("position") as THREE.BufferAttribute).array);
-      const theirNorm = arr((theirs.getAttribute("normal") as THREE.BufferAttribute).array);
-      const ours = convexParityMesh({ points: pts.map((p) => [p.x, p.y, p.z] as const) });
-      expect(theirPos.length).toBeGreaterThan(0);
-      expect(ours.positions.length).toBe(theirPos.length);
-      expect(ours.normals!.length).toBe(theirNorm.length);
-      expect(ours.indices).toBeUndefined();
-      for (let i = 0; i < theirPos.length; i += 1) {
-        expect(Math.abs(ours.positions[i]! - theirPos[i]!), `pos[${i}]`).toBeLessThanOrEqual(EPS);
-        expect(Math.abs(ours.normals![i]! - theirNorm[i]!), `normal[${i}]`).toBeLessThanOrEqual(EPS);
-      }
-      const ob = bounds(ours.positions);
-      const tb = bounds(theirPos);
-      for (let c = 0; c < 3; c += 1) {
-        expect(Math.abs(ob.min[c]! - tb.min[c]!)).toBeLessThanOrEqual(EPS);
-        expect(Math.abs(ob.max[c]! - tb.max[c]!)).toBeLessThanOrEqual(EPS);
-      }
-    });
-  }
+  it("finds only boundary and creased edges while retaining all unique wireframe edges", () => {
+    const positions = [0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0];
+    const indices = [0, 1, 2, 0, 2, 3];
+    const expanded = indices.flatMap((i) => positions.slice(i * 3, i * 3 + 3));
+    for (const input of [{ positions, indices }, { positions: expanded }]) {
+      expect(edgesParityMesh(input, 1).positions).toHaveLength(4 * 6);
+      expect(wireframeParityMesh(input).positions).toHaveLength(5 * 6);
+    }
+    expect(wireframeParityMesh({ positions, indices, groups: [{ start: 0, count: 3 }] }).positions).toHaveLength(3 * 6);
+    const corner = { positions: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], indices: [0, 1, 2, 1, 0, 3] };
+    expect(edgesParityMesh(corner, 45).positions).toHaveLength(5 * 6);
+    expect(edgesParityMesh(corner, 120).positions).toHaveLength(4 * 6);
+  });
 
-  it("geometry.convex returns a non-indexed custom-geometry spec with the same counts", () => {
-    const pts = seededPoints(0x1c0de, 1000, 10);
-    const theirs = new ConvexGeometry(pts);
-    const spec = geometry.convex(pts.map((p) => ({ x: p.x, y: p.y, z: p.z })));
-    const flat = normalizeGeometryAttributes(spec);
+  it("constructs a closed convex hull, discarding duplicate/interior points and orienting faces outward", () => {
+    const corners = [[-1,-1,-1], [1,-1,-1], [-1,1,-1], [1,1,-1], [-1,-1,1], [1,-1,1], [-1,1,1], [1,1,1]] as const;
+    const mesh = convexParityMesh({ points: [...corners, [0, 0, 0], corners[0]] });
+    checkMesh(mesh);
+    expect(mesh.indices).toBeUndefined();
+    expect(mesh.positions.length / 9).toBe(12);
+    expectPoint(bounds(mesh.positions).min, [-1, -1, -1]);
+    expectPoint(bounds(mesh.positions).max, [1, 1, 1]);
+    expectUnitNormals(mesh);
+    for (let i = 0; i < mesh.positions.length; i += 9) {
+      const c = [0, 1, 2].map((axis) => (mesh.positions[i + axis]! + mesh.positions[i + axis + 3]! + mesh.positions[i + axis + 6]!) / 3);
+      expect(c[0]! * mesh.normals![i]! + c[1]! * mesh.normals![i + 1]! + c[2]! * mesh.normals![i + 2]!).toBeGreaterThan(0);
+    }
+    const spec = geometry.convex(corners);
     expect(spec.kind).toBe("aura-custom-geometry");
-    expect(flat.positions.length).toBe((theirs.getAttribute("position") as THREE.BufferAttribute).array.length);
-    expect(flat.indices?.length ?? 0).toBe(0);
+    expect(normalizeGeometryAttributes(spec).positions).toHaveLength(mesh.positions.length);
+    expect(() => geometry.convex([[0,0,0], [1,0,0], [0,1,0]])).toThrow(/at least four/);
+    expect(() => geometry.convex([[0,0,0], [1,0,0], [2,0,0], [3,0,0]])).toThrow();
+    const tetra = convexParityMesh({ points: [[0,0,0], [1,0,0], [0,1,0], [0,0,1]] });
+    expect(tetra.positions.length / 9).toBe(4);
+    expectUnitNormals(tetra);
   });
 
-  it("geometry.convex rejects <4 and degenerate input", () => {
-    expect(() => geometry.convex([[0, 0, 0], [1, 0, 0], [0, 1, 0]])).toThrow(/at least four/);
-    expect(() => geometry.convex([[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0]])).toThrow();
+  it.each([[0x1c0de, 1000, 10], [0xbeef, 64, 3], [0x5eed, 300, 25]] as const)("encloses a seeded %i cloud with %i points in a closed manifold", (seed, count, scale) => {
+    let state: number = seed;
+    const random = (): number => {
+      state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+      return state / 0x100000000;
+    };
+    const points = Array.from({ length: count }, () => [(random() * 2 - 1) * scale, (random() * 2 - 1) * scale, (random() * 2 - 1) * scale] as const);
+    const hull = convexParityMesh({ points });
+    checkMesh(hull);
+    expect(hull.positions.length).toBeGreaterThan(0);
+    expectUnitNormals(hull);
+    const edgeCounts = new Map<string, number>();
+    const key = (p: readonly number[]): string => p.join(",");
+    for (let i = 0; i < hull.positions.length; i += 9) {
+      const a = hull.positions.slice(i, i + 3);
+      const b = hull.positions.slice(i + 3, i + 6);
+      const c = hull.positions.slice(i + 6, i + 9);
+      const n = hull.normals!.slice(i, i + 3);
+      for (const input of points) {
+        const distance = (input[0] - a[0]!) * n[0]! + (input[1] - a[1]!) * n[1]! + (input[2] - a[2]!) * n[2]!;
+        expect(distance).toBeLessThanOrEqual(1e-7 * scale);
+      }
+      for (const [u, v] of [[a, b], [b, c], [c, a]]) {
+        const edge = [key(u!), key(v!)].sort().join("|");
+        edgeCounts.set(edge, (edgeCounts.get(edge) ?? 0) + 1);
+      }
+    }
+    expect([...edgeCounts.values()].every((uses) => uses === 2)).toBe(true);
   });
 });
 
-describe("AD-06 geometry.toNonIndexed is public and matches three (R-13)", () => {
-  it("expands positions/normals/uvs exactly like BufferGeometry.toNonIndexed", () => {
-    const box = new THREE.BoxGeometry(2, 1, 1, 2, 2, 1);
-    const spec = geometry.define({
-      positions: arr((box.getAttribute("position") as THREE.BufferAttribute).array),
-      normals: arr((box.getAttribute("normal") as THREE.BufferAttribute).array),
-      uvs: arr((box.getAttribute("uv") as THREE.BufferAttribute).array),
-      indices: arr((box.getIndex() as THREE.BufferAttribute).array)
-    });
-    const theirs = box.toNonIndexed();
-    const ours = normalizeGeometryAttributes(geometry.toNonIndexed(spec));
-    const tp = arr((theirs.getAttribute("position") as THREE.BufferAttribute).array);
-    const tn = arr((theirs.getAttribute("normal") as THREE.BufferAttribute).array);
-    const tu = arr((theirs.getAttribute("uv") as THREE.BufferAttribute).array);
-    expect(ours.positions.length).toBe(tp.length);
-    expect(ours.normals!.length).toBe(tn.length);
-    expect(ours.uvs!.length).toBe(tu.length);
-    expect(ours.indices?.length ?? 0).toBe(0);
-    for (let i = 0; i < tp.length; i += 1) expect(Math.abs(ours.positions[i]! - tp[i]!)).toBeLessThanOrEqual(EPS);
-    for (let i = 0; i < tn.length; i += 1) expect(Math.abs(ours.normals![i]! - tn[i]!)).toBeLessThanOrEqual(EPS);
-    for (let i = 0; i < tu.length; i += 1) expect(Math.abs(ours.uvs![i]! - tu[i]!)).toBeLessThanOrEqual(EPS);
+describe("geometry.toNonIndexed", () => {
+  it("expands positions, normals and UVs in index order without mutating the source", () => {
+    const positions = [0,0,0, 1,0,0, 1,1,0, 0,1,0];
+    const normals = [0,0,1, 0,0,1, 0,0,1, 0,0,1];
+    const uvs = [0,0, 1,0, 1,1, 0,1];
+    const indices = [0,1,2, 0,2,3];
+    const spec = geometry.define({ positions, normals, uvs, indices });
+    const result = normalizeGeometryAttributes(geometry.toNonIndexed(spec));
+    expect(Array.from(result.positions)).toEqual(indices.flatMap((i) => positions.slice(3*i, 3*i+3)));
+    expect(Array.from(result.normals!)).toEqual(indices.flatMap((i) => normals.slice(3*i, 3*i+3)));
+    expect(Array.from(result.uvs!)).toEqual(indices.flatMap((i) => uvs.slice(2*i, 2*i+2)));
+    expect(result.indices?.length ?? 0).toBe(0);
+    expect(indices).toEqual([0,1,2, 0,2,3]);
   });
-
-  it("returns the spec unchanged when already non-indexed", () => {
+  it("returns the existing spec when already non-indexed", () => {
     const spec = geometry.define({ positions: [[0, 0, 0], [1, 0, 0], [0, 1, 0]], indices: [] });
     expect(geometry.toNonIndexed(spec)).toBe(spec);
   });

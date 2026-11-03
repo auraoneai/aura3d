@@ -41,7 +41,8 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
   "@aura3d/assets": {
     "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" },
     "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" },
-    "./vite": { types: "./dist/vite/auraDecoders.d.ts", import: "./dist/vite/auraDecoders.js" }
+    "./vite": { types: "./dist/vite/auraDecoders.d.ts", import: "./dist/vite/auraDecoders.js" },
+    "./vite-client": { types: "./vite-client.d.ts", import: "./vite-client.js" }
   },
   "@aura3d/math": {
     // Mutable three.js-compatible math classes (beat-three.js part 2, WP-2); the root entry stays the immutable classes.
@@ -91,6 +92,7 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
 // than re-exported through the browser-focused @aura3d/engine facade.
 const standaloneRootPackages = new Set([
   "@aura3d/asset-index",
+  "@aura3d/addons",
   "@aura3d/cli",
   "@aura3d/core",
   "@aura3d/debug",
@@ -128,6 +130,10 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
   const violations: ExportViolation[] = [];
   const packages: string[] = [];
   const publicPackages: string[] = [];
+  const registryPath = join(root, "aura.exports.json");
+  const registry = existsSync(registryPath)
+    ? JSON.parse(readFileSync(registryPath, "utf8")) as { paths?: readonly (readonly [string, string, ...unknown[]])[] }
+    : undefined;
 
   for (const dir of packageDirs) {
     const manifestPath = join(dir, "package.json");
@@ -152,7 +158,20 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
     if (!exportsMap || typeof exportsMap !== "object" || !("." in exportsMap)) {
       violations.push({ packageName: name, message: "Package must expose only an explicit \".\" export." });
     } else {
-      const approvedSubpaths = approvedSubpathExports[name] ?? {};
+      const approvedSubpaths: Record<string, ApprovedSubpath> = { ...(approvedSubpathExports[name] ?? {}) };
+      // New opt-in subpaths use the same authoritative registry as dev aliases
+      // and dist generation, rather than a second hand-maintained list.
+      for (const [specifier, source] of registry?.paths ?? []) {
+        if (!specifier.startsWith(`${name}/`)) continue;
+        const sourcePrefix = `packages/${dir.split(/[\\/]/).at(-1)}/src/`;
+        if (!source.startsWith(sourcePrefix) || !source.endsWith('.ts')) continue;
+        const subpath = `.${specifier.slice(name.length)}`;
+        // The registry also carries source-only aliases; their presence does
+        // not make them published exports.
+        if (!(subpath in exportsMap)) continue;
+        const emitted = source.slice(sourcePrefix.length).replace(/\.ts$/, '');
+        approvedSubpaths[subpath] ??= { types: `./dist/${emitted}.d.ts`, import: `./dist/${emitted}.js` };
+      }
       const unapprovedSubpaths = Object.keys(exportsMap).filter((key) => key !== "." && !(key in approvedSubpaths));
       if (unapprovedSubpaths.length > 0) {
         violations.push({ packageName: name, message: `Unapproved package subpath export found: ${unapprovedSubpaths.join(", ")}.` });

@@ -13,6 +13,7 @@
  */
 
 import { VariantPicker, jitter, type Rng } from "./rng";
+import type { AudioFileRequest } from "../AudioFileManager";
 import { clamp, dbToGain } from "./types";
 import type { SoundBiquadLike, SoundGraphContext, SoundNodeLike, SoundSourceLike } from "./types";
 
@@ -21,8 +22,48 @@ export const PRIORITY_RANK: Record<VoicePriority, number> = { critical: 2, norma
 export const priorityOf = (p: VoicePriority | number | undefined): number =>
   typeof p === "number" ? p : PRIORITY_RANK[p ?? "normal"];
 
+/** An asset's complete identity is passed through to the buffer resolver. */
+export interface VoiceAsset {
+  readonly url: string;
+  readonly buffer?: AudioBuffer;
+  readonly id?: string;
+  readonly kind?: string;
+  readonly type?: string;
+  readonly format?: string;
+  readonly license?: string;
+  readonly provenance?: "sample" | "synth";
+  readonly hash?: string;
+  readonly sha256?: string;
+  readonly sizeBytes?: number;
+  readonly integrity?: AudioFileRequest["integrity"];
+  readonly request?: Omit<AudioFileRequest, "input">;
+  readonly variantHashes?: Readonly<Partial<Record<"opus.webm" | "m4a", string>>>;
+  readonly securityContext?: string;
+}
+
+/** Existing URL-only callbacks remain valid; identity-aware consumers use asset. */
+export type VoiceBufferFor = (url: string, asset?: VoiceAsset) => AudioBuffer | undefined;
+export type VoiceBufferLoad = (asset: VoiceAsset, signal?: AbortSignal) => Promise<AudioBuffer | undefined>;
+
+/** Encoded-byte requirements cannot be established by an already decoded buffer. */
+export function voiceAssetHasUnverifiableInlineProof(asset: VoiceAsset): boolean {
+  if (!asset.buffer) return false;
+  const digest = (value: string | undefined): boolean => typeof value === "string" &&
+    (/^sha256[-:]/i.test(value.trim()) || /^[0-9a-f]{64}$/i.test(value.trim()));
+  return digest(asset.hash) || asset.sha256 !== undefined || asset.integrity !== undefined || asset.sizeBytes !== undefined ||
+    asset.variantHashes !== undefined || asset.request?.expectedHash !== undefined ||
+    asset.request?.expectedUrl !== undefined || asset.request?.integrity !== undefined || asset.request?.maxBytes !== undefined;
+}
+
+/** Inline PCM still needs validation when its asset carries policy or typing. */
+export function voiceAssetNeedsValidation(asset: VoiceAsset): boolean {
+  return asset.buffer !== undefined && (voiceAssetHasUnverifiableInlineProof(asset) ||
+    asset.request !== undefined || asset.securityContext !== undefined || asset.kind !== undefined ||
+    asset.type !== undefined || asset.url.includes("{format}"));
+}
+
 export interface VoiceCueSpec {
-  readonly asset?: { readonly url: string } | readonly { readonly url: string }[];
+  readonly asset?: VoiceAsset | readonly VoiceAsset[];
   readonly bus: string;
   readonly volumeDb?: number;
   readonly pitchJitterSemitones?: number;
@@ -49,8 +90,8 @@ export interface VoiceRecord {
 export interface VoicePoolOptions {
   readonly ctx: SoundGraphContext;
   readonly rng: Rng;
-  /** Resolve an asset url to a decoded buffer (async load handled upstream). */
-  readonly bufferFor: (url: string) => AudioBuffer | undefined;
+  /** Resolve the selected asset; async loading is handled upstream. */
+  readonly bufferFor: VoiceBufferFor;
   /** Now in ms — injected for tests. */
   readonly now?: () => number;
   /** Global cap per §17 tier. */
@@ -92,6 +133,15 @@ export class VoicePool {
     };
   }
 
+  /** Select a cue variant once so an asynchronous caller can load that exact asset. */
+  selectAsset(cueId: string, spec: VoiceCueSpec): VoiceAsset | undefined {
+    if (!spec.asset) return undefined;
+    const list: readonly VoiceAsset[] = Array.isArray(spec.asset) ? spec.asset : [spec.asset as VoiceAsset];
+    if (list.length === 0) return undefined;
+    const picker = this.pickerFor(cueId, spec);
+    return list[picker ? picker.next() : 0] ?? list[0];
+  }
+
   /**
    * Allocate a voice for `cueId`. Returns the record plus any steal/eviction
    * performed; `dropped` means the cooldown rejected the play.
@@ -100,7 +150,7 @@ export class VoicePool {
     cueId: string,
     spec: VoiceCueSpec,
     destination: SoundNodeLike,
-    opts: { volumeDb?: number; rate?: number; loop?: boolean } = {}
+    opts: { volumeDb?: number; rate?: number; loop?: boolean; selectedAsset?: VoiceAsset; buffer?: AudioBuffer } = {}
   ): VoiceAllocation {
     const now = this.now();
     const cooldown = spec.cooldownMs ?? 30;
@@ -109,6 +159,12 @@ export class VoicePool {
       this.droppedByCooldown += 1;
       return { dropped: true };
     }
+    const selectedAsset = opts.selectedAsset ?? this.selectAsset(cueId, spec);
+    const unresolvedProof = selectedAsset ? voiceAssetNeedsValidation(selectedAsset) : false;
+    const raw = opts.buffer ?? (unresolvedProof ? undefined : selectedAsset?.buffer) ??
+      (selectedAsset && !unresolvedProof ? this.o.bufferFor(selectedAsset.url, selectedAsset) : undefined);
+    // Do not allocate/start a silent source when an asset has not decoded yet.
+    if ((spec.asset !== undefined || selectedAsset !== undefined) && raw === undefined) return { dropped: true };
     this.lastPlayAt.set(cueId, now);
 
     // Per-cue steal: already at maxVoices → steal oldest of the same cue.
@@ -140,7 +196,6 @@ export class VoicePool {
 
     const source = this.o.ctx.createBufferSource() as unknown as SoundSourceLike;
     const loop = opts.loop ?? spec.loop ?? false;
-    const raw = resolveBuffer(spec.asset, this.pickerFor(cueId, spec), this.o.bufferFor);
     // Loops whose last sample does not meet the first click once per cycle —
     // play a crossfaded copy instead (see seamlessLoopBuffer).
     const buffer = raw !== undefined && loop ? seamlessLoopBuffer(this.o.ctx, raw) : raw;
@@ -262,18 +317,6 @@ const lowestPriorityOldest = (records: Set<VoiceRecord>): VoiceRecord | undefine
     }
   }
   return best;
-};
-
-const resolveBuffer = (
-  asset: VoiceCueSpec["asset"],
-  picker: VariantPicker | undefined,
-  bufferFor: (url: string) => AudioBuffer | undefined
-): AudioBuffer | undefined => {
-  if (!asset) return undefined;
-  const list = Array.isArray(asset) ? asset : [asset];
-  const index = picker ? picker.next() : 0;
-  const chosen = list[index] ?? list[0];
-  return (chosen as { buffer?: AudioBuffer }).buffer ?? bufferFor(chosen.url);
 };
 
 // ---- envelopes + content conditioning --------------------------------------

@@ -34,6 +34,12 @@ export async function createRenderableScene(
   asset: RenderableAsset,
   options: CreateRenderableSceneOptions = {}
 ): Promise<RenderableScene> {
+  // Registered adapters own every scene they build through the format lease.
+  // The built-in glTF adapter recurses with an unregistered payload, so the
+  // existing native glTF path below remains the single resource builder.
+  if ((asset.kind === "native-format" || asset.kind === "gltf") && asset.format) {
+    return asset.format.createRenderableScene(options);
+  }
   const defaults = createAssetRenderDefaults(options.lighting);
   if (asset.kind === "canonical-product-scene") {
     const kit = createCanonicalProductSceneRenderKit({

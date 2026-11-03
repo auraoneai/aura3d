@@ -1,6 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from WebGL2Device.ts; 0 changed logic lines.
 
-import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
+import { getRenderAttachmentIdentity, RenderDeviceError, type RenderTarget } from "../RenderDevice";
+import { getRenderTargetTextureOwner } from "../Texture";
 import type { DeviceProbe } from "../contracts/device";
 import { WebGL2RenderTarget } from "../WebGL2Device";
 import { probeWebGL2Device } from "../quality/DeviceProbe";
@@ -31,6 +32,15 @@ export class WebGL2ReadbackProbe {
         targetId: target.id
       });
     }
+    // Uploading the resolved texture cannot update its multisample renderbuffer.
+    // A later resolve would overwrite the upload, and clearing pending resolve
+    // state would discard changes to the other color or depth attachments.
+    if (target.sampleCount > 1) {
+      throw new RenderDeviceError("Byte pixel uploads to multisampled WebGL2 render targets are unsupported", "WEBGL_MULTISAMPLE_PIXEL_UPLOAD_UNSUPPORTED", {
+        targetId: target.id,
+        sampleCount: target.sampleCount
+      });
+    }
     if (target.colorTexture.format !== "rgba8") {
       throw new RenderDeviceError("Byte pixel uploads are only supported for rgba8 WebGL2 render targets", "INVALID_PIXEL_UPLOAD_FORMAT", {
         targetId: target.id,
@@ -48,7 +58,6 @@ export class WebGL2ReadbackProbe {
     try {
       this.host.gl.bindTexture(this.host.gl.TEXTURE_2D, target.colorHandle);
       this.host.gl.texSubImage2D(this.host.gl.TEXTURE_2D, 0, 0, 0, target.width, target.height, this.host.gl.RGBA, this.host.gl.UNSIGNED_BYTE, pixels);
-      target.needsResolve = false;
     } finally {
       this.host.lifecycle.restoreTextureUnit0(textureUnit0);
     }
@@ -103,14 +112,30 @@ export class WebGL2ReadbackProbe {
     return pixels;
   }
 
-  readFloatPixels(x: number, y: number, width: number, height: number): Float32Array {
+  readFloatPixels(x: number, y: number, width: number, height: number, attachment?: number): Float32Array {
+    return this.readFloatTarget(this.host.activeRenderTarget, x, y, width, height, attachment);
+  }
+
+  /** Read a concrete target without changing the device's active draw target. */
+  readFloatTarget(target: WebGL2RenderTarget | null, x: number, y: number, width: number, height: number, attachment?: number): Float32Array {
     this.host.lifecycle.assertAlive();
-    if (![x, y, width, height].every(Number.isInteger) || x < 0 || y < 0 || width <= 0 || height <= 0) {
+    if (this.host.lifecycle.isDeviceLost()) throw new RenderDeviceError("Render context is lost", "CONTEXT_LOST");
+    if (![x, y, width, height].every(Number.isSafeInteger) || x < 0 || y < 0 || width <= 0 || height <= 0 ||
+        !Number.isSafeInteger(width * height * 4)) {
       throw new RenderDeviceError("Float readback rectangle must be positive and in bounds", "INVALID_READBACK_RECT", { x, y, width, height });
     }
-    const boundsWidth = this.host.activeRenderTarget?.width ?? this.host.gl.drawingBufferWidth;
-    const boundsHeight = this.host.activeRenderTarget?.height ?? this.host.gl.drawingBufferHeight;
-    if (x + width > boundsWidth || y + height > boundsHeight) {
+    if (!target && attachment !== undefined) {
+      throw new RenderDeviceError("Attachment readback requires an active render target", "INVALID_RENDER_ATTACHMENT", { attachment });
+    }
+    const index = attachment ?? 0;
+    const identity = target ? getRenderAttachmentIdentity(target, "color", index) : undefined;
+    if (target && (!this.host.renderTargets.has(target) || target.nativeInvalid ||
+        !identity || getRenderTargetTextureOwner(identity.texture) !== this.host.device)) {
+      throw new RenderDeviceError("Render target is not a live WebGL2 resource owned by this device", "INVALID_RESOURCE", { targetId: target.id });
+    }
+    const boundsWidth = target?.width ?? this.host.gl.drawingBufferWidth;
+    const boundsHeight = target?.height ?? this.host.gl.drawingBufferHeight;
+    if (width > boundsWidth - x || height > boundsHeight - y) {
       throw new RenderDeviceError("Float readback rectangle exceeds framebuffer bounds", "READBACK_OUT_OF_BOUNDS", {
         x,
         y,
@@ -120,32 +145,81 @@ export class WebGL2ReadbackProbe {
         boundsHeight
       });
     }
-    const readTarget = this.host.activeRenderTarget;
-    if (readTarget) {
-      this.host.resolveMultisampleTarget(readTarget);
-      this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.framebuffer);
+    const gl = this.host.gl;
+    const priorError = this.host.lifecycle.readError();
+    if (priorError) {
+      this.host.lifecycle.lastError = priorError;
+      throw new RenderDeviceError("WebGL2 has a pending error before float readback", "WEBGL_FLOAT_READBACK_FAILED", { error: priorError });
     }
-    const pixels = new Float32Array(width * height * 4);
-    // WebGL2 guarantees only one implementation-chosen (format, type) pair per
-    // framebuffer beyond the RGBA/UNSIGNED_BYTE baseline. ANGLE→Metal reports
-    // HALF_FLOAT for rgba16f attachments, where a fixed RGBA/FLOAT readPixels
-    // raises INVALID_OPERATION and the sticky error is later misattributed to
-    // the LDR present pass. Honor the implementation's preferred combination.
-    const readFormat = this.host.gl.getParameter(this.host.gl.IMPLEMENTATION_COLOR_READ_FORMAT) as number;
-    const readType = this.host.gl.getParameter(this.host.gl.IMPLEMENTATION_COLOR_READ_TYPE) as number;
-    if (readFormat === this.host.gl.RGBA && readType === this.host.gl.HALF_FLOAT) {
-      const raw = new Uint16Array(width * height * 4);
-      this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.HALF_FLOAT, raw);
-      for (let i = 0; i < raw.length; i += 1) pixels[i] = halfToFloat(raw[i]!);
-    } else {
-      this.host.gl.readPixels(x, y, width, height, this.host.gl.RGBA, this.host.gl.FLOAT, pixels);
+    if (target) {
+      const neededResolve = target.needsResolve;
+      this.host.resolveMultisampleTarget(target);
+      const resolveError = this.host.lifecycle.readError();
+      if (resolveError || this.host.lifecycle.isDeviceLost()) {
+        if (neededResolve) target.needsResolve = true;
+        this.host.lifecycle.lastError = resolveError;
+        throw new RenderDeviceError("WebGL2 multisample resolve failed before float readback", "WEBGL_FLOAT_READBACK_FAILED", { error: resolveError });
+      }
     }
-    this.host.counters.readbacks += 1;
-    if (readTarget && readTarget.sampleCount > 1) {
-      this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, readTarget.drawFramebuffer);
+    const previousRead = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    const packBuffer = gl.getParameter(gl.PIXEL_PACK_BUFFER_BINDING) as WebGLBuffer | null;
+    const packAlignment = gl.getParameter(gl.PACK_ALIGNMENT) as number;
+    const packRowLength = gl.getParameter(gl.PACK_ROW_LENGTH) as number;
+    const packSkipRows = gl.getParameter(gl.PACK_SKIP_ROWS) as number;
+    const packSkipPixels = gl.getParameter(gl.PACK_SKIP_PIXELS) as number;
+    let previousReadBuffer: GLenum | undefined;
+    try {
+      if (target) {
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.framebuffer);
+        previousReadBuffer = gl.getParameter(gl.READ_BUFFER) as GLenum;
+        gl.readBuffer(gl.COLOR_ATTACHMENT0 + index);
+      }
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+      gl.pixelStorei(gl.PACK_ALIGNMENT, 4);
+      gl.pixelStorei(gl.PACK_ROW_LENGTH, 0);
+      gl.pixelStorei(gl.PACK_SKIP_ROWS, 0);
+      gl.pixelStorei(gl.PACK_SKIP_PIXELS, 0);
+      const pixels = new Float32Array(width * height * 4);
+      if (!identity || identity.format === "rgba8") {
+        const raw = new Uint8Array(pixels.length);
+        gl.readPixels(x, y, width, height, gl.RGBA, gl.UNSIGNED_BYTE, raw);
+        for (let i = 0; i < raw.length; i += 1) pixels[i] = raw[i]! / 255;
+      } else {
+        // Query after selecting the MRT attachment: the implementation pair
+        // can differ between color formats. Never down-convert rgba32f.
+        const readFormat = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_FORMAT) as number;
+        const readType = gl.getParameter(gl.IMPLEMENTATION_COLOR_READ_TYPE) as number;
+        if (readFormat !== gl.RGBA || (readType !== gl.FLOAT &&
+            !(identity.format === "rgba16f" && readType === gl.HALF_FLOAT))) {
+          throw new RenderDeviceError("WebGL2 cannot read this float attachment without losing precision", "WEBGL_FLOAT_READBACK_UNSUPPORTED", {
+            format: identity.format, readFormat, readType
+          });
+        }
+        if (readType === gl.HALF_FLOAT) {
+          const raw = new Uint16Array(pixels.length);
+          gl.readPixels(x, y, width, height, gl.RGBA, gl.HALF_FLOAT, raw);
+          for (let i = 0; i < raw.length; i += 1) pixels[i] = halfToFloat(raw[i]!);
+        } else {
+          gl.readPixels(x, y, width, height, gl.RGBA, gl.FLOAT, pixels);
+        }
+      }
+      const error = this.host.lifecycle.readError();
+      if (error || this.host.lifecycle.isDeviceLost() || target?.disposed || identity?.texture.disposed) {
+        this.host.lifecycle.lastError = error;
+        throw new RenderDeviceError("WebGL2 float readback failed or its source became unavailable", "WEBGL_FLOAT_READBACK_FAILED", { error });
+      }
+      this.host.counters.readbacks += 1;
+      return pixels;
+    } finally {
+      gl.pixelStorei(gl.PACK_ALIGNMENT, packAlignment);
+      gl.pixelStorei(gl.PACK_ROW_LENGTH, packRowLength);
+      gl.pixelStorei(gl.PACK_SKIP_ROWS, packSkipRows);
+      gl.pixelStorei(gl.PACK_SKIP_PIXELS, packSkipPixels);
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, packBuffer);
+      if (previousReadBuffer !== undefined) gl.readBuffer(previousReadBuffer);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, previousRead);
       this.host.stateCache.invalidate();
     }
-    return pixels;
   }
 
   readDepthPixels(x: number, y: number, width: number, height: number): Float32Array {

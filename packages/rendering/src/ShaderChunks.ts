@@ -36,6 +36,10 @@ const float A3D_PI = 3.14159265359;
 const float A3D_INV_PI = 0.31830988618;
 const float A3D_EPSILON = 0.00001;
 const float A3D_MIN_ROUGHNESS = 0.045;
+// Fragment-local controls are initialized to the legacy response. Physical
+// shaders set them once per fragment before evaluating any direct light.
+float a3dPbrDiffuseRoughness = 0.0;
+float a3dPbrRetroreflection = 0.0;
 
 float a3dSaturate(float value) {
   return clamp(value, 0.0, 1.0);
@@ -90,6 +94,23 @@ float a3dDiffuseBurley(float nDotV, float nDotL, float lDotH, float roughness) {
   return lightScatter * viewScatter * energyFactor;
 }
 
+// Bounded Oren–Nayar angular response and optional retroreflection. At zero
+// roughness and zero retroreflection this is exactly one, preserving the
+// existing diffuse model and leaving the specular lobe untouched.
+float a3dPbrDiffuseDetail(vec3 N, vec3 V, vec3 L) {
+  float nl = clamp(dot(N, L), 0.0, 1.0), nv = clamp(dot(N, V), 0.0, 1.0);
+  float sinL = sqrt(max(1.0 - nl * nl, 0.0)), sinV = sqrt(max(1.0 - nv * nv, 0.0));
+  float alignment = 0.0;
+  if (sinL * sinV > A3D_EPSILON) alignment = max(dot(L - N * nl, V - N * nv) / (sinL * sinV), 0.0);
+  float sigma = clamp(a3dPbrDiffuseRoughness, 0.0, 1.0) * (0.5 * A3D_PI);
+  float sigma2 = sigma * sigma;
+  float a = 1.0 - 0.5 * sigma2 / (sigma2 + 0.33);
+  float b = 0.45 * sigma2 / (sigma2 + 0.09);
+  float angular = clamp(a + b * alignment * max(sinL, sinV) * min(sinL, sinV) / max(max(nl, nv), A3D_EPSILON), 0.0, 1.0);
+  float retro = clamp(a3dPbrRetroreflection, 0.0, 1.0);
+  return angular * (1.0 - retro * (1.0 - pow(clamp(dot(L, V), 0.0, 1.0), 8.0)));
+}
+
 vec3 a3dPbrF0(vec3 albedo, float metallic, float specularFactor, vec3 specularColorFactor) {
   vec3 dielectricF0 = vec3(0.04) * clamp(specularFactor, 0.0, 1.0) * clamp(specularColorFactor, vec3(0.0), vec3(1.0));
   return mix(dielectricF0, clamp(albedo, vec3(0.0), vec3(1.0)), clamp(metallic, 0.0, 1.0));
@@ -122,7 +143,7 @@ vec3 a3dPbrDirectLight(
   float G = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, roughness);
   vec3 specular = D * G * F;
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
-  vec3 diffuse = kd * albedo * A3D_INV_PI * a3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0));
+  vec3 diffuse = kd * albedo * A3D_INV_PI * a3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0)) * a3dPbrDiffuseDetail(N, V, L);
   return (diffuse + specular) * lightColor * lightIntensity * nDotL;
 }
 
@@ -146,7 +167,7 @@ vec3 a3dPbrRectAreaLightSample(
   float distanceToSample = length(toSample);
   vec3 lightDirection = distanceToSample > A3D_EPSILON ? toSample / distanceToSample : -normalize(emitterNormal);
   float emitterCosine = max(dot(normalize(emitterNormal), -lightDirection), 0.0);
-  float rangeFalloff = clamp(1.0 - pow(distanceToSample / max(range, A3D_EPSILON), 4.0), 0.0, 1.0);
+  float rangeFalloff = range <= 0.0 ? 1.0 : clamp(1.0 - pow(distanceToSample / max(range, A3D_EPSILON), 4.0), 0.0, 1.0);
   rangeFalloff *= rangeFalloff;
   float irradiance = lightIntensity * sampleArea * emitterCosine * rangeFalloff / max(distanceToSample * distanceToSample, 0.01);
   return a3dPbrDirectLight(
@@ -174,6 +195,7 @@ vec3 a3dPbrRectAreaLight(
   float width,
   float height,
   float range,
+  float twoSided,
   vec3 normal,
   vec3 viewDirection,
   vec3 lightColor,
@@ -184,6 +206,9 @@ vec3 a3dPbrRectAreaLight(
   float specularFactor,
   vec3 specularColorFactor
 ) {
+  // Every sample lies in the same plane, so the emitter faces the receiver
+  // on the back as well only when the light explicitly enables both sides.
+  if (twoSided > 0.5 && dot(emitterNormal, worldPosition - center) < 0.0) emitterNormal = -emitterNormal;
   float quadratureOffset = 0.28867513459;
   vec3 rightOffset = normalize(emitterRight) * width * quadratureOffset;
   vec3 upOffset = normalize(emitterUp) * height * quadratureOffset;

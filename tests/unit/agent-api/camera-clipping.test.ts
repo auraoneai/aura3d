@@ -20,7 +20,14 @@ describe("root camera clipping", () => {
     expect(camera.perspective()).toMatchObject({ near: 0.05, far: 100 });
     expect(createCameraProjection({ mode: "perspective" }, 1)).toEqual(createCameraProjection({ mode: "perspective", near: 0.05, far: 100 }, 1));
   });
-  for (const clipping of [{ near: 0 }, { near: -1 }, { near: NaN }, { far: Infinity }, { far: 0.01 }, { near: 2, far: 2 }]) {
+  it("supports an unbounded perspective far plane", () => {
+    const matrix = createCameraProjection({ mode: "perspective", near: 0.25, far: Infinity }, 1);
+    const ndc = (distance: number) => (-distance * matrix[10]! + matrix[14]!) / (-distance * matrix[11]! + matrix[15]!);
+    expect(matrix.every(Number.isFinite)).toBe(true);
+    expect(ndc(0.25)).toBeCloseTo(-1);
+    expect(ndc(1e12)).toBeCloseTo(1);
+  });
+  for (const clipping of [{ near: 0 }, { near: -1 }, { near: NaN }, { far: -Infinity }, { far: 0.01 }, { near: 2, far: 2 }]) {
     it(`rejects invalid clipping ${JSON.stringify(clipping)}`, () => {
       expect(() => camera.perspective(clipping)).toThrow(RangeError);
       expect(() => scene().camera({ mode: "perspective", ...clipping })).toThrow(RangeError);

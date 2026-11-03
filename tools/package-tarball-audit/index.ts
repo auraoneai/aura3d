@@ -14,7 +14,7 @@ interface PackageTarget {
   readonly requiredBins?: readonly string[];
 }
 
-const targets: readonly PackageTarget[] = [
+const specialTargets: readonly PackageTarget[] = [
   {
     id: "engine-root",
     dir: ".",
@@ -41,6 +41,23 @@ const targets: readonly PackageTarget[] = [
     requiredFiles: ["package.json", "dist/cli.js", "dist/index.js", "dist/index.d.ts", "templates/product-viewer/package.json", "templates/cinematic-scene/package.json", "templates/mini-game/package.json"],
     requiredBins: ["create-aura3d"]
   }
+];
+
+// Audit every published workspace package, not only the four historically
+// sampled packages. Candidate-plan validation separately enforces exact names.
+const knownTargets = new Map(specialTargets.map(target => [target.dir, target]));
+const targets: readonly PackageTarget[] = [
+  specialTargets[0]!,
+  ...readdirSync(resolve('packages'), { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => `packages/${entry.name}`)
+    .filter(dir => existsSync(resolve(dir, 'package.json')))
+    .flatMap(dir => {
+      const manifest = JSON.parse(readFileSync(resolve(dir, 'package.json'), 'utf8')) as { name: string; private?: boolean; bin?: Record<string, string> };
+      if (manifest.private === true) return [];
+      const existing = knownTargets.get(dir);
+      return [existing ?? { id: manifest.name.replace(/^@aura3d\//, '').replaceAll('/', '-'), dir, expectedName: manifest.name, requiredFiles: ['package.json', 'dist/index.js', 'dist/index.d.ts'], requiredBins: Object.keys(manifest.bin ?? {}) }];
+    })
 ];
 
 const disallowedPathPatterns = [/^archive\//, /V[234]PRD\.md$/, /TestV4PlanPRD\.md$/, /\.(png|jpe?g|csv)$/i];

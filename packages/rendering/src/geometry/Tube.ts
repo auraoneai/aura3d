@@ -1,15 +1,3 @@
-/**
- * threejs-parity (§5.2, lane L2-02) — `TubeGeometry` verbatim port.
- *
- * `path.computeFrenetFrames(tubularSegments, closed)` supplies the N/B rings;
- * each segment i emits radialSegments+1 verts with
- * normal = (cos·N + sin·B) (v = j/radialSegments·2π, cos = −cos(v)),
- * vertex = P + radius·normal — plus a duplicated first ring when closed.
- * UVs (i/tubular, j/radial); quad indices (a,b,d)(b,c,d).
- */
-
-import type { Vector3 } from "@aura3d/math";
-import type { Curve } from "@aura3d/math";
 import { resolveCurve3 } from "./Support";
 import type { ParityMesh } from "./Support";
 
@@ -21,69 +9,54 @@ export interface TubeParityParams {
   readonly closed?: boolean;
 }
 
+/** Sweep a circular section along the curve's arc-length and transported frame. */
 export function tubeParityMesh(params: TubeParityParams): ParityMesh {
-  const path: Curve<Vector3> = resolveCurve3(params.path);
-  const tubularSegments = Math.floor(params.tubularSegments ?? 64);
+  const curve = resolveCurve3(params.path);
+  const requestedLength = params.tubularSegments ?? 64;
+  const requestedAround = params.radialSegments ?? 8;
   const radius = params.radius ?? 1;
-  const radialSegments = Math.floor(params.radialSegments ?? 8);
-  const closed = params.closed ?? false;
-
-  const frames = path.computeFrenetFrames(tubularSegments, closed);
-  // computeFrenetFrames returns null for curves without a 3D frame model
-  // (e.g. 2D paths); a tube path is always 3D but the frozen Curve interface
-  // keeps null in the type. Fail loudly rather than write NaN geometry.
-  if (!frames) {
-    throw new Error("tubeParityMesh: path curve does not provide Frenet frames (requires a 3D curve).");
+  if (![requestedLength, requestedAround, radius].every(Number.isFinite)) {
+    throw new RangeError("tubeParityMesh requires finite parameters");
   }
-
-  const indices: number[] = [];
-  const vertices: number[] = [];
+  const length = Math.max(1, Math.floor(requestedLength));
+  const around = Math.max(3, Math.floor(requestedAround));
+  const frames = curve.computeFrenetFrames(length, params.closed ?? false);
+  if (!frames || frames.normals.length <= length || frames.binormals.length <= length) {
+    throw new Error("tubeParityMesh requires a 3D curve with complete Frenet frames");
+  }
+  const positions: number[] = [];
   const normals: number[] = [];
   const uvs: number[] = [];
+  const indices: number[] = [];
+  const stride = around + 1;
 
-  const generateSegment = (i: number): void => {
-    // three samples via getPointAt — arc-length uniform.
-    const P = path.getPointAt(i / tubularSegments);
-    const N = frames.normals[i]!;
-    const B = frames.binormals[i]!;
-    for (let j = 0; j <= radialSegments; j += 1) {
-      const v = (j / radialSegments) * Math.PI * 2;
-      const sin = Math.sin(v);
-      const cos = -Math.cos(v);
-      let nx = cos * N.x + sin * B.x;
-      let ny = cos * N.y + sin * B.y;
-      let nz = cos * N.z + sin * B.z;
-      const nl = Math.hypot(nx, ny, nz);
-      nx /= nl;
-      ny /= nl;
-      nz /= nl;
-      normals.push(nx, ny, nz);
-      vertices.push(P.x + radius * nx, P.y + radius * ny, P.z + radius * nz);
-    }
-  };
-
-  for (let i = 0; i < tubularSegments; i += 1) {
-    generateSegment(i);
-  }
-  // Last row: regular segment when open; duplicate of the first ring when closed.
-  generateSegment(closed === false ? tubularSegments : 0);
-
-  for (let i = 0; i <= tubularSegments; i += 1) {
-    for (let j = 0; j <= radialSegments; j += 1) {
-      uvs.push(i / tubularSegments, j / radialSegments);
+  for (let row = 0; row <= length; row += 1) {
+    const frameIndex = params.closed && row === length ? 0 : row;
+    const center = curve.getPointAt(frameIndex / length);
+    const normal = frames.normals[frameIndex]!;
+    const binormal = frames.binormals[frameIndex]!;
+    for (let col = 0; col <= around; col += 1) {
+      const angle = 2 * Math.PI * col / around;
+      const a = -Math.cos(angle);
+      const b = Math.sin(angle);
+      let x = a * normal.x + b * binormal.x;
+      let y = a * normal.y + b * binormal.y;
+      let z = a * normal.z + b * binormal.z;
+      const norm = Math.hypot(x, y, z);
+      if (!Number.isFinite(norm) || norm === 0 || ![center.x, center.y, center.z].every(Number.isFinite)) {
+        throw new Error("tubeParityMesh requires finite points and nonzero frame vectors");
+      }
+      x /= norm;
+      y /= norm;
+      z /= norm;
+      positions.push(center.x + radius * x, center.y + radius * y, center.z + radius * z);
+      normals.push(x, y, z);
+      uvs.push(row / length, col / around);
+      if (row > 0 && col > 0) {
+        const last = row * stride + col;
+        indices.push(last - stride - 1, last - 1, last - stride, last - 1, last, last - stride);
+      }
     }
   }
-
-  for (let j = 1; j <= tubularSegments; j += 1) {
-    for (let i = 1; i <= radialSegments; i += 1) {
-      const a = (radialSegments + 1) * (j - 1) + (i - 1);
-      const b = (radialSegments + 1) * j + (i - 1);
-      const c = (radialSegments + 1) * j + i;
-      const d = (radialSegments + 1) * (j - 1) + i;
-      indices.push(a, b, d);
-      indices.push(b, c, d);
-    }
-  }
-
-  return { positions: vertices, normals, uvs, indices };
+  return { positions, normals, uvs, indices };
 }

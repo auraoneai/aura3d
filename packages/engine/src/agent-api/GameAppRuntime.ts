@@ -7,7 +7,7 @@ import type {
 import type {
   GameInputController,
   GameInputOptions
-} from "./GameRuntime";
+} from "./GameRuntimeCore.js";
 import type {
   GameRuntimeEvidence,
   GameRuntimeEvidenceOptions
@@ -120,9 +120,11 @@ export interface GameAppRuntime<TApp extends AuraAppHandle = AuraAppHandle> {
    * before submission, so `raf`-sourced callbacks resolve on the following
    * `requestAnimationFrame` tick; `advance()` never resolves it (nothing is
    * presented). Calling again after a resolve returns a promise for the
-   * frame after that — callers re-arm it per `setScene`.
+   * frame after that — callers re-arm it per `setScene`. An optional signal
+   * cancels only this wait. Pending waits reject with `AbortError` when the
+   * runtime is disposed.
    */
-  firstPresentedFrame(): Promise<number>;
+  firstPresentedFrame(options?: { readonly signal?: AbortSignal }): Promise<number>;
   dispose(): GameAppRuntimeEvidence;
 }
 
@@ -184,15 +186,81 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
   const timeController = (): AuraTimeController =>
     (app as { time?: AuraTimeController }).time ?? fallbackTime;
 
-  // firstPresentedFrame: each call registers a waiter resolved on the next
-  // presented frame. `raf`-sourced callbacks precede the submission in the
-  // same task, so they resolve on the following rAF (or a microtask when no
-  // rAF exists); `step()` resolves synchronously after its render.
-  const presentedWaiters = new Set<(frame: number) => void>();
-  const resolvePresented = (frameIndex: number) => {
-    const waiters = [...presentedWaiters];
-    presentedWaiters.clear();
-    for (const waiter of waiters) waiter(frameIndex);
+  // A waiter belongs to the frame that claimed it, not to whichever frame
+  // happens to run the delayed presentation callback. Keep claimed waiters in
+  // the live set so cancellation and disposal can still settle them promptly.
+  interface PresentedWaiter {
+    claimed: boolean;
+    settled: boolean;
+    task?: PresentedRafTask;
+    resolve(frame: number): void;
+    reject(reason: unknown): void;
+    cleanup(): void;
+  }
+  interface PresentedRafTask {
+    active: boolean;
+    handle?: number;
+    cancelWhenAssigned: boolean;
+    readonly waiters: Set<PresentedWaiter>;
+  }
+  const presentedWaiters = new Set<PresentedWaiter>();
+  const pendingPresentationRafs = new Set<PresentedRafTask>();
+  const stepContexts: Array<{ frame?: number }> = [];
+
+  const cancelPresentationRaf = (task: PresentedRafTask): void => {
+    if (task.handle === undefined) {
+      task.cancelWhenAssigned = true;
+    } else if (typeof cancelAnimationFrame === "function") {
+      try { cancelAnimationFrame(task.handle); } catch { /* Cancellation is best effort. */ }
+    }
+  };
+  const detachPresentationTask = (waiter: PresentedWaiter): void => {
+    const task = waiter.task;
+    if (!task) return;
+    waiter.task = undefined;
+    task.waiters.delete(waiter);
+    if (task.active && task.waiters.size === 0) {
+      task.active = false;
+      pendingPresentationRafs.delete(task);
+      cancelPresentationRaf(task);
+    }
+  };
+
+  const claimPresentedWaiters = (): PresentedWaiter[] => {
+    const claimed: PresentedWaiter[] = [];
+    for (const waiter of presentedWaiters) {
+      if (waiter.claimed || waiter.settled) continue;
+      waiter.claimed = true;
+      claimed.push(waiter);
+    }
+    return claimed;
+  };
+  const unclaimPresentedWaiters = (waiters: readonly PresentedWaiter[]): void => {
+    for (const waiter of waiters) if (!waiter.settled) waiter.claimed = false;
+  };
+  const resolvePresented = (waiters: readonly PresentedWaiter[], frameIndex: number): void => {
+    for (const waiter of waiters) {
+      if (waiter.settled) continue;
+      waiter.settled = true;
+      presentedWaiters.delete(waiter);
+      detachPresentationTask(waiter);
+      waiter.cleanup();
+      waiter.resolve(frameIndex);
+    }
+  };
+  const presentStep = (dt: number): void => {
+    const waiters = claimPresentedWaiters();
+    const context: { frame?: number } = {};
+    stepContexts.push(context);
+    try {
+      app.step(dt);
+    } catch (error) {
+      unclaimPresentedWaiters(waiters);
+      throw error;
+    } finally {
+      stepContexts.pop();
+    }
+    resolvePresented(waiters, context.frame ?? app.runtime.frame);
   };
 
   // C-23 (R15, #212): under A3D_QR_CAMERA_LOOP the loop frame advances the
@@ -211,32 +279,65 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
           advance(frame.dt);
           return;
         }
-        app.step(frame.dt);
-        if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
+        presentStep(frame.dt);
       }
   );
   const loopTickUnsubscribe = cameraLoopOn ? loop.onTick(() => {
-    app.step(0);
-    if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
+    presentStep(0);
   }) : undefined;
   const internalFrameUnsubscribe = app.onFrame((frame) => {
+    const context = stepContexts.at(-1);
+    if (context && context.frame === undefined && frame.source !== "raf") context.frame = frame.frame;
+    const rafWaiters = frame.source === "raf" ? claimPresentedWaiters() : [];
     const loopSnapshot = loop.snapshot();
-    for (const input of ownedInputs) input.update(frame.dt);
-    const normalizedFrame: AuraAppFrame = {
-      ...frame,
-      alpha: frame.alpha ?? loopSnapshot.alpha,
-      fixedDt: loopSnapshot.fixedDt,
-      paused: status === "paused" || app.runtime.paused
-    };
-    for (const callback of [...frameCallbacks]) {
-      if (frameCallbacks.has(callback)) callback(normalizedFrame);
+    try {
+      for (const input of ownedInputs) input.update(frame.dt);
+      const normalizedFrame: AuraAppFrame = {
+        ...frame,
+        alpha: frame.alpha ?? loopSnapshot.alpha,
+        fixedDt: loopSnapshot.fixedDt,
+        paused: status === "paused" || app.runtime.paused
+      };
+      for (const callback of [...frameCallbacks]) {
+        if (frameCallbacks.has(callback)) callback(normalizedFrame);
+      }
+    } catch (error) {
+      unclaimPresentedWaiters(rafWaiters);
+      throw error;
     }
-    if (frame.source === "raf" && presentedWaiters.size > 0) {
+    const waitingForRaf = rafWaiters.filter((waiter) => !waiter.settled);
+    if (!disposed && waitingForRaf.length > 0) {
       const presentedIndex = frame.frame;
+      const task: PresentedRafTask = {
+        active: true,
+        cancelWhenAssigned: false,
+        waiters: new Set(waitingForRaf)
+      };
+      for (const waiter of waitingForRaf) waiter.task = task;
+      pendingPresentationRafs.add(task);
+      const finish = (): void => {
+        pendingPresentationRafs.delete(task);
+        if (!task.active) return;
+        task.active = false;
+        const waiters = [...task.waiters];
+        task.waiters.clear();
+        for (const waiter of waiters) waiter.task = undefined;
+        resolvePresented(waiters, presentedIndex);
+      };
       if (typeof requestAnimationFrame === "function") {
-        requestAnimationFrame(() => resolvePresented(presentedIndex));
+        try {
+          task.handle = requestAnimationFrame(finish);
+          if (task.cancelWhenAssigned) cancelPresentationRaf(task);
+        } catch (error) {
+          pendingPresentationRafs.delete(task);
+          task.active = false;
+          for (const waiter of task.waiters) waiter.task = undefined;
+          unclaimPresentedWaiters([...task.waiters]);
+          task.waiters.clear();
+          throw error;
+        }
       } else {
-        queueMicrotask(() => resolvePresented(presentedIndex));
+        queueMicrotask(finish);
       }
     }
   });
@@ -345,7 +446,6 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       stepCount += 1;
       loop.step(Math.max(0, dt));
       if (perfGovernorOptions?.sample) pollPerformance();
-      if (presentedWaiters.size > 0) resolvePresented(app.runtime.frame);
       return snapshotEvidence();
     },
     pollPerformance(telemetry?: GamePerFramePerfTelemetry) {
@@ -400,10 +500,48 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       timeController().scale = Math.min(4, Math.max(0, scale));
       return snapshotEvidence();
     },
-    firstPresentedFrame() {
+    firstPresentedFrame(options) {
       assertAlive("firstPresentedFrame");
-      return new Promise<number>((resolve) => {
-        presentedWaiters.add(resolve);
+      const signal = options?.signal;
+      return new Promise<number>((resolve, reject) => {
+        const waiter: PresentedWaiter = {
+          claimed: false,
+          settled: false,
+          resolve,
+          reject,
+          cleanup: () => {
+            try { signal?.removeEventListener("abort", abort); } catch { /* Settle all waiters even if a signal was replaced. */ }
+          }
+        };
+        const abort = (): void => {
+          if (waiter.settled) return;
+          waiter.settled = true;
+          presentedWaiters.delete(waiter);
+          detachPresentationTask(waiter);
+          waiter.cleanup();
+          const reason = signal?.reason;
+          if (reason !== undefined) reject(reason);
+          else {
+            const error = new Error("Presentation wait was aborted.");
+            error.name = "AbortError";
+            reject(error);
+          }
+        };
+        presentedWaiters.add(waiter);
+        try {
+          if (signal?.aborted) { abort(); return; }
+          signal?.addEventListener("abort", abort, { once: true });
+          // Cover a signal that is aborted during listener registration.
+          if (signal?.aborted) abort();
+        } catch (error) {
+          if (!waiter.settled) {
+            waiter.settled = true;
+            presentedWaiters.delete(waiter);
+            detachPresentationTask(waiter);
+            waiter.cleanup();
+            reject(error);
+          }
+        }
       });
     },
     dispose() {
@@ -411,11 +549,26 @@ export function createGameAppRuntime<TApp extends AuraAppHandle>(
       disposeCount += 1;
       status = "disposed";
       disposed = true;
+      for (const task of pendingPresentationRafs) {
+        task.active = false;
+        for (const waiter of task.waiters) waiter.task = undefined;
+        task.waiters.clear();
+        cancelPresentationRaf(task);
+      }
+      pendingPresentationRafs.clear();
+      for (const waiter of [...presentedWaiters]) {
+        waiter.settled = true;
+        presentedWaiters.delete(waiter);
+        waiter.cleanup();
+        const error = new Error("GameAppRuntime was disposed before a frame was presented.") as Error & { code: string };
+        error.name = "AbortError";
+        error.code = "A3D_GAME_RUNTIME_DISPOSED";
+        waiter.reject(error);
+      }
       loopFrameUnsubscribe();
-    loopTickUnsubscribe?.();
+      loopTickUnsubscribe?.();
       internalFrameUnsubscribe();
       frameCallbacks.clear();
-      presentedWaiters.clear();
       for (const input of ownedInputs) input.dispose();
       loop.dispose();
       app.dispose();

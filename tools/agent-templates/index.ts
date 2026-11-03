@@ -11,6 +11,13 @@ import { lookFloorStaticFindings, TEMPLATE_LOOK_FLOOR } from "./look-floor.mjs";
 import { drift as rootTemplateDrift, mirroredTemplateNames } from "./sync-root-templates.mjs";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
+// A plan or gate path alone cannot authorize this legacy install/browser runner.
+// Keep its installed lifecycle closed until candidate-bound source and isolated
+// installer/browser custody can be verified before any scaffold is removed.
+if (process.env.A3D_TEMPLATE_TARBALL_DIR !== undefined || process.env.A3D_REGISTRY_INSTALL === "1") {
+  throw new Error("INSTALLED_TEMPLATE_CUSTODY_UNAVAILABLE: candidate-bound source, CODE_COMPLETE_GO and isolated installer/browser custody are required");
+}
+
 const exactReleasePlan = loadValidatedReleasePlan();
 const currentPackageVersion = (JSON.parse(readFileSync("package.json", "utf8")) as { version: string }).version;
 const templates = [...CREATE_AURA3D_TEMPLATES];

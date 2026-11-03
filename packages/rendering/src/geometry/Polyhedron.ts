@@ -1,15 +1,4 @@
-/**
- * threejs-parity (§5.2, lane L2-01) — `PolyhedronGeometry` verbatim port,
- * plus the four platonic-solid subclasses (`variant`).
- *
- * Non-indexed output: `subdivide(detail)` pushes per-face vertex triplets in
- * three's exact order, `applyRadius` projects onto the sphere, UVs use the
- * azimuth/inclination mapping with `correctUVs`/`correctSeam`. detail=0 gets
- * flat face normals (`computeVertexNormals` on the non-indexed buffer),
- * detail>0 gets `normalizeNormals` (position direction).
- */
-
-import { computeVertexNormals } from "./Support";
+/** Geometry generator for regular polyhedra and caller-supplied triangular bases. */
 import type { ParityMesh } from "./Support";
 
 export type PolyhedronVariant = "tetrahedron" | "octahedron" | "icosahedron" | "dodecahedron";
@@ -20,204 +9,145 @@ export interface PolyhedronParityParams {
   readonly variant?: PolyhedronVariant;
 }
 
-const TAU = (1 + Math.sqrt(5)) / 2;
-const RTAU = 1 / TAU;
+type Point = readonly [number, number, number];
 
-const BASE: Record<PolyhedronVariant, { readonly vertices: readonly number[]; readonly indices: readonly number[] }> = {
-  tetrahedron: {
-    vertices: [1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1],
-    indices: [2, 1, 0, 0, 3, 2, 1, 3, 0, 2, 3, 1]
-  },
-  octahedron: {
-    vertices: [1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1],
-    indices: [0, 2, 4, 0, 4, 3, 0, 3, 5, 0, 5, 2, 1, 2, 5, 1, 5, 3, 1, 3, 4, 1, 4, 2]
-  },
-  icosahedron: {
-    vertices: [
-      -1, TAU, 0, 1, TAU, 0, -1, -TAU, 0, 1, -TAU, 0,
-      0, -1, TAU, 0, 1, TAU, 0, -1, -TAU, 0, 1, -TAU,
-      TAU, 0, -1, TAU, 0, 1, -TAU, 0, -1, -TAU, 0, 1
-    ],
-    indices: [
-      0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11,
-      1, 5, 9, 5, 11, 4, 11, 10, 2, 10, 7, 6, 7, 1, 8,
-      3, 9, 4, 3, 4, 2, 3, 2, 6, 3, 6, 8, 3, 8, 9,
-      4, 9, 5, 2, 4, 11, 6, 2, 10, 8, 6, 7, 9, 8, 1
-    ]
-  },
-  dodecahedron: {
-    vertices: [
-      // (±1, ±1, ±1)
-      -1, -1, -1, -1, -1, 1,
-      -1, 1, -1, -1, 1, 1,
-      1, -1, -1, 1, -1, 1,
-      1, 1, -1, 1, 1, 1,
-      // (0, ±1/φ, ±φ)
-      0, -RTAU, -TAU, 0, -RTAU, TAU,
-      0, RTAU, -TAU, 0, RTAU, TAU,
-      // (±1/φ, ±φ, 0)
-      -RTAU, -TAU, 0, -RTAU, TAU, 0,
-      RTAU, -TAU, 0, RTAU, TAU, 0,
-      // (±φ, 0, ±1/φ)
-      -TAU, 0, -RTAU, TAU, 0, -RTAU,
-      -TAU, 0, RTAU, TAU, 0, RTAU
-    ],
-    indices: [
-      3, 11, 7, 3, 7, 15, 3, 15, 13,
-      7, 19, 17, 7, 17, 6, 7, 6, 15,
-      17, 4, 8, 17, 8, 10, 17, 10, 6,
-      8, 0, 16, 8, 16, 2, 8, 2, 10,
-      0, 12, 1, 0, 1, 18, 0, 18, 16,
-      6, 10, 2, 6, 2, 13, 6, 13, 15,
-      2, 16, 18, 2, 18, 3, 2, 3, 13,
-      18, 1, 9, 18, 9, 11, 18, 11, 3,
-      4, 14, 12, 4, 12, 0, 4, 0, 8,
-      11, 9, 5, 11, 5, 19, 11, 19, 7,
-      19, 5, 14, 19, 14, 4, 19, 4, 17,
-      1, 12, 14, 1, 14, 5, 1, 5, 9
-    ]
-  }
+const subtract = (a: Point, b: Point): Point => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross = (a: Point, b: Point): Point => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const dot = (a: Point, b: Point): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const length = (p: Point): number => Math.hypot(...p);
+const normalize = (p: Point): Point => {
+  const size = length(p);
+  return size > 0 ? [p[0] / size, p[1] / size, p[2] / size] : [0, 0, 0];
 };
 
-type Vec3Tuple = readonly [number, number, number];
-
-function lerp3(a: Vec3Tuple, b: Vec3Tuple, t: number): Vec3Tuple {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-}
-
-function azimuth(vector: Vec3Tuple): number {
-  return Math.atan2(vector[2], -vector[0]);
-}
-
-function inclination(vector: Vec3Tuple): number {
-  return Math.atan2(-vector[1], Math.sqrt(vector[0] * vector[0] + vector[2] * vector[2]));
-}
-
-/** Raw `PolyhedronGeometry(vertices, indices, radius, detail)` — non-indexed. */
-export function polyhedronParityMeshFromBase(vertices: readonly number[], indices: readonly number[], radius = 1, detail = 0): ParityMesh {
-  const vertexBuffer: number[] = [];
-  const uvBuffer: number[] = [];
-
-  const pushVertex = (vertex: Vec3Tuple): void => {
-    vertexBuffer.push(vertex[0], vertex[1], vertex[2]);
-  };
-
-  const getVertexByIndex = (index: number): Vec3Tuple => {
-    const stride = index * 3;
-    return [vertices[stride]!, vertices[stride + 1]!, vertices[stride + 2]!];
-  };
-
-  const subdivideFace = (a: Vec3Tuple, b: Vec3Tuple, c: Vec3Tuple, d: number): void => {
-    const cols = d + 1;
-    const v: Vec3Tuple[][] = [];
-    for (let i = 0; i <= cols; i += 1) {
-      v[i] = [];
-      const aj = lerp3(a, c, i / cols);
-      const bj = lerp3(b, c, i / cols);
-      const rows = cols - i;
-      for (let j = 0; j <= rows; j += 1) {
-        if (j === 0 && i === cols) {
-          v[i]![j] = aj;
-        } else {
-          v[i]![j] = lerp3(aj, bj, j / rows);
-        }
-      }
+/** Construct the vertices from regular-solid coordinate identities. */
+function solidPoints(variant: PolyhedronVariant): Point[] {
+  const p: Point[] = [];
+  if (variant === "tetrahedron") return [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]];
+  if (variant === "octahedron") return [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  const phi = (1 + Math.sqrt(5)) / 2;
+  if (variant === "dodecahedron") {
+    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) p.push([x, y, z]);
+    for (const a of [-1, 1]) for (const b of [-1, 1]) {
+      p.push([0, a / phi, b * phi], [a / phi, b * phi, 0], [a * phi, 0, b / phi]);
     }
-    for (let i = 0; i < cols; i += 1) {
-      for (let j = 0; j < 2 * (cols - i) - 1; j += 1) {
-        const k = Math.floor(j / 2);
-        if (j % 2 === 0) {
-          pushVertex(v[i]![k + 1]!);
-          pushVertex(v[i + 1]![k]!);
-          pushVertex(v[i]![k]!);
-        } else {
-          pushVertex(v[i]![k + 1]!);
-          pushVertex(v[i + 1]![k + 1]!);
-          pushVertex(v[i + 1]![k]!);
-        }
-      }
-    }
-  };
-
-  for (let i = 0; i < indices.length; i += 3) {
-    const a = getVertexByIndex(indices[i]!);
-    const b = getVertexByIndex(indices[i + 1]!);
-    const c = getVertexByIndex(indices[i + 2]!);
-    subdivideFace(a, b, c, detail);
-  }
-
-  // applyRadius — project every vertex onto the sphere.
-  for (let i = 0; i < vertexBuffer.length; i += 3) {
-    const len = Math.hypot(vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!);
-    const s = len === 0 ? 0 : radius / len;
-    vertexBuffer[i] = vertexBuffer[i]! * s;
-    vertexBuffer[i + 1] = vertexBuffer[i + 1]! * s;
-    vertexBuffer[i + 2] = vertexBuffer[i + 2]! * s;
-  }
-
-  // generateUVs
-  for (let i = 0; i < vertexBuffer.length; i += 3) {
-    const vertex: Vec3Tuple = [vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!];
-    const u = azimuth(vertex) / 2 / Math.PI + 0.5;
-    const v = inclination(vertex) / Math.PI + 0.5;
-    uvBuffer.push(u, 1 - v);
-  }
-
-  // correctUVs
-  for (let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6) {
-    const a: Vec3Tuple = [vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!];
-    const b: Vec3Tuple = [vertexBuffer[i + 3]!, vertexBuffer[i + 4]!, vertexBuffer[i + 5]!];
-    const c: Vec3Tuple = [vertexBuffer[i + 6]!, vertexBuffer[i + 7]!, vertexBuffer[i + 8]!];
-    const centroid: Vec3Tuple = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
-    const azi = azimuth(centroid);
-    const correctUV = (stride: number, vector: Vec3Tuple): void => {
-      if (azi < 0 && uvBuffer[stride] === 1) {
-        uvBuffer[stride] = uvBuffer[stride]! - 1;
-      }
-      if (vector[0] === 0 && vector[2] === 0) {
-        uvBuffer[stride] = azi / 2 / Math.PI + 0.5;
-      }
-    };
-    correctUV(j + 0, a);
-    correctUV(j + 2, b);
-    correctUV(j + 4, c);
-  }
-
-  // correctSeam — faces straddling the ±u seam get the <0.2 us bumped by 1.
-  for (let i = 0; i < uvBuffer.length; i += 6) {
-    const x0 = uvBuffer[i + 0]!;
-    const x1 = uvBuffer[i + 2]!;
-    const x2 = uvBuffer[i + 4]!;
-    const max = Math.max(x0, x1, x2);
-    const min = Math.min(x0, x1, x2);
-    if (max > 0.9 && min < 0.1) {
-      if (x0 < 0.2) uvBuffer[i + 0] = x0 + 1;
-      if (x1 < 0.2) uvBuffer[i + 2] = x1 + 1;
-      if (x2 < 0.2) uvBuffer[i + 4] = x2 + 1;
-    }
-  }
-
-  // normals: a copy of positions; detail=0 → flat (computeVertexNormals),
-  // detail>0 → normalizeNormals.
-  let normals: number[];
-  if (detail === 0) {
-    normals = computeVertexNormals(vertexBuffer);
   } else {
-    normals = new Array<number>(vertexBuffer.length);
-    for (let i = 0; i < vertexBuffer.length; i += 3) {
-      const len = Math.hypot(vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!);
-      const s = len === 0 ? 0 : 1 / len;
-      normals[i] = vertexBuffer[i]! * s;
-      normals[i + 1] = vertexBuffer[i + 1]! * s;
-      normals[i + 2] = vertexBuffer[i + 2]! * s;
+    for (const a of [-1, 1]) for (const b of [-1, 1]) {
+      p.push([0, a, b * phi], [a, b * phi, 0], [a * phi, 0, b]);
     }
   }
+  return p;
+}
 
-  return { positions: vertexBuffer, normals, uvs: uvBuffer };
+/**
+ * Enumerate supporting planes of a small convex point set. Coplanar points
+ * form one polygon, ordered around the plane, before fan triangulation.
+ */
+function convexFaces(points: readonly Point[]): number[] {
+  const seen = new Set<string>();
+  const triangles: number[] = [];
+  const epsilon = 1e-8;
+  for (let a = 0; a < points.length; a += 1) for (let b = a + 1; b < points.length; b += 1) {
+    for (let c = b + 1; c < points.length; c += 1) {
+      let normal = cross(subtract(points[b]!, points[a]!), subtract(points[c]!, points[a]!));
+      if (length(normal) < epsilon) continue;
+      normal = normalize(normal);
+      const distances = points.map((p) => dot(normal, subtract(p, points[a]!)));
+      if (distances.some((d) => d > epsilon) && distances.some((d) => d < -epsilon)) continue;
+      const face = distances.flatMap((d, index) => Math.abs(d) <= epsilon ? [index] : []);
+      const key = face.join(",");
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const center: Point = [
+        face.reduce((sum, i) => sum + points[i]![0], 0) / face.length,
+        face.reduce((sum, i) => sum + points[i]![1], 0) / face.length,
+        face.reduce((sum, i) => sum + points[i]![2], 0) / face.length
+      ];
+      if (dot(normal, center) < 0) normal = [-normal[0], -normal[1], -normal[2]];
+      const u = normalize(subtract(points[face[0]!]!, center));
+      const v = cross(normal, u);
+      face.sort((i, j) => {
+        const pi = subtract(points[i]!, center);
+        const pj = subtract(points[j]!, center);
+        return Math.atan2(dot(pi, v), dot(pi, u)) - Math.atan2(dot(pj, v), dot(pj, u));
+      });
+      for (let i = 1; i + 1 < face.length; i += 1) triangles.push(face[0]!, face[i]!, face[i + 1]!);
+    }
+  }
+  return triangles;
+}
+
+/** Project a triangular base onto a sphere after barycentric subdivision. */
+export function polyhedronParityMeshFromBase(vertices: readonly number[], indices: readonly number[], radius = 1, detail = 0): ParityMesh {
+  if (!Number.isFinite(radius) || !Number.isInteger(detail) || detail < 0) {
+    throw new RangeError("Polyhedron radius must be finite and detail must be a nonnegative integer");
+  }
+  if (vertices.length % 3 !== 0 || indices.length % 3 !== 0 || vertices.some((n) => !Number.isFinite(n))) {
+    throw new RangeError("Polyhedron base must contain finite XYZ vertices and triangle indices");
+  }
+  if (indices.some((i) => !Number.isInteger(i) || i < 0 || i * 3 + 2 >= vertices.length)) {
+    throw new RangeError("Polyhedron base index is outside its vertex array");
+  }
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const subdivisions = detail + 1;
+  const read = (i: number): Point => [vertices[i * 3]!, vertices[i * 3 + 1]!, vertices[i * 3 + 2]!];
+  const project = (p: Point): Point => {
+    const unit = normalize(p);
+    return [unit[0] * radius, unit[1] * radius, unit[2] * radius];
+  };
+  const emit = (a: Point, b: Point, c: Point): void => {
+    const tri = [project(a), project(b), project(c)];
+    const flat = normalize(cross(subtract(tri[1]!, tri[0]!), subtract(tri[2]!, tri[0]!)));
+    const tex = tri.map((p) => {
+      const h = Math.hypot(p[0], p[2]);
+      return [0.5 + Math.atan2(p[2], p[0]) / (2 * Math.PI), 0.5 + Math.atan2(p[1], h) / Math.PI];
+    });
+    // A face crossing the longitude seam needs neighboring U coordinates in
+    // the same repetition of the texture. At a pole use its neighbors' U.
+    const nonPoles = tri.map((p, i) => Math.hypot(p[0], p[2]) > 1e-12 ? i : -1).filter((i) => i >= 0);
+    if (nonPoles.length > 0) {
+      let best: number[] = [];
+      let bestWidth = Infinity;
+      for (const anchorIndex of nonPoles) {
+        const anchor = tex[anchorIndex]![0]!;
+        const candidate = nonPoles.map((i) => tex[i]![0]! + Math.round(anchor - tex[i]![0]!));
+        const width = Math.max(...candidate) - Math.min(...candidate);
+        if (width < bestWidth) { bestWidth = width; best = candidate; }
+      }
+      nonPoles.forEach((i, j) => { tex[i]![0] = best[j]!; });
+      const poleU = nonPoles.reduce((sum, i) => sum + tex[i]![0]!, 0) / nonPoles.length;
+      for (let i = 0; i < 3; i += 1) if (!nonPoles.includes(i)) tex[i]![0] = poleU;
+    }
+    for (let i = 0; i < 3; i += 1) {
+      const p = tri[i]!;
+      const n = detail === 0 ? flat : normalize(p);
+      positions.push(...p);
+      normals.push(...n);
+      uvs.push(tex[i]![0]!, tex[i]![1]!);
+    }
+  };
+  for (let face = 0; face < indices.length; face += 3) {
+    const a = read(indices[face]!);
+    const b = read(indices[face + 1]!);
+    const c = read(indices[face + 2]!);
+    const point = (i: number, j: number): Point => {
+      const x = i / subdivisions;
+      const y = j / subdivisions;
+      return [a[0] * (1 - x - y) + b[0] * x + c[0] * y, a[1] * (1 - x - y) + b[1] * x + c[1] * y, a[2] * (1 - x - y) + b[2] * x + c[2] * y];
+    };
+    for (let i = 0; i < subdivisions; i += 1) for (let j = 0; j < subdivisions - i; j += 1) {
+      emit(point(i, j), point(i + 1, j), point(i, j + 1));
+      if (i + j + 1 < subdivisions) emit(point(i + 1, j), point(i + 1, j + 1), point(i, j + 1));
+    }
+  }
+  return { positions, normals, uvs };
 }
 
 export function polyhedronParityMesh(params: PolyhedronParityParams = {}): ParityMesh {
   const variant = params.variant ?? "icosahedron";
-  const base = BASE[variant];
-  return polyhedronParityMeshFromBase(base.vertices, base.indices, params.radius ?? 1, params.detail ?? 0);
+  if (!["tetrahedron", "octahedron", "icosahedron", "dodecahedron"].includes(variant)) throw new RangeError(`Unknown polyhedron variant: ${variant}`);
+  const points = solidPoints(variant);
+  return polyhedronParityMeshFromBase(points.flat(), convexFaces(points), params.radius ?? 1, params.detail ?? 0);
 }

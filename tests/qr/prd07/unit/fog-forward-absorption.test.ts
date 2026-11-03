@@ -88,7 +88,9 @@ describe("#187 absorption fog on forward geometry", () => {
   });
 
   it("legacy generator (core off) keeps the parity slots — mode 6, unchanged", () => {
-    const legacy = resolveQrFlags({ options: ["vfx", "vfx.fog"] });
+    const legacy = resolveQrFlags({ options: ["vfx", "vfx.fog", "-core"] });
+    expect(legacy.on("A3D_QR_CORE")).toBe(false);
+    expect(legacy.on("A3D_QR_VFX_FOG")).toBe(true);
     runCollect(() => ({ mode: "absorption", absorption: OCEAN }), legacy);
     expect(bound().get("u_fogMode")).toBe(FOG_MODE.legacyParity);
   });

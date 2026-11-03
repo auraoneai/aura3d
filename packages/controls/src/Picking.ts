@@ -1,3 +1,4 @@
+import { composeMat4, multiplyMat4, quatFromEulerXYZ, type Mat4 } from "@aura3d/scene";
 import {
   ControlVector3,
   traverseControlObject,
@@ -14,9 +15,40 @@ export interface ThreeCompatPickResult {
   readonly point: ControlVector3;
   readonly radius: number;
   readonly metadata?: ControlPickMetadata;
+  readonly normal?: ControlVector3;
+  readonly uv?: readonly [number, number];
+  readonly faceIndex?: number;
+  readonly instanceId?: number;
+  readonly batchMemberId?: string | number;
+  readonly barycentric?: readonly [number, number, number];
 }
 
+/** Structural result from the engine's exact mesh query. */
+export interface ExactScenePickHit {
+  readonly object?: ControlObject3DLike;
+  readonly nodeId?: string;
+  readonly nodeName?: string | undefined;
+  readonly distance: number;
+  readonly point: readonly [number, number, number];
+  readonly normal?: readonly [number, number, number];
+  readonly uv?: readonly [number, number];
+  readonly faceIndex?: number;
+  readonly instanceId?: number;
+  readonly batchMemberId?: string | number;
+  readonly barycentric?: readonly [number, number, number];
+}
+
+/** Adapter to engine `raycast`, with the desired scene targets bound. */
+export type ExactScenePickQuery = (
+  ray: { readonly origin: readonly [number, number, number]; readonly direction: readonly [number, number, number]; readonly maxDistance?: number },
+  options: { readonly mode: "mesh"; readonly near: number; readonly far: number; readonly recursive: true; readonly firstHitOnly: false }
+) => readonly ExactScenePickHit[];
+
 export interface PickingOptions {
+  /** Sphere approximation remains the default for existing callers. */
+  readonly mode?: "approximate" | "exact";
+  readonly query?: ExactScenePickQuery;
+  readonly resolveObject?: (hit: ExactScenePickHit) => ControlObject3DLike | undefined;
   readonly near?: number;
   readonly far?: number;
   readonly tolerance?: number;
@@ -45,19 +77,10 @@ export interface PickingReport {
 }
 
 /**
- * Sphere-based picking over `ControlObject3DLike` scene graphs.
+ * Pick against exact scene hits, or spherical approximations for compatibility.
  *
- * Scope notes (F4):
- *
- * - `SkinnedMesh` objects are pickable via the same bind-pose sphere test as
- *   static meshes (position plus `pickRadius`). Bone-deformed triangles beyond
- *   that radius are an explicit non-goal: this layer answers "which authored
- *   object did the pointer hit", not triangle-exact skinning queries.
- * - `InstancedMesh` objects are pickable per instance: metadata
- *   `instancePositions` lists world-space instance centers, each tested as
- *   its own sphere, and a hit reports the nearest entry as
- *   `metadata.instanceId`. Without `instancePositions` the single object
- *   sphere is tested, exactly like a static mesh.
+ * Exact mode obtains triangle, instance and deformed-mesh hits from the scene
+ * query. Approximate mode uses explicitly authored pick spheres.
  */
 export class Picking {
   pick(
@@ -88,6 +111,9 @@ export class Picking {
     const near = finiteRange(options.near ?? 0, "near", 0);
     const far = finiteRange(options.far ?? Number.POSITIVE_INFINITY, "far", near);
     const tolerance = finiteRange(options.tolerance ?? 0, "tolerance", 0);
+    if (options.mode === "exact") {
+      return this.reportExact(root, origin, normalizedDirection, near, far, options);
+    }
     const hits: ThreeCompatPickResult[] = [];
     const counters = {
       testedObjects: 0,
@@ -100,9 +126,9 @@ export class Picking {
     };
     let nearestMissPerpendicularDistance = Number.POSITIVE_INFINITY;
 
-    traverseControlObject(root, (object) => {
+    visitHierarchy(root, (object, world, visible) => {
       counters.testedObjects += 1;
-      if (object.visible === false && options.includeInvisible !== true) {
+      if (!visible && options.includeInvisible !== true) {
         counters.skippedInvisible += 1;
         return;
       }
@@ -116,8 +142,8 @@ export class Picking {
         return;
       }
       counters.candidateObjects += 1;
-      const radius = resolvePickRadius(object, metadata) + tolerance;
-      const instances = resolveInstanceCenters(object, metadata);
+      const radius = resolvePickRadius(object, metadata, world) + tolerance;
+      const instances = resolveInstanceCenters(object, metadata, world);
       for (let instanceId = 0; instanceId < instances.length; instanceId += 1) {
         const center = instances[instanceId];
         const toCenter = new ControlVector3(
@@ -163,6 +189,92 @@ export class Picking {
         ...counters,
         hitCount: hits.length,
         nearestMissPerpendicularDistance: Number.isFinite(nearestMissPerpendicularDistance) ? nearestMissPerpendicularDistance : null,
+        nearestHitLabel: hit ? pickLabel(hit.object, hit.metadata) : null
+      }
+    };
+  }
+
+  private reportExact(
+    root: ControlObject3DLike,
+    origin: Vector3Like,
+    direction: Vector3Like,
+    near: number,
+    far: number,
+    options: PickingOptions
+  ): PickingReport {
+    if (!options.query) throw new Error("Picking exact mode requires a scene query adapter.");
+    const byName = new Map<string, ControlObject3DLike | null>();
+    const byId = new Map<string, ControlObject3DLike | null>();
+    const objects = new Set<ControlObject3DLike>();
+    const visibility = new Map<ControlObject3DLike, boolean>();
+    visitHierarchy(root, (object, _world, visible) => {
+      objects.add(object);
+      visibility.set(object, visible);
+      if (object.name) byName.set(object.name, byName.has(object.name) ? null : object);
+      const id = (object as ControlObject3DLike & { readonly id?: string }).id;
+      if (id) byId.set(id, byId.has(id) ? null : object);
+    });
+    const rawHits = options.query({
+      origin: [origin.x, origin.y, origin.z],
+      direction: [direction.x, direction.y, direction.z],
+      ...(Number.isFinite(far) ? { maxDistance: far } : {})
+    }, { mode: "mesh", near, far, recursive: true, firstHitOnly: false });
+    const hits: ThreeCompatPickResult[] = [];
+    let skippedInvisible = 0;
+    let skippedDisabled = 0;
+    let skippedOutOfRange = 0;
+    for (const raw of rawHits) {
+      if (!Number.isFinite(raw.distance) || raw.distance < near || raw.distance > far) {
+        skippedOutOfRange += 1;
+        continue;
+      }
+      const mapped = raw.object ?? options.resolveObject?.(raw);
+      const object = mapped ?? (raw.nodeId && byId.has(raw.nodeId) ? byId.get(raw.nodeId) : raw.nodeName ? byName.get(raw.nodeName) : undefined);
+      if (!object || !objects.has(object)) {
+        throw new Error(`Picking could not uniquely resolve exact scene hit ${raw.nodeId ?? raw.nodeName ?? "without an identity"}; provide resolveObject.`);
+      }
+      if (!visibility.get(object) && options.includeInvisible !== true) {
+        skippedInvisible += 1;
+        continue;
+      }
+      const metadata = resolvePickMetadata(object, options);
+      if (metadata?.selectable === false) {
+        skippedDisabled += 1;
+        continue;
+      }
+      if (!raw.point.every(Number.isFinite)) throw new RangeError("Picking exact query returned a non-finite point.");
+      if (raw.normal && !raw.normal.every(Number.isFinite)) throw new RangeError("Picking exact query returned a non-finite normal.");
+      hits.push({
+        object,
+        distance: raw.distance,
+        distanceAlongRay: raw.distance,
+        perpendicularDistance: 0,
+        point: new ControlVector3(...raw.point),
+        radius: 0,
+        metadata: raw.instanceId === undefined ? metadata : { ...metadata, instanceId: raw.instanceId },
+        ...(raw.normal ? { normal: new ControlVector3(...raw.normal) } : {}),
+        ...(raw.uv ? { uv: raw.uv } : {}),
+        ...(raw.faceIndex === undefined ? {} : { faceIndex: raw.faceIndex }),
+        ...(raw.instanceId === undefined ? {} : { instanceId: raw.instanceId }),
+        ...(raw.batchMemberId === undefined ? {} : { batchMemberId: raw.batchMemberId }),
+        ...(raw.barycentric ? { barycentric: raw.barycentric } : {})
+      });
+    }
+    hits.sort(compareHits);
+    const hit = hits[0] ?? null;
+    return {
+      hit,
+      hits,
+      diagnostics: {
+        testedObjects: objects.size,
+        candidateObjects: rawHits.length,
+        hitCount: hits.length,
+        skippedInvisible,
+        skippedNonPickable: 0,
+        skippedDisabled,
+        skippedOutOfRange,
+        skippedMissedRadius: 0,
+        nearestMissPerpendicularDistance: null,
         nearestHitLabel: hit ? pickLabel(hit.object, hit.metadata) : null
       }
     };
@@ -214,10 +326,11 @@ function isPickableObject(
 
 function resolveInstanceCenters(
   object: ControlObject3DLike,
-  metadata: ControlPickMetadata | undefined
+  metadata: ControlPickMetadata | undefined,
+  world: Mat4
 ): readonly Vector3Like[] {
   const positions = metadata?.instancePositions;
-  if (!positions || positions.length === 0) return [object.position];
+  if (!positions || positions.length === 0) return [{ x: world[12], y: world[13], z: world[14] }];
   return positions.map((entry): Vector3Like => {
     if (Array.isArray(entry)) {
       return {
@@ -230,13 +343,32 @@ function resolveInstanceCenters(
   });
 }
 
-function resolvePickRadius(object: ControlObject3DLike, metadata: ControlPickMetadata | undefined): number {
+function resolvePickRadius(object: ControlObject3DLike, metadata: ControlPickMetadata | undefined, world: Mat4): number {
   const explicit = metadata?.pickRadius ?? object.pickRadius ?? readUserDataRadius(object.userData);
   if (explicit !== undefined) return positiveFinite(explicit, "pickRadius");
-  const scale = object.scale;
-  if (!scale) return 0.5;
-  const radius = Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z)) * 0.5;
+  const radius = Math.max(Math.hypot(world[0], world[1], world[2]), Math.hypot(world[4], world[5], world[6]), Math.hypot(world[8], world[9], world[10])) * 0.5;
   return Number.isFinite(radius) && radius > 0 ? radius : 0.5;
+}
+
+/** Traverse authored objects with inherited transforms, including default-origin nodes. */
+function visitHierarchy(root: ControlObject3DLike, visit: (object: ControlObject3DLike, world: Mat4, visible: boolean) => void): void {
+  const walk = (object: ControlObject3DLike, parent?: Mat4, parentVisible = true, descend = true): void => {
+    const position = object.position;
+    const rotation = object.rotation ?? { x: 0, y: 0, z: 0 };
+    const scale = object.scale ?? { x: 1, y: 1, z: 1 };
+    const local = composeMat4([position.x, position.y, position.z], quatFromEulerXYZ(rotation.x, rotation.y, rotation.z), [scale.x, scale.y, scale.z]);
+    const matrix = (object as ControlObject3DLike & { readonly matrixWorld?: ArrayLike<number> | { readonly elements: ArrayLike<number> } }).matrixWorld;
+    const elements = matrix && "elements" in Object(matrix) ? (matrix as { readonly elements: ArrayLike<number> }).elements : matrix as ArrayLike<number> | undefined;
+    const world = elements?.length === 16 ? Array.from(elements) as Mat4 : parent ? multiplyMat4(parent, local) : local;
+    const visible = parentVisible && object.visible !== false;
+    visit(object, world, visible);
+    if (descend) for (const child of object.children ?? []) walk(child, world, visible);
+  };
+  if (root.children === undefined && root.traverse) {
+    // A traversal-only provider does not expose a hierarchy; preserve its
+    // existing contract while using any world matrices it supplies.
+    traverseControlObject(root, (object) => walk(object, undefined, true, false));
+  } else walk(root);
 }
 
 function readUserDataRadius(userData: Record<string, unknown> | undefined): number | undefined {

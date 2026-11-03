@@ -27,20 +27,37 @@ export interface GLTFSharedTextureLease {
   /** Number of shared entries currently held (diagnostics/tests). */
   readonly size: number;
   release(): void;
+  /** Wait for final-lease cleanup; a call after rejection retries failed releases. */
+  releaseAsync?(): Promise<void>;
 }
 
 export class GLTFSharedTextureCache {
   private readonly entries = new Map<string, Promise<Texture>>();
+  private readonly retiring = new Set<Promise<Texture>>();
   private refs = 0;
   private disposed = false;
+  private cleanup?: Promise<void>;
+  private cleanupFailed = false;
 
-  acquire(): GLTFSharedTextureLease {
+  acquire(): GLTFSharedTextureLease & { releaseAsync(): Promise<void> } {
     if (this.disposed) {
       throw new Error("GLTFSharedTextureCache: cannot acquire a disposed cache.");
     }
     this.refs++;
     let released = false;
+    let last = false;
+    let observed = false;
+    let observation: Promise<void> | undefined;
     const cache = this;
+    const release = (): void => {
+      if (released) return;
+      released = true;
+      cache.refs--;
+      if (cache.refs === 0) {
+        last = true;
+        cache.disposeEntries();
+      }
+    };
     return {
       get size() {
         return cache.entries.size;
@@ -63,15 +80,18 @@ export class GLTFSharedTextureCache {
         });
         return created;
       },
-      release: () => {
-        if (released) {
-          return;
-        }
-        released = true;
-        cache.refs--;
-        if (cache.refs <= 0) {
-          cache.disposeEntries();
-        }
+      release,
+      releaseAsync: () => {
+        release();
+        if (!last) return Promise.resolve();
+        if (observation) return observation;
+        const retry = observed;
+        observed = true;
+        const pending = cache.drainEntries(retry).finally(() => {
+          if (observation === pending) observation = undefined;
+        });
+        observation = pending;
+        return pending;
       }
     };
   }
@@ -91,12 +111,35 @@ export class GLTFSharedTextureCache {
       return;
     }
     this.disposed = true;
-    const entries = [...this.entries.values()];
+    for (const entry of this.entries.values()) this.retiring.add(entry);
     this.entries.clear();
-    for (const entry of entries) {
-      entry.then((texture) => texture.dispose()).catch(() => {
-        // Rejected entries were already evicted by getOrCreate; nothing to free.
-      });
-    }
+    void this.drainEntries(false).catch(() => {});
+  }
+
+  private drainEntries(retry: boolean): Promise<void> {
+    if (this.cleanup && (!this.cleanupFailed || !retry)) return this.cleanup;
+    this.cleanupFailed = false;
+    const attempt = Promise.allSettled([...this.retiring].map((entry) => entry.then(
+      (texture) => {
+        try {
+          if (!texture.disposed) texture.dispose();
+          if (!texture.disposed) throw new Error("glTF shared texture disposal is in progress");
+          this.retiring.delete(entry);
+        } catch (error) {
+          try { if (texture.disposed) this.retiring.delete(entry); } catch { /* Retain an uncertain texture. */ }
+          throw error;
+        }
+      },
+      () => { this.retiring.delete(entry); }
+    ))).then((results) => {
+      const errors = results.filter((result): result is PromiseRejectedResult => result.status === "rejected").map((result) => result.reason);
+      if (errors.length) throw new AggregateError(errors, "glTF shared texture cleanup failed");
+    });
+    this.cleanup = attempt.then(
+      () => {},
+      (error: unknown) => { this.cleanupFailed = true; throw error; }
+    );
+    void this.cleanup.catch(() => {});
+    return this.cleanup;
   }
 }

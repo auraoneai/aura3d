@@ -2,7 +2,7 @@
 // carries its own transform and an optional vertex tint, so a village of houses, lamps and props sharing one
 // material becomes a single `AuraCustomGeometrySpec` ready for `primitives.custom` / `geometry.define`.
 import { colorToRgba } from "../colorUtils.js";
-import { mergeAuraGeometries, normalizeGeometryAttributes, type AuraCustomGeometrySpec } from "../RootGeometry.js";
+import { applyAuraGeometryMatrix4, mergeAuraGeometries, normalizeGeometryAttributes, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraColor, AuraVec3 } from "./types.js";
 
 export interface AuraStaticPart {
@@ -41,24 +41,15 @@ function transformPart(part: AuraStaticPart, forceColors: boolean, mode: "multip
   if (sc.some((v) => !Number.isFinite(v) || v === 0)) throw new Error("Aura3D mergeStatic scale components must be finite and non-zero.");
   const m = rotationMatrix(part.rotation ?? [0, 0, 0]);
   const count = n.vertexCount;
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i += 1) {
-    const x = n.positions[i * 3]! * sc[0], y = n.positions[i * 3 + 1]! * sc[1], z = n.positions[i * 3 + 2]! * sc[2];
-    positions[i * 3] = m[0]! * x + m[1]! * y + m[2]! * z + p[0];
-    positions[i * 3 + 1] = m[3]! * x + m[4]! * y + m[5]! * z + p[1];
-    positions[i * 3 + 2] = m[6]! * x + m[7]! * y + m[8]! * z + p[2];
-  }
-  let normals: Float32Array | undefined;
-  if (n.normals) {
-    normals = new Float32Array(count * 3);
-    for (let i = 0; i < count; i += 1) {
-      // Inverse-transpose of R * S is R * S^-1, so non-uniform scale keeps normals perpendicular.
-      const x = n.normals[i * 3]! / sc[0], y = n.normals[i * 3 + 1]! / sc[1], z = n.normals[i * 3 + 2]! / sc[2];
-      const nx = m[0]! * x + m[1]! * y + m[2]! * z, ny = m[3]! * x + m[4]! * y + m[5]! * z, nz = m[6]! * x + m[7]! * y + m[8]! * z;
-      const len = Math.hypot(nx, ny, nz) || 1;
-      normals[i * 3] = nx / len; normals[i * 3 + 1] = ny / len; normals[i * 3 + 2] = nz / len;
-    }
-  }
+  // The shared affine operation preserves UVs, custom streams, groups and draw
+  // metadata, applies the inverse transpose to normals, and transforms morph
+  // deltas without translating them. Unsupported morph channels fail closed.
+  const transformed = applyAuraGeometryMatrix4(part.geometry, [
+    m[0]! * sc[0], m[3]! * sc[0], m[6]! * sc[0], 0,
+    m[1]! * sc[1], m[4]! * sc[1], m[7]! * sc[1], 0,
+    m[2]! * sc[2], m[5]! * sc[2], m[8]! * sc[2], 0,
+    p[0], p[1], p[2], 1
+  ]);
   let colors: Float32Array | undefined = n.colors ? Float32Array.from(n.colors) : undefined;
   if (part.color !== undefined || (forceColors && !colors)) {
     colors ??= new Float32Array(count * 4).fill(1);
@@ -69,37 +60,34 @@ function transformPart(part: AuraStaticPart, forceColors: boolean, mode: "multip
   }
   let indices: Uint16Array | Uint32Array | undefined = n.indices ? (n.indices instanceof Uint16Array ? Uint16Array.from(n.indices) : Uint32Array.from(n.indices)) : undefined;
   const mirrored = sc[0] * sc[1] * sc[2] < 0;
-  const uvs = n.uvs ? Float32Array.from(n.uvs) : undefined;
-  if (mirrored) {
-    // A mirrored transform flips triangle winding; swap two corners per triangle so faces stay front-facing.
-    if (indices) {
-      for (let i = 0; i + 2 < indices.length; i += 3) { const t = indices[i + 1]!; indices[i + 1] = indices[i + 2]!; indices[i + 2] = t; }
-    } else {
-      const swap = (a: Float32Array | undefined, size: number): void => {
-        if (!a) return;
-        for (let t = 0; t + 2 < count; t += 3) for (let c = 0; c < size; c += 1) {
-          const u = a[(t + 1) * size + c]!; a[(t + 1) * size + c] = a[(t + 2) * size + c]!; a[(t + 2) * size + c] = u;
-        }
-      };
-      swap(positions, 3); swap(normals, 3); swap(uvs, 2); swap(colors, 4);
+  if (mirrored && (part.geometry.topology ?? "triangles") === "triangles") {
+    // Ranges beginning in the middle of a triangle have a different local
+    // winding; one globally swapped index stream cannot preserve both views.
+    const ranges = [...(part.geometry.groups ?? []), ...(part.geometry.drawRange ? [part.geometry.drawRange] : [])];
+    if (ranges.some(({ start, count: rangeCount }) => start % 3 !== 0 || (rangeCount !== Infinity && rangeCount % 3 !== 0))) {
+      throw new Error("AURA_GEOMETRY_INCOMPATIBLE: mirrored merge requires triangle-aligned groups and draw ranges.");
     }
+    // A mirrored transform flips triangle winding; swap two corners per triangle so faces stay front-facing.
+    // Indexing a previously non-indexed mesh preserves *every* per-vertex
+    // stream (including custom, UV1 and morph data) in its original order.
+    if (!indices) {
+      indices = count > 65536 ? new Uint32Array(count) : new Uint16Array(count);
+      for (let i = 0; i < count; i += 1) indices[i] = i;
+    }
+    for (let i = 0; i + 2 < indices.length; i += 3) { const t = indices[i + 1]!; indices[i + 1] = indices[i + 2]!; indices[i + 2] = t; }
   }
   return {
-    kind: "aura-custom-geometry",
-    positions,
-    ...(normals ? { normals } : {}),
-    ...(uvs ? { uvs } : {}),
+    ...transformed,
     ...(colors ? { colors } : {}),
-    ...(indices ? { indices } : { indices: [] }),
-    ...(part.geometry.attributes ? { attributes: part.geometry.attributes } : {})
+    indices: indices ?? []
   };
 }
 
 /**
  * Merge parts into one geometry. Returns `undefined` for an empty list (nothing to draw), so callers can
  * skip the node instead of branching on a throw. If any part has vertex colours or a tint, every part gets
- * colours (missing ones are white) so the merged geometry keeps them; UVs and normals survive only when
- * every part has them (same rule as `geometry.merge`).
+ * colours (missing ones are white) so the merged geometry keeps them. Other streams,
+ * morphs and topology must be compatible across parts, or the merge rejects them.
  */
 export function mergeStatic(parts: readonly AuraStaticPart[], options: AuraMergeStaticOptions = {}): AuraCustomGeometrySpec | undefined {
   if (parts.length === 0) return undefined;

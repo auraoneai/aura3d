@@ -8,6 +8,7 @@ import {
   GLTFLoader,
   ImportPipeline,
   ImportPipelineError,
+  LoadContext,
   MaterialLoader,
   SceneLoader,
   ShaderLoader,
@@ -68,7 +69,7 @@ test("workstream5 asset manager shares duplicate in-flight loads and cached resu
       return { url: request.url };
     }
   };
-  const assets = new AssetManager({ baseUrl: "https://cdn.example/assets/" });
+  const assets = new AssetManager({ baseUrl: "https://cdn.example/assets/", credentials: "omit" });
   assets.register(loader);
 
   const [first, second] = await Promise.all([
@@ -167,16 +168,24 @@ test("workstream5 asset manager retries transient loader failures without cachin
       return { attempt: attempts };
     }
   };
-  const assets = new AssetManager({ retries: 2 });
+  const assets = new AssetManager({ retries: 2, credentials: "omit" });
   assets.register(loader);
 
   const handle = await assets.load<{ readonly attempt: number }>("retry.txt", { type: "text" });
 
   assert.equal(handle.value.attempt, 3);
   assert.equal(attempts, 3);
-  assert.deepEqual(assets.cache.keys(), ["text:retry.txt"]);
+  const cacheSnapshot = assets.cache.snapshot();
+  assert.equal(cacheSnapshot.cachedEntries, 1);
+  assert.equal(cacheSnapshot.inFlightEntries, 0);
+  assert.equal(cacheSnapshot.keys.length, 1);
+  assert.equal(cacheSnapshot.keys.some((key) => key.includes("retry.txt")), false);
+  const cached = await assets.load("retry.txt", { type: "text" });
+  assert.equal(cached, handle);
+  assert.equal(attempts, 3);
 
   await assets.release(handle);
+  await assets.release(cached);
 });
 
 test("workstream5 asset manager keeps failed loads retryable and respects in-flight caller cancellation", async () => {
@@ -210,15 +219,18 @@ test("workstream5 asset manager keeps failed loads retryable and respects in-fli
   await assets.release(recovered);
 
   let resolveShared!: (value: { readonly url: string; readonly attempt: number }) => void;
+  let notifySharedStarted!: () => void;
+  const sharedStarted = new Promise<void>((resolve) => { notifySharedStarted = resolve; });
   const sharedLoader: AssetLoader<{ readonly url: string; readonly attempt: number }> = {
     type: "shared",
     canLoad: (request) => request.type === "shared",
     load: (request) =>
       new Promise((resolve) => {
         resolveShared = () => resolve({ url: request.url, attempt: 1 });
+        notifySharedStarted();
       })
   };
-  const sharedAssets = new AssetManager();
+  const sharedAssets = new AssetManager({ credentials: "omit" });
   sharedAssets.register(sharedLoader);
   const controller = new AbortController();
   const first = sharedAssets.load<{ readonly url: string; readonly attempt: number }>("shared.txt", { type: "shared" });
@@ -227,6 +239,9 @@ test("workstream5 asset manager keeps failed loads retryable and respects in-fli
     signal: controller.signal
   });
 
+  // Identity hashing is asynchronous; wait for the first load to be in flight
+  // before cancelling the second request.
+  await sharedStarted;
   controller.abort("cancel second waiter");
 
   await assert.rejects(
@@ -272,7 +287,7 @@ test("workstream5 GLTFLoader loads triangle mesh and creates scene renderable", 
     scene: 0
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.meshes[0]?.geometry.vertexCount, 3);
   assert.equal(asset.meshes[0]?.positions.length, 3);
@@ -326,7 +341,7 @@ test("workstream5 GLTFLoader imports POINTS primitives into render-resource poin
 
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(asset);
   const geometry = resources.geometryLibrary.get("point-cloud");
@@ -376,7 +391,7 @@ test("workstream5 GLTFLoader imports EXT_mesh_gpu_instancing into scene renderab
 
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const renderable = asset.createScene().collectRenderables()[0]?.renderable;
   const resources = await createGLTFRenderResources(asset);
@@ -393,7 +408,7 @@ test("workstream5 GLTFLoader imports EXT_mesh_gpu_instancing into scene renderab
   delete defaultMaterialGltf.meshes[0]!.primitives[0]!.material;
   const defaultMaterialAsset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(defaultMaterialGltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const defaultMaterialResources = await createGLTFRenderResources(defaultMaterialAsset);
   const defaultInstancedMaterial = defaultMaterialResources.materialLibrary.get("default-material");
@@ -409,7 +424,7 @@ test("workstream5 GLTFLoader imports EXT_mesh_gpu_instancing into scene renderab
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(mismatched))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /EXT_mesh_gpu_instancing SCALE count must match instance count/
   );
@@ -452,7 +467,7 @@ test("workstream5 GLTFLoader preserves all primitives for a multi-primitive glTF
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const scene = asset.createScene();
   const renderables = scene.collectRenderables();
@@ -472,7 +487,7 @@ test("workstream5 GLTFLoader preserves all primitives for a multi-primitive glTF
   missingMesh.nodes[0]!.mesh = 9;
   const missingAsset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(missingMesh))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   assert.throws(() => missingAsset.createScene(), /missing mesh 9/);
 });
@@ -501,7 +516,7 @@ test("workstream5 GLTFLoader preserves and selects named glTF scenes", async () 
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
 
   assert.equal(asset.defaultScene, 1);
@@ -540,7 +555,7 @@ test("workstream5 GLTFLoader distinguishes default materials from explicit mater
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(base))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
 
   assert.equal(asset.meshes[0]?.material, "default-material");
@@ -560,7 +575,7 @@ test("workstream5 GLTFLoader distinguishes default materials from explicit mater
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalid))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /references missing material 9/
   );
@@ -605,7 +620,7 @@ test("workstream5 GLTFLoader preserves and validates KHR_materials_variants meta
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
 
   assert.deepEqual(asset.materialVariants, [{ name: "red" }, { name: "blue" }]);
@@ -644,7 +659,7 @@ test("workstream5 GLTFLoader preserves and validates KHR_materials_variants meta
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidMaterial))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /KHR_materials_variants mapping 0 references missing material 9/
   );
@@ -654,7 +669,7 @@ test("workstream5 GLTFLoader preserves and validates KHR_materials_variants meta
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidVariant))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /KHR_materials_variants mapping 0 references missing variant 4/
   );
@@ -693,7 +708,7 @@ test("workstream5 GLTFLoader rejects malformed mesh primitive descriptors", asyn
     await assert.rejects(
       () => new GLTFLoader().load(
         { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-        { throwIfAborted: () => undefined } as never
+        new LoadContext()
       ),
       message,
       name
@@ -732,7 +747,7 @@ test("workstream5 GLTFLoader respects glTF primitive modes for points, lines, an
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(asset);
 
@@ -748,7 +763,7 @@ test("workstream5 GLTFLoader respects glTF primitive modes for points, lines, an
   pointsGltf.meshes[0]!.primitives[0]!.mode = 0;
   const pointsAsset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(pointsGltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const pointResources = await createGLTFRenderResources(pointsAsset);
 
@@ -785,7 +800,7 @@ test("workstream5 GLTFLoader preserves glTF tangents through render resources", 
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(asset);
   const geometry = resources.geometryLibrary.get("tangent-triangle");
@@ -800,7 +815,7 @@ test("workstream5 GLTFLoader preserves glTF tangents through render resources", 
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalid))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /TANGENT count mismatch/
   );
@@ -830,7 +845,7 @@ test("workstream5 GLTFLoader preserves glTF vertex colors through render resourc
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(asset);
   const geometry = resources.geometryLibrary.get("colored-triangle");
@@ -846,7 +861,7 @@ test("workstream5 GLTFLoader preserves glTF vertex colors through render resourc
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalid))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /COLOR_0 count mismatch/
   );
@@ -871,7 +886,7 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
 
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(asset);
   const transparent = resources.materialLibrary.get("transparent-double-sided");
@@ -935,7 +950,7 @@ test("workstream5 GLTFLoader applies glTF node matrix transforms and validates m
     scene: 0
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const node = asset.createScene().findByName("matrix-node")[0];
 
   assert.deepEqual(node?.transform.position, [4, 5, 6]);
@@ -946,7 +961,7 @@ test("workstream5 GLTFLoader applies glTF node matrix transforms and validates m
     scenes: [{ nodes: [0] }]
   };
   const mixedUrl = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(mixed))}`;
-  const mixedAsset = await new GLTFLoader().load({ url: mixedUrl }, { throwIfAborted: () => undefined } as never);
+  const mixedAsset = await new GLTFLoader().load({ url: mixedUrl }, new LoadContext());
   assert.throws(() => mixedAsset.createScene(), /cannot combine matrix/);
 
   const invalid = {
@@ -955,7 +970,7 @@ test("workstream5 GLTFLoader applies glTF node matrix transforms and validates m
     scenes: [{ nodes: [0] }]
   };
   const invalidUrl = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalid))}`;
-  const invalidAsset = await new GLTFLoader().load({ url: invalidUrl }, { throwIfAborted: () => undefined } as never);
+  const invalidAsset = await new GLTFLoader().load({ url: invalidUrl }, new LoadContext());
   assert.throws(() => invalidAsset.createScene(), /matrix must contain 16 finite values/);
 });
 
@@ -976,7 +991,7 @@ test("workstream5 GLTFLoader rejects malformed glTF scene node graphs", async ()
   for (const [name, gltf, message] of cases) {
     const asset = await new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     );
     assert.throws(() => asset.createScene(), message, name);
   }
@@ -1011,7 +1026,7 @@ test("workstream5 GLTFLoader imports KHR_lights_punctual into runtime scene ligh
     scene: 0
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const scene = asset.createScene();
   const lights = scene.collectLights();
 
@@ -1033,7 +1048,7 @@ test("workstream5 GLTFLoader imports KHR_lights_punctual into runtime scene ligh
   invalidMissing.nodes[0]!.extensions!.KHR_lights_punctual.light = 9;
   const invalidMissingAsset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidMissing))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   assert.throws(() => invalidMissingAsset.createScene(), /missing punctual light 9/);
 
@@ -1042,7 +1057,7 @@ test("workstream5 GLTFLoader imports KHR_lights_punctual into runtime scene ligh
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidCone))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /innerConeAngle/
   );
@@ -1064,7 +1079,7 @@ test("workstream5 GLTFLoader imports glTF perspective and orthographic cameras i
   };
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const scene = asset.createScene();
   const cameras = scene.collectCameras();
@@ -1090,7 +1105,7 @@ test("workstream5 GLTFLoader imports glTF perspective and orthographic cameras i
   missing.nodes[0]!.camera = 9;
   const missingAsset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(missing))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   assert.throws(() => missingAsset.createScene(), /missing camera 9/);
 
@@ -1099,7 +1114,7 @@ test("workstream5 GLTFLoader imports glTF perspective and orthographic cameras i
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalid))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /zfar must be greater/
   );
@@ -1202,7 +1217,7 @@ test("workstream5 GLTFLoader applies sparse accessor overlays without silently d
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.deepEqual(asset.meshes[0]?.positions, [[0, 0, 0], [1, 0, 0], [0, 1, 0]]);
   assert.deepEqual(asset.meshes[0]?.geometry.bounds, { min: [0, 0, 0], max: [1, 1, 0] });
@@ -1212,7 +1227,7 @@ test("workstream5 GLTFLoader applies sparse accessor overlays without silently d
   };
   invalidSparse.accessors[0]!.sparse!.indices = { bufferView: 0, byteOffset: 2, componentType: 5123 };
   const invalidUrl = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidSparse))}`;
-  await assert.rejects(() => new GLTFLoader().load({ url: invalidUrl }, { throwIfAborted: () => undefined } as never), /sparse indices.*exceeds/);
+  await assert.rejects(() => new GLTFLoader().load({ url: invalidUrl }, new LoadContext()), /sparse indices.*exceeds/);
 
   const malformedSparseCases: readonly [string, (copy: typeof gltf) => void, RegExp][] = [
     ["missing sparse indices", (copy) => { delete (copy.accessors[0]!.sparse as Record<string, unknown>).indices; }, /sparse indices must be an object/],
@@ -1227,7 +1242,7 @@ test("workstream5 GLTFLoader applies sparse accessor overlays without silently d
     mutate(copy);
     const malformedUrl = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(copy))}`;
     await assert.rejects(
-      () => new GLTFLoader().load({ url: malformedUrl }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url: malformedUrl }, new LoadContext()),
       message,
       name
     );
@@ -1267,7 +1282,7 @@ test("workstream5 GLTFLoader rejects malformed accessor and bufferView descripto
     mutate(gltf);
     const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
     await assert.rejects(
-      () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url }, new LoadContext()),
       message,
       name
     );
@@ -1296,7 +1311,7 @@ test("workstream5 GLTFLoader accepts KHR_mesh_quantization and decodes signed no
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.deepEqual(asset.meshes[0]?.positions, [[-1, 0, 0], [1, 0, 0], [0, 1, 0]]);
   assert.deepEqual(asset.meshes[0]?.normals, [[-1, 0, 0], [0, 1, 0], [0, 0, 1]]);
@@ -1320,7 +1335,7 @@ test("workstream5 GLTFLoader rejects quantized core geometry attributes when KHR
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
   await assert.rejects(
-    () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+    () => new GLTFLoader().load({ url }, new LoadContext()),
     /KHR_mesh_quantization/
   );
 });
@@ -1363,7 +1378,7 @@ test("workstream5 GLTFLoader decodes EXT_meshopt_compression bufferViews through
       decoderCalls.push(`${descriptor.bufferViewIndex}:${descriptor.mode}:${descriptor.byteStride}:${descriptor.count}:${descriptor.filter}:${[...source].join(",")}`);
       return decodedPositions;
     }
-  }).load({ url }, { throwIfAborted: () => undefined } as never);
+  }).load({ url }, new LoadContext());
 
   assert.deepEqual(decoderCalls, ["0:ATTRIBUTES:12:3:NONE:9,8,7,6"]);
   assert.equal(asset.meshes[0]?.geometry.vertexCount, 3);
@@ -1402,7 +1417,7 @@ test("workstream5 GLTFLoader rejects malformed EXT_meshopt_compression descripto
   };
   const load = (gltf: typeof baseGLTF, decoder?: GLTFMeshoptDecoder) => new GLTFLoader(
     decoder ? { meshoptDecoder: decoder } : {}
-  ).load({ url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` }, { throwIfAborted: () => undefined } as never);
+  ).load({ url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` }, new LoadContext());
 
   await assert.rejects(() => load(baseGLTF), /requires a meshoptDecoder/);
 
@@ -1465,7 +1480,7 @@ test("workstream5 GLTFLoader decodes KHR_draco_mesh_compression primitives throu
         indices: [0, 1, 2]
       };
     }
-  }).load({ url }, { throwIfAborted: () => undefined } as never);
+  }).load({ url }, new LoadContext());
 
   assert.deepEqual(decoderCalls, ["0:0:0:3:7:222,173,190,239"]);
   assert.deepEqual(asset.meshes[0]?.positions, [[-1, 0, 0], [1, 0, 0], [0, 1, 0]]);
@@ -1504,7 +1519,7 @@ test("workstream5 GLTFLoader rejects malformed KHR_draco_mesh_compression descri
   });
   const load = (gltf: typeof baseGLTF, dracoDecoder?: GLTFDracoDecoder) => new GLTFLoader(
     dracoDecoder ? { dracoDecoder } : {}
-  ).load({ url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` }, { throwIfAborted: () => undefined } as never);
+  ).load({ url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` }, new LoadContext());
 
   await assert.rejects(() => load(baseGLTF), /requires a dracoDecoder/);
 
@@ -1553,7 +1568,7 @@ test("workstream5 GLTFLoader loads binary GLB buffer chunks", async () => {
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.meshes[0]?.name, "glb-triangle");
   assert.equal(asset.meshes[0]?.geometry.indexCount, 3);
@@ -1616,7 +1631,7 @@ test("workstream5 GLTFLoader extracts GLB material texture metadata and embedded
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.images[0]?.name, "embedded-base-color");
   assert.equal(asset.images[0]?.mimeType, "image/png");
@@ -1648,7 +1663,7 @@ test("workstream5 GLTFLoader rejects unsupported embedded image MIME types", asy
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
   await assert.rejects(
-    () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+    () => new GLTFLoader().load({ url }, new LoadContext()),
     /mimeType/
   );
 });
@@ -1668,7 +1683,7 @@ test("workstream5 GLTFLoader rejects unsupported URI image MIME metadata and dat
     const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
     await assert.rejects(
-      () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url }, new LoadContext()),
       message
     );
   }
@@ -1699,7 +1714,7 @@ test("workstream5 GLTFLoader accepts EXT_texture_webp and resolves WebP texture 
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const decodedImages: number[] = [];
   const resources = await createGLTFRenderResources(asset, {
     imageDecoder: (image, imageIndex) => {
@@ -1751,7 +1766,7 @@ test("workstream5 GLTFLoader accepts KHR_texture_basisu and routes KTX2 images t
 
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const decodedImages: number[] = [];
   const resources = await createGLTFRenderResources(asset, {
@@ -1792,7 +1807,7 @@ test("workstream5 GLTFLoader rejects unsupported sampler enum values", async () 
     };
     const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
     await assert.rejects(
-      () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url }, new LoadContext()),
       message
     );
   }
@@ -1820,7 +1835,7 @@ test("workstream5 GLTFLoader rejects malformed texture source and sampler refere
     };
     const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
     await assert.rejects(
-      () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url }, new LoadContext()),
       message
     );
   }
@@ -1866,7 +1881,7 @@ test("workstream5 GLTFLoader accepts KHR_materials_unlit and creates unlit rende
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const resources = await createGLTFRenderResources(asset, {
     imageDecoder: (image) => {
       assert.deepEqual([...new Uint8Array(image.data ?? new ArrayBuffer(0))], [...imageBytes]);
@@ -1901,7 +1916,7 @@ test("workstream5 GLTFLoader accepts KHR_materials_emissive_strength and preserv
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const resources = await createGLTFRenderResources(asset);
   const material = resources.materialLibrary.get("emissive-strength-material");
 
@@ -1917,6 +1932,7 @@ test("workstream5 GLTFLoader accepts KHR_materials_emissive_strength and preserv
     materials: [
       {
         name: "invalid-emissive-strength",
+        emissiveFactor: [0.2, 0.4, 0.6],
         extensions: {
           KHR_materials_emissive_strength: { emissiveStrength: -1 }
         }
@@ -1924,10 +1940,32 @@ test("workstream5 GLTFLoader accepts KHR_materials_emissive_strength and preserv
     ]
   };
   const invalidUrl = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalid))}`;
-  await assert.rejects(
-    () => new GLTFLoader().load({ url: invalidUrl }, { throwIfAborted: () => undefined } as never),
-    /emissiveStrength/
-  );
+  const repaired = await new GLTFLoader().load({ url: invalidUrl }, new LoadContext());
+  const repairedMaterial = repaired.materials[0];
+  assert.ok(repairedMaterial);
+  assert.equal(repairedMaterial.emissiveStrength, 1);
+  assert.deepEqual(repairedMaterial.emissiveFactor, [0.2, 0.4, 0.6]);
+  assert.deepEqual(repairedMaterial.emissiveFactor.map((channel) => channel * repairedMaterial.emissiveStrength), [0.2, 0.4, 0.6]);
+});
+
+test("workstream5 GLTFLoader preserves emission when repairing an HDR emissive factor", async () => {
+  const original = [0, 0.5, 1.2];
+  const gltf = {
+    asset: { version: "2.0" },
+    extensionsRequired: ["KHR_texture_transform"],
+    images: [{ uri: "data:image/png;base64,AAAA" }],
+    textures: [{ source: 0 }],
+    materials: [{ name: "emissive factor outside unit range", emissiveFactor: original }]
+  };
+  const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
+  const material = asset.materials[0];
+  assert.ok(material);
+  assert.deepEqual(material.emissiveFactor, [0, 0.5 / 1.2, 1]);
+  assert.equal(material.emissiveStrength, 1.2);
+  material.emissiveFactor.forEach((channel, index) => {
+    assert.ok(Math.abs(channel * material.emissiveStrength - original[index]!) < 1e-12);
+  });
 });
 
 test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and runtime texture bindings", async () => {
@@ -2085,7 +2123,7 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   // Parsing preserves the full glTF contract, but fourteen simultaneous
   // extension maps cannot fit the guaranteed WebGL2 fragment sampler budget.
   await assert.rejects(() => createGLTFRenderResources(asset, {
@@ -2113,7 +2151,7 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   };
   const familyAsset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(familyGltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(familyAsset, {
     imageDecoder: (_image, imageIndex) => ({
@@ -2334,7 +2372,7 @@ test("workstream5 GLTFLoader imports KHR_materials_pbrSpecularGlossiness into PB
 
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const resources = await createGLTFRenderResources(asset, {
     imageDecoder: (_image, imageIndex) => ({
@@ -2450,13 +2488,13 @@ test("workstream5 GLTFLoader rejects invalid advanced glTF material extension va
       /KHR_materials_iridescence\.iridescenceFactor/
     ],
     [
-      "iridescence ior outside physical range",
-      { extensions: { KHR_materials_iridescence: { iridescenceIor: 3.1 } } },
+      "iridescence ior below the schema minimum",
+      { extensions: { KHR_materials_iridescence: { iridescenceIor: 0.9 } } },
       /KHR_materials_iridescence\.iridescenceIor/
     ],
     [
-      "iridescence thickness range inverted",
-      { extensions: { KHR_materials_iridescence: { iridescenceThicknessMinimum: 700, iridescenceThicknessMaximum: 100 } } },
+      "iridescence thickness maximum is negative",
+      { extensions: { KHR_materials_iridescence: { iridescenceThicknessMinimum: 700, iridescenceThicknessMaximum: -1 } } },
       /KHR_materials_iridescence\.iridescenceThicknessMaximum/
     ],
     [
@@ -2501,10 +2539,24 @@ test("workstream5 GLTFLoader rejects invalid advanced glTF material extension va
     };
     const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
     await assert.rejects(
-      () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url }, new LoadContext()),
       message
     );
   }
+});
+
+test("workstream5 GLTFLoader preserves high iridescence IOR and reversed thickness endpoints", async () => {
+  const gltf = {
+    asset: { version: "2.0" }, extensionsRequired: ["KHR_materials_iridescence"],
+    materials: [{ extensions: { KHR_materials_iridescence: {
+      iridescenceIor: 3.1, iridescenceThicknessMinimum: 700, iridescenceThicknessMaximum: 100
+    } } }]
+  };
+  const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
+  assert.equal(asset.materials[0]?.iridescence?.ior, 3.1);
+  assert.equal(asset.materials[0]?.iridescence?.thicknessMinimum, 700);
+  assert.equal(asset.materials[0]?.iridescence?.thicknessMaximum, 100);
 });
 
 test("workstream5 GLTFLoader rejects invalid material scalar, color, and texture-transform data", async () => {
@@ -2518,11 +2570,6 @@ test("workstream5 GLTFLoader rejects invalid material scalar, color, and texture
       "negative roughness",
       { pbrMetallicRoughness: { roughnessFactor: -0.1 } },
       /roughnessFactor/
-    ],
-    [
-      "emissive factor outside unit range",
-      { emissiveFactor: [0, 0.5, 1.2] },
-      /emissiveFactor/
     ],
     [
       "alpha cutoff outside unit range",
@@ -2604,7 +2651,7 @@ test("workstream5 GLTFLoader rejects invalid material scalar, color, and texture
     };
     const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
     await assert.rejects(
-      () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+      () => new GLTFLoader().load({ url }, new LoadContext()),
       message
     );
   }
@@ -2697,7 +2744,7 @@ test("workstream5 glTF render resources bind material textures, samplers, UV tra
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const resources = await createGLTFRenderResources(asset, {
     imageDecoder: (image, imageIndex) => {
       const expectedSource = [baseColorImageBytes, normalImageBytes, metallicRoughnessImageBytes, occlusionImageBytes, emissiveImageBytes][imageIndex];
@@ -2809,7 +2856,7 @@ test("workstream5 GLTFLoader preserves secondary texcoords and render resources 
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const resources = await createGLTFRenderResources(asset, {
     imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) })
   });
@@ -2851,7 +2898,7 @@ test("workstream5 GLTFLoader rejects material texCoord references without matchi
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
   await assert.rejects(
-    () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+    () => new GLTFLoader().load({ url }, new LoadContext()),
     /TEXCOORD_1/
   );
 });
@@ -2882,7 +2929,7 @@ test("workstream5 glTF render resources synthesize fallback normals and TEXCOORD
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const resources = await createGLTFRenderResources(asset, {
     imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) })
   });
@@ -2944,7 +2991,7 @@ test("workstream5 glTF render resources preserve mixed material texcoord sets wi
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.materials[0]?.baseColorTexture?.texCoord, 0);
   assert.equal(asset.materials[0]?.normalTexture?.texCoord, 1);
@@ -3018,7 +3065,7 @@ test("workstream5 GLTFLoader imports skinning data and animation channels", asyn
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.meshes[0]?.skinIndex, 0);
   assert.deepEqual(asset.meshes[0]?.normals[0], [0, 0, 1]);
@@ -3076,7 +3123,7 @@ test("workstream5 GLTFLoader keeps skinning palette in original glTF joint order
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const resources = await createGLTFRenderResources(asset);
   const renderable = resources.scene.collectRenderables()[0]?.renderable;
 
@@ -3115,7 +3162,7 @@ test("workstream5 GLTFLoader rejects malformed skin descriptors", async () => {
     await assert.rejects(
       () => new GLTFLoader().load(
         { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-        { throwIfAborted: () => undefined } as never
+        new LoadContext()
       ),
       message,
       name
@@ -3157,7 +3204,7 @@ test("workstream5 GLTFLoader imports CUBICSPLINE animation tangents", async () =
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const track = asset.animations[0]?.tracks[0];
 
   assert.equal(track?.target, "spline-node.translation");
@@ -3193,7 +3240,7 @@ test("workstream5 GLTFLoader imports multi-target morph weight animation channel
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const track = asset.animations[0]?.tracks[0];
 
   assert.equal(track?.target, "morph-node.weights");
@@ -3244,7 +3291,7 @@ test("workstream5 GLTFLoader binds supported KHR_animation_pointer channels alon
 
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
 
   assert.equal(asset.loaderDiagnostics.unsupportedExtensions.includes("KHR_animation_pointer"), false);
@@ -3284,7 +3331,7 @@ test("workstream5 GLTFLoader rejects unsupported animation interpolation and tar
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidInterpolation))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /interpolation CATMULLROMSPLINE is unsupported/
   );
@@ -3294,7 +3341,7 @@ test("workstream5 GLTFLoader rejects unsupported animation interpolation and tar
   await assert.rejects(
     () => new GLTFLoader().load(
       { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(invalidPath))}` },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     ),
     /target path color is unsupported/
   );
@@ -3335,7 +3382,7 @@ test("workstream5 GLTFLoader imports morph target geometry and default weights",
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const mesh = asset.meshes[0];
 
   assert.equal(mesh?.morphTargets.length, 1);
@@ -3404,7 +3451,7 @@ test("workstream5 GLTFLoader rejects malformed morph target descriptors and weig
     await assert.rejects(
       () => new GLTFLoader().load(
         { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
-        { throwIfAborted: () => undefined } as never
+        new LoadContext()
       ),
       message,
       name
@@ -3426,7 +3473,7 @@ test("workstream5 GLTFLoader rejects materials that reference missing textures",
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
   await assert.rejects(
-    () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+    () => new GLTFLoader().load({ url }, new LoadContext()),
     /baseColorTexture references missing texture 4/
   );
 });
@@ -3469,8 +3516,8 @@ test("workstream5 shader and material loaders validate fetched descriptors", asy
   }) as typeof fetch;
 
   try {
-    const shader = await new ShaderLoader().load({ url: "https://assets.example/surface.wgsl" }, { throwIfAborted: () => undefined } as never);
-    const material = await new MaterialLoader().load({ url: "https://assets.example/surface.material.json" }, { throwIfAborted: () => undefined } as never);
+    const shader = await new ShaderLoader().load({ url: "https://assets.example/surface.wgsl" }, new LoadContext());
+    const material = await new MaterialLoader().load({ url: "https://assets.example/surface.material.json" }, new LoadContext());
 
     assert.match(shader.source, /@fragment/);
     assert.equal(material.name, "surface");
@@ -3483,12 +3530,12 @@ test("workstream5 shader and material loaders validate fetched descriptors", asy
     assert.equal(runtimeMaterial.getParameter("u_roughness"), 0.65);
     assert.deepEqual(runtimeMaterial.getParameter("u_emissiveColor"), [0.02, 0.03, 0.04]);
 
-    const flat = await new MaterialLoader().load({ url: "https://assets.example/flat.material.json" }, { throwIfAborted: () => undefined } as never);
+    const flat = await new MaterialLoader().load({ url: "https://assets.example/flat.material.json" }, new LoadContext());
     const flatMaterial = flat.createMaterial();
     assert.ok(flatMaterial instanceof UnlitMaterial);
     assert.deepEqual(flatMaterial.getParameter("u_baseColor"), [0.8, 0.7, 0.6, 1]);
 
-    const invalid = await new MaterialLoader().load({ url: "https://assets.example/invalid.material.json" }, { throwIfAborted: () => undefined } as never);
+    const invalid = await new MaterialLoader().load({ url: "https://assets.example/invalid.material.json" }, new LoadContext());
     assert.throws(() => invalid.createMaterial(), /roughness/);
   } finally {
     globalThis.fetch = originalFetch;
@@ -3526,7 +3573,7 @@ test("workstream5 SceneLoader imports hierarchy and animation clips", async () =
     })) as typeof fetch;
 
   try {
-    const asset = await new SceneLoader().load({ url: "https://assets.example/level.scene.json" }, { throwIfAborted: () => undefined } as never);
+    const asset = await new SceneLoader().load({ url: "https://assets.example/level.scene.json" }, new LoadContext());
     const [root] = asset.scene.findByName("animated-root");
     const [child] = asset.scene.findByName("child");
 

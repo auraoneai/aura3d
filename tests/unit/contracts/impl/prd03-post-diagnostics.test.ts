@@ -13,7 +13,8 @@ import {
   latestSubmittedPostprocess,
   recordAuthoredPostContext,
   resetAuthoredPostContext,
-  resetSubmittedPostprocess
+  resetSubmittedPostprocess,
+  type PostSectionReport
 } from "../../../../packages/engine/src/agent-api/postBridge";
 import { resolveQrFlags } from "@aura3d/engine/contracts";
 import type { AuraApp } from "@aura3d/engine";
@@ -56,6 +57,7 @@ describe("post/exposure diagnostics sections", () => {
     expect(post.pipeline).toBe("legacy");
     expect(post.submittedPasses).toEqual([]);
     expect(post.executionMode).toBeNull();
+    expect(post.velocityCoverage).toBeNull();
     const exposure = collectExposureSection(app as AuraApp);
     expect(exposure.applied).toBeNull();
     app.dispose();
@@ -71,6 +73,21 @@ describe("post/exposure diagnostics sections", () => {
     expect(submitted?.authored.colorGrade).toBe(true);
     expect(submitted?.authored.colorGradeExposure).toBe(1.35);
     expect(submitted?.authored.antiAliasMode).toBe("fxaa");
+  });
+
+  test("unscoped velocity coverage exposes unknown counts without breaking the prior type shape", () => {
+    const previousShape: NonNullable<PostSectionReport["velocityCoverage"]> = {
+      items: 0, withVelocity: 0, moving: 0, movingWithHistory: 0
+    };
+    expect(previousShape.available).toBeUndefined();
+
+    recordAuthoredPostContext({ flags: resolveQrFlags({ options: ["post"] }), options: {} });
+    createProductionRuntimePostprocess(snapshotWithEffects(), [], 320, 200);
+    const coverage = collectPostSection({} as AuraApp).velocityCoverage;
+    expect(coverage).toEqual({
+      items: 0, withVelocity: 0, moving: 0, movingWithHistory: 0, available: false
+    });
+    expect(coverage?.available).toBe(false);
   });
 
   test("post section lists the passes the legacy chain executes", () => {
@@ -134,8 +151,10 @@ describe("post/exposure diagnostics sections", () => {
   test("flag-off keeps the same truthful data (diagnostics plumbing is flag-neutral)", () => {
     const flags = resolveQrFlags({ options: { A3D_QR_POST: false } });
     expect(flags.on("A3D_QR_POST")).toBe(false);
+    recordAuthoredPostContext({ flags, options: {} });
     createProductionRuntimePostprocess(scene().add(effects.bloom({ intensity: 0.5 })).toJSON(), [], 160, 90);
     expect(latestSubmittedPostprocess()?.authored.bloom).toBe(true);
     expect(collectPostSection({} as AuraApp).submittedPasses).toContain("bloom");
+    expect(collectPostSection({} as AuraApp).velocityCoverage).toBeNull();
   });
 });

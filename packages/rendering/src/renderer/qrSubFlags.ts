@@ -70,8 +70,12 @@ function generatedProviderFlags(flags: QrFlags): QrFlags {
 // The generated-program cache and the AuraFrame UBO belong to the device, not a
 // pass instance: the Renderer warms it and ForwardPass acquires from it.
 
-const caches = new WeakMap<RenderDevice, ProgramCacheLike>();
-const auraFrames = new WeakMap<RenderDevice, FrameUniformsLike>();
+// Program generators retain the flags supplied at creation. Distinct renderer
+// owners sharing a device therefore need separate caches for distinct flag
+// identities, even though the compiled programs still belong to that device.
+const caches = new WeakMap<RenderDevice, Map<QrFlags, ProgramCacheLike>>();
+const lastCache = new WeakMap<RenderDevice, ProgramCacheLike>();
+const auraFrames = new WeakMap<RenderDevice, Map<QrFlags, FrameUniformsLike>>();
 const degradationSinks = new WeakMap<RenderDevice, (degradation: ProgramDegradationLike) => void>();
 
 /**
@@ -87,7 +91,9 @@ export function setRendererProgramDegradationSink(device: RenderDevice, sink: ((
 }
 
 export function rendererProgramCache(device: RenderDevice, flags: QrFlags): ProgramCacheLike {
-  let cache = caches.get(device);
+  let byFlags = caches.get(device);
+  if (!byFlags) { byFlags = new Map(); caches.set(device, byFlags); }
+  let cache = byFlags.get(flags);
   if (!cache) {
     // T0-05 (a): without `flags` the real generator resolves no ShaderFeature
     // contributors and no C-03 lobes, so no registered chunk ever reaches a
@@ -108,8 +114,9 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
       flags,
       onDegradation: (degradation) => degradationSinks.get(device)?.(degradation)
     });
-    caches.set(device, cache);
+    byFlags.set(flags, cache);
   }
+  lastCache.set(device, cache);
   return cache;
 }
 
@@ -117,15 +124,31 @@ export function rendererProgramCache(device: RenderDevice, flags: QrFlags): Prog
  * PRD-01 Phase 6 (C-31): read-only access for diagnostics — never creates the
  * singleton, so callers that lack the app's QrFlags can't pollute the map.
  */
-export function rendererProgramCachePeek(device: RenderDevice): ProgramCacheLike | undefined {
-  return caches.get(device);
+export function rendererProgramCachePeek(device: RenderDevice, flags?: QrFlags): ProgramCacheLike | undefined {
+  return flags ? caches.get(device)?.get(flags) : lastCache.get(device);
+}
+
+/** Called only after the last renderer owning this device has stopped. */
+export function disposeRendererProgramCaches(device: RenderDevice): void {
+  const byFlags = caches.get(device);
+  caches.delete(device);
+  lastCache.delete(device);
+  auraFrames.delete(device);
+  if (!byFlags) return;
+  const errors: unknown[] = [];
+  for (const cache of byFlags.values()) {
+    try { cache.dispose(); } catch (error) { errors.push(error); }
+  }
+  if (errors.length) throw new AggregateError(errors, "Renderer program cache disposal failed.");
 }
 
 export function rendererAuraFrame(device: RenderDevice, flags: QrFlags): FrameUniformsLike {
-  let fu = auraFrames.get(device);
+  let byFlags = auraFrames.get(device);
+  if (!byFlags) { byFlags = new Map(); auraFrames.set(device, byFlags); }
+  let fu = byFlags.get(flags);
   if (!fu) {
     fu = frameUniformsSlot.get(generatedProviderFlags(flags))(device);
-    auraFrames.set(device, fu);
+    byFlags.set(flags, fu);
   }
   return fu;
 }

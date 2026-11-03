@@ -200,7 +200,11 @@ describe("camera controls scene camera contracts", () => {
     const input = new InputSystem(target);
 
     input.attach(target);
-    expect([...active.values()].map((listeners) => listeners.size)).toEqual([1, 1, 1, 1, 1, 1, 1, 1]);
+    expect([...active.keys()].sort()).toEqual([
+      "blur", "keydown", "keyup", "lostpointercapture", "pointercancel", "pointerdown",
+      "pointerleave", "pointermove", "pointerup", "wheel"
+    ]);
+    expect([...active.values()].every((listeners) => listeners.size === 1)).toBe(true);
 
     input.dispose();
     expect([...active.values()].every((listeners) => listeners.size === 0)).toBe(true);

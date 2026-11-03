@@ -52,12 +52,13 @@ describe("T1a assertNoUndocumentedRendererMount", () => {
 
   test("forbidden primitives fail closed", () => {
     const cases: ReadonlyArray<[string, string]> = [
-      ["three import", `import { WebGLRenderer } from "three";`],
-      ["three examples import", `import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";`],
-      ["WebGLRenderer", `const r = new WebGLRenderer();`],
-      ["new Renderer", `const r = new Renderer(canvas);`],
-      ["unsafeModelUrl", `model(unsafeModelUrl("https://x/y.glb"))`],
-      ["string model id", `model("hero-id")`],
+      // These are inert source strings for the import-policy scanner, not loaded dependencies.
+      ["third-party renderer import", `import { WebGLRenderer } from "three";`],
+      ["third-party loader import", `import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";`],
+      ["third-party renderer construction", `const r = new WebGLRenderer();`],
+      ["new Renderer", `import { Renderer } from "@aura3d/rendering";\nconst r = new Renderer(canvas);`],
+      ["unsafeModelUrl", `import { model, unsafeModelUrl } from "@aura3d/engine";\nmodel(unsafeModelUrl("https://example.invalid/hero.glb"))`],
+      ["string model id", `import { model } from "@aura3d/engine";\nmodel("hero-id")`],
     ];
     for (const [label, content] of cases) {
       expect(
@@ -108,7 +109,7 @@ const renderer = await A3DRenderer.create({ canvas });`;
   test("assert throws with path and reason", () => {
     expect(() =>
       assertNoUndocumentedRendererMount([
-        { path: "apps/demo/src/main.ts", content: `import { x } from "three";` },
+        { path: "apps/demo/src/main.ts", content: `import { Renderer } from "@aura3d/rendering";\nconst r = new Renderer(canvas);` },
       ])
     ).toThrow(/apps\/demo\/src\/main\.ts/);
   });

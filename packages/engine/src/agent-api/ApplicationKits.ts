@@ -18,12 +18,12 @@
  * All five kits are pure: they hold state and return scene-node JSON plus intent. No
  * renderer, no DOM, no asset loading, so each is unit-testable and reusable by any route.
  *
- * Deliberately *not* included: anything a kit cannot honestly own. Measurement and section
- * views in the architecture kit need geometry the public API does not expose, so they are
- * reported as absent. See `unsupported` on each kit's capability report.
+ * Deliberately *not* included: anything a kit cannot honestly own. Architecture
+ * measurement still needs picked world positions and is reported as absent.
  */
 
 import type { AuraCameraSpec, AuraColor, AuraSceneNode, AuraVec3 } from "./nodes/types.js";
+import { clipping, type AuraClipGroup, type AuraGlobalClipOptions } from "./nodes/clipping.js";
 import {
   clearFocus,
   focusCameraIntent,
@@ -42,7 +42,7 @@ import {
   type SemanticRegion,
   type SpatialInvariantReport
 } from "./SpatialAnchoring.js";
-import { round } from "./GameRuntime.js";
+import { round } from "./GameRuntimeCore.js";
 import { timeline } from "./nodes/timeline.js";
 
 /** Capability report every kit publishes, so a claim can be checked against it. */
@@ -533,6 +533,8 @@ export interface ArchitectureKitOptions {
   readonly moods: readonly { readonly id: string; readonly label: string; readonly sunElevation: number; readonly sunAzimuth: number }[];
   readonly materialVariants?: readonly { readonly id: string; readonly label: string }[] | undefined;
   readonly aspect?: number | undefined;
+  /** Initial world-space section planes. The frame's clipping group is attached to the scene. */
+  readonly section?: AuraGlobalClipOptions | undefined;
 }
 
 export interface ArchitectureFrame {
@@ -543,6 +545,8 @@ export interface ArchitectureFrame {
   readonly materialVariantId: string | undefined;
   readonly nodes: readonly AuraSceneNode[];
   readonly camera: AuraCameraSpec | undefined;
+  /** Stable, live global group; pass it as the scene's clipping option. */
+  readonly clipping: AuraClipGroup;
   /** Sun direction for the active mood, as a unit vector. */
   readonly sunDirection: AuraVec3;
   /** Spaces on the focused floor, or all spaces when no floor is focused. */
@@ -558,6 +562,8 @@ export interface ArchitectureKit {
   focusSpace(spaceId: string | undefined): ArchitectureFrame;
   setMood(moodId: string): ArchitectureFrame;
   setMaterialVariant(variantId: string | undefined): ArchitectureFrame;
+  /** Replace the section plane configuration, or disable it with undefined. */
+  setSection(options: AuraGlobalClipOptions | undefined): ArchitectureFrame;
   reset(): ArchitectureFrame;
   frame(): ArchitectureFrame;
 }
@@ -566,6 +572,8 @@ export function createArchitectureKit(options: ArchitectureKitOptions): Architec
   const spaces = new Map(options.spaces.map((space) => [space.id, space]));
   const moods = new Map(options.moods.map((mood) => [mood.id, mood]));
   const variants = new Map((options.materialVariants ?? []).map((variant) => [variant.id, variant]));
+  const section = clipping.global(options.section ?? { planes: [], enabled: false });
+  const initialSection = section.snapshot();
   const initial = {
     floor: undefined as number | undefined,
     spaceId: undefined as string | undefined,
@@ -579,16 +587,12 @@ export function createArchitectureKit(options: ArchitectureKitOptions): Architec
     kit: "architecture",
     supported: [
       "navigation between spaces", "floor focus", "room focus", "annotations",
-      "sun/light controls", "material variants", "camera framing", "spatial invariants"
+      "sun/light controls", "material variants", "camera framing", "spatial invariants", "clipping/section views"
     ],
     unsupported: [
       {
         capability: "measurement",
         reason: "point-to-point measurement needs picked world positions from the renderer, which the safe public API does not expose; a kit returning invented distances would be worse than none"
-      },
-      {
-        capability: "clipping/section views",
-        reason: "clip planes are not surfaced through the root safe API, so a kit cannot honestly produce a section view"
       }
     ]
   };
@@ -645,6 +649,7 @@ export function createArchitectureKit(options: ArchitectureKitOptions): Architec
       materialVariantId: state.materialVariantId,
       nodes: focus.nodes,
       camera,
+      clipping: section,
       sunDirection,
       visibleSpaceIds,
       spatialInvariants: checkSpatialInvariants(
@@ -685,8 +690,14 @@ export function createArchitectureKit(options: ArchitectureKitOptions): Architec
       state = { ...state, materialVariantId: variantId !== undefined && variants.has(variantId) ? variantId : undefined };
       return buildFrame();
     },
+    setSection(sectionOptions) {
+      if (sectionOptions === undefined) section.setEnabled(false);
+      else section.update({ space: "world", combine: "intersection", clipShadows: false, enabled: true, ...sectionOptions });
+      return buildFrame();
+    },
     reset() {
       state = initial;
+      section.update({ planes: initialSection.planes, space: initialSection.space, combine: initialSection.combine, clipShadows: initialSection.clipShadows, enabled: initialSection.enabled });
       return buildFrame();
     },
     frame: buildFrame

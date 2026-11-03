@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Geometry,
   createPlanarProjectionMatrix,
@@ -9,9 +9,13 @@ import {
   type DrawCommand
 } from "../../../packages/rendering/src";
 
+afterEach(() => { vi.useRealTimers(); });
+
 describe("WebGL2 render-state isolation", () => {
-  it("deletes WebGL resource handles on device disposal", () => {
+  it("deletes WebGL resource handles on device disposal", async () => {
+    vi.useFakeTimers();
     const { canvas, gl } = createFakeWebGL2Canvas();
+    gl.state.fenceSignaled = false;
     const device = WebGL2Device.create({ canvas });
     const geometry = Geometry.triangle();
     const vertexBuffer = geometry.vertexBuffer.upload(device);
@@ -58,7 +62,17 @@ describe("WebGL2 render-state isolation", () => {
     device.dispose();
 
     expect(gl.state.deletions.buffers).toBeGreaterThanOrEqual(2);
+    expect(gl.state.deletions.textures).toBe(0);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(gl.state.deletions.textures).toBe(0);
+    gl.state.fenceSignaled = true;
+    await vi.advanceTimersByTimeAsync(8);
     expect(gl.state.deletions.textures).toBeGreaterThanOrEqual(3);
+    expect(new Set(gl.state.deletedTextureHandles).size).toBe(gl.state.deletions.textures);
+    const textureDeletes = gl.state.deletions.textures;
+    device.dispose();
+    await vi.advanceTimersByTimeAsync(8);
+    expect(gl.state.deletions.textures).toBe(textureDeletes);
     expect(gl.state.deletions.framebuffers).toBeGreaterThanOrEqual(2);
     expect(gl.state.deletions.renderbuffers).toBeGreaterThanOrEqual(1);
     expect(gl.state.deletions.vertexArrays).toBeGreaterThanOrEqual(1);
@@ -309,8 +323,8 @@ describe("WebGL2 render-state isolation", () => {
       format: "depth24",
       label: "sampleable-depth-target-depth"
     });
-    expect(gl.state.framebufferTextureAttachments.some((entry) => entry.attachment === gl.DEPTH_ATTACHMENT)).toBe(true);
-    expect(gl.state.framebufferRenderbufferAttachments.some((entry) => entry.attachment === gl.DEPTH_ATTACHMENT)).toBe(false);
+    expect(gl.state.framebufferTextureAttachments.some((entry) => entry.attachment === gl.DEPTH_STENCIL_ATTACHMENT)).toBe(true);
+    expect(gl.state.framebufferRenderbufferAttachments.some((entry) => entry.attachment === gl.DEPTH_STENCIL_ATTACHMENT)).toBe(false);
     expect(gl.state.activeTextureUnit).toBe(4);
     expect(gl.state.textureBindings.get(4)).toBe(sentinelTexture);
   });
@@ -328,7 +342,7 @@ describe("WebGL2 render-state isolation", () => {
     expect(target.sampleCount).toBe(4);
     expect(gl.state.multisampleAllocations).toEqual([
       { samples: 4, internalFormat: gl.RGBA8, width: 8, height: 8 },
-      { samples: 4, internalFormat: gl.DEPTH_COMPONENT24, width: 8, height: 8 }
+      { samples: 4, internalFormat: gl.DEPTH24_STENCIL8, width: 8, height: 8 }
     ]);
     device.beginFrame(8, 8);
     device.setRenderTarget(target);
@@ -349,7 +363,7 @@ describe("WebGL2 render-state isolation", () => {
     const target = device.createRenderTarget({ width: 8, height: 8, label: "default-depth-target" });
 
     expect(target.depthTexture).toBeUndefined();
-    expect(gl.state.framebufferRenderbufferAttachments.some((entry) => entry.attachment === gl.DEPTH_ATTACHMENT)).toBe(true);
+    expect(gl.state.framebufferRenderbufferAttachments.some((entry) => entry.attachment === gl.DEPTH_STENCIL_ATTACHMENT)).toBe(true);
   });
 
   it("binds renderer-owned sampleable depth textures without attempting an rgba upload", () => {
@@ -409,8 +423,10 @@ describe("WebGL2 render-state isolation", () => {
     expect(gl.state.textureBindings.get(2)).toBe(sentinelTexture);
   });
 
-  it("runs LDR bloom as bright, ping-pong blur, and LUT composite fullscreen stages", () => {
+  it("runs LDR bloom as bright, ping-pong blur, and LUT composite fullscreen stages", async () => {
+    vi.useFakeTimers();
     const { canvas, gl } = createFakeWebGL2Canvas();
+    gl.state.fenceSignaled = false;
     const device = WebGL2Device.create({ canvas });
     const source = device.createRenderTarget({ width: 4, height: 2, label: "native-bloom-source" });
     const output = device.createRenderTarget({ width: 4, height: 2, label: "native-bloom-output" });
@@ -467,7 +483,17 @@ describe("WebGL2 render-state isolation", () => {
 
     device.dispose();
     expect(gl.state.deletions.programs).toBeGreaterThanOrEqual(4);
+    const beforeFence = gl.state.deletions.textures;
+    await vi.advanceTimersByTimeAsync(0);
+    expect(gl.state.deletions.textures).toBe(beforeFence);
+    gl.state.fenceSignaled = true;
+    await vi.advanceTimersByTimeAsync(8);
     expect(gl.state.deletions.textures).toBeGreaterThanOrEqual(6);
+    expect(new Set(gl.state.deletedTextureHandles).size).toBe(gl.state.deletions.textures);
+    const textureDeletes = gl.state.deletions.textures;
+    device.dispose();
+    await vi.advanceTimersByTimeAsync(8);
+    expect(gl.state.deletions.textures).toBe(textureDeletes);
     expect(gl.state.deletions.framebuffers).toBeGreaterThanOrEqual(4);
   });
 
@@ -506,8 +532,10 @@ describe("WebGL2 render-state isolation", () => {
     device.dispose();
   });
 
-  it("runs LDR outline as an integer Sobel, circular dilation, and LUT blend stage", () => {
+  it("runs LDR outline as an integer Sobel, circular dilation, and LUT blend stage", async () => {
+    vi.useFakeTimers();
     const { canvas, gl } = createFakeWebGL2Canvas();
+    gl.state.fenceSignaled = false;
     const device = WebGL2Device.create({ canvas });
     const source = device.createRenderTarget({ width: 5, height: 4, label: "native-outline-source" });
     const output = device.createRenderTarget({ width: 5, height: 4, label: "native-outline-output" });
@@ -543,7 +571,17 @@ describe("WebGL2 render-state isolation", () => {
 
     device.dispose();
     expect(gl.state.deletions.programs).toBeGreaterThanOrEqual(2);
+    const beforeFence = gl.state.deletions.textures;
+    await vi.advanceTimersByTimeAsync(0);
+    expect(gl.state.deletions.textures).toBe(beforeFence);
+    gl.state.fenceSignaled = true;
+    await vi.advanceTimersByTimeAsync(8);
     expect(gl.state.deletions.textures).toBeGreaterThanOrEqual(5);
+    expect(new Set(gl.state.deletedTextureHandles).size).toBe(gl.state.deletions.textures);
+    const textureDeletes = gl.state.deletions.textures;
+    device.dispose();
+    await vi.advanceTimersByTimeAsync(8);
+    expect(gl.state.deletions.textures).toBe(textureDeletes);
   });
 
   it("runs SSAO as a depth-texture fullscreen stage before FXAA", () => {
@@ -788,6 +826,8 @@ interface FakeWebGL2State {
   uniformWrites: { readonly name: string; readonly value: number | number[] }[];
   fullscreenDraws: { readonly program: FakeProgram | null; readonly framebuffer: unknown; readonly viewport: readonly [number, number, number, number] }[];
   depthTextureUploadAttempts: number;
+  fenceSignaled: boolean;
+  deletedTextureHandles: unknown[];
   deletions: {
     buffers: number;
     textures: number;
@@ -851,6 +891,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     fullscreenDraws: [],
     uniformWrites: [],
     depthTextureUploadAttempts: 0,
+    fenceSignaled: true,
+    deletedTextureHandles: [],
     deletions: {
       buffers: 0,
       textures: 0,
@@ -863,6 +905,9 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
   };
   const gl = {
     ACTIVE_TEXTURE: 0x84e0,
+    ALREADY_SIGNALED: 0x911a,
+    TIMEOUT_EXPIRED: 0x911b,
+    SYNC_GPU_COMMANDS_COMPLETE: 0x9117,
     ACTIVE_ATTRIBUTES: 0x8b89,
     ACTIVE_UNIFORMS: 0x8b86,
     ARRAY_BUFFER: 0x8892,
@@ -884,6 +929,9 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     DEPTH_COMPONENT: 0x1902,
     DEPTH_COMPONENT16: 0x81a5,
     DEPTH_COMPONENT24: 0x81a6,
+    DEPTH24_STENCIL8: 0x88f0,
+    DEPTH_STENCIL: 0x84f9,
+    DEPTH_STENCIL_ATTACHMENT: 0x821a,
     DEPTH_TEST: 0x0b71,
     DEPTH_WRITEMASK: 0x0b72,
     DYNAMIC_DRAW: 0x88e8,
@@ -897,8 +945,13 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     READ_FRAMEBUFFER: 0x8ca8,
     DRAW_FRAMEBUFFER: 0x8ca9,
     FRAMEBUFFER_BINDING: 0x8ca6,
+    READ_FRAMEBUFFER_BINDING: 0x8caa,
+    DRAW_FRAMEBUFFER_BINDING: 0x8ca6,
+    READ_BUFFER: 0x0c02,
+    DRAW_BUFFER0: 0x8825,
     FRAMEBUFFER_COMPLETE: 0x8cd5,
     FRONT: 0x0404,
+    FUNC_ADD: 0x8006,
     GEQUAL: 0x0206,
     GREATER: 0x0204,
     EQUAL: 0x0202,
@@ -924,6 +977,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     NONE: 0,
     NOTEQUAL: 0x0205,
     ONE_MINUS_SRC_ALPHA: 0x0303,
+    ONE: 1,
     POINTS: 0x0000,
     RENDERER: 0x1f01,
     RENDERBUFFER: 0x8d41,
@@ -937,6 +991,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     SRGB8_ALPHA8: 0x8c43,
     SRC_ALPHA: 0x0302,
     STENCIL_TEST: 0x0b90,
+    STENCIL_BUFFER_BIT: 0x0400,
     TEXTURE0: 0x84c0,
     TEXTURE_2D: 0x0de1,
     TEXTURE_BINDING_2D: 0x8069,
@@ -951,6 +1006,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     UNPACK_PREMULTIPLY_ALPHA_WEBGL: 0x9241,
     UNSIGNED_BYTE: 0x1401,
     UNSIGNED_INT: 0x1405,
+    UNSIGNED_INT_24_8: 0x84fa,
     UNSIGNED_SHORT: 0x1403,
     VENDOR: 0x1f00,
     VERTEX_ARRAY_BINDING: 0x85b5,
@@ -968,6 +1024,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       if (parameter === this.ARRAY_BUFFER_BINDING) return state.arrayBuffer;
       if (parameter === this.ELEMENT_ARRAY_BUFFER_BINDING) return state.elementArrayBuffer;
       if (parameter === this.FRAMEBUFFER_BINDING) return state.framebuffer;
+      if (parameter === this.READ_FRAMEBUFFER_BINDING) return state.framebuffer;
+      if (parameter === this.READ_BUFFER || parameter === this.DRAW_BUFFER0) return this.COLOR_ATTACHMENT0;
       if (parameter === this.RENDERBUFFER_BINDING) return state.renderbuffer;
       if (parameter === this.ACTIVE_TEXTURE) return this.TEXTURE0 + state.activeTextureUnit;
       if (parameter === this.TEXTURE_BINDING_2D) return state.textureBindings.get(state.activeTextureUnit) ?? null;
@@ -1072,7 +1130,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       const data = args[5];
       const dataLength = ArrayBuffer.isView(data) ? data.byteLength : null;
       state.textureUploads.push({ internalFormat, width, height, dataLength });
-      if (internalFormat === this.DEPTH_COMPONENT24) state.depthTextureUploadAttempts += 1;
+      if (internalFormat === this.DEPTH_COMPONENT24 || internalFormat === this.DEPTH24_STENCIL8) state.depthTextureUploadAttempts += 1;
     },
     texSubImage2D() {},
     pixelStorei() {},
@@ -1086,6 +1144,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     bindFramebuffer(target: number, framebuffer: unknown) {
       if (target === this.FRAMEBUFFER || target === this.READ_FRAMEBUFFER || target === this.DRAW_FRAMEBUFFER) state.framebuffer = framebuffer;
     },
+    readBuffer() {},
+    drawBuffers() {},
     bindRenderbuffer(target: number, renderbuffer: unknown) {
       if (target === this.RENDERBUFFER) state.renderbuffer = renderbuffer;
     },
@@ -1109,8 +1169,12 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     checkFramebufferStatus() {
       return this.FRAMEBUFFER_COMPLETE;
     },
-    deleteTexture() {
+    fenceSync() { return { id: nextId++ }; },
+    clientWaitSync() { return state.fenceSignaled ? this.ALREADY_SIGNALED : this.TIMEOUT_EXPIRED; },
+    deleteSync() {},
+    deleteTexture(texture: unknown) {
       state.deletions.textures += 1;
+      state.deletedTextureHandles.push(texture);
     },
     deleteFramebuffer() {
       state.deletions.framebuffers += 1;
@@ -1155,6 +1219,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     clearDepth(depth: number) {
       state.clearDepth = depth;
     },
+    clearStencil() {},
     clear() {},
     useProgram(program: FakeProgram) {
       state.currentProgram = program;
@@ -1207,6 +1272,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       state.stencilOp = [fail, depthFail, depthPass];
     },
     blendFunc() {},
+    blendFuncSeparate() {},
+    blendEquationSeparate() {},
     drawArrays() {
       state.fullscreenDraws.push({ program: state.currentProgram, framebuffer: state.framebuffer, viewport: [...state.viewport] });
     },
@@ -1379,8 +1446,10 @@ describe("E1 wave 2: device primitive counters", () => {
     const { canvas } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
     const geometry = Geometry.triangle();
-    const vertexBuffer = geometry.vertexBuffer.upload(device);
-    const indexBuffer = geometry.indexBuffer?.upload(device);
+    // The counter exercise draws four vertices and nine indices; allocate real
+    // ranges for both instead of relying on the old unchecked short buffers.
+    const vertexBuffer = device.createBuffer("vertex", geometry.vertexBuffer.format.stride * 4);
+    const indexBuffer = device.createBuffer("index", 18, new Uint16Array([0, 1, 2, 0, 1, 2, 0, 1, 2]));
     const shader = device.createShaderProgram({
       label: "e1-triangle-count",
       marker: "@aura3d-test:e1-triangle-count",

@@ -14,7 +14,37 @@
 // AuraCreateAppOptions.assets?: { decoders?: { basePath?: string; meshopt?: boolean; draco?: boolean; ktx2?: boolean; workerCount?: number }; variant?: "optimized" | "source" | "mobile"; maxTextureSize?: number; lod?: false }
 
 export interface AuraAssetDecodersOption { readonly basePath?: string; readonly meshopt?: boolean; readonly draco?: boolean; readonly ktx2?: boolean; readonly workerCount?: number; }
-export interface AuraAssetsOption { readonly decoders?: AuraAssetDecodersOption; readonly variant?: "optimized" | "source" | "mobile"; readonly maxTextureSize?: number; readonly lod?: false; }
+export interface AuraAssetsOption {
+  readonly decoders?: AuraAssetDecodersOption;
+  readonly variant?: "optimized" | "source" | "mobile";
+  readonly maxTextureSize?: number;
+  readonly lod?: false;
+  /**
+   * Non-secret, unique authentication generation for this app or worker.
+   * It overrides asset-level generations and is fixed for the owner's lifetime.
+   * Dispose and recreate the app or worker with a fresh generation whenever
+   * ambient credentials or authorization change. Game audio has its own
+   * independent security-context API.
+   *
+   * Request-policy-aware caches do not reuse requests that may use browser
+   * credentials when no generation is supplied. This value partitions cache
+   * identity; it is not sent as an authentication credential.
+   */
+  readonly securityContext?: string;
+}
+
+/** @internal Capture the app-owned generation before mounting or transferring. */
+export function snapshotAuraAssetsOption(options: AuraAssetsOption | undefined): AuraAssetsOption | undefined {
+  if (options === undefined) return undefined;
+  const { securityContext, ...otherOptions } = options;
+  if (securityContext !== undefined && (typeof securityContext !== "string" || !securityContext.trim())) {
+    throw new TypeError("Asset securityContext must be a non-empty authentication generation");
+  }
+  return {
+    ...otherOptions,
+    ...(securityContext === undefined ? {} : { securityContext })
+  };
+}
 export interface AuraAssetLodOption { readonly bias?: number; readonly crossFadeSeconds?: number; }
 export type AuraModelLodOption = false | "auto" | AuraAssetLodOption;
 export type AuraModelColliderOption = "auto" | "bounds" | false;

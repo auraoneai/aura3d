@@ -11,6 +11,7 @@ import {
   FootstepPlayer,
   PositionalEmitter,
   SceneAudioBridge,
+  SpatialAudio,
   applyOcclusionToGain,
   attachFocusPolicy,
   computeDistanceAttenuation,
@@ -18,6 +19,9 @@ import {
   createAudioTimelineMixSnapshot,
   createAudioWaveformReviewData,
   createAnimationAudioMixer,
+  createExternalAudioNodeAdapter,
+  createMediaElementAudioSourceAdapter,
+  createMediaStreamAudioSourceAdapter,
   createAudioWaveform,
   createAudioWaveformPath,
   createGameMixer,
@@ -30,6 +34,10 @@ import {
 
 class MockParam {
   value = 0;
+  setTargetAtTime(value: number) { this.value = value; }
+  cancelScheduledValues() {}
+  setValueAtTime(value: number) { this.value = value; }
+  linearRampToValueAtTime(value: number) { this.value = value; }
 }
 
 class MockNode {
@@ -38,8 +46,8 @@ class MockNode {
     this.connections.push(destination);
     return destination;
   }
-  disconnect() {
-    this.connections = [];
+  disconnect(destination?: unknown) {
+    this.connections = destination ? this.connections.filter((item) => item !== destination) : [];
   }
 }
 
@@ -50,20 +58,29 @@ class MockGain extends MockNode {
 class MockSource extends MockNode {
   buffer: AudioBuffer | null = null;
   loop = false;
+  loopStart = 0;
+  loopEnd = 0;
+  playbackRate = new MockParam();
+  detune = new MockParam();
   onended: (() => void) | null = null;
   started = false;
   stopped = false;
-  start() {
+  startArgs?: [number, number, number?];
+  stopWhen?: number;
+  start(when = 0, offset = 0, duration?: number) {
     this.started = true;
+    this.startArgs = [when, offset, duration];
   }
-  stop() {
+  stop(when = 0) {
     this.stopped = true;
+    this.stopWhen = when;
   }
 }
 
 function createMockAudioBuffer(channels: readonly Float32Array[], sampleRate: number): AudioBuffer {
   return {
     duration: channels.length === 0 ? 0 : (channels[0]?.length ?? 0) / sampleRate,
+    length: channels[0]?.length ?? 0,
     numberOfChannels: channels.length,
     sampleRate,
     getChannelData(index: number) {
@@ -181,6 +198,7 @@ test("AudioFileManager loads typed audio assets once and caches decoded clips", 
   };
   const manager = new AudioFileManager({
     context,
+    securityContext: "audio-cache-test-session",
     fetch: async (url) => {
       fetchCount++;
       assert.equal(url, "/aura-assets/dialogue.wav");
@@ -573,4 +591,479 @@ test("FootstepPlayer round-robins per surface and falls back honestly", () => {
   assert.equal(bare.onPlant({ foot: "left", surface: "grass" }), null);
   assert.equal(bare.evidence().plantCount, 0);
   assert.throws(() => bare.registerSurface("empty", []), /at least one cue/);
+});
+
+function playbackContext() {
+  const nodes: MockSource[] = [];
+  const context = {
+    state: "running",
+    destination: new MockNode() as unknown as AudioNode,
+    currentTime: 0,
+    resume: async () => {},
+    suspend: async () => {},
+    close: async () => {},
+    createGain: () => new MockGain() as unknown as GainNode,
+    createBufferSource: () => {
+      const node = new MockSource();
+      nodes.push(node);
+      return node as unknown as AudioBufferSourceNode;
+    },
+    createPanner: () => new MockNode() as unknown as PannerNode,
+    createBiquadFilter: () => new MockNode() as unknown as BiquadFilterNode,
+    createConvolver: () => new MockNode() as unknown as ConvolverNode
+  };
+  return { context, nodes };
+}
+
+function twentySecondClip(): AudioClip {
+  return new AudioClip({ buffer: { duration: 20, numberOfChannels: 1, sampleRate: 48_000 } as AudioBuffer });
+}
+
+function near(actual: number, expected: number): void {
+  assert.ok(Math.abs(actual - expected) < 1e-9, `expected ${actual} to be near ${expected}`);
+}
+
+test("AudioSource accounts for rate, detune, delayed starts and resumable sprite duration", () => {
+  const { context, nodes } = playbackContext();
+  const source = new AudioSource({ context, clip: twentySecondClip() });
+  context.currentTime = 10;
+  source.play(12);
+  context.currentTime = 11;
+  assert.equal(source.positionSeconds, 0);
+  source.pause();
+  assert.equal(source.positionSeconds, 0);
+  assert.equal(nodes[0].stopped, true);
+  source.resume();
+  assert.deepEqual(nodes[1].startArgs, [0, 0, undefined]);
+  context.currentTime = 13;
+  near(source.positionSeconds, 2);
+  source.setPlaybackRate(2);
+  context.currentTime = 14;
+  near(source.positionSeconds, 4);
+  source.setDetune(1200);
+  assert.equal(nodes[1].detune.value, 1200);
+  context.currentTime = 14.5;
+  near(source.positionSeconds, 6);
+  source.pause();
+  source.resume();
+  assert.deepEqual(nodes[2].startArgs, [0, 6, undefined]);
+  assert.equal(nodes[2].playbackRate.value, 2);
+  assert.equal(nodes[2].detune.value, 1200);
+
+  source.stop();
+  source.setPlaybackRate(1);
+  source.setDetune(0);
+  source.playSprite(4, 3);
+  context.currentTime += 1;
+  source.pause();
+  near(source.positionSeconds, 5);
+  source.resume();
+  assert.deepEqual(nodes[4].startArgs, [0, 5, 2]);
+  source.dispose();
+  source.dispose();
+  assert.throws(() => source.play(), /disposed/);
+});
+
+test("AudioSource integrates exponential rate ramps, loop regions, and scheduled stops", () => {
+  const { context, nodes } = playbackContext();
+  const source = new AudioSource({ context, clip: twentySecondClip(), loop: true, loopStart: 2, loopEnd: 5 });
+  source.play();
+  assert.equal(nodes[0].loopStart, 2);
+  assert.equal(nodes[0].loopEnd, 5);
+  context.currentTime = 7;
+  near(source.positionSeconds, 4);
+  source.pause();
+  source.resume();
+  assert.deepEqual(nodes[1].startArgs, [0, 4, undefined]);
+  context.currentTime = 9;
+  near(source.positionSeconds, 3);
+  source.setLoopRegion(1, 4);
+  assert.equal(nodes[1].loopStart, 1);
+  assert.equal(nodes[1].loopEnd, 4);
+  assert.throws(() => source.setLoopRegion(4, 2), RangeError);
+  source.stop(11);
+  assert.equal(source.state, "playing");
+  assert.equal(nodes[1].stopWhen, 11);
+  assert.ok(nodes[1].connections.length > 0);
+  context.currentTime = 10;
+  near(source.positionSeconds, 1);
+  nodes[1].onended?.();
+  assert.equal(source.state, "stopped");
+  assert.equal(nodes[1].connections.length, 0);
+
+  context.currentTime = 12;
+  source.loop = false;
+  source.play();
+  source.setPlaybackRate(3, 3000); // tau = 1 second
+  context.currentTime = 13;
+  const firstRampDistance = 3 - 2 * (1 - Math.exp(-1));
+  near(source.positionSeconds, firstRampDistance);
+  source.pause();
+  near(source.positionSeconds, firstRampDistance);
+  context.currentTime = 20;
+  source.resume();
+  context.currentTime = 21;
+  near(source.positionSeconds, firstRampDistance + 3 - (2 / Math.E) * (1 - 1 / Math.E));
+  source.dispose();
+});
+
+test("AudioSource integrates successive rate targets and does not resume an exhausted sprite", () => {
+  const { context, nodes } = playbackContext();
+  const source = new AudioSource({ context, clip: twentySecondClip() });
+  source.play();
+  source.setPlaybackRate(3, 3000);
+  context.currentTime = 1;
+  const first = 3 - 2 * (1 - 1 / Math.E);
+  source.setPlaybackRate(1, 1500);
+  context.currentTime = 2;
+  near(source.positionSeconds, first + 1 + (2 - 2 / Math.E) * (1 - Math.exp(-2)) / 2);
+  source.stop();
+  source.playSprite(4, 1);
+  context.currentTime = 4;
+  source.pause();
+  assert.equal(source.state, "stopped");
+  source.resume();
+  assert.equal(nodes.length, 2);
+  source.dispose();
+});
+
+test("AudioSource replaces active rate automation when switching to an immediate rate", () => {
+  type Event = { type: "value" | "target"; value: number; time: number; constant?: number };
+  class AutomationParam extends MockParam {
+    events: Event[] = [];
+    setTargetAtTime(value: number, time = 0, constant = 1) {
+      this.events.push({ type: "target", value, time, constant });
+    }
+    setValueAtTime(value: number, time = 0) {
+      this.events.push({ type: "value", value, time });
+    }
+    cancelScheduledValues(time = 0) {
+      this.events = this.events.filter((event) => event.time < time);
+    }
+    at(time: number): number {
+      let value = 1;
+      let target: number | undefined;
+      let constant = 1;
+      let at = 0;
+      for (const event of this.events) {
+        if (event.time > time) break;
+        if (target !== undefined) value = target + (value - target) * Math.exp(-(event.time - at) / constant);
+        if (event.type === "value") { value = event.value; target = undefined; }
+        else { target = event.value; constant = event.constant!; }
+        at = event.time;
+      }
+      return target === undefined ? value : target + (value - target) * Math.exp(-(time - at) / constant);
+    }
+  }
+  const { context, nodes } = playbackContext();
+  const create = context.createBufferSource;
+  let automation!: AutomationParam;
+  context.createBufferSource = () => {
+    const node = create();
+    automation = new AutomationParam();
+    (nodes[nodes.length - 1] as MockSource).playbackRate = automation;
+    return node;
+  };
+  const source = new AudioSource({ context, clip: twentySecondClip() });
+  source.play();
+  source.setPlaybackRate(3, 3000);
+  context.currentTime = 1;
+  const rampDistance = 3 - 2 * (1 - Math.exp(-1));
+  source.setPlaybackRate(4);
+  context.currentTime = 2;
+  near(source.positionSeconds, rampDistance + 4);
+  near(automation.at(2), 4);
+  source.dispose();
+});
+
+test("AudioSource respects a sprite offset past its loop and resumes without rewinding", () => {
+  const { context, nodes } = playbackContext();
+  const source = new AudioSource({ context, clip: twentySecondClip(), loop: true, loopStart: 2, loopEnd: 5 });
+  source.playSprite(8, 4, 10);
+  context.currentTime = 9;
+  near(source.positionSeconds, 8);
+  context.currentTime = 10;
+  near(source.positionSeconds, 5);
+  context.currentTime = 11;
+  near(source.positionSeconds, 6);
+  source.pause();
+  source.resume();
+  assert.deepEqual(nodes[1].startArgs, [0, 6, 3]);
+  assert.equal(nodes[1].loop, false);
+  source.loop = true;
+  assert.equal(nodes[1].loop, false);
+  source.setLoopRegion(1, 5);
+  assert.equal(nodes[1].loop, false);
+  context.currentTime = 12;
+  near(source.positionSeconds, 7);
+  source.setLoopRegion(2, 10);
+  assert.equal(nodes[1].loop, true);
+  context.currentTime = 15;
+  // The four buffer seconds requested by the sprite are exhausted at 9.
+  near(source.positionSeconds, 9);
+  source.dispose();
+});
+
+test("AudioSource pauses a delayed looped sprite before the start without changing its requested offset", () => {
+  const { context, nodes } = playbackContext();
+  const source = new AudioSource({ context, clip: twentySecondClip(), loop: true, loopStart: 2, loopEnd: 5 });
+  source.playSprite(8, 4, 10);
+  context.currentTime = 2;
+  source.pause();
+  source.resume();
+  assert.equal(nodes[1].loop, true);
+  assert.deepEqual(nodes[1].startArgs, [0, 8, 4]);
+  near(source.positionSeconds, 5);
+  source.dispose();
+});
+
+test("AudioSource rejects an invalid sprite start without corrupting the active voice", () => {
+  const { context, nodes } = playbackContext();
+  const source = new AudioSource({ context, clip: twentySecondClip() });
+  source.play();
+  context.currentTime = 1;
+  assert.throws(() => source.playSprite(8, 4, -1), /start time/);
+  assert.equal(nodes.length, 1);
+  assert.equal(nodes[0].stopped, false);
+  near(source.positionSeconds, 1);
+  const create = context.createBufferSource;
+  context.createBufferSource = () => { throw new Error("source unavailable"); };
+  assert.throws(() => source.playSprite(8, 4), /source unavailable/);
+  near(source.positionSeconds, 1);
+  assert.equal(nodes[0].stopped, false);
+  context.createBufferSource = create;
+  source.pause();
+  source.resume();
+  assert.deepEqual(nodes[1].startArgs, [0, 1, undefined]);
+  source.dispose();
+});
+
+test("SceneAudioBridge resolves nested mirrored, nonuniform world poses and releases borrowed bindings", () => {
+  const scene = new Scene();
+  const parent = scene.createNode("parent");
+  const child = scene.createNode("child");
+  scene.root.addChild(parent);
+  parent.addChild(child);
+  const halfSqrt = Math.SQRT1_2;
+  parent.transform.setPosition(3, 4, 5).setRotation(0, halfSqrt, 0, halfSqrt).setScale(-2, 3, 4);
+  child.transform.setPosition(1, 2, 3).setRotation(0, 0, halfSqrt, halfSqrt);
+  const listener = new AudioListener();
+  const spatial = {
+    orientation: { x: 1, y: 0, z: 0 },
+    position: { x: 0, y: 0, z: 0 },
+    setPosition(position: { x: number; y: number; z: number }) { this.position = { ...position }; },
+    setOrientation(orientation: { x: number; y: number; z: number }) { this.orientation = { ...orientation }; }
+  };
+  // No Scene argument: ancestor transforms still have to be updated.
+  const bridge = new SceneAudioBridge();
+  bridge.bindListener(child, listener);
+  const binding = bridge.bindSource(child, spatial as never);
+  bridge.update();
+  near(listener.position.x, 15); near(listener.position.y, 10); near(listener.position.z, 7);
+  near(listener.forward.x, -1); near(listener.forward.y, 0); near(listener.forward.z, 0);
+  near(listener.up.x, 0); near(listener.up.y, 0); near(listener.up.z, -1);
+  near(spatial.orientation.x, 0); near(spatial.orientation.y, 1); near(spatial.orientation.z, 0);
+  near(spatial.position.x, 15); near(spatial.position.y, 10); near(spatial.position.z, 7);
+  bridge.unbindSource(binding);
+  bridge.unbindListener();
+  child.transform.setPosition(0, 0, 0);
+  bridge.update();
+  near(listener.position.x, 15);
+  near(spatial.position.x, 15);
+  bridge.dispose();
+  bridge.dispose();
+  assert.throws(() => bridge.bindListener(child, listener), /disposed/);
+});
+
+test("SceneAudioBridge writes world axes to native listener and panner parameters", () => {
+  const { context } = playbackContext();
+  const nativeListener = {
+    positionX: new MockParam(), positionY: new MockParam(), positionZ: new MockParam(),
+    forwardX: new MockParam(), forwardY: new MockParam(), forwardZ: new MockParam(),
+    upX: new MockParam(), upY: new MockParam(), upZ: new MockParam()
+  };
+  const panner = Object.assign(new MockNode(), {
+    positionX: new MockParam(), positionY: new MockParam(), positionZ: new MockParam(),
+    orientationX: new MockParam(), orientationY: new MockParam(), orientationZ: new MockParam()
+  });
+  const graph = { ...context, listener: nativeListener, createPanner: () => panner as unknown as PannerNode };
+  const scene = new Scene();
+  const node = scene.createNode("oriented");
+  scene.root.addChild(node);
+  node.transform.setRotation(0, Math.SQRT1_2, 0, Math.SQRT1_2);
+  const listener = new AudioListener({ context: graph });
+  const spatial = new SpatialAudio({ context: graph });
+  const bridge = new SceneAudioBridge(scene);
+  bridge.bindListener(node, listener);
+  bridge.bindSource(node, spatial);
+  bridge.update();
+  near(nativeListener.forwardX.value, -1);
+  near(nativeListener.forwardY.value, 0);
+  near(nativeListener.forwardZ.value, 0);
+  near(nativeListener.upY.value, 1);
+  near(panner.orientationX.value, 0);
+  near(panner.orientationY.value, 0);
+  near(panner.orientationZ.value, -1);
+  bridge.dispose();
+  spatial.dispose();
+  assert.equal(panner.connections.length, 0);
+});
+
+test("SceneAudioBridge keeps listener axes unit and orthogonal under inherited shear", () => {
+  const scene = new Scene();
+  const parent = scene.createNode("stretched");
+  const child = scene.createNode("tilted");
+  scene.root.addChild(parent);
+  parent.addChild(child);
+  parent.transform.setScale(1, 2, 3);
+  child.transform.setRotation(Math.sin(Math.PI / 8), 0, 0, Math.cos(Math.PI / 8));
+  const listener = new AudioListener();
+  const bridge = new SceneAudioBridge(scene);
+  bridge.bindListener(child, listener);
+  bridge.update();
+  near(listener.forward.y, 2 / Math.sqrt(13));
+  near(listener.forward.z, -3 / Math.sqrt(13));
+  near(listener.up.y, 3 / Math.sqrt(13));
+  near(listener.up.z, 2 / Math.sqrt(13));
+  near(listener.forward.x * listener.up.x + listener.forward.y * listener.up.y + listener.forward.z * listener.up.z, 0);
+});
+
+test("SceneAudioBridge updates the scene hierarchy once while resolving detached bindings", () => {
+  const scene = new Scene();
+  const first = scene.createNode("first");
+  const second = scene.createNode("second");
+  const detachedParent = scene.createNode("detached-parent");
+  const detached = scene.createNode("detached");
+  scene.root.addChild(first).addChild(second);
+  detachedParent.addChild(detached);
+  detachedParent.transform.setPosition(7, 8, 9);
+  let rootUpdates = 0;
+  const updateRoot = scene.root.updateWorldTransform.bind(scene.root);
+  scene.root.updateWorldTransform = (force = false) => { rootUpdates++; updateRoot(force); };
+  const bridge = new SceneAudioBridge(scene);
+  const listener = new AudioListener();
+  const otherListener = new AudioListener();
+  const spatial = { setPosition: (value: { x: number; y: number; z: number }) => otherListener.setTransform(value) };
+  bridge.bindListener(detached, listener);
+  bridge.bindSource(first, spatial as never);
+  bridge.bindSource(second, spatial as never);
+  bridge.update();
+  assert.equal(rootUpdates, 1);
+  assert.deepEqual(listener.position, { x: 7, y: 8, z: 9 });
+  bridge.dispose();
+});
+
+test("audio source adapters preserve borrowed routes, user-gesture failures, and owned media teardown", async () => {
+  const output = new MockNode();
+  const unrelated = new MockNode();
+  const mediaSource = new MockNode();
+  const streamSource = new MockNode();
+  let elementCreations = 0;
+  let resumed = 0;
+  let played = 0;
+  let paused = 0;
+  let trackStops = 0;
+  const context = {
+    destination: output as unknown as AudioNode,
+    createGain: () => new MockGain() as unknown as GainNode,
+    createMediaElementSource: () => { elementCreations++; return mediaSource as unknown as MediaElementAudioSourceNode; },
+    createMediaStreamSource: () => streamSource as unknown as MediaStreamAudioSourceNode,
+    resume: () => { resumed++; }
+  };
+  const element = { play: async () => { played++; throw new Error("gesture required"); }, pause: () => { paused++; } } as unknown as HTMLMediaElement;
+  const stream = { getTracks: () => [{ stop: () => { trackStops++; } }, { stop: () => { trackStops++; } }] } as unknown as MediaStream;
+  mediaSource.connect(unrelated);
+  const borrowed = createMediaElementAudioSourceAdapter({ context, element });
+  const other = createMediaElementAudioSourceAdapter({ context, element, ownership: "owned" });
+  assert.equal(elementCreations, 1);
+  assert.equal(mediaSource.connections.length, 3);
+  assert.equal(played, 0);
+  assert.equal(resumed, 0);
+  await assert.rejects(borrowed.play(), /gesture required/);
+  borrowed.dispose();
+  borrowed.dispose();
+  assert.equal(mediaSource.connections.length, 2);
+  assert.ok(mediaSource.connections.includes(unrelated));
+  assert.equal(paused, 0);
+  assert.throws(() => borrowed.connect(output as unknown as AudioNode), /disposed/);
+  other.dispose();
+  assert.deepEqual(mediaSource.connections, [unrelated]);
+  assert.equal(paused, 1);
+  assert.equal(played, 1);
+  assert.equal(resumed, 0);
+  const again = createMediaElementAudioSourceAdapter({ context, element });
+  assert.equal(elementCreations, 1);
+  again.dispose();
+  const anotherContext = { ...context, createMediaElementSource: () => new MockNode() as unknown as MediaElementAudioSourceNode };
+  assert.throws(() => createMediaElementAudioSourceAdapter({ context: anotherContext, element }), /another audio context/i);
+
+  const borrowedStream = createMediaStreamAudioSourceAdapter({ context, stream });
+  borrowedStream.pause();
+  assert.equal(borrowedStream.output.gain.value, 0);
+  await borrowedStream.play();
+  assert.equal(borrowedStream.output.gain.value, 1);
+  borrowedStream.dispose();
+  assert.equal(trackStops, 0);
+  const ownedStream = createMediaStreamAudioSourceAdapter({ context, stream, ownership: "owned" });
+  ownedStream.dispose();
+  ownedStream.dispose();
+  assert.equal(trackStops, 2);
+
+  const external = new MockSource();
+  external.connect(unrelated);
+  const externalAdapter = createExternalAudioNodeAdapter({ context, node: external as unknown as AudioNode });
+  externalAdapter.dispose();
+  assert.deepEqual(external.connections, [unrelated]);
+  assert.equal(external.stopped, false);
+  const ownedExternal = createExternalAudioNodeAdapter({ context, node: external as unknown as AudioNode, ownership: "owned" });
+  ownedExternal.dispose();
+  assert.equal(external.stopped, true);
+  assert.equal(external.connections.length, 0);
+  assert.throws(() => createMediaStreamAudioSourceAdapter({ context: { destination: context.destination, createGain: context.createGain }, stream }), /does not support/);
+
+  let settlePlay!: () => void;
+  let latePauses = 0;
+  const lateElement = {
+    play: () => new Promise<void>((resolve) => { settlePlay = resolve; }),
+    pause: () => { latePauses++; }
+  } as unknown as HTMLMediaElement;
+  const late = createMediaElementAudioSourceAdapter({ context, element: lateElement, ownership: "owned" });
+  const pendingPlay = late.play();
+  late.dispose();
+  settlePlay();
+  await pendingPlay;
+  assert.equal(latePauses, 2);
+});
+
+test("owned stream teardown attempts every track even when one stop fails", () => {
+  const { context } = playbackContext();
+  let secondStopped = false;
+  const stream = { getTracks: () => [
+    { stop: () => { throw new Error("first track failed"); } },
+    { stop: () => { secondStopped = true; } }
+  ] } as unknown as MediaStream;
+  const graph = { ...context, createMediaStreamSource: () => new MockNode() as unknown as MediaStreamAudioSourceNode };
+  const adapter = createMediaStreamAudioSourceAdapter({ context: graph, stream, ownership: "owned" });
+  assert.throws(() => adapter.dispose(), /first track failed/);
+  assert.equal(secondStopped, true);
+  assert.equal(adapter.disposed, true);
+});
+
+test("owned adapter releases its stream if output disconnection fails", () => {
+  const { context } = playbackContext();
+  const input = new MockNode();
+  const output = new MockGain();
+  output.disconnect = () => { throw new Error("output disconnect failed"); };
+  let stopped = 0;
+  const stream = { getTracks: () => [{ stop: () => { stopped++; } }] } as unknown as MediaStream;
+  const graph = {
+    ...context,
+    createGain: () => output as unknown as GainNode,
+    createMediaStreamSource: () => input as unknown as MediaStreamAudioSourceNode
+  };
+  const adapter = createMediaStreamAudioSourceAdapter({ context: graph, stream, ownership: "owned" });
+  assert.throws(() => adapter.dispose(), /output disconnect failed/);
+  assert.deepEqual(input.connections, []);
+  assert.equal(stopped, 1);
+  assert.equal(adapter.disposed, true);
 });

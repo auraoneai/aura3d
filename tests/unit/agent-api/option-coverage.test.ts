@@ -1,214 +1,215 @@
-// Beat-three.js WP-S.1 / WP-S.2 (contract 3.3, decision 5, target D3): no builder accepts an option and ignores it.
-//
-// Three layers, all driven by the coverage metadata in `compiler/optionCoverage.ts` (so a new option cannot ship uncovered):
-//  1. Documented options: every option key in a `docs/api/*.md` or `docs/agents/recipes.md` code block that calls a
-//     covered builder has a coverage row, and that row is not on the diagnostic-only (declared-but-not-consumed) list.
-//  2. Guard: every covered primitive / instance / interaction option is accepted, reaches the node, and an option the
-//  2. Guard: every covered primitive / instance / interaction option is read, and an option the builder does not
-//     read is reported on the node (`OPTION_IGNORED ... Valid options: ...`) and surfaced by the compiler as an
-//     `option-ignored` degradation, not thrown, so an existing app that passes a stray key keeps mounting.
-//  3. Spot checks for the two silent no-ops found in the 4.1.2 benchmark: plane segments subdivide, `orbit` is typed
-//     and its point / position / autoRotate configure the orbit camera on every camera path.
-//
-// The compile-level proof that each covered option changes the compiled scene is `tests/qr/prd15/compiler/optionCoverage.test.ts`.
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+// Option probes exercise named downstream consumers. These are source-level
+// observations; they do not imply rendered-pixel or device evidence.
 import { describe, expect, it } from "vitest";
-import "@aura3d/engine/lanes"; // registers every lane's coverage rows and diagnostic-only entries
-import "../../../packages/engine/src/agent-api/compiler/optionCoverage"; // the scaffolded + hand-written rows register on import
-import { DIAGNOSTIC_ONLY_FIELDS, optionCoverageRows } from "../../../packages/engine/src/contracts/compiler";
+import { auditOptionProbes, documentedOptionReferences, optionCoverageRule, readOptionProbeSummaries } from "../../../tools/arch-gates/rules/option-coverage";
+import { OPTION_COVERAGE_ROWS } from "../../../packages/engine/src/agent-api/compiler/optionCoverage";
 import type { OptionCoverageRow } from "../../../packages/engine/src/contracts/compiler";
-import { primitives, primitive } from "../../../packages/engine/src/agent-api/nodes/primitives";
+import { primitives } from "../../../packages/engine/src/agent-api/nodes/primitives";
 import { instances } from "../../../packages/engine/src/agent-api/nodes/instances";
 import { interactions } from "../../../packages/engine/src/agent-api/nodes/interactions";
+import { geometry } from "../../../packages/engine/src/agent-api/nodes/geometry";
+import { lights } from "../../../packages/engine/src/agent-api/nodes/lights";
+import { effects } from "../../../packages/engine/src/agent-api/nodes/effects.composite";
+import { material } from "../../../packages/engine/src/agent-api/nodes/material";
+import { model, unsafeModelUrl } from "../../../packages/engine/src/agent-api/nodes/model";
 import { qrPrimitiveGeometryOptions } from "../../../packages/engine/src/agent-api/compiler/geometry";
-import { qrPrimitiveMeshFor } from "../../../packages/engine/src/agent-api/compiler/primitives";
+import { createProductionModelInstanceTransforms, createProductionPrimitiveGeometry, createProductionRuntimePrimitiveEntries, qrPrimitiveMeshFor } from "../../../packages/engine/src/agent-api/compiler/primitives";
+import { createProductionRuntimeRendererInput } from "../../../packages/engine/src/agent-api/compiler/renderInput";
+import { createProductionRuntimeEnvironmentFog } from "../../../packages/engine/src/agent-api/compiler/fog";
+import { collectPrd02Lights, physicalLightDescriptor } from "../../../packages/engine/src/agent-api/compiler/lights";
+import { applyModelTintBridge } from "../../../packages/engine/src/agent-api/compiler/modelMaterials";
+import { Prd03PostSurface, mapBloomOptionsV2 } from "../../../packages/engine/src/agent-api/postBridge";
+import { registeredPostPasses } from "../../../packages/rendering/src/contracts/post";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
-import { compileScene } from "@aura3d/engine/contracts";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
 import { camera } from "../../../packages/engine/src/agent-api/nodes/camera";
 import { resolveCameraFrame } from "../../../packages/engine/src/agent-api/compiler/camera";
 import { createFromSpecRig } from "../../../packages/engine/src/agent-api/camera/rigs/fromSpec";
-import type { AuraPrimitiveNode } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { AuraPrimitiveNode, AuraModelNode } from "../../../packages/engine/src/agent-api/nodes/types";
 
-const root = process.cwd();
-const rows: readonly OptionCoverageRow[] = optionCoverageRows();
-const rowKeys = new Set(rows.map((row) => `${row.builder}.${row.field}`));
-const builderNames = new Set(rows.map((row) => row.builder));
+const modelAsset = unsafeModelUrl("/fixtures/probe.glb");
+const triangle = { kind: "aura-custom-geometry" as const, positions: [[0, 0, 0], [1, 0, 0], [0, 1, 0]] as const, indices: [0, 1, 2] };
+const baseTransforms = [{ position: [0, 0, 0] as const }];
+const qr = qrPrimitiveGeometryOptions(resolveQrFlags({}), undefined, {});
 
-/* --------------------------- docs code-block scan --------------------------- */
-
-const docFiles = [
-  ...readdirSync(join(root, "docs/api")).filter((name) => name.endsWith(".md")).map((name) => join(root, "docs/api", name)),
-  join(root, "docs/agents/recipes.md")
-];
-
-function codeBlocks(markdown: string): string[] {
-  const blocks: string[] = [];
-  const fence = /```(?:ts|typescript|tsx|js|javascript)\n([\s\S]*?)```/g;
-  for (let match = fence.exec(markdown); match; match = fence.exec(markdown)) blocks.push(match[1]!);
-  return blocks;
-}
-
-/** Top-level keys of the object literal whose `{` is at `open` (string, comment and nesting aware). */
-function topLevelKeys(source: string, open: number): string[] {
-  const keys: string[] = [];
-  let depth = 0;
-  let expectKey = false;
-  for (let i = open; i < source.length; i += 1) {
-    const char = source[i]!;
-    if (char === "'" || char === '"' || char === "`") {
-      const quote = char;
-      const start = i;
-      i += 1;
-      while (i < source.length && source[i] !== quote) { if (source[i] === "\\") i += 1; i += 1; }
-      if (depth === 1 && expectKey && /^\s*:/.test(source.slice(i + 1, i + 6))) keys.push(source.slice(start + 1, i));
-      if (depth === 1) expectKey = false;
-      continue;
-    }
-    if (char === "/" && source[i + 1] === "/") { while (i < source.length && source[i] !== "\n") i += 1; continue; }
-    if (char === "{" || char === "[" || char === "(") { depth += 1; if (depth === 1) expectKey = true; continue; }
-    if (char === "}" || char === "]" || char === ")") { depth -= 1; if (depth === 0) break; continue; }
-    if (depth !== 1) continue;
-    if (char === ",") { expectKey = true; continue; }
-    if (!expectKey) continue;
-    const identifier = /^(\.\.\.)?([A-Za-z_$][\w$]*)\s*(:|,|\}|\()?/.exec(source.slice(i));
-    if (identifier) {
-      if (!identifier[1]) keys.push(identifier[2]!);
-      i += identifier[0].length - 1 - (identifier[3] === "," || identifier[3] === "}" || identifier[3] === "(" ? 1 : 0);
-      expectKey = false;
-    } else if (!/\s/.test(char)) {
-      expectKey = false;
-    }
+function build(row: OptionCoverageRow, value: unknown): any {
+  const option = { [row.field]: value };
+  switch (row.builder) {
+    case "effects.fog": return effects.fog(option);
+    case "effects.bloom": return effects.bloom(option);
+    case "effects.toon": return effects.toon(option);
+    case "lights.directional": return lights.directional(option);
+    case "lights.studio": return lights.studio(option);
+    case "lights.hemisphere": return lights.hemisphere(option);
+    case "geometry.define": return geometry.define({ positions: triangle.positions, indices: triangle.indices, ...option });
+    case "geometry.custom": return geometry.custom(triangle, option);
+    case "instances.cylinder": return instances.cylinder({ transforms: baseTransforms, ...option });
+    case "instances.cone": return instances.cone({ transforms: baseTransforms, ...option });
+    case "instances.model": return instances.model(modelAsset, { transforms: baseTransforms, ...option });
+    case "interactions.orbit": return interactions.orbit(option);
+    case "model": return model(modelAsset, option);
+    case "material.pbr": return material.pbr(option);
+    case "material.custom": return material.custom({
+      glsl: { fragment: "out vec4 outColor; void main(){outColor=vec4(strength * float(TINT));}" },
+      uniforms: { strength: { type: "f32", value: 0.5 } }, defines: { TINT: 1 }, ...option
+    });
+    case "primitives.box": return primitives.box(option);
+    case "primitives.capsule": return primitives.capsule(option);
+    case "primitives.cylinder": return primitives.cylinder(option);
+    case "primitives.plane": return primitives.plane(option);
+    default: throw new Error(`No consumer fixture for ${row.builder}`);
   }
-  return keys;
 }
 
-/** `callee -> option keys` for every covered builder called with an options object in the docs. */
-function documentedOptions(): Map<string, Set<string>> {
-  const found = new Map<string, Set<string>>();
-  const call = /\b([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\(\s*(?:[^(){}]*?,\s*)?\{/g;
-  for (const file of docFiles) {
-    for (const block of codeBlocks(readFileSync(file, "utf8"))) {
-      call.lastIndex = 0;
-      for (let match = call.exec(block); match; match = call.exec(block)) {
-        const callee = match[1]!;
-        if (!builderNames.has(callee)) continue;
-        const keys = found.get(callee) ?? new Set<string>();
-        for (const key of topLevelKeys(block, block.indexOf("{", match.index + callee.length))) keys.add(key);
-        found.set(callee, keys);
+function observe(row: OptionCoverageRow, value: unknown): unknown {
+  const built = build(row, value);
+  if (row.builder === "effects.toon") {
+    const surface = new Prd03PostSurface(resolveQrFlags({ options: { A3D_QR_POST: true } }));
+    surface.addPostPass(built);
+    try {
+      const descriptor = registeredPostPasses().find((pass) => pass.id === `prd03.custom.${built.name}`);
+      if (!descriptor) throw new Error("toon pass was not registered");
+      if (row.field === "name") return descriptor.id;
+      return descriptor.uniforms?.({} as never)[row.field === "bands" ? "u_bands" : row.field === "outline" ? "u_outline" : "u_texel"];
+    } finally { surface.dispose(); }
+  }
+  if (row.builder === "geometry.define") {
+    const mesh = createProductionPrimitiveGeometry(geometry.custom(built).toJSON());
+    try {
+      if (row.field === "bounds") return mesh.bounds;
+      if (row.field === "indices") return Array.from(mesh.indexBuffer!.data);
+      const semantic = row.field === "positions" ? "position" : "normal";
+      return [0, 1, 2].flatMap((index) => [...mesh.vertexBuffer.getAttribute(index, semantic)]);
+    } finally { mesh.dispose(); }
+  }
+  if (row.builder === "material.custom") {
+    const entry = createProductionRuntimePrimitiveEntries([primitives.box({ material: built }).toJSON()])[0]!;
+    const output = entry.resources[0]!.material as import("../../../packages/engine/src/agent-api/compiler/customMaterial").AuraCustomShaderMaterial;
+    try {
+      switch (row.field) {
+        case "glsl": case "defines": case "fog": case "receiveShadow": return output.sources.glsl.fragment;
+        case "wgsl": return output.sources.wgsl?.fragment;
+        case "uniforms": return output.getParameter("u_strength");
+        case "side": return output.renderState.cullMode;
+        case "transparent": return output.renderState.blend;
+        case "blending": return output.renderState.blendMode;
+        case "depthWrite": return output.renderState.depthWrite;
+        case "depthTest": return output.renderState.depthTest;
+        default: throw new Error(`No custom material consumer for ${row.field}`);
       }
-    }
+    } finally { output.dispose(); }
   }
-  return found;
+  if (row.builder === "material.pbr") {
+    const entry = createProductionRuntimePrimitiveEntries([primitives.box({ material: built }).toJSON()])[0]!;
+    const param = row.observation === "pbr.color" ? "u_baseColor" : `u_${row.field}`;
+    return entry.resources[0]!.material.getParameter(param);
+  }
+  const node = built.toJSON();
+  if (row.observation?.startsWith("fog.")) {
+    const fog = createProductionRuntimeEnvironmentFog(scene().add(node).toJSON());
+    if (!fog) throw new Error("fog consumer did not produce a fog input");
+    return fog[row.field as "color" | "density"];
+  }
+  if (row.observation?.startsWith("bloom.")) {
+    const result = mapBloomOptionsV2(node, 5).options;
+    return result[row.field === "radius" ? "scatter" : row.field as "threshold" | "intensity"];
+  }
+  if (row.observation?.startsWith("hemisphere.")) {
+    const resolved = collectPrd02Lights(scene().add(node).toJSON()).hemisphere[0]!;
+    return resolved[row.field === "skyColor" ? "skyColor" : row.field === "groundColor" ? "groundColor" : "intensity"];
+  }
+  if (row.observation?.startsWith("light.")) {
+    const descriptor = physicalLightDescriptor(node, node.name ?? "studio");
+    if (!descriptor) throw new Error("light consumer did not produce a descriptor");
+    const key = row.observation.slice("light.".length);
+    return descriptor[key === "shadow" ? "shadowRequested" : key as "name" | "intensity" | "color" | "position" | "direction"];
+  }
+  if (row.observation?.startsWith("orbit.")) {
+    const snapshot = scene().camera(camera.orbit({ target: [0, 0, 0], position: [3, 2, 3] })).add(built).toJSON();
+    const frame = resolveCameraFrame(snapshot, snapshot.camera, 1000);
+    return row.field === "target" ? frame.target : frame.eye;
+  }
+  if (row.observation === "model.material") return applyModelTintBridge(node);
+  if (row.observation === "model.instances") {
+    const modelNode = node as AuraModelNode;
+    return Array.from(createProductionModelInstanceTransforms(modelNode.instances!, modelNode, { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }, 0));
+  }
+  const primitiveNode = node as AuraPrimitiveNode;
+  if (row.observation === "primitive.segments") return qrPrimitiveMeshFor(primitiveNode, qr)!.positions.length;
+  const snapshot = scene().add(primitiveNode).toJSON();
+  const entries = createProductionRuntimePrimitiveEntries([primitiveNode], qr);
+  const input = createProductionRuntimeRendererInput(snapshot, { width: 640, height: 360 } as HTMLCanvasElement, [], entries, 0, undefined, new Set(), { color: [0, 0, 0], intensity: 0 }, []);
+  const item = [...(input.source.collectRenderItems?.() ?? [])][0]!;
+  switch (row.observation) {
+    case "primitive.name": return item.label;
+    case "primitive.material.color": return item.material.getParameter("u_baseColor");
+    case "primitive.size": return Array.from(item.modelMatrix as ArrayLike<number>);
+    case "primitive.castShadow": return item.castShadow;
+    case "instances.transforms": return Array.from(item.instanceTransforms!);
+    case "instances.colors": return Array.from(item.instanceColors!);
+    default: throw new Error(`No consumer observation for ${row.observation}`);
+  }
 }
 
-const isDiagnosticOnly = (row: OptionCoverageRow): boolean => {
-  const key = `${row.builder}.${row.field}`;
-  return Object.keys(DIAGNOSTIC_ONLY_FIELDS).some((entry) =>
-    entry === key || entry === `${row.builder}.*` || entry === `*.${row.field}` ||
-    (entry.startsWith("transform.") && entry.slice("transform.".length) === row.field)
-  );
-};
-
-describe("documented options are honoured (contract 3.3)", () => {
-  const documented = documentedOptions();
-
-  it("finds documented option objects for the builders the docs teach", () => {
-    expect(documented.size).toBeGreaterThanOrEqual(8);
-    expect(documented.has("primitives.box")).toBe(true);
-    expect(documented.has("instances.cylinder")).toBe(true);
+describe("typed option probes and real consumers", () => {
+  const rows = OPTION_COVERAGE_ROWS.filter((row) => row.disposition === "runtime");
+  it("registers a useful set of consumer probes", () => { expect(rows.length).toBeGreaterThan(30); });
+  it.each(rows.map((row) => [`${row.builder}.${row.field}`, row] as const))("%s reaches its named consumer", (_name, row) => {
+    expect(row.observation).toBeTruthy();
+    expect(observe(row, row.probeValueA), `${row.builder}.${row.field} -> ${row.observation}`).not.toEqual(observe(row, row.probeValueB));
   });
 
-  it("every documented option has a coverage row", () => {
-    const missing: string[] = [];
-    for (const [callee, keys] of documented) for (const key of keys) if (!rowKeys.has(`${callee}.${key}`)) missing.push(`${callee}.${key}`);
-    expect(missing, "documented options with no option-coverage row").toEqual([]);
+  it("pins independent numerical outcomes instead of accepting any changed input", () => {
+    const row = (builder: string, field: string) => OPTION_COVERAGE_ROWS.find((r) => r.builder === builder && r.field === field)!;
+    expect(observe(row("effects.fog", "density"), 0.05)).toBeCloseTo(0.05);
+    expect(observe(row("effects.fog", "density"), 0.25)).toBeCloseTo(0.25);
+    expect(observe(row("effects.bloom", "radius"), 0.2)).toBeCloseTo(0.2);
+    expect(observe(row("lights.directional", "shadow"), false)).toBe(false);
+    expect(observe(row("lights.directional", "shadow"), true)).toBe(true);
+    const instanceMatrix = observe(row("instances.cylinder", "transforms"), [{ position: [2, 1, -1] }]) as number[];
+    expect(instanceMatrix.slice(12, 15)).toEqual([2, 1, -1]);
   });
 
-  it("no documented option is declared-but-not-consumed", () => {
-    const unconsumed: string[] = [];
-    for (const [callee, keys] of documented) {
-      for (const key of keys) {
-        const row = rows.find((candidate) => candidate.builder === callee && candidate.field === key);
-        if (row && isDiagnosticOnly(row)) unconsumed.push(`${callee}.${key}`);
-      }
-    }
-    expect(unconsumed, "documented options the compiler does not consume").toEqual([]);
+  it("rejects unsupported shape parameters with actionable options", () => {
+    const row = OPTION_COVERAGE_ROWS.find((r) => r.disposition === "unsupported")!;
+    expect(row.reason).toContain("size");
+    expect(() => primitives.plane({ params: row.probeValueB as never })).toThrow(/Supported params: widthSegments, heightSegments/);
   });
 });
 
-/* ------------------------------ builder guard ------------------------------ */
-
-const TRANSFORMS = [{ position: [0, 0, 0] as const }];
-const guarded = rows.filter((row) =>
-  /^primitives\./.test(row.builder) || row.builder === "primitive" || /^instances\.(box|sphere|plane|cylinder|capsule|torus)$/.test(row.builder) || /^interactions\./.test(row.builder)
-);
-
-function resolve(builder: string): (...args: unknown[]) => { toJSON(): Record<string, unknown> } {
-  const [head, name] = builder.split(".");
-  const table: Record<string, Record<string, unknown>> = { primitives, instances, interactions } as never;
-  const target = name === undefined ? (builder === "primitive" ? primitive : undefined) : table[head!]?.[name];
-  if (typeof target !== "function") throw new Error(`builder ${builder} did not resolve`);
-  return target as never;
-}
-
-function invoke(row: OptionCoverageRow, options: Record<string, unknown>) {
-  const defaults = /^instances\./.test(row.builder) ? { transforms: TRANSFORMS } : {};
-  const before = row.builder === "primitive" ? ["box"] : [];
-  return resolve(row.builder)(...before, { ...defaults, ...options });
-}
-
-describe("builders accept every covered option and reject the rest (decision 5)", () => {
-  it("has guarded rows for primitives, instances and interactions", () => {
-    expect(new Set(guarded.map((row) => row.builder.split(".")[0])).size).toBe(4);
-    expect(guarded.length).toBeGreaterThan(150);
+describe("option discovery and ownership", () => {
+  it("discovers nested calls without treating their inner keys as outer options", () => {
+    const markdown = '```ts\nprimitives.box({ name: "box", material: material.pbr({ color: "#fff" }) })\n```';
+    const found = documentedOptionReferences(markdown, "example.md");
+    expect(found.map((r) => `${r.builder}.${r.field}`).sort()).toEqual(["material.pbr.color", "primitives.box.material", "primitives.box.name"]);
+    const game = '```ts\nconst effects = game.effects({});\neffects.hitSpark([0, 0, 0], { ownerId: "p" });\neffects.fog({ density: 0.1 });\n```';
+    expect(documentedOptionReferences(game, "game.md").map((r) => `${r.builder}.${r.field}`)).toEqual(["effects.fog.density"]);
+    const positional = '```ts\ngeometry.custom({ positions: [0, 0, 0] }, { name: "mesh" });\n```';
+    expect(documentedOptionReferences(positional, "mesh.md").map((r) => `${r.builder}.${r.field}`)).toEqual(["geometry.custom.name"]);
+    const spread = documentedOptionReferences('```ts\nprimitives.box({ ...defaults });\n```', "dynamic.md");
+    expect(auditOptionProbes(spread, [])[0]?.detail).toContain("primitives.box.*");
+    const conditional = documentedOptionReferences('```ts\ninteractions.pointer(target ? { target } : {});\n```', "conditional.md");
+    expect(conditional.map((r) => `${r.builder}.${r.field}`)).toEqual(["interactions.pointer.target"]);
+    const signature = documentedOptionReferences('```ts\neffects.shaderPass({ name?, glsl? | fragment?: { glsl?, wgsl? } });\n```', "api.md");
+    expect(signature).toEqual([]);
   });
 
-  it("every covered option is read: the node carries no ignored-option note", () => {
-    const noted: string[] = [];
-    for (const row of guarded) {
-      const node = invoke(row, { [row.field]: row.probeValueA }).toJSON() as { ignoredOptions?: readonly string[] };
-      if (node.ignoredOptions) noted.push(`${row.builder}.${row.field}: ${node.ignoredOptions.join(" | ")}`);
-    }
-    expect(noted).toEqual([]);
+  it("fails missing, duplicate, unverified and reasonless unsupported probes", () => {
+    const refs = documentedOptionReferences('```ts\nprimitives.box({ size: 2 })\n```', "example.md");
+    expect(auditOptionProbes(refs, []).map((f) => f.detail)).toContain("primitives.box.size has no typed consumer probe");
+    const rows = [
+      { builder: "primitives.box", field: "size", disposition: "unverified" as const, observation: "pending" },
+      { builder: "primitives.box", field: "size", disposition: "unsupported" as const, observation: "error" }
+    ];
+    const findings = auditOptionProbes(refs, rows).map((f) => f.detail).join("\n");
+    expect(findings).toContain("duplicate probe");
+    expect(findings).toContain("actionable reason");
+    expect(auditOptionProbes(refs, [rows[0]!]).map((f) => f.detail).join("\n")).toContain("unverified evidence only");
+    expect(readOptionProbeSummaries('const primitive = forOptions<T>(); const rows = [primitive("primitives.box", "size", 1, 2, "primitive.size")];')[0]).toMatchObject({ builder: "primitives.box", field: "size", observation: "primitive.size", disposition: "runtime" });
   });
 
-  it("an option the builder does not read is reported (not thrown) with the valid keys", () => {
-    for (const builder of new Set(guarded.map((row) => row.builder))) {
-      const row = guarded.find((candidate) => candidate.builder === builder)!;
-      const node = invoke(row, { notAnOption: 1 }).toJSON() as { ignoredOptions?: readonly string[] };
-      expect(node.ignoredOptions, `${builder} must report an unknown option`).toHaveLength(1);
-      expect(node.ignoredOptions![0]).toMatch(/^OPTION_IGNORED /);
-      expect(node.ignoredOptions![0]).toContain('"notAnOption"');
-      expect(node.ignoredOptions![0]).toContain(`Valid options: `);
-      expect(node.ignoredOptions![0]).toContain(row.field);
-    }
-  });
-
-  it("the compiler turns the note into an option-ignored degradation instead of failing the mount", async () => {
-    const degraded: { code: string; message: string }[] = [];
-    const node = primitives.plane({ segments: 8 } as never);
-    const snapshot = scene().add(node).toJSON();
-    const compiled = await compileScene(snapshot, {
-      renderer: undefined, assets: undefined, quality: { tier: "high" } as never, strict: false,
-      flags: resolveQrFlags({ options: ["compiler"] }), degrade: (entry: { code: string; message: string }) => { degraded.push(entry); },
-      canvas: { width: 800, height: 600 } as unknown as HTMLCanvasElement,
-      environmentLighting: () => ({}), collectedLights: [], runtimeWarnings: new Set<string>()
-    } as never);
-    expect(compiled).toBeTruthy();
-    expect(degraded).toHaveLength(1);
-    expect(degraded[0]).toMatchObject({ code: "option-ignored" });
-    expect(degraded[0]!.message).toMatch(/^OPTION_IGNORED primitives\.plane: option "segments" is not read[\s\S]*Valid options: name, position/);
-  });
-
-  it("primitive transform extras and params reach the node (they used to be dropped)", () => {
-    const node = primitives.box({
-      renderOrder: 3, frustumCulled: false, layers: 2, userData: { tag: "x" }, rotationOrder: "XYZ", quaternion: [0, 0, 0, 1], params: { widthSegments: 4 }
-    }).toJSON() as unknown as Record<string, unknown>;
-    expect(node).toMatchObject({
-      renderOrder: 3, frustumCulled: false, layers: 2, userData: { tag: "x" }, rotationOrder: "XYZ", quaternion: [0, 0, 0, 1], params: { widthSegments: 4 }
-    });
+  it("all documented options have downstream evidence or an actionable unsupported diagnostic", () => {
+    expect(optionCoverageRule([], process.cwd()).filter((finding) => finding.enforced)).toEqual([]);
   });
 });
 

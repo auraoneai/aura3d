@@ -6,16 +6,24 @@
  * frame's camera up so `lookAtMat4` never degenerates (§6.4).
  */
 import type { AuraVec3 } from "../../index.js";
-import type { AuraCameraRig } from "../../../contracts/camera.js";
+import type { AuraCameraProbe, AuraCameraRig } from "../../../contracts/camera.js";
+import {
+  acquirePointerCapture,
+  acquireTouchAction,
+  releasePointerCaptureLease,
+  releaseTouchAction,
+  type PointerCaptureTargetLike,
+  type TouchActionTargetLike
+} from "@aura3d/input";
 import { springDamp } from "../Spring.js";
 import { createCollisionDamper, type CollisionDamper } from "../collision.js";
 import { distanceForFractionInContext } from "../framing.js";
-import { add, mul, sub, subjectHeight } from "./rigUtils.js";
+import { add, mul, probeForSubject, sub, subjectHeight, type CameraSubjectRef } from "./rigUtils.js";
 
 const DEG = Math.PI / 180;
 
 export interface OrbitRigOptions {
-  readonly target?: AuraVec3 | string;
+  readonly target?: AuraVec3 | CameraSubjectRef;
   readonly distance?: number;
   readonly yaw?: number;
   readonly pitch?: number;
@@ -45,6 +53,7 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
   let yaw = yawT;
   let pitch = pitchT;
   let damper: CollisionDamper | undefined;
+  let damperProbe: AuraCameraProbe | undefined;
   let prevUp: AuraVec3 = [0, 1, 0];
 
   return {
@@ -70,11 +79,14 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
       }
     },
     update(ctx) {
-      const subject = typeof o.target === "string" ? ctx.subject(o.target) : undefined;
+      const ref = typeof o.target === "string" || (o.target !== undefined && !Array.isArray(o.target))
+        ? o.target as CameraSubjectRef
+        : undefined;
+      const subject = ref !== undefined ? ctx.subject(ref) : undefined;
       const target: AuraVec3 | undefined =
-        typeof o.target === "string"
+        ref !== undefined
           ? subject?.position
-          : (o.target ?? [0, 0, 0]);
+          : ((o.target as AuraVec3 | undefined) ?? [0, 0, 0]);
       if (!target) return ctx.previous;
       // Framing solver wins over the fixed distance when set (#76).
       const dist =
@@ -92,13 +104,15 @@ export function createOrbitRig(o: OrbitRigOptions = {}): AuraOrbitRig {
         Math.cos(yr) * Math.cos(pr)
       ];
       const desiredEye = add(target, mul(dir, dist));
-      const eye = o.collision
-        ? (damper ??= createCollisionDamper(ctx.probe, typeof o.collision === "object" ? o.collision : {})).resolve(
-            target,
-            desiredEye,
-            ctx.dt
-          )
-        : desiredEye;
+      let eye = desiredEye;
+      if (o.collision) {
+        const probe = ref === undefined ? ctx.probe : probeForSubject(ctx.probe, ref);
+        if (!damper || damperProbe !== probe) {
+          damperProbe = probe;
+          damper = createCollisionDamper(probe, typeof o.collision === "object" ? o.collision : {});
+        }
+        eye = damper.resolve(target, desiredEye, ctx.dt);
+      }
       // Degeneracy: near ±90° pitch, keep the previous frame's up (§6.4).
       const up: AuraVec3 = Math.abs(pitch) > 89.5 ? prevUp : [0, 1, 0];
       prevUp = up;
@@ -123,41 +137,88 @@ export function bindOrbitPointer(
   element: {
     addEventListener(type: string, fn: (e: unknown) => void): unknown;
     removeEventListener(type: string, fn: (e: unknown) => void): unknown;
-    setPointerCapture?(id: number): unknown;
-  },
+  } & PointerCaptureTargetLike & TouchActionTargetLike,
   rig: AuraOrbitRig,
   options: { readonly sensitivity?: number } = {}
 ): () => void {
-  let dragging = false;
-  let lastX = 0;
-  let lastY = 0;
+  type Event = { clientX?: number; clientY?: number; pointerId?: number; button?: number };
+  const sensitivity = options.sensitivity ?? 0.25;
+  if (!Number.isFinite(sensitivity)) throw new Error("Orbit pointer sensitivity must be finite.");
+  let active: { pointerId: number | undefined; x: number; y: number } | undefined;
+  let disposed = false;
+  let touchActionOwned = false;
+  const owner = {};
   const down = (e: unknown) => {
-    const ev = e as { clientX: number; clientY: number; pointerId?: number };
-    dragging = true;
-    lastX = ev.clientX;
-    lastY = ev.clientY;
-    if (ev.pointerId !== undefined) element.setPointerCapture?.(ev.pointerId);
+    const ev = e as Event;
+    if (disposed || active || (ev.button !== undefined && ev.button !== 0) ||
+        !Number.isFinite(ev.clientX) || !Number.isFinite(ev.clientY) ||
+        (ev.pointerId !== undefined && !Number.isInteger(ev.pointerId))) return;
+    const contact = { pointerId: ev.pointerId, x: ev.clientX!, y: ev.clientY! };
+    active = contact;
+    if (contact.pointerId !== undefined) {
+      try { acquirePointerCapture(element, contact.pointerId, owner); }
+      catch { /* Synthetic or already inactive pointers may not be captured. */ }
+    }
   };
   const move = (e: unknown) => {
-    if (!dragging) return;
-    const ev = e as { clientX: number; clientY: number };
-    rig.dragBy(ev.clientX - lastX, ev.clientY - lastY, options.sensitivity ?? 0.25);
-    lastX = ev.clientX;
-    lastY = ev.clientY;
+    const ev = e as Event;
+    const contact = active;
+    if (disposed || !contact || ev.pointerId !== contact.pointerId ||
+        !Number.isFinite(ev.clientX) || !Number.isFinite(ev.clientY)) return;
+    const dx = ev.clientX! - contact.x, dy = ev.clientY! - contact.y;
+    if (!Number.isFinite(dx * sensitivity) || !Number.isFinite(dy * sensitivity)) return;
+    contact.x = ev.clientX!;
+    contact.y = ev.clientY!;
+    rig.dragBy(dx, dy, sensitivity);
   };
-  const up = () => {
-    dragging = false;
+  const end = (e: unknown, release: boolean) => {
+    const ev = e as Event;
+    const contact = active;
+    if (!contact || ev.pointerId !== contact.pointerId) return;
+    active = undefined;
+    if (contact.pointerId !== undefined) releasePointerCaptureLease(element, contact.pointerId, owner, release);
   };
-  element.addEventListener("pointerdown", down);
-  element.addEventListener("pointermove", move);
-  element.addEventListener("pointerup", up);
-  element.addEventListener("pointercancel", up);
-  return () => {
-    element.removeEventListener("pointerdown", down);
-    element.removeEventListener("pointermove", move);
-    element.removeEventListener("pointerup", up);
-    element.removeEventListener("pointercancel", up);
+  const up = (e: unknown) => end(e, true);
+  const lost = (e: unknown) => end(e, false);
+  const listeners: Array<[string, (event: unknown) => void]> = [
+    ["pointerdown", down], ["pointermove", move], ["pointerup", up],
+    ["pointercancel", up], ["lostpointercapture", lost]
+  ];
+  const installed: Array<[string, (event: unknown) => void]> = [];
+  const dispose = () => {
+    disposed = true;
+    const failures: unknown[] = [];
+    const contact = active;
+    active = undefined;
+    if (contact?.pointerId !== undefined) {
+      try { releasePointerCaptureLease(element, contact.pointerId, owner, true); }
+      catch (error) { failures.push(error); }
+    }
+    for (let index = installed.length - 1; index >= 0; index--) {
+      const [type, listener] = installed[index]!;
+      try {
+        element.removeEventListener(type, listener);
+        installed.splice(index, 1);
+      } catch (error) { failures.push(error); }
+    }
+    if (touchActionOwned) {
+      try { releaseTouchAction(element, owner); touchActionOwned = false; }
+      catch (error) { failures.push(error); }
+    }
+    if (failures.length) throw new AggregateError(failures, "Could not dispose orbit pointer controls");
   };
+  try {
+    touchActionOwned = acquireTouchAction(element, owner);
+    for (const entry of listeners) {
+      installed.push(entry);
+      element.addEventListener(...entry);
+    }
+  } catch (error) {
+    try { dispose(); }
+    catch (cleanupError) { throw new AggregateError([error, cleanupError], "Could not bind orbit pointer controls"); }
+    throw error;
+  }
+  return dispose;
 }
 
 import { registerRigFactory } from "./registry.js";

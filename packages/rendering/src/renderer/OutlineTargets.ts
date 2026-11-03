@@ -19,6 +19,7 @@ import { createLeanCoreShaderLibrary, type ShaderLibrary } from "../ShaderLibrar
 import { prd02DepthFeatures, registerPrd02DepthShader, resolvePrd02ShadowCasterVariant } from "../shadows/Prd02DepthShaderLibrary";
 import { QUALITY_TIERS } from "../contracts/quality";
 import { rendererQrFlags } from "./FrameGraph";
+import type { DepthConvention } from "../DepthConvention";
 
 /** Shader marker of the ink program. */
 export const OUTLINE_TARGET_SHADER_MARKER = "@aura3d-shader:gu47_outline_targets";
@@ -181,6 +182,14 @@ export interface OutlineTargetPassInput {
   readonly targets: readonly string[];
   /** The matrix the forward pass rasterized with. */
   readonly viewProjectionMatrix: Float32Array | readonly number[];
+  /** The forward pass's scene eye, including any source override. */
+  readonly cameraPosition?: readonly [number, number, number];
+  /** The same frame time used to deform the forward silhouette. */
+  readonly timeSeconds?: number;
+  /** The convention and view range of the forward projection. */
+  readonly depthConvention?: DepthConvention;
+  readonly depthViewMatrix?: Float32Array | readonly number[];
+  readonly depthRange?: { readonly near: number; readonly far: number };
   readonly width: number;
   readonly height: number;
   /** RGBA 0..255 (the compiler's outline colour). Default the compiler default #ff9822. */
@@ -270,6 +279,11 @@ export class OutlineTargetPass {
       new DepthPass({
         casters: targetItems,
         viewProjectionMatrix: input.viewProjectionMatrix,
+        cameraPosition: input.cameraPosition,
+        timeSeconds: input.timeSeconds,
+        depthConvention: input.depthConvention,
+        depthViewMatrix: input.depthViewMatrix,
+        depthRange: input.depthRange,
         shaderLibrary: depthLibraryFor(device),
         variantResolver: (item: RenderItem) => resolvePrd02ShadowCasterVariant(item, flags, QUALITY_TIERS.high, features),
         depthVariantFeatures: features

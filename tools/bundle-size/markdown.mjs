@@ -1,4 +1,10 @@
-export function renderBundleSizeMarkdown(results) {
+export function renderBundleSizeMarkdown(results, candidate = { status: "unbound", reason: "No candidate supplied" }, reportPath = "tests/reports/bundle-size.json") {
+  const candidateLines = candidate.status === "bound"
+    ? [
+        `Candidate: \`${candidate.releasePlan.path}\` (SHA-256 \`${candidate.releasePlan.sha256}\`), version \`${candidate.version}\`.`,
+        `Source revision: \`${candidate.source.commit}\`; source fingerprint: \`${candidate.source.fingerprint}\`; lock SHA-256: \`${candidate.source.lockfileSha256}\`.`
+      ]
+    : [`Candidate: unbound (${candidate.reason}). These observations cannot establish a release pass.`];
   const lines = [
     "# Aura3D Bundle Sizes",
     "",
@@ -6,6 +12,11 @@ export function renderBundleSizeMarkdown(results) {
     "",
     "Measurement method: esbuild ESM splitting, minify, statically reachable critical-path",
     "chunks, conservative per-chunk gzip sum, and `size-limit` against the concatenated gzip members.",
+    "",
+    ...candidateLines,
+    "",
+    "The enforced core row bundles the public barrel with every export as an entry point;",
+    "the informational one-cube row instead measures a consumer importing only its used API.",
     "",
     "| Target | JavaScript Bytes | Gzip Bytes | Budget | Result |",
     "|---|---:|---:|---:|---:|",
@@ -15,12 +26,14 @@ export function renderBundleSizeMarkdown(results) {
       formatBytes(result.gzipBytes),
       formatBytes(result.budget),
       result.enforced
-        ? result.gzipBytes <= result.budget && result.sizeLimitPassed ? "pass" : "fail"
+        ? candidate.status !== "bound"
+          ? result.gzipBytes <= result.budget && result.sizeLimitPassed ? "within budget (unbound)" : "over budget (unbound)"
+          : result.gzipBytes <= result.budget && result.sizeLimitPassed ? "pass" : "fail"
         : "informational"
     ].join(" | ")).map((row) => `| ${row} |`),
     "",
     "The authoritative machine-readable report is",
-    "`tests/reports/bundle-size.json`.",
+    `\`${reportPath}\`.`,
     "",
     /*
      * This standing note is emitted by the generator, not hand-maintained in the file.
@@ -37,17 +50,12 @@ export function renderBundleSizeMarkdown(results) {
     "the bundle delta explicitly. Do not hide renderer-capability work inside showcase patches",
     "without a bundle-size review.",
     "",
-    "## Known Overrun",
+    "## Budget interpretation",
     "",
-    "PRD-15 Phase 4 (T4.6) collapsed `@aura3d/lean` to a deprecated re-export shim over",
-    "`@aura3d/engine`, so the `core-agent-api` target and the lean-importing templates now",
-    "measure the engine critical path — the 80,000 B lean budget no longer applies to a shim",
-    "and stays in the table as a visible fail rather than a hidden one. The lean numbers",
-    "recover when consumers import engine subpaths directly (Q-13-1 migration) and the",
-    "shim is removed at 4.0.0. The `compatibility-root-observation` target retains the",
-    "compatibility-heavy root as an informational measurement rather than pretending its",
-    "bytes disappeared. This report keeps the root/template debt visible. Do not raise",
-    "either set of budgets to manufacture a pass.",
+    "The core and starter rows retain their existing enforced budgets; informational rows",
+    "expose other slices without defining a release budget. Values compare the recorded",
+    "measurements with those limits. A release pass also requires a bound candidate and",
+    "the full machine-readable check report. Do not raise budgets to manufacture a pass.",
     ""
   ];
   return lines.join("\n");

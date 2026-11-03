@@ -1,6 +1,14 @@
 import { readFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
+import { validateAcceptanceGate } from "../../../tools/native-capability-gate/index.mjs";
+import { historicalDisclosureIssues, historicalRouteDisclosureIssues } from "../../../tools/native-evidence-analysis/historical-checks";
+
+const acceptanceGate = process.env.AURA3D_CODE_COMPLETE_GATE;
+if (process.env.AURA3D_SOURCE_PROCESS_GUARD === "1" || !acceptanceGate) {
+  throw new Error("Historical evidence checks require the global code-complete gate");
+}
+validateAcceptanceGate({ gatePath: acceptanceGate });
 
 /**
  * WS-6.2 — public claims stay tied to what was measured.
@@ -56,6 +64,7 @@ describe("public claims do not overclaim", () => {
 
 describe("public claims state the bundle position, which is the release blocker", () => {
   it("discloses that the bundle is over budget while it is over budget", () => {
+    expect(historicalDisclosureIssues(README, bundle)).toEqual([]);
     /*
      * Conditional on the measurement, not hard-coded. If the bundle gap closes, `bundle.pass`
      * becomes true and this assertion stops requiring the disclosure — so the README does not
@@ -105,6 +114,7 @@ describe("public claims state the bundle position, which is the release blocker"
     const tierHealth = "tests/reports/tier12-route-health/report.json";
     if (!existsSync(tierHealth)) return;
     const report = JSON.parse(readFileSync(tierHealth, "utf8")) as { readonly failures: readonly string[] };
+    expect(historicalRouteDisclosureIssues(README, report)).toEqual([]);
     const brokenRoutes = new Set(report.failures.map((failure) => failure.split("/")[2]).filter(Boolean));
     for (const route of brokenRoutes) {
       expect(README, `README does not disclose that ${route} is broken`).toContain(route!);

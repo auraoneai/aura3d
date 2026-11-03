@@ -63,6 +63,23 @@ describe("generate-resolution-maps", () => {
     expect(vite).toContain('["@fixture/core", "./packages/core/src/index.ts"]');
   });
 
+  it("adds an explicitly declared CommonJS condition without changing ESM targets", () => {
+    const aura: AuraExportsFile = {
+      package: "@fixture/engine",
+      entries: { "./math": { source: "packages/math/src/index.ts", require: "./dist/math/index.cjs" } },
+      paths: []
+    };
+    expect(buildPackageExports(aura)["./math"]).toEqual({
+      types: "./dist/math/index.d.ts",
+      browser: "./dist/math/index.js",
+      import: "./dist/math/index.js",
+      require: "./dist/math/index.cjs",
+      default: "./dist/math/index.js"
+    });
+    expect(() => buildPackageExports({ ...aura, entries: { "./math": { source: "packages/math/src/index.ts", require: "../outside.cjs" } } })).toThrow("invalid CommonJS target");
+    expect(() => buildPackageExports({ ...aura, entries: { "./math": { source: "packages/math/src/index.ts", require: "./dist/../outside.cjs" } } })).toThrow("invalid CommonJS target");
+  });
+
   it("a deprecated entry emits a re-export stub source (b)", () => {
     const aura: AuraExportsFile = {
       package: "@fixture/engine",
@@ -110,6 +127,86 @@ describe("generate-resolution-maps", () => {
     mkdirSync(join(root, "tools/finalize-dist"), { recursive: true });
     const checkAfter = generateResolutionMaps(root, "check");
     expect(checkAfter.ok).toBe(true);
+  });
+
+  it("synchronizes the CLI registry and detects drift", () => {
+    const aura: AuraExportsFile = {
+      package: "@fixture/engine",
+      entries: { ".": { source: "packages/engine/src/index.ts", conditions: true } },
+      paths: [
+        ["@fixture/assets/exporters", "packages/assets/src/exporters/index.ts"],
+        ["@fixture/assets", "packages/assets/src/index.ts", { browser: "packages/assets/src/browser-index.ts" }]
+      ]
+    };
+    const root = fixtureRoot(aura);
+    mkdirSync(join(root, "packages/aura3d-cli/data"), { recursive: true });
+    generateResolutionMaps(root, "write");
+    const bundled = join(root, "packages/aura3d-cli/data/aura.exports.json");
+    expect(readFileSync(bundled, "utf8")).toBe(readFileSync(join(root, "aura.exports.json"), "utf8"));
+    writeFileSync(bundled, "{}\n");
+    expect(generateResolutionMaps(root, "check").diffs.some((diff) => diff.includes("data/aura.exports.json"))).toBe(true);
+    generateResolutionMaps(root, "write");
+    expect(generateResolutionMaps(root, "check").ok).toBe(true);
+    const aliases = readFileSync(join(root, "vite.aliases.generated.ts"), "utf8");
+    expect(aliases.indexOf('"@fixture/assets/exporters"')).toBeLessThan(aliases.indexOf('"@fixture/assets"'));
+    expect(aliases).toContain('["@fixture/assets", "./packages/assets/src/browser-index.ts"]');
+  });
+
+  it("maps native entrypoints to their declared source and published targets", () => {
+    const root = process.cwd();
+    const aura = JSON.parse(readFileSync(join(root, "aura.exports.json"), "utf8")) as AuraExportsFile;
+    const paths = Object.fromEntries(aura.paths.map(([specifier, source]) => [specifier, source]));
+    expect(paths["@aura3d/assets/exporters"]).toBe("packages/assets/src/exporters/index.ts");
+    expect(paths["@aura3d/assets/importers"]).toBe("packages/assets/src/importers.ts");
+    expect(paths["@aura3d/debug/helpers"]).toBe("packages/debug/src/helpers.ts");
+    expect(paths["@aura3d/rendering/shader-graph"]).toBe("packages/rendering/src/program/ShaderGraphCompiler.ts");
+    expect(paths["@aura3d/engine/scatter"]).toBe("packages/engine/src/agent-api/nodes/scatter.ts");
+    expect(paths["@aura3d/engine/worker"]).toBe("packages/engine/src/public/worker.ts");
+    expect(paths["@aura3d/engine/lighting"]).toBe("packages/rendering/src/lighting/index.ts");
+    expect(paths["@aura3d/engine/shader-graph-runtime"]).toBe("packages/engine/src/public/shader-graph-runtime.ts");
+    expect(paths["@aura3d/rendering/volumetrics"]).toBe("packages/rendering/src/volumetrics.ts");
+    expect(paths["@aura3d/addons/utils/WorkerPool"]).toBe("packages/addons/src/utils/WorkerPool.ts");
+    const assets = JSON.parse(readFileSync(join(root, "packages/assets/package.json"), "utf8"));
+    const debug = JSON.parse(readFileSync(join(root, "packages/debug/package.json"), "utf8"));
+    const addons = JSON.parse(readFileSync(join(root, "packages/addons/package.json"), "utf8"));
+    expect(assets.exports["./exporters"].import).toBe("./dist/exporters/index.js");
+    expect(assets.exports["./importers"].import).toBe("./dist/importers.js");
+    expect(debug.exports["./helpers"].types).toBe("./dist/helpers.d.ts");
+    expect(addons.exports["./utils/WorkerPool"].import).toBe("./dist/utils/WorkerPool.js");
+  });
+
+  it("keeps the engine lighting entrypoint on the same internalized module as the root runtime", () => {
+    const aura = JSON.parse(readFileSync(join(process.cwd(), "aura.exports.json"), "utf8")) as AuraExportsFile;
+    expect(aura.entries["./lighting"]).toEqual({ source: "packages/rendering/src/lighting/index.ts", conditions: true });
+    expect(buildPackageExports(aura)["./lighting"]).toEqual({
+      types: "./dist/rendering/lighting/index.d.ts",
+      browser: "./dist/rendering/lighting/index.js",
+      import: "./dist/rendering/lighting/index.js",
+      default: "./dist/rendering/lighting/index.js"
+    });
+    const paths = buildTsconfigPaths(aura) as { compilerOptions: { paths: Record<string, string[]> } };
+    expect(paths.compilerOptions.paths["@aura3d/engine/lighting"]).toEqual(paths.compilerOptions.paths["@aura3d/rendering/lighting"]);
+    const aliases = buildViteAliases(aura);
+    expect(aliases).toContain('["@aura3d/engine/lighting", "./packages/rendering/src/lighting/index.ts"]');
+    expect(aliases.indexOf('"@aura3d/engine/lighting"')).toBeLessThan(aliases.indexOf('"@aura3d/engine"'));
+    expect(aliases.indexOf('"@aura3d/assets/importers"')).toBeLessThan(aliases.indexOf('"@aura3d/assets"'));
+  });
+
+  it("loads opt-in source entrypoints without creating browser resources", async () => {
+    const [importers, exporters, worker, graph, lighting] = await Promise.all([
+      import("@aura3d/assets/importers"),
+      import("@aura3d/assets/exporters"),
+      import("@aura3d/engine/worker"),
+      import("@aura3d/engine/shader-graph-runtime"),
+      import("@aura3d/engine/lighting")
+    ]);
+    expect(typeof importers.parseBVH).toBe("function");
+    expect(typeof exporters.exportGLTF).toBe("function");
+    expect(typeof worker.createWorkerRenderer).toBe("function");
+    expect(typeof worker.workerRendererUrl).toBe("function");
+    expect(typeof graph.createCustomShaderMaterial).toBe("function");
+    expect(typeof graph.shaderGraphMaterial).toBe("function");
+    expect(typeof lighting.NativeLightmapBake).toBe("function");
   });
 
   it("excludes vite:false rows from Vite aliases but keeps them in tsconfig paths", () => {

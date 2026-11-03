@@ -220,8 +220,13 @@ export function createJuice<TEvent extends string = string, TCue extends string 
       const squashed = [...base];
       const idx = axis === "x" ? 0 : axis === "y" ? 1 : 2;
       squashed[idx] = base[idx] * (1 - amount);
+      const generation = deps.tweens.cancelGeneration;
       const first = deps.tweens.tween(node, { scale: squashed as readonly number[] }, { duration: ms / 2000, ease: "quadOut" });
       void first.done.then(() => {
+        // Reset/disposal may cancel this tween, or cancel the pool after its
+        // promise resolved but before this continuation runs. Do not create a
+        // stale return tween in either case.
+        if (first.cancelled || deps.tweens.cancelGeneration !== generation) return;
         deps.tweens.tween(node, { scale: base as readonly number[] }, { duration: ms / 2000, ease: "backOut" });
       });
       return first;

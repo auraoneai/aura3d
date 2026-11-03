@@ -49,6 +49,17 @@ cannot silently drop the chain to a direct render.
 
 No HDR-dependent or native-WebGPU postprocess claim is made from this contract.
 
+The current source also contains an experimental native WebGPU depth-of-field
+route for a bounded opaque, full-view scene. Source and mock-device tests cover
+untextured built-in unlit triangles and line segments, including supported
+normalized unsigned RGBA vertex colors and alpha-tested cutouts. Transparent,
+textured, instanced, multisampled, point, and physical-material draws are not
+covered by this route. A root-authored effect reaches the native command path
+in source tests when anti-aliasing is explicitly set to `"off"`; an automatic
+tier that selects multisampling remains unsupported. Shader compilation on a
+WebGPU device, rendered pixels, and visual quality have not been established
+by those source tests.
+
 Two root wiring defects were fixed while producing this evidence, both of which
 had made a requested effect unprovable:
 
@@ -82,6 +93,36 @@ source and optional output target, validates dimensions, exposes diagnostics,
 supports resize, and deterministically disposes both owned targets. Stereo
 composition is not part of this pass catalog and is no longer listed in the
 composer capability report. SMAA is explicitly unsupported.
+
+### Caller-supplied previous depth for temporal resolve
+
+The lower-level `Renderer` temporal options accept the explicit opt-in
+`expectedPreviousDepth: "velocity-alpha"` on the WebGL2 v2 postprocess path.
+Supply a live, same-device, render-sized, single-sample linear `rgba32f`
+velocity render target in the `velocity` option. Its red and green channels
+hold current-minus-previous, unjittered UV motion in WebGL texture coordinates;
+alpha holds the corresponding signed linear view distance in the **previous
+presented camera's** view space. A pixel with no matching previous surface,
+including newly visible geometry and uncovered sky, must use `3e38` in alpha.
+The producer must populate matching motion and depth for the same frame and
+view and keep the target alive and unchanged through submission and commit.
+
+Velocity dilation keeps the selected foreground velocity and its previous
+depth together and uses `rgba32f` for the intermediate so the sentinel remains
+representable. It also rejects history for a current pixel marked without a
+previous surface, even if a neighboring pixel has history. An optional reactive
+target must likewise be live, same-device, linear, render-sized, single-sample,
+and distinct from the velocity, history and depth attachments. Temporal
+reconstruction requires both velocity and reactive inputs. The inputs remain
+caller-owned; a change of target, device generation, frame or settings during
+preparation or use rejects the frame.
+
+Without this option, velocity alpha is ignored and the existing approximation
+compares current linear depth with prior depth. The camera-only fallback keeps
+that behavior. The caller is responsible for producing valid data and clearing
+the sentinel; attachment validation cannot establish pixel provenance. This
+option neither generates per-object velocity nor enables WebGPU temporal
+reconstruction. Source and mock checks do not establish device pixel output.
 
 The canonical browser proof is:
 

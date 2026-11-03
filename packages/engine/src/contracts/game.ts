@@ -3,7 +3,8 @@
  * Flag: A3D_QR_GAME. The stub lives in `./stubs/game.ts`.
  */
 
-import type { AuraVec3, AuraSceneSnapshot, AuraApp } from "../agent-api/index";
+import type { AuraVec3, AuraSceneSnapshot } from "../agent-api/nodes/types.js";
+import type { AuraApp } from "../agent-api/nodes/types/runtime.js";
 import type { GameAudio } from "../game/GameAudio";
 
 export type GameSessionState = "booting" | "loading" | "title" | "playing" | "paused" | "results" | "transitioning" | "context-lost" | "disposed";

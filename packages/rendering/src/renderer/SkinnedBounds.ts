@@ -5,6 +5,8 @@ import type { SkinningPaletteBinding } from "../ForwardPass";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { SkinnedBoundsProvider } from "../contracts/shadows.js";
 import { type Bounds3, Geometry } from "../Geometry";
+import type { VertexBuffer } from "../VertexBuffer";
+import type { VertexAttributeSemantic, VertexFormat } from "../VertexFormat";
 import { computeSkinnedGeometryBounds, computeSkinnedGeometryBoundsFromJointBoxes } from "../SkinningBounds";
 import { paletteKeyOf } from "../SkinningUniforms";
 import { rendererQrFlags } from "./FrameGraph";
@@ -19,22 +21,56 @@ export function skinnedItemLocalBounds(geometry: Geometry, skinning: SkinningPal
     // from the legacy map so a joint-box bound never answers a legacy lookup.
     const key = (paletteKeyOf(skinning) as object | null) ?? geometry;
     const cached = skinnedJointBoxBoundsCache.get(key);
-    if (cached && float32ArraysEqual(cached.matrices, skinning.matrices)) return cached.bounds;
+    if (cached && matchesBoundsCache(cached, geometry, skinning)) return cached.bounds;
     const bounds = computeSkinnedGeometryBoundsFromJointBoxes(geometry, skinning);
-    skinnedJointBoxBoundsCache.set(key, { matrices: new Float32Array(skinning.matrices), bounds });
+    skinnedJointBoxBoundsCache.set(key, snapshotBoundsCache(geometry, skinning, bounds));
     return bounds;
   }
   const cached = skinnedCullingBoundsCache.get(geometry);
-  if (cached && float32ArraysEqual(cached.matrices, skinning.matrices)) {
+  if (cached && matchesBoundsCache(cached, geometry, skinning)) {
     return cached.bounds;
   }
   const bounds = computeSkinnedGeometryBounds(geometry, skinning);
-  skinnedCullingBoundsCache.set(geometry, { matrices: new Float32Array(skinning.matrices), bounds });
+  skinnedCullingBoundsCache.set(geometry, snapshotBoundsCache(geometry, skinning, bounds));
   return bounds;
 }
 
-const skinnedCullingBoundsCache = new WeakMap<object, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
-const skinnedJointBoxBoundsCache = new WeakMap<object, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
+interface SkinnedBoundsCacheEntry {
+  readonly geometry: Geometry;
+  readonly format: VertexFormat;
+  readonly sourceBounds: Bounds3;
+  readonly jointCount: number;
+  readonly extraInfluences: boolean;
+  readonly streams: readonly { readonly semantic: VertexAttributeSemantic; readonly buffer: VertexBuffer; readonly revision: number }[];
+  readonly matrices: Float32Array;
+  readonly bounds: Bounds3;
+}
+
+const skinnedCullingBoundsCache = new WeakMap<object, SkinnedBoundsCacheEntry>();
+const skinnedJointBoxBoundsCache = new WeakMap<object, SkinnedBoundsCacheEntry>();
+
+function snapshotBoundsCache(geometry: Geometry, skinning: SkinningPaletteBinding, bounds: Bounds3): SkinnedBoundsCacheEntry {
+  const format = geometry.vertexBuffer.format;
+  const streams = (["position", "joints", "weights", "joints1", "weights1"] as const)
+    .filter((semantic) => format.hasAttribute(semantic))
+    .map((semantic) => {
+      const buffer = geometry.getAttributeBuffer(semantic);
+      return { semantic, buffer, revision: buffer.revision };
+    });
+  return {
+    geometry, format, sourceBounds: geometry.bounds, jointCount: skinning.jointCount,
+    extraInfluences: skinning.extraInfluences === true, streams,
+    matrices: new Float32Array(skinning.matrices), bounds
+  };
+}
+
+function matchesBoundsCache(cached: SkinnedBoundsCacheEntry, geometry: Geometry, skinning: SkinningPaletteBinding): boolean {
+  return cached.geometry === geometry && cached.format === geometry.vertexBuffer.format && cached.sourceBounds === geometry.bounds
+    && cached.jointCount === skinning.jointCount && cached.extraInfluences === (skinning.extraInfluences === true)
+    && float32ArraysEqual(cached.matrices, skinning.matrices)
+    && cached.streams.every(({ semantic, buffer, revision }) =>
+      geometry.getAttributeBuffer(semantic) === buffer && buffer.revision === revision);
+}
 
 function float32ArraysEqual(left: Float32Array, right: Float32Array): boolean {
   if (left.length !== right.length) return false;

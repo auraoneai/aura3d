@@ -1,66 +1,56 @@
-/**
- * PRD-02 §7.2 — `RoomEnvironmentScene.ts` is a verbatim port of three r185
- * `RoomEnvironment.js`. The test parses the vendored upstream file so the
- * port cannot silently drift (panel count, radiances, transforms, light).
- */
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { createRoomEnvironmentScene, sampleRoomEnvironment } from "@aura3d/rendering/lanes";
+import {
+  createRoomEnvironmentScene,
+  ROOM_ENVIRONMENT_PANEL_RADIANCES,
+  ROOM_ENVIRONMENT_SCENE_OFFSET_Y,
+  sampleRoomEnvironment
+} from "../../../../packages/rendering/src/environment/RoomEnvironmentScene";
 
-const UPSTREAM = "benchmark/context/threejs/files/examples/jsm/environments/RoomEnvironment.js";
-
-function parseUpstream() {
-  const src = readFileSync(UPSTREAM, "utf8");
-  const radiances = [...src.matchAll(/createAreaLightMaterial\(\s*(\d+)\s*\)/g)].map((m) => Number(m[1]));
-  const positions = [...src.matchAll(/light(\d)\.position\.set\(\s*([-\d.]+),\s*([-\d.]+),\s*([-\d.]+)\s*\)/g)]
-    .map((m) => ({ idx: Number(m[1]), pos: [Number(m[2]), Number(m[3]), Number(m[4])] }));
-  const scales = [...src.matchAll(/light(\d)\.scale\.set\(\s*([-\d.]+),\s*([-\d.]+),\s*([-\d.]+)\s*\)/g)]
-    .map((m) => ({ idx: Number(m[1]), scale: [Number(m[2]), Number(m[3]), Number(m[4])] }));
-  const lightMatch = /PointLight\(\s*0x([\da-f]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\s*\)/.exec(src)!;
-  const lightPos = /mainLight\.position\.set\(\s*([-\d.]+),\s*([-\d.]+),\s*([-\d.]+)\s*\)/.exec(src)!;
-  return {
-    radiances,
-    positions,
-    scales,
-    light: { intensity: Number(lightMatch[2]), decay: Number(lightMatch[4]), position: lightPos.slice(1).map(Number) }
-  };
-}
-
-describe("prd02 RoomEnvironmentScene (r185 verbatim port)", () => {
+describe("independently authored neutral studio", () => {
   const scene = createRoomEnvironmentScene();
-  const upstream = parseUpstream();
 
-  it("6 emissive panels with radiances matching the upstream file", () => {
-    expect(upstream.radiances).toEqual([50, 50, 17, 43, 20, 100]);
-    expect(scene.panels).toHaveLength(6);
-    expect(scene.panels.map((p) => p.emissive[0])).toEqual(upstream.radiances);
+  it("defines a finite room, five colored-neutral emitters and a bounded point source", () => {
+    expect(ROOM_ENVIRONMENT_SCENE_OFFSET_Y).toBe(0);
+    expect(scene.room.position).toEqual([0, 1, 0]);
+    expect(scene.room.scale).toEqual([24, 20, 24]);
+    expect(scene.room.albedo).toEqual([0.8, 0.8, 0.8]);
+    expect(scene.boxes).toHaveLength(2);
+    expect(scene.panels).toHaveLength(5);
+    expect(ROOM_ENVIRONMENT_PANEL_RADIANCES).toEqual([64, 32, 24, 16, 48]);
+    expect(scene.panels.map((panel) => panel.emissive)).toEqual([
+      [64, 64, 64], [32, 32, 32], [24, 24, 24], [16, 16, 16], [48, 48, 48]
+    ]);
+    expect(scene.light).toMatchObject({ position: [0, 7, 0], intensity: 240, distance: 40, decay: 2, color: [1, 1, 1] });
   });
 
-  it("panel positions and scales match upstream verbatim", () => {
-    for (const up of upstream.positions) {
-      const panel = scene.panels[up.idx - 1]!;
-      for (let i = 0; i < 3; i += 1) expect(panel.position[i]).toBeCloseTo(up.pos[i]!, 3);
+  it("samples nearest luminous panels at the authored radiance, independent of ray length", () => {
+    for (const [direction, expected] of [
+      [[0, 1, 0], 64],
+      [[-11.8, 3, 0], 32],
+      [[11.8, 5, -3], 24],
+      [[0, 2, -11.8], 16],
+      [[4, 5, 11.8], 48]
+    ] as const) {
+      const scaled = direction.map((part) => part * 7) as [number, number, number];
+      expect(sampleRoomEnvironment(direction)).toEqual([expected, expected, expected]);
+      expect(sampleRoomEnvironment(scaled)).toEqual([expected, expected, expected]);
     }
-    for (const up of upstream.scales) {
-      const panel = scene.panels[up.idx - 1]!;
-      for (let i = 0; i < 3; i += 1) expect(panel.scale[i]).toBeCloseTo(up.scale[i]!, 3);
+  });
+
+  it("uses Lambertian floor reflectance, inverse-square falloff and the declared range window", () => {
+    // Downward ray meets the floor at y=-9; the light at y=7 is 16 metres away.
+    const expected = (0.8 / Math.PI) * 240 * (1 - 16 / 40) ** 2 / 16 ** 2;
+    for (const actual of sampleRoomEnvironment([0, -1, 0])) expect(actual).toBeCloseTo(expected, 10);
+  });
+
+  it("returns finite nonnegative radiance for other directions and zero for invalid rays", () => {
+    for (const direction of [[1, 0, 0], [0, 0, 1], [0.2, -1, 0.3], [-0.3, 0.2, -1]] as const) {
+      for (const channel of sampleRoomEnvironment(direction)) {
+        expect(Number.isFinite(channel)).toBe(true);
+        expect(channel).toBeGreaterThanOrEqual(0);
+      }
     }
-  });
-
-  it("6 prop boxes + room shell + the 900-intensity point light", () => {
-    expect(scene.boxes).toHaveLength(6);
-    expect(scene.light.intensity).toBe(upstream.light.intensity);
-    expect(scene.light.decay).toBe(upstream.light.decay);
-    expect([...scene.light.position]).toEqual(upstream.light.position);
-  });
-
-  it("sampleRoomEnvironment returns panel radiance toward a panel face and wall bounce elsewhere", () => {
-    // Ray at the -x panel (position [-16.116, 14.37, 8.208], emissive 50) reads ~50; wall reads lambertian.
-    // r185 shifts the room by y = -3.5, so the capture point is (0, 3.5, 0) in scene space.
-    const [towardX] = sampleRoomEnvironment([-16.116, 14.37 - 3.5, 8.208] as const);
-    expect(towardX).toBeGreaterThan(10); // somewhere in an emissive panel
-    const [towardWall] = sampleRoomEnvironment([0.4, -0.9, 0.4] as const);
-    expect(towardWall).toBeGreaterThan(0);
-    expect(towardWall).toBeLessThan(5); // point-lit white walls are ~0.3–1, not emissive
+    expect(sampleRoomEnvironment([0, 0, 0])).toEqual([0, 0, 0]);
+    expect(sampleRoomEnvironment([NaN, 0, 1])).toEqual([0, 0, 0]);
   });
 });

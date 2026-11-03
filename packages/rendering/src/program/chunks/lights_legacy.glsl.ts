@@ -15,6 +15,13 @@
 export const LIGHTS_LEGACY_CHUNK_GLSL = /* glsl */ `
 uniform vec4 u_lightData[96];
 uniform float u_lightCount;
+#ifdef A3D_PHOTOMETRIC_PROFILE
+// These rows correspond to the selected u_lightData slots. Offsets/counts are
+// float uniforms for the existing WebGL binder, with exact integer values.
+uniform highp sampler2D u_a3dPhotometricAtlas;
+uniform vec4 u_a3dPhotometricOffsets[16];
+uniform vec4 u_a3dPhotometricMeta[16];
+#endif
 #ifdef LIGHTS_CLUSTERED
 uniform sampler2D u_clusterLightData;
 uniform sampler2D u_clusterLightIndices;
@@ -39,6 +46,21 @@ vec3 a3dLegacyLightRadiance(int baseIndex, vec3 worldPos, out vec3 L) {
   vec4 directionKind = u_lightData[baseIndex + 2];
   vec4 spotShadowLayer = u_lightData[baseIndex + 3];
   float kind = directionKind.w;
+#ifdef A3D_PHOTOMETRIC_PROFILE
+  // Profile samples are absolute candelas. A present profile with zero scale
+  // stays dark instead of falling back to the authored scalar intensity.
+  if (kind > 0.5 && kind < 2.5) {
+    int slot = baseIndex / 6;
+    vec4 profileOffsets = u_a3dPhotometricOffsets[slot];
+    if (profileOffsets.w > 0.0) {
+      vec4 profileMeta = u_a3dPhotometricMeta[slot];
+      colorIntensity.a = a3dPhotometricCandela(
+        u_a3dPhotometricAtlas, ivec4(profileOffsets), ivec2(profileMeta.xy),
+        profileMeta.zw, worldPos - positionRange.xyz, directionKind.xyz
+      );
+    }
+  }
+#endif
   if (kind < 0.5) {
     // directional: directionKind.xyz = light->world direction
     L = -directionKind.xyz;
@@ -52,6 +74,7 @@ vec3 a3dLegacyLightRadiance(int baseIndex, vec3 worldPos, out vec3 L) {
     // spot: cone from packed angles (x outer radians, y penumbra fraction)
     vec3 lightToFragment = normalize(worldPos - positionRange.xyz);
     float cone = dot(normalize(directionKind.xyz), lightToFragment);
+    if (u_lightData[baseIndex + 5].w > 0.5) cone = abs(cone);
     float outer = cos(spotShadowLayer.x);
     float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
     attenuation *= smoothstep(outer, inner, cone);
@@ -63,7 +86,9 @@ vec3 a3dLegacyLightRadiance(int baseIndex, vec3 worldPos, out vec3 L) {
 // Clustered lookup for >8 lights: same packing from the cluster textures.
 int a3dClusterIndex(vec2 fragCoord) {
   ivec2 clusterTile = clamp(
-    ivec2(floor(fragCoord / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))),
+    // The producer bins in fixed 64-pixel, bottom-left framebuffer tiles;
+    // the last tile is partial when a viewport dimension is not divisible by 64.
+    ivec2(floor(min(fragCoord, u_clusterViewportSize) / 64.0)),
     ivec2(0), ivec2(u_clusterGridSize) - ivec2(1)
   );
   return clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
@@ -85,6 +110,7 @@ vec3 a3dClusteredLightRadiance(int lightIndex, vec3 worldPos, out vec3 L) {
   if (kind > 1.5) {
     vec3 lightToFragment = normalize(worldPos - positionRange.xyz);
     float cone = dot(normalize(directionKind.xyz), lightToFragment);
+    if (texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0).w > 0.5) cone = abs(cone);
     float outer = cos(spotShadowLayer.x);
     float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
     attenuation *= smoothstep(outer, inner, cone);

@@ -82,7 +82,8 @@ export interface PhysicsWheelState {
   /** Tyre impulse across its rolling direction: the lateral grip realized. This is the honest slip signal. */
   readonly sideImpulse: number;
   /**
-   * Handle of the collider this tyre is resting on, or `null` in the air.
+   * The owning world's `Collider.id` for the surface under this tyre, or
+   * `null` when airborne or when the collider has been removed.
    *
    * A game registers the road and verge colliders and reads this to decide
    * "on asphalt" from the thing physically holding the car, instead of sampling
@@ -144,4 +145,134 @@ export interface PhysicsVehicleController {
   /** Zero engine force, brake and steering on every wheel, leaving the chassis where it is. */
   clearCommands(): this;
   dispose(): void;
+}
+
+const WHEEL_TUNING_KEYS = [
+  "suspensionStiffness",
+  "suspensionCompression",
+  "suspensionRelaxation",
+  "maxSuspensionTravel",
+  "maxSuspensionForce",
+  "frictionSlip",
+  "sideFrictionStiffness"
+] as const;
+const WHEEL_SPEC_KEYS = ["connection", "direction", "axle", "restLength", "radius", ...WHEEL_TUNING_KEYS] as const;
+const WHEEL_COMMAND_KEYS = ["engineForce", "brake", "steering"] as const;
+const VEHICLE_POSE_KEYS = ["position", "rotation", "linearVelocity", "angularVelocity"] as const;
+
+function validateKeys(value: object, allowed: readonly string[], label: string): void {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError(`${label} must be an object.`);
+  }
+  for (const key of Object.keys(value)) {
+    if (!allowed.includes(key)) throw new Error(`Unsupported ${label} option '${key}'.`);
+  }
+}
+
+function finite(value: number, label: string): number {
+  if (!Number.isFinite(value)) throw new TypeError(`${label} must be finite.`);
+  return value;
+}
+
+function nonNegative(value: number, label: string): number {
+  finite(value, label);
+  if (value < 0) throw new RangeError(`${label} must be non-negative.`);
+  return value;
+}
+
+function positive(value: number, label: string): number {
+  finite(value, label);
+  if (value <= 0) throw new RangeError(`${label} must be positive.`);
+  return value;
+}
+
+function vector(value: Vec3, label: string): [number, number, number] {
+  if (value == null || value.length !== 3 || !Array.from(value).every(Number.isFinite)) {
+    throw new TypeError(`${label} must be a finite 3D vector.`);
+  }
+  return [value[0], value[1], value[2]];
+}
+
+function direction(value: Vec3, label: string): [number, number, number] {
+  const v = vector(value, label);
+  const length = Math.hypot(...v);
+  if (!Number.isFinite(length) || length <= 1e-8) throw new RangeError(`${label} must be non-zero.`);
+  return [v[0] / length, v[1] / length, v[2] / length];
+}
+
+/** Validate the complete tuning update before any native wheel is modified. */
+export function validatePhysicsWheelTuning(tuning: PhysicsWheelTuning): void {
+  validateKeys(tuning, WHEEL_TUNING_KEYS, "wheel tuning");
+  for (const key of WHEEL_TUNING_KEYS) {
+    const value = tuning[key];
+    if (value !== undefined) {
+      // The current optional backend requires a strictly positive grip value.
+      if (key === "frictionSlip") positive(value, key);
+      else nonNegative(value, key);
+    }
+  }
+}
+
+/**
+ * Return a validated, detached wheel descriptor with unit suspension and axle
+ * vectors. Validation happens before registration, so an invalid tuning value
+ * cannot leave an extra wheel attached to the chassis.
+ */
+export function normalizePhysicsWheelSpec(spec: PhysicsWheelSpec): PhysicsWheelSpec {
+  validateKeys(spec, WHEEL_SPEC_KEYS, "wheel");
+  const connection = vector(spec.connection, "wheel connection");
+  const suspension = direction(spec.direction, "wheel direction");
+  const axle = direction(spec.axle, "wheel axle");
+  const alignment = Math.abs(suspension[0] * axle[0] + suspension[1] * axle[1] + suspension[2] * axle[2]);
+  if (alignment >= 1 - 1e-6) throw new RangeError("wheel direction and axle must not be parallel.");
+  positive(spec.restLength, "suspension rest length");
+  positive(spec.radius, "wheel radius");
+  const tuning: Record<string, number> = {};
+  for (const key of WHEEL_TUNING_KEYS) {
+    const value = spec[key];
+    if (value !== undefined) tuning[key] = value;
+  }
+  validatePhysicsWheelTuning(tuning);
+  return { ...spec, connection, direction: suspension, axle };
+}
+
+/** Validate all supplied controls before applying any one of them. */
+export function validatePhysicsWheelCommand(command: PhysicsWheelCommand): void {
+  validateKeys(command, WHEEL_COMMAND_KEYS, "wheel command");
+  if (command.engineForce !== undefined) finite(command.engineForce, "engineForce");
+  if (command.brake !== undefined) nonNegative(command.brake, "brake");
+  if (command.steering !== undefined) finite(command.steering, "steering");
+}
+
+/** Validate both axes together before either axis is changed. */
+export function validatePhysicsVehicleAxes(up: PhysicsVehicleAxis, forward: PhysicsVehicleAxis): void {
+  if (!Number.isInteger(up) || up < 0 || up > 2 || !Number.isInteger(forward) || forward < 0 || forward > 2) {
+    throw new RangeError("Vehicle axes must be 0 (x), 1 (y), or 2 (z).");
+  }
+  if (up === forward) throw new RangeError("Vehicle up and forward axes must differ.");
+}
+
+export function validatePhysicsVehicleStep(dt: number): void {
+  positive(dt, "vehicle step dt");
+}
+
+/**
+ * Validate a complete respawn before changing the chassis. Omitting rotation
+ * restores an upright orientation; omitting velocities clears old momentum.
+ */
+export function normalizePhysicsVehiclePose(pose: PhysicsVehiclePose): Required<PhysicsVehiclePose> {
+  validateKeys(pose, VEHICLE_POSE_KEYS, "vehicle pose");
+  const position = vector(pose.position, "vehicle reset position");
+  const inputRotation = pose.rotation === undefined ? [0, 0, 0, 1] : pose.rotation;
+  if (inputRotation == null || inputRotation.length !== 4 || !Array.from(inputRotation).every(Number.isFinite)) {
+    throw new TypeError("vehicle reset rotation must be a finite quaternion.");
+  }
+  const length = Math.hypot(...inputRotation);
+  if (!Number.isFinite(length) || length <= 1e-8) throw new RangeError("vehicle reset rotation must be non-zero.");
+  return {
+    position,
+    rotation: [inputRotation[0] / length, inputRotation[1] / length, inputRotation[2] / length, inputRotation[3] / length],
+    linearVelocity: vector(pose.linearVelocity === undefined ? [0, 0, 0] : pose.linearVelocity, "vehicle reset linear velocity"),
+    angularVelocity: vector(pose.angularVelocity === undefined ? [0, 0, 0] : pose.angularVelocity, "vehicle reset angular velocity")
+  };
 }

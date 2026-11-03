@@ -1,11 +1,12 @@
-import { DirectionalLight, Light } from "@aura3d/scene";
+import { DirectionalLight, Light, type SceneNode } from "@aura3d/scene";
 import { type Bounds3 } from "./Geometry";
 import { type ForwardShadowMapOptions, type RenderItem } from "./ForwardPass";
 import { type RenderDeviceDiagnostics } from "./RenderDevice";
 import { type RenderPassContext } from "./RenderPass";
 import { ShadowMap } from "./ShadowMap";
-import { ShadowPass, type ShadowPassReason } from "./ShadowPass";
+import { ShadowPass, assertStableMultiTargetShadowClipping, isShadowLightVisible, type ShadowPassReason } from "./ShadowPass";
 import { type ShaderLibrary } from "./ShaderLibraryCore";
+import type { DepthConvention } from "./DepthConvention";
 
 export interface CascadeSplitOptions {
   readonly cascadeCount: number;
@@ -388,8 +389,19 @@ export interface CascadedShadowPassOptions {
   readonly light: Light | null;
   readonly casters: readonly RenderItem[];
   readonly cascades: CascadedShadowMaps;
+  /**
+   * Include visibility through this root (inclusive), ignoring ancestors above
+   * it. If omitted or neither the light nor its ancestor, check only the light.
+   */
+  readonly visibilityRoot?: SceneNode;
   readonly shaderLibrary?: ShaderLibrary;
   readonly viewProjectionMatrices?: readonly (Float32Array | readonly number[])[];
+  /** Scene eye for camera-dependent caster displacement. */
+  readonly cameraPosition?: readonly [number, number, number];
+  /** Frame time shared with the forward pass. */
+  readonly timeSeconds?: number;
+  /** Convention shared by these cascade light projections. */
+  readonly depthConvention?: DepthConvention;
 }
 
 export interface CascadeShadowPassResult {
@@ -415,19 +427,32 @@ export class CascadedShadowPass {
   constructor(private readonly options: CascadedShadowPassOptions) {}
 
   execute(context: RenderPassContext): CascadedShadowPassResult {
+    this.lastResult = null;
     this.disposeShadowPasses();
-    const cascadeResults = this.options.cascades.getCascades().map((cascade) => {
-      const shadowPass = new ShadowPass({
-        light: this.options.light,
-        casters: this.options.casters,
-        shadowMap: cascade.shadowMap,
-        ...(this.options.viewProjectionMatrices?.[cascade.index]
-          ? { viewProjectionMatrix: this.options.viewProjectionMatrices[cascade.index] }
-          : {}),
-        ...(this.options.shaderLibrary ? { shaderLibrary: this.options.shaderLibrary } : {})
-      });
-      this.shadowPasses.push(shadowPass);
-      const result = shadowPass.execute(context);
+    const cascades = this.options.cascades.getCascades();
+    // Own every per-cascade map before the first draw, including maps for
+    // cascades not reached if an earlier submission fails.
+    this.shadowPasses = cascades.map((cascade) => new ShadowPass({
+      light: this.options.light,
+      casters: this.options.casters,
+      visibilityRoot: this.options.visibilityRoot,
+      shadowMap: cascade.shadowMap,
+      cameraPosition: this.options.cameraPosition,
+      timeSeconds: this.options.timeSeconds,
+      depthConvention: this.options.depthConvention,
+      ...(this.options.viewProjectionMatrices?.[cascade.index]
+        ? { viewProjectionMatrix: this.options.viewProjectionMatrices[cascade.index] }
+        : {}),
+      ...(this.options.shaderLibrary ? { shaderLibrary: this.options.shaderLibrary } : {})
+    }));
+    const light = this.options.light;
+    const checkClipping = cascades.length > 1 && light !== null && isShadowLightVisible(light, this.options.visibilityRoot) && light.castsShadow;
+    if (checkClipping) assertStableMultiTargetShadowClipping(this.options.casters);
+    const cascadeResults = cascades.map((cascade, index) => {
+      // Another draw can mutate authored inputs; recheck before each later
+      // pass, although earlier targets have already been submitted.
+      if (checkClipping && index > 0) assertStableMultiTargetShadowClipping(this.options.casters);
+      const result = this.shadowPasses[index]!.execute(context);
       return {
         index: cascade.index,
         split: cascade.split,
@@ -453,6 +478,9 @@ export class CascadedShadowPass {
   getForwardShadowMaps(options: Omit<ForwardShadowMapOptions, "texture" | "lightMatrix" | "cascades"> & {
     readonly lightMatrices: readonly (Float32Array | readonly number[])[];
   }): readonly ForwardShadowMapOptions[] {
+    // A thrown cascade leaves earlier passes populated; no part of that
+    // attempt may be published as a complete cascade set.
+    if (!this.lastResult) return [];
     return this.shadowPasses.flatMap((shadowPass, index) => {
       const lightMatrix = options.lightMatrices[index];
       if (!lightMatrix) return [];
@@ -469,6 +497,7 @@ export class CascadedShadowPass {
   }
 
   dispose(): void {
+    this.lastResult = null;
     this.disposeShadowPasses();
   }
 
@@ -521,6 +550,7 @@ function multiplyMatrix(left: readonly number[], right: readonly number[]): Floa
   return result;
 }
 
-export function supportsCascadedShadowLight(light: Light | null): light is DirectionalLight {
-  return light instanceof DirectionalLight && light.visible && light.castsShadow;
+/** A matching root enables bounded inherited visibility; otherwise only the light's flag is checked. */
+export function supportsCascadedShadowLight(light: Light | null, visibilityRoot?: SceneNode): light is DirectionalLight {
+  return light instanceof DirectionalLight && isShadowLightVisible(light, visibilityRoot) && light.castsShadow;
 }

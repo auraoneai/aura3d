@@ -5,14 +5,8 @@ import type { MutableDiagnostics } from "../diagnostics.js";
 import { colorWithAlpha } from "../colorUtils.js";
 import { getParticleLife, writeParticlePosition } from "../compiler/effects.js";
 import { labelDefaultPosition } from "../compiler/labels.js";
-import { material } from "../nodes/material.js";
-import { primitive } from "../nodes/primitives.js";
-import { renderer } from "../rendererDiagnostics.js";
-import { seededRange, animatedPosition, primitiveSize } from "../sceneMath.js";
-import { shadows } from "../nodes/shadows.js";
+import { seededRange, animatedPosition } from "../sceneMath.js";
 import { snapshotDiagnostics } from "../diagnostics.js";
-import { assets } from "../AssetDecoders.js";
-import { round } from "../GameRuntime.js";
 
 /**
  * WS-2.5 — DIAGNOSTIC PREVIEW ONLY. Renamed from `renderSceneToCanvas`.

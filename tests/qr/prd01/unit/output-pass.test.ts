@@ -1,5 +1,5 @@
 /**
- * Lane-01 §15 Phase-4 test: C-05 OutputPass (r185 operators, exposure,
+ * Lane-01 §15 Phase-4 test: C-05 OutputPass (tone operators, exposure,
  * dither, BACKGROUND_COVERAGE MRT mix, juice overlay) + the §9.1 v2 frame
  * order (opaque/transparent split, scene-depth copy, sortDepth interleave)
  * + HDR scene-target allocation. Runs on MockRenderDevice — GLSL content and
@@ -56,26 +56,33 @@ function transparentItem(x = 0): RenderItem {
 }
 
 describe("outputFragmentGlsl variant keys", () => {
-  it("maps each operator to its r185 function via TONE_MAP", () => {
-    for (const [op, fn] of Object.entries({ none: "NoneToneMapping", linear: "LinearToneMapping", reinhard: "ReinhardToneMapping", aces: "ACESFilmicToneMapping", agx: "AgXToneMapping", neutral: "NeutralToneMapping" })) {
+  it("maps each operator to its output function via TONE_MAP", () => {
+    for (const [op, fn] of Object.entries({ none: "NoneToneMapping", linear: "LinearToneMapping", reinhard: "ReinhardToneMapping", aces: "ACESFilmicToneMapping", agx: "AgXToneMapping", neutral: "NeutralToneMapping", cineon: "CineonToneMapping" })) {
       const src = outputFragmentGlsl({ toneMapping: op, backgroundCoverage: false, overlay: false });
       expect(src).toContain(`#define TONE_MAP(c) ${fn}(c)`);
       expect(src).toContain("TONE_MAP(hdr * u_exposure)");
     }
   });
 
-  it("keeps r185 operator constants and removes exposure lines", () => {
+  it("keeps the actual operator equations and applies exposure outside them", () => {
     const src = outputFragmentGlsl({ toneMapping: "aces", backgroundCoverage: false, overlay: false });
-    expect(src).toContain("0.59719");              // ACES input matrix
-    expect(src).toContain("AgxMinEv = - 12.47393"); // AgX range
-    expect(src).toContain("StartCompression");      // Khronos Neutral
+    expect(src).toContain("vec3(0.59719, 0.35458, 0.04823)"); // ACES input matrix
+    expect(src).toContain("(log2(max(inset, vec3(1e-10))) + 12.47393) / 16.499999"); // AgX range
+    expect(src).toContain("float knee = 0.76;"); // Neutral highlight shoulder
+    expect(src).toContain("1.0 - shoulder * shoulder / (peak + shoulder - knee)");
+    expect(src).toContain("TONE_MAP(hdr * u_exposure)");
     expect(src).not.toContain("toneMappingExposure");
   });
 
-  it("applies sRGB OETF and triangular dither", () => {
+  it("transforms destination primaries before the sRGB OETF and triangular dither", () => {
     const src = outputFragmentGlsl({ toneMapping: "none", backgroundCoverage: false, overlay: false });
-    expect(src).toContain("a3dLinearToSRGB(clamp(display, 0.0, 1.0))");
+    expect(src).toContain("a3dLinearToSRGB(clamp(a3dOutputGamut(display), 0.0, 1.0))");
     expect(src).toContain("a3dTriangularNoise(gl_FragCoord.xy) / 255.0");
+    expect(src.indexOf("TONE_MAP(hdr * u_exposure)")).toBeLessThan(src.indexOf("a3dOutputGamut(display)"));
+    expect(src.indexOf("a3dOutputGamut(display)")).toBeLessThan(src.indexOf("a3dTriangularNoise(gl_FragCoord.xy) / 255.0"));
+    const p3 = outputFragmentGlsl({ toneMapping: "none", backgroundCoverage: false, overlay: false, outputColorSpace: "display-p3" });
+    expect(p3).toContain("#define OUTPUT_DISPLAY_P3");
+    expect(p3).toContain("vec3(0.8224619687143624, 0.17753803128563794, 0.0)");
   });
 
   it("gates coverage mix and overlay on their defines", () => {

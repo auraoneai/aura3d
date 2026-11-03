@@ -93,3 +93,9 @@ Use `physics.world(...)`, `physics.body(...)`, `physics.box(...)`, `physics.sphe
 ## Subpaths
 
 `@aura3d/engine/game` (game kit), `/devtools`, `/renderer`, `/animation-studio`, `/lanes`, `/contracts`, `/advanced-runtime`, `/production-runtime` (deprecated for game code: use the root exports `attachRootRenderSource` and `TypedGLBActor`).
+
+The source entry `@aura3d/engine/geometry-tools` exposes opt-in mesh modifiers,
+attribute interleaving, vertex remapping and welding, topology conversion, morph
+evaluation, crease normals, and seeded surface sampling. Operations return new
+geometry or explicit diagnostics where applicable. Packed-consumer availability
+remains subject to the current candidate's package checks.

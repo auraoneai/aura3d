@@ -122,7 +122,15 @@ export const LIGHTING_IBL_CALL_GLSL = /* glsl */ `
 vec3 a3dPrd02Irradiance = a3dIndirectDiffuseIrradiance(N);
 vec3 a3dHemiIrradiance = mix(u_hemiGround, u_hemiSky, dot(N, u_hemiDirection) * 0.5 + 0.5);
 vec3 a3dEnvIrradiance = max(a3dPrd02Irradiance - u_ambientIrradiance - a3dHemiIrradiance, vec3(0.0));
+#ifdef A3D_LOCAL_DIFFUSE_IRRADIANCE
+a3dEnvIrradiance = a3dLocalDiffuseBlend(a3dEnvIrradiance, v_worldPosition, N);
+#endif
 indirectDiffuse += a3dIndirectDiffuse(a3dEnvIrradiance, V, N, material);
 indirectDiffuse += (u_ambientIrradiance + a3dHemiIrradiance * 0.31830989) * material.diffuseContribution;
-indirectSpecular += a3dIndirectSpecular(a3dEnvSpecularRadiance(N, V, material.roughness), a3dEnvIrradiance, V, N, material);
+vec3 a3dPrd02SpecularRadiance = a3dEnvSpecularRadiance(N, V, material.roughness);
+#ifdef A3D_LOCAL_PROBE
+a3dPrd02SpecularRadiance = a3dPrd02SpecularRadiance * a3d_probeGlobalWeight()
+  + a3d_probeSpecular(v_worldPosition, reflect(-V, N), material.roughness) * u_a3dLocalProbeIntensity;
+#endif
+indirectSpecular += a3dIndirectSpecular(a3dPrd02SpecularRadiance, a3dEnvIrradiance, V, N, material);
 `;

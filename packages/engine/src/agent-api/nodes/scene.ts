@@ -7,14 +7,95 @@ import { AuraNodeBuilder, toSceneNode } from "./builder.js";
 import { camera } from "./camera.js";
 import { applyOrbitInteraction } from "./orbitInteraction.js";
 import { isPositiveFinite, lowerLookNode } from "../sceneMath.js";
-import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { dropShadowedLookFill } from "../looks/lookFill.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
+import { validateClippingGroup } from "@aura3d/rendering";
+import { AuraClipGroup, type AuraClipGroupSnapshot, type AuraClipScope } from "./clipping.js";
 
 const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
+
+// Enumerable symbols follow the engine's object-spread snapshots but are not
+// written to JSON. This keeps captured state stable while a mounted scene can
+// still observe edits to the controller that produced it.
+const LIVE_SCENE_CLIPPING: unique symbol = Symbol("aura3d.liveSceneClipping");
+const LIVE_MATERIAL_CLIPPING: unique symbol = Symbol("aura3d.liveMaterialClipping");
+interface LiveClippingBinding {
+  readonly group: AuraClipGroup;
+  readonly snapshot: AuraClipGroupSnapshot;
+  readonly fingerprint: string;
+}
+type SceneWithLiveClipping = AuraSceneSnapshot & { readonly [LIVE_SCENE_CLIPPING]?: LiveClippingBinding };
+type MaterialWithLiveClipping = AuraMaterialSpec & { readonly [LIVE_MATERIAL_CLIPPING]?: LiveClippingBinding };
+
+function liveClipping(binding: LiveClippingBinding | undefined, current: AuraClipGroup | AuraClipGroupSnapshot | undefined): AuraClipGroup | AuraClipGroupSnapshot | undefined {
+  // A caller can use object spread to replace clipping or directly edit a
+  // copied snapshot. In either case the explicit value wins over its old
+  // controller; ordinary engine spreads preserve both identity and contents.
+  return binding && binding.snapshot === current && binding.fingerprint === JSON.stringify(current) ? binding.group : current;
+}
+
+/** Internal rendering seam: JSON-loaded snapshots naturally fall back to their copied state. */
+export function getSceneClipping(snapshot: AuraSceneSnapshot): AuraClipGroup | AuraClipGroupSnapshot | undefined {
+  return liveClipping((snapshot as SceneWithLiveClipping)[LIVE_SCENE_CLIPPING], snapshot.clipping);
+}
+
+/** Internal rendering seam for a copied material in a scene snapshot. */
+export function getMaterialClipping(material: AuraMaterialSpec | undefined): AuraClipGroup | AuraClipGroupSnapshot | undefined {
+  const value = material && liveClipping((material as MaterialWithLiveClipping)[LIVE_MATERIAL_CLIPPING], material.clipping);
+  if (value !== undefined) snapshotClipping(value, "material");
+  return value;
+}
+
+function snapshotClipping(value: AuraClipGroup | AuraClipGroupSnapshot, scope: AuraClipScope): AuraClipGroupSnapshot {
+  if (!value || typeof value !== "object" || value.kind !== "aura-clip-group") {
+    throw new TypeError(`Expected a ${scope} clipping group created by clipping.${scope}().`);
+  }
+  if (value.scope !== scope) throw new RangeError(`Expected a ${scope} clipping group.`);
+  if (!Number.isSafeInteger(value.revision) || value.revision < 0 || typeof value.disposed !== "boolean") {
+    throw new TypeError("Clipping snapshot requires a nonnegative revision and boolean disposed state.");
+  }
+  const validated = validateClippingGroup(value, scope);
+  return { kind: "aura-clip-group", scope, revision: value.revision, disposed: value.disposed, ...validated };
+}
+
+/** Copy only clipping-bearing materials, preserving all unrelated node identity. */
+function snapshotMaterial(material: AuraMaterialSpec): AuraMaterialSpec {
+  const clipping = getMaterialClipping(material);
+  if (clipping === undefined) return material;
+  const snapshot = snapshotClipping(clipping, "material");
+  const copy: MaterialWithLiveClipping = {
+    ...material,
+    clipping: snapshot,
+    ...(clipping instanceof AuraClipGroup ? { [LIVE_MATERIAL_CLIPPING]: { group: clipping, snapshot, fingerprint: JSON.stringify(snapshot) } } : { [LIVE_MATERIAL_CLIPPING]: undefined })
+  };
+  return copy;
+}
+
+function snapshotNodeMaterials(node: AuraSceneNode): AuraSceneNode {
+  if (node.kind === "group") {
+    const children = node.children.map(snapshotNodeMaterials);
+    return children.some((child, index) => child !== node.children[index]) ? { ...node, children } : node;
+  }
+  let result: AuraSceneNode = node;
+  if ("material" in node && node.material) {
+    const material = snapshotMaterial(node.material);
+    if (material !== node.material) result = { ...node, material } as AuraSceneNode;
+  }
+  if (node.kind === "primitive" && node.lod) {
+    const levels = node.lod.levels.map((level) => {
+      if (!level.material) return level;
+      const material = snapshotMaterial(level.material);
+      return material === level.material ? level : { ...level, material };
+    });
+    if (levels.some((level, index) => level !== node.lod!.levels[index])) {
+      result = { ...result, lod: { ...node.lod, levels } } as AuraSceneNode;
+    }
+  }
+  return result;
+}
 
 /**
  * A3D_QR_LOOKS (lane 13, #1142 follow-up): a look group carries its
@@ -68,6 +149,20 @@ export class AuraSceneBuilder {
   private physicsController: AuraPhysicsWorldController | undefined;
   private diagnosticsEnabled = false;
   private overrideMaterialSpec: AuraMaterialSpec | undefined;
+  private clippingGroup: AuraClipGroup | AuraClipGroupSnapshot | undefined;
+
+  /** Attach a scene-wide world-space group, or clear it with `null`. */
+  clipping(next: AuraClipGroup | AuraClipGroupSnapshot | null): this {
+    if (next === null) {
+      this.clippingGroup = undefined;
+      return this;
+    }
+    const copied = snapshotClipping(next, "global");
+    // Only a real controller stays live; a plain JSON snapshot is copied on
+    // receipt so later caller mutations cannot alter the scene.
+    this.clippingGroup = next instanceof AuraClipGroup ? next : copied;
+    return this;
+  }
 
   /**
    * threejs-parity SG-10: three's `scene.overrideMaterial`. Every primitive
@@ -84,6 +179,7 @@ export class AuraSceneBuilder {
       return this;
     }
     assertAuraOverrideMaterial(spec);
+    snapshotMaterial(spec);
     this.overrideMaterialSpec = spec;
     return this;
   }
@@ -145,16 +241,21 @@ export class AuraSceneBuilder {
   }
 
   toJSON(): AuraSceneSnapshot {
+    const clipping = this.clippingGroup;
+    const clippingSnapshot = clipping ? snapshotClipping(clipping, "global") : undefined;
+    const nodes = dropShadowedLookFill(this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes]);
     return {
       schema: "aura3d-scene-snapshot/1.0",
+      ...(clippingSnapshot ? { clipping: clippingSnapshot } : {}),
+      ...(clipping instanceof AuraClipGroup && clippingSnapshot ? { [LIVE_SCENE_CLIPPING]: { group: clipping, snapshot: clippingSnapshot, fingerprint: JSON.stringify(clippingSnapshot) } } : {}),
       background: this.backgroundExplicit ? this.backgroundColor : (looksFlagOn() ? lookBackdrop(this.nodes) : undefined) ?? this.backgroundColor,
       ...(this.backgroundImageSpec ? { backgroundImage: this.backgroundImageSpec } : {}),
       ...(this.backgroundToneMapped ? {} : { backgroundToneMapped: false as const }),
       camera: applyOrbitInteraction(this.cameraSpec, this.nodes),
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
-      ...(this.overrideMaterialSpec ? { overrideMaterial: this.overrideMaterialSpec } : {}),
-      nodes: dropShadowedLookFill(this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes]),
+      ...(this.overrideMaterialSpec ? { overrideMaterial: snapshotMaterial(this.overrideMaterialSpec) } : {}),
+      nodes: nodes.map(snapshotNodeMaterials),
       diagnostics: {
         enabled: this.diagnosticsEnabled
       }
@@ -173,20 +274,22 @@ export interface AuraSceneInit {
   readonly camera?: AuraCameraSpec;
   readonly timeline?: AuraTimelineSpec;
   readonly diagnostics?: boolean;
+  /** Scene-wide world-space retained half-spaces. */
+  readonly clipping?: AuraClipGroup | AuraClipGroupSnapshot;
 }
 
-const SCENE_INIT_KEYS = new Set(["children", "background", "camera", "timeline", "diagnostics"]);
+const SCENE_INIT_KEYS = new Set(["children", "background", "camera", "timeline", "diagnostics", "clipping"]);
 
 export function scene(init?: AuraSceneInit): AuraSceneBuilder {
   const builder = new AuraSceneBuilder();
   if (init === undefined) return builder;
   if (init === null || typeof init !== "object" || Array.isArray(init)) {
-    throw new AuraRuntimeError("invalid-scene-options", "scene(init) takes an options object ({ children, background, camera, timeline, diagnostics }) or nothing. Suggested fix: scene().add(node) for one node, scene({ children: [...] }) for many.");
+    throw new AuraRuntimeError("invalid-scene-options", "scene(init) takes an options object ({ children, background, camera, timeline, diagnostics, clipping }) or nothing. Suggested fix: scene().add(node) for one node, scene({ children: [...] }) for many.");
   }
   // `scene({ children })` used to return a silently empty scene (the argument was ignored); unknown keys now fail by name.
   const unknown = Object.keys(init).filter((key) => !SCENE_INIT_KEYS.has(key));
   if (unknown.length > 0) {
-    throw new AuraRuntimeError("invalid-scene-options", `scene(init) does not understand ${unknown.map((key) => `"${key}"`).join(", ")}. Supported: children, background, camera, timeline, diagnostics.`);
+    throw new AuraRuntimeError("invalid-scene-options", `scene(init) does not understand ${unknown.map((key) => `"${key}"`).join(", ")}. Supported: children, background, camera, timeline, diagnostics, clipping.`);
   }
   if (init.children !== undefined) {
     if (!Array.isArray(init.children)) throw new AuraRuntimeError("invalid-scene-options", "scene({ children }) needs an array of nodes.");
@@ -196,5 +299,6 @@ export function scene(init?: AuraSceneInit): AuraSceneBuilder {
   if (init.camera !== undefined) builder.camera(init.camera);
   if (init.timeline !== undefined) builder.timeline(init.timeline);
   if (init.diagnostics !== undefined) builder.diagnostics(init.diagnostics);
+  if (init.clipping !== undefined) builder.clipping(init.clipping);
   return builder;
 }

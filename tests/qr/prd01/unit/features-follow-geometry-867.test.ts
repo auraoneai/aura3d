@@ -2,9 +2,9 @@
  * #867 (games, scores.md column C): with the lane flags on, 15 of 18 games
  * threw `MaterialBindingError: Missing shader attribute a_uv / a_tangent`
  * (a_joints/a_weights on skinned). The generated program's feature set must
- * follow what the geometry carries, as in three.js: no uv → no uv maps,
- * uv without tangent → normal map via derivative TBN, no joints/weights → no
- * skinning. Binding validation must never kill the frame.
+ * follow what the geometry carries: no uv → no uv maps, uv without tangent →
+ * normal map via derivative TBN. Explicit skinning requires both joint and
+ * weight attributes rather than silently drawing an undeformed bind pose.
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -142,7 +142,7 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
     }
   });
 
-  it("skinning on an item without joints/weights: draws unskinned on the generated program", async () => {
+  it.each([["strict", ALL_STRICT], ["non-strict", ALL]] as const)("skinning without joints/weights rejects in %s mode", async (_mode, flags) => {
     const item = {
       geometry: triangle(VertexFormat.P3N3T2, true),
       material: new PBRMaterial(),
@@ -150,14 +150,7 @@ describe("generated draws follow geometry attributes ($ALL, mock device)", () =>
       label: "rigless",
       skinning: { jointCount: 1, matrices: new Float32Array(IDENTITY) }
     } as RenderItem;
-    const { diagnostics, drawn } = await renderOne(item);
-    expect(diagnostics.drawCalls).toBeGreaterThan(0);
-    const generated = generatedOf(drawn);
-    expect(generated.length).toBeGreaterThan(0);
-    for (const d of generated) {
-      expect(d.attributes).not.toContain("a_joints");
-      expect(d.attributes).not.toContain("a_weights");
-    }
+    await expect(renderOne(item, flags)).rejects.toMatchObject({ code: "SKINNING_GEOMETRY_CONTRACT" });
   });
 
   it("a binding validation failure never kills the frame (non-strict): falls back to the legacy program", async () => {

@@ -16,7 +16,10 @@
 //   Object.assign(features, prd07FeatureBits({ item, pass: f.pass, tier, flags }));
 
 import type { ShaderFeatureSelectInput } from "../contracts/program";
+import { MaterialInstance } from "../MaterialInstance";
 import { prd07WetnessState } from "../atmosphere/shaders/wetness.glsl";
+import { prd07ForwardFog } from "../atmosphere/fogUniformStore";
+import { hasPrd07ManagedFrameContext } from "./Prd07FrameState";
 
 /** "prd07.fog" — height fog model on analytic tiers, volumetric otherwise. */
 export function prd07FogSelect(input: Pick<ShaderFeatureSelectInput, "flags" | "tier">): "height" | "volumetric" | undefined {
@@ -32,12 +35,15 @@ const LIT_SHADER_KEY = /pbr|skinned-lit/i;
  *  chunk injected into a dry scene), and only for lit forward draws: the
  *  `fragment:material` call chunk edits `PhysicalMaterial material`, which
  *  unlit / depth / shadow programs do not have (wetness landmine, #880). */
-export function prd07WetnessSelect(input?: Pick<ShaderFeatureSelectInput, "item" | "pass">): true | undefined {
-  const w = prd07WetnessState();
+export function prd07WetnessSelect(input?: Pick<ShaderFeatureSelectInput, "item" | "pass" | "frameContext">): true | undefined {
+  const w = prd07WetnessState(input?.frameContext);
   if (!(w.wetness > 0 || w.rainRipples > 0 || w.snowCover > 0)) return undefined;
   if (input === undefined) return true;
   if (input.pass !== "forward") return undefined;
-  const shaderKey = (input.item.material as { readonly shaderKey?: string } | undefined)?.shaderKey ?? "";
+  const material = input.item.material;
+  // Program identity belongs to the base; per-instance uniforms stay on the wrapper.
+  const base = material instanceof MaterialInstance ? material.baseMaterial : material;
+  const shaderKey = base?.shaderKey ?? "";
   return LIT_SHADER_KEY.test(shaderKey) ? true : undefined;
 }
 
@@ -45,7 +51,8 @@ export function prd07WetnessSelect(input?: Pick<ShaderFeatureSelectInput, "item"
  *  features appear; merge over `f.features` without overwriting set bits. */
 export function prd07FeatureBits(input: ShaderFeatureSelectInput): Record<string, string | number | boolean> {
   const out: Record<string, string | number | boolean> = {};
-  const fog = prd07FogSelect(input);
+  const fog = input.frameContext !== undefined && hasPrd07ManagedFrameContext(input.frameContext) && prd07ForwardFog(input.frameContext) === null
+    ? undefined : prd07FogSelect(input);
   if (fog !== undefined) out["prd07.fog"] = fog;
   const wet = prd07WetnessSelect(input);
   if (wet !== undefined) out["prd07.wetness"] = wet;

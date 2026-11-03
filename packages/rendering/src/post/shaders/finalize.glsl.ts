@@ -7,10 +7,9 @@
  * write to the 8-bit output.
  *
  * `FINALIZE_FXAA_FUSED_GLSL` is the §6.1 fuse: when post-AA is FXAA, S10b
- * (display LUT + vignette), S11 (r185 FXAA) and S12 collapse into one draw.
- * The fused program reads luma from `.a` (S10b writes `luma(disp)` there) so
- * the FXAA taps never re-run the grade — the fix for today's per-tap
- * `finalColorAt` re-evaluation (`WebGL2Device.ts:3611-3631`).
+ * (display LUT + vignette), S11 antialiasing and S12 collapse into one draw.
+ * The fused program computes luminance from the graded RGB while carrying
+ * the input opacity through each sample and the final write.
  */
 
 import { POST_COMMON_GLSL } from "./common.glsl.js";
@@ -21,16 +20,19 @@ const FINALIZE_FNS_GLSL = /* glsl */ `
 float luma709(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 
 vec3 rcas(sampler2D tex, vec2 uv, vec2 texel, float sharpness) {
-  // FSR1 RCAS: single-pass adaptive sharpen over the 4-ring neighbourhood.
-  vec3 e = texture(tex, uv).rgb;
-  vec3 cross = (
-    texture(tex, uv + vec2(0.0, -texel.y)).rgb +
-    texture(tex, uv + vec2(0.0, texel.y)).rgb +
-    texture(tex, uv + vec2(-texel.x, 0.0)).rgb +
-    texture(tex, uv + vec2(texel.x, 0.0)).rgb
-  ) * 0.25;
+  // Weight neighboring straight colors by opacity before sharpening, so
+  // invisible RGB does not create a colored fringe at transparent edges.
+  vec4 e = texture(tex, uv);
+  vec4 south = texture(tex, uv + vec2(0.0, -texel.y));
+  vec4 north = texture(tex, uv + vec2(0.0, texel.y));
+  vec4 west = texture(tex, uv + vec2(-texel.x, 0.0));
+  vec4 east = texture(tex, uv + vec2(texel.x, 0.0));
+  float alphaSum = south.a + north.a + west.a + east.a;
+  vec3 cross = alphaSum > 1e-8
+    ? (south.rgb * south.a + north.rgb * north.a + west.rgb * west.a + east.rgb * east.a) / alphaSum
+    : e.rgb;
   float sharp = min(sharpness, 0.25);
-  return clamp(e + (e - cross) * sharp, 0.0, 1.0);
+  return clamp(e.rgb + (e.rgb - cross) * sharp, 0.0, 1.0);
 }
 
 float filmGrain(vec2 fragCoord, float frame, float intensity, float size, float luminanceResponse, float lumaValue) {
@@ -49,6 +51,7 @@ uniform float u_grainIntensity;
 uniform float u_grainSize;
 uniform float u_grainLuminanceResponse;
 uniform float u_rcasSharpness;    // 0 disables; FSR1 limit 0.25
+uniform int u_outputAlphaMode;    // 0 straight, 1 opaque, 2 premultiplied
 in vec2 v_uv;
 out vec4 outColor;
 
@@ -56,12 +59,39 @@ ${POST_COMMON_GLSL}
 ${FINALIZE_FNS_GLSL}
 
 void main() {
+  vec4 source = texture(u_source, v_uv);
   vec3 disp = u_rcasSharpness > 0.0
     ? rcas(u_source, v_uv, u_texelSize, u_rcasSharpness)
-    : texture(u_source, v_uv).rgb;
+    : source.rgb;
   disp += filmGrain(gl_FragCoord.xy, u_frame, u_grainIntensity, u_grainSize, u_grainLuminanceResponse, luma709(disp));
   disp += triangularDither(gl_FragCoord.xy, u_frame);
-  outColor = vec4(clamp(disp, 0.0, 1.0), 1.0);
+  vec4 result = vec4(clamp(disp, 0.0, 1.0), source.a);
+  if (u_outputAlphaMode == 1) result.a = 1.0;
+  if (u_outputAlphaMode == 2) result.rgb *= result.a;
+  outColor = result;
+}
+`;
+
+/** Encoded P3 pass-through for the admitted same-gamut tail subset. */
+export const FINALIZE_P3_GLSL = /* glsl */ `#version 300 es
+precision highp float;
+uniform sampler2D u_source;
+uniform float u_frame;
+uniform int u_ditherEnabled;
+uniform int u_outputAlphaMode; // 0 straight, 1 opaque, 2 premultiplied
+in vec2 v_uv;
+out vec4 outColor;
+
+${POST_COMMON_GLSL}
+
+void main() {
+  vec4 source = texture(u_source, v_uv);
+  vec3 encoded = source.rgb;
+  if (u_ditherEnabled != 0) encoded += triangularDither(gl_FragCoord.xy, u_frame);
+  vec4 result = vec4(clamp(encoded, 0.0, 1.0), source.a);
+  if (u_outputAlphaMode == 1) result.a = 1.0;
+  if (u_outputAlphaMode == 2) result.rgb *= result.a;
+  outColor = result;
 }
 `;
 
@@ -69,7 +99,7 @@ export const FINALIZE_FXAA_FUSED_GLSL = /* glsl */ `#version 300 es
 precision highp float;
 // GLSL ES 3.00 has no default precision for sampler3D (CI: "'sampler3D' : No precision specified").
 precision highp sampler3D;
-#define AURA_LUMA_ALPHA 1
+#define AURA_LUMA_ALPHA 0
 uniform sampler2D u_source;
 uniform sampler3D u_lut3d;
 uniform int u_hasLut;
@@ -82,6 +112,7 @@ uniform float u_grainLuminanceResponse;
 uniform float u_vignetteIntensity;
 uniform float u_vignetteSmoothness;
 uniform float u_vignetteRoundness;
+uniform int u_outputAlphaMode;
 uniform vec3 u_vignetteColor;
 uniform vec2 u_resolution;
 in vec2 v_uv;
@@ -110,7 +141,7 @@ vec4 sampleGraded(sampler2D tex, vec2 uv) {
     float len = length(p) * u_vignetteIntensity;
     disp *= mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignetteSmoothness));
   }
-  return vec4(disp, luma709(disp));
+  return vec4(disp, c.a);
 }
 
 void main() {
@@ -119,6 +150,9 @@ void main() {
   vec3 disp = color.rgb;
   disp += filmGrain(gl_FragCoord.xy, u_frame, u_grainIntensity, u_grainSize, u_grainLuminanceResponse, luma709(disp));
   disp += triangularDither(gl_FragCoord.xy, u_frame);
-  outColor = vec4(clamp(disp, 0.0, 1.0), 1.0);
+  vec4 result = vec4(clamp(disp, 0.0, 1.0), color.a);
+  if (u_outputAlphaMode == 1) result.a = 1.0;
+  if (u_outputAlphaMode == 2) result.rgb *= result.a;
+  outColor = result;
 }
 `;

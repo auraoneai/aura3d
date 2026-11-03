@@ -250,6 +250,11 @@ export class EditorRuntime {
     return this.diagnostics.update(input);
   }
 
+  invalidateFrameTimeSample(): void {
+    this.assertAlive();
+    this.diagnostics.invalidateFrameTimeSample();
+  }
+
   diagnosticsSnapshot(): EditorDiagnosticsSnapshot {
     this.assertAlive();
     return this.diagnostics.snapshot();

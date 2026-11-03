@@ -18,7 +18,8 @@ import { recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { vignetteColorRgb } from "../post/vignetteColor";
 import type { PostPipelineOptions } from "../contracts/post";
 import type { AuraToneMappingOperatorLike, OutputVignetteUniforms } from "../contracts/output";
-import { outputPassForDevice } from "../output/OutputPass";
+import { executeOutputPassToEncodedDisplaySurface, outputPassForDevice } from "../output/OutputPass";
+import { isExplicitEncodedPostLease, issueEncodedDisplaySurface, type EncodedDisplaySurfaceLease } from "../output/EncodedDisplaySurface";
 import { TONE_MAP_OPERATOR_FUNCTIONS } from "../output/ToneMappingOperators.glsl";
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
@@ -1536,12 +1537,24 @@ export class WebGL2LegacyPostPipeline {
   }
 
   describeGpuTargetInventory(liveRenderTargets: readonly WebGL2RenderTarget[]): GpuTargetInventoryEntry[] {
-    const entries: GpuTargetInventoryEntry[] = liveRenderTargets.map((target) => ({
-      label: target.label,
-      kind: "render-target" as const,
-      bytes: target.colorTexture.byteLength + (target.depthTexture?.byteLength ?? 0),
-      owner: resolveGpuTargetOwner(target.label)
-    }));
+    // Layer views share their parent's texture and framebuffer storage.
+    const layerViews = new Set(liveRenderTargets.flatMap((target) => target.layerTargets ?? []));
+    const entries: GpuTargetInventoryEntry[] = liveRenderTargets.filter((target) => !layerViews.has(target)).map((target) => {
+      const colors = target.depthOnly ? [] : target.colorTextures ?? [target.colorTexture];
+      const sampledColorBytes = colors.reduce((sum, texture) => sum + texture.byteLength, 0);
+      const sampledDepthBytes = target.depthTexture?.byteLength ?? 0;
+      // Multisampled targets use renderbuffers in addition to the sampled
+      // resolve textures. These estimates describe allocated pixel storage;
+      // sampled-texture budget accounting remains separate.
+      const multisampleColorBytes = target.multisampleColorHandle ? sampledColorBytes * target.sampleCount : 0;
+      const depthRenderbufferBytes = target.depthHandle ? target.width * target.height * 4 * target.sampleCount : 0;
+      return {
+        label: target.label,
+        kind: "render-target" as const,
+        bytes: sampledColorBytes + sampledDepthBytes + multisampleColorBytes + depthRenderbufferBytes,
+        owner: resolveGpuTargetOwner(target.label)
+      };
+    });
     const pyramid = this.bloomPyramidResources;
     if (pyramid) {
       const bytesPerPixel = pyramid.hdr ? 8 : 4;
@@ -3015,10 +3028,11 @@ function outputPassRouteTone(
   passes: readonly LdrPostprocessPassDescriptor[],
   pipeline: PostPipelineOptions,
   source: RenderTarget,
-  host: WebGL2DeviceHost
+  host: WebGL2DeviceHost,
+  requirePolicy = false
 ): OutputPassRouteTone | undefined {
   if (source.colorTexture.format === "rgba8" || !host.device) return undefined;
-  if (!hdrOutputPassEnabled() || !halfFloatColorRenderable(host)) return undefined;
+  if ((!requirePolicy && !hdrOutputPassEnabled()) || !halfFloatColorRenderable(host)) return undefined;
   if (!passes.every((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName) || pass.name === ("bloom" as LdrPostprocessPassName))) return undefined;
   const tonePass = passes.find((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName));
   const whitePoint = tonePass?.options?.whitePoint;
@@ -3038,6 +3052,22 @@ function outputPassRouteTone(
  * proven native fused path. Phases 3–6 grow this seam stage-by-stage into
  * the real v2 GPU loop (S1–S12) without touching `WebGL2Device.ts`.
  */
+/** Keep older v2 module providers working while capturing one release per acquisition. */
+function acquireV2TargetForPresent(
+  host: WebGL2DeviceHost,
+  v2: typeof import("../post/v2Entry"),
+  key: { readonly width: number; readonly height: number; readonly format: string }
+): import("../post/PostResources").PostTargetLease {
+  if (typeof v2.acquireV2TargetLease === "function") return v2.acquireV2TargetLease(host, key);
+  const target = v2.acquireV2Target(host, key);
+  let released = false;
+  return { target, release: () => {
+    if (released) return;
+    released = true;
+    v2.releaseV2Target(host, target);
+  } };
+}
+
 export function executePostGraphWebGL2(
   host: WebGL2DeviceHost | null,
   source: RenderTarget,
@@ -3056,6 +3086,8 @@ export function executePostGraphWebGL2(
     readonly frameContext?: {
       readonly source: unknown;
       readonly items: readonly import("../ForwardPass").RenderItem[];
+      readonly scopeId?: object;
+      readonly diagnosticToken?: import("../renderer/PostDiagnosticsScope").PostDiagnosticToken;
       readonly sceneDepth: {
         readonly texture: import("../Texture").Texture | null;
         readonly available: boolean;
@@ -3073,6 +3105,20 @@ export function executePostGraphWebGL2(
   }
   const v2 = request.v2;
   const pipeline = request.pipeline;
+  // This declaration concerns the texture *entering* OUT, after every HDR
+  // stage and bloom/custom pass. It is a caller warranty, never an inference
+  // from the desired destination alpha mode. Validate before running stages
+  // so an unsupported/missing declaration cannot be lost to a fused fallback.
+  const inputAlphaMode = pipeline.inputAlphaMode;
+  if (inputAlphaMode !== undefined && inputAlphaMode !== "premultiplied") {
+    throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED: expected premultiplied scene-linear opacity", "OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED");
+  }
+  if ((pipeline.alphaMode === "straight" || pipeline.alphaMode === "premultiplied") && inputAlphaMode !== "premultiplied") {
+    throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNAVAILABLE: alpha-preserving output requires a premultiplied scene-linear source", "OUTPUT_INPUT_ALPHA_MODE_UNAVAILABLE");
+  }
+  if ((pipeline.alphaMode === undefined || pipeline.alphaMode === "opaque") && inputAlphaMode !== undefined) {
+    throw new RenderDeviceError("OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED: opaque output uses the legacy coverage contract", "OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED");
+  }
   // GU47 E-C (EC-7): the bridge marks the bloom options `selective` when a
   // scene material declares a bloom weight other than 1; the HDR prefilter
   // then weights the excess by the alpha-carried weight.
@@ -3088,26 +3134,38 @@ export function executePostGraphWebGL2(
     && request.passes.some((pass) => pass.name === ("bloom" as LdrPostprocessPassName))
     && source.colorTexture.format !== "rgba8";
   let afterBloomStage: import("../post/v2Entry").DeferredAfterBloomStage | undefined;
+  let workSourceLease: import("../post/PostResources").PostTargetLease | undefined;
+  let exposureCompletion: { readonly commit: () => void; readonly abort: () => void } | undefined;
   let afterBloomRan = false;
   if (v2) {
     const hdrResult = v2.runV2HdrStages(
       host, source, pipeline, request.cameraFrame, request.temporal, request.frameContext,
-      deferBeforeTonemap ? { deferBeforeTonemap: true } : undefined
+      { deferExposureCommit: true, retainOutputLease: true, ...(deferBeforeTonemap ? { deferBeforeTonemap: true } : {}) }
     );
     workSource = hdrResult.target;
+    workSourceLease = hdrResult.outputLease;
     afterBloomStage = hdrResult.afterBloom;
+    exposureCompletion = hdrResult.exposureCompletion;
   }
+  let ldrTailTarget: RenderTarget | undefined;
+  let ldrTailLease: import("../post/PostResources").PostTargetLease | undefined;
+  let encodedSurface: EncodedDisplaySurfaceLease | undefined;
+  let tailOutputScope: ReturnType<WebGL2DeviceHost["device"]["beginSrgbOutputFallbackScope"]> | undefined;
+  const present = (): void => {
+  let failed = false;
+  try {
   // The vignette is a light falloff: it composes in linear light inside the single OUT
   // stage (before the one tone map and encode) instead of darkening display-referred
   // bytes in the LDR tail. The OUT stage always exists on this route — a tone-mapping
   // descriptor, or the linear OutputPass injected for `toneMapping: "none"`.
   const vignetteInOut = linearVignetteEnabled() && Boolean(pipeline.vignette)
     && (request.passes.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName)) || pipeline.toneMapping === "none");
-  const tailPipeline: PostPipelineOptions = vignetteInOut ? { ...pipeline, vignette: undefined } : pipeline;
-  const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(tailPipeline));
-  const ldrTailTarget = needsTail && v2
-    ? v2.acquireV2Target(host, { width: source.width, height: source.height, format: "rgba8" })
+  let tailPipeline: PostPipelineOptions = vignetteInOut ? { ...pipeline, vignette: undefined } : pipeline;
+  const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(tailPipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId));
+  ldrTailLease = needsTail && v2
+    ? acquireV2TargetForPresent(host, v2, { width: source.width, height: source.height, format: "rgba8" })
     : undefined;
+  ldrTailTarget = ldrTailLease?.target;
   // With a real S12 the fused OUT must not emit the legacy dither — the
   // finalize pass owns the single triangular dither for the frame.
   const pipelineForOut = needsTail && pipeline.dither !== false
@@ -3129,15 +3187,56 @@ export function executePostGraphWebGL2(
   // descriptors are only bloom and tone mapping (every effect before them composes in
   // linear HDR); chains with legacy display-space kernels (ssr, outline, grade, fxaa
   // descriptors) or a non-default white point keep the fused present.
-  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host) : undefined;
+  const requiresOutputPolicy = pipeline.outputColorSpace === "display-p3" || (pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque");
+  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host, requiresOutputPolicy) : undefined;
+  const p3TailFallback = Boolean(ldrTailTarget && !request.outputTarget && pipeline.outputColorSpace === "display-p3");
+  const requiresAlphaPolicy = pipeline.alphaMode !== undefined && pipeline.alphaMode !== "opaque";
+  if (requiresOutputPolicy && !outputPassTone && (!p3TailFallback || requiresAlphaPolicy)) {
+    throw new RenderDeviceError("The active post chain cannot apply the requested output color or alpha policy", "POSTPROCESS_OUTPUT_POLICY_UNAVAILABLE");
+  }
+  // A P3 tail requires the explicit, frame-owned surface capability and a
+  // snapshotted sequence whose stages preserve the encoded display gamut.
+  // Older target-only providers and unadmitted effects keep the sRGB fallback.
+  const p3TailPlan = p3TailFallback && outputPassTone && v2 && ldrTailLease
+    && isExplicitEncodedPostLease(ldrTailLease, host.device)
+    && typeof v2.prepareP3DisplayTail === "function" && typeof v2.acquireV2TargetLease === "function"
+    ? v2.prepareP3DisplayTail(pipeline, request.frameContext?.diagnosticToken, request.frameContext?.scopeId)
+    : undefined;
+  let tailCanvasColorSpace: "srgb" | "display-p3" | undefined;
+  if (ldrTailTarget && !request.outputTarget) {
+    const canvasAlpha = host.device.getPresentationAlphaMode?.();
+    if (pipeline.alphaMode && pipeline.alphaMode !== "opaque" && canvasAlpha !== pipeline.alphaMode) {
+      throw new RenderDeviceError("Output alpha mode does not match the canvas", "OUTPUT_ALPHA_MODE_UNAVAILABLE", { requested: pipeline.alphaMode, active: canvasAlpha });
+    }
+    const verifiedCanvasAlpha = canvasAlpha === "opaque" || canvasAlpha === "straight" || canvasAlpha === "premultiplied";
+    if (p3TailFallback) {
+      tailOutputScope = p3TailPlan && verifiedCanvasAlpha
+        ? host.device.beginP3DisplayOutputScope()
+        : host.device.beginSrgbOutputFallbackScope("Display-P3 is unavailable for the encoded postprocess tail");
+    }
+    const result = tailOutputScope?.negotiation ?? host.device.negotiateOutputColorSpace(pipeline.outputColorSpace ?? "srgb");
+    if (result.active !== "srgb" && result.active !== "display-p3") {
+      throw new RenderDeviceError("The postprocess tail has no verified drawing-buffer color space", "OUTPUT_COLOR_SPACE_UNAVAILABLE");
+    }
+    tailCanvasColorSpace = result.active;
+    if (result.active === "display-p3") {
+      if (!p3TailPlan || !ldrTailLease) throw new RenderDeviceError("A Display-P3 tail requires an owned encoded surface", "OUTPUT_COLOR_SPACE_UNAVAILABLE");
+      const scratchAlpha = pipeline.alphaMode === "straight" || pipeline.alphaMode === "premultiplied" ? "straight" : "opaque";
+      encodedSurface = issueEncodedDisplaySurface(ldrTailLease, host.device, scratchAlpha);
+      tailPipeline = p3TailPlan;
+    } else if (p3TailFallback) {
+      tailPipeline = { ...tailPipeline, outputColorSpace: "srgb" };
+    }
+  }
   if (v2 && outputPassTone) {
     const bloomPass = v2Passes.find((pass) => pass.name === ("bloom" as LdrPostprocessPassName));
-    const owned: RenderTarget[] = [];
+    const owned: Array<import("../post/PostResources").PostTargetLease> = [];
     try {
       let current: RenderTarget = workSource;
       if (bloomPass) {
-        const bloomed = v2.acquireV2Target(host, { width: source.width, height: source.height, format: "rgba16f" });
-        owned.push(bloomed);
+        const bloomLease = acquireV2TargetForPresent(host, v2, { width: source.width, height: source.height, format: "rgba16f" });
+        const bloomed = bloomLease.target;
+        owned.push(bloomLease);
         host.post.presentHdrBloom(workSource, selectiveBloom ? { ...bloomPass.options, selective: true } : bloomPass.options, bloomed);
         current = bloomed;
         if (afterBloomStage) {
@@ -3152,25 +3251,34 @@ export function executePostGraphWebGL2(
       host.device.setRenderTarget(request.outputTarget ?? null);
       // `dither: false`: the S12 finalize owns the one triangular dither when a tail exists, and
       // the fused OUT this replaces never dithered; the chain's output must not change.
-      outputPassForDevice(host.device).execute(current, null, {
+      const outputColorSpace = tailCanvasColorSpace ?? pipeline.outputColorSpace;
+      const outputOptions = {
         toneMapping: outputPassTone.operator,
         exposure: pipelineForOut.exposure,
         dithering: false,
         backgroundCoverage: false,
         fullCoverage: true,
+        outputColorSpace,
+        // Display effects consume straight alpha; associate only at S12.
+        alphaMode: ldrTailTarget && pipeline.alphaMode === "premultiplied" ? "straight" : pipeline.alphaMode,
+        inputAlphaMode,
         ...(vignetteInOut && outputPassTone.vignette ? { vignette: outputPassTone.vignette } : {})
-      }, ldrTailTarget ?? request.outputTarget ?? "canvas");
+      } as const;
+      const outputPass = outputPassForDevice(host.device);
+      if (encodedSurface && ldrTailTarget) {
+        executeOutputPassToEncodedDisplaySurface(outputPass, current, null, outputOptions, ldrTailTarget, encodedSurface);
+      } else {
+        outputPass.execute(current, null, outputOptions, ldrTailTarget ?? request.outputTarget ?? "canvas");
+      }
     } finally {
-      afterBloomStage?.release();
-      for (const target of owned) v2.releaseV2Target(host, target);
+      for (const lease of owned) lease.release();
     }
-    if (workSource !== source) v2.releaseV2Target(host, workSource);
     if (ldrTailTarget) {
-      v2.runV2LdrTail(host, ldrTailTarget, tailPipeline, request.outputTarget, request.frameContext);
-      v2.releaseV2Target(host, ldrTailTarget);
+      v2.runV2LdrTail(host, ldrTailTarget, tailPipeline, request.outputTarget, request.frameContext, encodedSurface);
+      tailOutputScope?.assertCurrent();
     }
     host.device.setRenderTarget(request.outputTarget ?? null);
-    recordPostStage("out:output-pass");
+    recordPostStage("out:output-pass", request.frameContext?.diagnosticToken);
     return;
   }
   const mappedPasses = v2Passes
@@ -3191,7 +3299,7 @@ export function executePostGraphWebGL2(
   const depthSkippedPasses = workSourceDepthless
     ? mappedPasses.filter((pass) => {
       if (pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr") {
-        recordPostSkipped(`WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:${pass.name}`);
+        recordPostSkipped(`WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED:${pass.name}`, request.frameContext?.diagnosticToken);
         return false;
       }
       return true;
@@ -3205,7 +3313,6 @@ export function executePostGraphWebGL2(
   const passes = pipeline.toneMapping === "none" && !depthSkippedPasses.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName))
     ? [...depthSkippedPasses, createLegacyOutputPass(pipelineForOut, undefined, vignetteInOut ? pipeline.vignette : undefined)]
     : depthSkippedPasses;
-  try {
     host.post.presentLdrPostprocess(workSource, {
       passes,
       ...(ldrTailTarget ?? request.outputTarget ? { outputTarget: ldrTailTarget ?? request.outputTarget } : {}),
@@ -3224,15 +3331,32 @@ export function executePostGraphWebGL2(
     if (afterBloomStage && !afterBloomRan) {
       // The present declined the hook (no HDR bloom reached it): the deferred
       // passes were never applied. Surface it instead of dropping silently.
-      recordPostSkipped("POSTPROCESS_AFTER_BLOOM_UNUSED:before-tonemap-custom-passes");
+      recordPostSkipped("POSTPROCESS_AFTER_BLOOM_UNUSED:before-tonemap-custom-passes", request.frameContext?.diagnosticToken);
     }
-  } finally {
-    afterBloomStage?.release();
-  }
-  if (workSource !== source && v2) v2.releaseV2Target(host, workSource);
   if (ldrTailTarget && v2) {
-    v2.runV2LdrTail(host, ldrTailTarget, tailPipeline, request.outputTarget, request.frameContext);
-    v2.releaseV2Target(host, ldrTailTarget);
+    v2.runV2LdrTail(host, ldrTailTarget, tailPipeline, request.outputTarget, request.frameContext, encodedSurface);
+    tailOutputScope?.assertCurrent();
+  }
+  } catch (error) {
+    failed = true;
+    throw error;
+  } finally {
+    const errors: unknown[] = [];
+    const release = (action: () => void): void => { try { action(); } catch (error) { errors.push(error); } };
+    release(() => afterBloomStage?.release());
+    if (workSourceLease) release(() => workSourceLease!.release());
+    else if (v2 && workSource !== source) release(() => v2.releaseV2Target(host, workSource));
+    if (ldrTailLease) release(() => ldrTailLease!.release());
+    if (tailOutputScope) release(() => tailOutputScope!.release());
+    if (errors.length && !failed) throw new AggregateError(errors, "Post presentation resource release failed");
+  }
+  };
+  try {
+    present();
+    exposureCompletion?.commit();
+  } catch (error) {
+    try { exposureCompletion?.abort(); } catch { /* Preserve the original presentation failure. */ }
+    throw error;
   }
 }
 

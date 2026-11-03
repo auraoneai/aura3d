@@ -1,21 +1,15 @@
-/**
- * Copy-boundary test for Aura Clash public-facing copy.
- *
- * Aura Clash is a development showcase, not a flagship/release-ready game.
- * This test guards index.html and TitleScreen.ts against maturity claims
- * (flagship, mature, production-ready, release-ready, complete/finished game)
- * that would misrepresent the route's status.
- *
- * Run: node tests/copy-boundary.test.mjs
- */
+import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
+import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const read = (file) => readFileSync(join(root, file), "utf-8");
 const files = [
   "index.html",
-  "src/ui/TitleScreen.ts",
+  "src/legacy/ui/TitleScreen.ts",
+  "src/legacy/playable/AuraClashArenaApp.ts",
 ];
 
 const forbiddenPatterns = [
@@ -29,25 +23,55 @@ const forbiddenPatterns = [
   /\bcinematic\b/i,
 ];
 
-let failures = 0;
-for (const file of files) {
-  const path = join(root, file);
-  const content = readFileSync(path, "utf-8");
+function assertNoMaturityClaims(file, content) {
   for (const pattern of forbiddenPatterns) {
-    if (pattern.test(content)) {
-      console.error(`FAIL: ${file} contains forbidden maturity claim matching ${pattern}`);
-      failures += 1;
-    }
-  }
-  // Positive assertion: the development-showcase framing must be present.
-  if (!/development showcase/i.test(content)) {
-    console.error(`FAIL: ${file} is missing the required "development showcase" framing`);
-    failures += 1;
+    assert.doesNotMatch(content, pattern, `${file} contains a forbidden maturity claim`);
   }
 }
 
-if (failures > 0) {
-  console.error(`\n${failures} copy-boundary violation(s) found.`);
-  process.exit(1);
+test("the public entry dispatches to the checked legacy arena by default", () => {
+  assert.match(read("index.html"), /<script\s+type="module"\s+src="\.\/src\/main\.ts"/);
+  const dispatcher = read("src/main.ts");
+  assert.match(dispatcher, /const DEFAULT_ON\s*=\s*false\b/);
+  assert.match(dispatcher, /flags\.on\(ROUTE_FLAG\)\s*\?\s*import\("\.\/v2\/boot"\)\s*:\s*import\("\.\/legacy\/main"\)/);
+  assert.match(
+    read("src/legacy/main.ts"),
+    /import\("\.\/playable\/AuraClashArenaApp"\)\.then\(\(module\)\s*=>\s*module\.mountAuraClashArenaApp\(\)\)/,
+  );
+});
+
+for (const file of files) {
+  test(`${file} preserves the development-showcase copy boundary`, () => {
+    const content = read(file);
+    assertNoMaturityClaims(file, content);
+    assert.match(content, /development showcase/i, `${file} must frame the route as a development showcase`);
+  });
 }
-console.log("PASS: copy-boundary — no maturity claims, development-showcase framing present.");
+
+test("each public entry description uses development-showcase framing", () => {
+  const content = read("index.html");
+  for (const pattern of [
+    /<meta name="description" content="([^"]+)"/i,
+    /<meta property="og:description" content="([^"]+)"/i,
+    /<meta name="twitter:description" content="([^"]+)"/i,
+  ]) {
+    const match = content.match(pattern);
+    assert.ok(match, `missing description matching ${pattern}`);
+    assert.match(match[1], /development showcase/i);
+  }
+  const structuredData = content.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i);
+  assert.ok(structuredData, "missing structured description");
+  assert.match(JSON.parse(structuredData[1]).description, /development showcase/i);
+});
+
+test("the mounted arena markup contains the development-showcase framing", () => {
+  const content = read("src/legacy/playable/AuraClashArenaApp.ts");
+  const markup = [...content.matchAll(/root\.innerHTML\s*=\s*`([\s\S]*?)`;/g)];
+  assert.equal(markup.length, 1, "expected exactly one mounted arena template");
+  assert.match(markup[0][1], /development showcase/i);
+});
+
+test("the opt-in v2 shell also avoids unsupported maturity claims", () => {
+  const file = "src/v2/boot.ts";
+  assertNoMaturityClaims(file, read(file));
+});

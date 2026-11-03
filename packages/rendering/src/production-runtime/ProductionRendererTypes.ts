@@ -16,7 +16,10 @@ export interface ProductionImportedAssetRenderMetadata {
   readonly assetName?: string;
   readonly meshCount: number;
   readonly primitiveCount: number;
+  /** Authored input materials; a file can legitimately declare none. */
   readonly materialCount: number;
+  /** Runtime-bound materials when the source supplies an observed count. */
+  readonly runtimeMaterialCount?: number;
   readonly textureCount: number;
   readonly imageCount: number;
   readonly animationCount: number;

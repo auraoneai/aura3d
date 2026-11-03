@@ -1,6 +1,13 @@
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { validateAcceptanceGate } from "../../../tools/native-capability-gate/index.mjs";
+import { historicalBundleIssues, historicalDeveloperIssues } from "../../../tools/native-evidence-analysis/historical-checks";
+
+const acceptanceGate = process.env.AURA3D_CODE_COMPLETE_GATE;
+if (process.env.AURA3D_SOURCE_PROCESS_GUARD === "1" || !acceptanceGate) {
+  throw new Error("Historical evidence checks require the global code-complete gate");
+}
+validateAcceptanceGate({ gatePath: acceptanceGate });
 
 /**
  * WS-6.1 / §B.1 / §B.2 — the developer-value verdict, and why it currently fails on one axis.
@@ -55,7 +62,7 @@ interface BundleReport {
 
 function readFriction(): FrictionReport {
   if (!existsSync(FRICTION_REPORT)) {
-    execFileSync("npx", ["tsx", "tools/developer-friction/index.ts"], { stdio: "pipe" });
+    throw new Error("The retained historical developer-friction report is required");
   }
   return JSON.parse(readFileSync(FRICTION_REPORT, "utf8")) as FrictionReport;
 }
@@ -90,6 +97,7 @@ describe("§B.2 — developer friction is measured for both engines", () => {
   });
 
   it("measures runtime startup and clean install-to-cube for both engines in real browsers", () => {
+    expect(historicalDeveloperIssues(friction)).toEqual([]);
     expect(friction.runtimeStartupToFirstFrame.methodology.sessions).toBeGreaterThanOrEqual(3);
     expect(friction.runtimeStartupToFirstFrame.methodology.identicalCameraAndContent).toBe(true);
     for (const engine of [friction.runtimeStartupToFirstFrame.aura3d, friction.runtimeStartupToFirstFrame.threejs]) {
@@ -112,6 +120,7 @@ describe("§B.2 — developer friction is measured for both engines", () => {
 
 describe("§B.1 — the release-defining bundle condition", () => {
   it("is met through the documented lean entries, with the original ratios pinned", () => {
+    expect(historicalBundleIssues(bundle)).toEqual([]);
     /*
      * Measured 2026-08-08 by `tools/bundle-scenarios` through its canonical config, against real
      * Three.js builds of the same scenes:

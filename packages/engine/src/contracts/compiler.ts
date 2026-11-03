@@ -7,7 +7,8 @@
 import type { PrdId, QrFlagName, QrFlags } from "@aura3d/rendering/contracts";
 import { defineContractSlot, type ContractSlot } from "@aura3d/rendering/contracts";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
-import type { AuraSceneSnapshot, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistry } from "../agent-api/index";
+import type { AuraSceneSnapshot } from "../agent-api/nodes/types.js";
+import type { AuraRuntimeNodeHandle, AuraRuntimeNodeRegistry } from "../agent-api/nodes/types/runtime.js";
 import { resolveQrFlags } from "./flags.js";
 
 export type AuraDegradationCode = "renderer-mount-failed" | "texture-upgrade-failed" | "sdf-text-fallback" | "pose-apply-failed" | "clip-apply-failed" | "morph-apply-failed" | "foot-planting-failed" | "extension-lobe-pending" | "capability-degraded" | "option-ignored";
@@ -31,7 +32,22 @@ export interface AuraNodeKindMap { model: unknown; primitive: unknown; group: un
   // "parity-not-implemented" until the lane's real handler lands.
   line: unknown; points: unknown; sprite: unknown; batched: unknown;
   // AD-15 (P2): lens flare — compiled per frame by `compiler/lensFlare.ts` (camera-dependent).
-  lensflare: unknown; }
+  lensflare: unknown; "gaussian-splat": unknown; "scalar-volume": unknown; }
+
+/** A frame-local volume draw; the compiled scene owns its renderer. */
+export type RuntimeScalarVolumeDraw = import("@aura3d/rendering/volumetrics").ScalarVolumeDrawRecord;
+
+/** A frame-local draw of a compiled splat cloud. The compiled scene owns the renderer. */
+export interface RuntimeGaussianSplatDraw {
+  readonly renderer: import("@aura3d/rendering").GaussianSplatRenderer;
+  readonly modelMatrix: Float32Array;
+  readonly colorSpace: "srgb_rec709_display" | "lin_rec709_display";
+  /** World-space conservative cloud bounds for this asset instance. */
+  readonly worldBounds: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
+  readonly layerMask: number;
+  readonly frustumCulled: boolean;
+  readonly renderOrder: number;
+}
 
 export interface AnyNodeHandler {
   readonly kind: string;
@@ -86,7 +102,20 @@ export const DIAGNOSTIC_ONLY_FIELDS: Readonly<Record<string, { readonly reason: 
   "animation.restPoseReset": { reason: "C-19: rest-pose reset is PRD 06's", ownerPrd: 6 }
 };
 
-export interface OptionCoverageRow { readonly builder: string; readonly field: string; readonly probeValueA: unknown; readonly probeValueB: unknown; readonly ownerPrd: number; readonly beforeOptions?: readonly string[]; }
+export interface OptionCoverageRow {
+  readonly builder: string;
+  readonly field: string;
+  readonly probeValueA: unknown;
+  readonly probeValueB: unknown;
+  readonly ownerPrd: number;
+  readonly beforeOptions?: readonly string[];
+  /** Evidence level: runtime names a consumer, compile-only verifies lowering. */
+  readonly disposition?: "runtime" | "compile-only" | "unsupported" | "unverified";
+  /** Named consumer or observable effect, when known. */
+  readonly observation?: string;
+  /** Actionable error for unsupported fields, or missing evidence for unverified fields. */
+  readonly reason?: string;
+}
 
 const optionCoverage = new Map<string, OptionCoverageRow>();
 
@@ -169,6 +198,12 @@ export interface RuntimeCompiledSceneInternals {
   lastInput: unknown /* ProductionRendererInput */ | null;
   actorEntries: readonly unknown[];
   primitiveEntries: readonly unknown[];
+  /** Successfully acquired splat assets, including runtime additions. */
+  readonly loadedSplatAssetIds?: readonly string[];
+  /** Successfully acquired scalar volumes, including runtime additions. */
+  readonly loadedScalarVolumeAssetIds?: readonly string[];
+  readonly hasOwnedScalarVolumes?: boolean;
+  whenVolumeDisposalsSettled?(): Promise<void>;
   liveNodes: readonly import("../agent-api/nodes/types.js").AuraSceneNode[];
   addSubtree(node: import("../agent-api/nodes/types.js").AuraSceneNode, parentId?: string): void;
   removeSubtree(runtimeId: string): boolean;

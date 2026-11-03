@@ -13,9 +13,17 @@ import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterDescript
 import { proceduralFireballSheet, VfxSpriteTextures, vfxSpriteFrame, vfxSpritePageSize, type VfxSpriteLoader, type VfxSpriteTextureState } from "./FlipbookAtlas";
 import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type LoweredSprite, type LoweredVolumeEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
-import { LiveAtmosphere } from "./LiveAtmosphere";
+import { LiveAtmosphere, type AtmosphereRenderSnapshot } from "./LiveAtmosphere";
+import { isOwnedVfxBridge, ownedVfxBridgeOverlay, onOwnedVfxBridgeDetach, type Prd07MountAuthority, type VfxBridge } from "../../agent-api/vfx/bridge";
 import { TransientLightPool, type TransientLightFlash } from "./TransientLightPool";
 import type { CollectedLight } from "@aura3d/rendering";
+import { identityMat4Into, localMatrixOf, multiplyMat4Into } from "../../agent-api/sceneGraph.js";
+import { assertWeatherTransformFields, isIdentityWeatherMatrix, rigidWeatherMatrix, weatherInstancesToWorld, weatherLocalCamera } from "./WeatherTransform.js";
+
+const readAtmosphereSnapshot = LiveAtmosphere.prototype.renderSnapshot;
+const subscribeAtmosphereRenderChange = LiveAtmosphere.prototype.onRenderChange;
+const noteAtmosphereCamera = LiveAtmosphere.prototype.noteCamera;
+const readAtmosphereMutationVersion = LiveAtmosphere.prototype.authoredMutationVersion;
 
 let sharedSoftDot: Texture | null = null;
 
@@ -61,6 +69,8 @@ export function writeSpriteFrames(state: EmitterState, out: Float32Array, live: 
 interface VolumeBinding {
   readonly lowered: LoweredVolumeEffect;
   readonly emitter: ProceduralVolumeEmitter;
+  /** Original authored path; a live registry matrix takes precedence when present. */
+  readonly path: readonly EffectNodeLike[];
   scratch: Float32Array;
 }
 
@@ -327,7 +337,18 @@ export interface AppLike {
   onFrame(callback: (frame: { dt: number }) => void): () => void;
   /** Runtime-node registry — the legacy-sky hiding pass (§6.5) uses it. */
   readonly nodes?: {
+    /** Changes when the runtime node topology is added to, removed, or reset. */
+    readonly version?: number;
     get(id: string): { setVisible?(visible: boolean): void; visible?: boolean } | undefined;
+    onSceneChange?(listener: () => void): () => void;
+    atmosphereNodeState?(node: EffectNodeLike): {
+      readonly visible: boolean;
+      readonly worldPosition: readonly [number, number, number];
+      readonly worldMatrix?: ArrayLike<number>;
+    } | undefined;
+    /** Validate the actual runtime ancestor chain, including reparented nodes. */
+    assertWeatherNodeTransform?(node: EffectNodeLike): void;
+    sceneWithRuntimeAdditions?(): { readonly nodes: readonly EffectNodeLike[] } | undefined;
   };
   /** C-27 quality controller (app.quality) — supplies the resolved tier. */
   readonly quality?: { readonly tier: AuraQualityTier };
@@ -337,9 +358,35 @@ const UNSTOPPED_EMITTER_SECONDS = 5;
 const LINGER_SECONDS = 3;
 const LINGER_PARTICLE_LIMIT = 24;
 
+/** The current volume packet supports translation, but not scale, rotation, reflection or shear. */
+function isTranslationOnly(matrix: ArrayLike<number> | undefined): boolean {
+  if (!matrix || matrix.length !== 16) return false;
+  for (const index of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15]) {
+    const expected = index === 0 || index === 5 || index === 10 || index === 15 ? 1 : 0;
+    if (matrix[index] !== expected) return false;
+  }
+  return Number.isFinite(matrix[12]) && Number.isFinite(matrix[13]) && Number.isFinite(matrix[14]);
+}
+
 export class ProductionEffectSystem {
   readonly diagnostics = new EffectDiagnostics();
-  readonly atmosphere = new LiveAtmosphere();
+  readonly #atmosphere = new LiveAtmosphere();
+  get atmosphere(): LiveAtmosphere { return this.#atmosphere; }
+  readonly #app: AppLike;
+  readonly #disposeListeners = new Set<() => void>();
+  #effectsOwner: object | null = null;
+  #ownedBridge: VfxBridge | null = null;
+  #ownedCanvas: HTMLCanvasElement | null = null;
+  #runtimeOwner: object | null = null;
+  #managedSnapshot: AtmosphereRenderSnapshot | null = null;
+  #managedEpoch = 0;
+  #sceneSkyWrites = 0;
+  #authorityEpoch = 0;
+  readonly #authorityRevocations = new Set<() => void>();
+  #managedStaging = false;
+  #offManagedAtmosphere: (() => void) | null = null;
+  #offManagedScene: (() => void) | null = null;
+  readonly #managedListeners = new Set<() => void>();
   /** C-27 tier the system budgets against (resolved by the C-38 factory). */
   readonly tier: AuraQualityTier;
   private readonly budgetCap: number;
@@ -359,7 +406,16 @@ export class ProductionEffectSystem {
   private readonly groupScratch = new Map<string, Float32Array>();
   private readonly frameBatchMembers = new Map<string, string[]>();
   private readonly frameLive = new Map<string, number>();
-  private readonly offFrame: () => void;
+  private offFrame: (() => void) | null = null;
+  private frameRegistrationInProgress = false;
+  private frameInvalidated = false;
+  private readonly frameCallback = (frame: { dt: number }): void => this.frame(frame.dt);
+  /** IDs installed by the last completed authored-scene rebuild. */
+  private sceneEffectIds = new Set<string>();
+  /** Hidden weather also needs a rebuild when a live parent becomes visible. */
+  private sceneHasWeather = false;
+  private sceneEmitterNodes = new Map<string, EffectNodeLike>();
+  private sceneMeshNodes = new Map<string, EffectNodeLike>();
   /** P2-T7 transient light pool — tier-capped flashes for the burst presets. */
   readonly transientLights: TransientLightPool;
   /** §6.2.9 ribbon state — trails own the ring; the RibbonPass draws it. */
@@ -368,9 +424,10 @@ export class ProductionEffectSystem {
   private readonly beams = new Map<string, EffectNodeLike>();
   /** P6 runtime decals spawned via effects.decal (drawn by DecalBatch). */
   private readonly decalNodes = new Map<string, EffectNodeLike>();
+  private readonly decalExpirations = new Map<string, number>();
   private readonly meshBatches = new Map<string, MeshParticleBatch>();
   private drawFeedQueue: ParticlePassDiagnostics | null = null;
-  private disposed = false;
+  #disposed = false;
   private time = 0;
   private skyFlagOn = false;
   private weatherFlagOn = false;
@@ -390,7 +447,7 @@ export class ProductionEffectSystem {
   private readonly socketScratch = new Float32Array(16);
 
   constructor(
-    private readonly app: AppLike,
+    app: AppLike,
     options: {
       readonly tier?: AuraQualityTier;
       /** GU47 E-F: sprite image loader (default: fetch + createImageBitmap); tests inject a synchronous-data loader. */
@@ -399,6 +456,7 @@ export class ProductionEffectSystem {
       readonly spritePageUrl?: (pageSize: 1024 | 2048) => string;
     } = {}
   ) {
+    this.#app = app;
     // Resolved C-27 tier wins over the explicit option's fallback: callers pass
     // app.quality.tier; "high" remains only as the unresolved default.
     this.tier = options.tier ?? app.quality?.tier ?? "high";
@@ -431,7 +489,64 @@ export class ProductionEffectSystem {
       });
     }
     this.rebuildFromScene();
-    this.offFrame = app.onFrame((frame) => this.frame(frame.dt));
+    // An unmanaged host has no reliable topology-change signal, so retain the
+    // historical eager subscription until a managed scene observer is bound.
+    this.syncFrameSubscription();
+  }
+
+  /** Keep the app loop subscribed only while this system has work to advance. */
+  private hasFrameWork(): boolean {
+    // Standalone AppLike integrations may mutate `scene` without notifying us.
+    if (!this.#offManagedScene || this.frameInvalidated) return true;
+    for (const binding of this.emitters.values()) {
+      if (binding.state.live > 0 || binding.state.desc.emissionRate > 0) return true;
+    }
+    for (const binding of this.volumes.values()) if (binding.lowered.count > 0) return true;
+    for (const batch of this.meshBatches.values()) if (batch.liveCount > 0) return true;
+    // Aurora's shader scrolls its curtain bands even when sway is zero.
+    for (const beam of this.beams.values()) if (beam.effect === "auroraRibbon") return true;
+    if (this.decalExpirations.size > 0) return true;
+    for (const binding of this.trails.values()) {
+      const follow = binding.follow;
+      if (follow && ((follow.following && follow.target !== undefined) || follow.points.length > 0)) return true;
+    }
+    if (this.transientLights.liveCount > 0) return true;
+    // Managed ingestion already copied and validated these fields. Do not
+    // re-read caller-owned sky objects from the frame-demand check.
+    const clouds = this.#managedSnapshot?.skyForFog?.clouds;
+    // Cloud coverage defaults to zero and drift defaults to one in the sky
+    // renderer. Still clouds do not need a continuously running app loop.
+    if (clouds && (clouds.coverage ?? 0) > 0 && (clouds.speed ?? 1) > 0) return true;
+    // resolveFog returns the authored target by identity once a transition is
+    // complete, and an interpolated object while one is still in progress.
+    try { return this.#atmosphere.resolveFog() !== this.#atmosphere.state().fog; }
+    catch { return true; } // Keep a retry path for a temporarily invalid input.
+  }
+
+  private syncFrameSubscription(): void {
+    if (this.#disposed) return;
+    if (!this.hasFrameWork()) {
+      const off = this.offFrame;
+      this.offFrame = null;
+      off?.();
+      return;
+    }
+    if (this.offFrame || this.frameRegistrationInProgress) return;
+    this.frameRegistrationInProgress = true;
+    try {
+      const off = this.#app.onFrame(this.frameCallback);
+      if (this.#disposed || !this.hasFrameWork()) off();
+      else this.offFrame = off;
+    } finally {
+      this.frameRegistrationInProgress = false;
+    }
+  }
+
+  /** Publish one changed frame even if no continuous simulation remains. */
+  private requestFrame(): void {
+    if (this.#disposed) return;
+    this.frameInvalidated = true;
+    this.syncFrameSubscription();
   }
 
   /** P6-T4 — measured particle GPU ms; auto-engages the half-res path past the
@@ -455,6 +570,194 @@ export class ProductionEffectSystem {
     this.renderSincePrevFrame = true;
   }
 
+  /** Read the current app scene even when no simulation tick has run since setScene. */
+  captureAtmosphereSnapshot(): AtmosphereRenderSnapshot | null {
+    if (this.#disposed) return null;
+    const sig = this.sceneSignature();
+    if (sig.nodes !== this.lastSceneNodes || sig.version !== this.lastSceneVersion || sig.registryVersion !== this.lastRegistryVersion) this.rebuildFromScene();
+    this.#atmosphere.updateFogVisibility(this.#app);
+    return this.#atmosphere.renderSnapshot(this.#app);
+  }
+
+  /** Let the canvas overlay detach even when the system is disposed directly. */
+  onDispose(listener: () => void): () => void {
+    if (this.#disposed) { listener(); return () => {}; }
+    this.#disposeListeners.add(listener);
+    return () => { this.#disposeListeners.delete(listener); };
+  }
+
+  /** The system, rather than another global registry, owns its current extension and canvas overlay. */
+  setEffectsOwner(owner: object): void { this.#effectsOwner = owner; }
+  ownsEffectsOwner(owner: object): boolean { return !this.#disposed && this.#effectsOwner === owner; }
+  currentBridge(): VfxBridge | null { return this.#ownedBridge; }
+  setOwnedBridge(bridge: VfxBridge, canvas: HTMLCanvasElement): void {
+    if (!isOwnedVfxBridge(bridge, this, canvas)) throw new Error("PRD07_BRIDGE_OWNER_MISMATCH");
+    if (this.#disposed) bridge.detach();
+    else { this.#ownedBridge = bridge; this.#ownedCanvas = canvas; }
+  }
+
+  /** Seal the app-private owner once, before an asynchronous renderer mount can bind. */
+  bindRuntimeOwner(app: object, owner: object): void {
+    if (this.#disposed || this.#app !== app || (typeof owner !== "object" && typeof owner !== "function") || owner === null ||
+        (this.#runtimeOwner !== null && this.#runtimeOwner !== owner)) {
+      throw new Error("PRD07_APP_OWNER_MISMATCH");
+    }
+    if (this.#runtimeOwner === owner) return;
+    this.#runtimeOwner = owner;
+    this.#offManagedAtmosphere = subscribeAtmosphereRenderChange.call(this.#atmosphere, () => {
+      this.#ingestManagedAtmosphere();
+      this.requestFrame();
+    });
+    this.#offManagedScene = this.#app.nodes?.onSceneChange?.(() => {
+      // A weather subtree can become visible without a topology change;
+      // rebuild it while retaining other emitters on registry-only updates.
+      if (this.#app.nodes?.version === undefined) this.lastSceneNodes = null;
+      else if (this.sceneHasWeather) this.lastRegistryVersion = -1;
+      this.#ingestManagedAtmosphere(true);
+      this.requestFrame();
+    }) ?? null;
+    this.#ingestManagedAtmosphere(true);
+    this.syncFrameSubscription();
+  }
+
+  /** Read the registry's committed topology and effective handle state at ingestion time. */
+  #refreshManagedAtmosphereScene(): void {
+    const registry = this.#app.nodes;
+    const scene = registry?.sceneWithRuntimeAdditions?.() ?? this.#app.scene;
+    const fogNodes: EffectNodeLike[] = [], volumes: EffectNodeLike[] = [];
+    let sky: object | null = null;
+    const visit = (nodes: readonly EffectNodeLike[], parentVisible: boolean, transformedAncestor: boolean): void => {
+      for (const node of nodes) {
+        const runtime = registry?.atmosphereNodeState?.(node);
+        const visible = parentVisible && (runtime ? runtime.visible : node.visible !== false);
+        if (visible && node.kind === "effect") {
+          if (node.effect === "fogVolume") {
+            // The renderer packet only describes axis-aligned, unscaled
+            // volumes. Position alone cannot certify the shape under parents.
+            const fields = node as unknown as Record<string, unknown>;
+            if (runtime ? !isTranslationOnly(runtime.worldMatrix) : transformedAncestor ||
+                ["rotation", "quaternion", "scale", "pivot", "lookAt"].some((key) => fields[key] !== undefined)) {
+              throw new Error("PRD07_FOG_VOLUME_TRANSFORM_UNSUPPORTED");
+            }
+            volumes.push(node);
+          }
+          else if (node.effect === "fog" || node.effect === "volumetric-fog" || node.effect === "height-fog") fogNodes.push(node);
+        }
+        if (visible && node.kind === "sky") {
+          const spec = (node as { spec?: unknown }).spec;
+          if (spec && typeof spec === "object") sky = spec;
+        }
+        if (node.children) {
+          const n = node as unknown as Record<string, unknown>;
+          const hasTransform = ["position", "rotation", "quaternion", "scale", "pivot", "lookAt"].some((key) => n[key] !== undefined);
+          visit(node.children, visible, transformedAncestor || hasTransform);
+        }
+      }
+    };
+    visit(scene.nodes, true, false);
+    this.#atmosphere.batchRenderUpdates(() => {
+      if (sky !== this.sceneSky) {
+        if (sky) this.#setSceneSky(sky);
+        else if (this.sceneSky && this.#atmosphere.state().sky === this.sceneSky) this.#clearSceneSky();
+        this.sceneSky = sky;
+      }
+      this.#atmosphere.trackFogNodes(fogNodes);
+      this.#atmosphere.trackFogVolumes(volumes);
+    });
+  }
+
+  /**
+   * Ingest on app/scene mutation, not during renderer warmup or draw. A failed
+   * or reentrant ingestion invalidates the previous value until a later change.
+   */
+  #ingestManagedAtmosphere(refreshScene = false): void {
+    this.#managedSnapshot = null;
+    this.#managedEpoch++;
+    if (this.#disposed || this.#managedStaging) return;
+    this.#managedStaging = true;
+    let committed = false;
+    try {
+      const mutationVersion = readAtmosphereMutationVersion.call(this.#atmosphere);
+      const sceneSkyWrites = this.#sceneSkyWrites;
+      const sig = this.sceneSignature();
+      if (sig.nodes !== this.lastSceneNodes || sig.version !== this.lastSceneVersion || sig.registryVersion !== this.lastRegistryVersion) this.rebuildFromScene();
+      if (refreshScene) this.#refreshManagedAtmosphereScene();
+      this.#atmosphere.updateFogVisibility(this.#app);
+      const epoch = this.#managedEpoch;
+      const snapshot = readAtmosphereSnapshot.call(this.#atmosphere, this.#app);
+      // Reentrant setters invalidate the staged value; do not loop or publish a mix of revisions.
+      if (!snapshot || epoch !== this.#managedEpoch ||
+          readAtmosphereMutationVersion.call(this.#atmosphere) - mutationVersion !== this.#sceneSkyWrites - sceneSkyWrites) return;
+      const model = snapshot.skyForFog?.model;
+      // Borrowed sky textures lack a renderer-owned lease, just like puddle noise;
+      // unknown sky evaluators also cannot enter the managed path.
+      if (model !== undefined && model !== "preetham" && model !== "gradient" && model !== "color" && model !== "none") return;
+      this.#managedSnapshot = Object.freeze({ ...snapshot, revision: this.#managedEpoch });
+      committed = true;
+    } catch {
+      // Legacy APIs keep their behavior; managed rendering fails closed on this app.
+      this.#managedSnapshot = null;
+    } finally {
+      this.#managedStaging = false;
+      if (!committed) this.#revokeManagedAuthorities();
+      for (const listener of [...this.#managedListeners]) {
+        try { listener(); } catch { /* Other owners still need invalidation. */ }
+      }
+    }
+  }
+
+  #revokeManagedAuthorities(): void {
+    this.#authorityEpoch++;
+    for (const revoke of [...this.#authorityRevocations]) {
+      this.#authorityRevocations.delete(revoke);
+      try { revoke(); } catch { /* Every issued authority must still be revoked. */ }
+    }
+  }
+
+  /** Issue only through the app's private mount closure; identity is not obtained from a RenderSource. */
+  mountAuthority(app: object, canvas: HTMLCanvasElement, owner: object): Prd07MountAuthority | null {
+    const bridge = this.#ownedBridge;
+    if (this.#disposed || !this.#managedSnapshot || this.#app !== app || this.#runtimeOwner !== owner || this.#ownedCanvas !== canvas) return null;
+    const overlay = ownedVfxBridgeOverlay(bridge, this, canvas);
+    if (!overlay) return null;
+    const epoch = this.#authorityEpoch;
+    const isLive = (): boolean => !this.#disposed && this.#app === app && this.#runtimeOwner === owner &&
+      this.#ownedCanvas === canvas && this.#ownedBridge === bridge && this.#authorityEpoch === epoch &&
+      ownedVfxBridgeOverlay(bridge, this, canvas) === overlay;
+    const onRevoke = (listener: () => void): (() => void) => {
+      if (!isLive()) { listener(); return () => {}; }
+      let active = true;
+      let offBridge: () => void = () => {};
+      const revoke = (): void => {
+        if (!active) return;
+        active = false;
+        this.#authorityRevocations.delete(revoke);
+        offBridge();
+        listener();
+      };
+      this.#authorityRevocations.add(revoke);
+      offBridge = onOwnedVfxBridgeDetach(bridge, this, canvas, revoke);
+      return () => { if (active) { active = false; this.#authorityRevocations.delete(revoke); offBridge(); } };
+    };
+    return Object.freeze({
+      owner, canvas, overlay, isLive,
+      capture: () => isLive() ? this.#managedSnapshot : null,
+      isCurrent: (snapshot: AtmosphereRenderSnapshot) => isLive() && snapshot === this.#managedSnapshot,
+      onChange: (listener: () => void) => {
+        if (!isLive()) return () => {};
+        this.#managedListeners.add(listener);
+        const offRevoke = onRevoke(() => { this.#managedListeners.delete(listener); });
+        return () => { this.#managedListeners.delete(listener); offRevoke(); };
+      },
+      onRevoke,
+      noteCamera: (x: number, y: number, z: number, fx: number, fy: number, fz: number) => {
+        if (!isLive()) throw new Error("PRD07_APP_AUTHORITY_REVOKED");
+        if (![x, y, z, fx, fy, fz].every(Number.isFinite)) throw new Error("PRD07_CAMERA_INVALID");
+        noteAtmosphereCamera.call(this.#atmosphere, [x, y, z], [fx, fy, fz]);
+      }
+    });
+  }
+
   /** P6-T4 — force the half-res particle path on/off regardless of budget. */
   setParticleLowRes(on: boolean): void {
     this.lastHook?.setLowResEnabled?.(on);
@@ -462,6 +765,16 @@ export class ProductionEffectSystem {
 
   /** The sky spec the current scene's sky node put on LiveAtmosphere (null: the scene has none). */
   private sceneSky: object | null = null;
+
+  #setSceneSky(spec: object): void {
+    this.#sceneSkyWrites++;
+    this.#atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
+  }
+
+  #clearSceneSky(): void {
+    this.#sceneSkyWrites++;
+    this.#atmosphere.clearSky();
+  }
 
   /** P3-T4 — sky nodes land on LiveAtmosphere (consumed by prd07.sky flag-on). */
   private rebuildSkyFromScene(): void {
@@ -472,12 +785,12 @@ export class ProductionEffectSystem {
       const spec = (node as { spec?: unknown }).spec;
       if (spec && typeof spec === "object") {
         found = spec;
-        this.atmosphere.setSky(spec as Parameters<LiveAtmosphere["setSky"]>[0]);
+        this.#setSceneSky(spec);
       }
     });
     // A sky that came from the previous scene's sky node leaves with it (setScene to a scene without one); a sky set
     // at runtime through app.atmosphere.setSky stays. Before this the old sky kept drawing over the next scene.
-    if (found === null && this.sceneSky !== null && this.atmosphere.state().sky === this.sceneSky) this.atmosphere.clearSky();
+    if (found === null && this.sceneSky !== null && this.#atmosphere.state().sky === this.sceneSky) this.#clearSceneSky();
     this.sceneSky = found;
     this.applyLegacySkyVisibility();
   }
@@ -489,7 +802,7 @@ export class ProductionEffectSystem {
    * unchanged.
    */
   private applyLegacySkyVisibility(): void {
-    if (!this.skyFlagOn || !this.app.nodes) return;
+    if (!this.skyFlagOn || !this.#app.nodes) return;
     this.hideTaggedLegacyNodes("prd07.legacySky.");
   }
 
@@ -506,7 +819,7 @@ export class ProductionEffectSystem {
    * the frame is bit-identical.
    */
   private applyLegacyWeatherVisibility(): void {
-    if (!this.weatherFlagOn || !this.app.nodes) return;
+    if (!this.weatherFlagOn || !this.#app.nodes) return;
     this.hideTaggedLegacyNodes("prd07.legacyWeather.");
   }
 
@@ -523,7 +836,7 @@ export class ProductionEffectSystem {
    * and the forward decal path is byte-identical to today.
    */
   private applyLegacyDecalVisibility(): void {
-    if (!this.decalFlagOn || !this.app.nodes) return;
+    if (!this.decalFlagOn || !this.#app.nodes) return;
     this.hideTaggedLegacyNodes("prd07.legacyDecal.");
   }
 
@@ -536,13 +849,15 @@ export class ProductionEffectSystem {
     this.ribbons.enabledOrientations = on ? ["camera"] : ["camera", "surface"];
   }
 
-  /** Scene snapshot the last rebuild was computed from (nodes ref + version). */
+  /** Scene and registry topology the last rebuild was computed from. */
   private lastSceneNodes: readonly EffectNodeLike[] | null = null;
   private lastSceneVersion = -1;
+  private lastRegistryVersion = -1;
+  private sceneWalkNodes: readonly EffectNodeLike[] | null = null;
 
-  private sceneSignature(): { nodes: readonly EffectNodeLike[]; version: number } {
-    const s = this.app.scene as { nodes: readonly EffectNodeLike[]; version?: number };
-    return { nodes: s.nodes, version: s.version ?? -1 };
+  private sceneSignature(): { nodes: readonly EffectNodeLike[]; version: number; registryVersion: number } {
+    const s = this.#app.scene as { nodes: readonly EffectNodeLike[]; version?: number };
+    return { nodes: s.nodes, version: s.version ?? -1, registryVersion: this.#app.nodes?.version ?? -1 };
   }
 
   /**
@@ -551,7 +866,7 @@ export class ProductionEffectSystem {
    * their subtree, so only visible branches are visited.
    */
   private hideTaggedLegacyNodes(prefix: string): void {
-    const nodes = this.app.nodes;
+    const nodes = this.#app.nodes;
     if (!nodes) return;
     this.walkNodes((node, visible) => {
       if (!visible) return;
@@ -563,7 +878,7 @@ export class ProductionEffectSystem {
   /** Recursive scene walk — group children descend only under a visible ancestor. */
   private walkNodes(
     visit: (node: EffectNodeLike, visible: boolean) => void,
-    nodes: readonly EffectNodeLike[] = this.app.scene.nodes,
+    nodes: readonly EffectNodeLike[] = this.sceneWalkNodes ?? this.#app.scene.nodes,
     parentVisible = true
   ): void {
     for (const node of nodes) {
@@ -573,39 +888,130 @@ export class ProductionEffectSystem {
     }
   }
 
+  /** The registry tracks live reparenting; otherwise compose the authored path. */
+  private weatherWorld(path: readonly EffectNodeLike[]): { readonly matrix: Float32Array; readonly visible: boolean } {
+    const node = path[path.length - 1];
+    const registry = this.#app.nodes;
+    registry?.assertWeatherNodeTransform?.(node);
+    const live = registry?.atmosphereNodeState?.(node);
+    if (!live || !registry?.assertWeatherNodeTransform) {
+      for (const part of path) assertWeatherTransformFields(part);
+    }
+    if (live) {
+      if (!live.worldMatrix) throw new RangeError("WEATHER_TRANSFORM_UNSUPPORTED: runtime weather requires its world matrix.");
+      return { matrix: rigidWeatherMatrix(live.worldMatrix), visible: live.visible };
+    }
+    const matrix = identityMat4Into(new Float32Array(16));
+    for (const part of path) {
+      const local = localMatrixOf(part, new Float32Array(16));
+      multiplyMat4Into(matrix, matrix, local);
+    }
+    return { matrix: rigidWeatherMatrix(matrix), visible: path.every((part) => part.visible !== false) };
+  }
+
+  /** Validate every active weather path before a scene rebuild changes any effect state. */
+  private weatherPaths(nodes: readonly EffectNodeLike[]): { readonly paths: Map<EffectNodeLike, readonly EffectNodeLike[]>; readonly hasWeather: boolean } {
+    const paths = new Map<EffectNodeLike, readonly EffectNodeLike[]>();
+    let hasWeather = false;
+    const visit = (children: readonly EffectNodeLike[], parents: readonly EffectNodeLike[], parentVisible: boolean): void => {
+      for (const node of children) {
+        const visible = parentVisible && node.visible !== false;
+        const path = [...parents, node];
+        if (node.kind === "effect" && (node.effect === "rain" || node.effect === "snow")) {
+          hasWeather = true;
+          // A live node may have moved to a different parent since the scene
+          // snapshot was authored, so visibility must follow the live chain.
+          const live = this.#app.nodes?.atmosphereNodeState?.(node);
+          if (live?.visible ?? visible) {
+            this.weatherWorld(path);
+            paths.set(node, path);
+          }
+        }
+        if (node.children) visit(node.children, path, visible);
+      }
+    };
+    visit(nodes, [], true);
+    return { paths, hasWeather };
+  }
+
   private rebuildFromScene(): void {
-    const sig = this.sceneSignature();
-    this.lastSceneNodes = sig.nodes;
-    this.lastSceneVersion = sig.version;
-    this.rebuildSkyFromScene();
-    this.applyLegacyDecalVisibility();
-    const fogNodes: EffectNodeLike[] = [];
-    const fogVolumes: EffectNodeLike[] = [];
-    this.walkNodes((node, visible) => {
-      if (!visible || node.kind !== "effect") return;
-      const lowered = lowerEffectNode(this.placeAttached(node));
-      this.diagnostics.track({
-        nodeId: lowered.nodeId,
-        effect: lowered.effect,
-        consumer: lowered.consumer,
-        live: lowered.type === "volume" ? lowered.count : 0,
-        sim: lowered.sim,
-        softDepth: lowered.type === "emitter" || lowered.type === "volume" ? lowered.batch.softDepth : false
+    try {
+      const nextSceneEffectIds = new Set<string>();
+      const nextSceneEmitterNodes = new Map<string, EffectNodeLike>();
+      const nextSceneMeshNodes = new Map<string, EffectNodeLike>();
+      const sig = this.sceneSignature();
+      const walkNodes = this.#app.nodes?.sceneWithRuntimeAdditions?.()?.nodes ?? sig.nodes;
+      const { paths: weatherPaths, hasWeather } = this.weatherPaths(walkNodes);
+      this.#atmosphere.batchRenderUpdates(() => {
+        const registryOnly = sig.nodes === this.lastSceneNodes && sig.version === this.lastSceneVersion &&
+          sig.registryVersion !== this.lastRegistryVersion;
+        this.lastSceneNodes = sig.nodes;
+        this.lastSceneVersion = sig.version;
+        this.lastRegistryVersion = sig.registryVersion;
+        // Compiled subtree additions/removals live in the registry rather
+        // than app.scene. Cache its effective topology until its version
+        // changes, since it constructs a fresh node array on each read.
+        this.sceneWalkNodes = walkNodes;
+        this.rebuildSkyFromScene();
+        this.applyLegacyDecalVisibility();
+        const fogNodes: EffectNodeLike[] = [];
+        const fogVolumes: EffectNodeLike[] = [];
+        this.walkNodes((node, visible) => {
+          if (node.kind !== "effect") return;
+          const isWeather = node.effect === "rain" || node.effect === "snow";
+          if (isWeather ? !weatherPaths.has(node) : !visible) return;
+          const placed = this.placeAttached(node);
+          const runtimeId = (node as { runtime?: { id?: string } }).runtime?.id;
+          // Builders commonly share a default display name. Registry ids are
+          // the stable identity for distinct runtime-added nodes.
+          const lowered = lowerEffectNode(placed.id !== undefined || typeof runtimeId !== "string" ? placed : { ...placed, id: runtimeId });
+          nextSceneEffectIds.add(lowered.nodeId);
+          this.diagnostics.track({
+            nodeId: lowered.nodeId,
+            effect: lowered.effect,
+            consumer: lowered.consumer,
+            live: lowered.type === "volume" ? lowered.count : 0,
+            sim: lowered.sim,
+            softDepth: lowered.type === "emitter" || lowered.type === "volume" ? lowered.batch.softDepth : false
+          });
+          if (lowered.type === "emitter") {
+            if (!registryOnly || this.sceneEmitterNodes.get(lowered.nodeId) !== node ||
+                !this.emitters.has(lowered.nodeId) || this.transients.has(lowered.nodeId)) this.attachEmitter(lowered);
+            nextSceneEmitterNodes.set(lowered.nodeId, node);
+            this.trackAttachment(lowered.nodeId, node);
+          } else if (lowered.type === "volume") {
+            this.attachVolume(lowered, weatherPaths.get(node) ?? [node]);
+          } else if (lowered.consumer === "mesh-pass") {
+            if (!registryOnly || this.sceneMeshNodes.get(lowered.nodeId) !== node || !this.meshBatches.has(lowered.nodeId)) {
+              this.attachNonEmitter(node, lowered);
+            }
+            nextSceneMeshNodes.set(lowered.nodeId, node);
+          } else {
+            this.attachNonEmitter(node, lowered);
+          }
+          if (lowered.consumer === "scene-fog") {
+            (lowered.effect === "fogVolume" ? fogVolumes : fogNodes).push(node);
+          }
+        });
+        this.#atmosphere.trackFogNodes(fogNodes);
+        this.#atmosphere.trackFogVolumes(fogVolumes);
       });
-      if (lowered.type === "emitter") {
-        this.attachEmitter(lowered);
-        this.trackAttachment(lowered.nodeId, node);
-      } else if (lowered.type === "volume") {
-        this.attachVolume(lowered);
-      } else {
-        this.attachNonEmitter(node, lowered);
+      for (const id of this.sceneEffectIds) {
+        if (nextSceneEffectIds.has(id) || this.transients.has(id) || this.trails.get(id)?.runtime) continue;
+        this.removeInstance(id);
       }
-      if (lowered.consumer === "scene-fog") {
-        (lowered.effect === "fogVolume" ? fogVolumes : fogNodes).push(node);
-      }
-    });
-    this.atmosphere.trackFogNodes(fogNodes);
-    this.atmosphere.trackFogVolumes(fogVolumes);
+      this.sceneEffectIds = nextSceneEffectIds;
+      this.sceneHasWeather = hasWeather;
+      this.sceneEmitterNodes = nextSceneEmitterNodes;
+      this.sceneMeshNodes = nextSceneMeshNodes;
+    } catch (error) {
+      // A failed rebuild must be retried; its partial scene is never a frame snapshot.
+      this.lastSceneNodes = null;
+      this.lastSceneVersion = -1;
+      this.lastRegistryVersion = -1;
+      this.sceneWalkNodes = null;
+      throw error;
+    }
   }
 
   /**
@@ -642,7 +1048,14 @@ export class ProductionEffectSystem {
     } else if (lowered.consumer === "mesh-pass") {
       this.meshBatches.set(lowered.nodeId, seedMeshBatch(node));
     } else if (lowered.consumer === "decal-pass") {
+      const previous = this.decalNodes.get(lowered.nodeId);
       this.decalNodes.set(lowered.nodeId, node);
+      if (!previous || previous.decal?.lifetime !== node.decal?.lifetime) {
+        const lifetime = node.decal?.lifetime;
+        if (lifetime !== undefined && Number.isFinite(lifetime)) {
+          this.decalExpirations.set(lowered.nodeId, this.time + Math.max(0, lifetime));
+        } else this.decalExpirations.delete(lowered.nodeId);
+      }
     }
     // "post"/"scene-fog"/"none" consumers have no lane state (P3/P4).
   }
@@ -674,7 +1087,7 @@ export class ProductionEffectSystem {
 
   private syncDecals(): void {
     const seen = new Set<string>();
-    const nodes = (this.app.scene.nodes ?? []) as unknown as readonly Record<string, unknown>[];
+    const nodes = (this.sceneWalkNodes ?? this.#app.scene.nodes) as unknown as readonly Record<string, unknown>[];
     for (let i = 0; i < nodes.length; i += 1) {
       const node = nodes[i];
       if (node.kind !== "primitive") continue;
@@ -744,7 +1157,9 @@ export class ProductionEffectSystem {
         roughness: 0.5,
         fade: d.fade,
         polygonOffset: d.polygonOffset,
-        life: d.lifetime ?? Number.POSITIVE_INFINITY
+        // The renderer's clock is wall-clock based; this system's lifetime is
+        // simulation time. Expire it in frame() instead of mixing the clocks.
+        life: Number.POSITIVE_INFINITY
       }, this.time);
     }
     // Remove slots whose nodes left the scene.
@@ -759,9 +1174,12 @@ export class ProductionEffectSystem {
     if (!binding) return false;
     if (binding.follow) {
       this.sampleTrail(binding.follow, position);
+      this.requestFrame();
       return true;
     }
-    return binding.trail.push(position, this.time, width, color);
+    const pushed = binding.trail.push(position, this.time, width, color);
+    if (pushed) this.requestFrame();
+    return pushed;
   }
 
   /**
@@ -775,6 +1193,7 @@ export class ProductionEffectSystem {
     target: unknown,
     options: { readonly width: number; readonly life: number; readonly color?: unknown; readonly widthOverSpeed?: readonly [number, number]; readonly minVertexDistance?: number; readonly colorTail?: unknown }
   ): string {
+    if (this.#disposed) return id;
     const life = Number.isFinite(options.life) && options.life > 0 ? options.life : 0.5;
     const width = Number.isFinite(options.width) && options.width > 0 ? options.width : 0.3;
     // One point per frame at up to 120 Hz over the life, capped per tier.
@@ -803,6 +1222,7 @@ export class ProductionEffectSystem {
       const at = this.resolveTarget(target);
       if (at) this.sampleTrail(follow, at);
     }
+    this.requestFrame();
     return id;
   }
 
@@ -826,6 +1246,7 @@ export class ProductionEffectSystem {
     const shift = (p: readonly [number, number, number]): readonly [number, number, number] => [p[0] + dx, p[1] + dy, p[2] + dz];
     for (const point of follow.points) point.position = shift(point.position);
     if (follow.last) follow.last = { position: shift(follow.last.position), time: follow.last.time };
+    this.requestFrame();
   }
 
   /** GU47 E-F: drop every point of a trail (it restarts from the target's next position). */
@@ -837,6 +1258,7 @@ export class ProductionEffectSystem {
       binding.follow.last = null;
     }
     binding.trail.clear();
+    this.requestFrame();
   }
 
   /** GU47 E-F: stop following; `immediate` removes the ribbon now, otherwise it fades out over `life`. */
@@ -847,9 +1269,11 @@ export class ProductionEffectSystem {
       binding.trail.clear();
       this.ribbons.removeTrail(id);
       this.trails.delete(id);
+      this.requestFrame();
       return;
     }
     binding.follow.following = false;
+    this.requestFrame();
   }
 
   /** Append the target's position when it moved at least `minVertexDistance` since the last point. */
@@ -914,10 +1338,11 @@ export class ProductionEffectSystem {
   }
 
   /** §8.2 weather volume: ProceduralVolumeEmitter around the spec + a scratch. */
-  private attachVolume(lowered: LoweredVolumeEffect): VolumeBinding {
+  private attachVolume(lowered: LoweredVolumeEffect, path: readonly EffectNodeLike[]): VolumeBinding {
     const binding: VolumeBinding = {
       lowered,
       emitter: new ProceduralVolumeEmitter(lowered.volume, lowered.count),
+      path,
       scratch: new Float32Array(Math.max(64, lowered.count) * 16)
     };
     this.volumes.set(lowered.nodeId, binding);
@@ -965,11 +1390,11 @@ export class ProductionEffectSystem {
     let handle: AttachHandleLike | undefined;
     let socket: string | undefined;
     if (typeof target === "string") {
-      handle = this.app.nodes?.get(target) as AttachHandleLike | undefined;
+      handle = this.#app.nodes?.get(target) as AttachHandleLike | undefined;
     } else if (typeof target === "object" && target !== null) {
       const ref = target as { readonly node?: unknown; readonly socket?: unknown };
       if (typeof ref.node === "string") {
-        handle = this.app.nodes?.get(ref.node) as AttachHandleLike | undefined;
+        handle = this.#app.nodes?.get(ref.node) as AttachHandleLike | undefined;
         socket = typeof ref.socket === "string" ? ref.socket : undefined;
       } else {
         handle = target as AttachHandleLike;
@@ -1032,7 +1457,8 @@ export class ProductionEffectSystem {
 
   /** Add a transient effect-instance emitter (effects.burst/spawn). */
   addInstance(nodeId: string, node: EffectNodeLike): string {
-    if (this.runtimeEffects === "off") return nodeId;
+    if (this.#disposed || this.runtimeEffects === "off") return nodeId;
+    if (node.effect === "rain" || node.effect === "snow") this.weatherWorld([node]);
     const lowered = lowerEffectNode(this.placeAttached(node));
     this.diagnostics.track({
       nodeId,
@@ -1048,10 +1474,11 @@ export class ProductionEffectSystem {
       this.transients.set(nodeId, { born: this.time, warned: false });
       this.lastTransientAt = this.time;
     } else if (lowered.type === "volume") {
-      this.attachVolume({ ...lowered, nodeId });
+      this.attachVolume({ ...lowered, nodeId }, [node]);
     } else {
       this.attachNonEmitter(node, lowered);
     }
+    this.requestFrame();
     return nodeId;
   }
 
@@ -1061,13 +1488,18 @@ export class ProductionEffectSystem {
       // An explicit position wins over `attachTo`: the emitter stops following its node.
       this.attachments.delete(nodeId);
       binding.state.desc = { ...binding.state.desc, origin: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as never };
+      this.requestFrame();
       return;
     }
     const decalNode = this.decalNodes.get(nodeId);
-    if (decalNode) this.decalNodes.set(nodeId, { ...decalNode, position: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as typeof decalNode.position });
+    if (decalNode) {
+      this.decalNodes.set(nodeId, { ...decalNode, position: [origin[0] ?? 0, origin[1] ?? 0, origin[2] ?? 0] as typeof decalNode.position });
+      this.requestFrame();
+    }
   }
 
   removeInstance(nodeId: string): void {
+    if (this.#disposed) return;
     this.transients.delete(nodeId);
     this.attachments.delete(nodeId);
     const binding = this.emitters.get(nodeId);
@@ -1075,37 +1507,41 @@ export class ProductionEffectSystem {
       this.volumes.delete(nodeId);
       this.beams.delete(nodeId);
       this.decalNodes.delete(nodeId);
+      this.decalExpirations.delete(nodeId);
       const trail = this.trails.get(nodeId);
       if (trail) { trail.trail.clear(); this.ribbons.removeTrail(nodeId); this.trails.delete(nodeId); }
       this.meshBatches.delete(nodeId);
+      this.requestFrame();
       return;
     }
     binding.state.live = 0;
     this.emitters.delete(nodeId);
     this.diagnostics.untrack(nodeId);
+    this.requestFrame();
   }
 
   /** Sim advance — runs inside app.onFrame, before the renderer submits. */
   private frame(dt: number): void {
-    if (this.disposed) return;
+    if (this.#disposed) return;
+    this.frameInvalidated = false;
     this.time += dt;
     // Grouped/nested scene changes re-attach on the scene's own version/nodes
     // turnover — not on every set/onLoad call.
     const sig = this.sceneSignature();
-    if (sig.nodes !== this.lastSceneNodes || sig.version !== this.lastSceneVersion) {
+    if (sig.nodes !== this.lastSceneNodes || sig.version !== this.lastSceneVersion || sig.registryVersion !== this.lastRegistryVersion) {
       this.rebuildFromScene();
     }
     // §6.6 live fog state — advance transitions + refresh runtime-handle
     // visibility before the compiler/packers read the resolved spec.
-    this.atmosphere.tick(dt);
-    this.atmosphere.updateFogVisibility(this.app);
+    this.#atmosphere.tick(dt);
+    this.#atmosphere.updateFogVisibility(this.#app);
     // Close the previous rendered frame's draw accounting first. The visible
     // set is the scene's effect nodes that aren't hidden — headless apps have
     // no frustum, so scene-visible == in-frustum here; the contributor's
     // frustum cull narrows it further inside the renderer.
     const visible = new Set<string>();
     this.walkNodes((n, v) => {
-      if (v) visible.add(n.id ?? n.name ?? "");
+      if (v) visible.add(n.id ?? (n as { runtime?: { id?: string } }).runtime?.id ?? n.name ?? "");
     });
     this.diagnostics.endFrame(visible, !this.renderBridged || this.renderSincePrevFrame);
     this.renderSincePrevFrame = false;
@@ -1161,9 +1597,17 @@ export class ProductionEffectSystem {
     }
     for (const batch of this.meshBatches.values()) batch.step(dt);
     this.transientLights.step(dt);
+    for (const [id, expiresAt] of this.decalExpirations) {
+      if (this.time < expiresAt) continue;
+      this.decalExpirations.delete(id);
+      this.decalNodes.delete(id);
+      this.decals.remove(`runtime-decal.${id}`);
+      this.diagnostics.untrack(id);
+    }
     this.watchTransients();
     this.diagnostics.setFrameStats(this.emitters.size + this.volumes.size, this.liveCount());
     this.diagnostics.setBudget({ tier: this.tier, cap: this.budgetCap, culled: this.culledTotal });
+    this.syncFrameSubscription();
   }
 
   /**
@@ -1234,6 +1678,18 @@ export class ProductionEffectSystem {
    * atlas submit a single instanced draw.
    */
   feed(hook: ParticleRenderHook): void {
+    // Preflight and stage every weather packet before touching the render hook or
+    // any other emitter. This makes a bad live transform fail atomically.
+    const volumeCam = this.#atmosphere.cameraPose().position;
+    const volumeTransforms = [...this.volumes.values()].map((binding) => ({ binding, ...this.weatherWorld(binding.path) }));
+    const volumePackets = new Map<VolumeBinding, { readonly data: Float32Array; readonly live: number }>();
+    for (const { binding, matrix, visible } of volumeTransforms) {
+      const identity = isIdentityWeatherMatrix(matrix);
+      const localCamera = identity ? volumeCam : weatherLocalCamera(matrix, volumeCam);
+      const { data } = binding.emitter.instanceData(this.time, localCamera, binding.scratch);
+      if (!identity) weatherInstancesToWorld(data, binding.lowered.count, matrix);
+      volumePackets.set(binding, { data, live: visible ? Math.max(0, Math.floor(binding.lowered.count * this.volumeScale)) : 0 });
+    }
     this.frameBatchMembers.clear();
     const groups = new Map<string, { first: EmitterBinding; parts: { binding: EmitterBinding; live: number }[] }>();
     for (const binding of this.emitters.values()) {
@@ -1296,12 +1752,11 @@ export class ProductionEffectSystem {
     }
     // §8.2 weather volumes — one batch per node (specs are per-node); the
     // camera pose arrives via the prd07.fog contributor's noteCamera hookup.
-    const volumeCam = this.atmosphere.cameraPose().position;
     for (const binding of this.volumes.values()) {
       const b = binding.lowered.batch;
       const key = `eff.vol.${binding.lowered.nodeId}`;
       seenKeys.add(key);
-      const live = Math.max(0, Math.floor(binding.lowered.count * this.volumeScale));
+      const { data, live } = volumePackets.get(binding)!;
       const desc: ParticleBatchDescriptor = {
         key,
         capacity: binding.lowered.count,
@@ -1320,7 +1775,6 @@ export class ProductionEffectSystem {
       this.lastHook = hook;
       const handle = hook.upsertBatch(desc);
       this.batchHandles.set(key, handle);
-      const { data } = binding.emitter.instanceData(this.time, volumeCam, binding.scratch);
       hook.writeInstances(handle, data, live);
       this.frameLive.set(binding.lowered.nodeId, live);
       this.frameBatchMembers.set(key, live > 0 ? [binding.lowered.nodeId] : []);
@@ -1389,7 +1843,10 @@ export class ProductionEffectSystem {
 
   /** P2-T7 — transient flash for burst presets (impact/explosion/super-flash). */
   flashLight(flash: TransientLightFlash): boolean {
-    return this.transientLights.flash(flash);
+    if (this.#disposed) return false;
+    const accepted = this.transientLights.flash(flash);
+    if (accepted) this.requestFrame();
+    return accepted;
   }
 
   /** CollectedLights published to the RenderSource each frame (C-01 collect). */
@@ -1409,20 +1866,48 @@ export class ProductionEffectSystem {
   }
 
   dispose(): void {
-    if (this.disposed) return;
-    this.disposed = true;
-    this.offFrame();
+    if (this.#disposed) return;
+    this.#disposed = true;
+    const errors: unknown[] = [];
+    const attempt = (cleanup: () => void): void => { try { cleanup(); } catch (error) { errors.push(error); } };
+    this.#managedSnapshot = null;
+    this.#managedEpoch++;
+    this.#revokeManagedAuthorities();
+    for (const listener of [...this.#managedListeners]) attempt(listener);
+    this.#managedListeners.clear();
+    if (this.#offManagedAtmosphere) attempt(this.#offManagedAtmosphere);
+    if (this.#offManagedScene) attempt(this.#offManagedScene);
+    this.#offManagedAtmosphere = null;
+    this.#offManagedScene = null;
+    const offFrame = this.offFrame;
+    this.offFrame = null;
+    if (offFrame) attempt(offFrame);
+    attempt(() => this.#atmosphere.dispose());
+    for (const listener of [...this.#disposeListeners]) attempt(listener);
+    this.#disposeListeners.clear();
+    this.#effectsOwner = null;
+    this.#ownedBridge = null;
+    this.#ownedCanvas = null;
+    this.#runtimeOwner = null;
     // GU47 E-F: the particle pass is shared per device; leaving this system's batches in it kept the last frame's
     // particles drawing (frozen dots) for as long as the device rendered.
-    if (this.lastHook) for (const handle of this.batchHandles.values()) this.lastHook.removeBatch(handle);
+    if (this.lastHook) for (const handle of this.batchHandles.values()) attempt(() => this.lastHook!.removeBatch(handle));
     this.batchHandles.clear();
     this.emitters.clear();
     this.volumes.clear();
     this.transients.clear();
+    this.sceneEffectIds.clear();
+    this.sceneEmitterNodes.clear();
+    this.sceneMeshNodes.clear();
+    this.decalExpirations.clear();
+    this.decalNodes.clear();
+    this.sceneWalkNodes = null;
     this.attachments.clear();
     this.trails.clear();
-    this.ribbons.clear();
+    attempt(() => this.ribbons.clear());
     this.beams.clear();
     this.meshBatches.clear();
+    this.decals.clear();
+    if (errors.length) throw new AggregateError(errors, "Failed to dispose the app's effect system cleanly.");
   }
 }

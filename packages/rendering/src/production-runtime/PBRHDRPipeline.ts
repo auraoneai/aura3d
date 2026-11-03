@@ -100,6 +100,9 @@ export interface ProductionPbrHdrPipeline {
   };
 }
 
+/** A pipeline built from already decoded linear pixels has no Radiance header. */
+export type ProductionLinearPbrHdrPipeline = Omit<ProductionPbrHdrPipeline, "radiance">;
+
 export interface ProductionEnvironmentLightingResources {
   readonly lighting: EnvironmentLightingOptions;
   readonly environmentTexture: Texture;
@@ -132,8 +135,9 @@ export function parseProductionRadianceHDR(buffer: ArrayBuffer | Uint8Array): Pr
   }
   const height = Number(resolutionMatch[2]);
   const width = Number(resolutionMatch[3]);
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
-    throw new Error("Production HDR parser found invalid dimensions.");
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0 ||
+      width * height > 16_777_216) {
+    throw new Error("Production HDR parser found invalid or over-limit dimensions.");
   }
   const dataOffset = resolutionMatch.index + resolutionMatch[0].length;
   const rgbe = decodeRadianceRle(bytes.subarray(dataOffset), width, height);
@@ -157,9 +161,29 @@ export function createProductionPbrHdrPipelineFromRadiance(
     data: radiance.rgbe
   };
   const linear = decodeRgbeEnvironmentMap(rgbeSource);
+  return {
+    ...createProductionPbrHdrPipeline(linear, { ...rgbeSource, encoding: "rgbe" }, options, true),
+    radiance
+  };
+}
+
+/** Build the same lighting chain from top-down, decoded linear RGBA pixels. */
+export function createProductionPbrHdrPipelineFromLinear(
+  linear: LinearHdrEnvironmentMapSource,
+  options: ProductionPbrHdrPipelineOptions
+): ProductionLinearPbrHdrPipeline {
+  return createProductionPbrHdrPipeline(linear, { ...linear, encoding: "linear-hdr" }, options, false);
+}
+
+function createProductionPbrHdrPipeline(
+  linear: LinearHdrEnvironmentMapSource,
+  input: Parameters<typeof createEnvironmentMapResourceSet>[0],
+  options: ProductionPbrHdrPipelineOptions,
+  realRadianceHdr: boolean
+): ProductionLinearPbrHdrPipeline {
   const toneMapping = createProductionToneMappingPolicy(options.toneMapping);
-  const resources = createEnvironmentMapResourceSet({ ...rgbeSource, encoding: "rgbe" }, {
-    textureEncoding: "rgbe",
+  const resources = createEnvironmentMapResourceSet(input, {
+    textureEncoding: realRadianceHdr ? "rgbe" : "rgba16f",
     outputColorSpace: toneMapping.outputColorSpace,
     exposure: toneMapping.exposure,
     toneMapping: environmentToneMappingOperator(toneMapping.operator),
@@ -191,7 +215,6 @@ export function createProductionPbrHdrPipelineFromRadiance(
   return {
     id: options.id,
     label: options.label,
-    radiance,
     linear,
     resources,
     environmentMipLevels,
@@ -202,10 +225,10 @@ export function createProductionPbrHdrPipelineFromRadiance(
     backgroundIntensity: options.backgroundIntensity ?? 0.8,
     rotation: options.rotation ?? 0,
     diagnostics: {
-      realRadianceHdr: true,
+      realRadianceHdr,
       environmentTextureEncoding: "rgba16f-linear",
       environmentTextureFormat: "rgba16f",
-      hdrPixelCount: radiance.width * radiance.height,
+      hdrPixelCount: linear.width * linear.height,
       maxLinearValue: resources.diagnostics.maxLinearValue,
       diffuseIrradiance: resources.diffuseIrradiance.width > 0 && resources.diffuseIrradiance.height > 0,
       diffuseIrradianceModel: "cosine-weighted-hemisphere",
@@ -225,7 +248,7 @@ export function createProductionPbrHdrPipelineFromRadiance(
 }
 
 export function createProductionEnvironmentLightingResources(
-  pipeline: ProductionPbrHdrPipeline
+  pipeline: ProductionLinearPbrHdrPipeline
 ): ProductionEnvironmentLightingResources {
   const environmentTexture = new Texture({
     width: pipeline.resources.base.width,
@@ -319,9 +342,9 @@ export function createProductionEnvironmentLightingResources(
 
 export interface DualProbeEnvironmentLightingOptions {
   /** Diffuse/illumination source: owns the roughest cubemap mip the diffuse term samples. */
-  readonly illumination: ProductionPbrHdrPipeline;
+  readonly illumination: ProductionLinearPbrHdrPipeline;
   /** Reflection source: owns the sharper mips the roughness-scaled specular term samples. */
-  readonly reflection: ProductionPbrHdrPipeline;
+  readonly reflection: ProductionLinearPbrHdrPipeline;
   /** Diffuse probe gain; defaults to the illumination pipeline intensity. */
   readonly illuminationIntensity?: number;
   /** Specular probe gain; defaults to the reflection pipeline intensity. */

@@ -5,9 +5,10 @@
  * sweep over node bounds (runtime handles and static scene nodes). The
  * BVH-backed replacement is request Q-11-2; this module is what it replaces.
  */
-import { sphereCastCollider, type Collider, type RigidBody } from "@aura3d/physics";
+import { sphereCastCollider, type Collider, type RigidBody } from "@aura3d/physics/solverless";
 import type { AuraVec3 } from "../index.js";
 import type { AuraCameraProbe } from "../../contracts/camera.js";
+import { CAMERA_SUBJECT_PROBE, type CameraSubjectRef, type SubjectAwareCameraProbe } from "./rigs/rigUtils.js";
 
 export interface ProbeBoundsEntry {
   readonly id: string;
@@ -18,8 +19,16 @@ export interface ProbeBoundsEntry {
 export interface ProbePhysicsEntry {
   readonly collider: Collider;
   readonly body: RigidBody;
-  /** Optional node id for `occluders` bookkeeping (unused by sphereCast itself). */
+  /** Optional node id; an unidentified collider is never presumed to be the subject. */
   readonly id?: string;
+  /** Exact node identity, when available; takes precedence over the id. */
+  readonly owner?: object;
+}
+
+/** Entries known to belong to one particular subject, not every referenced node. */
+export interface CameraProbeTargetFilter {
+  readonly bounds?: (entry: ProbeBoundsEntry) => boolean;
+  readonly colliders?: (entry: ProbePhysicsEntry) => boolean;
 }
 
 export type AuraCameraProbeTier = "low" | "medium" | "high" | "ultra";
@@ -79,6 +88,17 @@ export interface AuraCameraProbeDeps {
   readonly bounds?: () => Iterable<ProbeBoundsEntry>;
   /** Ids the camera may see through (the subject itself, rigs, helpers). */
   readonly ignore?: (id: string) => boolean;
+  /**
+   * Resolve a rig's target to exact probe entries on each query. An unresolved
+   * target is an error, rather than a reason to ignore unrelated geometry.
+   */
+  readonly targetFilter?: (target: CameraSubjectRef) => CameraProbeTargetFilter | undefined;
+  /**
+   * Preserve the legacy unscoped standalone probe's origin-containing-box
+   * heuristic by default. Target-aware probes default it off and exclude by
+   * identity instead, so a wall containing the look point remains a real hit.
+   */
+  readonly ignoreOriginBounds?: boolean;
 }
 
 const sub = (a: AuraVec3, b: AuraVec3): AuraVec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -123,14 +143,93 @@ const NO_HIT = Object.freeze({ hit: false, distance: Number.POSITIVE_INFINITY })
 
 export function createCameraProbe(deps: AuraCameraProbeDeps): AuraBudgetedCameraProbe {
   const ignore = deps.ignore ?? (() => false);
+  const ignoreOriginBounds = deps.ignoreOriginBounds ?? !deps.targetFilter;
   let budget = deps.budget?.();
   let casts = 0;
   let queries = 0;
   let deniedCasts = 0;
   let deniedQueries = 0;
   const castAllowed = () => !budget || casts < budget.sphereCasts;
+  const stringTargets = new Map<string, AuraCameraProbe>();
+  const objectTargets = new WeakMap<object, AuraCameraProbe>();
 
-  return {
+  function targetFilter(target: CameraSubjectRef | undefined): CameraProbeTargetFilter | undefined {
+    if (target === undefined) return undefined;
+    const filter = deps.targetFilter?.(target);
+    if (!filter) throw new Error("Camera collision target could not be mapped to this probe.");
+    return filter;
+  }
+
+  function sphereCast(from: AuraVec3, to: AuraVec3, radius: number, target?: CameraSubjectRef) {
+    // Over the tier cap: no hit (the damper eases back out on its slow
+    // push-out spring) — never an unbudgeted cast.
+    if (!castAllowed()) {
+      deniedCasts += 1;
+      return NO_HIT;
+    }
+    casts += 1;
+    const delta = sub(to, from);
+    const distance = len(delta);
+    if (distance <= 1e-9) return { hit: false, distance: Number.POSITIVE_INFINITY };
+    const dir = [delta[0] / distance, delta[1] / distance, delta[2] / distance] as AuraVec3;
+    const filter = targetFilter(target);
+
+    // Physics tier: narrow phase through sphereCastCollider.
+    let best: { hit: boolean; distance: number; node?: string } | undefined;
+    const colliders = deps.colliders?.();
+    if (colliders) {
+      // physics Vec3 is a mutable tuple — widen the readonly AuraVec3s.
+      const mut = (v: AuraVec3): [number, number, number] => [v[0], v[1], v[2]];
+      for (const entry of colliders) {
+        if (filter?.colliders?.(entry)) continue;
+        const hit = sphereCastCollider(mut(from), radius, mut(dir), entry.collider, entry.body, {
+          maxDistance: distance
+        });
+        if (hit && (!best || hit.distance < best.distance)) {
+          best = { hit: true, distance: hit.distance, node: entry.id };
+        }
+      }
+    }
+
+    // AABB tier: sweep a sphere-equivalent box-expanded AABB per node.
+    // Compare both tiers: a physics hit must not hide a nearer static wall.
+    for (const b of deps.bounds?.() ?? []) {
+      if (ignore(b.id) || filter?.bounds?.(b) || (ignoreOriginBounds && contains(b, from))) continue;
+      const t = rayHitsExpandedAabb(from, delta, b.min, b.max, radius);
+      if (t !== undefined && (!best || t * distance < best.distance)) {
+        best = { hit: true, distance: t * distance, node: b.id };
+      }
+    }
+    return best ?? NO_HIT;
+  }
+
+  function occluders(from: AuraVec3, to: AuraVec3, target?: CameraSubjectRef): readonly string[] {
+    if (budget) {
+      if (!budget.fade) {
+        deniedQueries += 1;
+        return [];
+      }
+      if (queries < budget.occluderQueries) queries += 1;
+      else if (castAllowed()) casts += 1;
+      else {
+        deniedQueries += 1;
+        return [];
+      }
+    } else {
+      queries += 1;
+    }
+    const delta = sub(to, from);
+    const ids: string[] = [];
+    const filter = targetFilter(target);
+    // Thin-probe radius so occluders() reports what a near-infinitesimal cast hits.
+    for (const b of deps.bounds?.() ?? []) {
+      if (ignore(b.id) || filter?.bounds?.(b) || (ignoreOriginBounds && contains(b, from))) continue;
+      if (rayHitsExpandedAabb(from, delta, b.min, b.max, 0.02) !== undefined) ids.push(b.id);
+    }
+    return ids;
+  }
+
+  const probe: AuraBudgetedCameraProbe & SubjectAwareCameraProbe = {
     beginFrame() {
       budget = deps.budget?.();
       casts = 0;
@@ -141,80 +240,21 @@ export function createCameraProbe(deps: AuraCameraProbeDeps): AuraBudgetedCamera
     stats() {
       return { sphereCasts: casts, occluderQueries: queries, deniedCasts, deniedOccluderQueries: deniedQueries };
     },
-    sphereCast(from, to, radius) {
-      // Over the tier cap: no hit (the damper eases back out on its slow
-      // push-out spring) — never an unbudgeted cast.
-      if (!castAllowed()) {
-        deniedCasts += 1;
-        return NO_HIT;
+    sphereCast: (from, to, radius) => sphereCast(from, to, radius),
+    occluders: (from, to) => occluders(from, to),
+    ...(deps.targetFilter ? {
+      [CAMERA_SUBJECT_PROBE](target: CameraSubjectRef): AuraCameraProbe {
+        const existing = typeof target === "string" ? stringTargets.get(target) : objectTargets.get(target);
+        if (existing) return existing;
+        const scoped: AuraCameraProbe = {
+          sphereCast: (from, to, radius) => sphereCast(from, to, radius, target),
+          occluders: (from, to) => occluders(from, to, target)
+        };
+        if (typeof target === "string") stringTargets.set(target, scoped);
+        else objectTargets.set(target, scoped);
+        return scoped;
       }
-      casts += 1;
-      const delta = sub(to, from);
-      const distance = len(delta);
-      if (distance <= 1e-9) return { hit: false, distance: Number.POSITIVE_INFINITY };
-      const dir = [delta[0] / distance, delta[1] / distance, delta[2] / distance] as AuraVec3;
-
-      // Physics tier: narrow phase through sphereCastCollider.
-      const colliders = deps.colliders?.();
-      if (colliders) {
-        let best: { hit: boolean; distance: number; node?: string } | undefined;
-        // physics Vec3 is a mutable tuple — widen the readonly AuraVec3s.
-        const mut = (v: AuraVec3): [number, number, number] => [v[0], v[1], v[2]];
-        for (const entry of colliders) {
-          const hit = sphereCastCollider(mut(from), radius, mut(dir), entry.collider, entry.body, {
-            maxDistance: distance
-          });
-          if (hit && (!best || hit.distance < best.distance)) {
-            best = { hit: true, distance: hit.distance, node: entry.id };
-          }
-        }
-        if (best) return best;
-        // fall through to AABB list too — a collider list may not cover
-        // static scenery nodes that have bounds but no physics body.
-      }
-
-      // AABB tier: sweep a sphere-equivalent box-expanded AABB per node.
-      // A box that already contains the cast origin is the volume the camera
-      // looks FROM (the subject's own bounds around its look point) — it can
-      // not occlude the arm, and counting it would collapse every collision
-      // rig onto its subject at t = 0.
-      let bestT = Number.POSITIVE_INFINITY;
-      let bestId: string | undefined;
-      for (const b of deps.bounds?.() ?? []) {
-        if (ignore(b.id) || contains(b, from)) continue;
-        const t = rayHitsExpandedAabb(from, delta, b.min, b.max, radius);
-        if (t !== undefined && t < bestT) {
-          bestT = t;
-          bestId = b.id;
-        }
-      }
-      if (bestId === undefined) return { hit: false, distance: Number.POSITIVE_INFINITY };
-      return { hit: true, distance: bestT * distance, node: bestId };
-    },
-
-    occluders(from, to) {
-      if (budget) {
-        if (!budget.fade) {
-          deniedQueries += 1;
-          return [];
-        }
-        if (queries < budget.occluderQueries) queries += 1;
-        else if (castAllowed()) casts += 1;
-        else {
-          deniedQueries += 1;
-          return [];
-        }
-      } else {
-        queries += 1;
-      }
-      const delta = sub(to, from);
-      const ids: string[] = [];
-      // Thin-probe radius so occluders() reports what a near-infinitesimal cast hits.
-      for (const b of deps.bounds?.() ?? []) {
-        if (ignore(b.id) || contains(b, from)) continue;
-        if (rayHitsExpandedAabb(from, delta, b.min, b.max, 0.02) !== undefined) ids.push(b.id);
-      }
-      return ids;
-    }
+    } : {})
   };
+  return probe;
 }
