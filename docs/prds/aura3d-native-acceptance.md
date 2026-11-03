@@ -1,5 +1,7 @@
 # Aura3D native capability acceptance — Phase B
 
+> **5.0 override (owner, 2026-11-02):** this program ships as **Aura3D 5.0.0**. The [5.0 decision record](aura3d-native-code-complete.md#50-decision-record-owner-2026-11-02--supersedes-conflicting-text-below) wins over anything below: the source pass and acceptance run on the 4.x ACR path (`tools/remote-acr/run.sh` + `Dockerfile.playwright`), not the custody runner (`run-source.sh` / `Dockerfile.source` / isolated matrix producer are not release prerequisites); the fixed denominator is [`aura3d-5.0-scope.md`](aura3d-5.0-scope.md) (FINISH-5.0 / EXPERIMENTAL-5.0 / SUPERSEDED-PROCESS) — do not re-audit or re-derive counts; order is snapshot → fix + one full remote source pass → freeze + acceptance → publish 5.0.0 + Cloudflare deploy.
+
 **State: LOCKED until global CODE_COMPLETE_GO.** This file contains acceptance work only. Its existence does not authorize running that work before all required implementation and source validation are complete.
 
 **Current provisional source review:** The [current saved audit](aura3d-native-current-audit-2026-11-02.md) estimates **784/1,014 granular source-side subrequirements present (~77%), 183 partial, 43 missing, and 4 unknown**. It corrects the previously reported **785 present / 182 partial** by reclassifying one item; no completion credit is assigned to partials. Its earlier **53/192 task rows** and **912/1,864 source-related ledger rows** count only fully source-implemented historical rows; they use different units and omit partial work. Current task and source classifications are not fresh verified gate data.
@@ -139,7 +141,7 @@ Only actual defects in required production behavior or the policy's frozen categ
 
 ## 8. Release actions, cleanup and final record
 
-This acceptance plan does not grant new permission to publish, deploy production changes, spend on hardware, widen external trust, change shared credentials or send messages. Perform those actions only within existing session authorization and applicable policy. Prepare the concrete reviewable result first and continue independent authorized work if a genuine human gate is reached.
+For 5.0 the owner has authorized, after acceptance passes: npm publish of 5.0.0 for every `@aura3d/*` package and `create-aura3d` (deprecating all prior versions), tag `v5.0.0`, GitHub release, and Cloudflare Pages deploys of `aura3d` and `aura3d-wonder-world` with live URL and rollback verification. Otherwise, this acceptance plan does not grant new permission to publish, deploy production changes, spend on hardware, widen external trust, change shared credentials or send messages. Perform those actions only within existing session authorization and applicable policy. Prepare the concrete reviewable result first and continue independent authorized work if a genuine human gate is reached.
 
 Use existing serverless infrastructure where suitable. A temporary VM/GPU is a last resort only when a container job cannot execute the workload and the required authorization exists. Register cleanup traps before creation, delete all task-created compute, disks, snapshots, interfaces, addresses and resource groups, and verify zero task remnants. Stopping or deallocating a resource is insufficient. Stop only temporary processes started for this task.
 

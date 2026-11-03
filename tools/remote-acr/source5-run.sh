@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# In-image runner for the Aura3D 5.0 source pass (decision record item 1 in
+# docs/prds/aura3d-native-code-complete.md). Runs the Phase A §4 command list
+# in order, never stops early, and records one exit code per command. No
+# browser stage runs here. Results are printed between SOURCE5_REPORT markers
+# so the launcher can retain them without blob credentials.
+set -uo pipefail
+cd /repo
+export CI=1
+export NATIVE_RUN_ID="${NATIVE_RUN_ID:?}"
+export NATIVE_RELEASE_KIND="${NATIVE_RELEASE_KIND:-major}"
+export NATIVE_REPORT_DIR="/repo/tests/reports/native-5/${NATIVE_RUN_ID}"
+export AURA3D_SOURCE_MANIFEST="/repo/tools/remote-acr/.source5-manifest.txt"
+mkdir -p "$NATIVE_REPORT_DIR" /tmp/source5-logs
+RESULTS=/tmp/source5-results.tsv
+: > "$RESULTS"
+
+run() {
+  local id="$1"; shift
+  local log="/tmp/source5-logs/${id}.log"
+  local started ended rc
+  started=$(date +%s)
+  echo "::: SOURCE5_BEGIN ${id} :: $*"
+  bash -c "$*" > "$log" 2>&1
+  rc=$?
+  ended=$(date +%s)
+  tail -n 60 "$log" | sed "s/^/[${id}] /"
+  echo "::: SOURCE5_END ${id} rc=${rc} secs=$((ended - started))"
+  printf '%s\t%s\t%s\t%s\n' "$id" "$rc" "$((ended - started))" "$*" >> "$RESULTS"
+}
+
+# Source checks.
+run typecheck            'pnpm typecheck'
+run lint                 'pnpm lint'
+run resolution           'pnpm resolution:check'
+run parity               'pnpm test:parity'
+run unit                 'pnpm test:unit'
+run assets-qr            'pnpm exec vitest run tests/assets tests/qr'
+run packages             'pnpm test:packages'
+run release-tools        'node --test tools/release/*.test.mjs'
+# Fresh build and pack.
+run build                'pnpm build'
+run pack                 'node tools/release/publish-all.mjs --pack-only --out-plan "$NATIVE_REPORT_DIR/candidate-plan.json"'
+export A3D_RELEASE_PLAN="$NATIVE_REPORT_DIR/candidate-plan.json"
+run api-baseline         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/prepare-baseline.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/baseline-manifest.json"'
+# Packed integration and consumer checks.
+run integration          'pnpm test:integration'
+run packages-dist        'pnpm test:packages:dist'
+run browser-tests-tsc    'pnpm exec tsc -p tsconfig.browser-tests.json --noEmit'
+run verify-exports       'pnpm verify:exports'
+run verify-imports       'pnpm verify:imports'
+run tarballs             'pnpm check:tarballs'
+run clean-install        'pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
+run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
+run bundle-size          'pnpm check:bundle-size'
+run api-diff             'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts --baseline-manifest "$NATIVE_REPORT_DIR/baseline-manifest.json" --candidate-plan "$A3D_RELEASE_PLAN" --release-kind "$NATIVE_RELEASE_KIND" --out "$NATIVE_REPORT_DIR/api-diff.json"'
+run api-contract         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
+run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
+run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
+
+echo "::: SOURCE5_REPORT_BEGIN"
+RESULTS="$RESULTS" node -e '
+  const fs = require("fs");
+  const rows = fs.readFileSync(process.env.RESULTS, "utf8").trim().split("\n").filter(Boolean).map((l) => {
+    const [id, rc, secs, ...cmd] = l.split("\t");
+    return { id, exitCode: Number(rc), seconds: Number(secs), command: cmd.join("\t") };
+  });
+  const plan = process.env.A3D_RELEASE_PLAN;
+  const out = {
+    schema: "aura3d.source5-report/1",
+    runId: process.env.NATIVE_RUN_ID,
+    releaseKind: process.env.NATIVE_RELEASE_KIND,
+    finishedUtc: new Date().toISOString(),
+    candidatePlan: fs.existsSync(plan) ? JSON.parse(fs.readFileSync(plan, "utf8")) : null,
+    commands: rows,
+    passed: rows.filter((r) => r.exitCode === 0).map((r) => r.id),
+    failed: rows.filter((r) => r.exitCode !== 0).map((r) => r.id),
+    browserAcceptance: "not-run"
+  };
+  process.stdout.write(Buffer.from(JSON.stringify(out)).toString("base64").replace(/(.{76})/g, "$1\n") + "\n");
+'
+echo "::: SOURCE5_REPORT_END"
+FAILED=$(awk -F'\t' '$2 != 0' "$RESULTS" | wc -l | tr -d ' ')
+echo "SOURCE5_EXIT=${FAILED}"
+exit 0

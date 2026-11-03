@@ -67,7 +67,8 @@ describe("native public loader contracts", () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response("abc"));
     vi.stubGlobal("fetch", fetchMock);
     const close = vi.fn();
-    const bitmap = { close } as unknown as ImageBitmap;
+    // Real ImageBitmaps always carry dimensions; the loader admits them before returning.
+    const bitmap = { close, width: 4, height: 4 } as unknown as ImageBitmap;
     const decode = vi.fn(async (_blob: Blob, _options?: ImageBitmapOptions) => bitmap);
     vi.stubGlobal("createImageBitmap", decode);
     const loader = new ImageBitmapLoader({ flipY: true, premultiplyAlpha: "none" }).setWithCredentials(true).setRequestHeader({ "X-Test": "image" });

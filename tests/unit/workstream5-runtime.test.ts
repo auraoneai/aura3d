@@ -2572,8 +2572,9 @@ test("workstream5 GLTFLoader rejects invalid material scalar, color, and texture
       /roughnessFactor/
     ],
     [
-      "alpha cutoff outside unit range",
-      { alphaCutoff: 1.5 },
+      // glTF 2.0 material.alphaCutoff: number, minimum 0, no maximum.
+      "negative alpha cutoff",
+      { alphaCutoff: -0.5 },
       /alphaCutoff/
     ],
     [

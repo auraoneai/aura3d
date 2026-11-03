@@ -1,5 +1,7 @@
 # Aura3D native capability execution prompt
 
+> **5.0 override (owner, 2026-11-02):** this program ships as **Aura3D 5.0.0**. The [5.0 decision record](aura3d-native-code-complete.md#50-decision-record-owner-2026-11-02--supersedes-conflicting-text-below) wins over anything below: the source pass and acceptance run on the 4.x ACR path (`tools/remote-acr/run.sh` + `Dockerfile.playwright`), not the custody runner (`run-source.sh` / `Dockerfile.source` / isolated matrix producer are not release prerequisites); the fixed denominator is [`aura3d-5.0-scope.md`](aura3d-5.0-scope.md) (FINISH-5.0 / EXPERIMENTAL-5.0 / SUPERSEDED-PROCESS) — do not re-audit or re-derive counts; order is snapshot → fix + one full remote source pass → freeze + acceptance → publish 5.0.0 + Cloudflare deploy.
+
 **Resume checkpoint:** Read [the current saved source audit](aura3d-native-current-audit-2026-11-02.md) first. [The execution handoff](../../PROMPT_EXECUTE_COMPETITIVE_REDESIGN_PRD.md) contains an older checkpoint that must be reconciled against current source. The working tree contains substantial uncommitted work; preserve it.
 
 **Current provisional source review:** The [current saved audit](aura3d-native-current-audit-2026-11-02.md) estimates **784/1,014 granular source-side subrequirements present (~77%), 183 partial, 43 missing, and 4 unknown**. It corrects the previously reported **785 present / 182 partial** by reclassifying one item; no completion credit is assigned to partials. Its earlier **53/192 task rows** and **912/1,864 source-related ledger rows** count only fully source-implemented historical rows; they use different units and omit partial work. Current task and source classifications are not fresh verified gate data.
@@ -145,7 +147,7 @@ This section is locked until the code-complete phase document's global gate pass
 
 Use approved serverless Azure ACR Tasks or Container Apps Jobs through `az-auraone-gurbaksh`, or serverless AWS CodeBuild where appropriate. Follow the repository's current remote tooling and provider instructions. Do not use GitHub Actions, standing runners, `--agent-pool`, local Docker, or local browser suites.
 
-All browser/visual automation is remote and headless. Use `tools/remote-acr/run.sh` for browser workloads after its required changes exist and `tools/remote-acr/run-source.sh` for the implemented source/build job. Each command must stage the intended files and retain separate phase results; the browser wrapper is not a general shell command runner.
+All browser/visual automation is remote and headless. Use `tools/remote-acr/run.sh` for browser workloads and, `tools/remote-acr/run-source5.sh` for the 5.0 source/build job (same `Dockerfile.playwright` image); `tools/remote-acr/run-source.sh` is not on the 5.0 path. Each command must stage the intended files and retain separate phase results; the browser wrapper is not a general shell command runner.
 
 Before acceptance, verify that the runner receives the intended candidate, independent lockfile, project selection, test list and reporter settings. Give every invocation a unique run ID. Verify the result includes the expected test inventory and real test exit status; a successful infrastructure command alone is not a test pass.
 

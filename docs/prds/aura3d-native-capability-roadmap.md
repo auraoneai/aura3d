@@ -1,5 +1,7 @@
 # PRD: Aura3D native 3D capability roadmap
 
+> **5.0 override (owner, 2026-11-02):** this roadmap remains the product specification for **Aura3D 5.0.0**, but the [5.0 decision record](aura3d-native-code-complete.md#50-decision-record-owner-2026-11-02--supersedes-conflicting-text-below) governs execution: the 4.x ACR path replaces the custody runner, and [`aura3d-5.0-scope.md`](aura3d-5.0-scope.md) is the fixed denominator (each partial task labeled FINISH-5.0 / EXPERIMENTAL-5.0 / SUPERSEDED-PROCESS).
+
 **Status:** implementation roadmap, not a statement that the work is complete.
 
 **Current source review, 2026-11-02:** The latest provisional assessment found

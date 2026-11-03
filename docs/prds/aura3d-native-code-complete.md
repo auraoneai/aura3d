@@ -1,5 +1,83 @@
 # Aura3D native capabilities — Phase A: code-complete
 
+## 5.0 decision record (owner, 2026-11-02) — supersedes conflicting text below
+
+This program ships as **Aura3D 5.0.0** (major release, full feature scope).
+The owner made these decisions to end the re-audit loop; where any later
+section, the roadmap, the execution prompt or the acceptance plan conflicts,
+this record wins.
+
+1. **Runner: the ACR build path replaces the custody runner.** The signed
+   source authority, verified offline toolchains, pinned package-manager
+   custody, sealed workspace isolation and post-install custody requirements
+   (`SOURCE_IMAGE_UNAVAILABLE` in `tools/remote-acr/Dockerfile.source`,
+   `workspace-admission` in `tools/remote-acr/run-source.sh`,
+   `MATRIX_SOURCE_PRODUCER_UNAVAILABLE` in
+   `tools/native-consumer-matrix/index.ts`) are **dropped as release
+   prerequisites**. The 5.0 source pass runs the unchanged §4 command list on
+   the image that shipped every 4.x release: serverless ACR Tasks via
+   `tools/remote-acr/run.sh` + `Dockerfile.playwright` (hermetic
+   `pnpm install --frozen-lockfile` from `pnpm-lock.yaml`), registry
+   `picassostagingacr`, one shared build, `KEEP_IMAGE=0`, cost contract and
+   ledger entry per the machine policy. Candidate identity = the frozen Git
+   commit plus the recorded lockfile and packed-archive SHA-256s. This is a
+   process change only; no product requirement is removed. Consumer-matrix
+   checks that need the isolated producer run as ordinary packed-consumer
+   installs in the same job.
+2. **Scope: fixed list, no re-derivation.** [`aura3d-5.0-scope.md`](aura3d-5.0-scope.md)
+   labels every partial roadmap task exactly once: **FINISH-5.0** (production
+   code still owed), **EXPERIMENTAL-5.0** (opt-in path works with explicit
+   fallback; ships labeled experimental, pending browser/GPU/device evidence),
+   or **SUPERSEDED-PROCESS** (custody/ledger-granularity work replaced by
+   item 1). That list is the 5.0 denominator. Progress = checked-off
+   FINISH-5.0 rows. Do not re-audit the tree or add rows without owner
+   approval.
+3. **Named defects that must be fixed for 5.0** (also rows in the scope list):
+   WebGPU teardown failures (last full run 26 pass / 32 fail); native
+   reversed and logarithmic depth; native WebGPU wetness; the alpha-cutoff and
+   bitmap-orientation test conflicts (resolved against the spec: glTF
+   `alphaCutoff` has no maximum, so the case now asserts a negative cutoff is
+   rejected; the `ImageBitmap` mock now carries dimensions — no assertion was
+   weakened); the
+   mini-game `Textures/colormap.png` sidecar + digest and the
+   `skylineParkourRunnerMeshy` manifest/file/provenance conflict; the
+   production-path benchmark that imports another 3D engine
+   (`tools/production-path-benchmark/index.ts`); the 4.x → 5.0 migration
+   guide (`docs/migration/4-to-5.md`).
+   **Teardown contract (decided 2026-11-02):** 5.0 keeps the strict WebGPU
+   retirement contract — a device, target, buffer or lane is complete only
+   after its retirement fence resolves, and a failed dispose stays pending
+   until `dispose()` is called again. The 40 failing teardown checks (121
+   passing) all asserted completion while a fence was pending; no product
+   defect was found. They are updated to assert pending → resolve fence →
+   complete/destroyed-once. Two synchronous cases (lane with no outstanding
+   resources; never-submitted target textures) complete without a fence.
+4. **Order of work, run once:**
+   - **a. Snapshot:** done — branch `native/5.0`, commit `26eae82e2`
+     (the uncommitted tree as of 2026-11-02), then merge of `origin/main`
+     (4.7.2–4.7.10 shipped fixes).
+   - **b. Fix + one full remote source pass:** close FINISH-5.0 rows and the
+     named defects; run the §4 command list once on ACR; fix real failures;
+     rerun only affected checks. Pre-existing unrelated failures are recorded,
+     not chased.
+   - **c. Freeze + acceptance:** commit the freeze, emit
+     `tests/reports/native-capabilities/code-complete-go.json` against the
+     scope list (§5), then run the [acceptance plan](aura3d-native-acceptance.md)
+     once on ACR.
+   - **Release prep (before freeze):** apply the published deprecation
+     policy — remove the 42 root names and 10 legacy subpaths scheduled for
+     removal in 5.0.0 (list in `docs/migration/4-to-5.md` "verify"), or record
+     an owner deferral; widen `@aura3d/react`'s `@aura3d/engine` peer to
+     `^5.0.0`; bump every manifest (incl. `@aura3d/addons`, at 4.7.1) with
+     `tools/release/prepare-version.mjs 5.0.0`; regenerate
+     `docs/api/public-api.md` (`pnpm verify:api-docs --write`); replace the
+     hard-fail custody line in `package.json` `check:release`.
+   - **d. Release:** publish 5.0.0 to npm (deprecating prior versions), tag,
+     GitHub release, deploy `aura3d` and `aura3d-wonder-world` to Cloudflare
+     Pages, verify live URLs and rollback.
+
+---
+
 **Status:** implementation instructions. This document does not declare code complete and does not authorize an acceptance run.
 
 **Current provisional source review:** The [current saved audit](aura3d-native-current-audit-2026-11-02.md) estimates **784/1,014 granular source-side subrequirements present (~77%), 183 partial, 43 missing, and 4 unknown**. It corrects the previously reported **785 present / 182 partial** by reclassifying one item; no completion credit is assigned to partials. Its earlier **53/192 task rows** and **912/1,864 source-related ledger rows** count only fully source-implemented historical rows; they use different units and omit partial work. Current task and source classifications are not fresh verified gate data.
@@ -71,8 +149,9 @@ was committed. The lifecycle agent's final change is recorded below.
    isolation and post-install custody are not configured. The installed
    consumer matrix deliberately stops with
    `MATRIX_SOURCE_PRODUCER_UNAVAILABLE` in
-   `tools/native-consumer-matrix/index.ts`. Implement the isolated producer and
-   retained reports without weakening either guard.
+   `tools/native-consumer-matrix/index.ts`. **5.0: no longer a blocker** —
+   superseded by decision record item 1 (ACR 4.x path). The guards stay in
+   place; they are simply not on the 5.0 release path.
 2. Finish remaining required production behavior, including native
    reversed/logarithmic depth and WebGPU wetness. Existing explicit fallback
    is not native support. Reconcile all other roadmap findings against current
@@ -172,17 +251,15 @@ The source/browser entrypoints must enforce the phase boundary. The source runne
 
 Quick targeted source checks may run locally only when policy permits their actual resource use. Run full suites, large checks, builds, package consumers, code generation and dependency scans on approved serverless remote infrastructure. Never use local Docker, local browser suites, GitHub Actions, standing runners or an agent pool.
 
-Use `tools/remote-acr/run-source.sh` after implementing the roadmap's required source-runner changes. The browser wrapper is not a general command runner and must not be used to bypass this phase boundary.
-
-The following new scripts, options and report contracts are future implementation requirements. Do not claim they already work in the audited baseline. Inspect aggregate commands for hidden browser work; split or correct such commands through their owner before running them.
+**5.0 runner (decision record item 1):** run the source pass on the 4.x ACR path — `tools/remote-acr/run-source5.sh` builds the same `Dockerfile.playwright` image once from the committed candidate (`git ls-files` tree, LFS content included, SHA-256 manifest), runs `tools/remote-acr/source5-run.sh` (the command list below, every command recorded, no browser stage) via `task.source5.yaml`, writes `tests/reports/native-5/<run-id>/source-report.json`, and deletes the image. `tools/remote-acr/run-source.sh`, `Dockerfile.source` and the custody admission are no longer prerequisites and may stay as-is; do not spend 5.0 time making them executable.
 
 ~~~sh
-RUN_ID=native-source-001 KEEP_IMAGE=0 tools/remote-acr/run-source.sh
+RUN_ID=native-5-source-001 tools/remote-acr/run-source5.sh   # KEEP_IMAGE=0, NATIVE_RELEASE_KIND=major by default
 ~~~
 
-Use a unique run ID. Inside that job, `source-checks.mjs` supplies validated `NATIVE_RUN_ID`, `NATIVE_REPORT_DIR`, `NATIVE_RELEASE_KIND` and `AURA3D_SOURCE_MANIFEST`. The staging manifest includes required current source, untracked task additions, configurations, fixtures, templates, documentation and generated maps. Exclude host credentials, dependency trees, private Git configuration and stale distribution output.
+Use a unique run ID. The job sets `NATIVE_RUN_ID`, `NATIVE_REPORT_DIR`, `NATIVE_RELEASE_KIND` and `AURA3D_SOURCE_MANIFEST` (a file list with SHA-256s of the staged context). The context is the committed candidate; exclude host credentials, dependency trees, private Git configuration and stale distribution output.
 
-Support source identity without a `.git` directory: recompute required file hashes and retain the originating commit/tree as provenance. Missing, changed or undeclared required inputs fail. A local commit must never be invented to satisfy release-plan code.
+Source identity is the candidate commit SHA recorded with the staged-file manifest and lockfile digest. Missing, changed or undeclared required inputs fail. Inspect aggregate commands for hidden browser work and drop the browser stage from them in this job.
 
 Run source checks, then a fresh build/pack, then packed integration/consumer checks in this order:
 
@@ -238,7 +315,7 @@ The record must carry at least:
 - Immutable required-source-outcome snapshot and its digest, including all current roadmap work packages.
 - Immutable implementation/staging-manifest digest, lockfile digest and every candidate package/archive digest.
 - Passing source report identities and digests, expected command/test inventory and observed results.
-- Required source-outcome IDs and completed IDs, and expected check IDs and passing check IDs, with exact set equality for each pair; equal counts alone are insufficient.
+- Required source-outcome IDs and completed IDs, and expected check IDs and passing check IDs, with exact set equality for each pair; equal counts alone are insufficient. **For 5.0 the required source-outcome set is the FINISH-5.0 and named-defect rows of [`aura3d-5.0-scope.md`](aura3d-5.0-scope.md)**; EXPERIMENTAL-5.0 rows must be listed with their experimental label and fallback, and SUPERSEDED-PROCESS rows are listed as superseded. The 1,901-row ledger remains historical reference, not the gate denominator.
 - Zero unresolved required production defects, zero unowned/untriaged source outcomes and zero missing required source checks.
 - Explicit statement that browser/device/live acceptance is not-run and has not been used to qualify source completion.
 
@@ -256,6 +333,12 @@ Mutable acceptance notes remain outside the immutable implementation input set u
 
 ## 6. Phase A exit checklist
 
+For 5.0, "roadmap source outcome" below means a FINISH-5.0 or named-defect row of [`aura3d-5.0-scope.md`](aura3d-5.0-scope.md); EXPERIMENTAL-5.0 rows need a working opt-in path, explicit fallback and an experimental label in `docs/project/support-policy.md` / the support matrix.
+
+- [x] Snapshot committed (`native/5.0` @ `26eae82e2`).
+- [ ] `origin/main` 4.7.10 merged into `native/5.0` (in progress: 31 conflicted files).
+- [ ] Every FINISH-5.0 row and named defect closed; EXPERIMENTAL-5.0 rows labeled.
+- [ ] 4.x → 5.0 migration guide written and linked from the README and changelog.
 - [ ] Every current roadmap source outcome has an owner, implemented production path and matching source tests; all lower-priority work remains included.
 - [ ] Confirmed defects have meaningful regression coverage and corrected behavior; no required implementation is deferred to acceptance.
 - [ ] Public types, runtime schemas, compiler lowering, serialization, exports, generated maps and package metadata agree.
