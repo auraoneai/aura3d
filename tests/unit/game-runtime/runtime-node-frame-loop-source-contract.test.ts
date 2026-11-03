@@ -46,8 +46,14 @@ describe("game runtime frame-loop and package source contracts", () => {
     // the public entry that imports them (#1140): a narrow glob list, never `true`.
     expect(Array.isArray(rootPackage.sideEffects)).toBe(true);
     expect(rootPackage.sideEffects).toEqual(expect.arrayContaining(["./dist/engine/lanes/**/*.js", "./dist/engine/public/index.js"]));
+    // Also narrow, and each kind pinned by its own contract test:
+    // - worker entry scripts run on load (tests/unit/packaging/native-worker-package.test.ts,
+    //   native-worker-bundle.test.ts);
+    // - the staged v5 entry public/v5.js (tests/unit/packaging/native-isolated-entrypoints.test.ts);
+    // - repo-only example/app/template sources, which load for their side effects
+    //   (d6ce480b7, tests/unit/parity/side-effects-allowlist.test.ts).
     for (const glob of rootPackage.sideEffects as readonly string[]) {
-      expect(glob, glob).toMatch(/^(\*\.css|\.\/dist\/[a-z-]+\/(lanes\/\*\*\/\*\.js|public\/index\.js|program\/ProgramGenerator\.js|agent-api\/.+\.js))$/);
+      expect(glob, glob).toMatch(/^(\*\.css|\.\/(examples|apps|templates)\/\*\*|\.\/dist\/[a-z-]+\/(lanes\/\*\*\/\*\.js|public\/(index|v5)\.js|program\/ProgramGenerator\.js|agent-api\/.+\.js|(?:[a-z-]+\/)*[a-z0-9-]+\.worker(?:\.bundle)?\.js))$/);
     }
     // PRD-15 §6.1: "." resolves to the explicit public surface entry.
     expect(publicRoot).toMatchObject({
@@ -57,7 +63,10 @@ describe("game runtime frame-loop and package source contracts", () => {
       default: "./dist/engine/public/index.js"
     });
     expect(agentApi).toContain("export function createAuraApp");
-    expect(agentApi).toContain("export const game = lazyNamespace(() => ({");
+    // 5.0 (26eae82e2) builds `game` from one factory so the 4.x root (sync collision) and the
+    // staged v5 entry (lazy physics, docs/migration/4-to-5.md) share it; the namespace stays lazy.
+    expect(agentApi).toContain("export const game = createGameNamespaceWithCollisionFactories(");
+    expect(agentApi).toMatch(/export function createGameNamespaceWithCollisionFactories\([\s\S]*?\) \{\n  return lazyNamespace\(\(\) => \(\{/);
     expect(agentApi).toContain("runtimeNode: createRuntimeNodeSpec");
     expect(agentApi).toContain("export function model");
     expect(agentApi).toContain("export function scene");

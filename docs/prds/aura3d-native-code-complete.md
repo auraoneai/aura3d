@@ -329,6 +329,47 @@ node tools/native-capability-gate/index.mjs --phase code-complete --source-manif
 
 `NATIVE_FREEZE_COMMIT` must be the actual committed candidate; the checker validates the unchanged tested snapshot binding. It must reject incomplete requirements, mismatched input/archive hashes, missing checks and an uncommitted or different implementation. It must never emit a success record merely because the command was requested.
 
+**5.0 override: the freeze sequence on the ACR source5 path (decision record items 1, 2 and 4c).** The custody-runner inputs above (`source-build.json` handoff, portable inputs, retained consumer projects) do not exist on the ACR path. Instead, `tools/remote-acr/source5-gate-inputs.mjs` turns the retained `run-source5.sh` run directories into a `aura3d.source5-gate-inputs/1` reports file. The gate recognizes that schema, re-runs the same merge from the retained files and applies the usual manifest-byte, freeze-commit-proof and exact-scope-set checks. The run order is fixed:
+
+~~~sh
+# 0. Before the freeze, commit everything the pass must verify unchanged: scope **DONE**
+#    markers in docs/prds/aura3d-5.0-scope.md, and docs/api/public-api.md taken from an
+#    earlier pass's public-api.generated.md. Both are source inputs, so editing either
+#    after the pass changes the candidate, and the gate then refuses it.
+# 1. Freeze: commit the candidate. The tracked tree must be clean. F is the freeze commit.
+git commit -m "native 5.0: freeze"            # task-owned files only
+F="$(git rev-parse HEAD)"
+# 2. One full source pass on F. Only the parent launches it, as one shared build.
+RUN_ID=native-5-source-NNN tools/remote-acr/run-source5.sh
+# 3. If needed, rerun only the affected stages on the SAME commit F (infra or flake failures).
+#    A product fix is a new commit, so it needs a new freeze and a new full pass;
+#    the adapter refuses runs that mix commits.
+STAGES="unit-3-of-6 packed-b" RUN_ID=native-5-source-NNN-r1 tools/remote-acr/run-source5.sh
+#    (to reuse the image instead: BUILD=0 IMAGE_COMMIT="$F" IMAGE_TAG=run-native-5-source-NNN,
+#     which works only when step 2 ran with KEEP_IMAGE=1)
+# 4. Adapter: the full pass first, then reruns in order (per stage, the last run wins).
+#    It refuses, listing every reason, on any missing or failed check, mixed commits,
+#    unretained or mismatched archives, or an incomplete scope row.
+node tools/remote-acr/source5-gate-inputs.mjs \
+  --run tests/reports/native-5/native-5-source-NNN --run tests/reports/native-5/native-5-source-NNN-r1
+# 5. Gate. HEAD must still be F, or a commit with byte-identical source inputs.
+node tools/native-capability-gate/index.mjs --phase code-complete \
+  --source-manifest tests/reports/native-5/native-5-source-NNN/source-manifest.json \
+  --source-reports tests/reports/native-5/native-5-source-NNN/gate-inputs/source-reports.json \
+  --scope docs/prds/aura3d-5.0-scope.md --ledger docs/prds/aura3d-native-capability-ledger.json \
+  --freeze-commit "$F" --owner "$NATIVE_INTEGRATION_OWNER" --out tests/reports/native-capabilities/code-complete-go.json
+node tools/native-capability-gate/index.mjs --phase acceptance --gate tests/reports/native-capabilities/code-complete-go.json
+# 6. Commit the record. tests/reports/ is gitignored, so force-add it.
+git add -f tests/reports/native-capabilities/code-complete-go.json
+git commit -m "native 5.0: CODE_COMPLETE_GO for $F"
+~~~
+
+- **Expected checks.** The adapter expects 27 checks: the 24 §4 commands, `api-docs-packed` and `api-docs` (S5-WP24-03), and `artifacts-upload` (candidate retention). The `unit` check passes only if every `unit-<i>-of-<n>` shard and packed-a `package-dist-unit` passed. `parity` is `tests/unit/parity` inside those shards. `build` and `pack` must pass in both packed stages, and both stages' plans must have identical archive digests. `deferredToAcceptance` must equal `tools/remote-acr/acceptance-evidence-tests.txt`.
+- **Scope completion.** A FINISH-5.0 or named-defect row counts as complete when its remaining-work cell carries a `**DONE` marker with no later `**PARTIAL` marker. The 19 "verify in the source pass" rows complete only through the reviewed `VERIFY_ONLY_ROWS` table in the adapter, which maps each row ID to the check IDs that must have passed (and, for S5-WP24-02 and S5-WP25-04, requires S5-DEF-07 or S5-DEF-01 to be **DONE**). Any other unfinished row refuses. Editing that table is a scope edit.
+- **Candidate identity.** The gate binds the frozen commit, the staged `source-manifest.json` (its SHA-256 equals `candidate.sourceManifestSha256`), the lockfile digest, and the packed-a archives. The launcher downloaded those archives under `<run>/artifacts/`, and both the adapter and the gate re-hash them (SHA-256 and SHA-512 integrity) against the plan. Git LFS files are bound through their pointer blobs, which the commit proof carries as `lfsPointers`. In the record, `sourceConsumerReport`, `matrixSourceReport` and `examplesSourceReport` are `null`, because the ACR pass keeps those projects in the job.
+- **Keep the retained inputs.** Keep `tests/reports/native-5/<run>/` and the gate-inputs file. The record's `inputs` list names them, and `--phase acceptance` re-hashes them.
+- **Run acceptance at F.** Step 6 moves HEAD past F, and `run-acceptance5.sh` (`acceptance5.mjs gate-binding`) requires HEAD to equal `freezeCommit`. To run acceptance, check out F detached and restore the record from the step-6 commit: `git show <step-6-commit>:tests/reports/native-capabilities/code-complete-go.json > tests/reports/native-capabilities/code-complete-go.json`.
+
 Mutable acceptance notes remain outside the immutable implementation input set under a reviewed rule. Updating evidence must not silently change code identity or overwrite earlier candidate results. A product edit after freeze invalidates the candidate for new acceptance until its affected source checks pass and a new global record is issued.
 
 ## 6. Phase A exit checklist

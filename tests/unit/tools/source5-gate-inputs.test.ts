@@ -5,7 +5,6 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseScopeOutcomes, validateAcceptanceGate } from '../../../tools/native-capability-gate/index.mjs';
-import { isSourceInput, sourceManifestInputDigest } from '../../../tools/release/source-identity.mjs';
 import { buildGateInputs, deriveCompletion, EXPECTED_CHECKS, rowIsDone, STAGE_COMMANDS, VERIFY_ONLY_ROWS } from '../../../tools/remote-acr/source5-gate-inputs.mjs';
 
 vi.setConfig({ testTimeout: 60_000 });
@@ -13,10 +12,14 @@ vi.setConfig({ testTimeout: 60_000 });
 const REPO = resolve(__dirname, '../../..');
 const GATE = join(REPO, 'tools/native-capability-gate/index.mjs');
 const hash = (data: string | Buffer) => createHash('sha256').update(data).digest('hex');
+// Same canonical JSON + SHA-256 as tools/release/source-identity.mjs sourceManifestInputDigest.
+const canonical = (value: unknown): string => value === null || typeof value !== 'object' ? JSON.stringify(value)
+  : Array.isArray(value) ? `[${value.map(canonical).join(',')}]`
+    : `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical((value as Record<string, unknown>)[k])}`).join(',')}}`;
 const sha512 = (data: Buffer) => `sha512-${createHash('sha512').update(data).digest('base64')}`;
 const SHARDS = 2;
 const ALL_STAGES = ['static', 'suites', 'packed-a', 'packed-b', ...Array.from({ length: SHARDS }, (_, i) => `unit-${i + 1}-of-${SHARDS}`)];
-const stageIds = (stage: string) => (stage.startsWith('unit-') ? [stage] : (STAGE_COMMANDS as Record<string, string[]>)[stage]);
+const stageIds = (stage: string) => (stage.startsWith('unit-') ? [stage] : (STAGE_COMMANDS as Readonly<Record<string, readonly string[]>>)[stage]);
 
 const scopeHeader = '| ID | Task | Label | Remaining work |\n| --- | --- | --- | --- |\n';
 function scopeDoc(extraRows = '') {
@@ -56,10 +59,11 @@ function fixture() {
   git(['update-index', '--cacheinfo', `100644,${pointerOid},assets/big.bin`]);
   git(['commit', '-qm', 'freeze']);
   const commit = git(['rev-parse', 'HEAD']), tree = git(['rev-parse', 'HEAD^{tree}']);
-  const sourcePaths = git(['ls-files']).split('\n').filter(isSourceInput).sort((a, b) => (a < b ? -1 : 1));
+  // Every fixture file is a source input (no tests/reports, dist or node_modules paths are committed).
+  const sourcePaths = git(['ls-files']).split('\n').filter(Boolean).sort((a, b) => (a < b ? -1 : 1));
   const files = sourcePaths.map(path => ({ path, type: 'file', mode: '100644', sha256: hash(readFileSync(join(root, path))) }));
   const lockfileSha256 = hash(readFileSync(join(root, 'pnpm-lock.yaml')));
-  const manifestText = `${JSON.stringify({ schema: 'aura3d.native-source-manifest/1', origin: { commit, tree }, files, administrativeFiles: [], lockfileSha256, inputDigest: sourceManifestInputDigest(files) }, null, 2)}\n`;
+  const manifestText = `${JSON.stringify({ schema: 'aura3d.native-source-manifest/1', origin: { commit, tree }, files, administrativeFiles: [], lockfileSha256, inputDigest: hash(canonical(files)) }, null, 2)}\n`;
   const tarballs = ['engine', 'react'].map(name => ({ name: `@aura3d/${name}`, file: `aura3d-${name}-5.0.0.tgz`, data: Buffer.from(`synthetic ${name} tarball`) }));
   const plan = {
     schema: 'aura3d-release-plan/1.0', source: { commit, tree, lockfileSha256 }, generatedAt: '2026-11-02T00:00:00.000Z', commit, lockfileSha256,
@@ -117,10 +121,10 @@ describe('source5 gate inputs adapter + code-complete gate (synthetic committed 
     expect(reports.passingCheckIds).toEqual(EXPECTED_CHECKS.map(check => check.id));
     expect(reports.expectedCheckIds).toHaveLength(27);
     expect(EXPECTED_CHECKS.filter(check => check.section4)).toHaveLength(24);
-    expect(reports.checks.find((check: { id: string }) => check.id === 'unit').commands.map((c: { id: string }) => c.id)).toEqual(['unit-1-of-2', 'unit-2-of-2', 'package-dist-unit']);
-    expect(reports.archives.map((a: { path: string }) => a.path)).toEqual(f.tarballs.map(t => `${full}/artifacts/tarballs/${t.file}`));
+    expect(reports.checks.find(check => check.id === 'unit')?.commands.map(c => c.id)).toEqual(['unit-1-of-2', 'unit-2-of-2', 'package-dist-unit']);
+    expect(reports.archives.map(a => a.path)).toEqual(f.tarballs.map(t => `${full}/artifacts/tarballs/${t.file}`));
     expect(reports.deferredToAcceptance).toHaveLength(2);
-    expect(reports.outcomeCompletion.filter((row: { basis: string }) => row.basis === 'verified-checks').map((row: { id: string }) => row.id).sort()).toEqual(Object.keys(VERIFY_ONLY_ROWS).sort());
+    expect(reports.outcomeCompletion.filter(row => row.basis === 'verified-checks').map(row => row.id).sort()).toEqual(Object.keys(VERIFY_ONLY_ROWS).sort());
 
     const run = f.gate(result.sourceReports.path, result.sourceManifest.path);
     expect(run.stderr).toBe('');

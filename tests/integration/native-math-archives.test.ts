@@ -38,7 +38,11 @@ describe("exact candidate math archive retirement", () => {
   afterAll(() => {
     const reportDir = process.env.NATIVE_REPORT_DIR;
     if (!reportDir || !plan) return;
-    if (!/^tests\/reports\/native-capabilities\/[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(reportDir)) throw new Error("Invalid source report directory");
+    // The 5.0 ACR source pass (decision record item 1, tools/remote-acr/source5-run.sh) exports an absolute
+    // /repo/tests/reports/native-5/<run> directory; the custody runner used tests/reports/native-capabilities/<run>.
+    // Both must still resolve to exactly one run directory inside this checkout.
+    const reportPath = relative(process.cwd(), resolve(reportDir)).split("\\").join("/");
+    if (!/^tests\/reports\/native-(?:capabilities|5)\/[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(reportPath)) throw new Error("Invalid source report directory");
     mkdirSync(reportDir, { recursive: true });
     writeFileSync(join(reportDir, "native-math-archive-audit.json"), `${JSON.stringify({
       schema: "aura3d.native-math-archive-audit/1", phase: "source", independence: "not-established",
