@@ -1,5 +1,5 @@
 version: v1.1.0
-# Aura3D 5.0 source pass (no browser). Nonsecret values only.
+# Aura3D 5.0 source pass, one stage per run (no browser). Nonsecret values only.
 steps:
   - id: source5
     cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}} /repo/tools/remote-acr/source5-run.sh
@@ -8,4 +8,5 @@ steps:
       - CI=1
       - NATIVE_RUN_ID={{.Values.RUN_ID}}
       - NATIVE_RELEASE_KIND={{.Values.RELEASE_KIND}}
-    timeout: 10800
+      - SOURCE5_STAGE={{.Values.STAGE}}
+    timeout: 1800

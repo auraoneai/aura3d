@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Aura3D 5.0 source pass on the 4.x ACR path (decision record item 1,
-# docs/prds/aura3d-native-code-complete.md): one `az acr build` of
-# Dockerfile.playwright from the committed candidate, one `az acr run` of
-# source5-run.sh, image deleted afterwards (KEEP_IMAGE=0 default).
+# docs/prds/aura3d-native-code-complete.md). One `az acr build` of
+# Dockerfile.playwright from the committed candidate, then one `az acr run`
+# per stage (<= 1800 s each, <= 2 concurrent, ACR policy), reports merged into
+# tests/reports/native-5/<run>/source-report.json, image deleted afterwards.
 # Usage: RUN_ID=native-5-source-001 tools/remote-acr/run-source5.sh
+#        STAGES="static suites" ... to run a subset (rerun of affected checks).
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
@@ -15,8 +17,13 @@ IMAGE_REPO="${IMAGE_REPO:-aura3d-source5}"
 RUN_ID="${RUN_ID:-native-5-source-$(date -u +%Y%m%dT%H%M%SZ)}"
 KEEP_IMAGE="${KEEP_IMAGE:-0}"
 RELEASE_KIND="${NATIVE_RELEASE_KIND:-major}"
+UNIT_SHARDS="${UNIT_SHARDS:-6}"
+DEFAULT_STAGES="static suites packed-a packed-b"
+for i in $(seq 1 "$UNIT_SHARDS"); do DEFAULT_STAGES="$DEFAULT_STAGES unit-$i-of-$UNIT_SHARDS"; done
+STAGES="${STAGES:-$DEFAULT_STAGES}"
+MAX_PARALLEL=2
 [[ "$RUN_ID" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$ ]] || { echo 'invalid RUN_ID' >&2; exit 2; }
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+if [ -n "$(git status --porcelain --untracked-files=no -- . ':!AGENTS.md')" ]; then
   echo 'FATAL: tracked changes present; the source pass runs only a committed candidate' >&2; exit 2
 fi
 COMMIT="$(git rev-parse HEAD)"
@@ -32,7 +39,7 @@ cleanup() {
   if [ "$PUSHED" = 1 ] && [ "$KEEP_IMAGE" != 1 ]; then
     "$AZ_WRAPPER" acr repository delete -n "$ACR_NAME" --image "$IMAGE_REPO:$IMAGE_TAG" --yes -o none || { echo "image cleanup FAILED: $IMAGE_REPO:$IMAGE_TAG" >&2; rc=1; }
   fi
-  rm -rf "$CTX"
+  rm -rf "$CTX" "$CTX.list"
   exit "$rc"
 }
 trap cleanup EXIT INT TERM
@@ -46,7 +53,6 @@ git ls-files -z --cached --others --exclude-standard \
   > "$CTX.list"
 rsync -a --from0 --files-from="$CTX.list" ./ "$CTX/"
 ( cd "$CTX" && tr '\0' '\n' < "$CTX.list" | while IFS= read -r f; do [ -f "$f" ] && shasum -a 256 "$f"; done ) > "$CTX/tools/remote-acr/.source5-manifest.txt"
-rm -f "$CTX.list"
 printf '%s\n' "$COMMIT" > "$CTX/tools/remote-acr/.source5-commit"
 cp "$CTX/tools/remote-acr/.source5-manifest.txt" "$OUT_DIR/source-manifest.txt"
 MANIFEST_SHA="$(shasum -a 256 "$OUT_DIR/source-manifest.txt" | cut -d' ' -f1)"
@@ -58,33 +64,63 @@ echo "== az acr build $IMAGE_REPO:$IMAGE_TAG"
 PUSHED=1
 set +e
 "$AZ_WRAPPER" acr build -r "$ACR_NAME" -g "$ACR_RG" -t "$IMAGE_REPO:$IMAGE_TAG" \
-  --build-arg AURA3D_NATIVE_ACCEPTANCE=0 -f tools/remote-acr/Dockerfile.playwright --timeout 3600 \
+  --build-arg AURA3D_NATIVE_ACCEPTANCE=0 -f tools/remote-acr/Dockerfile.playwright --timeout 1800 \
   "$CTX" > "$OUT_DIR/acr-build.log" 2>&1
 BUILD_RC=$?
 set -e
 tail -15 "$OUT_DIR/acr-build.log"
 [ "$BUILD_RC" = 0 ] || { echo "FATAL: build failed ($OUT_DIR/acr-build.log)" >&2; exit 3; }
 
-echo "== az acr run source5"
-set +e
-"$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f tools/remote-acr/task.source5.yaml --timeout 10800 \
-  --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG" \
-  --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" \
-  /dev/null > "$OUT_DIR/acr-run.log" 2>&1
-RUN_RC=$?
-set -e
+run_stage() {
+  set +e
+  local stage="$1" log="$OUT_DIR/acr-run-$1.log"
+  "$AZ_WRAPPER" acr run -r "$ACR_NAME" -g "$ACR_RG" -f tools/remote-acr/task.source5.yaml --timeout 1800 \
+    --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG" \
+    --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" \
+    /dev/null > "$log" 2>&1
+  local rc=$?
+  awk '/::: SOURCE5_REPORT_BEGIN/{f=1;next}/::: SOURCE5_REPORT_END/{f=0}f' "$log" \
+    | sed -E 's/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9:]+ //' | tr -d '\r' | base64 -d > "$OUT_DIR/stage-$stage.json" 2>/dev/null || true
+  echo "$rc" > "$OUT_DIR/stage-$stage.rc"
+  echo "   stage $stage: acr rc=$rc"
+}
+echo "== stages: $STAGES"
+for stage in $STAGES; do
+  while [ "$(jobs -rp | wc -l | tr -d ' ')" -ge "$MAX_PARALLEL" ]; do sleep 5; done
+  run_stage "$stage" &
+done
+wait
 
-awk '/::: SOURCE5_REPORT_BEGIN/{f=1;next}/::: SOURCE5_REPORT_END/{f=0}f' "$OUT_DIR/acr-run.log" \
-  | sed -E 's/^[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9:]+ //' | tr -d '\r' | base64 -d > "$OUT_DIR/report.raw.json" 2>/dev/null || true
-COMMIT="$COMMIT" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" RUN_RC="$RUN_RC" OUT="$OUT_DIR" node -e '
+COMMIT="$COMMIT" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" OUT="$OUT_DIR" STAGES="$STAGES" node -e '
   const fs = require("fs");
-  let r = null; try { r = JSON.parse(fs.readFileSync(process.env.OUT + "/report.raw.json", "utf8")); } catch {}
-  const report = { ...(r || { schema: "aura3d.source5-report/1", commands: [], passed: [], failed: ["report-missing"] }),
+  const out = process.env.OUT;
+  const stages = process.env.STAGES.split(/\s+/).filter(Boolean);
+  const commands = [], problems = [], plans = {};
+  for (const s of stages) {
+    let r = null; try { r = JSON.parse(fs.readFileSync(`${out}/stage-${s}.json`, "utf8")); } catch {}
+    const rc = Number(fs.readFileSync(`${out}/stage-${s}.rc`, "utf8"));
+    if (!r) { problems.push(`stage ${s}: report missing (acr rc=${rc})`); continue; }
+    for (const c of r.commands) commands.push({ stage: s, ...c });
+    if (r.candidatePlan) plans[s] = r.candidatePlan;
+    if (r.generatedApiReference) fs.writeFileSync(`${out}/public-api.generated.md`, r.generatedApiReference.text);
+  }
+  const digestsOf = (p) => JSON.stringify((p.packages || p.archives || p.entries || []).map((e) => [e.name, e.version, e.sha256 || e.integrity || e.digest]));
+  const planStages = Object.keys(plans);
+  if (planStages.length > 1 && new Set(planStages.map((s) => digestsOf(plans[s]))).size !== 1)
+    problems.push(`candidate archive digests differ between ${planStages.join(", ")}`);
+  const report = {
+    schema: "aura3d.source5-report/2",
     candidate: { commit: process.env.COMMIT, sourceManifestSha256: process.env.MANIFEST_SHA, lockfileSha256: process.env.LOCK_SHA },
-    acrRunExitCode: Number(process.env.RUN_RC) };
-  fs.writeFileSync(process.env.OUT + "/source-report.json", JSON.stringify(report, null, 2) + "\n");
-  for (const c of report.commands) console.log(`${c.exitCode === 0 ? "PASS" : "FAIL"} ${c.id} (${c.seconds}s)`);
-  console.log(`passed ${report.passed.length}, failed ${report.failed.length}`);
+    stages, commands,
+    passed: commands.filter((c) => c.exitCode === 0).map((c) => c.id),
+    failed: commands.filter((c) => c.exitCode !== 0).map((c) => c.id),
+    problems,
+    candidatePlan: plans["packed-a"] || plans["packed-b"] || null,
+    browserAcceptance: "not-run"
+  };
+  fs.writeFileSync(`${out}/source-report.json`, JSON.stringify(report, null, 2) + "\n");
+  for (const c of commands) console.log(`${c.exitCode === 0 ? "PASS" : "FAIL"} ${c.id} (${c.seconds}s)`);
+  for (const p of problems) console.log(`PROBLEM ${p}`);
+  console.log(`passed ${report.passed.length}, failed ${report.failed.length}, problems ${problems.length}`);
 '
-rm -f "$OUT_DIR/report.raw.json"
 echo "   report: $OUT_DIR/source-report.json"

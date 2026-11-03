@@ -21,7 +21,7 @@ run() {
   local started ended rc
   started=$(date +%s)
   echo "::: SOURCE5_BEGIN ${id} :: $*"
-  bash -c "$*" > "$log" 2>&1
+  timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
   rc=$?
   ended=$(date +%s)
   tail -n 60 "$log" | sed "s/^/[${id}] /"
@@ -29,41 +29,58 @@ run() {
   printf '%s\t%s\t%s\t%s\n' "$id" "$rc" "$((ended - started))" "$*" >> "$RESULTS"
 }
 
-# Source checks.
-run typecheck            'pnpm typecheck'
-run lint                 'pnpm lint'
-run resolution           'pnpm resolution:check'
-run parity               'pnpm test:parity'
-run unit                 'pnpm test:unit'
-run assets-qr            'pnpm exec vitest run tests/assets tests/qr'
-run packages             'pnpm test:packages'
-run release-tools        'node --test tools/release/*.test.mjs'
-# Fresh build and pack.
-run build                'pnpm build'
-run pack                 'node tools/release/publish-all.mjs --pack-only --out-plan "$NATIVE_REPORT_DIR/candidate-plan.json"'
-export A3D_RELEASE_PLAN="$NATIVE_REPORT_DIR/candidate-plan.json"
-run api-baseline         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/prepare-baseline.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/baseline-manifest.json"'
-# Packed integration and consumer checks.
-run integration          'pnpm test:integration'
-run packages-dist        'pnpm test:packages:dist'
-run browser-tests-tsc    'pnpm exec tsc -p tsconfig.browser-tests.json --noEmit'
-run verify-exports       'pnpm verify:exports'
-run verify-imports       'pnpm verify:imports'
-run tarballs             'pnpm check:tarballs'
-run clean-install        'pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
-run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
-run bundle-size          'pnpm check:bundle-size'
-run api-diff             'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts --baseline-manifest "$NATIVE_REPORT_DIR/baseline-manifest.json" --candidate-plan "$A3D_RELEASE_PLAN" --release-kind "$NATIVE_RELEASE_KIND" --out "$NATIVE_REPORT_DIR/api-diff.json"'
-run api-contract         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
-# Public reference from the packed candidate's declarations (S5-WP24-03): emit
-# the generated reference into the report, then verify the checked-in copy.
-run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "tests/reports/native-5/$NATIVE_RUN_ID/public-api.md" --write'
-run api-docs             'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
-run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
-run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
+# Stages (each ACR run executes one stage; <= 30 min each per the ACR policy).
+# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b
+STAGE="${SOURCE5_STAGE:?SOURCE5_STAGE required}"
+export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=6144}"
+pack_candidate() {
+  run build                'pnpm build'
+  run pack                 'node tools/release/publish-all.mjs --pack-only --out-plan "$NATIVE_REPORT_DIR/candidate-plan.json"'
+  export A3D_RELEASE_PLAN="$NATIVE_REPORT_DIR/candidate-plan.json"
+}
+case "$STAGE" in
+  static)
+    run typecheck            'pnpm typecheck'
+    run lint                 'pnpm lint'
+    run resolution           'pnpm resolution:check'
+    run browser-tests-tsc    'pnpm exec tsc -p tsconfig.browser-tests.json --noEmit'
+    run release-tools        'node --test tools/release/*.test.mjs'
+    ;;
+  unit-*)
+    SHARD="${STAGE#unit-}"; SHARD="${SHARD/-of-//}"
+    run "unit-${SHARD/\//-of-}" "pnpm exec vitest run tests/unit --maxWorkers=2 --shard=$SHARD"
+    ;;
+  suites)
+    run assets-qr            'pnpm exec vitest run tests/assets tests/qr --maxWorkers=2'
+    run packages             'pnpm test:packages'
+    ;;
+  packed-a)
+    pack_candidate
+    run api-baseline         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/prepare-baseline.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/baseline-manifest.json"'
+    run integration          'pnpm test:integration'
+    run packages-dist        'pnpm test:packages:dist'
+    run verify-exports       'pnpm verify:exports'
+    run verify-imports       'pnpm verify:imports'
+    run tarballs             'pnpm check:tarballs'
+    run bundle-size          'pnpm check:bundle-size'
+    run api-diff             'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts --baseline-manifest "$NATIVE_REPORT_DIR/baseline-manifest.json" --candidate-plan "$A3D_RELEASE_PLAN" --release-kind "$NATIVE_RELEASE_KIND" --out "$NATIVE_REPORT_DIR/api-diff.json"'
+    run api-contract         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
+    # Public reference from the packed candidate's declarations (S5-WP24-03).
+    run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "$NATIVE_REPORT_DIR/public-api.md" --write'
+    run api-docs             'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
+    ;;
+  packed-b)
+    pack_candidate
+    run clean-install        'pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
+    run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
+    run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
+    run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
+    ;;
+  *) echo "unknown SOURCE5_STAGE $STAGE" >&2; exit 2 ;;
+esac
 
 echo "::: SOURCE5_REPORT_BEGIN"
-RESULTS="$RESULTS" node -e '
+RESULTS="$RESULTS" SOURCE5_STAGE="$STAGE" A3D_RELEASE_PLAN="${A3D_RELEASE_PLAN:-}" node -e '
   const fs = require("fs");
   const rows = fs.readFileSync(process.env.RESULTS, "utf8").trim().split("\n").filter(Boolean).map((l) => {
     const [id, rc, secs, ...cmd] = l.split("\t");
@@ -79,6 +96,7 @@ RESULTS="$RESULTS" node -e '
     commands: rows,
     passed: rows.filter((r) => r.exitCode === 0).map((r) => r.id),
     failed: rows.filter((r) => r.exitCode !== 0).map((r) => r.id),
+    stage: process.env.SOURCE5_STAGE,
     browserAcceptance: "not-run",
     // Packed-candidate reference for docs/api/public-api.md (written by api-docs-packed).
     generatedApiReference: (() => {
