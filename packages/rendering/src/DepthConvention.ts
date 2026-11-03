@@ -27,16 +27,98 @@ export interface DepthConvention {
   /**
    * Honest precision report for the negotiated pipeline. "reduced" means the
    * mode is rendered correctly but does not deliver its full precision gain
-   * (for example reversed Z through a minus-one-to-one clip remap into a
-   * fixed-point depth attachment). Absent for conventions built elsewhere.
+   * (for example reversed Z through a minus-one-to-one clip remap or into a
+   * fixed-point depth attachment). "full" means reversed Z is rasterized from
+   * a zero-to-one projection into a floating-point depth attachment. Absent
+   * for conventions built elsewhere.
    */
   readonly precision?: DepthPrecision;
   readonly precisionReason?: string;
+  /** Storage class of the depth attachment the frame rasterizes into, when known. */
+  readonly depthStorage?: DepthStorage;
   /** Camera near/far for a logarithmic frame; generated programs encode against it. */
   readonly logRange?: DepthDistanceRange & { readonly kind?: "perspective" | "orthographic" };
 }
 
-export type DepthPrecision = "standard" | "reduced" | "extended";
+export type DepthPrecision = "standard" | "reduced" | "full" | "extended";
+
+/** Fixed-point (24-bit) or floating-point (32-bit) depth attachment storage. */
+export type DepthStorage = "fixed" | "float";
+
+/**
+ * What a device can deliver for reversed-Z precision. The renderer may only
+ * rasterize a zero-to-one projection when `zeroToOneReversed` is true; the
+ * depth attachment must also be floating point for reversed Z to be "full".
+ */
+export interface DepthPrecisionSupport {
+  /** Clip range of a standard frame (and of shadow/probe/mirror passes). */
+  readonly standardClipRange: DepthClipRange;
+  /** Reversed frames can rasterize a native zero-to-one projection without a clip-space remap. */
+  readonly zeroToOneReversed: boolean;
+  /** "float" render-target descriptors allocate floating-point depth. */
+  readonly floatDepth: boolean;
+  /** Floating-point depth is also available together with a stencil aspect. */
+  readonly floatDepthStencil: boolean;
+}
+
+/**
+ * Classify the precision a frame actually delivers. Reversed Z gains its
+ * floating-point precision only when both the projection is evaluated in a
+ * zero-to-one clip range (no (z + w) / 2 cancellation) and the attachment
+ * stores floats; anything less is correct ordering at "reduced" precision.
+ */
+export function classifyDepthPrecision(
+  mode: DepthMode,
+  pipeline: { readonly zeroToOneProjection: boolean; readonly depthStorage: DepthStorage; readonly reason?: string }
+): { readonly precision: DepthPrecision; readonly precisionReason?: string } {
+  if (mode === "standard") return { precision: "standard" };
+  if (mode === "logarithmic") {
+    return { precision: "extended", precisionReason: "logarithmic fragment depth distributes precision by relative distance and disables early depth testing for those draws" };
+  }
+  if (pipeline.zeroToOneProjection && pipeline.depthStorage === "float") {
+    return { precision: "full", precisionReason: "reversed depth is rasterized from a zero-to-one projection into a floating-point depth attachment" };
+  }
+  const missing = [
+    ...(pipeline.zeroToOneProjection ? [] : ["the projection is evaluated in a minus-one-to-one clip range"]),
+    ...(pipeline.depthStorage === "float" ? [] : ["the depth attachment is fixed point"])
+  ].join(" and ");
+  return { precision: "reduced", precisionReason: `reversed depth ordering is correct but ${missing}${pipeline.reason ? ` (${pipeline.reason})` : ""}` };
+}
+
+/**
+ * Re-express a reversed minus-one-to-one projection (near -> +1, far -> -1)
+ * as the matching zero-to-one reversed projection (near -> 1, far -> 0).
+ * Window depth is identical in both encodings (1 - standard window depth);
+ * only the arithmetic differs, which is where reversed-Z precision is won.
+ * The depth row is rebuilt exactly from near/far when the projection is a
+ * plain perspective or orthographic one; other matrices use (row2 + row3) / 2.
+ */
+export function zeroToOneReversedProjection(
+  projection: ArrayLike<number>,
+  metadata?: { readonly kind?: "perspective" | "orthographic" | "custom"; readonly near?: number; readonly far?: number }
+): Float32Array {
+  validateMatrix(projection);
+  const m = Array.from(projection);
+  const near = metadata?.near, far = metadata?.far;
+  const finiteRange = near !== undefined && far !== undefined && Number.isFinite(near) && Number.isFinite(far) && far > near;
+  // Column-major: row 2 is m[2], m[6], m[10], m[14]; row 3 is m[3], m[7], m[11], m[15].
+  const plainDepthRow = m[2] === 0 && m[6] === 0;
+  // The exact rebuild must describe the same matrix: f32 coefficients of a
+  // reversed minus-one-to-one depth row for this near/far.
+  const close = (actual: number, expected: number): boolean => Math.abs(actual - expected) <= Math.max(1e-6, Math.abs(expected) * 1e-5);
+  if (metadata?.kind === "perspective" && finiteRange && near! > 0 && plainDepthRow && m[3] === 0 && m[7] === 0 && m[11] === -1 && m[15] === 0
+    && close(m[10]!, (far! + near!) / (far! - near!)) && close(m[14]!, 2 * far! * near! / (far! - near!))) {
+    m[10] = near! / (far! - near!);
+    m[14] = far! * near! / (far! - near!);
+  } else if (metadata?.kind === "orthographic" && finiteRange && plainDepthRow && m[3] === 0 && m[7] === 0 && m[11] === 0 && m[15] === 1
+    && close(m[10]!, 2 / (far! - near!)) && close(m[14]!, (far! + near!) / (far! - near!))) {
+    m[10] = 1 / (far! - near!);
+    m[14] = far! / (far! - near!);
+  } else {
+    for (const column of [0, 1, 2, 3]) m[column * 4 + 2] = (m[column * 4 + 2]! + m[column * 4 + 3]!) / 2;
+  }
+  return Float32Array.from(m);
+}
 
 /**
  * Negotiate for the complete pipeline, not just the device's ability to change

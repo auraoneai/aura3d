@@ -36,6 +36,9 @@ export function createRendererDiagnosticReport(
   let depth: AuraRendererDiagnosticReport["depth"];
   if (runtime?.mounted && runtime.backend === "production-runtime") {
     try { depth = resolveProductionCameraDepth(snapshot.camera).depthConvention; } catch { /* preflight reports the unsupported request */ }
+    // The renderer's live frame convention carries the device-negotiated clip
+    // range, depth storage and precision for the same requested mode.
+    if (depth && runtime.depth && runtime.depth.mode === depth.mode) depth = Object.freeze({ ...depth, ...runtime.depth, requestedMode: depth.requestedMode });
   }
   const names = flattened.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
   const rendererSelection = normalizeCreateAppRendererOptions(rendererOptions);

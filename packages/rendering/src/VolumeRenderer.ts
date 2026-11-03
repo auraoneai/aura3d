@@ -1,4 +1,5 @@
 import type { RenderDevice } from "./RenderDevice";
+import type { DepthClipRange, DepthConvention, DepthMode } from "./DepthConvention";
 import { webgl2DeviceHost } from "./webgl2/Counters";
 import type { WebGL2DeviceHost } from "./webgl2/DeviceHost";
 import { reserveTextureBudget } from "./textures/TextureBudget";
@@ -39,8 +40,22 @@ export type VolumeRenderMode =
   | { readonly type: "raymarch" }
   | { readonly type: "slice"; readonly axis: "x" | "y" | "z"; readonly position: number };
 
+/**
+ * Frame depth convention the volume composites into. Reversed frames may use a
+ * zero-to-one projection (WebGL2 clip control); logarithmic frames need the
+ * camera near/far and projection kind used by the frame's programs.
+ */
+export interface VolumeDepthConvention {
+  readonly mode: DepthMode;
+  readonly clipRange: DepthClipRange;
+  readonly logRange?: { readonly near: number; readonly far: number; readonly kind?: "perspective" | "orthographic" };
+}
+
 export interface VolumeDrawOptions {
-  /** World-to-clip transform, column-major, using WebGL's [-1, 1] clip depth. */
+  /**
+   * World-to-clip transform, column-major, in the frame depth convention's
+   * clip range (WebGL's [-1, 1] unless a reversed frame uses zero-to-one).
+   */
   readonly viewProjectionMatrix: ArrayLike<number>;
   /** Maps the local unit cube to world space, column-major. Defaults to identity. */
   readonly modelMatrix?: ArrayLike<number>;
@@ -52,6 +67,34 @@ export interface VolumeDrawOptions {
    */
   readonly sceneDepth?: WebGLTexture | null;
   readonly mode?: VolumeRenderMode;
+  /**
+   * Depth convention of the active frame. Defaults to the owning device's
+   * active convention, or standard depth for a context-only renderer. The
+   * entry ray, opaque-depth clip, depth test and fragment depth all follow it.
+   */
+  readonly depth?: VolumeDepthConvention;
+}
+
+interface ResolvedVolumeDepth {
+  readonly mode: 0 | 1 | 2;
+  readonly zeroToOne: boolean;
+  readonly logRange: readonly [number, number];
+  readonly orthographic: boolean;
+}
+
+function resolveVolumeDepth(depth: VolumeDepthConvention | DepthConvention | undefined): ResolvedVolumeDepth {
+  const mode = depth?.mode ?? "standard";
+  const clipRange = depth?.clipRange ?? "minus-one-to-one";
+  if (mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") throw new RangeError("VolumeRenderer: unsupported depth mode.");
+  if (clipRange !== "minus-one-to-one" && !(clipRange === "zero-to-one" && mode === "reversed")) {
+    throw new RangeError("VolumeRenderer: only reversed depth may use a zero-to-one clip range.");
+  }
+  if (mode !== "logarithmic") return { mode: mode === "reversed" ? 1 : 0, zeroToOne: clipRange === "zero-to-one", logRange: [1, 2], orthographic: false };
+  const range = depth?.logRange;
+  if (!range || !(range.near > 0) || !Number.isFinite(range.far) || !(range.far > range.near) || (range.kind !== "perspective" && range.kind !== "orthographic")) {
+    throw new RangeError("VolumeRenderer: logarithmic depth requires finite 0 < near < far and the projection kind.");
+  }
+  return { mode: 2, zeroToOne: false, logRange: [range.near, range.far], orthographic: range.kind === "orthographic" };
 }
 
 export interface VolumeRendererDiagnostics {
@@ -112,7 +155,8 @@ interface DeferredProgramResources {
  * copy. All touched GL state is restored, including texture units and samplers.
  * It recreates its resources after context restoration and must be disposed by
  * the owner. Creation and texture updates consume and report an existing WebGL
- * error before making changes. WebGPU and reversed-depth are not supported here.
+ * error before making changes. WebGPU is not supported here; standard,
+ * reversed (either clip range) and logarithmic frame depth are.
  */
 export class VolumeRenderer {
   private readonly gl: WebGL2RenderingContext;
@@ -358,6 +402,7 @@ export class VolumeRenderer {
     const inverse = invertMatrix(mvp);
     const mode = options.mode ?? { type: "raymarch" };
     if (mode.type !== "raymarch" && mode.type !== "slice") throw new RangeError("VolumeRenderer: invalid render mode.");
+    const depth = resolveVolumeDepth(options.depth ?? this.device?.getDepthConvention?.());
     let axis = 0;
     let position = 0;
     if (mode.type === "slice") {
@@ -394,7 +439,8 @@ export class VolumeRenderer {
         gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
         gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
+        // Reversed depth stores nearer surfaces as larger values.
+        gl.depthFunc(depth.mode === 1 ? gl.GEQUAL : gl.LEQUAL);
         gl.depthMask(false);
         gl.disable(gl.CULL_FACE);
         gl.colorMask(true, true, true, true);
@@ -417,6 +463,10 @@ export class VolumeRenderer {
         gl.uniform4fv(location("u_planes[0]"), packedPlanes);
         gl.uniform1i(location("u_sliceAxis"), mode.type === "slice" ? axis : -1);
         gl.uniform1f(location("u_slicePosition"), position);
+        gl.uniform1i(location("u_depthMode"), depth.mode);
+        gl.uniform1i(location("u_clipZeroToOne"), depth.zeroToOne ? 1 : 0);
+        gl.uniform2fv(location("u_logRange"), new Float32Array(depth.logRange));
+        gl.uniform1i(location("u_logOrthographic"), depth.orthographic ? 1 : 0);
         if (this.host) {
           this.assertUpdateCurrent(r, generation);
           if (revision !== this.stateRevision) throw new Error("VolumeRenderer: state changed during draw.");
@@ -1231,6 +1281,23 @@ uniform int u_planeCount;
 uniform vec4 u_planes[8];
 uniform int u_sliceAxis;
 uniform float u_slicePosition;
+uniform int u_depthMode; // 0 standard, 1 reversed, 2 logarithmic
+uniform int u_clipZeroToOne;
+uniform vec2 u_logRange;
+uniform int u_logOrthographic;
+
+// Logarithmic frames store ln(d / near) / ln(far / near); convert to and from
+// the standard window depth of the frame's (minus-one-to-one) projection.
+float logToStandardWindow(float stored) {
+  float n = u_logRange.x; float f = u_logRange.y;
+  float d = n * exp(stored * log(f / n));
+  return u_logOrthographic != 0 ? (d - n) / (f - n) : f * (d - n) / (d * (f - n));
+}
+float standardWindowToLog(float window) {
+  float n = u_logRange.x; float f = u_logRange.y;
+  float d = u_logOrthographic != 0 ? n + window * (f - n) : f * n / max(f - window * (f - n), 1e-30);
+  return clamp(log(max(d, n) / n) / log(f / n), 0.0, 1.0);
+}
 
 bool allowed(vec3 p) {
   for (int i = 0; i < 8; ++i) {
@@ -1277,8 +1344,13 @@ vec4 colorAt(vec3 p) {
   return texture(u_transfer, vec2((value * 255.0 + 0.5) / 256.0, 0.5));
 }
 void main() {
-  vec4 nearH = u_inverseMvp * vec4(v_ndc, -1.0, 1.0);
-  vec4 middleH = u_inverseMvp * vec4(v_ndc, 0.0, 1.0);
+  // Near/far clip depth of the frame convention: reversed frames put the near
+  // plane at +1 (or 1 in a zero-to-one clip range).
+  float lowZ = u_clipZeroToOne != 0 ? 0.0 : -1.0;
+  float nearZ = u_depthMode == 1 ? 1.0 : lowZ;
+  float farZ = u_depthMode == 1 ? lowZ : 1.0;
+  vec4 nearH = u_inverseMvp * vec4(v_ndc, nearZ, 1.0);
+  vec4 middleH = u_inverseMvp * vec4(v_ndc, (nearZ + farZ) * 0.5, 1.0);
   if (nearH.w == 0.0 || middleH.w == 0.0) discard;
   vec3 origin = nearH.xyz / nearH.w;
   vec3 delta = middleH.xyz / middleH.w - origin;
@@ -1288,18 +1360,22 @@ void main() {
   vec3 direction = normalize(delta / largest);
   float first, last;
   if (!intersects(origin, direction, first, last)) discard;
-  float ndcLimit = 1.0;
+  float ndcLimit = farZ;
   if (u_hasDepth != 0) {
-    float depth = texelFetch(u_depth, ivec2(gl_FragCoord.xy), 0).r;
-    ndcLimit = clamp((depth - u_depthRange.x) / (u_depthRange.y - u_depthRange.x) * 2.0 - 1.0, -1.0, 1.0);
+    float stored = texelFetch(u_depth, ivec2(gl_FragCoord.xy), 0).r;
+    float window = u_depthMode == 2 ? logToStandardWindow(stored)
+      : clamp((stored - u_depthRange.x) / (u_depthRange.y - u_depthRange.x), 0.0, 1.0);
+    ndcLimit = u_clipZeroToOne != 0 ? window : window * 2.0 - 1.0;
   }
-  // z <= ndcLimit * w clips against copied opaque depth or, for clear/no
-  // depth, the true far plane without unprojecting an infinite endpoint.
+  // Samples in front of the limit satisfy z <= ndcLimit * w (standard) or
+  // z >= ndcLimit * w (reversed). This clips against copied opaque depth or,
+  // for clear/no depth, the true far plane without unprojecting an infinite endpoint.
+  float side = u_depthMode == 1 ? -1.0 : 1.0;
   vec4 clipOrigin = u_mvp * vec4(origin, 1.0);
   vec4 clipDirection = u_mvp * vec4(direction, 0.0);
   if (!all(lessThanEqual(abs(clipOrigin), vec4(3e38))) || !all(lessThanEqual(abs(clipDirection), vec4(3e38)))) discard;
-  float planeOrigin = ndcLimit * clipOrigin.w - clipOrigin.z;
-  float planeSlope = ndcLimit * clipDirection.w - clipDirection.z;
+  float planeOrigin = side * (ndcLimit * clipOrigin.w - clipOrigin.z);
+  float planeSlope = side * (ndcLimit * clipDirection.w - clipDirection.z);
   if (planeSlope < 0.0) last = min(last, -planeOrigin / planeSlope);
   else if (planeSlope > 0.0) first = max(first, -planeOrigin / planeSlope);
   else if (planeOrigin < 0.0) discard;
@@ -1334,7 +1410,10 @@ void main() {
   }
   if (hit < 0.0 || result.a <= 0.0) discard;
   vec4 clip = u_mvp * vec4(origin + direction * hit, 1.0);
-  float ndcDepth = clip.z / clip.w * 0.5 + 0.5;
-  gl_FragDepth = clamp(mix(u_depthRange.x, u_depthRange.y, ndcDepth), 0.0, 1.0);
+  float ndcDepth = u_clipZeroToOne != 0 ? clip.z / clip.w : clip.z / clip.w * 0.5 + 0.5;
+  // Logarithmic programs write their encoded depth directly; others map the
+  // clip depth through the active depth range.
+  gl_FragDepth = u_depthMode == 2 ? standardWindowToLog(clamp(ndcDepth, 0.0, 1.0))
+    : clamp(mix(u_depthRange.x, u_depthRange.y, ndcDepth), 0.0, 1.0);
   outColor = result;
 }`;

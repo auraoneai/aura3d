@@ -1371,7 +1371,11 @@ export interface AuraBackendSelectionDiagnostics {
 export interface AuraRendererDiagnosticReport {
   readonly kind: "aura-renderer-diagnostics";
   readonly backendSelection?: AuraBackendSelectionDiagnostics;
-  /** Negotiated production root-camera depth; this is not pixel-backed evidence. */
+  /**
+   * Negotiated production root-camera depth; this is not pixel-backed
+   * evidence. A mounted runtime reports the renderer's active frame convention
+   * (including the device-negotiated reversed-Z `precision`).
+   */
   readonly depth?: import("@aura3d/rendering").DepthConvention;
   readonly colorManagement: AuraRendererColorManagementPreset;
   readonly rendererMode: "safe-basic" | "production";
@@ -1689,14 +1693,14 @@ export interface AuraCameraSpec {
    * - "standard" (default): near = 0, far = 1, compare less-equal.
    * - "reversed": near = 1, far = 0, clear 0, compare greater-equal. Material
    *   depth compares stay authored in standard terms and are flipped by the
-   *   renderer. Precision is reported as "reduced": the portable path keeps a
-   *   minus-one-to-one clip range and a 24-bit depth attachment.
+   *   renderer. Precision "full" when the device rasterizes a zero-to-one
+   *   reversed projection into float depth (WebGL2 with EXT_clip_control and
+   *   renderer-owned scene targets); otherwise "reduced" (no EXT_clip_control,
+   *   WebGPU's in-shader clip remap, or a fixed-point canvas attachment).
    * - "logarithmic": generated programs write ln(d / near) / ln(far / near)
-   *   as fragment depth (WebGL2 only; disables early depth testing; WebGPU
-   *   fails with DEPTH_MODE_UNSUPPORTED). Requires finite 0 < near < far.
-   * All modes require a finite far. `allowFallback` is validated and
-   * retained, but the renderer does not yet downgrade a WebGPU logarithmic
-   * frame to standard depth; it fails precisely instead.
+   *   as fragment depth on WebGL2 and WebGPU (disables early depth testing).
+   *   Requires finite 0 < near < far.
+   * All modes require a finite far. `allowFallback` is validated and retained.
    */
   readonly depth?: { readonly mode?: "standard" | "reversed" | "logarithmic"; readonly allowFallback?: boolean };
   /** Positive near clipping distance in world units; defaults to 0.05. */
@@ -1768,6 +1772,8 @@ export interface AuraRendererRuntimeObservation {
   readonly backend: "scene-plan" | "webgl2-agent-runtime" | "production-runtime";
   /** Active canvas color space observed from this mounted device, not authored intent. */
   readonly outputColorSpace?: AuraRendererDiagnosticReport["outputColorSpace"];
+  /** The renderer's active frame depth convention (clip range, storage and precision). */
+  readonly depth?: import("@aura3d/rendering").DepthConvention;
   readonly postprocess: {
     readonly renderPass: boolean;
     readonly outputPass: boolean;

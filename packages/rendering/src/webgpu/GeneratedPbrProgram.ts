@@ -16,7 +16,7 @@ import { NATIVE_PROBE_WGSL } from "../shaders/advanced-lighting/native-probe.wgs
 import { NATIVE_VOXEL_WGSL } from "../shaders/advanced-lighting/native-voxel.wgsl";
 import { NATIVE_LIGHTMAP_WGSL } from "../shaders/advanced-lighting/native-lightmap.wgsl";
 import { PHOTOMETRIC_PROFILE_WGSL } from "../lighting/shaders/PhotometricProfile.wgsl";
-import { DEPTH_COVERAGE_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, depthCoverageUnsupportedReason } from "../program/ProgramFeatures";
+import { DEPTH_COVERAGE_FEATURE, PHOTOMETRIC_PROFILE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, depthCoverageUnsupportedReason } from "../program/ProgramFeatures";
 import { PHYSICAL_LIGHTING_WGSL } from "./PhysicalLighting.wgsl";
 import { PRD07_WETNESS_WGSL } from "../atmosphere/shaders/wetness.wgsl";
 import { isTextureBinding } from "../TextureBinding";
@@ -127,6 +127,8 @@ export interface GeneratedPbrProgram {
   readonly wetness: boolean;
   /** This program emits location 1; the device must validate paired depth writes. */
   readonly writesDepthCoverage: boolean;
+  /** Writes ln(d / near) / ln(far / near) as @builtin(frag_depth) (logarithmic frames). */
+  readonly logarithmicDepth: boolean;
   readonly jointKinds: readonly ("float" | "uint" | "sint" | null)[];
   /** Alpha 2..3 stores the indirect-radiance fraction for the AO post stage. */
   readonly requiresFloatColorAttachment: boolean;
@@ -194,7 +196,10 @@ const MATERIAL_FIELDS: readonly { readonly name: string; readonly type: ShaderDa
   { name: "photometricOffsets", type: { kind: "array", element: vec4, length: 16 }, wgsl: "array<vec4f, 16>" },
   { name: "photometricMeta", type: { kind: "array", element: vec4, length: 16 }, wgsl: "array<vec4f, 16>" },
   // PRD-07 wetness: (u_wetness, u_puddleThreshold, u_rainRipples, u_snowCover).
-  { name: "wetness", type: vec4, wgsl: "vec4f" }
+  { name: "wetness", type: vec4, wgsl: "vec4f" },
+  // Logarithmic frames: u_a3dLogDepthView and (near, far) from u_a3dLogDepthRange.
+  { name: "logDepthView", type: mat4, wgsl: "mat4x4f" },
+  { name: "logDepthRange", type: vec4, wgsl: "vec4f" }
 ];
 export const GENERATED_PBR_MATERIAL_LAYOUT = deriveShaderDataLayout({
   kind: "struct", fields: MATERIAL_FIELDS.map(({ name, type }) => ({ name, type }))
@@ -258,10 +263,10 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     if (!["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd04.tangentFrame", "prd04.transmissionTarget", "prd06.deform", "a3d.packedLoopColor", "prd07.wetness"].includes(item.id)) unsupported("activeFeatures", `contributor ${item.id}`);
     active.set(item.id, item.value);
   }
-  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", DEPTH_COVERAGE_FEATURE]);
+  const structural = new Set(["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "prd02.localProbe", "prd02.irradianceVolume", "prd04.tangentFrame", "prd04.geometryTangent", "prd04.transmissionTarget", "prd06.deform", "prd06.joint0Type", "prd06.joint1Type", "a3d.output.srgb", "a3d.clipping", "a3d.packedLoopColor", "a3d.independentPhysicalPreview", "a3d.nativeProbeGrid", "a3d.nativeVoxelIndirect", "a3d.nativeBakedLightmap", "a3d.nativeLightmapUv", "a3d.legacyPointShadow", "a3d.legacySpotShadow", "a3d.photometricProfile", "prd07.wetness", DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !structural.has(name)) unsupported(`features.${name}`, `feature ${name}`);
-    if ((name === "prd02.localProbe" || name === "prd02.irradianceVolume" || name === "prd04.geometryTangent" || name === "a3d.output.srgb" || name === "a3d.clipping" || name === "a3d.packedLoopColor" || name === "a3d.independentPhysicalPreview" || name === "a3d.photometricProfile") && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name} feature`);
+    if ((name === "prd02.localProbe" || name === "prd02.irradianceVolume" || name === "prd04.geometryTangent" || name === "a3d.output.srgb" || name === "a3d.clipping" || name === "a3d.packedLoopColor" || name === "a3d.independentPhysicalPreview" || name === "a3d.photometricProfile" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name} feature`);
   }
   if (f.features[PHOTOMETRIC_PROFILE_FEATURE] !== undefined && f.features[PHOTOMETRIC_PROFILE_FEATURE] !== true) {
     unsupported("features.a3d.photometricProfile", "an invalid photometric profile feature");
@@ -415,6 +420,7 @@ function validateDescriptor(descriptor: GeneratedPbrDescriptor): { baseMap: bool
     DOUBLE_SIDED: f.doubleSided, SPECULAR_AA: f.specularAntialiasing, SHADOW_CONTACT: f.shadows.contact,
     FOG_LINEAR: f.fog === "linear", FOG_EXP2: f.fog === "exp2" || f.fog === "height", FOG_HEIGHT: f.fog === "height", A3D_CLIPPING: f.features["a3d.clipping"] === true,
     A3D_PHOTOMETRIC_PROFILE: photometric, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_WETNESS: wetness,
+    A3D_LOG_DEPTH: f.features[PROGRAM_LOG_DEPTH_FEATURE] === true,
     A3D_LEGACY_POINT_SHADOW: pointShadow, A3D_LEGACY_SPOT_SHADOW: spotShadow,
     ALPHA_MASK: f.alphaMode === "mask", ALPHA_BLEND: f.alphaMode === "blend",
     LIGHT_HEMISPHERE: procedural, LIGHTS_CLUSTERED: f.lights.clustered, A3D_ENV_SAMPLE: f.environment !== "none", ENVMAP_TYPE_CUBE_UV: f.environment === "pmrem-cube", ENVMAP_TYPE_EQUIRECT: f.environment === "equirect",
@@ -837,6 +843,18 @@ const OUTPUT_WGSL = `fn generatedEncodeOutput(linear: vec3f) -> vec3f {
   return select(display * 12.92, 1.055 * pow(display, vec3f(1.0 / 2.4)) - vec3f(0.055), display >= vec3f(0.0031308));
 }`;
 
+/**
+ * Logarithmic fragment depth, identical to the WebGL2 generated programs:
+ * clamp(ln(max(d, near) / near) / ln(far / near), 0, 1), with d the forward
+ * view distance of the interpolated world position (bound per draw from the
+ * frame's u_a3dLogDepthView and u_a3dLogDepthRange).
+ */
+const LOG_DEPTH_WGSL = `fn generatedLogFragmentDepth(world: vec3f) -> f32 {
+  let distance = -(material.logDepthView * vec4f(world, 1.0)).z;
+  let range = material.logDepthRange.xy;
+  return clamp(log(max(distance, range.x) / range.x) / log(range.y / range.x), 0.0, 1.0);
+}`;
+
 /** Compose a validated, feature-specific WGSL program and exact binding manifest. */
 export function createGeneratedPbrProgram(descriptor: GeneratedPbrDescriptor): GeneratedPbrProgram {
   const f = descriptor.features;
@@ -845,6 +863,7 @@ export function createGeneratedPbrProgram(descriptor: GeneratedPbrDescriptor): G
   const packedLoopColor = f.features["a3d.packedLoopColor"] === true;
   const photometricProfile = f.features[PHOTOMETRIC_PROFILE_FEATURE] === true;
   const writesDepthCoverage = f.features[DEPTH_COVERAGE_FEATURE] === true;
+  const logDepth = f.features[PROGRAM_LOG_DEPTH_FEATURE] === true;
   const physicalDirect = packedLoopColor ? "a3dPackedPhysicalDirect" : "a3dPhysicalDirect";
   const physicalIndirect = packedLoopColor ? "a3dPackedPhysicalIndirect" : "a3dPhysicalIndirect";
   const packedArgument = packedLoopColor ? ", material.packedLoopColor.rgb" : "";
@@ -1055,11 +1074,13 @@ ${mode.transmission ? TRANSMISSION_WGSL : ""}
 ${mode.sampled !== "none" ? sampledEnvironmentWgsl(mode.sampled) : ""}
 ${lobeRadiance}
 ${clipping ? CLIPPING_WGSL : ""}
+${logDepth ? LOG_DEPTH_WGSL : ""}
 ${mode.uv0 || mode.uv1 ? MAP_UV_WGSL : ""}
 ${mode.outputSrgb ? OUTPUT_WGSL : ""}
 struct FragmentInput { @builtin(position) position: vec4f, @location(0) worldPosition: vec3f, @location(1) normal: vec3f, ${mode.uv0 ? "@location(2) uv: vec2f," : ""} ${mode.uv1 ? "@location(3) uv1: vec2f," : ""} ${mode.anisotropy ? "@location(4) tangent: vec4f," : ""} ${f.instancing?.color ? "@location(5) instanceColor: vec4f," : ""} ${instanceVolumeVaryings} ${f.vertexColors ? "@location(9) color: vec4f," : ""} ${clipping ? "@location(10) clipLocal: vec3f," : ""} };
 ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) color: vec4f, @location(1) depthCoverage: vec4f, };" : ""}
-@fragment fn fs_main(input: FragmentInput, @builtin(front_facing) frontFacing: bool) -> ${writesDepthCoverage ? "GeneratedDepthCoverageOutput" : "@location(0) vec4f"} {
+${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location(0) color: vec4f, @builtin(frag_depth) depth: f32, };" : ""}
+@fragment fn fs_main(input: FragmentInput, @builtin(front_facing) frontFacing: bool) -> ${writesDepthCoverage ? "GeneratedDepthCoverageOutput" : logDepth ? "GeneratedLogDepthOutput" : "@location(0) vec4f"} {
   let interpolatedNormal = ${f.flatShading ? "normalize(cross(dpdy(input.worldPosition), dpdx(input.worldPosition)))" : "normalize(input.normal)"};
   let geometryNormal = ${normal};
   var n = geometryNormal;
@@ -1426,7 +1447,11 @@ ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) colo
   let color = mix(unfoggedColor, material.fogColor.rgb, fogAmount);` : ""}
   ${fraction ? "let luma = vec3f(0.2126, 0.7152, 0.0722); let alpha = 2.0 + clamp(dot(indirectDiffuse + indirectSpecular, luma) / max(dot(color, luma), 0.0001), 0.0, 1.0);" : `let alpha = ${f.alphaMode === "blend" ? "base.a" : "1.0"};`}
   ${clipping ? "if (!generatedClipRetains(input.worldPosition, input.clipLocal)) { discard; }" : ""}
-  ${writesDepthCoverage ? "return GeneratedDepthCoverageOutput(vec4f(color, alpha), vec4f(1.0, 0.0, 0.0, 0.0));" : `return vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "color"}, alpha);`}
+  ${writesDepthCoverage
+    ? `return GeneratedDepthCoverageOutput(vec4f(color, alpha), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
+    : logDepth
+      ? `return GeneratedLogDepthOutput(vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "color"}, alpha), generatedLogFragmentDepth(input.worldPosition));`
+      : `return vec4f(${mode.outputSrgb ? "generatedEncodeOutput(color)" : "color"}, alpha);`}
 }`;
   return Object.freeze<GeneratedPbrProgram>({
     vertex, fragment, vertexEntryPoint: "vs_main", fragmentEntryPoint: "fs_main",
@@ -1438,7 +1463,7 @@ ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) colo
     morph: mode.morph, transmission: mode.transmission, transmissionMap: mode.lobeMaps.transmission !== undefined, contactShadow: f.shadows.contact,
     pointShadow, spotShadow,
     diffuseTransmission: mode.diffuseTransmission, diffuseTransmissionMap: mode.lobeMaps.diffuseTransmission !== undefined, diffuseTransmissionColorMap: mode.lobeMaps.diffuseTransmissionColor !== undefined,
-    fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, writesDepthCoverage, // validateDescriptor has rejected volumetric fog.
+    fog: f.fog as GeneratedPbrProgram["fog"], clipping, packedLoopColor, photometricProfile, wetness: mode.wetness, writesDepthCoverage, logarithmicDepth: logDepth, // validateDescriptor has rejected volumetric fog.
     materialVolume: mode.materialVolume, thicknessMap: mode.lobeMaps.volumeThickness !== undefined, dispersion: mode.dispersion, jointKinds: mode.jointKinds,
     requiresFloatColorAttachment: fraction
   });
@@ -1677,6 +1702,8 @@ export function packGeneratedPbrMaterialUniforms(uniforms: ReadonlyMap<string, U
     photometricOffsets: Array.from({ length: 16 }, (_, index) => photometric.offsets.slice(index * 4, index * 4 + 4)),
     photometricMeta: Array.from({ length: 16 }, (_, index) => photometric.meta.slice(index * 4, index * 4 + 4)),
     wetness: [scalar(uniforms, "u_wetness", 0), scalar(uniforms, "u_puddleThreshold", 0.62), scalar(uniforms, "u_rainRipples", 0), scalar(uniforms, "u_snowCover", 0)],
+    logDepthView: numbers(uniforms, "u_a3dLogDepthView", 16, IDENTITY),
+    logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0],
     lights: Array.from({ length: 96 }, (_, index) => lights.slice(index * 4, index * 4 + 4))
   });
 }

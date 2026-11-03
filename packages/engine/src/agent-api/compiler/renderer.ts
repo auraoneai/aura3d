@@ -1133,6 +1133,7 @@ export async function createProductionRuntimeSceneRenderer(
           mounted: true,
           backend: "production-runtime",
           outputColorSpace: deviceLost ? "unknown" : readActiveOutputColorSpace(productionRenderer.device, () => webGL2Context(canvas)),
+          ...(!deviceLost && productionRenderer.getDepthConvention?.() ? { depth: productionRenderer.getDepthConvention()! } : {}),
           postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
           shadow: {
             ...shadowObservation,

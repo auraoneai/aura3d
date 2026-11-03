@@ -15,7 +15,7 @@ function mockContext() {
     "TEXTURE_MIN_FILTER", "TEXTURE_MAG_FILTER", "CLAMP_TO_EDGE", "NEAREST", "LINEAR", "R32F", "RED", "FLOAT", "RGBA8", "RGBA", "UNSIGNED_BYTE", "R8",
     "VERTEX_SHADER", "FRAGMENT_SHADER", "COMPILE_STATUS", "LINK_STATUS", "CURRENT_PROGRAM", "VERTEX_ARRAY_BINDING", "BLEND", "DEPTH_TEST", "CULL_FACE",
     "DEPTH_WRITEMASK", "DEPTH_FUNC", "DEPTH_RANGE", "COLOR_WRITEMASK", "BLEND_SRC_RGB", "BLEND_DST_RGB", "BLEND_SRC_ALPHA", "BLEND_DST_ALPHA",
-    "BLEND_EQUATION_RGB", "BLEND_EQUATION_ALPHA", "FUNC_ADD", "ONE", "ONE_MINUS_SRC_ALPHA", "LEQUAL", "TRIANGLES"];
+    "BLEND_EQUATION_RGB", "BLEND_EQUATION_ALPHA", "FUNC_ADD", "ONE", "ONE_MINUS_SRC_ALPHA", "LEQUAL", "TRIANGLES", "GEQUAL"];
   const gl: Record<string, any> = { canvas: new EventTarget(), TEXTURE0: 1000, TEXTURE1: 1001, TEXTURE2: 1002 };
   constants.forEach((key, index) => { gl[key] = index + 1; });
   const calls: Record<string, unknown[][]> = {};
@@ -154,6 +154,33 @@ describe("scalar volume rendering", () => {
     expect(renderer.getDiagnostics().voxelCount).toBe(4);
     renderer.dispose();
     expect(renderer.getDiagnostics().retainedCpuBytes).toBe(0);
+  });
+
+  it("follows the frame depth convention for the entry ray, opaque clip, depth test and fragment depth", () => {
+    const { gl, calls } = mockContext();
+    const renderer = new VolumeRenderer(gl, field());
+    const last = (name: string, uniform: string) => calls[name]?.filter(([key]) => key === uniform).at(-1)?.[1];
+    const depthFuncs: unknown[] = [];
+    const depthFunc = gl.depthFunc.bind(gl);
+    (gl as unknown as { depthFunc: (value: number) => void }).depthFunc = (value: number) => { depthFuncs.push(value); depthFunc(value); };
+    renderer.draw({ viewProjectionMatrix: identity });
+    expect([last("uniform1i", "u_depthMode"), last("uniform1i", "u_clipZeroToOne")]).toEqual([0, 0]);
+    expect(depthFuncs.at(-2)).toBe(gl.LEQUAL);
+    renderer.draw({ viewProjectionMatrix: identity, depth: { mode: "reversed", clipRange: "zero-to-one" } });
+    expect([last("uniform1i", "u_depthMode"), last("uniform1i", "u_clipZeroToOne")]).toEqual([1, 1]);
+    expect(depthFuncs.at(-2)).toBe(gl.GEQUAL);
+    renderer.draw({ viewProjectionMatrix: identity, depth: { mode: "logarithmic", clipRange: "minus-one-to-one", logRange: { near: 0.5, far: 400, kind: "orthographic" } } });
+    expect([last("uniform1i", "u_depthMode"), last("uniform1i", "u_logOrthographic")]).toEqual([2, 1]);
+    expect([...(last("uniform2fv", "u_logRange") as Float32Array)]).toEqual([0.5, 400]);
+    expect(depthFuncs.at(-2)).toBe(gl.LEQUAL);
+    expect(() => renderer.draw({ viewProjectionMatrix: identity, depth: { mode: "logarithmic", clipRange: "minus-one-to-one" } })).toThrow(/near < far/);
+    expect(() => renderer.draw({ viewProjectionMatrix: identity, depth: { mode: "standard", clipRange: "zero-to-one" } })).toThrow(/zero-to-one/);
+    // The fragment stage converts with the same convention plumbing.
+    const fragment = String(calls.shaderSource?.map(([, source]) => source).find((source) => String(source).includes("gl_FragDepth")));
+    expect(fragment).toContain("float nearZ = u_depthMode == 1 ? 1.0 : lowZ;");
+    expect(fragment).toContain("float side = u_depthMode == 1 ? -1.0 : 1.0;");
+    expect(fragment).toContain("gl_FragDepth = u_depthMode == 2 ? standardWindowToLog(clamp(ndcDepth, 0.0, 1.0))");
+    renderer.dispose();
   });
 
   it("restores the caller's GL bindings and draw state even on errors", () => {

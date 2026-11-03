@@ -265,7 +265,8 @@ export class SceneDepthCopyPass extends BaseRenderPass {
 }
 
 /** Allocate a single-sample depth snapshot, retaining its creating device and generation. */
-export function ensureSceneDepthCopyTarget(device: RenderDevice, current: RenderTarget | null, width: number, height: number): RenderTarget {
+export function ensureSceneDepthCopyTarget(device: RenderDevice, current: RenderTarget | null, width: number, height: number,
+  depthPrecision: "fixed" | "float" = "fixed"): RenderTarget {
   if (device.disposed || device.contextLost) {
     throw new RenderDeviceError("Scene depth copy device is unavailable", "SCENE_DEPTH_COPY_DEVICE_UNAVAILABLE");
   }
@@ -278,11 +279,14 @@ export function ensureSceneDepthCopyTarget(device: RenderDevice, current: Render
       current.depthTexture && !current.depthTexture.disposed && current.depthTexture.format === "depth24" &&
       current.depthTexture.dimension === "2d" && current.depthTexture.width === w && current.depthTexture.height === h &&
       (current.sampleCount ?? 1) === 1 && current.width === w && current.height === h &&
+      (current.depthStorage ?? "fixed") === depthPrecision &&
       (device.kind !== "webgpu" || (!current.depthOnly && !current.colorTexture.disposed))) return current;
 
+  // The snapshot keeps the source's depth precision (float for reversed Z).
+  const precision = depthPrecision === "float" ? { depthPrecision } : {};
   const next = device.createRenderTarget(device.kind === "webgpu"
-    ? { label: "aura.scene.depth.copy", width: w, height: h, format: "rgba8", depth: "texture", sampleCount: 1 }
-    : { label: "aura.scene.depth.copy", width: w, height: h, format: "rgba8", depthOnly: true, sampleCount: 1 });
+    ? { label: "aura.scene.depth.copy", width: w, height: h, format: "rgba8", depth: "texture", sampleCount: 1, ...precision }
+    : { label: "aura.scene.depth.copy", width: w, height: h, format: "rgba8", depthOnly: true, sampleCount: 1, ...precision });
   if (next.disposed || next.width !== w || next.height !== h || !next.depthTexture || next.depthTexture.disposed ||
       next.depthTexture.format !== "depth24" || next.depthTexture.dimension !== "2d" ||
       next.depthTexture.width !== w || next.depthTexture.height !== h || (next.sampleCount ?? 1) !== 1 ||

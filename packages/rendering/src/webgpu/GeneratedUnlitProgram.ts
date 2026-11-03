@@ -1,7 +1,7 @@
 /** Generated forward unlit variants for native WebGPU draws. */
 import { RenderDeviceError, type UniformValue } from "../RenderDevice";
 import type { GeneratedPbrDescriptor } from "./GeneratedPbrProgram";
-import { DEPTH_COVERAGE_FEATURE, depthCoverageUnsupportedReason } from "../program/ProgramFeatures";
+import { DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, depthCoverageUnsupportedReason } from "../program/ProgramFeatures";
 import { NATIVE_POINT_WGSL } from "./NativePointShader";
 import { deriveShaderDataLayout, writeShaderData, type ShaderDataType } from "./ShaderDataLayout";
 
@@ -32,6 +32,8 @@ export interface GeneratedUnlitProgram {
   readonly writesDepthCoverage: boolean;
   /** Staged per-member loop color; does not authorize batched execution. */
   readonly packedLoopColor: boolean;
+  /** Writes ln(d / near) / ln(far / near) as @builtin(frag_depth) (logarithmic frames). */
+  readonly logarithmicDepth: boolean;
   readonly fog: "none" | "linear" | "exp2" | "height";
   readonly requiresFloatColorAttachment: boolean;
 }
@@ -45,7 +47,10 @@ const fields: readonly { readonly name: string; readonly type: ShaderDataType; r
   { name: "clipPlanes", type: { kind: "array", element: vec4, length: 8 }, wgsl: "array<vec4f, 8>" },
   { name: "clipGroups", type: { kind: "array", element: vec4, length: 2 }, wgsl: "array<vec4f, 2>" },
   { name: "clipControl", type: vec4, wgsl: "vec4f" },
-  { name: "packedLoopColor", type: vec4, wgsl: "vec4f" }
+  { name: "packedLoopColor", type: vec4, wgsl: "vec4f" },
+  // Logarithmic frames: u_a3dLogDepthView and (near, far) from u_a3dLogDepthRange.
+  { name: "logDepthView", type: mat4, wgsl: "mat4x4f" },
+  { name: "logDepthRange", type: vec4, wgsl: "vec4f" }
 ];
 
 export const GENERATED_UNLIT_MATERIAL_LAYOUT = deriveShaderDataLayout({ kind: "struct", fields: fields.map(({ name, type }) => ({ name, type })) }, "wgsl-uniform");
@@ -76,6 +81,13 @@ const CLIPPING = `fn generatedUnlitClipRetains(world: vec3f, local: vec3f) -> bo
     if (!keep) { return false; }
   }
   return true;
+}`;
+
+/** Same encoding as the WebGL2 generated programs (see GeneratedPbrProgram). */
+const LOG_DEPTH = `fn generatedUnlitLogFragmentDepth(world: vec3f) -> f32 {
+  let distance = -(material.logDepthView * vec4f(world, 1.0)).z;
+  let range = material.logDepthRange.xy;
+  return clamp(log(max(distance, range.x) / range.x) / log(range.y / range.x), 0.0, 1.0);
 }`;
 
 const MAP_UV = `fn generatedUnlitMapUv(uv: vec2f, transform: vec4f, angle: f32) -> vec2f {
@@ -117,11 +129,12 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   for (const [name, map] of Object.entries(f.maps)) {
     if (map && (name !== "baseColor" && name !== "emissive" || (map.uvSet !== 0 && map.uvSet !== 1))) unsupported(`maps.${name}`, `map ${name}`);
   }
-  const allowedFeatures = new Set(["a3d.nativePrimitive", "a3d.clipping", "a3d.output.srgb", "a3d.packedLoopColor", "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", DEPTH_COVERAGE_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])]);
+  const allowedFeatures = new Set(["a3d.nativePrimitive", "a3d.clipping", "a3d.output.srgb", "a3d.packedLoopColor", "prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", DEPTH_COVERAGE_FEATURE, PROGRAM_LOG_DEPTH_FEATURE, ...(isPoint ? ["prd15.parityPoints"] : [])]);
   for (const [name, value] of Object.entries(f.features)) {
     if (value !== false && !allowedFeatures.has(name)) unsupported(`features.${name}`, `feature ${name}`);
-    if ((name === "a3d.clipping" || name === "a3d.output.srgb" || name === "a3d.packedLoopColor") && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name}`);
+    if ((name === "a3d.clipping" || name === "a3d.output.srgb" || name === "a3d.packedLoopColor" || name === PROGRAM_LOG_DEPTH_FEATURE) && typeof value !== "boolean") unsupported(`features.${name}`, `invalid ${name}`);
   }
+  const logDepth = f.features[PROGRAM_LOG_DEPTH_FEATURE] === true;
   const active = new Map<string, string | number | boolean>();
   for (const feature of descriptor.activeFeatures) {
     if (active.has(feature.id) || !["prd02.ibl", "prd02.shadowFilter", "prd03.indirectFraction", "a3d.packedLoopColor", ...(isPoint ? ["prd15.parityPoints"] : [])].includes(feature.id)
@@ -150,7 +163,7 @@ export function createGeneratedUnlitProgram(descriptor: GeneratedPbrDescriptor):
   const uv0 = baseMap?.uvSet === 0 || emissiveMap?.uvSet === 0;
   const uv1 = baseMap?.uvSet === 1 || emissiveMap?.uvSet === 1;
   const expected: Readonly<Record<string, boolean>> = {
-    A3D_GENERATED_PROGRAM: true, A3D_LIT: false, A3D_CLIPPING: clipping, A3D_DEPTH_COVERAGE: writesDepthCoverage,
+    A3D_GENERATED_PROGRAM: true, A3D_LIT: false, A3D_CLIPPING: clipping, A3D_DEPTH_COVERAGE: writesDepthCoverage, A3D_LOG_DEPTH: logDepth,
     USE_INSTANCING: Boolean(f.instancing), USE_INSTANCING_COLOR: Boolean(f.instancing?.color), USE_INSTANCING_EMISSIVE: false,
     VERTEX_COLORS: f.vertexColors, USE_BASE_COLOR_MAP: Boolean(baseMap), USE_BASE_COLOR_MAP_UV1: baseMap?.uvSet === 1,
     USE_BASE_COLOR_MAP_TRANSFORM: Boolean(baseMap?.transform), USE_EMISSIVE_MAP: Boolean(emissiveMap),
@@ -206,10 +219,11 @@ struct VertexOutput { @builtin(position) position: vec4f, ${varyings} };
 }`;
   const textureDecls = resources.map(resource => `@group(0) @binding(${resource.samplerBinding}) var ${resource.uniform}Sampler: sampler;\n@group(0) @binding(${resource.textureBinding}) var ${resource.uniform}Texture: texture_2d<f32>;`).join("\n");
   const uv = (set: 0 | 1): string => set === 0 ? "input.uv" : "input.uv1";
-  const fragment = `${MATERIAL}\n${FRAME}\n${textureDecls}\n${point ? NATIVE_POINT_WGSL : ""}\n${clipping ? CLIPPING : ""}\n${baseMap || emissiveMap ? MAP_UV : ""}\n${outputSrgb ? OUTPUT : ""}
+  const fragment = `${MATERIAL}\n${FRAME}\n${textureDecls}\n${point ? NATIVE_POINT_WGSL : ""}\n${clipping ? CLIPPING : ""}\n${logDepth ? LOG_DEPTH : ""}\n${baseMap || emissiveMap ? MAP_UV : ""}\n${outputSrgb ? OUTPUT : ""}
 struct FragmentInput { @builtin(position) position: vec4f, ${varyings} };
 ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) color: vec4f, @location(1) depthCoverage: vec4f, };" : ""}
-@fragment fn fs_main(input: FragmentInput) -> ${writesDepthCoverage ? "GeneratedDepthCoverageOutput" : "@location(0) vec4f"} {
+${logDepth && !writesDepthCoverage ? "struct GeneratedLogDepthOutput { @location(0) color: vec4f, @builtin(frag_depth) depth: f32, };" : ""}
+@fragment fn fs_main(input: FragmentInput) -> ${writesDepthCoverage ? "GeneratedDepthCoverageOutput" : logDepth ? "GeneratedLogDepthOutput" : "@location(0) vec4f"} {
   let base = material.baseColor${f.vertexColors ? " * input.color" : ""}${f.instancing?.color ? " * input.instanceColor" : ""}${baseMap ? ` * textureSample(u_baseColorMapTexture, u_baseColorMapSampler, generatedUnlitMapUv(${uv(baseMap.uvSet)}, material.baseUv, material.mapControls.x))` : ""}${point?.mapped ? " * textureSample(u_pointMapTexture, u_pointMapSampler, input.pointCoord)" : ""}${packedLoopColor ? " * material.packedLoopColor" : ""};
   ${emissiveMap ? `let emissiveSample = textureSample(u_emissiveMapTexture, u_emissiveMapSampler, generatedUnlitMapUv(${uv(emissiveMap.uvSet)}, material.emissiveUv, material.mapControls.y)).rgb;` : ""}
   ${point ? "if (input.pointInvalid > 0.0) { discard; }" : ""}
@@ -220,14 +234,18 @@ ${writesDepthCoverage ? "struct GeneratedDepthCoverageOutput { @location(0) colo
   ${f.fog === "linear" ? "let fogAmount = clamp((fogDepth - material.fogParams.x) / max(material.fogParams.y - material.fogParams.x, 0.0001), 0.0, 1.0);" : `let density = material.fogParams.z${f.fog === "height" ? " * exp(-max(input.world.y, 0.0) * material.fogParams.w)" : ""}; let distance = density * fogDepth; let fogAmount = clamp(1.0 - exp(-distance * distance), 0.0, 1.0);`}
   let color = mix(unfogged, material.fogColor.rgb, fogAmount);` : ""}
   ${clipping ? "if (!generatedUnlitClipRetains(input.world, input.local)) { discard; }" : ""}
-  ${writesDepthCoverage ? "return GeneratedDepthCoverageOutput(vec4f(color, 1.0), vec4f(1.0, 0.0, 0.0, 0.0));" : `return vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : "1.0"});`}
+  ${writesDepthCoverage
+    ? `return GeneratedDepthCoverageOutput(vec4f(color, 1.0), vec4f(1.0, 0.0, 0.0, 0.0));` /* depth coverage rejects logarithmic depth (depthCoverageUnsupportedReason) */
+    : logDepth
+      ? `return GeneratedLogDepthOutput(vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : "1.0"}), generatedUnlitLogFragmentDepth(input.world));`
+      : `return vec4f(${outputSrgb ? "generatedUnlitEncodeOutput(color)" : "color"}, ${tagged ? "2.0" : f.alphaMode === "blend" ? "base.a" : "1.0"});`}
 }`;
   return Object.freeze<GeneratedUnlitProgram>({ vertex, fragment, vertexEntryPoint: "vs_main", fragmentEntryPoint: "fs_main",
     materialBinding: { group: 0, binding: 0, byteLength: GENERATED_UNLIT_MATERIAL_LAYOUT.size },
     frameBinding: { group: 1, binding: 0, minimumByteLength: 304 }, resources,
     requiredVertexLocations: [0, ...(uv0 ? [2] : []), ...(point ? [3] : []), ...(f.vertexColors ? [4] : []), ...(uv1 ? [7] : [])],
     requiredInstanceLocations: f.instancing ? [8, 9, 10, 11, ...(f.instancing.color ? [12] : [])] : [],
-    primitive, rasterTopology: isPoint ? "triangles" : primitive, point, clipping, packedLoopColor, writesDepthCoverage,
+    primitive, rasterTopology: isPoint ? "triangles" : primitive, point, clipping, packedLoopColor, writesDepthCoverage, logarithmicDepth: logDepth,
     fog: f.fog as GeneratedUnlitProgram["fog"], requiresFloatColorAttachment: tagged });
 }
 
@@ -264,6 +282,8 @@ export function packGeneratedUnlitMaterialUniforms(uniforms: ReadonlyMap<string,
     clipPlanes: Array.from({ length: 8 }, (_, index) => planes.slice(index * 4, index * 4 + 4)),
     clipGroups: Array.from({ length: 2 }, (_, index) => groups.slice(index * 4, index * 4 + 4)),
     clipControl: [scalar("u_a3dClipGroupCount"), 0, 0, 0],
-    packedLoopColor: memberColor
+    packedLoopColor: memberColor,
+    logDepthView: numbers(uniforms, "u_a3dLogDepthView", 16, IDENTITY),
+    logDepthRange: [...numbers(uniforms, "u_a3dLogDepthRange", 2, [1, 2]), 0, 0]
   });
 }

@@ -108,6 +108,19 @@ export interface RenderTargetDescriptor {
   readonly depthCompare?: boolean;
   /** PR 0a (lane 03 Q-01-2): MRT color attachments; attachment 0 is `colorTexture`. `drawBuffers` bound on setRenderTarget. */
   readonly colorAttachments?: readonly { format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f"> }[];
+  /**
+   * Depth storage class (default "fixed"). "float" allocates 32-bit float depth
+   * (WebGL2 DEPTH32F_STENCIL8 / DEPTH_COMPONENT32F; WebGPU depth32float or
+   * depth32float-stencil8) when the device reports `floatDepth`; a device
+   * that must fall back keeps fixed depth and reports it in `depthStorage`.
+   * The sampled depth texture keeps the generic "depth24" depth format class.
+   */
+  readonly depthPrecision?: import("./DepthConvention").DepthStorage;
+  /**
+   * Whether the depth attachment needs a stencil aspect (default true). Only a
+   * float request uses it: false permits a depth-only float format.
+   */
+  readonly stencil?: boolean;
 }
 
 export interface RenderTarget extends DisposableResource {
@@ -129,6 +142,8 @@ export interface RenderTarget extends DisposableResource {
   /** Cube/array targets: one child target per face/layer; callers render into `layerTargets[i]`. */
   readonly layerTargets?: readonly RenderTarget[];
   readonly depthOnly?: boolean;
+  /** Storage class of the depth attachment; absent means fixed point. */
+  readonly depthStorage?: import("./DepthConvention").DepthStorage;
   /** Subresource represented by a per-layer/mip target view. */
   readonly attachmentLayer?: number;
   readonly attachmentMipLevel?: number;
@@ -201,6 +216,12 @@ export function validateRenderTargetDescriptor(descriptor: RenderTargetDescripto
   }
   const formats = [descriptor.format, ...(descriptor.colorAttachments ?? []).map((entry) => entry.format)].filter((format) => format !== undefined);
   if (formats.some((format) => format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f")) throw new RenderDeviceError("Unsupported render target color format", "INVALID_RENDER_TARGET_FORMAT");
+  if (descriptor.depthPrecision !== undefined && descriptor.depthPrecision !== "fixed" && descriptor.depthPrecision !== "float") {
+    throw new RenderDeviceError("Render target depthPrecision must be \"fixed\" or \"float\"", "INVALID_RENDER_TARGET_FORMAT", { depthPrecision: descriptor.depthPrecision });
+  }
+  if (descriptor.stencil !== undefined && typeof descriptor.stencil !== "boolean") {
+    throw new RenderDeviceError("Render target stencil must be a boolean", "INVALID_RENDER_TARGET_FORMAT");
+  }
 }
 
 export function getRenderAttachmentIdentity(target: RenderTarget, aspect: "color" | "depth" = "color", attachment = 0): RenderAttachmentIdentity {
@@ -734,6 +755,8 @@ export interface RenderDevice {
   /** Set the convention for subsequently encoded scene/shadow passes. */
   setDepthConvention?(convention: import("./DepthConvention").DepthConvention): void;
   getDepthConvention?(): import("./DepthConvention").DepthConvention;
+  /** Reversed-Z precision the device can deliver (clip range and float depth support). */
+  getDepthPrecisionSupport?(): import("./DepthConvention").DepthPrecisionSupport;
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer;
   updateBuffer(buffer: RenderBuffer, byteOffset: number, data: ArrayBufferView): void;
@@ -955,6 +978,8 @@ export class MockRenderTarget implements RenderTarget {
   public readonly attachmentPixels: readonly Uint8Array[];
   public readonly attachmentFloatPixels: readonly (Float32Array | null)[];
   private readonly layerChild: boolean;
+  /** Set by the mock when a float depth request is honored. */
+  public depthStorage?: import("./DepthConvention").DepthStorage;
 
   constructor(
     public readonly id: number,
@@ -1241,6 +1266,8 @@ export class MockRenderDevice implements RenderDevice {
         depthOnly
       }
     );
+    if (descriptor.depthPrecision === "float" && descriptor.depth !== false && this.depthPrecisionSupport.floatDepth
+      && (descriptor.stencil === false || this.depthPrecisionSupport.floatDepthStencil)) target.depthStorage = "float";
     // Children below share these same attachment identities with the parent.
     for (const texture of new Set([target.colorTexture, ...(target.colorTextures ?? []), ...(target.depthTexture ? [target.depthTexture] : [])])) {
       claimRenderTargetTextureOwner(texture, this);
@@ -1708,13 +1735,25 @@ export class MockRenderDevice implements RenderDevice {
     requestedMode: "standard", mode: "standard", clipRange: "minus-one-to-one", clearValue: 1, compare: "less-equal", biasSign: 1
   });
 
+  /**
+   * Reversed-Z precision the mock advertises. Tests may replace it to model a
+   * device with zero-to-one reversed rasterization and float depth.
+   */
+  depthPrecisionSupport: import("./DepthConvention").DepthPrecisionSupport = Object.freeze({
+    standardClipRange: "minus-one-to-one", zeroToOneReversed: false, floatDepth: false, floatDepthStencil: false
+  });
+
+  getDepthPrecisionSupport(): import("./DepthConvention").DepthPrecisionSupport { return this.depthPrecisionSupport; }
+
   /** The mock follows the same clear-value contract as the GPU devices. */
   getDepthConvention(): import("./DepthConvention").DepthConvention { return this.mockDepthConvention; }
 
   setDepthConvention(convention: import("./DepthConvention").DepthConvention): void {
     this.assertAlive();
     const reversed = convention.mode === "reversed";
-    if (convention.clipRange !== "minus-one-to-one" || !["standard", "reversed", "logarithmic"].includes(convention.mode)
+    const clipRangeValid = convention.clipRange === "minus-one-to-one"
+      || (convention.clipRange === "zero-to-one" && reversed && this.depthPrecisionSupport.zeroToOneReversed);
+    if (!clipRangeValid || !["standard", "reversed", "logarithmic"].includes(convention.mode)
       || convention.clearValue !== (reversed ? 0 : 1) || convention.compare !== (reversed ? "greater-equal" : "less-equal") || convention.biasSign !== (reversed ? -1 : 1)) {
       throw new RenderDeviceError("Depth convention is invalid for the mock device", "INVALID_DEPTH_CONVENTION");
     }

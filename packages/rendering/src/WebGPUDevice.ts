@@ -11,6 +11,7 @@ import {
   RenderDeviceError,
   type RenderDeviceDiagnostics,
   type RenderDeviceInfo,
+  type RenderResourceCopyOptions,
   type RenderResourceReadbackOptions,
   type RenderShaderProgram,
   type RenderTarget,
@@ -24,6 +25,7 @@ import {
   type ShaderSources,
   type UniformValue,
   getRenderAttachmentIdentity,
+  validateRenderAttachmentAccess,
   viewBytes,
   resolveGpuTargetOwner,
   spreadGpuTargetInventory
@@ -60,7 +62,7 @@ import { convertNativeVertexRecords, needsNativeVertexConversion, planNativeVert
   NATIVE_VERTEX_CONVERSION_MAX_BYTES, NATIVE_VERTEX_CONVERSION_MAX_INDICES, NATIVE_VERTEX_CONVERSION_MAX_OPERATIONS,
   type NativeVertexConversionPlan } from "./webgpu/NativeVertexAttributeConversion";
 import { assertRgba8Level, filterNativeDataMip, planNativeDataMipmaps } from "./webgpu/NativeDataMipmaps";
-import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention } from "./DepthConvention";
+import { negotiateDepthConvention, resolveDepthDrawState, type DepthConvention, type DepthPrecisionSupport, type DepthStorage } from "./DepthConvention";
 import { deriveShaderDataLayout, type ShaderDataLayout, type ShaderDataType, type ShaderDataValue } from "./webgpu/ShaderDataLayout";
 import { deriveUniformDataLayout, emitWgslStruct, writeUniformData, type UniformBlockLayout } from "./program/UniformLayout";
 import { resolveNativeRenderState, applyNativeRenderDynamicState, validateNativeVertexLayouts } from "./webgpu/NativeRenderState";
@@ -691,6 +693,22 @@ function nativeBufferHandle(buffer: WebGPURenderBuffer): WebGPUBufferLike {
   return handle;
 }
 
+/**
+ * Per-wrapper release receipts installed by the owning device. A receipt
+ * resolves only once interop has destroyed the native lease after its
+ * retirement fence, and rejects on a failed fence or destructor.
+ */
+const nativeRetirementReceipts = new WeakMap<object, (resource: object) => Promise<void>>();
+
+/** Observe a disposed buffer/target wrapper without starting or retrying cleanup. */
+function observeNativeWrapperDisposal(owner: object, disposed: boolean, complete: boolean, handles: readonly (object | null)[]): Promise<void> {
+  if (!disposed) return Promise.reject(new RenderDeviceError("WebGPU resource disposal has not started", "WEBGPU_DISPOSAL_NOT_STARTED"));
+  if (!complete) return Promise.reject(new RenderDeviceError("WebGPU resource disposal failed; call dispose() again", "WEBGPU_DISPOSAL_INCOMPLETE"));
+  const receipt = nativeRetirementReceipts.get(owner);
+  if (!receipt) return Promise.resolve();
+  return Promise.all(handles.filter((handle): handle is object => handle !== null).map(receipt)).then(() => undefined);
+}
+
 class WebGPURenderBuffer implements RenderBuffer {
   public disposed = false;
   private disposing = false;
@@ -755,6 +773,11 @@ class WebGPURenderBuffer implements RenderBuffer {
 
   get [resourceDisposalInProgress](): boolean {
     return this.disposing || this.nativeCleanupActive?.(nativeBufferHandle(this)) === true;
+  }
+
+  /** Release receipt: resolves after the native buffer's retirement fence and destruction. */
+  whenDisposed(): Promise<void> {
+    return observeNativeWrapperDisposal(this, this.disposed, this.disposalComplete, [nativeBufferHandle(this)]);
   }
 }
 
@@ -858,6 +881,10 @@ class WebGPURenderTarget implements RenderTarget {
     if (!value && this.colorTexture.mipLevelCount > 1) this.nativeMipsReady = false;
   }
   public nativeClearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
+  /** Native depth/stencil format; every pipeline drawing into this target must match it. */
+  public nativeDepthFormat: string = DEPTH_TEXTURE_FORMAT;
+  /** "float" for depth32float and depth32float-stencil8 attachments. */
+  public depthStorage?: DepthStorage;
   constructor(
     public readonly id: number,
     public readonly width: number,
@@ -901,6 +928,11 @@ class WebGPURenderTarget implements RenderTarget {
   }
   get [resourceDisposalInProgress](): boolean {
     return this.disposing || this.nativeTextures().some(texture => texture !== null && this.nativeCleanupActive(texture));
+  }
+
+  /** Release receipt: resolves after every native attachment's retirement fence and destruction. */
+  whenDisposed(): Promise<void> {
+    return observeNativeWrapperDisposal(this, this.disposed, this.disposalComplete, this.nativeTextures());
   }
 
   private nativeTextures(): (WebGPUTextureLike | null)[] {
@@ -1696,6 +1728,13 @@ export class WebGPUDevice implements RenderDevice {
       || this.resourceInterop.owns(resource);
   }
 
+  /** Receipt for one native lease: interop's failure-reporting retirement observer. */
+  private nativeRetirementReceipt(resource: object): Promise<void> {
+    if (this.resourceInterop.owns(resource)) return this.resourceInterop.whenRetired(resource);
+    const failure = this.nativeRetirementFailures.get(resource);
+    return failure ? Promise.reject(failure.error) : Promise.resolve();
+  }
+
   private retryFailedNativeRetirement(resource: { destroy(): void }): void {
     const fenceFailure = this.resourceInterop.retirementFenceFailure(resource);
     // Retiring again cannot make a failed fence safe; report the original
@@ -2140,6 +2179,7 @@ export class WebGPUDevice implements RenderDevice {
       const epoch = {}, stamp = {};
       this.ownedBuffers.add(buffer);
       this.buffers.add(buffer);
+      nativeRetirementReceipts.set(buffer, resource => this.nativeRetirementReceipt(resource));
       this.#pointBufferEpochs.set(buffer, epoch);
       this.#pointBufferDestroyed.set(buffer, () => destroyed);
       this.#pointBufferStamps.set(stamp, { buffer, generation: this.generation, epoch });
@@ -2528,14 +2568,44 @@ export class WebGPUDevice implements RenderDevice {
 
   getDepthConvention(): DepthConvention { return this.depthConvention; }
 
+  /**
+   * WebGPU rasterizes zero-to-one, but generated and stock WGSL programs
+   * remap the renderer's minus-one-to-one projection in the vertex stage,
+   * which cancels the reversed-Z float gain; reversed frames therefore stay
+   * "reduced" until programs consume a native zero-to-one projection.
+   * depth32float is core; depth32float-stencil8 needs that device feature
+   * (pass it in `requiredFeatures`).
+   */
+  getDepthPrecisionSupport(): DepthPrecisionSupport {
+    return { standardClipRange: "zero-to-one", zeroToOneReversed: false, floatDepth: true,
+      floatDepthStencil: this.device.features?.has("depth32float-stencil8") === true };
+  }
+
+  /**
+   * A float request selects depth32float (no stencil need), else
+   * depth32float-stencil8 when the feature is enabled, else falls back to
+   * depth24plus-stencil8 (fixed storage, reported "reduced").
+   */
+  private selectDepthFormat(descriptor: RenderTargetDescriptor): { readonly format: string; readonly storage: DepthStorage } {
+    if (descriptor.depthPrecision !== "float") return { format: DEPTH_TEXTURE_FORMAT, storage: "fixed" };
+    if (descriptor.stencil === false) return { format: "depth32float", storage: "float" };
+    if (this.device.features?.has("depth32float-stencil8") === true) return { format: "depth32float-stencil8", storage: "float" };
+    return { format: DEPTH_TEXTURE_FORMAT, storage: "fixed" };
+  }
+
+  /** Depth/stencil format of the attachment the next draw writes (canvas depth is fixed). */
+  private activeDepthStencilFormat(): string {
+    return (this.gaussianSplatBorrowedDepth ?? this.activeRenderTarget)?.nativeDepthFormat ?? DEPTH_TEXTURE_FORMAT;
+  }
+
   setDepthConvention(convention: DepthConvention): void {
     this.assertAlive();
     // Generated WGSL programs remap the renderer's minus-one-to-one camera
     // projection into WebGPU's zero-to-one clip space, which preserves the
-    // reversed ordering (near = 1, far = 0). They do not write logarithmic
-    // fragment depth, so the renderer rejects that mode before this point.
+    // reversed ordering (near = 1, far = 0). In a logarithmic frame they
+    // write ln(d / near) / ln(far / near) as @builtin(frag_depth).
     const reversed = convention.mode === "reversed";
-    if ((convention.mode !== "standard" && !reversed) || convention.clipRange !== "zero-to-one"
+    if ((convention.mode !== "standard" && !reversed && convention.mode !== "logarithmic") || convention.clipRange !== "zero-to-one"
       || convention.clearValue !== (reversed ? 0 : 1) || convention.compare !== (reversed ? "greater-equal" : "less-equal") || convention.biasSign !== (reversed ? -1 : 1)) {
       throw new RenderDeviceError("Depth convention is unsupported by the active WebGPU pipeline", "DEPTH_MODE_UNSUPPORTED", { mode: convention.mode });
     }
@@ -2632,6 +2702,7 @@ export class WebGPUDevice implements RenderDevice {
       if (initialData) writeAlignedQueueBuffer(this.device.queue, handle, 0, buffer.bytes.slice(0, initialData.byteLength), buffer.nativeByteLength);
       this.ownedBuffers.add(buffer);
       this.buffers.add(buffer);
+      nativeRetirementReceipts.set(buffer, resource => this.nativeRetirementReceipt(resource));
       if (usage === "uniform" && byteLength >= 304) {
         const epoch = {};
         this.#pointFrameWriteEpochs.set(buffer, epoch);
@@ -2885,6 +2956,7 @@ export class WebGPUDevice implements RenderDevice {
     const textureFormat = webgpuTextureFormat(descriptor.format ?? "rgba8");
     const hasDepth = descriptor.depth !== false;
     const hasSampleableDepth = descriptor.depth === "texture";
+    const depthSelection = this.selectDepthFormat(descriptor);
     let colorBytes = 0;
     for (let level = 0; level < requestedMipCount; level += 1) colorBytes += Math.max(1, Math.floor(descriptor.width / 2 ** level))
       * Math.max(1, Math.floor(descriptor.height / 2 ** level)) * bytesPerPixel(descriptor.format ?? "rgba8");
@@ -2928,7 +3000,7 @@ export class WebGPUDevice implements RenderDevice {
       ? this.device.createTexture?.({
         label: `${descriptor.label ?? "aura3d-webgpu-render-target"}-depth`,
         size: [descriptor.width, descriptor.height],
-        format: DEPTH_TEXTURE_FORMAT,
+        format: depthSelection.format,
         // Internal deferred work may sample this same depth attachment; a
         // 4x attachment still does not expose a resolved public depth texture.
         usage: TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.TEXTURE_BINDING,
@@ -3000,6 +3072,8 @@ export class WebGPUDevice implements RenderDevice {
       resource => this.retryFailedNativeRetirement(resource),
       resource => this.activeNativeCleanups.has(resource)
     );
+    target.nativeDepthFormat = depthSelection.format;
+    if (hasDepth && depthSelection.storage === "float") target.depthStorage = "float";
     this.#p3ResolvedColors.set(target, {
       color: target.colorTexture, texture: target.nativeTexture, view: target.nativeView,
       multisampleTexture: target.nativeMultisampleTexture, multisampleView: target.nativeMultisampleView,
@@ -3009,6 +3083,7 @@ export class WebGPUDevice implements RenderDevice {
     if (target.depthTexture) claimRenderTargetTextureOwner(target.depthTexture, this);
     if (target.multisampledDepthTexture) claimRenderTargetTextureOwner(target.multisampledDepthTexture, this);
     this.renderTargets.add(target);
+    nativeRetirementReceipts.set(target, resource => this.nativeRetirementReceipt(resource));
     return target;
     } catch (error) {
       for (const { texture, registered, release } of [
@@ -3063,7 +3138,7 @@ export class WebGPUDevice implements RenderDevice {
     resolveNativeRenderState({
       state: { depthTest: false, depthWrite: false, cullMode: "none", blend: false, depthCompare: "always" },
       topology: "triangles", colorFormats: formats.map((format) => webgpuTextureFormat(format!)),
-      depthStencilFormat: descriptor.depth === false ? null : DEPTH_TEXTURE_FORMAT,
+      depthStencilFormat: descriptor.depth === false ? null : this.selectDepthFormat(descriptor).format,
       sampleCount, targetWidth: descriptor.width, targetHeight: descriptor.height,
       deviceGeneration: this.generation, targetKey: "mrt-preflight", targetGeneration: 0,
       shaderKey: "mrt-preflight", layoutKey: "mrt-preflight", colorLimits: this.device.limits, features: this.device.features
@@ -3568,7 +3643,7 @@ export class WebGPUDevice implements RenderDevice {
     return {
       colorView, ...(owned.nativeMultisampleView ? { resolveView: owned.nativeView } : {}),
       depthAttachmentView: owned.nativeDepthView, depthSampleView,
-      colorFormat: webgpuTextureFormat(owned.colorTexture.format), depthFormat: DEPTH_TEXTURE_FORMAT,
+      colorFormat: webgpuTextureFormat(owned.colorTexture.format), depthFormat: owned.nativeDepthFormat,
       width: owned.width, height: owned.height, sampleCount: owned.sampleCount, generation: this.generation,
       loadOp: needsClear ? "clear" : "load", clearColor, depthClearValue: this.depthConvention.clearValue, stencilClearValue: 0,
       submit: (commands, readResources = []) => {
@@ -3974,6 +4049,142 @@ export class WebGPUDevice implements RenderDevice {
       return output;
     } finally {
       if (mappedSuccessfully) {
+        try { readback.unmap?.(); } catch { /* Preserve any readback failure. */ }
+      }
+      try { this.retireNative(readback); } catch { /* Preserve any readback failure. */ }
+    }
+  }
+
+  /**
+   * Asynchronous same-device color copy. Both targets stay device-owned; an
+   * abort before submission leaves the destination untouched, and an abort
+   * after submission only stops waiting (the copy itself is not undone).
+   * Resolves after the copy's queue fence when the queue exposes one.
+   */
+  async copyRenderTarget(options: RenderResourceCopyOptions): Promise<void> {
+    await this.transferNativeRenderTarget(options);
+  }
+
+  /**
+   * Multisampled color resolve. Every WebGPU pass into a 4x target already
+   * resolves into the target's single-sample texture, so this copies that
+   * resolved image into the destination with the same ownership contract.
+   */
+  async resolveRenderTarget(options: RenderResourceCopyOptions): Promise<void> {
+    if ((options.source.sampleCount ?? 1) <= 1 || (options.destination.sampleCount ?? 1) !== 1 || (options.aspect ?? "color") !== "color") {
+      throw new RenderDeviceError("Resolve requires multisampled color source and single-sampled destination", "INVALID_RESOURCE_RESOLVE");
+    }
+    await this.transferNativeRenderTarget(options);
+  }
+
+  private async transferNativeRenderTarget(options: RenderResourceCopyOptions): Promise<void> {
+    this.assertAlive();
+    throwIfWebGPUReadbackAborted(options.signal);
+    const source = this.requireRenderTarget(options.source);
+    const destination = this.requireRenderTarget(options.destination);
+    const aspect = options.aspect ?? "color";
+    const read = getRenderAttachmentIdentity(source, aspect, options.sourceAttachment ?? 0);
+    const write = getRenderAttachmentIdentity(destination, aspect, options.destinationAttachment ?? 0);
+    if (source.width !== destination.width || source.height !== destination.height || read.format !== write.format) {
+      throw new RenderDeviceError("Copy attachments must have identical size and format", "INVALID_RESOURCE_COPY");
+    }
+    if (aspect === "depth") {
+      // depth24plus* cannot be copied and depth32float cannot be a copy
+      // destination, so a WebGPU depth copy would need a depth-writing pass.
+      throw new RenderDeviceError("WebGPU render-target depth copies are not supported; sample the depth texture instead", "WEBGPU_DEPTH_COPY_UNSUPPORTED");
+    }
+    if (write.sampleCount !== 1) throw new RenderDeviceError("WebGPU copies require a single-sample destination", "INVALID_RESOURCE_COPY");
+    validateRenderAttachmentAccess([read], [write]);
+    // Give an already scheduled abort a chance before anything is encoded.
+    await Promise.resolve();
+    throwIfWebGPUReadbackAborted(options.signal);
+    this.assertAlive();
+    this.assertOutsideMrtSubmission();
+    this.assertOutsideGaussianSplatDraw();
+    this.requireRenderTarget(source);
+    this.requireRenderTarget(destination);
+    const sourceNative = source.nativeColorFor(read.texture), destinationNative = destination.nativeColorFor(write.texture);
+    if (read.texture.disposed || write.texture.disposed || !sourceNative || !destinationNative || !this.device.createCommandEncoder) {
+      throw new RenderDeviceError("WebGPU target copy requires live native color textures", "WEBGPU_COPY_UNAVAILABLE");
+    }
+    this.resourceInterop.assertUsable(sourceNative);
+    this.resourceInterop.assertUsable(destinationNative);
+    if (source.nativeNeedsClear) this.flushNativeRenderTargetClear(source);
+    if (destination.nativeNeedsClear) this.flushNativeRenderTargetClear(destination);
+    if (source.nativeNeedsClear || destination.nativeNeedsClear) {
+      throw new RenderDeviceError("WebGPU target clear could not be submitted before copy", "WEBGPU_COPY_UNAVAILABLE");
+    }
+    const encoder = this.device.createCommandEncoder({ label: `${source.label}-to-${destination.label}-copy` });
+    if (!encoder.copyTextureToTexture) throw new RenderDeviceError("WebGPU texture copy is unavailable", "WEBGPU_COPY_UNAVAILABLE");
+    encoder.copyTextureToTexture(
+      { texture: sourceNative, mipLevel: read.mipLevel, origin: { x: 0, y: 0, z: read.layer } },
+      { texture: destinationNative, mipLevel: write.mipLevel, origin: { x: 0, y: 0, z: write.layer } },
+      { width: source.width, height: source.height, depthOrArrayLayers: 1 }
+    );
+    this.submitMrtAware([encoder.finish()], [{ resource: sourceNative, mode: "read" }, { resource: destinationNative, mode: "write" }],
+      source.nativeExtraColors.length > 0 || destination.nativeExtraColors.length > 0);
+    destination.nativeNeedsClear = false;
+    this.nativeSubmissions += 1;
+    const fence = this.device.queue.onSubmittedWorkDone?.();
+    if (fence && typeof (fence as Promise<void>).then === "function") await fence;
+    throwIfWebGPUReadbackAborted(options.signal);
+  }
+
+  /**
+   * Read a single-sample rgba8 attachment of any owned 2D target without
+   * changing the active target. Rows are bottom-to-top, as in readPixelsAsync.
+   * The staging buffer is device-owned and retired on every path; abort
+   * discards the result, not the target or already submitted GPU work.
+   */
+  async readRenderTarget(options: RenderResourceReadbackOptions): Promise<Uint8Array> {
+    this.assertAlive();
+    throwIfWebGPUReadbackAborted(options.signal);
+    const target = this.requireRenderTarget(options.target);
+    const identity = getRenderAttachmentIdentity(target, "color", options.attachment ?? 0);
+    if (identity.format !== "rgba8" || identity.sampleCount !== 1) {
+      throw new RenderDeviceError("Byte readback requires an rgba8 single-sampled attachment; resolve multisampled targets first", "INVALID_RESOURCE_READBACK");
+    }
+    if (identity.mipLevel !== 0 || identity.layer !== 0 || identity.texture.dimension !== "2d") {
+      throw new RenderDeviceError("Native WebGPU byte readback supports only 2D level-zero targets", "NATIVE_READBACK_TARGET_UNSUPPORTED");
+    }
+    if (!hasNativeTextureReadback(this.device)) {
+      throw new RenderDeviceError("WebGPU device does not expose native texture-to-buffer readback", "NATIVE_READBACK_UNSUPPORTED");
+    }
+    await Promise.resolve();
+    throwIfWebGPUReadbackAborted(options.signal);
+    this.assertAlive();
+    this.assertOutsideMrtSubmission();
+    this.assertOutsideGaussianSplatDraw();
+    this.requireRenderTarget(target);
+    this.flushNativeRenderTargetClear(target);
+    const { width, height } = target;
+    const unpaddedBytesPerRow = width * 4;
+    const bytesPerRow = alignTo(unpaddedBytesPerRow, 256);
+    const readback = this.submitNativeReadbackCopy(target, 0, 0, width, height, bytesPerRow, `${target.label}-native-byte-readback`,
+      identity.texture, false, options.signal);
+    let mapped = false;
+    try {
+      const { mapAsync, getMappedRange } = readback;
+      if (!mapAsync || !getMappedRange || !readback.unmap) {
+        throw new RenderDeviceError("WebGPU readback buffer does not expose mapped readback APIs", "NATIVE_READBACK_UNSUPPORTED");
+      }
+      await mapAsync.call(readback, MAP_MODE.READ);
+      mapped = true;
+      throwIfWebGPUReadbackAborted(options.signal);
+      this.assertAlive();
+      this.requireRenderTarget(target);
+      if (identity.texture.disposed || target.nativeColorFor(identity.texture) === undefined) {
+        throw new RenderDeviceError("Byte readback source was disposed", "DISPOSED_RESOURCE", { targetId: target.id });
+      }
+      const bytes = new Uint8Array(getMappedRange.call(readback));
+      const output = new Uint8Array(width * height * 4);
+      for (let row = 0; row < height; row += 1) {
+        output.set(bytes.subarray(row * bytesPerRow, row * bytesPerRow + unpaddedBytesPerRow), (height - 1 - row) * unpaddedBytesPerRow);
+      }
+      this.nativeTextureReadbacks += 1;
+      return output;
+    } finally {
+      if (mapped) {
         try { readback.unmap?.(); } catch { /* Preserve any readback failure. */ }
       }
       try { this.retireNative(readback); } catch { /* Preserve any readback failure. */ }
@@ -7097,7 +7308,7 @@ export class WebGPUDevice implements RenderDevice {
     const identity: (object | string | number | null)[] = [
       generation, shader, pipeline, pipelineKey, frameBuffer, index ?? null, indexHandle ?? null,
       command.indexType ?? "uint16", command.indexCount ?? 0, command.firstIndex ?? 0,
-      command.vertexCount, command.firstVertex ?? 0, sampleCount, hasDepthStencil ? DEPTH_TEXTURE_FORMAT : "",
+      command.vertexCount, command.firstVertex ?? 0, sampleCount, hasDepthStencil ? this.activeDepthStencilFormat() : "",
       ...targetFormats, ...vertexBindings.flatMap(([slot, handle]) => [slot, handle]),
       Array.from(frameSnapshot).join(","), Array.from(packed).join(",")
     ];
@@ -7257,7 +7468,7 @@ export class WebGPUDevice implements RenderDevice {
       }
       const result = this.nativeForwardBundles.encode({
         key: entry, pass, passDevice: native,
-        descriptor: { colorFormats: targetFormats, ...(hasDepthStencil ? { depthStencilFormat: DEPTH_TEXTURE_FORMAT } : {}), sampleCount },
+        descriptor: { colorFormats: targetFormats, ...(hasDepthStencil ? { depthStencilFormat: this.activeDepthStencilFormat() } : {}), sampleCount },
         commands, cacheable: true, lifetime: { revision: entry, isValid: isCurrent }
       });
       assertCurrent();
@@ -7536,7 +7747,7 @@ export class WebGPUDevice implements RenderDevice {
     const hasDepthStencil = depthView !== null && depthView !== undefined;
     const explicitLayout = this.portableTextureLayout(command, shader) ?? this.generatedPbrDeformLayout(shader);
     const resolvedState = resolveNativeRenderState({
-      state, topology: command.topology, colorFormats: targetFormats, depthStencilFormat: hasDepthStencil ? DEPTH_TEXTURE_FORMAT : null,
+      state, topology: command.topology, colorFormats: targetFormats, depthStencilFormat: hasDepthStencil ? this.activeDepthStencilFormat() : null,
       sampleCount, targetWidth: this.activeRenderTarget?.width ?? this.viewportWidth, targetHeight: this.activeRenderTarget?.height ?? this.viewportHeight,
       deviceGeneration: this.generation, targetKey: this.activeRenderTarget ? `target:${this.activeRenderTarget.id}` : "canvas",
       targetGeneration: this.activeRenderTarget?.id ?? this.canvasTargetGeneration,

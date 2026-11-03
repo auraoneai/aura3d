@@ -9,7 +9,7 @@ import { rendererDeviceIsLost, subscribeRendererDeviceLost, subscribeRendererDev
 import { createRendererFrameHooks, toFrameCamera } from "./renderer/FrameGraph";
 import type { FrameProjectionMetadata } from "./renderer/FrameGraph";
 import type { DepthConvention } from "./DepthConvention";
-import { applyFrameDepthConvention } from "./renderer/FrameDepthConvention";
+import { applyFrameDepthConvention, preferredFrameDepthStorage, recordFrameDepthStorage, reversedFrameUsesZeroToOne, zeroToOneReversedRasterCamera, type RasterCameraMatrices } from "./renderer/FrameDepthConvention";
 import { frameContributors, potentiallyActiveFrameContributors, type AuraFramePhase, type FrameCamera, type FrameContributorContext, type TransparentQueueItem } from "./contracts/frameGraph";
 import {
   assertPrd07RendererOperation, beginPrd07RendererOperation, beginPrd07RendererView,
@@ -1268,8 +1268,7 @@ export class Renderer {
     const checkedViews = views?.map((view) => {
       assertWarmupActive([signal]);
       sceneFromSource(normalized.source)?.updateWorldTransforms();
-      const resolved = resolveCamera(normalized.source, view.camera, view.viewport, { allowSceneCamera: true });
-      this.assertSupportedCameraDepth(resolved);
+      const resolved = this.assertSupportedCameraDepth(resolveCamera(normalized.source, view.camera, view.viewport, { allowSceneCamera: true }));
       return {
         resolved,
         frameCamera: toFrameCamera(resolved, resolved?.viewProjectionMatrix, resolved?.cameraPosition),
@@ -1291,8 +1290,7 @@ export class Renderer {
       sceneFromSource(source)?.updateWorldTransforms();
       const viewport = views?.[index]?.viewport;
       const checkedView = checkedViews?.[index];
-      const resolvedCamera = checkedView ? checkedView.resolved : resolveCamera(source, inputCamera, viewport ?? { width: this.width, height: this.height }, { allowSceneCamera: true });
-      this.assertSupportedCameraDepth(resolvedCamera);
+      const resolvedCamera = this.assertSupportedCameraDepth(checkedView ? checkedView.resolved : resolveCamera(source, inputCamera, viewport ?? { width: this.width, height: this.height }, { allowSceneCamera: true }));
       const cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
       const collected = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, false, resolvedCamera?.layerMask, this, undefined, rendererQrFlags(this.device), this.device, cullingFrustums?.[index]);
       assertWarmupActive([signal]);
@@ -2078,8 +2076,13 @@ export class Renderer {
    * it). Every frame path calls this before clearing or drawing, so a later
    * standard camera always restores standard depth. Shadow passes scope their
    * own standard light convention; probe faces use standard depth.
+   *
+   * Returns the raster camera: on a device that rasterizes reversed frames in
+   * a zero-to-one clip range (WebGL2 EXT_clip_control), a reversed
+   * minus-one-to-one camera is rebuilt with the matching zero-to-one
+   * projection. Callers must draw and cull with the returned camera.
    */
-  private assertSupportedCameraDepth(camera: Pick<CameraLike, "projectionMetadata" | "depthConvention"> | undefined): void {
+  private assertSupportedCameraDepth<T extends Pick<CameraLike, "projectionMetadata" | "depthConvention"> | undefined>(camera: T): T {
     const metadata = camera?.projectionMetadata;
     const convention = camera?.depthConvention;
     if (metadata && convention && (metadata.mode !== convention.mode || metadata.clipRange !== convention.clipRange)) {
@@ -2090,19 +2093,41 @@ export class Renderer {
     if (mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") {
       throw new RenderDeviceError("Unknown camera depth mode.", "DEPTH_MODE_UNSUPPORTED", { mode, backend: this.device.kind });
     }
-    if (clipRange !== "minus-one-to-one") {
+    const zeroToOneRaster = mode === "reversed" && reversedFrameUsesZeroToOne(this.device);
+    // A reversed zero-to-one camera is accepted where the device rasterizes
+    // one natively (an already rebuilt raster camera, or an authored one).
+    if (clipRange !== "minus-one-to-one" && !(clipRange === "zero-to-one" && zeroToOneRaster)) {
       throw new RenderDeviceError("The active renderer requires a minus-one-to-one camera projection in every depth mode.", "DEPTH_MODE_UNSUPPORTED", { mode, clipRange, backend: this.device.kind });
     }
     if (mode === "logarithmic") {
-      if (this.device.kind === "webgpu") {
-        throw new RenderDeviceError("Logarithmic depth is unavailable: generated WebGPU programs do not write logarithmic fragment depth.", "DEPTH_MODE_UNSUPPORTED", { mode, backend: this.device.kind });
-      }
       const near = metadata?.near, far = metadata?.far;
       if (near === undefined || far === undefined || !(near > 0) || !Number.isFinite(far) || !(far > near)) {
         throw new RenderDeviceError("Logarithmic depth requires projection metadata with finite 0 < near < far.", "DEPTH_MODE_UNSUPPORTED", { mode, near, far, backend: this.device.kind });
       }
     }
     applyFrameDepthConvention(this.device, mode, mode === "logarithmic" ? { near: metadata!.near!, far: metadata!.far!, ...(metadata!.kind !== "custom" ? { kind: metadata!.kind } : {}) } : undefined);
+    return zeroToOneRaster && clipRange === "minus-one-to-one" && camera && "viewProjectionMatrix" in camera
+      ? zeroToOneReversedRasterCamera(camera as unknown as RasterCameraMatrices) as unknown as T
+      : camera;
+  }
+
+  /**
+   * The depth convention of the most recent frame, including its precision
+   * report ("full" only for zero-to-one reversed Z into float depth).
+   */
+  getDepthConvention(): DepthConvention | null {
+    return this.device.getDepthConvention?.() ?? null;
+  }
+
+  /** Reversed frames record the storage of the depth attachment they rasterize into. */
+  private recordRasterDepthStorage(target: RenderTarget | null | undefined): void {
+    if ((this.device.getDepthConvention?.()?.mode ?? "standard") === "standard") return;
+    recordFrameDepthStorage(this.device, target?.depthStorage ?? "fixed");
+  }
+
+  /** Renderer-owned scene targets request float depth only when it buys reversed-Z precision. */
+  private frameDepthPrecision(): { readonly depthPrecision?: "float" } {
+    return preferredFrameDepthStorage(this.device) === "float" ? { depthPrecision: "float" } : {};
   }
 
   private planNativeDepthOfField(postprocess: RendererPostProcessOptions | undefined,
@@ -2768,7 +2793,7 @@ export class Renderer {
       allowSceneCamera: !(normalized.camera === undefined && (policy === "identity" || hasExplicitAutoFrameCameraPolicy(snapshot)))
     });
     if (!resolved && policy === "require") throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
-    this.assertSupportedCameraDepth(resolved);
+    resolved = this.assertSupportedCameraDepth(resolved);
     const collection = collectRenderItemsWithDiagnostics(nativeSource, resolved?.viewProjectionMatrix, resolved?.camera, false, resolved?.layerMask, this, undefined, rendererQrFlags(this.device), this.device);
     if (collection.items.some(itemMayClip)) return fallback("clipping requires the full forward renderer", fallbackInput);
     if (collection.items.some((item) => hasNegativeHandedness(toMat4(item.modelMatrix ?? identityMat4(), "modelMatrix", item.label)))) return fallback("reflected object winding requires the full forward renderer", fallbackInput);
@@ -3209,6 +3234,16 @@ export class Renderer {
     if (this.outputOptions.alphaMode === "straight" || this.outputOptions.alphaMode === "premultiplied" || preservingViewPost) {
       throw new RenderDeviceError("OUTPUT_ALPHA_MODE_UNAVAILABLE: multi-view composition does not establish an output alpha policy", "OUTPUT_ALPHA_MODE_UNAVAILABLE");
     }
+    // Native WebGPU depth of field owns a single full-view frame (coverage
+    // attachment, sealed participants). Refuse it for multiview before any
+    // view target is drawn, with a stable code, instead of failing mid-frame.
+    const nativeDofView = views.findIndex((view) => {
+      const post = view.postprocess === undefined || view.postprocess === true ? sourcePost : view.postprocess;
+      return post !== false && post !== undefined && typeof post === "object" && nativeWebGPUDofRequested(this.device, post);
+    });
+    if (nativeDofView >= 0) {
+      throw new RenderDeviceError("NATIVE_DOF_MULTIVIEW_UNSUPPORTED: native WebGPU depth of field renders a single full view; disable dof for multiview views", "NATIVE_DOF_MULTIVIEW_UNSUPPORTED", { view: views[nativeDofView]?.id ?? nativeDofView });
+    }
     const output = collectRenderTarget(input.source);
     validateExplicitRenderTarget(output);
     const width = output?.width ?? this.width;
@@ -3226,8 +3261,7 @@ export class Renderer {
       // Check the projection produced for this viewport, not metadata from a
       // previous camera update. Check all views before any target is drawn.
       sceneFromSource(input.source)?.updateWorldTransforms();
-      const resolved = resolveCamera(input.source, view.camera, view.viewport, { allowSceneCamera: true });
-      this.assertSupportedCameraDepth(resolved);
+      const resolved = this.assertSupportedCameraDepth(resolveCamera(input.source, view.camera, view.viewport, { allowSceneCamera: true }));
       cameras.push({ resolved: snapshotResolvedViewCamera(resolved) });
     });
     const authoredFrame = this.pendingAuthoredFrame;
@@ -3257,9 +3291,11 @@ export class Renderer {
 
   private ensureViewTarget(id: string | number, viewport: RendererRect): RenderTarget {
     const previous = this.viewTargets.get(id);
-    if (previous && !previous.disposed && previous.width === viewport.width && previous.height === viewport.height) return previous;
+    const depthPrecision = this.frameDepthPrecision();
+    if (previous && !previous.disposed && previous.width === viewport.width && previous.height === viewport.height
+      && (previous.depthStorage ?? "fixed") === (depthPrecision.depthPrecision ?? "fixed")) return previous;
     previous?.dispose();
-    const target = this.device.createRenderTarget({ width: viewport.width, height: viewport.height, label: `renderer-view-${String(id)}`, format: "rgba8", depth: true, sampleCount: 1 });
+    const target = this.device.createRenderTarget({ width: viewport.width, height: viewport.height, label: `renderer-view-${String(id)}`, format: "rgba8", depth: true, sampleCount: 1, ...depthPrecision });
     this.viewTargets.set(id, target);
     return target;
   }
@@ -3519,8 +3555,8 @@ export class Renderer {
     if (!resolvedCamera && cameraPolicy === "require") {
       throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
     }
+    resolvedCamera = this.assertSupportedCameraDepth(resolvedCamera);
     let cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-    this.assertSupportedCameraDepth(resolvedCamera);
     const prepareAdvanced = advancedLightingPrepare(source);
     const advancedFrame: AdvancedLightingFrame = { device: this.device, postScopeId: this.viewScopeId, viewId: this.activeViewId, frameIndex: this.authoredFrameId };
     const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags(this.device).on("A3D_QR_LIGHTING"), resolvedCamera?.layerMask, this,
@@ -3749,6 +3785,7 @@ export class Renderer {
     let benchmarkFrame: RendererBenchmarkMaskFrame | null = null;
     let benchmarkResourcesValid: (() => boolean) | null = null;
     const rasterTarget = ownedTargets[0] ?? explicitRenderTarget;
+    this.recordRasterDepthStorage(rasterTarget);
     if (rasterTarget && (rasterTarget.width !== this.width || rasterTarget.height !== this.height)) frameHooks.setRasterViewportIsFull(false);
     const photometricFrame = this.photometricFrame(this.activeViewId);
     const projectedSpotFrame = this.projectedSpotFrame(this.activeViewId);
@@ -4045,7 +4082,7 @@ export class Renderer {
             cameraPosition, viewProjection: rasterViewProjection }, phaseOrder.opaque) : undefined;
           this.graph.addPass(deferred ?? forward);
           if (hdrTarget?.depthTexture || hdrTarget?.multisampledDepthTexture) {
-            const depthCopy = this.ensureSceneDepthCopy(hdrTarget.width, hdrTarget.height);
+            const depthCopy = this.ensureSceneDepthCopy(hdrTarget.width, hdrTarget.height, hdrTarget.depthStorage ?? "fixed");
             frameHooks.setSceneDepthCopy(depthCopy);
             const copyPass = new SceneDepthCopyPass(hdrTarget, depthCopy, [opaqueColorResource], () => frameHooks.setSceneDepthCopy(null));
             this.graph.addPass(scalarVolumes.length ? withScalarVolumeDepthGuard(copyPass, scalarVolumes, this.device,
@@ -4407,8 +4444,8 @@ export class Renderer {
     if (!resolvedCamera && cameraPolicy === "require") {
       throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
     }
+    resolvedCamera = this.assertSupportedCameraDepth(resolvedCamera);
     let cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-    this.assertSupportedCameraDepth(resolvedCamera);
     const prepareAdvanced = advancedLightingPrepare(source);
     const advancedFrame: AdvancedLightingFrame = { device: this.device, postScopeId: this.viewScopeId, viewId: this.activeViewId, frameIndex: this.authoredFrameId };
     const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags(this.device).on("A3D_QR_LIGHTING"), resolvedCamera?.layerMask, this,
@@ -4620,6 +4657,7 @@ export class Renderer {
     let benchmarkFrame: RendererBenchmarkMaskFrame | null = null;
     let benchmarkResourcesValid: (() => boolean) | null = null;
     const rasterTarget = ownedTargets[0] ?? explicitRenderTarget;
+    this.recordRasterDepthStorage(rasterTarget);
     if (rasterTarget && (rasterTarget.width !== this.width || rasterTarget.height !== this.height)) frameHooks.setRasterViewportIsFull(false);
     const photometricFrame = this.photometricFrame(this.activeViewId);
     const projectedSpotFrame = this.projectedSpotFrame(this.activeViewId);
@@ -4901,7 +4939,7 @@ export class Renderer {
             cameraPosition, viewProjection: rasterViewProjection }, phaseOrder.opaque) : undefined;
           this.graph.addPass(deferred ?? forward);
           if (hdrTarget?.depthTexture || hdrTarget?.multisampledDepthTexture) {
-            const depthCopy = this.ensureSceneDepthCopy(hdrTarget.width, hdrTarget.height);
+            const depthCopy = this.ensureSceneDepthCopy(hdrTarget.width, hdrTarget.height, hdrTarget.depthStorage ?? "fixed");
             frameHooks.setSceneDepthCopy(depthCopy);
             const copyPass = new SceneDepthCopyPass(hdrTarget, depthCopy, [opaqueColorResource], () => frameHooks.setSceneDepthCopy(null));
             this.graph.addPass(scalarVolumes.length ? withScalarVolumeDepthGuard(copyPass, scalarVolumes, this.device,
@@ -5619,7 +5657,8 @@ export class Renderer {
     // the live single-sample sceneDepth. Until that requirement is declared,
     // keep it available and report the loss of MSAA explicitly.
     const sampleCount = coverage || forceSingleSample || this.device.kind === "webgpu" ? 1 : 4;
-    const key = `${width}x${height}:${format}:depth-texture:${sampleCount}:${coverage ? "cov" : "std"}`;
+    const depthPrecision = this.frameDepthPrecision();
+    const key = `${width}x${height}:${format}:depth-texture:${sampleCount}:${coverage ? "cov" : "std"}:${depthPrecision.depthPrecision ?? "fixed"}`;
     const cached = this.hdrSceneTarget;
     if (cached && cached.key === key && !cached.target.disposed) return cached.target;
     cached?.target.dispose();
@@ -5630,7 +5669,8 @@ export class Renderer {
       format,
       ...(coverage ? { colorAttachments: [{ format }, { format: "rgba8" }] as const } : {}),
       depth: "texture",
-      sampleCount
+      sampleCount,
+      ...depthPrecision
     });
     this.hdrMsaaMrtDegraded = coverage;
     this.hdrMsaaDepthDegraded = this.device.kind === "webgpu" && !coverage;
@@ -5638,8 +5678,8 @@ export class Renderer {
     return target;
   }
 
-  private ensureSceneDepthCopy(width: number, height: number): RenderTarget {
-    this.sceneDepthCopyTarget = ensureSceneDepthCopyTarget(this.device, this.sceneDepthCopyTarget, width, height);
+  private ensureSceneDepthCopy(width: number, height: number, depthPrecision: "fixed" | "float" = "fixed"): RenderTarget {
+    this.sceneDepthCopyTarget = ensureSceneDepthCopyTarget(this.device, this.sceneDepthCopyTarget, width, height, depthPrecision);
     return this.sceneDepthCopyTarget;
   }
 
@@ -5682,7 +5722,8 @@ export class Renderer {
   }
   /** Allocates the shared forward-color target once per distinct configuration. */
   private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number, nativeDepthCoverage = false): RenderTarget {
-    const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}:${nativeDepthCoverage ? "coverage" : "color"}`;
+    const depthPrecision = this.frameDepthPrecision();
+    const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}:${nativeDepthCoverage ? "coverage" : "color"}:${depthPrecision.depthPrecision ?? "fixed"}`;
     const cached = this.forwardColorTarget;
     if (cached && cached.key === key && !cached.target.disposed) return cached.target;
     cached?.target.dispose();
@@ -5693,6 +5734,7 @@ export class Renderer {
       format,
       depth: requiresDepthTexture ? "texture" : true,
       sampleCount,
+      ...depthPrecision,
       ...(nativeDepthCoverage ? { colorAttachments: [{ format }, { format: "rgba8" as const }] } : {})
     });
     this.forwardColorTarget = { target, key };
@@ -5704,11 +5746,12 @@ export class Renderer {
     const format = original.colorTexture.format;
     if (format !== "rgba16f" && format !== "rgba32f") return null;
     const samples = original.sampleCount ?? 1;
-    const key = `${this.width}x${this.height}:${format}:${original.depthTexture ? "texture" : "renderbuffer"}:${samples}`;
+    const depthPrecision = original.depthStorage ?? "fixed";
+    const key = `${this.width}x${this.height}:${format}:${original.depthTexture ? "texture" : "renderbuffer"}:${samples}:${depthPrecision}`;
     let target = this.selectiveBloomTarget?.key === key && !this.selectiveBloomTarget.target.disposed
       ? this.selectiveBloomTarget.target : undefined;
     if (!target) {
-      const created = createSelectiveBloomTarget(this.device, this.width, this.height, format, Boolean(original.depthTexture), samples);
+      const created = createSelectiveBloomTarget(this.device, this.width, this.height, format, Boolean(original.depthTexture), samples, depthPrecision);
       if (!created) return null;
       this.selectiveBloomTarget?.dispose();
       this.selectiveBloomTarget = { ...created, key };

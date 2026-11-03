@@ -8,16 +8,15 @@ import { negotiateDepthConvention, type DepthConvention, type DepthMode } from "
  *
  * - standard: minus-one-to-one projection, clear 1, compare less-equal.
  * - reversed: the projection maps near to +1 and far to -1 (window depth
- *   near = 1, far = 0), clear 0, compare greater-equal, negated bias. The
- *   portable path keeps the minus-one-to-one clip range and a fixed-point
- *   depth attachment, so ordering is correct but the floating-point precision
- *   gain of reversed Z is not delivered; diagnostics report "reduced".
- * - logarithmic: standard projection; generated programs write
- *   ln(distance / near) / ln(far / near) as fragment depth, which disables
- *   early depth testing for those draws. Needs finite 0 < near < far.
- *
- * Backend availability is negotiated by the renderer (WebGPU generated
- * programs do not write logarithmic fragment depth and fail precisely).
+ *   near = 1, far = 0), clear 0, compare greater-equal, negated bias. Where
+ *   the device rasterizes zero-to-one reversed depth (WebGL2 with
+ *   EXT_clip_control) the renderer rebuilds the matching zero-to-one
+ *   projection and allocates float depth, and reports precision "full";
+ *   elsewhere ordering is correct at "reduced" precision. This static report
+ *   cannot know the device; a mounted runtime reports the active value.
+ * - logarithmic: standard projection; generated WebGL2 and WebGPU programs
+ *   write ln(distance / near) / ln(far / near) as fragment depth, which
+ *   disables early depth testing for those draws. Needs finite 0 < near < far.
  */
 export function resolveProductionCameraDepth(
   camera: AuraCameraSpec,
@@ -62,7 +61,7 @@ export function resolveProductionCameraDepth(
   const depthConvention: DepthConvention = Object.freeze({
     ...negotiated,
     ...(mode === "reversed"
-      ? { precision: "reduced" as const, precisionReason: "reversed depth is rendered through a minus-one-to-one clip range into a fixed-point depth attachment; ordering is correct without the floating-point precision gain" }
+      ? { precision: "reduced" as const, precisionReason: "reversed depth precision is negotiated per device: \"full\" needs a zero-to-one reversed projection into float depth (WebGL2 with EXT_clip_control); the mounted renderer reports the active value" }
       : mode === "logarithmic"
         ? { precision: "extended" as const, precisionReason: "logarithmic fragment depth distributes precision by relative distance and disables early depth testing for those draws" }
         : { precision: "standard" as const })

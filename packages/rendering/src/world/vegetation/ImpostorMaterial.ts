@@ -15,6 +15,7 @@
  * maps 1:1 onto `a_position * 0.5 + 0.5`.
  */
 import type { ShaderSources } from "../../RenderDevice.js";
+import type { DepthClipRange, DepthMode } from "../../DepthConvention.js";
 import { a3d_prd10_impostor } from "./shaders/impostor.js";
 import { a3d_prd10_foliage } from "./shaders/foliage.js"; // bayer4x4 crossfade
 
@@ -67,8 +68,25 @@ in vec2 v_octUv;
 in vec2 v_localUv;
 in float v_fade;
 out vec4 o_color;
+// Frame depth convention (see impostorDepthUniforms): 0 standard, 1 reversed,
+// 2 logarithmic with (near, far) and orthographic flag. Defaults are standard.
+uniform float u_a3dDepthMode;
+uniform vec2 u_a3dLogDepthRange;
+uniform float u_a3dLogDepthOrthographic;
 ${a3d_prd10_foliage.glsl}
 ${a3d_prd10_impostor.glsl}
+// The parallax offset is authored in standard window depth (nearer = smaller).
+// Convert the fragment's stored depth to standard, offset it, and re-encode it
+// in the frame convention. Reversed depth is 1 - standard in both clip ranges.
+float a3dImpostorFrameDepth(float stored, float standardOffset) {
+  if (u_a3dDepthMode > 0.5 && u_a3dDepthMode < 1.5) return clamp(1.0 - clamp((1.0 - stored) + standardOffset, 0.0, 1.0), 0.0, 1.0);
+  float standardDepth = clamp(stored + standardOffset, 0.0, 1.0);
+  if (u_a3dDepthMode < 1.5) return standardDepth;
+  // gl_FragCoord.z of a logarithmic frame is the standard projection's depth.
+  float n = u_a3dLogDepthRange.x; float f = u_a3dLogDepthRange.y;
+  float d = u_a3dLogDepthOrthographic > 0.5 ? n + standardDepth * (f - n) : f * n / max(f - standardDepth * (f - n), 1e-30);
+  return clamp(log(max(d, n) / n) / log(f / n), 0.0, 1.0);
+}
 void main() {
   if (a3dBayer4x4(gl_FragCoord.xy) > v_fade) discard;
   // per-frame parallax direction: the view's offset from each frame in grid space
@@ -81,10 +99,9 @@ void main() {
   vec4 albedo = a3dImpostorShade(v_octUv, v_localUv, parallax, nXY, depth);
   vec3 n = vec3(nXY.xy, sqrt(max(1.0 - dot(nXY.xy, nXY.xy), 0.0)));
   o_color = vec4(albedo.rgb * max(dot(n, normalize(vec3(0.4, 0.8, 0.3))), 0.2), 1.0);
-  // statically assigned on every path (GLSL ES 3.0): pass-through unless High+
-  gl_FragDepth = u_impostorWriteDepth > 0.5
-    ? clamp(gl_FragCoord.z - (depth - 0.5) * 0.02, 0.0, 1.0)
-    : gl_FragCoord.z;
+  // statically assigned on every path (GLSL ES 3.0): pass-through unless
+  // High+, always encoded in the active frame convention.
+  gl_FragDepth = a3dImpostorFrameDepth(gl_FragCoord.z, u_impostorWriteDepth > 0.5 ? -(depth - 0.5) * 0.02 : 0.0);
 }
 `;
 
@@ -96,4 +113,25 @@ export function impostorShaderSources(): ShaderSources {
     vertex: IMPOSTOR_VERT,
     fragment: IMPOSTOR_FRAG
   };
+}
+
+/**
+ * Uniform values that make the impostor's fragment depth follow the frame
+ * convention: bind them with the other impostor uniforms. Omitted uniforms are
+ * zero, which is the standard convention.
+ */
+export function impostorDepthUniforms(convention?: {
+  readonly mode: DepthMode;
+  readonly clipRange?: DepthClipRange;
+  readonly logRange?: { readonly near: number; readonly far: number; readonly kind?: "perspective" | "orthographic" };
+}): ReadonlyMap<string, number | readonly number[]> {
+  const mode = convention?.mode ?? "standard";
+  if (mode !== "standard" && mode !== "reversed" && mode !== "logarithmic") throw new RangeError("Impostor depth requires a standard, reversed or logarithmic convention.");
+  if (convention?.clipRange === "zero-to-one" && mode !== "reversed") throw new RangeError("Only reversed impostor depth may use a zero-to-one clip range.");
+  if (mode !== "logarithmic") return new Map<string, number | readonly number[]>([["u_a3dDepthMode", mode === "reversed" ? 1 : 0], ["u_a3dLogDepthRange", [1, 2]], ["u_a3dLogDepthOrthographic", 0]]);
+  const range = convention?.logRange;
+  if (!range || !(range.near > 0) || !Number.isFinite(range.far) || !(range.far > range.near) || (range.kind !== "perspective" && range.kind !== "orthographic")) {
+    throw new RangeError("Logarithmic impostor depth requires finite 0 < near < far and the projection kind.");
+  }
+  return new Map<string, number | readonly number[]>([["u_a3dDepthMode", 2], ["u_a3dLogDepthRange", [range.near, range.far]], ["u_a3dLogDepthOrthographic", range.kind === "orthographic" ? 1 : 0]]);
 }

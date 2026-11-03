@@ -1,6 +1,24 @@
 import { temporalAccumulationWeight } from "./TemporalMath";
 import { resourceDisposalPending } from "./ResourceLifecycle";
-import { negotiateDepthConvention, type DepthConvention } from "./DepthConvention";
+import { negotiateDepthConvention, type DepthConvention, type DepthPrecisionSupport } from "./DepthConvention";
+
+/** EXT_clip_control (WebGL2): glClipControl(origin, depth mode). */
+interface ClipControlExtension {
+  readonly LOWER_LEFT_EXT: GLenum;
+  readonly NEGATIVE_ONE_TO_ONE_EXT: GLenum;
+  readonly ZERO_TO_ONE_EXT: GLenum;
+  clipControlEXT(origin: GLenum, depth: GLenum): void;
+}
+
+/** Depth/stencil storage of a WebGL2 render target; fixed targets keep one packed format. */
+function webgl2DepthStorageFormat(gl: WebGL2RenderingContext, float: boolean, stencil: boolean): {
+  readonly internalFormat: GLenum; readonly format: GLenum; readonly type: GLenum; readonly attachment: GLenum; readonly stencil: boolean;
+} {
+  if (!float) return { internalFormat: gl.DEPTH24_STENCIL8, format: gl.DEPTH_STENCIL, type: gl.UNSIGNED_INT_24_8, attachment: gl.DEPTH_STENCIL_ATTACHMENT, stencil: true };
+  return stencil
+    ? { internalFormat: gl.DEPTH32F_STENCIL8, format: gl.DEPTH_STENCIL, type: gl.FLOAT_32_UNSIGNED_INT_24_8_REV, attachment: gl.DEPTH_STENCIL_ATTACHMENT, stencil: true }
+    : { internalFormat: gl.DEPTH_COMPONENT32F, format: gl.DEPTH_COMPONENT, type: gl.FLOAT, attachment: gl.DEPTH_ATTACHMENT, stencil: false };
+}
 import { invertSsrProjection } from "./ProjectionMath";
 import type { TemporalGpuBindings } from "./TemporalHistory";
 import {
@@ -81,6 +99,7 @@ import { planStaticGeneratedUnlitPair, type StaticGeneratedUnlitPairPlanInput } 
 import { deriveStaticGeneratedUnlitPairSource, getRecordedStaticGeneratedUnlitSources, inspectStaticGeneratedUnlitPairProgram } from "./webgl2/StaticGeneratedUnlitShader";
 import { computeProgramKey, type ProgramFeatures } from "./contracts/program";
 import type { GaussianSplatColorAdapter } from "./GaussianSplatColorComposite";
+import { deriveShaderDataLayout } from "./webgpu/ShaderDataLayout";
 
 export interface TextureFilterAnisotropicExtension {
   readonly TEXTURE_MAX_ANISOTROPY_EXT: GLenum;
@@ -465,7 +484,9 @@ function renderTargetTextureBytes(descriptor: RenderTargetDescriptor): number {
     ? descriptor.colorAttachments.map((attachment) => attachment.format)
     : [renderTargetColorFormat(descriptor)];
   const depthTexture = descriptor.depthOnly === true || descriptor.depth === "texture" || descriptor.depthCompare === true || (planes > 1 && descriptor.depth !== false);
-  let total = depthTexture ? descriptor.width * descriptor.height * planes * 4 : 0;
+  // DEPTH32F_STENCIL8 occupies 8 bytes per texel (32-bit float + padded stencil).
+  const depthTexelBytes = descriptor.depthPrecision === "float" && descriptor.stencil !== false ? 8 : 4;
+  let total = depthTexture ? descriptor.width * descriptor.height * planes * depthTexelBytes : 0;
   for (const format of colors) {
     const pixelBytes = format === "rgba8" ? 4 : format === "rgba16f" ? 8 : 16;
     for (let level = 0; level < (descriptor.mipLevelCount ?? 1); level += 1) {
@@ -629,6 +650,8 @@ export interface WebGL2RenderTargetOptions {
   readonly attachmentMipLevel?: number;
   /** Whether the draw framebuffer owns a stencil attachment. */
   readonly hasStencil?: boolean;
+  /** Float when the depth attachment is DEPTH32F_STENCIL8 or DEPTH_COMPONENT32F. */
+  readonly depthStorage?: import("./DepthConvention").DepthStorage;
 }
 
 export class WebGL2RenderTarget implements RenderTarget {
@@ -647,6 +670,7 @@ export class WebGL2RenderTarget implements RenderTarget {
   public readonly colorTextures?: readonly Texture[];
   public readonly depthOnly: boolean;
   public readonly hasStencil: boolean;
+  public readonly depthStorage?: import("./DepthConvention").DepthStorage;
   public readonly attachmentLayer?: number;
   public readonly attachmentMipLevel?: number;
   public layerTargets?: readonly RenderTarget[];
@@ -693,6 +717,7 @@ export class WebGL2RenderTarget implements RenderTarget {
     this.layerChild = options.layerChild === true;
     this.depthOnly = options.depthOnly === true;
     this.hasStencil = options.hasStencil === true;
+    if (options.depthStorage !== undefined) this.depthStorage = options.depthStorage;
     this.attachmentLayer = options.attachmentLayer;
     this.attachmentMipLevel = options.attachmentMipLevel;
   }
@@ -919,14 +944,61 @@ export class WebGL2Device implements RenderDevice {
   setDepthConvention(convention: DepthConvention): void {
     this.host.lifecycle.assertAlive();
     const mode = convention.mode;
-    if (convention.clipRange !== "minus-one-to-one" || !["standard", "reversed", "logarithmic"].includes(mode)) {
-      throw new RenderDeviceError("Depth convention does not match the WebGL2 clip range", "INVALID_DEPTH_CONVENTION");
-    }
     const reversed = mode === "reversed";
+    // Zero-to-one is EXT_clip_control state, admitted only for reversed frames
+    // (the renderer rebuilds their projection to match).
+    const clipValid = convention.clipRange === "minus-one-to-one"
+      || (convention.clipRange === "zero-to-one" && reversed && this.clipControlExtension() !== null);
+    if (!clipValid || !["standard", "reversed", "logarithmic"].includes(mode)) {
+      throw new RenderDeviceError("Depth convention does not match the WebGL2 clip range", "INVALID_DEPTH_CONVENTION", { clipRange: convention.clipRange, mode });
+    }
     if (convention.clearValue !== (reversed ? 0 : 1) || convention.compare !== (reversed ? "greater-equal" : "less-equal") || convention.biasSign !== (reversed ? -1 : 1)) {
       throw new RenderDeviceError("Depth convention has inconsistent clear, comparison or bias values", "INVALID_DEPTH_CONVENTION");
     }
     this.activeDepthConvention = Object.freeze({ ...convention });
+    this.syncClipControl();
+  }
+
+  /**
+   * Reversed-Z precision on WebGL2: zero-to-one reversed rasterization needs
+   * EXT_clip_control; DEPTH32F_STENCIL8 and DEPTH_COMPONENT32F are core.
+   */
+  getDepthPrecisionSupport(): DepthPrecisionSupport {
+    return { standardClipRange: "minus-one-to-one", zeroToOneReversed: this.clipControlExtension() !== null, floatDepth: true, floatDepthStencil: true };
+  }
+
+  private clipControlCache: { readonly generation: number; readonly extension: ClipControlExtension | null } | null = null;
+  /** GL clip-control state this device last set, per context generation (loss resets it). */
+  private clipControlState: { readonly generation: number; readonly zeroToOne: boolean } | null = null;
+
+  private clipControlExtension(): ClipControlExtension | null {
+    if (this.clipControlCache?.generation === this.shaderGeneration) return this.clipControlCache.extension;
+    // A lost context reports no extensions; query again once it is restored.
+    if (this.host.contextLost) return null;
+    let extension: ClipControlExtension | null = null;
+    try {
+      const candidate = this.gl.getExtension("EXT_clip_control") as Partial<ClipControlExtension> | null;
+      if (candidate && typeof candidate.clipControlEXT === "function" && typeof candidate.LOWER_LEFT_EXT === "number"
+        && typeof candidate.ZERO_TO_ONE_EXT === "number" && typeof candidate.NEGATIVE_ONE_TO_ONE_EXT === "number") extension = candidate as ClipControlExtension;
+    } catch {
+      extension = null;
+    }
+    this.clipControlCache = { generation: this.shaderGeneration, extension };
+    return extension;
+  }
+
+  /** Make GL clip control match the active convention (standard and log frames reset it). */
+  private syncClipControl(): void {
+    const zeroToOne = this.activeDepthConvention.clipRange === "zero-to-one";
+    const known = this.clipControlState?.generation === this.shaderGeneration ? this.clipControlState.zeroToOne : false;
+    if (known === zeroToOne || this.host.contextLost) return;
+    const extension = this.clipControlExtension();
+    if (!extension) {
+      if (zeroToOne) throw new RenderDeviceError("EXT_clip_control is unavailable for a zero-to-one depth convention", "INVALID_DEPTH_CONVENTION");
+      return;
+    }
+    extension.clipControlEXT(extension.LOWER_LEFT_EXT, zeroToOne ? extension.ZERO_TO_ONE_EXT : extension.NEGATIVE_ONE_TO_ONE_EXT);
+    this.clipControlState = { generation: this.shaderGeneration, zeroToOne };
   }
 
 
@@ -1539,6 +1611,8 @@ export class WebGL2Device implements RenderDevice {
   beginFrame(width: number, height: number): void {
     this.assertOutsideGaussianSplatDraw();
     this.host.lifecycle.beginFrame(width, height);
+    // A restored context starts with default clip control; re-assert the frame's.
+    this.syncClipControl();
     this.primitiveCounts = { triangles: 0, lines: 0, points: 0 };
     this.currentFrameToken = this.host.lifecycle.frameActive && !this.host.contextLost ? {} : null;
   }
@@ -1844,14 +1918,18 @@ export class WebGL2Device implements RenderDevice {
         binding: multisampledDepth.name
       });
     }
-    // The standalone uniform binder does not lower recursive data schemas to
-    // GLSL fields or std140 blocks. Reject even optional/inactive entries:
-    // ignoring a struct or using a vector setter for a matrix can still draw.
-    // Ordinary legacy bindings with arrayLength remain on their existing path.
-    const data = sources.portableBindings?.find((binding) => binding.kind === "data" || binding.dataType !== undefined);
+    // S5-WP05-03: well-formed data schemas are lowered by the render passes to
+    // GL leaf uniforms (webgl2/UniformDataFlatten.ts) and uploaded with the
+    // declared type's setter. Reject only malformed metadata before compiling:
+    // a data binding without a schema, or a schema on a non-data binding.
+    const data = sources.portableBindings?.find((binding) => {
+      if ((binding.kind === "data") !== (binding.dataType !== undefined)) return true;
+      if (binding.dataType === undefined) return false;
+      try { deriveShaderDataLayout(binding.dataType, "glsl-std430"); return false; } catch { return true; }
+    });
     if (data) {
       throw new RenderDeviceError(
-        `WebGL2 does not support portable uniform data schemas for ${data.name}; use flat uniforms or explicit std140 blocks`,
+        `WebGL2 cannot bind portable uniform ${data.name}: data uniforms need exactly one valid dataType schema`,
         "WEBGL_PORTABLE_UNIFORM_DATA_UNSUPPORTED",
         { label: sources.label, binding: data.name, kind: data.kind }
       );
@@ -2733,6 +2811,11 @@ export class WebGL2Device implements RenderDevice {
     const format = renderTargetColorFormat(descriptor);
     const textureFormat = resolveRenderTargetFormat(this.gl, format);
     const depthMode = descriptor.depth === "texture" ? "texture" : descriptor.depth === false ? "none" : "renderbuffer";
+    // Fixed targets keep one packed DEPTH24_STENCIL8 so depth copies stay
+    // compatible; a float request uses DEPTH32F_STENCIL8 (or DEPTH_COMPONENT32F
+    // when the caller declares no stencil need).
+    const floatDepth = descriptor.depthPrecision === "float" && depthMode !== "none";
+    const depthStorage = webgl2DepthStorageFormat(this.gl, floatDepth, !floatDepth || descriptor.stencil !== false);
     const { colorHandle, framebuffer, drawFramebuffer, multisampleColorHandle, depthHandle, multisampleDepthHandle, depthTextureHandle } = (() => {
       let colorHandle: WebGLTexture | null = null, framebuffer: WebGLFramebuffer | null = null, drawFramebuffer: WebGLFramebuffer | null = null;
       let multisampleColorHandle: WebGLRenderbuffer | null = null, depthHandle: WebGLRenderbuffer | null = null, multisampleDepthHandle: WebGLRenderbuffer | null = null;
@@ -2833,8 +2916,8 @@ export class WebGL2Device implements RenderDevice {
       this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, colorHandle, 0);
       if (depthHandle && sampleCount === 1) {
         this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, depthHandle);
-        this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH24_STENCIL8, descriptor.width, descriptor.height);
-        this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, depthHandle);
+        this.gl.renderbufferStorage(this.gl.RENDERBUFFER, depthStorage.internalFormat, descriptor.width, descriptor.height);
+        this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, depthStorage.attachment, this.gl.RENDERBUFFER, depthHandle);
       }
       if (depthTextureHandle) {
         this.gl.bindTexture(this.gl.TEXTURE_2D, depthTextureHandle);
@@ -2845,15 +2928,15 @@ export class WebGL2Device implements RenderDevice {
         this.gl.texImage2D(
           this.gl.TEXTURE_2D,
           0,
-          this.gl.DEPTH24_STENCIL8,
+          depthStorage.internalFormat,
           descriptor.width,
           descriptor.height,
           0,
-          this.gl.DEPTH_STENCIL,
-          this.gl.UNSIGNED_INT_24_8,
+          depthStorage.format,
+          depthStorage.type,
           null
         );
-        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.TEXTURE_2D, depthTextureHandle, 0);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, depthStorage.attachment, this.gl.TEXTURE_2D, depthTextureHandle, 0);
       }
       resolveStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
       drawStatus = resolveStatus;
@@ -2865,8 +2948,8 @@ export class WebGL2Device implements RenderDevice {
         this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.RENDERBUFFER, multisampleColorHandle);
         if (multisampleDepthHandle) {
           this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, multisampleDepthHandle);
-          this.gl.renderbufferStorageMultisample(this.gl.RENDERBUFFER, sampleCount, this.gl.DEPTH24_STENCIL8, descriptor.width, descriptor.height);
-          this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, multisampleDepthHandle);
+          this.gl.renderbufferStorageMultisample(this.gl.RENDERBUFFER, sampleCount, depthStorage.internalFormat, descriptor.width, descriptor.height);
+          this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, depthStorage.attachment, this.gl.RENDERBUFFER, multisampleDepthHandle);
         }
         drawStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
       }
@@ -2904,7 +2987,7 @@ export class WebGL2Device implements RenderDevice {
       drawFramebuffer,
       multisampleColorHandle,
       this.gl,
-      { hasStencil: depthMode !== "none" }
+      { hasStencil: depthMode !== "none" && depthStorage.stencil, ...(floatDepth ? { depthStorage: "float" as const } : {}) }
     );
     target.onDispose = () => this.forgetRenderTargetTextures(target);
     this.renderTargets.add(target);
@@ -3033,8 +3116,12 @@ export class WebGL2Device implements RenderDevice {
     const depthCompare = descriptor.depthCompare === true;
     // A single packed depth/stencil format keeps depth copies compatible
     // between shadow, color, multisample and per-layer targets. Its depth
-    // component remains sampleable as the public depth24 texture.
-    const hasStencil = depthMode !== "none";
+    // component remains sampleable as the public depth24 texture. A float
+    // request (reversed-Z scene depth) uses DEPTH32F_STENCIL8 instead, or
+    // DEPTH_COMPONENT32F when the caller declares no stencil need.
+    const floatDepth = descriptor.depthPrecision === "float" && depthMode !== "none";
+    const depthStorage = webgl2DepthStorageFormat(gl, floatDepth, !floatDepth || descriptor.stencil !== false);
+    const hasStencil = depthMode !== "none" && depthStorage.stencil;
 
     const colorFormats: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">[] = depthOnly
       ? []
@@ -3132,9 +3219,9 @@ export class WebGL2Device implements RenderDevice {
           gl.texParameteri(textureTarget, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
           gl.texParameteri(textureTarget, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
         }
-        const internalFormat = hasStencil ? gl.DEPTH24_STENCIL8 : gl.DEPTH_COMPONENT24;
-        const pixelFormat = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
-        const pixelType = hasStencil ? gl.UNSIGNED_INT_24_8 : gl.UNSIGNED_INT;
+        const internalFormat = floatDepth ? depthStorage.internalFormat : hasStencil ? gl.DEPTH24_STENCIL8 : gl.DEPTH_COMPONENT24;
+        const pixelFormat = floatDepth ? depthStorage.format : hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+        const pixelType = floatDepth ? depthStorage.type : hasStencil ? gl.UNSIGNED_INT_24_8 : gl.UNSIGNED_INT;
         submittedStorage = true;
         if (dimension === "2d-array") {
           gl.texImage3D(textureTarget, 0, internalFormat, descriptor.width, descriptor.height, layerCount, 0, pixelFormat, pixelType, null);
@@ -3151,8 +3238,8 @@ export class WebGL2Device implements RenderDevice {
           throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", { label });
         }
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderbufferHandle);
-        if (sampleCount > 1) gl.renderbufferStorageMultisample(gl.RENDERBUFFER, sampleCount, gl.DEPTH24_STENCIL8, descriptor.width, descriptor.height);
-        else gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, descriptor.width, descriptor.height);
+        if (sampleCount > 1) gl.renderbufferStorageMultisample(gl.RENDERBUFFER, sampleCount, depthStorage.internalFormat, descriptor.width, descriptor.height);
+        else gl.renderbufferStorage(gl.RENDERBUFFER, depthStorage.internalFormat, descriptor.width, descriptor.height);
         gl.bindRenderbuffer(gl.RENDERBUFFER, previousRenderbuffer);
       }
 
@@ -3187,7 +3274,7 @@ export class WebGL2Device implements RenderDevice {
           }
         }
         if (depthRenderbufferHandle && sampleCount === 1) {
-          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthRenderbufferHandle);
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, depthStorage.attachment, gl.RENDERBUFFER, depthRenderbufferHandle);
         }
         return gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
       };
@@ -3224,7 +3311,7 @@ export class WebGL2Device implements RenderDevice {
           gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + attachment, gl.RENDERBUFFER, handle);
         }
         if (depthRenderbufferHandle) {
-          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthRenderbufferHandle);
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, depthStorage.attachment, gl.RENDERBUFFER, depthRenderbufferHandle);
         }
         const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
         if (status !== gl.FRAMEBUFFER_COMPLETE || this.host.lifecycle.isDeviceLost()) {
@@ -3269,7 +3356,8 @@ export class WebGL2Device implements RenderDevice {
           extraMultisampleColorHandles: multisampleColorHandles.slice(1),
           layerFramebuffers,
           layerChild: false,
-          hasStencil
+          hasStencil,
+          ...(floatDepth ? { depthStorage: "float" as const } : {})
         }
       );
       target.onDispose = () => this.forgetRenderTargetTextures(target);
@@ -3291,7 +3379,7 @@ export class WebGL2Device implements RenderDevice {
               framebuffer,
               null,
               gl,
-              { dimension, layers: 1, colorTextures: target.colorTextures, layerChild: true, depthOnly: descriptor.depthOnly, attachmentLayer: layer, attachmentMipLevel: 0, hasStencil }
+              { dimension, layers: 1, colorTextures: target.colorTextures, layerChild: true, depthOnly: descriptor.depthOnly, attachmentLayer: layer, attachmentMipLevel: 0, hasStencil, ...(floatDepth ? { depthStorage: "float" as const } : {}) }
             )
         );
         // layerTargets shares parent GL resources; children only mark dispose.
@@ -3336,7 +3424,9 @@ export class WebGL2Device implements RenderDevice {
       const counts = gl.getInternalformatParameter(gl.RENDERBUFFER, value, gl.SAMPLES) as Int32Array | null;
       return counts !== null && Array.from(counts).includes(samples);
     };
-    if (!supports(internal) || !supports(gl.DEPTH_COMPONENT24)) return false;
+    // Match the target's depth precision so the promoted frame keeps it.
+    const depthInternal = target.depthStorage === "float" ? gl.DEPTH_COMPONENT32F : gl.DEPTH_COMPONENT24;
+    if (!supports(internal) || !supports(depthInternal)) return false;
     const previousDraw = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
     const previousRead = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
     const previousRenderbuffer = gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null;
@@ -3359,7 +3449,7 @@ export class WebGL2Device implements RenderDevice {
       depth = gl.createRenderbuffer();
       if (!depth) return false;
       gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
-      gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT24, target.width, target.height);
+      gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, depthInternal, target.width, target.height);
       gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
       gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
       if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) return false;
@@ -3484,7 +3574,8 @@ export class WebGL2Device implements RenderDevice {
     const destinationAttachment = options.destinationAttachment ?? 0;
     const read = getRenderAttachmentIdentity(source, aspect, sourceAttachment);
     const write = getRenderAttachmentIdentity(destination, aspect, destinationAttachment);
-    if (source.width !== destination.width || source.height !== destination.height || read.format !== write.format) {
+    if (source.width !== destination.width || source.height !== destination.height || read.format !== write.format
+      || (aspect === "depth" && ((source.depthStorage ?? "fixed") !== (destination.depthStorage ?? "fixed") || source.hasStencil !== destination.hasStencil))) {
       throw new RenderDeviceError("Copy attachments must have identical size and format", "INVALID_RESOURCE_COPY");
     }
     if (write.sampleCount !== 1 || (read.sampleCount > 1 && aspect !== "color")) {

@@ -62,16 +62,23 @@ describe("renderer depth preflight", () => {
     } finally { f.dispose(); }
   });
 
-  it("rejects logarithmic depth on WebGPU and without a finite near/far range before compilation", async () => {
+  it("rejects logarithmic depth without a finite near/far range before compilation", async () => {
     const f = await fixture();
     try {
       await expect(f.renderer.precompile(f.source, { viewProjectionMatrix: IDENTITY,
         projectionMetadata: { kind: "custom", mode: "logarithmic", clipRange: "minus-one-to-one" } })).rejects.toMatchObject({ code: "DEPTH_MODE_UNSUPPORTED" });
-      Object.defineProperty(f.renderer.device, "kind", { configurable: true, value: "webgpu" });
-      await expect(f.renderer.precompile(f.source, { viewProjectionMatrix: IDENTITY,
-        projectionMetadata: { ...STANDARD, mode: "logarithmic" } })).rejects.toThrow(/generated WebGPU programs do not write logarithmic/);
       expect(f.collectRenderItems).not.toHaveBeenCalled();
       expect(f.compile).not.toHaveBeenCalled();
+    } finally { f.dispose(); }
+  });
+
+  it("no longer rejects logarithmic depth for a WebGPU device kind (generated WGSL writes frag_depth)", async () => {
+    const f = await fixture();
+    try {
+      Object.defineProperty(f.renderer.device, "kind", { configurable: true, value: "webgpu" });
+      const camera = { viewProjectionMatrix: IDENTITY, viewMatrix: IDENTITY, projectionMetadata: { ...STANDARD, mode: "logarithmic" as const } };
+      await expect(f.renderer.precompile(f.source, camera)).resolves.toMatchObject({ compiledPrograms: expect.any(Number) });
+      expect(f.renderer.device.getDepthConvention?.()).toMatchObject({ mode: "logarithmic", logRange: { near: 0.1, far: 100 } });
     } finally { f.dispose(); }
   });
 

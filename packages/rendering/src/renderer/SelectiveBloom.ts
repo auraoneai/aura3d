@@ -197,7 +197,9 @@ export function createSelectiveBloomTarget(
   height: number,
   format: "rgba16f" | "rgba32f",
   depthTexture: boolean,
-  sampleCount: number
+  sampleCount: number,
+  /** Match the forward target's depth storage (float for reversed-Z precision). */
+  depthPrecision: "fixed" | "float" = "fixed"
 ): SelectiveBloomTarget | null {
   const host = webgl2DeviceHost(device);
   if (!host || !selectiveDeviceIsBuiltin(device)) return null;
@@ -217,7 +219,8 @@ export function createSelectiveBloomTarget(
     target = device.createRenderTarget({
       width, height, format, sampleCount: 1, label: "renderer-selective-bloom",
       depth: depthTexture ? "texture" : false,
-      colorAttachments: [{ format }, { format }]
+      colorAttachments: [{ format }, { format }],
+      ...(depthPrecision === "float" && depthTexture ? { depthPrecision } : {})
     });
     const framebuffer = (target as RenderTarget & { readonly framebuffer?: WebGLFramebuffer }).framebuffer;
     if (!framebuffer || target.sampleCount !== 1 || target.colorTextures?.[0] !== target.colorTexture ||
@@ -231,10 +234,12 @@ export function createSelectiveBloomTarget(
       ownedDepth = gl.createRenderbuffer();
       if (!ownedDepth) return null;
       gl.bindRenderbuffer(gl.RENDERBUFFER, ownedDepth);
-      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+      gl.renderbufferStorage(gl.RENDERBUFFER, depthPrecision === "float" ? gl.DEPTH_COMPONENT32F : gl.DEPTH_COMPONENT16, width, height);
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
       gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, ownedDepth);
       if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) return null;
+      // The owned float renderbuffer is this target's depth storage.
+      if (depthPrecision === "float") (target as { depthStorage?: "fixed" | "float" }).depthStorage = "float";
     }
     const ready = target;
     const depth = ownedDepth;
