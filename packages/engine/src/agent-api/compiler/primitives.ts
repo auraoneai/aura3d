@@ -12,7 +12,7 @@ import { lodMarkerOf } from "../lodMarkers.js";
 import { createModelMatrixV2, parentTransformOf } from "./sceneGraph.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, fetchBytes, type AssetIntegrity, type AssetRequestOptions, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
-import { createPrimitiveGeometry, DepthPreviewMaterial, PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import { createPrimitiveGeometry, DepthPreviewMaterial, InstancedUnlitMaterial, PortableShaderMaterial, UnlitMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, type EnvironmentLightingOptions } from "@aura3d/rendering";
 import { createProductionPbrHdrPipelineFromLinear, createProductionPbrHdrPipelineFromRadiance, parseProductionRadianceHDR } from "../../../../rendering/src/production-runtime/PBRHDRPipeline.js";
 import { decodeRgbeEnvironmentMap, type LinearHdrEnvironmentMapSource } from "../../../../rendering/src/EnvironmentMapResources.js";
 import type { AuraParityPrimitiveParams } from "@aura3d/rendering";
@@ -923,7 +923,17 @@ export function productionPrimitiveAlphaCutoff(node: AuraPrimitiveNode): number 
   return masked ? cutoff ?? 0.5 : 0;
 }
 
-export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial {
+/**
+ * S5-WP19-04: the GPU material label. An authored material `name` (`material.pbr({ name })`)
+ * is appended so diagnostics, program labels and texture-upgrade rows name the material.
+ */
+export function productionPrimitiveMaterialLabel(prefix: string, node: AuraPrimitiveNode, resourceName?: string): string {
+  const base = `${prefix}-${resourceName ?? `${node.primitive}${node.name ? `-${node.name}` : ""}`}`;
+  const authored = node.material?.name;
+  return typeof authored === "string" && authored.length > 0 ? `${base}:${authored}` : base;
+}
+
+export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial | UnlitMaterial | InstancedUnlitMaterial {
   const materialSpec = node.material;
   if (materialSpec?.kind === "depth-preview") {
     const extra = Object.keys(materialSpec).find((key) => key !== "kind" && key !== "depthPreview");
@@ -943,6 +953,19 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
   }
   const { baseColor, opacity, emissiveColor, clearcoat, sheenColor, declaresExtension, transmission, thicknessRange, sheen, iridescence, anisotropy, environmentIntensity, envMapIntensity } =
     resolveProductionPrimitiveScalars(node);
+  // S5-WP19-04: `unlit: true` (KHR_materials_unlit semantics) draws the base colour and
+  // opacity with the unlit programs, exactly as an imported unlit glTF material does
+  // (GLTFRenderResources: UnlitMaterial / InstancedUnlitMaterial / TexturedUnlitMaterial).
+  // Lighting-only factors have no effect on an unlit surface.
+  if (materialSpec?.unlit === true) {
+    const name = productionPrimitiveMaterialLabel("a3d-production-unlit-primitive", node);
+    const color = [baseColor[0], baseColor[1], baseColor[2], opacity] as const;
+    const renderState = productionPrimitiveRenderState(node, opacity);
+    const unlit = node.instances ? new InstancedUnlitMaterial({ name, color, renderState }) : new UnlitMaterial({ name, color, renderState });
+    const unlitCutoff = productionPrimitiveAlphaCutoff(node);
+    if (unlitCutoff > 0) unlit.setParameter("u_alphaCutoff", unlitCutoff);
+    return unlit;
+  }
   /*
    * Native instance submission requires the renderer's instanced shader contract. The ordinary
    * PBR shader intentionally has no instance matrix inputs and ForwardPass therefore expands it.
@@ -953,7 +976,7 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
    */
   if (node.instances && !declaresExtension && transmission === 0 && thicknessRange === undefined && materialSpec?.thickness === undefined && materialSpec?.ior === undefined && materialSpec?.attenuationColor === undefined && materialSpec?.attenuationDistance === undefined && productionPrimitiveSpecularOptions(materialSpec) === undefined) {
     const instanced = new InstancedPBRMaterial({
-      name: `a3d-production-instanced-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
+      name: productionPrimitiveMaterialLabel("a3d-production-instanced-primitive", node),
       baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
       metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
       roughness: clamp01(materialSpec?.roughness ?? 0.58),
@@ -973,7 +996,7 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
     return instanced;
   }
   const lit = new PBRMaterial({
-    name: `a3d-production-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
+    name: productionPrimitiveMaterialLabel("a3d-production-primitive", node),
     baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
     metallic: clamp01(materialSpec?.metallic ?? materialSpec?.metalness ?? 0),
     roughness: clamp01(materialSpec?.roughness ?? 0.58),

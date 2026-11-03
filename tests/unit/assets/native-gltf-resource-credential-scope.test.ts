@@ -1,7 +1,7 @@
 import { createHash, webcrypto } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GLTFLoader } from "../../../packages/assets/src/GLTFLoader";
-import { createGLTFRenderResources, type GLTFImageDecoder } from "../../../packages/assets/src/GLTFRenderResources";
+import { createGLTFRenderResources, type GLTFImageDecoder, type GLTFRenderResources } from "../../../packages/assets/src/GLTFRenderResources";
 import { GLTFSharedTextureCache } from "../../../packages/assets/src/GLTFSharedTextureCache";
 import { LoadContext } from "../../../packages/assets/src/LoadContext";
 import { AssetIntegrityError } from "../../../packages/assets/src/LoaderFetch";
@@ -28,7 +28,7 @@ function documentWithImage(uri = "data:image/png;base64,AA==") {
 const inlineUrl = () => `data:model/gltf+json,${encodeURIComponent(JSON.stringify(documentWithImage()))}`;
 const loadAsset = () => new GLTFLoader().load({ url: inlineUrl() }, new LoadContext());
 const pixels = () => ({ width: 1, height: 1, data: new Uint8Array([10, 20, 30, 255]) });
-const textureOf = (resources: Awaited<ReturnType<typeof createGLTFRenderResources>>) => [...resources.textureLibrary.values()][0]!;
+const textureOf = (resources: GLTFRenderResources) => [...resources.textureLibrary.values()][0]!;
 
 beforeEach(() => { vi.stubGlobal("crypto", webcrypto); });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });

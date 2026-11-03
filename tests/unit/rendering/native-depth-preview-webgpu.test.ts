@@ -13,7 +13,7 @@ import { globalShaderSource } from "../../../packages/rendering/src/ShaderLibrar
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { createEngineBatchInstanceItem, rememberBatchMembers } from "../../../packages/rendering/src/batching/BatchMembers";
 
-const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
+const identity: readonly number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 const hasCommand = (name: string) => spawnSync(name, ["--version"], { stdio: "ignore" }).status === 0;
 
 type BufferCapture = { readonly label: string; destroy(): void };

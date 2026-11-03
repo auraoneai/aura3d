@@ -280,7 +280,9 @@ function resolveDemoEntry(root: string, id: string, sourceHtml: string): string 
   if (existsSync(sourceHtml)) {
     const declared = /<script[^>]+src="([^"]+)"/.exec(readFileSync(sourceHtml, "utf8"))?.[1];
     if (declared) {
-      const normalized = declared.replace(/^\.\//, "");
+      // Fixture hosts name the entry root-absolutely (`/examples/<id>/main.ts`)
+      // so an isolated Vite build resolves it; strip that prefix like `./`.
+      const normalized = declared.replace(/^\.\//, "").replace(new RegExp(`^/examples/${id}/`), "");
       // The page may reference a built `.js` name whose source is TypeScript.
       const candidates = normalized.endsWith(".js")
         ? [normalized.replace(/\.js$/, ".ts"), normalized]

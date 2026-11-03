@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Geometry } from "../../../packages/rendering/src/Geometry";
-import { InstancedPBRMaterial, PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
-import { MockRenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
+import { InstancedPBRMaterial } from "../../../packages/rendering/src/InstancedPBRMaterial";
+import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
+import { MockRenderDevice, type RenderTargetDescriptor, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { createLeanCoreShaderLibrary } from "../../../packages/rendering/src/ShaderLibraryCore";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
@@ -11,6 +12,13 @@ import { renderTargetPoolSlot, type RenderTargetPoolLike } from "../../../packag
 import { batchPlanCacheFor } from "../../../packages/rendering/src/renderer/CullingBatching";
 import { RenderTargetPool } from "../../../packages/rendering/src/resources/RenderTargetPool";
 import type { TargetPoolLease } from "../../../packages/rendering/src/resources/RenderTargetPoolLease";
+
+/** Pool acquire descriptor → device descriptor; the renderer only pools color formats. */
+function poolTargetDescriptor(desc: Parameters<RenderTargetPoolLike["acquire"]>[0]): RenderTargetDescriptor {
+  const { format } = desc;
+  if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") throw new Error(`pooled target format ${format} is not a color target format`);
+  return { ...desc, format, sampleCount: desc.samples };
+}
 
 const flags = createTrustedQrFlags({ A3D_QR_TIERS: true });
 const planFlags = createTrustedQrFlags({});
@@ -55,7 +63,7 @@ describe("renderer post and batch disposal retry", () => {
     let blocked = true, reenter = false;
     const targets: RenderTarget[] = [], attempts: number[] = [];
     const pool: RenderTargetPoolLike & { acquireLease: (desc: Parameters<RenderTargetPoolLike["acquire"]>[0]) => TargetPoolLease } = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release() {},
       trim() {},
       acquireLease(desc) {
@@ -173,7 +181,7 @@ describe("renderer post and batch disposal retry", () => {
     const postError = new Error("late post release");
     let blocked = true, attempts = 0;
     const pool: RenderTargetPoolLike & { acquireLease: (desc: Parameters<RenderTargetPoolLike["acquire"]>[0]) => TargetPoolLease } = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release() {}, trim() {},
       acquireLease(desc) {
         const target = this.acquire(desc);

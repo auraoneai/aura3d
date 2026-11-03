@@ -179,7 +179,8 @@ describe("meshy ledger reconcile against Prism (mocked, no network, no spend)", 
     const failing = vi.fn(async () => {
       throw new Error("connect failed to https://x/?k=sekret-key");
     });
-    const error = await fetchPrismPool({ key: "sekret-key", fetchImpl: failing as unknown as typeof fetch }).catch((caught) => caught as Error);
+    const error: unknown = await fetchPrismPool({ key: "sekret-key", fetchImpl: failing as unknown as typeof fetch }).then(() => undefined, (caught: unknown) => caught);
+    if (!(error instanceof Error)) throw new Error("fetchPrismPool must reject with an Error when fetch fails");
     expect(error.message).not.toContain("sekret-key");
     expect(error.message).toContain("<redacted>");
     const denied = vi.fn(async () => new Response("no", { status: 401 }));

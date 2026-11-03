@@ -1,7 +1,9 @@
 const status = document.querySelector("#aura3d-export-status");
 const canvas = document.querySelector("#aura3d-export");
 const context = canvas.getContext("2d");
-const project = await fetch("./project.json").then((response) => response.json());
+// Module-relative so a bundled build emits project.json beside the runtime;
+// it resolves to the same file next to runtime.js when served unbundled.
+const project = await fetch(new URL("./project.json", import.meta.url)).then((response) => response.json());
 const provenanceOperations = project.metadata.provenance?.operations?.map((operation) => operation.id) ?? [];
 const startedAt = performance.now();
 

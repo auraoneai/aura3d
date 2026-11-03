@@ -1,3 +1,5 @@
+// Window.__AURA3D_EDITOR_APP__ is declared once, by the editor app itself.
+import type {} from "../../apps/editor/src/EditorShell";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";

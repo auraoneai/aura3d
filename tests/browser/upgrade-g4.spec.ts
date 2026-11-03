@@ -109,10 +109,8 @@ for (const app of APPS) {
     const advanced = Object.keys(snap1.nums).filter((k) => k in snap0.nums && Math.abs(snap0.nums[k]! - snap1.nums[k]!) > 1e-6).slice(0, 6);
     const deprecations = consoleLines.filter((l) => /deprecat|removed in 4\.1|a3d-migrate/i.test(l));
     const result = { app, mode: MODE, status: resp?.status() ?? 0, canvases, started, pxBefore, pxAfter, frameChanged: Number(changed.toFixed(4)), hooks: snap1.hooks, drawCalls: snap1.drawCalls, stateAdvanced: advanced, deprecations: deprecations.slice(0, 5), console: consoleLines.slice(0, 8), pageErrors: pageErrors.slice(0, 5), failed: failed.slice(0, 8) };
-    // eslint-disable-next-line no-console
     console.log(`G4_JSON ${JSON.stringify(result)}`);
     const small = await page.evaluate(async (b64: string) => { const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode(); const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * img.naturalHeight / img.naturalWidth); c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5).split(",")[1]!; }, after.toString("base64"));
-    // eslint-disable-next-line no-console
     console.log(`G4_IMG ${app} ${small}`);
     expect(resp?.status() ?? 0).toBeLessThan(400);
     expect(pageErrors, "page errors").toEqual([]);

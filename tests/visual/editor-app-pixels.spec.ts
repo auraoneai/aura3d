@@ -1,3 +1,5 @@
+// Window.__AURA3D_EDITOR_APP__ is declared once, by the editor app itself.
+import type {} from "../../apps/editor/src/EditorShell";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../browser/example-dev-server";
 
@@ -59,11 +61,3 @@ test.describe("editor app visual pixels", () => {
     await page.screenshot({ path: testInfo.outputPath("editor-app-pixels.png"), fullPage: true });
   });
 });
-
-declare global {
-  interface Window {
-    __AURA3D_EDITOR_APP__?: {
-      getState(): { readonly status: "booting" | "ready" | "error" };
-    };
-  }
-}

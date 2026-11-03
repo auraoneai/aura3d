@@ -17,6 +17,8 @@ For manual inspection, serve the repository with the browser-test development se
 /examples/product-configurator/index.html
 ```
 
+Append `?finish=copper` or `?finish=ceramic` to open on that finish (the default is Graphite).
+
 ## Systems Used
 
 - `createProductConfiguratorWorkflow` from `@aura3d/workflows`

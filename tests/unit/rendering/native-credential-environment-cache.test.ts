@@ -27,7 +27,7 @@ function deferred<T>() {
 }
 
 /** A single linear RGBE texel; differing red bytes make stale reuse visible. */
-function hdr(red: number): Uint8Array {
+function hdr(red: number): Uint8Array<ArrayBuffer> {
   return new Uint8Array(Buffer.concat([
     Buffer.from("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1 +X 1\n", "ascii"),
     Buffer.from([red, 0, 0, 129])

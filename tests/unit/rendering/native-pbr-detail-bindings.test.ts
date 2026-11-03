@@ -22,7 +22,9 @@ describe("physical material color and detail map bindings", () => {
   it("preserves linear storage and sRGB texture encodings through generated binding", () => {
     const storage = new Texture({ width: 1, height: 1, colorSpace: "linear", usage: ["sampled", "storage", "copy-dst"] });
     const srgb = new Texture({ width: 1, height: 1, colorSpace: "srgb", data: pixels() });
-    const gl = { SRGB8_ALPHA8: 10, RGBA: 11, RGBA8: 12 } as WebGL2RenderingContext;
+    // Partial GL double: only the three format enums the helpers read, with their real values.
+    const formats: Pick<WebGL2RenderingContext, "SRGB8_ALPHA8" | "RGBA" | "RGBA8"> = { SRGB8_ALPHA8: 0x8c43, RGBA: 0x1908, RGBA8: 0x8058 };
+    const gl = formats as WebGL2RenderingContext;
     const device = new MockRenderDevice();
     const shader = makeShader(device);
     for (const texture of [storage, srgb]) {

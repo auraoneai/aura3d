@@ -73,7 +73,7 @@ describe("glTF compression decoder hooks", () => {
   });
 
   it("names unsupported, failed readiness and invalid Meshopt descriptors", async () => {
-    const descriptor = { bufferViewIndex: 9, count: 3, byteStride: 12, mode: "ATTRIBUTES" as const };
+    const descriptor = { bufferViewIndex: 9, count: 3, byteStride: 12, mode: "ATTRIBUTES" as const, filter: "NONE" as const };
     const source = new Uint8Array([1, 2, 3]);
     const unsupported = createMeshoptDecoder({ supported: false, decodeGltfBuffer() {} });
     await expect(unsupported(source, descriptor)).rejects.toThrow(/bufferView 9: decoder is unsupported/);

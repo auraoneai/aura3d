@@ -1,4 +1,4 @@
-export function loadSkinnedMesh(glb: any): { indices: number[]; pos: number[][]; jointNames: string[] } & Record<string, any>;
+export function loadSkinnedMesh(glb: any, primIndex?: number): { indices: number[]; pos: number[][]; jointNames: string[] } & Record<string, any>;
 export function skinnedPositions(mesh: any, fk: any): number[][];
 export function triangleStretch(glb: any, mesh?: any, clips?: string[], samples?: number): Float32Array;
 export function dropStretched(glb: any, limit?: number): { glb: any; removed: number; total: number; stretch: Float32Array };

@@ -4,7 +4,7 @@ import { Renderer, type RenderSource } from "../../../packages/rendering/src/Ren
 import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core.js";
 import { createWorkerRenderer, installWorkerRenderer } from "../../../packages/engine/src/agent-api/app/workerRuntime.js";
 import type { AuraWorkerEndpoint, AuraWorkerHostEndpoint, AuraWorkerRequest, AuraWorkerResponse } from "../../../packages/engine/src/agent-api/app/workerProtocol.js";
-import { realCompilerImpl } from "../../../packages/engine/src/agent-api/compiler/compileScene.js";
+import { realCompilerImpl, type MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene.js";
 import { createSceneLabelLayer, worldLabelsFromSnapshot } from "../../../packages/engine/src/agent-api/compiler/labels.js";
 import { createProductionRuntimePostprocess } from "../../../packages/engine/src/agent-api/compiler/postprocess.js";
 import { effects } from "../../../packages/engine/src/agent-api/nodes/effects.composite.js";
@@ -14,7 +14,7 @@ import { primitives } from "../../../packages/engine/src/agent-api/nodes/primiti
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene.js";
 import { text3D } from "../../../packages/engine/src/agent-api/nodes/text3d.js";
 import { TextureHandle, texture } from "../../../packages/engine/src/agent-api/nodes/texture.js";
-import type { AuraApp, AuraSceneSnapshot } from "../../../packages/engine/src/agent-api/nodes/types.js";
+import type { AuraApp, AuraPrimitiveNode, AuraSceneSnapshot } from "../../../packages/engine/src/agent-api/nodes/types.js";
 import { bindPostDiagnosticReader, collectPostSection, recordAuthoredPostContext, resetAuthoredPostContext, resetSubmittedPostprocess } from "../../../packages/engine/src/agent-api/postBridge.js";
 
 // Browser-shaped canvas and transport only; the renderer uses the source mock
@@ -134,10 +134,11 @@ describe("production compiler with an offscreen worker canvas", () => {
     try {
       await app.ready;
       expect(compile).toHaveBeenCalledTimes(1);
-      expect((compile.mock.calls[0]![1] as { canvas: unknown }).canvas).toBe(canvas);
-      const node = compile.mock.calls[0]![0].nodes.find(candidate => candidate.kind === "primitive")!;
-      const copy = (node as { material: { texture: TextureHandle } }).material.texture;
+      expect((compile.mock.calls[0]![1] as MountSceneCompileContext).canvas).toBe(canvas);
+      const node = compile.mock.calls[0]![0].nodes.find((candidate): candidate is AuraPrimitiveNode => candidate.kind === "primitive")!;
+      const copy = node.material?.texture;
       expect(copy).toBeInstanceOf(TextureHandle);
+      if (!(copy instanceof TextureHandle)) throw new Error("worker compile must receive a cloned TextureHandle");
       expect(copy).not.toBe(hostTexture);
       expect(Array.from(copy.texture.data as Uint8Array)).toEqual([1, 2, 3, 255]);
       const first = await app.step(0.016, 1);

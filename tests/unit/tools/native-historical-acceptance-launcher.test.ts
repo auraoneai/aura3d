@@ -24,13 +24,13 @@ function fixture() {
   const gate = {
     freezeCommit: 'c'.repeat(40), sourceInputDigest: 'd'.repeat(64), lockfileSha256: 'e'.repeat(64),
     runId: 'source-fixture', candidatePlan: { path: 'tests/reports/native-capabilities/run/candidate-plan.json', sha256: 'f'.repeat(64) },
-    deferredAcceptanceTests: HISTORICAL_ACCEPTANCE_TESTS.map((path: string, index: number) => ({
+    deferredAcceptanceTests: (HISTORICAL_ACCEPTANCE_TESTS as readonly string[]).map((path, index) => ({
       path, sha256: String(index + 1).repeat(64), phase: 'acceptance', status: 'not-run',
       assertionIds: [`${path}::case one`, `${path}::case two`]
     }))
   };
   const bytes = new Map<string, Buffer>();
-  const reports = HISTORICAL_REPORT_PATHS.map((path: string, index: number) => {
+  const reports = (HISTORICAL_REPORT_PATHS as readonly string[]).map((path, index) => {
     const body = Buffer.from(JSON.stringify({ synthetic: true, index }));
     bytes.set(path, body);
     const artifactPath = `aura3d-browser-artifacts/reports/${path.slice('tests/reports/'.length)}`;
@@ -164,7 +164,7 @@ describe('separate first-party historical replay cell', () => {
       path: HISTORICAL_REPLAY_TEST, sha256: '1'.repeat(64), phase: 'acceptance', status: 'not-run',
       assertionIds: [...HISTORICAL_REPLAY_ASSERTIONS], inapplicableAssertionIds: [...HISTORICAL_REPLAY_INAPPLICABLE],
       sourceTest: { path: HISTORICAL_REPLAY_SOURCE_TEST, sha256: '2'.repeat(64) },
-      fixtures: HISTORICAL_REPLAY_FIXTURES.map((ref): { path: string; sha256: string } => ({ ...ref })), currentCandidateBrowserReceipt: false };
+      fixtures: HISTORICAL_REPLAY_FIXTURES.map((ref: { path: string; sha256: string }): { path: string; sha256: string } => ({ ...ref })), currentCandidateBrowserReceipt: false };
     const gate = { deferredReplayTests: row };
     const assertions = row.assertionIds.map(id => ({ fullName: id.slice(row.path.length + 2), status: 'passed' }));
     const inapplicable = row.inapplicableAssertionIds.map(id => ({ fullName: id.slice(row.path.length + 2), status: 'pending' }));

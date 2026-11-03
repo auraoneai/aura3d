@@ -53,15 +53,15 @@ function fixture() {
     'tests/assets/example.test.ts', 'tests/integration/example.test.ts', 'packages/core/tests/core.test.ts',
     'tools/release/example.test.mjs', 'tools/agent-templates/cli.test.mjs',
     HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_SOURCE_TEST, ...HISTORICAL_ACCEPTANCE_TESTS,
-    HISTORICAL_REPLAY_TEST, HISTORICAL_REPLAY_SOURCE_TEST, ...HISTORICAL_REPLAY_FIXTURES.map(fixture => fixture.path),
+    HISTORICAL_REPLAY_TEST, HISTORICAL_REPLAY_SOURCE_TEST, ...HISTORICAL_REPLAY_FIXTURES.map((fixture: { readonly path: string }) => fixture.path),
     EXTERNAL_CODEC_TEST, EXTERNAL_CODEC_CONFIG, EXTERNAL_CODEC_POLICY, EXTERNAL_CODEC_CONTRACT, EXTERNAL_CODEC_CONTRACT_TYPES,
     EXTERNAL_CODEC_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER, EXTERNAL_CODEC_LAUNCHER_TEST,
     PORTABLE_NPM_LOCK, PORTABLE_NPM_LOCK_TYPES, PORTABLE_NPM_LOCK_TEST
   ];
   const realBaseline = JSON.parse(readFileSync(new URL('../../../tools/muse3jsparity-readiness/baseline-unit-inventory.json', import.meta.url), 'utf8')) as { schema: string; assertions: string[] };
-  const baseline = { schema: realBaseline.schema, assertions: realBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some(path => id.startsWith(`${path}::`))) };
+  const baseline = { schema: realBaseline.schema, assertions: realBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some((path: string) => id.startsWith(`${path}::`))) };
   const files = [...new Set(paths)].sort().map(path => {
-    const replay = HISTORICAL_REPLAY_FIXTURES.find(fixture => fixture.path === path);
+    const replay = HISTORICAL_REPLAY_FIXTURES.find((fixture: { readonly path: string }) => fixture.path === path);
     const bytes = replay ? readFileSync(new URL(`../../../${path}`, import.meta.url))
       : path === HISTORICAL_ACCEPTANCE_INVENTORY ? JSON.stringify(baseline)
         : path === 'pnpm-lock.yaml' ? 'synthetic lock' : `synthetic source: ${path}\n`;
@@ -88,7 +88,8 @@ function fixture() {
   put(root, archive.path, 'candidate');
   put(root, planPath, JSON.stringify(plan));
   put(root, `${dir}/source-manifest.json`, manifestBytes);
-  const steps = buildSteps(runId, dir, releaseKind, inventory).map(step => {
+  const canonicalSteps: ReadonlyArray<{ readonly id: unknown; readonly argv: unknown }> = buildSteps(runId, dir, releaseKind, inventory);
+  const steps = canonicalSteps.map(step => {
     const id = step.id, argv = step.argv;
     if (typeof id !== 'string' || !(argv === null
       || Array.isArray(argv) && argv.every((arg: unknown): arg is string => typeof arg === 'string'))) {
@@ -101,11 +102,11 @@ function fixture() {
   for (const step of prefix) {
     const log = `${dir}/logs/${step.id}.log`, logBytes = `successful ${step.id}\n`;
     put(root, log, logBytes);
-    const supplemental = inventory.supplementalChecks.find(item => item.id === step.id);
+    const supplemental = inventory.supplementalChecks.find((item: { readonly id: string }) => item.id === step.id);
     const check: Check = { id: step.id, argv: step.argv, subruns: [], status: 'passed', started: true, exitCode: 0, log, sha256: digest(logBytes),
       ...(supplemental ? { runner: supplemental.runner, cwd: supplemental.cwd } : {}) };
     if (['parity', 'unit', 'assets-qr', 'unit-dist'].includes(step.id)) {
-      const raw = { success: true, numTotalTests: expected[step.id].length, testResults: expected[step.id].map(path => ({
+      const raw = { success: true, numTotalTests: expected[step.id].length, testResults: expected[step.id].map((path: string) => ({
         name: path, assertionResults: [{ status: 'passed', fullName: `${path} assertion` }]
       })) };
       const bytes = JSON.stringify(raw), path = `${dir}/${step.id}.json`;
@@ -313,7 +314,7 @@ describe('source build handoff', () => {
 
   it('cleans up a failed staging attempt if retained inputs change after verification', () => {
     const f = fixture(), original = f.api.verifyCandidate;
-    f.api.verifyCandidate = (...args) => {
+    f.api.verifyCandidate = (...args: unknown[]) => {
       const result = original(...args);
       put(f.root, f.report.checks[0].log, 'changed after verification');
       return result;

@@ -545,6 +545,11 @@ const qa = installQaHooks("splat-rush", {
     updateHud();
   },
   extras: {
+    /** `ready()` as a plain value (true once boot, program warm-up and any `autostart` warm-up frames are done), for
+     * page-load readers that poll a property instead of calling a function (the example catalog's settle signal). */
+    get booted(): boolean {
+      return ready;
+    },
     /** Drive `n` steps with the closed-loop autopilot (start, drag, then steer), rendering once at the end. */
     runAutopilot(n: number, mistakeRows: number[] = []) {
       const driver = new Autopilot({ maxDx: 14, mistakeRows, aimOffset: 0 });

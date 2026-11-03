@@ -12,8 +12,15 @@ import {
   LoadContext,
   evaluateGLTFExtensionSupport,
   getGLTFExtensionSupport,
-  inspectGLTFAsset
+  inspectGLTFAsset,
+  type GLTFAsset
 } from "../../packages/assets/src";
+
+function extensionSupportOf(asset: GLTFAsset): NonNullable<GLTFAsset["loaderDiagnostics"]["extensionSupport"]> {
+  const support = asset.loaderDiagnostics.extensionSupport;
+  if (!support) throw new Error("glTF loader did not report extension support diagnostics");
+  return support;
+}
 
 describe("glTF extension support matrix", () => {
   it("describes the nonstandard instance-color convention without claiming general custom attributes", () => {
@@ -141,10 +148,10 @@ describe("glTF extension support matrix", () => {
 
     const asset = await new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext());
 
-    expect(asset.loaderDiagnostics.extensionSupport.schemaVersion).toBe("gltf-extension-support");
-    expect(asset.loaderDiagnostics.extensionSupport.parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_animation_pointer", "KHR_materials_transmission"]);
-    expect(asset.loaderDiagnostics.extensionSupport.diagnosticOnly.map((entry) => entry.name)).toEqual([]);
-    expect(asset.loaderDiagnostics.extensionSupport.unsupportedUsed).toEqual(["EXT_vendor_unknown"]);
+    expect(extensionSupportOf(asset).schemaVersion).toBe("gltf-extension-support");
+    expect(extensionSupportOf(asset).parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_animation_pointer", "KHR_materials_transmission"]);
+    expect(extensionSupportOf(asset).diagnosticOnly.map((entry) => entry.name)).toEqual([]);
+    expect(extensionSupportOf(asset).unsupportedUsed).toEqual(["EXT_vendor_unknown"]);
     expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual(["EXT_vendor_unknown"]);
     expect(asset.toJSON().loaderDiagnostics.extensionSupport).toEqual(asset.loaderDiagnostics.extensionSupport);
   });
@@ -160,7 +167,7 @@ describe("glTF extension support matrix", () => {
 
     const asset = await new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext());
     expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual([]);
-    expect(asset.loaderDiagnostics.extensionSupport.parsedWithLimits.map((entry) => entry.name)).toEqual([
+    expect(extensionSupportOf(asset).parsedWithLimits.map((entry) => entry.name)).toEqual([
       "KHR_animation_pointer"
     ]);
   });
@@ -253,7 +260,7 @@ describe("glTF extension support matrix", () => {
       const asset = await new GLTFLoader().load({ url: dataGLTF(document), type: "gltf" }, new LoadContext());
       expect(asset.materials[0]?.[field]).toEqual(expected);
       expect(asset.loaderDiagnostics.unsupportedExtensions).toEqual([]);
-      expect(asset.loaderDiagnostics.extensionSupport.unsupportedRequired).toEqual([]);
+      expect(extensionSupportOf(asset).unsupportedRequired).toEqual([]);
     }
   );
 

@@ -5,9 +5,14 @@
   "type": "module",
   "description": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera.",
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }

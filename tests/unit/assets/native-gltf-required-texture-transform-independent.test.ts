@@ -37,7 +37,7 @@ function document(options: {
   readonly infoTexCoord?: number;
   readonly transformTexCoord?: number;
 } = {}): Record<string, any> {
-  const targets = options.targets ?? slots.flatMap(([path]) => leaves.map((leaf) => ({ path, leaf })));
+  const targets: readonly Target[] = options.targets ?? slots.flatMap(([path]) => leaves.map((leaf) => ({ path, leaf })));
   const views: Record<string, number>[] = [];
   const accessors: Record<string, unknown>[] = [];
   const chunks: Uint8Array[] = [];

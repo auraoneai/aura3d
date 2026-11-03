@@ -428,7 +428,10 @@ describe("matrix native offline store orchestration", () => {
     write(parent, "package.json", manifestBytes); write(parent, "package-lock.json", lockBytes);
     mkdirSync(join(parent, "node_modules"));
     const admitted = vi.spyOn(npmGraph, "assertIndependentNpmConsumer").mockReturnValue({ inputPaths: [] });
-    const installed = vi.spyOn(cleanInstall, "assertInstalledArchiveSet").mockImplementation(() => {});
+    const installed = vi.spyOn(cleanInstall, "assertInstalledArchiveSet").mockImplementation(() => ({
+      schema: "aura3d.npm-installed-consumer/1", archiveAdmissionBound: true, packagePaths: [], fileCount: 0, bytes: 0,
+      installationAuthorized: false, executionAuthorized: false, scope: "synthetic"
+    }));
     const input = { projectDir: parent, admission, archives: [], readArchive: () => Buffer.alloc(0), candidatePackages: [] };
     expect(() => verifyMatrixInstalledNpmProject(input)).toThrow(/MATRIX_PLATFORM_UNAVAILABLE/);
     expect(installed).not.toHaveBeenCalled();

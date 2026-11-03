@@ -28,7 +28,8 @@ vi.mock("../../../packages/engine/src/agent-api/app/frameLoop", async (original)
 });
 
 import { createAuraApp, primitives, scene } from "../../../packages/engine/src";
-import type { AuraApp, AuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { AuraApp } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { MutableAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
 
 class FakeCanvas {
   width = 64; height = 64; clientWidth = 64; clientHeight = 64;
@@ -234,7 +235,7 @@ describe("app controller retirement ordering", () => {
     const app = makeApp(controller(dispose, () => Promise.resolve()));
     await app.readyStrict();
     const error = new Error("registry cleanup failure");
-    const nodesDispose = vi.spyOn(app.nodes as AuraRuntimeNodeRegistry, "dispose")
+    const nodesDispose = vi.spyOn(app.nodes as MutableAuraRuntimeNodeRegistry, "dispose")
       .mockImplementationOnce(() => { throw error; });
     expect(contains(await rejected(app.disposeAsync()), error)).toBe(true);
     expect(contains(await rejected(app.disposeAsync()), error)).toBe(true);

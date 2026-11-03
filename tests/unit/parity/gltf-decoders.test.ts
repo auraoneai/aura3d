@@ -283,7 +283,6 @@ function fixture(name: string): ArrayBuffer {
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 let dracoModule: any;
 async function draco(): Promise<any> {
   if (!dracoModule) {

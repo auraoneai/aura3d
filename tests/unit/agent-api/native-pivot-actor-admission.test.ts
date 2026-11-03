@@ -51,10 +51,10 @@ afterEach(() => { vi.restoreAllMocks(); });
 
 describe("pivoted model admission before actor publication", () => {
   it.each([
-    ["lookAt on the legacy model matrix", { pivot: [1, 0, 0], lookAt: [0, 0, 0] }, /PIVOT_UNSUPPORTED_LOOK_AT/],
-    ["model LOD", { pivot: [1, 0, 0], lod: true }, /PIVOT_UNSUPPORTED_LOD/],
-    ["instance LOD", { instances: [{ pivot: [1, 0, 0] }], instanceLod: { levels: [] } }, /PIVOT_UNSUPPORTED_LOD/],
-    ["invalid pivot", { pivot: [1, Number.NaN, 0] }, /PIVOT_INVALID/]
+    ["lookAt on the legacy model matrix", { pivot: [1, 0, 0] as const, lookAt: [0, 0, 0] as const }, /PIVOT_UNSUPPORTED_LOOK_AT/],
+    ["model LOD", { pivot: [1, 0, 0] as const, lod: true }, /PIVOT_UNSUPPORTED_LOD/],
+    ["instance LOD", { instances: [{ pivot: [1, 0, 0] as const }], instanceLod: { levels: [] } }, /PIVOT_UNSUPPORTED_LOD/],
+    ["invalid pivot", { pivot: [1, Number.NaN, 0] as const }, /PIVOT_INVALID/]
   ])("rejects %s before actor acquisition in compiled and legacy mounts", async (_name, overrides, failure) => {
     const value = snapshot([modelNode("bad", overrides as Partial<AuraModelNode>)]);
     const createRenderer = vi.spyOn(Renderer, "create");

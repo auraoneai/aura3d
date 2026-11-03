@@ -38,7 +38,6 @@ describe("root motion on real certified clips", () => {
     expect(rootTrack?.valueType).toBe("vector3");
 
     const report = measureRootMotionLoopClosure(walk, "root.translation");
-    // eslint-disable-next-line no-console
     console.log("kenney-walk-root-motion", JSON.stringify(report));
     // In-place negative control: zero travel cannot establish planted-foot slip.
     expect(report.cycleDelta).toEqual([0, 0, 0]);
@@ -86,7 +85,6 @@ describe("root motion on real certified clips", () => {
     expect(comTrack?.valueType).toBe("vector3");
 
     const report = measureRootMotionLoopClosure(take, "Bip01_01.translation");
-    // eslint-disable-next-line no-console
     console.log("take001-com-root-motion", JSON.stringify(report));
     expect(Number.isFinite(report.cycleDistance)).toBe(true);
     expect(Number.isFinite(report.loopClosureError)).toBe(true);

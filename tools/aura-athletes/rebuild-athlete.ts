@@ -14,13 +14,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { GlbEditor } from "../../packages/aura3d-cli/src/skin/glbEdit.ts";
 import { buildHierarchy, loadSkins, readAccessor, readGlbFile, writeGlbFile } from "../../packages/aura3d-cli/src/skin/gltf.ts";
-// @ts-expect-error plain JS modules
 import { readGlb as fcRead, writeGlb as fcWrite } from "../aura-fc/glb.mjs";
-// @ts-expect-error plain JS modules
 import { rebuildLegs } from "../aura-fc/rebuild-legs.mjs";
-// @ts-expect-error plain JS modules
 import { rebuildArms } from "../aura-fc/rebuild-arms.mjs";
-// @ts-expect-error plain JS modules
 import { cutBridges } from "../aura-fc/bridge-cut.mjs";
 
 type V = [number, number, number];

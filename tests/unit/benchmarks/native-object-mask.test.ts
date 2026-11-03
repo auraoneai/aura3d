@@ -233,7 +233,7 @@ describe("native object mask draw pass", () => {
     expect(target?.disposed).toBe(true);
     Object.defineProperty(f.device, "kind", { value: "webgl2" });
     expect(() => captureNativeObjectMask({ ...f, source })).toThrow(/OBJECT_MASK_DITHER_UNSUPPORTED/);
-    const context = { DITHER: 3024, RASTERIZER_DISCARD: 35977, SAMPLE_COVERAGE: 32928, isEnabled: vi.fn((_value: number) => true), disable: vi.fn((_value: number) => {}), enable: vi.fn((_value: number) => {}) };
+    const context = { DITHER: 0x0bd0 as const, RASTERIZER_DISCARD: 0x8c89 as const, SAMPLE_COVERAGE: 0x80a0 as const, isEnabled: vi.fn((_value: number) => true), disable: vi.fn((_value: number) => {}), enable: vi.fn((_value: number) => {}) };
     vi.spyOn(f.device, "draw").mockImplementationOnce(() => { throw new Error("raster failure"); });
     expect(() => captureNativeObjectMask({ ...f, source, webgl2Context: context })).toThrow("raster failure");
     expect(context.disable).toHaveBeenCalledWith(3024);

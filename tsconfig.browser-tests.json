@@ -4,7 +4,9 @@
   // separately served TypeScript harnesses. It does not run a browser or
   // claim that the older browser suite has been typechecked.
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    // Browser specs iterate DOM collections (HTMLCollection, NodeList).
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": [
     "tests/browser/native-*.ts",

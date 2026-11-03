@@ -31,7 +31,7 @@ const flag = (k: string): boolean => params.get(k) === "1";
 const CONTROLLER: ControllerParams = { kRoll: 6, kVel: 1.2, deadband: 0.15, pace: "brisk", brakeDecel: 4, brakeMargin: 6 };
 
 declare global {
-  interface Window { __AURA_LAST_TRAIN__?: unknown; __AURA_LAST_TRAIN_ERROR__?: string }
+  interface Window { __AURA_LAST_TRAIN__?: unknown; __AURA_LAST_TRAIN_ERROR__?: string; __AURA_LAST_TRAIN_READY__?: boolean }
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -537,6 +537,8 @@ async function boot(): Promise<void> {
   mark("runtime bound");
   ready = true;
   $("loading").classList.add("hidden");
+  /* A data ready signal (the hook's `ready` is a function): set once the loading panel is gone, for capture runners that wait on a window value. */
+  window.__AURA_LAST_TRAIN_READY__ = true;
   const best = readBest();
   $("best").textContent = best ? `Best score on this device: ${best}` : "";
   if (titleMode) $("title").classList.remove("hidden");

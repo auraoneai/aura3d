@@ -166,7 +166,6 @@ test.describe("fixc", () => {
             try {
               await page.evaluate(({ hk, drive }) => {
                 const api = (window as unknown as Record<string, any>)[hk];
-                // eslint-disable-next-line no-new-func
                 return new Function("api", drive)(api);
               }, { hk: hook, drive: step.drive });
               await raf(page, 4);

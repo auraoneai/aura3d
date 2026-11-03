@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { MockRenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
+import { MockRenderDevice, type RenderTargetDescriptor, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { Renderer, type RendererPostProcessOptions } from "../../../packages/rendering/src/Renderer";
 import { createLeanCoreShaderLibrary } from "../../../packages/rendering/src/ShaderLibraryCore";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
@@ -11,6 +11,19 @@ import { RendererPostprocessPipeline } from "../../../packages/rendering/src/ren
 import type { RendererHost } from "../../../packages/rendering/src/renderer/RendererHost";
 import { RenderTargetPool } from "../../../packages/rendering/src/resources/RenderTargetPool";
 import type { TargetPoolLease } from "../../../packages/rendering/src/resources/RenderTargetPoolLease";
+
+/** Post-pipeline test double: these cases only read the host's device and size. */
+function postOnlyHost(device: RendererHost["device"]): RendererHost {
+  const host: Pick<RendererHost, "device" | "width" | "height"> = { device, width: 2, height: 2 };
+  return host as RendererHost;
+}
+
+/** Pool acquire descriptor → device descriptor; the renderer only pools color formats. */
+function poolTargetDescriptor(desc: Parameters<RenderTargetPoolLike["acquire"]>[0]): RenderTargetDescriptor {
+  const { format } = desc;
+  if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") throw new Error(`pooled target format ${format} is not a color target format`);
+  return { ...desc, format, sampleCount: desc.samples };
+}
 
 const tiersOn = createTrustedQrFlags({ A3D_QR_TIERS: true });
 const tiersOff = createTrustedQrFlags({ A3D_QR_TIERS: false });
@@ -30,7 +43,7 @@ function fixture(mode: "legacy" | "token" = "token") {
   const failures = new Map<number, unknown>();
   let onRelease: ((index: number) => void) | undefined;
   const acquire = (desc: PoolDescriptor): RenderTarget => {
-    const target = device.createRenderTarget({ ...desc, sampleCount: desc.samples });
+    const target = device.createRenderTarget(poolTargetDescriptor(desc));
     targets.push(target);
     live.add(target);
     return target;
@@ -240,7 +253,7 @@ describe("legacy postprocess chain cleanup retry", () => {
     const f = fixture();
     const otherDevice = new MockRenderDevice();
     const otherSource = otherDevice.createRenderTarget({ width: 2, height: 2, format: "rgba8", depth: false });
-    const other = new RendererPostprocessPipeline({ device: otherDevice, width: 2, height: 2 } as RendererHost);
+    const other = new RendererPostprocessPipeline(postOnlyHost(otherDevice));
     const failure = new Error("first device release");
     f.failures.set(0, failure);
     setRendererQrFlags(tiersOff, otherDevice);
@@ -679,7 +692,7 @@ describe("legacy postprocess chain cleanup retry", () => {
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
     setRendererQrFlags(tiersOn, device);
     const source = device.createRenderTarget({ width: 2, height: 2, format: "rgba8", depth: false });
-    const pipeline = new RendererPostprocessPipeline({ device, width: 2, height: 2 } as RendererHost);
+    const pipeline = new RendererPostprocessPipeline(postOnlyHost(device));
     const present = device.presentRenderTarget.bind(device);
     vi.spyOn(device, "presentRenderTarget").mockImplementationOnce(target => {
       present(target);
@@ -732,7 +745,7 @@ describe("legacy postprocess chain cleanup retry", () => {
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
     setRendererQrFlags(tiersOn, device);
     const source = device.createRenderTarget({ width: 2, height: 2, format: "rgba8", depth: false });
-    const pipeline = new RendererPostprocessPipeline({ device, width: 2, height: 2 } as RendererHost);
+    const pipeline = new RendererPostprocessPipeline(postOnlyHost(device));
     let borrower: TargetPoolLease | undefined;
     try {
       expect(() => pipeline.executePostprocess(chain, [source])).toThrow(failure);

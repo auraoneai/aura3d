@@ -100,6 +100,7 @@ function installRendererShell(observePublications = false) {
   const submissions: Submission[] = [];
   const publications: Publication[] = [];
   vi.spyOn(Renderer, "create").mockImplementation(async (options) => {
+    if (!options) throw new Error("The app must pass renderer options");
     const device = WebGL2Device.create({ canvas: options.canvas!, textureBudgetPolicy: options.textureBudgetPolicy });
     devices.push(device);
     const host = (device as unknown as { host: WebGL2DeviceHost }).host;
@@ -227,7 +228,7 @@ describe("public typed-model WebGL texture residency", () => {
       vi.useFakeTimers();
       canvas.context.setWait("TIMEOUT_EXPIRED");
       if (teardown === "remove") {
-        expect(app.nodes.remove("red")).toBe(true);
+        expect(app.nodes.remove?.("red")).toBe(true);
         expect(app.nodes.get("red")).toBeUndefined();
       }
       const disposal = app.disposeAsync();

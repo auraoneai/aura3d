@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Geometry } from "../../../packages/rendering/src/Geometry";
-import { InstancedPBRMaterial, PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
-import { MockRenderDevice, type RenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
+import { InstancedPBRMaterial } from "../../../packages/rendering/src/InstancedPBRMaterial";
+import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
+import { MockRenderDevice, type RenderTargetDescriptor, type RenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { resourceDisposalPending } from "../../../packages/rendering/src/ResourceLifecycle";
 import { createLeanCoreShaderLibrary } from "../../../packages/rendering/src/ShaderLibraryCore";
@@ -13,6 +14,13 @@ import { renderTargetPoolSlot, type RenderTargetPoolLike } from "../../../packag
 import { prd11RenderTargetPoolFor } from "../../../packages/rendering/src/lanes/prd11";
 import { batchPlanCacheFor } from "../../../packages/rendering/src/renderer/CullingBatching";
 import { RenderTargetPool } from "../../../packages/rendering/src/resources/RenderTargetPool";
+
+/** Pool acquire descriptor → device descriptor; the renderer only pools color formats. */
+function poolTargetDescriptor(desc: Parameters<RenderTargetPoolLike["acquire"]>[0]): RenderTargetDescriptor {
+  const { format } = desc;
+  if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") throw new Error(`pooled target format ${format} is not a color target format`);
+  return { ...desc, format, sampleCount: desc.samples };
+}
 
 const flags = createTrustedQrFlags({ A3D_QR_TIERS: true });
 const chain = { execution: "cpu-deterministic", chromaticAberration: true, filmGrain: true } as const;
@@ -128,7 +136,7 @@ describe("renderer device disposal ownership", () => {
     let blocked = true, next: Renderer | undefined;
     const pool: RenderTargetPoolLike = {
       acquire(desc) {
-        const target = device.createRenderTarget({ ...desc, sampleCount: desc.samples });
+        const target = device.createRenderTarget(poolTargetDescriptor(desc));
         targets.push(target);
         return target;
       },
@@ -175,7 +183,7 @@ describe("renderer device disposal ownership", () => {
     let next: Renderer | undefined, nested: unknown;
     const pool: RenderTargetPoolLike = {
       acquire(desc) {
-        const target = device.createRenderTarget({ ...desc, sampleCount: desc.samples });
+        const target = device.createRenderTarget(poolTargetDescriptor(desc));
         targets.push(target);
         return target;
       },
@@ -265,7 +273,7 @@ describe("renderer device disposal ownership", () => {
     let blocked = true;
     const pool: RenderTargetPoolLike = {
       acquire(desc) {
-        const target = device.createRenderTarget({ ...desc, sampleCount: desc.samples });
+        const target = device.createRenderTarget(poolTargetDescriptor(desc));
         targets.push(target);
         return target;
       },
@@ -586,7 +594,7 @@ describe("renderer frame error preservation", () => {
     const photoFailure = new Error("photometric cleanup"), spotFailure = new Error("spot cleanup"), packedFailure = new Error("packed cleanup");
     let failPost = true;
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: () => { if (failPost) throw postFailure; }, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -627,7 +635,7 @@ describe("renderer frame error preservation", () => {
     const endFailure = new Error("end after post errors");
     let blocked = true;
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: () => { if (blocked) throw leaseFailure; }, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);

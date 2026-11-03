@@ -14,7 +14,6 @@
  * unit test can assert the strip is produced and that the three frames differ (the body moved).
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — resolved at runtime to the freshly-built monorepo dist (has co-located .d.ts).
 import {
   createStandardHumanoidClipRegistry,

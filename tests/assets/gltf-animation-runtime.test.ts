@@ -2,7 +2,18 @@ import { describe, expect, it } from "vitest";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 import { Renderable, Scene } from "@aura3d/scene";
 import { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime } from "../../packages/assets/src/GLTFAnimationRuntime";
-import type { GLTFAsset } from "../../packages/assets/src/GLTFLoader";
+import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "../../packages/assets/src/GLTFLoader";
+
+/**
+ * Deliberate partial test double: the skinning paths under test read only the
+ * mesh name/skin index and the skin's joints, joint names and bind matrices.
+ */
+function skinnedAssetDouble(asset: {
+  readonly meshes: readonly Pick<GLTFMeshAsset, "name" | "skinIndex">[];
+  readonly skins: readonly Pick<GLTFSkinAsset, "name" | "joints" | "jointNames" | "inverseBindMatrices">[];
+}): Pick<GLTFAsset, "meshes" | "skins"> {
+  return asset as Pick<GLTFAsset, "meshes" | "skins">;
+}
 
 describe("GLTFSceneAnimationRuntime", () => {
   it("applies imported-style TRS tracks to matching scene nodes", () => {
@@ -118,7 +129,7 @@ describe("GLTFSceneAnimationRuntime", () => {
         { time: 1, value: [0, 2, 0] }
       ] })]
     });
-    const asset = {
+    const asset = skinnedAssetDouble({
       meshes: [{ name: "skinned-geometry", skinIndex: 0 }],
       skins: [{
         name: "skin",
@@ -126,7 +137,7 @@ describe("GLTFSceneAnimationRuntime", () => {
         jointNames: ["JointA"],
         inverseBindMatrices: [identityMat4Fixture()]
       }]
-    } as Pick<GLTFAsset, "meshes" | "skins">;
+    });
 
     const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [clip], asset });
     const result = runtime.applyClip(clip, 1);
@@ -164,7 +175,7 @@ describe("GLTFSceneAnimationRuntime", () => {
         { time: 1, value: [0, 3, 0] }
       ] })]
     });
-    const asset = {
+    const asset = skinnedAssetDouble({
       meshes: [
         { name: "shared-skin-geometry-a", skinIndex: 0 },
         { name: "shared-skin-geometry-b", skinIndex: 0 }
@@ -175,7 +186,7 @@ describe("GLTFSceneAnimationRuntime", () => {
         jointNames: ["SharedJoint"],
         inverseBindMatrices: [identityMat4Fixture()]
       }]
-    } as Pick<GLTFAsset, "meshes" | "skins">;
+    });
 
     const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [clip], asset });
     const result = runtime.applyClip(clip, 1);
@@ -443,7 +454,7 @@ describe("GLTFSceneAnimationRuntime", () => {
       skinning: { jointCount: 3, matrices: new Float32Array(identityMat4Fixture().length * 3) }
     });
     scene.addRenderable(meshNode, renderable);
-    const asset = {
+    const asset = skinnedAssetDouble({
       meshes: [{ name: "skinned-arm", skinIndex: 0 }],
       skins: [{
         name: "arm-skin",
@@ -451,7 +462,7 @@ describe("GLTFSceneAnimationRuntime", () => {
         jointNames: ["UpperArm", "LowerArm", "Hand"],
         inverseBindMatrices: [identityMat4Fixture(), identityMat4Fixture(), identityMat4Fixture()]
       }]
-    } as Pick<GLTFAsset, "meshes" | "skins">;
+    });
 
     const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [], asset });
     const result = runtime.solveImportedSkeletonTwoBoneIK({
@@ -492,7 +503,7 @@ describe("GLTFSceneAnimationRuntime", () => {
       skinning: { jointCount: 3, matrices: new Float32Array(identityMat4Fixture().length * 3) }
     });
     scene.addRenderable(meshNode, renderable);
-    const asset = {
+    const asset = skinnedAssetDouble({
       meshes: [{ name: "skinned-arm", skinIndex: 0 }],
       skins: [{
         name: "arm-skin",
@@ -500,7 +511,7 @@ describe("GLTFSceneAnimationRuntime", () => {
         jointNames: ["UpperArm", "LowerArm", "Hand"],
         inverseBindMatrices: [identityMat4Fixture(), identityMat4Fixture(), identityMat4Fixture()]
       }]
-    } as Pick<GLTFAsset, "meshes" | "skins">;
+    });
 
     const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [], asset });
     const controller = runtime.createTwoBoneIKController({
@@ -613,7 +624,7 @@ describe("GLTFSceneAnimationRuntime", () => {
     const untouched = scene.createNode("UntouchedNode");
     scene.root.addChild(driven);
     scene.root.addChild(untouched);
-    untouched.transform.position = [9, 9, 9];
+    untouched.transform.setPosition(9, 9, 9);
     const clip = new AnimationClip({
       name: "clip",
       duration: 1,

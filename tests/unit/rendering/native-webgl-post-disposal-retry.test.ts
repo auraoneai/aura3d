@@ -252,9 +252,11 @@ describe("WebGL2 device post lifecycle disposal", () => {
       if (target === failedTarget && failPool) throw poolError;
     });
     const pool: RenderTargetPoolLike = {
-      acquire: descriptor => backingDevice.createRenderTarget({
-        width: descriptor.width, height: descriptor.height, format: descriptor.format, sampleCount: descriptor.samples
-      }),
+      acquire: descriptor => {
+        const { format } = descriptor;
+        if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") throw new Error(`pooled target format ${format} is not a color target format`);
+        return backingDevice.createRenderTarget({ width: descriptor.width, height: descriptor.height, format, sampleCount: descriptor.samples });
+      },
       release,
       trim() {}
     };

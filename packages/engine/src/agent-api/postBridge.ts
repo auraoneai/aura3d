@@ -962,6 +962,17 @@ export const POST_EFFECT_DEPRECATED_FIELDS: Readonly<Record<string, readonly str
   "depth-of-field": ["focus", "aperture"]
 };
 
+/**
+ * S5-WP19-04: shared-bag keys an effect builder accepts but never copies onto
+ * the node, so nothing downstream reads them. `effects.bloom` drops the
+ * transform spec and `animation`, and computes `postIntensity` itself. An
+ * AUTHORED one (listed in `postAuthored`) is reported `POST_FIELD_UNSUPPORTED`
+ * instead of passing through the common allowlist as a silent no-op.
+ */
+export const POST_EFFECT_INERT_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  bloom: ["animation", "postIntensity", "position", "pivot", "rotation", "scale", "lookAt", "rotationOrder", "quaternion"]
+};
+
 export interface PostFieldDiagnostic {
   readonly code: "POST_FIELD_UNSUPPORTED" | "post-field-deprecated" | "BLOOM_THRESHOLD_BELOW_HDR_WHITE" | "preset-capability-degraded" | "post-tier-disabled" | "EFFECT_PENDING_GPU_PASS" | "POST_DUPLICATE_STAGE"
     | "POST_LUT_PENDING" | "POST_LUT_UNAVAILABLE" | "POST_SELECTIVE_BLOOM_UNAVAILABLE" | "POST_SSR_MATERIAL_INPUTS_UNAVAILABLE";
@@ -989,8 +1000,9 @@ export function validatePostEffectNode(node: AuraEffectNode): readonly PostField
   // the caller actually wrote — factory-default own keys are excluded. Nodes
   // built without the bridge marker fall back to validating every own key.
   const keys = node.postAuthored ?? Object.keys(node);
+  const inert = node.postAuthored !== undefined ? POST_EFFECT_INERT_FIELDS[node.effect] ?? [] : [];
   for (const key of keys) {
-    if (POST_EFFECT_COMMON_FIELDS.includes(key) || fields.includes(key)) continue;
+    if (!inert.includes(key) && (POST_EFFECT_COMMON_FIELDS.includes(key) || fields.includes(key))) continue;
     if (deprecated.includes(key)) {
       diagnostics.push({
         code: "post-field-deprecated",

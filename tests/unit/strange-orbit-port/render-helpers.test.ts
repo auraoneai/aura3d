@@ -57,7 +57,7 @@ describe("orientation helpers", () => {
           z * c + (ax * y - ay * x) * s + az * dot * (1 - c)
         );
       };
-      const [x, y, z] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]].map((v) => rotate(v as Triple));
+      const [x, y, z] = ([[1, 0, 0], [0, 1, 0], [0, 0, 1]] as const satisfies readonly Triple[]).map((v) => rotate(v));
       const expected = [x!.x, y!.x, z!.x, x!.y, y!.y, z!.y, x!.z, y!.z, z!.z];
       expectNumbersClose(eulerZYXToMatrix(basisToEulerZYX(x!, y!, z!)), expected, 9);
     }

@@ -10,7 +10,7 @@ import type { AuraSceneBuilder, scene } from "../scene.js";
 import type { PhysicsContinuousCollisionDescriptor } from "@aura3d/physics/solverless";
 import type { GameAppRuntimeOptions } from "../../GameAppRuntime";
 import type { createGameInput, GameInputOptions } from "../../GameRuntimeCore";
-import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, PortableShaderMaterial, TexturedPBRMaterial, CollectedLight } from "@aura3d/rendering";
+import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, PortableShaderMaterial, TexturedPBRMaterial, TexturedUnlitMaterial, UnlitMaterial, CollectedLight } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../../production-runtime/TypedGLBActor.js";
 import type { animation } from "../animation.js";
 import type { effects } from "../effects.composite.js";
@@ -67,6 +67,8 @@ export interface AuraSceneEvidence {
     readonly modes: readonly AuraInteractionNode["mode"][];
     readonly orbitEnabled: boolean;
     readonly hoverTargets: readonly string[];
+    /** Nodes hover interactions mark as selected (`interactions.hover({ selected })`). */
+    readonly hoverSelections: readonly string[];
     readonly dragTargets: readonly string[];
     readonly impulseTargets: readonly string[];
   };
@@ -130,6 +132,8 @@ export interface AuraRuntimeNodeSnapshot {
   readonly morphTargets?: RuntimeNodeMorphTargetWeights;
   readonly bounds?: AuraRuntimeNodeBounds;
   readonly effects?: readonly AuraRuntimeNodeEffectAttachment[];
+  /** Live per-instance transforms (`setInstances`) on instanced and batched nodes. */
+  readonly instances?: readonly AuraTransformSpec[];
   /** Dense per-instance column-major mat4s written by `setInstanceMatrices` (instanced primitive nodes only). */
   readonly instanceMatrices?: Float32Array;
   /** Dense per-instance linear RGBA written by `setInstanceMatrices`. */
@@ -744,8 +748,8 @@ export interface ProductionRuntimePrimitiveResource {
   readonly geometry: Geometry;
   /** Coarser geometry for shadow depth passes; present only on dense instanced shadow casters (see `RenderItem.shadowGeometry`). */
   readonly shadowGeometry?: Geometry;
-  /** SH-02 (L1): `PortableShaderMaterial` when `node.material` is a `material.custom` spec. */
-  readonly material: PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial;
+  /** SH-02 (L1): `PortableShaderMaterial` when `node.material` is a `material.custom` spec; unlit materials (`unlit: true`) use the unlit programs. */
+  readonly material: PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial | UnlitMaterial | InstancedUnlitMaterial;
   readonly bounds: GltfBounds;
   readonly name: string;
   /** Source material spec (for the C1 textured upgrade); undefined when the node carries none. */
@@ -757,7 +761,7 @@ export interface ProductionRuntimePrimitiveResource {
    * material first; the post-mount upgrade swaps in a TexturedPBRMaterial
    * once authored texture refs resolve. Reads prefer this slot.
    */
-  texturedMaterial: TexturedPBRMaterial | null;
+  texturedMaterial: TexturedPBRMaterial | TexturedUnlitMaterial | null;
   /** Owns decoded bitmap and texture resources created by asynchronous upgrade. */
   textureDisposer?: () => void;
   /** C1 upgrade lifecycle: none (no texture inputs) → pending → textured | fallback. */

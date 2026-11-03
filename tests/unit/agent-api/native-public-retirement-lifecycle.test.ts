@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAuraApp, defineAuraAssets, primitives, scalarVolume, scene } from "../../../packages/engine/src";
-import type { AuraApp, AuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { AuraApp } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { MutableAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
 import { registerAppExtension } from "../../../packages/engine/src/contracts/app";
 import { FormatRegistry } from "../../../packages/assets/src/FormatRegistry";
 import type { ScalarVolumeAsset } from "../../../packages/assets/src/loaders/ScalarVolumeLoader";
@@ -180,7 +181,7 @@ describe("public app retirement with real mock-device ownership", () => {
     });
     const peerDispose = vi.spyOn(peerBatch, "dispose");
     const siblingDispose = vi.spyOn(siblingBatch, "dispose");
-    const nodesDispose = vi.spyOn(first.nodes as AuraRuntimeNodeRegistry, "dispose");
+    const nodesDispose = vi.spyOn(first.nodes as MutableAuraRuntimeNodeRegistry, "dispose");
     const deviceDispose = vi.spyOn(device, "dispose");
     const firstError = await rejected(first.disposeAsync());
     expect(contains(firstError, error)).toBe(true);
@@ -263,12 +264,12 @@ describe("public app retirement with real mock-device ownership", () => {
     for (const [id, dispose] of [["test-retirement-failed", failedExtension], ["test-retirement-sibling", siblingExtension]] as const) {
       unregister.push(registerAppExtension({
         id, owner: "prd15", flag: "A3D_QR_CORE", member: "time",
-        create: (current) => current.time, dispose
+        create: (current) => current.time!, dispose
       }));
     }
     app = makeApp();
     await app.readyStrict();
-    const nodesDispose = vi.spyOn(app.nodes as AuraRuntimeNodeRegistry, "dispose")
+    const nodesDispose = vi.spyOn(app.nodes as MutableAuraRuntimeNodeRegistry, "dispose")
       .mockImplementationOnce(() => { throw registryFailure; });
     const original = device.dispose.bind(device);
     let fail = true;

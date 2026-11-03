@@ -8,6 +8,7 @@ import type { GeneratedProgramDescriptor } from "./contracts/program";
 import type { AutoExposureOptionsV2, DofOptions } from "./post/PostGraph";
 import type { WebGPULinearDepthCoverage, WebGPULinearDepthProjection } from "./post/WebGPULinearDepth";
 import type { PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
+import type { VelocityCoverage } from "./forward/Velocity";
 import { hasAttachmentRenderOverrides, validateRenderCommandState } from "./contracts/blend";
 import type { ShaderDataType } from "./webgpu/ShaderDataLayout";
 
@@ -499,6 +500,13 @@ export interface RenderDeviceDiagnostics {
     readonly submittedMeshlets?: number;
     readonly culledMeshlets?: number;
   };
+  /** Renderer-level per-view temporal reports for the last authored frame (absent when no view ran temporal motion). */
+  readonly temporalViews?: readonly {
+    readonly viewId: string | number;
+    readonly motionSource: "camera" | "object";
+    readonly unsupportedMotion: readonly string[];
+    readonly coverage: VelocityCoverage;
+  }[];
   /** Primitives submitted through `draw` and `multiDrawElementsInstanced` since the frame began: index (or vertex) count / 3 per triangle draw, times the instance count. */
   readonly triangles?: number;
   /** Same count for `lines` draws (count / 2) and `points` draws (count). */

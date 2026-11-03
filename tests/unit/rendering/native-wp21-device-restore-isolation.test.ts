@@ -14,7 +14,9 @@ const targetDesc = { width: 8, height: 8, format: "rgba8", samples: 1, depth: fa
 
 function makeHostedDevice() {
   const device = new MockRenderDevice();
-  const host = { device, contextLost: false } as WebGL2DeviceHost;
+  // Deliberate double: a MockRenderDevice stands in for the host's WebGL2Device; the lifecycle only
+  // reads contextLost and forwards loss/restore to the device hooks installed below.
+  const host = { device, contextLost: false } as unknown as WebGL2DeviceHost;
   const canvas = new EventTarget();
   const lifecycle = new WebGL2ContextLifecycle(host, canvas as unknown as HTMLCanvasElement);
   Object.assign(host, { lifecycle });
@@ -169,7 +171,7 @@ describe("WP-21 device restore isolation", () => {
     const before = registry.size;
     const deviceFailure = new Error("device disposal failed");
     const targetFailure = new Error("target disposal failed");
-    const originalDispose = vi.fn(() => { throw deviceFailure; });
+    const originalDispose = vi.fn((): void => { throw deviceFailure; });
     Object.assign(a.device, { dispose: originalDispose });
     const pool = prd11RenderTargetPoolFor(a.device);
     const bad = pool.acquireLease(targetDesc);

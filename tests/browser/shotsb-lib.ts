@@ -82,7 +82,6 @@ export function shotsb(cfg: GameCfg): void {
         try {
           await page.evaluate(({ hook, drive }) => {
             const api = (window as unknown as Record<string, any>)[hook];
-            // eslint-disable-next-line no-new-func
             return new Function("api", drive)(api);
           }, { hook: cfg.hook, drive: st.drive });
         } catch (e) { err = String(e).slice(0, 240); }

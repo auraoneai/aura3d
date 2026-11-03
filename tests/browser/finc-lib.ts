@@ -124,9 +124,7 @@ export async function settleTextures(page: Page, cfg: Cfg, tag: string, budgetMs
     try {
       last = await page.evaluate(({ hk, probe, pump }) => {
         const api = (window as unknown as Record<string, any>)[hk];
-        // eslint-disable-next-line no-new-func
         if (pump) new Function("api", pump)(api);
-        // eslint-disable-next-line no-eval
         return (0, eval)(probe.replace("__HOOK__", JSON.stringify(hk)));
       }, { hk: cfg.hook, probe: TEX_PROBE, pump: cfg.pump ?? "" });
     } catch (e) { last = { error: String(e).slice(0, 160) }; }
@@ -146,7 +144,6 @@ export async function settleTextures(page: Page, cfg: Cfg, tag: string, budgetMs
 const driveStep = (page: Page, hook: string, drive: string) =>
   page.evaluate(({ hk, drive: body }) => {
     const api = (window as unknown as Record<string, any>)[hk];
-    // eslint-disable-next-line no-new-func
     return new Function("api", body)(api);
   }, { hk: hook, drive });
 

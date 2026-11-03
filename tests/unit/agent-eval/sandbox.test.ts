@@ -28,7 +28,7 @@ describe("agent-eval sandbox builder", () => {
     expect(findRepoSourceLeaks({ dir, arm: "aura", repoRoot, baseDir })).toEqual([]);
     const files = listSandboxFiles(dir);
     for (const root of ["packages/", "examples/", "apps/", "tests/", "tools/", "evidence/", "fixtures/"]) {
-      expect(files.some((f) => f.startsWith(root))).toBe(false);
+      expect(files.some((f: string) => f.startsWith(root))).toBe(false);
     }
   });
 

@@ -2,7 +2,6 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statS
 import { basename, dirname, join, relative } from "node:path";
 import { assertWorkerPackageLayout } from "./worker-layout.mjs";
 import { emitPackagedWorker } from "./worker-bundle.mjs";
-// @ts-expect-error TS5097: the build runs this file with node --experimental-strip-types, which needs the .ts extension.
 import { findBareWorkspaceImports, specifierPattern } from "./specifiers.ts";
 
 const root = process.cwd();

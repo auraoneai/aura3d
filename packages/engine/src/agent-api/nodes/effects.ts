@@ -312,7 +312,7 @@ export const vfxEffectBuilders = lazyNamespace(() => ({
    * sprite draws the soft-dot until it has loaded. `prewarm` starts the
    * sprite that many seconds in.
    */
-  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect" | "size"> & {
+  flipbook: (options: Omit<AuraEffectNode, "kind" | "effect" | "size" | "texture"> & {
     readonly blend?: AuraBlendMode;
     readonly size?: number | readonly [number, number];
     readonly seed?: number;

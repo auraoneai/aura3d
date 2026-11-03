@@ -2,6 +2,7 @@ import { webcrypto } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LoadContext, requestIdentityDetails } from "../../../packages/assets/src";
 import { productionEnvironmentRequest } from "../../../packages/engine/src/agent-api/compiler/primitives";
+import { defineAuraAssets } from "../../../packages/engine/src/agent-api/nodes/assets";
 import type { AuraAssetRef } from "../../../packages/engine/src/agent-api/nodes/types";
 import { snapshotAuraAssetsOption } from "../../../packages/engine/src/contracts/assets";
 
@@ -11,11 +12,13 @@ describe("app authentication generation and asset policy", () => {
   it("overrides an environment asset generation while preserving its integrity and dependency policy", async () => {
     vi.stubGlobal("crypto", webcrypto);
     const digest = "a".repeat(64);
-    const asset = {
-      kind: "aura-asset-ref", type: "texture", id: "sky", format: "hdr",
-      url: "https://assets.example/sky.hdr", hash: digest,
-      request: { securityContext: "asset-session", credentials: "include", allowedOrigins: ["https://assets.example"], maxBytes: 4096 }
-    } as AuraAssetRef<"texture">;
+    const asset: AuraAssetRef<"texture"> = defineAuraAssets({
+      sky: {
+        type: "texture", format: "hdr",
+        url: "https://assets.example/sky.hdr", hash: digest,
+        request: { securityContext: "asset-session", credentials: "include", allowedOrigins: ["https://assets.example"], maxBytes: 4096 }
+      }
+    }).sky;
     const app = snapshotAuraAssetsOption({ securityContext: "account-a-session-1" });
     const request = productionEnvironmentRequest(asset, { securityContext: app?.securityContext });
     expect(request).toMatchObject({

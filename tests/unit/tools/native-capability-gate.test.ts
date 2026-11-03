@@ -42,7 +42,7 @@ vi.mock('../../../tools/release/archive-admission.mjs', () => ({
 
 const temporary: string[] = [];
 const hash = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
-const historicalReplayFixtures = HISTORICAL_REPLAY_FIXTURES.map(fixture => ({ ...fixture, content: readFileSync(new URL(`../../../${fixture.path}`, import.meta.url)) }));
+const historicalReplayFixtures = HISTORICAL_REPLAY_FIXTURES.map((fixture: { readonly path: string }) => ({ ...fixture, content: readFileSync(new URL(`../../../${fixture.path}`, import.meta.url)) }));
 
 function syntheticAdmissionReceipt(root: string, sourceManifestPath: string, planPath: string, manifestBytes: Buffer, lockBytes: Buffer, pnpm = false) {
   const sourceBytes = readFileSync(join(root, sourceManifestPath)), planBytes = readFileSync(join(root, planPath));
@@ -271,7 +271,7 @@ function handoffFixture(omit?: string) {
     'evidence/unrelated/notes.md': 'unrelated evidence\n'
   };
   const originalBaseline = JSON.parse(readFileSync(new URL('../../../tools/muse3jsparity-readiness/baseline-unit-inventory.json', import.meta.url), 'utf8')) as { schema: string; assertions: string[] };
-  const historicalBaseline = { schema: originalBaseline.schema, assertions: originalBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some(path => id.startsWith(`${path}::`))) };
+  const historicalBaseline = { schema: originalBaseline.schema, assertions: originalBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some((path: string) => id.startsWith(`${path}::`))) };
   sourceContents[HISTORICAL_ACCEPTANCE_INVENTORY] = JSON.stringify(historicalBaseline);
   sourceContents[HISTORICAL_SOURCE_TEST] = 'synthetic historical analyzer tests\n';
   sourceContents[HISTORICAL_LAUNCHER] = 'synthetic historical acceptance launcher\n';
@@ -558,7 +558,8 @@ function handoffFixture(omit?: string) {
   };
   const retainedRefs = () => Object.fromEntries(Object.entries(retained).map(([name, value]) => [name, putJson(retainedPaths[name as keyof typeof retainedPaths], value)]));
   const inventories: any[] = [];
-  const steps = buildSteps(runId, reportDir, 'patch', sourcePlan).map(step => {
+  const canonicalSteps: ReadonlyArray<{ readonly id: unknown; readonly argv: unknown }> = buildSteps(runId, reportDir, 'patch', sourcePlan);
+  const steps = canonicalSteps.map(step => {
     const id = step.id, argv = step.argv;
     if (typeof id !== 'string' || !(argv === null
       || Array.isArray(argv) && argv.every((arg: unknown): arg is string => typeof arg === 'string'))) {
@@ -567,14 +568,14 @@ function handoffFixture(omit?: string) {
     return { id, argv };
   });
   const checks = steps.map(({ id, argv }) => {
-    const supplemental = sourcePlan.supplementalChecks.find(check => check.id === id);
+    const supplemental = sourcePlan.supplementalChecks.find((check: { readonly id: string }) => check.id === id);
     return { id, argv, status: 'passed', started: true, exitCode: 0,
       ...(supplemental ? { runner: supplemental.runner, cwd: supplemental.cwd } : {}),
       ...(() => { const ref = put(`${reportDir}/logs/${id}.log`, `${id} passed\n`); return { log: ref.path, sha256: ref.sha256 }; })(), subruns: [] as any[] };
   });
   const inventoryFiles = sourceTestFileCoverage(sourcePlan, []).expectedTestFiles;
   for (const [id, expected] of Object.entries(inventoryFiles) as Array<[string, string[]]>) {
-    const supplemental = sourcePlan.supplementalChecks.find(check => check.id === id);
+    const supplemental = sourcePlan.supplementalChecks.find((check: { readonly id: string }) => check.id === id);
     if (['packages', 'packages-dist', 'node-release'].includes(id) || supplemental) {
       const subruns = expected.map((file, index) => {
         const content = `TAP version 13\n# Subtest: ${file}\nok 1 - ${file}\n1..1\n# tests 1\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n`;

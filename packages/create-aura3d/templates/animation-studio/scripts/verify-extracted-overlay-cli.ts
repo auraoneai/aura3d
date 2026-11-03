@@ -22,7 +22,6 @@ import { writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — resolved at runtime to the freshly-built monorepo dist (has co-located .d.ts).
 import type { AnimationClipRegistry } from "@aura3d/animation";
 import { buildSkeletonStrip } from "./skeleton-overlay.js";
@@ -240,7 +239,6 @@ async function main(): Promise<void> {
       firstFinalDiff: strip.firstFinalMaxDiff,
       png: pngPath
     };
-    // eslint-disable-next-line no-console
     console.error(
       `  [${intent.padEnd(8)}] ${extracted ? "EXTRACTED" : "procedural"}  worstFloor=${round(floor.value)
         .toString()
@@ -253,12 +251,10 @@ async function main(): Promise<void> {
     join(outRoot, "summary.json"),
     JSON.stringify({ generated: "M6 reconciled-extracted-clip uprightness proof", allUpright, allAccepted, clips: rows }, null, 2)
   );
-  // eslint-disable-next-line no-console
   console.log(JSON.stringify({ ok: true, outRoot, allUpright, allAccepted, clips: rows }));
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(JSON.stringify({ ok: false, error: (err as Error).message, stack: (err as Error).stack }));
   process.exitCode = 1;
 });

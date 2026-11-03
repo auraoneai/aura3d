@@ -237,7 +237,7 @@ describe("runtime query render-item handoff", () => {
       expect(Array.from(floats.slice(0, 3))).toEqual([0.25, 0, 1]);
 
       // A same-footprint setGeometry replaces the deltas on the live resource.
-      handle.setGeometry!({ ...sourceGeometry, morphTargets: [
+      handle.setGeometry!({ positions: [0, 0, 0, 2, 0, 0, 0, 2, 0], indices: [0, 1, 2], morphTargets: [
         { name: "raise", positions: [0, 0, 4, 0, 0, 4, 0, 0, 4] },
         { positions: [1, 0, 0, 1, 0, 0, 1, 0, 0] },
         { name: "toString", positions: [0, 0, 3, 0, 0, 3, 0, 0, 3] }

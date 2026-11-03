@@ -80,7 +80,8 @@ export function buildGhostPlan(events: readonly GameInputReplayEvent[], label: s
 
 export interface StoredBestRun {
   readonly kind: "aura-game-input-replay-export";
-  readonly schemaVersion: "aura-game-input-replay/v1";
+  /** v2 when the replay carries device state; same union as the engine's replay export. */
+  readonly schemaVersion: "aura-game-input-replay/v1" | "aura-game-input-replay/v2";
   /** Trajectory hash of the recorded run, verified after import. */
   readonly trajectoryHash: string;
   readonly siteId: number;

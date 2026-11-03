@@ -167,7 +167,6 @@ test.describe("shotsc", () => {
             try {
               await page.evaluate(({ hk, drive }) => {
                 const api = (window as unknown as Record<string, any>)[hk];
-                // eslint-disable-next-line no-new-func
                 return new Function("api", drive)(api);
               }, { hk: hook, drive: step.drive });
               await raf(page, 4);
@@ -203,7 +202,6 @@ test.describe("shotsc", () => {
             for (const step of cfg.steps.slice(0, keyIdx + 1)) {
               await page.evaluate(({ hk, drive }) => {
                 const api = (window as unknown as Record<string, any>)[hk];
-                // eslint-disable-next-line no-new-func
                 return new Function("api", drive)(api);
               }, { hk: cfg.hook, drive: step.drive });
             }

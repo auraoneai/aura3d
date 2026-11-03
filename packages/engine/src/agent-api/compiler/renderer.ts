@@ -815,7 +815,7 @@ export async function createProductionRuntimeSceneRenderer(
           const warn = (message: string): void => { if (isCurrentTextureJob(job)) textureUpgradeWarnings.add(message); };
           const committed = (): void => { if (isCurrentTextureJob(job)) notifyCommittedResource(); };
           const current = (): boolean => isCurrentTextureJob(job);
-          const pbr = upgradeProductionPrimitiveTextures([oneEntry], warn, textureSizeLimit, undefined, job.controller.signal, committed, current, job.prepared, nativeTextureSizeLimit)
+          const pbr = upgradeProductionPrimitiveTextures([oneEntry], warn, textureSizeLimit, undefined, job.controller.signal, committed, current, job.prepared, nativeTextureSizeLimit, flags)
             .catch((error) => { if (isCurrentTextureJob(job)) warn(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`); });
           const custom = upgradeCustomMaterialTextures([oneEntry], warn, undefined, job.controller.signal, committed, current, job.preparedCustom)
             .catch((error) => { if (isCurrentTextureJob(job)) warn(`custom material texture pass failed (${error instanceof Error ? error.message : String(error)}); white fallback retained`); });
@@ -847,7 +847,7 @@ export async function createProductionRuntimeSceneRenderer(
       textureJobs.set(resource, job);
       queuedTextureJobs.set(resource, job);
       // GU47 e6 (g09 texPending): the whole job queue reads pending, not only the active slots.
-      noteProductionPrimitiveTextureQueued(resource, prepared);
+      noteProductionPrimitiveTextureQueued(resource, prepared, flags);
       drainTextureJobs();
     };
     const trackPrimitiveEntry = (entry: ProductionRuntimePrimitiveEntry, captured?: ReadonlyMap<PrimitiveResource, CapturedTextureGeneration>): void => {

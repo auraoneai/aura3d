@@ -3,7 +3,12 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    // Tests and tools iterate DOM collections and node --experimental-strip-types
+    // tools import sibling sources with their real ".ts" extension. Package
+    // sources keep the stricter base lib through tsconfig.build.json.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowImportingTsExtensions": true
   },
   // Roadmap source tests inside legacy lane trees must still be checked.
   // Explicit files are retained even when their containing tree is excluded.
@@ -70,11 +75,12 @@
     "tests/qr/prd06/browser/ik-slope-harness.ts",
     "tests/qr/prd06/browser/skinning-parity-flag-on-harness.ts",
     "tools/bundle-scenarios/entries/scenario-*-threejs.ts",
-    "tools/bench-vs-threejs/*/three*/main.ts",
-    "tools/bench-vs-threejs/*/three*/scene.ts",
-    "tools/bench-vs-threejs/full-game/three/src/main.ts",
-    "tools/bench-vs-threejs/full-game/three/src/game.ts",
-    "tools/bench-vs-threejs/full-game/three/src/scene.ts",
+    // S5-WP19-07 decision (docs/prds/aura3d-5.0-scope.md, 2026-11-02): the
+    // vs-three.js bench is an external comparison harness (three.js arms, and
+    // Aura arms that only resolve inside a scaffolded project, e.g. tagline's
+    // "./aura-assets"); it is never installed, typechecked, packed or shipped.
+    // Unit tests that import its Aura-side modules still typecheck them.
+    "tools/bench-vs-threejs/**",
     "tools/current-routes-threejs-parity/index.ts"
   ]
 }

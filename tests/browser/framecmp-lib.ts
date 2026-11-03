@@ -36,7 +36,6 @@ export function framecmp(cfgs: PortCfg[]): void {
           for (const step of cfg.steps) {
             await page.evaluate(({ hook, drive }) => {
               const api = (window as unknown as Record<string, any>)[hook];
-              // eslint-disable-next-line no-new-func
               return new Function("api", drive)(api);
             }, { hook: cfg.hook, drive: step.drive });
             await raf(page, 3);

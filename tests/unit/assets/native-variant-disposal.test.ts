@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { webcrypto } from "node:crypto";
 import { GLTFLoader, type GLTFMaterialAsset } from "../../../packages/assets/src/GLTFLoader";
-import { createGLTFRenderResources, type DecodedGLTFImage, type GLTFImageDecoder } from "../../../packages/assets/src/GLTFRenderResources";
+import { createGLTFRenderResources, type DecodedGLTFImage, type GLTFImageDecoder, type GLTFRenderResources } from "../../../packages/assets/src/GLTFRenderResources";
 import { GLTFSharedTextureCache } from "../../../packages/assets/src/GLTFSharedTextureCache";
 import { LoadContext } from "../../../packages/assets/src/LoadContext";
 import { createTypedGLBActor } from "../../../packages/engine/src/production-runtime/TypedGLBActor";
@@ -54,7 +54,7 @@ async function assetWithDeferredVariantTexture() {
   return { asset, enableTexture: () => { detail.bump = bump; } };
 }
 
-function makeInstanced(resources: Awaited<ReturnType<typeof createGLTFRenderResources>>) {
+function makeInstanced(resources: GLTFRenderResources) {
   const renderable = resources.scene.collectRenderables()[0]!.renderable;
   (renderable as { instanceTransforms?: Float32Array }).instanceTransforms = new Float32Array([
     1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1

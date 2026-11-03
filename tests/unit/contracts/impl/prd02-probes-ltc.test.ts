@@ -38,6 +38,7 @@ import {
 } from "../../../../packages/rendering/src/probes/LtcLuts";
 import type { FrameContributorContext } from "../../../../packages/rendering/src/contracts/frameGraph";
 import type { RenderItem } from "../../../../packages/rendering/src/contracts/renderItem";
+import type { RenderSource } from "../../../../packages/rendering/src/contracts/renderSource";
 import type { RenderTarget } from "../../../../packages/rendering/src/RenderDevice";
 
 const spec = (over: Partial<ReflectionProbeSpec> = {}): ReflectionProbeSpec => ({
@@ -423,6 +424,14 @@ describe("prd02 IrradianceVolumeSystem (PRD-02 §6.6)", () => {
   });
 });
 
+/**
+ * The engine's prd02 lane compiles probe nodes onto the RenderSource as
+ * `prd02.probes.<name>` keys, which RenderSource has no typed slot for.
+ */
+function probeSource<T extends Record<string, unknown>>(entries: T): RenderSource & T {
+  return Object.assign<RenderSource, T>({}, entries);
+}
+
 describe("prd02 probes contributor (PRD-02 §6.6)", () => {
   const node = {
     kind: "probe", probe: "reflection", name: "lounge",
@@ -444,9 +453,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
 
   it("honors authored reflection bounds, face size and update interval", () => {
     const device = new MockRenderDevice();
-    const source = { "prd02.probes.offset": { kind: "probe", probe: "reflection", name: "offset", options: {
+    const source = probeSource({ "prd02.probes.offset": { kind: "probe", probe: "reflection", name: "offset", options: {
       position: [0, 0, 0], box: { min: [9, -1, -1], max: [11, 1, 1] }, resolution: 64, update: { everyNFrames: 10 }
-    } } };
+    } } });
     const flags = ctxFor(source).flags;
     const sizes: number[] = [];
     const renderer = { device, renderProbeFace: (_source: unknown, _face: number, target: RenderTarget) => { sizes.push(target.width); } };
@@ -468,9 +477,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const device = new MockRenderDevice();
     const owner = {};
     const runtime = new Prd02LightingRuntime(undefined, owner);
-    const source = { "prd02.probes.mirror": { kind: "probe", probe: "reflection", name: "mirror", options: {
+    const source = probeSource({ "prd02.probes.mirror": { kind: "probe", probe: "reflection", name: "mirror", options: {
       position: [0, 0, 0], resolution: 64, update: "on-demand"
-    } } };
+    } } });
     const flags = ctxFor(source).flags;
     let faces = 0;
     const renderer = { device, renderProbeFace: () => { faces += 1; } };
@@ -495,9 +504,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     await runtime.updateProbe("later");
     prd02BeforeFrame(renderer, {}, flags, owner);
     expect(faces).toBe(0);
-    const source = { "prd02.probes.later": { kind: "probe", probe: "reflection", name: "later", options: {
+    const source = probeSource({ "prd02.probes.later": { kind: "probe", probe: "reflection", name: "later", options: {
       position: [0, 0, 0], resolution: 64, update: "on-demand"
-    } } };
+    } } });
     expect(prd02BeforeFrame(renderer, source, flags, owner)).toEqual(["later"]);
     expect(faces).toBe(6);
     disposePrd02Probes(device, owner);
@@ -507,10 +516,10 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
   it("shares a bounded cell budget fairly across volumes", () => {
     const device = new MockRenderDevice();
     const options = (x: number) => ({ bounds: { min: [x, 0, 0], max: [x + 2, 2, 2] }, resolution: [2, 2, 2], maxUpdatesPerFrame: 2 });
-    const source = {
+    const source = probeSource({
       "prd02.probes.a": { kind: "probe", probe: "irradiance-volume", name: "a", options: options(0) },
       "prd02.probes.b": { kind: "probe", probe: "irradiance-volume", name: "b", options: options(4) }
-    };
+    });
     let faces = 0;
     const renderer = { device, renderProbeFace: () => { faces += 1; } };
     const flags = ctxFor(source).flags;
@@ -530,10 +539,10 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const device = new MockRenderDevice();
     const owner = {}, otherOwner = {};
     const options = (x: number) => ({ bounds: { min: [x, 0, 0], max: [x + 2, 2, 2] }, resolution: [2, 2, 2], intensity: 1.5, maxUpdatesPerFrame: 1 });
-    const source = {
+    const source = probeSource({
       "prd02.probes.a": { kind: "probe", probe: "irradiance-volume", name: "a", options: options(0) },
       "prd02.probes.b": { kind: "probe", probe: "irradiance-volume", name: "b", options: options(10) }
-    };
+    });
     const renderer = { device, renderProbeFace: () => {} };
     const flags = ctxFor(source).flags;
     const item = { geometry: {} as never, boundingBoxCenter: [1, 1, 1] as const,
@@ -567,9 +576,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const bind = (minX: number, maxX: number, intensity: number, check: (draw: () => ReturnType<typeof prd02ItemIrradianceBindings>) => void) => {
       const device = new MockRenderDevice();
       const owner = {};
-      const source = { "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
+      const source = probeSource({ "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
         bounds: { min: [minX, 0, 0], max: [maxX, 1, 1] }, resolution: [1, 1, 1], intensity
-      } } };
+      } } });
       try {
         prd02BeforeFrame({ device, renderProbeFace: () => {} }, source, ctxFor(source).flags, owner);
         check(() => prd02ItemIrradianceBindings(applyProbeEnvironmentCubes([{ geometry: {} as never }], device, owner)[0], device, owner));
@@ -610,9 +619,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const geometry = Geometry.box();
     const material = new PBRMaterial();
     const owner = {};
-    const source = { "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
+    const source = probeSource({ "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
       bounds: { min: [-1, -1, -1], max: [1, 1, 1] }, resolution: [1, 1, 1], intensity: 2
-    } } };
+    } } });
     try {
       prd02BeforeFrame({ device, renderProbeFace: () => {} }, source, ctxFor(source).flags, owner);
       const item = applyProbeEnvironmentCubes([{ geometry, material }], device, owner)[0];
@@ -703,7 +712,7 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
   it("isolates capture resources and per-item selections for apps sharing a device", () => {
     const device = new MockRenderDevice();
     const ownerA = {}, ownerB = {};
-    const source = (x: number) => ({
+    const source = (x: number) => probeSource({
       "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
         bounds: { min: [x, 0, 0], max: [x + 1, 1, 1] }, resolution: [1, 1, 1]
       } },
@@ -789,14 +798,14 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const runtime = new Prd02LightingRuntime(undefined, owner);
     let faces = 0;
     const renderer = { device, renderProbeFace: () => { faces += 1; } };
-    const source = {
+    const source = probeSource({
       "prd02.probes.first": { kind: "probe", probe: "irradiance-volume", name: "first", options: {
         bounds: { min: [10, 20, 30], max: [14, 24, 34] }, resolution: [1, 1, 1], update: "on-demand"
       } },
       "prd02.probes.second": { kind: "probe", probe: "irradiance-volume", name: "second", options: {
         bounds: { min: [-5, -4, -3], max: [-1, 0, 1] }, resolution: [1, 1, 1], update: "on-demand"
       } }
-    };
+    });
     const ctx = { ...ctxFor(source), device };
     prd02BeforeFrame(renderer, source, ctx.flags, owner);
     expect(faces).toBe(12);
@@ -823,7 +832,7 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     prd02BeforeFrame(renderer, source, ctx.flags, owner);
     expect(faces).toBe(48);
     const retained = prd02IrradianceVolumes(device);
-    const remainingSource = { "prd02.probes.second": source["prd02.probes.second"] };
+    const remainingSource = probeSource({ "prd02.probes.second": source["prd02.probes.second"] });
     prd02BeforeFrame(renderer, remainingSource, ctx.flags, owner);
     expect(retained[0]!.textures.every((texture) => texture.disposed)).toBe(true);
     expect(prd02IrradianceVolumes(device).map((volume) => volume.spec.name)).toEqual(["second"]);
@@ -836,9 +845,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const device = new MockRenderDevice();
     const owner = {};
     const runtime = new Prd02LightingRuntime(undefined, owner);
-    const source = { "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
+    const source = probeSource({ "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
       bounds: { min: [0, 0, 0], max: [1, 1, 1] }, resolution: [1, 1, 1]
-    } } };
+    } } });
     const flags = ctxFor(source).flags;
     let faces = 0;
     let fail = false;
@@ -874,9 +883,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     }
     const device = new AsyncMockDevice();
     Object.defineProperty(device, "kind", { value: "webgpu" });
-    const source = { "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
+    const source = probeSource({ "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
       bounds: { min: [2, 3, 4], max: [3, 4, 5] }, resolution: [1, 1, 1]
-    } } };
+    } } });
     const flags = ctxFor(source).flags;
     const renderer = { device, renderProbeFace: () => {} };
     expect(() => prd02BeforeFrame(renderer, source, flags)).toThrow(/WEBGPU_PROBE_CAPTURE_ASYNC_REQUIRED/);
@@ -976,9 +985,9 @@ describe("prd02 probes contributor (PRD-02 §6.6)", () => {
     const device = new MockRenderDevice();
     const owner = {};
     const runtime = new Prd02LightingRuntime(undefined, owner);
-    const source = { "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
+    const source = probeSource({ "prd02.probes.room": { kind: "probe", probe: "irradiance-volume", name: "room", options: {
       bounds: { min: [0, 0, 0], max: [1, 1, 1] }, resolution: [1, 1, 1]
-    } } };
+    } } });
     const flags = ctxFor(source).flags;
     const events: string[] = [];
     const renderer = {

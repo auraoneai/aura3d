@@ -18,7 +18,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-// @ts-expect-error plain .mjs helper, no typings
 import { startBuiltSiteServer } from "./serve-built-site.mjs";
 import { buildPerfReport } from "../../../packages/aura3d-cli/src/commands/prd09/perf-report";
 

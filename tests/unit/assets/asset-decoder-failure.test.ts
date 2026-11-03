@@ -179,7 +179,7 @@ describe("decoder loading in a dedicated worker-shaped global", () => {
         return Promise.resolve({});
       });
     });
-    const registry = createAppAssetDecoders({ decoders: { basePath: "/explicit/codecs/" } }, capabilities, { maxTextureSize: 64 });
+    const registry = createAppAssetDecoders({ decoders: { basePath: "/explicit/codecs/" } }, capabilities, { maxTextureSize: 1024 });
     try {
       expect((await registry.require(["draco"])).draco).toBeTypeOf("function");
       expect(scripts).toEqual(["/explicit/codecs/draco/draco_decoder.js"]);

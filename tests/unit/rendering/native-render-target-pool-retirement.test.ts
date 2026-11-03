@@ -26,7 +26,7 @@ function makeDevice(): RenderDevice {
         colorTexture: { format: descriptor.format ?? "rgba8" },
         sampleCount: descriptor.sampleCount ?? 1,
         disposed: false,
-        dispose() { this.disposed = true; }
+        dispose(this: { disposed: boolean }) { this.disposed = true; }
       } as unknown as RenderTarget;
     }
   } as unknown as RenderDevice;

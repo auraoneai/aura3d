@@ -145,7 +145,6 @@ describe("cast/set/animation provenance is honest + prompt-derived (E3)", () => 
       animationSource: `director:[${[...new Set(clips)].join(",")}]`,
       castSource: document.assets.characters.length === 0 ? "unresolved (resolve real characters via `cast add`)" : "resolved"
     };
-    // eslint-disable-next-line no-console
     console.log(`E3 source report — ${JSON.stringify(report)}`);
     expect(report.setSource).not.toContain("moon");
     expect(report.animationSource).not.toContain("moon");

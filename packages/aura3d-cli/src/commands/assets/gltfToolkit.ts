@@ -9,7 +9,6 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 
 // The glTF-Transform types are only present when the optional packages are installed, so the toolkit is loosely typed.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Loose = any;
 
 export interface GltfToolkit {

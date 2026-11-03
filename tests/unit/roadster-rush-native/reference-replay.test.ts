@@ -6,7 +6,6 @@ import { RoadsterGame } from "../../../apps/showcase-roadster-rush/src/native/ga
 import { Player } from "../../../apps/showcase-roadster-rush/src/native/player";
 import { Traffic } from "../../../apps/showcase-roadster-rush/src/native/traffic";
 import { FreewayWorld } from "../../../apps/showcase-roadster-rush/src/native/world";
-// @ts-expect-error plain ES module shared with the remote capture
 import { runReference } from "../../support/rr-reference-run.mjs";
 
 /**

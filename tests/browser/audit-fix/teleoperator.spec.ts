@@ -28,7 +28,6 @@ type Win = Record<string, any>;
 const legacyEval = <T,>(page: Page, fn: (h: Win) => T) =>
   page.evaluate((src) => {
     const h = (window as unknown as Win).__AURA3D_SHOWCASE_TELEOPERATOR__;
-    // eslint-disable-next-line no-new-func
     return new Function("h", `return (${src})(h)`)(h);
   }, fn.toString()) as Promise<T>;
 

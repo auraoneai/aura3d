@@ -25,6 +25,12 @@ const context = {
   strict: false, quality: { tier: "high" }, renderer: null, assets: null,
   degrade: () => undefined
 } as unknown as SceneCompileContext;
+/** Narrow a flattened scene node to the line node the line handler compiles. */
+function lineOf(node: { readonly kind: string } | undefined): { readonly kind: "line" } {
+  if (node?.kind !== "line") throw new Error(`expected a flattened line node, got ${node?.kind ?? "nothing"}`);
+  return node as { readonly kind: "line" };
+}
+
 const sink = () => {
   const items: RenderItem[] = [];
   return { items, addItems(next: readonly RenderItem[]) { items.push(...next); }, feature() {}, set() {}, addLights() {} };
@@ -34,7 +40,7 @@ describe("live line geometry and world transforms", () => {
   it("uses the full flattened world matrix for anonymous lines, including shear", () => {
     const node = lines.line({ points: [[0, 0, 0], [1, 0, 0]], position: [1, 0, 0], rotation: [0, 0, Math.PI / 4] }).toJSON();
     const group = { kind: "group", position: [3, 0, 0], rotation: [0, 0, Math.PI / 2], scale: [2, 1, 1], children: [node] };
-    const [flattened] = flattenSceneNodesV2([group as never]);
+    const flattened = lineOf(flattenSceneNodesV2([group as never])[0]);
     const out = sink();
     lineNodeHandler.compile(flattened!, context, out as never);
     lineNodeHandler.update!(flattened!, undefined, context, out as never, 0);
@@ -57,11 +63,11 @@ describe("live line geometry and world transforms", () => {
     expect(flattened[0]).toEqual(expectedLegacy[0]);
     expect(flattened.map(mountedRootOf)).toEqual(["root", "root"]);
     const out = sink();
-    lineNodeHandler.compile(flattened[1]!, context, out as never);
-    lineNodeHandler.update!(flattened[1]!, undefined, context, out as never, 0);
+    lineNodeHandler.compile(lineOf(flattened[1]), context, out as never);
+    lineNodeHandler.update!(lineOf(flattened[1]), undefined, context, out as never, 0);
     expect(out.items[0]!.modelMatrix![12]).toBeCloseTo(3);
     expect(out.items[0]!.modelMatrix![13]).toBeCloseTo(2);
-    lineNodeHandler.dispose!(flattened[1]!);
+    lineNodeHandler.dispose!(lineOf(flattened[1]));
   });
 
   it("inherits visibility from entirely anonymous nested groups in both flatten modes", () => {
@@ -69,8 +75,9 @@ describe("live line geometry and world transforms", () => {
     const primitive = { kind: "primitive", primitive: "box" };
     const parent = { kind: "group", visible: false, children: [{ kind: "group", children: [line, primitive] }] };
     for (const flatten of [flattenNodesWithLineWorldMatrices, flattenSceneNodesV2]) {
-      const [hidden, unchanged] = flatten([parent as never]);
+      const [hiddenNode, unchanged] = flatten([parent as never]);
       expect(unchanged).toEqual(primitive);
+      const hidden = lineOf(hiddenNode);
       const out = sink();
       lineNodeHandler.compile(hidden!, context, out as never);
       lineNodeHandler.update!(hidden!, undefined, context, out as never, 0);

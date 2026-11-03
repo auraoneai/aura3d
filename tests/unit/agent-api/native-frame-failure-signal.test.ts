@@ -441,7 +441,7 @@ describe("frame-loop callback boundaries", () => {
     const snapshot = scene().add(primitives.box()).toJSON();
     const onFirstFrame = vi.fn(), onDeviceLossDetected = vi.fn(), onTerminalFrameFailure = vi.fn();
     const controller = await startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
-      createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false },
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false },
       undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
       { onRendererReady() {}, onFirstFrame, onDeviceLossDetected, onTerminalFrameFailure });
     controllers.push(controller);
@@ -458,7 +458,7 @@ describe("frame-loop callback boundaries", () => {
     let cancelled = false;
     const onFirstFrame = vi.fn(), onFirstFrameFailed = vi.fn(), onTerminalFrameFailure = vi.fn();
     const controller = await startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
-      createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false, frameMode: "async" },
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false, frameMode: "async" },
       undefined, undefined, undefined, undefined, undefined, undefined, undefined, () => cancelled,
       { onRendererReady() {}, onFirstFrame, onFirstFrameFailed, onTerminalFrameFailure });
     controllers.push(controller);
@@ -482,7 +482,7 @@ describe("frame-loop callback boundaries", () => {
     const snapshot = scene().add(primitives.box()).toJSON();
     const onTerminalFrameFailure = vi.fn();
     const controller = await startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
-      createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false, frameMode: "async" },
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false, frameMode: "async" },
       undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
       { onRendererReady() {}, onFirstFrame() {}, onTerminalFrameFailure });
     controllers.push(controller);
@@ -506,7 +506,7 @@ describe("frame-loop callback boundaries", () => {
     const onFirstFrameFailed = vi.fn(() => { first.lost = true; });
     const onDeviceLossDetected = vi.fn(), onTerminalFrameFailure = vi.fn();
     const pending = startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
-      createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false },
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false },
       undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
       { onRendererReady() {}, onFirstFrame() {}, onFirstFrameFailed, onDeviceLossDetected, onTerminalFrameFailure });
     await expect(pending).rejects.toBe(error);
@@ -521,7 +521,7 @@ describe("frame-loop callback boundaries", () => {
     mocks.renderers.push(first);
     const snapshot = scene().add(primitives.box()).toJSON();
     const controller = await startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
-      createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false },
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false },
       undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
       { onRendererReady() {}, onFirstFrame() {}, onTerminalFrameFailure() { throw new Error("observer failure"); } });
     controllers.push(controller);

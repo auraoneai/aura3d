@@ -41,7 +41,6 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — resolved at runtime to the freshly-built monorepo dist (has co-located .d.ts).
 import {
   createHumanoidRetargetingMap,

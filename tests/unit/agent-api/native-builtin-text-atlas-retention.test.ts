@@ -9,6 +9,7 @@ import { text3D } from "../../../packages/engine/src/agent-api/nodes/text3d";
 import type { AuraCreateAppRendererOptions, AuraSceneSnapshot } from "../../../packages/engine/src/agent-api/nodes/types";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import type { RenderItem, RenderSource } from "../../../packages/rendering/src";
+import { Material } from "../../../packages/rendering/src/Material";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 
@@ -101,6 +102,13 @@ function textItem(source: RenderSource, name = "first"): RenderItem {
   return item;
 }
 
+/** Built-in text items own a plain Material (never a MaterialInstance), which tracks disposal. */
+function textMaterial(item: RenderItem): Material {
+  const material = item.material;
+  if (!(material instanceof Material)) throw new Error("Text item must own a Material");
+  return material;
+}
+
 function textTexture(item: RenderItem) {
   const binding = item.material?.getParameter("u_baseColorTexture");
   if (!(binding instanceof TextureBinding) || !binding.texture) throw new Error("Missing text texture");
@@ -146,12 +154,12 @@ describe("mount-owned built-in glyph atlas frame lifetimes", () => {
       expect(oldTexture.label).toBe("a3d-builtin-glyph-atlas");
       f.registry.get("first")!.setText("BA");
       f.controller.update!(1);
-      expect(oldItem.material!.disposed).toBe(false);
+      expect(textMaterial(oldItem).disposed).toBe(false);
       expect(() => oldItem.geometry.vertexBuffer.readBytes(0, 0)).not.toThrow();
       expect(oldTexture.disposed).toBe(false);
       gate.resolve();
       await rendering;
-      expect(oldItem.material!.disposed).toBe(true);
+      expect(textMaterial(oldItem).disposed).toBe(true);
       expect(() => oldItem.geometry.vertexBuffer.readBytes(0, 0)).toThrow();
       const next = textItem(await capturePrecompile(f));
       expect(next.geometry).not.toBe(oldItem.geometry);
@@ -183,11 +191,11 @@ describe("mount-owned built-in glyph atlas frame lifetimes", () => {
       const texture = textTexture(item);
       expect(f.registry.remove("first")).toBe(true);
       f.controller.update!(1);
-      expect(item.material!.disposed).toBe(false);
+      expect(textMaterial(item).disposed).toBe(false);
       expect(texture.disposed).toBe(false);
       gate.resolve();
       await warming;
-      expect(item.material!.disposed).toBe(true);
+      expect(textMaterial(item).disposed).toBe(true);
       expect(texture.disposed).toBe(false); // The open mount still owns the atlas.
     } finally {
       gate.resolve();
@@ -219,12 +227,12 @@ describe("mount-owned built-in glyph atlas frame lifetimes", () => {
       const settled = f.controller.whenDisposed!().then(() => { disposed = true; });
       await Promise.resolve();
       expect(disposed).toBe(false);
-      expect(item.material!.disposed).toBe(false);
+      expect(textMaterial(item).disposed).toBe(false);
       expect(texture.disposed).toBe(false);
       gate.resolve();
       await rendering.catch(() => {});
       await settled;
-      expect(item.material!.disposed).toBe(true);
+      expect(textMaterial(item).disposed).toBe(true);
       expect(texture.disposed).toBe(true);
     } finally {
       gate.resolve();
@@ -273,7 +281,7 @@ describe("mount-owned built-in glyph atlas frame lifetimes", () => {
       await flushMicrotasks();
       expect(settled).toBe(false);
       expect(disposeDevice).not.toHaveBeenCalled();
-      expect(item.material!.disposed).toBe(false);
+      expect(textMaterial(item).disposed).toBe(false);
       expect(texture.disposed).toBe(false);
 
       gate.resolve();
@@ -281,7 +289,7 @@ describe("mount-owned built-in glyph atlas frame lifetimes", () => {
       if (reject) expect(result.error).toMatchObject({ message: `synthetic pending ${operation} failure` });
       else expect(result.error).toBeUndefined();
       await disposal;
-      expect(item.material!.disposed).toBe(true);
+      expect(textMaterial(item).disposed).toBe(true);
       expect(texture.disposed).toBe(true);
       expect(disposeDevice).toHaveBeenCalledTimes(1);
       f.controller.dispose(); f.registry.dispose();

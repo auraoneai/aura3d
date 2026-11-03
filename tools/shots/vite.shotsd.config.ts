@@ -1,10 +1,11 @@
 import path from "node:path";
 const repo = "/private/tmp/aura3d-shotsd";
-import rootConfig from "./vite.config";
+import type { Alias } from "vite";
+import rootConfig from "../../vite.config";
 const routes = ["showcase-top-tennis","showcase-iron-crown","showcase-pips-big-leap","showcase-bunker-zero","showcase-dot-dash-3d","showcase-cross-hop","showcase-teleoperator","showcase-heatsink"];
 const input = Object.fromEntries(routes.map((r) => [r, path.join(repo, "apps", r, "index.html")]));
-const g = (p) => path.join(repo, "packages/game/src", p);
-const rootAliases = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
+const g = (p: string) => path.join(repo, "packages/game/src", p);
+const rootAliases: readonly Alias[] = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 export default {
   root: repo, publicDir: false, base: "/",
   resolve: { alias: [

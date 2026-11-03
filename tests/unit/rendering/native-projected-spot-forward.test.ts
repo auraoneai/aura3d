@@ -170,7 +170,10 @@ describe("projected-spot forward integration", () => {
     const f = setup();
     const projected = spot(f.asset);
     const remove = registerForwardDrawHook({ id: "projected-test-mutation", bind: () => {
-      (projected.projectedImage!.offset as number[])[0] = 0.75;
+      const offset = projected.projectedImage?.offset;
+      if (!offset) throw new Error("projected spot fixture must author an image offset");
+      // Deliberate post-admission mutation of the authored (readonly-typed) offset.
+      (offset as [number, number])[0] = 0.75;
     } });
     try {
       f.renderer.render({ cameraPolicy: "identity", renderItems: [f.item], collectedLights: [projected] });

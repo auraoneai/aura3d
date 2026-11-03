@@ -424,8 +424,10 @@ async function createAssetViewerDracoDecoder(): Promise<{
 }
 
 async function loadDracoDecoderModule(): Promise<GLTFDracoDecoderModule> {
-  const decoderUrl = new URL("/node_modules/draco3d/draco_decoder_nodejs.js", window.location.origin).href;
-  const wasmUrl = new URL("/node_modules/draco3d/draco_decoder.wasm", window.location.origin).href;
+  // The engine's shipped browser decoder pair (public/aura-decoders), not a
+  // dependency tree path, so an isolated build serves the same files.
+  const decoderUrl = new URL("/aura-decoders/draco/draco_decoder.js", window.location.origin).href;
+  const wasmUrl = new URL("/aura-decoders/draco/draco_decoder.wasm", window.location.origin).href;
   const [source, wasmBinary] = await Promise.all([fetchText(decoderUrl), fetchArrayBuffer(wasmUrl)]);
   const objectUrl = URL.createObjectURL(new Blob([`${source}\nexport default DracoDecoderModule;`], { type: "application/javascript" }));
   try {
@@ -442,7 +444,7 @@ async function loadDracoDecoderModule(): Promise<GLTFDracoDecoderModule> {
 }
 
 async function loadMeshoptDecoderModule(): Promise<GLTFMeshoptDecoderModule> {
-  const decoderUrl = new URL("/node_modules/meshoptimizer/meshopt_decoder.mjs", window.location.origin).href;
+  const decoderUrl = new URL("/aura-decoders/meshopt/meshopt_decoder.mjs", window.location.origin).href;
   const source = await fetchText(decoderUrl);
   const objectUrl = URL.createObjectURL(new Blob([source], { type: "application/javascript" }));
   try {

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { assertExampleRetainedIdentity, collectExampleRetainedFiles, exampleOfflineNpmCommand, exampleRetainedFilesDigest, prepareExampleLockedInstall, readExampleCandidateReviews, readExampleInstallBundle, sourceScriptCommands, stageExampleVerifiedArchives } from "../../../tools/agent-examples/index.js";
+import { assertExampleRetainedIdentity, collectExampleRetainedFiles, exampleOfflineNpmCommand, exampleRetainedFilesDigest, prepareExampleLockedInstall, readExampleCandidateReviews, readExampleInstallBundle, rootServedFile, sourceScriptCommands, stageExampleDependencies, stageExampleVerifiedArchives } from "../../../tools/agent-examples/index.js";
 import * as archiveAdmission from "../../../tools/release/archive-admission.mjs";
 
 const roots: string[] = [];
@@ -262,5 +262,41 @@ describe("retained example source and output identity", () => {
     expect(command[0]).toBe("ci");
     expect(command).toEqual(expect.arrayContaining(["--offline", "--ignore-scripts", "--cache", "/cache", "--userconfig", "/user-config"]));
     expect(() => sourceScriptCommands({ build: "vite build --token=synthetic-secret" }, "build")).toThrow(/credential-bearing/);
+  });
+});
+
+describe("isolated example dependency staging", () => {
+  it("stages imported sibling examples, repo-root modules and the root-served files they name, never package source", () => {
+    const root = scratch();
+    put(root, "apps/game-port/index.html", '<link rel="stylesheet" href="/fonts/local.css"><script type="module" src="./src/main.ts"></script>');
+    put(root, "apps/game-port/src/main.ts", 'import "../../port-shared/diag";\nimport "../../../examples/game-port/main";\nimport "../../../packages/engine/src/index";\n');
+    put(root, "apps/port-shared/diag.ts", "export {};\n");
+    put(root, "examples/game-port/main.ts", 'import { assets } from "../../src/aura-assets.js";\nconst hdr = "/hdri/sky.hdr";\nconst soldier = "/fixtures/parity/soldier.glb";\nexport const used = [assets.robot, hdr, soldier];\n');
+    put(root, "src/aura-assets.ts", 'export const assets = defineAuraAssets({\n  "robot": {\n    type: "model",\n    url: "/aura-assets/robot.1234.glb",\n  },\n  "unused": {\n    type: "model",\n    url: "/aura-assets/unused.5678.glb",\n  },\n} as const);\n');
+    put(root, "public/aura-assets/robot.1234.glb", "glb");
+    put(root, "public/aura-assets/unused.5678.glb", "glb");
+    put(root, "public/hdri/sky.hdr", "hdr");
+    put(root, "public/fonts/local.css", '@font-face { src: url("/fonts/a/A.woff2"); }');
+    put(root, "public/fonts/a/A.woff2", "font");
+    put(root, "fixtures/parity/soldier.glb", "glb");
+    put(root, "packages/engine/src/index.ts", "export {};\n");
+    put(root, "apps/game-port/tsconfig.json", '{ "extends": "../../tsconfig.base.json", "include": ["src/**/*.ts"] }');
+    put(root, "apps/game-port/vite.config.ts", 'import rootConfig from "../../vite.config";\nexport default rootConfig;\n');
+    put(root, "tsconfig.base.json", '{ "extends": ["./tsconfig.paths.generated.json"] }');
+    put(root, "tsconfig.paths.generated.json", '{ "compilerOptions": { "paths": { "@aura3d/engine": ["packages/engine/src/index.ts"] } } }');
+    put(root, "vite.config.ts", "export default {};\n");
+    const wrapper = scratch();
+    for (const file of ["tsconfig.json", "vite.config.ts"]) put(wrapper, `apps/game-port/${file}`, readFileSync(join(root, "apps/game-port", file), "utf8"));
+    put(wrapper, "apps/game-port/index.html", readFileSync(join(root, "apps/game-port/index.html"), "utf8"));
+    put(wrapper, "apps/game-port/src/main.ts", readFileSync(join(root, "apps/game-port/src/main.ts"), "utf8"));
+    const result = stageExampleDependencies(root, wrapper, join(wrapper, "apps/game-port"));
+    // The root Vite config aliases workspace source, so it is never staged.
+    expect(result.staged.sort()).toEqual(["apps/port-shared", "examples/game-port", "src/aura-assets.ts", "tsconfig.base.json", "tsconfig.paths.generated.json"]);
+    expect(() => readFileSync(join(wrapper, "vite.config.ts"))).toThrow();
+    expect(result.publicFiles).toEqual(["aura-assets/robot.1234.glb", "fixtures/parity/soldier.glb", "fonts/a/A.woff2", "fonts/local.css", "hdri/sky.hdr"]);
+    expect(readFileSync(join(wrapper, "examples/game-port/main.ts"), "utf8")).toContain("assets.robot");
+    expect(() => readFileSync(join(wrapper, "packages/engine/src/index.ts"))).toThrow();
+    expect(rootServedFile(root, "/packages/engine/src/index.ts")).toBeUndefined();
+    expect(rootServedFile(root, "/hdri/sky.hdr")).toBe(join(root, "public/hdri/sky.hdr"));
   });
 });

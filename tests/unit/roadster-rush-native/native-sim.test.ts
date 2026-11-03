@@ -4,7 +4,6 @@ import { Player } from "../../../apps/showcase-roadster-rush/src/native/player";
 import { Traffic } from "../../../apps/showcase-roadster-rush/src/native/traffic";
 import { FreewayWorld } from "../../../apps/showcase-roadster-rush/src/native/world";
 import { createRng } from "../../../apps/showcase-roadster-rush/src/native/rng";
-// @ts-expect-error plain ES module shared with the browser capture
 import { runReference } from "../../support/rr-reference-run.mjs";
 
 function makeGame(seed: number): RoadsterGame {

@@ -77,6 +77,13 @@ function constructionProbe() {
   return { create, stop, canvas };
 }
 
+/** The options the engine passed to the first `Renderer.create` call. */
+function firstCreateOptions(create: ReturnType<typeof constructionProbe>["create"]) {
+  const options = create.mock.calls[0]?.[0];
+  if (!options) throw new Error("Renderer.create was not called with options");
+  return options;
+}
+
 afterEach(() => resetAuthoredPostContext());
 
 describe("engine input-alpha warranty", () => {
@@ -89,8 +96,8 @@ describe("engine input-alpha warranty", () => {
           output: { alphaMode, inputAlphaMode: "premultiplied", outputColorSpace: "srgb" }
         })).rejects.toBe(stop);
         expect(create).toHaveBeenCalledOnce();
-        expect(create.mock.calls[0]![0].output).toMatchObject({ alphaMode, inputAlphaMode: "premultiplied" });
-        expect(create.mock.calls[0]![0].presentationAlphaMode).toBe(alphaMode);
+        expect(firstCreateOptions(create).output).toMatchObject({ alphaMode, inputAlphaMode: "premultiplied" });
+        expect(firstCreateOptions(create).presentationAlphaMode).toBe(alphaMode);
       } finally { create.mockRestore(); }
     }
   );
@@ -101,7 +108,7 @@ describe("engine input-alpha warranty", () => {
       await expect(createProductionRuntimeSceneRenderer(canvas, transparentBlackScene, { backend: "webgl2" }, undefined, flags, undefined, {
         output: { alphaMode: "straight" }
       })).rejects.toMatchObject({ code: "OUTPUT_INPUT_ALPHA_MODE_UNAVAILABLE" });
-      expect(create.mock.calls[0]![0].output).not.toHaveProperty("inputAlphaMode");
+      expect(firstCreateOptions(create).output).not.toHaveProperty("inputAlphaMode");
     } finally { create.mockRestore(); }
   });
 
@@ -111,7 +118,7 @@ describe("engine input-alpha warranty", () => {
       await expect(createProductionRuntimeSceneRenderer(canvas, transparentBlackScene, { backend: "webgl2" }, undefined, flags, undefined, {
         output: { alphaMode: "opaque", inputAlphaMode: "premultiplied" }
       })).rejects.toMatchObject({ code: "OUTPUT_INPUT_ALPHA_MODE_UNSUPPORTED" });
-      expect(create.mock.calls[0]![0].output).toMatchObject({ alphaMode: "opaque", inputAlphaMode: "premultiplied" });
+      expect(firstCreateOptions(create).output).toMatchObject({ alphaMode: "opaque", inputAlphaMode: "premultiplied" });
     } finally { create.mockRestore(); }
   });
 
@@ -121,8 +128,8 @@ describe("engine input-alpha warranty", () => {
       await expect(createProductionRuntimeSceneRenderer(canvas, transparentBlackScene, { backend: "webgl2" }, undefined, flags, undefined, {
         output: { alphaMode: "opaque" }
       })).rejects.toBe(stop);
-      expect(create.mock.calls[0]![0].output).toMatchObject({ alphaMode: "opaque" });
-      expect(create.mock.calls[0]![0].output).not.toHaveProperty("inputAlphaMode");
+      expect(firstCreateOptions(create).output).toMatchObject({ alphaMode: "opaque" });
+      expect(firstCreateOptions(create).output).not.toHaveProperty("inputAlphaMode");
     } finally { create.mockRestore(); }
   });
 

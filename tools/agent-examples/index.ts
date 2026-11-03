@@ -255,7 +255,10 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
     if (!definedPublic && diagnosticNames.test(name)) { exemptions.push({ sourcePath: path, reason: "diagnostic route naming convention" }); continue; }
     const readme = resolve(root, path, "README.md");
     if (!definedPublic && existsSync(readme) && readmeMarksNonPublic(readFileSync(readme, "utf8"), publicReferences.has(path))) { exemptions.push({ sourcePath: path, reason: "README explicitly marks the route non-public" }); continue; }
-    if (!definedPublic && (!references.has(path) || (!existsSync(resolve(root, path)) && !publicReferences.has(path)))) {
+    // A leftover directory holding only untracked build output (for example a
+    // removed route's copied public/ decoders) is not an example source.
+    const hasSource = existsSync(resolve(root, path)) && readdirSync(resolve(root, path)).some((name) => name !== "public" && !ignored.has(name));
+    if (!definedPublic && (!references.has(path) || (!hasSource && !publicReferences.has(path)))) {
       exemptions.push({ sourcePath: path, reason: "no current public documentation or classified example" });
       continue;
     }
@@ -522,6 +525,163 @@ function copyProject(source: string, target: string): void {
   } });
 }
 
+const STAGED_PUBLIC_EXTENSIONS = /\.(?:glb|gltf|bin|png|jpe?g|webp|avif|ktx2|hdr|exr|wav|mp3|ogg|json|svg|woff2?|ttf|otf|css|basis|wasm|m?js)$/i;
+
+function relativeSpecifiers(file: string, text: string): string[] {
+  const out: string[] = [];
+  if (/\.[cm]?[jt]sx?$/.test(file)) {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+    const visit = (node: ts.Node): void => {
+      if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) out.push(node.moduleSpecifier.text);
+      else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments[0] && ts.isStringLiteralLike(node.arguments[0])) out.push(node.arguments[0].text);
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+  } else if (/\.css$/.test(file)) {
+    for (const match of text.matchAll(/@import\s+(?:url\()?["']([^"')]+)["']/g)) out.push(match[1]!);
+  } else if (/\.html$/.test(file)) {
+    for (const match of text.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)="([^"]+)"/g)) out.push(match[1]!);
+  }
+  return out.filter((specifier) => specifier.startsWith("."));
+}
+
+function rootAbsoluteUrls(text: string): string[] {
+  return [...text.matchAll(/["'`](\/[A-Za-z0-9_][A-Za-z0-9_./-]*)["'`]/g)].map((match) => match[1]!).filter((url) => STAGED_PUBLIC_EXTENSIONS.test(url) && !url.includes(".."));
+}
+
+/**
+ * The repository dev server serves `public/` and the repository root at `/`.
+ * Resolve a root-absolute URL the way it does, never into package source,
+ * dependency trees or VCS metadata.
+ */
+export function rootServedFile(root: string, url: string, publicDirs: readonly string[] = []): string | undefined {
+  const path = url.slice(1);
+  const first = path.split("/")[0]!;
+  // A staged sibling app's own public/ is also served at `/` when that app is
+  // the page (port wrappers keep their game's assets there).
+  for (const candidate of [resolve(root, "public", path), ...(["packages", "node_modules", ".git", "src"].includes(first) ? [] : [resolve(root, path)]),
+    ...publicDirs.map((directory) => resolve(root, directory, path))]) {
+    if (candidate.startsWith(`${resolve(root)}${sep}`) && existsSync(candidate) && lstatSync(candidate).isFile()) return candidate;
+  }
+  return undefined;
+}
+
+/** Keys an example reads from the repo-root typed asset map, mapped to their `/aura-assets/` URLs. */
+function rootAssetUrls(assetMap: string, exampleText: string): string[] {
+  const keys = new Set<string>();
+  for (const match of exampleText.matchAll(/\bassets(?:\.([A-Za-z_$][\w$]*)|\[\s*["']([^"']+)["']\s*\])/g)) keys.add(match[1] ?? match[2]!);
+  const urls: string[] = [];
+  let current: string | undefined;
+  for (const line of assetMap.split("\n")) {
+    const key = /^ {2}"([^"]+)": \{\s*$/.exec(line)?.[1];
+    if (key) { current = key; continue; }
+    const url = current && keys.has(current) ? /^ {4}url: "(\/[^"]+)",?\s*$/.exec(line)?.[1] : undefined;
+    if (url) { urls.push(url); current = undefined; }
+  }
+  return urls;
+}
+
+/**
+ * Stage the out-of-project source an example imports by relative path, exactly
+ * as it exists in the source tree: a sibling `apps/<name>` or `examples/<name>`
+ * directory (port wrappers mounting an `examples/*-port`, shared port support)
+ * or a single repo-root module such as `src/aura-assets.ts`. Workspace package
+ * source is never staged; those imports must resolve through the candidate
+ * archives. Root `public/` files the staged sources name by root-absolute URL
+ * (and the `/aura-assets/` files of the root asset-map keys they read) are
+ * copied into a harness public directory. Every staged path is returned for
+ * the report's harness record; nothing in the example itself is changed.
+ */
+export function stageExampleDependencies(root: string, wrapper: string, project: string, hosts: readonly string[] = []): { staged: string[]; publicFiles: string[]; publicDirs: string[] } {
+  const staged: string[] = [], publicFiles = new Set<string>(), publicDirs: string[] = [];
+  const named = new Set<string>();
+  const pending = [project, ...hosts];
+  const scanned = new Set<string>();
+  let assetMapText: string | undefined;
+  const exampleText: string[] = [];
+  while (pending.length) {
+    const unit = pending.shift()!;
+    const files = lstatSync(unit).isDirectory() ? walkFiles(unit) : [unit];
+    for (const file of files) {
+      if (scanned.has(file)) continue;
+      scanned.add(file);
+      const rootFile = resolve(root, relative(wrapper, file));
+      if (/(?:^|[\\/])tsconfig[\w.-]*\.json$/.test(file)) {
+        // A shared compiler config (`extends: ../../tsconfig.base.json`) is
+        // staged with its extends chain. Its workspace `paths` point at package
+        // source that is not staged, so TypeScript falls back to the installed
+        // candidate packages.
+        let config: any;
+        try { config = ts.parseConfigFileTextToJson(file, readFileSync(file, "utf8")).config; } catch { config = undefined; }
+        for (const parent of [config?.extends].flat().filter((value: unknown): value is string => typeof value === "string" && value.startsWith("."))) {
+          const source = resolve(dirname(rootFile), parent.endsWith(".json") ? parent : `${parent}.json`);
+          const fromRoot = portable(relative(root, source));
+          if (fromRoot.startsWith("../") || !existsSync(source) || existsSync(resolve(wrapper, fromRoot))) continue;
+          const destination = resolve(wrapper, fromRoot);
+          mkdirSync(dirname(destination), { recursive: true });
+          cpSync(source, destination);
+          staged.push(fromRoot);
+          pending.push(destination);
+        }
+        continue;
+      }
+      // Build-tool configs are the consumer's own; a root config that aliases
+      // workspace source must not be staged into the candidate-only build.
+      if (!/\.(?:[cm]?[jt]sx?|css|html)$/.test(file) || /(?:^|[\\/])(?:vite|vitest|playwright)\.config\.[cm]?[jt]s$/.test(file)) continue;
+      const text = readFileSync(file, "utf8");
+      if (portable(relative(root, rootFile)) !== "src/aura-assets.ts") {
+        exampleText.push(text);
+        for (const url of rootAbsoluteUrls(text)) {
+          named.add(url);
+        }
+      }
+      for (const specifier of relativeSpecifiers(file, text)) {
+        const target = resolve(dirname(rootFile), specifier.split(/[?#]/)[0]!);
+        const fromRoot = portable(relative(root, target));
+        if (fromRoot.startsWith("../") || isAbsolute(fromRoot) || existsSync(resolve(wrapper, fromRoot))) continue;
+        const parts = fromRoot.split("/");
+        if (parts[0] === "packages" || parts.includes("node_modules")) continue;
+        let source: string | undefined;
+        if ((parts[0] === "apps" || parts[0] === "examples") && parts.length >= 2) source = resolve(root, parts[0], parts[1]!);
+        else {
+          const base = target.replace(/\.js$/, "");
+          source = [target, `${base}.ts`, `${base}.tsx`, `${target}.ts`, resolve(target, "index.ts")].find((candidate) => existsSync(candidate) && lstatSync(candidate).isFile());
+        }
+        if (!source || !existsSync(source)) continue;
+        const destination = resolve(wrapper, relative(root, source));
+        if (existsSync(destination)) continue;
+        if (lstatSync(source).isDirectory()) copyProject(source, destination);
+        else { mkdirSync(dirname(destination), { recursive: true }); cpSync(source, destination); }
+        staged.push(portable(relative(root, source)));
+        if (lstatSync(source).isDirectory() && existsSync(resolve(source, "public"))) publicDirs.push(`${portable(relative(root, source))}/public`);
+        if (portable(relative(root, source)) === "src/aura-assets.ts") assetMapText = readFileSync(source, "utf8");
+        else pending.push(destination);
+      }
+    }
+  }
+  if (assetMapText) for (const url of rootAssetUrls(assetMapText, exampleText.join("\n"))) named.add(url);
+  for (const url of named) if (!existsSync(resolve(project, "public", url.slice(1))) && rootServedFile(root, url, publicDirs)) publicFiles.add(url.slice(1));
+  // Staged stylesheets and glTF files carry their own references (font files,
+  // external buffers and images); follow them so the staged file is complete.
+  const followed = [...publicFiles];
+  while (followed.length) {
+    const path = followed.shift()!;
+    const file = rootServedFile(root, `/${path}`, publicDirs);
+    if (!file || !/\.(?:css|gltf)$/i.test(path)) continue;
+    const text = readFileSync(file, "utf8");
+    const references = /\.css$/i.test(path)
+      ? [...text.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)|@import\s+["']([^"']+)["']/g)].map((match) => (match[1] ?? match[2])!)
+      : (() => { try { const gltf = JSON.parse(text); return [...(gltf.buffers ?? []), ...(gltf.images ?? [])].map((item: any) => item?.uri).filter((uri: unknown): uri is string => typeof uri === "string"); } catch { return []; } })();
+    for (const reference of references) {
+      if (/^(?:data:|[a-z]+:\/\/|#)/i.test(reference)) continue;
+      const url = reference.startsWith("/") ? reference.split(/[?#]/)[0]! : new URL(reference, `http://x/${path}`).pathname;
+      const next = decodeURIComponent(url).slice(1);
+      if (!publicFiles.has(next) && !existsSync(resolve(project, "public", next)) && rootServedFile(root, `/${next}`, publicDirs)) { publicFiles.add(next); followed.push(next); }
+    }
+  }
+  return { staged, publicFiles: [...publicFiles].sort(), publicDirs };
+}
+
 /** create-aura3d template that every capability project is scaffolded from (it ships the admitted barbarian). */
 export const CAPABILITY_SCAFFOLD_TEMPLATE = "mini-game" as const;
 /** The only project files a capability project adds or replaces; everything else is the untouched scaffold. */
@@ -579,6 +739,21 @@ function standaloneHarness(root: string, wrapper: string, project: string, entry
     files.push(`${fixture} (documented browser host)`);
     html = resolve(wrapper, fixture, "index.html");
   }
+  const staging = stageExampleDependencies(root, wrapper, project, html.startsWith(`${project}${sep}`) ? [] : [dirname(html)]);
+  files.push(...staging.staged.map((path) => `${path} (staged source dependency)`));
+  let publicRelative: string | undefined;
+  if (staging.publicFiles.length) {
+    // One Vite publicDir: the example's own public files plus the root public
+    // files its sources name, copied unchanged into a recorded harness folder.
+    const harnessPublic = resolve(wrapper, "aura-example-public");
+    if (existsSync(resolve(project, "public"))) copyProject(resolve(project, "public"), harnessPublic);
+    for (const path of staging.publicFiles) {
+      mkdirSync(dirname(resolve(harnessPublic, path)), { recursive: true });
+      cpSync(rootServedFile(root, `/${path}`, staging.publicDirs)!, resolve(harnessPublic, path));
+    }
+    publicRelative = "aura-example-public";
+    files.push(...staging.publicFiles.map((path) => `aura-example-public/${path} (staged root public file)`));
+  }
   const rootManifest = readJson(resolve(root, "package.json"));
   const vite = rootManifest.devDependencies?.vite, typescript = rootManifest.devDependencies?.typescript;
   if (!vite || !typescript) throw new Error("Source manifest must declare Vite and TypeScript for standalone harnesses");
@@ -606,7 +781,7 @@ function standaloneHarness(root: string, wrapper: string, project: string, entry
   // retained and recorded; missing external imports or relative support remain build failures.
   const projectRelative = portable(relative(wrapper, project));
   const htmlRelative = portable(relative(wrapper, html));
-  writeFileSync(resolve(wrapper, "aura-example.vite.mjs"), `import { defineConfig } from "vite";\nimport { existsSync } from "node:fs";\nimport { dirname, resolve } from "node:path";\nimport { fileURLToPath } from "node:url";\nconst root = dirname(fileURLToPath(import.meta.url));\nconst project = resolve(root, ${JSON.stringify(projectRelative)});\nconst publicDir = resolve(project, "public");\nexport default defineConfig({ root, publicDir: existsSync(publicDir) ? publicDir : false, build: { outDir: resolve(project, "dist"), emptyOutDir: true, rollupOptions: { input: resolve(root, ${JSON.stringify(htmlRelative)}) } } });\n`);
+  writeFileSync(resolve(wrapper, "aura-example.vite.mjs"), `import { defineConfig } from "vite";\nimport { existsSync } from "node:fs";\nimport { dirname, resolve } from "node:path";\nimport { fileURLToPath } from "node:url";\nconst root = dirname(fileURLToPath(import.meta.url));\nconst project = resolve(root, ${JSON.stringify(projectRelative)});\nconst publicDir = ${publicRelative ? `resolve(root, ${JSON.stringify(publicRelative)})` : `resolve(project, "public")`};\nexport default defineConfig({ root, publicDir: existsSync(publicDir) ? publicDir : false, build: { outDir: resolve(project, "dist"), emptyOutDir: true, rollupOptions: { input: resolve(root, ${JSON.stringify(htmlRelative)}) } } });\n`);
   writeFileSync(resolve(wrapper, "aura-example.tsconfig.json"), `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "ESNext", moduleResolution: "Bundler", lib: ["ES2022", "DOM", "DOM.Iterable"], strict: true, skipLibCheck: true, noEmit: true }, include: [`${projectRelative}/**/*.ts`, `${projectRelative}/**/*.tsx`, `${portable(dirname(htmlRelative))}/**/*.ts`] }, null, 2)}\n`);
   return { manifest: { dependencies, devDependencies: { typescript, vite } }, files, outputEntry: htmlRelative };
 }
@@ -892,6 +1067,21 @@ async function produceSource(root: string, runId: string, candidatePath: string,
       }
       const manifestFile = resolve(project, "package.json");
       const isStandalone = !existsSync(manifestFile);
+      if (entry.kind !== "capability-example" && !isStandalone) {
+        // A wrapper app that mounts a sibling example (`*-port`) or reads a
+        // repo-root module builds only if that source is staged beside it.
+        const staging = stageExampleDependencies(root, wrapper, project);
+        harness.push(...staging.staged.map((path) => `${path} (staged source dependency)`));
+        // Vite's default publicDir is the project's own public/; add only the
+        // root-served files its sources name that it does not already carry.
+        for (const path of staging.publicFiles) {
+          const destination = resolve(project, "public", path);
+          mkdirSync(dirname(destination), { recursive: true });
+          cpSync(rootServedFile(root, `/${path}`, staging.publicDirs)!, destination);
+          harness.push(`${portable(relative(wrapper, destination))} (staged root public file)`);
+        }
+      }
+      // Standalone examples stage their dependencies (and fixture host) in standaloneHarness.
       const standalone = isStandalone ? standaloneHarness(root, wrapper, project, entry as ExampleCatalogEntry) : undefined;
       if (standalone) harness.push(...standalone.files);
       const manifest = standalone?.manifest ?? readJson(manifestFile);

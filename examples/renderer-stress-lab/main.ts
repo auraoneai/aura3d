@@ -88,11 +88,28 @@ async function run(): Promise<void> {
     window.__AURA3D_RENDERER_STRESS_LAB__ = result;
     shell.status.textContent = JSON.stringify(result, null, 2);
   };
+  applyStartQuery(shell);
   shell.objectInput.addEventListener("input", render);
   shell.materialInput.addEventListener("input", render);
   shell.lightInput.addEventListener("input", render);
   render();
   window.addEventListener("beforeunload", () => renderer.dispose(), { once: true });
+}
+
+/**
+ * Documented start query: `?objects=`, `?materials=` and `?lights=` preset the
+ * three existing sliders (values outside a slider's range/step are ignored),
+ * e.g. `?lights=1` renders the grid under the single directional key light.
+ * Without a query the defaults (96 objects, 8 materials, 4 lights) are unchanged.
+ */
+function applyStartQuery(shell: ReturnType<typeof createShell>): void {
+  const params = new URLSearchParams(window.location.search);
+  for (const [name, input] of [["objects", shell.objectInput], ["materials", shell.materialInput], ["lights", shell.lightInput]] as const) {
+    const raw = params.get(name);
+    if (raw === null || !/^\d+$/.test(raw)) continue;
+    const value = Number(raw), min = Number(input.min), max = Number(input.max), step = Number(input.step);
+    if (value >= min && value <= max && (value - min) % step === 0) input.value = String(value);
+  }
 }
 
 function renderStressScene(renderer: Renderer, objectCount: number, materialCount: number, lightCount: number): RendererStressLabState {

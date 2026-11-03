@@ -97,7 +97,10 @@ async function run(): Promise<void> {
     antialias: true,
     preserveDrawingBuffer: true
   });
-  let finish: Finish = "graphite";
+  // `?finish=graphite|copper|ceramic` opens the route on that documented finish
+  // (default Graphite), the same state the Finish buttons select.
+  const requestedFinish = new URLSearchParams(location.search).get("finish");
+  let finish: Finish = requestedFinish === "copper" || requestedFinish === "ceramic" ? requestedFinish : "graphite";
   let lighting: Lighting = "studio";
   let cameraPreset: CameraPreset = "hero";
   let exposure: Exposure = "neutral";
@@ -116,7 +119,8 @@ async function run(): Promise<void> {
         title: "Aura Studio Headphones",
         category: "consumer-audio",
         url: productAsset.url,
-        manifestUrl: `${location.origin}/examples/external-product-configurator/headphones.manifest.json`
+        // Root-absolute so isolated builds stage the same manifest the dev server serves.
+        manifestUrl: new URL("/examples/external-product-configurator/headphones.manifest.json", location.origin).href
       },
       materialMode: materialMode(finish),
       lighting: lightingPreset(lighting),
@@ -244,6 +248,7 @@ async function run(): Promise<void> {
     renderer.dispose();
   }, { once: true });
 
+  setPressed(shell.root, "data-finish", finish);
   await render();
 }
 

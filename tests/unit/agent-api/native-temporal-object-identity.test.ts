@@ -109,8 +109,8 @@ describe("rigid temporal draw identities", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(gltfFixture())));
     const actor = await createTypedGLBActor({ asset: { url: "https://asset.invalid/identity.gltf", format: "gltf" }, id: "identity", width: 64, height: 64 });
     try {
-      const first = actor.collectRenderItems({ modelMatrix: matrixAt(0) });
-      const moved = actor.collectRenderItems({ modelMatrix: matrixAt(2) });
+      const first = actor.collectRenderItems({ modelMatrix: Array.from(matrixAt(0)) });
+      const moved = actor.collectRenderItems({ modelMatrix: Array.from(matrixAt(2)) });
       expect(first).toHaveLength(2);
       expect(first[0]!.geometry).toBe(first[1]!.geometry);
       expect(first[0]!.temporalObjectKey).not.toBe(first[1]!.temporalObjectKey);
@@ -118,7 +118,7 @@ describe("rigid temporal draw identities", () => {
       // A second actor sharing the same pipeline and scene nodes must still
       // receive different keys; this exercises the actual actor collector.
       const secondActor = { ...actor, id: "second" } as TypedGLBActor;
-      const second = collectTypedGLBActorRenderItems(secondActor, { modelMatrix: matrixAt(0) });
+      const second = collectTypedGLBActorRenderItems(secondActor, { modelMatrix: Array.from(matrixAt(0)) });
       expect(second[0]!.temporalObjectKey).not.toBe(first[0]!.temporalObjectKey);
 
       const history = new VelocityHistory();

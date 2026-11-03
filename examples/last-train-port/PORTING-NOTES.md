@@ -19,6 +19,7 @@ never executed outside the capture browser). Only the simulation-core regions th
 | `main.ts`, `index.html` | Boot, fixed-step loop, input, HUD, capture hooks. |
 
 Run it: open `/examples/last-train-port/` on the example dev server. Query parameters are listed at the top of `main.ts`.
+`?title=0` skips the title card into the docked first-play view; once the loading panel is hidden the page sets `window.__AURA_LAST_TRAIN_READY__ = true` (a data value, for capture runners that cannot call the hook's `ready()` function).
 
 ## How the reference was made
 

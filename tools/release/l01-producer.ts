@@ -5,12 +5,9 @@ import { hostname } from 'node:os';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { artifact, newRunId, sameSource, validateReceipt, writeImmutableJson, type Artifact, type ProducerReceipt } from '../muse3jsparity-readiness/evidence-lineage';
-// @ts-expect-error The release identity module is JavaScript.
 import { sourceIdentity } from './source-identity.mjs';
 import { loadMuse301ExecutionRequirements } from '../muse3jsparity-readiness/requirements';
-// @ts-expect-error Existing release module is JavaScript and has no declaration file.
 import { buildReleaseArtifactManifest } from './build-artifact-manifest.mjs';
-// @ts-expect-error Existing release module is JavaScript and has no declaration file.
 import { packageAcceptanceDocument, producePackageAcceptance, recordBuild, recordCommand } from './package-acceptance.mjs';
 
 interface PackageAcceptanceEntry { name: string; manifest: string; tarball: string; sha256: string }

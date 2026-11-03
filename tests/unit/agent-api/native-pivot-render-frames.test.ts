@@ -47,7 +47,7 @@ function harness(
       resource.geometry.dispose();
       if (resource.shadowGeometry && resource.shadowGeometry !== resource.geometry) resource.shadowGeometry.dispose();
       resource.material.dispose();
-      if (resource.texturedMaterial && resource.texturedMaterial !== resource.material) resource.texturedMaterial.dispose();
+      resource.texturedMaterial?.dispose(); // a separate upgrade slot, never the scalar material
     }
   };
   return { entries, frame, dispose };

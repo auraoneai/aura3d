@@ -5,9 +5,14 @@
   "type": "module",
   "description": "Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget.",
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }

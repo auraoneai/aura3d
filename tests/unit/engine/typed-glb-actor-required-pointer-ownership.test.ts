@@ -493,15 +493,16 @@ describe("typed actor required pointer failure ownership", () => {
     registry.register(createGLTFFormatAdapter("gltf", ["gltf"], {
       type: "gltf", canLoad: () => true, load: async () => legacy, dispose: () => {}
     }));
+    const owner = {};
     try {
-      const actor = await loadActor("legacy-format-unknown", { formatRegistry: registry });
+      const actor = await loadActor("legacy-format-unknown", { runtimeOwner: owner, formatRegistry: registry });
       const track = asset.animations[0]!.tracks[0]!;
       expect(asset.loaderDiagnostics.extensionsRequired).toContain("KHR_animation_pointer");
       expect(legacy.animationPointerForTrack).toBeUndefined();
       expect(actor.animation.inspectTrackBinding(track)).toMatchObject({ status: "unavailable", reason: "missing-node" });
       // Global extensionsRequired is insufficient to identify this channel.
       actor.dispose();
-      await awaitTypedGLBActorDisposals();
+      await awaitTypedGLBActorDisposals(owner);
       expect(asset.disposed).toBe(false);
     } finally {
       loader.dispose(asset);

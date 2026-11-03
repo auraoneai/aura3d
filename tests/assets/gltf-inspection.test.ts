@@ -23,8 +23,14 @@ import {
   Geometry,
   MockRenderDevice,
   Renderer,
-  UnlitMaterial
+  UnlitMaterial,
+  type EnvironmentLightingOptions
 } from "../../packages/rendering/src";
+
+function enabledEnvironmentLighting(lighting: false | EnvironmentLightingOptions | undefined): EnvironmentLightingOptions {
+  if (!lighting) throw new Error("expected enabled environment lighting");
+  return lighting;
+}
 
 describe("glTF asset inspection", () => {
   it("reports meshes, material texture slots, runtime texture dimensions, and bounded render warnings", async () => {
@@ -86,10 +92,10 @@ describe("glTF asset inspection", () => {
         missingMaterialDrawItems: 0,
         textureBackedMaterialNames: ["inspection-material"]
       });
-      expect(report.renderResources.textureContributionDiagnostics).toEqual([
+      expect(report.renderResources!.textureContributionDiagnostics).toEqual([
         expect.objectContaining({ contribution: "color-bearing", slot: "baseColor", drawItems: 1 })
       ]);
-      expect(report.renderResources.suppressedTextureSlotDiagnostics).toEqual([]);
+      expect(report.renderResources!.suppressedTextureSlotDiagnostics).toEqual([]);
       expect(report.animations[0]).toMatchObject({
         name: "inspection-animation",
         duration: 1,
@@ -191,10 +197,10 @@ describe("glTF asset inspection", () => {
         expect(hdrPreviewEnvironment.environmentMapTexture).toBeDefined();
         expect(hdrPreviewEnvironment.environmentBrdfLutTexture).toBeDefined();
         expect(hdrPreviewEnvironment.environmentMapMipCount ?? 0).toBeGreaterThanOrEqual(4);
-        expect(hdrStudioInput.source.environmentLighting?.environmentMapTexture).toBeDefined();
-        expect(hdrStudioInput.source.environmentLighting?.environmentBrdfLutTexture).toBeDefined();
-        expect(hdrStudioInput.source.environmentLighting?.environmentMapMipCount ?? 0).toBeGreaterThanOrEqual(4);
-        expect(hdrStudioInput.source.environmentLighting?.proceduralMap?.specularIntensity ?? 0).toBeGreaterThan(0);
+        expect(enabledEnvironmentLighting(hdrStudioInput.source.environmentLighting).environmentMapTexture).toBeDefined();
+        expect(enabledEnvironmentLighting(hdrStudioInput.source.environmentLighting).environmentBrdfLutTexture).toBeDefined();
+        expect(enabledEnvironmentLighting(hdrStudioInput.source.environmentLighting).environmentMapMipCount ?? 0).toBeGreaterThanOrEqual(4);
+        expect(enabledEnvironmentLighting(hdrStudioInput.source.environmentLighting).proceduralMap?.specularIntensity ?? 0).toBeGreaterThan(0);
         expect(hdrStudioInput.source.environmentLighting).not.toEqual(DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING);
         expect(hdrStudioInput.source.postprocess).toEqual(DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS);
         expect(hdrStudioInput.source.postprocess).not.toBe(DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS);
@@ -214,9 +220,9 @@ describe("glTF asset inspection", () => {
         expect(defaultPreviewInput.source.cameraPosition).toEqual(defaultPreviewInput.frame.cameraPosition);
         expect(defaultPreviewInput.frame.cameraPosition).toEqual(resources.createCameraFrame({ width: 64, height: 64 }, DEFAULT_GLTF_STUDIO_PREVIEW_FRAME).cameraPosition);
         expect(rendererInput.camera.viewProjectionMatrix).toHaveLength(16);
-        (source.environmentLighting?.color as [number, number, number])[0] = 0;
-        expect(secondPreviewSource.environmentLighting?.color[0]).toBe(DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING.color[0]);
-        expect(defaultSource.environmentLighting?.color[0]).toBe(DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING.color[0]);
+        (enabledEnvironmentLighting(source.environmentLighting).color as [number, number, number])[0] = 0;
+        expect(enabledEnvironmentLighting(secondPreviewSource.environmentLighting).color[0]).toBe(DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING.color[0]);
+        expect(enabledEnvironmentLighting(defaultSource.environmentLighting).color[0]).toBe(DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING.color[0]);
         expect(renderer.render(source).drawCalls).toBeGreaterThan(0);
         expect((renderer.device as MockRenderDevice).drawCommands[0]?.uniforms?.get("u_environmentIntensity")).toBe(DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING.intensity);
         expect(renderer.render(unlitSource).drawCalls).toBeGreaterThan(0);
@@ -266,7 +272,7 @@ describe("glTF asset inspection", () => {
         unsupportedTexCoordDrawItems: 1,
         generatedTangentUvMismatchDrawItems: 1
       });
-      expect(report.renderResources.materialFidelityDiagnostics).toEqual(expect.arrayContaining([
+      expect(report.renderResources!.materialFidelityDiagnostics).toEqual(expect.arrayContaining([
         expect.objectContaining({
           issue: "unsupported-texcoord-set",
           slot: "baseColor",

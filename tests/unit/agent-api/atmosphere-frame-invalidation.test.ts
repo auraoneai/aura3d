@@ -69,7 +69,7 @@ function beginMount(
 ) {
   const snapshot = scene().add(primitives.box()).toJSON();
   return startProductionRender(canvas, snapshot, createInitialDiagnostics(snapshot, undefined),
-    { autoStart: true, resize: false, frameMode: "async" }, undefined, undefined, isPaused,
+    { scene: snapshot, autoStart: true, resize: false, frameMode: "async" }, undefined, undefined, isPaused,
     undefined, undefined, undefined, undefined, undefined, readiness);
 }
 

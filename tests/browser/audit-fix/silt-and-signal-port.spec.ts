@@ -35,7 +35,6 @@ type Api = Record<string, any>;
 const silt = <T>(page: Page, body: string, arg?: unknown): Promise<T> =>
   page.evaluate(({ body: b, arg: a }) => {
     const api = (window as unknown as Record<string, Api>).__AURA_SILT__;
-    // eslint-disable-next-line no-new-func
     return new Function("api", "arg", b)(api, a);
   }, { body, arg }) as Promise<T>;
 

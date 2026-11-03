@@ -33,7 +33,8 @@ export interface GltfJson {
   nodes: GltfNode[];
   skins?: { joints: number[]; inverseBindMatrices?: number; skeleton?: number; name?: string }[];
   meshes?: { name?: string; primitives: { attributes: Record<string, number>; indices?: number; material?: number; mode?: number; targets?: Record<string, number>[] }[] }[];
-  materials?: { name?: string }[];
+  materials?: { name?: string; pbrMetallicRoughness?: { baseColorFactor?: number[]; baseColorTexture?: { index: number; texCoord?: number }; metallicFactor?: number; roughnessFactor?: number } }[];
+  images?: { bufferView?: number; mimeType?: string; uri?: string; name?: string }[];
   animations?: GltfAnimation[];
   scenes?: { nodes?: number[] }[];
   scene?: number;

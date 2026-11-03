@@ -19,7 +19,6 @@
  * the rest of the route is validated against; vite's workspace fs.allow covers it).
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — resolved at runtime to the freshly-built monorepo dist (has co-located .d.ts).
 import {
   inferHumanoidRig,

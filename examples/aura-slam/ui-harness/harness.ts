@@ -11,7 +11,6 @@ import { strokes } from "../sim/strokes";
 import type { CreateSlamEngine, SlamEngine } from "../ui/types";
 import { createInputMapper } from "../input/mapper";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const params = new URLSearchParams(location.search);
 const swipeOn = params.get("swipe") === "1";
 /** `?engine=real` runs the native simulation; the default fake engine scores a point on a timer so UI flow is deterministic. */

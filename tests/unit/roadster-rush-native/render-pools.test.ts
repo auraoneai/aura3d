@@ -95,7 +95,6 @@ describe("Apex Overdrive render pools cover the simulation", () => {
           if (!pool?.includes(k)) miss(k.kind, k.z);
         }
       }
-      // eslint-disable-next-line no-console
       console.log(`RR_POOL_PEAKS seed=${seed} distance=${maxDistance.toFixed(0)} ${JSON.stringify(peak)}`);
       expect(maxDistance).toBeGreaterThan(3000);
       expect(firstMiss).toBe("");

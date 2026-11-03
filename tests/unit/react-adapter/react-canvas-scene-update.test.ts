@@ -114,6 +114,6 @@ describe("declarative scene composition", () => {
     const updated = buildSceneFromChildren(second);
     applySceneChange({ setScene }, sceneChildrenKey(first), sceneChildrenKey(second), updated);
     expect(setScene).toHaveBeenCalledWith(updated);
-    expect(updated.toJSON().nodes.some((node) => node.name === "second")).toBe(true);
+    expect(updated.toJSON().nodes.some((node) => "name" in node && node.name === "second")).toBe(true);
   });
 });

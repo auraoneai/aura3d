@@ -136,7 +136,6 @@ async function visibleOverlays(page: Page): Promise<string[]> {
 
 async function simRead(page: Page) {
   return page.evaluate((expr) => {
-    // eslint-disable-next-line no-eval
     const s = (0, eval)(expr) as any;
     if (!s) return null;
     return { mode: s.mode, runKind: s.runKind, mazeId: s.mazeId, score: s.score, lives: s.lives, dotsLeft: s.dotsLeft, hasMoved: s.hasMoved, mazesPlayed: s.profile?.mazesPlayed, fright: s.fright, frightMax: s.frightMax ?? null, boardsCleared: s.boardsCleared ?? null };

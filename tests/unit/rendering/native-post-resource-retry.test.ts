@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MockRenderDevice, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
+import { MockRenderDevice, type RenderTargetDescriptor, type RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 import { renderTargetPoolSlot, type RenderTargetPoolLike } from "../../../packages/rendering/src/contracts/device";
 import { PostResources } from "../../../packages/rendering/src/post/PostResources";
 import { acquireV2TargetLease } from "../../../packages/rendering/src/post/v2Stages";
@@ -9,6 +9,13 @@ import { disposeNativePostEffectsForHost, registerNativePostEffectLifecycle, rel
   releaseNativePostEffectScopeForHost,
   type NativePostEffectLifecycle } from "../../../packages/rendering/src/renderer/postSkipped";
 import type { WebGL2DeviceHost } from "../../../packages/rendering/src/webgl2/DeviceHost";
+
+/** Pool acquire descriptor → device descriptor; the renderer only pools color formats. */
+function poolTargetDescriptor(desc: Parameters<RenderTargetPoolLike["acquire"]>[0]): RenderTargetDescriptor {
+  const { format } = desc;
+  if (format !== "rgba8" && format !== "rgba16f" && format !== "rgba32f") throw new Error(`pooled target format ${format} is not a color target format`);
+  return { ...desc, format, sampleCount: desc.samples };
+}
 
 const key = { width: 8, height: 8, format: "rgba8", samples: 1, depth: false } as const;
 const flags = { values: {}, on: () => false };
@@ -28,7 +35,7 @@ describe("post owner cleanup retries", () => {
       return /^[A-Z][A-Z0-9_]*$/.test(name) ? 1 : () => undefined;
     } }) as unknown as WebGL2RenderingContext;
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release() {}, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -84,7 +91,7 @@ describe("post owner cleanup retries", () => {
       return /^[A-Z][A-Z0-9_]*$/.test(name) ? 1 : () => undefined;
     } }) as unknown as WebGL2RenderingContext;
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release() {}, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -120,7 +127,7 @@ describe("post owner cleanup retries", () => {
     } }) as unknown as WebGL2RenderingContext;
     const release = vi.fn();
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -202,7 +209,7 @@ describe("post owner cleanup retries", () => {
     const calls = new Map<RenderTarget, number>();
     let resources: PostResources;
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: target => {
         calls.set(target, (calls.get(target) ?? 0) + 1);
         resources.dispose();
@@ -232,7 +239,7 @@ describe("post owner cleanup retries", () => {
     const device = new MockRenderDevice(), failures = new Set<RenderTarget>();
     const calls = new Map<RenderTarget, number>();
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: target => {
         calls.set(target, (calls.get(target) ?? 0) + 1);
         if (failures.has(target)) throw new Error("backing failed");
@@ -260,7 +267,7 @@ describe("post owner cleanup retries", () => {
     let fail = true;
     const release = vi.fn(() => { if (fail) throw failure; });
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -359,7 +366,7 @@ describe("post owner cleanup retries", () => {
     let resources: PostResources, second: RenderTarget;
     const calls = new Map<RenderTarget, number>();
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: target => {
         calls.set(target, (calls.get(target) ?? 0) + 1);
         if (target === second) throw failure;
@@ -386,7 +393,7 @@ describe("post owner cleanup retries", () => {
     const calls = new Map<RenderTarget, number>();
     let first: RenderTarget;
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: target => {
         calls.set(target, (calls.get(target) ?? 0) + 1);
         if (target === first && fail) throw failure;
@@ -423,7 +430,7 @@ describe("post owner cleanup retries", () => {
     device.onDeviceLost = () => unsubscribe;
     const release = vi.fn();
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release, trim() {}
     };
     vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -447,7 +454,7 @@ describe("post owner cleanup retries", () => {
     const release = vi.fn(() => { if (fail) throw new Error("rollback failed"); });
     const pool: RenderTargetPoolLike = {
       acquire: desc => {
-        const target = device.createRenderTarget({ ...desc, sampleCount: desc.samples });
+        const target = device.createRenderTarget(poolTargetDescriptor(desc));
         resources.dispose();
         return target;
       },
@@ -477,7 +484,7 @@ describe("post owner cleanup retries", () => {
         }
       });
       const pool: RenderTargetPoolLike = {
-        acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+        acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
         release, trim() {}
       };
       vi.spyOn(renderTargetPoolSlot, "get").mockReturnValue(() => pool);
@@ -498,7 +505,7 @@ describe("post owner cleanup retries", () => {
     const calls = new Map<RenderTarget, number>();
     device.onDeviceLost = listener => { lost = listener; return () => undefined; };
     const pool: RenderTargetPoolLike = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       release: target => {
         calls.set(target, (calls.get(target) ?? 0) + 1);
         if (target === first && fail) throw new Error("loss cleanup failed");
@@ -528,7 +535,7 @@ describe("post owner cleanup retries", () => {
     let fail = true;
     const releases: Array<ReturnType<typeof vi.fn>> = [];
     const pool: RenderTargetPoolLike & { acquireLease: (desc: Parameters<RenderTargetPoolLike["acquire"]>[0]) => TargetPoolLease } = {
-      acquire: desc => device.createRenderTarget({ ...desc, sampleCount: desc.samples }),
+      acquire: desc => device.createRenderTarget(poolTargetDescriptor(desc)),
       acquireLease(desc) {
         const target = this.acquire(desc);
         const release = vi.fn(() => { if (releases[0] === release && fail) throw new Error("explicit failed"); });

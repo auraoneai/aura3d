@@ -486,7 +486,6 @@ function waitForViteReady(child: ChildProcessWithoutNullStreams): Promise<string
 }
 
 function stripAnsi(text: string): string {
-  // eslint-disable-next-line no-control-regex
   return text.replace(/\u001b\[\d*m/g, "");
 }
 

@@ -570,7 +570,6 @@ async function main() {
           // posters on this site), so full-page captures include below-fold
           // sections. window/document exist in the page context evaluated
           // below; the script runs in Node where eslint flags them.
-          /* eslint-disable no-undef */
           // WebGL showcase/game routes block the JS loop under software
           // rendering — the scroll walk can hang there for good. Shots may
           // opt out with "noScroll": true; every walk is also time-bounded.
@@ -591,7 +590,6 @@ async function main() {
               new Promise((resolve) => setTimeout(resolve, 20_000))
             ]).catch(() => {});
           }
-          /* eslint-enable no-undef */
           await sleep(250);
 
           result.finalStatus = response?.status ?? null;

@@ -17,7 +17,6 @@ import { assertIndependentPnpmConsumer, assertInstalledPnpmArchiveSet, seedVerif
 import { createPnpmLoopbackRegistry } from "../release/pnpm-loopback-registry.mjs";
 import { assertZstdWorkerPayload } from "../finalize-dist/worker-bundle.mjs";
 import { assertInstalledArchiveSet, createPortableSourceEnvironment, inventoryPortableConsumerFiles, packedConsumerEnvironment, type NativeConsumerFile, type PortableLock } from "../package-clean-install/index";
-// @ts-expect-error The shared artifact-redaction module is plain JavaScript.
 import { redactText } from "../remote-acr/upload-artifacts.mjs";
 
 export type Manager = "npm" | "pnpm";

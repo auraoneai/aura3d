@@ -48,7 +48,7 @@ describe("worker canvas and frame scheduling", () => {
     const timer = clock();
     const events: string[] = [];
     const frames: WorkerScheduledFrame<{ x: number }>[] = [];
-    const scheduler = createWorkerFrameScheduler({
+    const scheduler = createWorkerFrameScheduler<{ x: number }>({
       ...timer,
       onFrame(frame) { frames.push(frame); events.push(`frame:${frame.source}`); },
       applyResize(size) { events.push(`resize:${size.width}x${size.height}@${size.pixelRatio}`); },
@@ -170,7 +170,7 @@ describe("worker canvas and frame scheduling", () => {
     const firstFrameFailed = vi.fn();
     let ready!: (controller: { dispose(): void }) => void;
     const controllerReady = new Promise<{ dispose(): void }>((resolve) => { ready = resolve; });
-    const mount = startProductionRender(canvas, snapshot, createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false, frameMode: "async" }, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, {
+    const mount = startProductionRender(canvas, snapshot, createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false, frameMode: "async" }, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, {
       onRendererReady(backend, controller) { expect(backend).toBe("webgl2"); ready(controller); },
       onFirstFrame: firstFrame,
       onFirstFrameFailed: firstFrameFailed

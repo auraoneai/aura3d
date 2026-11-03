@@ -1,5 +1,4 @@
 // Verbatim copy of the pre-migration examples/saiyan-snake-way-port/sfx.ts (only the context injection differs), kept to prove the cue-bank port plays the same automation.
-/* eslint-disable */
 /**
  * Small synthesised sound effects (Web Audio, no asset files): pickups, jump, landing, hits, surge and
  * flight whooshes. Everything is a one-shot with a short envelope and there is no continuous bed.

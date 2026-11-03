@@ -278,6 +278,10 @@ export interface AuraMaterialSpec {
     readonly iridescence?: 0 | 1;
     readonly iridescenceThickness?: 0 | 1;
     readonly anisotropy?: 0 | 1;
+    readonly specularIntensity?: 0 | 1;
+    readonly specularColor?: 0 | 1;
+    readonly transmission?: 0 | 1;
+    readonly thickness?: 0 | 1;
   };
   /** Per-slot UV transforms, passed through to the native per-slot transform uniforms. */
   readonly texTransforms?: {
@@ -296,6 +300,10 @@ export interface AuraMaterialSpec {
     readonly iridescence?: AuraTextureTransform;
     readonly iridescenceThickness?: AuraTextureTransform;
     readonly anisotropy?: AuraTextureTransform;
+    readonly specularIntensity?: AuraTextureTransform;
+    readonly specularColor?: AuraTextureTransform;
+    readonly transmission?: AuraTextureTransform;
+    readonly thickness?: AuraTextureTransform;
   };
   // C-15 additions (PR 0a; owner tags per CONTRACTS.md)
   /** C-04 (PRD 01): named blend state. */

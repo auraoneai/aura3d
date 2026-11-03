@@ -56,7 +56,6 @@ export function launchAuraSlam(options: Partial<Omit<StartAuraSlamOptions, "rend
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __AURA_SLAM_NO_BOOT__: boolean | undefined;
 }
 

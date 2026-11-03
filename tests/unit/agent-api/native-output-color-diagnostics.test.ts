@@ -201,6 +201,7 @@ describe("production app diagnostic wiring (mock devices, no browser or GPU)", (
     const actualCreate = Renderer.create.bind(Renderer);
     const mounted = new Map<FakeCanvas, Renderer>();
     vi.spyOn(Renderer, "create").mockImplementation(async (options) => {
+      if (!options) throw new Error("The app must pass renderer options");
       const instance = await actualCreate({ ...options, backend: "mock", requiredFeatures: [] });
       const canvas = options.canvas as unknown as FakeCanvas;
       Object.defineProperty(instance.device, "kind", { value: options.backend });
@@ -208,7 +209,9 @@ describe("production app diagnostic wiring (mock devices, no browser or GPU)", (
         ...instance.device.info,
         capabilities: [...(instance.device.info.capabilities ?? []), "hdr-render-targets", "native-render-pipeline", "canvas-surface"]
       } });
-      vi.spyOn(instance.device, "getOutputColorSpaceNegotiation").mockImplementation(() => canvas.negotiation);
+      const device = instance.device;
+      if (!(device instanceof MockRenderDevice)) throw new Error("Expected the mock render device");
+      vi.spyOn(device, "getOutputColorSpaceNegotiation").mockImplementation(() => canvas.negotiation);
       vi.spyOn(instance, "render").mockImplementation(() => instance.device.getDiagnostics());
       mounted.set(canvas, instance);
       return instance;

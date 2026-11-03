@@ -38,7 +38,11 @@ export default [
       "**/public/**",
       "**/.vercel/**",
       "**/.vite/**",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      // Captured third-party data, not repository source: a set of non-contiguous regions cut out
+      // of the Last Train to the Sea game module (see tests/fixtures/crayon/last-train/PROVENANCE.md).
+      // Tests read it as text only and it is never executed, so it is not a parseable program.
+      "tests/fixtures/crayon/last-train/game-sim.extract.js"
     ]
   },
   {

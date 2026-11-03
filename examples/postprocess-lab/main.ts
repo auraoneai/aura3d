@@ -36,6 +36,7 @@ import {
   type DepthTextureStats,
   type RenderDebugIssue,
   type RenderDebugOverlaySnapshot,
+  PBRMaterial,
   Renderer,
   type PostProcessColorSpace,
   type RendererTimingSnapshot,
@@ -202,6 +203,8 @@ interface RealScenePostprocessInput {
   readonly nonDarkPixels: number;
   readonly colorBuckets: number;
   readonly samplePixel: readonly number[];
+  /** `asset` (default) or `contrast`, chosen by the documented `?material=` query. */
+  readonly materialMode: "asset" | "contrast";
 }
 
 interface PostprocessControls {
@@ -728,12 +731,20 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
     fill.color = [0.58, 0.76, 1];
     fill.transform.setPosition(-2.4, 2.1, 3.2);
     resources.scene.root.addChild(fill);
+    // `?material=contrast` renders the product with one flat PBR base, the
+    // Product Studio "contrast" mode's first palette entry ([0.9, 0.16, 0.12],
+    // metallic 0.15, roughness 0.42), so the post chain runs on a colour the
+    // dark asset texture lacks. Default `asset` keeps the GLB's own material.
+    const materialMode = new URLSearchParams(location.search).get("material") === "contrast" ? "contrast" : "asset";
+    const materialLibrary = materialMode === "contrast"
+      ? new Map([...resources.materialLibrary.keys()].map((key): [string, PBRMaterial] => [key, new PBRMaterial({ name: `postprocess-contrast-${key}`, baseColor: [0.9, 0.16, 0.12, 1], metallic: 0.15, roughness: 0.42 })]))
+      : resources.materialLibrary;
     const inspection = inspectGLTFAsset(asset, resources);
     const renderItemCount = resources.scene.collectRenderables().length;
     const diagnostics = renderer.render({
       scene: resources.scene,
       geometryLibrary: resources.geometryLibrary,
-      materialLibrary: resources.materialLibrary,
+      materialLibrary,
       morphTargetLibrary: resources.morphTargetLibrary,
       environmentLighting: {
         color: [0.72, 0.82, 0.94],
@@ -762,6 +773,7 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
       nonDarkPixels: countNonDarkPixels(pixels),
       colorBuckets: countColorBuckets(pixels),
       samplePixel: Array.from(pixels.slice(centerIndex, centerIndex + 4)),
+      materialMode,
       pixels
     };
   } finally {
@@ -783,7 +795,8 @@ function summarizeRealSceneInput(realScene: RealScenePostprocessInput & { readon
     drawCalls: realScene.drawCalls,
     nonDarkPixels: realScene.nonDarkPixels,
     colorBuckets: realScene.colorBuckets,
-    samplePixel: realScene.samplePixel
+    samplePixel: realScene.samplePixel,
+    materialMode: realScene.materialMode
   };
 }
 

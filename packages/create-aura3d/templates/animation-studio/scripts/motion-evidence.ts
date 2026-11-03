@@ -21,7 +21,6 @@
  * and that every strip shows real motion.
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — resolved at runtime to the freshly-built monorepo dist (has co-located .d.ts).
 import {
   createStandardHumanoidClipRegistry,

@@ -23,7 +23,6 @@ import type { EpisodeDocument } from "./episode-document";
 const injected = (window as Window & { __AURA_EPISODE_DOCUMENT__?: EpisodeDocument }).__AURA_EPISODE_DOCUMENT__;
 const documentToPlay = injected ?? emptyDocument;
 if (!injected) {
-  // eslint-disable-next-line no-console
   console.warn(EMPTY_DOCUMENT_NOTICE);
 }
 
@@ -37,6 +36,5 @@ void mountScenePlayer(documentToPlay).catch((error: unknown) => {
   if (root) {
     root.innerHTML = `<pre style="color:#f88;background:#0b0f1a;padding:24px;white-space:pre-wrap;">scene-player failed: ${message}</pre>`;
   }
-  // eslint-disable-next-line no-console
   console.error("scene-player failed", error);
 });

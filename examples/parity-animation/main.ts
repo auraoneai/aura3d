@@ -180,6 +180,12 @@ async function boot(): Promise<void> {
         if (data[i]! + data[i + 1]! + data[i + 2]! > 24) litPixels += 1;
       }
       bitmap.close();
+      // Present the frame that was actually rendered: the app is disposed
+      // below, so the WebGL #stage canvas would otherwise show nothing. The
+      // captured readback takes its place (same 960x540 box) as #stage-frame.
+      probe.id = "stage-frame";
+      probe.dataset.testid = "example-frame";
+      canvas.replaceWith(probe);
       // §8 route-health inside the live app, before dispose (L8 IDs).
       const routeHealth = createAuraRouteHealthSnapshot(app, {
         parityIds: ["SA-01", "SA-02", "SA-03", "SA-04", "SA-05", "SA-06", "SM-03"]

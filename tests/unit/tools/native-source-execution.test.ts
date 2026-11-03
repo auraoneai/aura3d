@@ -13,6 +13,10 @@ import {
 import { collectArtifacts, managedIdentityToken, parseArgs, parseBlobUrl, run } from '../../../tools/remote-acr/upload-artifacts.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
+// source-checks.mjs is plain JavaScript (its exports are untyped here): these are
+// the record shapes the assertions below read from it.
+interface SourceStepView { readonly id: string; readonly argv: readonly string[] | null }
+interface ReplayFixtureView { readonly path: string }
 const hash = (data: string | Buffer) => createHash('sha256').update(data).digest('hex');
 const temporary: string[] = [];
 function temp() { const path = mkdtempSync(join(tmpdir(), 'a3d-source-')); temporary.push(path); return path; }
@@ -25,7 +29,7 @@ function staged() {
     'tools/remote-acr/source-checks.mjs', 'tools/remote-acr/source-task-run.sh', 'tools/release/source-identity.mjs',
     'tools/native-source-inventory/index.mjs', 'tools/agent-templates/cli.test.mjs',
     'packages/engine/src/index.ts', 'packages/core/tests/core.test.ts', 'tests/unit/a.test.ts', 'tests/unit/parity/a.test.ts',
-    ...BUILT_UNIT_TESTS, ...PACKED_UNIT_TESTS, ...HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_SOURCE_TEST, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_TEST, HISTORICAL_REPLAY_SOURCE_TEST, ...HISTORICAL_REPLAY_FIXTURES.map(fixture => fixture.path), EXTERNAL_CODEC_TEST, EXTERNAL_CODEC_CONFIG, EXTERNAL_CODEC_POLICY, EXTERNAL_CODEC_CONTRACT, EXTERNAL_CODEC_CONTRACT_TYPES, EXTERNAL_CODEC_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER, EXTERNAL_CODEC_LAUNCHER_TEST, PORTABLE_NPM_LOCK, PORTABLE_NPM_LOCK_TYPES, PORTABLE_NPM_LOCK_TEST, 'tests/integration/a.test.ts', 'tests/assets/a.test.ts',
+    ...BUILT_UNIT_TESTS, ...PACKED_UNIT_TESTS, ...HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_SOURCE_TEST, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_TEST, HISTORICAL_REPLAY_SOURCE_TEST, ...HISTORICAL_REPLAY_FIXTURES.map((fixture: ReplayFixtureView) => fixture.path), EXTERNAL_CODEC_TEST, EXTERNAL_CODEC_CONFIG, EXTERNAL_CODEC_POLICY, EXTERNAL_CODEC_CONTRACT, EXTERNAL_CODEC_CONTRACT_TYPES, EXTERNAL_CODEC_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER, EXTERNAL_CODEC_LAUNCHER_TEST, PORTABLE_NPM_LOCK, PORTABLE_NPM_LOCK_TYPES, PORTABLE_NPM_LOCK_TEST, 'tests/integration/a.test.ts', 'tests/assets/a.test.ts',
     'tests/qr/a.test.ts', 'tests/fixtures/a.bin', 'tools/release/a.test.mjs', 'templates/example/a.ts',
     'tools/remote-acr/portable-inputs.mjs', 'tests/unit/tools/native-portable-source-inputs.test.ts',
     'tools/remote-acr/source-resume.mjs', 'tests/unit/tools/native-source-resume.test.ts',
@@ -33,8 +37,8 @@ function staged() {
     'packages/create-aura3d/templates/a.ts', 'public/aura-environments/a.json'
   ];
   const realBaseline = JSON.parse(readFileSync(join(root, HISTORICAL_ACCEPTANCE_INVENTORY), 'utf8')) as { schema: string; assertions: string[] };
-  const baseline = { schema: realBaseline.schema, assertions: realBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some(path => id.startsWith(`${path}::`))) };
-  for (const path of [...paths, ...ADMINISTRATIVE_FILES]) put(dir, path, path === 'package.json' ? '{}' : path === 'docs/prds/aura3d-native-capability-roadmap.md' ? '| CREATE | tests/fixtures/a.bin | required |\n' : path === HISTORICAL_ACCEPTANCE_INVENTORY ? JSON.stringify(baseline) : HISTORICAL_REPLAY_FIXTURES.some(fixture => fixture.path === path) ? readFileSync(join(root, path)) : path);
+  const baseline = { schema: realBaseline.schema, assertions: realBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some((path: string) => id.startsWith(`${path}::`))) };
+  for (const path of [...paths, ...ADMINISTRATIVE_FILES]) put(dir, path, path === 'package.json' ? '{}' : path === 'docs/prds/aura3d-native-capability-roadmap.md' ? '| CREATE | tests/fixtures/a.bin | required |\n' : path === HISTORICAL_ACCEPTANCE_INVENTORY ? JSON.stringify(baseline) : HISTORICAL_REPLAY_FIXTURES.some((fixture: ReplayFixtureView) => fixture.path === path) ? readFileSync(join(root, path)) : path);
   const entries = (ps: string[]) => ps.sort().map(path => ({ path, sha256: hash(readFileSync(join(dir, path))), mode: '100644', type: 'file' }));
   const files = entries(paths);
   const initial = { schema: MANIFEST_SCHEMA, origin: { commit: 'a'.repeat(40), tree: 'b'.repeat(40) }, files, administrativeFiles: entries([...ADMINISTRATIVE_FILES]), lockfileSha256: files.find(f => f.path === 'pnpm-lock.yaml')!.sha256, inputDigest: computeInputDigest(files) };
@@ -53,7 +57,8 @@ function materializationFixture(downloaded: string, runId: string, phase?: 'resu
   const sourceManifest = write(`${reportDir}/source-manifest.json`, manifestBytes);
   const inventory = nativeSourceInventoryForManifest(manifest, runId);
   const sourceInventory = write(`${reportDir}/source-inventory.json`, `${JSON.stringify(inventory)}\n`);
-  const steps = buildSteps(runId, reportDir, 'patch', inventory).map(step => {
+  const canonicalSteps: ReadonlyArray<{ readonly id: unknown; readonly argv: unknown }> = buildSteps(runId, reportDir, 'patch', inventory);
+  const steps = canonicalSteps.map(step => {
     const id = step.id, argv = step.argv;
     if (typeof id !== 'string' || !(argv === null
       || Array.isArray(argv) && argv.every((arg: unknown): arg is string => typeof arg === 'string'))) {
@@ -64,7 +69,7 @@ function materializationFixture(downloaded: string, runId: string, phase?: 'resu
   const expected = sourceTestFileCoverage(inventory, []).expectedTestFiles as Record<string, string[]>;
   const testInventories: any[] = [];
   const checks = steps.map(step => {
-    const plan = inventory.supplementalChecks.find(item => item.id === step.id);
+    const plan = inventory.supplementalChecks.find((item: { readonly id: string }) => item.id === step.id);
     const log = write(`${reportDir}/logs/${step.id}.log`, `synthetic ${step.id}\n`);
     const check: any = { id: step.id, argv: step.argv, status: 'passed', started: true, exitCode: 0,
       log: log.path, sha256: log.sha256, subruns: [], ...(plan ? { runner: plan.runner, cwd: plan.cwd } : {}) };
@@ -133,7 +138,7 @@ describe('source execution boundaries', () => {
     const { dir, manifest } = staged();
     expect(() => verifyStagedSource(dir, manifest)).not.toThrow();
     expect(() => assertRequiredPayload(manifest.files.filter(f => !f.path.startsWith('tests/fixtures/')).map(f => f.path), '')).toThrow(/fixture/);
-    for (const required of [...BUILT_UNIT_TESTS, ...PACKED_UNIT_TESTS, ...HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_SOURCE_TEST, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_TEST, HISTORICAL_REPLAY_SOURCE_TEST, ...HISTORICAL_REPLAY_FIXTURES.map(fixture => fixture.path), EXTERNAL_CODEC_TEST, EXTERNAL_CODEC_CONFIG, EXTERNAL_CODEC_POLICY, EXTERNAL_CODEC_CONTRACT, EXTERNAL_CODEC_CONTRACT_TYPES, EXTERNAL_CODEC_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER, EXTERNAL_CODEC_LAUNCHER_TEST, PORTABLE_NPM_LOCK, PORTABLE_NPM_LOCK_TYPES, PORTABLE_NPM_LOCK_TEST, ...ARCHIVE_ADMISSION_FILES, ...ARCHIVE_ADMISSION_TESTS]) {
+    for (const required of [...BUILT_UNIT_TESTS, ...PACKED_UNIT_TESTS, ...HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_SOURCE_TEST, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_TEST, HISTORICAL_REPLAY_SOURCE_TEST, ...HISTORICAL_REPLAY_FIXTURES.map((fixture: ReplayFixtureView) => fixture.path), EXTERNAL_CODEC_TEST, EXTERNAL_CODEC_CONFIG, EXTERNAL_CODEC_POLICY, EXTERNAL_CODEC_CONTRACT, EXTERNAL_CODEC_CONTRACT_TYPES, EXTERNAL_CODEC_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER, EXTERNAL_CODEC_LAUNCHER_TEST, PORTABLE_NPM_LOCK, PORTABLE_NPM_LOCK_TYPES, PORTABLE_NPM_LOCK_TEST, ...ARCHIVE_ADMISSION_FILES, ...ARCHIVE_ADMISSION_TESTS]) {
       expect(() => assertRequiredPayload(manifest.files.filter(f => f.path !== required).map(f => f.path), '')).toThrow(/required staged input missing/);
     }
     expect(() => assertRequiredPayload(manifest.files.map(f => f.path), '| CREATE | tests/unit/missing.test.ts | required |')).toThrow(/planned source input missing/);
@@ -234,7 +239,7 @@ describe('source execution boundaries', () => {
     expect(() => validateSourceArgv('node-release', ['node', '--test', '--eval=code'])).toThrow();
     expect(() => assertNoAcceptanceProcess('pnpm', ['exec', 'playwright', 'test'])).toThrow(/browser/);
     expect(() => assertNoAcceptanceProcess('pnpm', ['exec', 'tsc', '-p', 'tsconfig.browser-tests.json'])).not.toThrow();
-    expect(buildSteps('sample', 'tests/reports/native-capabilities/sample').map(s => s.id)).toContain('examples-source');
+    expect(buildSteps('sample', 'tests/reports/native-capabilities/sample').map((s: SourceStepView) => s.id)).toContain('examples-source');
   });
   it('blocks browser subprocesses in nested Node execution', () => {
     if (process.env.AURA3D_SOURCE_PROCESS_GUARD === '1') {
@@ -271,7 +276,7 @@ describe('source execution boundaries', () => {
     expect(expected.unit).toEqual(['tests/unit/a.test.ts', 'tests/unit/parity/a.test.ts', HISTORICAL_REPLAY_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER_TEST, HISTORICAL_LAUNCHER_TEST, HISTORICAL_SOURCE_TEST, PORTABLE_NPM_LOCK_TEST, 'tests/unit/tools/native-portable-source-inputs.test.ts', 'tests/unit/tools/native-source-resume.test.ts', ...ARCHIVE_ADMISSION_TESTS].sort());
     expect(expected['unit-dist']).toEqual([...BUILT_UNIT_TESTS]);
     expect(expected['unit-packed']).toEqual([...PACKED_UNIT_TESTS]);
-    const report = { success: true, numTotalTests: expected.unit.length, testResults: expected.unit.map(file => ({ name: `/repo/${file}`, assertionResults: [{ status: 'passed', title: 'runs' }] })) };
+    const report = { success: true, numTotalTests: expected.unit.length, testResults: expected.unit.map((file: string) => ({ name: `/repo/${file}`, assertionResults: [{ status: 'passed', title: 'runs' }] })) };
     expect(parseVitestInventory(report, expected.unit, '/repo').testCount).toBe(expected.unit.length);
     expect(() => parseVitestInventory(report, ['tests/unit/missing.test.ts'], '/repo')).toThrow(/inventory/);
     expect(() => parseVitestInventory({ ...report, testResults: [{ ...report.testResults[0], assertionResults: [{ status: 'pending' }] }, ...report.testResults.slice(1)] }, expected.unit, '/repo')).toThrow(/skipped/);
@@ -281,7 +286,7 @@ describe('source execution boundaries', () => {
     expect(() => parseTap('# tests 1\n# pass 1\n# fail 0\n# skipped 1\n# todo 0\n# cancelled 0\n')).toThrow(/skipped/);
   });
   it('runs build and packed consumers only after their prerequisites with disjoint mandatory inventories', () => {
-    const steps = buildSteps('fresh', 'tests/reports/native-capabilities/fresh');
+    const steps: readonly SourceStepView[] = buildSteps('fresh', 'tests/reports/native-capabilities/fresh');
     const ids = steps.map(step => step.id);
     expect(ids.indexOf('unit')).toBeLessThan(ids.indexOf('build'));
     expect(ids.indexOf('build')).toBeLessThan(ids.indexOf('unit-dist'));
@@ -309,7 +314,7 @@ describe('source execution boundaries', () => {
     const dir = temp();
     put(dir, 'dist/engine/index.js', 'root output');
     put(dir, 'packages/engine/dist/index.js', 'workspace output');
-    const first = collectBuildProducts(dir), firstDigest = buildProductsDigest(first);
+    const first: ReadonlyArray<{ readonly path: string; readonly mode: string }> = collectBuildProducts(dir), firstDigest = buildProductsDigest(first);
     expect(first.map(item => item.path)).toEqual(['dist', 'dist/engine', 'dist/engine/index.js', 'packages/engine/dist', 'packages/engine/dist/index.js']);
     expect(first.find(item => item.path === 'dist')?.mode).toMatch(/^040[0-7]{3}$/);
     expect(first.find(item => item.path === 'dist/engine/index.js')?.mode).toMatch(/^100[0-7]{3}$/);
@@ -360,7 +365,7 @@ describe('source execution boundaries', () => {
   it('binds exactly named historical acceptance tests and required synthetic source coverage to the staged manifest', () => {
     const { dir, manifest } = staged();
     const baseline = JSON.parse(readFileSync(join(dir, HISTORICAL_ACCEPTANCE_INVENTORY), 'utf8'));
-    const rows = expectedHistoricalAcceptance(manifest, baseline);
+    const rows: ReadonlyArray<{ readonly path: string; readonly assertionIds: readonly string[]; readonly phase: string; readonly status: string; readonly sourceTest: { readonly path: string } }> = expectedHistoricalAcceptance(manifest, baseline);
     expect(rows.map(row => row.path)).toEqual([...HISTORICAL_ACCEPTANCE_TESTS]);
     expect(rows.map(row => row.assertionIds.length)).toEqual([7, 6, 7]);
     expect(rows.every(row => row.phase === 'acceptance' && row.status === 'not-run' && row.sourceTest.path === HISTORICAL_SOURCE_TEST)).toBe(true);

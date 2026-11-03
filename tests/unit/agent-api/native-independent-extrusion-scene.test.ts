@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { AuraPrimitiveOptions } from "@aura3d/engine";
+import type { AuraPrimitiveOptions } from "../../../packages/engine/src/agent-api/nodes/types";
 import { extrudeParityMesh, type ExtrudeParityParams } from "@aura3d/rendering";
 import { primitives } from "../../../packages/engine/src/agent-api/nodes/primitives";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";

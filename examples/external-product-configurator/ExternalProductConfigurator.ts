@@ -30,6 +30,13 @@ export async function mountExternalProductConfigurator(id: string): Promise<void
   const status = root.querySelector<HTMLElement>("[data-testid='hr4-product-status']")!;
   const material = root.querySelector<HTMLSelectElement>("[data-testid='hr4-product-material']")!;
   const lighting = root.querySelector<HTMLSelectElement>("[data-testid='hr4-product-lighting']")!;
+  // `?material=asset|contrast|metal-check` and `?lighting=catalog-softbox|hero-contrast|inspection-bay`
+  // open the fixture on that select option (defaults Asset / Catalog softbox), the same state the selects choose.
+  const params = new URLSearchParams(location.search);
+  for (const [select, key] of [[material, "material"], [lighting, "lighting"]] as const) {
+    const requested = params.get(key);
+    if (requested && [...select.options].some((option) => option.value === requested)) select.value = requested;
+  }
   const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 1280, height: 900, clearColor: [0.02, 0.022, 0.026, 1], preserveDrawingBuffer: true });
   let disposePrevious: (() => void) | undefined;
 
@@ -41,7 +48,8 @@ export async function mountExternalProductConfigurator(id: string): Promise<void
         title: "Studio Headphones",
         category: "consumer-audio",
         url: productAsset.url,
-        manifestUrl: `${location.origin}/examples/external-product-configurator/headphones.manifest.json`
+        // Root-absolute so an isolated build stages the same manifest the dev server serves.
+        manifestUrl: new URL("/examples/external-product-configurator/headphones.manifest.json", location.origin).href
       },
       materialMode: material.value as "asset" | "contrast" | "metal-check",
       lighting: lighting.value as "catalog-softbox" | "hero-contrast" | "inspection-bay",

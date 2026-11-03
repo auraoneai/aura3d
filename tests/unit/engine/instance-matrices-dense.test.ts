@@ -158,7 +158,6 @@ describe("dense instance matrices", () => {
     for (let i = 0; i < 8; i += 1) frame();
     const samples = Array.from({ length: 30 }, frame).sort((a, b) => a - b);
     const median = samples[Math.floor(samples.length / 2)]!;
-    // eslint-disable-next-line no-console
     console.log(`dense instance frame CPU: median ${median.toFixed(3)} ms, p90 ${samples[Math.floor(samples.length * 0.9)]!.toFixed(3)} ms`);
     expect(median).toBeLessThanOrEqual(2);
   });

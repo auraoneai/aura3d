@@ -115,7 +115,6 @@ for (const app of APPS) {
     note(canvasesR.error);
     const snap0R = await safe("hook0", () => hookSnapshot(page), { hooks: [] as string[], nums: {} as Record<string, number>, drawCalls: null as number | null });
     note(snap0R.error);
-    // eslint-disable-next-line no-console
     console.log(`G3_BOOT ${JSON.stringify({ app, mode: MODE, status: resp?.status() ?? 0, canvases: canvasesR.value, hooks: snap0R.value.hooks, drawCalls: snap0R.value.drawCalls, console: consoleLines.slice(0, 10), pageErrors: pageErrors.slice(0, 5), failed: failed.slice(0, 10) })}`);
     const beforeR = await safe("shot0", () => canvasShot(page), null as Buffer | null, 60_000);
     note(beforeR.error);
@@ -143,10 +142,8 @@ for (const app of APPS) {
     const started = startedR.value;
     const canvases = canvasesR.value;
     const result = { app, mode: MODE, status: resp?.status() ?? 0, canvases, started, pxBefore, pxAfter, frameChanged: Number(changed.toFixed(4)), hooks: snap1.hooks, drawCalls: snap1.drawCalls ?? snap0.drawCalls, stateAdvanced: advanced, deprecations: deprecations.slice(0, 5), console: consoleLines.slice(0, 8), pageErrors: pageErrors.slice(0, 5), failed: failed.slice(0, 8), stepErrors: stepErrors.slice(0, 6) };
-    // eslint-disable-next-line no-console
     console.log(`G3_JSON ${JSON.stringify(result)}`);
     const small = !after ? "" : await page.evaluate(async (b64: string) => { const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode(); const c = document.createElement("canvas"); c.width = 320; c.height = Math.round(320 * img.naturalHeight / img.naturalWidth); c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.5).split(",")[1]!; }, after.toString("base64"));
-    // eslint-disable-next-line no-console
     console.log(`G3_IMG ${app} ${small}`);
     expect(resp?.status() ?? 0).toBeLessThan(400);
     expect(pageErrors, "page errors").toEqual([]);

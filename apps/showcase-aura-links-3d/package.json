@@ -5,9 +5,14 @@
   "type": "module",
   "description": "Aura Links 3D — postcard arcade golf on the Aura3D engine: three-click swing, ball-flight sim with wind and lies, six courses from Scottish dunes to a lunar crater, Range Lab, Putting Lab, Player Studio and a 32-player Pro Circuit.",
   "scripts": {
-    "build": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }

@@ -36,7 +36,6 @@ describe("certified cross-rig retarget maps", () => {
     const girl = await measureRig("showcaseWalkAnimatedGirl", GIRL);
     const runner = await measureRig("showcaseAnimatedRunnerHero", RUNNER);
     const map = createHumanoidRetargetingMap(girl, runner);
-    // eslint-disable-next-line no-console
     console.log("girl-to-runner", JSON.stringify({ ok: map.ok, coverage: map.coverage, scales: summarizeScales(map) }));
     expect(map.ok).toBe(true);
     expect(map.coverage).toBeCloseTo(1, 1);
@@ -67,7 +66,6 @@ describe("certified cross-rig retarget maps", () => {
       extraAliases: { spine: ["body"], leftFoot: ["feet"], rightFoot: ["feet"] }
     });
     const map = createHumanoidRetargetingMap(girl, robot);
-    // eslint-disable-next-line no-console
     console.log("girl-to-robot", JSON.stringify({ ok: map.ok, coverage: map.coverage, scales: summarizeScales(map) }));
     expect(map.ok).toBe(true);
     // Short-limbed mech (16.55 units tall): limb scales sit 0.64–0.93x of the height ratio —
@@ -88,7 +86,6 @@ describe("certified cross-rig retarget maps", () => {
     const girl = await measureRig("showcaseWalkAnimatedGirl", GIRL);
     const kenney = await measureRig("showcaseKenneyOobiPlatformerHero", KENNEY);
     const map = createHumanoidRetargetingMap(girl, kenney);
-    // eslint-disable-next-line no-console
     console.log("girl-to-kenney", JSON.stringify({ ok: map.ok, coverage: map.coverage, requiredCoverage: map.requiredCoverage }));
     // Kenney limbs are rigid object-level parts (no knees/elbows/hands in the node set),
     // so the humanoid path honestly reports low coverage instead of a confident bad map.

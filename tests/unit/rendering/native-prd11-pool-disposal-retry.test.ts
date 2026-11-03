@@ -31,7 +31,9 @@ function leafErrors(error: unknown): unknown[] {
 }
 
 function installRestore(device: MockRenderDevice, beforeCollect?: (lifecycle: WebGL2ContextLifecycle) => void): WebGL2ContextLifecycle {
-  const host = { device, contextLost: false } as WebGL2DeviceHost;
+  // Deliberate double: a MockRenderDevice stands in for the host's WebGL2Device; the lifecycle only
+  // reads contextLost and forwards loss/restore to the device hooks installed below.
+  const host = { device, contextLost: false } as unknown as WebGL2DeviceHost;
   const lifecycle = new WebGL2ContextLifecycle(host, new EventTarget() as unknown as HTMLCanvasElement);
   Object.assign(host, { lifecycle });
   Object.assign(device, {

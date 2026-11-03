@@ -69,6 +69,12 @@ const NEAR_LENS_METRES = 5.5;
 
 const params = new URLSearchParams(window.location.search);
 const qaManual = params.get("qaManual") === "1";
+/**
+ * `?autostart=1` skips the title card: the race is started as soon as the scene is ready (as if Start were pressed,
+ * without unlocking audio). With `?qaManual=1` the fixed-step sim then stays at the first countdown beat, so the
+ * countdown "3" shot holds still for a capture. Without the parameter the title card waits for the player as before.
+ */
+const autostart = params.get("autostart") === "1";
 const qaEvRaw = Number(params.get("qaEv"));
 const qaEv = params.has("qaEv") && Number.isFinite(qaEvRaw) ? Math.min(2, Math.max(-2, qaEvRaw)) : undefined;
 const qaAoOff = params.get("qaAo") === "off";
@@ -742,6 +748,10 @@ async function boot(): Promise<void> {
   hud.selectCircuit(selectedCircuit);
   hud.resetRace(race);
   hud.setAutopilot(autopilotOn);
+  if (autostart && !started) {
+    started = true;
+    hud.hideStart();
+  }
   if (!started) hud.showStart(inputs.touch);
   auraApp.onFrame(({ dt }) => {
     loop.tick(performance.now());

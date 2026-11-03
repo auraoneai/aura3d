@@ -12,7 +12,6 @@ import {
   type AthleteRigHandles
 } from "../../../examples/aura-slam/view/athleteRig";
 import { pose, type PoseActor, type PoseMatchState } from "../../../examples/aura-slam/view/pose";
-// @ts-expect-error plain ESM tool without types
 import { extractOriginalRig, MAIN_PATH, OUT_PATH } from "../../../tools/aura-slam/extractOriginalRig.mjs";
 
 type V3 = [number, number, number];

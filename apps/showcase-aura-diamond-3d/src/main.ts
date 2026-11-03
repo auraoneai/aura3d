@@ -636,6 +636,13 @@ function boot(): void {
 
   /* ---------- Juice / FX ---------- */
   const params = new URLSearchParams(window.location.search);
+  /**
+   * `?hold=1`: a settled first-play view for captures. Quick Play starts as usual, then the sim clock is held at the
+   * opening 0-0 "between" beat (no CPU pitch is delivered) and the broadcast sequences are skipped, so the camera rests
+   * on the game's own batting view. `window.__AURA_DIAMOND_HOLD__` becomes `{ frames }` (rendered frames since the hold
+   * began). Without the parameter nothing changes.
+   */
+  const holdPlay = params.get("hold") === "1";
   const reducedMotion = params.has("reducedMotion") || (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false);
   const reducedFlash = params.has("reducedFlash") || (window.matchMedia?.("(prefers-reduced-flash: reduce)")?.matches ?? false);
 
@@ -3352,7 +3359,7 @@ function boot(): void {
     lastCamHalf = G.half;
     lastCamPhase = G.phase;
     const gameCam = G.phase === "menu" || G.over || G.phase === "windup" || G.phase === "pitch" || G.phase === "batted" || G.phase === "pitchSelect" || G.phase === "pitchMeter";
-    const seq = director.update(performance.now() / 1000, gameCam);
+    const seq = holdPlay ? null : director.update(performance.now() / 1000, gameCam);
     if (seq) {
       c.mode = "sequence";
       eye = seq.pose.eye;
@@ -3695,6 +3702,10 @@ function boot(): void {
     updateCamera(0.016);
     updateHud(0.016);
     appReady = true;
+    if (holdPlay) {
+      simLoop.manual = true;
+      (window as any).__AURA_DIAMOND_HOLD__ = { frames: 0 };
+    }
     document.body.dataset.aura3dReady = "true";
     document.querySelector("#app canvas")?.setAttribute("data-ready", "true");
   });
@@ -3816,6 +3827,7 @@ function boot(): void {
     const dt = clamp(rawDt, 0.001, 0.05);
     const now = performance.now() / 1000;
     framesRendered += 1;
+    if (holdPlay && appReady) (window as any).__AURA_DIAMOND_HOLD__.frames += 1;
 
     if (!appReady) {
       updateActors(0.016, simTime);

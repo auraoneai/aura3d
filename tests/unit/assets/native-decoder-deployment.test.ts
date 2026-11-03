@@ -246,7 +246,7 @@ describe("decoder deployment forwarded to an app and worker", () => {
     const release = installWorkerAssetsFromUrl(workerUrlWithAssets(new URL("https://aura.invalid/assets/render.js"), manifest).href);
     const registryFactory = vi.mocked(browserAssets.createAssetDecoderRegistry);
     const caps = { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false } as const;
-    const tier = { maxTextureSize: 64 };
+    const tier = { maxTextureSize: 1024 } as const;
     const scripts: string[] = [];
     vi.stubGlobal("importScripts", (url: string) => {
       scripts.push(url);
@@ -286,7 +286,7 @@ describe("decoder deployment forwarded to an app and worker", () => {
     const scripts: string[] = [];
     vi.stubGlobal("importScripts", (url: string) => { scripts.push(url); throw new Error("codec not deployed"); });
     const registry = createAppAssetDecoders({ decoders: { basePath } },
-      { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false }, { maxTextureSize: 64 });
+      { astc: false, bptc: false, etc2: false, s3tc: false, s3tcSrgb: false }, { maxTextureSize: 1024 });
     try {
       await expect(registry.require(["draco"])).rejects.toMatchObject({
         name: "AssetDecoderUnavailable", decoderId: "draco", url: missing

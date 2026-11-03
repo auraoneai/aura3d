@@ -50,7 +50,7 @@ describe("static renderer invalidation", () => {
     let paused = false;
     const snapshot = scene().add(primitives.box()).toJSON();
     const controller = await startProductionRender(new FakeCanvas() as unknown as HTMLCanvasElement, snapshot,
-      createInitialDiagnostics(snapshot, undefined), { autoStart: true, resize: false, frameMode: "async" },
+      createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: true, resize: false, frameMode: "async" },
       undefined, undefined, () => paused);
     expect(state.draws).toBe(1);
     expect(callbacks.size).toBe(0);

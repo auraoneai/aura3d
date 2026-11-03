@@ -25,6 +25,7 @@ describe("public opt-in geometry tools", () => {
   it("exposes useful mesh operations without altering their source geometry", () => {
     const source = triangle();
     const remapped = remapAuraGeometryVertices(source, [2, 1, 0], [2, 1, 0]);
+    if (!(remapped.positions instanceof Float32Array)) throw new Error("remapAuraGeometryVertices returns packed Float32Array positions");
     expect(Array.from(remapped.positions)).toEqual([0, 2, 0, 2, 0, 0, 0, 0, 0]);
     expect(source.positions).toEqual([0, 0, 0, 2, 0, 0, 0, 2, 0]);
     expect(tessellateAuraMesh(source, { maxEdgeLength: 1.5, maxTriangles: 32 }).stats.outputTriangles).toBeGreaterThan(1);

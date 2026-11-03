@@ -108,7 +108,9 @@ describe("geometry operations reject unsupported top-level fields", () => {
     const stream = Symbol("stream");
     const input = { ...quadInput(), [stream]: new Float32Array(4) };
     expectUnsupported(() => defineAuraCustomGeometry(input), "Symbol(stream)");
-    expectUnsupported(() => auraGeometryToNonIndexed({ ...defineAuraCustomGeometry(quadInput()), [stream]: input[stream] }), "Symbol(stream)");
+    // A variable, not an inline literal: the extra symbol-keyed stream is the point of the case.
+    const withSymbolStream = { ...defineAuraCustomGeometry(quadInput()), [stream]: input[stream] };
+    expectUnsupported(() => auraGeometryToNonIndexed(withSymbolStream), "Symbol(stream)");
   });
 
   it("continues to deindex supported built-in, custom and morph streams in index order", () => {

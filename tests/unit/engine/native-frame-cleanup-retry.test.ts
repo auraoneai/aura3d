@@ -127,7 +127,7 @@ async function mount(
   const snapshot = scene().add(primitives.box({ name: "cleanup" })).toJSON();
   state.renderers.push(renderer);
   return startProductionRender((options.canvas ?? new FakeCanvas()) as unknown as HTMLCanvasElement, snapshot,
-    createInitialDiagnostics(snapshot, undefined), { autoStart: false, resize: false, ...(options.async ? { frameMode: "async" as const } : {}) },
+    createInitialDiagnostics(snapshot, undefined), { scene: snapshot, autoStart: false, resize: false, ...(options.async ? { frameMode: "async" as const } : {}) },
     undefined, undefined, undefined, options.runtimeNodes ?? {} as AuraRuntimeNodeRegistry,
     undefined, undefined, undefined, undefined, undefined, undefined, undefined,
     options.atmosphere ? { subscribePrd07Atmosphere: options.atmosphere } : undefined);

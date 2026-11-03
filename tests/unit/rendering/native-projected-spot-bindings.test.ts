@@ -17,8 +17,10 @@ type Asset = { readonly id: string };
 type MutableImage = { texture: Asset; offset?: [number, number]; scale?: [number, number]; rotation?: number };
 type Light = ProjectedSpotLight<Asset>;
 
-function light(name: string, intensity: number, kind: "spot" | "point" = "point"): CollectedLight {
-  return { ...collectLight(new Scene().createLight(kind, name)), kind, color: [1, 1, 1], intensity,
+function light(name: string, intensity: number, kind: "spot" | "point" = "point"): Light {
+  // A fresh scene light carries no projected image; drop the untyped slot so the light is a Light<Asset>.
+  const { projectedImage: _none, ...collected } = collectLight(new Scene().createLight(kind, name));
+  return { ...collected, kind, color: [1, 1, 1], intensity,
     position: [1, 2, 3], direction: [0, -1, 0], right: [1, 0, 0], up: [0, 0, 1], range: 10,
     spotAngle: kind === "spot" ? 0.6 : 0, penumbra: 0.1, castsShadow: false, layerMask: 1 };
 }

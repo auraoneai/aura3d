@@ -5,9 +5,14 @@
   "type": "module",
   "description": "Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over.",
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build"
   },
   "dependencies": {
     "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }

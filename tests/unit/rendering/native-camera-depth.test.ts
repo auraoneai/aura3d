@@ -9,7 +9,8 @@ import {
   reconstructViewPosition,
   remapDepthCompare,
   resolveDepthDrawState,
-  toStandardWindowDepth
+  toStandardWindowDepth,
+  type DepthCompareFunction
 } from "../../../packages/rendering/src/DepthConvention.js";
 import { resolveProductionCameraDepth } from "../../../packages/engine/src/agent-api/compiler/cameraDepth.js";
 import { createCameraProjection as createRootCameraProjection } from "../../../packages/engine/src/agent-api/RootRuntimeSupport.js";
@@ -20,7 +21,7 @@ import { Renderer } from "../../../packages/rendering/src/Renderer.js";
 import { withStandardDeviceDepth, standardizeDepthReadback } from "../../../packages/rendering/src/renderer/FrameDepthConvention.js";
 import { createRendererFrameHooks, toFrameCamera } from "../../../packages/rendering/src/renderer/FrameGraph.js";
 import { registerFrameContributor, type FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph.js";
-import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice.js";
+import { MockRenderDevice, MockRenderTarget } from "../../../packages/rendering/src/RenderDevice.js";
 import { RenderGraph } from "../../../packages/rendering/src/RenderGraph.js";
 import { Texture } from "../../../packages/rendering/src/Texture.js";
 
@@ -421,7 +422,8 @@ describe("production reversed and logarithmic depth (WP-30)", () => {
     expect(resolved).toMatchObject({ depthCompare: "less-equal", depthCompareV2: "greater-equal", polygonOffset: { factor: -1.5, units: -2 }, depthConventionApplied: true });
     expect(resolveDepthDrawState(resolved, reversed)).toBe(resolved);
     expect(resolveDepthDrawState(state, { mode: "standard" })).toBe(state);
-    expect(resolveDepthDrawState({ depthCompare: "always" as const }, reversed).depthCompareV2).toBe("always");
+    const alwaysState: { readonly depthCompare: "always"; readonly depthCompareV2?: DepthCompareFunction } = { depthCompare: "always" };
+    expect(resolveDepthDrawState(alwaysState, reversed).depthCompareV2).toBe("always");
   });
 
   it("standardizes reversed and logarithmic readback for reference depth consumers", () => {
@@ -444,6 +446,7 @@ describe("production reversed and logarithmic depth (WP-30)", () => {
       const projection = createRootCameraProjection(projectionCamera, 1);
       const camera = { viewProjectionMatrix: projection, viewMatrix: identityMat4(), projectionMatrix: projection, projectionMetadata, depthConvention };
       const target = device.createRenderTarget({ width: 8, height: 8, depth: "texture" });
+      if (!(target instanceof MockRenderTarget)) throw new Error("mock device must create mock render targets with depth readback");
       renderer.render({ renderItems: [{ geometry, material, label: "reversed" }], renderTarget: target, cameraPolicy: "require" }, camera);
       expect(device.getDepthConvention()).toMatchObject({ mode: "reversed", clearValue: 0, compare: "greater-equal", biasSign: -1 });
       const draws = device.drawCommands.filter((command) => command.label === "reversed");

@@ -443,7 +443,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const hipsPos = vAdd(RIG.hipsBind, [0, key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
   const spinePos = vAdd(hipsPos, qRotate(hipsW, RIG.tSpine));
   const chestPos = vAdd(spinePos, qRotate(spineW, RIG.tChest));
-  const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead)); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead));
   const shoulderR = vAdd(chestPos, qRotate(chestW, RIG.tShoulderR));
   const shoulderL = vAdd(chestPos, qRotate(chestW, RIG.tShoulderL));
 

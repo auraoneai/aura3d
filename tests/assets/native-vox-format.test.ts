@@ -34,7 +34,7 @@ function dict(values: Readonly<Record<string, string>> = {}): Uint8Array {
   const entries = Object.entries(values);
   return join(u32(entries.length), ...entries.flatMap(([key, value]) => [string(key), string(value)]));
 }
-function chunk(name: string, content = new Uint8Array(), children = new Uint8Array()): Uint8Array {
+function chunk(name: string, content: Uint8Array = new Uint8Array(), children: Uint8Array = new Uint8Array()): Uint8Array {
   if (text(name).length !== 4) throw new Error("test chunk name must have four bytes");
   return join(text(name), u32(content.length), u32(children.length), content, children);
 }

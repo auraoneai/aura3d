@@ -42,6 +42,8 @@ export function collectAuraSceneEvidence(sceneValue: AuraSceneBuilder | AuraScen
       modes: Array.from(new Set(interactionNodes.map((node) => node.mode))).sort() as AuraInteractionNode["mode"][],
       orbitEnabled: interactionNodes.some((node) => node.mode === "orbit"),
       hoverTargets: interactionNodes.filter((node) => node.mode === "hover" && node.target).map((node) => node.target!),
+      // S5-WP19-04: `interactions.hover/raycastHover/highlight({ selected })` names the node shown as selected.
+      hoverSelections: interactionNodes.filter((node) => node.mode === "hover" && node.selected).map((node) => node.selected!),
       dragTargets: interactionNodes.filter((node) => node.mode === "drag-vector" && node.target).map((node) => node.target!),
       impulseTargets: interactionNodes.filter((node) => node.mode === "click-impulse" && node.target).map((node) => node.target!)
     },

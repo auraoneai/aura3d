@@ -5,6 +5,7 @@ import {
   computeAutoFitTransform,
   fetchGltfBytesShared,
   GLTFLoader,
+  LoadContext,
   normalizeSkinWeights,
   OBJLoader,
   resolveGLTFClipName,
@@ -145,7 +146,9 @@ test("AssetManager shares duplicate in-flight loads and releases cached handles"
     }
   };
 
-  const assets = new AssetManager({ baseUrl: "https://example.test/assets/" });
+  // 5.0 contract (docs/migration/4-to-5.md §5.4): requests that may carry
+  // browser credentials are shared only under an explicit securityContext.
+  const assets = new AssetManager({ baseUrl: "https://example.test/assets/", securityContext: "test-session-1" });
   assets.register(loader);
 
   const [a, b] = await Promise.all([assets.load("hero.txt", { type: "text" }), assets.load("hero.txt", { type: "text" })]);
@@ -234,7 +237,7 @@ test("GLTFLoader loads a triangle fixture into geometry and scene data", async (
     scene: 0
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.meshes.length, 1);
   assert.equal(asset.meshes[0]?.geometry.vertexCount, 3);
@@ -283,7 +286,7 @@ test("GLTFLoader resolves an external buffer from a root-relative glTF URL", asy
   try {
     const asset = await new GLTFLoader().load(
       { url: "/fixtures/city/district.gltf" },
-      { throwIfAborted: () => undefined } as never
+      new LoadContext()
     );
     assert.equal(asset.meshes.length, 1);
     assert.deepEqual(requested, [
@@ -317,7 +320,7 @@ test("GLTFLoader loads a binary GLB fixture with a BIN chunk", async () => {
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.meshes[0]?.name, "glb-triangle");
   assert.equal(asset.meshes[0]?.geometry.indexCount, 3);
@@ -339,7 +342,7 @@ test("GLTFLoader preserves matrix-backed node shear and reflection without a los
     scene: 0
   };
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
   const scene = asset.createScene();
   scene.updateWorldTransforms();
   const node = scene.findByName("matrix-node")[0];
@@ -363,7 +366,7 @@ test("OBJLoader parses bounded geometry into the glTF render-resource path", asy
     "f 1/1 2/2 3/3 4/4"
   ].join("\n");
   const url = `data:text/plain,${encodeURIComponent(obj)}`;
-  const asset = await new OBJLoader().load({ url, type: "obj" }, { throwIfAborted: () => undefined } as never);
+  const asset = await new OBJLoader().load({ url, type: "obj" }, new LoadContext());
 
   assert.equal(asset.url, url);
   assert.equal(asset.meshes.length, 1);
@@ -400,7 +403,7 @@ test("OBJLoader preserves mtllib/usemtl material groups through glTF primitives"
   ].join("\n");
   const url = `data:text/plain,${encodeURIComponent(obj)}`;
   const request = { url, type: "obj", materialLibraries: { "sample.mtl": mtl } };
-  const asset = await new OBJLoader().load(request, { throwIfAborted: () => undefined } as never);
+  const asset = await new OBJLoader().load(request, new LoadContext());
 
   assert.equal(asset.materials.length, 2);
   assert.deepEqual(asset.materials.map((material) => material.name), ["amber", "blue"]);
@@ -456,7 +459,7 @@ test("GLTFLoader extracts material texture metadata and embedded image bytes fro
   };
   const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
 
-  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
   assert.equal(asset.images[0]?.mimeType, "image/png");
   assert.deepEqual([...new Uint8Array(asset.images[0]?.data ?? new ArrayBuffer(0))], [...imageBytes]);
@@ -478,7 +481,7 @@ test("GLTFLoader rejects missing material texture references", async () => {
   const url = `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 
   await assert.rejects(
-    () => new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never),
+    () => new GLTFLoader().load({ url }, new LoadContext()),
     /baseColorTexture references missing texture 4/
   );
 });
@@ -536,7 +539,9 @@ test("fetchGltfBytesShared shares one fetch across concurrent same-URL loads", a
     } as unknown as Response;
   }) as typeof fetch;
   try {
-    const request = { url: "https://example.test/prop.glb" };
+    // 5.0 contract (docs/migration/4-to-5.md §5.4): only credential omission
+    // or an explicit securityContext makes a request shareable.
+    const request = { url: "https://example.test/prop.glb", securityContext: "test-session-1" };
     const pending = Array.from({ length: 5 }, () =>
       fetchGltfBytesShared("https://example.test/prop.glb", "document", request, (status) => `failed ${status}`));
     release();
@@ -548,6 +553,13 @@ test("fetchGltfBytesShared shares one fetch across concurrent same-URL loads", a
     // After settle the next load fetches again (HTTP cache serves it).
     await fetchGltfBytesShared("https://example.test/prop.glb", "document", request, (status) => `failed ${status}`);
     assert.equal(calls, 2);
+    // Default (same-origin credentials, no securityContext) is never shared.
+    const unscoped = { url: "https://example.test/prop.glb" };
+    await Promise.all([
+      fetchGltfBytesShared("https://example.test/prop.glb", "document", unscoped, (status) => `failed ${status}`),
+      fetchGltfBytesShared("https://example.test/prop.glb", "document", unscoped, (status) => `failed ${status}`)
+    ]);
+    assert.equal(calls, 4);
   } finally {
     globalThis.fetch = realFetch;
   }
@@ -593,7 +605,7 @@ test("fetchGltfBytesShared propagates HTTP failures with the caller's message", 
     return { ok: false, status: 404, headers: { get: () => null }, body: null } as unknown as Response;
   }) as typeof fetch;
   try {
-    const request = { url: "https://example.test/missing.glb" };
+    const request = { url: "https://example.test/missing.glb", credentials: "omit" as const };
     const pending = [
       fetchGltfBytesShared("https://example.test/missing.glb", "document", request, (status) => `glTF request failed with ${status}`),
       fetchGltfBytesShared("https://example.test/missing.glb", "document", request, (status) => `glTF request failed with ${status}`)

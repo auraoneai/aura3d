@@ -17,14 +17,14 @@ export { decodeProductionImageFallback, PRIMITIVE_TEXTURE_DECODE_FALLBACK_MS, pr
 import type { AssetRequestOptions } from "@aura3d/assets/browser";
 import { AuraRuntimeError } from "./errors.js";
 import { colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { createProductionPrimitiveMaterial, productionPrimitiveAlphaCutoff, productionPrimitiveRenderState, productionPrimitiveSpecularOptions, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
+import { createProductionPrimitiveMaterial, productionPrimitiveAlphaCutoff, productionPrimitiveMaterialLabel, productionPrimitiveRenderState, productionPrimitiveSpecularOptions, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
 import { primitive } from "../nodes/primitives.js";
 import { assertSdfTextMaterialSupported, rootSdfFontAtlas, text3D } from "../nodes/text3d.js";
 import { compileSdfTextSnapshot } from "./text.js";
 import { ownBuiltinGlyphResource, retireBuiltinGlyphResource, type BuiltinGlyphAtlasScope, type BuiltinGlyphLease } from "./BuiltinGlyphAtlas.js";
 import { clamp01 } from "../sceneMath.js";
-import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextLayout, type SdfTextOcclusionPolicy, type SdfTextQuadMesh, type TextureAddressMode } from "@aura3d/rendering";
-import type { AuraQualityTier, AuraTextureSampling, AuraTextureWrap } from "@aura3d/rendering/contracts";
+import { Geometry, IndexBuffer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, VertexBuffer, VertexFormat, createSdfTextQuadMesh, generateProceduralMaterialTexture, layoutSdfText, resolveSamplerAnisotropy, type ProceduralMaterialTexture, type SdfTextLayout, type SdfTextOcclusionPolicy, type SdfTextQuadMesh, type TextureAddressMode } from "@aura3d/rendering";
+import type { AuraQualityTier, AuraTextureSampling, AuraTextureWrap, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraMaterialTextureSlot } from "../../contracts/materials.js";
 import { typedGLBActorQrFlags } from "../../production-runtime/actor/extensions.js";
 import { material } from "../nodes/material.js";
@@ -167,7 +167,7 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
         throw new AuraRuntimeError("unsupported-texture", `${slot}Map requires a fetchable png, jpg, jpeg or webp texture`);
       }
       bitmapAssets[slot] = input;
-      return [[slot, { url: input.url, colorSpace: slot === "sheenColor" ? "srgb" : "linear", texCoord, ...(transform ? { transform } : {}) }]];
+      return [[slot, { url: input.url, colorSpace: SRGB_EXTENSION_SLOTS.has(slot) ? "srgb" : "linear", texCoord, ...(transform ? { transform } : {}) }]];
     })
   );
   const baseColorRef = textureRef(materialSpec?.texture);
@@ -299,10 +299,20 @@ export function blankProductionPrimitiveTextureState(): {
   return { texturedMaterial: null, textureStatus: "none", textureSlots: [], textureWarnings: [], sdfText: null, textureBytes: 0, textureMipBytes: [] };
 }
 
-export const ROOT_EXTENSION_TEXTURE_SLOTS = ["clearcoat", "clearcoatRoughness", "clearcoatNormal", "sheenColor", "sheenRoughness", "iridescence", "iridescenceThickness", "anisotropy", "diffuseRoughness", "bump"] as const;
+export const ROOT_EXTENSION_TEXTURE_SLOTS = ["clearcoat", "clearcoatRoughness", "clearcoatNormal", "sheenColor", "sheenRoughness", "iridescence", "iridescenceThickness", "anisotropy", "diffuseRoughness", "bump",
+  "specularIntensity", "specularColor", "transmission", "thickness"] as const;
 
 export type RootExtensionTextureSlot = typeof ROOT_EXTENSION_TEXTURE_SLOTS[number];
 const ROOT_SCALAR_ATLAS_SLOTS: readonly RootExtensionTextureSlot[] = ["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"];
+/**
+ * S5-WP19-04: `specularIntensityMap` / `thicknessMap` bind to the TexturedPBRMaterial
+ * `specular*` / `volumeThickness*` options (KHR_materials_specular / _volume); every
+ * other extension slot uses its own name. Used for the texture, sampler, transform and texCoord keys.
+ */
+const EXTENSION_MATERIAL_SLOT: Readonly<Partial<Record<RootExtensionTextureSlot, string>>> = { specularIntensity: "specular", thickness: "volumeThickness" };
+const extensionMaterialSlot = (slot: RootExtensionTextureSlot): string => EXTENSION_MATERIAL_SLOT[slot] ?? slot;
+/** sRGB colour maps among the extension slots; the rest are linear data. */
+const SRGB_EXTENSION_SLOTS: ReadonlySet<RootExtensionTextureSlot> = new Set(["sheenColor", "specularColor"]);
 
 function throwIfTextureAborted(signal?: AbortSignal): void {
   if (!signal?.aborted) return;
@@ -761,12 +771,13 @@ function intentNeedsTexturedUpgrade(intent: PrimitiveTextureIntent, qrMaterials:
  */
 export function noteProductionPrimitiveTextureQueued(
   resource: ProductionRuntimePrimitiveResource,
-  prepared: PreparedProductionPrimitiveTextureWork | undefined
+  prepared: PreparedProductionPrimitiveTextureWork | undefined,
+  qrFlags?: QrFlags
 ): void {
   try {
     if (resource.textureStatus !== "none" || resource.material.disposed) return;
     const intent = prepared?.ok ? prepared.intent : prepared ? undefined : createProductionPrimitiveTextureIntent(resource.materialSpec);
-    if (intent && !intentNeedsTexturedUpgrade(intent, typedGLBActorQrFlags().on("A3D_QR_MATERIALS"))) return;
+    if (intent && !intentNeedsTexturedUpgrade(intent, (qrFlags ?? typedGLBActorQrFlags()).on("A3D_QR_MATERIALS"))) return;
     resource.textureStatus = "pending";
     resource.texturePendingSince = textureClockMs();
     markTextureStage(resource, "queued");
@@ -792,10 +803,16 @@ export async function upgradeProductionPrimitiveTextures(
   onCommitted?: () => void,
   isCurrentGeneration?: () => boolean,
   preparedWork?: PreparedProductionPrimitiveTextureWork,
-  nativeMaxTextureSize = maxTextureSize
+  nativeMaxTextureSize = maxTextureSize,
+  /**
+   * S5-WP19-04: the mounting app's flags. Native 5.0 binds QR flags per owner, so the
+   * process-wide default no longer carries the app's A3D_QR_MATERIALS (sampling,
+   * slotSampling, procedural maps, hardware wrap); the renderer passes its own.
+   */
+  qrFlags?: QrFlags
 ): Promise<void> {
   throwIfTextureAborted(signal);
-  const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
+  const qrMaterials = (qrFlags ?? typedGLBActorQrFlags()).on("A3D_QR_MATERIALS");
   type QueuedTexture = {
     readonly resource: ProductionRuntimePrimitiveResource;
     readonly spec: AuraMaterialSpec | undefined;
@@ -888,7 +905,7 @@ export async function upgradeProductionPrimitiveTextures(
     let committed = false;
     try {
       await upgradeProductionPrimitiveResource(resource, resource.sourceNode, spec, intent, maxTextureSize, samplingContext, signal, isCurrent,
-        preparedWork?.ok ? preparedWork.plans : undefined, nativeMaxTextureSize, preparedWork?.ok ? preparedWork.bitmapPlans : undefined);
+        preparedWork?.ok ? preparedWork.plans : undefined, nativeMaxTextureSize, preparedWork?.ok ? preparedWork.bitmapPlans : undefined, qrFlags);
       committed = resource.texturedMaterial !== null;
     } catch (error) {
       if (!isCurrent()) return;
@@ -940,11 +957,12 @@ export async function upgradeProductionPrimitiveResource(
   isCurrentGeneration?: () => boolean,
   preparedNativePlans?: NativeTexturePlans,
   nativeMaxTextureSize = maxTextureSize,
-  preparedBitmapPlans?: BitmapTexturePlans
+  preparedBitmapPlans?: BitmapTexturePlans,
+  qrFlags?: QrFlags
 ): Promise<void> {
   throwIfTextureAborted(signal);
   const expectedMaterial = resource.material;
-  const qrMaterials = typedGLBActorQrFlags().on("A3D_QR_MATERIALS");
+  const qrMaterials = (qrFlags ?? typedGLBActorQrFlags()).on("A3D_QR_MATERIALS");
   const fail = (message: string): Error => new Error(message);
   const ensureCurrent = (): void => {
     throwIfTextureAborted(signal);
@@ -1153,8 +1171,8 @@ export async function upgradeProductionPrimitiveResource(
       if (needsScalarAtlas && ROOT_SCALAR_ATLAS_SLOTS.includes(slot)) {
         Object.assign(atlasPixels, { [slot]: bitmapRgbaPixels(source) });
       }
-      extensionOptions[`${slot}Texture`] = own(new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` }));
-      if (map.transform) extensionOptions[`${slot}TextureTransform`] = { ...map.transform };
+      extensionOptions[`${extensionMaterialSlot(slot)}Texture`] = own(new Texture({ width: source.width, height: source.height, source, colorSpace: map.colorSpace, label: `${resource.name}-${slot}` }));
+      if (map.transform) extensionOptions[`${extensionMaterialSlot(slot)}TextureTransform`] = { ...map.transform };
       slots.push(slot);
     }
     // threejs-parity ST-01 (L4): `texture.*` handles in extension slots bind
@@ -1168,9 +1186,9 @@ export async function upgradeProductionPrimitiveResource(
         if (!pixels) throw fail(`"${resource.name}" extension slot ${slot}Map texture handle has no CPU-readable pixels for the scalar atlas`);
         Object.assign(atlasPixels, { [slot]: pixels });
       }
-      extensionOptions[`${slot}Texture`] = binding.texture;
-      extensionOptions[`${slot}Sampler`] = binding.sampler;
-      extensionOptions[`${slot}TextureTransform`] = mergedTransform(slotWarn, slot, spec?.texTransforms?.[slot], binding.transform);
+      extensionOptions[`${extensionMaterialSlot(slot)}Texture`] = binding.texture;
+      extensionOptions[`${extensionMaterialSlot(slot)}Sampler`] = binding.sampler;
+      extensionOptions[`${extensionMaterialSlot(slot)}TextureTransform`] = mergedTransform(slotWarn, slot, spec?.texTransforms?.[slot], binding.transform);
       slots.push(slot);
     }
     if (needsScalarAtlas) {
@@ -1349,9 +1367,22 @@ export async function upgradeProductionPrimitiveResource(
       qrMaterials && spec?.slotSampling?.[slot]
         ? prd04MaterialSampler(spec, spec.slotSampling[slot], samplingContext)
         : textureSampler;
-    for (const [slot] of extensionEntries) extensionOptions[`${slot}Sampler`] = qrMaterials ? slotSamplerFor(slot) : textureSampler;
-    const upgradedMaterial = new TexturedPBRMaterial({
-      name: `a3d-production-textured-primitive-${resource.name}`,
+    for (const [slot] of extensionEntries) extensionOptions[`${extensionMaterialSlot(slot)}Sampler`] = qrMaterials ? slotSamplerFor(slot) : textureSampler;
+    // S5-WP19-04: an unlit material (`unlit: true`) samples only its base-colour texture
+    // (TexturedUnlitMaterial, as for imported KHR_materials_unlit); other maps are reported.
+    const unlit = spec?.unlit === true;
+    if (unlit && !baseColorTexture) throw fail(`"${resource.name}" is unlit; only a base-colour texture applies (${slots.join(", ")} not used)`);
+    if (unlit) for (const slot of slots) if (slot !== "baseColor") slotWarn(`unlit material "${resource.name}" does not use its ${slot} texture; only the base-colour texture applies`);
+    const upgradedMaterial: TexturedPBRMaterial | TexturedUnlitMaterial = unlit ? new TexturedUnlitMaterial({
+      name: productionPrimitiveMaterialLabel("a3d-production-textured-unlit-primitive", node, resource.name),
+      texture: baseColorTexture!,
+      sampler: baseColorRefBinding?.sampler ?? slotSamplerFor("baseColor"),
+      ...(mergedTransform(slotWarn, "baseColor", spec?.texTransforms?.baseColor, baseColorRefBinding?.transform)
+        ? { textureTransform: mergedTransform(slotWarn, "baseColor", spec?.texTransforms?.baseColor, baseColorRefBinding?.transform)! } : {}),
+      color: [scalars.baseColor[0], scalars.baseColor[1], scalars.baseColor[2], scalars.opacity],
+      renderState: productionPrimitiveRenderState(node, scalars.opacity)
+    }) : new TexturedPBRMaterial({
+      name: productionPrimitiveMaterialLabel("a3d-production-textured-primitive", node, resource.name),
       ...(qrMaterials ? { hardwareWrap: true } : {}),
       baseColor: [scalars.baseColor[0], scalars.baseColor[1], scalars.baseColor[2], scalars.opacity],
       metallic: clamp01(spec?.metallic ?? spec?.metalness ?? 0),
@@ -1418,8 +1449,8 @@ export async function upgradeProductionPrimitiveResource(
       ...((texCoords?.baseColor ?? 0) > 0 || (texCoords?.normal ?? 0) > 0 || (texCoords?.metallicRoughness ?? 0) > 0 || (texCoords?.occlusion ?? 0) > 0 || (texCoords?.emissive ?? 0) > 0 || extensionEntries.length > 0 || extensionRefs.length > 0
         ? {
           textureTexCoords: {
-            ...Object.fromEntries(extensionEntries.map(([slot, map]) => [slot, map.texCoord])),
-            ...Object.fromEntries(extensionRefs.map((slot) => [slot, texCoords?.[slot] ?? 0])),
+            ...Object.fromEntries(extensionEntries.map(([slot, map]) => [extensionMaterialSlot(slot), map.texCoord])),
+            ...Object.fromEntries(extensionRefs.map((slot) => [extensionMaterialSlot(slot), texCoords?.[slot] ?? 0])),
             ...(baseColorTexture && (texCoords?.baseColor ?? 0) > 0 ? { baseColor: 1 as const } : {}),
             ...(normalTexture && (texCoords?.normal ?? 0) > 0 ? { normal: 1 as const } : {}),
             ...(metallicRoughnessTexture && (texCoords?.metallicRoughness ?? 0) > 0 ? { metallicRoughness: 1 as const } : {}),

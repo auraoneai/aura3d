@@ -65,7 +65,6 @@ describe("certified-rig bone proportions", () => {
         calf: segment("leftFoot", "leftLowerLeg"),
         torso: head && hips ? dist(head, hips) : undefined
       };
-      // eslint-disable-next-line no-console
       console.log("rig-proportions", JSON.stringify(proportions));
       expect(height).toBeGreaterThan(0);
       const measured = await measureCertifiedRig(rig.rigId, rig.file);

@@ -140,9 +140,17 @@ export interface LightsProps {
   readonly position?: readonly [number, number, number];
 }
 
-export interface EffectProps extends Omit<AuraEffectNode, "kind" | "effect"> {
-  readonly type: AuraEffectNode["effect"];
-}
+/** Scene fog mode (C-21), as accepted by `effects.fog`; not the anti-alias `mode`. */
+type FogEffectMode = NonNullable<Parameters<typeof effects.fog>[0]>["mode"];
+type EffectBaseProps = Omit<AuraEffectNode, "kind" | "effect" | "mode">;
+
+/**
+ * `<Effect>` props. `mode` depends on `type`: a fog effect takes the scene fog
+ * mode, every other effect keeps the effect node's anti-alias mode.
+ */
+export type EffectProps =
+  | (EffectBaseProps & { readonly type: "fog"; readonly mode?: FogEffectMode })
+  | (EffectBaseProps & { readonly type: Exclude<AuraEffectNode["effect"], "fog">; readonly mode?: AuraEffectNode["mode"] });
 
 /**
  * The renderer-ready app for `useAuraFrame`. Undefined before readiness and

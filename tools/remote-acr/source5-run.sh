@@ -24,7 +24,7 @@ run() {
   timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
   rc=$?
   ended=$(date +%s)
-  tail -n 60 "$log" | sed "s/^/[${id}] /"
+  if [ "$rc" = 0 ]; then tail -n 20 "$log"; else tail -n "${SOURCE5_FAIL_LINES:-400}" "$log"; fi | sed "s/^/[${id}] /"
   echo "::: SOURCE5_END ${id} rc=${rc} secs=$((ended - started))"
   printf '%s\t%s\t%s\t%s\n' "$id" "$rc" "$((ended - started))" "$*" >> "$RESULTS"
 }
@@ -50,7 +50,16 @@ case "$STAGE" in
     SHARD="${STAGE#unit-}"; SHARD="${SHARD/-of-//}"
     EXCLUDES=""
     while IFS= read -r t; do case "$t" in ''|'#'*) ;; *) EXCLUDES="$EXCLUDES --exclude $t";; esac; done < tools/remote-acr/acceptance-evidence-tests.txt
-    run "unit-${SHARD/\//-of-}" "pnpm exec vitest run tests/unit --maxWorkers=2 --shard=$SHARD$EXCLUDES"
+    UJSON="$NATIVE_REPORT_DIR/unit-${SHARD/\//-of-}.json"
+    run "unit-${SHARD/\//-of-}" "pnpm exec vitest run tests/unit --maxWorkers=2 --shard=$SHARD$EXCLUDES --reporter=default --reporter=json --outputFile=$UJSON"
+    # Complete failing-test list (the per-command log tail may truncate it).
+    UJSON="$UJSON" node -e '
+      const fs = require("fs"); let r; try { r = JSON.parse(fs.readFileSync(process.env.UJSON, "utf8")); } catch { console.log("::: UNIT_FAILURES unavailable"); process.exit(0); }
+      for (const f of r.testResults || []) for (const a of f.assertionResults || []) if (a.status === "failed")
+        console.log("::: UNIT_FAIL " + f.name.replace(/^\/repo\//, "") + " :: " + a.fullName + " :: " + String((a.failureMessages || [])[0] || "").split("\n")[0].slice(0, 300));
+      for (const f of r.testResults || []) if ((f.assertionResults || []).length === 0 && f.status === "failed")
+        console.log("::: UNIT_FAIL " + f.name.replace(/^\/repo\//, "") + " :: <file failed to run> :: " + String(f.message || "").split("\n")[0].slice(0, 300));
+    ' 
     ;;
   suites)
     run assets-qr            'pnpm exec vitest run tests/assets tests/qr --maxWorkers=2'

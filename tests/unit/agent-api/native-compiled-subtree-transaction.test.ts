@@ -362,7 +362,8 @@ describe("compiled subtree transactions", () => {
     const mounted = { ...authored, nodes: flattenTaggingMountedRoots(authored.nodes,
       (nodes, options) => flattenAuraSceneNodes(nodes, temp.mountCtx.flags, options)) };
     const registry = createAuraRuntimeNodeRegistry(mounted, {}, authored);
-    const compiled = await compileScene(mounted, { ...temp.mountCtx, runtimeNodes: registry });
+    const context: MountSceneCompileContext = { ...temp.mountCtx, runtimeNodes: registry };
+    const compiled = await compileScene(mounted, context);
     const impl = asRuntimeImpl(compiled)!;
     try {
       const replacement = groups.create("replacement", [

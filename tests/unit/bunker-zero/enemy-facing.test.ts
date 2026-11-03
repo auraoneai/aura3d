@@ -1,7 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-// @ts-expect-error plain .mjs helper without types for accessor/nodeIndex/forward
 import { accessor, forward, nodeIndex, readGlb } from "../../../tools/aura-fc/glb.mjs";
 import { ENEMY_FORWARD, ENEMY_TURN_RATE, enemyFacingError, nextEnemyYaw, simHeading } from "../../../apps/showcase-bunker-zero/src/enemy-facing";
 

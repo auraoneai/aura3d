@@ -201,7 +201,7 @@ describe("typed root EXR environment", () => {
       autoStart: false, resize: false, strict: true, renderer: { backend: "webgl2" },
       qualityRebuild: { flags: { A3D_QR_COMPILER: false, A3D_QR_LIGHTING: false, A3D_QR_CORE: false, A3D_QR_POST: false } }
     });
-    let cube: Texture | undefined;
+    let cube: Texture | null | undefined;
     try {
       await app.readyStrict();
       await until(() => expect(app.diagnostics().renderer?.environment).toMatchObject({ hdriStatus: "ready", iblPixelBacked: true }));
@@ -551,7 +551,7 @@ describe("typed root EXR environment", () => {
       autoStart: false, resize: false, strict: true, renderer: { backend: "webgl2" },
       qualityRebuild: { flags: { A3D_QR_COMPILER: false, A3D_QR_LIGHTING: false, A3D_QR_CORE: false, A3D_QR_POST: false } }
     });
-    let texture: Texture | undefined;
+    let texture: Texture | null | undefined;
     try {
       await app.readyStrict();
       expect(fetch).toHaveBeenCalledTimes(1);

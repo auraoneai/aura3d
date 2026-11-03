@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAuraApp, primitives, scene } from "../../../packages/engine/src";
-import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
+import { createAuraRuntimeNodeRegistry, type MutableAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
 import { createProductionRuntimeSceneRenderer } from "../../../packages/engine/src/agent-api/compiler/renderer";
-import type { AuraApp, AuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/nodes/types";
+import type { AuraApp } from "../../../packages/engine/src/agent-api/nodes/types";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
 
@@ -107,7 +107,7 @@ describe("app-owned production disposal retry", () => {
     const original = new Error("first device release");
     const deviceDispose = failDeviceOnce(renderer, original);
     const rendererDispose = vi.spyOn(renderer, "dispose");
-    const nodesDispose = vi.spyOn(app.nodes as AuraRuntimeNodeRegistry, "dispose");
+    const nodesDispose = vi.spyOn(app.nodes as MutableAuraRuntimeNodeRegistry, "dispose");
 
     app.dispose();
     const first = rejection(app.disposeAsync());
@@ -189,7 +189,7 @@ describe("app-owned production disposal retry", () => {
     const nativeError = new Error("native failure");
     const siblingError = new Error("compiled detach failure");
     const deviceDispose = failDeviceOnce(renderer, nativeError);
-    const registry = app.nodes as AuraRuntimeNodeRegistry;
+    const registry = app.nodes as MutableAuraRuntimeNodeRegistry;
     const detach = vi.spyOn(registry, "detachCompiled").mockImplementationOnce(() => { throw siblingError; });
     const nodesDispose = vi.spyOn(registry, "dispose");
 

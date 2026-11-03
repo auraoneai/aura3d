@@ -200,7 +200,6 @@ async function call<T = unknown>(page: Page, body: string): Promise<T | { error:
   try {
     return await page.evaluate(({ hook, body }) => {
       const api = (window as unknown as Record<string, any>)[hook];
-      // eslint-disable-next-line no-new-func
       return JSON.parse(JSON.stringify(new Function("api", body)(api) ?? null));
     }, { hook: HOOK, body }) as T;
   } catch (e) { return { error: String(e).slice(0, 300) }; }

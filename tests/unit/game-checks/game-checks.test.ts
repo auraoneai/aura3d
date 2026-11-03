@@ -3,7 +3,6 @@ import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-// @ts-expect-error plain ESM tool without types
 import { resetGitCache, runChecks } from "../../../tools/game-checks/lib/index.mjs";
 
 const REPO = process.cwd();

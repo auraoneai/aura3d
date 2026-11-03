@@ -56,7 +56,6 @@ import {
 // leg/knee/ankle/foot chain a two-bone foot-IK solve needs; `createFootIkRig` is the engine's real
 // two-bone solver (used only for rigs that have the chain). On sparse/mascot rigs we keep the
 // honest `rootGrounding` (root pinned to the ground mark — NOT IK).
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — resolved at runtime to the freshly-built monorepo dist (has co-located .d.ts).
 import {
   gradeRig,

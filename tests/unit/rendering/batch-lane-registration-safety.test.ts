@@ -4,7 +4,7 @@ import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { InstancedPBRMaterial } from "../../../packages/rendering/src/InstancedPBRMaterial";
 import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
-import { createTrustedQrFlags, type QrFlags } from "../../../packages/rendering/src/contracts/core";
+import { createTrustedQrFlags, type QrFlagName, type QrFlags } from "../../../packages/rendering/src/contracts/core";
 import { frameContributors, registerFrameContributor, type FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph";
 import { registerMaterialLobe } from "../../../packages/rendering/src/contracts/materialLobes";
 import { registerShaderFeature, shaderChunk, shaderFeaturesFor } from "../../../packages/rendering/src/contracts/program";
@@ -151,7 +151,7 @@ describe("trusted batching lane registrations", () => {
     let getterReads = 0;
     const remove = registerShaderFeature({
       id: "prd11.foreign-unknown-flag", owner: "prd11",
-      get flag() { getterReads += 1; throw new Error("flag getter ran"); },
+      get flag(): QrFlagName { getterReads += 1; throw new Error("flag getter ran"); },
       select: () => undefined, defines: () => ({}), chunks: [], hooks: []
     });
     try {
@@ -221,7 +221,9 @@ describe("batch preflight during reentrant source work", () => {
       expect(result[0]).toBe(items[0]);
       expect(cache.lastReport.reasonsNotBatched["active-item-observers"]).toBe(2);
       expect(retire).toHaveBeenCalledTimes(1);
-      expect(retire.mock.instances[0]!.disposed).toBe(true);
+      const retired = retire.mock.contexts[0];
+      if (!(retired instanceof InstancedPBRMaterial)) throw new Error("expected the retired batch material as the dispose receiver");
+      expect(retired.disposed).toBe(true);
     } finally { remove?.(); Reflect.deleteProperty(material, "getParameters"); retire.mockRestore(); dispose(); }
   });
 

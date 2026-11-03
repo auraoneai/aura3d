@@ -175,7 +175,8 @@ describe("seeded area-weighted surface sampling", () => {
     const source = {
       kind: "aura-custom-geometry" as const,
       positions: [0, 0, 0, 1, 0, 0, 0, 1, 0],
-      morphTargets: [{ name: "bend", positions: Array(9).fill(0), normals, tangents }]
+      indices: [0, 1, 2],
+      morphTargets: [{ name: "bend", positions: Array<number>(9).fill(0), normals, tangents }]
     };
     const sampler = createMeshSurfaceSampler(source, { seed: 31 });
     const sample = sampler.sample();

@@ -30,6 +30,7 @@ import { scene } from "../../../packages/engine/src/agent-api/nodes/scene.js";
 import type { AuraModelNode } from "../../../packages/engine/src/agent-api/nodes/types.js";
 import type { AuraCameraPose } from "../../../packages/engine/src/contracts/camera.js";
 import {
+  catalogRouteErrors,
   compareNumericCatalogRegions,
   loadExpectations,
   type NumericRegion
@@ -48,6 +49,10 @@ interface FixtureCase {
   provenance: string;
   subject: string;
   surface: { kind: "canvas"; selector: string };
+  query?: string;
+  settle?: { signal: string; equals?: string | number | boolean; atLeast?: number; timeoutMs?: number };
+  driver?: { call: string; args?: Array<string | number | boolean | null> };
+  presentation?: "gpu-canvas" | "canvas2d";
   source: { path: string; sha256: string };
   sourceDependencies?: Array<{ path: string; sha256: string }>;
   regions: NumericRegion[];
@@ -554,7 +559,15 @@ describe("source-backed native example catalog fixture", () => {
       expect(entry.provenance).toMatch(/no reference capture/i);
       expect(entry.provenance).toMatch(/unverified/i);
       expect(entry.subject.trim()).not.toBe("");
-      expect(entry.surface).toEqual({ kind: "canvas", selector: "canvas" });
+      // Documented examples may name their presenting canvas (a framed lab or a
+      // 2D readback composite); templates and capability scenarios keep the bare canvas.
+      expect(entry.surface.kind).toBe("canvas");
+      if (entry.id.startsWith("documented-example:")) expect(entry.surface.selector.trim()).not.toBe("");
+      else expect(entry.surface).toEqual({ kind: "canvas", selector: "canvas" });
+      expect(catalogRouteErrors(entry), entry.id).toEqual([]);
+      if (!entry.id.startsWith("documented-example:")) {
+        expect(entry.query ?? entry.settle ?? entry.driver ?? entry.presentation, entry.id).toBeUndefined();
+      }
       expect(entry.regions.some(({ label }) => label === "subject")).toBe(true);
       for (const input of [entry.source, ...(entry.sourceDependencies ?? [])]) {
         const source = resolve(root, input.path);
@@ -1287,6 +1300,25 @@ describe("source-backed native example catalog fixture", () => {
     expect(result.pass).toBe(false);
   });
 
+  it("validates the route-start fields (query, settle signal, driver, presentation) and fails closed on malformed ones", () => {
+    expect(catalogRouteErrors({})).toEqual([]);
+    expect(catalogRouteErrors({ query: "?autostart=1", settle: { signal: "__GAME__.ready", equals: true, timeoutMs: 30_000 } })).toEqual([]);
+    expect(catalogRouteErrors({ presentation: "canvas2d", surface: { kind: "canvas" },
+      settle: { signal: "__LAB__.status", equals: "ready" }, driver: { call: "__LAB__.render", args: [1, "a", null] } })).toEqual([]);
+    expect(catalogRouteErrors({ settle: { signal: "__APP__.runtime.time", atLeast: 2 } })).toEqual([]);
+    for (const bad of [
+      { query: "autostart=1" }, { query: "?a=<script>" }, { query: 1 },
+      { settle: { signal: "window['x']" } }, { settle: { signal: "a.b", equals: 1, atLeast: 2 } },
+      { settle: { signal: "a", timeoutMs: 500 } }, { settle: { signal: "a", extra: true } },
+      { driver: { call: "__LAB__.render" } }, { settle: { signal: "a" }, driver: { call: "a.b()" } },
+      { settle: { signal: "a" }, driver: { call: "a.b", args: [{}] } },
+      { presentation: "webgl" }, { presentation: "canvas2d", surface: { kind: "svg" } }
+    ]) expect(catalogRouteErrors(bad), JSON.stringify(bad)).not.toEqual([]);
+    const original = fixture().cases[0]!;
+    const { directory, path } = temporaryManifest({ schema: "aura3d.native-example-expectations/1", cases: [{ ...original, query: "start" }] });
+    expect(() => loadExpectations(directory, path)).toThrow(/invalid route start/);
+  });
+
   it("accepts only a bounded subject-colored sample in its own region, not blanks, wrong colors or misplaced subjects", () => {
     const samples: Record<string, readonly (readonly [number, number, number])[]> = {
       "capability-example:typed-model": [[246, 192, 156], [73, 103, 124]],
@@ -1350,12 +1382,71 @@ describe("source-backed native example catalog fixture", () => {
       "documented-example:examples/spatial-audio-lab": [[218,  170,  85]],
       "documented-example:examples/spatial-text-lab": [[203,  178,  120]],
       "documented-example:examples/tsl-lab": [[50,  153,  65]],
-      "documented-example:examples/xr-lab": [[228,  35,  35]]
+      "documented-example:examples/xr-lab": [[228,  35,  35]],
+      "documented-example:examples/renderer-stress-lab": [[216,  155,  137]],
+      "documented-example:apps/showcase-heatsink": [[248,  150,  40]],
+      "documented-example:apps/showcase-aura-diamond-3d": [[184,  106,  66],  [70,  118,  50]],
+      "documented-example:examples/external-product-configurator": [[190,  45,  35]],
+      "documented-example:examples/postprocess-lab": [[175,  135,  125]],
+      "documented-example:apps/showcase-digital-twin-ops": [[236,  233,  214]],
+      "documented-example:apps/showcase-cinematic-architecture": [[45,  140,  30]],
+      "documented-example:apps/showcase-dot-dash-3d": [[95,  243,  255]],
+      "documented-example:apps/showcase-bunker-zero": [[45,  230,  235],  [48,  62,  70]],
+      "documented-example:apps/showcase-aura-links-3d": [[118,  150,  152],  [225,  165,  132]],
+      "documented-example:apps/showcase-top-tennis": [[43,  103,  142],  [240,  238,  228]],
+      "documented-example:apps/showcase-iron-crown": [[235,  95,  45]],
+      "documented-example:apps/showcase-roadster-rush": [[20,  55,  120]],
+      "documented-example:apps/showcase-teleoperator": [[185,  188,  192]],
+      "documented-example:apps/showcase-product-configurator": [[240,  147,  99]],
+      "documented-example:apps/showcase-smart-city-control": [[101,  216,  232]],
+      "documented-example:examples/heatsink-port": [[215,  120,  70]],
+      "documented-example:apps/showcase-heatsink-port": [[215,  120,  70]],
+      "documented-example:examples/drift-and-deliver-port": [[100,  190,  160]],
+      "documented-example:apps/showcase-drift-and-deliver-port": [[100,  190,  160]],
+      "documented-example:examples/last-train-port": [[150,  30,  25]],
+      "documented-example:apps/showcase-last-train-port": [[150,  30,  25]],
+      "documented-example:examples/kid-goku-beyond-the-clouds-port": [[40,  170,  140],  [190,  150,  40]],
+      "documented-example:apps/showcase-cloud-runner-port": [[40,  170,  140],  [190,  150,  40]],
+      "documented-example:examples/ninja-runner-port": [[215,  90,  25],  [30,  45,  70]],
+      "documented-example:apps/showcase-ninja-runner-port": [[215,  90,  25],  [30,  45,  70]],
+      "documented-example:examples/roadster-hours-port": [[20,  95,  95],  [210,  120,  70]],
+      "documented-example:apps/showcase-roadster-hours-port": [[20,  95,  95],  [210,  120,  70]],
+      "documented-example:examples/silt-and-signal-port": [[228,  225,  215]],
+      "documented-example:apps/showcase-silt-and-signal-port": [[228,  225,  215]],
+      "documented-example:apps/showcase-serpentine-sky-run-port": [[150,  40,  50]],
+      "documented-example:examples/splat-rush-port": [[220,  40,  35]],
+      "documented-example:apps/showcase-splat-rush-port": [[220,  40,  35]],
+      "documented-example:examples/strange-orbit-port": [[205,  140,  100]],
+      "documented-example:apps/showcase-strange-orbit-port": [[205,  140,  100]],
+      "documented-example:examples/where-the-wind-wanders-port": [[80,  95,  55]],
+      "documented-example:apps/showcase-where-the-wind-wanders-port": [[80,  95,  55]],
+      "documented-example:examples/10-particles": [[240,  175,  70]],
+      "documented-example:examples/animated-character": [[245,  200,  75]],
+      "documented-example:examples/animation-state-machine": [[255,  141,  99]],
+      "documented-example:examples/raycast-ccd-lab": [[51,  230,  255],  [255,  179,  46]],
+      "documented-example:examples/parity-animation": [[190,  135,  95]],
+      "documented-example:examples/parity-runtime-lab": [[42,  108,  255]],
+      "documented-example:examples/custom-draw-probe": [[250,  10,  10]],
+      "documented-example:examples/external-asset-gallery": [[168,  111,  45]],
+      "documented-example:examples/external-interactive-showcase": [[216,  106,  53]],
+      "documented-example:examples/external-editor-authored-app": [[255,  136,  68]],
+      "documented-example:examples/foundation-editor-authored-app": [[255,  136,  68]],
+      "documented-example:examples/external-interior-scene": [[63,  124,  239]],
+      "documented-example:examples/external-material-studio": [[39,  144,  243]],
+      "documented-example:examples/external-extension-lab": [[27,  245,  255]],
+      "documented-example:examples/external-character-viewer": [[201,  147,  55]],
+      "documented-example:examples/asset-viewer": [[173,  137,  20]],
+      "documented-example:examples/post-order-lab": [[245,  60,  245]],
+      "documented-example:examples/custom-shader-webgpu-lab": [[220,  80,  60]],
+      "documented-example:examples/product-configurator": [[190,  45,  35]],
+      "documented-example:examples/character-animation-viewer": [[200,  140,  55]],
+      "documented-example:examples/saiyan-snake-way-port": [[150,  40,  50]],
+      "documented-example:examples/aura-slam": [[43,  103,  142],  [240,  238,  228]]
     };
     // Patch width per band where the default half-region patch falls outside a
     // case's authored fraction bounds, and a warm wrong color for cyan/teal subjects.
-    const sampleScale: Record<string, number> = { "template:racing-starter": 0.4, "documented-example:apps/showcase-slingshot-siege": 0.62, "documented-example:examples/custom-attributes-lab": 0.6, "documented-example:examples/custom-material-lab": 0.6, "documented-example:examples/tsl-lab": 0.61 };
-    const warmWrong = new Set(["documented-example:examples/context-recovery-lab", "documented-example:examples/rendering-large-scene"]);
+    const sampleScale: Record<string, number> = { "template:racing-starter": 0.4, "documented-example:apps/showcase-slingshot-siege": 0.62, "documented-example:examples/custom-attributes-lab": 0.6, "documented-example:examples/custom-material-lab": 0.6, "documented-example:examples/tsl-lab": 0.61 , "documented-example:apps/showcase-top-tennis": 0.9, "documented-example:examples/animation-state-machine": 0.8, "documented-example:examples/parity-runtime-lab": 0.8, "documented-example:examples/custom-draw-probe": 0.8, "documented-example:examples/post-order-lab": 0.7, "documented-example:examples/custom-shader-webgpu-lab": 0.7, "documented-example:examples/character-animation-viewer": 0.7, "documented-example:examples/aura-slam": 0.9};
+    const warmWrong = new Set(["documented-example:examples/context-recovery-lab", "documented-example:examples/rendering-large-scene", "documented-example:apps/showcase-dot-dash-3d", "documented-example:apps/showcase-bunker-zero", "documented-example:apps/showcase-top-tennis", "documented-example:examples/kid-goku-beyond-the-clouds-port", "documented-example:apps/showcase-cloud-runner-port", "documented-example:examples/parity-runtime-lab", "documented-example:examples/external-interior-scene", "documented-example:examples/external-material-studio", "documented-example:examples/aura-slam"]);
     const data = fixture();
     expect(new Set(data.cases.map(({ id }) => id))).toEqual(new Set(Object.keys(samples)));
     for (const entry of data.cases) {

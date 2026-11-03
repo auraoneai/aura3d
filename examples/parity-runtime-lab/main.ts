@@ -88,6 +88,9 @@ function addCanvas(label: string, width = W, height = H): HTMLCanvasElement {
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** Where each app's frame is presented: its WebGL canvas, then its latest readback. */
+const presented = new Map<AuraApp, HTMLCanvasElement>();
+
 async function shot(app: AuraApp): Promise<Shot> {
   const image = (await app.capture?.({ type: "image-bitmap" })) as ImageBitmap;
   const c = document.createElement("canvas");
@@ -95,12 +98,23 @@ async function shot(app: AuraApp): Promise<Shot> {
   c.height = image.height;
   const ctx = c.getContext("2d")!;
   ctx.drawImage(image, 0, 0);
+  // Each case disposes its app after measuring, which leaves its WebGL canvas
+  // empty. Present the measured readback in that canvas's place instead.
+  const previous = presented.get(app);
+  if (previous) {
+    c.dataset.frame = previous.dataset.frame ?? "";
+    previous.replaceWith(c);
+    presented.set(app, c);
+  }
   const { width, height, data } = ctx.getImageData(0, 0, c.width, c.height);
   return { width, height, data };
 }
 
 async function mount(label: string, build: () => ReturnType<typeof scene>): Promise<AuraApp> {
-  const app = createAuraApp(addCanvas(label), { scene: build(), pixelRatio: 1, resize: false });
+  const canvas = addCanvas(label);
+  canvas.dataset.frame = label;
+  const app = createAuraApp(canvas, { scene: build(), pixelRatio: 1, resize: false });
+  presented.set(app, canvas);
   await app.ready();
   const start = Date.now();
   while ((app.diagnostics().drawCalls ?? 0) === 0 && Date.now() - start < 45_000) {

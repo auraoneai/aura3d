@@ -15,7 +15,6 @@ import { inspectInstalledRelease, loadValidatedReleasePlan, type ExactReleasePla
 import { assertIndependentNpmConsumer, inspectNpmArchive, seedVerifiedNpmCache, type NpmAdmissionInput } from "../release/portable-npm-lock.mjs";
 import { consumeArchiveAdmission, verifyArchiveAdmission } from "../release/archive-admission.mjs";
 import { inspectInstalledNpmConsumer, verifyInstalledNpmConsumer, type InstalledNpmConsumerReport } from "../release/pnpm-installed-tree.mjs";
-// @ts-expect-error The shared artifact-redaction module is plain JavaScript.
 import { redactText } from "../remote-acr/upload-artifacts.mjs";
 import { CREATE_AURA3D_TEMPLATES } from "../../packages/create-aura3d/src/index";
 

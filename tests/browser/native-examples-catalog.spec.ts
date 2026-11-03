@@ -60,7 +60,69 @@ interface VisualExpectation {
   author: string;
   subject: string;
   surface?: { kind: "canvas" | "svg" | "dom"; selector: string };
+  /**
+   * Route start: a query string the route's own source documents (for example
+   * `?autostart=1` or `?start=1`) that skips its title/menu/splash into the
+   * settled first-play pose. Appended to the built HTML entry.
+   */
+  query?: string;
+  /** Wait for a documented ready signal (or a settled pose time) the page publishes on `window` before capture. */
+  settle?: CatalogSettle;
+  /** A documented page driver (for labs that render only on an external call), awaited once after settle. */
+  driver?: { call: string; args?: Array<string | number | boolean | null> };
+  /**
+   * What the surface presents. Default (`"gpu-canvas"`): the surface canvas
+   * itself requested a WebGL2/WebGPU context. `"canvas2d"`: a 2D-canvas or
+   * readback-composite page; the surface canvas requested a 2D context (any
+   * WebGL2/WebGPU contexts the page also requests are recorded as its backend).
+   * Both use the same bounded numeric regions.
+   */
+  presentation?: "gpu-canvas" | "canvas2d";
   regions: Array<VisualRegion | NumericRegion>;
+}
+export interface CatalogSettle {
+  /** Dot path from `window`, e.g. `__AURA3D_PARITY_ANIMATION__.status`. */
+  signal: string;
+  /** Require strict equality; otherwise `atLeast` (numeric), otherwise truthy. */
+  equals?: string | number | boolean;
+  atLeast?: number;
+  timeoutMs?: number;
+}
+
+const WINDOW_PATH = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*){0,7}$/;
+/** Validate the optional route-start fields of one expectation without a browser. */
+export function catalogRouteErrors(entry: { query?: unknown; settle?: unknown; driver?: unknown; presentation?: unknown; surface?: unknown }): string[] {
+  const errors: string[] = [];
+  if (entry.query !== undefined && (typeof entry.query !== "string" || !/^\?[A-Za-z0-9_.~=&%-]{1,120}$/.test(entry.query))) {
+    errors.push("query must be a short `?key=value` string");
+  }
+  if (entry.settle !== undefined) {
+    const settle = entry.settle as Partial<CatalogSettle> | null;
+    if (!settle || typeof settle !== "object" || typeof settle.signal !== "string" || !WINDOW_PATH.test(settle.signal) ||
+        (settle.equals !== undefined && !["string", "number", "boolean"].includes(typeof settle.equals)) ||
+        (settle.atLeast !== undefined && (typeof settle.atLeast !== "number" || !Number.isFinite(settle.atLeast))) ||
+        (settle.equals !== undefined && settle.atLeast !== undefined) ||
+        (settle.timeoutMs !== undefined && (!Number.isInteger(settle.timeoutMs) || settle.timeoutMs < 1_000 || settle.timeoutMs > 120_000)) ||
+        Object.keys(settle).some((key) => !["signal", "equals", "atLeast", "timeoutMs"].includes(key))) {
+      errors.push("settle must name a window signal path with at most one of equals/atLeast and a bounded timeout");
+    }
+  }
+  if (entry.driver !== undefined) {
+    const driver = entry.driver as { call?: unknown; args?: unknown } | null;
+    if (!driver || typeof driver !== "object" || typeof driver.call !== "string" || !WINDOW_PATH.test(driver.call) ||
+        (driver.args !== undefined && (!Array.isArray(driver.args) || driver.args.length > 8 ||
+          !driver.args.every((arg) => arg === null || ["string", "number", "boolean"].includes(typeof arg)))) ||
+        Object.keys(driver).some((key) => !["call", "args"].includes(key))) {
+      errors.push("driver must name a window function path with primitive arguments");
+    }
+    if (entry.settle === undefined) errors.push("a driver requires a settle signal so it is not called before the page is ready");
+  }
+  if (entry.presentation !== undefined && entry.presentation !== "gpu-canvas" && entry.presentation !== "canvas2d") {
+    errors.push("presentation must be gpu-canvas or canvas2d");
+  }
+  const surface = entry.surface as { kind?: unknown } | undefined;
+  if (entry.presentation === "canvas2d" && surface?.kind !== undefined && surface.kind !== "canvas") errors.push("canvas2d presentation requires a canvas surface");
+  return errors;
 }
 export interface NumericRegion {
   label: "subject" | "output";
@@ -464,6 +526,8 @@ export function loadExpectations(root = ROOT, expectationsPath = EXPECTATIONS_PA
     }
     if (entry.surface && (!(entry.surface.kind === "canvas" || entry.surface.kind === "svg" || entry.surface.kind === "dom") ||
         typeof entry.surface.selector !== "string" || !entry.surface.selector.trim())) throw new Error(`invalid visual surface: ${entry.id}`);
+    const routeErrors = catalogRouteErrors(entry);
+    if (routeErrors.length) throw new Error(`invalid route start for ${entry.id}: ${routeErrors.join("; ")}`);
     if (entry.kind === "reference") {
       if (typeof entry.reference !== "string" || typeof entry.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(entry.sha256)) {
         throw new Error(`missing reference or digest: ${entry.id}`);
@@ -681,11 +745,14 @@ async function runCase(browser: Browser, testInfo: TestInfo, item: CatalogCase, 
     // instrumentation only; it does not substitute a renderer or scene.
     await page.addInitScript(() => {
       const contexts: Array<{ type: string; renderer?: string }> = [];
+      const byCanvas = new WeakMap<HTMLCanvasElement, string[]>();
       (window as unknown as { __auraCatalogContexts: typeof contexts }).__auraCatalogContexts = contexts;
+      (window as unknown as { __auraCatalogContextTypes: typeof byCanvas }).__auraCatalogContextTypes = byCanvas;
       const original = HTMLCanvasElement.prototype.getContext;
       const prototype = HTMLCanvasElement.prototype as unknown as { getContext(type: string, ...args: unknown[]): unknown };
       prototype.getContext = function (this: HTMLCanvasElement, type: string, ...args: unknown[]): unknown {
         const context = Reflect.apply(original, this, [type, ...args]) as WebGL2RenderingContext | null;
+        if (context) byCanvas.set(this, [...(byCanvas.get(this) ?? []), type]);
         if (context && (type === "webgl2" || type === "webgpu")) {
           const renderer = type === "webgl2" ? String(context.getParameter(context.RENDERER)) : undefined;
           contexts.push(renderer ? { type, renderer } : { type });
@@ -697,7 +764,7 @@ async function runCase(browser: Browser, testInfo: TestInfo, item: CatalogCase, 
     page.on("console", (message) => { if (message.type() === "error") issues.push({ message: `console: ${redactUrls(message.text())}`, url: message.location().url }); });
     page.on("requestfailed", (request) => issues.push({ message: `request failed: ${redactUrls(request.url())} ${request.failure()?.errorText ?? "unknown"}`, url: request.url() }));
     page.on("response", (response) => { if (response.status() >= 400) issues.push({ message: `HTTP ${response.status()}: ${redactUrls(response.url())}`, url: response.url() }); });
-    const navigation = await page.goto(server.origin, { waitUntil: "load", timeout: 60_000 });
+    const navigation = await page.goto(`${server.origin}${expectation.query ?? ""}`, { waitUntil: "load", timeout: 60_000 });
     if (!navigation?.ok()) throw new Error(`navigation failed: ${navigation?.status() ?? "no response"}`);
     declaresIcon = (await page.locator('link[rel~="icon"]').count()) > 0;
     const surface = expectation.surface ?? { kind: "canvas" as const, selector: "canvas" };
@@ -710,9 +777,49 @@ async function runCase(browser: Browser, testInfo: TestInfo, item: CatalogCase, 
     if ((surface.kind === "canvas" && tag !== "canvas") || (surface.kind === "svg" && tag !== "svg")) {
       throw new Error(`expected ${surface.kind} surface, got ${tag}`);
     }
-    if (surface.kind === "canvas") {
+    if (surface.kind === "canvas" && expectation.presentation === "canvas2d") {
+      // A 2D-canvas page (or a readback composite) presents through its own 2D
+      // context; any WebGL2/WebGPU contexts it also requests are recorded.
+      await expect.poll(() => target.evaluate((element) =>
+        ((window as unknown as { __auraCatalogContextTypes: WeakMap<Element, string[]> }).__auraCatalogContextTypes.get(element) ?? []).includes("2d")),
+      { timeout: 60_000 }).toBe(true);
+      result.backend = await page.evaluate(() => (window as unknown as { __auraCatalogContexts: Array<{ type: string; renderer?: string }> }).__auraCatalogContexts);
+    } else if (surface.kind === "canvas") {
       await expect.poll(() => page.evaluate(() => (window as unknown as { __auraCatalogContexts: unknown[] }).__auraCatalogContexts.length), { timeout: 60_000 }).toBeGreaterThan(0);
       result.backend = await page.evaluate(() => (window as unknown as { __auraCatalogContexts: Array<{ type: string; renderer?: string }> }).__auraCatalogContexts);
+    }
+    if (expectation.settle) {
+      const settle = expectation.settle;
+      await expect.poll(() => page.evaluate(({ signal, equals, atLeast }) => {
+        let value: unknown = window;
+        for (const key of signal.split(".")) value = value == null ? undefined : (value as Record<string, unknown>)[key];
+        if (equals !== undefined) return value === equals;
+        if (atLeast !== undefined) return typeof value === "number" && Number.isFinite(value) && value >= atLeast;
+        return Boolean(value);
+      }, { signal: settle.signal, equals: settle.equals, atLeast: settle.atLeast }), {
+        timeout: settle.timeoutMs ?? 60_000, intervals: [250, 500, 1000], message: `settle signal ${settle.signal}`
+      }).toBe(true);
+    }
+    if (expectation.driver) {
+      const driver = expectation.driver;
+      await page.evaluate(async ({ call, args }) => {
+        const keys = call.split(".");
+        let owner: unknown = window;
+        for (const key of keys.slice(0, -1)) owner = owner == null ? undefined : (owner as Record<string, unknown>)[key];
+        const fn = owner == null ? undefined : (owner as Record<string, unknown>)[keys.at(-1)!];
+        if (typeof fn !== "function") throw new Error(`documented driver ${call} is unavailable`);
+        await Reflect.apply(fn, owner, args);
+      }, { call: driver.call, args: driver.args ?? [] });
+    }
+    if (surface.kind === "canvas") {
+      const presented = await target.evaluate((element) =>
+        (window as unknown as { __auraCatalogContextTypes: WeakMap<Element, string[]> }).__auraCatalogContextTypes.get(element) ?? []);
+      const gpu = presented.some((type) => type === "webgl2" || type === "webgpu");
+      // A GPU canvas transferred to a worker records no main-thread context, so
+      // the default only rejects a surface that is demonstrably a 2D canvas.
+      if ((expectation.presentation ?? "gpu-canvas") === "gpu-canvas" ? presented.length > 0 && !gpu : !presented.includes("2d")) {
+        throw new Error(`surface canvas did not request the declared ${expectation.presentation ?? "gpu-canvas"} context (got ${presented.join(",") || "none"})`);
+      }
     }
     if (item.id === "capability-example:bounds-query") {
       let hit: unknown;

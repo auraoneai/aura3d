@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
@@ -18,11 +18,13 @@ export default defineConfig({
     }
   ],
   resolve: {
-    alias: [
+    // Inside the monorepo the route builds against the repo's built SDK. An
+    // isolated consumer copy (no repo dist/) resolves the installed package.
+    alias: existsSync(resolve(auraRoot, "dist/engine/public/index.js")) ? [
       { find: /^@aura3d\/engine$/, replacement: resolve(auraRoot, "dist/engine/public/index.js") },
       { find: /^@aura3d\/engine\/rendering$/, replacement: resolve(auraRoot, "dist/rendering/index.js") },
       { find: /^@aura3d\/engine\/scene$/, replacement: resolve(auraRoot, "dist/scene/index.js") }
-    ]
+    ] : []
   },
   build: {
     outDir: "dist",

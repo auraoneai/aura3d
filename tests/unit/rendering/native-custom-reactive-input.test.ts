@@ -133,7 +133,7 @@ function harness(): Harness {
 
 function custom(anchor: PostPassDescriptor["insertAt"], overrides: Partial<PostPassDescriptor> = {}): PostPassDescriptor {
   return {
-    id: `test.reactive.${anchor}`, owner: "test", flag: "A3D_QR_POST", insertAt: anchor,
+    id: `test.reactive.${anchor}`, owner: "prd03", flag: "A3D_QR_POST", insertAt: anchor,
     space: anchor === "after-tonemap" ? "display" : "linear-hdr", inputs: ["color", "reactive"],
     fragment: { glsl: "// reactive-marker\nvoid main() { outColor = vec4(texture(u_reactive, v_uv).r); }" },
     gpuOnly: true, ...overrides

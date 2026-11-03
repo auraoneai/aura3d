@@ -1,7 +1,7 @@
 import { webcrypto } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GLTFLoader } from "../../../packages/assets/src/GLTFLoader";
-import { createGLTFRenderResources } from "../../../packages/assets/src/GLTFRenderResources";
+import { createGLTFRenderResources, type GLTFRenderResources } from "../../../packages/assets/src/GLTFRenderResources";
 import { GLTFSharedTextureCache } from "../../../packages/assets/src/GLTFSharedTextureCache";
 import { LoadContext } from "../../../packages/assets/src/LoadContext";
 import { loadProductionGLTFRenderPipeline } from "../../../packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline";
@@ -39,7 +39,7 @@ const decoded = () => ({
     { width: 1, height: 1, data: new Uint8Array(4).fill(3) }
   ]
 });
-const textureOf = (resources: Awaited<ReturnType<typeof createGLTFRenderResources>>) => [...resources.textureLibrary.values()][0]!;
+const textureOf = (resources: GLTFRenderResources) => [...resources.textureLibrary.values()][0]!;
 
 beforeEach(() => { vi.stubGlobal("crypto", webcrypto); });
 afterEach(() => { vi.unstubAllGlobals(); resetTextureBudgetLedger(); });

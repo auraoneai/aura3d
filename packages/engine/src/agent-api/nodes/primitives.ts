@@ -3,7 +3,7 @@
 import type { AuraPrimitiveOptions, AuraPrimitiveNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
-import { ignoredOptionsNote } from "./optionDiagnostics.js";
+import { ignoredOptionsNote, materialIgnoredOptions } from "./optionDiagnostics.js";
 import { assertValidPivot } from "../pivotGuard.js";
 
 /**
@@ -72,9 +72,13 @@ export interface PrimitiveOptionGuard {
 export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode> {
   assertValidPivot(options.pivot);
   const pivot = options.pivot === undefined ? undefined : [...options.pivot] as [number, number, number];
-  const ignored = guard
+  const builderIgnored = guard
     ? ignoredOptionsNote(guard.builder, guard.options, guard.validKeys)
     : ignoredOptionsNote(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
+  // S5-WP19-04: material fields the material builder recorded as never rendered.
+  const materialIgnored = materialIgnoredOptions(options.material);
+  const ignored = materialIgnored.length === 0 ? builderIgnored
+    : { ignoredOptions: [...(builderIgnored.ignoredOptions ?? []), ...materialIgnored] };
   assertUnitPrimitiveParams(primitiveName, options.params);
   return new AuraNodeBuilder({
     kind: "primitive",
