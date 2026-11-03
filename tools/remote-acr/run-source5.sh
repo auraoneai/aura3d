@@ -53,8 +53,11 @@ SUB="$("$AZ_WRAPPER" account show --query id -o tsv)"
 
 if [ "${BUILD:-1}" = 0 ]; then MANIFEST_SHA=reused-image; LOCK_SHA=reused-image; else
 echo "== staging committed candidate $COMMIT"
-git ls-files -z --cached --others --exclude-standard \
-  | grep -zv -e '^tests/reports/' -e '/node_modules/' -e '^node_modules/' \
+# Untracked local reports stay out; committed (tracked) reports are candidate
+# source (e.g. tests/reports/final-competitive-baseline) and are staged.
+{ git ls-files -z --cached --others --exclude-standard \
+    | grep -zv -e '^tests/reports/' -e '/node_modules/' -e '^node_modules/'
+  git ls-files -z --cached -- tests/reports; } \
   > "$CTX.list"
 rsync -a --from0 --files-from="$CTX.list" ./ "$CTX/"
 ( cd "$CTX" && tr '\0' '\n' < "$CTX.list" | while IFS= read -r f; do [ -f "$f" ] && shasum -a 256 "$f"; done ) > "$CTX/tools/remote-acr/.source5-manifest.txt"

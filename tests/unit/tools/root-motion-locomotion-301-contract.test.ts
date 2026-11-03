@@ -29,8 +29,13 @@ describe("E01 rendered locomotion evidence cadence", () => {
 
   it("advances renderer-owned actor state without presenting intermediate frames", () => {
     expect(engine).toContain("productionController?.update?.(runtimeTime * 1000)");
-    expect(engine).toContain("preparedFrame = { time, input: buildFrame(time) }");
-    expect(engine).toContain("const input = takePreparedFrame(time)");
+    // 26eae82e2 (5.0 frame retention): the prepared frame now also carries its
+    // retained-resource release; update() still builds without presenting and
+    // render() still consumes the prepared frame for the same time.
+    expect(engine).toContain("const input = buildFrame(time);\n        const release = retainFrame(input);");
+    expect(engine).toContain("preparedFrame = { time, input, release }");
+    expect(engine).toContain("frame = takePreparedFrame(time)");
+    expect(engine).toContain("const prepared = preparedFrame?.time === time ? preparedFrame : undefined;");
   });
 
   it("turns through a bounded arc without reversing at a short route endpoint", () => {

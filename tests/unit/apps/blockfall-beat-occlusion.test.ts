@@ -17,7 +17,7 @@ import { CELL } from "../../../apps/showcase-blockfall-reactor/src/reactor-scene
  * regress without failing here.
  */
 describe("Blockfall line-clear beat does not occlude the board", () => {
-  const source = readFileSync("apps/showcase-blockfall-reactor/src/reactor-scene.ts", "utf8");
+  const source = readFileSync("apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts", "utf8");
   const boardWidthUnits = CELL * BOARD_WIDTH;
 
   it("does not restore the old arbitrary foreground sphere", () => {
@@ -40,7 +40,7 @@ describe("Blockfall line-clear beat does not occlude the board", () => {
   });
 
   it("keeps every beat overlay translucent so the board reads through it", () => {
-    const scene = readFileSync("apps/showcase-blockfall-reactor/src/reactor-scene.ts", "utf8");
+    const scene = readFileSync("apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts", "utf8");
     for (const name of ["level up charge band", "game over wash", "reset sweep"]) {
       const declaration = scene.split("\n").find((line) => line.includes(`name: "${name}`));
       expect(declaration, `${name} material should exist`).toBeDefined();

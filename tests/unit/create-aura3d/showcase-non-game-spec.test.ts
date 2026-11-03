@@ -1,9 +1,24 @@
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { compileShowcaseSpecFile } from "../../../packages/create-aura3d/src/showcase-spec-compiler";
 import { expectStrictGeneratedSource } from "./generated-source-assertions";
+
+// QR-05 release-gate honesty (2d8f721f9, 2026-10-06) removed every hand-authored
+// `quality: "release"` from aura.assets.json; release quality is granted only by
+// `aura3d assets admit`, and the live manifest holds none. These cases exercise the
+// replacement selector, so the candidates they expect are presented as admitted
+// (release quality); every other manifest field and all evidence stay real.
+const ADMITTED_REPLACEMENTS = new Set(["showcaseVoxelBuilding", "showcaseRoboticWeldingWorkcell", "showcaseParticleCore"]);
+vi.mock("../../../packages/create-aura3d/src/showcase-spec-replacement-manifest", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../packages/create-aura3d/src/showcase-spec-replacement-manifest")>();
+  return {
+    ...actual,
+    readManifestAssets: (projectDir: string) => actual.readManifestAssets(projectDir)
+      .map((asset) => ADMITTED_REPLACEMENTS.has(asset.id) ? { ...asset, quality: "release" as const } : asset)
+  };
+});
 
 const specs = {
   architecture: "tests/fixtures/showcase-spec/cinematic-architecture.json",

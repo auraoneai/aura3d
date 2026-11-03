@@ -12,7 +12,8 @@ describe("N1 lights.spot root builder", () => {
   it("builds a spot node with cone defaults", () => {
     const snapshot = scene().add(lights.spot()).toJSON();
     const node = snapshot.nodes.find((entry) => entry.kind === "light" && entry.light === "spot");
-    expect(node).toMatchObject({ light: "spot", angle: Math.PI / 6, penumbra: 0.4, distance: 12, intensity: 8 });
+    // QR PRD-02 Phase 2 (8e6f298dd) raised the spot default from 8 to 30; prd02-builders.test.ts pins it.
+    expect(node).toMatchObject({ light: "spot", angle: Math.PI / 6, penumbra: 0.4, distance: 12, intensity: 30 });
   });
 
   it("honors an explicit aim target and cone", () => {

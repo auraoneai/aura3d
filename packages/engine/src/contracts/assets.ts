@@ -33,18 +33,6 @@ export interface AuraAssetsOption {
   readonly securityContext?: string;
 }
 
-/** @internal Capture the app-owned generation before mounting or transferring. */
-export function snapshotAuraAssetsOption(options: AuraAssetsOption | undefined): AuraAssetsOption | undefined {
-  if (options === undefined) return undefined;
-  const { securityContext, ...otherOptions } = options;
-  if (securityContext !== undefined && (typeof securityContext !== "string" || !securityContext.trim())) {
-    throw new TypeError("Asset securityContext must be a non-empty authentication generation");
-  }
-  return {
-    ...otherOptions,
-    ...(securityContext === undefined ? {} : { securityContext })
-  };
-}
 export interface AuraAssetLodOption { readonly bias?: number; readonly crossFadeSeconds?: number; }
 export type AuraModelLodOption = false | "auto" | AuraAssetLodOption;
 export type AuraModelColliderOption = "auto" | "bounds" | false;

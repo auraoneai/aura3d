@@ -12,7 +12,7 @@
 import type { AuraCameraSpec, AuraSceneNode, AuraTransformSpec, AuraVec3 } from "./types.js";
 import type { RendererPostProcessOptions } from "@aura3d/rendering";
 import { AuraNodeBuilder } from "./builder.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { STEREO_DEFAULT_EYE_SEPARATION, STEREO_DEFAULT_FOCUS } from "../stereoMath.js";
 import { createChaseRig, type ChaseOptions, type ChaseRig } from "./chaseCamera.js";
 

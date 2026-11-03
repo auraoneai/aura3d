@@ -161,7 +161,10 @@ describe("converted feature docs match shipped source", () => {
     const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".ts") ? [join(d, e.name)] : []);
     return walk("packages/engine/src/agent-api").map((f2) => readFileSync(f2, "utf8")).join("\n");
   })();
-    expect(source).toContain('export type AuraRendererMode = "safe-basic" | "production"');
+    // CCR-15-1 (QR-15 T8.1, 90e6de309) removed the `AuraRendererMode` alias; the
+    // deprecated `mode` option is now the inline literal union on the renderer options.
+    expect(source).not.toContain("export type AuraRendererMode");
+    expect(source).toContain('readonly mode?: "safe-basic" | "production";');
     expect(source).toContain(
       'export type AuraRendererQualityProfileId = "safe-basic" | "production" | "cinematic" | "experimental-webgpu"'
     );

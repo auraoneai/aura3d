@@ -11,6 +11,7 @@ import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
 import { Material } from "../../../packages/rendering/src/Material";
 import { MaterialInstance } from "../../../packages/rendering/src/MaterialInstance";
 import { GLTFLoader } from "../../../packages/assets/src/GLTFLoader";
+import { LoadContext } from "../../../packages/assets/src/LoadContext";
 import type { RenderItem } from "../../../packages/rendering/src/ForwardPass";
 
 /**
@@ -48,7 +49,7 @@ async function fixtureRenderItems(): Promise<readonly RenderItem[]> {
   const base64 = readFileSync("tests/fixtures/gltf-multipart/body-and-four-wheels.glb").toString("base64");
   const asset = await new GLTFLoader().load(
     { url: `data:model/gltf-binary;base64,${base64}` },
-    { throwIfAborted: () => undefined } as never
+    new LoadContext()
   );
   const scene = asset.createScene();
   scene.updateWorldTransforms();

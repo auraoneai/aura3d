@@ -32,7 +32,7 @@ import type { PackedGeometryLease, RenderItem } from "@aura3d/rendering";
 import { qrCoreGeneratorOn } from "@aura3d/rendering";
 import type { NodeHandler, RenderSourceContributions, SceneCompileContext } from "../../contracts/compiler.js";
 import { registerNodeHandler } from "../../contracts/compiler.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { assertDepthPreviewTarget } from "./depthPreviewTarget.js";
 import { sourceSceneNodeOf } from "../compiler/sceneGraph.js";
 import { runtimeNodeQueryState } from "../app/runtimeNodes.js";

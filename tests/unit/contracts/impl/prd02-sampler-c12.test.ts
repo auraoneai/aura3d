@@ -161,8 +161,19 @@ describe("prd02 C-12 WebGL2SamplerRegistry (device mock)", () => {
     const p = paramsOf(calls);
     expect(p.has(GL.TEXTURE_COMPARE_MODE)).toBe(false);
     expect(p.get(GL.TEXTURE_WRAP_S)).toBe(GL.CLAMP_TO_EDGE); // mirror inert
-    expect(p.get(GL.TEXTURE_WRAP_R)).toBe(GL.CLAMP_TO_EDGE); // falls back to addressV
+    // 5.0 (26eae82e2, S5-WP05-02 3D/array/cube resources): an explicit
+    // third-axis mode is resource semantics and is honoured with the flag off
+    // too (see native-dynamic-textures "third-axis address modes distinct");
+    // without addressW the R axis still falls back to addressV.
+    expect(p.get(GL.TEXTURE_WRAP_R)).toBe(GL.REPEAT);
     expect(p.get(GL.TEXTURE_MIN_FILTER)).toBe(GL.LINEAR_MIPMAP_LINEAR); // no downgrade
+    const fallback = mockHost();
+    new WebGL2SamplerRegistry(fallback.host).getSamplerHandle(
+      new Sampler({ mirror: true, addressV: "clamp-to-edge", minFilter: "linear-mipmap-linear" }),
+      GL.TEXTURE_CUBE_MAP,
+      texture
+    );
+    expect(paramsOf(fallback.calls).get(GL.TEXTURE_WRAP_R)).toBe(GL.CLAMP_TO_EDGE); // falls back to addressV
     // legacy key shape unchanged (6 fields)
     expect(reg.samplerKey(new Sampler({ compare: "less-equal" }), GL.TEXTURE_2D).split("|")).toHaveLength(6);
   });

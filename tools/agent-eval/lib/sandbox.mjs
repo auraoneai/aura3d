@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { basename, join, relative, resolve, sep } from "node:path";
+import { listCandidateFiles } from "../../remote-acr/source5-files.mjs";
 
 export const ARMS = ["aura", "three"];
 export const AGENT_EVAL_DIR = resolve(import.meta.dirname, "..");
@@ -117,9 +118,9 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docs
 }
 
 function repoSourceIndex(repoRoot) {
-  const raw = execFileSync("git", ["ls-files", "-z", "--", ...FORBIDDEN_ROOTS], { cwd: repoRoot, encoding: "utf8", maxBuffer: 1 << 28 });
+  // Git checkout: tracked files; ACR source pass (no .git): the staged manifest.
   const index = new Map();
-  for (const path of raw.split("\0")) {
+  for (const path of listCandidateFiles(repoRoot, FORBIDDEN_ROOTS)) {
     if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || path.startsWith("evidence/agent-eval/")) continue;
     const name = basename(path);
     if (!index.has(name)) index.set(name, []);

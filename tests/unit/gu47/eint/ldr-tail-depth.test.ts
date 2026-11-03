@@ -11,7 +11,9 @@ import type { Texture } from "../../../../packages/rendering/src/Texture";
  * GU47 eint, E-E handoff H2: `runV2LdrTail` binds linear depth for `after-tonemap` customs that declare
  * `inputs: ["depth"]` (the default slot of `toon({ inkSource: "depth" | "both", fadeDistance })`). The scene depth
  * from the C-13 frame context is linearised once per tail with the S1 program and bound at unit 1
- * (`u_depthLinear`); without scene depth, or for colour-only customs, nothing changes (the 1x1 blank binds).
+ * (`u_depthLinear`); colour-only customs never pay for it. 5.0 (docs/rendering/postprocess.md "Effect input audit"):
+ * a depth custom without scene depth fails with `POSTPROCESS_INPUT_UNAVAILABLE:<pass>:depth` instead of reading a blank,
+ * and linearisation uses the depth-convention program (`auraLinearDepth`, inverse projection).
  */
 
 const PIPELINE: PostPipelineOptions = {
@@ -133,7 +135,7 @@ describe("GU47 eint H2: the LDR tail binds linear depth for after-tonemap depth 
     const draws: DrawRecord[] = [];
     const host = fakeHost(draws, new Map([[depthTexture, depthHandle]]));
     runV2LdrTail(host, fakeTarget("rgba8"), { ...PIPELINE, customPasses: passes }, undefined, context);
-    const linearize = draws.filter((draw) => draw.fragment.includes("linearizeDepth(d, u_near, u_far, u_ortho)"));
+    const linearize = draws.filter((draw) => draw.fragment.includes("o_color = vec4(auraLinearDepth(ndcXY, depth)"));
     const custom = draws.filter((draw) => draw.fragment.includes("u_marker_"));
     return { draws, linearize, custom };
   }
@@ -159,12 +161,17 @@ describe("GU47 eint H2: the LDR tail binds linear depth for after-tonemap depth 
     expect(linearize[0]!.uniforms.get("u_ortho")).toEqual([1]);
   });
 
-  it("without scene depth the custom keeps the 1x1 blank and no linearise draw runs", () => {
+  it("without scene depth a depth custom reports POSTPROCESS_INPUT_UNAVAILABLE and no linearise draw runs", () => {
     for (const context of [undefined, frameContext(null)]) {
-      const { linearize, custom } = run([displayPass("ink-none", ["color", "depth"])], context);
-      expect(linearize).toHaveLength(0);
-      expect(custom).toHaveLength(1);
-      expect(custom[0]!.units.get(1)).not.toEqual(expect.objectContaining({ color: expect.any(Number) }));
+      let draws: DrawRecord[] = [];
+      expect(() => {
+        setRendererQrFlags(POST_FLAGS);
+        beginPostStageTrace();
+        const host = fakeHost(draws = [], new Map([[depthTexture, depthHandle]]));
+        runV2LdrTail(host, fakeTarget("rgba8"), { ...PIPELINE, customPasses: [displayPass("ink-none", ["color", "depth"])] }, undefined, context);
+      }).toThrow("POSTPROCESS_INPUT_UNAVAILABLE:eint.ink-none:depth");
+      expect(draws.filter((draw) => draw.fragment.includes("auraLinearDepth(ndcXY, depth)"))).toHaveLength(0);
+      expect(draws.filter((draw) => draw.fragment.includes("u_marker_"))).toHaveLength(0);
     }
   });
 

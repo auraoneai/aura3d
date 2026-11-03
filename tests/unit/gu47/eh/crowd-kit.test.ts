@@ -4,6 +4,7 @@
  * pose with per-spectator colour, clip phase and held pose index. Acceptance target: 480
  * spectators in <= 4 draws.
  */
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
@@ -227,7 +228,8 @@ describe("GU47 E-H crowd kit: bake from a skinned GLB", () => {
   });
 
   it("loadCrowdPoses bakes once per (asset, clip, poses, height) and feeds createCrowd", async () => {
-    const asset = { url: "https://assets.invalid/gu47-eh/crowd-cesium-load.glb", type: "model", format: "glb", hash: "sha256-cesium" };
+    const asset = { url: "https://assets.invalid/gu47-eh/crowd-cesium-load.glb", type: "model", format: "glb", // 5.0: a typed asset `hash` is the expected document SHA-256 (TypedGLBActor actorRequest), not a free label.
+      hash: `sha256-${createHash("sha256").update(CESIUM_MAN).digest("hex")}` };
     const [first, second] = await Promise.all([loadCrowdPoses(asset, { poses: 4 }), loadCrowdPoses(asset, { poses: 4 })]);
     expect(second).toBe(first);
     const fetchesAfterBake = fetches;

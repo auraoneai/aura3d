@@ -15,23 +15,17 @@ const engineSource = (function agentApiSource() {
   return walk("packages/engine/src/agent-api").map((f) => readFileSync(f, "utf8")).join("\n");
 })();
 // `showcase-public-racing-presentation-proof` and `showcase-public-platformer-presentation-proof` were
-// deleted in 1.5.0 as superseded by Turbo Drift Circuit and Skyline Runner, so the retained public game
-// routes are the two current ones.
-const publicGameRouteSources = [
-  "apps/showcase-turbo-drift-circuit/src/main.ts",
-  "apps/showcase-turbo-drift-circuit/src/legacy/main.ts",
-  "apps/showcase-skyline-runner/src/main.ts",
-  "apps/showcase-skyline-runner/src/legacy/main.ts"
-].filter((file) => existsSync(file)).map((file) => readFileSync(file, "utf8")).join("\n");
+// deleted in 1.5.0 as superseded by Turbo Drift Circuit and Skyline Runner; those two routes were in turn
+// retired in 4.0.1 (46bca99f1; docs/project/showcase/apps-classification.md: "app source and route health
+// are absent, and the marketing build redirects its URL to the showcase index"). No published route calls
+// the composed presentation helpers any more, so they are guarded as exported engine surface only.
+const retiredPresentationRoutes = ["showcase-turbo-drift-circuit", "showcase-skyline-runner"] as const;
+const retiredRouteList = (buildScript.match(/const retiredPrototypeRoutes = \[([\s\S]*?)\];/)?.[1] ?? "");
+const showcaseRouteList = (buildScript.match(/const showcaseRoutes = \[([\s\S]*?)\];/)?.[1] ?? "");
 
 /*
- * Helpers the **retained** public game routes actually call.
- *
- * The previous list named the eleven granular helpers (`racingRoadMesh`, `platformerGroundMesh`, ...),
- * which only the two deleted presentation proofs used. Turbo Drift Circuit and Skyline Runner call the
- * composed surfaces instead, so keeping the old list would have asserted against source that no longer
- * exists. Each entry below is verified present in the retained route sources, so this stays a real guard
- * rather than a list that happens to pass.
+ * Composed presentation helpers (formerly called by Turbo Drift Circuit and Skyline Runner). They stay
+ * part of the published game surface after the 4.0.1 route retirement.
  */
 const requiredPublicGameHelpers = [
   "racingPresentationTrack",
@@ -63,8 +57,13 @@ describe("marketing showcase route build", () => {
 
   it("guards every public game presentation helper used by the routes", () => {
     for (const helper of requiredPublicGameHelpers) {
-      expect(publicGameRouteSources, `retained routes must call game.${helper}`).toContain(`game.${helper}`);
       expect(engineSource, `${helper} must stay exported`).toContain(`${helper}:`);
+    }
+    // The routes that called them were retired in 4.0.1: their source is gone and the build redirects them.
+    for (const route of retiredPresentationRoutes) {
+      expect(existsSync(`apps/${route}/src/main.ts`), `${route} source was retired`).toBe(false);
+      expect(retiredRouteList, `${route} must redirect`).toContain(`"${route}"`);
+      expect(showcaseRouteList, `${route} must not be built as a live route`).not.toContain(`"${route}"`);
     }
   });
 
@@ -76,8 +75,9 @@ describe("marketing showcase route build", () => {
     }
   });
   it("publishes current game presentations, prunes deleted routes, and excludes diagnostic harnesses", () => {
-    for (const route of ["showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
-      expect(buildScript).toContain(`"${route}"`);
+    // 4.0.1 retired the two game presentation routes: they are redirected, never published as live routes.
+    for (const route of retiredPresentationRoutes) {
+      expect(retiredRouteList).toContain(`"${route}"`);
     }
     // The two deleted presentation proofs must stay in the prune list so a stale `dist/` from an older
     // build is still cleaned, even though their source no longer exists.
@@ -87,7 +87,9 @@ describe("marketing showcase route build", () => {
     ]) {
       expect(buildScript).toContain(`"${deleted}"`);
     }
-    expect(buildScript).toContain("release-ready game route must be published by marketing build");
+    // Every live route must build (replaces the per-route release-ready guard removed in 4.0.1).
+    expect(buildScript).toContain("showcase route did not build: ${builtHtml}");
+    expect(buildScript).toContain("for (const route of retiredPrototypeRoutes) {");
     /*
      * The game-layer diagnostic publish guard was removed with its routes.
      *
@@ -121,13 +123,16 @@ describe("marketing showcase route build", () => {
   });
 
   it("builds every showcase game route the production capture manifest expects to exist", () => {
-    // showcase-orbital-defense was captured against https://aura3d.auraone.ai but missing from
-    // showcaseRoutes, so marketing/dist never contained it and the live route 404'd.
+    // showcase-orbital-defense was once captured against https://aura3d.auraone.ai but missing from
+    // showcaseRoutes, so the live route 404'd. It has since been retired (redirected), so the guard is:
+    // every captured route is either built live or redirected — never absent from both lists.
     const games = readFileSync("tools/quality-rebuild-capture/games.json", "utf8");
     const routes = [...games.matchAll(/"route":\s*"\/apps\/(showcase-[^/"]+)\/"/g)].map((m) => m[1]);
-    expect(routes).toContain("showcase-orbital-defense");
+    expect(routes.length).toBeGreaterThan(0);
+    expect(retiredRouteList).toContain('"showcase-orbital-defense"');
     for (const route of new Set(routes)) {
-      expect(buildScript, `${route} must be in showcaseRoutes`).toContain(`"${route}"`);
+      const listed = showcaseRouteList.includes(`"${route}"`) || retiredRouteList.includes(`"${route}"`);
+      expect(listed, `${route} must be in showcaseRoutes or retiredPrototypeRoutes`).toBe(true);
     }
   });
 

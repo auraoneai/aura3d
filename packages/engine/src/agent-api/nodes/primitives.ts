@@ -2,7 +2,7 @@
 
 import type { AuraPrimitiveOptions, AuraPrimitiveNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { ignoredOptionsNote, materialIgnoredOptions } from "./optionDiagnostics.js";
 import { assertValidPivot } from "../pivotGuard.js";
 

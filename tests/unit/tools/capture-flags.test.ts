@@ -26,7 +26,12 @@ describe("#626 capture flags: exact mode", () => {
     const resolved = resolvedFromUrl(captureUrlWithFlags("/game/?x=1", flags));
     expect(resolved.on("A3D_QR_ROUTE_BANK_SHOT" as never)).toBe(true);
     expect(resolved.on("A3D_QR_GAME" as never)).toBe(false);
-    expect(resolved.on("A3D_QR_CAMERA" as never)).toBe(false);
+    expect(resolved.on("A3D_QR_WORLD" as never)).toBe(false);
+    // A3D_QR_CAMERA was promoted to `default-on` (1e0871749, flags.state.ts;
+    // §5.3 promotion: on unless a source sets it). Exact mode must not arm it
+    // from games.json, so it resolves to its registry default, nothing more.
+    const registryDefault = resolveQrFlags({ options: [], env: {} });
+    expect(resolved.on("A3D_QR_CAMERA" as never)).toBe(registryDefault.on("A3D_QR_CAMERA" as never));
   });
 
   it("exact `all` passes through unchanged", () => {

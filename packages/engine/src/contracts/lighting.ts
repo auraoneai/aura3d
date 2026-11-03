@@ -40,14 +40,6 @@ export interface AuraClusteredLightingOptions {
   readonly fallback?: "forward" | "error";
 }
 
-/** Bounds and resolution of an irradiance probe grid, with a finite update budget. */
-export interface AuraLightProbeGridOptions {
-  readonly min: AuraVec3;
-  readonly max: AuraVec3;
-  readonly resolution: readonly [number, number, number];
-  readonly maxUpdatesPerFrame?: number;
-}
-
 export type AuraLightingModel = "physical" | "legacy-3.0";
 export interface AuraLightingOptions { readonly model?: AuraLightingModel; readonly autoSunShadow?: boolean; readonly quality?: AuraQualityTier | "auto"; readonly maxShadowedLights?: number; readonly clustered?: AuraClusteredLightingOptions; }
 // AuraCreateAppOptions.lighting?: AuraLightingOptions    (PR 0a)

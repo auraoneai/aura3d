@@ -33,7 +33,8 @@ profile still selects `rendererMode: "production"` — the conservative feature
 set on the production backend, not the compatibility WebGL2 renderer. Explicit
 `mode: "safe-basic"` is the compatibility fallback.
 
-Types live on `AuraRendererMode` (`"safe-basic" | "production"`) and
+Types: `mode` is the inline union `"safe-basic" | "production"` (deprecated,
+CCR-15-1; the `AuraRendererMode` alias was removed) and profiles are
 `AuraRendererQualityProfileId`
 (`"safe-basic" | "production" | "cinematic" | "experimental-webgpu"`).
 

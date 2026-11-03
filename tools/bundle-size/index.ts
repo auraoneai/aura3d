@@ -126,6 +126,18 @@ const targets: readonly BundleTarget[] = [
     external: []
   },
   {
+    id: "input-package",
+    label: "@aura3d/input barrel (incl. PointerLeases) excluding math/scene",
+    entryPoint: "packages/input/src/index.ts",
+    // Added 2026-11-02 for 5.0 (owner-delegated): the input package had no
+    // budget of its own, so the PRD-08 lane test priced PointerLeases (pulled
+    // by camera/rigs/orbit.ts via the "@aura3d/input" barrel) as lane code.
+    // Measured 17,225 gzip / 57,350 js on 2026-11-02; budget = measured
+    // rounded up to the next 512 B.
+    budget: 17_408,
+    external: ["@aura3d/math", "@aura3d/scene"]
+  },
+  {
     id: "game-addon-observation",
     label: "opt-in @aura3d/engine/game slice excluding engine",
     entryPoint: "packages/game/src/index.ts",

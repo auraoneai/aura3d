@@ -6,7 +6,7 @@
 
 import { AuraNodeBuilder } from "./builder.js";
 import type { AuraColor, AuraLineNode, AuraMaterialSpec, AuraRuntimeNodeSpec, AuraVec3 } from "./types.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 
 /** `positions`/`points` input: a flat tuple array, flat number array, or packed Float32Array. */
 export type AuraLinePositionsInput = readonly AuraVec3[] | readonly number[] | Float32Array;

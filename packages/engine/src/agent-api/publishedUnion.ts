@@ -317,6 +317,14 @@ export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
 export type { GameJuice } from "../contracts/game.js";
 export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
 export type { AuraPostPassOrder } from "../contracts/post.js";
+// 5.0 (2026-11-02): contract names reachable from public signatures
+// (AuraLightingRuntime.attachIndirect/attachLightmap, AuraLightingOptions.clustered,
+// light photometricProfile/projectedImage, AuraCustomPostPass.inputs,
+// composeWorldMatrix) and the error app.lighting.attach* throws.
+export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
+export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "../contracts/lighting.js";
+export type { AuraPostPassInput } from "../contracts/post.js";
+export type { AuraPivotTransformSpec } from "../contracts/sceneGraph.js";
 // Lane 04/05/06 production-runtime — material overrides, QR flags,
 // shader-warmup + decoder hooks.
 export { applyMaterialOverrides, lowerModelMaterialOverrides, snapshotMaterials } from "../production-runtime/ModelMaterialOverrides.js";

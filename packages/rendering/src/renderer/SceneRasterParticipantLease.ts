@@ -184,7 +184,10 @@ function inspectBuffer(value: VertexBuffer | IndexBuffer): BufferSnapshot {
   let deviceBufferCount: number;
   try { deviceBufferCount = Reflect.apply(mapSize, ownValue(value, "deviceBuffers"), []) as number; }
   catch { return invalid("Participant buffer device state is unavailable"); }
-  if (attempted !== false || ownValue(value, "disposed") !== false || ownValue(value, "gpuBuffer") !== null || deviceBufferCount !== 0) {
+  // `disposed` is a getter that turns true only after device retirement; a
+  // buffer whose dispose() was requested is `closed` and already unreadable.
+  if (attempted !== false || ownValue(value, "closed") !== false || ownValue(value, "disposalComplete") !== false
+    || ownValue(value, "gpuBuffer") !== null || deviceBufferCount !== 0) {
     return invalid("Participant buffer is disposed or has attempted GPU upload");
   }
   const data = ownValue(value, "data");

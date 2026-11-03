@@ -50,7 +50,6 @@ const bankWindow = window as BankShotWindow;
 const reducedMotion = typeof window.matchMedia === "function"
   && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const portraitComposition = window.innerWidth <= 700 || window.innerHeight > window.innerWidth * 1.25;
-const visualReviewCapture = new URLSearchParams(window.location.search).get("capture") === "review";
 // PRD-03 §6.6 / Q-14-1: post v2 (A3D_QR_POST, default-on) has no hidden bloom
 // gain, a linear-HDR bloom threshold of 1.0 and real AO on the felt, which left
 // the hall ~9% darker than post-off. Under post v2 the aim overlays get HDR
@@ -62,7 +61,6 @@ const postV2 = resolveQrFlags({
 const NEON_GAIN = postV2 ? 2.6 : 1;
 const KEY_LIGHT_GAIN = postV2 ? 1.14 : 1;
 const AIM_EMISSIVE_STRENGTH = 1.35 * NEON_GAIN;
-document.body.dataset.capture = visualReviewCapture ? "review" : "default";
 
 const APP_ID = "showcase-bank-shot";
 // Keep the Rapier bodies at regulation radius while giving the typed ball
@@ -184,7 +182,7 @@ function cueReady(name: string, gapFrames: number): boolean {
 }
 
 // ---------------------------------------------------------------- scene ------
-const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: visualReviewCapture ? 0.62 : 0.9 });
+const AIM_LINE_MATERIAL = material.emissive({ name: "aim line", color: "#38bdf8", emissive: "#0ea5e9", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.9 });
 const AIM_BANK_MATERIAL = material.emissive({ name: "aim bank", color: "#f59e0b", emissive: "#d97706", emissiveIntensity: AIM_EMISSIVE_STRENGTH, opacity: 0.85 });
 const AIM_OBJECT_MATERIAL = material.emissive({ name: "aim object target vector", color: "#fbbf24", emissive: "#f59e0b", emissiveIntensity: AIM_EMISSIVE_STRENGTH * 1.15, opacity: 0.92 });
 const AIM_DEFLECTION_MATERIAL = material.emissive({ name: "aim cue deflection vector", color: "#e0f2fe", emissive: "#38bdf8", emissiveIntensity: AIM_EMISSIVE_STRENGTH * 0.95, opacity: 0.82 });
@@ -313,10 +311,9 @@ function visualNodes(): AuraSceneNode[] {
       .runtime(game.runtimeNode("cue-ghost", { tags: ["cue-ghost"] }))
       .toJSON()
   );
-  // Fine renderer-owned felt guides remain available in the playable route,
-  // but the review capture relies on the typed table's integrated cloth marks
-  // so no oversized route-side ring competes with the live break.
-  for (const z of visualReviewCapture ? [] : [-0.52, -0.26, 0.26, 0.52]) {
+  // Fine renderer-owned felt guides (PRD-09: the review capture shows the
+  // shipped route; no capture-only branch).
+  for (const z of [-0.52, -0.26, 0.26, 0.52]) {
     nodes.push(
       primitives.box({ name: `felt-guide-${z}`, material: FELT_GUIDE_MATERIAL })
         .position(0, 0.022, z)
@@ -371,9 +368,9 @@ function buildScene(): ReturnType<typeof scene> {
   const sceneCamera = portraitComposition
     ? camera.perspective({ position: [-3.8, 7.2, 0], target: [-0.38, -0.05, 0], fov: 62 })
     : camera.perspective({
-      position: visualReviewCapture ? [-0.28, 1.88, 2.52] : [-0.08, 1.92, 2.68],
-      target: visualReviewCapture ? [0.14, 0.28, -0.08] : [0.24, 0.28, -0.08],
-      fov: visualReviewCapture ? 46 : 50
+      position: [-0.08, 1.92, 2.68],
+      target: [0.24, 0.28, -0.08],
+      fov: 50
     });
   return scene()
     .background("#10182a")
@@ -383,15 +380,15 @@ function buildScene(): ReturnType<typeof scene> {
       effects.neonBloom({ intensity: reducedMotion ? 0.04 : 0.065, quality: "balanced", softKnee: 0.5, shoulder: 0.6 }),
       effects.colorGrade({ exposure: 1.04, contrast: 1.08, saturation: 1.1 }),
       effects.antiAlias({ mode: "fxaa" }),
-      effects.ambientOcclusion({ intensity: visualReviewCapture ? 0.54 : 0.26 }),
+      effects.ambientOcclusion({ intensity: 0.26 }),
       effects.contactOcclusion({ name: "ball-to-felt contact", intensity: 0.36, radius: 0.52 }),
       effects.fog({
         name: "hall haze",
-        density: visualReviewCapture ? 0.0035 : 0.006,
+        density: 0.006,
         color: "#141e33",
-        intensity: visualReviewCapture ? 0.06 : 0.1
+        intensity: 0.1
       }),
-      lights.ambient({ name: "slate ambient", color: "#586d8c", intensity: (visualReviewCapture ? 0.42 : 0.48) * KEY_LIGHT_GAIN }),
+      lights.ambient({ name: "slate ambient", color: "#586d8c", intensity: 0.48 * KEY_LIGHT_GAIN }),
       lights.point({ name: "pendant-light-mid", color: "#fff5d8", intensity: 2.35 * KEY_LIGHT_GAIN }).position(-0.95, 2.05, 0.65),
       lights.point({ name: "pendant-light-head", color: "#ffe9bd", intensity: 2.1 * KEY_LIGHT_GAIN }).position(0.2, 2.1, -0.55),
       lights.point({ name: "pendant-light-foot", color: "#ffd99c", intensity: 2.0 * KEY_LIGHT_GAIN }).position(1.05, 2.0, 0.25),
@@ -405,9 +402,9 @@ function buildScene(): ReturnType<typeof scene> {
       // Cool fill & rim lights
       lights.directional({ name: "cool rim key", color: "#83bdff", intensity: 1.15 }).position(3.2, 4.5, 2.2),
       lights.directional({ name: "warm room fill", color: "#f2a65e", intensity: 0.92 }).position(-3.0, 3.5, -2.0),
-      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: visualReviewCapture ? 0.18 : 0.48 }).position(0, 0.75, 2.0),
-      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: visualReviewCapture ? 0.24 : 0.52 }).position(1.65, 0.72, -0.58),
-      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: visualReviewCapture ? 0.22 : 0.48 }).position(-1.45, 0.62, 0.62)
+      lights.point({ name: "felt cyan bounce", color: "#55baff", intensity: 0.48 }).position(0, 0.75, 2.0),
+      lights.point({ name: "rack magenta rim", color: "#ff78ad", intensity: 0.52 }).position(1.65, 0.72, -0.58),
+      lights.point({ name: "cue teal rim", color: "#55e2d2", intensity: 0.48 }).position(-1.45, 0.62, 0.62)
     ])
     .camera(sceneCamera);
 }
@@ -975,7 +972,7 @@ function syncVisuals(): void {
 
   // Physics sweep preview (sphereCast against live balls and cushions).
   const sweep = sim.sweepFromCue(angle);
-  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0038 : 0.006);
+  poseLine(aimLineHandle, cueInfo.x, cueInfo.z, sweep.ghostX, sweep.ghostZ, BALL_SURFACE_Y + 0.002, 0.006);
   aimMarkerHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y, sweep.ghostZ);
   aimGhostRingHandle?.setPosition(sweep.ghostX, BALL_SURFACE_Y + 0.003, sweep.ghostZ);
   aimGhostRingHandle?.setRotation(Math.PI / 2, 0, 0);
@@ -998,7 +995,7 @@ function syncVisuals(): void {
         targetBall.x + objDirX * 0.56,
         targetBall.z + objDirZ * 0.56,
         BALL_SURFACE_Y + 0.003,
-        visualReviewCapture ? 0.0036 : 0.0052
+        0.0052
       );
       // Cue ball tangent deflection vector (cyan-white), modulated by spin/english
       const dot = dirX * objDirX + dirZ * objDirZ;
@@ -1015,7 +1012,7 @@ function syncVisuals(): void {
           sweep.ghostX + tangX * 0.38,
           sweep.ghostZ + tangZ * 0.38,
           BALL_SURFACE_Y + 0.003,
-          visualReviewCapture ? 0.0032 : 0.0045
+          0.0045
         );
       } else {
         parkNode(aimDeflectionLineHandle);
@@ -1030,7 +1027,7 @@ function syncVisuals(): void {
     const dot = dirX * sweep.normalX + dirZ * sweep.normalZ;
     const bankX = dirX - 2 * dot * sweep.normalX + sideEnglish * 0.18 * perpX;
     const bankZ = dirZ - 2 * dot * sweep.normalZ + sideEnglish * 0.18 * perpZ;
-    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.48, sweep.ghostZ + bankZ * 0.48, BALL_SURFACE_Y + 0.002, visualReviewCapture ? 0.0034 : 0.005);
+    poseLine(aimBankHandle, sweep.ghostX, sweep.ghostZ, sweep.ghostX + bankX * 0.48, sweep.ghostZ + bankZ * 0.48, BALL_SURFACE_Y + 0.002, 0.005);
   } else {
     parkNode(aimBankHandle);
     parkNode(aimObjectLineHandle);

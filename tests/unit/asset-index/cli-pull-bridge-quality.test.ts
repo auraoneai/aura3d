@@ -378,9 +378,26 @@ describe("runResolve role admission (refusal with fallback)", () => {
     expect(report.ok).toBe(true);
     expect(report.asset?.id).toBe("catalog:hero-car");
     expect(downloaded).toEqual(["https://example.test/hero.glb"]);
-    // The refusal reason is retained, not silently discarded.
-    expect(report.messages.join("\n")).toContain("catalog:shell-792");
-    expect(report.messages.join("\n")).toMatch(/distant-prop shell|triangle-floor|structural floor/);
+    // The resolve scorer's G1 triangle band now ranks the in-band hero above the
+    // 792-triangle shell despite the shell's higher resolver score, so the shell is
+    // never attempted on the default path. Forcing it exercises the refusal: it is
+    // refused before download and the reason is retained, not silently discarded.
+    const forcedDownloads: string[] = [];
+    const forced = runResolve({
+      query: "low poly race car hero",
+      name: "heroCar",
+      projectDir: makeProject(),
+      candidateId: "catalog:shell-792",
+      makeResolver: () => stubResolver([candidate(shellCandidate(), 100), candidate(heroCandidate(), 1)]) as never,
+      download: async (url, dest) => {
+        forcedDownloads.push(url);
+        writeFileSync(dest, minimalGlb());
+      },
+      inspectAssetFn: (({ file }: { file: string }) => healthyInspection(file)) as never,
+    });
+    await expect(forced).rejects.toThrow(/catalog:shell-792/);
+    await expect(forced).rejects.toThrow(/distant-prop shell|triangle-floor|structural floor/);
+    expect(forcedDownloads).toEqual([]);
   });
 
   it("warns (not blocks) on unproven checks for an otherwise fit hero", async () => {

@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import ts from "typescript";
 import type { GateFinding } from "../index";
+import { isExpired, loadAllowlist, nameAllowed } from "./shared";
 
 export const EVIDENCE_RE = /(Evidence|Report|Readiness|Proof|Audit|Claim|Parity|Receipt|Superiority|Probe|CurrentRoutes|ExternalParity)/;
 
@@ -32,7 +33,12 @@ const BUDGETS: readonly BudgetSpec[] = [
 export const ALLOWED_ENGINE_SUBPATHS = [
   ".", "./renderer", "./devtools", "./assets", "./animation", "./physics", "./audio", "./input", "./controls", "./scene", "./math", "./scripting", "./editor-runtime", "./workflows", "./ecs",
   "./game", "./game/capture", "./game/art", "./game/util", "./game/styles.css", "./scene/math", "./physics/solverless", "./physics/world",
-  "./scatter", "./worker", "./shader-graph-runtime", "./lighting", "./v5", "./v5/context", "./v5/game", "./v5/internal", "./v5/math/hull"
+  "./scatter", "./worker", "./shader-graph-runtime", "./lighting", "./v5", "./v5/context", "./v5/game", "./v5/internal", "./v5/math/hull",
+  // 5.0 (2026-11-02): both are documented 5.0 entries in docs/migration/4-to-5.md —
+  // "./geometry-tools" is an additive opt-in subpath (§"Other new subpaths") and
+  // "./media-node" stays the Node-only media entry (B15) that the browser root
+  // cannot carry.
+  "./geometry-tools", "./media-node"
 ] as const;
 
 // The public entries emit deprecated names as `/** @deprecated ... *\/ export { X }` /
@@ -111,9 +117,12 @@ export function checkExportBudget(root: string): GateFinding[] {
   return findings;
 }
 
-/** `no-evidence-in-runtime`: zero LIVE evidence-regex names on "." / "./renderer". */
+/** `no-evidence-in-runtime`: zero LIVE evidence-regex names on "." / "./renderer".
+ *  Dated `{ rule, file, name }` allowlist rows downgrade a named export to warn;
+ *  an expired row is enforced again. */
 export function checkNoEvidenceInRuntime(root: string): GateFinding[] {
   const findings: GateFinding[] = [];
+  const allowlist = loadAllowlist(root);
   const spec = JSON.parse(readFileSync(join(root, "aura.exports.json"), "utf8")) as {
     entries?: Record<string, { source?: string }>;
   };
@@ -121,7 +130,13 @@ export function checkNoEvidenceInRuntime(root: string): GateFinding[] {
     const entry = spec.entries?.[subpath];
     if (!entry?.source) continue;
     for (const n of exportsOf(root, join(root, entry.source)).filter((x) => !x.deprecated && EVIDENCE_RE.test(x.name))) {
-      findings.push({ rule: "no-evidence-in-runtime", file: entry.source, detail: `"${subpath}" exports live name "${n.name}" matching the evidence regex`, enforced: true });
+      const detail = `"${subpath}" exports live name "${n.name}" matching the evidence regex`;
+      const row = nameAllowed(allowlist, "no-evidence-in-runtime", entry.source, n.name);
+      if (row && !isExpired(row)) {
+        findings.push({ rule: "no-evidence-in-runtime", file: entry.source, detail: `${detail} (allowlisted until ${row.expires}: ${row.reason})`, enforced: false });
+      } else {
+        findings.push({ rule: "no-evidence-in-runtime", file: entry.source, detail: `${detail}${row ? " (ALLOWLIST EXPIRED)" : ""}`, enforced: true });
+      }
     }
   }
   return findings;

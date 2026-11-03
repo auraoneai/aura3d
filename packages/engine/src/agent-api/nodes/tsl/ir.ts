@@ -7,7 +7,7 @@
  * with a named `AuraRuntimeError`, never silently.
  */
 
-import { AuraRuntimeError } from "../../compiler/errors.js";
+import { AuraRuntimeError } from "../../../contracts/runtimeError.js";
 
 export type TslType = "float" | "int" | "bool" | "vec2" | "vec3" | "vec4" | "sampler2D";
 export type TslBuiltinName = "positionLocal" | "positionWorld" | "normalLocal" | "normalWorld" | "uv" | "time" | "cameraPosition";

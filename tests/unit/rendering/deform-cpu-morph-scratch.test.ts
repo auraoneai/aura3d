@@ -197,9 +197,23 @@ describe("T2.3 persistent CPU-morph scratch (A3D_QR_ANIMATION on)", () => {
   it("throws the same count-mismatch error as the legacy path", () => {
     setRendererQrFlags(FLAGS_ON);
     const source = sourceGeometry();
-    expect(() => resolveRenderGeometry(itemOf(source, morphTargets(2), [1]))).toThrow(
-      "Morph target count must match morph weight count."
-    );
+    // Both flag arms now run the structured MORPH_TARGET_CONTRACT validation
+    // (`activeDirectionMorphs` in forward/Deform.ts) before choosing a path,
+    // so the error is the same RenderDeviceError on either arm.
+    const capture = (): unknown => {
+      try {
+        resolveRenderGeometry(itemOf(source, morphTargets(2), [1]));
+      } catch (error) {
+        return error;
+      }
+      return undefined;
+    };
+    const flagOn = capture() as { message?: string; code?: string };
+    setRendererQrFlags(FLAGS_OFF);
+    const flagOff = capture() as { message?: string; code?: string };
+    expect(flagOn?.message).toContain("Morph target count must match morph weight count");
+    expect(flagOn?.code).toBe("MORPH_TARGET_CONTRACT");
+    expect({ message: flagOn.message, code: flagOn.code }).toEqual({ message: flagOff?.message, code: flagOff?.code });
     releaseMorphScratchGeometry(source);
   });
 });

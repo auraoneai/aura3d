@@ -4,7 +4,7 @@ import { LoadContext, requestIdentityDetails } from "../../../packages/assets/sr
 import { productionEnvironmentRequest } from "../../../packages/engine/src/agent-api/compiler/primitives";
 import { defineAuraAssets } from "../../../packages/engine/src/agent-api/nodes/assets";
 import type { AuraAssetRef } from "../../../packages/engine/src/agent-api/nodes/types";
-import { snapshotAuraAssetsOption } from "../../../packages/engine/src/contracts/assets";
+import { snapshotAuraAssetsOption } from "../../../packages/engine/src/agent-api/app/assetsOptionSnapshot";
 
 afterEach(() => vi.unstubAllGlobals());
 

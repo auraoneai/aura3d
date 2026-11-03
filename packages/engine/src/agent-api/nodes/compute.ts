@@ -28,7 +28,7 @@ import type {
   ComputeRenderOwner,
   ComputeSamplerSpec
 } from "@aura3d/rendering";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 
 export type AuraComputePipelineSpec = ComputePipelineSpec;
 export type AuraComputeBufferSpec = ComputeBufferSpec;

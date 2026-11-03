@@ -8,12 +8,15 @@ vi.mock("../../../packages/engine/src/agent-api/app/mountRenderer", async (impor
   const actual = await importOriginal<typeof import("../../../packages/engine/src/agent-api/app/mountRenderer")>();
   return {
     ...actual,
-    createProductionSceneRenderer: async () => {
+    // WebGLSceneRenderer.diagnostics is a required AuraRendererDiagnosticReport
+    // (nodes/types/runtime.ts); app.diagnostics() reads its warnings.
+    createProductionSceneRenderer: async (_canvas: unknown, snapshot: Parameters<typeof actual.createProductionSceneRenderer>[1]) => {
+      const { createInitialDiagnostics } = await import("../../../packages/engine/src/agent-api/diagnostics");
       const record = { disposed: false, renders: 0, renderedAfterDispose: 0 };
       fake.renderers.push(record);
       return {
         backend: "production-runtime",
-        diagnostics: undefined,
+        diagnostics: createInitialDiagnostics(snapshot, undefined).renderer,
         render() {
           if (record.disposed) {
             record.renderedAfterDispose += 1;

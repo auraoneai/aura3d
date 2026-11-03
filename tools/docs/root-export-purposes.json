@@ -68,5 +68,6 @@
   "distributeInRegion": "Distribute items evenly across a region with minimum spacing.",
   "checkSpatialInvariants": "Verify that helper geometry is anchored to its subject.",
   "renderer": "Renderer presets and diagnostics: exposure, color management, quality presets and profiles.",
-  "createAuraRouteHealthSnapshot": "Snapshot route health for a running app."
+  "createAuraRouteHealthSnapshot": "Snapshot route health for a running app.",
+  "AuraAdvancedLightingUnavailableError": "Error thrown by `app.lighting.attachIndirect` / `attachLightmap` when the app has no ready renderer with a compatible advanced-lighting consumer (`code: \"ADVANCED_LIGHTING_RENDER_PATH_UNAVAILABLE\"`)."
 }

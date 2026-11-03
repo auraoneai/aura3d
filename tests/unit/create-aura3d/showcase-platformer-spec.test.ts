@@ -2,10 +2,25 @@ import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { compileShowcaseSpec, compileShowcaseSpecFile } from "../../../packages/create-aura3d/src/showcase-spec-compiler";
 import type { ShowcaseSpec, ShowcaseSpecAsset } from "../../../packages/create-aura3d/src/showcase-spec-compiler";
 import { expectStrictGeneratedSource } from "./generated-source-assertions";
+
+// QR-05 release-gate honesty (2d8f721f9, 2026-10-06) removed every hand-authored
+// `quality: "release"` from aura.assets.json; release quality is granted only by
+// `aura3d assets admit`, and the live manifest holds none. The replacement case
+// below exercises the selector, so the candidate it expects is presented as
+// admitted (release quality); every other manifest field and all evidence stay real.
+const ADMITTED_REPLACEMENTS = new Set(["showcaseSideScrollerWorld"]);
+vi.mock("../../../packages/create-aura3d/src/showcase-spec-replacement-manifest", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../packages/create-aura3d/src/showcase-spec-replacement-manifest")>();
+  return {
+    ...actual,
+    readManifestAssets: (projectDir: string) => actual.readManifestAssets(projectDir)
+      .map((asset) => ADMITTED_REPLACEMENTS.has(asset.id) ? { ...asset, quality: "release" as const } : asset)
+  };
+});
 
 type SkylineSpec = ShowcaseSpec & { readonly platformer: NonNullable<ShowcaseSpec["platformer"]> };
 const SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS = 15000;

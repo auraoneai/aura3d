@@ -19,6 +19,14 @@ const EXTERNAL = [
   // Non-lane packages: §17 budgets measure lane-08 code cost, not the app
   // shell — assets/physics/input barrels carry their own lanes budgets.
   "@aura3d/assets", "@aura3d/physics-rapier", "@aura3d/physics",
+  // @aura3d/input: camera/rigs/orbit.ts imports pointer-capture/touch-action
+  // leases from the "@aura3d/input" barrel, which pulls PointerLeases.ts
+  // (5.0 input-ownership work), pushing "everything" to 25,344 B. That cost is
+  // priced by the `input-package` target in tools/bundle-size/index.ts
+  // (barrel incl. PointerLeases, added 2026-11-02), so it is externalized here
+  // like the other platform barrels. The touch kit (TouchLayouts,
+  // VirtualTouchControls) is imported by relative path and stays in-lane.
+  "@aura3d/input",
   "@dimforge/rapier3d-compat", "@gltf-transform/core", "@gltf-transform/functions"
 ];
 

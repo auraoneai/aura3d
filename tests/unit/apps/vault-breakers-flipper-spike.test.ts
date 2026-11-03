@@ -112,9 +112,12 @@ function buildProbe(): Probe {
     return { joint, bat };
   };
 
-  const left = makeFlipper(-0.8, REST, UP, [0, 1, 0], REST, UP);
+  // Aura3D 5.0 measures hinge limits from the creation pose (the joint frame
+  // captures the bodies' relative rotation, Rapier and native solvers alike);
+  // each bat is created at rest, so both travel 0 -> UP - REST.
+  const left = makeFlipper(-0.8, REST, UP, [0, 1, 0], 0, UP - REST);
   // Mirrored axis: joint-space angles are the negated world yaws.
-  const right = makeFlipper(0.8, RIGHT_REST, RIGHT_UP, [0, -1, 0], -RIGHT_REST, -RIGHT_UP);
+  const right = makeFlipper(0.8, RIGHT_REST, RIGHT_UP, [0, -1, 0], 0, RIGHT_REST - RIGHT_UP);
 
   const raiseBoth = (speed = MOTOR_SPEED): void => {
     // Sleeping bodies ignore joint motors until woken (same discipline as the

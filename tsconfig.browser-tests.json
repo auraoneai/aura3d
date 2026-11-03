@@ -10,6 +10,11 @@
   },
   "include": [
     "tests/browser/native-*.ts",
+    // Native roadmap spec + harness inside the prd04 browser tree (that tree is
+    // excluded from tsconfig.check.json for its dev-server absolute URLs; these
+    // two import none).
+    "tests/qr/prd04/browser/native-physical-numeric.spec.ts",
+    "tests/qr/prd04/browser/native-physical-numeric.ts",
     "tests/browser/editor-authoring-external-parity.spec.ts",
     "tests/browser/example-dev-server.ts",
     "tests/browser/createAuraApp-animation-bridge-harness.ts",

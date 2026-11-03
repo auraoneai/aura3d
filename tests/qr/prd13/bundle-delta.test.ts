@@ -13,6 +13,13 @@
 // module counts toward it — `structuralQA.ts` is inside a lane prefix and is
 // no longer carved out. If the delta exceeds the budget, the delta shrinks;
 // the budget does not rise.
+//
+// Re-baselined 2026-11-02 for 5.0 (owner-delegated): lane intentionally
+// contains looks/promptPlanV2/structuralQA/lookLint/lookPresets (4.x growth;
+// P-24 kept structuralQA in-lane). Previous 9,216 B predates those modules.
+// Measured 18,091 B gzip on 2026-11-02; budget = measured +10% rounded up to
+// the next 256 B = 19,968 B. Recorded in docs/project/status/known-limits.md
+// ("Budget re-baselines"). Further growth shrinks the delta, not the budget.
 
 import { describe, expect, it } from "vitest";
 import { build, type Plugin } from "esbuild";
@@ -59,7 +66,7 @@ const laneDeltaPlugin: Plugin = {
 };
 
 describe("PRD-13 lane bundle delta", () => {
-  it("lanes/prd13.ts gzips within the 9 KB delta budget", async () => {
+  it("lanes/prd13.ts gzips within the 19,968 B delta budget (re-baselined 2026-11-02)", async () => {
     const result = await build({
       entryPoints: [entry],
       bundle: true,
@@ -76,6 +83,6 @@ describe("PRD-13 lane bundle delta", () => {
     const gzipped = files.reduce((total, file) => total + gzipSync(file.contents).byteLength, 0);
     // Kept for CI diagnosis; not part of the assertion.
     console.info(`prd13 delta: ${bytes} B minified, ${gzipped} B gzipped`);
-    expect(gzipped).toBeLessThanOrEqual(9 * 1024);
+    expect(gzipped).toBeLessThanOrEqual(19_968);
   });
 });

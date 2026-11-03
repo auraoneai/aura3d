@@ -149,6 +149,10 @@ export { registerEnvironmentSource, resolveEnvironment } from "../contracts/envi
 export { resolveQrFlags } from "../contracts/flags.js";
 export { captureFromUrl } from "../contracts/game.js";
 export { StubLightingRuntime } from "../contracts/lighting.js";
+export { AuraAdvancedLightingUnavailableError } from "../contracts/lighting.js";
+export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "../contracts/lighting.js";
+export type { AuraPostPassInput } from "../contracts/post.js";
+export type { AuraPivotTransformSpec } from "../contracts/sceneGraph.js";
 export { lookLint, registerLookLintRule } from "../contracts/looks.js";
 export { StubModelMaterialHandle } from "../contracts/materials.js";
 export { StubPostSurface } from "../contracts/post.js";
@@ -174,7 +178,7 @@ export { Renderer, createExternalParityEnvironmentPipeline, listExternalParityEn
 export { createAssetViewerWorkflow, createInteractiveSceneWorkflow, createProductConfiguratorWorkflow } from "@aura3d/workflows";
 
 export type { AuraApp, AuraAppTarget, AuraCreateAppOptions, AuraCreateGameAppOptions, AuraRuntimeNodeHandle } from "./nodes/types/runtime.js";
-export type { AuraAssetDefinition, AuraAssetMap, AuraAssetRef, AuraCameraSpec, AuraMaterialSpec, AuraModelNode, AuraNodeInput, AuraPhysicsWorldController, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot, AuraTransformSpec, AuraVec3 } from "./nodes/types.js";
+export type { AuraAssetDefinition, AuraAssetMap, AuraAssetRef, AuraAssetRefIdentity, AuraCameraSpec, AuraMaterialSpec, AuraModelNode, AuraNodeInput, AuraPhysicsWorldController, AuraPrimitiveNode, AuraSceneNode, AuraSceneSnapshot, AuraTransformSpec, AuraVec3 } from "./nodes/types.js";
 export type { AuraSceneInit } from "./nodes/scene.js";
 export type { AuraModelAssetEntry, AuraModelAssetRefs, AuraModelAssetSet, AuraModelAssetsOptions } from "./assets/productionModels.js";
 export type { AuraLookBuildOptions } from "./looks/looks.js";

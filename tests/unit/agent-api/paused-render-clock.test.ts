@@ -47,10 +47,18 @@ describe("paused apps hold their render clock", () => {
   it("pause cancels automatic production submissions until resume", () => {
     expect(SOURCE).toContain('productionController?.pause?.();');
     expect(SOURCE).toContain('productionController?.resume?.();');
-    expect(SOURCE).toContain('if (!explicit && !isPaused() && (sceneWantsFrames || requiresFrames())');
-    expect(SOURCE).toContain('if (!disposed && !isPaused() && (sceneWantsFrames || requiresFrames())');
-    expect(SOURCE).toContain('if (!isPaused() && (sceneWantsFrames || requiresFrames())');
-    expect(SOURCE).toContain('if (!isPaused()) animationHandle = requestAnimationFrame(scheduleFrame);');
+    // 5.0 frame loop (app/frameLoop.ts): every automatic reschedule goes through one
+    // `canSchedule()` guard that refuses while paused, and a frame already queued
+    // when pause() lands returns without submitting.
+    const frameLoop = readFileSync("packages/engine/src/agent-api/app/frameLoop.ts", "utf8");
+    expect(frameLoop).toContain("const canSchedule = (): boolean => !disposed && !pageHidden && !isPaused() &&");
+    expect(frameLoop).toContain("if (disposed || pageHidden || isPaused()) return;");
+    const lines = frameLoop.split("\n");
+    const sites = lines.flatMap((line, index) => line.includes("= requestAnimationFrame(scheduleFrame)") ? [index] : []);
+    expect(sites.length).toBeGreaterThan(0);
+    for (const index of sites) {
+      expect(lines.slice(Math.max(0, index - 3), index + 1).join("\n"), `line ${index + 1}`).toContain("canSchedule()");
+    }
   });
 
   it("the app supplies its own simulated clock for paused frames", () => {

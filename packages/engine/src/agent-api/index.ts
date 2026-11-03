@@ -242,6 +242,9 @@ export type { A3DApp, A3DAppDiagnostics, A3DAppLifecycleSnapshot, A3DAppOptions,
 // GU47 (4.7.0): contract and lane names the engine lanes added (E-A, E-B, E-F, E-H), kept
 // equal to the in-repo "." view (published union, PRD-15 T1.4).
 export { RUNTIME_ENVIRONMENT_NODE_ID } from "./publishedUnion.js";
+// 5.0: advanced-lighting, post-input and pivot contract names reachable from public signatures.
+export { AuraAdvancedLightingUnavailableError } from "./publishedUnion.js";
+export type { AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions } from "./publishedUnion.js";
 export type { AuraActorPoseApi, AuraBurstOptions, AuraEnvironmentSwapOptions, AuraHdriId, AuraPlayLayerOptions, AuraSetFogOptions, AuraSetFogSpec, AuraSkyCloudsOptions, AuraSkyStarsLegacySpec, AuraSkyStarsOptions, AuraTrailHandle, AuraTrailOptions, AuraVfxGenreVariant, Prd02LightingApp } from "./publishedUnion.js";
 export { createProgressSnapshot, createRenderProgressTracker } from "./RenderProgressTracker.js";
 export type { CreateRenderProgressTrackerOptions, RenderProgressAdvanceInput, RenderProgressSnapshot, RenderProgressStatus, RenderProgressTracker } from "./RenderProgressTracker.js";

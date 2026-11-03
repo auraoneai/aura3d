@@ -1,7 +1,8 @@
 import { createHash, webcrypto } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { camera, createAuraApp, defineAuraAssets, gaussianSplat, group, material, primitives, scene } from "../../../packages/engine/src/public/index";
-import { compileScene, registerNodeHandler, updateCompiledScene, type RuntimeGaussianSplatDraw } from "../../../packages/engine/src/contracts/compiler";
+import { compileScene, registerNodeHandler, updateCompiledScene } from "../../../packages/engine/src/contracts/compiler";
+import type { RuntimeGaussianSplatDraw } from "../../../packages/engine/src/agent-api/compiler/runtimeDraws";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
 import { asRuntimeImpl, type MountSceneCompileContext } from "../../../packages/engine/src/agent-api/compiler/compileScene";

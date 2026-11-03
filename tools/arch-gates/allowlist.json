@@ -74,64 +74,64 @@
   {
     "rule": "single-renderer",
     "file": "packages/rendering/src/effects/ResidentGPUParticleRenderer.ts",
-    "expires": "2026-11-30",
-    "reason": "resident GPU particle path creates its own webgpu context; owner migrates to RenderBackend",
+    "expires": "2027-01-31",
+    "reason": "resident GPU particle path creates its own webgpu context; owner migrates to RenderBackend | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-07-4"
   },
   {
     "rule": "glsl-location",
     "file": "packages/engine/src/production-runtime/index.ts",
-    "expires": "2026-11-30",
-    "reason": "15 self-debt: embedded skybox shader registration moves to a chunk module in the 4.0 consolidation",
+    "expires": "2027-01-31",
+    "reason": "15 self-debt: embedded skybox shader registration moves to a chunk module in the 4.0 consolidation | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "T7.x"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/ShaderLibrary.ts",
-    "expires": "2026-11-30",
-    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch — owner migrates",
+    "expires": "2027-01-31",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch — owner migrates | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-01-6"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/ShaderLibraryCore.ts",
-    "expires": "2026-11-30",
-    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch — owner migrates",
+    "expires": "2027-01-31",
+    "reason": "legacy shader registry holds GLSL inline; Q-01-4 says do not touch — owner migrates | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-01-6"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/TemporalHistory.ts",
-    "expires": "2026-11-30",
-    "reason": "post-history shaders inline; owner migrates to chunks",
+    "expires": "2027-01-31",
+    "reason": "post-history shaders inline; owner migrates to chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-03-2"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/webgl2/LegacyPost.ts",
-    "expires": "2026-11-30",
-    "reason": "legacy post pipeline shaders inline; owner migrates to chunks",
+    "expires": "2027-01-31",
+    "reason": "legacy post pipeline shaders inline; owner migrates to chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-03-2"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/animation/AnimationToonMaterial.ts",
-    "expires": "2026-11-30",
-    "reason": "toon material shaders inline; owner migrates to chunks",
+    "expires": "2027-01-31",
+    "reason": "toon material shaders inline; owner migrates to chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-06-2"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/webgl2/Probe.ts",
-    "expires": "2026-11-30",
-    "reason": "device probe shaders inline; owner migrates to chunks",
+    "expires": "2027-01-31",
+    "reason": "device probe shaders inline; owner migrates to chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-11-4"
   },
   {
     "rule": "single-renderer",
     "file": "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts",
-    "expires": "2026-11-30",
-    "reason": "webgpu production renderer constructs itself; owner folds into WebGPUDevice/RenderBackend",
+    "expires": "2027-01-31",
+    "reason": "webgpu production renderer constructs itself; owner folds into WebGPUDevice/RenderBackend | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-11-4"
   },
   {
@@ -141,9 +141,10 @@
       "animation",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -152,9 +153,10 @@
       "animation",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -163,9 +165,10 @@
       "animation",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -174,9 +177,10 @@
       "animation",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -187,9 +191,10 @@
       "rendering",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -199,9 +204,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -210,9 +216,10 @@
       "animation",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -221,9 +228,10 @@
       "animation",
       "core"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -232,9 +240,10 @@
       "animation",
       "scripting"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -244,9 +253,10 @@
       "editor",
       "editor-runtime"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-3",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -255,9 +265,10 @@
       "animation",
       "engine"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-4",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -266,9 +277,10 @@
       "animation",
       "engine"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-06-4",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -277,9 +289,10 @@
       "assets",
       "rendering"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-01-8",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -288,9 +301,10 @@
       "physics",
       "rendering"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-01-8",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -299,9 +313,10 @@
       "rendering",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-01-8",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -311,9 +326,10 @@
       "input",
       "three-compat"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-08-2",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -323,9 +339,10 @@
       "input",
       "three-compat"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-08-2",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -335,9 +352,10 @@
       "input",
       "three-compat"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-08-2",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -346,9 +364,10 @@
       "controls",
       "input"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-08-2",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -357,9 +376,10 @@
       "audio",
       "input"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-08-2",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -368,9 +388,10 @@
       "aura3d-cli",
       "engine"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "Q-05-9",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -379,9 +400,10 @@
       "core",
       "ecs"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.8",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -390,9 +412,10 @@
       "ecs",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.8",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -401,9 +424,10 @@
       "react",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.9",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -412,9 +436,10 @@
       "react",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.9",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -423,9 +448,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -434,9 +460,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -445,9 +472,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -456,9 +484,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -467,9 +496,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -478,9 +508,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -489,9 +520,10 @@
       "physics",
       "scene"
     ],
-    "expires": "2026-11-03",
+    "expires": "2027-01-31",
     "request": "T6.6",
-    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "no-cycles",
@@ -651,8 +683,8 @@
       "packages/engine/src/agent-api/vfx/effects-api.ts",
       "packages/engine/src/agent-api/vfx/gameEffects.ts"
     ],
-    "expires": "2026-11-15",
-    "reason": "agent-api 157-file SCC: compiler/nodes/app/devtools leaf web — structural debt from T3 leaf split; snapshot refreshed at Phase-8 gate pass (+50 members merged via sibling lanes); converges via dedicated repoint work; refreshed 2026-10-11 (+AnimationController.ts, compiler/sceneGraph.ts, postPresets.ts via sibling-lane merges)",
+    "expires": "2027-01-31",
+    "reason": "agent-api 157-file SCC: compiler/nodes/app/devtools leaf web — structural debt from T3 leaf split; snapshot refreshed at Phase-8 gate pass (+50 members merged via sibling lanes); converges via dedicated repoint work; refreshed 2026-10-11 (+AnimationController.ts, compiler/sceneGraph.ts, postPresets.ts via sibling-lane merges) | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-15-1"
   },
   {
@@ -662,9 +694,10 @@
       "asset-index",
       "editor-runtime"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-2",
-    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -673,9 +706,10 @@
       "controls",
       "rendering"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-2",
-    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -684,9 +718,10 @@
       "controls",
       "math"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-2",
-    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -695,9 +730,10 @@
       "physics",
       "rendering"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-2",
-    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)"
+    "note": "cross-package name collision with different declarations; tied to open request or phase-6 convergence (PRD-15 T5.8)",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "layering",
@@ -715,9 +751,10 @@
       "engine",
       "game"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -726,9 +763,10 @@
       "engine",
       "game"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -737,9 +775,10 @@
       "engine",
       "game"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -748,9 +787,10 @@
       "engine",
       "game"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -759,9 +799,10 @@
       "audio",
       "game"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "unique-ownership",
@@ -770,9 +811,10 @@
       "animation",
       "scene"
     ],
-    "expires": "2026-11-15",
+    "expires": "2027-01-31",
     "request": "Q-15-3",
-    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3"
+    "note": "contract-stub vs real-impl pair (converges at stub sunset) or foreign collision — see Q-15-3",
+    "reason": "Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md."
   },
   {
     "rule": "no-cross-package-relative",
@@ -785,106 +827,850 @@
   {
     "rule": "glsl-location",
     "file": "packages/engine/src/production-runtime/world/GrassRuntime.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 grass program GLSL inline; owner moves it under a shaders/ chunk dir",
+    "expires": "2027-01-31",
+    "reason": "lane-10 grass program GLSL inline; owner moves it under a shaders/ chunk dir | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/atmosphere/sky.glsl.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-07 sky shader module outside a shaders/ dir; owner moves it to atmosphere/shaders/",
+    "expires": "2027-01-31",
+    "reason": "lane-07 sky shader module outside a shaders/ dir; owner moves it to atmosphere/shaders/ | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-07-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/environment/Prd02BackgroundShaderLibrary.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-02 background shader library predates T4.9 fail mode; owner moves GLSL to shaders/chunks",
+    "expires": "2027-01-31",
+    "reason": "lane-02 background shader library predates T4.9 fail mode; owner moves GLSL to shaders/chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-02-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/passes/ContactShadowPass.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-02 contact-shadow pass GLSL inline; owner moves it to shaders/chunks/contact_shadow",
+    "expires": "2027-01-31",
+    "reason": "lane-02 contact-shadow pass GLSL inline; owner moves it to shaders/chunks/contact_shadow | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-02-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/program/ProgramGenerator.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-01 program generator assembles chunk GLSL; header templates move to program/chunks",
+    "expires": "2027-01-31",
+    "reason": "lane-01 program generator assembles chunk GLSL; header templates move to program/chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-01-6"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/renderer/SceneDepthCopyPass.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-01 depth-copy blit GLSL inline; owner moves it to program/chunks",
+    "expires": "2027-01-31",
+    "reason": "lane-01 depth-copy blit GLSL inline; owner moves it to program/chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-01-6"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/shadows/Prd02DepthShaderLibrary.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-02 depth shader library predates T4.9 fail mode; owner moves GLSL to shaders/chunks",
+    "expires": "2027-01-31",
+    "reason": "lane-02 depth shader library predates T4.9 fail mode; owner moves GLSL to shaders/chunks | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-02-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/space/PlanetMaterial.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/terrain/SplatBake.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/terrain/TerrainHeightTexture.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/vegetation/FoliageMaterial.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/vegetation/ImpostorMaterial.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/water/SceneCopyFallback.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "glsl-location",
     "file": "packages/rendering/src/world/water/WaterMaterial.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders",
+    "expires": "2027-01-31",
+    "reason": "lane-10 world material GLSL inline; owner moves it to world/*/shaders | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-10-glsl"
   },
   {
     "rule": "single-renderer",
     "file": "packages/engine/src/lanes/prd01/outputSurface.ts",
-    "expires": "2026-11-15",
-    "reason": "lane-01 capture reads back the app canvas's existing WebGL2 context (no new context); owner routes readback through C-29 Renderer",
+    "expires": "2027-01-31",
+    "reason": "lane-01 capture reads back the app canvas's existing WebGL2 context (no new context); owner routes readback through C-29 Renderer | Re-dated 2026-11-03 to carry through the 5.0 release (agent, owner-delegated); tracked as 5.x debt in docs/project/status/known-limits.md.",
     "request": "Q-01-capture"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/advancedLightingBridge.ts",
+    "to": "packages/engine/src/agent-api/app/advancedLightingState.ts",
+    "reason": "5.0 debt: advanced-lighting bridge reads the per-app lighting state store (advancedLightingStateFor) owned by app/; moving the store to contracts is deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/animation.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/compileScene.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/lights.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/lines.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/primitives.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderInput.ts",
+    "to": "packages/engine/src/agent-api/app/actorAnimationHandle.ts",
+    "reason": "5.0 debt: compiler animation/render-input lowering calls actor pose helpers (empty-pose rejection, bone attachments) owned by the 1k-line app/actorAnimationHandle.ts; split of the pure pose helpers deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderInput.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderInput.ts",
+    "to": "packages/engine/src/agent-api/app/renderPath.ts",
+    "reason": "5.0 debt: render-path and bloom-fusion decisions live in app/renderPath.ts, which itself value-imports nodes/groups and app/rendererOptions; moving it below compiler/ requires the rendererOptions split; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderer.ts",
+    "to": "packages/engine/src/agent-api/app/renderPath.ts",
+    "reason": "5.0 debt: render-path and bloom-fusion decisions live in app/renderPath.ts, which itself value-imports nodes/groups and app/rendererOptions; moving it below compiler/ requires the rendererOptions split; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderer.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: compiler lowering reads/writes live runtime-node state (effective visibility, node handles, query state, material revision, root motion) owned by the 2.3k-line app/runtimeNodes.ts store; fix = move that store into a compiler-visible contracts module, a behaviour-bearing split deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderer.ts",
+    "to": "packages/engine/src/agent-api/app/colorManagement.ts",
+    "reason": "5.0 debt: renderer value-imports the output colour policy resolver; the file is SHA-pinned at this path by tests/fixtures/native-examples-catalog/expectations.json (post-order-lab sourceDependencies), so the move to a lower layer waits for a fixture re-pin in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/compiler/renderer.ts",
+    "to": "packages/engine/src/agent-api/app/outputColorDiagnostics.ts",
+    "reason": "5.0 debt: renderer value-imports the read-only output colour-space observation helper; moves together with app/colorManagement.ts (same renderer.ts import block, SHA-pinned sibling) in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/batched.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-uses rendering runtime (Renderer/WebGL2Device instanceof checks, batch item factories, packed-loop members, registerBatchedDrawShader re-export, qrCoreGeneratorOn) — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/batched.ts",
+    "to": "packages/engine/src/agent-api/compiler/sceneGraph.ts",
+    "reason": "5.0 debt: node value-uses scene-graph transform helpers (sourceSceneNodeOf / parentTransformOf / worldTransformOf) that live in compiler/; moving them to a shared contracts module is deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/batched.ts",
+    "to": "packages/engine/src/agent-api/app/runtimeNodes.ts",
+    "reason": "5.0 debt: batched node value-reads runtimeNodeQueryState from app/runtimeNodes.ts; moves with the runtime-node store split (see compiler/* -> app/runtimeNodes.ts rows) in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/batched.ts",
+    "to": "packages/engine/src/agent-api/compiler/primitives.ts",
+    "reason": "5.0 debt: node value-calls production primitive geometry/material factories owned by compiler/primitives.ts; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/batched.ts",
+    "to": "packages/engine/src/agent-api/compiler/textures.ts",
+    "reason": "5.0 debt: batched node value-calls production primitive texture intent/upgrade helpers owned by compiler/textures.ts; deferred to 5.x with the compiler/primitives.ts edge",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/batchedState.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: constructs rendering runtime objects (BatchedGeometryPool, DrawDataTexture, PackedLoopProducerState) and registers packed-loop snapshots — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/clipping.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-calls validateClippingGroup from @aura3d/rendering — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/compute.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-uses createComputeContext and ComputeError (instanceof/new) from @aura3d/rendering — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/effects.post.ts",
+    "to": "packages/engine/src/agent-api/compiler/errors.ts",
+    "reason": "5.0 debt: AuraRuntimeError now lives in contracts/runtimeError.ts (all other nodes/ importers repointed 2026-11-02); this file is SHA-pinned by tests/fixtures/native-examples-catalog/expectations.json (post-order-lab sourceDependencies), so its one-line import repoint waits for the next fixture re-pin",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/geometry.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-calls convex/edges/wireframe parity mesh builders from @aura3d/rendering — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/instancedMesh.ts",
+    "to": "packages/engine/src/agent-api/compiler/primitives.ts",
+    "reason": "5.0 debt: node value-calls production primitive geometry/material factories owned by compiler/primitives.ts; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/instances.ts",
+    "to": "@aura3d/rendering/contracts",
+    "reason": "5.0 debt: value-calls registerFrameContributor (@aura3d/rendering/contracts) and setPrd10WindState (@aura3d/rendering/world) — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/instances.ts",
+    "to": "@aura3d/rendering/world",
+    "reason": "5.0 debt: value-calls registerFrameContributor (@aura3d/rendering/contracts) and setPrd10WindState (@aura3d/rendering/world) — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/material.ts",
+    "to": "packages/engine/src/agent-api/compiler/customMaterial.ts",
+    "reason": "5.0 debt: node value-calls the custom-material spec validator (assertAuraCustomMaterialSpec and friends) at authoring time; customMaterial.ts is SHA-pinned by tests/fixtures/native-examples-catalog/expectations.json, so splitting the validator into contracts waits for a re-pin in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/material.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-calls resolveDepthPreviewMaterialOptions from @aura3d/rendering — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/overrideMaterial.ts",
+    "to": "packages/engine/src/agent-api/compiler/customMaterial.ts",
+    "reason": "5.0 debt: node value-calls the custom-material spec validator (assertAuraCustomMaterialSpec and friends) at authoring time; customMaterial.ts is SHA-pinned by tests/fixtures/native-examples-catalog/expectations.json, so splitting the validator into contracts waits for a re-pin in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/physics-core.ts",
+    "to": "packages/engine/src/agent-api/compiler/sceneGraph.ts",
+    "reason": "5.0 debt: node value-uses scene-graph transform helpers (sourceSceneNodeOf / parentTransformOf / worldTransformOf) that live in compiler/; moving them to a shared contracts module is deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/scene.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-calls validateClippingGroup from @aura3d/rendering — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/shaderGraph.ts",
+    "to": "@aura3d/rendering/shader-graph",
+    "reason": "5.0 debt: value-uses shader-graph compile/validate/pack and ShaderGraphError, plus Texture (instanceof) and cloneMaterialUniformValue — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/shaderGraph.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: value-uses shader-graph compile/validate/pack and ShaderGraphError, plus Texture (instanceof) and cloneMaterialUniformValue — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/shaderGraph.ts",
+    "to": "packages/engine/src/agent-api/compiler/customMaterial.ts",
+    "reason": "5.0 debt: node value-calls the custom-material spec validator (assertAuraCustomMaterialSpec and friends) at authoring time; customMaterial.ts is SHA-pinned by tests/fixtures/native-examples-catalog/expectations.json, so splitting the validator into contracts waits for a re-pin in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/texture.ts",
+    "to": "@aura3d/rendering",
+    "reason": "5.0 debt: constructs rendering Texture and calls isCompressedTextureFormat/srgbToLinearChannel — not type-only; fix = compiler-side lowering of the node, a behaviour-bearing change deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/nodes/tsl/index.ts",
+    "to": "packages/engine/src/agent-api/compiler/customMaterial.ts",
+    "reason": "5.0 debt: node value-calls the custom-material spec validator (assertAuraCustomMaterialSpec and friends) at authoring time; customMaterial.ts is SHA-pinned by tests/fixtures/native-examples-catalog/expectations.json, so splitting the validator into contracts waits for a re-pin in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "layering",
+    "from": "packages/engine/src/agent-api/sceneKitDiagnosticsCore.ts",
+    "to": "packages/engine/src/agent-api/devtools/sceneKitBudgets.ts",
+    "reason": "5.0 debt: scene-kit diagnostics core value-imports the devtools budget table (devtools/sceneKitBudgets.ts) instead of a shared contract; moving the budget table out of devtools/ is deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-cycles",
+    "scc": [
+      "packages/engine/src/agent-api/AnimationDirector.ts",
+      "packages/engine/src/agent-api/AnimationPerformance.ts",
+      "packages/engine/src/agent-api/CameraPresetLibrary.ts",
+      "packages/engine/src/agent-api/RootRuntimeSupport.ts",
+      "packages/engine/src/agent-api/RuntimeNodeHandle.ts",
+      "packages/engine/src/agent-api/app/renderPath.ts",
+      "packages/engine/src/agent-api/app/runtimeNodes.ts",
+      "packages/engine/src/agent-api/colorUtils.ts",
+      "packages/engine/src/agent-api/compiler/actors.ts",
+      "packages/engine/src/agent-api/compiler/animation.ts",
+      "packages/engine/src/agent-api/compiler/camera.ts",
+      "packages/engine/src/agent-api/compiler/cameraDepth.ts",
+      "packages/engine/src/agent-api/compiler/customMaterial.ts",
+      "packages/engine/src/agent-api/compiler/effects.ts",
+      "packages/engine/src/agent-api/compiler/geometry.ts",
+      "packages/engine/src/agent-api/compiler/labels.ts",
+      "packages/engine/src/agent-api/compiler/lights.ts",
+      "packages/engine/src/agent-api/compiler/observations.ts",
+      "packages/engine/src/agent-api/compiler/primitives.ts",
+      "packages/engine/src/agent-api/compiler/sceneGraph.ts",
+      "packages/engine/src/agent-api/compiler/textures.ts",
+      "packages/engine/src/agent-api/devtools/diagnosticPreview.ts",
+      "packages/engine/src/agent-api/devtools/sceneKitBudgets.ts",
+      "packages/engine/src/agent-api/diagnostics.ts",
+      "packages/engine/src/agent-api/looks/structuralQA.ts",
+      "packages/engine/src/agent-api/nodes/animation.ts",
+      "packages/engine/src/agent-api/nodes/camera.ts",
+      "packages/engine/src/agent-api/nodes/character.ts",
+      "packages/engine/src/agent-api/nodes/charts.ts",
+      "packages/engine/src/agent-api/nodes/city.ts",
+      "packages/engine/src/agent-api/nodes/effects.composite.ts",
+      "packages/engine/src/agent-api/nodes/effects.post.ts",
+      "packages/engine/src/agent-api/nodes/effects.toon.ts",
+      "packages/engine/src/agent-api/nodes/effects.ts",
+      "packages/engine/src/agent-api/nodes/geometry.ts",
+      "packages/engine/src/agent-api/nodes/groups.ts",
+      "packages/engine/src/agent-api/nodes/instances.ts",
+      "packages/engine/src/agent-api/nodes/material.ts",
+      "packages/engine/src/agent-api/nodes/materialTools.ts",
+      "packages/engine/src/agent-api/nodes/model.ts",
+      "packages/engine/src/agent-api/nodes/neon.ts",
+      "packages/engine/src/agent-api/nodes/overrideMaterial.ts",
+      "packages/engine/src/agent-api/nodes/particles.ts",
+      "packages/engine/src/agent-api/nodes/prefabs/cityBlock.ts",
+      "packages/engine/src/agent-api/nodes/prefabs/index.ts",
+      "packages/engine/src/agent-api/nodes/prefabs/objectiveMarker.ts",
+      "packages/engine/src/agent-api/nodes/product.ts",
+      "packages/engine/src/agent-api/nodes/scene.ts",
+      "packages/engine/src/agent-api/nodes/shaderGraph.ts",
+      "packages/engine/src/agent-api/nodes/shadows.ts",
+      "packages/engine/src/agent-api/nodes/solar.ts",
+      "packages/engine/src/agent-api/nodes/tsl/index.ts",
+      "packages/engine/src/agent-api/performanceEvidence.ts",
+      "packages/engine/src/agent-api/platform.ts",
+      "packages/engine/src/agent-api/public/devtools.ts",
+      "packages/engine/src/agent-api/rendererDiagnostics.ts",
+      "packages/engine/src/agent-api/runtimeEvidence.ts",
+      "packages/engine/src/agent-api/sceneEvidence.ts",
+      "packages/engine/src/agent-api/sceneGraph.ts",
+      "packages/engine/src/agent-api/sceneMath.ts"
+    ],
+    "expires": "2027-01-31",
+    "reason": "5.0 debt: agent-api 60-file SCC (compiler/nodes/app leaf web). Exact member snapshot 2026-11-02; 52 members are already in the existing 154-member Phase-8 SCC row (expires 2026-11-15), the 8 new ones (app/renderPath.ts, compiler/cameraDepth.ts, compiler/customMaterial.ts, nodes/effects.toon.ts, nodes/overrideMaterial.ts, nodes/prefabs/objectiveMarker.ts, nodes/shaderGraph.ts, nodes/tsl/index.ts) joined via 4.x/5.0 lane merges (custom-material validator, render-path, toon post). Subset match: shrinking stays covered, any NEW member resurfaces the finding. Converges with the layering repoints in 5.x",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "max-file-lines",
+    "file": "packages/engine/src/agent-api/GameRuntimeCore.ts",
+    "reason": "5.0 debt: 5059 lines > 2,500; splitting this hot file is a structural refactor outside the 5.0 fixed scope (no behaviour change owed); split in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "max-file-lines",
+    "file": "packages/engine/src/agent-api/nodes/types.ts",
+    "reason": "5.0 debt: 3158 lines > 2,500; splitting this hot file is a structural refactor outside the 5.0 fixed scope (no behaviour change owed); split in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "max-file-lines",
+    "file": "packages/engine/src/agent-api/app/createAuraAppCore.ts",
+    "reason": "5.0 debt: 2654 lines > 2,500; splitting this hot file is a structural refactor outside the 5.0 fixed scope (no behaviour change owed); split in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/debug/src/safety/diagnosticsPanel.ts",
+    "reason": "5.0 debt: debug probeGpu() opens a throwaway WebGL2 context only to read WEBGL_debug_renderer_info for the diagnostics panel; never renders; route through the device owner in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/engine/src/agent-api/compiler/renderer.ts",
+    "reason": "5.0 debt: webGL2Context() narrows the canvas overload to obtain the WebGL2 context handed to the device owner and to output colour diagnostics; owner consolidation into WebGL2Device deferred; route through the device owner in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "single-renderer",
+    "file": "packages/engine/src/lanes/prd01/diagnostics.ts",
+    "reason": "5.0 debt: output colour-space diagnostics read the app canvas's existing WebGL2 context (getContext returns the live context, never a second device); route through the device owner in 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/aura3d-cli/src/migrate-three/emit.ts",
+    "reason": "5.0 debt: false positive: a migration-note template string mentions '#version 300 es' as prose; the CLI emits no GLSL from here",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/engine/src/agent-api/compiler/customMaterial.ts",
+    "reason": "5.0 debt: false positive: the regex pairs backticks across JSDoc inline-code spans and a template literal; the only real GLSL here is a double-quoted depth fragment constant. File is SHA-pinned by tests/fixtures/native-examples-catalog/expectations.json, so comment rewording waits for a re-pin",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/DepthPreviewShader.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/GaussianSplatRenderer.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/Renderer.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/VolumeRenderer.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/program/ShaderGraphCompiler.ts",
+    "reason": "5.0 debt: 1 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/renderer/ObjectMotionPass.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/renderer/OutlineTargets.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/transparency/WeightedTransparency.ts",
+    "reason": "5.0 debt: 3 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/GaussianSplatSurface.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/LdrPostprocessShader.ts",
+    "reason": "5.0 debt: 1 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgl2/StaticBatchUnlitShader.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "glsl-location",
+    "file": "packages/rendering/src/webgpu/ScalarVolumePass.ts",
+    "reason": "5.0 debt: 2 inline GLSL program string(s) in a renderer/pass module; relocating them to a shaders/ folder changes paths referenced by docs/prds/aura3d-native-capability-ledger.json locators and tests; deferred to 5.x",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/index.ts",
+    "name": "collectAuraSceneEvidence",
+    "reason": "5.0 debt: \"collectAuraSceneEvidence\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/index.ts",
+    "name": "collectPromptAnimationEvidence",
+    "reason": "5.0 debt: \"collectPromptAnimationEvidence\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/index.ts",
+    "name": "createCaptionTimingProof",
+    "reason": "5.0 debt: \"createCaptionTimingProof\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/index.ts",
+    "name": "evaluatePromptAnimationPublishReadiness",
+    "reason": "5.0 debt: \"evaluatePromptAnimationPublishReadiness\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/index.ts",
+    "name": "AuraReadinessOptions",
+    "reason": "5.0 debt: \"AuraReadinessOptions\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/renderer.ts",
+    "name": "createTypedGLBActorEvidence",
+    "reason": "5.0 debt: \"createTypedGLBActorEvidence\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/renderer.ts",
+    "name": "TypedGLBActorEvidence",
+    "reason": "5.0 debt: \"TypedGLBActorEvidence\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/renderer.ts",
+    "name": "GameAppRuntimeEvidence",
+    "reason": "5.0 debt: \"GameAppRuntimeEvidence\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/renderer.ts",
+    "name": "A3DExampleParityTargetId",
+    "reason": "5.0 debt: \"A3DExampleParityTargetId\" is a published name (docs/api/stability-policy.md); removing it from the runtime entry is a breaking change that needs a deprecation cycle — deprecate in 5.x, remove no earlier than 6.0",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Vec3Like",
+    "packages": [
+      "audio",
+      "controls",
+      "game"
+    ],
+    "reason": "5.0 debt: \"Vec3Like\" is exported by @aura3d/audio + @aura3d/controls + @aura3d/game with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "ParticleBurst",
+    "packages": [
+      "game",
+      "rendering"
+    ],
+    "reason": "5.0 debt: \"ParticleBurst\" is exported by @aura3d/game + @aura3d/rendering with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "earcut",
+    "packages": [
+      "math",
+      "rendering"
+    ],
+    "reason": "5.0 debt: \"earcut\" is exported by @aura3d/math + @aura3d/rendering with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "shapeArea",
+    "packages": [
+      "math",
+      "rendering"
+    ],
+    "reason": "5.0 debt: \"shapeArea\" is exported by @aura3d/math + @aura3d/rendering with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "isClockWise",
+    "packages": [
+      "math",
+      "rendering"
+    ],
+    "reason": "5.0 debt: \"isClockWise\" is exported by @aura3d/math + @aura3d/rendering with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "triangulateShape",
+    "packages": [
+      "math",
+      "rendering"
+    ],
+    "reason": "5.0 debt: \"triangulateShape\" is exported by @aura3d/math + @aura3d/rendering with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "Shape",
+    "packages": [
+      "math",
+      "physics"
+    ],
+    "reason": "5.0 debt: \"Shape\" is exported by @aura3d/math + @aura3d/physics with different declarations; converging on one owner changes public package types, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "no-evidence-in-runtime",
+    "file": "packages/engine/src/public/index.ts",
+    "name": "AuraProbeGridAttachmentOptions",
+    "expires": "2027-01-31",
+    "reason": "5.0 regex false positive: 'Probe' here is a light-probe grid (lighting option type), not an evidence probe. Published 2026-11-02 because public AuraLightingRuntime.attachIndirect references it; revisit the EVIDENCE_RE 'Probe' token in 5.x",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-02)"
   }
 ]

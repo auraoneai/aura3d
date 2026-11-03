@@ -12,7 +12,7 @@
  * topology-specific and a mesh material cannot stand in for them.
  */
 import type { AuraMaterialSpec, AuraSceneNode } from "./types.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { assertAuraCustomMaterialSpec } from "../compiler/customMaterial.js";
 
 const OWNER = "scene().overrideMaterial";

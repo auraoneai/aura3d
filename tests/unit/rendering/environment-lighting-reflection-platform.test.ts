@@ -8,7 +8,6 @@ import {
   composeEnvironmentLighting
 } from "../../../packages/rendering/src";
 import {
-  createEnvironmentPresetReport,
   createNamedEnvironmentPreset,
   listNamedEnvironmentPresets
 } from "../../../packages/rendering/src/EnvironmentPreset";
@@ -35,24 +34,13 @@ describe("named environment preset reports", () => {
       "clean-void"
     ]);
 
-    const studio = createNamedEnvironmentPreset("studio", { size: 6 });
-    const ocean = createNamedEnvironmentPreset("ocean", { requestedFeatures: ["fft-webgpu-water"] });
-    const studioReport = createEnvironmentPresetReport(studio, "studio");
-    const oceanReport = createEnvironmentPresetReport(ocean, "ocean");
-
-    expect(studio.type).toBe("studio");
-    expect(studio.lightingPreset).toBe("softbox");
-    expect(studio.fog).toBeUndefined();
-    expect(studioReport.renderItemCount).toBe(studio.items.length);
-    expect(studioReport.visibleBackgroundSeparatedFromLighting).toBe(true);
-    expect(studioReport.productionReady).toBe(false);
-    expect(studioReport.claimBoundary).toMatch(/route acceptance still requires browser screenshot/i);
-
-    expect(ocean.type).toBe("ocean");
-    expect(ocean.fog?.preset).toBe("marine-layer");
-    expect(ocean.unsupportedRequests.join(" ")).toMatch(/FFT\/WebGPU water/i);
-    expect(oceanReport.hasFogProfile).toBe(true);
-    expect(oceanReport.capabilityIds).toContain("dynamic-ocean-plane");
+    // The named-preset factory was deleted by QR-10/PRD-10 (864ccaa89): it is a
+    // throwing stub now (docs/project/status/retired-tests.md §6). The
+    // descriptor list above stays public.
+    expect(() => createNamedEnvironmentPreset("studio", { size: 6 })).toThrow(/^removed-world-planner:/);
+    expect(() => createNamedEnvironmentPreset("ocean", { requestedFeatures: ["fft-webgpu-water"] })).toThrow(
+      /Use createEnvironmentPreset with explicit options/
+    );
   });
 });
 
@@ -317,12 +305,15 @@ describe("reflection surface contracts", () => {
     });
 
     const first = renderCapture();
+    // Texture.dispose() releases CPU content references (5.0 contract, see the
+    // doc comment on Texture.dispose); the next capture retires `first`, so
+    // its face layout is read while it is the live capture.
+    expect(first.texture.dimension).toBe("cube");
+    expect(first.texture.cubeFaces.map((face) => face.face)).toEqual(["px", "nx", "py", "ny", "pz", "nz"]);
     movingObjectFace = 0;
     const second = renderCapture();
     const surface = createReflectionSurface({ id: "live-surface", kind: "cube-probe", probe, capture });
 
-    expect(first.texture.dimension).toBe("cube");
-    expect(first.texture.cubeFaces.map((face) => face.face)).toEqual(["px", "nx", "py", "ny", "pz", "nz"]);
     expect(first.capturedPixelCount).toBe(96);
     expect(first.revision).toBe(1);
     expect(first.changedFaceCount).toBe(6);

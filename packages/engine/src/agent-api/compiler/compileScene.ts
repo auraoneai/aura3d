@@ -42,7 +42,7 @@ import type {
   AuraCompiledFeature,
   CompilerImpl
 } from "../../contracts/compiler.js";
-import type { RuntimeGaussianSplatDraw, RuntimeScalarVolumeDraw } from "../../contracts/compiler.js";
+import type { RuntimeGaussianSplatDraw, RuntimeScalarVolumeDraw } from "./runtimeDraws.js";
 import { flattenAuraSceneNodes, flattenNodesWithLineWorldMatrices, sourceSceneNodeOf, worldTransformOf } from "./sceneGraph.js";
 import { applySplatLookAt, runtimeNodeEffectiveVisibility, runtimeNodeHandleForSceneNode, runtimeNodeQueryState } from "../app/runtimeNodes.js";
 import { localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";

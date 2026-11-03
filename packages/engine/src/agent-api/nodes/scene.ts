@@ -11,7 +11,7 @@ import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
 import { dropShadowedLookFill } from "../looks/lookFill.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { validateClippingGroup } from "@aura3d/rendering";
 import { AuraClipGroup, type AuraClipGroupSnapshot, type AuraClipScope } from "./clipping.js";
 

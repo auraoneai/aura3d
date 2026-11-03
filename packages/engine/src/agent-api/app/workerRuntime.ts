@@ -4,7 +4,8 @@ import { resizeOffscreenCanvas, workerCanvasBackingSize, type OffscreenCanvasSiz
 import { createWorkerFrameScheduler, type WorkerScheduledFrame } from "./workerFrameLoop.js";
 import { createWorkerKeyEventBuffer, createWorkerPointerEventBuffer } from "./workerProtocol.js";
 import type { AuraWorkerEndpoint, AuraWorkerFrameResult, AuraWorkerHostEndpoint, AuraWorkerInput, AuraWorkerPointer, AuraWorkerPointerEvent, AuraWorkerRequest, AuraWorkerResponse, AuraWorkerScreenshotPayload } from "./workerProtocol.js";
-import { snapshotAuraAssetsOption, type AuraAssetsOption } from "../../contracts/assets.js";
+import type { AuraAssetsOption } from "../../contracts/assets.js";
+import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import { Texture, type TexturePixelData } from "@aura3d/rendering";
 import { TextureHandle, auraTextureRefTexture } from "../nodes/texture.js";
 import type { AuraTextureRef } from "../nodes/types.js";

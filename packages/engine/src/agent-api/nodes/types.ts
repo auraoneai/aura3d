@@ -2929,7 +2929,7 @@ export type AuraUniformValue = UniformDataValue | AuraVec3 | readonly AuraVec3[]
  *   `u_foo` with a `#define foo u_foo`); names above are reserved and rejected.
  *
  * Not provided: the fragment output. Declare it yourself (the examples use
- * `out vec4 outColor;`) and write to it. `#version 300 es` is added for you.
+ * `out vec4 outColor;`) and write to it. The GLSL ES 3.00 version directive is added for you.
  */
 export interface AuraCustomMaterialSpec {
   readonly glsl: { readonly vertex?: string; readonly fragment: string };

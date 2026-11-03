@@ -40,7 +40,7 @@ import { clearTypedGLBActorQrFlags, setTypedGLBActorQrFlags } from "../../produc
 import { bindActorAnimationContext, createActorAnimationContext, disposeActorAnimationContext } from "./actorAnimationHandle.js";
 import { setWorldBuilderFlags } from "../world/flags.js";
 import { appExtensionsAll } from "../../contracts/app.js";
-import { snapshotAuraAssetsOption } from "../../contracts/assets.js";
+import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 import { bindShaderFailureStore, createShaderFailureStore, RenderDeviceError, setShaderFailureMode } from "@aura3d/rendering";

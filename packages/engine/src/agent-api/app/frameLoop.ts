@@ -16,7 +16,7 @@ import { groups } from "../nodes/groups.js";
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { normalizeCreateAppRendererOptions } from "./rendererOptions.js";
 import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags.js";
-import { snapshotAuraAssetsOption } from "../../contracts/assets.js";
+import { snapshotAuraAssetsOption } from "./assetsOptionSnapshot.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveCameraFrame } from "../compiler/camera.js";
 import { updateRouteDiagnostics } from "./routeState.js";

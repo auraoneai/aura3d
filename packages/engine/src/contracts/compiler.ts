@@ -34,21 +34,6 @@ export interface AuraNodeKindMap { model: unknown; primitive: unknown; group: un
   // AD-15 (P2): lens flare — compiled per frame by `compiler/lensFlare.ts` (camera-dependent).
   lensflare: unknown; "gaussian-splat": unknown; "scalar-volume": unknown; }
 
-/** A frame-local volume draw; the compiled scene owns its renderer. */
-export type RuntimeScalarVolumeDraw = import("@aura3d/rendering/volumetrics").ScalarVolumeDrawRecord;
-
-/** A frame-local draw of a compiled splat cloud. The compiled scene owns the renderer. */
-export interface RuntimeGaussianSplatDraw {
-  readonly renderer: import("@aura3d/rendering").GaussianSplatRenderer;
-  readonly modelMatrix: Float32Array;
-  readonly colorSpace: "srgb_rec709_display" | "lin_rec709_display";
-  /** World-space conservative cloud bounds for this asset instance. */
-  readonly worldBounds: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
-  readonly layerMask: number;
-  readonly frustumCulled: boolean;
-  readonly renderOrder: number;
-}
-
 export interface AnyNodeHandler {
   readonly kind: string;
   readonly owner: PrdId;

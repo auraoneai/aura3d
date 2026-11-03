@@ -222,12 +222,20 @@ describe("native source typecheck inventory", () => {
       "tests/unit/tools/native-browser-source-inventory.test.ts",
       "tools/compare-engines/index.ts",
       "tools/bundle-scenarios/index.ts",
-      "tools/bench-vs-threejs/full-game/three/src/audio.ts",
-      "tools/bench-vs-threejs/full-game/three/src/touch.ts",
-      "tools/bench-vs-threejs/full-game/three/src/ui.ts",
       "tools/native-consumer-matrix/index.ts",
       "tools/native-runtime-audit/index.ts",
     ]) expect(nodeRoots.has(path), path).toBe(true);
+    // S5-WP19-07 decision (docs/prds/aura3d-5.0-scope.md, 2026-11-02): the vs-three.js bench is an
+    // external comparison harness, never installed or typechecked here (tsconfig.check.json exclude).
+    for (const path of [
+      "tools/bench-vs-threejs/full-game/three/src/audio.ts",
+      "tools/bench-vs-threejs/full-game/three/src/touch.ts",
+      "tools/bench-vs-threejs/full-game/three/src/ui.ts",
+    ]) {
+      expect(existsSync(resolve(root, path)), path).toBe(true);
+      expect(nodeRoots.has(path), path).toBe(false);
+      expect(browserRoots.has(path), path).toBe(false);
+    }
     for (const path of browserRoots) {
       if (path.startsWith("tests/browser/")) {
         expect(readFileSync(resolve(root, path), "utf8"), path).not.toMatch(/^\s*\/\/\s*@ts-nocheck\b/m);

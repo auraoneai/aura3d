@@ -28,7 +28,7 @@ import {
 } from "@aura3d/rendering";
 import { AssetManager, EXRLoader, ImageLoader, LoadContext, redactAssetUrl, TextureLoader as AssetTextureLoader, type AssetHandle, type AuraEXRTextureData, type TextureDescriptorAsset } from "@aura3d/assets/browser";
 import { assetEventScopeForApp, emitAppAssetError, emitAppAssetProgress, safeAssetError } from "../assetEvents.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { loadNativeTexture, type AuraNativeTextureLoadOptions, type NativeTextureConversionLimits } from "./loadNativeTexture.js";
 import type {

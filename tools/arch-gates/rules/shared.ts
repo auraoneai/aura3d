@@ -53,6 +53,7 @@ export interface AllowlistEntry {
   readonly from?: string;    // edge allowlist: importer path
   readonly to?: string;      // edge allowlist: importee path
   readonly file?: string;    // file allowlist
+  readonly name?: string;    // named-export allowlist (with `file`)
   readonly scc?: readonly string[]; // exact sorted member set
 }
 
@@ -78,6 +79,13 @@ export function edgeAllowed(list: readonly AllowlistEntry[], rule: string, from:
 export function fileAllowed(list: readonly AllowlistEntry[], rule: string, file: string): AllowlistEntry | null {
   for (const e of list) {
     if (e.rule === rule && e.file === file) return e;
+  }
+  return null;
+}
+
+export function nameAllowed(list: readonly AllowlistEntry[], rule: string, file: string, name: string): AllowlistEntry | null {
+  for (const e of list) {
+    if (e.rule === rule && e.file === file && e.name === name) return e;
   }
   return null;
 }

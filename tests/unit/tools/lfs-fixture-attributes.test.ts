@@ -5,6 +5,7 @@ import { devNull, tmpdir } from "node:os";
 import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { listCandidateFiles } from "../../../tools/remote-acr/source5-files.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -99,6 +100,17 @@ for (const key of [
   "GIT_WORK_TREE"
 ]) delete gitEnv[key];
 
+// The ACR source-pass image has Git but not the git-lfs filter binary; the
+// clean-filter cases need it (the check-attr cases above do not).
+const HAS_GIT_LFS = (() => {
+  try {
+    execFileSync("git", ["lfs", "version"], { env: gitEnv, stdio: "ignore", timeout: 30_000 });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
 function git(cwd: string, args: readonly string[], input?: Buffer): Buffer {
   return execFileSync("git", args, {
     cwd,
@@ -179,7 +191,8 @@ describe("legacy fixture Git LFS attributes", () => {
       ...legacyFixtures.map((fixture) => fixture.path),
       ...existingPointers.map((entry) => entry.path)
     ];
-    const tracked = gitText(repoRoot, ["ls-files", "--", ...paths]).split("\n").sort();
+    // Git checkout: tracked paths. ACR source pass (no .git): the staged candidate manifest.
+    const tracked = listCandidateFiles(repoRoot, paths).sort();
     expect(tracked).toEqual([...paths].sort());
   });
 
@@ -204,7 +217,7 @@ describe("legacy fixture Git LFS attributes", () => {
     expect(attributes(tempRepo, path), path).toEqual(lfsAttributes);
   });
 
-  it.each([
+  it.skipIf(!HAS_GIT_LFS).each([
     { path: "fixtures/asset-corpus/new.glb", bytes: Buffer.from("glTF\0\r\nnew asset") },
     { path: "fixtures/environment-corpus/hdri/new.hdr", bytes: Buffer.from("#?RADIANCE\n\0\r\nnew asset") }
   ])("routes new $path bytes through the offline LFS clean filter", ({ path, bytes }) => {
@@ -213,7 +226,7 @@ describe("legacy fixture Git LFS attributes", () => {
     expect(stored.bytes.toString("utf8")).toBe(pointer(sha256, bytes.length));
   });
 
-  it.each(existingPointers)("leaves the existing LFS pointer $path unchanged", (entry) => {
+  it.skipIf(!HAS_GIT_LFS).each(existingPointers)("leaves the existing LFS pointer $path unchanged", (entry) => {
     expect(attributes(tempRepo, entry.path), entry.path).toEqual(lfsAttributes);
     // The checkout may contain either the pointer or its hydrated bytes.
     const path = join(repoRoot, entry.path);

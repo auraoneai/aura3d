@@ -24,7 +24,7 @@
 
 import type { AuraColor, AuraSceneNode, AuraTextureRef, AuraTransformSpec, AuraVec3 } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 
 export interface AuraLensFlareElement {
   /** Flare texture (a `texture.*` handle). Omitted → a generated soft radial glow. */

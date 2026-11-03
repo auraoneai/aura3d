@@ -20,9 +20,6 @@ export interface AuraPivotTransformSpec extends AuraTransformSpec {
   readonly pivot?: AuraVec3;
 }
 
-/** A partial transform update: omitted fields retain their current values. */
-export interface AuraTransformUpdate extends AuraPivotTransformSpec {}
-
 /**
  * PR 0a stub: composes parent * local with ZYX order via the same math as
  * `eulerToQuat` (index.ts:5345); `rotationOrder` and `quaternion` are ignored

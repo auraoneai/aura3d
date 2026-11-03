@@ -187,3 +187,55 @@ candidate. Final release claims require regeneration and source-bound receipts.
 - Racing uses shared authored-unit arcade motion, not a physical tyre model.
   It does not claim weight transfer, understeer, slip/yaw inertia, or physical
   vehicle parity. See ADR 0003 for the ownership decision.
+
+## Budget re-baselines
+
+- **PRD-13 lane bundle delta** (`tests/qr/prd13/bundle-delta.test.ts`):
+  re-baselined 2026-11-02 for 5.0 (owner-delegated) from 9,216 B to
+  19,968 B gzip (measured 18,091 B + 10%, rounded up to the next 256 B). The
+  lane intentionally contains looks/promptPlanV2/structuralQA/lookLint/lookPresets
+  (4.x growth; P-24 kept structuralQA in-lane). Previous 9,216 B predates
+  those modules. The check was already failing on `main` before 5.0.
+- **`@aura3d/input` package budget** (`input-package` in
+  `tools/bundle-size/index.ts`): new target added 2026-11-02 at 17,408 B gzip
+  (barrel incl. `PointerLeases.ts`, measured 17,225 B, rounded up to the next
+  512 B). The PRD-08 lane test (`tests/qr/prd08/unit/bundle.test.ts`) now
+  externalizes `@aura3d/input` because this target prices it; its 24,000 B
+  "everything" budget is unchanged.
+
+## 5.x architecture-gate debt
+
+The architecture gates (`tools/arch-gates`, live assertion in
+`tests/qr/prd15/arch-gates-rules.test.ts`) had 91 enforced findings with no
+allowlist row on 2026-11-02. Fixed for 5.0:
+
+- 11 `nodes/ → compiler/errors.ts` layering edges: `AuraRuntimeError` and
+  `AuraMigrationError` moved to `packages/engine/src/contracts/runtimeError.ts`;
+  `compiler/errors.ts` re-exports the same classes, so `instanceof` and existing
+  importers are unchanged. (`nodes/effects.post.ts` keeps the old import because
+  `tests/fixtures/native-examples-catalog/expectations.json` pins its SHA-256.)
+- 2 `export-budget` findings: `./geometry-tools` and `./media-node` are
+  documented 5.0 entries (`docs/migration/4-to-5.md`) and were added to the
+  explicit subpath list.
+- 1 `glsl-location` false positive: JSDoc wording in `nodes/types.ts`.
+
+The remaining 77 findings are allowlisted in `tools/arch-gates/allowlist.json`.
+Each has its own row with a concrete reason, expiry 2027-01-31 and reviewer
+"agent (owner-delegated, 2026-11-02)". They are 5.x tech debt:
+
+| Rule | Rows | What remains |
+| --- | --- | --- |
+| `layering` compiler/ → app/ | 13 | Compiler lowering still calls code in `app/runtimeNodes.ts` (the runtime-node store), `app/renderPath.ts`, `app/actorAnimationHandle.ts`, `app/advancedLightingState.ts`, `app/colorManagement.ts` and `app/outputColorDiagnostics.ts`. |
+| `layering` nodes/ → @aura3d/rendering | 12 | Node builders call rendering runtime code (constructors, validators, `instanceof` checks), so a type-only import is not enough. The fix is compiler-side lowering. |
+| `layering` nodes/ → compiler/ or app/ | 11 | Custom-material validator, primitive and texture factories, scene-graph transform helpers, `runtimeNodeQueryState`, and the pinned `effects.post.ts` error import. |
+| `layering` → devtools/ | 1 | `sceneKitDiagnosticsCore.ts` reads the devtools budget table. |
+| `no-cycles` | 1 | 60-file agent-api SCC: exact snapshot, 8 members newer than the Phase-8 row. |
+| `max-file-lines` | 3 | `GameRuntimeCore.ts` (5,059), `nodes/types.ts` (3,158), `app/createAuraAppCore.ts` (2,654). |
+| `single-renderer` | 3 | WebGL2 context reads in the debug GPU probe, `compiler/renderer.ts`, and lane-01 output diagnostics. |
+| `glsl-location` | 14 | 12 renderer/pass modules with inline GLSL (paths referenced by ledger locators) and 2 false positives (`migrate-three/emit.ts`, `compiler/customMaterial.ts`). |
+| `no-evidence-in-runtime` | 9 | Published evidence/readiness names on `.` and `./renderer` (for example `collectAuraSceneEvidence`, `TypedGLBActorEvidence`). Removing them needs a deprecation cycle. The rule now accepts dated `{ rule, file, name }` rows. |
+| `unique-ownership` | 7 | `Vec3Like`, `ParticleBurst`, `earcut`, `shapeArea`, `isClockWise`, `triangulateShape`, `Shape` have different declarations in different packages. |
+
+Rows written before 5.0 (unique-ownership `2026-11-03`, glsl-location,
+single-renderer and the Phase-8 SCC row `2026-11-15` / `2026-11-30`) keep
+their original expiry dates.

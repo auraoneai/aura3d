@@ -103,9 +103,8 @@ test("bank shot renders, scatters visibly on the strike, and captures review sho
   const server = await startExampleDevServer();
   try {
     await page.setViewportSize({ width: 1280, height: 800 });
-    // The desktop comparison frame uses an evidence-only full-table lens. The
-    // panel remains mounted for the same keyboard/rule assertions; its pixels
-    // are hidden only in this named review capture.
+    // PRD-09: the route ignores ?capture (no review-only lens, lights or hidden
+    // panel), so this frame is the shipped play view.
     await page.goto(server.origin + "/apps/showcase-bank-shot/?capture=review", { waitUntil: "commit", timeout: 120_000 });
     await waitForReady(page);
 

@@ -1,4 +1,4 @@
-import { AuraRuntimeError } from "../compiler/errors.js";
+import { AuraRuntimeError } from "../../contracts/runtimeError.js";
 import type { AuraCustomPostPass, AuraPostPassOrder } from "../../contracts/post.js";
 import { postEffectBuilders } from "./effects.post.js";
 

@@ -4,6 +4,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fitDirectionalCascades, isOversizeShadowCaster } from "../../../../packages/rendering/src/shadows/DirectionalCascadeFitter";
 import { Prd02ShadowSystem } from "../../../../packages/rendering/src/shadows/ShadowSystem";
 import type { RenderItem } from "../../../../packages/rendering/src/contracts/renderItem";
+import { MockRenderDevice } from "../../../../packages/rendering/src/RenderDevice";
+import { Geometry } from "../../../../packages/rendering/src/Geometry";
+import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
+import { QUALITY_TIERS } from "../../../../packages/rendering/src/contracts/quality";
 
 // The 4.3.0 fit, oversize skip and instance-attribute depth path are opt-in (default = 4.2.0): these tests exercise them.
 beforeAll(() => { (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current"; });
@@ -107,12 +111,24 @@ describe("oversize shadow casters (sky domes)", () => {
   });
 
   it("the shadow system skips an oversize caster and reports it", () => {
-    const device = { info: { capabilities: ["render-targets", "depth-textures"] } } as never;
+    // 5.0: a frame that throws mid-submission clears its diagnostics and fits
+    // (ShadowSystem.update), so the frame must complete on a real mock device.
+    const device = new MockRenderDevice();
+    device.beginFrame(256, 256);
     const system = new Prd02ShadowSystem(device, { enabled: true, mapSize: 1024, cascades: 2, maxDistance: 150, splitLambda: 0.6, filter: "pcf", strength: 1, bias: 0, normalBias: 1.5 });
-    const sky = box([0, 0, 0], [4000, 4000, 4000], "sky");
-    const house = box([-8, 4, -30], [6, 8, 6], "house");
-    try { system.update({ camera, sun: { direction: sun }, casters: [sky, house], localLights: [], flags: undefined as never, tier: undefined as never }); } catch { /* rendering needs a real device; the fit and the drop list are set before it */ }
+    // Real unit cubes scaled by the model matrix, so the depth pass can draw them.
+    const cube = (center: V3, size: V3, label: string): RenderItem => ({
+      geometry: Geometry.cube(1),
+      modelMatrix: new Float32Array([size[0], 0, 0, 0, 0, size[1], 0, 0, 0, 0, size[2], 0, center[0], center[1], center[2], 1]),
+      label
+    });
+    const sky = cube([0, 0, 0], [4000, 4000, 4000], "sky");
+    const house = cube([-8, 4, -30], [6, 8, 6], "house");
+    const flags = resolveQrFlags({ options: { A3D_QR_LIGHTING: true } });
+    system.update({ camera, sun: { direction: sun }, casters: [sky, house], localLights: [], flags, tier: QUALITY_TIERS.high });
     expect(system.diagnostics().droppedFeatures).toContain("shadow.caster.oversize:sky");
+    expect(system.diagnostics().droppedFeatures).not.toContain("shadow.caster.oversize:house");
     expect(system.cascadeFits().length).toBe(2);
+    system.dispose?.();
   });
 });

@@ -115,25 +115,6 @@ body { overflow: hidden; }
     width: min(232px, calc(100vw - 32px));
     max-height: calc(100vh - 32px);
   }
-
-  /* The named review artifact is judged on the renderer's table and live
-     balls. Keep the complete controls/evidence tree mounted for keyboard and
-     accessibility checks, but remove its visual occlusion only for the
-     evidence-only capture route. */
-  body[data-capture="review"] .panel {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* The named review frame is judged on the live table and ball materials;
-     keep the instruction available on the normal route but remove this one
-     capture-only banner so it cannot compete with the primary surface. */
-  body[data-capture="review"] .hole-banner,
-  body[data-capture="review"] .pocket-toast,
-  body[data-capture="review"] .result-card {
-    opacity: 0;
-    pointer-events: none;
-  }
 }
 
 @media (max-width: 860px) {

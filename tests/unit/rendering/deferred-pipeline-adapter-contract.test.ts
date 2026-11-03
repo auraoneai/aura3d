@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { integrateGgxDfg } from "../../../packages/rendering/src/program/DFGLutData";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { Material } from "../../../packages/rendering/src/Material";
 import { MaterialInstance } from "../../../packages/rendering/src/MaterialInstance";
@@ -157,8 +158,15 @@ describe("native drawing resource lifetime", () => {
     expect(Array.from(frameData.slice(32, 48))).toEqual([0.5, 0, 0, 0, 0, 0.25, 0, 0, 0, 0, Math.fround(0.2), 0, 0, 0, 0, 1]);
     const lookup = mock.uploads.find((upload) => upload.label === "aura-native-dfg")!.data;
     expect(lookup).toHaveLength(512);
-    expect(lookup[0]).toBe(0.1474609375);
-    expect(lookup[1]).toBe(0.85205078125);
+    // 5.0 independence rule: the DFG table is Aura3D's own GGX split-sum integration
+    // (program/DFGLutData.ts, replacing the r185 table, 26eae82e2); each RG texel is
+    // that integral at the texel centre, stored as binary16.
+    for (const [x, y] of [[0, 0], [4, 8], [15, 15]] as const) {
+      const [a, b] = integrateGgxDfg((x + 0.5) / 16, (y + 0.5) / 16);
+      const offset = (y * 16 + x) * 2;
+      expect(Math.abs(lookup[offset]! - a)).toBeLessThan(Math.max(a, 2 ** -14) * 2 ** -10);
+      expect(Math.abs(lookup[offset + 1]! - b)).toBeLessThan(Math.max(b, 2 ** -14) * 2 ** -10);
+    }
     expect(mock.textures.find((texture) => texture.format === "depth32float")?.usage).toBe(0x14);
     expect(mock.modules.some((code) => code.includes("a3dPhysicalDirect") && code.includes("textureLoad(sceneDepth"))).toBe(true);
     pipeline.dispose();

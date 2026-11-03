@@ -19,7 +19,10 @@ describe("current Three.js baseline", () => {
     expect(report.pass).toBe(true);
     expect(report.historicalVersion).toBe("0.165.0");
     expect(report.currentInputs.context).toBe("0.185.1");
-    expect(report.currentInputs.rootThree).toBe("0.185.1");
+    // S5-WP19-07: the workspace root installs no other 3D engine; only the external
+    // comparison harness (benchmarks/threejs) pins three.
+    expect(report.currentInputs.rootThree).toBeNull();
+    expect(report.currentInputs.rootThreeTypes).toBeNull();
     expect(report.currentInputs.benchmarkThree).toBe("0.185.1");
   });
 

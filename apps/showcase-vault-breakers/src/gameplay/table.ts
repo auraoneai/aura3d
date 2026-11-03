@@ -47,7 +47,14 @@ export const FLIPPER_RAISE_SPEED = 90;
 export const FLIPPER_RETURN_SPEED = -25;
 export const FLIPPER_MOTOR_TORQUE = 600;
 export const FLIPPER_BAT_MASS = 0.35;
-export const RIGHT_JOINT_LIMITS: readonly [number, number] = [-RIGHT_REST_YAW, -RIGHT_UP_YAW];
+/**
+ * Hinge limits are measured from the creation pose (Aura3D 5.0: the joint frame
+ * captures the bodies' relative rotation at creation, on the Rapier and native
+ * solvers alike), and each bat is created at its rest yaw. Both sides therefore
+ * travel 0 (rest) -> +1.12 rad (up) about their same-sign mirrored axes.
+ */
+export const FLIPPER_JOINT_LIMITS: readonly [number, number] = [0, FLIPPER_UP_YAW - FLIPPER_REST_YAW];
+export const RIGHT_JOINT_LIMITS: readonly [number, number] = [0, RIGHT_REST_YAW - RIGHT_UP_YAW];
 
 /** Fixed outgoing speed after bumper reflection (m/s). */
 export const BUMPER_REFLECT_SPEED = 4.0;
@@ -457,9 +464,7 @@ export function createTableSimulation(): TableSimulation {
     const restYaw = side === "left" ? FLIPPER_REST_YAW : RIGHT_REST_YAW;
     const upYaw = side === "left" ? FLIPPER_UP_YAW : RIGHT_UP_YAW;
     const axis: readonly [number, number, number] = side === "left" ? [0, 1, 0] : [0, -1, 0];
-    const limits: readonly [number, number] = side === "left"
-      ? [FLIPPER_REST_YAW, FLIPPER_UP_YAW]
-      : RIGHT_JOINT_LIMITS;
+    const limits: readonly [number, number] = side === "left" ? FLIPPER_JOINT_LIMITS : RIGHT_JOINT_LIMITS;
     const pivot: readonly [number, number, number] = [pivotX, BALL_RADIUS + 0.02, 3.15];
     const batCenter: readonly [number, number, number] = [
       pivot[0] + Math.cos(restYaw) * 0.4,

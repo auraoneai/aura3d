@@ -77,10 +77,12 @@ const checks = [
   check("context-exists", existsSync(resolve(repoRoot, contextRelativePath)), contextRelativePath),
   check("surface-inventory-exists", existsSync(resolve(repoRoot, inventoryRelativePath)), inventoryRelativePath),
   check("context-is-not-historical-target", context.three.version !== historicalVersion, `current=${context.three.version}; forbidden current target=${historicalVersion}`),
-  check("current-inputs-agree", Object.entries(currentInputs).filter(([key]) => key !== "rootThreeTypes").every(([, value]) => value === context.three.version), JSON.stringify(currentInputs)),
-  check("types-match-current-minor", currentInputs.rootThreeTypes === "0.185.4", `@types/three=${currentInputs.rootThreeTypes}`),
+  // S5-WP19-07 (docs/prds/aura3d-5.0-scope.md, 2026-11-02): the workspace installs no other 3D
+  // engine; three.js lives only in the external comparison harnesses (benchmarks/threejs, ...).
+  check("current-inputs-agree", Object.entries(currentInputs).filter(([key]) => key !== "rootThree" && key !== "rootThreeTypes").every(([, value]) => value === context.three.version), JSON.stringify(currentInputs)),
+  check("root-installs-no-three", currentInputs.rootThree === null && currentInputs.rootThreeTypes === null, `three=${currentInputs.rootThree}; @types/three=${currentInputs.rootThreeTypes}`),
   check("npm-and-tag-commit-agree", context.three.npmGitHead === context.three.releaseCommit, `${context.three.npmGitHead} vs ${context.three.releaseCommit}`),
-  check("root-lock-has-current-three", lockfile.includes("three@0.185.1:") && lockfile.includes("specifier: 0.185.1"), "pnpm lock contains exact three@0.185.1 importer and package"),
+  check("root-lock-has-no-three", !/(?:^|[\s/'"])(?:@types\/)?three@\d/m.test(lockfile), "pnpm lock has no three or @types/three package (S5-WP19-07)"),
   check("root-lock-does-not-select-historical-three", !lockfile.includes("three@0.165.0:") && !lockfile.includes("specifier: ^0.165.0") && !lockfile.includes("specifier: 0.165.0"), "pnpm lock has no active three@0.165.0 package/importer"),
   check("official-surface-inventory-complete", ["WebGLRenderer", "WebGPURenderer", "TSL", "EffectComposer", "GLTFLoader", "AnimationMixer", "InstancedMesh", "LOD", "WebXRManager"].every((name) => context.officialSurfaceSources.some((url) => url.includes(name.toLowerCase()) || url.includes(name))), `${context.officialSurfaceSources.length} official source URLs locked`),
   check("workload-set-complete", context.workloads.length === 15, `${context.workloads.length} of 15 required workloads locked`),
