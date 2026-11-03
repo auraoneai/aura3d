@@ -15,7 +15,24 @@ function extractFunctionBody(source: string, name: string): string {
     if (char === "(") parenDepth += 1;
     if (char === ")") { parenDepth -= 1; if (parenDepth === 0) { paramEnd += 1; break; } }
   }
-  const braceStart = source.indexOf("{", paramEnd);
+  // Skip a return-type annotation, which may itself contain braces
+  // (`): Promise<Renderer & { readonly loadedAssetIds: ... }> {`).
+  let braceStart = paramEnd;
+  while (braceStart < source.length && /\s/.test(source[braceStart]!)) braceStart += 1;
+  if (source[braceStart] === ":") {
+    let typeDepth = 0;
+    let sawToken = false;
+    for (braceStart += 1; braceStart < source.length; braceStart += 1) {
+      const char = source[braceStart]!;
+      if (typeDepth === 0 && char === "{" && sawToken) break;
+      if ("<([{".includes(char)) typeDepth += 1;
+      else if (char === ">" && source[braceStart - 1] !== "=") typeDepth -= 1;
+      else if (")]}".includes(char)) typeDepth -= 1;
+      if (!/\s/.test(char)) sawToken = true;
+    }
+  } else {
+    braceStart = source.indexOf("{", paramEnd);
+  }
   expect(braceStart, `expected function ${name} to have a body`).toBeGreaterThanOrEqual(0);
 
   let depth = 0;
@@ -41,7 +58,9 @@ describe("createAuraApp production bridge boundary", () => {
     const rendererSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/renderer.ts"), "utf8");
     const runtimeRenderer = extractFunctionBody(rendererSource, "createProductionRuntimeSceneRenderer");
     const renderInputSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/renderInput.ts"), "utf8");
-    const inputBuilder = extractFunctionBody(renderInputSource, "createProductionRuntimeRendererInput");
+    // 5.0: the exported builder delegates to an owner-scoped implementation.
+    expect(extractFunctionBody(renderInputSource, "createProductionRuntimeRendererInput")).toContain("createProductionRuntimeRendererInputOwned(");
+    const inputBuilder = extractFunctionBody(renderInputSource, "createProductionRuntimeRendererInputOwned");
     const collectedLights = extractFunctionBody(source, "createProductionRuntimeCollectedLights");
     const postprocessSource = readFileSync(resolve(process.cwd(), "packages/engine/src/agent-api/compiler/postprocess.ts"), "utf8");
     const postprocess = extractFunctionBody(postprocessSource, "createProductionRuntimePostprocess");
@@ -59,8 +78,12 @@ describe("createAuraApp production bridge boundary", () => {
     expect(runtimeRenderer).toContain("actor.dispose()");
     expect(runtimeRenderer).toContain("modelNodes.length > 0");
     expect(runtimeRenderer).toContain("Renderer.create");
-    expect(runtimeRenderer).toContain("productionRenderer.render(");
-    expect(runtimeRenderer).toContain("productionRenderer.renderAsync(");
+    // 5.0: frames go through the probe-capture frame helpers, which own the
+    // PRD-07 renderer operation and call the production Renderer themselves.
+    expect(runtimeRenderer).toContain("renderProductionSourceWithProbesInFrame(productionRenderer, ");
+    expect(runtimeRenderer).toContain("await renderProductionSourceWithProbesInAsyncFrame(productionRenderer, ");
+    expect(extractFunctionBody(rendererSource, "renderProductionSourceWithProbesInFrame")).toContain("renderer.render(source, camera)");
+    expect(extractFunctionBody(rendererSource, "renderProductionSourceWithProbesInAsyncFrame")).toContain("renderer.renderAsync(source, camera)");
     expect(runtimeRenderer).toContain("rendererInteractiveFeatureReport");
     // GU47 eint EB-2: an explicit renderer.quality tier rides along as the local shadow caster cap.
     expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true, ...(mountShadowTier ? { shadowTier: mountShadowTier } : {}) })");
@@ -80,7 +103,8 @@ describe("createAuraApp production bridge boundary", () => {
     expect(inputBuilder).toContain("createProductionRuntimePostprocess(snapshot, collectedLights,");
     expect(inputBuilder).toContain("createProductionRuntimeShadowOptions(snapshot, collectedLights)");
 
-    expect(collectedLights).toContain("groups.flatten(snapshot.nodes)");
+    // 5.0: lights flatten through the world-matrix-preserving scene flattener.
+    expect(collectedLights).toContain("flattenNodesWithLineWorldMatrices(snapshot.nodes)");
     expect(collectedLights).toContain("createProductionRuntimeLightDescriptors");
     expect(collectedLights).toContain("createProductionRuntimeFallbackLights");
     expect(collectedLights).toContain("createProductionRuntimeCollectedLight");

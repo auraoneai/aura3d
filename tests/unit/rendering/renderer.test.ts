@@ -123,6 +123,8 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
+  // Canvas presentation: 5.0 requires the tone stage's output color space to
+  // match the canvas (WEBGPU_OUTPUT_COLOR_SPACE_UNSUPPORTED; the fake canvas is sRGB).
   it.each(["rgba8", "rgba16f"] as const)("submits native WebGPU %s postprocess targets to canvas presentation", async (targetFormat) => {
     const native = createNativeFakeWebGPU();
     const canvas = createFakeWebGPUCanvas();
@@ -130,7 +132,7 @@ describe("Renderer", () => {
     const diagnostics = renderer.render({ renderItems: [], postprocess: {
       targetFormat,
       bloom: { threshold: 0.75, intensity: 0.5, radius: 0 },
-      toneMapping: { exposure: 1, gamma: 1, operator: "reinhard", outputColorSpace: "linear" }
+      toneMapping: { exposure: 1, gamma: 1, operator: "reinhard", outputColorSpace: "srgb" }
     } });
     expect(diagnostics.postprocessTargetFormat).toBe(targetFormat);
     expect(diagnostics.postprocessPassNames).toEqual(["bloom", "tone-mapping"]);
@@ -191,7 +193,7 @@ describe("Renderer", () => {
       postprocess: {
         targetFormat: "rgba8",
         bloom: { threshold: 0.1, intensity: 0.2, radius: 1 },
-        toneMapping: { exposure: 1, gamma: 1, operator: "reinhard", outputColorSpace: "linear" },
+        toneMapping: { exposure: 1, gamma: 1, operator: "reinhard", outputColorSpace: "srgb" },
         fxaa: true
       }
     });
@@ -1470,7 +1472,11 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
-  it("can batch compatible static render items inside the renderer", async () => {
+  // 5.0: renderer-owned instanced static batching requires a device whose frame
+  // execution is attested (renderer/BatchExecutionTrust.ts: none is yet), so the
+  // mock device keeps every logical item; physical pair batching is the WebGL2
+  // path covered by native-static-batch-fallbacks.test.ts.
+  it("keeps compatible static render items logical on an unattested device", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 4, height: 4 });
     const geometry = Geometry.triangle();
     const material = new InstancedUnlitMaterial({ color: [0.9, 0.7, 0.3, 1] });
@@ -1484,13 +1490,12 @@ describe("Renderer", () => {
       ]
     });
 
-    const command = (renderer.device as MockRenderDevice).drawCommands[0];
+    const commands = (renderer.device as MockRenderDevice).drawCommands;
     expect(diagnostics.submittedObjects).toBe(3);
     expect(diagnostics.visibleObjects).toBe(3);
-    expect(diagnostics.drawCalls).toBe(1);
-    expect(command?.label).toMatch(/^renderer-static-batch-/);
-    expect(command?.instanceCount).toBe(3);
-    expect(command?.uniforms?.get("u_instanceCount")).toBe(3);
+    expect(diagnostics.drawCalls).toBe(3);
+    expect(commands).toHaveLength(3);
+    expect(commands.some((command) => /^renderer-static-batch-/.test(command.label ?? ""))).toBe(false);
     renderer.dispose();
   });
 

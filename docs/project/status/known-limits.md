@@ -91,6 +91,9 @@ candidate. Final release claims require regeneration and source-bound receipts.
 - Temp-path provenance, duplicate hashes without explanation, placeholder-like
   assets, unreadable materials, and primitive substitutions are release blockers
   for public showcases.
+- No current 77-asset glTF corpus entry is expected-fail.
+  The corpus (`tests/assets/corpus/gltf-corpus.manifest.json`) is importer
+  evidence for the named assets only.
 
 ## WebGPU Limits
 

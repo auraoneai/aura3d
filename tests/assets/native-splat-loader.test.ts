@@ -664,13 +664,15 @@ describe("native Gaussian splat imports", () => {
     vi.stubGlobal("fetch", fetchMock);
     try {
       const manager = new AssetManager(); manager.register(new GaussianSplatLoader());
-      const first = await manager.load<GaussianSplatData>("https://example.test/multi.gltf", { type: "gaussian-splat" });
-      const second = await manager.load<GaussianSplatData>("https://example.test/multi.gltf", { type: "gaussian-splat" });
+      // 5.0 (docs/migration/4-to-5.md §5.4): only credential-free requests (or ones with a
+      // securityContext) are shared and cached, so request the shareable policy explicitly.
+      const first = await manager.load<GaussianSplatData>("https://example.test/multi.gltf", { type: "gaussian-splat", credentials: "omit" });
+      const second = await manager.load<GaussianSplatData>("https://example.test/multi.gltf", { type: "gaussian-splat", credentials: "omit" });
       expect(second).toBe(first); expect(first.refCount).toBe(2); expect(first.value.additionalClouds).toHaveLength(1);
       const previous = first.value.additionalClouds![0]!.positions;
       await first.release(); expect(second.value.additionalClouds![0]!.positions).toBe(previous);
       await second.release(); expect(second.status).toBe("disposed"); expect(() => second.value).toThrow(/disposed/);
-      const reloaded = await manager.load<GaussianSplatData>("https://example.test/multi.gltf", { type: "gaussian-splat" });
+      const reloaded = await manager.load<GaussianSplatData>("https://example.test/multi.gltf", { type: "gaussian-splat", credentials: "omit" });
       expect(fetchMock).toHaveBeenCalledTimes(2); expect(reloaded.value.additionalClouds![0]!.positions).not.toBe(previous);
       await reloaded.release();
     } finally { vi.unstubAllGlobals(); }

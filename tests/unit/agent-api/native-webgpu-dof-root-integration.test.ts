@@ -218,8 +218,9 @@ describe("root-authored depth of field on native WebGPU", () => {
       { camera: { viewProjectionMatrix: identity }, viewport: { x: 2, y: 0, width: 2, height: 4 } }
     ] };
     try {
-      if (asynchronous) await expect(renderer.renderAsync(input)).rejects.toMatchObject({ code: "NATIVE_DOF_FRAME_UNSUPPORTED" });
-      else expect(() => renderer.render(input)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_FRAME_UNSUPPORTED" }));
+      // Multiview native DoF has its own stable code (docs/rendering/native-backends.md).
+      if (asynchronous) await expect(renderer.renderAsync(input)).rejects.toMatchObject({ code: "NATIVE_DOF_MULTIVIEW_UNSUPPORTED" });
+      else expect(() => renderer.render(input)).toThrowError(expect.objectContaining({ code: "NATIVE_DOF_MULTIVIEW_UNSUPPORTED" }));
       expect(device.beginNativeDepthOfFieldFrame).not.toHaveBeenCalled();
       expect(device.presentLdrPostprocess).not.toHaveBeenCalled();
     } finally { renderer.dispose(); }
