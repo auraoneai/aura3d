@@ -63,7 +63,7 @@ import { Renderer, packedLoopMemberFor } from "@aura3d/rendering";
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
 import type { TypedGLBActor, TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
-import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
+import { EnvironmentCache, defaultProbeLoader } from "@aura3d/rendering";
 import { bindPrd02EnvironmentProbe, prd02EnvironmentProbeRequestKey, prd02ProbeBindIntensities, runtimeEnvironmentIntensity, scaleEnvironmentLighting } from "./environment.js";
 import { resolveEnvironment, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
 import { prd02LightingOn, updateRuntimePhotometricLights, usePhotometricWorldPose } from "./lights.js";

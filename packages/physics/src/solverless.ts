@@ -56,6 +56,8 @@ export { RigidBody } from "./RigidBody.js";
 export type { Quat, RigidBodyDescriptor, RigidBodySnapshot, RigidBodyType } from "./RigidBody.js";
 export { raycastCollider, sphereCastCollider } from "./Raycast.js";
 export type { RaycastHit, RaycastOptions, SphereCastHit } from "./Raycast.js";
+// Joint descriptors import only `Shape` math (and `RigidBody` as a type), never the solver.
+export { Constraint } from "./Constraint.js";
 
 // Preserve the original physics declaration identities without exposing the
 // world entry's optional-backend initialization exports.

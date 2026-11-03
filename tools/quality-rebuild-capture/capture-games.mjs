@@ -150,6 +150,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // games.json validation
 // ---------------------------------------------------------------------------------------------
 const STEP_KEYS = ["wait", "press", "down", "up", "hold", "shot", "until", "drag", "click", "focus", "tap", "repeat", "fps", "releaseAll", "mouse"];
+const START_INPUT_KEYS = ["wait", "press", "hold", "click", "focus", "tap", "mouse"];
 
 function validateTimeline(game) {
   const problems = [];
@@ -184,6 +185,17 @@ function validateTimeline(game) {
     });
   };
   walk(game.timeline, `${game.id}.timeline`);
+  if (game.startInput !== undefined) {
+    // The documented start gesture is input only: no shots, loops or samplers.
+    const before = shots.length;
+    walk(game.startInput, `${game.id}.startInput`);
+    if (shots.length !== before) problems.push(`${game.id}.startInput: shots are not allowed`);
+    for (const step of Array.isArray(game.startInput) ? game.startInput : []) {
+      if (step && typeof step === "object" && !START_INPUT_KEYS.some((k) => k in step)) {
+        problems.push(`${game.id}.startInput: only ${START_INPUT_KEYS.join("/")} steps are allowed`);
+      }
+    }
+  }
   const dupes = shots.filter((s, i) => shots.indexOf(s) !== i);
   if (dupes.length) problems.push(`${game.id}: duplicate shot names ${dupes.join(", ")}`);
   for (const required of defaults.requiredShots ?? []) {
@@ -833,11 +845,35 @@ async function captureRun(browser, game, run, url, gameDir, options = {}) {
     const readyTimeout = game.readyTimeoutMs ?? defaults.readyTimeoutMs ?? 30_000;
     const fallbackMs = defaults.readyFallbackMs ?? 6_000;
     let canvasAt = null; let reason = "timeout"; let last = null;
+    const startSteps = Array.isArray(game.startInput) ? game.startInput : [];
+    let startSent = false;
     const pollStart = Date.now();
     while (Date.now() - pollStart < readyTimeout + 15_000) {
       last = await page.evaluate(pageReadiness).catch(() => null);
       if (last && game.readyExpr) last.custom = Boolean(await evaluateExpression(page, game.readyExpr));
       if (last && last.canvasCount > 0 && canvasAt === null) canvasAt = Date.now();
+      // FLAG-2: readyExpr stays the strict C-24 contract, so a route that holds
+      // on a title/attract screen must get its documented start input (games.json
+      // `startInput`) once the canvas presents, before readiness is waited on.
+      const presenting = last && last.canvasCount > 0 &&
+        ((last.liveDrawCalls ?? 0) > 0 || last.firstDrawAt !== null || last.firstGpuSubmitAt !== null);
+      if (!startSent && startSteps.length && presenting) {
+        const readyNow = last.beacon ? last.beacon.state === "playing" : (game.readyExpr ? last.custom === true : false);
+        if (!readyNow) {
+          startSent = true;
+          if (game.focus?.selector) {
+            const loc = page.locator(game.focus.selector).first();
+            if (game.focus.method === "click") await loc.click({ timeout: 5_000 }).catch(() => undefined);
+            else await loc.focus({ timeout: 5_000 }).catch(() => undefined);
+          }
+          const sentAt = Date.now() - navStarted;
+          await new Timeline(page, run, game, gameDir, record, null).exec(startSteps).catch((e) => {
+            (record.flags ??= []).push(`start-input-failed: ${String(e?.message ?? e).slice(0, 160)}`);
+          });
+          record.startInput = { sentAfterGotoMs: sentAt, beaconState: last.beacon?.state ?? null, steps: startSteps };
+          continue;
+        }
+      }
       if (last && last.beacon) {
         if (last.beacon.state === "playing") {
           reason = "beacon";

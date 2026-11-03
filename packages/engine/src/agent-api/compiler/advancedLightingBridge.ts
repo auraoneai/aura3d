@@ -2,8 +2,8 @@ import type { RenderDevice, RenderItem, RenderSource } from "@aura3d/rendering";
 import { AuraAdvancedLightingUnavailableError } from "../../contracts/lighting.js";
 import { advancedLightingStateFor, type AdvancedIndirectBinding, type AdvancedLightmapBinding, type AdvancedLightingSnapshotTicket } from "../app/advancedLightingState.js";
 import { ADVANCED_LIGHTING_BINDING, advancedLightingItemBinding, stampAdvancedLightingBinding,
-  type AdvancedLightingFrame, type AdvancedLightingSource } from "../../../../rendering/src/lighting/AdvancedLightingBindings.js";
-import { prd02ItemIrradianceBindings } from "../../../../rendering/src/probes/ProbeBoxProjection.js";
+  type AdvancedLightingFrame, type AdvancedLightingSource } from "@aura3d/rendering/lighting";
+import { prd02ItemIrradianceBindings } from "@aura3d/rendering";
 
 /** Authored node identity is kept out of userData and normal batching keys. */
 export interface AdvancedLightingOrigin {

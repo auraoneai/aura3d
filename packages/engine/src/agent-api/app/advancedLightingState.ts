@@ -1,7 +1,7 @@
 import { AuraAdvancedLightingUnavailableError, type AuraAdvancedIndirectOptions, type AuraAdvancedIndirectSource,
   type AuraLightmapAttachmentOptions, type AuraProbeGridAttachmentOptions, type AuraVoxelAttachmentOptions } from "../../contracts/lighting.js";
 import type { NativeBakedLightmapRenderData, NativeLightProbeGridRenderData, VoxelIndirectRenderData } from "@aura3d/rendering/lighting";
-import { verifyNativeBakedLightmap } from "../../../../rendering/src/lighting/NativeLightBaking.js";
+import { verifyNativeBakedLightmap } from "@aura3d/rendering/lighting";
 
 type ProbeBinding = {
   readonly kind: "probe-grid";

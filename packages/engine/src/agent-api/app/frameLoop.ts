@@ -24,7 +24,7 @@ import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusi
 import { authoredBackingResize, canvasContentBox, noteEngineCanvasSize, ownSizedCanvasAxes, refreshOwnSizedAxes } from "./canvas.js";
 import { setAdvancedLightingInvalidator } from "./advancedLightingState.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
-import { isPrd07DeviceLeaseBusy } from "../../../../rendering/src/vfx/Prd07FrameAdapter.js";
+import { isPrd07DeviceLeaseBusy } from "@aura3d/rendering";
 import { RenderDeviceError } from "@aura3d/rendering";
 
 function frameSetupCleanupFailure(error: unknown, failures: readonly unknown[]): RenderDeviceError {

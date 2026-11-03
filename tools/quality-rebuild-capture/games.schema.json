@@ -52,7 +52,8 @@
             "acceptedBy": { "type": "array", "items": { "type": "string" } }
           }
         },
-        "qrFlags": { "type": "array", "items": { "type": "string" } }
+        "qrFlags": { "type": "array", "items": { "type": "string" } },
+        "startInput": { "type": "array", "items": { "type": "object" } }
       },
       "additionalProperties": true
     }

@@ -27,7 +27,8 @@
     "/examples/neon-corridor-strike/"
    ],
    "evidenceGlobal": "__AURA3D_GAME_EVIDENCE__",
-   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+   "startInput": [],
    "focus": {
     "selector": ".aca",
     "method": "focus"
@@ -491,7 +492,8 @@
    "legacy": {
     "evidenceGlobal": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__"
    },
-   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+   "startInput": [{ "press": "Enter" }],
    "captureContractMigrated": true,
    "titleDeterministic": null,
    "scenarios": [
@@ -744,7 +746,8 @@
    "legacy": {
     "evidenceGlobal": "__AURORA_LANDER_EVIDENCE__"
    },
-   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+   "startInput": [],
    "captureContractMigrated": true,
    "titleDeterministic": null,
    "scenarios": [
@@ -996,7 +999,8 @@
    "legacy": {
     "evidenceGlobal": "__VAULT_BREAKERS_EVIDENCE__"
    },
-   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+   "startInput": [],
    "captureContractMigrated": true,
    "titleDeterministic": null,
    "scenarios": [
@@ -1229,7 +1233,8 @@
    "legacy": {
     "evidenceGlobal": "__BANK_SHOT_EVIDENCE__"
    },
-   "readyExpr": "(window.__AURA3D_GAME__?.state === 'playing' || document.body?.dataset?.aura3dReady === 'true' || document.body?.dataset?.aura3dShowcaseReady === 'true' || Boolean(window.__AURA_CLASH_ARENA_PROOF__ || window.__AURA3D_FPS_EVIDENCE__ || window.__AURA3D_GAME_EVIDENCE__))",
+   "readyExpr": "window.__AURA3D_GAME__?.state === 'playing'",
+   "startInput": [],
    "captureContractMigrated": true,
    "titleDeterministic": null,
    "scenarios": [

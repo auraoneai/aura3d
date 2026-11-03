@@ -126,7 +126,8 @@ export type { ProgramDegradation, GenerateProgramOptions } from "./program/Progr
 export { ProgramCache, subscribeProgramReadiness } from "./program/ProgramCache";
 export { ProgramWarmup, collectWarmupFeatures } from "./program/ProgramWarmup";
 export type { WarmupInput, WarmupResult } from "./program/ProgramWarmup";
-export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
+export { defaultProgramFeatures, materialFeatureWarning, materialUsesGeneratedProgram, materialRoutesToGeneratedProgram, ALLOWLIST_PROGRAM_SHADERS } from "./program/MaterialFeatures";
+export type { ProjectedSpotResource } from "./lighting/ProjectedSpotBindings";
 export { qrCoreGeneratorOn, qrCoreOutputOn, qrE3CompilerLightingOn, rendererProgramCache, rendererProgramCachePeek, rendererAuraFrame, rendererOutputPass, setRendererProgramDegradationSink } from "./renderer/qrSubFlags";
 export { createPrd06ProgramCacheWarmup, type Prd06ShaderWarmupOptions } from "./renderer/Prd06ShaderWarmup";
 export { OutputPass } from "./output/OutputPass";
@@ -515,6 +516,7 @@ export {
   createProductionOrbitControlPreset,
   createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromLinear,
   createProductionPbrHdrPipelineFromRadiance,
   createProductionToneMappingPolicy,
   createProductionWebGPUReport,

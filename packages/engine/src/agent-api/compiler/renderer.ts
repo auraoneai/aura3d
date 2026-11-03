@@ -34,9 +34,9 @@ import { updateRuntimePhotometricLights } from "./lights.js";
 import { runtimeMaterialRevision, type RuntimeMaterialChange } from "../app/runtimeNodes.js";
 import { createAppTextureResidency, type AppTextureResidency } from "./textureResidency.js";
 import { createAdvancedLightingBridge, type AdvancedLightingBridge } from "./advancedLightingBridge.js";
-import { qrCoreGeneratorOn } from "../../../../rendering/src/renderer/qrSubFlags.js";
-import { programCacheSlot } from "../../../../rendering/src/contracts/program.js";
-import { materialRoutesToGeneratedProgram } from "../../../../rendering/src/program/MaterialFeatures.js";
+import { qrCoreGeneratorOn } from "@aura3d/rendering";
+import { programCacheSlot } from "@aura3d/rendering/contracts";
+import { materialRoutesToGeneratedProgram } from "@aura3d/rendering";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { clearProductionPrimitiveTextureQueued, isPreparedProductionPrimitiveTextureWorkCurrent, noteProductionPrimitiveTextureQueued, texturePendingMs, prepareProductionPrimitiveTextureWork, upgradeProductionPrimitiveTextures, type PreparedProductionPrimitiveTextureWork } from "./textures.js";
 import { prepareCustomMaterialTextureWork, upgradeCustomMaterialTextures, type PreparedCustomMaterialTextureWork } from "./customTextures.js";
@@ -60,12 +60,12 @@ import { readActiveOutputColorSpace } from "../app/outputColorDiagnostics.js";
 import { bindPostDiagnosticReader } from "../postBridge.js";
 import type { Prd07MountAuthority } from "../vfx/bridge.js";
 import type { TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
-import type { ProjectedSpotResource as RendererProjectedSpotResource } from "../../../../rendering/src/lighting/ProjectedSpotBindings.js";
-import { disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "../../../../rendering/src/probes/Prd02ProbesContributor.js";
-import { rendererQrFlags, setRendererQrFlags } from "../../../../rendering/src/renderer/FrameGraph.js";
+import type { ProjectedSpotResource as RendererProjectedSpotResource } from "@aura3d/rendering";
+import { disposePrd02Probes, prd02BeforeFrame, prd02BeforeFrameAsync, withPrd02ProbeFrameLock, type Prd02ProbeCaptureRenderer } from "@aura3d/rendering";
+import { rendererQrFlags, setRendererQrFlags } from "@aura3d/rendering";
 import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginPrd07RendererOperation, bindPrd07RendererAuthority,
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
-  type Prd07RendererOperation } from "../../../../rendering/src/vfx/Prd07RendererBridge.js";
+  type Prd07RendererOperation } from "@aura3d/rendering";
 import type { AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere.js";
 
 const syncProductionFrames = new WeakSet<object>();

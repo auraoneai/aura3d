@@ -113,3 +113,16 @@ export type { LowResCompositeDefines } from "../vfx/shaders/lowresComposite.glsl
 export type { DecalProgramDefines } from "../vfx/shaders/decal.glsl";
 export { BEAM_SHADER_MARKER, beamVertexSource, beamFragmentSource, beamProgramKey } from "../vfx/shaders/beam.glsl";
 export { MESH_PARTICLE_SHADER_MARKER, meshParticleVertexSource, meshParticleFragmentSource } from "../vfx/shaders/mesh-particle.glsl";
+// Renderer-bridge leases the engine compiler/frame loop share with the
+// rendering package (package entrypoint instead of a cross-package src path).
+export {
+  assertPrd07RendererLeaseAvailable,
+  assertPrd07RendererOperation,
+  beginPrd07RendererOperation,
+  bindPrd07RendererAuthority,
+  endPrd07RendererOperation,
+  withBorrowedPrd07RendererOperation,
+  withPrd07RendererCanvasLock,
+  type Prd07RendererOperation
+} from "../vfx/Prd07RendererBridge";
+export { isPrd07DeviceLeaseBusy } from "../vfx/Prd07FrameAdapter";

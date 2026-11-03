@@ -1,5 +1,4 @@
-import { Collider, RigidBody, Shape } from "@aura3d/physics/solverless";
-import { Constraint } from "../../../../../physics/src/Constraint.js";
+import { Collider, Constraint, RigidBody, Shape } from "@aura3d/physics/solverless";
 
 // This key is deliberately private to this module: a structurally identical
 // object cannot accidentally become a second accepted core in TypeScript.

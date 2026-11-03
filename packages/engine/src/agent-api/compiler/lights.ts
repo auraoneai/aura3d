@@ -16,10 +16,10 @@ import type { CollectedLight } from "@aura3d/rendering";
 import { DirectionalLight, PointLight, RectAreaLight, SpotLight, type Light } from "@aura3d/scene";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 // Deep import (lane-15 package export map untouched; FlagshipFoundation pattern).
-import type { AuraLightData } from "../../../../rendering/src/LightUniforms.js";
-import type { PhotometricProfileTable } from "../../../../rendering/src/lighting/PhotometricProfileAtlas.js";
+import type { AuraLightData } from "@aura3d/rendering";
+import type { PhotometricProfileTable } from "@aura3d/rendering";
 // threejs-parity AD-16: LightProbe SH9 evaluation (same deep-import pattern).
-import { evaluateSH9Radiance } from "../../../../rendering/src/environment/SphericalHarmonics.js";
+import { evaluateSH9Radiance } from "@aura3d/rendering";
 
 export function createProductionRuntimeFallbackLights(flags?: { on(name: string): boolean }): readonly CollectedLight[] {
   // PRD-02: under A3D_QR_LIGHTING the authored-defaults fallback light rig is

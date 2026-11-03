@@ -157,7 +157,8 @@ export {
   type BakedEnvironmentManifest,
   EnvironmentCache,
   environmentCacheLimit,
-  defaultProbeLoader
+  defaultProbeLoader,
+  hdriProbeFaceSize
 } from "../environment/EnvironmentCache.js";
 export {
   type A3DEnvironmentUniformInput,
@@ -273,10 +274,18 @@ export {
   probeNodesFromSource,
   // 02-S12: frame-host pre-frame hook (#1113) + collect-phase cube override.
   prd02BeforeFrame,
+  prd02BeforeFrameAsync,
+  queuePrd02ProbeUpdate,
+  withPrd02ProbeFrameLock,
+  disposePrd02Probes,
   applyProbeEnvironmentCubes,
   PROBE_BINDINGS_BLACKBOARD_KEY,
   type Prd02ProbeCaptureRenderer
 } from "../probes/Prd02ProbesContributor.js";
+export { prd02ItemIrradianceBindings } from "../probes/ProbeBoxProjection.js";
+// Lane-02 light counters read by the engine lane barrel and compiler.
+export { auraLightsCounters, auraLightsLastFrame, type AuraLightData } from "../LightUniforms.js";
+export type { PhotometricProfileTable } from "../lighting/PhotometricProfileAtlas.js";
 export {
   fetchLtcLutTextures,
   gaussLegendreRectDiffuse,

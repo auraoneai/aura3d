@@ -778,9 +778,9 @@ import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending, type Aur
 // Deep imports: @aura3d/rendering has no "./environment" subpath and contracts
 // don't re-export RenderDevice (lane-15/-01 files); same pattern as
 // FlagshipFoundation's rendering/src deep imports.
-import type { RenderDevice } from "../../../../rendering/src/RenderDevice.js";
-import { EnvironmentCache, defaultProbeLoader, hdriProbeFaceSize } from "../../../../rendering/src/environment/EnvironmentCache.js";
-import { Texture } from "../../../../rendering/src/Texture.js";
+import type { RenderDevice } from "@aura3d/rendering";
+import { EnvironmentCache, defaultProbeLoader, hdriProbeFaceSize } from "@aura3d/rendering";
+import { Texture } from "@aura3d/rendering";
 import { fetchBytes as fetchAssetBytes, LoadContext, mergeAssetRequestOptions, requestIdentityDetails, type AssetRequestOptions } from "@aura3d/assets/browser";
 import { decodeProductionEnvironmentImage, productionEnvironmentRequest } from "./primitives.js";
 import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";

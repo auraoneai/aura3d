@@ -11,6 +11,7 @@
 // `--strict` mode turns warnings into a nonzero exit for the enforce-mode
 // flip later in the lane.
 // Run: pnpm exec tsx --tsconfig tsconfig.base.json tools/arch-gates/index.ts [--strict] [--out <path>]
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve, dirname, relative, sep, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -91,7 +92,27 @@ export function checkSrcClean(root: string): GateFinding[] {
       }
     }
   }
-  return findings;
+  return withoutGitIgnored(root, findings);
+}
+
+/**
+ * Untracked, git-ignored files (e.g. stale local `*.js.map` debris from an old
+ * in-place tsc emit) never reach a checkout, a packed tarball or the remote
+ * runner, so they are not source-tree findings. Tracked files are never
+ * reported as ignored by `git check-ignore`, so a committed artifact still
+ * fails. Outside a git work tree (fixtures) nothing is filtered.
+ */
+function withoutGitIgnored(root: string, findings: GateFinding[]): GateFinding[] {
+  if (!findings.length) return findings;
+  const result = spawnSync("git", ["-C", root, "check-ignore", "--stdin"], {
+    input: findings.map((f) => f.file).join("\n"),
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024
+  });
+  // 0 = some ignored, 1 = none ignored, anything else = not a work tree / no git.
+  if (result.error || (result.status !== 0 && result.status !== 1)) return findings;
+  const ignored = new Set(result.stdout.split("\n").map((line) => line.trim()).filter(Boolean));
+  return findings.filter((f) => !ignored.has(f.file));
 }
 
 // ---------------------------------------------------------------------------

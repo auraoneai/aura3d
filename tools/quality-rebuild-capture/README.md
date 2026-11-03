@@ -128,7 +128,12 @@ Times are wall-clock. Key names are `KeyboardEvent.code` values.
 | `{"mouse": {...}}`, `{"click": sel}`, `{"focus": sel}`, `{"tap": sel}`, `{"releaseAll": true}` | other pointer and focus helpers |
 
 Game-level fields: `focus: {selector, method: focus|click}` is applied after readiness.
-`readyExpr`, `evidenceGlobal` and `altRoutes` are optional.
+`startInput` is the game's documented start gesture (`wait`/`press`/`hold`/`click`/`focus`/`tap`/`mouse`
+steps, no shots). It is sent once, after the canvas first presents and before readiness is
+waited on, only if the route is not already ready (beacon `playing` / `readyExpr` true); `[]`
+records that the game auto-starts. Rebuild routes keep the strict C-24 `readyExpr`
+(`window.__AURA3D_GAME__?.state === 'playing'`). The run record's `startInput` notes when it was sent.
+`readyExpr`, `startInput`, `evidenceGlobal` and `altRoutes` are optional.
 
 Expressions run through CDP `Runtime.evaluate` as strings, so a route's CSP can't block them.
 

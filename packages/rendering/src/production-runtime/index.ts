@@ -27,6 +27,7 @@ export type { ProductionWebGL2RendererOptions } from "./backendSelection";
 export {
   createDualProbeEnvironmentLightingResources,
   createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromLinear,
   createProductionPbrHdrPipelineFromRadiance,
   createProductionToneMappingPolicy,
   parseProductionRadianceHDR
