@@ -481,7 +481,9 @@ export function verifySource5GateInputs({ reports, manifestRef, scope, io }) {
   if (canonical(completion.completedOutcomeIds) !== canonical(reports.completedOutcomeIds) || canonical(completion.completion) !== canonical(reports.outcomeCompletion)) fail('completed outcome IDs differ from the scope + verified checks');
   const used = [value.candidatePlan.path, ...value.archives.map(archive => archive.path),
     value.consumerReports.index.path, ...value.consumerReports.files.map(file => file.path), ...runs.flatMap(run => [run.reportRef.path,
-    ...Object.values(value.stageSources).filter(source => source.runId === run.runId).flatMap(source => [source.stageReport.path, source.log.path])])];
+    // Each winning stage's report, log and recorded `az acr run` exit code (re-read by every later validation).
+    ...Object.entries(value.stageSources).filter(([, source]) => source.runId === run.runId)
+      .flatMap(([stage, source]) => [source.stageReport.path, source.log.path, `${run.dir}/stage-${stage}.rc`])])];
   return { value, used: [...new Set(used)] };
 }
 

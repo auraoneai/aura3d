@@ -140,11 +140,20 @@ describe('acceptance5 gate refusal', () => {
     expect(() => check({ gateText: gate({ matrixSourceReport: { path: '../x' } }) })).toThrow(/source consumer reports/);
   });
 
-  it('source5 records bind the clean-install and matrix reports; examplesSourceReport may be null only there', () => {
-    const source5 = { sourceRunner: 'acr-source5', examplesSourceReport: null };
-    expect(check({ gateText: gate(source5) })).toMatchObject({ consumerSourceReport: 'tests/reports/a.json', matrixSourceReport: 'tests/reports/b.json', examplesSourceReport: null });
+  it('source5 records bind all three reports (examples included) and hand the job their in-job paths', () => {
+    const sha256 = 'a'.repeat(64), retained = 'tests/reports/native-5/r/artifacts';
+    const ref = (job: string) => ({ path: `${retained}/consumers/${job}`, jobPath: job, sha256 });
+    const source5 = { sourceRunner: 'acr-source5', candidatePlan: { path: `${retained}/candidate-plan.json`, jobPath: 'tests/reports/native-5/r/candidate-plan.json', sha256 },
+      sourceConsumerReport: ref('tests/reports/native-consumers/r/source.json'), matrixSourceReport: ref('tests/reports/native-consumers/r/matrix-source.json'),
+      examplesSourceReport: ref('tests/reports/native-examples-catalog/r/examples-source.json') };
+    expect(check({ gateText: gate(source5) })).toMatchObject({ candidatePlan: 'tests/reports/native-5/r/candidate-plan.json',
+      consumerSourceReport: 'tests/reports/native-consumers/r/source.json', matrixSourceReport: 'tests/reports/native-consumers/r/matrix-source.json',
+      examplesSourceReport: 'tests/reports/native-examples-catalog/r/examples-source.json' });
+    // No null exception any more: every source5 record binds an examples report with an in-job path.
+    expect(() => check({ gateText: gate({ ...source5, examplesSourceReport: null }) })).toThrow(/source consumer reports/);
     expect(() => check({ gateText: gate({ ...source5, sourceConsumerReport: null }) })).toThrow(/source consumer reports/);
-    expect(() => check({ gateText: gate({ ...source5, matrixSourceReport: null }) })).toThrow(/source consumer reports/);
+    expect(() => check({ gateText: gate({ ...source5, matrixSourceReport: { path: `${retained}/consumers/m.json`, sha256 } }) })).toThrow(/source consumer reports/);
+    expect(() => check({ gateText: gate({ ...source5, candidatePlan: { path: `${retained}/candidate-plan.json`, sha256 } }) })).toThrow(/candidate plan/);
     expect(() => check({ gateText: gate({ examplesSourceReport: null }) })).toThrow(/source consumer reports/);
   });
 

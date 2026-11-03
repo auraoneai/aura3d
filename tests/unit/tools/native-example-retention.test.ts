@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { assertExampleRetainedIdentity, collectExampleRetainedFiles, exampleOfflineNpmCommand, exampleRetainedFilesDigest, prepareExampleLockedInstall, readExampleCandidateReviews, readExampleInstallBundle, rootServedFile, sourceScriptCommands, stageExampleDependencies, stageExampleVerifiedArchives } from "../../../tools/agent-examples/index.js";
+import { assertExampleRetainedIdentity, assertPackedExampleLock, collectExampleRetainedFiles, packedExampleWrapper, exampleOfflineNpmCommand, exampleRetainedFilesDigest, prepareExampleLockedInstall, readExampleCandidateReviews, readExampleInstallBundle, rootServedFile, sourceScriptCommands, stageExampleDependencies, stageExampleVerifiedArchives } from "../../../tools/agent-examples/index.js";
 import * as archiveAdmission from "../../../tools/release/archive-admission.mjs";
 
 const roots: string[] = [];
@@ -299,5 +299,46 @@ describe("isolated example dependency staging", () => {
     expect(() => readFileSync(join(wrapper, "packages/engine/src/index.ts"))).toThrow();
     expect(rootServedFile(root, "/packages/engine/src/index.ts")).toBeUndefined();
     expect(rootServedFile(root, "/hdri/sky.hdr")).toBe(join(root, "public/hdri/sky.hdr"));
+  });
+});
+
+describe("packed-candidate example installs (ACR source5 path, no custody lock input)", () => {
+  // Synthetic plan: engine depends on core; react is unused by the example.
+  const pkg = (name: string, deps: string[] = []) => ({ name, version: "5.0.0", internalDependencies: deps, tarball: `tests/reports/release-tarballs/${name.replace("@", "").replace("/", "-")}-5.0.0.tgz`,
+    sha256: createHash("sha256").update(name).digest("hex"), integrity: `sha512-${createHash("sha512").update(name).digest("base64")}` });
+  const plan = { version: "5.0.0", packages: [pkg("@aura3d/engine", ["@aura3d/core"]), pkg("@aura3d/core"), pkg("@aura3d/react", ["@aura3d/engine"])] };
+  const example = { name: "camera-path", scripts: { build: "vite build" }, dependencies: { "@aura3d/engine": "workspace:*" }, devDependencies: { vite: "^7.0.0", typescript: "^5.8.3" } };
+  const spec = (name: string) => `file:.aura3d-candidate/${name.replace("@", "").replace("/", "-")}-5.0.0.tgz`;
+  const lockFor = (overrides: Record<string, unknown> = {}) => ({ lockfileVersion: 3, packages: {
+    "": {}, "node_modules/vite": { version: "7.0.0", resolved: "https://registry.npmjs.org/vite/-/vite-7.0.0.tgz", integrity: "sha512-x" },
+    ...Object.fromEntries(["@aura3d/engine", "@aura3d/core"].map((name) => [`node_modules/${name}`, { version: "5.0.0", resolved: spec(name), integrity: plan.packages.find((p) => p.name === name)!.integrity }])),
+    ...overrides } });
+  const installed = ["@aura3d/engine", "@aura3d/core"].map((name) => { const p = plan.packages.find((entry) => entry.name === name)!;
+    return { name, installPath: `node_modules/${name}`, version: p.version, sha256: p.sha256, integrity: p.integrity, contentsSha256: "c".repeat(64) }; });
+
+  it("substitutes candidate specifiers with the staged plan archives and pins the internal closure", () => {
+    const { wrapper, closure, substitutions } = packedExampleWrapper(example, plan as never);
+    expect((wrapper.dependencies as Record<string, string>)["@aura3d/engine"]).toBe(spec("@aura3d/engine"));
+    expect((wrapper.dependencies as Record<string, string>).vite).toBe("^7.0.0");
+    expect(wrapper.overrides).toEqual({ "@aura3d/core": spec("@aura3d/core") });
+    expect(closure.map((p) => p.name)).toEqual(["@aura3d/engine", "@aura3d/core"]);
+    expect(substitutions.map((item) => [item.section, item.name])).toEqual([["dependencies", "@aura3d/engine"], ["overrides", "@aura3d/core"]]);
+    expect(() => assertPackedExampleLock(wrapper, lockFor(), plan as never, substitutions, installed)).not.toThrow();
+  });
+
+  it("refuses external engines, unstaged workspaces, unpinned or foreign locks and incomplete installs", () => {
+    expect(() => packedExampleWrapper({ ...example, dependencies: { ...example.dependencies, three: "^0.170.0" } }, plan as never)).toThrow(/prohibited external 3D engine/);
+    expect(() => packedExampleWrapper({ ...example, dependencies: { ...example.dependencies, "@aura3d/missing": "workspace:*" } }, plan as never)).toThrow(/Missing candidate package/);
+    expect(() => packedExampleWrapper({ ...example, dependencies: { ...example.dependencies, helper: "workspace:*" } }, plan as never)).toThrow(/unstaged local workspace/);
+    const { wrapper, substitutions } = packedExampleWrapper(example, plan as never);
+    const engine = plan.packages[0]!;
+    expect(() => assertPackedExampleLock(wrapper, lockFor({ "node_modules/@aura3d/engine": { version: "5.0.0", resolved: spec(engine.name), integrity: "sha512-other" } }), plan as never, substitutions, installed)).toThrow(/not pinned to the plan integrity/);
+    expect(() => assertPackedExampleLock(wrapper, lockFor({ "node_modules/@aura3d/engine": { version: "5.0.0", resolved: "https://registry.npmjs.org/@aura3d/engine/-/engine-5.0.0.tgz", integrity: engine.integrity } }), plan as never, substitutions, installed)).toThrow(/not pinned/);
+    expect(() => assertPackedExampleLock(wrapper, lockFor({ "node_modules/@aura3d/react": { version: "5.0.0", resolved: spec("@aura3d/react"), integrity: plan.packages[2]!.integrity } }), plan as never, substitutions, installed)).toThrow(/outside the candidate closure/);
+    const noCore = lockFor(); delete (noCore.packages as Record<string, unknown>)["node_modules/@aura3d/core"];
+    expect(() => assertPackedExampleLock(wrapper, noCore, plan as never, substitutions, installed)).toThrow(/not locked: @aura3d\/core/);
+    expect(() => assertPackedExampleLock({ ...wrapper, dependencies: { ...(wrapper.dependencies as object), extra: "file:../x.tgz" } }, lockFor(), plan as never, substitutions, installed)).toThrow(/unrecorded local dependency/);
+    expect(() => assertPackedExampleLock(wrapper, lockFor(), plan as never, substitutions, installed.slice(0, 1))).toThrow(/inventory is incomplete/);
+    expect(() => assertPackedExampleLock(wrapper, lockFor(), plan as never, [], installed)).toThrow(/substitutions are missing/);
   });
 });

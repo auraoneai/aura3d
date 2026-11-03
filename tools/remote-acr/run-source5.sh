@@ -12,10 +12,13 @@
 # to source5/<run>/artifacts/, which are downloaded into <run>/artifacts/ and
 # re-hashed against the plan (tools/remote-acr/source5-artifacts.mjs). packed-b
 # gets the same SAS (same values file) and uploads its consumer source reports
-# (clean-install source.json, matrix-source.json) with every file under their
-# run directories to source5/<run>/consumers/; they are downloaded, re-hashed and
+# (clean-install source.json, matrix-source.json, packed examples-source.json)
+# with every file under their run directories to source5/<run>/consumers/ (one
+# upload per <= 128 MiB chunk); they are downloaded, re-hashed and
 # extracted under <run>/artifacts/consumers/<job path> and recorded as
 # `artifacts.consumers` (source5-artifacts.mjs verify-consumers).
+# Both packed stages get PLAN_GENERATED_AT (the commit's UTC committer time) so
+# their candidate plans are byte-identical (the adapter refuses otherwise).
 # Usage: RUN_ID=native-5-source-001 tools/remote-acr/run-source5.sh
 #        STAGES="static suites" ... to run a subset (rerun of affected checks).
 set -euo pipefail
