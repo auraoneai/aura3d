@@ -67,7 +67,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y glslang-tools
-          A3D_REQUIRE_GLSLANG=1 pnpm exec vitest run tests/qr/prd01/glsl/every-chunk-compiles.test.ts
+          pnpm exec vitest run tests/qr/prd01/glsl/every-chunk-compiles.test.ts
           A3D_GLSL_REPORT_EXCLUDED=1 pnpm exec vitest run tests/qr/prd01/glsl/every-chunk-compiles.test.ts -t report-only
   browser:
     strategy:

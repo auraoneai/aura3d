@@ -633,7 +633,7 @@ Route directories are named without their `apps/`/`examples/` prefix here on pur
 
 Product fixes with no test change: `onFrame` callback error text restored to the documented 4.2.0 form `onFrame callback threw: <message>` with redaction (`createAuraAppCore.ts`, `tests/unit/agent-api/on-frame-errors.test.ts`); `attach()` emits one scene-change notification per commit (`runtimeNodes.ts`); a directly disposed PRD07 effect system no longer fails the renderer mount (`createAuraAppCore.ts`, `ProductionEffectSystem` `disposed` getter) (`tests/unit/agent-api/native-material-clipping-invalidation.test.ts`).
 
-## 13. ACR source pass 002 (candidate `1a5b87eb5`): integration, assets/QR and package-dist cases
+## 14. ACR source pass 002 (candidate `1a5b87eb5`): integration, assets/QR and package-dist cases
 
 No product assertion was weakened; budgets are unchanged.
 

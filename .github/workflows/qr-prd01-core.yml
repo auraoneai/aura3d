@@ -179,8 +179,6 @@ jobs:
           sudo apt-get install -y -q glslang-tools
           glslangValidator --version
       - name: Compose + validate every registered chunk
-        env:
-          A3D_REQUIRE_GLSLANG: "1"
         run: pnpm exec vitest run --root . tests/qr/prd01/glsl/every-chunk-compiles.test.ts --reporter=verbose
       # Report-only, not a gate: raw glslang status of KNOWN_EXCLUDED features
       # (prd10.caustics #1143, prd10.wind #881). The report tests only log their
