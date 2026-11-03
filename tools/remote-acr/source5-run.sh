@@ -48,7 +48,9 @@ case "$STAGE" in
     ;;
   unit-*)
     SHARD="${STAGE#unit-}"; SHARD="${SHARD/-of-//}"
-    run "unit-${SHARD/\//-of-}" "pnpm exec vitest run tests/unit --maxWorkers=2 --shard=$SHARD"
+    EXCLUDES=""
+    while IFS= read -r t; do case "$t" in ''|'#'*) ;; *) EXCLUDES="$EXCLUDES --exclude $t";; esac; done < tools/remote-acr/acceptance-evidence-tests.txt
+    run "unit-${SHARD/\//-of-}" "pnpm exec vitest run tests/unit --maxWorkers=2 --shard=$SHARD$EXCLUDES"
     ;;
   suites)
     run assets-qr            'pnpm exec vitest run tests/assets tests/qr --maxWorkers=2'
@@ -97,6 +99,7 @@ RESULTS="$RESULTS" SOURCE5_STAGE="$STAGE" A3D_RELEASE_PLAN="${A3D_RELEASE_PLAN:-
     passed: rows.filter((r) => r.exitCode === 0).map((r) => r.id),
     failed: rows.filter((r) => r.exitCode !== 0).map((r) => r.id),
     stage: process.env.SOURCE5_STAGE,
+    deferredToAcceptance: fs.readFileSync("tools/remote-acr/acceptance-evidence-tests.txt", "utf8").split("\n").filter((l) => l && !l.startsWith("#")),
     browserAcceptance: "not-run",
     // Packed-candidate reference for docs/api/public-api.md (written by api-docs-packed).
     generatedApiReference: (() => {

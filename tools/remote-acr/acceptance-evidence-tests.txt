@@ -1,0 +1,18 @@
+# Unit-test files that read first-party browser/tool evidence (gitignored
+# tests/reports/**). Per Phase A §1 no source gate may require a browser
+# receipt, so the 5.0 source pass excludes them from the unit shards and
+# reports them as deferred; the acceptance run executes them after the
+# browser evidence exists. Do not add files here to hide failures.
+tests/unit/apps/turbo-hero-admission.test.ts
+tests/unit/aura3d-cli/asset-screening-effects.test.ts
+tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts
+tests/unit/root-path-integrity/pixel-exports-t1.test.ts
+tests/unit/tools/claim-lineage.test.ts
+tests/unit/tools/parity-consumers.test.ts
+tests/unit/tools/evidence-freshness.test.ts
+tests/unit/tools/replicability-metrics.test.ts
+tests/unit/tools/showcase-route-gates.test.ts
+tests/unit/tools/visual-review-perceptual-binding.test.ts
+tests/unit/tools/developer-value.test.ts
+tests/unit/tools/honest-public-claims.test.ts
+tests/unit/tools/release-metrics-rollup.test.ts
