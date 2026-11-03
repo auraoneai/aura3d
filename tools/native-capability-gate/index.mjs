@@ -2,7 +2,7 @@
 /** The single Phase A -> Phase B boundary. No browser or provider is started here. */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { lstatSync, readFileSync, readdirSync, readlinkSync, realpathSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync, realpathSync, writeFileSync, mkdirSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { isSourceInput } from '../release/source-identity.mjs';
@@ -12,6 +12,7 @@ import { verifySourceBuildHandoff, verifySupplementalEvidence } from '../remote-
 import { verifyPortableInputs } from '../remote-acr/portable-inputs.mjs';
 import { ARCHIVE_ADMISSION_FILES, ARCHIVE_ADMISSION_TESTS, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER_TEST, EXTERNAL_CODEC_SOURCE_TEST, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_SOURCE_TEST, HISTORICAL_SOURCE_TEST, assertPassingPhaseReport, buildSteps, expectedExternalCodecAcceptance, expectedHistoricalAcceptance, expectedHistoricalReplay, nativeSourceInventoryForManifest, sourceTestFileCoverage, parseTap, parseVitestInventory, sourceHandoffApi, validateSourceArgv } from '../remote-acr/source-checks.mjs';
 import { redactText } from '../remote-acr/upload-artifacts.mjs';
+import { ACCEPTANCE_STAGING_RECORD, readAcceptanceStaging } from '../remote-acr/acceptance-staging.mjs';
 
 const SHA = /^[a-f0-9]{64}$/;
 const fail = message => { throw new Error(`native capability gate: ${message}`); };
@@ -66,7 +67,15 @@ function sourceBytes(root, entry) {
   if (!stat.isFile() || entry.type !== 'file' || entry.mode !== (stat.mode & 0o111 ? '100755' : '100644')) fail(`wrong file type/mode: ${entry.path}`);
   return readFileSync(path);
 }
-function manifestInputs(root, manifest) {
+const NO_OMISSIONS = new Set();
+/**
+ * `omitted` is non-empty only inside a staged browser-acceptance context whose
+ * validated staging record leaves out unreferenced asset trees. Omitted files
+ * must be absent; they remain bound by the manifest digest and commit tree.
+ * Their bytes cannot be re-hashed there, so the byte fingerprint is null and
+ * only the full-checkout validation (host, before staging) compares it.
+ */
+function manifestInputs(root, manifest, omitted = NO_OMISSIONS) {
   if (manifest.schema !== 'aura3d.native-source-manifest/1') fail('unsupported source manifest');
   const entries = array(manifest.files, 'manifest files');
   const paths = entries.map(entry => entry.path);
@@ -76,6 +85,7 @@ function manifestInputs(root, manifest) {
   // supplied plan fingerprint used by the source-consumer report.
   const fingerprint = createHash('sha256');
   for (const entry of entries) {
+    if (omitted.has(entry.path)) continue;
     const data = sourceBytes(root, entry);
     if (sha256(data) !== digest(entry.sha256, `source ${entry.path}`)) fail(`source file changed: ${entry.path}`);
     fingerprint.update(entry.path).update('\0').update(entry.type === 'symlink' ? `<symlink:${data.toString('utf8')}>` : data).update('\0');
@@ -85,7 +95,7 @@ function manifestInputs(root, manifest) {
   if (!lock || lock.sha256 !== digest(manifest.lockfileSha256, 'lockfile digest')) fail('lockfile is absent or mismatched');
   nonempty(manifest.origin?.commit, 'tested origin commit');
   nonempty(manifest.origin?.tree, 'tested origin tree');
-  return { paths, fingerprint: fingerprint.digest('hex') };
+  return { paths, fingerprint: omitted.size ? null : fingerprint.digest('hex') };
 }
 function git(root, ...args) { return execFileSync('git', args, { cwd: root, maxBuffer: 256 * 1024 * 1024 }); }
 function gitObjectHash(format, type, data) { return createHash(format).update(`${type} ${data.length}\0`).update(data).digest('hex'); }
@@ -122,7 +132,7 @@ function createCommitProof(root, freezeCommit) {
   visit(tree);
   return { format, commit, tree, commitObject: commitBytes.toString('base64'), treeObjects: objects };
 }
-function verifyCommitProof(root, proof, manifest) {
+function verifyCommitProof(root, proof, manifest, omitted = NO_OMISSIONS) {
   if (!proof || !['sha1', 'sha256'].includes(proof.format)) fail('missing commit proof');
   const commitBytes = Buffer.from(nonempty(proof.commitObject, 'commit proof'), 'base64');
   if (gitObjectHash(proof.format, 'commit', commitBytes) !== proof.commit) fail('commit proof hash mismatch');
@@ -146,7 +156,7 @@ function verifyCommitProof(root, proof, manifest) {
       if (!isSourceInput(path)) continue;
       const expected = source.get(path);
       if (!expected || !['100644', '100755', '120000'].includes(entry.mode) || expected.mode !== entry.mode) fail(`unlisted or incompatible committed source: ${path}`);
-      if (gitObjectHash(proof.format, 'blob', sourceBytes(root, expected)) !== entry.oid) fail(`source differs from freeze commit: ${path}`);
+      if (!omitted.has(path) && gitObjectHash(proof.format, 'blob', sourceBytes(root, expected)) !== entry.oid) fail(`source differs from freeze commit: ${path}`);
       actual.push(path);
     }
   };
@@ -761,7 +771,7 @@ function verifyReports(root, reports, manifestRef, manifest, sourceFingerprint) 
       || new Set(packages.map(pkg => pkg.name)).size !== packages.length) fail('candidate plan package inventory is incomplete');
   if (plan.commit !== manifest.origin.commit || plan.source?.commit !== manifest.origin.commit
       || plan.source?.tree !== manifest.origin.tree || plan.source?.inputDigest !== manifest.inputDigest
-      || plan.source?.fingerprint !== sourceFingerprint || plan.source?.manifestSha256 !== manifestRef.sha256
+      || (sourceFingerprint === null ? !SHA.test(plan.source?.fingerprint ?? '') : plan.source?.fingerprint !== sourceFingerprint) || plan.source?.manifestSha256 !== manifestRef.sha256
       || plan.source?.lockfileSha256 !== manifest.lockfileSha256 || plan.lockfileSha256 !== manifest.lockfileSha256) fail('candidate plan source identity mismatch');
   const archives = array(reports.archives, 'candidate archives');
   equalSet(packages.map(p => p.tarball), archives.map(p => p.path), 'candidate package archives');
@@ -849,12 +859,20 @@ function verifyDeferredAcceptance(root, manifest, reports) {
   if (!assets?.expectedFiles?.includes(EXTERNAL_CODEC_SOURCE_TEST) || !assets.discoveredFiles?.includes(EXTERNAL_CODEC_SOURCE_TEST)) fail('external codec source test was not executed');
   return { deferredAcceptanceTests: expected, deferredReplayTests: replay, deferredExternalCodecTests: externalCodec };
 }
-function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof) {
+function evaluate(root, sourceManifestPath, sourceReportsPath, ledgerPath, proof, gateBytes = null) {
   root = resolve(root);
   const sourceManifest = asRef(root, sourceManifestPath), sourceReports = asRef(root, sourceReportsPath), ledgerRef = asRef(root, ledgerPath);
   const manifest = readJson(root, sourceManifest.path), reports = readJson(root, sourceReports.path), ledger = readJson(root, ledgerRef.path);
-  const { paths, fingerprint } = manifestInputs(root, manifest);
-  verifyCommitProof(root, proof, manifest);
+  let omitted = NO_OMISSIONS;
+  if (gateBytes === null) {
+    // Emission always binds the complete checkout.
+    if (existsSync(join(root, ACCEPTANCE_STAGING_RECORD))) fail('a staged acceptance context cannot emit a gate');
+  } else {
+    try { omitted = readAcceptanceStaging(root, gateBytes, array(manifest.files, 'manifest files').map(entry => entry.path)) ?? NO_OMISSIONS; }
+    catch (error) { fail(error.message); }
+  }
+  const { paths, fingerprint } = manifestInputs(root, manifest, omitted);
+  verifyCommitProof(root, proof, manifest, omitted);
   const reportPaths = verifyReports(root, reports, sourceManifest, manifest, fingerprint);
   const { deferredAcceptanceTests, deferredReplayTests, deferredExternalCodecTests } = verifyDeferredAcceptance(root, manifest, reports);
   const outcome = verifyLedger(root, ledger, reports);
@@ -886,10 +904,11 @@ export function emitCodeCompleteGate({ root = process.cwd(), sourceManifest, sou
 export function validateAcceptanceGate({ root = process.cwd(), gatePath, sourceReport } = {}) {
   root = resolve(root); nonempty(gatePath, 'gate path');
   const record = readJson(root, gatePath);
+  const gateBytes = bytes(root, gatePath);
   if (record.schema !== 'aura3d.native-code-complete/1' || record.status !== 'CODE_COMPLETE_GO'
       || typeof record.owner !== 'string' || !record.owner.trim()
       || typeof record.createdAt !== 'string' || !Number.isFinite(Date.parse(record.createdAt))) fail('invalid gate record');
-  const result = evaluate(root, record.sourceManifest?.path, record.sourceReports?.path, record.ledger?.path, record.commitProof);
+  const result = evaluate(root, record.sourceManifest?.path, record.sourceReports?.path, record.ledger?.path, record.commitProof, gateBytes);
   for (const [key, value] of Object.entries(result)) if (canonical(record[key]) !== canonical(value)) fail(`gate field mismatch: ${key}`);
   if (sourceReport && ![record.sourceConsumerReport.path, record.matrixSourceReport.path, record.examplesSourceReport.path].includes(sourceReport)) fail('selected source report is not bound to this gate');
   return record;

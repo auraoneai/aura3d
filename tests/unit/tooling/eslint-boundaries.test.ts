@@ -9,9 +9,11 @@
  */
 import { describe, expect, it } from "vitest";
 import { ESLint } from "eslint";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import auraBoundaries from "../../../tools/eslint-plugin-aura3d-boundaries/index.mjs";
 import { PACKAGE_TIERS } from "../../../tools/package-tiers";
+import { PACKAGE_INVENTORY, packageTiers, releasePackageTargets } from "../../../tools/release/release-inventory.mjs";
 
 const repoRoot = resolve(__dirname, "../../..");
 
@@ -147,8 +149,23 @@ describe("tier source of truth", () => {
     // If these two ever diverge, one gate would permit what the other rejects. They must read the
     // same module — this asserts the module exists and is populated, and the import above is what
     // makes the sharing real.
-    expect(Object.keys(PACKAGE_TIERS)).toHaveLength(29);
+    expect(PACKAGE_TIERS).toEqual(packageTiers());
     expect(PACKAGE_TIERS.math).toBe(0);
     expect(PACKAGE_TIERS.engine).toBeGreaterThan(PACKAGE_TIERS.rendering);
+  });
+});
+
+describe("versioned package inventory", () => {
+  it("assigns a tier to every current workspace package and a directory to every release target", () => {
+    const workspace = readdirSync(resolve(repoRoot, "packages")).filter(dir => existsSync(resolve(repoRoot, "packages", dir, "package.json")));
+    expect(workspace.filter(dir => PACKAGE_TIERS[dir] === undefined)).toEqual([]);
+    for (const dir of workspace) {
+      const manifest = JSON.parse(readFileSync(resolve(repoRoot, "packages", dir, "package.json"), "utf8")) as { name: string };
+      expect(PACKAGE_INVENTORY.find(item => item.directory === `packages/${dir}`)?.name).toBe(manifest.name);
+    }
+    const targets = releasePackageTargets("5.0.0");
+    expect(targets.map(target => target.name)).toContain("@aura3d/addons");
+    expect(targets.find(target => target.name === "@aura3d/engine")?.directory).toBe(".");
+    for (const target of targets) expect(existsSync(resolve(repoRoot, target.directory, "package.json"))).toBe(true);
   });
 });

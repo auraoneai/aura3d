@@ -17,7 +17,7 @@ function targetDevice() {
       });
       return {
         width: descriptor.width, height: descriptor.height, colorTexture, disposed: false,
-        dispose() { this.disposed = true; colorTexture.dispose(); }
+        dispose() { (this as { disposed: boolean }).disposed = true; colorTexture.dispose(); }
       } as RenderTarget;
     }
   } as RenderDevice;

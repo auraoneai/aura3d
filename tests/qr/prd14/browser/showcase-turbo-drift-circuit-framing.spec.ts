@@ -30,7 +30,7 @@ test.describe("showcase-turbo-drift-circuit framing (T2.3)", () => {
         await page.setViewportSize(viewport);
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Throttle out of the lights so the chase subject is moving.
         await page.keyboard.down("KeyW");
         await page.waitForTimeout(5200);

@@ -393,6 +393,22 @@ function normalizePath(path: string): string {
   return path.split("\\").join("/");
 }
 
+/**
+ * `--out <root-relative path>` writes/verifies the packed reference somewhere
+ * other than the checked-in docs/api/public-api.md (the source pass emits the
+ * candidate-generated reference into its report directory).
+ */
+export function apiDocsOutputPath(argv: readonly string[]): string {
+  const index = argv.indexOf("--out");
+  if (index < 0) return defaultOutputPath;
+  const value = argv[index + 1];
+  if (!value || value.startsWith("--") || argv.lastIndexOf("--out") !== index) throw new Error("--out requires one root-relative path");
+  if (value.startsWith("/") || value.includes("\\") || value.split("/").some((part) => !part || part === "." || part === "..") || !value.endsWith(".md")) {
+    throw new Error(`--out must be a root-relative .md path: ${value}`);
+  }
+  return value;
+}
+
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   try {
@@ -400,12 +416,13 @@ if (isMain) {
     const planIndex = process.argv.indexOf("--candidate-plan");
     const plan = planIndex >= 0 ? process.argv[planIndex + 1] : process.env.A3D_RELEASE_PLAN;
     if (!plan || plan.startsWith("--")) throw new Error("--candidate-plan or A3D_RELEASE_PLAN is required to generate documentation from packed declarations");
+    const outputPath = apiDocsOutputPath(process.argv.slice(2));
     const scratch = mkdtempSync(join(tmpdir(), "aura3d-api-docs-"));
     try {
       const candidate = stageCandidatePackages(root, plan, scratch);
       const packages = collectPackedPackageApis(scratch, candidate.packages);
-      if (process.argv.includes("--write")) writeApiDocs(root, defaultOutputPath, packages);
-      const report = validateApiDocs(root, defaultOutputPath, packages);
+      if (process.argv.includes("--write")) writeApiDocs(root, outputPath, packages);
+      const report = validateApiDocs(root, outputPath, packages);
       writeApiDocsReport(report, root);
       console.log(JSON.stringify({ ok: report.ok, candidatePlan: candidate.candidatePlan, candidatePlanSha256: candidate.candidatePlanSha256,
         outputPath: report.outputPath, packages: report.packages.length, violations: report.violations }, null, 2));

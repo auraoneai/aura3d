@@ -523,7 +523,7 @@ function makeCapabilityProject(root: string, project: string, id: string): strin
   const rootManifest = readJson(resolve(root, "package.json"));
   const vite = rootManifest.devDependencies?.vite, typescript = rootManifest.devDependencies?.typescript;
   if (!vite || !typescript) throw new Error("Source manifest must declare Vite and TypeScript for scenario harnesses");
-  writeFileSync(resolve(project, "package.json"), `${JSON.stringify({ name: `aura3d-native-example-${id}`, private: true, type: "module", scripts: { build: "tsc --noEmit && vite build" }, dependencies: { "@aura3d/engine": "workspace:*" }, devDependencies: { typescript, vite } }, null, 2)}\n`);
+  writeFileSync(resolve(project, "package.json"), `${JSON.stringify({ name: `aura3d-native-example-${id}`, private: true, type: "module", scripts: { build: "tsc --noEmit && vite build" }, dependencies: { "@aura3d/assets": "workspace:*", "@aura3d/engine": "workspace:*" }, devDependencies: { typescript, vite } }, null, 2)}\n`);
   writeFileSync(resolve(project, "tsconfig.json"), `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "ESNext", moduleResolution: "Bundler", lib: ["ES2022", "DOM"], strict: true, skipLibCheck: true, noEmit: true }, include: ["src"] }, null, 2)}\n`);
   writeFileSync(resolve(project, "index.html"), '<!doctype html><html><head><meta charset="utf-8"></head><body><div id="app"></div><script type="module" src="/src/main.ts"></script></body></html>\n');
   writeFileSync(resolve(project, "src/main.ts"), `import { assets } from "./aura-assets";

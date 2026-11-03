@@ -68,9 +68,9 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&autorun=1`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+        ((window as unknown as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
       await shot(page, "02-opening");
 
@@ -126,7 +126,7 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
 
       const start = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".thief.x"), EVIDENCE);
       // Move toward the archive wing (west + north) so the thief walks.
@@ -170,7 +170,7 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const r = await page.evaluate(() => {
         const c = document.querySelector("canvas");
         const b = (c ?? document.body).getBoundingClientRect();
@@ -209,7 +209,7 @@ test.describe("showcase-gallery-shift v2 (T2.6)", () => {
       for (const scenario of ["floor-2", "alert"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         const look = await page.evaluate((EVIDENCE: string) => eval(EVIDENCE + ".appliedLook"), EVIDENCE);
         expect(look).toEqual({ applied: scenario, kind: "v2-scenario", honest: true });
         // T2.2-post: the renderer applied the look this route declares.

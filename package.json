@@ -2,6 +2,9 @@
   "name": "@aura3d/engine",
   "version": "4.7.10",
   "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "private": false,
   "type": "module",
   "files": [
@@ -222,13 +225,13 @@
     "check:production-path-benchmark": "pnpm exec tsx --tsconfig tsconfig.base.json tools/production-path-benchmark/index.ts --gate-only",
     "check:public-api": "pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts",
     "check:public-surface-diff": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts",
-    "check:release": "printf '%s\\n' 'check:release blocked: candidate-bound clean-install optional-peer and installed-template custody are unavailable' >&2 && false && : \"${A3D_RELEASE_PLAN:?A3D_RELEASE_PLAN must identify the candidate plan}\" && : \"${NATIVE_CONSUMER_SOURCE_REPORT:?NATIVE_CONSUMER_SOURCE_REPORT must identify its source report}\" && pnpm typecheck && pnpm lint && pnpm --dir marketing check:version && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:public-surface-diff && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:asset-screening && pnpm check:agent-docs && pnpm check:templates && pnpm check:template-source-audit && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:claim-lineage && pnpm check:package-graph && pnpm check:production-path-benchmark && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install && pnpm check:templates:installed && pnpm check:installed-tree-shaking --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\" --candidate-plan \"$A3D_RELEASE_PLAN\" && pnpm check:game-runtime && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx && pnpm check:no-three-runtime",
+    "check:release": ": \"${A3D_RELEASE_PLAN:?A3D_RELEASE_PLAN must identify the candidate plan}\" && : \"${NATIVE_CONSUMER_SOURCE_REPORT:?NATIVE_CONSUMER_SOURCE_REPORT must identify its source report}\" && pnpm typecheck && pnpm lint && pnpm --dir marketing check:version && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:public-surface-diff && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:asset-screening && pnpm check:agent-docs && pnpm check:templates && pnpm check:template-source-audit && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:claim-lineage && pnpm check:package-graph && pnpm check:production-path-benchmark && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install --phase verify --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\" --candidate-plan \"$A3D_RELEASE_PLAN\" && pnpm check:installed-tree-shaking --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\" --candidate-plan \"$A3D_RELEASE_PLAN\" && pnpm check:game-runtime && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx && pnpm check:no-three-runtime",
     "check:skills": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/check.ts",
     "skills:sync": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-skills/sync.ts",
     "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",
     "check:template-source-audit": "pnpm exec tsx --tsconfig tsconfig.base.json tools/template-source-audit/index.ts",
     "check:templates": "pnpm exec vitest run tests/unit/create-aura3d/templates.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
-    "check:templates:installed": "printf '%s\\n' 'check:templates:installed blocked: candidate-bound source, CODE_COMPLETE_GO and isolated installer/browser custody are required' >&2 && false && pnpm build:raw && node tools/release/publish-all.mjs --pack-only && A3D_TEMPLATE_TARBALL_DIR=tests/reports/release-tarballs pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-templates/index.ts",
+    "check:templates:installed": ": \"${NATIVE_CONSUMER_SOURCE_REPORT:?NATIVE_CONSUMER_SOURCE_REPORT must identify the packed clean-install source report}\" && pnpm check:clean-install --phase verify --source-report \"$NATIVE_CONSUMER_SOURCE_REPORT\"",
     "dev": "vite",
     "doctor": "tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts doctor",
     "evidence:command": "node tools/evidence/run-command-proof.mjs",

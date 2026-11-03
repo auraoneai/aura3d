@@ -14,7 +14,7 @@ describe("P2-T2 effect presets", () => {
 
   it("every AuraVfxKind resolves to a preset with ≥ 1 emitter layer", () => {
     for (const kind of VFX_KINDS) {
-      const preset = app.effects.presets[kind];
+      const preset = app.effects!.presets[kind];
       expect(preset, kind).toBeTruthy();
       expect(preset.name).toBe(kind);
       expect(preset.layers.some((l) => l.type === "emitter"), kind).toBe(true);
@@ -23,14 +23,14 @@ describe("P2-T2 effect presets", () => {
 
   it("every GameFxKind maps onto a resolvable preset (§7.8 parity)", () => {
     for (const kind of GAME_KINDS) {
-      expect(app.effects.presets[kind as AuraVfxKind], kind).toBeTruthy();
+      expect(app.effects!.presets[kind as AuraVfxKind], kind).toBeTruthy();
     }
   });
 
   it("registerPreset overrides a kind", () => {
     const spec = { name: "spark", layers: [{ type: "emitter", speed: 9 }] } as never;
-    app.effects.registerPreset("spark", spec);
-    expect(app.effects.presets.spark).toBe(spec);
+    app.effects!.registerPreset("spark", spec);
+    expect(app.effects!.presets.spark).toBe(spec);
     app.dispose();
   });
 });

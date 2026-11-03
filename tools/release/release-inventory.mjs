@@ -1,23 +1,71 @@
-// Explicit release sets protect historical receipts and make additions reviewable.
-// A source candidate at an already-published version may select the native
-// inventory explicitly; it does not imply that version was published with it.
-const BASE = [
-  '@aura3d/animation', '@aura3d/apps', '@aura3d/asset-index', '@aura3d/assets',
-  '@aura3d/audio', '@aura3d/cli', '@aura3d/controls', '@aura3d/core',
-  '@aura3d/debug', '@aura3d/ecs', '@aura3d/editor-runtime', '@aura3d/engine',
-  '@aura3d/input', '@aura3d/math', '@aura3d/navigation-recast', '@aura3d/physics',
-  '@aura3d/physics-rapier', '@aura3d/product-studio', '@aura3d/react',
-  '@aura3d/rendering', '@aura3d/scene', '@aura3d/scripting', '@aura3d/workflows',
-  'create-aura3d'
-];
-const HISTORICAL_3 = [...BASE, '@aura3d/editor', '@aura3d/environments', '@aura3d/lean', '@aura3d/materials', '@aura3d/three-compat'].sort();
-const HISTORICAL_4 = [...BASE].sort();
-const NATIVE = [...BASE, '@aura3d/addons'].sort();
+// One versioned package inventory. Explicit release sets protect historical
+// receipts and make additions reviewable. Every entry also records its
+// workspace directory (null when it no longer exists in this tree) and its
+// dependency tier, so release planning, tarball target discovery and the
+// package-tier gates (tools/package-tiers.ts, the ESLint boundary rule) all
+// derive from this record. A source candidate at an already-published
+// version may select the native inventory explicitly; it does not imply that
+// version was published with it.
+//
+// Tiers: dependencies point DOWN only (an edge from tier N to tier M > N is a
+// layer violation); nothing may depend on tier 5 or 6 except tier 6.
+const H3 = 'historical-3', H4 = 'historical-4', N1 = 'native-1';
+const ALL = Object.freeze([H3, H4, N1]);
+const entry = (name, directory, tier, inventories) => Object.freeze({ name, directory, tier, inventories: Object.freeze([...inventories]) });
+export const PACKAGE_INVENTORY = Object.freeze([
+  // 0 - foundation: no Aura3D dependencies at all.
+  entry('@aura3d/math', 'packages/math', 0, ALL),
+  entry('@aura3d/physics', 'packages/physics', 0, ALL),
+  entry('@aura3d/physics-rapier', 'packages/physics-rapier', 0, ALL),
+  entry('@aura3d/navigation-recast', 'packages/navigation-recast', 0, ALL),
+  entry('@aura3d/scripting', 'packages/scripting', 0, ALL),
+  entry('@aura3d/asset-index', 'packages/asset-index', 0, ALL),
+  // 1 - core data model.
+  entry('@aura3d/core', 'packages/core', 1, ALL),
+  entry('@aura3d/scene', 'packages/scene', 1, ALL),
+  // 2 - subsystems over the data model.
+  entry('@aura3d/animation', 'packages/animation', 2, ALL),
+  entry('@aura3d/rendering', 'packages/rendering', 2, ALL),
+  entry('@aura3d/input', 'packages/input', 2, ALL),
+  entry('@aura3d/audio', 'packages/audio', 2, ALL),
+  entry('@aura3d/ecs', 'packages/ecs', 2, ALL),
+  // 3 - subsystems that compose other subsystems.
+  entry('@aura3d/assets', 'packages/assets', 3, ALL),
+  entry('@aura3d/controls', 'packages/controls', 3, ALL),
+  entry('@aura3d/materials', 'packages/materials', 3, [H3]),
+  entry('@aura3d/environments', 'packages/environments', 3, [H3]),
+  entry('@aura3d/debug', 'packages/debug', 3, ALL),
+  entry('@aura3d/editor-runtime', 'packages/editor-runtime', 3, ALL),
+  // 4 - product surfaces.
+  entry('@aura3d/product-studio', 'packages/product-studio', 4, ALL),
+  entry('@aura3d/apps', 'packages/apps', 4, ALL),
+  entry('@aura3d/workflows', 'packages/workflows', 4, ALL),
+  entry('@aura3d/editor', 'packages/editor', 4, [H3]),
+  // 5 - aggregates. Nothing may depend on these except other aggregates.
+  entry('@aura3d/engine-runtime', 'packages/engine', 5, []),
+  entry('@aura3d/game', 'packages/game', 5, []),
+  // Optional outputs compose rendering and other lower-level packages.
+  entry('@aura3d/addons', 'packages/addons', 5, [N1]),
+  entry('@aura3d/react', 'packages/react', 6, ALL),
+  entry('@aura3d/three-compat', 'packages/three-compat', 6, [H3]),
+  entry('@aura3d/cli', 'packages/aura3d-cli', 6, ALL),
+  entry('create-aura3d', 'packages/create-aura3d', 6, ALL),
+  // The published root aggregate is the repository manifest itself; it has no
+  // packages/ directory and therefore no workspace tier.
+  entry('@aura3d/engine', '.', null, ALL),
+  entry('@aura3d/lean', null, null, [H3])
+]);
+const inventorySet = id => PACKAGE_INVENTORY.filter(item => item.inventories.includes(id)).map(item => item.name).sort();
 export const RELEASE_INVENTORIES = Object.freeze({
-  'historical-3': Object.freeze(HISTORICAL_3),
-  'historical-4': Object.freeze(HISTORICAL_4),
-  'native-1': Object.freeze(NATIVE)
+  'historical-3': Object.freeze(inventorySet(H3)),
+  'historical-4': Object.freeze(inventorySet(H4)),
+  'native-1': Object.freeze(inventorySet(N1))
 });
+/** Tier per workspace directory basename (packages/<dir>), derived from the inventory. */
+export function packageTiers() {
+  return Object.fromEntries(PACKAGE_INVENTORY.filter(item => item.tier !== null && item.directory?.startsWith('packages/'))
+    .map(item => [item.directory.slice('packages/'.length), item.tier]));
+}
 function parseVersion(version) {
   const match = /^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?$/.exec(version ?? '');
   if (!match) throw new Error(`Invalid release version: ${version}`);
@@ -49,4 +97,12 @@ export function assertReleaseInventory(version, names, inventoryId) {
   const unexpected = actual.filter(name => !expected.includes(name));
   if (missing.length || unexpected.length) throw new Error(`Release package inventory mismatch: missing [${missing.join(', ')}]; unexpected [${unexpected.join(', ')}]`);
   return expected;
+}
+/** Package name and workspace directory for every package in the selected release inventory. */
+export function releasePackageTargets(version, inventoryId) {
+  return publicPackageNames(version, inventoryId).map(name => {
+    const item = PACKAGE_INVENTORY.find(candidate => candidate.name === name);
+    if (!item || !item.directory) throw new Error(`Release inventory package has no workspace directory: ${name}`);
+    return { name, directory: item.directory };
+  });
 }

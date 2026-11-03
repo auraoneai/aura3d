@@ -25,7 +25,7 @@ const SPEC = {
 
 function driveChassis(steer: number, seconds = 1.2) {
   const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0, 1));
-  const state: VehiclePlanarState = {
+  const state: { -readonly [K in keyof VehiclePlanarState]: VehiclePlanarState[K] } = {
     x: 0, z: 0, heading: 0, speed: 0, steer: 0, throttle: 0
   };
   chassis.reset(state);

@@ -30,7 +30,7 @@ test.describe("showcase-bank-shot framing (T2.3)", () => {
         await page.setViewportSize(viewport);
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Drive to the 03-mid state: charge + release a shot.
         await page.keyboard.down("Space");
         await page.waitForTimeout(700);

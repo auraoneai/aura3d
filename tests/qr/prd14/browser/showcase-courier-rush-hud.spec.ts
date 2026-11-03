@@ -21,7 +21,7 @@ test.describe("showcase-courier-rush mobile HUD (§14.4)", () => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await page.waitForTimeout(2500);
       const measured = await page.evaluate(() => {
         const vw = window.innerWidth;

@@ -139,6 +139,34 @@ describe("native performance budget", () => {
     expect(() => compareNativeBudget(base, next, { ...policy, minimumSessions: 2 })).toThrow(/policy/);
     expect(compareNativeBudget(base, next, { metrics: [{ name: "frameP95Ms" }, { name: "gpuMs" }] }).status).toBe("no-data");
   });
+
+  it("excludes a metric only when it is allowed and explicitly unsupported on both sides", () => {
+    const withGpu = (r: NativePerformanceReport, value: number | null) => {
+      for (const session of r.sessions) {
+        session.metrics.gpuP95Ms = value;
+        if (value === null) session.unavailable = { ...session.unavailable, gpuP95Ms: "unsupported: EXT_disjoint_timer_query_webgl2 unavailable" };
+      }
+      return r;
+    };
+    const metrics = [{ name: "frameP95Ms" }, { name: "gpuP95Ms", unsupportedAllowed: true }];
+    const excluded = compareNativeBudget(withGpu(report("base", [10, 10, 10], true), null), withGpu(report("next", [10, 10, 10]), null), { metrics });
+    expect(excluded).toMatchObject({ status: "pass", excludedUnsupported: ["gpuP95Ms"],
+      metrics: [{ status: "pass" }, { status: "unsupported", unsupportedReasons: ["unsupported: EXT_disjoint_timer_query_webgl2 unavailable"] }] });
+    // Required metrics are never excluded, even with a recorded reason.
+    const required = compareNativeBudget(withGpu(report("base", [10, 10, 10], true), null), withGpu(report("next", [10, 10, 10]), null),
+      { metrics: [{ name: "frameP95Ms" }, { name: "gpuP95Ms" }] });
+    expect(required).toMatchObject({ status: "no-data", excludedUnsupported: [], metrics: [{ status: "pass" }, { status: "no-data" }] });
+    // A one-sided or partial gap is a lost measurement, not an unsupported one.
+    const oneSided = compareNativeBudget(withGpu(report("base", [10, 10, 10], true), 3), withGpu(report("next", [10, 10, 10]), null), { metrics });
+    expect(oneSided).toMatchObject({ status: "no-data", metrics: [{ status: "pass" }, { status: "no-data" }] });
+    const partial = withGpu(report("next", [10, 10, 10]), null);
+    partial.sessions[0]!.metrics.gpuP95Ms = 3;
+    expect(compareNativeBudget(withGpu(report("base", [10, 10, 10], true), null), partial, { metrics }).status).toBe("no-data");
+    // Nothing left to compare is no-data, not a pass.
+    const onlyUnsupported = compareNativeBudget(withGpu(report("base", [10, 10, 10], true), null), withGpu(report("next", [10, 10, 10]), null),
+      { metrics: [{ name: "gpuP95Ms", unsupportedAllowed: true }] });
+    expect(onlyUnsupported).toMatchObject({ status: "no-data", excludedUnsupported: ["gpuP95Ms"] });
+  });
 });
 
 describe("native performance workload definitions", () => {

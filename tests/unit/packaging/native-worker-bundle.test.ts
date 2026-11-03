@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { assertPackagedWorkerFactory, assertSelfContainedWorker, assertZstdPackageMetadata, assertZstdWorkerFactory, assertZstdWorkerPayload, emitPackagedWorker, workerBundleOptions } from "../../../tools/finalize-dist/worker-bundle.mjs";
+import { assertPackedWorkerAssets, assertPackagedWorkerFactory, assertSelfContainedWorker, assertZstdPackageMetadata, assertZstdWorkerFactory, assertZstdWorkerPayload, emitPackagedWorker, workerBundleOptions } from "../../../tools/finalize-dist/worker-bundle.mjs";
 
 const roots: string[] = [];
 const factory = readFileSync("packages/engine/src/agent-api/app/workerFactoryPackaged.ts", "utf8");
@@ -98,6 +98,17 @@ describe("release-time worker layout", () => {
     expect(readFileSync(join(output, "meshopt_decoder.mjs"), "utf8")).toContain("meshopt permission text");
     expect(readFileSync(join(output, "ktx2.worker.js"), "utf8")).toBe("classic ktx worker");
     expect(readFileSync(join(output, "humanoid-fixture.glb"), "utf8")).toBe("humanoid");
+  });
+
+  it("verifies emitted worker entrypoints as shipped and rejects missing or non-self-contained bundles", async () => {
+    const { root, write, output } = fixture();
+    await emitPackagedWorker(root, fakeBuild(root).build as never);
+    expect(assertPackedWorkerAssets(root).files).toContain("render.worker.bundle.js");
+    write("dist/engine/agent-api/app/worker-assets/retarget.worker.bundle.js", 'import "./chunk.js"; self.postMessage({ type: "bake" });');
+    expect(() => assertPackedWorkerAssets(root)).toThrow(/packed retarget worker: bundle retains static module imports/);
+    write("dist/engine/agent-api/app/worker-assets/retarget.worker.bundle.js", 'self.postMessage({ type: "bake" });');
+    rmSync(join(output, "draco_decoder.wasm"));
+    expect(() => assertPackedWorkerAssets(root)).toThrow(/worker-assets\/draco_decoder.wasm/);
   });
 
   it("requires the pinned decoder, executable notices and discoverable module worker in both packages", async () => {

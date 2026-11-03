@@ -100,8 +100,14 @@ simulate WebGL calls; they establish no browser, image, timing, or physical-devi
 The probe records per-kind WebGL object creations and live handles before and
 after app disposal, independently of renderer ledger counters. These are
 observable object lifetimes, **not** bytes resident on the physical device.
-WebGL does not expose actual GPU residency bytes or a complete JavaScript
-allocation count, so both are reported unavailable. A JavaScript heap snapshot
+WebGL does not expose actual GPU residency bytes and no shipping browser
+exposes a complete JavaScript allocation count, so both are reported
+unsupported with a recorded reason. On Chromium the probe samples the CDP
+`Performance` domain in thread-tick time exactly around the timed frames and
+records `cpuThreadTimeMs` (renderer main-thread CPU time per timed frame);
+other browsers record it unsupported. `installedBytes` is the summed size of
+the regular files inside every gate-bound candidate archive, after verifying
+each archive digest. A JavaScript heap snapshot
 is included only when the browser exposes it; GC timing and heap accounting
 are browser-dependent. After timing, the harness totals decoded response
 bodies and separately compresses each body with gzip and Brotli to characterize
@@ -143,3 +149,20 @@ the relative median absolute deviation of either set of session results
 exceeds 5%. If the rerun remains above that threshold, the result remains
 inconclusive. The analyzer also records a provisional threshold crossing on a
 noisy run. Missing machine identity cannot establish a same-device pass.
+
+Only GPU timing, GPU residency, thread CPU time, heap bytes, JavaScript
+allocation count and the production-bundle fields may be excluded from the
+aggregate, and only when every baseline and candidate session reports them
+null with a recorded reason (`excludedUnsupported` in the result). Any other
+missing metric, or a one-sided or partial gap, stays no-data. A result with
+nothing left to compare is no-data.
+
+Retained same-device baselines can be selected with
+`--baseline-index <file>` (or `NATIVE_PERF_BASELINE_INDEX`) instead of an
+explicit `--baseline`. The index has schema
+`aura3d.native-performance-baselines/1` and one entry per device, browser and
+browser version: `{ device, browser, browserVersion, baselineVersion,
+manifest, sha256 }`. The analyzer selects the entry matching the candidate's
+identity, verifies the retained manifest's SHA-256 and that every retained
+report carries the entry's device and `baselineVersion`. No matching entry is
+no-data, never a pass.

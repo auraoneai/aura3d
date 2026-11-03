@@ -2,7 +2,7 @@
 // preset loads /hdri/<file>.hdr (looks.ts HDRI_ASSET); a scaffolded project
 // that authors a look must carry them under public/hdri or its IBL/sky 404s.
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
@@ -45,10 +45,28 @@ describe("create-aura3d template HDRIs", () => {
     }
   });
 
-  test("cinematic-scene (no look authored) gets no public/hdri", () => {
+  test("cinematic-scene authors its look indirectly (compilePromptPlanV2) and gets the HDRI set", () => {
     const targetDir = join(scratch, "cinematic-scene");
-    expect(templateAuthorsLook(join(rootDir, "templates", "cinematic-scene"))).toBe(false);
+    expect(readFileSync(join(rootDir, "templates", "cinematic-scene", "src", "main.ts"), "utf8")).not.toMatch(/\blooks\.(?:preset|nodes)\(/);
+    expect(templateAuthorsLook(join(rootDir, "templates", "cinematic-scene"))).toBe(true);
     const result = createA3DProject({ targetDir, template: "cinematic-scene", rootDir });
+    for (const file of readdirSync(hdriSource)) {
+      expect(result.files).toContain(`public/hdri/${file}`);
+      expect(sha256(join(targetDir, "public", "hdri", file))).toBe(sha256(join(hdriSource, file)));
+    }
+  });
+
+  test("a template with no direct or indirect look authoring gets no public/hdri", () => {
+    const fakeRoot = join(scratch, "no-look-root");
+    cpSync(join(rootDir, "templates", "product-viewer"), join(fakeRoot, "templates", "product-viewer"), { recursive: true });
+    const main = join(fakeRoot, "templates", "product-viewer", "src", "main.ts");
+    writeFileSync(main, 'import { createAuraApp, scene } from "@aura3d/engine";\nexport const app = createAuraApp({ scene: scene() });\n');
+    for (const entry of readdirSync(join(fakeRoot, "templates", "product-viewer", "src"))) {
+      if (entry !== "main.ts" && /\.(ts|tsx|js|mjs)$/.test(entry)) rmSync(join(fakeRoot, "templates", "product-viewer", "src", entry));
+    }
+    expect(templateAuthorsLook(join(fakeRoot, "templates", "product-viewer"))).toBe(false);
+    const targetDir = join(scratch, "no-look");
+    const result = createA3DProject({ targetDir, template: "product-viewer", rootDir: fakeRoot });
     expect(existsSync(join(targetDir, "public", "hdri"))).toBe(false);
     expect(result.files.some((file) => file.startsWith("public/hdri/"))).toBe(false);
   });

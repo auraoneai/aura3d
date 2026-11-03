@@ -29,7 +29,7 @@ test.describe("showcase-pulse-tunnel framing (T2.3)", () => {
         await page.setViewportSize(viewport);
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}${DRIVE_QUERY}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Let the deterministic drive reach the 03-mid state before sampling.
         await page.waitForTimeout(2500);
         // The evidence id travels as an argument: page.evaluate runs in the

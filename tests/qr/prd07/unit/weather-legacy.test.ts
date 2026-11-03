@@ -6,8 +6,10 @@ import { describe, expect, it } from "vitest";
 import { weather } from "../../../../packages/engine/src/agent-api/nodes/weather";
 import { ProductionEffectSystem } from "../../../../packages/engine/src/production-runtime/effects/ProductionEffectSystem";
 
-const legacyIds = (nodes: readonly { runtime?: { id?: string } }[]) =>
-  nodes.filter((n) => n.runtime?.id?.startsWith("prd07.legacyWeather.")).map((n) => n.runtime!.id!);
+const legacyIds = (input: readonly object[]) => {
+  const nodes = input as readonly { runtime?: { id?: string } }[];
+  return nodes.filter((n) => n.runtime?.id?.startsWith("prd07.legacyWeather.")).map((n) => n.runtime!.id!);
+};
 
 describe("P5-T4 weather legacy carve", () => {
   it("precipitation tags every streak/flake and emits the real effect node", () => {

@@ -15,6 +15,7 @@
     "tests/browser/root-sdf-text-g1-harness.ts",
     "tests/browser/resource-soak-u1.spec.ts",
     "tests/browser/resource-soak-u1-harness.ts",
+    "tests/browser/resource-soak-accounting.ts",
     "tests/visual/canvas-pixel-checks.ts"
   ],
   "exclude": ["node_modules", "dist", "tests/**/fixtures/**"]

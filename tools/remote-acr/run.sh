@@ -247,6 +247,7 @@ IMAGE_PUSH_ATTEMPTED=0
 INPUTS_JSON=""
 INPUTS_LIST=""
 HISTORICAL_INPUTS_JSON=""
+STAGING_RECORD=""
 cleanup_ctx() {
   local saved_status=$?
   trap - EXIT
@@ -261,6 +262,7 @@ cleanup_ctx() {
   [ -z "$INPUTS_JSON" ] || rm -f "$INPUTS_JSON"
   [ -z "$INPUTS_LIST" ] || rm -f "$INPUTS_LIST"
   [ -z "$HISTORICAL_INPUTS_JSON" ] || rm -f "$HISTORICAL_INPUTS_JSON"
+  [ -z "$STAGING_RECORD" ] || rm -f "$STAGING_RECORD"
   exit "$saved_status"
 }
 trap cleanup_ctx EXIT
@@ -305,11 +307,20 @@ for (const name of new Set([...entries, process.argv[3]])) {
   process.stdout.write(name + '\0');
 }
 NODE
+  if [ "$AURA3D_ACCEPTANCE_KIND" = browser ]; then
+    # The full checkout was validated above; leave out whole asset trees
+    # (marketing, evidence, apps, docs, ...) that no selected spec or module it
+    # imports references. The record makes the in-context and in-image gate
+    # checks accept exactly those absences and nothing else.
+    STAGING_RECORD="$(mktemp /tmp/aura3d-acceptance-staging.XXXXXX)"
+    # shellcheck disable=SC2086 # SPECS is a validated list of exact paths.
+    AURA3D_EXTRA_DIRS="${EXTRA_DIRS:-}" node tools/remote-acr/acceptance-staging.mjs select "$INPUTS_LIST" "$AURA3D_CODE_COMPLETE_GATE" "$STAGING_RECORD" $SPECS || exit 2
+  fi
   rsync -a --from0 --files-from="$INPUTS_LIST" ./ "$CTX/"
-  for spec in $SPECS; do [ -f "$CTX/$spec" ] || { echo "FATAL: selected spec absent from candidate: $spec" >&2; exit 2; }; done
-  for required in tests/fixtures tests/support packages/create-aura3d/templates public/aura-environments; do
-    [ -d "$CTX/$required" ] && [ -n "$(ls -A "$CTX/$required")" ] || { echo "FATAL: candidate omitted required payload: $required" >&2; exit 2; }
-  done
+  [ -z "$STAGING_RECORD" ] || cp "$STAGING_RECORD" "$CTX/.aura3d-acceptance-staging.json"
+  # Missing specs, payload trees or promised inputs fail before any submission.
+  # shellcheck disable=SC2086
+  node tools/remote-acr/acceptance-staging.mjs verify-context "$CTX" "$INPUTS_LIST" $SPECS || exit 2
   # Independently validate the exact Git-free staging context before ACR sees it.
   (cd "$CTX" && node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE")
   if [ "$AURA3D_ACCEPTANCE_KIND" = historical-evidence ]; then

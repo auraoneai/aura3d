@@ -36,14 +36,17 @@
     "tests/**/fixtures/**",
     "tests/**/before/**",
     "tests/**/after/**",
-    // Lane test trees that do not typecheck under the check tsconfig yet
-    // (mirrors origin/main's tsconfig.build.json exclusions — each lane
-    // fixes its own drift and re-adds itself):
-    "tests/qr/prd04",
-    "tests/qr/prd07",
-    "tests/qr/prd08",
-    "tests/qr/prd11",
-    "tests/qr/prd14",
+    // QR lane trees prd04/07/08/11/14 are typechecked here (5.0, S5-WP19-02).
+    // Only these browser-served roots stay out: they import dev-server
+    // absolute URLs ("/benchmarks/...", "/tests/qr/prd04/shims/*.glsl.js")
+    // that only Vite resolves, or (prd07/browser) declare per-spec Window
+    // globals that collide with their harness declarations in one program.
+    // tests/qr/prd04/browser/r185-golden.ts and harness/prd04-capture.ts also
+    // import the external comparison engine.
+    "tests/qr/prd04/browser",
+    "tests/qr/prd04/harness",
+    "tests/qr/prd07/browser",
+    "tests/qr/prd07/corpus/clear-fx.ts",
     // Historical comparison browser entrypoints depend on an external engine
     // that is no longer part of the independent source dependency graph.
     // Preserve their source and evidence, but do not claim these roots are

@@ -68,7 +68,7 @@ describe("P5-T6/T7 volumetric tier mapping", () => {
   it("invertRigid round-trips a rigid transform", () => {
     // R = 90° about Y, t = (2, 3, 4).
     const m = [0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 2, 3, 4, 1];
-    const inv = invertRigid(m);
+    const inv = invertRigid(Float32Array.from(m));
     // Apply inv then m to a point and expect identity back.
     const p = [0.3, -1.2, 5.5];
     const q = [

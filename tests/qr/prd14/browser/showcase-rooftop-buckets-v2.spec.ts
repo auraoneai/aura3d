@@ -75,9 +75,9 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+        ((window as unknown as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
       await shot(page, "01-title");
 
@@ -139,7 +139,7 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await shootAtSweetSpot(page);
       await expect.poll(async () => page.evaluate((EVIDENCE: string) =>
         (eval(EVIDENCE + ".shot") as { inFlight?: boolean; meter?: number })?.inFlight ?? false, EVIDENCE),
@@ -163,7 +163,7 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const box = await page.evaluate(() => {
         const el = document.getElementById("app") ?? document.body;
         const r = el.getBoundingClientRect();
@@ -200,14 +200,14 @@ test.describe("showcase-rooftop-buckets v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const playLook = await page.evaluate((EVIDENCE: string) =>
         JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
       await expectRuntimeMatchesDeclared(APP_DIR, JSON.parse(playLook).runtime);
       for (const scenario of ["charged", "made", "brick"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         const scenarioLook = await page.evaluate((EVIDENCE: string) =>
           JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
         expect(scenarioLook).toBe(playLook);

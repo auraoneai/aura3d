@@ -22,7 +22,7 @@ describe("C-20 AuraAppEffects surface", () => {
     expect(fx.liveCount).toBeGreaterThanOrEqual(0);
     expect(Object.keys(fx.presets).length).toBeGreaterThanOrEqual(14);
     fx.registerPreset("my-fx", { name: "my-fx", layers: [{ type: "emitter" }] });
-    expect(fx.presets["my-fx"]).toBeDefined();
+    expect((fx.presets as Readonly<Record<string, unknown>>)["my-fx"]).toBeDefined();
     fx.clear();
     expect(prd07SystemFor(app)!.liveCount()).toBe(0);
     app.dispose();

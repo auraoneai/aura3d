@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import { heapGatePolicy, type WebGPUPipelineSnapshot } from "./resource-soak-accounting";
 
 /**
  * PART U1 browser soak (muse3jsparity-PRD): 50 route mount/step/dispose
@@ -17,6 +18,12 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * production mounts retains ~90+ KiB/cycle and trips the bound by cycle 45),
  * and the post-run GC heap must return within 2 MiB of baseline (full
  * reclamation — the strongest no-leak signal).
+ *
+ * The heap bounds apply only to Chromium (see heapGatePolicy); other browser
+ * families record the heap metric as explicitly unsupported and still run the
+ * native-handle, listener, registry and WebGPU pipeline checks. When WebGPU is
+ * available the same route is also soaked on the explicit WebGPU backend and
+ * every requested device, with the pipelines it owns, must be destroyed.
  */
 test.describe("U1 resource soak", () => {
   let server: ExampleDevServer;
@@ -31,7 +38,7 @@ test.describe("U1 resource soak", () => {
 
   test("50 cycles leave the heap flat and the GPU registry empty", async ({ page, browser, browserName }, testInfo) => {
     test.setTimeout(180_000);
-    expect(browserName, "the GC-disciplined heap calibration applies only to Chromium/CDP").toBe("chromium");
+    const heapPolicy = heapGatePolicy(browserName);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -108,10 +115,11 @@ test.describe("U1 resource soak", () => {
     });
     const nativeBaseline = await nativeSnapshot();
 
-    const cdp = await page.context().newCDPSession(page);
+    const cdp = heapPolicy.status === "calibrated" ? await page.context().newCDPSession(page) : undefined;
     const collectGarbage = async (): Promise<void> => {
       // These calibrated heap limits apply only to forced-GC Chromium runs.
       // An unavailable GC is not a valid measurement of this workload.
+      if (!cdp) throw new Error("Forced GC requires the calibrated Chromium CDP path");
       await cdp.send("HeapProfiler.enable");
       await cdp.send("HeapProfiler.collectGarbage");
     };
@@ -145,6 +153,7 @@ test.describe("U1 resource soak", () => {
      * retention raises the settled floor of every later chunk and still trips it.
      */
     const gcHeap = async (): Promise<number | null> => {
+      if (heapPolicy.status !== "calibrated") return null;
       let floor: number | null = null;
       for (let pass = 0; pass < HEAP_SETTLE_PASSES; pass += 1) {
         await collectGarbage();
@@ -168,7 +177,8 @@ test.describe("U1 resource soak", () => {
     // Measured route soak: 5 chunks x 9 = 45 cycles, GC-disciplined heap at both ends of every chunk.
     const heapEnds: number[] = [];
     const heapBaseline = await gcHeap();
-    expect(heapBaseline, "performance.memory is required for the heap gate").not.toBeNull();
+    const heapGated = heapPolicy.status === "calibrated";
+    if (heapGated) expect(heapBaseline, "performance.memory is required for the heap gate").not.toBeNull();
     let measuredCycles = 0;
     for (let chunk = 0; chunk < 5; chunk += 1) {
       const out = await runRouteCycles(9);
@@ -182,16 +192,58 @@ test.describe("U1 resource soak", () => {
         buffers: nativeBaseline.buffers, textures: nativeBaseline.textures, programs: nativeBaseline.programs, listeners: nativeBaseline.listeners
       });
       const heap = await gcHeap();
-      expect(heap, "performance.memory is required for the heap gate").not.toBeNull();
-      heapEnds.push(heap as number);
+      if (heapGated) {
+        expect(heap, "performance.memory is required for the heap gate").not.toBeNull();
+        heapEnds.push(heap as number);
+      }
     }
     expect(measuredCycles).toBe(45);
 
     const baseline = heapBaseline as number;
-    const maxDrift = Math.max(...heapEnds.map((heap) => heap - baseline));
-    expect(maxDrift, `heap drift ${maxDrift} bytes across 45 measured cycles exceeds the 4 MiB flat budget`).toBeLessThanOrEqual(
-      4 * 1024 * 1024
-    );
+    const maxDrift = heapGated ? Math.max(...heapEnds.map((heap) => heap - baseline)) : null;
+    if (heapPolicy.status === "calibrated") {
+      expect(maxDrift, `heap drift ${maxDrift} bytes across 45 measured cycles exceeds the 4 MiB flat budget`).toBeLessThanOrEqual(
+        heapPolicy.maxDriftBytes
+      );
+    }
+
+    // WebGPU route soak: count every render/compute pipeline per device and
+    // require all devices (and so their pipelines) to be destroyed afterwards.
+    type SoakWindow = { __AURA3D_RESOURCE_SOAK_U1__?: {
+      runWebGPURouteCycles(cycles: number): Promise<
+        | { status: "unsupported"; reason: string }
+        | { status: "ran"; cycles: { cycle: number; drawCalls: number; pipelines: WebGPUPipelineSnapshot }[] }>;
+      webgpuPipelines(): WebGPUPipelineSnapshot | null;
+    } };
+    const pipelineSnapshot = (): Promise<WebGPUPipelineSnapshot | null> => page.evaluate(() =>
+      (window as unknown as SoakWindow).__AURA3D_RESOURCE_SOAK_U1__!.webgpuPipelines());
+    const webgpuBaseline = await pipelineSnapshot();
+    const webgpu = await page.evaluate((count) => (window as unknown as SoakWindow).__AURA3D_RESOURCE_SOAK_U1__!.runWebGPURouteCycles(count), 20);
+    let webgpuFinal: WebGPUPipelineSnapshot | null = null;
+    if (webgpu.status === "ran") {
+      expect(webgpu.cycles).toHaveLength(20);
+      let previous = webgpuBaseline!;
+      let firstCycleRender = 0;
+      for (const entry of webgpu.cycles) {
+        expect(entry.drawCalls, `WebGPU cycle ${entry.cycle} must draw`).toBeGreaterThan(0);
+        expect(entry.pipelines.pipelinesLive, `WebGPU cycle ${entry.cycle} must own counted pipelines while mounted`).toBeGreaterThan(0);
+        expect(entry.pipelines.devicesLive, `WebGPU cycle ${entry.cycle} live devices`).toBe(webgpuBaseline!.devicesLive + 1);
+        const render = entry.pipelines.pipelinesCreated.render - previous.pipelinesCreated.render;
+        if (entry.cycle === 0) firstCycleRender = render;
+        // A fresh device recompiles the same scene; growth would mean an unbounded pipeline cache.
+        else expect(render, `WebGPU cycle ${entry.cycle} render pipelines vs first cycle`).toBeLessThanOrEqual(firstCycleRender);
+        previous = entry.pipelines;
+      }
+      await expect.poll(async () => {
+        const snapshot = await pipelineSnapshot();
+        return snapshot && { devicesLive: snapshot.devicesLive, pipelinesLive: snapshot.pipelinesLive };
+      }, { message: "every WebGPU device and its pipelines must be destroyed after disposeAsync" }).toEqual({
+        devicesLive: webgpuBaseline!.devicesLive, pipelinesLive: webgpuBaseline!.pipelinesLive
+      });
+      webgpuFinal = await pipelineSnapshot();
+    } else {
+      expect(webgpu.reason, "an unsupported WebGPU soak must say why").toMatch(/\S/);
+    }
 
     // Real-GL registry soak: 2 live targets mid-cycle with exact bytes, zero after every cycle.
     const registry = (await page.evaluate(() => (() => {
@@ -231,12 +283,14 @@ test.describe("U1 resource soak", () => {
     expect(nativeFinal.listenersAdded).toBeGreaterThan(0);
 
     const heapFinal = await gcHeap();
-    expect(heapFinal, "performance.memory is required for the heap gate").not.toBeNull();
-    const reclaimDrift = (heapFinal as number) - baseline;
-    expect(
-      reclaimDrift,
-      `post-run heap ${reclaimDrift} bytes over baseline: allocations were not reclaimed`
-    ).toBeLessThanOrEqual(2 * 1024 * 1024);
+    const reclaimDrift = heapGated ? (heapFinal as number) - baseline : null;
+    if (heapPolicy.status === "calibrated") {
+      expect(heapFinal, "performance.memory is required for the heap gate").not.toBeNull();
+      expect(
+        reclaimDrift,
+        `post-run heap ${reclaimDrift} bytes over baseline: allocations were not reclaimed`
+      ).toBeLessThanOrEqual(heapPolicy.maxReclaimBytes);
+    }
     expect(errors.join("\n"), "soak harness must run without page errors").toBe("");
 
     mkdirSync(resolve("tests/reports/muse3jsparity"), { recursive: true });
@@ -248,7 +302,7 @@ test.describe("U1 resource soak", () => {
           generatedAt: new Date().toISOString(),
           pass: true,
           environment: { project: testInfo.project.name, browserName, browserVersion: browser.version(), os: `${process.platform}-${process.arch}` },
-          heapCalibration: { method: "Chromium CDP forced GC, settled minimum", provenance: "U1 calibration 2026-09-04; comparability with other runners is unverified", warmupCycles: 5, maxDriftBytes: 4 * 1024 * 1024, maxReclaimBytes: 2 * 1024 * 1024 },
+          heapCalibration: heapPolicy.status === "calibrated" ? { ...heapPolicy, warmupCycles: 5 } : heapPolicy,
           warmupCycles: 5,
           measuredRouteCycles: measuredCycles,
           registryCycles: 50,
@@ -261,7 +315,10 @@ test.describe("U1 resource soak", () => {
           ownersSeen: registry.ownersSeen,
           shadowBytesSeen: registry.shadowBytesSeen,
           mirrorBytesSeen: registry.mirrorBytesSeen,
-          nativeResources: nativeFinal
+          nativeResources: nativeFinal,
+          webgpu: webgpu.status === "ran"
+            ? { status: "ran", cycles: webgpu.cycles.length, baseline: webgpuBaseline, final: webgpuFinal }
+            : { status: "unsupported", reason: webgpu.reason }
         },
         null,
         2

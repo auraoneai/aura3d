@@ -9,7 +9,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "nod
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import { build, type Metafile } from "esbuild";
-import { hashConsumerProject, restorePortableConsumerProject, validateSourceConsumerReport, type NativeConsumerProject } from "../package-clean-install/index";
+import { hashConsumerProject, restorePackedConsumerProject, restorePortableConsumerProject, validateSourceConsumerReport, type NativeConsumerProject } from "../package-clean-install/index";
 import { loadValidatedReleasePlan, type ExactReleasePlan } from "../release/exact-release-plan.mjs";
 
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string }
@@ -129,7 +129,13 @@ function assertVerifiedProject(project: NativeConsumerProject, destination: stri
 
 export async function measureSlice(root: string, project: NativeConsumerProject, slice: Slice, work: string, plan?: ExactReleasePlan): Promise<{ checks: Check[]; measurement: unknown }> {
   const isolated = join(work, slice.id);
-  if (project.retention === "portable-v1") {
+  if (project.retention === "packed-v1") {
+    if (!plan) throw new Error(`A validated candidate plan is required to restore ${project.template}`);
+    // Reinstall from the retained lock and staged candidate archives; the
+    // restore rechecks every candidate lock identity and installed package.
+    await restorePackedConsumerProject(root, project, isolated, plan);
+    assertVerifiedProject(project, isolated);
+  } else if (project.retention === "portable-v1") {
     if (!plan) throw new Error(`A validated candidate plan is required to restore ${project.template}`);
     // Reconstruct only from the retained lock and candidate archives after the
     // restore helper has checked their identity and dependency independence.
@@ -218,7 +224,9 @@ export async function measureSlice(root: string, project: NativeConsumerProject,
 }
 
 export async function main(argv: readonly string[] = process.argv.slice(2), root = resolve(dirname(fileURLToPath(import.meta.url)), "../..")): Promise<void> {
-  const reportDirectory = process.env.NATIVE_REPORT_DIR ?? "tests/reports";
+  // The source pass exports an absolute NATIVE_REPORT_DIR (tools/remote-acr/source5-run.sh).
+  const rawReportDirectory = process.env.NATIVE_REPORT_DIR ?? "tests/reports";
+  const reportDirectory = isAbsolute(rawReportDirectory) ? relative(root, rawReportDirectory).split(sep).join("/") : rawReportDirectory;
   if (!/^tests\/reports(?:\/[A-Za-z0-9][A-Za-z0-9._-]*)*$/u.test(reportDirectory) || reportDirectory.split("/").some(part => part === "." || part === "..")) {
     throw new Error("NATIVE_REPORT_DIR must be a path under tests/reports");
   }
@@ -261,7 +269,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2), root
     pass: failures.length === 0,
     sourceReport: { path: reportPath, sha256: sha256(reportBytes), runId: sourceReport.runId },
     candidate: { releasePlan: plan.reference, version: plan.version, source: plan.source },
-    method: "Restore verified portable source-phase consumer projects outside the workspace from their retained lock and candidate archives; sum per-chunk JavaScript, gzip and Brotli bytes and inspect esbuild retained-byte contributions. Dynamic optional-peer imports are listed separately.",
+    method: "Restore verified source-phase consumer projects (packed or portable) outside the workspace from their retained lock and candidate archives; sum per-chunk JavaScript, gzip and Brotli bytes and inspect esbuild retained-byte contributions. Dynamic optional-peer imports are listed separately.",
     checks, failures, measurements
   };
   const output = resolve(root, reportDirectory, "installed-tree-shaking.json");

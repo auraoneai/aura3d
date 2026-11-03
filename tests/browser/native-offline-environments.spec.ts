@@ -9,7 +9,7 @@ import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { expect, test } from "@playwright/test";
 import { build } from "esbuild";
 import { loadValidatedReleasePlan } from "../../tools/release/exact-release-plan.mjs";
-import { restorePortableConsumerProject, validateSourceConsumerReport, type NativeConsumerProject } from "../../tools/package-clean-install/index";
+import { restorePackedConsumerProject, restorePortableConsumerProject, validateSourceConsumerReport, type NativeConsumerProject } from "../../tools/package-clean-install/index";
 import { consumerReportFromEnvironment, restoreGatedBrowserConsumer, type BrowserGateRecord } from "../../tools/native-capability-gate/browser-contract";
 import { TEMPLATE_ENVIRONMENT_PRESETS } from "../../packages/create-aura3d/src/template-hdri";
 
@@ -109,9 +109,10 @@ test.describe("installed template environments", () => {
         }
         const source = validateSourceConsumerReport(root, reportPath, plan);
         const selected = source.projects.find(project => project.kind === "template" && project.template === "product-viewer");
-        if (!selected || selected.retention !== "portable-v1") throw new Error("Portable product-viewer project is missing");
+        if (!selected || (selected.retention !== "portable-v1" && selected.retention !== "packed-v1")) throw new Error("Retained product-viewer project is missing");
         installed = selected.installedPackages;
-        await restorePortableConsumerProject(root, selected, destination, plan);
+        if (selected.retention === "packed-v1") await restorePackedConsumerProject(root, selected, destination, plan);
+        else await restorePortableConsumerProject(root, selected, destination, plan);
       }
     );
     try { serving = await serveRestoredProject(restored.directory, installed); }

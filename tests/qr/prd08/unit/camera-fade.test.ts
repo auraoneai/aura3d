@@ -47,7 +47,7 @@ const FLAGS_ON = { on: (f: string) => f === "A3D_QR_CAMERA" };
 const FLAGS_OFF = { on: () => false };
 const item = (label: string): RenderItem => ({ label }) as unknown as RenderItem;
 const ctx = (frameIndex = 0) =>
-  ({ flags: FLAGS_ON, frameIndex }) as unknown as Parameters<ReturnType<typeof createOccluderFadeContributor>["collect"]>[1];
+  ({ flags: FLAGS_ON, frameIndex }) as unknown as Parameters<NonNullable<ReturnType<typeof createOccluderFadeContributor>["collect"]>>[1];
 
 describe("S15 occluder fade — coverage math", () => {
   it("u_cameraFade 0.5 draws 50 % of pixels (within ±2 %)", () => {
@@ -97,7 +97,7 @@ describe("S15/C-11 occluder fade — manager + contributor", () => {
       contrib.collect!(items, {
         flags: FLAGS_OFF,
         frameIndex: 0
-      } as Parameters<NonNullable<typeof contrib.collect>>[1])
+      } as unknown as Parameters<NonNullable<typeof contrib.collect>>[1])
     ).toBe(items);
   });
 

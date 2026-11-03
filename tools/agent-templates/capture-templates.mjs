@@ -258,7 +258,7 @@ function templateAuthorsLook(dir) {
     for (const entry of readdirSync(current, { withFileTypes: true })) {
       const file = path.join(current, entry.name);
       if (entry.isDirectory()) stack.push(file);
-      else if (/\.(ts|tsx|js|mjs)$/.test(entry.name) && /\blooks\.(preset|nodes)\(/.test(readFileSync(file, "utf8"))) return true;
+      else if (/\.(ts|tsx|js|mjs)$/.test(entry.name) && /\b(?:looks\.(?:preset|nodes)|compilePromptPlanV2|promptPlanToSceneV2)\s*\(/.test(readFileSync(file, "utf8"))) return true;
     }
   }
   return false;

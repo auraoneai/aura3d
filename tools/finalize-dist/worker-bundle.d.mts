@@ -8,3 +8,4 @@ export function assertZstdWorkerFactory(source: string): void;
 export function assertZstdPackageMetadata(rootManifest: Record<string, unknown>, assetsManifest: Record<string, unknown>): void;
 export function assertPackagedWorkerFactory(source: string): void;
 export function emitPackagedWorker(root: string, buildOverride?: (options: BuildOptions) => Promise<BuildResult<BuildOptions>>): Promise<void>;
+export function assertPackedWorkerAssets(packageDir: string): { workerAssets: string; files: string[] };

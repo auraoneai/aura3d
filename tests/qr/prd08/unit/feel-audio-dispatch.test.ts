@@ -52,7 +52,7 @@ describe("A-10 feel audio channel → GameSound.play", () => {
     nullPlay.define("x", { audio: { cue: "a" } });
     nullPlay.emit("x");
     expect(nullPlay.evidence().executed.audio ?? 0).toBe(0);
-    nullPlay.dispose();
+    (nullPlay as unknown as { dispose(): void }).dispose();
     liveBuses.length = 0;
 
     const stubCtx = makeBus(fakeApp(), {

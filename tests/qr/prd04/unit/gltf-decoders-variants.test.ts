@@ -8,13 +8,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { MeshoptDecoder } from "meshoptimizer";
-// @ts-expect-error draco3d ships no types
 import draco3d from "draco3d";
 import {
   GLTFLoader,
   LoadContext,
   createDracoDecoder,
-  createMeshoptDecoder
+  createMeshoptDecoder,
+  type GLTFDracoDecoderModule
 } from "../../../../packages/assets/src";
 import {
   loadProductionGLTFRenderPipeline,
@@ -44,7 +44,7 @@ describe("requiredGLTFDecoders + scanGLTFExtensionsUsed (P5-2)", () => {
 
 describe("compressed corpus fixtures decode through the loader (P5-2)", () => {
   it("Draco variant decodes to the same mesh cardinality as the uncompressed GLB", async () => {
-    const module = await draco3d.createDecoderModule();
+    const module = await (draco3d as unknown as { createDecoderModule(): Promise<GLTFDracoDecoderModule> }).createDecoderModule();
     const base = await new GLTFLoader().load({ url: DATA_URL(HELMET), type: "gltf" }, new LoadContext());
     const draco = await new GLTFLoader({ dracoDecoder: createDracoDecoder(module) })
       .load({ url: DATA_URL(HELMET_DRACO), type: "gltf" }, new LoadContext());

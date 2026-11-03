@@ -31,7 +31,7 @@ test.describe("showcase-orbital-defense framing (T2.3)", () => {
         await page.setViewportSize(viewport);
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Let drones drift in a little, then read framing + HUD overlap.
         await page.waitForTimeout(2500);
         const framing = await page.evaluate((EVIDENCE: string) =>

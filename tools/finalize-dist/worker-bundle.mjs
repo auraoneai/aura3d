@@ -179,6 +179,28 @@ function readResult(result, root, label, marker) {
   return source;
 }
 
+/**
+ * Verify the emitted worker entrypoints as shipped in an installed or extracted
+ * root package (`packageDir` contains package.json and dist/). Every manifest
+ * asset must exist, the published factory must reference them statically, and
+ * each emitted worker bundle must be self-contained with its protocol code.
+ */
+export function assertPackedWorkerAssets(packageDir) {
+  const root = resolve(packageDir);
+  const app = "dist/engine/agent-api/app";
+  const output = `${app}/worker-assets`;
+  assertPackagedWorkerFactory(readFileSync(checkedSource(root, `${app}/workerFactory.js`), "utf8"));
+  for (const name of new Set(["render.worker.bundle.js", ...Object.values(ASSETS)])) checkedSource(root, `${output}/${name}`);
+  assertSelfContainedWorker(readFileSync(checkedSource(root, `${output}/render.worker.bundle.js`), "utf8"), "packed render worker", "init");
+  assertSelfContainedWorker(readFileSync(checkedSource(root, `${output}/retarget.worker.bundle.js`), "utf8"), "packed retarget worker", "bake");
+  const license = readFileSync(checkedSource(root, `${output}/LICENSE-zstd-decoder.txt`), "utf8");
+  const provenance = JSON.parse(readFileSync(checkedSource(root, `${output}/provenance-zstd.json`), "utf8"));
+  assertZstdWorkerPayload(readFileSync(checkedSource(root, `${output}/zstd.worker.bundle.js`), "utf8"), license, provenance);
+  assertZstdWorkerPayload(readFileSync(checkedSource(root, "dist/assets/workers/zstd.worker.js"), "utf8"), license, provenance);
+  assertZstdWorkerFactory(readFileSync(checkedSource(root, "dist/assets/loaders/ZstdDecoder.js"), "utf8"));
+  return { workerAssets: output, files: [...new Set(["render.worker.bundle.js", ...Object.values(ASSETS)])].sort() };
+}
+
 /** Emit a raw, same-origin ESM worker asset and static URLs for its dependencies. */
 export async function emitPackagedWorker(rootInput, buildOverride) {
   const root = resolve(rootInput);

@@ -24,10 +24,10 @@ test.describe("patrol-wing dispatch (T1.10)", () => {
     try {
       await page.goto(`${url}/`);
       await expect.poll(() =>
-        page.evaluate((g) => Boolean((window as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
+        page.evaluate((g) => Boolean((window as unknown as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
         { timeout: 30_000 }).toBe(true);
       // The v2 beacon must NOT publish under flag-off.
-      const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
+      const v2 = await page.evaluate(() => (window as unknown as Record<string, unknown>).__AURA3D_GAME__);
       expect(v2).toBeUndefined();
       await soakIfNeeded(page);
       expect(errors).toEqual([]);
@@ -44,15 +44,15 @@ test.describe("patrol-wing dispatch (T1.10)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() =>
-        page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
+        page.evaluate(() => (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
         { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+        ((window as unknown as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
       // Real C-24 impl publishes per-route evidence under the games.json
       // evidenceGlobal (FLAG-2).
       const evidence = await page.evaluate((app) =>
-        ((window as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ as Record<string, unknown> | undefined)?.[app],
+        ((window as unknown as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ as Record<string, unknown> | undefined)?.[app],
         APP_DIR);
       expect(evidence, "v2 evidence section missing").toBeTruthy();
       await soakIfNeeded(page);

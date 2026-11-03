@@ -32,13 +32,35 @@ function codeBlocks(markdown: string): string[] {
   return [...markdown.matchAll(/```(?:ts|typescript|tsx|js|javascript)\s*\n([\s\S]*?)```/g)].map((match) => match[1]!);
 }
 
-/** Parse code, not text patterns: nested calls and comments cannot create keys. */
-function optionObjects(expression: ts.Expression | undefined): readonly ts.ObjectLiteralExpression[] {
+/**
+ * Parse code, not text patterns: nested calls and comments cannot create keys.
+ * An identifier argument resolves to a `const` object literal declared in the
+ * same example, so `const options = {...}; primitives.box(options)` is not
+ * hidden from discovery.
+ */
+function optionObjects(expression: ts.Expression | undefined, bindings: ReadonlyMap<string, ts.Expression> = new Map(), seen = new Set<string>()): readonly ts.ObjectLiteralExpression[] {
   if (!expression) return [];
   if (ts.isObjectLiteralExpression(expression)) return [expression];
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isSatisfiesExpression(expression)) return optionObjects(expression.expression);
-  if (ts.isConditionalExpression(expression)) return [...optionObjects(expression.whenTrue), ...optionObjects(expression.whenFalse)];
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isSatisfiesExpression(expression)) return optionObjects(expression.expression, bindings, seen);
+  if (ts.isConditionalExpression(expression)) return [...optionObjects(expression.whenTrue, bindings, seen), ...optionObjects(expression.whenFalse, bindings, seen)];
+  if (ts.isIdentifier(expression) && bindings.has(expression.text) && !seen.has(expression.text)) {
+    return optionObjects(bindings.get(expression.text), bindings, new Set([...seen, expression.text]));
+  }
   return [];
+}
+
+function constBindings(source: ts.SourceFile): Map<string, ts.Expression> {
+  const bindings = new Map<string, ts.Expression>();
+  const scan = (node: ts.Node): void => {
+    if (ts.isVariableDeclarationList(node) && (node.flags & ts.NodeFlags.Const)) {
+      for (const declaration of node.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.initializer) bindings.set(declaration.name.text, declaration.initializer);
+      }
+    }
+    ts.forEachChild(node, scan);
+  };
+  scan(source);
+  return bindings;
 }
 
 export function documentedOptionReferences(markdown: string, file: string): DocumentedOption[] {
@@ -58,6 +80,7 @@ export function documentedOptionReferences(markdown: string, file: string): Docu
   });
   for (const block of blocks) {
     const source = ts.createSourceFile("example.ts", block, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const bindings = constBindings(source);
     const visit = (node: ts.Node): void => {
       if (ts.isCallExpression(node)) {
         const builder = node.expression.getText(source);
@@ -71,7 +94,7 @@ export function documentedOptionReferences(markdown: string, file: string): Docu
           // options. Never mistake a geometry spec or asset literal for options.
           const positional = builder === "geometry.custom" || builder === "instances.model" || builder === "model" || builder === "primitives.custom";
           const candidate = positional ? node.arguments[1] : node.arguments[0];
-          for (const options of optionObjects(candidate)) for (const property of options.properties) {
+          for (const options of optionObjects(candidate, bindings)) for (const property of options.properties) {
             if (ts.isSpreadAssignment(property) || ("name" in property && property.name && ts.isComputedPropertyName(property.name))) {
               // A spread or computed key can carry more options than the AST
               // can name; report the gap rather than silently omitting it.
@@ -150,6 +173,61 @@ export function auditOptionProbes(documented: readonly DocumentedOption[], rows:
   return findings;
 }
 
+/**
+ * Type-driven discovery: every property of every option type a typed probe
+ * helper (`forOptions<T>()`) is declared against, for every builder probed
+ * through that helper. This finds supported options that no example happens
+ * to spell out. Requires the TypeScript checker; never imports runtime code.
+ */
+export function typedOptionInventory(root: string): DocumentedOption[] {
+  const file = join(root, OUT_FILE);
+  if (!existsSync(file)) return [];
+  const config = ts.getParsedCommandLineOfConfigFile(join(root, "tsconfig.base.json"), {}, {
+    ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => undefined
+  });
+  const program = ts.createProgram([file], { ...(config?.options ?? {}), noEmit: true });
+  const checker = program.getTypeChecker();
+  const source = program.getSourceFile(file);
+  if (!source) return [];
+  const helperFields = new Map<string, string[]>();
+  const helperBuilders = new Map<string, Set<string>>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer) &&
+        ts.isIdentifier(node.initializer.expression) && node.initializer.expression.text === "forOptions" && node.initializer.typeArguments?.[0]) {
+      const type = checker.getApparentType(checker.getTypeFromTypeNode(node.initializer.typeArguments[0]));
+      helperFields.set(node.name.text, checker.getPropertiesOfType(type).map((property) => property.name).sort());
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && helperFields.has(node.expression.text) && node.arguments[0] && ts.isStringLiteral(node.arguments[0])) {
+      const builders = helperBuilders.get(node.expression.text) ?? new Set<string>();
+      builders.add(node.arguments[0].text);
+      helperBuilders.set(node.expression.text, builders);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  const found = new Map<string, DocumentedOption>();
+  for (const [helper, builders] of helperBuilders) for (const builder of builders) for (const field of helperFields.get(helper) ?? []) {
+    found.set(`${builder}.${field}`, { builder, field, file: OUT_FILE });
+  }
+  return [...found.values()].sort((a, b) => `${a.builder}.${a.field}`.localeCompare(`${b.builder}.${b.field}`));
+}
+
+/**
+ * Typed options without a runtime probe or actionable unsupported row. These
+ * are reported (not yet enforced) so the gap is visible and countable; the
+ * documented-example audit above stays enforced.
+ */
+export function typedOptionGaps(inventory: readonly DocumentedOption[], rows: readonly OptionProbeSummary[]): GateFinding[] {
+  const covered = new Set(rows.filter((row) => row.disposition === "runtime" || (row.disposition === "unsupported" && row.reason)).map((row) => `${row.builder}.${row.field}`));
+  const missing = new Map<string, string[]>();
+  for (const option of inventory) {
+    if (covered.has(`${option.builder}.${option.field}`)) continue;
+    missing.set(option.builder, [...(missing.get(option.builder) ?? []), option.field]);
+  }
+  return [...missing].map(([builder, fields]) => ({ rule: "option-coverage", file: OUT_FILE,
+    detail: `${builder}: ${fields.length} typed option(s) have no runtime probe or actionable unsupported row: ${fields.join(", ")}` }));
+}
+
 function docs(root: string): DocumentedOption[] {
   const apiDir = join(root, "docs/api");
   const files = [
@@ -181,11 +259,12 @@ function staleDiagnosticFindings(root: string, rows: readonly OptionProbeSummary
   return findings;
 }
 
-export function optionCoverageRule(_files: string[], root: string): GateFinding[] {
+export function optionCoverageRule(_files: string[], root: string, options: { typed?: boolean } = {}): GateFinding[] {
   const path = join(root, OUT_FILE);
   if (!existsSync(path)) return [{ rule: "option-coverage", file: OUT_FILE, detail: "typed option probe registry is missing", enforced: true }];
   const rows = readOptionProbeSummaries(readFileSync(path, "utf8"));
-  return [...auditOptionProbes(docs(root), rows), ...staleDiagnosticFindings(root, rows)];
+  return [...auditOptionProbes(docs(root), rows), ...staleDiagnosticFindings(root, rows),
+    ...(options.typed === false ? [] : typedOptionGaps(typedOptionInventory(root), rows))];
 }
 
 /** The historical command now discovers gaps without overwriting reviewed probes. */

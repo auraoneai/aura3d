@@ -38,13 +38,13 @@ function writeBrowserBuildFixture(dir: string): void {
 function makeReport() {
   const root = temporary();
   write(join(root, "pnpm-lock.yaml"), "source lock\n");
-  const entries: PackageEntry[] = ["@aura3d/engine", "@aura3d/react", "@aura3d/navigation-recast", "@aura3d/assets"].map((name, i) => {
+  const entries: PackageEntry[] = ["@aura3d/engine", "@aura3d/react", "@aura3d/navigation-recast", "@aura3d/assets", "@aura3d/input", "@aura3d/controls"].map((name, i) => {
     const bytes = `archive-${i}`;
     const tarball = `archives/${i}.tgz`;
     write(join(root, tarball), bytes);
     return { name, version: "4.7.1", tarball, sha256: hash(bytes), integrity: `sha512-${createHash("sha512").update(bytes).digest("base64")}` };
   });
-  const plan = { schema: "aura3d-release-plan/1.0", version: "4.7.1", source: { commit: "origin-commit", fingerprint: "a".repeat(64), inputDigest: "b".repeat(64), lockfileSha256: hash("source lock\n") }, packageCount: 4, expectedPackageCount: 4, packages: entries };
+  const plan = { schema: "aura3d-release-plan/1.0", version: "4.7.1", source: { commit: "origin-commit", fingerprint: "a".repeat(64), inputDigest: "b".repeat(64), lockfileSha256: hash("source lock\n") }, packageCount: 6, expectedPackageCount: 6, packages: entries };
   const planText = JSON.stringify(plan);
   write(join(root, "candidate.json"), planText);
   cpSync(fixtures, join(root, "tests/fixtures/native-consumer"), { recursive: true });
@@ -280,7 +280,9 @@ describe("isolated native consumer matrix", () => {
     const result = (input: ConsumerNativePnpmStoreInput): NativePnpmStoreReport => ({
       schema: "aura3d.pnpm-native-store/1",
       binding: { kind: "consumer", manifestSha256: hash(Buffer.from(input.admission!.manifestBytes)), lockfileSha256: hash(Buffer.from(input.admission!.lockBytes)) },
-      manifestSha256: "a".repeat(64), archiveCount: 3, fileCount: 1, installationAuthorized: false, scope: "synthetic inventory"
+      // One archive per candidate package of the peer-absent cell.
+      manifestSha256: "a".repeat(64), archiveCount: state.report.projects.find(item => item.id === "pnpm-react18-peer-absent")!.archives!.length,
+      fileCount: 1, installationAuthorized: false, scope: "synthetic inventory"
     });
     const seed = vi.spyOn(pnpmGraph, "seedVerifiedPnpmStore").mockImplementation(input => {
       expect(input.admission?.capability).toBe(capability);

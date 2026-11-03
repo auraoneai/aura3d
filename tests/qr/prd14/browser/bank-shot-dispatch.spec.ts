@@ -36,15 +36,15 @@ test.describe("bank-shot dispatch (T1.10)", () => {
     try {
       await page.goto(`${url}/`);
       await expect.poll(() =>
-        page.evaluate((g) => Boolean((window as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
+        page.evaluate((g) => Boolean((window as unknown as Record<string, unknown>)[g]), EVIDENCE_GLOBAL),
         { timeout: 30_000 }).toBe(true);
       const keys = await page.evaluate(
-        (g) => Object.keys((window as Record<string, unknown>)[g] as object), EVIDENCE_GLOBAL);
+        (g) => Object.keys((window as unknown as Record<string, unknown>)[g] as object), EVIDENCE_GLOBAL);
       for (const key of LEGACY_EVIDENCE_KEYS) {
         expect(keys, `legacy evidence key "${key}" missing after the move`).toContain(key);
       }
       // The v2 beacon must NOT publish under flag-off.
-      const v2 = await page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__);
+      const v2 = await page.evaluate(() => (window as unknown as Record<string, unknown>).__AURA3D_GAME__);
       expect(v2).toBeUndefined();
       expect(errors).toEqual([]);
     } finally {
@@ -60,10 +60,10 @@ test.describe("bank-shot dispatch (T1.10)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() =>
-        page.evaluate(() => (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
+        page.evaluate(() => (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined),
         { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+        ((window as unknown as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
       expect(errors).toEqual([]);
     } finally {

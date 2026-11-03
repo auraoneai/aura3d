@@ -31,7 +31,7 @@ test.describe("aura-clash-showcase framing (T2.3)", () => {
         await page.setViewportSize(viewport);
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         // Drive to 03-mid: walk toward the opponent then jab.
         await page.keyboard.down("KeyD");
         await page.waitForTimeout(1200);

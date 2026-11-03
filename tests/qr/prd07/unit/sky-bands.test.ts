@@ -29,8 +29,8 @@ describe("gradient bands (Q-07-2)", () => {
     expect(gradientFrame(spec(six)).bands).toHaveLength(SKY_BAND_CAPACITY);
     const zero = gradientFrame(spec([{ elevationDeg: 30, widthDeg: 10, color: "#ff0000", intensity: 0 }]));
     const none = gradientFrame(spec([]));
-    const dir = [0, Math.sin((30 * Math.PI) / 180), Math.cos((30 * Math.PI) / 180)];
-    expect(gradientEvaluate(zero, [...dir])).toEqual(gradientEvaluate(none, [...dir]));
+    const dir: [number, number, number] = [0, Math.sin((30 * Math.PI) / 180), Math.cos((30 * Math.PI) / 180)];
+    expect(gradientEvaluate(zero, [...dir] as [number, number, number])).toEqual(gradientEvaluate(none, [...dir] as [number, number, number]));
   });
 
   it("numeric band colors pass through; hex parses srgb->linear", () => {

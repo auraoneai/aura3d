@@ -15,7 +15,7 @@ describe("P5-T3 weather volume", () => {
   it("rain volume exists and drops fall between frames", () => {
     const v = createWeatherVolume({ type: "rain", intensity: 0.8, seed: 7 });
     expect(v.kind).toBe("rain");
-    expect(v.emitter.count).toBeGreaterThan(0);
+    expect(v.emitter.particleCount).toBeGreaterThan(0);
     const cam: [number, number, number] = [0, 1.7, 0];
     const a = v.emitter.positions(0, cam);
     const b = v.emitter.positions(0.25, cam);
@@ -25,13 +25,13 @@ describe("P5-T3 weather volume", () => {
     const e = v.spec.extent[1];
     const expectedDy = v.spec.fallVelocity[1] * 0.25;
     let meanMod = 0;
-    for (let i = 0; i < v.emitter.count; i += 1) {
+    for (let i = 0; i < v.emitter.particleCount; i += 1) {
       let dy = (b[i * 3 + 1]! - a[i * 3 + 1]!) % e;
       if (dy < -e / 2) dy += e;
       if (dy >= e / 2) dy -= e;
       meanMod += dy;
     }
-    meanMod /= v.emitter.count;
+    meanMod /= v.emitter.particleCount;
     expect(meanMod).toBeCloseTo(expectedDy, 1);
     expect(v.wetness).toBeGreaterThan(0);
     expect(v.splashes).not.toBeNull();

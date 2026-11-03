@@ -15,27 +15,21 @@
  *   no-internal-deep-import — `@aura3d/<pkg>/src/...` is never importable. This is the rule the
  *     old config claimed to enforce; it never ran because the config had no parser for `.ts`.
  *
- * Tiers come from `tools/package-tiers.ts` — the same module the graph gate reads. Neither gate
+ * Tiers come from the versioned inventory `tools/release/release-inventory.mjs` — the record
+ * `tools/package-tiers.ts` projects for the graph gate. Neither gate
  * carries its own copy.
  */
 import { readFileSync } from "node:fs";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { packageTiers } from "../release/release-inventory.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
 
-/** Parse the tier map out of the canonical TS module without needing a TS loader in ESLint. */
+/** Tiers come from the versioned package inventory (plain JS), the same record tools/package-tiers.ts projects. */
 function loadTiers() {
-  const source = readFileSync(resolve(repoRoot, "tools/package-tiers.ts"), "utf8");
-  const body = source.slice(
-    source.indexOf("export const PACKAGE_TIERS"),
-    source.indexOf("};", source.indexOf("export const PACKAGE_TIERS"))
-  );
-  const tiers = {};
-  for (const match of body.matchAll(/^\s*"?([a-z0-9-]+)"?:\s*(\d+),?\s*$/gm)) {
-    tiers[match[1]] = Number(match[2]);
-  }
+  const tiers = packageTiers();
   if (Object.keys(tiers).length === 0) throw new Error("aura3d-boundaries: parsed zero tiers");
   return tiers;
 }

@@ -32,7 +32,7 @@ function fakeHost(device: MockRenderDevice): WebGL2DeviceHost & { lifecycle: Web
     device,
     contextLost: true,
     lifecycle: undefined as unknown as WebGL2ContextLifecycle
-  } as WebGL2DeviceHost;
+  } as unknown as WebGL2DeviceHost;
   const lifecycle = new WebGL2ContextLifecycle(host, fakeCanvas() as unknown as HTMLCanvasElement);
   (host as { lifecycle: WebGL2ContextLifecycle }).lifecycle = lifecycle;
   registerWebGL2DeviceHost(host);

@@ -27,7 +27,7 @@ const spec = (over: Partial<GpuSimSpec> = {}): GpuSimSpec => ({
   emitter: { origin: [0, 0, 0], direction: [0, 1, 0], spread: 0, speed: [5, 5], discRadius: 0 },
   seed: 0xabcd,
   useHeightfield: false,
-  heightfield: null,
+  heightfield: undefined,
   heightUvScale: 0,
   heightMax: 0,
   ...over

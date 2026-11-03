@@ -31,7 +31,8 @@ export interface NativeBrowserEvidence {
   driver: { value?: string; unavailableReason?: string };
   /** Aura3D-specified launch arguments; does not include Playwright's implicit defaults. */
   featureFlags: string[];
-  browserLaunchArguments: { value?: string[]; unavailableReason?: string };
+  /** Complete effective command line of the browser process, or a per-field reason it could not be observed. */
+  browserLaunchArguments: { value?: string[]; unavailableReason?: string; source?: "cdp-browser-command-line" | "proc-cmdline" };
   fixture: { id: string; sha256: string; license: string; byteLength: number };
   scenarios: NativeBrowserScenario[];
 }
@@ -105,7 +106,8 @@ export function validateNativeBrowserEvidence(value: unknown): string[] {
     if (!meaningful(provenance?.deviceId) || !meaningful(provenance?.observedBy) || !meaningful(provenance?.observation)) errors.push("Physical provenance requires a device id, observer and on-device observation.");
     const adapter = record(evidence.adapter);
     const driver = record(evidence.driver);
-    const labels = [project, browser?.distribution, os?.name, adapter?.value, driver?.value, provenance?.deviceId, provenance?.observation,
+    const labels = [project, browser?.distribution, browser?.executableVersion, os?.name, os?.version, os?.kernel, adapter?.value, driver?.value,
+      provenance?.deviceId, provenance?.observedBy, provenance?.observation,
       ...(Array.isArray(evidence.featureFlags) ? evidence.featureFlags : []),
       ...(Array.isArray(args?.value) ? args.value : [])].filter((item): item is string => typeof item === "string").join(" ");
     if (/swiftshader|llvmpipe|softpipe|software raster|software render|emulat|simulator|injected/i.test(labels)) {
@@ -135,6 +137,23 @@ export function validateNativeBrowserEvidence(value: unknown): string[] {
     for (const name of NATIVE_BROWSER_SCENARIOS) if (!seen.has(name)) errors.push(`Missing scenario: ${name}.`);
   }
   return errors;
+}
+
+export interface ObservedBrowserProcess { pid: number; ppid: number; argv: string[] }
+
+/**
+ * Pick the browser root process launched by this test worker and return its
+ * complete argv. A browser is a direct child of the Playwright worker; any
+ * ambiguity yields an explicit reason instead of a guessed argument list.
+ */
+export function selectBrowserProcessArguments(processes: readonly ObservedBrowserProcess[], workerPid: number, executablePath: string):
+  NativeBrowserEvidence["browserLaunchArguments"] {
+  if (!executablePath.trim()) return { unavailableReason: "The browser type did not report an executable path to match against running processes." };
+  const matches = processes.filter((item) => item.ppid === workerPid && item.argv.some((arg) => arg === executablePath));
+  if (matches.length === 1) return { value: [...matches[0].argv], source: "proc-cmdline" };
+  return { unavailableReason: matches.length === 0
+    ? `No child process of worker ${workerPid} was started from ${executablePath}.`
+    : `${matches.length} child processes of worker ${workerPid} were started from ${executablePath}; the effective command line is ambiguous.` };
 }
 
 /** A self-contained, glTF 2.0 GLB; no downloaded fixture or codec is needed. */

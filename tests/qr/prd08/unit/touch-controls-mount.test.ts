@@ -9,7 +9,7 @@ import { mountTouchControls } from "../../../../packages/engine/src/agent-api/co
 
 class FakeEl {
   readonly tagName = "div";
-  readonly children: FakeEl[] = [];
+  children: FakeEl[] = [];
   className = "";
   textContent = "";
   style: Record<string, string> = {};

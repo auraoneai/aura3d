@@ -26,7 +26,7 @@ function fakeDevice() {
       const colorTexture = new Texture({ width: d.width, height: d.height, format: d.format, renderAttachment: true, mipLevelCount: d.mipLevelCount });
       const target = {
         id: targets.length + 1, label: d.label ?? "source", width: d.width, height: d.height, colorTexture, sampleCount: d.sampleCount ?? 1, disposed: false,
-        dispose() { this.disposed = true; colorTexture.dispose(); }
+        dispose() { (this as { disposed: boolean }).disposed = true; colorTexture.dispose(); }
       } as RenderTarget;
       targets.push(target);
       return target;

@@ -21,7 +21,7 @@ test.describe("showcase-gallery-shift animated thief (§14.4)", () => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // The binding applies the default idle clip on the first post-ready
       // frame; poll until the evidence reports it.
       // Read the field inside the page: the old form read it off the

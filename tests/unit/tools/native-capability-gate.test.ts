@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { emitCodeCompleteGate, validateAcceptanceGate, verifyTapInventory, verifyVitestInventory } from '../../../tools/native-capability-gate/index.mjs';
+import { ACCEPTANCE_STAGING_RECORD, createAcceptanceStagingRecord } from '../../../tools/remote-acr/acceptance-staging.mjs';
 import { inspectIndependentNpmConsumer } from '../../../tools/release/portable-npm-lock.mjs';
 import { inspectIndependentPnpmConsumer } from '../../../tools/release/portable-pnpm-lock.mjs';
 import { ARCHIVE_ADMISSION_FILES, ARCHIVE_ADMISSION_TESTS, buildProductsDigest, buildSteps, computeInputDigest, EXTERNAL_CODEC_TEST, EXTERNAL_CODEC_CONFIG, EXTERNAL_CODEC_POLICY, EXTERNAL_CODEC_CONTRACT, EXTERNAL_CODEC_CONTRACT_TYPES, EXTERNAL_CODEC_SOURCE_TEST, EXTERNAL_CODEC_CONTRACT_TEST, EXTERNAL_CODEC_LAUNCHER, EXTERNAL_CODEC_LAUNCHER_TEST, PORTABLE_NPM_LOCK, PORTABLE_NPM_LOCK_TYPES, PORTABLE_NPM_LOCK_TEST, HISTORICAL_ACCEPTANCE_INVENTORY, HISTORICAL_ACCEPTANCE_TESTS, HISTORICAL_LAUNCHER, HISTORICAL_LAUNCHER_TEST, HISTORICAL_REPLAY_FIXTURES, HISTORICAL_REPLAY_SOURCE_TEST, HISTORICAL_REPLAY_TEST, HISTORICAL_SOURCE_TEST, expectedExternalCodecAcceptance, expectedHistoricalAcceptance, expectedHistoricalReplay, materializeResults, nativeSourceInventoryForManifest, parseVitestInventory, sourceTestFileCoverage } from '../../../tools/remote-acr/source-checks.mjs';
@@ -265,7 +266,9 @@ function handoffFixture(omit?: string) {
     'tests/qr/example.test.ts': 'qr source\n',
     'tests/integration/example.test.ts': 'integration source\n',
     'packages/example/tests/example.test.ts': 'package source\n',
-    'tools/release/example.test.mjs': 'release source\n'
+    'tools/release/example.test.mjs': 'release source\n',
+    // An unrelated asset tree that browser acceptance staging may omit.
+    'evidence/unrelated/notes.md': 'unrelated evidence\n'
   };
   const originalBaseline = JSON.parse(readFileSync(new URL('../../../tools/muse3jsparity-readiness/baseline-unit-inventory.json', import.meta.url), 'utf8')) as { schema: string; assertions: string[] };
   const historicalBaseline = { schema: originalBaseline.schema, assertions: originalBaseline.assertions.filter(id => HISTORICAL_ACCEPTANCE_TESTS.some(path => id.startsWith(`${path}::`))) };
@@ -326,7 +329,7 @@ function handoffFixture(omit?: string) {
   const sourcePlan = nativeSourceInventoryForManifest(manifest, runId);
   const sourceInventory = putJson(`${reportDir}/source-inventory.json`, sourcePlan);
 
-  const names = ['engine', 'react', 'assets', 'navigation-recast'];
+  const names = ['engine', 'react', 'assets', 'input', 'controls', 'navigation-recast'];
   const archivePayloads = Object.fromEntries(names.map(name => [name, syntheticPackageArchive(name)]));
   const candidateArchiveRefs = names.map(name => put(`${reportDir}/candidate-tarballs/${name}.tgz`, archivePayloads[name]));
   const archives = [...candidateArchiveRefs].sort((a, b) => a.path.localeCompare(b.path));
@@ -1239,5 +1242,165 @@ describe('synthetic source gate handoff with mocked admission', () => {
     mutate(f);
     f.saveRehashedState();
     expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(/candidate plan source identity mismatch/);
+  });
+});
+
+describe('code-complete outcome inventory', () => {
+  const ledgerPath = 'docs/prds/aura3d-native-capability-ledger.json';
+  const editLedger = (root: string, edit: (ledger: any) => void) => {
+    const path = join(root, ledgerPath);
+    const ledger = JSON.parse(readFileSync(path, 'utf8'));
+    edit(ledger);
+    writeFileSync(path, `${JSON.stringify(ledger, null, 2)}\n`);
+  };
+  const renameEverywhere = (ledger: any) => {
+    ledger.requiredSourceOutcomeIds = ['different-outcome'];
+    ledger.outcomes[0].id = 'different-outcome';
+  };
+
+  it('refuses an equal-count ledger whose outcome IDs differ from the completed source outcomes', () => {
+    const f = handoffFixture();
+    editLedger(f.root, renameEverywhere);
+    expect(f.reports.completedOutcomeIds).toHaveLength(1);
+    expect(() => f.emit()).toThrow(/required\/completed outcomes differ/);
+  });
+
+  it('refuses an equal-count outcome list whose IDs differ from the required IDs', () => {
+    const f = handoffFixture();
+    editLedger(f.root, ledger => { ledger.outcomes[0].id = 'different-outcome'; });
+    expect(() => f.emit()).toThrow(/ledger required\/outcome IDs differ/);
+  });
+
+  it.each([
+    ['a missing owner', (row: any) => { delete row.owner; }],
+    ['a blank owner', (row: any) => { row.owner = ' '; }],
+    ['a malformed owner', (row: any) => { row.owner = 'integration-owner'; }],
+    ['an owner absent from the roadmap', (row: any) => { row.owner = 'WP-99'; }],
+    ['a non-required row', (row: any) => { row.required = false; }]
+  ])('refuses an outcome with %s', (_label, mutate) => {
+    const f = handoffFixture();
+    editLedger(f.root, ledger => mutate(ledger.outcomes[0]));
+    expect(() => f.emit()).toThrow(/unowned or incomplete outcome synthetic-outcome/);
+  });
+
+  it('rejects an equal-count outcome substitution or an unowned outcome after gate emission', () => {
+    const f = handoffFixture();
+    f.emit();
+    const original = readFileSync(join(f.root, ledgerPath));
+    editLedger(f.root, renameEverywhere);
+    expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(/required\/completed outcomes differ/);
+    writeFileSync(join(f.root, ledgerPath), original);
+    editLedger(f.root, ledger => { ledger.outcomes[0].owner = 'WP-99'; });
+    expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(/unowned or incomplete outcome/);
+    writeFileSync(join(f.root, ledgerPath), original);
+    expect(validateAcceptanceGate({ root: f.root, gatePath: f.gatePath }).completedOutcomeIds).toEqual(['synthetic-outcome']);
+  });
+});
+
+/**
+ * Every acceptance entrypoint must validate the global code-complete gate
+ * before it submits a job, launches a browser or subprocess, restores a
+ * consumer or reads candidate measurements. Each row names the earliest
+ * guarded operation; discovery below fails when a new gate consumer appears
+ * without a row here.
+ */
+const ACCEPTANCE_ENTRYPOINTS: ReadonlyArray<{ file: string; after?: string; gate: string; execution: string }> = [
+  { file: 'tools/remote-acr/run.sh', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: '"$AZ_WRAPPER" account show' },
+  { file: 'tools/remote-acr/Dockerfile.playwright', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: 'RUN pnpm install --frozen-lockfile' },
+  { file: 'tools/remote-acr/task-run.sh', gate: 'native-capability-gate/index.mjs --phase acceptance', execution: 'pnpm exec playwright test' },
+  { file: 'tools/remote-acr/historical-acceptance.mjs', after: 'function main(args)', gate: 'loadReplayGate(root, gatePath)', execution: 'spawnSync(process.execPath' },
+  { file: 'tools/remote-acr/historical-acceptance.mjs', after: "options['--phase'] === 'prepare'", gate: 'validateAcceptanceGate(', execution: 'spawnSync(process.execPath' },
+  { file: 'tools/remote-acr/external-codec-run.mjs', after: 'export function runCodecPreflight', gate: 'validateGate()', execution: 'validateFixtures(' },
+  { file: 'tools/package-clean-install/index.ts', after: 'async function runBrowser(', gate: 'validateAcceptanceGate(', execution: 'restorePortableConsumerProject(' },
+  { file: 'tools/native-consumer-matrix/index.ts', after: 'export async function restoreReactConsumers', gate: 'assertGate(', execution: 'restoreMatrixProject(' },
+  { file: 'tools/native-runtime-audit/index.ts', after: 'export async function runBrowserAudit', gate: 'await validateGate(', execution: 'readFileSync(' },
+  { file: 'tools/performance/native-benchmark.ts', after: 'export async function analyzeNativeBenchmark', gate: 'await validateGate(', execution: 'readWorkloadSources(' },
+  { file: 'tests/browser/native-cross-browser.spec.ts', gate: '"tools/native-capability-gate/index.mjs", "--phase", "acceptance"', execution: 'await startExampleDevServer()' },
+  { file: 'tests/browser/native-performance-probe.spec.ts', after: 'test.beforeAll', gate: 'validator.validateAcceptanceGate(', execution: 'await startExampleDevServer()' },
+  { file: 'tests/browser/native-examples-catalog.spec.ts', after: 'test.describe("packed native example catalog"', gate: 'gateModule.validateAcceptanceGate(', execution: 'test("all supported' },
+  { file: 'tests/browser/native-offline-independence.spec.ts', gate: 'gateModule.validateAcceptanceGate(', execution: 'restoreMatrixProject(' },
+  { file: 'tests/browser/native-offline-environments.spec.ts', after: 'const gateModulePath', gate: 'gateModule.validateAcceptanceGate(', execution: 'page.goto(' },
+  { file: 'tests/acceptance/gltf-external-decoder-fixtures.test.ts', gate: 'validateAcceptanceGate({ root, gatePath })', execution: 'describe(' },
+  { file: 'tests/unit/tools/honest-public-claims.test.ts', gate: 'validateAcceptanceGate({ gatePath: acceptanceGate })', execution: 'describe(' },
+  { file: 'tests/unit/tools/developer-value.test.ts', gate: 'validateAcceptanceGate({ gatePath: acceptanceGate })', execution: 'describe(' },
+  { file: 'tests/unit/tools/release-metrics-rollup.test.ts', gate: 'validateAcceptanceGate({ gatePath: acceptanceGate })', execution: 'describe(' }
+];
+// Files that reference the gate only to test or describe it.
+const NON_ENTRYPOINT_GATE_REFERENCES = new Set(['tests/unit/tools/native-capability-gate.test.ts', 'tests/unit/tools/native-external-codec-launcher.test.ts']);
+
+describe('acceptance entrypoint gate coverage', () => {
+  const repo = new URL('../../../', import.meta.url);
+  const read = (file: string) => readFileSync(new URL(file, repo), 'utf8');
+
+  it.each(ACCEPTANCE_ENTRYPOINTS.map(row => [`${row.file}${row.after ? ` (${row.after})` : ''}`, row] as const))(
+    '%s validates the gate before its first guarded operation', (_label, row) => {
+      const text = read(row.file);
+      const start = row.after ? text.indexOf(row.after) : 0;
+      expect(start, `anchor ${row.after}`).toBeGreaterThanOrEqual(0);
+      const gate = text.indexOf(row.gate, start), execution = text.indexOf(row.execution, start);
+      expect(gate, `gate call ${row.gate}`).toBeGreaterThanOrEqual(0);
+      expect(execution, `guarded operation ${row.execution}`).toBeGreaterThan(gate);
+    });
+
+  it('lists every repository file that invokes the acceptance gate', () => {
+    const call = /validateAcceptanceGate\s*\(|native-capability-gate\/index\.mjs"?,?\s*"?--phase"?,?\s*"?acceptance/;
+    const found: string[] = [];
+    const skip = new Set(['node_modules', 'reports', '_quarantine', 'native-capability-gate', '.git', 'dist']);
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(new URL(dir, repo), { withFileTypes: true })) {
+        const path = `${dir}${entry.name}`;
+        if (entry.isDirectory()) { if (!skip.has(entry.name)) walk(`${path}/`); continue; }
+        if (/\.(?:[cm]?[jt]s|sh)$|^Dockerfile/.test(entry.name) && call.test(read(path))) found.push(path);
+      }
+    };
+    walk('tools/'); walk('tests/');
+    const listed = new Set(ACCEPTANCE_ENTRYPOINTS.map(row => row.file));
+    expect(found.filter(path => !listed.has(path) && !NON_ENTRYPOINT_GATE_REFERENCES.has(path)).sort()).toEqual([]);
+    // Injected-validator rows (validateGate) are wired through their CLI and are covered by the ordering rows above.
+    for (const row of ACCEPTANCE_ENTRYPOINTS) if (!row.gate.includes('validateGate')) expect(found, `${row.file} no longer invokes the gate`).toContain(row.file);
+  });
+});
+
+describe('staged browser acceptance context', () => {
+  const omittedPath = 'evidence/unrelated/notes.md';
+  const stage = (f: ReturnType<typeof handoffFixture>, omitted: string[], gateBytes = readFileSync(join(f.root, f.gatePath))) => {
+    writeFileSync(join(f.root, ACCEPTANCE_STAGING_RECORD), JSON.stringify(createAcceptanceStagingRecord({ gateBytes, omitted, keepRoots: [] })));
+    for (const path of omitted) rmSync(join(f.root, path), { force: true });
+  };
+
+  it('accepts only the recorded absence of an unreferenced asset tree and still verifies staged bytes', () => {
+    const f = handoffFixture();
+    f.emit();
+    stage(f, [omittedPath]);
+    expect(validateAcceptanceGate({ root: f.root, gatePath: f.gatePath }).status).toBe('CODE_COMPLETE_GO');
+    writeFileSync(join(f.root, 'src/example.ts'), 'export const example = false;\n');
+    expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(/source file changed: src\/example\.ts/);
+  });
+
+  it('rejects an unrecorded missing source file', () => {
+    const f = handoffFixture();
+    f.emit();
+    rmSync(join(f.root, omittedPath));
+    expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow();
+  });
+
+  it.each([
+    ['a runtime source path', (f: ReturnType<typeof handoffFixture>) => stage(f, ['src/example.ts']), /non-omittable or unlisted path: src\/example\.ts/],
+    ['a path outside the manifest', (f: ReturnType<typeof handoffFixture>) => stage(f, ['evidence/unrelated/other.md']), /non-omittable or unlisted/],
+    ['another gate', (f: ReturnType<typeof handoffFixture>) => stage(f, [omittedPath], Buffer.from('other gate')), /bound to another gate/],
+    ['a file that is still present', (f: ReturnType<typeof handoffFixture>) => {
+      stage(f, [omittedPath]); writeFileSync(join(f.root, omittedPath), 'unrelated evidence\n');
+    }, /omits a present file/]
+  ])('rejects a staging record that omits %s', (_label, mutate, message) => {
+    const f = handoffFixture();
+    f.emit();
+    mutate(f);
+    expect(() => validateAcceptanceGate({ root: f.root, gatePath: f.gatePath })).toThrow(message);
+  });
+
+  it('refuses to emit a gate from a staged context', () => {
+    const f = handoffFixture();
+    writeFileSync(join(f.root, ACCEPTANCE_STAGING_RECORD), '{}');
+    expect(() => f.emit()).toThrow(/staged acceptance context cannot emit/);
   });
 });

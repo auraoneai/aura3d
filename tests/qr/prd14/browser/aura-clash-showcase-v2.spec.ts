@@ -57,9 +57,9 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const state = await page.evaluate(() =>
-        ((window as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
+        ((window as unknown as Record<string, unknown>).__AURA3D_GAME__ as { state?: string }).state);
       expect(state).toBe("playing");
       await shot(page, "01-title");
 
@@ -93,7 +93,7 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
             if (c.expr.includes("hitStopActive")) combatMet ||= r.ok;
             else if (c.expr.includes("subjectHeightFraction")) {
               framingMet ||= r.ok;
-              const f = ev.framing as { subjectHeightFraction?: number | null } | undefined;
+              const f = ev.framing as { subjectHeightFraction?: number | null; subjectScreenHeightFraction?: number | null } | undefined;
               if (f?.subjectHeightFraction == null && f?.subjectScreenHeightFraction == null) {
                 framingUnmeasured = true;
               }
@@ -147,7 +147,7 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // Walk in, then light/heavy attacks until combat state moves.
       await page.keyboard.down("KeyD");
       await page.waitForTimeout(1200);
@@ -172,7 +172,7 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // dpad-4btn: dpad zone (lower-left) walks right, button taps attack.
       for (let i = 0; i < 5; i += 1) {
         await page.touchscreen.tap(140, 620);
@@ -197,14 +197,14 @@ test.describe("aura-clash-showcase v2 (T2.6)", () => {
     try {
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       const playLook = await page.evaluate((EVIDENCE: string) =>
         JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
       await expectRuntimeMatchesDeclared(APP_DIR, JSON.parse(playLook).runtime);
       for (const scenario of ["mid-round", "final-round", "ko"]) {
         await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG},${ENGINE_FLAGS}&scenario=${scenario}`);
         await expect.poll(() => page.evaluate(() =>
-          (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+          (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
         const scenarioLook = await page.evaluate((EVIDENCE: string) =>
           JSON.stringify({ route: eval(EVIDENCE + ".appliedLook"), runtime: (window as unknown as { __AURA3D_GAME__?: { app?: { diagnostics?: () => { appliedLook?: unknown } } } }).__AURA3D_GAME__?.app?.diagnostics?.().appliedLook ?? null }), EVIDENCE);
         expect(scenarioLook, `appliedLook drifted on scenario ${scenario}`).toBe(playLook);

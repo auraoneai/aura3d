@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  apiDocsOutputPath,
   collectPackedPackageApis,
   collectPublicPackageApis,
   readApiDocsAppendix,
@@ -164,5 +165,15 @@ describe("public API docs", () => {
     const wrongIdentity = scratch();
     packedFixture(wrongIdentity);
     expect(() => collectPackedPackageApis(wrongIdentity, [{ ...candidate, version: "9.9.9" }])).toThrow(/packed package identity mismatch/);
+  });
+});
+
+describe("api-docs output path", () => {
+  it("defaults to the checked-in reference and accepts only one root-relative markdown path", () => {
+    expect(apiDocsOutputPath(["--candidate-plan", "plan.json"])).toBe("docs/api/public-api.md");
+    expect(apiDocsOutputPath(["--out", "tests/reports/native-5/run/public-api.md", "--write"])).toBe("tests/reports/native-5/run/public-api.md");
+    for (const bad of [["--out"], ["--out", "--write"], ["--out", "/tmp/x.md"], ["--out", "../x.md"], ["--out", "a/./x.md"], ["--out", "x.json"], ["--out", "a.md", "--out", "b.md"]]) {
+      expect(() => apiDocsOutputPath(bad), bad.join(" ")).toThrow(/--out/);
+    }
   });
 });

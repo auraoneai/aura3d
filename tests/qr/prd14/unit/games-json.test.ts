@@ -93,7 +93,7 @@ describe("T1.13 games.json V2", () => {
 
   it("carries the C-35 V2 fields on every entry", () => {
     for (const entry of gamesJson.games) {
-      const v2 = entry as GameEntryV2;
+      const v2 = entry as unknown as GameEntryV2;
       const label = String(entry.id);
       expect([0, 1, 2, 3, 4]).toContain(v2.wave);
       expect(["S-presentation", "S-world", "F"]).toContain(v2.rebuildTier);
@@ -122,7 +122,7 @@ describe("T1.13 games.json V2", () => {
       expect(v2.budgets.drawCalls.ultra).toBeLessThanOrEqual(1000);
       expect(v2.budgets.transferToPlayableMB).toBeGreaterThan(0);
       expect(v2.budgets.transferToPlayableMB).toBeLessThanOrEqual(15);
-      expect(v2.qrFlags, `${label} qrFlags`).toEqual([routeUrlFlagFor(String(entry.id)), ...ENGINE_QR_FLAGS]);
+      expect((v2 as GameEntryV2 & { qrFlags?: readonly string[] }).qrFlags, `${label} qrFlags`).toEqual([routeUrlFlagFor(String(entry.id)), ...ENGINE_QR_FLAGS]);
     }
   });
 
@@ -150,7 +150,7 @@ describe("T1.13 games.json V2", () => {
 
   it("parses every requiredConditions expr and references existing shots", () => {
     for (const entry of gamesJson.games) {
-      const v2 = entry as GameEntryV2;
+      const v2 = entry as unknown as GameEntryV2;
       const shots = collectShotIds(entry);
       for (const condition of v2.requiredConditions) {
         expect(shots.has(condition.shot), `${String(entry.id)} shot "${condition.shot}"`).toBe(true);
@@ -162,7 +162,7 @@ describe("T1.13 games.json V2", () => {
 
   it("restricts canvasBlankCheck overrides to the five §7.2.1 games, each with a reason", () => {
     for (const entry of gamesJson.games) {
-      const v2 = entry as GameEntryV2;
+      const v2 = entry as unknown as GameEntryV2;
       if (v2.canvasBlankCheck === undefined) {
         expect(ALLOWED_BLANK_OVERRIDES.has(String(entry.id)) === false, `${String(entry.id)} must not omit the check silently`).toBe(true);
         continue;
@@ -175,7 +175,7 @@ describe("T1.13 games.json V2", () => {
   });
 
   it("leaves Courier Rush with no canvasBlankCheck override (the 0.968+ black frame must fail)", () => {
-    const courier = gamesJson.games.find((g) => g.id === "showcase-courier-rush") as GameEntryV2;
+    const courier = gamesJson.games.find((g) => g.id === "showcase-courier-rush") as unknown as GameEntryV2;
     expect(courier.canvasBlankCheck).toBeUndefined();
   });
 });

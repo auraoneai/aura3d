@@ -5,10 +5,11 @@
 //   3. /vite.aliases.generated.ts                   (rows where flags.vite !== false)
 //   4. /tools/finalize-dist/manifest.generated.json (merged spec view)
 //   5. /packages/aura3d-cli/data/aura.exports.json (bundled registry copy)
+//   6. /packages/*/package.json#exports            (from "workspaceExports")
 // Deprecated entries additionally emit a re-export stub source at the mapped
 // path so the published dist target keeps resolving until removeIn.
 // Usage: pnpm exec tsx --tsconfig tsconfig.base.json tools/generate-resolution-maps/index.ts --write|--check [--root <dir>]
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 
 export interface AuraEntry {
@@ -36,11 +37,52 @@ export interface AuraPathRowFlags {
 
 export type AuraPathRow = readonly [specifier: string, file: string] | readonly [specifier: string, file: string, flags: AuraPathRowFlags];
 
+export type AuraWorkspaceCondition = "types" | "browser" | "import" | "default";
+
+/** One workspace package subpath: a package-relative `src/` source, or a verbatim export target. */
+export type AuraWorkspaceExportEntry =
+  | { readonly source: string; readonly conditions?: readonly AuraWorkspaceCondition[]; readonly browserSource?: string }
+  | { readonly literal: unknown };
+
 export interface AuraExportsFile {
   readonly package: string;
   readonly entries: Record<string, AuraEntry>;
   readonly deprecated?: Record<string, AuraDeprecatedEntry>;
   readonly paths: readonly AuraPathRow[];
+  /** Workspace package directory (`packages/<dir>`) -> its package.json#exports, by subpath. */
+  readonly workspaceExports?: Record<string, Record<string, AuraWorkspaceExportEntry>>;
+}
+
+/** Package-relative src/<rest>.ts(x) -> ./dist/<rest>.<ext> */
+function workspaceDistTarget(source: string, ext: "js" | "d.ts"): string {
+  const match = /^src\/(.+)\.tsx?$/.exec(source);
+  if (!match || match[1]!.split("/").includes("..")) throw new Error(`workspace export source outside src/: ${source}`);
+  return `./dist/${match[1]}.${ext}`;
+}
+
+/** Build one workspace package's `exports` object from the registry. */
+export function buildWorkspacePackageExports(aura: AuraExportsFile, packageDir: string): Record<string, unknown> {
+  const section = aura.workspaceExports?.[packageDir];
+  if (!section) throw new Error(`aura.exports.json has no workspaceExports entry for ${packageDir}`);
+  const out: Record<string, unknown> = {};
+  for (const [subpath, entry] of Object.entries(section)) {
+    if (subpath !== "." && !subpath.startsWith("./")) throw new Error(`${packageDir}: invalid export subpath ${subpath}`);
+    if ("literal" in entry) { out[subpath] = entry.literal; continue; }
+    const conditions = entry.conditions ?? ["types", "import"];
+    if (!conditions.includes("types") || !conditions.includes("import") || new Set(conditions).size !== conditions.length) {
+      throw new Error(`${packageDir}${subpath.slice(1)}: conditions must list types and import once`);
+    }
+    if (entry.browserSource && !conditions.includes("browser")) throw new Error(`${packageDir}${subpath.slice(1)}: browserSource without a browser condition`);
+    const target: Record<string, string> = {};
+    for (const condition of conditions) {
+      if (condition === "types") target.types = workspaceDistTarget(entry.source, "d.ts");
+      else if (condition === "browser") target.browser = workspaceDistTarget(entry.browserSource ?? entry.source, "js");
+      else if (condition === "import" || condition === "default") target[condition] = workspaceDistTarget(entry.source, "js");
+      else throw new Error(`${packageDir}${subpath.slice(1)}: unknown condition ${String(condition)}`);
+    }
+    out[subpath] = target;
+  }
+  return out;
 }
 
 /** packages/<pkg>/src/<rest>.ts -> ./dist/<pkg>/<rest>.<ext> */
@@ -279,6 +321,33 @@ export function generateResolutionMaps(root: string, mode: "write" | "check"): {
     const baseNext = spliceTsconfigPaths(readFileSync(basePath, "utf8"), tsconfigPaths.compilerOptions.paths);
     if (mode === "write") writeIfChanged(basePath, baseNext, changed);
     else if (readFileSync(basePath, "utf8") !== baseNext) diffs.push("tsconfig.base.json#compilerOptions.paths differs from generated output");
+  }
+  // Workspace package export conditions come from the same registry. Every
+  // workspace manifest that publishes `exports` must have a registry section,
+  // and every section must name an existing workspace manifest.
+  const packagesDir = join(root, "packages");
+  const workspaceDirs = existsSync(packagesDir)
+    ? readdirSync(packagesDir).sort().map((name) => `packages/${name}`).filter((dir) => existsSync(join(root, dir, "package.json")))
+    : [];
+  for (const dir of Object.keys(aura.workspaceExports ?? {})) {
+    if (!workspaceDirs.includes(dir)) diffs.push(`aura.exports.json workspaceExports names missing workspace package ${dir}`);
+  }
+  for (const dir of workspaceDirs) {
+    const manifestPath = join(root, dir, "package.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { exports?: unknown };
+    if (!aura.workspaceExports?.[dir]) {
+      if (manifest.exports !== undefined) diffs.push(`${dir}/package.json#exports is not generated from aura.exports.json workspaceExports`);
+      continue;
+    }
+    const generated = buildWorkspacePackageExports(aura, dir);
+    if (JSON.stringify(manifest.exports) === JSON.stringify(generated)) continue;
+    if (mode === "write") {
+      manifest.exports = generated;
+      writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+      changed.push(manifestPath);
+    } else {
+      diffs.push(`${dir}/package.json#exports differs from generated output`);
+    }
   }
   for (const [subpath, entry] of Object.entries(aura.deprecated ?? {})) {
     const stubPath = join(root, entry.source!);

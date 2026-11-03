@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { arch, platform, release } from "node:os";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Browser } from "@playwright/test";
 import {
   createNativeBrowserFixture,
   NATIVE_BROWSER_FIXTURE_ID,
@@ -10,7 +10,9 @@ import {
   NATIVE_BROWSER_FIXTURE_SHA256,
   NATIVE_BROWSER_FIXTURE_URL,
   NATIVE_BROWSER_SCENARIOS,
+  selectBrowserProcessArguments,
   validateNativeBrowserEvidence,
+  type ObservedBrowserProcess,
   type NativeBrowserEvidence,
   type NativeBrowserScenario,
   type NativeBrowserScenarioName,
@@ -87,7 +89,7 @@ test.describe("native public cross-browser workloads", () => {
       adapter: { unavailableReason: "Public renderer has not mounted." },
       driver: { unavailableReason: "Public renderer has not mounted." },
       featureFlags: flags,
-      browserLaunchArguments: { unavailableReason: "Playwright does not expose the complete effective argument list consistently across browser families." },
+      browserLaunchArguments: await effectiveBrowserArguments(browser),
       fixture: { id: NATIVE_BROWSER_FIXTURE_ID, sha256: NATIVE_BROWSER_FIXTURE_SHA256, license: NATIVE_BROWSER_FIXTURE_LICENSE, byteLength: bytes.byteLength },
       scenarios: NATIVE_BROWSER_SCENARIOS.map((name) => ({ name, status: "skipped", reason: "Workload did not start." })),
     };
@@ -125,7 +127,7 @@ test.describe("native public cross-browser workloads", () => {
           evidence.driver = observed.driver;
           if (observed.adapter.value && /swiftshader|llvmpipe|softpipe|software raster|software render/i.test(observed.adapter.value)) evidence.deviceClass = "software";
           if (observed.backend === "webgl2" && observed.drawCalls > 0 && observed.foregroundPixels > 200 && observed.errors.length === 0) {
-            setResult({ name: "rendering", status: "passed", details: observed });
+            setResult({ name: "rendering", status: "passed", details: { ...observed } });
           } else fail("rendering", `Public renderer failed to produce the expected WebGL2 frame: ${JSON.stringify(observed)}`);
           if (observed.importedAsset && observed.foregroundPixels > 200) {
             setResult({ name: "asset", status: "passed", details: { id: NATIVE_BROWSER_FIXTURE_ID, importedAsset: true, foregroundPixels: observed.foregroundPixels } });
@@ -198,6 +200,45 @@ test.describe("native public cross-browser workloads", () => {
 
 function message(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+}
+
+/**
+ * Chromium reports its own complete command line over CDP. Other families are
+ * read from the worker's child process on Linux; otherwise the specific reason
+ * each source was unavailable is recorded.
+ */
+async function effectiveBrowserArguments(browser: Browser): Promise<NativeBrowserEvidence["browserLaunchArguments"]> {
+  const reasons: string[] = [];
+  if (browser.browserType().name() === "chromium") {
+    try {
+      const session = await browser.newBrowserCDPSession();
+      try {
+        const result = await session.send("Browser.getBrowserCommandLine") as { arguments?: unknown };
+        if (Array.isArray(result.arguments) && result.arguments.length && result.arguments.every((arg) => typeof arg === "string")) {
+          return { value: result.arguments as string[], source: "cdp-browser-command-line" };
+        }
+        reasons.push("CDP Browser.getBrowserCommandLine returned no arguments.");
+      } finally { await session.detach().catch(() => undefined); }
+    } catch (error) { reasons.push(`CDP Browser.getBrowserCommandLine unavailable: ${message(error)}`); }
+  }
+  if (platform() === "linux") {
+    const processes: ObservedBrowserProcess[] = [];
+    try {
+      for (const entry of readdirSync("/proc")) {
+        if (!/^\d+$/.test(entry)) continue;
+        try {
+          const stat = readFileSync(`/proc/${entry}/stat`, "utf8");
+          const ppid = Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[1]);
+          const argv = readFileSync(`/proc/${entry}/cmdline`, "utf8").split("\0").filter(Boolean);
+          processes.push({ pid: Number(entry), ppid, argv });
+        } catch { /* the process exited while scanning */ }
+      }
+      const selected = selectBrowserProcessArguments(processes, process.pid, browser.browserType().executablePath());
+      if (selected.value) return selected;
+      reasons.push(selected.unavailableReason ?? "Browser process was not found.");
+    } catch (error) { reasons.push(`Process table unavailable: ${message(error)}`); }
+  } else reasons.push(`Process command lines are not read on ${platform()}.`);
+  return { unavailableReason: reasons.join(" ") };
 }
 
 function operatingSystem(): NativeBrowserEvidence["os"] {

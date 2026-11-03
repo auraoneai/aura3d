@@ -4,6 +4,7 @@ import {
   createNativeBrowserFixture,
   NATIVE_BROWSER_FIXTURE_SHA256,
   type NativeBrowserEvidence,
+  selectBrowserProcessArguments,
   validateNativeBrowserEvidence,
 } from "../../browser/native-cross-browser-harness";
 
@@ -117,6 +118,22 @@ describe("native browser matrix evidence", () => {
     expect(errorsFor(evidence)).toMatch(/software|emulat|physical|hardware/);
   });
 
+  it.each([
+    ["os.version", (e: ReturnType<typeof automationEvidence>) => { e.os.version = "Android 14 Emulator (sdk_gphone64)"; }],
+    ["os.kernel", (e: ReturnType<typeof automationEvidence>) => { e.os.kernel = "5.15.0-android-simulator"; }],
+    ["physicalProvenance.observedBy", (e: ReturnType<typeof automationEvidence>) => { e.physicalProvenance!.observedBy = "emulator harness"; }],
+  ] as const)("rejects an emulator marker found only in %s of a physical record", (_field, mutate) => {
+    const evidence = automationEvidence();
+    evidence.project = "retail-device-run";
+    evidence.evidenceKind = "physical";
+    evidence.deviceClass = "physical";
+    evidence.browser.distribution = "Retail Chrome";
+    evidence.physicalProvenance = { deviceId: "device-1", observedBy: "operator", observation: "on-device run" };
+    expect(validateNativeBrowserEvidence(evidence)).toEqual([]);
+    mutate(evidence);
+    expect(errorsFor(evidence)).toMatch(/software|emulat|physical|hardware/);
+  });
+
   it("rejects physical labels contradicted by actual browser launch arguments or distribution", () => {
     const evidence = automationEvidence();
     evidence.project = "retail-device-run";
@@ -154,6 +171,24 @@ describe("native browser matrix evidence", () => {
   });
 });
 
+
+describe("effective browser launch arguments", () => {
+  const exe = "/ms-playwright/firefox-1490/firefox/firefox";
+  it("returns the complete argv of the single browser child of this worker", () => {
+    const argv = [exe, "-no-remote", "-headless", "-profile", "/tmp/pw-profile", "-juggler-pipe"];
+    expect(selectBrowserProcessArguments([
+      { pid: 10, ppid: 4, argv },
+      { pid: 11, ppid: 10, argv: [exe, "-contentproc", "1"] },
+      { pid: 12, ppid: 99, argv: [exe, "-juggler-pipe"] },
+    ], 4, exe)).toEqual({ value: argv, source: "proc-cmdline" });
+  });
+
+  it("records a reason instead of guessing when no or several child processes match", () => {
+    expect(selectBrowserProcessArguments([], 4, exe).unavailableReason).toMatch(/No child process/);
+    expect(selectBrowserProcessArguments([{ pid: 1, ppid: 4, argv: [exe] }, { pid: 2, ppid: 4, argv: [exe] }], 4, exe).unavailableReason).toMatch(/ambiguous/);
+    expect(selectBrowserProcessArguments([{ pid: 1, ppid: 4, argv: [exe] }], 4, " ").unavailableReason).toMatch(/executable path/);
+  });
+});
 
 describe("native browser fixture", () => {
   it("is a deterministic, independently authored GLB bound to the declared digest", () => {

@@ -1,5 +1,5 @@
 {
-  "$comment": "Single resolution truth for @aura3d/engine (PRD-15 \u00a76.9). \"entries\" are the published subpaths: source file, \"conditions\":true emits the types+browser+import+default object, \"browser\" names a browser-variant source (emits a browser condition and retargets the in-repo Vite alias). \"paths\" is the in-repo specifier table in vite-safe order (deeper subpaths precede the bare package); flags: vite:false excludes from generated Vite aliases, browser301:false excludes from the browser-301 resolution set, browser:<file> swaps the Vite replacement. \"deprecated\" entries keep their dist target but emit a re-export stub source at the mapped path. Consumed by tools/generate-resolution-maps.",
+  "$comment": "Single resolution truth for @aura3d/engine (PRD-15 \u00a76.9). \"entries\" are the published subpaths: source file, \"conditions\":true emits the types+browser+import+default object, \"browser\" names a browser-variant source (emits a browser condition and retargets the in-repo Vite alias). \"paths\" is the in-repo specifier table in vite-safe order (deeper subpaths precede the bare package); flags: vite:false excludes from generated Vite aliases, browser301:false excludes from the browser-301 resolution set, browser:<file> swaps the Vite replacement. \"deprecated\" entries keep their dist target but emit a re-export stub source at the mapped path. \"workspaceExports\" generates each workspace package.json#exports: package dir -> subpath -> {source, conditions (default [types, import]; types/import/default map source to dist, browser maps browserSource or source), browserSource} or {literal}. Consumed by tools/generate-resolution-maps.",
   "package": "@aura3d/engine",
   "entries": {
     ".": {
@@ -756,5 +756,431 @@
       "@aura3d/engine",
       "packages/engine/src/public/index.ts"
     ]
-  ]
+  ],
+  "workspaceExports": {
+    "packages/addons": {
+      ".": {
+        "source": "src/index.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./renderers/SpatialDOMRenderer": {
+        "source": "src/renderers/SpatialDOMRenderer.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./renderers/VectorRenderer": {
+        "source": "src/renderers/VectorRenderer.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./effects/StereoOutputs": {
+        "source": "src/effects/StereoOutputs.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./effects/AsciiOutput": {
+        "source": "src/effects/AsciiOutput.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./effects/OutlineOutput": {
+        "source": "src/effects/OutlineOutput.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./objects/MarchingCubes": {
+        "source": "src/objects/MarchingCubes.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./objects/SpecializedObjects": {
+        "source": "src/objects/SpecializedObjects.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./generators/EnvironmentGenerators": {
+        "source": "src/generators/EnvironmentGenerators.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./tools/Sculptor": {
+        "source": "src/tools/Sculptor.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./tools/TubePainter": {
+        "source": "src/tools/TubePainter.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./tools/Fracture": {
+        "source": "src/tools/Fracture.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./utils/WorkerPool": {
+        "source": "src/utils/WorkerPool.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      }
+    },
+    "packages/animation": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./pose": {
+        "source": "src/contracts/pose.ts"
+      },
+      "./lanes": {
+        "source": "src/lanes/index.ts"
+      },
+      "./contracts": {
+        "source": "src/contracts/index.ts"
+      }
+    },
+    "packages/apps": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/asset-index": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/assets": {
+      ".": {
+        "source": "src/index.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import"
+        ],
+        "browserSource": "src/browser-index.ts"
+      },
+      "./browser": {
+        "source": "src/browser-index.ts"
+      },
+      "./gltf-runtime": {
+        "source": "src/gltf-runtime.ts"
+      },
+      "./vite": {
+        "source": "src/vite/auraDecoders.ts"
+      },
+      "./vite-client": {
+        "literal": {
+          "types": "./vite-client.d.ts",
+          "import": "./vite-client.js"
+        }
+      },
+      "./exporters": {
+        "source": "src/exporters/index.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./importers": {
+        "source": "src/importers.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      }
+    },
+    "packages/audio": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/aura3d-cli": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/controls": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/core": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/create-aura3d": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/debug": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./helpers": {
+        "source": "src/helpers.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      }
+    },
+    "packages/ecs": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/editor-runtime": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/engine": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./advanced-runtime": {
+        "source": "src/advanced-runtime/index.ts"
+      },
+      "./animation-studio": {
+        "source": "src/animation-studio/index.ts"
+      },
+      "./production-runtime": {
+        "source": "src/production-runtime/index.ts"
+      },
+      "./contracts": {
+        "source": "src/contracts/index.ts"
+      },
+      "./renderer": {
+        "literal": {
+          "types": "./dist/renderer/index.d.ts",
+          "import": "./dist/renderer/index.js"
+        }
+      },
+      "./devtools": {
+        "literal": {
+          "types": "./dist/devtools/index.d.ts",
+          "import": "./dist/devtools/index.js"
+        }
+      },
+      "./v5": {
+        "source": "src/public/v5.ts"
+      },
+      "./v5/context": {
+        "source": "src/public/v5-context.ts"
+      },
+      "./v5/internal": {
+        "source": "src/public/v5-internal.ts"
+      },
+      "./lanes": {
+        "source": "src/lanes/index.ts"
+      }
+    },
+    "packages/game": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./capture": {
+        "source": "src/capture/index.ts"
+      },
+      "./art": {
+        "source": "src/art/index.ts"
+      },
+      "./util": {
+        "source": "src/util/index.ts"
+      },
+      "./styles.css": {
+        "literal": "./src/styles.css"
+      }
+    },
+    "packages/input": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/math": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./three": {
+        "source": "src/three/index.ts"
+      }
+    },
+    "packages/navigation-recast": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/physics": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./solverless": {
+        "source": "src/solverless.ts"
+      },
+      "./world": {
+        "source": "src/world.ts"
+      }
+    },
+    "packages/physics-rapier": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/product-studio": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/react": {
+      ".": {
+        "source": "src/index.ts",
+        "conditions": [
+          "types",
+          "import",
+          "browser",
+          "default"
+        ]
+      }
+    },
+    "packages/rendering": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./lanes": {
+        "source": "src/lanes/index.ts"
+      },
+      "./webgpu": {
+        "source": "src/webgpu.ts"
+      },
+      "./production-runtime": {
+        "source": "src/production-runtime/index.ts"
+      },
+      "./extension-scalar-atlas": {
+        "source": "src/extension-scalar-atlas.ts"
+      },
+      "./reflection-surfaces": {
+        "source": "src/reflection-surfaces.ts"
+      },
+      "./contracts": {
+        "source": "src/contracts/index.ts"
+      },
+      "./contracts/*": {
+        "literal": {
+          "types": "./dist/contracts/*.d.ts",
+          "import": "./dist/contracts/*.js"
+        }
+      },
+      "./reference": {
+        "source": "src/reference/index.ts"
+      },
+      "./world": {
+        "source": "src/world/index.ts"
+      },
+      "./shader-graph": {
+        "source": "src/program/ShaderGraphCompiler.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./lighting": {
+        "source": "src/lighting/index.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      },
+      "./volumetrics": {
+        "source": "src/volumetrics.ts",
+        "conditions": [
+          "types",
+          "browser",
+          "import",
+          "default"
+        ]
+      }
+    },
+    "packages/scene": {
+      ".": {
+        "source": "src/index.ts"
+      },
+      "./math": {
+        "source": "src/MathTypes.ts"
+      }
+    },
+    "packages/scripting": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    },
+    "packages/workflows": {
+      ".": {
+        "source": "src/index.ts"
+      }
+    }
+  }
 }

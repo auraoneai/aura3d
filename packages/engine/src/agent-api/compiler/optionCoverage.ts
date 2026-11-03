@@ -9,7 +9,7 @@ import { registerOptionCoverage } from "../../contracts/compiler.js";
 import type { OptionCoverageRow } from "../../contracts/compiler.js";
 import type { AuraModelOptions, AuraPrimitiveOptions, AuraCustomMaterialSpec } from "../nodes/types.js";
 import type { AuraInstancedModelOptions, AuraInstancedPrimitiveOptions } from "../nodes/instances.js";
-import type { AuraOrbitOptions } from "../nodes/interactions.js";
+import type { AuraOrbitOptions, interactions } from "../nodes/interactions.js";
 import type { lights } from "../nodes/lights.js";
 import type { vfxEffectBuilders } from "../nodes/effects.js";
 import type { postEffectBuilders } from "../nodes/effects.post.js";
@@ -42,6 +42,8 @@ const toon = forOptions<AuraToonOptions>();
 const customMaterial = forOptions<AuraCustomMaterialSpec>();
 const customGeometry = forOptions<Omit<AuraCustomGeometrySpec, "kind">>();
 const pbr = forOptions<NonNullable<Parameters<typeof material.pbr>[0]>>();
+const metal = forOptions<NonNullable<Parameters<typeof material.metal>[0]>>();
+const hover = forOptions<NonNullable<Parameters<typeof interactions.hover>[0]>>();
 
 const aMaterial = { color: "#ff0000" } as const;
 const bMaterial = { color: "#00ff00" } as const;
@@ -93,6 +95,13 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   orbit("interactions.orbit", "target", [0, 0, 0], [1, 1, 0], "orbit.target"),
   orbit("interactions.orbit", "position", [3, 2, 3], [5, 2, 3], "orbit.position"),
   orbit("interactions.orbit", "autoRotate", 0.5, 1, "orbit.autoRotate"),
+  hover("interactions.hover", "target", "crate-a", "crate-b", "interaction.hoverTargets"),
+  {
+    builder: "interactions.pointer", field: "target",
+    probeValueA: "crate-a", probeValueB: "crate-b", ownerPrd: 19,
+    disposition: "unsupported", observation: "interaction.pointerTarget",
+    reason: "interactions.pointer records its target declaratively but no runtime consumer picks per target; use interactions.hover({ target }) for per-node picking evidence or handle canvas pointer events in the app"
+  },
 
   toon("effects.toon", "name", "toon-a", "toon-b", "toon.name"),
   toon("effects.toon", "bands", 3, 7, "toon.bands"),
@@ -119,6 +128,7 @@ export const OPTION_COVERAGE_ROWS: OptionCoverageRow[] = [
   pbr("material.pbr", "color", "#ff0000", "#00ff00", "pbr.color"),
   pbr("material.pbr", "metallic", 0.1, 0.9, "pbr.metallic"),
   pbr("material.pbr", "roughness", 0.2, 0.8, "pbr.roughness"),
+  metal("material.metal", "color", "#ff0000", "#00ff00", "pbr.color"),
   {
     builder: "primitives.plane", field: "params.radius",
     probeValueA: { widthSegments: 2 }, probeValueB: { radius: 2 }, ownerPrd: 19,

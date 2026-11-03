@@ -80,7 +80,7 @@ describe("P4-T3 LiveAtmosphere fog state", () => {
     atmosphere.updateFogVisibility(appWithVisibility({ red: false, green: true }));
     atmosphere.resolveFog(0); // anchor t0
     const mid = atmosphere.resolveFog(0.5);
-    const color = mid?.color as readonly number[];
+    const color = mid?.color as unknown as readonly number[];
     expect(Array.isArray(color)).toBe(true);
     expect(color[0]).toBeCloseTo(0.107, 1); // mean of linear endpoints
     expect(color[1]).toBeCloseTo(0.107, 1);

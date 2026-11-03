@@ -1,7 +1,8 @@
 // Option probes exercise named downstream consumers. These are source-level
 // observations; they do not imply rendered-pixel or device evidence.
 import { describe, expect, it } from "vitest";
-import { auditOptionProbes, documentedOptionReferences, optionCoverageRule, readOptionProbeSummaries } from "../../../tools/arch-gates/rules/option-coverage";
+import { readFileSync } from "node:fs";
+import { auditOptionProbes, documentedOptionReferences, optionCoverageRule, readOptionProbeSummaries, typedOptionGaps, typedOptionInventory } from "../../../tools/arch-gates/rules/option-coverage";
 import { OPTION_COVERAGE_ROWS } from "../../../packages/engine/src/agent-api/compiler/optionCoverage";
 import type { OptionCoverageRow } from "../../../packages/engine/src/contracts/compiler";
 import { primitives } from "../../../packages/engine/src/agent-api/nodes/primitives";
@@ -22,6 +23,7 @@ import { Prd03PostSurface, mapBloomOptionsV2 } from "../../../packages/engine/sr
 import { registeredPostPasses } from "../../../packages/rendering/src/contracts/post";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
+import { collectAuraSceneEvidence } from "../../../packages/engine/src/agent-api/sceneEvidence";
 import { camera } from "../../../packages/engine/src/agent-api/nodes/camera";
 import { resolveCameraFrame } from "../../../packages/engine/src/agent-api/compiler/camera";
 import { createFromSpecRig } from "../../../packages/engine/src/agent-api/camera/rigs/fromSpec";
@@ -49,6 +51,8 @@ function build(row: OptionCoverageRow, value: unknown): any {
     case "interactions.orbit": return interactions.orbit(option);
     case "model": return model(modelAsset, option);
     case "material.pbr": return material.pbr(option);
+    case "material.metal": return material.metal(option);
+    case "interactions.hover": return interactions.hover(option);
     case "material.custom": return material.custom({
       glsl: { fragment: "out vec4 outColor; void main(){outColor=vec4(strength * float(TINT));}" },
       uniforms: { strength: { type: "f32", value: 0.5 } }, defines: { TINT: 1 }, ...option
@@ -99,12 +103,13 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
       }
     } finally { output.dispose(); }
   }
-  if (row.builder === "material.pbr") {
+  if (row.builder === "material.pbr" || row.builder === "material.metal") {
     const entry = createProductionRuntimePrimitiveEntries([primitives.box({ material: built }).toJSON()])[0]!;
     const param = row.observation === "pbr.color" ? "u_baseColor" : `u_${row.field}`;
     return entry.resources[0]!.material.getParameter(param);
   }
   const node = built.toJSON();
+  if (row.observation === "interaction.hoverTargets") return collectAuraSceneEvidence(scene().add(built).toJSON()).interactions.hoverTargets;
   if (row.observation?.startsWith("fog.")) {
     const fog = createProductionRuntimeEnvironmentFog(scene().add(node).toJSON());
     if (!fog) throw new Error("fog consumer did not produce a fog input");
@@ -171,7 +176,9 @@ describe("typed option probes and real consumers", () => {
   });
 
   it("rejects unsupported shape parameters with actionable options", () => {
-    const row = OPTION_COVERAGE_ROWS.find((r) => r.disposition === "unsupported")!;
+    const row = OPTION_COVERAGE_ROWS.find((r) => r.disposition === "unsupported" && r.builder === "primitives.plane")!;
+    const pointer = OPTION_COVERAGE_ROWS.find((r) => r.disposition === "unsupported" && r.builder === "interactions.pointer")!;
+    expect(pointer.reason).toContain("interactions.hover({ target })");
     expect(row.reason).toContain("size");
     expect(() => primitives.plane({ params: row.probeValueB as never })).toThrow(/Supported params: widthSegments, heightSegments/);
   });
@@ -208,8 +215,26 @@ describe("option discovery and ownership", () => {
     expect(readOptionProbeSummaries('const primitive = forOptions<T>(); const rows = [primitive("primitives.box", "size", 1, 2, "primitive.size")];')[0]).toMatchObject({ builder: "primitives.box", field: "size", observation: "primitive.size", disposition: "runtime" });
   });
 
+  it("discovers options passed through a const-bound object, not only inline literals", () => {
+    const markdown = '```ts\nconst options = { size: 2, castShadow: true };\nconst alias = options;\nprimitives.box(alias);\nlet mutable = { name: "x" };\nprimitives.plane(mutable);\n```';
+    expect(documentedOptionReferences(markdown, "bound.md").map((r) => `${r.builder}.${r.field}`).sort()).toEqual(["primitives.box.castShadow", "primitives.box.size"]);
+  });
+
+  it("derives every typed option of each probed builder from its public option type", () => {
+    const inventory = typedOptionInventory(process.cwd());
+    const keys = new Set(inventory.map((r) => `${r.builder}.${r.field}`));
+    // Fields that no documented example spells out are still discovered.
+    for (const key of ["material.pbr.clearcoat", "material.pbr.roughness", "lights.directional.shadow", "effects.toon.inkColor", "geometry.define.uvs", "primitives.box.receiveShadow"]) expect(keys.has(key), key).toBe(true);
+    const gaps = typedOptionGaps(inventory, readOptionProbeSummaries(readFileSync("packages/engine/src/agent-api/compiler/optionCoverage.ts", "utf8")));
+    const pbr = gaps.find((f) => f.detail.startsWith("material.pbr:"))?.detail ?? "";
+    expect(pbr).toContain("clearcoat");
+    // Probed fields are not reported as gaps.
+    expect(pbr).not.toMatch(/: .*\broughness\b(?!Map)/);
+    expect(gaps.every((f) => !f.enforced)).toBe(true);
+  }, 120_000);
+
   it("all documented options have downstream evidence or an actionable unsupported diagnostic", () => {
-    expect(optionCoverageRule([], process.cwd()).filter((finding) => finding.enforced)).toEqual([]);
+    expect(optionCoverageRule([], process.cwd(), { typed: false }).filter((finding) => finding.enforced)).toEqual([]);
   });
 });
 

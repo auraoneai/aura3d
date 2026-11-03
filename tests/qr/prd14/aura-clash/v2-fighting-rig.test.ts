@@ -15,7 +15,7 @@ function ctx(subjects: Record<string, { position: AuraVec3 }>, aspect = 16 / 9):
     },
     subject: (ref) => {
       const name = typeof ref === "string" ? ref : ref.name;
-      const s = subjects[name];
+      const s = name === undefined ? undefined : subjects[name];
       return s ? {
         position: s.position,
         velocity: [0, 0, 0],

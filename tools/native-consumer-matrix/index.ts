@@ -16,7 +16,9 @@ import { assertIndependentNpmConsumer, inspectNpmArchive, seedVerifiedNpmCache }
 import { assertIndependentPnpmConsumer, assertInstalledPnpmArchiveSet, seedVerifiedPnpmStore, verifyPnpmNativeStore, type InstalledPnpmConsumerReport, type NativePnpmStoreReport } from "../release/portable-pnpm-lock.mjs";
 import { createPnpmLoopbackRegistry } from "../release/pnpm-loopback-registry.mjs";
 import { assertZstdWorkerPayload } from "../finalize-dist/worker-bundle.mjs";
-import { assertInstalledArchiveSet, createPortableSourceEnvironment, inventoryPortableConsumerFiles, type NativeConsumerFile, type PortableLock } from "../package-clean-install/index";
+import { assertInstalledArchiveSet, createPortableSourceEnvironment, inventoryPortableConsumerFiles, packedConsumerEnvironment, type NativeConsumerFile, type PortableLock } from "../package-clean-install/index";
+// @ts-expect-error The shared artifact-redaction module is plain JavaScript.
+import { redactText } from "../remote-acr/upload-artifacts.mjs";
 
 export type Manager = "npm" | "pnpm";
 export type Peer = "absent" | "present";
@@ -40,7 +42,8 @@ interface Check { id: string; project: string; command: string[]; status: "pass"
 interface RetainedProject extends MatrixCell {
   path: string; manifestSha256: string; lockfile: string; lockfileSha256: string;
   projectSha256: string; installedPackages: PackageEntry[]; toolVersions: Record<string, string>;
-  retention?: "portable-v1";
+  /** packed-v1: ordinary packed-consumer install; retained without node_modules. */
+  retention?: "portable-v1" | "packed-v1";
   sourceManifest?: { path: string; sha256: string };
   files?: NativeConsumerFile[];
   archives?: MatrixArchive[];
@@ -679,7 +682,7 @@ export function validateSourceMatrixReport(root: string, reportPath: string): Ma
     must(p.path === `tests/reports/native-consumer-matrix/${report.runId}/projects/${cell.id}`, `Invalid project path: ${cell.id}`);
     const dir = inside(root, p.path);
     if (p.retention === "portable-v1") validatePortableMatrixRecords(root, report, p, dir);
-    else if (p.retention !== undefined) throw new Error("Unsupported matrix retention format");
+    else if (p.retention !== undefined && p.retention !== "packed-v1") throw new Error("Unsupported matrix retention format");
     must(p.lockfile === (cell.manager === "npm" ? "package-lock.json" : "pnpm-lock.yaml"), `Wrong lockfile: ${cell.id}`);
     must(fileHash(join(dir, "package.json")) === p.manifestSha256 && fileHash(join(dir, p.lockfile)) === p.lockfileSha256 && hashConsumerProject(dir) === p.projectSha256, `Retained project changed: ${cell.id}`);
     must(JSON.stringify(JSON.parse(readFileSync(join(dir, "package.json"), "utf8"))) === JSON.stringify(projectManifest(root, cell, plan)), `Consumer manifest was changed: ${cell.id}`);
@@ -692,10 +695,10 @@ export function validateSourceMatrixReport(root: string, reportPath: string): Ma
     for (const name of ["typescript", "tsx", "vite", "react", "react-dom"]) must(Boolean(p.toolVersions?.[name]), `Missing installed tool version: ${cell.id}/${name}`);
     for (const id of CHECK_IDS) {
       const matches = report.checks.filter(check => check.project === cell.id && check.id === id);
-      const expectedCommand = commands(cell)[id] ?? ["inspect-installed-artifacts"];
+      const expectedCommand = id === "install" && p.retention === "packed-v1" ? packedInstallCommand(cell) : commands(cell)[id] ?? ["inspect-installed-artifacts"];
       const expectedLog = `tests/reports/native-consumer-matrix/${report.runId}/logs/${cell.id}-${id}.log`;
       must(matches.length === 1 && matches[0].status === "pass" && matches[0].exitCode === 0 && JSON.stringify(matches[0].command) === JSON.stringify(expectedCommand) && matches[0].logPath === expectedLog && existsSync(inside(root, expectedLog)) && matches[0].logSha256 === fileHash(inside(root, expectedLog)), `Missing/failed check: ${cell.id}/${id}`);
-      if (p.retention === "portable-v1") {
+      if (p.retention === "portable-v1" || p.retention === "packed-v1") {
         const bytes = matrixFile(root, expectedLog, 64 * 1024 * 1024);
         must(Number.isSafeInteger(matches[0].logSize) && matches[0].logSize === bytes.byteLength && matches[0].logSha256 === hash(bytes), `Matrix log changed: ${cell.id}/${id}`);
       }
@@ -708,7 +711,9 @@ export function validateSourceMatrixReport(root: string, reportPath: string): Ma
 export async function runSource(root: string, runId: string, planPath: string): Promise<MatrixReport> {
   const bundlePath = process.env.NATIVE_MATRIX_BUNDLE_INPUT;
   const stagedManifestPath = process.env.AURA3D_SOURCE_MANIFEST;
-  if (!bundlePath || !stagedManifestPath) throw new Error(MATRIX_INPUT_ERROR);
+  // No pre-supplied portable bundle: run the ordinary packed-consumer matrix.
+  if (!bundlePath) return runPackedMatrixSource(root, runId, planPath);
+  if (!stagedManifestPath) throw new Error(MATRIX_INPUT_ERROR);
   assertRunId(runId);
   const sourceManifestPath = `tests/reports/native-capabilities/${runId}/source-manifest.json`;
   if (!matrixFile(root, stagedManifestPath, MAX_MATRIX_JSON).equals(matrixFile(root, sourceManifestPath, MAX_MATRIX_JSON))) {
@@ -919,6 +924,7 @@ export async function restoreMatrixProject(root: string, report: MatrixReport, c
   if (canonical(verifiedReport) !== canonical(report)) throw new Error("Matrix report changed before restore");
   const cell = matrixCells().find(item => item.id === cellId) ?? fail(`Unknown matrix project: ${cellId}`);
   const project = verifiedReport.projects.find(item => item.id === cellId) ?? fail(`Missing matrix project: ${cellId}`);
+  if (project.retention === "packed-v1") return restorePackedMatrixProject(root, verifiedReport, cell, project, outputDir);
   if (project.retention !== "portable-v1" || !project.sourceManifest || !project.archives || !Array.isArray(verifiedReport.candidateReviews)) throw new Error(MATRIX_INPUT_ERROR);
   const candidateReviews = verifiedReport.candidateReviews;
   const { plan, ref } = readCandidate(root, verifiedReport.candidate.path);
@@ -987,6 +993,166 @@ export async function restoreMatrixProject(root: string, report: MatrixReport, c
   finally { rmSync(cache, { recursive: true, force: true }); }
 }
 
+// ---------------------------------------------------------------------------
+// Packed matrix producer (5.0 decision record item 1). Each cell is an
+// ordinary isolated packed-consumer install in a fresh temporary project: the
+// candidate archives are verified against the plan by readCandidate, copied in
+// as file: dependencies, installed with the cell's package manager, and every
+// probe runs against that installation. The lock must pin each candidate entry
+// to its plan SRI (inspectLock). Retained projects omit node_modules and are
+// restored with a lock-pinned install for the browser phase.
+// ---------------------------------------------------------------------------
+
+export type PackedMatrixRunner = (command: string[], cwd: string, env: NodeJS.ProcessEnv) => { exitCode: number; output: string };
+const defaultPackedMatrixRunner: PackedMatrixRunner = (command, cwd, env) => {
+  const result = spawnSync(command[0], command.slice(1), { cwd, env, encoding: "utf8", timeout: 900_000, maxBuffer: 64 * 1024 * 1024 });
+  return { exitCode: result.status ?? 1, output: `${result.stdout ?? ""}${result.stderr ?? ""}${result.error ? `\n${result.error}` : ""}` };
+};
+
+/** Source-phase install: resolves third-party packages and writes the cell lock. */
+export function packedInstallCommand(cell: MatrixCell): string[] {
+  return cell.manager === "npm"
+    ? ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier"]
+    : ["pnpm", "install", "--ignore-scripts", "--ignore-pnpmfile", "--package-import-method=copy"];
+}
+/** Browser-phase restore: installs exactly the retained lock. */
+export function packedRestoreCommand(cell: MatrixCell): string[] {
+  return cell.manager === "npm"
+    ? ["npm", "ci", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier"]
+    : ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--ignore-pnpmfile", "--package-import-method=copy"];
+}
+function packedEnvironment(work: string): NodeJS.ProcessEnv {
+  const cache = join(work, ".cache"), home = join(work, ".home"), store = join(work, ".pnpm-store");
+  for (const dir of [cache, home, store]) mkdirSync(dir, { recursive: true });
+  return { ...packedConsumerEnvironment(cache, home), npm_config_store_dir: store, npm_config_cache_dir: join(cache, "pnpm") };
+}
+function installedToolVersions(project: string): Record<string, string> {
+  const versions: Record<string, string> = {};
+  for (const name of ["typescript", "tsx", "vite", "react", "react-dom"]) {
+    const manifest = JSON.parse(readFileSync(join(project, "node_modules", name, "package.json"), "utf8")) as { version?: string };
+    must(typeof manifest.version === "string" && manifest.version.length > 0, `Missing installed tool version: ${name}`);
+    versions[name] = manifest.version!;
+  }
+  return versions;
+}
+function retainMatrixProject(source: string, target: string): void {
+  cpSync(source, target, { recursive: true, verbatimSymlinks: true, errorOnExist: true, force: false,
+    filter: path => path !== join(source, "node_modules") });
+}
+
+export async function runPackedMatrixSource(root: string, runId: string, planPath: string, runner: PackedMatrixRunner = defaultPackedMatrixRunner): Promise<MatrixReport> {
+  assertRunId(runId);
+  const target = join(root, "tests/reports/native-consumer-matrix", runId);
+  const reportPath = join(root, "tests/reports/native-consumers", runId, "matrix-source.json");
+  must(!existsSync(target), `Run already exists: ${target}`);
+  must(!existsSync(reportPath), `Source matrix report already exists: ${reportPath}`);
+  const { plan, ref } = readCandidate(root, planPath);
+  const scratch = realpathSync(mkdtempSync(join(tmpdir(), "a3d-packed-matrix-")));
+  const env = packedEnvironment(scratch);
+  const projects: RetainedProject[] = [], checks: Check[] = [];
+  let failed = false;
+  try {
+    const toolVersion = (command: string[]): string => {
+      const result = runner(command, scratch, env);
+      must(result.exitCode === 0, `Required tool unavailable: ${command.join(" ")}\n${result.output}`);
+      return result.output.trim();
+    };
+    const toolVersions = { node: process.version, npm: toolVersion(["npm", "--version"]), pnpm: toolVersion(["pnpm", "--version"]) };
+    for (const cell of matrixCells()) {
+      const project = join(scratch, "cells", cell.id);
+      mkdirSync(project, { recursive: true });
+      projectFiles(root, project, cell, plan);
+      let cellFailed = false;
+      const record = (id: string, command: string[], exitCode: number, output: string): void => {
+        const logPath = `tests/reports/native-consumer-matrix/${runId}/logs/${cell.id}-${id}.log`;
+        const text = redactText(output);
+        mkdirSync(dirname(join(root, logPath)), { recursive: true });
+        writeFileSync(join(root, logPath), text);
+        checks.push({ id, project: cell.id, command, status: exitCode === 0 ? "pass" : "fail", exitCode, logPath,
+          logSha256: hash(text), logSize: Buffer.byteLength(text) });
+        if (exitCode !== 0) cellFailed = true;
+      };
+      for (const id of CHECK_IDS) {
+        const command = id === "install" ? packedInstallCommand(cell) : commands(cell)[id] ?? ["inspect-installed-artifacts"];
+        if (cellFailed) {
+          checks.push({ id, project: cell.id, command, status: "not-run", exitCode: null, logPath: "", logSha256: "" });
+          continue;
+        }
+        if (id === "installed-identity") {
+          try { inspectInstalled(project, cell, plan); record(id, command, 0, JSON.stringify(projectPackages(plan, cell).map(pkg => ({ name: pkg.name, integrity: pkg.integrity })))); }
+          catch (error) { record(id, command, 1, String(error)); }
+          continue;
+        }
+        const result = runner(command, project, env);
+        let exitCode = result.exitCode, output = result.output;
+        if (exitCode === 0 && id === "install") {
+          try { inspectLock(project, cell, plan); } catch (error) { exitCode = 1; output += `\n${String(error)}`; }
+        }
+        if (exitCode === 0 && id === "browser-build") {
+          try { assertBrowserBuild(project, root); } catch (error) { exitCode = 1; output += `\n${String(error)}`; }
+        }
+        record(id, command, exitCode, output);
+      }
+      failed ||= cellFailed;
+      const retained = join(target, "projects", cell.id);
+      mkdirSync(dirname(retained), { recursive: true });
+      retainMatrixProject(project, retained);
+      const lockfile = cell.manager === "npm" ? "package-lock.json" : "pnpm-lock.yaml";
+      projects.push({ ...cell, path: relative(root, retained).split(sep).join("/"), retention: "packed-v1",
+        manifestSha256: fileHash(join(retained, "package.json")), lockfile,
+        lockfileSha256: existsSync(join(retained, lockfile)) ? fileHash(join(retained, lockfile)) : "",
+        projectSha256: hashConsumerProject(retained), installedPackages: projectPackages(plan, cell),
+        toolVersions: cellFailed ? {} : installedToolVersions(project) });
+    }
+    const report: MatrixReport = { schema: "aura3d.native-consumers/1", phase: "source", runId, status: failed ? "fail" : "pass",
+      source: { revision: plan.source.commit, stagedSourceSha256: plan.source.inputDigest ?? plan.source.fingerprint, lockfileSha256: plan.source.lockfileSha256 },
+      candidate: { path: ref.path, sha256: ref.sha256, version: plan.version, packages: plan.packages },
+      toolVersions, projects, checks,
+      browser: matrixCells().flatMap(cell => BROWSERS.map(browser => ({ id: `${cell.id}/${browser}`, status: "not-run" as const }))) };
+    writeJson(reportPath, report);
+    if (report.status === "pass") validateSourceMatrixReport(root, relative(root, reportPath));
+    return report;
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+}
+
+/** Restore a retained packed cell with a lock-pinned install and rerun its Node probes. */
+async function restorePackedMatrixProject(root: string, report: MatrixReport, cell: MatrixCell, project: RetainedProject, outputDir: string,
+  runner: PackedMatrixRunner = defaultPackedMatrixRunner): Promise<string> {
+  const { plan } = readCandidate(root, report.candidate.path);
+  must(isAbsolute(outputDir), "Restored project path must be absolute");
+  const parent = realpathSync(dirname(outputDir));
+  const destination = join(parent, basename(outputDir));
+  const workspace = realpathSync(root);
+  const fromTemp = relative(realpathSync(tmpdir()), parent);
+  must(destination !== workspace && !destination.startsWith(`${workspace}${sep}`), "Restored consumer must be outside the repository");
+  must(fromTemp !== ".." && !fromTemp.startsWith(".." + sep) && !isAbsolute(fromTemp), "Restored consumer must be in a temporary workspace");
+  for (let ancestor = parent; ; ancestor = dirname(ancestor)) {
+    must(!existsSync(join(ancestor, "node_modules")), "Restored consumer can resolve outside dependencies");
+    if (dirname(ancestor) === ancestor) break;
+  }
+  must(!existsSync(destination), "Restored project already exists");
+  const work = mkdtempSync(join(tmpdir(), "a3d-packed-matrix-restore-"));
+  try {
+    retainMatrixProject(inside(root, project.path), destination);
+    must(hashConsumerProject(destination) === project.projectSha256, `Restored project inputs differ: ${cell.id}`);
+    const env = packedEnvironment(work);
+    const installed = runner(packedRestoreCommand(cell), destination, env);
+    must(installed.exitCode === 0, `Locked consumer restore failed for ${cell.id}: ${redactText(installed.output).slice(-4000)}`);
+    must(hashConsumerProject(destination) === project.projectSha256 && fileHash(join(destination, project.lockfile)) === project.lockfileSha256, `Restore changed source inputs or lock: ${cell.id}`);
+    inspectInstalled(destination, cell, plan);
+    for (const id of ["javascript-esm", "condition-node", "condition-browser", "react-ssr", "optional-peer"]) {
+      const result = runner(commands(cell)[id], destination, env);
+      must(result.exitCode === 0, `Restored ${cell.id}/${id} failed: ${redactText(result.output).slice(-4000)}`);
+    }
+    must(hashConsumerProject(destination) === project.projectSha256 && fileHash(join(destination, project.lockfile)) === project.lockfileSha256,
+      `Restored consumer changed during probes: ${cell.id}`);
+    return destination;
+  } catch (error) { rmSync(destination, { recursive: true, force: true }); throw error; }
+  finally { rmSync(work, { recursive: true, force: true }); }
+}
+
 function assertMatrixExecutionReady(manager: Manager): void {
   // A real OS-enforced process/network isolation and pinned toolchain custody
   // capability has no issuer in this repository. Do not replace this with an
@@ -1016,14 +1182,16 @@ export async function restoreReactConsumers(root: string, reportPath: string, ga
   if (!existsSync(inside(root, reportPath))) throw new Error(MATRIX_INPUT_ERROR);
   const report = validateSourceMatrixReport(root, reportPath);
   const { plan, ref } = readCandidate(root, report.candidate.path);
-  if (!Array.isArray(report.candidateReviews)) throw new Error(MATRIX_INPUT_ERROR);
+  const packed = report.projects.every(item => item.retention === "packed-v1");
+  if (!packed && !Array.isArray(report.candidateReviews)) throw new Error(MATRIX_INPUT_ERROR);
   for (const id of ["npm-react18-peer-present", "npm-react19-peer-present"]) {
     const cell = matrixCells().find(item => item.id === id)!;
     const project = report.projects.find(item => item.id === id);
+    if (packed && project) continue;
     if (!project || project.retention !== "portable-v1" || !project.sourceManifest || !project.archives) throw new Error(MATRIX_INPUT_ERROR);
     prepareNpmCell(root, report.runId, plan, ref, cell, project.sourceManifest,
       matrixFile(root, project.path + "/package.json", MAX_MATRIX_JSON), matrixFile(root, project.path + "/" + project.lockfile, MAX_MATRIX_JSON),
-      project.archives, "tests/reports/native-consumer-matrix/" + report.runId + "/dependency-archives/", report.candidateReviews);
+      project.archives, "tests/reports/native-consumer-matrix/" + report.runId + "/dependency-archives/", report.candidateReviews!);
   }
   await assertGate(root, reportPath, gatePath, report);
   must(isAbsolute(outputDir), "--out-dir must be absolute and outside the repository");
@@ -1053,7 +1221,7 @@ export async function runBrowser(root: string, runId: string, reportPath: string
   await assertGate(root, reportPath, gatePath, source);
   // Gate every manager, not merely the presence of a pnpm cell, before loading
   // Playwright or creating any browser-phase artifacts.
-  for (const project of source.projects) assertMatrixExecutionReady(project.manager);
+  for (const project of source.projects) if (project.retention !== "packed-v1") assertMatrixExecutionReady(project.manager);
   const target = join(root, "tests/reports/native-consumer-matrix", runId);
   const browserReport = join(root, "tests/reports/native-consumers", runId, "matrix-browser.json");
   must(!existsSync(target), `Run already exists: ${target}`);

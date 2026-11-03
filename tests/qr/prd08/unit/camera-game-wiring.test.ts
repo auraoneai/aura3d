@@ -38,7 +38,7 @@ const racingOptions = (extra: Partial<GameRacingPresentationCameraOptions> = {})
     toScenePose: (p: readonly [number, number, number]) => poseFrom(p),
     trackModel: { position: [0, 0, 0] }
   } as unknown as GameRacingPresentationCameraOptions["sceneBinding"],
-  focus: [0, 0, 0],
+  focus: [0, 0, 0] as unknown as GameRacingPresentationCameraOptions["focus"],
   targetNode: "car",
   ...extra
 });
@@ -53,7 +53,7 @@ const platformerOptions = (
     }),
     worldModel: { position: [0, 0, 0] }
   } as unknown as GamePlatformerPresentationCameraOptions["sceneBinding"],
-  player: { position: [1, 0, 0], facing: 1 } as GamePlatformerPresentationCameraOptions["player"],
+  player: { position: [1, 0, 0], facing: 1 } as unknown as GamePlatformerPresentationCameraOptions["player"],
   targetNode: "player",
   ...extra
 });
@@ -101,7 +101,7 @@ describe("C-13 racingCamera verdict gate removed", () => {
   const compositionBase = {
     mode: "chase" as const,
     sceneBinding: racingOptions().sceneBinding,
-    focus: [0, 0, 0] as readonly [number, number, number],
+    focus: [0, 0, 0] as unknown as GameRacingPresentationCameraOptions["focus"],
     targetNode: "car"
   };
 

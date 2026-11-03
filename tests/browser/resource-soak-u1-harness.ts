@@ -1,5 +1,9 @@
 import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
 import { WebGL2Device, resolveGpuTargetOwner } from "@aura3d/rendering";
+import { installWebGPUPipelineLedger, type WebGPUPipelineSnapshot } from "./resource-soak-accounting";
+
+// Patch before any app requests a device so every engine pipeline is counted.
+const webgpuLedger = installWebGPUPipelineLedger(globalThis as unknown as Parameters<typeof installWebGPUPipelineLedger>[0]);
 
 /**
  * PART U1 browser soak (muse3jsparity-PRD): 50 mount/step/dispose cycles at
@@ -44,6 +48,8 @@ declare global {
   interface Window {
     __AURA3D_RESOURCE_SOAK_U1__?: SoakReport & {
       runRouteCycles(cycles: number): Promise<{ cycles: SoakCycleEvidence[] }>;
+      runWebGPURouteCycles(cycles: number): Promise<WebGPURouteResult>;
+      webgpuPipelines(): WebGPUPipelineSnapshot | null;
       runRegistry(cycles: number): Promise<{
         registry: RegistryCycleEvidence[];
         registryFinal: SoakReport["registryFinal"];
@@ -130,6 +136,42 @@ async function runRouteCycles(cycles: number): Promise<{ cycles: SoakCycleEviden
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
   return { cycles: out };
+}
+
+type WebGPURouteResult =
+  | { readonly status: "unsupported"; readonly reason: string }
+  | { readonly status: "ran"; readonly cycles: readonly { readonly cycle: number; readonly drawCalls: number; readonly pipelines: WebGPUPipelineSnapshot }[] };
+
+/**
+ * Phase A2 — the same route on the explicit WebGPU backend (no fallback).
+ * Each cycle uses a fresh canvas and awaits full retirement, so every device
+ * (and the pipelines it owns) must be destroyed before the next mount.
+ */
+async function runWebGPURouteCycles(cycles: number): Promise<WebGPURouteResult> {
+  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
+  if (!gpu) return { status: "unsupported", reason: "navigator.gpu is not exposed by this browser." };
+  if (!webgpuLedger) return { status: "unsupported", reason: "GPUAdapter/GPUDevice prototypes are not exposed; pipelines cannot be counted." };
+  if (!(await gpu.requestAdapter())) return { status: "unsupported", reason: "navigator.gpu.requestAdapter() returned no adapter." };
+  const built = buildScene();
+  const out: { cycle: number; drawCalls: number; pipelines: WebGPUPipelineSnapshot }[] = [];
+  for (let cycle = 0; cycle < cycles; cycle += 1) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256; canvas.height = 256;
+    document.body.append(canvas);
+    const app = createAuraApp(canvas, { scene: built, autoStart: false, pixelRatio: 1, resize: false, renderer: { backend: "webgpu", allowFallback: false } });
+    try {
+      await app.ready();
+      if (app.backend !== "webgpu") throw new Error(`WebGPU soak mounted ${app.backend} with fallback disabled.`);
+      await app.stepAsync(1 / 60);
+      const drawCalls = app.diagnostics().drawCalls;
+      out.push({ cycle, drawCalls, pipelines: webgpuLedger.snapshot() });
+    } finally {
+      await app.disposeAsync();
+      canvas.remove();
+    }
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+  return { status: "ran", cycles: out };
 }
 
 /**
@@ -248,6 +290,19 @@ window.__AURA3D_RESOURCE_SOAK_U1__ = {
     report.status = "running";
     try {
       const out = await runRouteCycles(cycles);
+      report.status = "ready";
+      return out;
+    } catch (error) {
+      fail(error);
+    }
+  },
+  webgpuPipelines: () => webgpuLedger?.snapshot() ?? null,
+  runWebGPURouteCycles: async (cycles: number) => {
+    const report = harness();
+    if (report.status === "running" || report.status === "done") throw new Error("Soak harness busy or finished.");
+    report.status = "running";
+    try {
+      const out = await runWebGPURouteCycles(cycles);
       report.status = "ready";
       return out;
     } catch (error) {

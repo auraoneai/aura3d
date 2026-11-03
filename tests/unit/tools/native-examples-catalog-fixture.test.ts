@@ -1305,6 +1305,8 @@ describe("source-backed native example catalog fixture", () => {
       "capability-example:custom-shader": [[31, 143, 184]],
       "capability-example:world-text": [[224, 186, 113]],
       "capability-example:physics": [[219, 142, 74]],
+      "capability-example:worker-render": [[246, 192, 156], [73, 103, 124]],
+      "capability-example:interchange-export": [[216, 138, 74]],
       "starter-example:hello-world-typed-asset": [[151, 74, 10]],
       "starter-example:material-lighting": [[255, 0, 184], [0, 191, 255]],
       "starter-example:camera-path": [[159, 122, 68], [83, 221, 255]],

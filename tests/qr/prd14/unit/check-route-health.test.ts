@@ -10,13 +10,14 @@ const HERE = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = `${HERE}/../route-health-fixtures`;
 const SCRIPT = `${HERE}/../../../../scripts/check-route-health.mjs`;
 
-function run(dir, routes = []) {
+function run(dir: string, routes: string[] = []) {
   const args = [SCRIPT, "--dir", dir];
   if (routes.length) args.push("--routes", routes.join(","));
   try {
     const out = execFileSync("node", args, { encoding: "utf8" });
     return { code: 0, out };
-  } catch (err) {
+  } catch (caught) {
+    const err = caught as { status?: number; stdout?: string; stderr?: string };
     return { code: err.status ?? 1, out: `${err.stdout ?? ""}${err.stderr ?? ""}` };
   }
 }

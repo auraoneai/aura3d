@@ -4,7 +4,8 @@
  * registry/snapshot/ctx helpers they share. No vitest and no resolver
  * imports — importing this module never registers tests.
  */
-import type { AuraCameraSpec, AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "@aura3d/engine";
+import type { AuraCameraSpec, AuraSceneSnapshot } from "@aura3d/engine";
+import type { AuraRuntimeNodeRegistry } from "@aura3d/engine/lanes";
 import type { LegacySpecRigDeps } from "@aura3d/engine/lanes";
 import type { AuraCameraRigContext } from "@aura3d/engine/contracts";
 

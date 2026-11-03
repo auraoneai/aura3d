@@ -257,7 +257,11 @@ async function runObservedWorkload(spec: NativeWorkload, resources: ReturnType<t
     const frameTimes: number[] = [];
     const cpuWallTimes: number[] = [];
     let gpu: Awaited<ReturnType<typeof timer.finish>>;
+    // Optional harness hook (the acceptance probe exposes it) that samples
+    // main-thread CPU time exactly around the timed frames. Absent elsewhere.
+    const phase = (globalThis as { __auraNativePerfPhase?: (name: "timed-start" | "timed-end") => Promise<unknown> }).__auraNativePerfPhase;
     try {
+      await phase?.("timed-start");
       let last = await new Promise<number>((resolve) => requestAnimationFrame(resolve));
       for (let i = 0; i < spec.timedFrames; i++) {
         const tick = await new Promise<number>((resolve) => requestAnimationFrame(resolve));
@@ -268,6 +272,7 @@ async function runObservedWorkload(spec: NativeWorkload, resources: ReturnType<t
         try { app.step(1 / 60); cpuWallTimes.push(performance.now() - start); }
         finally { timer.end(query); }
       }
+      await phase?.("timed-end");
       gpu = await timer.finish(spec.timedFrames);
     } finally {
       timer.dispose();

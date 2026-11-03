@@ -22,7 +22,7 @@ test.describe("showcase-mech-hangar union-scene (§14.4)", () => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&scenario=pit`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       await page.waitForTimeout(2500);
       const loading = await page.evaluate((EVIDENCE: string) =>
         JSON.parse(JSON.stringify(eval(EVIDENCE + ".loading"))) as {

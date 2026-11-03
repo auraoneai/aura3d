@@ -72,6 +72,8 @@ describe("guardPostprocessPlan (PRD 11 §6.8)", () => {
   it("keeps C-13 gpuOnly registered passes regardless of fusion rules", () => {
     const dispose = registerPostPass({
       id: "prd11.test-glow",
+      owner: "prd11",
+      flag: "A3D_QR_POST",
       insertAt: "after-tonemap",
       space: "display",
       inputs: ["color"],

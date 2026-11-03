@@ -23,7 +23,7 @@ test.describe("showcase-siege-golf sceneSwaps=0 across a shot (§14.4)", () => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`${url}/?a3d-qr=${ROUTE_FLAG}&autorun=1`);
       await expect.poll(() => page.evaluate(() =>
-        (window as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
+        (window as unknown as Record<string, unknown>).__AURA3D_GAME__ !== undefined), { timeout: 30_000 }).toBe(true);
       // Autorun must actually take a stroke — don't accept a trivially-zero counter.
       await expect.poll(() => page.evaluate((EVIDENCE: string) =>
         eval(EVIDENCE + ".shot")?.strokes ?? 0, EVIDENCE), { timeout: 30_000 }).toBeGreaterThanOrEqual(1);

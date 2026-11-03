@@ -1,7 +1,6 @@
 // Lane-07 numeric visual checks (tests/qr/prd07/ci/vfx-pixels.mjs): the
 // metrics behave on synthetic frames, so a CI verdict means what it says.
 import { describe, expect, it } from "vitest";
-// @ts-expect-error — plain .mjs CI script, no type declarations
 import { changedFraction, colourFraction, evaluateScene, stats } from "../ci/vfx-pixels.mjs";
 
 type Img = { w: number; h: number; rgb: Uint8Array };

@@ -7,6 +7,7 @@ import {
   buildPackageExports,
   buildTsconfigPaths,
   buildViteAliases,
+  buildWorkspacePackageExports,
   deprecatedStubContent,
   distTarget,
   generateResolutionMaps,
@@ -150,6 +151,42 @@ describe("generate-resolution-maps", () => {
     const aliases = readFileSync(join(root, "vite.aliases.generated.ts"), "utf8");
     expect(aliases.indexOf('"@fixture/assets/exporters"')).toBeLessThan(aliases.indexOf('"@fixture/assets"'));
     expect(aliases).toContain('["@fixture/assets", "./packages/assets/src/browser-index.ts"]');
+  });
+
+  it("generates workspace package export conditions from the registry and rejects unregistered maps", () => {
+    const aura: AuraExportsFile = {
+      package: "@fixture/engine",
+      entries: { ".": { source: "packages/engine/src/index.ts", conditions: true } },
+      paths: [["@fixture/engine", "packages/engine/src/index.ts"]],
+      workspaceExports: {
+        "packages/assets": {
+          ".": { source: "src/index.ts", conditions: ["types", "browser", "import"], browserSource: "src/browser-index.ts" },
+          "./exporters": { source: "src/exporters/index.ts", conditions: ["types", "browser", "import", "default"] },
+          "./client": { literal: { types: "./client.d.ts", import: "./client.js" } }
+        }
+      }
+    };
+    expect(buildWorkspacePackageExports(aura, "packages/assets")).toEqual({
+      ".": { types: "./dist/index.d.ts", browser: "./dist/browser-index.js", import: "./dist/index.js" },
+      "./exporters": { types: "./dist/exporters/index.d.ts", browser: "./dist/exporters/index.js", import: "./dist/exporters/index.js", default: "./dist/exporters/index.js" },
+      "./client": { types: "./client.d.ts", import: "./client.js" }
+    });
+    const root = fixtureRoot(aura);
+    mkdirSync(join(root, "packages/assets"), { recursive: true });
+    mkdirSync(join(root, "packages/other"), { recursive: true });
+    writeFileSync(join(root, "packages/assets/package.json"), JSON.stringify({ name: "@fixture/assets", exports: { ".": "./stale.js" } }));
+    writeFileSync(join(root, "packages/other/package.json"), JSON.stringify({ name: "@fixture/other", exports: { ".": "./dist/index.js" } }));
+    const drift = generateResolutionMaps(root, "check").diffs;
+    expect(drift).toContain("packages/assets/package.json#exports differs from generated output");
+    expect(drift).toContain("packages/other/package.json#exports is not generated from aura.exports.json workspaceExports");
+    generateResolutionMaps(root, "write");
+    expect(JSON.parse(readFileSync(join(root, "packages/assets/package.json"), "utf8")).exports).toEqual(buildWorkspacePackageExports(aura, "packages/assets"));
+    expect(generateResolutionMaps(root, "check").diffs).toEqual(["packages/other/package.json#exports is not generated from aura.exports.json workspaceExports"]);
+    expect(() => buildWorkspacePackageExports({ ...aura, workspaceExports: { "packages/assets": { ".": { source: "src/index.ts", conditions: ["import"] } } } }, "packages/assets")).toThrow(/types and import/);
+  });
+
+  it("keeps every real workspace package export map generated from the registry", () => {
+    expect(generateResolutionMaps(process.cwd(), "check").diffs.filter((diff) => diff.includes("package.json#exports") || diff.includes("workspaceExports"))).toEqual([]);
   });
 
   it("maps native entrypoints to their declared source and published targets", () => {

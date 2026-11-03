@@ -36,13 +36,32 @@ interface MeasurementManifest {
 }
 interface LoadedMeasurements { manifest: MeasurementManifest; sha256: string; reports: Map<string, NativePerformanceReport> }
 
-/** Retain distinct measurements and labels. CPU metrics are wall durations, not thread CPU time. */
+/**
+ * Retain distinct measurements and labels. cpuP* are synchronous submission
+ * wall durations; cpuThreadTimeMs is renderer main-thread CPU time per timed
+ * frame where the browser exposes thread ticks.
+ */
 export const NATIVE_METRICS = [
   "startupMs", "frameP50Ms", "frameP95Ms", "frameP99Ms", "cpuP50Ms", "cpuP95Ms", "cpuP99Ms",
   "gpuP50Ms", "gpuP95Ms", "gpuP99Ms", "cpuThreadTimeMs", "drawCalls", "heapBytes", "gpuResidentBytes",
   "liveResources", "resourcesAfterDispose", "glAllocations", "jsAllocations", "requestCount", "rawBytes", "gzipBytes", "brotliBytes",
   "bundleRawBytes", "bundleGzipBytes", "bundleBrotliBytes", "installedBytes"
 ] as const;
+
+/**
+ * Metrics a browser, backend or device may genuinely not expose. They are
+ * excluded from the aggregate only when every baseline and candidate session
+ * reports null with a recorded reason. Every other metric is required: a
+ * missing value is no-data and never a pass.
+ */
+export const NATIVE_UNSUPPORTED_ALLOWED_METRICS: ReadonlySet<string> = new Set([
+  "gpuP50Ms", "gpuP95Ms", "gpuP99Ms", "gpuResidentBytes", "cpuThreadTimeMs", "heapBytes", "jsAllocations",
+  "bundleRawBytes", "bundleGzipBytes", "bundleBrotliBytes"
+]);
+
+export const NATIVE_METRIC_POLICIES = NATIVE_METRICS.map((name) => ({
+  name, ...(NATIVE_UNSUPPORTED_ALLOWED_METRICS.has(name) ? { unsupportedAllowed: true } : {})
+}));
 
 const digestPattern = /^[a-f0-9]{64}$/;
 const sha256 = (value: string | Uint8Array): string => createHash("sha256").update(value).digest("hex");
@@ -173,7 +192,47 @@ export function loadMeasurements(root: string, manifestPath: string, source: Wor
   return { manifest, sha256: raw.digest, reports };
 }
 
-export interface BenchmarkOptions { root: string; gatePath: string; input: string; baseline?: string; rerun?: string; rerunBaseline?: string; runId?: string }
+export interface BenchmarkOptions {
+  root: string; gatePath: string; input: string; baseline?: string; rerun?: string; rerunBaseline?: string; runId?: string;
+  /** Versioned index of retained same-device baselines; used when no explicit baseline is given. */
+  baselineIndex?: string;
+}
+
+export interface RetainedBaselineEntry {
+  /** Stable runner-supplied device identity (NATIVE_PERF_DEVICE); never "unavailable". */
+  device: string;
+  browser: string;
+  browserVersion: string;
+  baselineVersion: string;
+  /** Root-relative measurement manifest retained for this device. */
+  manifest: string;
+  sha256: string;
+}
+export interface RetainedBaselineIndex { schema: "aura3d.native-performance-baselines/1"; baselines: RetainedBaselineEntry[] }
+
+/**
+ * Select the one retained baseline recorded on the same device, browser and
+ * browser version as the candidate and verify its manifest bytes. Returns null
+ * when the index has no entry for this device, which the analyzer reports as
+ * no-data rather than a pass.
+ */
+export function resolveRetainedBaseline(root: string, indexPath: string, identity: NativePerformanceIdentity): { manifest: string; entry: RetainedBaselineEntry } | null {
+  const index = requireRecord(readJson(resolve(root, indexPath)).value, "baseline index") as unknown as RetainedBaselineIndex;
+  if (index.schema !== "aura3d.native-performance-baselines/1" || !Array.isArray(index.baselines)) throw new Error("Invalid retained baseline index");
+  const keys = new Set<string>();
+  for (const entry of index.baselines) {
+    if (!entry || !nonempty(entry.device) || /^unavailable$/i.test(entry.device.trim()) || !nonempty(entry.browser) || !nonempty(entry.browserVersion) ||
+        !nonempty(entry.baselineVersion) || !nonempty(entry.manifest) || entry.manifest.startsWith("/") || entry.manifest.split(/[\\/]/).includes("..") ||
+        !digestPattern.test(entry.sha256 ?? "")) throw new Error("Invalid retained baseline entry");
+    const key = `${entry.device}\0${entry.browser}\0${entry.browserVersion}`;
+    if (keys.has(key)) throw new Error("Duplicate retained baseline for one device and browser");
+    keys.add(key);
+  }
+  const entry = index.baselines.find((item) => item.device === identity.device && item.browser === identity.browser && item.browserVersion === identity.browserVersion);
+  if (!entry) return null;
+  if (readJson(resolve(root, entry.manifest)).digest !== entry.sha256) throw new Error("Retained baseline manifest changed");
+  return { manifest: entry.manifest, entry };
+}
 export interface BenchmarkResult {
   schema: "aura3d.native-benchmark-analysis/1";
   status: "pass" | "fail" | "inconclusive" | "no-data";
@@ -181,6 +240,8 @@ export interface BenchmarkResult {
   candidate: CandidateIdentity;
   inputSha256: string;
   baselineSha256: string | null;
+  /** How the baseline was selected; null when none was supplied (no-data). */
+  baselineSource: { kind: "explicit" | "retained-index"; manifest: string; baselineVersion?: string } | null;
   workloads: Array<{ id: string; identity: NativePerformanceIdentity; result: NativeBudgetResult }>;
   methodology: string[];
 }
@@ -197,23 +258,34 @@ export async function analyzeNativeBenchmark(
   const source = readWorkloadSources(options.root);
   const current = loadMeasurements(options.root, options.input, source, gate);
   if (options.runId && current.manifest.runId !== options.runId) throw new Error("Acceptance run ID does not match measurement manifest");
-  const baseline = options.baseline ? loadMeasurements(options.root, options.baseline, source) : undefined;
+  const firstIdentity = current.reports.get(NATIVE_WORKLOADS[0]!.id)!.identity;
+  const retained = !options.baseline && options.baselineIndex ? resolveRetainedBaseline(options.root, options.baselineIndex, firstIdentity) : null;
+  const baselinePath = options.baseline ?? retained?.manifest;
+  const baseline = baselinePath ? loadMeasurements(options.root, baselinePath, source) : undefined;
+  if (retained && baseline) for (const report of baseline.reports.values()) {
+    if (report.baselineVersion !== retained.entry.baselineVersion || report.identity.device !== retained.entry.device) {
+      throw new Error("Retained baseline reports differ from their index entry");
+    }
+  }
   const rerun = options.rerun ? loadMeasurements(options.root, options.rerun, source, gate) : undefined;
   const rerunBaseline = options.rerunBaseline ? loadMeasurements(options.root, options.rerunBaseline, source) : undefined;
   const workloads = NATIVE_WORKLOADS.map(({ id }) => ({
     id,
     identity: current.reports.get(id)!.identity,
     result: compareNativeBudget(baseline?.reports.get(id) ?? ({} as NativePerformanceReport), current.reports.get(id)!, {
-      metrics: NATIVE_METRICS.map((name) => ({ name })),
+      metrics: NATIVE_METRIC_POLICIES,
       ...(rerun && rerunBaseline ? { rerun: { candidate: rerun.reports.get(id)!, baseline: rerunBaseline.reports.get(id)! } } : {})
     })
   }));
   const statuses = workloads.map(({ result }) => result.status);
   const status = statuses.includes("fail") ? "fail" : statuses.includes("inconclusive") ? "inconclusive" : statuses.includes("no-data") ? "no-data" : "pass";
   return { schema: "aura3d.native-benchmark-analysis/1", status, runId: current.manifest.runId, candidate: current.manifest.candidate,
-    inputSha256: current.sha256, baselineSha256: baseline?.sha256 ?? null, workloads,
+    inputSha256: current.sha256, baselineSha256: baseline?.sha256 ?? null,
+    baselineSource: !baselinePath ? null : retained ? { kind: "retained-index", manifest: retained.manifest, baselineVersion: retained.entry.baselineVersion } : { kind: "explicit", manifest: baselinePath },
+    workloads,
     methodology: ["Fixed source-bound workloads, at least three independent sessions and 300 timed frames per session.",
-      "CPU p50/p95/p99 are synchronous submission wall durations, not thread CPU time; GPU timing is reported only when available.",
+      "CPU p50/p95/p99 are synchronous submission wall durations, not thread CPU time; cpuThreadTimeMs is main-thread CPU time per timed frame where exposed; GPU timing is reported only when available.",
+      `Only ${[...NATIVE_UNSUPPORTED_ALLOWED_METRICS].join(", ")} may be excluded, and only when every baseline and candidate session records them unsupported.`,
       "Unavailable metrics and missing or noisy baselines are not passes; this report does not establish physical-device support."] };
 }
 
@@ -221,8 +293,8 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2), values = new Map<string, string>();
   for (let index = 0; index < args.length; index += 2) {
     const name = args[index], value = args[index + 1];
-    if (!name || !["--input", "--baseline", "--rerun", "--rerun-baseline", "--out", "--gate"].includes(name) || !value || value.startsWith("--") || values.has(name)) {
-      throw new Error("Usage: native-benchmark --input <manifest> [--baseline <manifest>] [--rerun <manifest> --rerun-baseline <manifest>] [--out <file>] [--gate <file>]");
+    if (!name || !["--input", "--baseline", "--baseline-index", "--rerun", "--rerun-baseline", "--out", "--gate"].includes(name) || !value || value.startsWith("--") || values.has(name)) {
+      throw new Error("Usage: native-benchmark --input <manifest> [--baseline <manifest> | --baseline-index <file>] [--rerun <manifest> --rerun-baseline <manifest>] [--out <file>] [--gate <file>]");
     }
     values.set(name, value);
   }
@@ -230,7 +302,9 @@ async function main(): Promise<void> {
   const validatorModule = await import(pathToFileURL(resolve(root, "tools/native-capability-gate/index.mjs")).href) as {
     validateAcceptanceGate: (input: { root: string; gatePath: string }) => AcceptanceGate | Promise<AcceptanceGate>;
   };
+  if (values.has("--baseline") && values.has("--baseline-index")) throw new Error("Use either --baseline or --baseline-index");
   const result = await analyzeNativeBenchmark({ root, gatePath, input: values.get("--input") ?? "", baseline: values.get("--baseline"),
+    baselineIndex: values.get("--baseline-index") ?? process.env.NATIVE_PERF_BASELINE_INDEX,
     rerun: values.get("--rerun"), rerunBaseline: values.get("--rerun-baseline"), runId: process.env.NATIVE_ACCEPTANCE_RUN_ID }, validatorModule.validateAcceptanceGate);
   const output = `${JSON.stringify(result, null, 2)}\n`;
   if (values.has("--out")) { const out = resolve(root, values.get("--out")!); mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, output); }

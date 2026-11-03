@@ -44,6 +44,13 @@ export interface NativeMetricPolicy {
   name: string;
   /** Optional independent maximum in the same unit as the session metric. */
   absoluteMax?: number;
+  /**
+   * The metric may be excluded as explicitly unsupported on this browser or
+   * device. Exclusion requires every baseline and candidate session to report
+   * null with a recorded unavailable reason; a partial or one-sided gap stays
+   * no-data. Metrics without this flag are always required.
+   */
+  unsupportedAllowed?: boolean;
 }
 
 export interface NativeBudgetOptions {
@@ -57,7 +64,7 @@ export interface NativeBudgetOptions {
   rerun?: { baseline: NativePerformanceReport; candidate: NativePerformanceReport };
 }
 
-export type NativeMetricStatus = "pass" | "regression" | "inconclusive" | "no-data";
+export type NativeMetricStatus = "pass" | "regression" | "inconclusive" | "no-data" | "unsupported";
 export interface NativeMetricResult {
   name: string;
   status: NativeMetricStatus;
@@ -74,11 +81,15 @@ export interface NativeMetricResult {
   /** One rerun is requested only when the first comparison is noisy. */
   rerunRequired: boolean;
   comparedRun: "initial" | "rerun";
+  /** Recorded per-session reasons when the metric is excluded as unsupported. */
+  unsupportedReasons?: string[];
 }
 
 export interface NativeBudgetResult {
   schema: "aura3d.native-budget/1";
   status: "pass" | "fail" | "inconclusive" | "no-data";
+  /** Metrics excluded from the aggregate because both sides explicitly report them unsupported. */
+  excludedUnsupported: string[];
   baselineVersion: string | null;
   baselineRunId: string | null;
   candidateRunId: string | null;
@@ -154,6 +165,17 @@ function valuesFor(report: NativePerformanceReport, metric: string): number[] | 
   return values.every((value): value is number => typeof value === "number" && Number.isFinite(value) && value >= 0) ? values : null;
 }
 
+/** Reasons when every session explicitly reports the metric unavailable; otherwise null. */
+function uniformlyUnsupported(report: NativePerformanceReport, metric: string): string[] | null {
+  const reasons: string[] = [];
+  for (const session of report.sessions) {
+    const reason = session.unavailable?.[metric];
+    if (session.metrics[metric] !== null || !known(reason)) return null;
+    reasons.push(reason.trim());
+  }
+  return reasons.length ? [...new Set(reasons)] : null;
+}
+
 function initialResult(policy: NativeMetricPolicy, comparedRun: "initial" | "rerun"): NativeMetricResult {
   return {
     name: policy.name, status: "no-data", baselineMedian: null, candidateMedian: null,
@@ -171,6 +193,15 @@ function compareMetric(
   comparedRun: "initial" | "rerun"
 ): NativeMetricResult {
   const result = initialResult(policy, comparedRun);
+  if (policy.unsupportedAllowed) {
+    const baseReasons = uniformlyUnsupported(baseline, policy.name), nextReasons = uniformlyUnsupported(candidate, policy.name);
+    if (baseReasons && nextReasons) {
+      result.status = "unsupported";
+      result.unsupportedReasons = [...new Set([...baseReasons, ...nextReasons])];
+      result.reason = `metric ${policy.name} is explicitly unsupported in every baseline and candidate session: ${result.unsupportedReasons.join("; ")}`;
+      return result;
+    }
+  }
   const base = valuesFor(baseline, policy.name);
   const next = valuesFor(candidate, policy.name);
   if (next) {
@@ -281,9 +312,13 @@ export function compareNativeBudget(
       });
     }
   }
-  const status = metrics.some((metric) => metric.status === "regression" || metric.absolute?.status === "fail") ? "fail" :
-    metrics.some((metric) => metric.status === "inconclusive") ? "inconclusive" :
-    metrics.some((metric) => metric.status === "no-data") ? "no-data" : "pass";
-  return { schema: "aura3d.native-budget/1", status, baselineVersion: baseline?.baselineVersion ?? null,
+  // Explicitly unsupported metrics are excluded, never counted as passes; a
+  // comparison with nothing left to compare is no-data.
+  const compared = metrics.filter((metric) => metric.status !== "unsupported");
+  const status = compared.some((metric) => metric.status === "regression" || metric.absolute?.status === "fail") ? "fail" :
+    compared.some((metric) => metric.status === "inconclusive") ? "inconclusive" :
+    !compared.length || compared.some((metric) => metric.status === "no-data") ? "no-data" : "pass";
+  return { schema: "aura3d.native-budget/1", status,
+    excludedUnsupported: metrics.filter((metric) => metric.status === "unsupported").map((metric) => metric.name), baselineVersion: baseline?.baselineVersion ?? null,
     baselineRunId: baseline?.runId ?? null, candidateRunId: candidate?.runId ?? null, metrics };
 }

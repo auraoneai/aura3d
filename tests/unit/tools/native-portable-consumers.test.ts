@@ -276,12 +276,14 @@ describe("portable consumer source execution", () => {
     }
   });
 
-  it("fails source production before scaffolding, installing, or creating a report", async () => {
+  it("without a portable bundle, uses the packed producer and fails on a changed candidate archive before any subprocess or report", async () => {
     const f = portableFixture();
     const oldBundle = process.env.NATIVE_CONSUMER_BUNDLE_INPUT, oldManifest = process.env.AURA3D_SOURCE_MANIFEST;
     try {
       delete process.env.NATIVE_CONSUMER_BUNDLE_INPUT; delete process.env.AURA3D_SOURCE_MANIFEST;
-      await expect(main(["--phase", "source", "--run-id", "safe-run", "--candidate-plan", f.plan.reference.path], f.root)).rejects.toThrow(/PORTABLE_CONSUMER_SOURCE_PRODUCER_UNAVAILABLE/);
+      // The synthetic plan has no create-aura3d archive; the packed producer
+      // must stop on candidate identity before running npm or writing a report.
+      await expect(main(["--phase", "source", "--run-id", "safe-run", "--candidate-plan", f.plan.reference.path], f.root)).rejects.toThrow(/Candidate scaffold package is missing|Candidate archive changed/);
       expect(release.spawn).not.toHaveBeenCalled();
       expect(existsSync(join(f.root, "tests/reports/native-consumers/safe-run"))).toBe(false);
     } finally {
@@ -359,7 +361,7 @@ describe("portable consumer source execution", () => {
     expect(existsSync(f.destination)).toBe(false);
   });
 
-  it("still blocks restore before cache creation or npm when archive admission exists but execution custody does not", async () => {
+  it("restores offline from the admitted cache once admission exists, and rejects an install that does not produce the admitted tree", async () => {
     const f = portableFixture(), parent = mkdtempSync(join(tmpdir(), "aura-custody-destination-"));
     roots.push(parent);
     const destination = join(parent, "consumer"), capability = Object.freeze({}), receipt = { synthetic: true };
@@ -367,9 +369,13 @@ describe("portable consumer source execution", () => {
       lockBytes: readFileSync(join(f.directory, "package-lock.json")),
       archives: [{ resolved: f.project.archives![0]!.resolved, bytes: readFileSync(join(f.directory, "archives/engine.tgz")) }] };
     f.project.admission = receipt as never;
-    await expect(restorePortableConsumerProject(f.root, f.project, destination, f.plan)).rejects.toThrow(/NPM_INSTALL_CUSTODY_UNAVAILABLE/);
+    // execFileSync is a no-op mock: npm "succeeds" but installs nothing, so the
+    // post-install archive-set verification must reject and clean up.
+    await expect(restorePortableConsumerProject(f.root, f.project, destination, f.plan)).rejects.toThrow(/missing|installed|archive/i);
     expect(release.verify).toHaveBeenCalledOnce();
-    expect(release.spawn).not.toHaveBeenCalled();
+    expect(release.spawn).toHaveBeenCalledOnce();
+    expect(release.spawn.mock.calls[0]![0]).toBe("npm");
+    expect(release.spawn.mock.calls[0]![1]).toEqual(expect.arrayContaining(["ci", "--offline", "--ignore-scripts"]));
     expect(existsSync(destination)).toBe(false);
   });
 

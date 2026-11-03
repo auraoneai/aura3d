@@ -55,6 +55,10 @@ run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/inst
 run bundle-size          'pnpm check:bundle-size'
 run api-diff             'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-surface-diff/index.ts --baseline-manifest "$NATIVE_REPORT_DIR/baseline-manifest.json" --candidate-plan "$A3D_RELEASE_PLAN" --release-kind "$NATIVE_RELEASE_KIND" --out "$NATIVE_REPORT_DIR/api-diff.json"'
 run api-contract         'pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
+# Public reference from the packed candidate's declarations (S5-WP24-03): emit
+# the generated reference into the report, then verify the checked-in copy.
+run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "tests/reports/native-5/$NATIVE_RUN_ID/public-api.md" --write'
+run api-docs             'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
 run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
 run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
 
@@ -75,7 +79,14 @@ RESULTS="$RESULTS" node -e '
     commands: rows,
     passed: rows.filter((r) => r.exitCode === 0).map((r) => r.id),
     failed: rows.filter((r) => r.exitCode !== 0).map((r) => r.id),
-    browserAcceptance: "not-run"
+    browserAcceptance: "not-run",
+    // Packed-candidate reference for docs/api/public-api.md (written by api-docs-packed).
+    generatedApiReference: (() => {
+      const file = `${process.env.NATIVE_REPORT_DIR}/public-api.md`;
+      if (!fs.existsSync(file)) return null;
+      const text = fs.readFileSync(file, "utf8");
+      return { path: "docs/api/public-api.md", sha256: require("crypto").createHash("sha256").update(text).digest("hex"), text };
+    })()
   };
   process.stdout.write(Buffer.from(JSON.stringify(out)).toString("base64").replace(/(.{76})/g, "$1\n") + "\n");
 '

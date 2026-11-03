@@ -1,4 +1,5 @@
 import { loadValidatedReleasePlan } from "../release/exact-release-plan.mjs";
+import { releasePackageTargets } from "../release/release-inventory.mjs";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, mkdtempSync, readdirSync, statSync, rmSync } from "node:fs";
@@ -43,29 +44,32 @@ const specialTargets: readonly PackageTarget[] = [
   }
 ];
 
-// Audit every published workspace package, not only the four historically
-// sampled packages. Candidate-plan validation separately enforces exact names.
+// Audit every package in the versioned release inventory selected for this
+// version (or the candidate plan's explicit inventory). Targets come from the
+// inventory, not a manifest scan; a public workspace manifest outside the
+// inventory, or an inventory package without its manifest, fails here.
+const exactPlan = loadValidatedReleasePlan();
+const rootManifest = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { version: string };
 const knownTargets = new Map(specialTargets.map(target => [target.dir, target]));
-const targets: readonly PackageTarget[] = [
-  specialTargets[0]!,
-  ...readdirSync(resolve('packages'), { withFileTypes: true })
-    .filter(entry => entry.isDirectory())
-    .map(entry => `packages/${entry.name}`)
-    .filter(dir => existsSync(resolve(dir, 'package.json')))
-    .flatMap(dir => {
-      const manifest = JSON.parse(readFileSync(resolve(dir, 'package.json'), 'utf8')) as { name: string; private?: boolean; bin?: Record<string, string> };
-      if (manifest.private === true) return [];
-      const existing = knownTargets.get(dir);
-      return [existing ?? { id: manifest.name.replace(/^@aura3d\//, '').replaceAll('/', '-'), dir, expectedName: manifest.name, requiredFiles: ['package.json', 'dist/index.js', 'dist/index.d.ts'], requiredBins: Object.keys(manifest.bin ?? {}) }];
-    })
-];
+const inventoryTargets = releasePackageTargets(exactPlan?.version ?? rootManifest.version, exactPlan?.inventoryId);
+const targets: readonly PackageTarget[] = inventoryTargets.map(({ name, directory }) => {
+  if (!existsSync(resolve(directory, "package.json"))) throw new Error(`Release inventory package ${name} has no manifest at ${directory}`);
+  const manifest = JSON.parse(readFileSync(resolve(directory, "package.json"), "utf8")) as { name: string; private?: boolean; bin?: Record<string, string> };
+  if (manifest.name !== name || manifest.private === true) throw new Error(`Release inventory package ${name} does not match public manifest ${directory}`);
+  const existing = knownTargets.get(directory);
+  return existing ?? { id: name.replace(/^@aura3d\//, "").replaceAll("/", "-"), dir: directory, expectedName: name, requiredFiles: ["package.json", "dist/index.js", "dist/index.d.ts"], requiredBins: Object.keys(manifest.bin ?? {}) };
+}).sort((a, b) => (a.dir === "." ? -1 : b.dir === "." ? 1 : a.dir < b.dir ? -1 : a.dir > b.dir ? 1 : 0));
+const uninventoried = readdirSync(resolve("packages"), { withFileTypes: true })
+  .filter(entry => entry.isDirectory() && existsSync(resolve("packages", entry.name, "package.json")))
+  .map(entry => `packages/${entry.name}`)
+  .filter(dir => (JSON.parse(readFileSync(resolve(dir, "package.json"), "utf8")) as { private?: boolean }).private !== true && !targets.some(target => target.dir === dir));
+if (uninventoried.length) throw new Error(`Public workspace packages are missing from the release inventory: ${uninventoried.join(", ")}`);
 
 const disallowedPathPatterns = [/^archive\//, /V[234]PRD\.md$/, /TestV4PlanPRD\.md$/, /\.(png|jpe?g|csv)$/i];
 // GU47 E-F (eint EF-1): the engine's built-in VFX sprite pages are runtime assets, not screenshots or evidence:
 // the emitted FlipbookAtlas.js resolves them from dist/assets/vfx/ (tools/finalize-dist copies exactly these two).
 const allowedPathPatterns = [/^dist\/assets\/vfx\/aura-vfx-(1k|2k)\.png$/];
 const disallowedTextPatterns = [/AuraSceneIR/, /MockProvider/, /prompt-to-scene/, /@aura3d\/ai-scene/, /\bV[234]\b/, /Path A/, /Path B/];
-const exactPlan = loadValidatedReleasePlan();
 const extracted = new Map<string,string>();
 const temporary: string[] = [];
 const results: Record<string, unknown>[] = [];

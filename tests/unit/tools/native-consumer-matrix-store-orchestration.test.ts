@@ -60,7 +60,7 @@ function fixture(options: { lifecycleManager?: "npm" | "pnpm"; registryManager?:
   write(root, "staged-manifest.json", sourceManifest);
   write(root, manifestPath, sourceManifest);
   write(root, "pnpm-lock.yaml", sourceLock);
-  const packages = ["@aura3d/engine", "@aura3d/react", "@aura3d/assets", "@aura3d/navigation-recast"].map((name, index) => {
+  const packages = ["@aura3d/engine", "@aura3d/react", "@aura3d/assets", "@aura3d/input", "@aura3d/controls", "@aura3d/navigation-recast"].map((name, index) => {
     const bytes = archive({ name, version: "1.0.0" });
     const tarball = `archives/${index}.tgz`;
     write(root, tarball, bytes);

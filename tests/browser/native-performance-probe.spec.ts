@@ -7,6 +7,7 @@ import { expect, test, type Browser, type Response } from "@playwright/test";
 import type { NativeCodeCompleteGate } from "../../tools/native-capability-gate/index.mjs";
 import type { NativePerformanceReport } from "../../tools/performance/native-budget";
 import type { CandidateIdentity } from "../../tools/performance/native-benchmark";
+import { installedCandidateBytes } from "../../tools/performance/native-installed-bytes";
 import { NATIVE_WORKLOADS, type NativeWorkload, type runNativeWorkload } from "../../tools/performance/native-workloads";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
@@ -63,10 +64,29 @@ async function measureTransfers(responses: readonly Response[], failedRequests: 
     brotliBytes: errors.length ? null : brotliBytes, errors };
 }
 
-async function session(browser: Browser, origin: string, spec: NativeWorkload, runId: string, sessionNumber: number): Promise<{ session: Session; adapter: string | null; backend: string }> {
+async function session(browser: Browser, origin: string, spec: NativeWorkload, runId: string, sessionNumber: number, installedBytes: number): Promise<{ session: Session; adapter: string | null; backend: string }> {
   const context = await browser.newContext({ viewport: { width: spec.viewport.width, height: spec.viewport.height }, deviceScaleFactor: spec.viewport.dpr });
   try {
     const page = await context.newPage();
+    // Main-thread CPU time: Chromium's CDP Performance domain in thread-tick
+    // time, sampled by the workload exactly around its timed frames.
+    let threadTimeUnavailable: string | null = null;
+    const threadSamples: Partial<Record<"timed-start" | "timed-end", number>> = {};
+    const cdp = browser.browserType().name() === "chromium" ? await context.newCDPSession(page).catch(() => null) : null;
+    if (!cdp) threadTimeUnavailable = `${browser.browserType().name()} exposes no renderer thread CPU time to the automation driver`;
+    else {
+      try { await cdp.send("Performance.enable", { timeDomain: "threadTicks" }); }
+      catch (error) { threadTimeUnavailable = `CDP Performance thread-tick metrics unavailable: ${String(error)}`; }
+    }
+    await page.exposeFunction("__auraNativePerfPhase", async (name: "timed-start" | "timed-end") => {
+      if (!cdp || threadTimeUnavailable) return;
+      try {
+        const { metrics } = await cdp.send("Performance.getMetrics");
+        const task = metrics.find((metric) => metric.name === "TaskDuration")?.value;
+        if (typeof task !== "number" || !Number.isFinite(task)) throw new Error("TaskDuration missing");
+        threadSamples[name] = task;
+      } catch (error) { threadTimeUnavailable = `CDP Performance.getMetrics failed: ${String(error)}`; }
+    });
     const responses: Response[] = [];
     const failed: string[] = [];
     const errors: string[] = [];
@@ -98,16 +118,20 @@ async function session(browser: Browser, origin: string, spec: NativeWorkload, r
       liveResources: count(data.liveBeforeDispose.live), resourcesAfterDispose: count(data.liveAfterDispose.live),
       glAllocations: count(data.liveBeforeDispose.allocations), drawCalls: data.diagnostics.drawCalls,
       gpuResidentBytes: null, jsAllocations: null, cpuThreadTimeMs: null,
-      bundleRawBytes: null, bundleGzipBytes: null, bundleBrotliBytes: null, installedBytes: null };
+      bundleRawBytes: null, bundleGzipBytes: null, bundleBrotliBytes: null, installedBytes };
     const unavailable: Session["unavailable"] = {
-      gpuResidentBytes: "WebGL does not expose actual device-resident memory bytes",
-      jsAllocations: "The browser does not expose a complete JavaScript allocation count",
-      cpuThreadTimeMs: "The browser does not expose per-frame process CPU time; cpuP* are synchronous wall durations",
-      bundleRawBytes: "Production bundle size is measured separately from this source-server workload",
-      bundleGzipBytes: "Production bundle size is measured separately from this source-server workload",
-      bundleBrotliBytes: "Production bundle size is measured separately from this source-server workload",
-      installedBytes: "Installed package bytes are measured separately from this source-server workload"
+      gpuResidentBytes: "unsupported: WebGL does not expose actual device-resident memory bytes",
+      jsAllocations: "unsupported: no shipping browser exposes a complete JavaScript allocation count; sampled heap profiles are estimates, not counts",
+      bundleRawBytes: "unsupported in this probe: production bundle bytes are measured by check:bundle-size, not this source-server workload",
+      bundleGzipBytes: "unsupported in this probe: production bundle bytes are measured by check:bundle-size, not this source-server workload",
+      bundleBrotliBytes: "unsupported in this probe: production bundle bytes are measured by check:bundle-size, not this source-server workload"
     };
+    const threadStart = threadSamples["timed-start"], threadEnd = threadSamples["timed-end"];
+    if (!threadTimeUnavailable && typeof threadStart === "number" && typeof threadEnd === "number" && threadEnd >= threadStart && data.timedFrames > 0) {
+      metrics.cpuThreadTimeMs = ((threadEnd - threadStart) * 1000) / data.timedFrames;
+    } else {
+      unavailable.cpuThreadTimeMs = `unsupported: ${threadTimeUnavailable ?? "timed-window thread samples were not recorded"}`;
+    }
     if (data.heapBytes === null) unavailable.heapBytes = "performance.memory.usedJSHeapSize is unavailable in this browser";
     if (transfers.errors.length) for (const name of ["rawBytes", "gzipBytes", "brotliBytes"]) unavailable[name] = `Incomplete response bodies: ${transfers.errors.join("; ")}`;
     addSummary(metrics, unavailable, "frame", data.frame, "No complete frame pacing samples");
@@ -119,6 +143,8 @@ async function session(browser: Browser, origin: string, spec: NativeWorkload, r
         liveAfterDispose: data.liveAfterDispose, diagnostics: data.diagnostics, transferErrors: transfers.errors,
         methods: { frame: "requestAnimationFrame intervals", cpu: "performance.now around synchronous app.step; wall duration, not thread CPU time",
           gpu: "asynchronous EXT_disjoint_timer_query_webgl2, nanoseconds converted to milliseconds",
+          cpuThread: "CDP Performance.getMetrics TaskDuration in threadTicks domain, timed-window delta divided by timed frames (Chromium only)",
+          installed: "summed regular-file sizes of every gate-bound candidate archive after digest verification",
           resources: "observed WebGL create/delete handles, not GPU residency", bytes: "sum of decoded response bodies and independently gzip/Brotli-compressed bodies after timing" } }
     } };
   } finally { await context.close(); }
@@ -172,6 +198,7 @@ test.describe("Native performance workloads (acceptance only)", () => {
     const launchOptionsSha256 = digest(JSON.stringify(launchOptions));
     const candidate: CandidateIdentity = { sourceSha256: gate.sourceInputDigest, sourceRunId: gate.runId,
       lockfileSha256: gate.lockfileSha256, candidatePlanSha256: gate.candidatePlan.sha256, archives: gate.archives };
+    const installedBytes = installedCandidateBytes(process.cwd(), gate.archives);
     const workloads: Array<{ id: string; workloadSha256: string; report: string; sha256: string }> = [];
     const failures: string[] = [];
     for (const spec of NATIVE_WORKLOADS) {
@@ -181,7 +208,7 @@ test.describe("Native performance workloads (acceptance only)", () => {
         for (let index = 1; index <= 3; index++) {
           const browser = await browserType.launch(launchOptions);
           try {
-            const observation = await session(browser, server!.origin, spec, runId, index);
+            const observation = await session(browser, server!.origin, spec, runId, index, installedBytes);
             observations.push({ ...observation, browserName: browser.browserType().name(), browserVersion: browser.version() });
           } finally {
             await browser.close();

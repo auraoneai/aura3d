@@ -79,7 +79,7 @@ describe("matrix dependency admission", () => {
     write(root, "staged-manifest.json", sourceManifest);
     write(root, sourceManifestPath, sourceManifest);
     write(root, "pnpm-lock.yaml", sourceLock);
-    const packages = ["@aura3d/engine", "@aura3d/react", "@aura3d/assets", "@aura3d/navigation-recast"].map((name, index) => {
+    const packages = ["@aura3d/engine", "@aura3d/react", "@aura3d/assets", "@aura3d/input", "@aura3d/controls", "@aura3d/navigation-recast"].map((name, index) => {
       const bytes = Buffer.from("candidate " + index), tarball = `archives/${index}.tgz`;
       write(root, tarball, bytes);
       return { name, version: "1.0.0", tarball, sha256: sha(bytes), integrity: "sha512-" + createHash("sha512").update(bytes).digest("base64") };
@@ -139,9 +139,9 @@ describe("matrix dependency admission", () => {
     expect(subprocesses.spawnSync).not.toHaveBeenCalled();
   });
 
-  it("refuses source production before resolving a candidate or starting a subprocess", async () => {
+  it("without a portable bundle, the packed producer refuses a missing candidate before any subprocess or report", async () => {
     const root = temporaryRoot();
-    await expect(runSource(root, "source-test", "missing-candidate.json")).rejects.toThrow(/MATRIX_ADMISSION_UNAVAILABLE/);
+    await expect(runSource(root, "source-test", "missing-candidate.json")).rejects.toThrow(/ENOENT|missing-candidate/);
     expect(subprocesses.spawnSync).not.toHaveBeenCalled();
     expect(existsSync(join(root, "tests/reports"))).toBe(false);
   });
@@ -153,7 +153,7 @@ describe("matrix dependency admission", () => {
     write(root, "staged-manifest.json", manifest);
     write(root, manifestPath, manifest);
     write(root, "pnpm-lock.yaml", sourceLock);
-    const packages = ["@aura3d/engine", "@aura3d/react", "@aura3d/assets", "@aura3d/navigation-recast"].map((name, index) => {
+    const packages = ["@aura3d/engine", "@aura3d/react", "@aura3d/assets", "@aura3d/input", "@aura3d/controls", "@aura3d/navigation-recast"].map((name, index) => {
       const bytes = Buffer.from("synthetic archive " + index), tarball = `archives/${index}.tgz`;
       write(root, tarball, bytes);
       return { name, version: "1.0.0", tarball, sha256: sha(bytes), integrity: "sha512-" + createHash("sha512").update(bytes).digest("base64") };

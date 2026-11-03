@@ -11,7 +11,7 @@ export default class NoSkipInCiReporter implements Reporter {
     if (result.status === "skipped") this.skipped.push(test.titlePath().filter(Boolean).join(" > "));
   }
 
-  onEnd(result: FullResult): { status: FullResult["status"] } | undefined {
+  async onEnd(result: FullResult): Promise<{ status: FullResult["status"] } | undefined> {
     if (this.skipped.length === 0) return undefined;
     const list = this.skipped.map((t) => `  - ${t}`).join("\n");
     if (!process.env.CI) {

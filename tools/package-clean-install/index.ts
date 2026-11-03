@@ -1,13 +1,14 @@
 /**
  * Candidate-bound clean consumers. Source and browser runs are separate:
- * source production requires a verified portable input bundle; browser needs
+ * source production installs the packed candidate (or a verified portable
+ * input bundle) in fresh temporary consumers; browser needs
  * both the immutable source report and the global code-complete gate.
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { devNull, tmpdir } from "node:os";
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { withNpmTransport } from "../release/npm-transport.mjs";
 import { inspectInstalledRelease, loadValidatedReleasePlan, type ExactReleasePlan } from "../release/exact-release-plan.mjs";
@@ -41,7 +42,8 @@ export interface NativeConsumerProject {
   lockfileSha256: string;
   projectSha256: string;
   /** Portable projects retain no installed dependencies; archives are root-relative. */
-  retention?: "portable-v1";
+  /** packed-v1: retained without node_modules; restored with a lock-pinned npm ci of the staged candidate archives. */
+  retention?: "portable-v1" | "packed-v1";
   sourceManifest?: { path: string; sha256: string };
   candidateReviews?: CandidateReviewReference[];
   /** Informational only; each restore independently obtains a new capability. */
@@ -424,15 +426,6 @@ function preparePortableProject(root: string, project: NativeConsumerProject, pl
 }
 
 /**
- * Archive admission and offline flags do not authenticate npm's executable,
- * its platform/configuration, or the host's process/network isolation. Do not
- * start a real install until a separately verified custody provider exists.
- */
-function requireNpmInstallCustody(): void {
-  throw new Error("NPM_INSTALL_CUSTODY_UNAVAILABLE: authenticated npm process, platform and OS/network isolation are required before installation");
-}
-
-/**
  * Reconstruct only inside a fresh temporary destination, using archive snapshots
  * that have passed the complete pre-install independence scan.
  */
@@ -448,7 +441,8 @@ export async function restorePortableConsumerProject(root: string, project: Nati
       (process.platform !== "win32" && ((parentStat.mode & 0o077) !== 0 || (process.getuid && parentStat.uid !== process.getuid())))) {
     throw new Error("Portable restore destination must be in a temporary workspace outside the repository");
   }
-  requireNpmInstallCustody();
+  // 5.0 decision record item 1: no separate npm custody provider. The restore
+  // runs offline from the admitted archive cache and is verified afterwards.
   const cache = mkdtempSync(resolve(tmpdir(), "aura3d-consumer-cache-"));
   let restored = false;
   try {
@@ -492,6 +486,22 @@ export async function restorePortableConsumerProject(root: string, project: Nati
   }
 }
 
+/** Retained source-phase logs are part of the report identity. */
+function verifyConsumerLogs(root: string, report: NativeConsumerReport): void {
+  const prefix = "tests/reports/native-consumers/" + report.runId + "/logs/";
+  const logPaths = new Set<string>();
+  for (const check of report.checks) {
+    const name = check.logPath.startsWith(prefix) ? check.logPath.slice(prefix.length) : "";
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.log$/.test(name) || logPaths.has(check.logPath) ||
+        !Number.isSafeInteger(check.logSize) || (check.logSize ?? -1) < 0 || !hex.test(check.logSha256 ?? "")) {
+      throw new Error("Portable consumer log inventory is invalid");
+    }
+    logPaths.add(check.logPath);
+    const bytes = readPortableFile(root, check.logPath, 64 * 1024 * 1024);
+    if (bytes.byteLength !== check.logSize || hash(bytes) !== check.logSha256) throw new Error("Portable consumer log changed");
+  }
+}
+
 /** Verify both current candidate archives and retained projects before reuse. */
 export function validateSourceConsumerReport(root: string, reportPath: string, expectedPlan: ExactReleasePlan): NativeConsumerReport {
   if (!expectedPlan?.reference?.sha256) throw new Error("A validated current candidate plan is required");
@@ -513,7 +523,10 @@ export function validateSourceConsumerReport(root: string, reportPath: string, e
   if (!Array.isArray(report.checks) || !report.checks.length || new Set(report.checks.map(c => c.id)).size !== report.checks.length || report.checks.some(c => c.status !== "passed" || c.exitCode !== 0 || !Array.isArray(c.command) || c.command.length === 0 || !existsSync(inside(root, c.logPath)))) throw new Error("Source consumer checks failed or were skipped");
   if (!report.checks.some(c => c.id === "launcher:install" && c.project === "launcher")) throw new Error("Missing launcher installation check");
   const portableProjects = report.projects.filter(project => project.retention === "portable-v1");
-  if (portableProjects.length && portableProjects.length !== report.projects.length) throw new Error("Consumer report mixes retention formats");
+  const packedProjects = report.projects.filter(project => project.retention === "packed-v1");
+  if ((portableProjects.length && portableProjects.length !== report.projects.length) ||
+      (packedProjects.length && packedProjects.length !== report.projects.length)) throw new Error("Consumer report mixes retention formats");
+  if (portableProjects.length || packedProjects.length) verifyConsumerLogs(root, report);
   if (portableProjects.length) {
     checkedInput(root, relative(root, resolve(root, reportPath)).split(sep).join("/"), "file");
     if (!report.source.manifest || !hex.test(report.source.manifest.sha256 ?? "") ||
@@ -526,18 +539,6 @@ export function validateSourceConsumerReport(root: string, reportPath: string, e
     if (portableProjects.some(project => JSON.stringify(normalizeReviewReferences(project.candidateReviews)) !== JSON.stringify(candidateReviews))) {
       throw new Error("Portable consumer projects do not share the staged candidate reviews");
     }
-    const prefix = "tests/reports/native-consumers/" + report.runId + "/logs/";
-    const logPaths = new Set<string>();
-    for (const check of report.checks) {
-      const name = check.logPath.startsWith(prefix) ? check.logPath.slice(prefix.length) : "";
-      if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.log$/.test(name) || logPaths.has(check.logPath) ||
-          !Number.isSafeInteger(check.logSize) || (check.logSize ?? -1) < 0 || !hex.test(check.logSha256 ?? "")) {
-        throw new Error("Portable consumer log inventory is invalid");
-      }
-      logPaths.add(check.logPath);
-      const bytes = readPortableFile(root, check.logPath, 64 * 1024 * 1024);
-      if (bytes.byteLength !== check.logSize || hash(bytes) !== check.logSha256) throw new Error("Portable consumer log changed");
-    }
   }
   for (const project of report.projects) {
     const expectedPath = project.template === "react-import" ? `tests/reports/native-consumers/${report.runId}/projects/react-import` : `tests/reports/native-consumers/${report.runId}/projects/templates/${project.template}/demo`;
@@ -546,6 +547,8 @@ export function validateSourceConsumerReport(root: string, reportPath: string, e
       // Portable reports never rely on retained node_modules. Their complete
       // graph and local archive snapshots are checked before later use.
       preparePortableProject(root, project, expectedPlan);
+    } else if (project.retention === "packed-v1") {
+      assertRetainedPackedProject(root, project, expectedPlan);
     } else {
       if (project.retention !== undefined) throw new Error("Unsupported consumer retention format");
       // Historical synthetic fixtures still exercise their original contract.
@@ -793,13 +796,15 @@ function retainPortableTree(source: string, target: string): void {
 
 async function runSource(root: string, runId: string, plan: ExactReleasePlan): Promise<void> {
   const bundlePath = process.env.NATIVE_CONSUMER_BUNDLE_INPUT, stagedManifestPath = process.env.AURA3D_SOURCE_MANIFEST;
-  if (!bundlePath || !stagedManifestPath) throw new Error("PORTABLE_CONSUMER_SOURCE_PRODUCER_UNAVAILABLE: a trusted candidate-bound dependency metadata and archive bundle is required before scaffolding or installation");
+  // Without a pre-supplied portable bundle, run the ordinary packed-consumer
+  // install of the plan's archives (5.0 decision record item 1).
+  if (!bundlePath) { await runPackedSource(root, runId, plan); return; }
+  if (!stagedManifestPath) throw new Error("PORTABLE_CONSUMER_SOURCE_PRODUCER_UNAVAILABLE: a portable input bundle requires its gate-bound AURA3D_SOURCE_MANIFEST");
   const sourceManifestPath = `tests/reports/native-capabilities/${runId}/source-manifest.json`;
   if (!readPortableFile(root, sourceManifestPath, 16 * 1024 * 1024).equals(readPortableFile(root, stagedManifestPath, 16 * 1024 * 1024))) {
     throw new Error("Gate-bound source manifest differs from the staged input");
   }
   const prepared = prepareSourceBundle(root, runId, plan, bundlePath, sourceManifestPath);
-  requireNpmInstallCustody();
   const reportDir = resolve(root, "tests/reports/native-consumers", runId);
   if (existsSync(reportDir)) throw new Error(`Run ID already exists: ${runId}`);
   const scratch = mkdtempSync(resolve(tmpdir(), "aura3d-native-consumers-")), env = createPortableSourceEnvironment(root, sourceManifestPath);
@@ -893,6 +898,335 @@ async function runSource(root: string, runId: string, plan: ExactReleasePlan): P
   }
 }
 
+// ---------------------------------------------------------------------------
+// Packed-consumer producer (5.0 decision record item 1). The custody runner is
+// dropped; the source pass installs the packed candidate tarballs into fresh
+// temporary consumers inside the ACR job. Candidate identity stays bound: each
+// archive's SHA-256/SRI is checked against the validated plan before it is
+// copied, the generated lock must pin every candidate entry to the plan SRI,
+// installed candidate contents are recorded, and only candidate dependency
+// specifiers are substituted in the untouched scaffold.
+// ---------------------------------------------------------------------------
+
+export const PACKED_CANDIDATE_DIR = ".aura3d-candidate";
+type PlanPackage = ExactReleasePlan["packages"][number] & { internalDependencies?: string[] };
+export interface PackedConsumerRunner {
+  (command: string, args: string[], cwd: string, env: NodeJS.ProcessEnv): { status: number; output: string };
+}
+const defaultPackedRunner: PackedConsumerRunner = (command, args, cwd, env) => {
+  try {
+    const output = execFileSync(command, args, { cwd, env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024 });
+    return { status: 0, output: String(output ?? "") };
+  } catch (error) {
+    const failure = error as { status?: number | null; stdout?: string | Buffer; stderr?: string | Buffer; message?: string };
+    return { status: typeof failure.status === "number" && failure.status !== 0 ? failure.status : 1,
+      output: `${failure.stdout ?? ""}\n${failure.stderr ?? ""}\n${failure.message ?? ""}` };
+  }
+};
+
+/** Install env: no host npm config/credentials, private cache and home, no browser downloads. */
+export function packedConsumerEnvironment(cache: string, home: string): NodeJS.ProcessEnv {
+  const allowed = new Set(["PATH", "TMPDIR", "LANG", "LC_ALL", "TZ", "CI", "SYSTEMROOT", "WINDIR",
+    "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy"]);
+  return { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => allowed.has(key))),
+    HOME: home, USERPROFILE: home, npm_config_cache: cache, npm_config_userconfig: devNull, npm_config_globalconfig: devNull,
+    npm_config_audit: "false", npm_config_fund: "false", npm_config_update_notifier: "false",
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1", PUPPETEER_SKIP_DOWNLOAD: "1" };
+}
+
+/** Candidate archive bytes, rechecked against the plan's SHA-256 and SRI. */
+function candidateArchive(root: string, pkg: PlanPackage): Buffer {
+  const bytes = readFileSync(inside(root, pkg.tarball));
+  if (hash(bytes) !== pkg.sha256 || `sha512-${createHash("sha512").update(bytes).digest("base64")}` !== pkg.integrity) {
+    throw new Error(`Candidate archive changed: ${pkg.name}`);
+  }
+  return bytes;
+}
+
+/** Direct candidate names plus their internal dependency closure, in plan order. */
+export function candidateClosure(plan: ExactReleasePlan, direct: Iterable<string>): PlanPackage[] {
+  const packages = plan.packages as PlanPackage[];
+  const pending = [...direct], names = new Set<string>();
+  while (pending.length) {
+    const name = pending.shift()!;
+    if (names.has(name)) continue;
+    const entry = packages.find(item => item.name === name);
+    if (!entry) throw new Error(`Candidate package is missing: ${name}`);
+    names.add(name);
+    pending.push(...(entry.internalDependencies ?? []));
+  }
+  return packages.filter(item => names.has(item.name));
+}
+
+// npm's canonical relative form, so neither the manifest nor the lock is rewritten.
+const packedSpec = (pkg: PlanPackage): string => `file:${PACKED_CANDIDATE_DIR}/${basename(pkg.tarball)}`;
+
+/**
+ * Replace only candidate dependency specifiers with the staged archives and pin
+ * the remaining internal closure with `overrides`. Every change is recorded.
+ */
+export function substitutePackedCandidates(manifest: Record<string, unknown>, plan: ExactReleasePlan): { closure: PlanPackage[]; substitutions: NativeConsumerProject["substitutions"] } {
+  const substitutions: NativeConsumerProject["substitutions"] = [];
+  const direct = new Set<string>();
+  for (const section of ["dependencies", "devDependencies", "optionalDependencies"]) {
+    const deps = manifest[section] as Record<string, string> | undefined;
+    for (const [name, value] of Object.entries(deps ?? {})) {
+      const pkg = (plan.packages as PlanPackage[]).find(item => item.name === name);
+      if (!pkg) {
+        if (name.startsWith("@aura3d/") || name === "create-aura3d") throw new Error(`Scaffold depends on a package absent from the candidate: ${name}`);
+        continue;
+      }
+      const after = packedSpec(pkg);
+      substitutions.push({ section, name, before: value, after });
+      deps![name] = after;
+      direct.add(name);
+    }
+  }
+  if (!direct.size) throw new Error("Scaffold has no candidate dependency to substitute");
+  const closure = candidateClosure(plan, direct);
+  const transitive = closure.filter(pkg => !direct.has(pkg.name));
+  if (transitive.length) {
+    if (manifest.overrides !== undefined) throw new Error("Scaffold already declares overrides; candidate pinning would change them");
+    manifest.overrides = Object.fromEntries(transitive.map(pkg => [pkg.name, packedSpec(pkg)]));
+    for (const pkg of transitive) substitutions.push({ section: "overrides", name: pkg.name, before: "", after: packedSpec(pkg) });
+  }
+  return { closure, substitutions };
+}
+
+function stagePackedArchives(root: string, directory: string, closure: PlanPackage[]): void {
+  mkdirSync(resolve(directory, PACKED_CANDIDATE_DIR), { recursive: true });
+  if (new Set(closure.map(pkg => basename(pkg.tarball))).size !== closure.length) throw new Error("Duplicate candidate archive filename");
+  for (const pkg of closure) writeFileSync(resolve(directory, PACKED_CANDIDATE_DIR, basename(pkg.tarball)), candidateArchive(root, pkg), { flag: "wx" });
+}
+
+/**
+ * Bind an installed packed consumer to the plan: every staged archive is the
+ * exact candidate, every candidate lock entry carries the plan SRI and points
+ * at the staged archive, and no Aura3D package came from anywhere else.
+ */
+export function assertPackedInstall(root: string, directory: string, plan: ExactReleasePlan, closure: PlanPackage[]): NativeConsumerProject["installedPackages"] {
+  for (const pkg of closure) {
+    if (!readFileSync(resolve(directory, PACKED_CANDIDATE_DIR, basename(pkg.tarball))).equals(candidateArchive(root, pkg))) {
+      throw new Error(`Staged candidate archive changed: ${pkg.name}`);
+    }
+  }
+  const lock = JSON.parse(readFileSync(resolve(directory, "package-lock.json"), "utf8")) as { packages?: Record<string, { resolved?: string; integrity?: string; link?: boolean; version?: string }> };
+  if (!lock.packages || typeof lock.packages !== "object") throw new Error("Missing npm installed package inventory");
+  for (const [path, entry] of Object.entries(lock.packages)) {
+    const match = path.match(/(?:^|\/)node_modules\/((?:@aura3d\/[^/]+)|create-aura3d)$/);
+    if (!match) continue;
+    const pkg = closure.find(item => item.name === match[1]);
+    if (!pkg) throw new Error(`Installed Aura package is outside the candidate closure: ${path}`);
+    if (entry.link === true || entry.integrity !== pkg.integrity || entry.resolved !== packedSpec(pkg)) {
+      throw new Error(`Installed candidate lock identity mismatch: ${path}`);
+    }
+  }
+  inspectInstalledRelease(root, directory, plan);
+  const installed = installedPackages(directory, plan);
+  for (const pkg of closure) if (!installed.some(item => item.name === pkg.name)) throw new Error(`Candidate package was not installed: ${pkg.name}`);
+  return installed;
+}
+
+/** The candidate scaffold's large-asset manifest, read from the archive itself. */
+function candidateTemplateAssets(root: string, plan: ExactReleasePlan): Record<string, { path: string; bytes: number; sha256: string }[]> {
+  const create = (plan.packages as PlanPackage[]).find(item => item.name === "create-aura3d");
+  if (!create) throw new Error("Candidate scaffold package is missing");
+  const file = inspectNpmArchive(candidateArchive(root, create)).files.find(item => item.path === "template-assets.json");
+  if (!file) return {};
+  const manifest = JSON.parse(Buffer.from(file.bytes).toString("utf8")) as { schema?: string; templates?: Record<string, { path: string; bytes: number; sha256: string }[]> };
+  if (manifest.schema !== "create-aura3d/template-assets@1" || !manifest.templates || typeof manifest.templates !== "object") throw new Error("Candidate template asset manifest is invalid");
+  return manifest.templates;
+}
+
+/**
+ * Supply large template assets the npm archive omits (normally fetched from the
+ * tagged release) from the staged source tree, admitted only by the exact size
+ * and digest listed in the candidate archive.
+ */
+function supplyTemplateAssets(root: string, template: string, directory: string, assets: { path: string; bytes: number; sha256: string }[]): void {
+  for (const asset of assets) {
+    assertSafeRelative(asset.path);
+    const target = resolve(directory, asset.path);
+    if (existsSync(target)) {
+      if (fileHash(target) !== asset.sha256) throw new Error(`Scaffold asset differs from the candidate manifest: ${template}/${asset.path}`);
+      continue;
+    }
+    const source = inside(root, `packages/create-aura3d/templates/${template}/${asset.path}`);
+    const bytes = readFileSync(source);
+    if (bytes.byteLength !== asset.bytes || hash(bytes) !== asset.sha256) throw new Error(`Template asset does not match the candidate manifest: ${template}/${asset.path}`);
+    writeSafeSnapshot(directory, asset.path, bytes);
+  }
+}
+
+export const REACT_IMPORT_MANIFEST = (engine: string, react: string): Record<string, unknown> => ({
+  name: "aura3d-react-source-consumer", private: true, type: "module", scripts: { build: "tsc --noEmit" },
+  dependencies: { "@aura3d/engine": engine, "@aura3d/react": react, react: "^19.0.0", "react-dom": "^19.0.0" },
+  devDependencies: { typescript: "^5.8.3", "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0" }
+});
+
+/**
+ * Ordinary isolated packed-consumer source phase: scaffold every template from
+ * the packed create-aura3d archive, install the packed candidate with npm in a
+ * fresh temporary project, build it, and retain the project (without
+ * node_modules) together with its lock and staged candidate archives.
+ */
+export async function runPackedSource(root: string, runId: string, plan: ExactReleasePlan, runner: PackedConsumerRunner = defaultPackedRunner): Promise<NativeConsumerReport> {
+  const reportDir = resolve(root, "tests/reports/native-consumers", runId);
+  if (existsSync(reportDir)) throw new Error(`Run ID already exists: ${runId}`);
+  const assets = candidateTemplateAssets(root, plan);
+  const scratch = realpathSync(mkdtempSync(resolve(tmpdir(), "aura3d-packed-consumers-")));
+  const cache = resolve(scratch, ".npm-cache"), home = resolve(scratch, ".home");
+  mkdirSync(cache); mkdirSync(home);
+  const env = packedConsumerEnvironment(cache, home);
+  const checks: NativeConsumerCheck[] = [], projects: NativeConsumerProject[] = [];
+  let complete = false;
+  mkdirSync(resolve(reportDir, "logs"), { recursive: true });
+  const run = (project: string, id: string, cmd: string, args: string[], cwd: string): void => {
+    const result = runner(cmd, args, cwd, env);
+    const logPath = relative(root, resolve(reportDir, "logs", `${project}-${id}.log`)).split(sep).join("/");
+    const safeOutput = redactText(result.output);
+    writeFileSync(resolve(root, logPath), safeOutput);
+    const check: NativeConsumerCheck = { id: `${project}:${id}`, project, command: [cmd, ...args], status: result.status === 0 ? "passed" : "failed",
+      exitCode: result.status, logPath, logSize: Buffer.byteLength(safeOutput), logSha256: hash(safeOutput) };
+    checks.push(check);
+    if (check.status !== "passed") throw new Error(`Packed consumer ${project}:${id} failed (log ${logPath})`);
+  };
+  const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull];
+  try {
+    const launcherDir = resolve(scratch, "launcher");
+    mkdirSync(launcherDir);
+    const launcherManifest: Record<string, unknown> = { name: "aura3d-scaffold-launcher", private: true, type: "module", dependencies: { "create-aura3d": plan.version } };
+    const launcherSubstitution = substitutePackedCandidates(launcherManifest, plan);
+    stagePackedArchives(root, launcherDir, launcherSubstitution.closure);
+    writeFileSync(resolve(launcherDir, "package.json"), `${JSON.stringify(launcherManifest, null, 2)}\n`);
+    run("launcher", "install", "npm", npmInstall, launcherDir);
+    assertPackedInstall(root, launcherDir, plan, launcherSubstitution.closure);
+    const npmVersion = runner("npm", ["--version"], scratch, env).output.trim();
+    if (!npmVersion) throw new Error("npm version is unavailable");
+    const scaffold = 'import {createA3DProject} from "create-aura3d"; const result=createA3DProject({targetDir:process.argv[1],template:process.argv[2],agent:"all",skills:"core"}); console.log(JSON.stringify(result));';
+    for (const id of [...CREATE_AURA3D_TEMPLATES, "react-import"]) {
+      const isTemplate = id !== "react-import";
+      const directory = isTemplate ? resolve(scratch, "templates", id, "demo") : resolve(scratch, "react-import");
+      mkdirSync(dirname(directory), { recursive: true });
+      let manifest: Record<string, unknown>;
+      if (isTemplate) {
+        run(id, "scaffold", process.execPath, ["--input-type=module", "-e", scaffold, directory, id], launcherDir);
+        supplyTemplateAssets(root, id, directory, assets[id] ?? []);
+        manifest = JSON.parse(readFileSync(resolve(directory, "package.json"), "utf8")) as Record<string, unknown>;
+      } else {
+        mkdirSync(resolve(directory, "src"), { recursive: true });
+        writeFileSync(resolve(directory, "tsconfig.json"), JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", jsx: "react-jsx", strict: true, skipLibCheck: true }, include: ["src"] }, null, 2));
+        writeFileSync(resolve(directory, "src/main.tsx"), 'import { AuraCanvas } from "@aura3d/react";\nexport { AuraCanvas };\n');
+        manifest = REACT_IMPORT_MANIFEST(plan.version, plan.version);
+      }
+      const { closure, substitutions } = substitutePackedCandidates(manifest, plan);
+      stagePackedArchives(root, directory, closure);
+      writeFileSync(resolve(directory, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+      const pristine = hashConsumerProject(directory, { includeDist: false });
+      run(id, "install", "npm", npmInstall, directory);
+      const installed = assertPackedInstall(root, directory, plan, closure);
+      if (hashConsumerProject(directory, { includeDist: false }) !== pristine) throw new Error("Packed consumer install changed scaffold source: " + id);
+      run(id, "build", "npm", ["run", "build"], directory);
+      if (JSON.stringify(assertPackedInstall(root, directory, plan, closure)) !== JSON.stringify(installed)) throw new Error("Packed installed candidate changed during build: " + id);
+      if (hashConsumerProject(directory, { includeDist: false }) !== pristine) throw new Error("Packed consumer build changed scaffold source: " + id);
+      const retained = isTemplate ? resolve(reportDir, "projects/templates", id, "demo") : resolve(reportDir, "projects/react-import");
+      mkdirSync(dirname(retained), { recursive: true });
+      retainPortableTree(directory, retained);
+      projects.push({ template: id, kind: isTemplate ? "template" : "fixture", path: relative(root, retained).split(sep).join("/"),
+        entry: isTemplate ? (id === "animation-studio" ? "src/render-live-route.ts" : "src/main.ts") : "src/main.tsx", retention: "packed-v1",
+        files: inventoryPortableConsumerFiles(retained), manifestSha256: fileHash(resolve(retained, "package.json")),
+        lockfileSha256: fileHash(resolve(retained, "package-lock.json")), projectSha256: hashConsumerProject(retained), installedPackages: installed, substitutions });
+    }
+    const report: NativeConsumerReport = { schema: "aura3d.native-consumers/1", phase: "source", runId, pass: true,
+      source: { revision: plan.source.commit, stagedSourceSha256: plan.source.fingerprint, lockfileSha256: plan.source.lockfileSha256 },
+      candidate: { path: plan.reference.path, sha256: plan.reference.sha256, version: plan.version, packages: plan.packages },
+      toolVersions: { node: process.version, npm: npmVersion }, projects, checks, browser: CREATE_AURA3D_TEMPLATES.map(id => ({ id, status: "not-run" })) };
+    writeFileSync(resolve(reportDir, "source.json"), `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
+    validateSourceConsumerReport(root, relative(root, resolve(reportDir, "source.json")), plan);
+    complete = true;
+    return report;
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+    if (!complete) rmSync(reportDir, { recursive: true, force: true });
+  }
+}
+
+/** Verify a retained packed project against the plan without installing it. */
+function assertRetainedPackedProject(root: string, project: NativeConsumerProject, plan: ExactReleasePlan): string {
+  const dir = inside(root, project.path);
+  if (!existsSync(inside(dir, project.entry))) throw new Error(`Missing project entry: ${project.template}`);
+  if (fileHash(resolve(dir, "package.json")) !== project.manifestSha256 || fileHash(resolve(dir, "package-lock.json")) !== project.lockfileSha256 ||
+      hashConsumerProject(dir) !== project.projectSha256) throw new Error(`Consumer project changed: ${project.template}`);
+  const files = inventoryPortableConsumerFiles(dir);
+  if (!Array.isArray(project.files) || canonicalObject(project.files) !== canonicalObject(files)) throw new Error(`Packed consumer file inventory changed: ${project.template}`);
+  const manifest = JSON.parse(readFileSync(resolve(dir, "package.json"), "utf8")) as Record<string, Record<string, string> | undefined>;
+  if (!Array.isArray(project.substitutions) || !project.substitutions.length) throw new Error(`Packed consumer substitutions are missing: ${project.template}`);
+  const names = new Set<string>();
+  for (const item of project.substitutions) {
+    const pkg = (plan.packages as PlanPackage[]).find(entry => entry.name === item.name);
+    if (!pkg || item.after !== packedSpec(pkg) || manifest[item.section]?.[item.name] !== item.after) throw new Error(`Packed consumer substitution is not a candidate archive: ${project.template}/${item.name}`);
+    names.add(item.name);
+  }
+  for (const section of ["dependencies", "devDependencies", "optionalDependencies", "overrides"]) {
+    for (const [name, value] of Object.entries(manifest[section] ?? {})) {
+      if (typeof value === "string" && value.startsWith("file:") && !project.substitutions.some(item => item.section === section && item.name === name)) {
+        throw new Error(`Packed consumer has an unrecorded local dependency: ${project.template}/${name}`);
+      }
+    }
+  }
+  const closure = candidateClosure(plan, names);
+  const staged = readdirSync(resolve(dir, PACKED_CANDIDATE_DIR)).sort();
+  if (canonicalObject(staged) !== canonicalObject(closure.map(pkg => basename(pkg.tarball)).sort())) throw new Error(`Packed consumer archive set differs from its candidate closure: ${project.template}`);
+  for (const pkg of closure) if (!readFileSync(resolve(dir, PACKED_CANDIDATE_DIR, basename(pkg.tarball))).equals(candidateArchive(root, pkg))) {
+    throw new Error(`Retained candidate archive changed: ${project.template}/${pkg.name}`);
+  }
+  const lock = JSON.parse(readFileSync(resolve(dir, "package-lock.json"), "utf8")) as { packages?: Record<string, { integrity?: string; resolved?: string }> };
+  for (const installed of project.installedPackages ?? []) {
+    const pkg = closure.find(entry => entry.name === installed.name);
+    const entry = lock.packages?.[installed.installPath];
+    if (!pkg || installed.version !== pkg.version || installed.sha256 !== pkg.sha256 || installed.integrity !== pkg.integrity ||
+        !entry || entry.integrity !== pkg.integrity || !hex.test(installed.contentsSha256 ?? "")) throw new Error(`Installed candidate changed: ${project.template}/${installed.name}`);
+  }
+  if (closure.some(pkg => !project.installedPackages.some(item => item.name === pkg.name))) throw new Error(`Packed consumer candidate inventory is incomplete: ${project.template}`);
+  return dir;
+}
+
+/**
+ * Restore a retained packed project into a new temporary directory: copy it,
+ * run a lock-pinned `npm ci`, then recheck the candidate lock identities and
+ * every installed candidate package against the source-phase record.
+ */
+export async function restorePackedConsumerProject(root: string, project: NativeConsumerProject, destination: string, plan: ExactReleasePlan,
+  runner: PackedConsumerRunner = defaultPackedRunner): Promise<void> {
+  if (project.retention !== "packed-v1") throw new Error("Packed consumer project required");
+  const retained = assertRetainedPackedProject(root, project, plan);
+  if (!isAbsolute(destination) || existsSync(destination)) throw new Error("Packed restore requires a new absolute destination");
+  const parent = realpathSync(dirname(destination));
+  const rel = relative(realpathSync(tmpdir()), parent), fromRoot = relative(realpathSync(root), parent);
+  const inRepository = !fromRoot || (fromRoot !== ".." && !fromRoot.startsWith(".." + sep) && !isAbsolute(fromRoot));
+  if (rel === ".." || rel.startsWith(".." + sep) || isAbsolute(rel) || inRepository) throw new Error("Packed restore destination must be in a temporary workspace outside the repository");
+  const work = mkdtempSync(resolve(tmpdir(), "aura3d-packed-restore-"));
+  let restored = false;
+  try {
+    cpSync(retained, destination, { recursive: true, dereference: false, errorOnExist: true, force: false });
+    if (hashConsumerProject(destination) !== project.projectSha256) throw new Error(`Packed restore inputs differ: ${project.template}`);
+    const cache = resolve(work, "cache"), home = resolve(work, "home");
+    mkdirSync(cache); mkdirSync(home);
+    const result = runner("npm", ["ci", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", devNull, "--globalconfig", devNull],
+      destination, packedConsumerEnvironment(cache, home));
+    if (result.status !== 0) throw new Error(`Packed restore install failed for ${project.template}: ${redactText(result.output).slice(-4000)}`);
+    if (fileHash(resolve(destination, "package.json")) !== project.manifestSha256 || fileHash(resolve(destination, "package-lock.json")) !== project.lockfileSha256 ||
+        hashConsumerProject(destination) !== project.projectSha256) throw new Error(`Packed restore changed source or lock: ${project.template}`);
+    const closure = candidateClosure(plan, new Set(project.substitutions.map(item => item.name)));
+    const installed = assertPackedInstall(root, destination, plan, closure);
+    if (JSON.stringify(installed) !== JSON.stringify(project.installedPackages)) throw new Error(`Restored candidate changed: ${project.template}`);
+    restored = true;
+  } finally {
+    rmSync(work, { recursive: true, force: true });
+    if (!restored) rmSync(destination, { recursive: true, force: true });
+  }
+}
+
 async function runBrowser(root: string, runId: string, sourcePath: string, gatePath: string, plan: ExactReleasePlan): Promise<void> {
   // The gate is evaluated before any browser subprocess is provisioned.
   const gateModulePath = "../native-capability-gate/index.mjs";
@@ -907,9 +1241,10 @@ async function runBrowser(root: string, runId: string, sourcePath: string, gateP
   try {
     const checks: NativeConsumerCheck[] = [];
     for (const project of source.projects.filter(p => p.kind === "template")) {
-      if (project.retention !== "portable-v1") throw new Error("Browser acceptance requires portable consumer projects");
       const destination = resolve(work, project.template);
-      await restorePortableConsumerProject(root, project, destination, plan);
+      if (project.retention === "packed-v1") await restorePackedConsumerProject(root, project, destination, plan);
+      else if (project.retention === "portable-v1") await restorePortableConsumerProject(root, project, destination, plan);
+      else throw new Error("Browser acceptance requires portable or packed consumer projects");
       checks.push(runCommand(root, reportDir, project.template, "browser", "npm", ["run", "test:browser"], destination));
     }
     const report = { schema: "aura3d.native-consumers/1", phase: "browser", runId, pass: checks.length === CREATE_AURA3D_TEMPLATES.length && checks.every(c => c.status === "passed"), sourceReport: { path: sourcePath, sha256: fileHash(inside(root, sourcePath)) }, candidate: source.candidate, source: source.source, toolVersions: source.toolVersions, checks };
@@ -933,7 +1268,18 @@ export async function main(argv: string[] = process.argv.slice(2), root = resolv
   const source = arg("--source-report");
   const gate = arg("--gate") ?? "tests/reports/native-capabilities/code-complete-go.json";
   const candidatePath = arg("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN;
-  if ((phase !== "source" && phase !== "browser") || !runId || !SLUG.test(runId)) throw new Error("Usage: --phase source|browser --run-id <id> [--candidate-plan <path>] [--source-report <path>] [--gate <path>]");
+  if (phase === "verify") {
+    // Release check: re-verify a retained source report against the current plan.
+    const reportPath = source ?? process.env.NATIVE_CONSUMER_SOURCE_REPORT;
+    if (!reportPath || runId) throw new Error("Usage: --phase verify --source-report <path> [--candidate-plan <path>]");
+    if (!candidatePath) throw new Error("A validated --candidate-plan or A3D_RELEASE_PLAN is required");
+    const verifyPlan = loadValidatedReleasePlan(root, candidatePath);
+    if (!verifyPlan) throw new Error("Candidate plan is required");
+    const report = validateSourceConsumerReport(root, reportPath, verifyPlan);
+    console.log(`Clean-install source report verified: ${report.projects.length} projects, ${report.checks.length} checks (${reportPath})`);
+    return;
+  }
+  if ((phase !== "source" && phase !== "browser") || !runId || !SLUG.test(runId)) throw new Error("Usage: --phase source|browser --run-id <id> [--candidate-plan <path>] [--source-report <path>] [--gate <path>] | --phase verify --source-report <path>");
   if (!candidatePath) throw new Error("A validated --candidate-plan or A3D_RELEASE_PLAN is required");
   const plan = loadValidatedReleasePlan(root, candidatePath);
   if (!plan) throw new Error("Candidate plan is required");

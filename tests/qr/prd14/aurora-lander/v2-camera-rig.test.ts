@@ -58,7 +58,7 @@ describe("aurora-lander altitude rig", () => {
   it("eases between the two framings instead of cutting", () => {
     const state = stateAt(60);
     const rig = createAuroraRig(state);
-    rig.reset();
+    rig.reset!();
     let pose = rig.update(ctx(1 / 60));
     const firstY = pose.position[1];
     // Drop the lander 30 m between frames — the rig moves toward the approach
@@ -75,7 +75,7 @@ describe("aurora-lander altitude rig", () => {
     for (let i = 0; i < 30; i++) rig.update(ctx(1 / 60));
     state.agl = 55;
     state.y += 35;
-    rig.reset();
+    rig.reset!();
     const want = auroraPoseFor(state);
     const pose = rig.update(ctx(1 / 60));
     expect(pose.position[1]).toBeCloseTo(want.position[1] ?? 0, 0);
