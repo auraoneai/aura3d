@@ -4,7 +4,14 @@
  * result. No per-instance spec decomposition or object allocation per frame.
  *
  * Budget: the CPU cost of one forest frame's instance work (dense write for all three nodes + `createProductionRuntimeRendererInput`)
- * stays at or under 2 ms at the bench scene's 18,000 instances. GL submission is not part of `frame()` CPU in this test.
+ * stays at or under 2 ms at the bench scene's 18,000 instances on the reference Mac. GL submission is not part of `frame()` CPU in
+ * this test.
+ *
+ * Machine calibration: a raw 2 ms wall-clock assertion fails on slow shared runners (median 1.2 ms on the reference Mac, 5.2 ms on a
+ * shared ACR shard) without any code change. The budget test therefore times a fixed calibration workload (`calibrate()`: a
+ * deterministic Float32Array 4x4 matrix multiply over 18,000 matrices) in the same process, immediately before every frame sample,
+ * and asserts median(frame) / median(calibration) <= REFERENCE_BUDGET_RATIO, where REFERENCE_BUDGET_RATIO = 2 ms / calibration
+ * time on the reference Mac. The 2 ms reference stays the budget; the calibration only translates it to the current machine.
  */
 import "@aura3d/engine";
 import { describe, expect, it } from "vitest";
@@ -79,6 +86,51 @@ const byName = (items: RenderItem[], name: string): RenderItem => {
   return hit;
 };
 
+const WARMUP_ITERATIONS = 8;
+const SAMPLE_ITERATIONS = 30;
+const CALIBRATION_MATRICES = 18_000;
+
+/**
+ * Calibration time (median ms of `calibrate()`) on the reference Mac (Apple Silicon dev Mac, Node via vitest), recorded 2026-11-02
+ * from 5 local runs of this test; the smallest of the 5 medians is used so REFERENCE_BUDGET_RATIO is the max of the 5 per-run
+ * 2 ms / calibration ratios. Re-record only when the calibration workload itself changes.
+ */
+const REFERENCE_CALIBRATION_MS = 0.315;
+/** The 2 ms reference budget expressed in calibration units: frame median / calibration median must stay at or under this. */
+const REFERENCE_BUDGET_RATIO = 2 / REFERENCE_CALIBRATION_MS;
+
+/**
+ * Fixed, deterministic calibration workload: multiply 18,000 column-major 4x4 matrices (LCG-seeded, never changes) by a fixed
+ * matrix into an output Float32Array, then fold one lane into a checksum so the work is observable. Same order of typed-array
+ * memory traffic as the dense instance frame, no engine code involved.
+ */
+function createCalibration(): { run(): number; checksum(): number } {
+  const rand = lcg(11);
+  const input = new Float32Array(CALIBRATION_MATRICES * 16);
+  for (let i = 0; i < input.length; i += 1) input[i] = rand() * 2 - 1;
+  const m = new Float32Array(16);
+  for (let i = 0; i < 16; i += 1) m[i] = rand() * 2 - 1;
+  const output = new Float32Array(CALIBRATION_MATRICES * 16);
+  let sum = 0;
+  return {
+    run(): number {
+      const t0 = performance.now();
+      for (let k = 0; k < CALIBRATION_MATRICES; k += 1) {
+        const o = k * 16;
+        for (let col = 0; col < 4; col += 1) {
+          const b0 = input[o + col * 4]!, b1 = input[o + col * 4 + 1]!, b2 = input[o + col * 4 + 2]!, b3 = input[o + col * 4 + 3]!;
+          for (let row = 0; row < 4; row += 1) {
+            output[o + col * 4 + row] = m[row]! * b0 + m[4 + row]! * b1 + m[8 + row]! * b2 + m[12 + row]! * b3;
+          }
+        }
+      }
+      sum += output[(sum >>> 0) % output.length]!;
+      return performance.now() - t0;
+    },
+    checksum: () => sum,
+  };
+}
+
 describe("dense instance matrices", () => {
   it("fold the node size into the written matrices exactly like the spec path", () => {
     const forest = buildForest(300, 100);
@@ -144,7 +196,7 @@ describe("dense instance matrices", () => {
     expect([...warnings].some((w) => w.startsWith("INSTANCES_EMPTY"))).toBe(true);
   });
 
-  it("frame() CPU budget: 18,000 dense instances (8,000 trunks, 8,000 canopies, 2,000 rocks) cost <= 2 ms per frame", () => {
+  it("frame() CPU budget: 18,000 dense instances (8,000 trunks, 8,000 canopies, 2,000 rocks) cost <= 2 ms per frame (machine-calibrated)", () => {
     const forest = buildForest(8000, 2000);
     const entries = createProductionRuntimePrimitiveEntries(forest.primitives);
     const frame = (): number => {
@@ -155,10 +207,29 @@ describe("dense instance matrices", () => {
       render(forest, entries);
       return performance.now() - t0;
     };
-    for (let i = 0; i < 8; i += 1) frame();
-    const samples = Array.from({ length: 30 }, frame).sort((a, b) => a - b);
-    const median = samples[Math.floor(samples.length / 2)]!;
-    console.log(`dense instance frame CPU: median ${median.toFixed(3)} ms, p90 ${samples[Math.floor(samples.length * 0.9)]!.toFixed(3)} ms`);
-    expect(median).toBeLessThanOrEqual(2);
+    const calibration = createCalibration();
+    for (let i = 0; i < WARMUP_ITERATIONS; i += 1) {
+      calibration.run();
+      frame();
+    }
+    const calibrationSamples: number[] = [];
+    const frameSamples: number[] = [];
+    for (let i = 0; i < SAMPLE_ITERATIONS; i += 1) {
+      calibrationSamples.push(calibration.run());
+      frameSamples.push(frame());
+    }
+    // Keeps the calibration output observable so the multiply cannot be eliminated.
+    expect(Number.isFinite(calibration.checksum())).toBe(true);
+    const median = (values: number[]): number => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
+    const frameMedian = median(frameSamples);
+    const calibrationMedian = median(calibrationSamples);
+    const ratio = frameMedian / calibrationMedian;
+    const scaledBudgetMs = REFERENCE_BUDGET_RATIO * calibrationMedian;
+    console.log(
+      `dense instance frame CPU: median ${frameMedian.toFixed(3)} ms, p90 ${[...frameSamples].sort((a, b) => a - b)[Math.floor(SAMPLE_ITERATIONS * 0.9)]!.toFixed(3)} ms; ` +
+        `calibration median ${calibrationMedian.toFixed(3)} ms (reference ${REFERENCE_CALIBRATION_MS} ms); ` +
+        `ratio ${ratio.toFixed(3)} <= ${REFERENCE_BUDGET_RATIO.toFixed(3)} (2 ms on the reference Mac = ${scaledBudgetMs.toFixed(3)} ms here)`,
+    );
+    expect(ratio).toBeLessThanOrEqual(REFERENCE_BUDGET_RATIO);
   });
 });

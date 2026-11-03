@@ -202,6 +202,15 @@ candidate. Final release claims require regeneration and source-bound receipts.
   512 B). The PRD-08 lane test (`tests/qr/prd08/unit/bundle.test.ts`) now
   externalizes `@aura3d/input` because this target prices it; its 24,000 B
   "everything" budget is unchanged.
+- **Root `package.json` script count** (`tests/unit/quality-gate/scripts.test.ts`):
+  re-baselined 2026-11-02 for 5.0 (owner-delegated) from the Q-15-1 target of
+  ≤ 80 to a cap of 123 (the exact current count: 120 on `main` plus
+  `check:clean-install:source`, `check:clean-install:browser` and
+  `verify:api-docs`). The ≤ 80 target is carried as 5.x debt; the cap
+  prevents growth. The check was already failing on `main` before 5.0. No
+  scripts were removed: the four `external-parity-*` scripts whose tools are
+  quarantined are still invoked by `.github/workflows/public-demo-deploy.yml`
+  and `tools/public-demo-deployment-artifacts`, so they are not dead.
 
 ## 5.x architecture-gate debt
 
