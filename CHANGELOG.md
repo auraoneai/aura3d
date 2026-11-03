@@ -1,8 +1,45 @@
 # Changelog
 
-Version: 4.7.9
+Version: 4.7.10
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.10 (2026-11-02)
+
+GameUpgrades47 continuation after 4.7.9 (lane reports in `docs/prds/game-upgrades-47/lanes/`, "Wave 1 (post-4.7.9)" sections). A small release: Meshy models that had been generated but never used are wired into eight games where they did not lose a blind panel, the selective-bloom activation fixes, and a recorded decision on the five over-budget HDRIs. Presentation only: simulation, physics, scoring, input and the reference replays are unchanged.
+
+Every wired view was judged blind by three judges against the 4.6.2 frame and against the live 4.7.9 frame of the same view, from remote software-WebGL2 captures. A swap that lost to 4.7.9 was reverted before this release: Glint Courier's two sentries (0 of 3 judges preferred them on all three views), Iron Crown's Colosseum weapon rack and forge anvil (2 of 3 preferred the old frame), Serpentine's sky pavilion (0 of 3 on all three views), Craterline's pylon (0 of 3 on both views), Duneglide's hoverboard (0 of 3 on one of four views), Apex Overdrive's rival interceptor (0 of 3 on the night view) and Shadowstep's dusk house (worse than 4.6.2 on its one finished view). Six of the seven beat 4.6.2 on every view they were judged on, but a view that loses to the live release (or to 4.6.2) does not ship; the lane reports keep the record.
+
+### Games
+
+| Game | Change | Panel vs 4.6.2 | Panel vs 4.7.9 |
+|---|---|---|---|
+| Thermal Drift | two Meshy cast-iron towers replace the grey L and T towers (the old glowing window strips are gone) | 3 better of 3 | 3 same of 3 |
+| Aura Diamond 3D | a second seated-fan model (555 triangles) on about half of the stand seats | 3 better of 3 | 3 same of 3 |
+| Aura Links 3D | a Meshy gorse bush in the ground cover | 1 better of 1 | 1 same of 1 |
+| Cumulus Dash | a Meshy tower on the cloud route | 1 better of 1 | 1 same of 1 |
+| Chroma Roll | a Meshy paint-palette island | 1 better of 1 | 1 same of 1 |
+| Saltwind Highway | salt-faded bus and sedan traffic models | 1 better of 1 | 1 same of 1 |
+| Grid Dispatch | a Meshy Victorian facade in the city set | 3 better of 3 | 1 better, 2 same of 3 |
+| Gridlock Courier | pastel hatch and sedan traffic cars in the default look (in no captured frame) | no 60 s frame (run limit); 25 s frame matches live | no 60 s frame (run limit); 25 s frame matches live |
+
+Of the 48 finished Meshy models, 20 were wired by their game lanes and 11 of those ship here (in the eight games above); 9 lost a panel and were reverted; the other 28 were skipped for a stated reason (triangle or texture budget, a footprint that does not fit, a static mesh for an animated role, or missing idle and attack clips). Retextured models count as new models: Meshy re-normalised their meshes, so their geometry hashes changed.
+
+### Engine
+
+- **Selective bloom (internal, still not a visible feature).** Registered early post passes that carry an `enabled` predicate (the underwater distortion pass) no longer make every frame decline the separate-signal path; the second draw buffer is enabled only on frames that write the signal (this removes a WebGL2 `INVALID_OPERATION` on frames that declined late); the twin-program prewarm is derived once per program instead of every selective frame. A scene that does not ask for selective bloom renders exactly as before. The path still cannot be shown end to end on the remote software-WebGL2 runner: it reports `POST_SELECTIVE_BLOOM_UNAVAILABLE:generated-programs-unavailable` because that runner has no `KHR_parallel_shader_compile`, which the twin compile requires by design. It needs a real GPU.
+
+### Decisions
+
+- **The five over-budget HDRIs stay as they are.** `rooftop_night`, `cobblestone_street_night`, `hangar_interior`, `kloppenheim_02` and `indoor-workshop` (1.64-1.77 MB at 1k) are at the lossless floor of the format and within 0.4% of Poly Haven's own 1k downloads; the best copy that stays within one tone-mapped level over the exposures the games use is still 0.65-1.5% over the 1.5 MiB budget, so no lossy copy was shipped. They are recorded as final exceptions (`assets/art-direction/hdri-environments.json`, `public/hdri/ATTRIBUTION.md`).
+
+### Known limits
+
+- **Rubric below the PRD bar.** No game scores 7 or more in all 12 categories (model judge, software WebGL2).
+- **Distinctness pairs still below the bar** (model judge, 48 trials, bar 0.8): Ion Circuit against Thermal Drift (0.69), Saltwind (0.59) and Craterline (0.71); Serpentine against Cumulus (0.77) and Shadowstep (0.59); Aura Hoops against Aura Diamond (0.73, shared athlete model); Cross Hop against Pip's Big Leap (0.79). They need new models; about 600 of the 697 planned Meshy rows are still ungenerated and the Meshy pool is exhausted until its credits reset.
+- **Selective bloom activation is unproven** (see Engine); **Bunker Zero's 25/60 s texture deadline is unproven**; game-checks still reports 41 `borrowed-asset` and 12 `luma-band` warnings.
+- **Found, not fixed:** the underwater distortion post pass never runs in shipped code (its on/off predicate reads a field that nothing writes).
+- **Real-GPU judgement is owner-only (PRD D5).**
 
 ## 4.7.9 (2026-11-02)
 
