@@ -31,6 +31,8 @@ RUN npm install -g "pnpm@11.1.3" >/dev/null && pnpm --version
 COPY . ./
 # `az acr build` drops files named .gitignore; the launcher ships them renamed. Restore the real names.
 RUN find /repo -name .gitignore.a3d-staged -not -path '*/node_modules/*' -exec sh -c 'for f; do mv "$f" "$(dirname "$f")/.gitignore"; done' sh {} +
+# `az acr build` also injects a copy of the Dockerfile at the context root (<32-hex>_Dockerfile.playwright); it is not source.
+RUN find /repo -maxdepth 1 -name '*_Dockerfile.playwright' -type f -exec rm -f {} +
 RUN if [ "$AURA3D_NATIVE_ACCEPTANCE" = "1" ]; then \
       node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE"; \
     fi
