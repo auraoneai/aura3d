@@ -82,13 +82,6 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "linksDunesBeaconTower",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
         "assetKey": "linksGolfBall",
         "triangles": 0,
         "textures": 0,
@@ -132,13 +125,6 @@
       },
       {
         "assetKey": "linksHarbourTowerC",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "linksMareLander",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
