@@ -43,6 +43,11 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "diamondIvyWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "ballpark_fanA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ballpark_fanB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "aura_diamond_3d_ballparkLighthouse": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "aura_diamond_3d_ballparkMesa": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "aura_diamond_3d_ballparkWaterTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "aura_diamond_3d_ballparkRowhouseRoof": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "aura_diamond_3d_ballparkHabitat": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -366,6 +371,61 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-ca3de84cd75aa880f994904d5c75e497bf0a2dcf23f865c21d22fac5fbba1ecd",
     bounds: [0.792, 1.894, 0.896],
     sizeBytes: 48724,
+  },
+  // GU47 wave 2 (DIA-A1): Diamond-owned Meshy set piece (white and terracotta striped lighthouse), generated 2026-11-03 and admitted into this app
+  // (assets/models/aura_diamond_3d_ballparkLighthouse.glb, rights: assets/provenance/aura_diamond_3d_ballparkLighthouse.rights.json); decimated 28,198 -> 12,000 triangles,
+  // 512 px maps (gltf-transform weld + meshopt simplify + textureCompress). Served from this app's public/aura-assets.
+  "aura_diamond_3d_ballparkLighthouse": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_diamond_3d_ballparkLighthouse.5d356034.glb",
+    hash: "sha256-5d3560347e70969ace77fa34f7aad27da05494f9d9d990c7e9b3ee8c1933422e",
+    bounds: [0.8, 1.9, 0.8],
+    sizeBytes: 574920,
+  },
+  // GU47 wave 2 (DIA-A1): Diamond-owned Meshy set piece (flat-topped desert mesa), generated 2026-11-03 and admitted into this app
+  // (assets/models/aura_diamond_3d_ballparkMesa.glb, rights: assets/provenance/aura_diamond_3d_ballparkMesa.rights.json); decimated 28,460 -> 10,000 triangles,
+  // 512 px maps (gltf-transform weld + meshopt simplify + textureCompress). Served from this app's public/aura-assets.
+  "aura_diamond_3d_ballparkMesa": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_diamond_3d_ballparkMesa.5fbc62b3.glb",
+    hash: "sha256-5fbc62b3284c4b0b20aa6235bb34747bb2499fdc2fe766a0a74857e97f9c0569",
+    bounds: [1.9, 0.5, 1.9],
+    sizeBytes: 436892,
+  },
+  // GU47 wave 2 (DIA-A1): Diamond-owned Meshy set piece (wooden rooftop-style water tower), generated 2026-11-03 and admitted into this app
+  // (assets/models/aura_diamond_3d_ballparkWaterTower.glb, rights: assets/provenance/aura_diamond_3d_ballparkWaterTower.rights.json); decimated 27,916 -> 11,998 triangles,
+  // 512 px maps (gltf-transform weld + meshopt simplify + textureCompress). Served from this app's public/aura-assets.
+  "aura_diamond_3d_ballparkWaterTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_diamond_3d_ballparkWaterTower.78598963.glb",
+    hash: "sha256-785989636167422e1a3c4ca774a1bb067c982df27ed5dae081fc0b944bf76aed",
+    bounds: [1.06, 1.9, 1.06],
+    sizeBytes: 715540,
+  },
+  // GU47 wave 2 (DIA-A1): Diamond-owned Meshy set piece (brick rowhouse block), generated 2026-11-03 and admitted into this app
+  // (assets/models/aura_diamond_3d_ballparkRowhouseRoof.glb, rights: assets/provenance/aura_diamond_3d_ballparkRowhouseRoof.rights.json); decimated 39,628 -> 15,758 triangles,
+  // 512 px maps (gltf-transform weld + meshopt simplify + textureCompress). Served from this app's public/aura-assets.
+  "aura_diamond_3d_ballparkRowhouseRoof": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_diamond_3d_ballparkRowhouseRoof.c7ade9d6.glb",
+    hash: "sha256-c7ade9d61fc20ee206b0c2f9cd9d4687caa883153026901f14f613a1be21cd0b",
+    bounds: [1.9, 1.06, 1.64],
+    sizeBytes: 923348,
+  },
+  // GU47 wave 2 (DIA-A1): Diamond-owned Meshy set piece (moon base habitat module), generated 2026-11-03 and admitted into this app
+  // (assets/models/aura_diamond_3d_ballparkHabitat.glb, rights: assets/provenance/aura_diamond_3d_ballparkHabitat.rights.json); decimated 28,570 -> 12,000 triangles,
+  // 512 px maps (gltf-transform weld + meshopt simplify + textureCompress). Served from this app's public/aura-assets.
+  "aura_diamond_3d_ballparkHabitat": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_diamond_3d_ballparkHabitat.a9838fcb.glb",
+    hash: "sha256-a9838fcb5ff752d50bf941cd132e97b64b659e394a0ecfb76d038bb4bfe48e25",
+    bounds: [1.9, 1.54, 1.4],
+    sizeBytes: 606908,
   },
 } as const);
 

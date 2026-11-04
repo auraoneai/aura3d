@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "c6b868cefac394dd744e8179f6784afc0190d71c3e8f195f97c573249f6ed71b",
+  "sourceSha256": "736107afb38b6ae60b12cee20e910d6cee26de34a5a3e984a9a1bcebab80055d",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",
@@ -245,6 +245,13 @@
       {
         "assetKey": "diamondFloodlight",
         "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_diamond_3d_ballparkLighthouse",
+        "triangles": 12000,
         "textures": 0,
         "unlit": false,
         "overridesTextures": false
@@ -801,6 +808,41 @@
         "role": "set-dressing",
         "assetKey": "ballpark_fanB",
         "maxTriangles": 1000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_diamond_3d_ballparkLighthouse",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_diamond_3d_ballparkMesa",
+        "maxTriangles": 10000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_diamond_3d_ballparkWaterTower",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_diamond_3d_ballparkRowhouseRoof",
+        "maxTriangles": 16000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_diamond_3d_ballparkHabitat",
+        "maxTriangles": 12000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 512
       },
