@@ -37,3 +37,7 @@ Packed to 512 px by `tools/pack-detail.mjs` (R = luminance detail re-centred on 
 ## GU47 wave 2 (2026-11-03): landmark rocks (RH47-11)
 
 `seastack` (Sunbreak sea stacks), `hoodoo` and `arch` (Redline) are baked from Meshy text-to-3d models generated 2026-11-03 through the same AuraOne Meshy account via Kiro Prism (GU47 WP-36): `saltwindSeaStack` (task `01a1a4d4-7351-72a5-80c7-dfdf49a14670`), `saltwindHoodoo` (task `01a1a4d5-73e3-7239-9917-3e3e2f2c0aff`) and `saltwindArch` (task `01a1a4d5-24f2-70f0-9630-48fa2723229a`). Each was decimated from about 28 k to 6,000 / 5,000 / 8,000 triangles (gltf-transform weld + meshopt simplify) and baked by `tools/bake-meshy.mjs` to a 1024 px base-colour JPEG plus a binary mesh; Redline tints the hoodoo and arch with the route's sandstone colour. Rights and task records are in `provenance/saltwind{SeaStack,Hoodoo,Arch}.{rights,meta}.json`: generated asset under the account's Meshy plan terms at generation time, not CC0, no exclusivity claimed.
+
+## GU47 wave 3 (2026-11-04): Halo arcology towers (RH47-11)
+
+`arcology` (Halo arcology towers) is baked from the Meshy text-to-3d model `saltwindArcologyR2` (task `01a1a620-a8fa-769d-8482-e1906e51a7b7`), generated 2026-11-04 through the same AuraOne Meshy account via Kiro Prism (GU47 WP-36). It was decimated (sloppy meshopt) from 96,770 to 7,429 triangles with a 1024 px base-colour texture before the bake. Rights and Meshy metadata: `assets/provenance/saltwindArcologyR2.{rights,meta}.json`.

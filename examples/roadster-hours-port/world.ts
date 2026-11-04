@@ -217,7 +217,7 @@ function guardrails(level: Level): MeshData {
   return m;
 }
 
-function towers(level: Level, seed: number): MeshData {
+function towers(level: Level, seed: number, avoid: readonly (readonly [number, number])[] = []): MeshData {
   const m = emptyMesh();
   for (let s = 40; s < level.length + 60; s += 38) {
     for (const sign of [-1, 1] as const) {
@@ -226,6 +226,8 @@ function towers(level: Level, seed: number): MeshData {
       const width = 14 + r * 26, depth = 14 + hash2(Math.floor(s), sign + 9, seed) * 24;
       const height = 50 + Math.pow(hash2(Math.floor(s), sign + 13, seed), 2) * 230;
       const [x, , z] = roadPoint(level, s + r * 20, sign * (level.width + dist), 0);
+      // GU47 wave 3 (g22): no box tower inside the footprint of a generated arcology
+      if (avoid.some((a) => Math.hypot(a[0] - x, a[1] - z) < 80)) continue;
       appendBox(m, [x, -8 + height / 2, z], [width / 2, height / 2, depth / 2]);
     }
   }
@@ -598,7 +600,11 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   if (look.style !== "skyway") builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, look.style === "coast" ? "hills" : "cliff", seed + 101)), { name: "flank-cliff", material: material.custom(terrainSpec(look)) }));
   else builder.add(geometry.custom(dyn(flank(level, look, (look.seaSide * -1) as -1 | 1, "sea", seed + 101)), { name: "flank-far", material: material.custom(terrainSpec(look)) }));
   builder.add(geometry.custom(dyn(guardrails(level)), { name: "guardrails", material: material.custom(solidSpec(look, [0.72, 0.74, 0.77], [0, 0, 0], 0, 0.32, 0.9, look.row ? 1 : 0)) }));
-  if (look.style === "skyway") builder.add(geometry.custom(dyn(towers(level, seed)), { name: "towers", material: material.custom(towerSpec(look)) }));
+  // GU47 wave 3 (g22, RH47-11): generated arcology towers on Halo; the stand-in box skyline leaves their footprints clear
+  const arcologyOn = look.style === "skyway" && row !== null && enabled("landmarks") && hasMeshy("arcology");
+  const arcologySpots = arcologyOn ? landmarkPlacements("arcology", level.length, width, look.seaSide, seed) : [];
+  const arcologyXZ = arcologySpots.map((p): readonly [number, number] => { const [x, , z] = roadPoint(level, p.s, p.l, 0); return [x, z]; });
+  if (look.style === "skyway") builder.add(geometry.custom(dyn(towers(level, seed, arcologyXZ)), { name: "towers", material: material.custom(towerSpec(look)) }));
   if (look.style !== "canyon") {
     const lamps = streetLamps(level);
     builder.add(geometry.custom(dyn(lamps.poles), { name: "lamp-poles", material: material.custom(solidSpec(look, [0.36, 0.38, 0.42], [0, 0, 0], 0, 0.5, 0.6)) }));
@@ -760,6 +766,9 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
       }
       builder.add(instances.cylinder({ name: "uplink-masts", transforms: place("uplink-mast"), material: pbr("#3a3b40", 0.5, 0.6), castShadow: false }));
     } else {
+      if (arcologyOn) {
+        scatter("arcology", "arcology-towers", arcologySpots.map((p) => ({ p: landBase(p), yaw: p.yaw - roadProfile(level, p.s).heading, size: [p.size[1], p.size[1], p.size[1]] as Vec3 })), { tint: "#d6e0ec", roughness: 0.85, metallic: 0, castShadow: false });
+      }
       const masts = place("antenna");
       builder.add(instances.cylinder({ name: "antenna-masts", transforms: masts, material: pbr("#9aa6b2", 0.4, 0.7), castShadow: false }));
       builder.add(instances.sphere({ name: "antenna-beacons", transforms: masts.map((m) => ({ position: [m.position[0], m.position[1] + m.scale[1] / 2 + 1, m.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [2.4, 2.4, 2.4] as Vec3 })), material: material.pbr({ color: "#3a0a06", roughness: 0.4, emissive: row.gantry.glow, emissiveIntensity: 3 }), castShadow: false }));

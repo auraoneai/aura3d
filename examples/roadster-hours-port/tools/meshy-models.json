@@ -208,5 +208,17 @@
   ],
   "tex": 1024,
   "maxTris": 8000
+ },
+ {
+  "key": "arcology",
+  "kind": "prop",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindArcologyR2/opt/model.glb",
+  "dims": [
+   95,
+   200,
+   92
+  ],
+  "tex": 1024,
+  "maxTris": 8000
  }
 ]

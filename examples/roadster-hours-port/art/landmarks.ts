@@ -19,7 +19,7 @@ export interface LandmarkPlacement {
   readonly yaw: number;
 }
 
-export type LandmarkKind = "turbine" | "sea-stack" | "mesa" | "hoodoo" | "arch" | "uplink-mast" | "antenna" | "tube-ring";
+export type LandmarkKind = "turbine" | "sea-stack" | "mesa" | "hoodoo" | "arch" | "uplink-mast" | "antenna" | "tube-ring" | "arcology";
 
 export const LANDMARK_KINDS: Readonly<Record<"sunbreak" | "redline" | "halo", readonly string[]>> = {
   sunbreak: ["lighthouse", "town", "turbine", "sea-stack"],
@@ -81,6 +81,13 @@ export function landmarkPlacements(kind: LandmarkKind, length: number, halfWidth
       break;
     case "antenna":
       for (let i = 0, s = 200; s < length; i++, s += 260 + r(i, 1) * 120) out.push({ s, l: (i % 2 ? land : seaSide) * (halfWidth + 55 + r(i, 2) * 70), y: -40, size: [1.2, 120 + r(i, 3) * 60, 1.2], yaw: 0 });
+      break;
+    case "arcology":
+      // GU47 wave 3 (g22): the generated arcology towers of Halo, one every ~330 m alternating sides, 110-170 m off the road (above the box skyline)
+      for (let i = 0, s = 260; s < length - 100; i++, s += 300 + r(i, 1) * 90) {
+        const h = 150 + r(i, 2) * 50;
+        out.push({ s, l: (i % 2 ? land : seaSide) * (halfWidth + 110 + r(i, 3) * 60), y: -8, size: [h * 0.46, h, h * 0.46], yaw: r(i, 4) * Math.PI * 2 });
+      }
       break;
     case "tube-ring":
       // the maglev tube act (Halo s 880-1540): a ring over the road every 36 m
