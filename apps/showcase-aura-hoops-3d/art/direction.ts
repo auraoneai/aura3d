@@ -71,6 +71,8 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopLifeguardTower", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopCorrugatedRoof", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopContainer", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 3 (H47-A1): the re-rolled covered bleacher, 25,104 -> 17,714 triangles after the meshopt pass, 1k maps.
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopBleacherR2", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsTrophy", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
