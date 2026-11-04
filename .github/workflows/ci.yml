@@ -62,7 +62,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run TypeScript type check
-        run: pnpm typecheck
+        env:
+          NODE_OPTIONS: --max-old-space-size=12288
+        run: pnpm typecheck --extendedDiagnostics
 
   test:
     name: Test (Node ${{ matrix.node }})
