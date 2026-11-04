@@ -36,7 +36,8 @@
     },
     "./assets": {
       "source": "packages/assets/src/index.ts",
-      "browser": "packages/assets/src/browser-index.ts"
+      "browser": "packages/assets/src/browser-index.ts",
+      "browserTypes": true
     },
     "./input": {
       "source": "packages/input/src/index.ts"

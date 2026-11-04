@@ -16,6 +16,8 @@ export interface AuraEntry {
   readonly source?: string;
   readonly conditions?: boolean;
   readonly browser?: string;
+  /** Emit `browser` as an object `{ types, default }` typed from the browser source and list it before `types` (requires `browser`). Browser builds must not promise Node-only helper types. */
+  readonly browserTypes?: boolean;
   /** Explicit generated CommonJS bridge for entrypoints whose ESM graph supports synchronous require. */
   readonly require?: string;
   readonly devOnly?: boolean;
@@ -122,10 +124,12 @@ export function buildPackageExports(aura: AuraExportsFile): Record<string, unkno
     if (entry.require && (!/^\.\/dist\/[a-zA-Z0-9_./-]+\.cjs$/.test(entry.require) || entry.require.split("/").includes(".."))) {
       throw new Error(`entry ${subpath} has an invalid CommonJS target`);
     }
+    if (entry.browserTypes && !entry.browser) throw new Error(`entry ${subpath}: browserTypes needs a browser source`);
     if (entry.conditions || entry.browser || entry.require) {
+      const browserJs = entry.browser ? distTarget(entry.browser, "js") : dist;
+      const browser = entry.browserTypes ? { types: distTarget(entry.browser!, "d.ts"), default: browserJs } : browserJs;
       out[subpath] = {
-        types: dts,
-        browser: entry.browser ? distTarget(entry.browser, "js") : dist,
+        ...(entry.browserTypes ? { browser, types: dts } : { types: dts, browser }),
         import: dist,
         ...(entry.require ? { require: entry.require } : {}),
         default: dist

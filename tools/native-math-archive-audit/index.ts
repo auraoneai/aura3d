@@ -187,7 +187,14 @@ export function inspectMathArchive(options: MathArchiveOptions): MathArchiveRepo
       issue("INVALID_MAP", entry.path, "sourcesContent does not match sources"); return;
     }
     for (let index = 0; index < map.sources.length; index += 1) {
-      const source = `${map.sourceRoot ?? ""}/${map.sources[index]}`.replaceAll("\\", "/");
+      let source = `${map.sourceRoot ?? ""}/${map.sources[index]}`.replaceAll("\\", "/");
+      // The standalone math package is emitted straight into packages/math/dist, so its maps point at the package-local
+      // "../src/<file>.ts" (the sources are not shipped). Resolve that against the map's own directory and bind it to
+      // the staged packages/math/src file of the same name.
+      if (options.kind === "math" && !map.sourceRoot) {
+        const resolved = normalize(join(dirname(entry.path), String(map.sources[index]).replaceAll("\\", "/")));
+        if (resolved.startsWith("package/src/")) source = `/packages/math/${resolved.slice("package/".length)}`;
+      }
       const matches = Object.keys(options.sourceDigests).filter((path) => source.endsWith(`/${path}`));
       if (matches.length !== 1) { issue("UNBOUND_MAP_SOURCE", entry.path, "Map source is not uniquely bound to staged math source"); continue; }
       const embedded = Array.isArray(content) ? content[index] : undefined;

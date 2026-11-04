@@ -66,8 +66,11 @@
     "./physics/world": "./dist/physics/world.js",
     "./animation": "./dist/animation/index.js",
     "./assets": {
+      "browser": {
+        "types": "./dist/assets/browser-index.d.ts",
+        "default": "./dist/assets/browser-index.js"
+      },
       "types": "./dist/assets/index.d.ts",
-      "browser": "./dist/assets/browser-index.js",
       "import": "./dist/assets/index.js",
       "default": "./dist/assets/index.js"
     },
