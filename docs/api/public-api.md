@@ -69,7 +69,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/engine/lighting` | `5.0.0` | `./dist/rendering/lighting/index.d.ts` | 61 |
 | `@aura3d/engine/math` | `5.0.0` | `./dist/math/index.d.ts` | 163 |
 | `@aura3d/engine/media-node` | `5.0.0` | `./dist/engine/agent-api/media-node.d.ts` | 91 |
-| `@aura3d/engine/physics` | `5.0.0` | `./dist/physics/index.d.ts` | 252 |
+| `@aura3d/engine/physics` | `5.0.0` | `./dist/physics/index.d.ts` | 279 |
 | `@aura3d/engine/physics/solverless` | `5.0.0` | `./dist/physics/solverless.d.ts` | 134 |
 | `@aura3d/engine/physics/world` | `5.0.0` | `./dist/physics/world.d.ts` | 15 |
 | `@aura3d/engine/renderer` | `5.0.0` | `./dist/engine/public/renderer.d.ts` | 10899 |
@@ -89,7 +89,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 | `@aura3d/math` | `5.0.0` | `./dist/index.d.ts` | 163 |
 | `@aura3d/math/three` | `5.0.0` | `./dist/three/index.d.ts` | 81 |
 | `@aura3d/navigation-recast` | `5.0.0` | `./dist/index.d.ts` | 16 |
-| `@aura3d/physics` | `5.0.0` | `./dist/index.d.ts` | 252 |
+| `@aura3d/physics` | `5.0.0` | `./dist/index.d.ts` | 250 |
 | `@aura3d/physics-rapier` | `5.0.0` | `./dist/index.d.ts` | 29 |
 | `@aura3d/physics/solverless` | `5.0.0` | `./dist/solverless.d.ts` | 134 |
 | `@aura3d/physics/world` | `5.0.0` | `./dist/world.d.ts` | 15 |
@@ -141,7 +141,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 ## @aura3d/addons
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1271,7 +1271,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/addons/effects/AsciiOutput
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1348,7 +1348,7 @@ export declare class AsciiOutput {
 ## @aura3d/addons/effects/OutlineOutput
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1423,7 +1423,7 @@ export declare class OutlineOutput {
 ## @aura3d/addons/effects/StereoOutputs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1546,7 +1546,7 @@ export declare class StereoOutput {
 ## @aura3d/addons/generators/EnvironmentGenerators
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1663,7 +1663,7 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 ## @aura3d/addons/objects/MarchingCubes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1760,7 +1760,7 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 ## @aura3d/addons/objects/SpecializedObjects
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -1927,7 +1927,7 @@ export {};
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -2020,7 +2020,7 @@ export declare class SpatialDOMRenderer {
 ## @aura3d/addons/renderers/VectorRenderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -2135,7 +2135,7 @@ export {};
 ## @aura3d/addons/tools/Fracture
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -2239,7 +2239,7 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 ## @aura3d/addons/tools/Sculptor
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -2340,7 +2340,7 @@ export declare class Sculptor {
 ## @aura3d/addons/tools/TubePainter
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -2404,7 +2404,7 @@ export declare class TubePainter {
 ## @aura3d/addons/utils/WorkerPool
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=af1cccaf75ffdecfe9776ffe4b8c125a93d94447498f2b398fe61510455fc3c7`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
 
 ### Export conditions
 
@@ -2514,7 +2514,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/animation
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=1a6760bf1a6715f4a36d58e791ec1dd138402f54a385f524d143de54f4923036`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
 
 ### Export conditions
 
@@ -5386,7 +5386,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/animation/contracts
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=1a6760bf1a6715f4a36d58e791ec1dd138402f54a385f524d143de54f4923036`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
 
 ### Export conditions
 
@@ -5433,7 +5433,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/animation/lanes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=1a6760bf1a6715f4a36d58e791ec1dd138402f54a385f524d143de54f4923036`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
 
 ### Export conditions
 
@@ -7207,7 +7207,7 @@ export {};
 ## @aura3d/animation/pose
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=1a6760bf1a6715f4a36d58e791ec1dd138402f54a385f524d143de54f4923036`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
 
 ### Export conditions
 
@@ -7247,7 +7247,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/apps
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/apps@5.0.0#sha256=570e13bcc905137f056012c4c4fbe15c81a1cc6c2045771b212be2758e3dec55`
+- Packed identity: `archive:@aura3d/apps@5.0.0#sha256=2db9e9b02c261fe80cf70dc2a8e0dda4f0d9ca736f3ad698e6c709e369a7ce61`
 
 ### Export conditions
 
@@ -7312,7 +7312,7 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 ## @aura3d/asset-index
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/asset-index@5.0.0#sha256=4e50088213c81b1b0e5340eccbd9bfe85d0ef912305d8e9d04778dc59bd819bb`
+- Packed identity: `archive:@aura3d/asset-index@5.0.0#sha256=332f8880e7f2f84d7fbb68a13840383eca34db9360c14f18c0b2c0af4a03d20a`
 
 ### Export conditions
 
@@ -8050,7 +8050,7 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 ## @aura3d/assets
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -13775,7 +13775,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/assets/browser
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -18478,7 +18478,7 @@ export declare class GLTFSharedTextureCache {
 ## @aura3d/assets/exporters
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -19387,7 +19387,7 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 ## @aura3d/assets/gltf-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -21822,7 +21822,7 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 ## @aura3d/assets/importers
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -23582,7 +23582,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ## @aura3d/assets/vite
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -23679,7 +23679,7 @@ export {};
 ## @aura3d/assets/vite-client
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=6ffbe864359fc1deea1ebd304a9ca36e015e4b172e41e477ee961380faf1e9e9`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
 
 ### Export conditions
 
@@ -23699,7 +23699,7 @@ declare module "virtual:aura3d-decoder-deployment" {
 ## @aura3d/audio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/audio@5.0.0#sha256=87481edfb5b00b63d46e7d983358de96028d88d81580f51d7a0dcfb8fd17cf82`
+- Packed identity: `archive:@aura3d/audio@5.0.0#sha256=b8b9618e2f3c205df201dd1f661732105448c6b278a4019ebf427a2854352406`
 
 ### Export conditions
 
@@ -26325,7 +26325,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/cli@5.0.0#sha256=e61e063d7c00733c02752575700f18255ef6d97fae2a782245c788d15bcb604b`
+- Packed identity: `archive:@aura3d/cli@5.0.0#sha256=27856aa5a9574bf26fd846f5dc11b2d2f99c379e60196f0e348a1cf520f35228`
 
 ### Export conditions
 
@@ -28496,7 +28496,7 @@ export interface CharacterAssemblyResolvedPart {
 ## @aura3d/controls
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/controls@5.0.0#sha256=50e8a9b81f438d7ad84a55e979ebd82fd2d0c44145a83b2f4432678d864fe156`
+- Packed identity: `archive:@aura3d/controls@5.0.0#sha256=5ed762c6a4248a277b6c042f6bc2671d464a0f78245e1573bb23c522bed72883`
 
 ### Export conditions
 
@@ -30299,7 +30299,7 @@ export declare class FirstPersonControls {
 ## @aura3d/core
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/core@5.0.0#sha256=fc9a5df0f294a005cd14de926f345bd71bb0a5da60de1dd30f7f7936e3b4dd70`
+- Packed identity: `archive:@aura3d/core@5.0.0#sha256=c7e44f860fa5a0ed779bb54ad183a138e49018a620b4cb34ea644fc7721241e1`
 
 ### Export conditions
 
@@ -30814,7 +30814,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.0.0`
-- Packed identity: `archive:create-aura3d@5.0.0#sha256=a1474d7e70d11e679a6d03da8d4359feb97e3af3e8e2245ba662530fb0f0fbfa`
+- Packed identity: `archive:create-aura3d@5.0.0#sha256=8dcdaf5b0f38cb0901fd6e7cb62a673d3ef04afbdce5c2bf92b8168cc13d8ad8`
 
 ### Export conditions
 
@@ -31584,7 +31584,7 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 ## @aura3d/debug
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=b3da1a35be88b17e8b3825331158eeff3c86fd3d2e6c2e52a30c1f0a75593f93`
+- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=93883ac7569c887dfceffcc4d42ad2de692b5b42e3e2c40ed4efe2f9a1e57f66`
 
 ### Export conditions
 
@@ -32964,7 +32964,7 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 ## @aura3d/debug/helpers
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=b3da1a35be88b17e8b3825331158eeff3c86fd3d2e6c2e52a30c1f0a75593f93`
+- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=93883ac7569c887dfceffcc4d42ad2de692b5b42e3e2c40ed4efe2f9a1e57f66`
 
 ### Export conditions
 
@@ -33172,7 +33172,7 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 ## @aura3d/ecs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/ecs@5.0.0#sha256=3fbea92efdfecd7ac9787d1647bfad114c5189699f8233dfa201cf6f35d540ee`
+- Packed identity: `archive:@aura3d/ecs@5.0.0#sha256=c62d68838f4c187d383cd0a115c9b4932dc896a0e04990599687b86812b86ab2`
 
 ### Export conditions
 
@@ -33840,7 +33840,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/editor-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.0.0#sha256=36d31950bbf43fc6950ca87b4e002562965c106482b21762516ff5b5fbe749ee`
+- Packed identity: `archive:@aura3d/editor-runtime@5.0.0#sha256=404ea099dad25823b3ff5cbedf276be697563b3d710e94e184bb8448bd38a022`
 
 ### Export conditions
 
@@ -36423,7 +36423,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -120746,7 +120746,7 @@ export declare function estimateGlbResourceBytes(sizeBytes: number | undefined, 
 ## @aura3d/engine/animation
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -123617,12 +123617,13 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
+- `browser.types`: `./dist/assets/browser-index.d.ts`
+- `browser.default`: `./dist/assets/browser-index.js`
 - `types`: `./dist/assets/index.d.ts`
-- `browser`: `./dist/assets/browser-index.js`
 - `import`: `./dist/assets/index.js`
 - `default`: `./dist/assets/index.js`
 
@@ -129342,7 +129343,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -131967,7 +131968,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -133769,7 +133770,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -215901,7 +215902,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -216568,7 +216569,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -219150,7 +219151,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -306096,7 +306097,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -309190,7 +309191,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -392780,7 +392781,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -392791,7 +392792,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -392817,7 +392818,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -393544,7 +393545,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -394785,7 +394786,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -395424,7 +395425,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -397414,7 +397415,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -398039,7 +398040,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -398132,13 +398133,423 @@ export * from "./PhysicsDebugDraw.js";
 ### `./dist/physics/ensure.d.ts`
 
 ```ts
-/** The initialised solver module (Rapier's namespace), typed structurally so consumers need not have it installed. */
-export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
-/** Resolves with the initialised solver module once it is ready (immediately in the default build), or `null` when it is unavailable. */
-export declare const ensurePhysics: () => Promise<PhysicsSolverModule | null>;
-/** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
-export declare const physicsInitMode: "top-level-await" | "lazy";
+export { ensurePhysics, physicsInitMode } from "../physics-rapier/index.js";
 //# sourceMappingURL=ensure.d.ts.map
+```
+
+### `./dist/physics-rapier/index.d.ts`
+
+```ts
+import type * as Rapier from "@dimforge/rapier3d-compat";
+import { ensureRapier, rapierInitMode } from "./rapierInit.js";
+export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
+export type RapierModule = typeof import("@dimforge/rapier3d-compat");
+export type PhysicsVec3 = readonly [number, number, number];
+export type RapierShapeSpec = {
+    readonly kind: "box";
+    readonly halfExtents: PhysicsVec3;
+} | {
+    readonly kind: "sphere";
+    readonly radius: number;
+} | {
+    readonly kind: "capsule";
+    readonly halfHeight: number;
+    readonly radius: number;
+} | {
+    readonly kind: "plane";
+    readonly normal: PhysicsVec3;
+    readonly constant: number;
+} | {
+    readonly kind: "mesh";
+    readonly vertices: readonly PhysicsVec3[];
+    readonly indices: readonly number[];
+} | {
+    readonly kind: "convex-hull";
+    readonly vertices: readonly PhysicsVec3[];
+} | {
+    readonly kind: "heightfield";
+    readonly rows: number;
+    readonly columns: number;
+    readonly heights: readonly number[];
+    readonly cellSize: number;
+};
+export interface RapierRigidBodySpec {
+    readonly type?: "dynamic" | "fixed" | "kinematic-position" | "kinematic-velocity";
+    readonly position?: PhysicsVec3;
+    readonly rotation?: readonly [number, number, number, number];
+    readonly linearVelocity?: PhysicsVec3;
+    readonly angularVelocity?: PhysicsVec3;
+    readonly linearDamping?: number;
+    readonly angularDamping?: number;
+    readonly ccd?: boolean;
+    readonly canSleep?: boolean;
+    readonly mass?: number;
+    readonly principalAngularInertia?: PhysicsVec3;
+}
+export interface RapierColliderSpec {
+    readonly shape: RapierShapeSpec;
+    readonly density?: number;
+    readonly friction?: number;
+    readonly restitution?: number;
+    readonly sensor?: boolean;
+    readonly collisionGroups?: number;
+}
+export interface RapierBodySpec extends RapierRigidBodySpec, RapierColliderSpec {
+}
+export type RapierJointSpec = {
+    /**
+     * `revolute` is the Rapier-native name for `hinge`; `prismatic` is the
+     * Rapier-native name for `slider`. Both spellings are accepted and build the
+     * same native joint — the alias exists so H1's fixed/revolute/prismatic
+     * promotion reads identically at the adapter and at root.
+     */
+    readonly type: "fixed" | "hinge" | "revolute" | "slider" | "prismatic" | "spring" | "ball-socket" | "motorised-hinge";
+    readonly localAnchorA: PhysicsVec3;
+    readonly localAnchorB: PhysicsVec3;
+    /** Fixed-joint local frames; omitted frames default to identity. */
+    readonly localRotationA?: readonly [number, number, number, number];
+    readonly localRotationB?: readonly [number, number, number, number];
+    /** Align the two local frames using the bodies' relative rotation at creation. */
+    readonly relativeFrameBFromA?: readonly [number, number, number, number];
+    readonly axis: PhysicsVec3;
+    readonly restLength: number;
+    readonly stiffness: number;
+    readonly damping: number;
+    readonly motorSpeed: number;
+    readonly maxMotorTorque: number;
+    readonly limits?: readonly [number, number];
+};
+export interface RapierPhysicsOptions {
+    readonly gravity?: PhysicsVec3;
+    readonly moduleLoader?: (() => Promise<RapierModule>) | undefined;
+}
+export declare class RapierBodyHandle {
+    #private;
+    constructor(world: RapierPhysicsWorld, body: Rapier.RigidBody);
+    get id(): number;
+    position(): PhysicsVec3;
+    velocity(): PhysicsVec3;
+    sleeping(): boolean;
+    applyForce(force: PhysicsVec3): this;
+    applyImpulse(impulse: PhysicsVec3): this;
+    setVelocity(velocity: PhysicsVec3): this;
+    setPosition(position: PhysicsVec3): this;
+    wake(): this;
+    sleep(): this;
+    remove(): void;
+    /** @internal */
+    ownedBy(world: RapierPhysicsWorld): boolean;
+    /** Stable typed escape hatch. The caller does not own or free this object. */
+    unsafeRapierBody(): Rapier.RigidBody;
+    /** The first attached collider, retained for the one-shape convenience API. */
+    unsafeRapierCollider(): Rapier.Collider;
+}
+export declare class RapierColliderHandle {
+    #private;
+    constructor(world: RapierPhysicsWorld, collider: Rapier.Collider, shape?: RapierShapeSpec);
+    get id(): number;
+    remove(): void;
+    /** @internal */
+    ownedBy(world: RapierPhysicsWorld): boolean;
+    /** Stable typed escape hatch. The adapter owns and frees this object. */
+    unsafeRapierCollider(): Rapier.Collider;
+    /** @internal Original winding is needed to filter front faces of triangle meshes. */
+    get surface(): Extract<RapierShapeSpec, {
+        kind: "mesh" | "heightfield";
+    }> | undefined;
+    /** Cast a unit-distance ray at this collider; `maxDistance` is in world units. */
+    castRay(origin: PhysicsVec3, direction: PhysicsVec3, maxDistance?: number, includeBackfaces?: boolean): RapierColliderQueryHit | undefined;
+    /** Sweep a sphere at this collider without approximating its corners or surface. */
+    castSphere(origin: PhysicsVec3, radius: number, direction: PhysicsVec3, maxDistance?: number, includeBackfaces?: boolean): RapierColliderSphereQueryHit | undefined;
+    /** Test actual collider geometry against a world-aligned box or sphere. */
+    intersectsShape(center: PhysicsVec3, shape: Extract<RapierShapeSpec, {
+        kind: "sphere" | "box";
+    }>): boolean;
+}
+export interface RapierColliderQueryHit {
+    readonly point: PhysicsVec3;
+    readonly normal: PhysicsVec3;
+    readonly distance: number;
+}
+export interface RapierColliderSphereQueryHit extends RapierColliderQueryHit {
+    readonly castCenter: PhysicsVec3;
+}
+export declare class RapierJointHandle {
+    #private;
+    constructor(world: RapierPhysicsWorld, joint: Rapier.ImpulseJoint, module: RapierModule);
+    get id(): number;
+    remove(): void;
+    /** @internal */
+    ownedBy(world: RapierPhysicsWorld): boolean;
+    configureMotor(speed: number, maxTorque: number): void;
+    /** Stable typed escape hatch. The adapter owns and frees this object. */
+    unsafeRapierJoint(): Rapier.ImpulseJoint;
+}
+export interface RapierRayHit {
+    readonly body: RapierBodyHandle;
+    readonly colliderHandle: number;
+    readonly timeOfImpact: number;
+    readonly point: PhysicsVec3;
+}
+export interface RapierCharacterMovement {
+    readonly requested: PhysicsVec3;
+    readonly applied: PhysicsVec3;
+    readonly grounded: boolean;
+    readonly collisions: number;
+    readonly nextPosition: PhysicsVec3;
+}
+export declare class RapierCharacterControllerHandle {
+    #private;
+    constructor(world: RapierPhysicsWorld, raw: Rapier.KinematicCharacterController);
+    /** @internal */
+    ownedBy(world: RapierPhysicsWorld): boolean;
+    /** The adapter owns this native controller. */
+    get raw(): Rapier.KinematicCharacterController;
+    enableAutostep(maxHeight: number, minWidth: number, includeDynamicBodies?: boolean): this;
+    enableSnapToGround(distance: number): this;
+    setMaxSlopeClimbAngle(radians: number): this;
+    setMinSlopeSlideAngle(radians: number): this;
+    /** Sliding down slopes too steep to stand on. Turning this off leaves a character stuck on a hill. */
+    setSlideEnabled(enabled: boolean): this;
+    /** Mass used when the character pushes a dynamic body, in kilograms. */
+    setCharacterMass(mass: number | null): this;
+    /** Whether touching a dynamic body moves it. Off, the character walks through crates. */
+    setApplyImpulsesToDynamicBodies(enabled: boolean): this;
+    /** The grounding reported by the most recent `move`, with no solver side effect. */
+    get lastGrounded(): boolean;
+    get lastApplied(): PhysicsVec3;
+    move(character: RapierColliderHandle | RapierBodyHandle, requested: PhysicsVec3): RapierCharacterMovement;
+    /**
+     * Teleport the character and clear the queued kinematic step.
+     *
+     * Writing only the rendered mesh leaves Rapier's queued next-translation in place,
+     * so the respawned character is dragged back toward wherever the old movement was
+     * headed on the following step.
+     */
+    setPosition(character: RapierColliderHandle | RapierBodyHandle, position: PhysicsVec3): PhysicsVec3;
+    dispose(): void;
+}
+/** Per-wheel suspension and grip tuning. All values are solver units. */
+export interface RapierWheelTuning {
+    readonly suspensionStiffness?: number;
+    readonly suspensionCompression?: number;
+    readonly suspensionRelaxation?: number;
+    readonly maxSuspensionTravel?: number;
+    readonly maxSuspensionForce?: number;
+    /**
+     * Tyre traction. Rapier's own wording: "the larger the value, the more
+     * instantaneous braking will happen" — so a LARGER number is MORE grip and a
+     * smaller number lets the tyre break loose. A racing game's drift control is
+     * therefore a *reduction* of this value.
+     */
+    readonly frictionSlip?: number;
+    readonly sideFrictionStiffness?: number;
+}
+/** A wheel plus its initial tuning, used by `addWheel`. */
+export interface RapierWheelSpec extends RapierWheelTuning {
+    readonly connection: PhysicsVec3;
+    readonly direction: PhysicsVec3;
+    readonly axle: PhysicsVec3;
+    readonly restLength: number;
+    readonly radius: number;
+}
+/** Driver input for one wheel for one step. */
+export interface RapierWheelCommand {
+    readonly engineForce?: number;
+    readonly brake?: number;
+    /** Radians. */
+    readonly steering?: number;
+}
+/** Measured wheel state after `update`. */
+export interface RapierWheelState {
+    readonly index: number;
+    readonly isInContact: boolean;
+    readonly contactPoint: PhysicsVec3 | null;
+    readonly contactNormal: PhysicsVec3 | null;
+    readonly engineForce: number;
+    readonly brake: number;
+    readonly steering: number;
+    readonly suspensionLength: number;
+    readonly rotation: number;
+    readonly frictionSlip: number;
+    /** Force the suspension spring is applying this step, newtons. Zero means the spring is not carrying the car. */
+    readonly suspensionForce: number;
+    /** Tyre impulse along the rolling direction — the drive/brake traction actually realized. */
+    readonly forwardImpulse: number;
+    /** Tyre impulse across the rolling direction — the lateral grip actually realized. This is the slip signal. */
+    readonly sideImpulse: number;
+    /** Handle of the collider this tyre is standing on, or `null` in the air. Lets a game tell road from verge without a second query. */
+    readonly groundColliderHandle: number | null;
+}
+export declare class RapierVehicleControllerHandle {
+    #private;
+    constructor(world: RapierPhysicsWorld, raw: Rapier.DynamicRayCastVehicleController);
+    /** @internal */
+    ownedBy(world: RapierPhysicsWorld): boolean;
+    /** The adapter owns this native controller. */
+    get raw(): Rapier.DynamicRayCastVehicleController;
+    /** Chassis-local axes the solver uses to project suspension and tyre forces. */
+    get upAxis(): number;
+    set upAxis(axis: number);
+    /**
+     * Rapier declares this as the write-only accessor `setIndexForwardAxis`, so the
+     * assignment below is the call, not a typo. Reading it back is `indexForwardAxis`.
+     */
+    set forwardAxis(axis: number);
+    get forwardAxis(): number;
+    addWheel(spec: RapierWheelSpec): this;
+    /** Wheel geometry may only be changed through the setters after registration. */
+    setWheelTuning(index: number, tuning: RapierWheelTuning): this;
+    /**
+     * Applies drive input. Only the fields present are written, so a caller can
+     * steer without disturbing throttle and vice versa.
+     *
+     * Nonzero input wakes the chassis. Rapier sleeps a body that has been still, and a
+     * raycast vehicle writes its chassis velocity directly rather than through the force
+     * accumulator, so nothing else wakes it: a car that sat on the start line long enough
+     * to fall asleep then ignores the throttle when the lights go out. That is a
+     * "car will not launch after a countdown" bug with no error anywhere in it.
+     */
+    setWheelCommand(index: number, command: RapierWheelCommand): this;
+    /** Broadcast the same brake to every wheel — the handbrake and stop case. */
+    setBrakes(brake: number): this;
+    wheelState(index: number): RapierWheelState;
+    wheelStates(): readonly RapierWheelState[];
+    /** True only while at least one tyre is touching the ground — the grounding test. */
+    isGrounded(): boolean;
+    groundedWheelCount(): number;
+    currentVehicleSpeed(): number;
+    wheelCount(): number;
+    update(dt: number): void;
+    /**
+     * Release every drive input without touching the chassis.
+     *
+     * A restart that teleports the car but leaves `engineForce` set resumes throttle
+     * the instant the frame resumes, and a wheel left at full lock steers the car into
+     * the barrier it was respawned away from. Both are invisible in a screenshot and
+     * obvious in play, so the reset has to own them.
+     */
+    clearWheelCommands(): this;
+    /**
+     * Take the chassis back as a full physical state, not just a rendered transform.
+     *
+     * Position, rotation, linear velocity, angular velocity and sleep state are all
+     * written, because leaving the old velocity in place means the respawned car keeps
+     * its pre-crash momentum and drives straight off the new spawn.
+     */
+    setChassisPose(position: PhysicsVec3, rotation?: readonly [number, number, number, number], linearVelocity?: PhysicsVec3, angularVelocity?: PhysicsVec3): this;
+    /** The native body the controller drives, so a caller can read the solved pose. */
+    chassisPosition(): PhysicsVec3;
+    chassisRotation(): readonly [number, number, number, number];
+    chassisLinearVelocity(): PhysicsVec3;
+    chassisAngularVelocity(): PhysicsVec3;
+    dispose(): void;
+}
+/**
+ * Owns the optional Rapier world and its native allocations. Supported colliders
+ * are box, sphere, capsule, convex hull, and fixed-body plane, triangle mesh,
+ * or heightfield. Fixed, revolute/hinge, prismatic/slider, spring, spherical,
+ * and motorised-hinge joints are available. Unsupported combinations throw
+ * before native creation. Disposing the world invalidates all owned handles;
+ * removing a body also removes its colliders, joints, and vehicle controllers.
+ */
+export declare class RapierPhysicsWorld {
+    #private;
+    constructor(module: RapierModule, gravity: PhysicsVec3);
+    get disposed(): boolean;
+    /** True until {@link refreshQueries} or a real step has run since the last structural change. */
+    get queriesStale(): boolean;
+    /** @internal Revision changes when a structural edit or teleport invalidates wheel observations. */
+    get queryRevision(): number;
+    /** Declare that a transform was written outside the solver, so the next query needs a refresh. */
+    markQueriesStale(): void;
+    /**
+     * Make scene queries valid without advancing the simulation.
+     *
+     * Called by `PhysicsWorld` before a character move or a vehicle wheel update when the
+     * world changed since the last pass, so a route never has to know this exists.
+     */
+    refreshQueries(): void;
+    createRigidBody(spec?: RapierRigidBodySpec): RapierBodyHandle;
+    createCollider(body: RapierBodyHandle, spec: RapierColliderSpec): RapierColliderHandle;
+    createBody(spec: RapierBodySpec): RapierBodyHandle;
+    removeBody(handle: RapierBodyHandle): void;
+    removeCollider(handle: RapierColliderHandle): void;
+    createJoint(spec: RapierJointSpec, a: RapierBodyHandle, b: RapierBodyHandle): RapierJointHandle;
+    removeJoint(handle: RapierJointHandle): void;
+    createFixedJoint(a: RapierBodyHandle, b: RapierBodyHandle): Rapier.ImpulseJoint;
+    createCharacterController(offset?: number): RapierCharacterControllerHandle;
+    removeCharacterController(value: RapierCharacterControllerHandle): void;
+    createVehicleController(chassis: RapierBodyHandle): RapierVehicleControllerHandle;
+    removeVehicleController(value: RapierVehicleControllerHandle): void;
+    /** @internal Query one collider, including its current body transform. */
+    colliderIntersectsShape(handle: RapierColliderHandle, center: PhysicsVec3, shape: Extract<RapierShapeSpec, {
+        kind: "sphere" | "box";
+    }>): boolean;
+    /** @internal Query one collider, including its current body transform. */
+    castColliderRay(handle: RapierColliderHandle, origin: PhysicsVec3, direction: PhysicsVec3, maxDistance: number, includeBackfaces: boolean): RapierColliderQueryHit | undefined;
+    /** @internal Sweep one sphere, retaining contact on rounded and triangular geometry. */
+    castColliderSphere(handle: RapierColliderHandle, origin: PhysicsVec3, radius: number, direction: PhysicsVec3, maxDistance: number, includeBackfaces: boolean): RapierColliderSphereQueryHit | undefined;
+    raycast(origin: PhysicsVec3, direction: PhysicsVec3, maxDistance?: number): RapierRayHit | undefined;
+    step(dt?: number): void;
+    setGravity(gravity: PhysicsVec3): void;
+    /** Disposed worlds report no bodies, allowing owners to verify teardown. */
+    bodies(): readonly RapierBodyHandle[];
+    /** Stable typed escape hatch. The adapter owns and frees the returned world. */
+    unsafeRapierWorld(): Rapier.World;
+    dispose(): void;
+    /** @internal */
+    assertBodyHandle(handle: RapierBodyHandle): void;
+    /** @internal */
+    assertColliderHandle(handle: RapierColliderHandle): void;
+    /** @internal */
+    assertJointHandle(handle: RapierJointHandle): void;
+    /** @internal */
+    assertCharacterController(handle: RapierCharacterControllerHandle): void;
+    /** @internal */
+    assertVehicleController(handle: RapierVehicleControllerHandle): void;
+    /** @internal */
+    assertCharacterTarget(handle: RapierBodyHandle | RapierColliderHandle): void;
+    /** @internal */
+    isPositionKinematic(body: Rapier.RigidBody): boolean;
+}
+export declare function createRapierPhysics(options?: RapierPhysicsOptions): Promise<RapierPhysicsWorld>;
+/**
+ * Synchronous construction after this ESM module's one-time top-level WASM initialization.
+ * This preserves the established `new PhysicsWorld()` ergonomics without hiding a second
+ * JavaScript solver behind the synchronous API.
+ */
+export declare function createRapierPhysicsSync(options?: Omit<RapierPhysicsOptions, "moduleLoader">): RapierPhysicsWorld;
+/**
+ * PRD-05 §6.3.7 — consume a generated `<id>.<hash8>.collision.glb` sidecar.
+ *
+ * The sidecar (written by `tools/asset-optimize` step `colliders`) carries one
+ * node per mesh-bearing scene node; each mesh's `extras.aura3dCollider` names
+ * the shape: `trimesh` / `convex-hull` geometry verbatim, or analytic `box` /
+ * `capsule` parameters baked from bounds. Node-local TRS is baked into the
+ * produced shape so colliders sit where the source mesh sits.
+ *
+ * `source` is a fetchable URL or the sidecar bytes. `transform` places the
+ * fixed body all colliders attach to — it is the model's world transform
+ * (Q-15-2 wires `model(asset, { physics, collider: "auto" })` to call this).
+ * `options.collider` passes density/friction/etc. through to every collider.
+ */
+export interface ColliderSidecarTransform {
+    readonly position?: PhysicsVec3;
+    readonly rotation?: readonly [number, number, number, number];
+}
+export interface ColliderSidecarOptions extends ColliderSidecarTransform {
+    readonly body?: RapierBodyHandle;
+    readonly collider?: Readonly<Partial<Omit<RapierColliderSpec, "shape">>>;
+}
+export interface ColliderSidecarResult {
+    readonly body: RapierBodyHandle;
+    readonly colliders: readonly RapierColliderHandle[];
+    /** Per-collider `extras.aura3dCollider.sourceNode` in creation order. */
+    readonly sourceNodes: readonly string[];
+}
+export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, source: string | Uint8Array, options?: ColliderSidecarOptions): Promise<ColliderSidecarResult>;
+//# sourceMappingURL=index.d.ts.map
 ```
 
 ### `./dist/physics/Shape.d.ts`
@@ -400267,7 +400678,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -401519,7 +401930,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -401544,7 +401955,7 @@ export declare class PhysicsWorld {
  * adapter module's one-time WASM initialization without pulling unrelated arcade or query APIs.
  */
 export { PhysicsWorld } from "./PhysicsWorld.js";
-export { ensurePhysics, physicsInitMode } from "./ensure.js";
+export { ensurePhysics, physicsInitMode } from "./ensureOpaque.js";
 export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection, PhysicsContinuousCollisionDescriptor, PhysicsContinuousCollisionSelection, PhysicsSnapshot, PhysicsStepStats, PhysicsWorldDescriptor } from "./PhysicsWorld.js";
 //# sourceMappingURL=world.d.ts.map
 ```
@@ -401765,22 +402176,22 @@ export declare class PhysicsWorld {
 //# sourceMappingURL=PhysicsWorld.d.ts.map
 ```
 
-### `./dist/physics/ensure.d.ts`
+### `./dist/physics/ensureOpaque.d.ts`
 
 ```ts
 /** The initialised solver module (Rapier's namespace), typed structurally so consumers need not have it installed. */
 export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
-/** Resolves with the initialised solver module once it is ready (immediately in the default build), or `null` when it is unavailable. */
+/** Resolves with the initialised solver module once it is ready (immediately in the default build), or `null` when the optional solver is absent. */
 export declare const ensurePhysics: () => Promise<PhysicsSolverModule | null>;
 /** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
 export declare const physicsInitMode: "top-level-await" | "lazy";
-//# sourceMappingURL=ensure.d.ts.map
+//# sourceMappingURL=ensureOpaque.d.ts.map
 ```
 
 ## @aura3d/engine/renderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -485839,7 +486250,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -485972,7 +486383,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -487097,7 +487508,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -487181,7 +487592,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -488361,7 +488772,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -492560,7 +492971,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -559442,7 +559853,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -559688,7 +560099,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -646606,7 +647017,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -651793,7 +652204,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -651981,7 +652392,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -652481,7 +652892,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=1bd6839c83f7aa0e50075cc69084feee608d964f48e8d0d51ebb1ee572e4d352`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
 
 ### Export conditions
 
@@ -652939,7 +653350,7 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 ## @aura3d/input
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/input@5.0.0#sha256=9c6df4e78f1c96218668e0b90dfbc7da9dcf5a79f436b11bf41d4783c53f5ea9`
+- Packed identity: `archive:@aura3d/input@5.0.0#sha256=b4773e3425a69da6ad1e552c45c5ff6d998bd8eb6797955685c31761057e9279`
 
 ### Export conditions
 
@@ -654181,7 +654592,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/math@5.0.0#sha256=c27ce7f860608e3fed993b811e8273235872cd6bea1678d4ae6b55a768bb0684`
+- Packed identity: `archive:@aura3d/math@5.0.0#sha256=7ac85c136f03e97fa3387e767b66c186d88be2e87d85f79c6c659750d3bc29b1`
 
 ### Export conditions
 
@@ -656168,7 +656579,7 @@ export declare class NURBSVolume {
 ## @aura3d/math/three
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/math@5.0.0#sha256=c27ce7f860608e3fed993b811e8273235872cd6bea1678d4ae6b55a768bb0684`
+- Packed identity: `archive:@aura3d/math@5.0.0#sha256=7ac85c136f03e97fa3387e767b66c186d88be2e87d85f79c6c659750d3bc29b1`
 
 ### Export conditions
 
@@ -657416,7 +657827,7 @@ export {};
 ## @aura3d/navigation-recast
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.0.0#sha256=6cf1ea72e09a59b723c7460b7ebc32bfffd40d2df663430c0b68afecfe89ad70`
+- Packed identity: `archive:@aura3d/navigation-recast@5.0.0#sha256=d94220b4b6c22826c9fca8792a7a1d2b9657c3b5189ee6fd5a8031ea88885009`
 
 ### Export conditions
 
@@ -657547,7 +657958,7 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 ## @aura3d/physics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f9347119fd85c449fc99496eb1b7b371117d44de24c163603c1f44e627c000e1`
+- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=7881967bdc16829e1a33088dfd05bce28e5924292d296466ace5418391853e6e`
 
 ### Export conditions
 
@@ -657641,12 +658052,7 @@ export * from "./PhysicsDebugDraw.js";
 ### `./dist/ensure.d.ts`
 
 ```ts
-/** The initialised solver module (Rapier's namespace), typed structurally so consumers need not have it installed. */
-export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
-/** Resolves with the initialised solver module once it is ready (immediately in the default build), or `null` when it is unavailable. */
-export declare const ensurePhysics: () => Promise<PhysicsSolverModule | null>;
-/** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
-export declare const physicsInitMode: "top-level-await" | "lazy";
+export { ensurePhysics, physicsInitMode } from "@aura3d/physics-rapier";
 //# sourceMappingURL=ensure.d.ts.map
 ```
 
@@ -659776,7 +660182,7 @@ export {};
 ## @aura3d/physics-rapier
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.0.0#sha256=bd935b6868a64b31c578d34f1ae9559a4a0bf1efb311c1ad09b5930a64596e59`
+- Packed identity: `archive:@aura3d/physics-rapier@5.0.0#sha256=bdd4eac6b61e09f059c44e6ed5aeab212b902ff371f25ba979fe733c6ee1754b`
 
 ### Export conditions
 
@@ -660201,7 +660607,7 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 ## @aura3d/physics/solverless
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f9347119fd85c449fc99496eb1b7b371117d44de24c163603c1f44e627c000e1`
+- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=7881967bdc16829e1a33088dfd05bce28e5924292d296466ace5418391853e6e`
 
 ### Export conditions
 
@@ -661454,7 +661860,7 @@ export declare class PhysicsWorld {
 ## @aura3d/physics/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f9347119fd85c449fc99496eb1b7b371117d44de24c163603c1f44e627c000e1`
+- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=7881967bdc16829e1a33088dfd05bce28e5924292d296466ace5418391853e6e`
 
 ### Export conditions
 
@@ -661480,7 +661886,7 @@ export declare class PhysicsWorld {
  * adapter module's one-time WASM initialization without pulling unrelated arcade or query APIs.
  */
 export { PhysicsWorld } from "./PhysicsWorld.js";
-export { ensurePhysics, physicsInitMode } from "./ensure.js";
+export { ensurePhysics, physicsInitMode } from "./ensureOpaque.js";
 export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection, PhysicsContinuousCollisionDescriptor, PhysicsContinuousCollisionSelection, PhysicsSnapshot, PhysicsStepStats, PhysicsWorldDescriptor } from "./PhysicsWorld.js";
 //# sourceMappingURL=world.d.ts.map
 ```
@@ -661701,22 +662107,22 @@ export declare class PhysicsWorld {
 //# sourceMappingURL=PhysicsWorld.d.ts.map
 ```
 
-### `./dist/ensure.d.ts`
+### `./dist/ensureOpaque.d.ts`
 
 ```ts
 /** The initialised solver module (Rapier's namespace), typed structurally so consumers need not have it installed. */
 export type PhysicsSolverModule = Readonly<Record<string, unknown>>;
-/** Resolves with the initialised solver module once it is ready (immediately in the default build), or `null` when it is unavailable. */
+/** Resolves with the initialised solver module once it is ready (immediately in the default build), or `null` when the optional solver is absent. */
 export declare const ensurePhysics: () => Promise<PhysicsSolverModule | null>;
 /** How the solver initialises: at module load (`top-level-await`) or on the first `ensurePhysics()` (`lazy`). */
 export declare const physicsInitMode: "top-level-await" | "lazy";
-//# sourceMappingURL=ensure.d.ts.map
+//# sourceMappingURL=ensureOpaque.d.ts.map
 ```
 
 ## @aura3d/product-studio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/product-studio@5.0.0#sha256=ab5ec943f3087825598b9e539fd95f3945926f36814df4b11da72d69cd004457`
+- Packed identity: `archive:@aura3d/product-studio@5.0.0#sha256=882cde5788ce17b9398f9f97316272d48052fae8fe871e87f295ece083ea1887`
 
 ### Export conditions
 
@@ -661998,7 +662404,7 @@ export interface ProductStudio {
 ## @aura3d/react
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/react@5.0.0#sha256=bb1f42891b71ca4ca4651ff946f0566398a8fcffb0ad4e1351518311073c1470`
+- Packed identity: `archive:@aura3d/react@5.0.0#sha256=edf1758d34e6668ffb778de28aa73421cebaf1428c479a1ceac128b17d7f7550`
 
 ### Export conditions
 
@@ -662305,7 +662711,7 @@ export {};
 ## @aura3d/rendering
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -693881,7 +694287,7 @@ export declare function registerBatchedDrawShader(): void;
 ## @aura3d/rendering/contracts
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695470,7 +695876,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/atmosphere
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695515,7 +695921,7 @@ export {};
 ## @aura3d/rendering/contracts/blend
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695560,7 +695966,7 @@ export declare function renderStateKey(state: RenderCommandState): number;
 ## @aura3d/rendering/contracts/core
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695630,7 +696036,7 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 ## @aura3d/rendering/contracts/deform
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695683,7 +696089,7 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 ## @aura3d/rendering/contracts/device
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695769,7 +696175,7 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 ## @aura3d/rendering/contracts/environment
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695839,7 +696245,7 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 ## @aura3d/rendering/contracts/flags.state
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -695869,7 +696275,7 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 ## @aura3d/rendering/contracts/frameGraph
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -696013,7 +696419,7 @@ export {};
 ## @aura3d/rendering/contracts/frameUniforms
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -696071,7 +696477,7 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 ## @aura3d/rendering/contracts/geometry
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -696119,7 +696525,7 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 ## @aura3d/rendering/contracts/index
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -697708,7 +698114,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/materialLobes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -697768,7 +698174,7 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 ## @aura3d/rendering/contracts/output
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -697840,7 +698246,7 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 ## @aura3d/rendering/contracts/particles
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -697897,7 +698303,7 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 ## @aura3d/rendering/contracts/post
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698005,7 +698411,7 @@ export interface PostPipelineOptions {
 ## @aura3d/rendering/contracts/program
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698211,7 +698617,7 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 ## @aura3d/rendering/contracts/quality
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698340,7 +698746,7 @@ export declare class StubQualityController implements AuraQualityController {
 ## @aura3d/rendering/contracts/rendererFactory
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698400,7 +698806,7 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 ## @aura3d/rendering/contracts/renderItem
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698518,7 +698924,7 @@ export interface RenderItem {
 ## @aura3d/rendering/contracts/renderSource
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698614,7 +699020,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/sampling
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698675,7 +699081,7 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 ## @aura3d/rendering/contracts/shadows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698751,7 +699157,7 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 ## @aura3d/rendering/contracts/structuralMemo
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698789,7 +699195,7 @@ export declare class StructuralMemo<V> {
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698822,7 +699228,7 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 ## @aura3d/rendering/contracts/textureFormats
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698855,7 +699261,7 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 ## @aura3d/rendering/contracts/velocity
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698927,7 +699333,7 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 ## @aura3d/rendering/extension-scalar-atlas
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -698968,7 +699374,7 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 ## @aura3d/rendering/lanes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -705820,7 +706226,7 @@ export {};
 ## @aura3d/rendering/lighting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -706459,7 +706865,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/rendering/production-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -709951,7 +710357,7 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 ## @aura3d/rendering/reference
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -710684,7 +711090,7 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 ## @aura3d/rendering/reflection-surfaces
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -710819,7 +711225,7 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 ## @aura3d/rendering/shader-graph
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -711062,7 +711468,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/rendering/volumetrics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -711618,7 +712024,7 @@ export {};
 ## @aura3d/rendering/webgpu
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -714308,7 +714714,7 @@ export declare class GaussianSplatRenderer {
 ## @aura3d/rendering/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=23697c42fdc0f3243c99545ef07c3492f801294894e60bb97b9d3ecb5482ff52`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
 
 ### Export conditions
 
@@ -715407,7 +715813,7 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 ## @aura3d/scene
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=32d4bf2ebe9b273e1e1d252069e19d475951589baa4d68080b9c7cacd27d7cdb`
+- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=dfc8a7f526d24b397993e1d61c1070f4d55931954054124826971ffd0366da4a`
 
 ### Export conditions
 
@@ -716533,7 +716939,7 @@ export {};
 ## @aura3d/scene/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=32d4bf2ebe9b273e1e1d252069e19d475951589baa4d68080b9c7cacd27d7cdb`
+- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=dfc8a7f526d24b397993e1d61c1070f4d55931954054124826971ffd0366da4a`
 
 ### Export conditions
 
@@ -716618,7 +717024,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/scripting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/scripting@5.0.0#sha256=06b290bd8e6114ad799873262e13eb377dfa10c48cd6e6a09f6d204d1668d3c9`
+- Packed identity: `archive:@aura3d/scripting@5.0.0#sha256=5acbb73c2ca94b69bcfc125d366623d8abbdd5dfeca9d6ff8abad19c681533c0`
 
 ### Export conditions
 
@@ -717799,7 +718205,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/workflows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/workflows@5.0.0#sha256=fffab11262f14249d51960b4a1c96ce400f1f4324ed426cd5aad6e0a28cd5204`
+- Packed identity: `archive:@aura3d/workflows@5.0.0#sha256=84b0486e2d57e59ac1f8e7e79960defca605e00acef9b080f264ccb4aadc14ac`
 
 ### Export conditions
 
