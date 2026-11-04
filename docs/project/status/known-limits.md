@@ -216,9 +216,11 @@ candidate. Final release claims require regeneration and source-bound receipts.
   "everything" budget is unchanged.
 - **Root `package.json` script count** (`tests/unit/quality-gate/scripts.test.ts`):
   re-baselined 2026-11-02 for 5.0 (owner-delegated) from the Q-15-1 target of
-  ≤ 80 to a cap of 123 (the exact current count: 120 on `main` plus
-  `check:clean-install:source`, `check:clean-install:browser` and
-  `verify:api-docs`). The ≤ 80 target is carried as 5.x debt; the cap
+  ≤ 80 to a cap of 121 (the exact current count: 120 on `main` plus
+  `verify:api-docs`; the `check:clean-install:source` and
+  `check:clean-install:browser` aliases first counted in the cap of 123 were
+  unreferenced and removed by `tools/script-prune --check`, which CI enforces;
+  `verify:asset-urls` is kept through the pruner's `REVIEW_KEEP`). The ≤ 80 target is carried as 5.x debt; the cap
   prevents growth. The check was already failing on `main` before 5.0. No
   scripts were removed: the four `external-parity-*` scripts whose tools are
   quarantined are still invoked by `.github/workflows/public-demo-deploy.yml`

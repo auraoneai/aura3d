@@ -302,8 +302,6 @@
     "verify:size": "node --experimental-strip-types tools/package-size/index.ts",
     "verify:source-cleanliness": "node --experimental-strip-types tools/verify-source-cleanliness/index.ts",
     "verify:static-demo-server-smoke": "node --experimental-strip-types tools/static-demo-server-smoke/index.ts",
-    "check:clean-install:source": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source",
-    "check:clean-install:browser": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase browser",
     "verify:api-docs": "tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts"
   },
   "devDependencies": {
