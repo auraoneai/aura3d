@@ -32,13 +32,14 @@ type AuraGeneratedAssetDefinitions = {
   readonly "ironcrownHarbourCrane": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownFishingBoat": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownHangarPlane": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "ironcrownTempleGate": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownShrine": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownTowerA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownTowerB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownBackdropRidge": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownSkylineBlockA": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "ironcrownSkylineBlockB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownHall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "ironcrownSkylineBlockC": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
@@ -7735,135 +7736,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "suitabilityReason": "Iron Crown venue dressing (GU47 wave 2, WP-36 crownHangarPlane; Meshy, 20000 tris after decimation, single material)"
     }
   },
-  "ironcrownTempleGate": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/ironcrownTempleGate.cce415ee.glb",
-    hash: "sha256-cce415ee8bb403e16bbf04c749aec5b8a1dc3392acaa167ae8f9ba11fea8d75b",
-    bounds: [
-      1.902,
-      1.419,
-      0.712
-    ],
-    sizeBytes: 1218164,
-    metadata: {
-      "materials": [
-        "material-0"
-      ],
-      "animations": [],
-      "animationClips": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": [],
-        "messages": [
-          "No embedded animation clips detected."
-        ]
-      },
-      "humanoid": false,
-      "humanoidStatus": "non-humanoid",
-      "humanoidConfidence": "low",
-      "skeleton": {
-        "skinCount": 0,
-        "jointCount": 0,
-        "skins": [],
-        "messages": [
-          "No skin/skeleton metadata detected."
-        ]
-      },
-      "morphTargets": {
-        "targetCount": 0,
-        "targetNames": [],
-        "meshes": [],
-        "messages": [
-          "No morph target metadata detected."
-        ]
-      },
-      "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 3,
-        "animationClipCount": 0,
-        "skinCount": 0,
-        "morphTargetCount": 0,
-        "rootNodeNames": [
-          "node-0"
-        ],
-        "maxDepth": 1,
-        "messages": [
-          "Detected 1 node across 1 root."
-        ]
-      },
-      "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownTempleGate.cce415ee.glb",
-        "license": "Meshy generated asset (paid API, plan terms at generation time)",
-        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
-        "licenseUrl": "https://www.meshy.ai/terms",
-        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, iron-crown/crownTempleGate). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
-        "sourceFamily": "meshy",
-        "retrievedAt": "2026-11-04T04:38:14.603Z",
-        "evidence": [
-          "aura-evidence/meshy/ironcrownTempleGate.rights.b271572aa785.json",
-          "aura-evidence/meshy/ironcrownTempleGate.metadata.62408dd7a4e3.json"
-        ],
-        "checkedAt": "2026-11-04T04:38:14.603Z"
-      },
-      "sourcePath": "public/aura-assets/ironcrownTempleGate.cce415ee.glb",
-      "outputPath": "public/aura-assets/ironcrownTempleGate.cce415ee.glb",
-      "license": "Meshy generated asset (paid API, plan terms at generation time)",
-      "boundsMetadata": {
-        "min": [
-          -0.951,
-          -0.71,
-          -0.357
-        ],
-        "max": [
-          0.951,
-          0.708,
-          0.356
-        ],
-        "size": [
-          1.902,
-          1.419,
-          0.712
-        ],
-        "center": [
-          0,
-          -0.001,
-          0
-        ],
-        "maxDimension": 1.902,
-        "grounded": false
-      },
-      "materialMetadata": [
-        {
-          "name": "material-0",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        }
-      ],
-      "orientation": {
-        "source": "unknown",
-        "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
-        ]
-      },
-      "nodeNames": [
-        "node-0"
-      ],
-      "textures": [
-        "image-0",
-        "image-1",
-        "image-2"
-      ],
-      "dependencies": [],
-      "quality": "candidate",
-      "role": "world",
-      "suitabilityReason": "Iron Crown venue dressing (GU47 wave 2, WP-36 crownTempleGate; Meshy, 19998 tris after decimation, single material)"
-    }
-  },
   "ironcrownShrine": {
     type: "model",
     format: "glb",
@@ -8636,6 +8508,264 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "quality": "candidate",
       "role": "backdrop",
       "suitabilityReason": "Iron Crown venue dressing (GU47 wave 2, WP-36 crownSkylineBlockB; Meshy, 21242 tris after decimation, single material)"
+    }
+  },
+  "ironcrownHall": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownHall.aed6bfb1.glb",
+    hash: "sha256-aed6bfb1e7fd21cfb5657efc08e9aea48dc14c67c086105681d32ff2f94e1ede",
+    bounds: [
+      1.903,
+      1.444,
+      1.375
+    ],
+    sizeBytes: 922144,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownHall.aed6bfb1.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, iron-crown/crownHallR2). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T10:42:58.947Z",
+        "evidence": [
+          "aura-evidence/meshy/ironcrownHall.rights.328a6e3ce725.json",
+          "aura-evidence/meshy/ironcrownHall.metadata.10a99cdc5c56.json"
+        ],
+        "checkedAt": "2026-11-04T10:42:58.947Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownHall.aed6bfb1.glb",
+      "outputPath": "public/aura-assets/ironcrownHall.aed6bfb1.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.725,
+          -0.687
+        ],
+        "max": [
+          0.951,
+          0.72,
+          0.688
+        ],
+        "size": [
+          1.903,
+          1.444,
+          1.375
+        ],
+        "center": [
+          -0.001,
+          -0.002,
+          0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "world",
+      "suitabilityReason": "Iron Crown venue dressing (GU47 wave 3, WP-36 crownHallR2; Meshy, 26724 tris after decimation, single material)"
+    }
+  },
+  "ironcrownSkylineBlockC": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/ironcrownSkylineBlockC.e7a3aa0b.glb",
+    hash: "sha256-e7a3aa0bcc0cb08e9f0a4320caf99c55c12b92c88321f902399c22a974874796",
+    bounds: [
+      1.903,
+      0.669,
+      1.481
+    ],
+    sizeBytes: 1331940,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/ironcrownSkylineBlockC.e7a3aa0b.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, iron-crown/crownSkylineBlockCR2). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T10:40:54.649Z",
+        "evidence": [
+          "aura-evidence/meshy/ironcrownSkylineBlockC.rights.ad31a6efbf34.json",
+          "aura-evidence/meshy/ironcrownSkylineBlockC.metadata.e9cd1ed08bcc.json"
+        ],
+        "checkedAt": "2026-11-04T10:40:54.649Z"
+      },
+      "sourcePath": "public/aura-assets/ironcrownSkylineBlockC.e7a3aa0b.glb",
+      "outputPath": "public/aura-assets/ironcrownSkylineBlockC.e7a3aa0b.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.952,
+          -0.335,
+          -0.754
+        ],
+        "max": [
+          0.951,
+          0.333,
+          0.727
+        ],
+        "size": [
+          1.903,
+          0.669,
+          1.481
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.014
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "backdrop",
+      "suitabilityReason": "Iron Crown venue dressing (GU47 wave 3, WP-36 crownSkylineBlockCR2; Meshy, 21992 tris after decimation, single material)"
     }
   },
 } as const);

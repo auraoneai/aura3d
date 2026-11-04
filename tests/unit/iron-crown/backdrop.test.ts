@@ -31,8 +31,9 @@ describe("iron-crown far backdrops (GU47 IC47-W1)", () => {
       const layers = nodes.filter((node) => node.kind !== "model");
       expect(layers.length).toBeGreaterThanOrEqual(1);
       expect(layers.length).toBeLessThanOrEqual(4);
-      expect(models.length).toBeLessThanOrEqual(6);
-      expect(layers.length + models.length).toBeLessThanOrEqual(10);
+      // Wave 3: the Dock far bank adds two warehouse rows (still one draw each, far under the 60-draw backdrop budget).
+      expect(models.length).toBeLessThanOrEqual(8);
+      expect(layers.length + models.length).toBeLessThanOrEqual(12);
       for (const node of nodes) {
         expect(node.name?.startsWith(`bd-${stage.id}-`), node.name).toBe(true);
         expect(node.castShadow).toBe(false);

@@ -83,13 +83,16 @@ export default defineArtDirection({
     { role: "backdrop", assetKey: "ironcrownHarbourCrane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "ironcrownFishingBoat", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "ironcrownHangarPlane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "world", assetKey: "ironcrownTempleGate", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 3 (2026-11-04): the re-rolled pavilion (crownHallR2, sloppy-decimated 146,414 -> 26,724 tris) replaces the temple gate at the Monastery centre.
+    { role: "world", assetKey: "ironcrownHall", maxTriangles: 27000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "ironcrownShrine", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "ironcrownTowerA", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "ironcrownTowerB", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "ironcrownBackdropRidge", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "ironcrownSkylineBlockA", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "ironcrownSkylineBlockB", maxTriangles: 22000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 3: the re-rolled waterfront warehouse row (crownSkylineBlockCR2, 27,070 -> 21,992 tris), Dock far bank.
+    { role: "backdrop", assetKey: "ironcrownSkylineBlockC", maxTriangles: 22000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // Still borrowed: no CC0 catalog asset fits these without degrading the venue (lane report, Phase 9).
     // Phase 9b: the Airstrip and Monastery keep their 4.7.7 props (the CC0 swaps lost a blind panel against 4.7.7).
     { ...MESHY_PROP, assetKey: "auroraFuelDepotTankMeshy" },
