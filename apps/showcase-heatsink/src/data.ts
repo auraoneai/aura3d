@@ -182,8 +182,8 @@ export interface SceneryAnchor {
   readonly spinSpeed?: number;
 }
 
-// 22 track-side anchors: arches, gantry, tunnels, towers, hazards, pickups and the shockwave pylon.
-// With the 7 drones and the mine, 30 `model(...)` nodes cover all 26 admitted `heatsink*` assets.
+// 24 track-side anchors: arches, gantry, tunnels, towers, hazards, pickups and the shockwave pylon.
+// With the 7 drones and the mine, 32 `model(...)` nodes (route budget 32).
 export const SCENERY_ANCHORS: readonly SceneryAnchor[] = [
   { id: "prop-gantry-start", assetKey: "heatsinkGantryStart", maxDim: 38, s: 68, period: 240, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
   { id: "prop-arch-a", assetKey: "heatsink_thermalArchIron", maxDim: 38, s: 46, period: 160, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
@@ -191,17 +191,23 @@ export const SCENERY_ANCHORS: readonly SceneryAnchor[] = [
   { id: "prop-overpass", assetKey: "heatsinkOverpass", maxDim: 56, s: 94, period: 220, lateralX: 0, baseY: 4.8, yaw: 0, kind: "decor" },
   { id: "prop-tunnel-a", assetKey: "heatsinkTunnelFrame", maxDim: 36, s: 58, period: 180, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
   { id: "prop-tunnel-b", assetKey: "heatsinkTunnelFrame", maxDim: 36, s: 148, period: 180, lateralX: 0, baseY: 0.0, yaw: 0, kind: "decor" },
-  { id: "prop-statue", assetKey: "heatsinkStatue", maxDim: 22, s: 128, period: 260, lateralX: -19.5, baseY: 0.0, yaw: 0.35, kind: "decor" },
+  // GU47 wave 2 (HS-09): the Meshy ladle crane replaces the statue (same id; a fitted model grounds its lowest point on the node, so every wave-2 piece stands on the plain at y -8.2, below the elevated road and clear of the wall).
+  { id: "prop-statue", assetKey: "heatsink_thermalLadleCrane", maxDim: 24, s: 128, period: 260, lateralX: -25.0, baseY: -8.2, yaw: 0.35, kind: "decor" },
   { id: "prop-tower-l-left", assetKey: "heatsink_thermalTowerLIron", maxDim: 46, s: 44, period: 150, lateralX: -28.0, baseY: -2.0, yaw: 0.1, kind: "decor" },
   { id: "prop-tower-l-right", assetKey: "heatsink_thermalTowerLIron", maxDim: 48, s: 118, period: 150, lateralX: 28.5, baseY: -2.0, yaw: -0.15, kind: "decor" },
   { id: "prop-tower-t-left", assetKey: "heatsink_thermalTowerTIron", maxDim: 52, s: 82, period: 170, lateralX: -29.0, baseY: -2.0, yaw: 0, kind: "decor" },
-  { id: "prop-tower-x-right", assetKey: "heatsinkTowerX", maxDim: 54, s: 156, period: 190, lateralX: 29.5, baseY: -2.0, yaw: 0.2, kind: "decor" },
+  // GU47 wave 2 (HS-09, HS-04): the Meshy cooling tower is a new far-left landmark (the wave-1 soot-iron T tower stays).
+  { id: "prop-cooling-tower", assetKey: "heatsink_thermalCoolingTower", maxDim: 36, s: 10, period: 230, lateralX: -42.0, baseY: -8.2, yaw: 0, kind: "decor" },
+  // GU47 wave 2 (HS-09, HS-04): the Meshy smokestack cluster replaces the X tower; a new Meshy water tower stands on the opposite flank.
+  { id: "prop-tower-x-right", assetKey: "heatsink_thermalSmokestacks", maxDim: 40, s: 156, period: 190, lateralX: 40.0, baseY: -8.2, yaw: 0.15, kind: "decor" },
+  { id: "prop-water-tower", assetKey: "heatsink_thermalWaterTower", maxDim: 30, s: 20, period: 210, lateralX: 31.0, baseY: -8.2, yaw: -0.3, kind: "decor" },
   { id: "prop-billboard-left", assetKey: "heatsinkHoloBillboard", maxDim: 9.5, s: 60, period: 140, lateralX: -16.2, baseY: 5.4, yaw: 0.28, kind: "decor" },
   { id: "prop-billboard-right", assetKey: "heatsinkHoloBillboard", maxDim: 9.5, s: 130, period: 140, lateralX: 16.2, baseY: 5.6, yaw: -0.28, kind: "decor" },
   { id: "prop-lava-fall", assetKey: "heatsinkLavaFall", maxDim: 18, s: 108, period: 210, lateralX: 18.5, baseY: 0.0, yaw: -0.4, kind: "lava" },
   { id: "prop-water-emitter", assetKey: "heatsinkWaterEmitter", maxDim: 14, s: 76, period: 190, lateralX: -16.8, baseY: 0.0, yaw: 0.4, kind: "water" },
   { id: "prop-barrier-left", assetKey: "heatsinkBarrierA", maxDim: 3.8, s: 28, period: 90, lateralX: -9.4, baseY: 0.2, yaw: 0, kind: "decor" },
-  { id: "prop-checkpoint-ring", assetKey: "heatsinkCheckpointRing", maxDim: 26.0, s: 86, period: 150, lateralX: -11.5, baseY: 1.2, yaw: 0, kind: "decor" },
+  // GU47 wave 2 (HS-09): the Meshy reactor ring replaces the checkpoint ring; its 15 m deep base is moved off the road onto the left flank.
+  { id: "prop-checkpoint-ring", assetKey: "heatsink_thermalReactorRing", maxDim: 24.0, s: 86, period: 150, lateralX: -27.0, baseY: -8.2, yaw: 0.25, kind: "decor" },
   { id: "prop-boost-pad", assetKey: "heatsinkBoostPad", maxDim: 4.8, s: 42, period: 110, lateralX: -2.4, baseY: 0.12, yaw: 0, kind: "boost" },
   { id: "prop-cooling-canister", assetKey: "heatsinkCoolingCanister", maxDim: 2.1, s: 64, period: 125, lateralX: 3.1, baseY: 1.45, yaw: 0, kind: "coolant", spinSpeed: 1.8 },
   { id: "prop-shield-pickup", assetKey: "heatsinkShieldPickup", maxDim: 2.0, s: 98, period: 135, lateralX: -3.2, baseY: 1.65, yaw: 0, kind: "shield", spinSpeed: 2.1 },

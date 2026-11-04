@@ -416,6 +416,661 @@ const definitions = {
       "role": "prop"
     },
   },
+  // GU47 wave 2 (thermalReactorRing): Meshy text-to-3d set piece (HS-09). Optimized GLB from the wave-2 pipeline, then decimated to 19994 triangles with
+  // the coordinator decimate tool (gltf-transform weld + meshopt simplify, textures capped); admitted app-local, root-relative URL (route-local-model-url-unsafe trap).
+  "heatsink_thermalReactorRing": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/heatsink_thermalReactorRing.6bbdff56.glb",
+    hash: "sha256-6bbdff56c902ad53601b4f76830415b2857db50a6c549cf3799104afd266dae0",
+    bounds: [
+      1.901,
+      1.561,
+      1.188
+    ],
+    sizeBytes: 1177964,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalReactorRing.6bbdff56.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, heatsink/thermalReactorRing). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:23:59.691Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalReactorRing.rights.4e12cfad6a1b.json",
+          "aura-evidence/meshy/heatsink_thermalReactorRing.metadata.275adb88aeec.json",
+          "wave2:artifacts/gu47-meshy/heatsink/thermalReactorRing/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-04T04:23:59.691Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalReactorRing.6bbdff56.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalReactorRing.6bbdff56.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.951,
+          -0.781,
+          -0.594
+        ],
+        "max": [
+          0.95,
+          0.78,
+          0.593
+        ],
+        "size": [
+          1.901,
+          1.561,
+          1.188
+        ],
+        "center": [
+          -0.001,
+          0,
+          0
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  // GU47 wave 2 (thermalLadleCrane): Meshy text-to-3d set piece (HS-09). Optimized GLB from the wave-2 pipeline, then decimated to 16198 triangles with
+  // the coordinator decimate tool (gltf-transform weld + meshopt simplify, textures capped); admitted app-local, root-relative URL (route-local-model-url-unsafe trap).
+  "heatsink_thermalLadleCrane": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/heatsink_thermalLadleCrane.783973a2.glb",
+    hash: "sha256-783973a24b62ff75d70700f7e9e16badff9abd24b4c58556b3abeb72495d57d4",
+    bounds: [
+      1.084,
+      1.904,
+      0.966
+    ],
+    sizeBytes: 1392716,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalLadleCrane.783973a2.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, heatsink/thermalLadleCrane). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:21:12.287Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalLadleCrane.rights.2c2f8df6d7e6.json",
+          "aura-evidence/meshy/heatsink_thermalLadleCrane.metadata.001412584bb0.json",
+          "wave2:artifacts/gu47-meshy/heatsink/thermalLadleCrane/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-04T04:21:12.287Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalLadleCrane.783973a2.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalLadleCrane.783973a2.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.53,
+          -0.952,
+          -0.484
+        ],
+        "max": [
+          0.554,
+          0.951,
+          0.482
+        ],
+        "size": [
+          1.084,
+          1.904,
+          0.966
+        ],
+        "center": [
+          0.012,
+          0,
+          -0.001
+        ],
+        "maxDimension": 1.904,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  // GU47 wave 2 (thermalCoolingTower): Meshy text-to-3d set piece (HS-09). Optimized GLB from the wave-2 pipeline, then decimated to 19968 triangles with
+  // the coordinator decimate tool (gltf-transform weld + meshopt simplify, textures capped); admitted app-local, root-relative URL (route-local-model-url-unsafe trap).
+  "heatsink_thermalCoolingTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/heatsink_thermalCoolingTower.3c6a9a5b.glb",
+    hash: "sha256-3c6a9a5b3c1bb91c2a911359f1f782593addc23cea57b7959c91ce048867c290",
+    bounds: [
+      1.901,
+      1.487,
+      1.22
+    ],
+    sizeBytes: 1267556,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalCoolingTower.3c6a9a5b.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, heatsink/thermalCoolingTower). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:20:55.751Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalCoolingTower.rights.9ac7a30adcb3.json",
+          "aura-evidence/meshy/heatsink_thermalCoolingTower.metadata.d5a0670b0303.json",
+          "wave2:artifacts/gu47-meshy/heatsink/thermalCoolingTower/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-04T04:20:55.751Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalCoolingTower.3c6a9a5b.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalCoolingTower.3c6a9a5b.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.95,
+          -0.744,
+          -0.622
+        ],
+        "max": [
+          0.951,
+          0.743,
+          0.598
+        ],
+        "size": [
+          1.901,
+          1.487,
+          1.22
+        ],
+        "center": [
+          0,
+          0,
+          -0.012
+        ],
+        "maxDimension": 1.901,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  // GU47 wave 2 (thermalSmokestacks): Meshy text-to-3d set piece (HS-09). Optimized GLB from the wave-2 pipeline, then decimated to 24712 triangles with
+  // the coordinator decimate tool (gltf-transform weld + meshopt simplify, textures capped); admitted app-local, root-relative URL (route-local-model-url-unsafe trap).
+  "heatsink_thermalSmokestacks": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/heatsink_thermalSmokestacks.f7a75986.glb",
+    hash: "sha256-f7a759861eb00b451c4e3b8b3df03f32bf68962274907900a669f32cf22c6c12",
+    bounds: [
+      1.858,
+      1.601,
+      0.659
+    ],
+    sizeBytes: 1293484,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalSmokestacks.f7a75986.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, heatsink/thermalSmokestacks). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:21:46.554Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalSmokestacks.rights.c072f5fddd45.json",
+          "aura-evidence/meshy/heatsink_thermalSmokestacks.metadata.ee7b4da12d80.json",
+          "wave2:artifacts/gu47-meshy/heatsink/thermalSmokestacks/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-04T04:21:46.554Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalSmokestacks.f7a75986.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalSmokestacks.f7a75986.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.916,
+          -0.806,
+          -0.322
+        ],
+        "max": [
+          0.942,
+          0.795,
+          0.337
+        ],
+        "size": [
+          1.858,
+          1.601,
+          0.659
+        ],
+        "center": [
+          0.013,
+          -0.005,
+          0.007
+        ],
+        "maxDimension": 1.858,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
+  // GU47 wave 2 (thermalWaterTower): Meshy text-to-3d set piece (HS-09). Optimized GLB from the wave-2 pipeline, then decimated to 20000 triangles with
+  // the coordinator decimate tool (gltf-transform weld + meshopt simplify, textures capped); admitted app-local, root-relative URL (route-local-model-url-unsafe trap).
+  "heatsink_thermalWaterTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/heatsink_thermalWaterTower.2c76aeab.glb",
+    hash: "sha256-2c76aeab607ea365a4f8613ef5028036c4d425aa50d24329fb30e3c111b0e5f6",
+    bounds: [
+      1.412,
+      1.903,
+      1.311
+    ],
+    sizeBytes: 1194988,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/heatsink_thermalWaterTower.2c76aeab.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, heatsink/thermalWaterTower). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:22:41.582Z",
+        "evidence": [
+          "aura-evidence/meshy/heatsink_thermalWaterTower.rights.ee8a7374141d.json",
+          "aura-evidence/meshy/heatsink_thermalWaterTower.metadata.2f881ce25d1d.json",
+          "wave2:artifacts/gu47-meshy/heatsink/thermalWaterTower/opt/thumbnail.png"
+        ],
+        "checkedAt": "2026-11-04T04:22:41.582Z"
+      },
+      "sourcePath": "public/aura-assets/heatsink_thermalWaterTower.2c76aeab.glb",
+      "outputPath": "public/aura-assets/heatsink_thermalWaterTower.2c76aeab.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.707,
+          -0.952,
+          -0.656
+        ],
+        "max": [
+          0.705,
+          0.951,
+          0.655
+        ],
+        "size": [
+          1.412,
+          1.903,
+          1.311
+        ],
+        "center": [
+          -0.001,
+          -0.001,
+          0
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "quality": "candidate",
+      "role": "prop"
+    },
+  },
   "heatsinkArch": {
     type: "model",
     format: "glb",
