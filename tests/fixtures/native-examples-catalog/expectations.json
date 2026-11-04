@@ -1066,7 +1066,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/primitives.ts",
-          "sha256": "1e04444d7d50f7e81a58614c26efefd7ac80b048c3d27c55d82dcece670ef600"
+          "sha256": "10d67b953a86462655bd1d1b21ae38907d7299f233bd8d7f3dbf83ceb893b314"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
@@ -1082,7 +1082,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
-          "sha256": "f2380492fb9da2bcd7a31bc87c8e345d5282f71d6009484508902df83a2b17d7"
+          "sha256": "82d990c4805a6c8d775756ab58ce43e3ff8d0d73f20f47e0b256f54138cf367d"
         },
         {
           "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
@@ -2919,7 +2919,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "27ba15b74606691c692f50892b480f11410f3a23be5c071560c0be2a1628eb59"
+          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
         }
       ],
       "regions": [
@@ -3056,7 +3056,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "27ba15b74606691c692f50892b480f11410f3a23be5c071560c0be2a1628eb59"
+          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
         }
       ],
       "regions": [
@@ -7595,7 +7595,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "27ba15b74606691c692f50892b480f11410f3a23be5c071560c0be2a1628eb59"
+          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
         }
       ],
       "regions": [
@@ -7665,7 +7665,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "27ba15b74606691c692f50892b480f11410f3a23be5c071560c0be2a1628eb59"
+          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
         }
       ],
       "regions": [

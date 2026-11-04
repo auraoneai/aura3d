@@ -33,9 +33,12 @@ describe("GU47 eint EF-1: finalize-dist ships the VFX pages", () => {
 
   it("the tarball audit (which bans .png) allows exactly the two pages", () => {
     const audit = readFileSync(resolve(root, "tools/package-tarball-audit/index.ts"), "utf8");
-    const source = /const allowedPathPatterns = \[\/(.+)\/\];/.exec(audit)?.[1];
-    expect(source).toBeDefined();
-    const allowed = new RegExp(source!);
+    // 5.0: the allow-list is a multi-line array (VFX pages in dist/assets/vfx, the render-worker asset folder, template colormap sidecars).
+    const body = /const allowedPathPatterns = \[([\s\S]*?)\n\];/.exec(audit)?.[1];
+    expect(body).toBeDefined();
+    const patterns = [...body!.split("\n").filter((line) => !line.trim().startsWith("//")).join("\n").matchAll(/^\s*\/(.+)\/,?\s*$/gm)].map((match) => new RegExp(match[1]!));
+    expect(patterns.length).toBeGreaterThan(0);
+    const allowed = { test: (path: string): boolean => patterns.some((pattern) => pattern.test(path)) };
     expect(allowed.test("dist/assets/vfx/aura-vfx-1k.png")).toBe(true);
     expect(allowed.test("dist/assets/vfx/aura-vfx-2k.png")).toBe(true);
     expect(allowed.test("dist/assets/vfx/aura-vfx-2k-decals.png")).toBe(false);

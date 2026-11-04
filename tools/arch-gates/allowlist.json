@@ -1672,5 +1672,31 @@
     "reason": "5.0 regex false positive: 'Probe' here is a light-probe grid (lighting option type), not an evidence probe. Published 2026-11-02 because public AuraLightingRuntime.attachIndirect references it; revisit the EVIDENCE_RE 'Probe' token in 5.x",
     "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
     "reviewer": "agent (owner-delegated, 2026-11-02)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "ensurePhysics",
+    "packages": [
+      "physics",
+      "physics-rapier"
+    ],
+    "reason": "5.0 debt: \"ensurePhysics\" is re-declared by @aura3d/physics (explicitly typed const over the optional @aura3d/physics-rapier solver, so the backend-neutral public declarations never name the backend) and exported by @aura3d/physics-rapier; converging on one declaration would put the backend types back into the physics contract, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-03)"
+  },
+  {
+    "rule": "unique-ownership",
+    "name": "physicsInitMode",
+    "packages": [
+      "physics",
+      "physics-rapier"
+    ],
+    "reason": "5.0 debt: \"physicsInitMode\" is re-declared by @aura3d/physics (explicitly typed const over the optional @aura3d/physics-rapier solver, so the backend-neutral public declarations never name the backend) and exported by @aura3d/physics-rapier; converging on one declaration would put the backend types back into the physics contract, deferred to 5.x",
+    "note": "cross-package name collision (PRD-15 T5.8); listed as 5.x tech debt",
+    "expires": "2027-01-31",
+    "request": "docs/project/status/known-limits.md#5x-architecture-gate-debt",
+    "reviewer": "agent (owner-delegated, 2026-11-03)"
   }
 ]

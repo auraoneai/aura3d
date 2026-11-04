@@ -296,7 +296,7 @@ Each has its own row with a concrete reason, expiry 2027-01-31 and reviewer
 | `single-renderer` | 3 | WebGL2 context reads in the debug GPU probe, `compiler/renderer.ts`, and lane-01 output diagnostics. |
 | `glsl-location` | 14 | 12 renderer/pass modules with inline GLSL (paths referenced by ledger locators) and 2 false positives (`migrate-three/emit.ts`, `compiler/customMaterial.ts`). |
 | `no-evidence-in-runtime` | 9 | Published evidence/readiness names on `.` and `./renderer` (for example `collectAuraSceneEvidence`, `TypedGLBActorEvidence`). Removing them needs a deprecation cycle. The rule now accepts dated `{ rule, file, name }` rows. |
-| `unique-ownership` | 7 | `Vec3Like`, `ParticleBurst`, `earcut`, `shapeArea`, `isClockWise`, `triangulateShape`, `Shape` have different declarations in different packages. |
+| `unique-ownership` | 9 | `Vec3Like`, `ParticleBurst`, `earcut`, `shapeArea`, `isClockWise`, `triangulateShape`, `Shape` have different declarations in different packages; `ensurePhysics` and `physicsInitMode` are re-declared by `@aura3d/physics` over the optional `@aura3d/physics-rapier` solver so the backend-neutral contract never names the backend. |
 
 Rows written before 5.0 (unique-ownership `2026-11-03`, glsl-location,
 single-renderer and the Phase-8 SCC row `2026-11-15` / `2026-11-30`) keep
