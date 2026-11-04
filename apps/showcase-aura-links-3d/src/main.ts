@@ -140,6 +140,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 const HIDDEN_SCALE = 0.0001;
+// GU47 wave 3: the basalt column model's taupe, wood-grained base colour is multiplied down to a cool dark grey so it reads as volcanic stone
+const BASALT_TINT = [{ color: "#8a8782", colorMode: "multiply" as const }];
 const TRAIL_COUNT = 16;
 /**
  * drawn ball radius (m): about 2.3x a real 21 mm ball, half the cup's 0.2 m width. At 0.035 the ball hid behind
@@ -719,12 +721,34 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
   } else if (theme === "parkland") {
     if (clubSpot) nodes.push(...buildClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
   } else if (theme === "volcanic") {
+    // GU47 wave 3 (golfBasaltColumnsR2, LINKS-08): a Links-owned basalt column cluster beside the fairway, left of the hole,
+    // outside the rough band (10 m high, about 16 m long); the crater shard keeps the right side
+    {
+      const bcX = Math.max(terrain.bounds.minX + 10, midT[0] - fairHalf - 24);
+      const bcZ = midT[1] + 10;
+      nodes.push(
+        model(assets.links_basalt_columns, { name: "landmark-basalt-columns", targetHeight: 10, role: "setDressing", scaleMode: "fit", materialOverrides: BASALT_TINT })
+          .position(bcX, terrain.height(bcX, bcZ) - 0.2, bcZ)
+          .rotate(0, 0.9, 0)
+      );
+    }
     nodes.push(
       model(assets.linksCraterCrystal, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1])
         .rotate(0, 0.4, 0)
     );
   } else if (theme === "alpine") {
+    // GU47 wave 3 (golfCableCarStationR2, LINKS-08): Cloud Terrace's alpine cable car station stands right of the hole,
+    // outside the rough band (11 m high, about 13 m wide), front toward the fairway and the tee camera
+    {
+      const ccX = Math.min(terrain.bounds.maxX - 10, midT[0] + fairHalf + 26);
+      const ccZ = midT[1] + 14;
+      nodes.push(
+        model(assets.links_cable_car_station, { name: "landmark-cable-car-station", targetHeight: 11, role: "setDressing", scaleMode: "fit" })
+          .position(ccX, terrain.height(ccX, ccZ) - 0.1, ccZ)
+          .rotate(0, -1.95, 0)
+      );
+    }
     // GU47 phase 9 (D2): the far treeline behind the green is this game's own CC0 snow pine, instanced in one draw; it
     // stays inside the old backdrop card's 90 m span and 60 m height at the same distance
     const alpTransforms = Array.from({ length: 15 }, (_, i) => {
