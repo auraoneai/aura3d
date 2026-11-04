@@ -68,11 +68,12 @@ describe("pips-big-leap shell", () => {
     }
   });
 
-  it("GU47 phase 4: the diorama draws no voxel NPCs (PBL-A3 villagers replace them)", () => {
+  it("GU47 phase 4 + wave 2: the diorama draws no voxel NPCs; the generated villagers replace them (PBL-A3)", () => {
     for (const id of ["academy", "w1", "w2"] as const) {
       const spec = worldSpec(id);
       const nodes = (buildWorld(spec).scene.toJSON() as unknown as { nodes: { name?: string }[] }).nodes;
       expect(nodes.some((n) => /^npc:/.test(n.name ?? "")), id).toBe(false);
+      for (const n of spec.npcs) expect(nodes.some((x) => x.name === `pbl-villager:${n.id}`), `${id} ${n.id}`).toBe(true);
       const original = (buildWorld(spec, { look: "original" }).scene.toJSON() as unknown as { nodes: { name?: string }[] }).nodes;
       expect(original.some((n) => /^npc:/.test(n.name ?? "")), id).toBe(true);
     }
