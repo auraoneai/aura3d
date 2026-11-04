@@ -1,6 +1,6 @@
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { normalizeNpmArchiveBytes, sortTarEntries } from '../../../tools/release/deterministic-archive.mjs';
+import { canonicalizeManifestBytes, normalizeNpmArchiveBytes, sortTarEntries } from '../../../tools/release/deterministic-archive.mjs';
 
 /** Minimal ustar writer: one regular-file entry per row, in the given order. */
 function tar(rows: Array<{ path: string; text: string; pax?: boolean }>): Buffer {
@@ -59,5 +59,25 @@ describe('deterministic npm archive entry order', () => {
   it('refuses a duplicate path and a truncated archive', () => {
     expect(() => sortTarEntries(tar([{ path: 'package/a', text: '1' }, { path: 'package/a', text: '2' }]))).toThrow(/Duplicate tar entry path/);
     expect(() => sortTarEntries(tar(rows).subarray(0, 700))).toThrow(/Truncated tar entry/);
+  });
+
+  it('gives the same bytes when pnpm emits the packed dependency maps in another order (ACR pass 011, @aura3d/debug)', () => {
+    const manifest = (deps: string[]) => `{\n  "name": "@aura3d/debug",\n  "dependencies": {\n${deps.map((name) => `    "${name}": "5.0.0"`).join(',\n')}\n  },\n  "files": [\n    "dist"\n  ]\n}`;
+    const pack = (deps: string[]) => normalizeNpmArchiveBytes(gzipSync(tar([{ path: 'package/dist/index.js', text: 'a' }, { path: 'package/package.json', text: manifest(deps) }])));
+    const sorted = pack(['@aura3d/animation', '@aura3d/physics', '@aura3d/rendering']);
+    expect(Buffer.compare(pack(['@aura3d/animation', '@aura3d/rendering', '@aura3d/physics']), sorted)).toBe(0);
+    expect(entries(gunzipSync(sorted))).toContain(`package/package.json=${manifest(['@aura3d/animation', '@aura3d/physics', '@aura3d/rendering'])}`);
+    expect(canonicalizeManifestBytes(Buffer.from('not json')).toString()).toBe('not json');
+  });
+
+  it('normalizes entry headers (mtime, owner ids, mode class) so a repack of other file metadata converges', () => {
+    const plain = tar([{ path: 'package/a.js', text: 'a' }]);
+    const odd = Buffer.from(plain);
+    odd.write('0000664\0', 100); odd.write('0001750\0', 108); odd.write('00000012345\0', 136); odd.write('someone', 265);
+    const header = (bytes: Buffer) => gunzipSync(normalizeNpmArchiveBytes(gzipSync(bytes))).subarray(0, 512);
+    expect(Buffer.compare(header(odd), header(plain))).toBe(0);
+    const out = header(plain);
+    expect(out.subarray(100, 108).toString()).toBe('0000644\0');
+    expect(Number.parseInt(out.subarray(148, 154).toString(), 8)).toBe([...out.subarray(0, 148), ...out.subarray(156)].reduce((a, b) => a + b, 0) + 8 * 32);
   });
 });

@@ -5,7 +5,14 @@
 // bytes (and therefore different plan SHA-256/SRI values) with identical file contents. The ACR source pass
 // packs the same commit in several stages and requires the stage plans to be byte-identical, so every archive
 // is rewritten with its entries (each with its own pax/GNU extension headers) sorted by path and a fixed gzip
-// level. Entry headers, modes, sizes and file bytes are copied unchanged.
+// level.
+//
+// Sorting entries is not enough: `pnpm pack` also rewrites `workspace:*` ranges in `package/package.json` and
+// emits the rewritten dependency maps in the order its asynchronous version lookups finish (ACR pass 011:
+// `@aura3d/debug` packed with `animation, rendering, physics` in one stage and `animation, physics, rendering`
+// in six others, 36 bytes of one entry). Dependency maps in the packed manifest are therefore key-sorted, and
+// every entry header is normalized (mtime, uid/gid 0, empty uname/gname, mode 0644/0755, recomputed checksum).
+// File bytes of every other entry are copied unchanged.
 import { readFileSync, renameSync, writeFileSync } from "node:fs";
 import { gunzipSync, gzipSync } from "node:zlib";
 
@@ -38,6 +45,50 @@ const paxPath = (data) => {
   return undefined;
 };
 
+const DEPENDENCY_MAPS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
+const FIXED_MTIME = 499162500; // 1985-10-26T08:15:00Z, the value npm/pnpm pack already writes.
+
+/** Key-sort the dependency maps of a packed manifest; anything that is not a JSON object is returned untouched. */
+export function canonicalizeManifestBytes(data) {
+  let manifest;
+  const text = data.toString("utf8");
+  try { manifest = JSON.parse(text); } catch { return data; }
+  if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) return data;
+  let changed = false;
+  for (const field of DEPENDENCY_MAPS) {
+    const map = manifest[field];
+    if (map === null || typeof map !== "object" || Array.isArray(map)) continue;
+    const keys = Object.keys(map);
+    const sorted = [...keys].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    if (sorted.every((key, index) => key === keys[index])) continue;
+    manifest[field] = Object.fromEntries(sorted.map((key) => [key, map[key]]));
+    changed = true;
+  }
+  if (!changed) return data;
+  const indent = /^\{\r?\n( +|\t)"/.exec(text)?.[1] ?? 2;
+  return Buffer.from(`${JSON.stringify(manifest, null, indent)}${text.endsWith("\n") ? "\n" : ""}`, "utf8");
+}
+
+const writeOctal = (header, start, length, value) => {
+  header.fill(0, start, start + length);
+  header.write(`${value.toString(8).padStart(length - 1, "0")}\0`, start, "latin1");
+};
+
+/** Normalize one entry header in place: mtime, owner ids/names, mode class, size; fresh checksum. */
+function normalizeHeader(header, size) {
+  const mode = octal(header, 100, 8);
+  writeOctal(header, 100, 8, mode & 0o111 ? 0o755 : 0o644);
+  writeOctal(header, 108, 8, 0);
+  writeOctal(header, 116, 8, 0);
+  writeOctal(header, 124, 12, size);
+  writeOctal(header, 136, 12, FIXED_MTIME);
+  header.fill(0, 265, 297); // uname
+  header.fill(0, 297, 329); // gname
+  header.fill(0x20, 148, 156);
+  const sum = header.reduce((total, byte) => total + byte, 0);
+  header.write(`${sum.toString(8).padStart(6, "0")}\0 `, 148, "latin1");
+}
+
 /** Rewrite uncompressed tar bytes with entries (and their extension headers) in path order. */
 export function sortTarEntries(tar) {
   const groups = [];
@@ -54,15 +105,21 @@ export function sortTarEntries(tar) {
     const chunk = tar.subarray(offset, offset + total);
     const data = tar.subarray(offset + BLOCK, offset + BLOCK + size);
     offset += total;
-    pending.push(chunk);
-    if (type === "x") { pendingPath = paxPath(data) ?? pendingPath; continue; }
+    if (type === "x") { pending.push(chunk); pendingPath = paxPath(data) ?? pendingPath; continue; }
     if (type === "g" || type === "L" || type === "K") {
+      pending.push(chunk);
       if (type === "L") pendingPath = cString(data, 0, data.length);
       continue;
     }
     const prefix = cString(header, 345, 155);
     const name = cString(header, 0, 100);
-    groups.push({ path: pendingPath ?? (prefix ? `${prefix}/${name}` : name), chunks: pending });
+    const path = pendingPath ?? (prefix ? `${prefix}/${name}` : name);
+    // The entry itself (not its extension headers): canonical manifest bytes, then a normalized header.
+    const entryHeader = Buffer.from(header);
+    const entryData = type === "0" && path === "package/package.json" ? canonicalizeManifestBytes(Buffer.from(data)) : data;
+    normalizeHeader(entryHeader, entryData.length);
+    pending.push(Buffer.concat([entryHeader, entryData, Buffer.alloc(Math.ceil(entryData.length / BLOCK) * BLOCK - entryData.length)]));
+    groups.push({ path, chunks: pending });
     pending = [];
     pendingPath = undefined;
   }
