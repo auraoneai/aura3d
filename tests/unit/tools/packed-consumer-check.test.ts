@@ -124,7 +124,9 @@ describe("packed consumer check (PRD-15 T1.6)", () => {
 
   beforeAll(() => {
     tmp = mkdtempSync(join(tmpdir(), "a3d-pack-fixture-"));
-    const sourceJob = Boolean(process.env.AURA3D_SOURCE_MANIFEST || process.env.AURA3D_SOURCE_PROCESS_GUARD || process.env.NATIVE_RUN_ID);
+    // Only a job that stages packed archives opts in. The source5 unit shards also export
+    // AURA3D_SOURCE_MANIFEST / NATIVE_RUN_ID but run before any pack, so they use the standalone pack.
+    const sourceJob = process.env.A3D_PACKED_SOURCE_CONSUMER === "1";
     archive = selectEngineArchive({
       root: REPO_ROOT,
       planPath: process.env.A3D_RELEASE_PLAN,

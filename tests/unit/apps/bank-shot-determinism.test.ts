@@ -22,7 +22,13 @@ import {
  * - authored spin measurably changes the shot and stays bounded.
  */
 
-function runScript(power: number, angle: number, spin: number, frames: number): TableSimulation {
+// Rapier steps are synchronous and slow on a 2 vCPU runner (this file ran ~227 s). Yield to the event loop
+// regularly so the vitest worker can answer its RPC (otherwise `Timeout calling "onTaskUpdate"` is raised
+// as an unhandled error after a >60 s blocked tick).
+const yieldToLoop = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
+const YIELD_EVERY = 100;
+
+async function runScript(power: number, angle: number, spin: number, frames: number): Promise<TableSimulation> {
   const sim = createTableSimulation();
   sim.strike(power, angle, spin);
   for (let index = 0; index < frames; index += 1) {
@@ -30,6 +36,7 @@ function runScript(power: number, angle: number, spin: number, frames: number): 
     sim.consumeSensorEvents();
     sim.consumeImpacts();
     sim.consumePotEvents();
+    if (index % YIELD_EVERY === YIELD_EVERY - 1) await yieldToLoop();
   }
   return sim;
 }
@@ -55,17 +62,17 @@ describe("bank shot table construction", () => {
 });
 
 describe("bank shot determinism", () => {
-  it("identical (seed, shot) scripts reproduce identical pose hashes", { timeout: 60_000 }, () => {
-    const runA = runScript(1, 0, 0.4, 600);
-    const runB = runScript(1, 0, 0.4, 600);
+  it("identical (seed, shot) scripts reproduce identical pose hashes", { timeout: 60_000 }, async () => {
+    const runA = await runScript(1, 0, 0.4, 600);
+    const runB = await runScript(1, 0, 0.4, 600);
     expect(runA.poseHash()).toBe(runB.poseHash());
     // A different shot is a different layout: the hash discriminates.
-    const runC = runScript(0.7, 0.35, 0, 600);
+    const runC = await runScript(0.7, 0.35, 0, 600);
     expect(runC.poseHash()).not.toBe(runA.poseHash());
   });
 
-  it("a full-power break scatters the rack: at least 10 of 15 balls move > 0.05 m", { timeout: 120_000 }, () => {
-    const sim = runScript(1, 0, 0, 4000);
+  it("a full-power break scatters the rack: at least 10 of 15 balls move > 0.05 m", { timeout: 120_000 }, async () => {
+    const sim = await runScript(1, 0, 0, 4000);
     let moved = 0;
     for (const info of sim.ballInfos()) {
       if (info.number === 0) continue;
@@ -75,8 +82,8 @@ describe("bank shot determinism", () => {
     expect(moved).toBeGreaterThanOrEqual(10);
   });
 
-  it("the break settles: every live ball comes to rest inside the playfield", { timeout: 120_000 }, () => {
-    const sim = runScript(1, 0, 0, 4000);
+  it("the break settles: every live ball comes to rest inside the playfield", { timeout: 120_000 }, async () => {
+    const sim = await runScript(1, 0, 0, 4000);
     expect(sim.allAtRest(0.05)).toBe(true);
     for (const info of sim.ballInfos()) {
       if (!info.live) continue;
@@ -85,10 +92,10 @@ describe("bank shot determinism", () => {
     }
   });
 
-  it("resetRack rebuilds a hash-identical rack from a scattered table", { timeout: 120_000 }, () => {
+  it("resetRack rebuilds a hash-identical rack from a scattered table", { timeout: 120_000 }, async () => {
     const fresh = createTableSimulation();
     const freshHash = fresh.poseHash();
-    const sim = runScript(1, 0.2, 0, 900);
+    const sim = await runScript(1, 0.2, 0, 900);
     expect(sim.poseHash()).not.toBe(freshHash);
     sim.resetRack();
     expect(sim.poseHash()).toBe(freshHash);
@@ -97,9 +104,9 @@ describe("bank shot determinism", () => {
     expect(sim.cueAtRest()).toBe(true);
   });
 
-  it("authored spin measurably changes the shot and the nudge stays bounded", { timeout: 60_000 }, () => {
-    const plain = runScript(1, 0, 0, 600);
-    const spun = runScript(1, 0, 1, 600);
+  it("authored spin measurably changes the shot and the nudge stays bounded", { timeout: 60_000 }, async () => {
+    const plain = await runScript(1, 0, 0, 600);
+    const spun = await runScript(1, 0, 1, 600);
     // The authored nudge (bounded at SPIN_NUDGE m/s) diverges the layout.
     expect(spun.poseHash()).not.toBe(plain.poseHash());
     expect(SPIN_NUDGE).toBeLessThanOrEqual(0.6);
@@ -139,7 +146,7 @@ describe("bank shot pockets", () => {
     }
   });
 
-  it("pocket sensors fire exactly once per entry across a full break", { timeout: 120_000 }, () => {
+  it("pocket sensors fire exactly once per entry across a full break", { timeout: 120_000 }, async () => {
     const sim = createTableSimulation();
     sim.strike(1, 0, 0);
     const sensorPairs: string[] = [];
@@ -148,6 +155,7 @@ describe("bank shot pockets", () => {
       for (const sensor of sim.consumeSensorEvents()) sensorPairs.push(`${sensor.pocket}:${sensor.ball}`);
       sim.consumeImpacts();
       sim.consumePotEvents();
+      if (index % YIELD_EVERY === YIELD_EVERY - 1) await yieldToLoop();
     }
     expect(sensorPairs.length).toBeGreaterThan(0);
     const unique = new Set(sensorPairs);

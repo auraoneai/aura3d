@@ -65,7 +65,7 @@ describe("certified-rig bone proportions", () => {
         calf: segment("leftFoot", "leftLowerLeg"),
         torso: head && hips ? dist(head, hips) : undefined
       };
-      console.log("rig-proportions", JSON.stringify(proportions));
+      if (process.env.A3D_RIG_VERBOSE) console.log("rig-proportions", JSON.stringify(proportions));
       expect(height).toBeGreaterThan(0);
       const measured = await measureCertifiedRig(rig.rigId, rig.file);
       expect(measured.assetSha256).toMatch(/^[a-f0-9]{64}$/);
@@ -77,5 +77,5 @@ describe("certified-rig bone proportions", () => {
         if (binding.length !== undefined) expect(binding.length).toBeGreaterThan(0);
       }
     }
-  });
+  }, 120_000);
 });
