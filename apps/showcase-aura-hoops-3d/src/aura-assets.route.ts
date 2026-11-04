@@ -43,6 +43,18 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "hoopsAthleteGuardKit": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   /** GU47 WP-36 blacktopFloodlightRig: Meshy retexture of hoopsFloodlight (assets/provenance/hoops_blacktopFloodlight.*). */
   readonly "hoops_blacktopFloodlight": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 2 WP-36 blacktopFanB: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopFanB.*). */
+  readonly "aura_hoops_3d_blacktopFanB": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 2 WP-36 blacktopFanC: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopFanC.*). */
+  readonly "aura_hoops_3d_blacktopFanC": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 2 WP-36 blacktopMuralWall: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopMuralWall.*). */
+  readonly "aura_hoops_3d_blacktopMuralWall": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 2 WP-36 blacktopLifeguardTower: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopLifeguardTower.*). */
+  readonly "aura_hoops_3d_blacktopLifeguardTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 2 WP-36 blacktopCorrugatedRoof: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopCorrugatedRoof.*). */
+  readonly "aura_hoops_3d_blacktopCorrugatedRoof": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 2 WP-36 blacktopContainer: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopContainer.*). */
+  readonly "aura_hoops_3d_blacktopContainer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -351,6 +363,54 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-9e22faefcf59f6da9485a875d324efaee4d3949cfee68f28e998710e2dcb3f76",
     bounds: [0.695,2,0.687],
     sizeBytes: 499364,
+  },
+  "aura_hoops_3d_blacktopFanB": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopFanB.20b94d34.glb",
+    hash: "sha256-20b94d34d841002b391f3eaae61c1112521acffa091164f8a496250f79346c47",
+    bounds: [1.099,1.885,0.332],
+    sizeBytes: 144068,
+  },
+  "aura_hoops_3d_blacktopFanC": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopFanC.12808a2e.glb",
+    hash: "sha256-12808a2e51b898d5a584338bd79dc1a37a08397a568813a8057f06002e5dfc5f",
+    bounds: [1.416,1.899,0.414],
+    sizeBytes: 139220,
+  },
+  "aura_hoops_3d_blacktopMuralWall": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopMuralWall.9714f337.glb",
+    hash: "sha256-9714f337234c2aa33f7cf465bb0572c814c9a47f31158944d2804383eb153e31",
+    bounds: [1.902,1.264,0.044],
+    sizeBytes: 1012708,
+  },
+  "aura_hoops_3d_blacktopLifeguardTower": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopLifeguardTower.8bcdaf16.glb",
+    hash: "sha256-8bcdaf167a1580baf51c1e00ae0630e2fe373af4272c180e72ba7a98854346c8",
+    bounds: [1.262,1.789,1.895],
+    sizeBytes: 1108096,
+  },
+  "aura_hoops_3d_blacktopCorrugatedRoof": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopCorrugatedRoof.20a9bbf7.glb",
+    hash: "sha256-20a9bbf73e781609fe37f05ccb4849b310dec3f06c8c9259161e4c8092143641",
+    bounds: [1.904,1.843,1.094],
+    sizeBytes: 610244,
+  },
+  "aura_hoops_3d_blacktopContainer": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopContainer.84ed1f44.glb",
+    hash: "sha256-84ed1f44049780cba2f77290c0db0cc49c0a7cfbeea9eea63cdd6d935984a7d9",
+    bounds: [1.891,1.279,1.262],
+    sizeBytes: 919316,
   },
 } as const);
 

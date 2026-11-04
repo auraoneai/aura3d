@@ -745,7 +745,7 @@ export function courtSurroundNodes(rig: CourtRig): AuraNodeBuilder<AuraSceneNode
 
 /** Bleacher stands as [x, z, yaw]: behind the far baseline and along both sidelines, outside the light poles. */
 export const BLEACHER_STANDS: readonly (readonly [number, number, number])[] = [[0, -15.5, 0], [-17.5, 4, Math.PI / 2], [17.5, 4, -Math.PI / 2]];
-const BLEACHER_ROWS = 5;
+export const BLEACHER_ROWS = 5;
 /**
  * GU47 phase 3: grounded stepped bleachers (5 rows, 10 m wide) from two instanced draws per court (risers and seat
  * planks), replacing the borrowed stadium-seat GLB that floated over the court edge. Row r rises 0.45 m and steps 0.8 m

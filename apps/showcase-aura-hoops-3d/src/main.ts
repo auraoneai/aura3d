@@ -80,6 +80,8 @@ import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 import { createOnePress } from "./input";
 import { hoopMaterials } from "./hoopMaterials";
 import { SprayTags } from "./sprayTags";
+import { courtCrowdNodes } from "./crowd";
+import { courtSetPieceNodes } from "./setPieces";
 import { headLookAngles, headLookQuat, stepHeadLook, worldToActor, type HeadLookAngles } from "./headLook";
 import { SCOREBOARD_NODE_ID, courtNameNode, scoreboardNode, scoreboardText } from "./diegetic";
 import { projectCrops, type QaCropSubject } from "./qaCrops";
@@ -788,7 +790,12 @@ function buildAthlete(id: string, team: TeamId): any[] {
 function buildCrowd(v: VenueSpec): any[] {
   // GU47 phase 3: grounded bleachers (courtRigs.ts) replaced the borrowed seat GLB on the new look. Phase 9 (D2): the
   // `?look=original` switch draws the same game-owned bleachers, so no court draws the showcase library's seat GLB.
-  return courtBleacherNodes(COURT_RIGS[v.id]);
+  const rig = COURT_RIGS[v.id];
+  // GU47 wave 2 (H47-A1): standing Meshy fans on those bleachers, two instanced draws, new look only.
+  const fans = LOOK_ORIGINAL || !rig.bleachers
+    ? []
+    : courtCrowdNodes(v.id, rig.bleachers.seat, { fanB: assets.aura_hoops_3d_blacktopFanB, fanC: assets.aura_hoops_3d_blacktopFanC });
+  return [...courtBleacherNodes(rig), ...fans];
 }
 
 function buildVenueDressing(v: VenueSpec): any[] {
@@ -907,6 +914,15 @@ function buildVenueDressing(v: VenueSpec): any[] {
   if (!LOOK_ORIGINAL) nodes.push(courtNameNode(v.label, COURT_RIGS[v.id].sprayTag.color, COURT_RIGS[v.id].surround ? COURT_Z0 - 3.2 : COURT_Z1 + 1.3));
   // GU47 phase 3: ground to the horizon (a deck disc on Orbit) under the grounded courts.
   if (!LOOK_ORIGINAL) nodes.push(...courtSurroundNodes(COURT_RIGS[v.id]));
+  // GU47 wave 2 (H47-A2): the court's Meshy set-pieces (Rucker mural wall, Venice lifeguard tower, Manila roofs, Shanghai containers).
+  if (!LOOK_ORIGINAL) {
+    nodes.push(...courtSetPieceNodes(v.id, {
+      mural: assets.aura_hoops_3d_blacktopMuralWall,
+      lifeguardTower: assets.aura_hoops_3d_blacktopLifeguardTower,
+      corrugatedRoof: assets.aura_hoops_3d_blacktopCorrugatedRoof,
+      container: assets.aura_hoops_3d_blacktopContainer
+    }));
+  }
 
   // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
   nodes.push(
@@ -3551,7 +3567,7 @@ function publishEvidence(force = false): void {
     touch: touchControls?.evidence?.() ?? null,
     deterministic: { rng: "lcg:0xa3d5", ballSim: "route-local analytic + contact model" },
     assets: [
-      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy", "hoops_blacktopFloodlight"
+      "hoopsAthleteGuardKit", "hoopsAthleteBigKit", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy", "hoops_blacktopFloodlight", "aura_hoops_3d_blacktopFanB", "aura_hoops_3d_blacktopFanC", "aura_hoops_3d_blacktopMuralWall", "aura_hoops_3d_blacktopLifeguardTower", "aura_hoops_3d_blacktopCorrugatedRoof", "aura_hoops_3d_blacktopContainer"
     ]
   };
   publishBeacon(evidence);
