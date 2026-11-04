@@ -103,6 +103,13 @@ describe("native dependency graph", () => {
     expect(clean).toMatchObject({ path: "templates/clean", nodes: ["importer:packages/math"], unresolved: [], prohibited: [], complete: true });
     expect(report.findings).toContainEqual(expect.objectContaining({ name: "three", disposition: "projected-dependency" }));
     expect(report.limitations.join(" ")).toContain("workspace-lock projection");
+
+    // A reviewed name no longer keeps the profile incomplete, is still listed, and a prohibited package stays a finding.
+    const reviewed = collectDependencyGraph(root, { installProfiles: ["templates/scaffold"], reviewedUnresolved: [{ name: "missing", reviewer: "agent", note: "checked" }] });
+    expect(reviewed.projectedProfiles![0]).toMatchObject({ unresolved: [], reviewedUnresolved: [{ owner: "templates/scaffold", name: "missing", specifier: "^9.0.0", reviewer: "agent" }], complete: true, prohibited: ["three"] });
+    // Only an exact name is reviewed.
+    expect(collectDependencyGraph(root, { installProfiles: ["templates/scaffold"], reviewedUnresolved: [{ name: "missing-other", reviewer: "agent", note: "checked" }] })
+      .projectedProfiles![0]).toMatchObject({ complete: false });
   });
 
   it("scans every install profile, packed consumer profiles, and records external comparison harnesses as excluded", () => {

@@ -314,6 +314,18 @@
       "disposition": "false-positive",
       "reviewer": "agent (owner-delegated, 2026-11-02)",
       "note": "'derived from', 'taken from' or 'copied from' describing data flow inside Aura's own code (a value derived from a state, a pattern copied from a sibling test, assets copied between repo directories with their NOTICE). Lines that say ported, original, captured, adapted, based on, reimplementation or clone are deliberately NOT covered here and stay unreviewed for a per-file review. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "packages/rendering/src/program/ProgramCache.ts",
+        "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts",
+        "apps/showcase-iron-crown/src/game/fighters.ts",
+        "tests/assets/native-legacy-scene-formats.test.ts"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "Four lines reviewed individually: ProgramCache.ts 'captured prewarm' is the shader-program prewarm signal twin (technical sense of captured/derived); aura-assets-v2.ts '(original, CC0-1.0)' names Aura-commissioned audio replacing earlier in-repo cues; fighters.ts 'adapted from the create-aura3d fighting template' is Aura's own template; native-legacy-scene-formats.test.ts says the formats are NOT adapted from another engine's corpus. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
     }
   ],
   "$reviewedUnresolvedDependencies": [

@@ -35,7 +35,8 @@
       "source": "packages/animation/src/index.ts"
     },
     "./assets": {
-      "source": "packages/assets/src/index.ts"
+      "source": "packages/assets/src/index.ts",
+      "browser": "packages/assets/src/browser-index.ts"
     },
     "./input": {
       "source": "packages/input/src/index.ts"

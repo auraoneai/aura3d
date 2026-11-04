@@ -25,11 +25,29 @@ export const SLICES: readonly Slice[] = [
 // a static import or any other missing dependency fails. These are recorded in
 // the output rather than counted as bytes transferred by this bundle.
 const OPTIONAL_PEERS = ["@dimforge/rapier3d-compat", "@aura3d/navigation-recast", "recast-navigation", "recast-navigation/*"];
+// Node-only branches that installed dependencies reach through a dynamic `import("node:...")` (for example
+// @gltf-transform/core's HTTP/file helper). A browser never runs them; bundlers such as Vite stub them, esbuild
+// needs them declared external. Like the optional peers they are valid only as dynamic imports and are recorded.
+const NODE_DYNAMIC_IMPORTS = ["node:fs", "node:path"];
+const ALLOWED_EXTERNALS = [...OPTIONAL_PEERS, ...NODE_DYNAMIC_IMPORTS];
 const sha256 = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 
 function inside(parent: string, path: string): boolean {
   const rel = relative(parent, path);
   return rel === "" || (rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));
+}
+
+/**
+ * Locate the packed-consumer source report. A missing file is named as such (it is normally absent
+ * because `package-clean-install --phase source` failed first), distinct from a path outside the root.
+ */
+export function resolveSourceReportFile(root: string, sourceReportPath: string): string {
+  const reportFile = resolve(root, sourceReportPath);
+  if (!existsSync(reportFile)) {
+    throw new Error(`Source report not found: ${relative(root, reportFile).split(sep).join("/")} (it is written by package-clean-install --phase source; check that step first)`);
+  }
+  if (!inside(realpathSync(root), realpathSync(reportFile))) throw new Error("Source report must be inside the source root");
+  return reportFile;
 }
 
 /** Enforce that project builds never silently resolve workspace dependencies. */
@@ -47,7 +65,7 @@ export function assertIsolatedInputs(projectRoot: string, inputs: readonly strin
 export function assertOptionalExternals(metafile: Metafile): string[] {
   const externals = Object.values(metafile.outputs).flatMap(output => output.imports.filter(entry => entry.external));
   for (const entry of externals) {
-    const allowed = OPTIONAL_PEERS.some(peer => peer.endsWith("/*") ? entry.path.startsWith(peer.slice(0, -1)) : entry.path === peer);
+    const allowed = ALLOWED_EXTERNALS.some(peer => peer.endsWith("/*") ? entry.path.startsWith(peer.slice(0, -1)) : entry.path === peer);
     if (!allowed || entry.kind !== "dynamic-import") throw new Error(`Unexpected external ${entry.kind}: ${entry.path}`);
   }
   return [...new Set(externals.map(entry => entry.path))].sort();
@@ -165,7 +183,10 @@ export async function measureSlice(root: string, project: NativeConsumerProject,
     metafile: true,
     write: false,
     logLevel: "silent",
-    external: OPTIONAL_PEERS
+    external: ALLOWED_EXTERNALS
+  }).catch((error: unknown) => {
+    // esbuild's message names only the unresolved import; say which slice and project failed.
+    throw new Error(`Installed tree-shaking slice ${slice.id} (${project.template}) failed to bundle: ${error instanceof Error ? error.message : String(error)}`);
   });
   if (!result.metafile || !result.outputFiles?.length) throw new Error(`No measurement for ${slice.id}`);
   assertIsolatedInputs(isolated, Object.keys(result.metafile.inputs));
@@ -237,8 +258,7 @@ export async function main(argv: readonly string[] = process.argv.slice(2), root
   }
   const plan = loadValidatedReleasePlan(root, candidatePath);
   if (!plan) throw new Error("A validated current candidate plan is required");
-  const reportFile = resolve(root, sourceReportPath);
-  if (!existsSync(reportFile) || !inside(realpathSync(root), realpathSync(reportFile))) throw new Error("Source report must be inside the source root");
+  const reportFile = resolveSourceReportFile(root, sourceReportPath);
   const reportPath = relative(root, reportFile).replaceAll("\\", "/");
   const reportBytes = readFileSync(reportFile);
   const sourceReport = validateSourceConsumerReport(root, reportPath, plan);

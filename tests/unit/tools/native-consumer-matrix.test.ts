@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { zstdDecompressSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BROWSERS, CHECK_IDS, assertBrowserBuild, commands, consumerSplatSpz, consumerTriangleGlb, consumerViteConfig, hashConsumerProject, inspectMatrixInstalledProject, matrixCells, projectManifest, readCandidate, restoreMatrixProject, runBrowser, validateGateMatchesSource, validateSourceMatrixReport, type MatrixReport, type PackageEntry } from "../../../tools/native-consumer-matrix/index";
+import { BROWSERS, CHECK_IDS, assertBrowserBuild, commands, matrixFailureSummary, pnpmCandidateOverrides, consumerSplatSpz, consumerTriangleGlb, consumerViteConfig, hashConsumerProject, inspectMatrixInstalledProject, matrixCells, projectManifest, readCandidate, restoreMatrixProject, runBrowser, validateGateMatchesSource, validateSourceMatrixReport, type MatrixReport, type PackageEntry } from "../../../tools/native-consumer-matrix/index";
 import { inventoryPortableConsumerFiles } from "../../../tools/package-clean-install/index";
 import * as admissions from "../../../tools/release/archive-admission.mjs";
 import * as npmGraph from "../../../tools/release/portable-npm-lock.mjs";
@@ -345,5 +345,55 @@ describe("isolated native consumer matrix", () => {
     write(join(destination, "typescript-bundler.ts"), readFileSync(join(fixtures, "typescript-bundler.ts"), "utf8"));
     expect(() => inspectMatrixInstalledProject(state.root, state.report, cellId, destination, storeDir))
       .toThrow(/no independently trusted policy anchor/);
+  });
+});
+
+describe("native consumer matrix failure reporting and installs", () => {
+  it("names the failing cell, check, command and the tail of its log", () => {
+    const root = temporary();
+    const lines = Array.from({ length: 100 }, (_, index) => `line ${index + 1}`);
+    write(join(root, "tests/reports/native-consumer-matrix/run/logs/npm-react18-peer-absent-typescript-nodenext.log"), `${lines.join("\n")}\n`);
+    const summary = matrixFailureSummary(root, { checks: [
+      { id: "install", project: "npm-react18-peer-absent", command: ["npm", "install"], status: "pass", exitCode: 0, logPath: "", logSha256: "" },
+      { id: "typescript-nodenext", project: "npm-react18-peer-absent", command: ["node_modules/.bin/tsc", "-p", "tsconfig.nodenext.json"], status: "fail", exitCode: 2,
+        logPath: "tests/reports/native-consumer-matrix/run/logs/npm-react18-peer-absent-typescript-nodenext.log", logSha256: "" },
+      { id: "browser-build", project: "npm-react18-peer-absent", command: ["vite", "build"], status: "not-run", exitCode: null, logPath: "", logSha256: "" }
+    ] }, 5);
+    expect(summary).toContain("FAILED cell npm-react18-peer-absent check typescript-nodenext (exit 2): node_modules/.bin/tsc -p tsconfig.nodenext.json");
+    expect(summary).toContain("last 5 of 100 lines");
+    expect(summary).toContain("    line 100");
+    expect(summary).toContain("    line 96");
+    expect(summary).not.toContain("line 95\n");
+    expect(summary).not.toContain("check install");
+    expect(summary).not.toContain("browser-build");
+    expect(matrixFailureSummary(root, { checks: [] })).toBe("");
+  });
+
+  it("still reports a failing check whose log is unavailable", () => {
+    const summary = matrixFailureSummary(temporary(), { checks: [
+      { id: "install", project: "pnpm-react19-peer-present", command: ["pnpm", "install"], status: "fail", exitCode: 1, logPath: "tests/reports/missing.log", logSha256: "" }
+    ] });
+    expect(summary).toContain("FAILED cell pnpm-react19-peer-present check install (exit 1)");
+    expect(summary).toContain("log unavailable");
+  });
+
+  it("overrides every candidate package onto its archive so pnpm never asks the registry for unpublished internals", () => {
+    const yaml = pnpmCandidateOverrides([
+      { name: "@aura3d/math", tarball: "tests/reports/release-tarballs/aura3d-math-5.0.0.tgz" },
+      { name: "@aura3d/engine", tarball: "tests/reports/release-tarballs/aura3d-engine-5.0.0.tgz" }
+    ]);
+    expect(yaml).toBe('overrides:\n  "@aura3d/math": "file:./tarballs/aura3d-math-5.0.0.tgz"\n  "@aura3d/engine": "file:./tarballs/aura3d-engine-5.0.0.tgz"\n');
+  });
+
+  it("accepts an unreferenced second copy of a decoder but not a kind that nothing references", () => {
+    const root = temporary();
+    writeBrowserBuildFixture(root);
+    write(join(root, "dist/assets/basis_transcoder-orphan.js"), "asset");
+    write(join(root, "dist/assets/meshopt_decoder-orphan.mjs"), "asset");
+    expect(() => assertBrowserBuild(root)).not.toThrow();
+    write(join(root, "dist/assets/index-test.js"), JSON.stringify(["render.worker.bundle-test.js", "retarget.worker.bundle-test.js", "ktx2.worker-test.js", "aura-vfx-1k-test.png", "aura-vfx-2k-test.png",
+      "humanoid-fixture-test.glb", "basis_transcoder-test.js", "basis_transcoder-test.mjs", "basis_transcoder-test.wasm", "draco_decoder-test.mjs", "draco_decoder-test.wasm",
+      "zstd.worker.bundle-test.js", "zstd.worker-test.js"]));
+    expect(() => assertBrowserBuild(root)).toThrow(/does not reference any emitted worker asset matching: .*meshopt_decoder/);
   });
 });

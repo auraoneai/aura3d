@@ -21,3 +21,13 @@ export function findBareWorkspaceImports(source: string, workspacePackages: Read
   }
   return found;
 }
+
+/** A bare directory specifier (`.` or `..`) that NodeNext cannot resolve without an explicit index file. */
+export function isDirectorySpecifier(specifier: string): boolean {
+  return specifier === "." || specifier === "..";
+}
+
+/** `..` -> `../index.js`, `.` -> `./index.js`. */
+export function directoryIndexSpecifier(specifier: string): string {
+  return `${specifier}/index.js`;
+}

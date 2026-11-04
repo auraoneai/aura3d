@@ -543,7 +543,9 @@
     {
       "name": "./assets",
       "source": "packages/assets/src/index.ts",
-      "dist": "./dist/assets/index.js"
+      "dist": "./dist/assets/index.js",
+      "browser": "packages/assets/src/browser-index.ts",
+      "browserDist": "./dist/assets/browser-index.js"
     },
     {
       "name": "./input",

@@ -2,7 +2,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statS
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { assertWorkerPackageLayout } from "./worker-layout.mjs";
 import { emitPackagedWorker } from "./worker-bundle.mjs";
-import { findBareWorkspaceImports, specifierPattern } from "./specifiers.ts";
+import { directoryIndexSpecifier, findBareWorkspaceImports, isDirectorySpecifier, specifierPattern } from "./specifiers.ts";
 
 const root = process.cwd();
 const packageRoot = join(root, "packages");
@@ -283,6 +283,12 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
     let next = relative(dirname(file), target).replaceAll("\\", "/");
     if (!next.startsWith(".")) next = `./${next}`;
     return next;
+  }
+
+  if (isDirectorySpecifier(specifier)) {
+    // `import("..")` / `import(".")` come from declaration emit of inferred types. NodeNext cannot resolve a
+    // directory specifier, so name its index explicitly (when the directory has one).
+    return existsSync(join(dirname(file), specifier, "index.js")) ? directoryIndexSpecifier(specifier) : specifier;
   }
 
   if (specifier.startsWith("./") || specifier.startsWith("../")) {

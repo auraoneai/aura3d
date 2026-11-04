@@ -495,12 +495,23 @@ export function consumerViteConfig(): string {
   const triangleHash = hash(consumerTriangleGlb());
   return `const external = ["@aura3d/navigation-recast"];\nexport default { define: { __AURA_MATRIX_TRIANGLE_SHA256__: ${JSON.stringify(JSON.stringify(triangleHash))} }, build: { rollupOptions: { external } } };\n`;
 }
+/**
+ * pnpm does not let a `file:` tarball satisfy another candidate archive's registry-style requirement
+ * (`@aura3d/math@5.0.0`, unpublished before release), so it would resolve the candidate's own internal
+ * packages from the registry and fail. npm accepts the same top-level `file:` entries. Override every
+ * candidate package onto its archive so both managers install exactly the packed bytes.
+ */
+export function pnpmCandidateOverrides(archives: readonly { name: string; tarball: string }[]): string {
+  const lines = archives.map(pkg => `  ${JSON.stringify(pkg.name)}: ${JSON.stringify(`file:./tarballs/${basename(pkg.tarball)}`)}`);
+  return `overrides:\n${lines.join("\n")}\n`;
+}
 function projectFiles(root: string, project: string, cell: MatrixCell, plan: CandidatePlan): void {
   mkdirSync(join(project, "tarballs"), { recursive: true });
   const archives = projectPackages(plan, cell);
   must(new Set(archives.map(pkg => basename(pkg.tarball))).size === archives.length, `Duplicate archive filename in ${cell.id}`);
   for (const pkg of archives) cpSync(inside(root, pkg.tarball), join(project, "tarballs", basename(pkg.tarball)));
   writeFileSync(join(project, "package.json"), `${JSON.stringify(projectManifest(root, cell, plan), null, 2)}\n`);
+  if (cell.manager === "pnpm") writeFileSync(join(project, "pnpm-workspace.yaml"), pnpmCandidateOverrides(archives));
   for (const fixture of FIXTURES) cpSync(join(root, "tests/fixtures/native-consumer", fixture), join(project, fixture));
   for (const mode of ["nodenext", "bundler"] as const) {
     const config = {
@@ -575,7 +586,11 @@ export function assertBrowserBuild(project: string, sourceRoot = process.cwd()):
   const provenance = JSON.parse(readFileSync(join(sourceRoot, "packages/assets/vendor/zstd/provenance.json"), "utf8"));
   for (const worker of allWorkerAssets.filter(name => /^zstd\.worker(?:\.bundle)?-.*\.m?js$/.test(name))) assertZstdWorkerPayload(readFileSync(join(assets, worker), "utf8"), license, provenance);
   const clientCode = clients.map((name) => readFileSync(join(assets, name), "utf8")).join("\n");
-  must(allWorkerAssets.every((name) => clientCode.includes(name)), "Browser build does not reference every packaged worker asset");
+  // Vite also emits the vendored decoder copies that `@aura3d/assets` names with `new URL(...)` even when the
+  // module that uses them is tree-shaken, so a second, unreferenced copy of a decoder is expected next to the
+  // engine's packaged one. Each kind of packaged worker asset must have at least one referenced file.
+  const unreferencedKinds = patterns.filter(pattern => !allWorkerAssets.some(name => pattern.test(name) && clientCode.includes(name)));
+  must(unreferencedKinds.length === 0, `Browser build does not reference any emitted worker asset matching: ${unreferencedKinds.map(String).join(", ")}`);
   must(fileHash(join(project, "dist/triangle.glb")) === hash(consumerTriangleGlb()), "Browser build lost or changed the triangle asset");
   must(fileHash(join(project, "dist/splat.spz")) === hash(consumerSplatSpz()), "Browser build lost or changed the SPZ asset");
 }
@@ -1299,6 +1314,24 @@ export async function runBrowser(root: string, runId: string, reportPath: string
   }
 }
 
+/**
+ * Human-readable reason for every failed check of a source matrix report: the
+ * cell, the command and the tail of its (already redacted) log, so a failing
+ * source pass explains itself instead of exiting silently.
+ */
+export function matrixFailureSummary(root: string, report: Pick<MatrixReport, "checks">, tailLines = 60): string {
+  const failed = report.checks.filter(check => check.status === "fail");
+  if (!failed.length) return "";
+  return failed.map(check => {
+    let log = "";
+    try { log = check.logPath ? readFileSync(join(root, check.logPath), "utf8") : ""; } catch { log = `(log unavailable: ${check.logPath})`; }
+    const lines = log.replace(/\s+$/, "").split(/\r?\n/);
+    const tail = lines.slice(-tailLines).map(line => `    ${line}`).join("\n");
+    return `[matrix] FAILED cell ${check.project} check ${check.id} (exit ${check.exitCode}): ${check.command.join(" ")}\n` +
+      `[matrix] log ${check.logPath} (last ${Math.min(tailLines, lines.length)} of ${lines.length} lines)\n${tail}`;
+  }).join("\n");
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const options = new Map<string, string | true>();
@@ -1318,7 +1351,10 @@ async function main(): Promise<void> {
     const plan = value("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN;
     must(Boolean(plan), "--candidate-plan or A3D_RELEASE_PLAN is required");
     const report = await runSource(process.cwd(), runId!, plan!);
-    if (report.status !== "pass") process.exitCode = 1;
+    if (report.status !== "pass") {
+      console.error(matrixFailureSummary(process.cwd(), report) || "[matrix] source matrix failed without a failing check");
+      process.exitCode = 1;
+    }
   } else {
     must(!options.has("--candidate-plan") && (!options.has("--out-dir") || options.has("--restore-react")), "Invalid browser arguments");
     const sourceReport = value("--source-report") ?? "";

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { build, type Metafile } from "esbuild";
 import { afterEach, describe, expect, it } from "vitest";
-import { SLICES, assertIsolatedInputs, assertOptionalExternals, copyVerifiedProject, main as measureInstalledTree, measureSlice, retainedEngineSubtrees, retainedPackages } from "../../../tools/installed-tree-shaking/index";
+import { SLICES, assertIsolatedInputs, assertOptionalExternals, copyVerifiedProject, main as measureInstalledTree, resolveSourceReportFile, measureSlice, retainedEngineSubtrees, retainedPackages } from "../../../tools/installed-tree-shaking/index";
 import { hashConsumerProject, type NativeConsumerProject } from "../../../tools/package-clean-install/index";
 import { renderBundleSizeMarkdown } from "../../../tools/bundle-size/markdown.mjs";
 import { validateBundleCandidate, validateTreeCandidate } from "../../../tools/release/package-acceptance.mjs";
@@ -194,11 +194,16 @@ describe("isolated installed consumers", () => {
     if (id === "react") expect(measurement.retainedEngineSubtrees.react).toBeGreaterThan(0);
   });
 
-  it("permits only asynchronous documented optional peers as externals", () => {
+  it("permits only asynchronous documented optional peers and Node-only dynamic branches as externals", () => {
     const graph = (path: string, kind: string) => ({ inputs: {}, outputs: { "out.js": { bytes: 1, inputs: {}, exports: [], imports: [{ path, kind, external: true }] } } } as Metafile);
     expect(assertOptionalExternals(graph("@aura3d/navigation-recast", "dynamic-import"))).toEqual(["@aura3d/navigation-recast"]);
     expect(() => assertOptionalExternals(graph("@aura3d/navigation-recast", "import-statement"))).toThrow(/Unexpected external/);
-    expect(() => assertOptionalExternals(graph("node:fs", "dynamic-import"))).toThrow(/Unexpected external/);
+    // @gltf-transform/core reaches node:fs / node:path only through a dynamic import that a browser never runs.
+    expect(assertOptionalExternals(graph("node:fs", "dynamic-import"))).toEqual(["node:fs"]);
+    expect(assertOptionalExternals(graph("node:path", "dynamic-import"))).toEqual(["node:path"]);
+    expect(() => assertOptionalExternals(graph("node:fs", "import-statement"))).toThrow(/Unexpected external/);
+    expect(() => assertOptionalExternals(graph("node:child_process", "dynamic-import"))).toThrow(/Unexpected external/);
+    expect(() => assertOptionalExternals(graph("left-pad", "dynamic-import"))).toThrow(/Unexpected external/);
   });
 
   it("rejects an output directory outside retained reports before measuring", async () => {
@@ -261,5 +266,30 @@ describe("candidate-bound reports", () => {
     expect(result.baselineEncoding).toBe("static-target-contract");
     write(root, path, source.replace("budget: 190_000", "budget: 190_001"));
     expect(() => validateBudgetContinuity(root)).toThrow(/Increased bundle budget: core-agent-api/);
+  });
+});
+
+describe("installed tree-shaking source report path", () => {
+  it("accepts the source report as source5-run.sh passes it, relative or absolute, inside the source root", () => {
+    const root = temp();
+    write(root, "tests/reports/native-consumers/run-1/source.json", "{}");
+    const relative = "tests/reports/native-consumers/run-1/source.json";
+    expect(resolveSourceReportFile(root, relative)).toBe(join(root, relative));
+    expect(resolveSourceReportFile(root, join(root, relative))).toBe(join(root, relative));
+  });
+
+  it("names a missing report as missing (the clean-install step did not write it) rather than as outside the root", () => {
+    const root = temp();
+    expect(() => resolveSourceReportFile(root, "tests/reports/native-consumers/run-1/source.json"))
+      .toThrow(/Source report not found: tests\/reports\/native-consumers\/run-1\/source\.json.*package-clean-install/);
+  });
+
+  it("rejects a report outside the source root, including through a symlink", () => {
+    const root = temp(), outside = temp();
+    write(outside, "source.json", "{}");
+    expect(() => resolveSourceReportFile(root, join(outside, "source.json"))).toThrow("Source report must be inside the source root");
+    mkdirSync(join(root, "tests/reports"), { recursive: true });
+    symlinkSync(join(outside, "source.json"), join(root, "tests/reports/link.json"));
+    expect(() => resolveSourceReportFile(root, "tests/reports/link.json")).toThrow("Source report must be inside the source root");
   });
 });

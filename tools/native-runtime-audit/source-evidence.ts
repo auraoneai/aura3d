@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync, realpathSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { DEFAULT_PROHIBITED_PACKAGES, readPackagePayload } from "./dependency-graph.js";
+import { DEFAULT_PROHIBITED_PACKAGES, readPackagePayload, type ReviewedUnresolvedDependency } from "./dependency-graph.js";
 
 export type SourceKind = "source" | "worker" | "generated-data" | "source-map" | "source-map-content" | "encoded-content" | "binary";
 export type ReplacementStatus = "unreviewed" | "independent" | "third-party-licensed" | "replacement-needed";
@@ -43,30 +43,51 @@ export interface SourceCandidateReview {
 
 /**
  * A reviewed disposition for a whole class of candidates that is independent of
- * the file it appears in: a standardized-equation id (the pattern matches only
- * the published constants themselves) or a reviewer-supplied fingerprint id.
- * Matching is exact on kind and detail; any other class stays unreviewed.
+ * the file it appears in. Two forms:
+ * - a standardized-equation id or reviewer-supplied fingerprint id (`detail`
+ *   required; the pattern matches only the published constants themselves);
+ * - a path-scoped class of any other candidate kind: `paths` lists exact files
+ *   or directory prefixes (ending in `/`) the reviewer inspected, `detail` is
+ *   optional (omitted: every detail of that kind). Payload entries
+ *   (`<archive>!/package/...`) match on their in-archive path, which starts
+ *   with `package/`. A path-scoped review must never be global.
+ * Matching is exact on kind, detail (when given) and path; anything else stays
+ * unreviewed.
  */
 export interface SourceCandidateClassReview {
-  readonly kind: "standardized-equation" | "fingerprint";
-  readonly detail: string;
+  readonly kind: SourceReviewCandidate["kind"];
+  readonly detail?: string;
+  /** Alternative to `detail`: a regular expression (anchored, at most 200 characters) matched against the whole finding detail. */
+  readonly detailPattern?: string;
+  readonly paths?: readonly string[];
   readonly disposition: CandidateDisposition;
   readonly reviewer: string;
   readonly note: string;
 }
 
-/** Shape of docs/prds/aura3d-native-provenance-record.json: path records plus the reserved class-review key. */
+/** Shape of docs/prds/aura3d-native-provenance-record.json: path records plus the reserved review keys. */
 export const CANDIDATE_CLASS_REVIEWS_KEY = "$candidateClassReviews";
+/** Path-scoped class reviews (never global; every entry names the files or directories it was reviewed in). */
+export const PATH_SCOPED_REVIEWS_KEY = "$pathScopedReviews";
+/** Names the root lock does not pin whose own dependency trees a reviewer checked for prohibited packages. */
+export const REVIEWED_UNRESOLVED_DEPENDENCIES_KEY = "$reviewedUnresolvedDependencies";
 
-/** Split a provenance record document into digest-bound file records and class reviews. */
+/** Split a provenance record document into digest-bound file records, global class reviews and path-scoped reviews. */
 export function parseProvenanceRecord(document: unknown): {
-  provenance: Record<string, SourceProvenance>; classReviews: SourceCandidateClassReview[];
+  provenance: Record<string, SourceProvenance>; classReviews: SourceCandidateClassReview[]; pathScopedReviews: SourceCandidateClassReview[];
+  reviewedUnresolvedDependencies: ReviewedUnresolvedDependency[];
 } {
   if (!document || typeof document !== "object" || Array.isArray(document)) throw new Error("Provenance must be a path-to-record object");
-  const { [CANDIDATE_CLASS_REVIEWS_KEY]: classReviews, ...provenance } = document as Record<string, unknown>;
+  const { [CANDIDATE_CLASS_REVIEWS_KEY]: classReviews, [PATH_SCOPED_REVIEWS_KEY]: pathScoped, [REVIEWED_UNRESOLVED_DEPENDENCIES_KEY]: unresolved, ...provenance } = document as Record<string, unknown>;
   if (Object.keys(provenance).some((path) => path.startsWith("$"))) throw new Error("Unknown reserved provenance record key");
-  return { provenance: provenance as Record<string, SourceProvenance>,
-    classReviews: classReviews === undefined ? [] : validateClassReviews(classReviews) };
+  const global = classReviews === undefined ? [] : validateClassReviews(classReviews);
+  if (global.some((review) => review.paths || review.detailPattern || (review.kind !== "standardized-equation" && review.kind !== "fingerprint"))) {
+    throw new Error("Global class reviews are limited to exact standardized-equation and fingerprint ids; scope anything else under " + PATH_SCOPED_REVIEWS_KEY);
+  }
+  const scoped = pathScoped === undefined ? [] : validateClassReviews(pathScoped);
+  if (scoped.some((review) => !review.paths)) throw new Error(`Every ${PATH_SCOPED_REVIEWS_KEY} entry must list the paths it was reviewed in`);
+  const reviewedUnresolvedDependencies = unresolved === undefined ? [] : validateReviewedUnresolved(unresolved);
+  return { provenance: provenance as Record<string, SourceProvenance>, classReviews: global, pathScopedReviews: scoped, reviewedUnresolvedDependencies };
 }
 
 export interface SourceEntry {
@@ -160,7 +181,8 @@ const soundPackLinks = new Map([
   ["apps/showcase-iron-crown/public/packs", "../../../assets/packs"],
   ["apps/showcase-pips-big-leap/public/packs", "../../../assets/packs"]
 ]);
-const maxSourceFileBytes = 128 * 1024 * 1024;
+// The committed Poly Haven 8k HDRI fixture is 128 MiB + 113 bytes; hash-only binary inputs of that size are in scope.
+export const maxSourceFileBytes = 256 * 1024 * 1024;
 const candidateKinds: readonly SourceReviewCandidate["kind"][] = ["package-import", "text-reference", "source-map-reference", "fingerprint",
   "embedded-data", "invalid-source-map", "missing-source-map-content", "bundled-source", "license-notice", "provenance-reference", "standardized-equation"];
 const dispositions: readonly CandidateDisposition[] = ["standardized-equation", "compatibility-contract", "independent-implementation",
@@ -307,7 +329,7 @@ export function inspectSourceEntries(entries: Iterable<SourceEntry>, options: So
   for (let index = 0; index < findings.length; index += 1) {
     const finding = findings[index]!;
     const review = reviews.get(finding.path)?.find((item) => item.kind === finding.kind && (item.detail === undefined || item.detail === finding.detail)) ??
-      classReviews.find((item) => item.kind === finding.kind && item.detail === finding.detail);
+      classReviews.find((item) => classReviewMatches(item, finding));
     if (review) findings[index] = { ...finding, review: { disposition: review.disposition, reviewer: review.reviewer, note: review.note } };
     else if (finding.kind === "standardized-equation" || finding.kind === "fingerprint" ||
         recorded.has(finding.path) || recorded.has(finding.path.split("#", 1)[0]!)) gatedUnreviewed += 1;
@@ -630,17 +652,54 @@ function findReferences(path: string, text: string, prohibited: readonly string[
   }
 }
 
+function validateReviewedUnresolved(value: unknown): ReviewedUnresolvedDependency[] {
+  if (!Array.isArray(value)) throw new Error("Reviewed unresolved dependencies must be an array");
+  const seen = new Set<string>();
+  return value.map((item: ReviewedUnresolvedDependency) => {
+    if (!item || typeof item !== "object" || typeof item.name !== "string" || !/^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/.test(item.name) ||
+        typeof item.reviewer !== "string" || !item.reviewer.trim() || typeof item.note !== "string" || !item.note.trim() || seen.has(item.name)) {
+      throw new Error("Invalid reviewed unresolved dependency");
+    }
+    seen.add(item.name);
+    return item;
+  });
+}
+
+/** Does a class review cover this finding? Path scope applies to the file part of the path (before `#`), payload entries by in-archive path. */
+export function classReviewMatches(review: SourceCandidateClassReview, finding: { path: string; kind: SourceReviewCandidate["kind"]; detail: string }): boolean {
+  if (review.kind !== finding.kind) return false;
+  if (review.detail !== undefined && review.detail !== finding.detail) return false;
+  if (review.detailPattern !== undefined && !new RegExp(`^(?:${review.detailPattern})$`).test(finding.detail)) return false;
+  if (!review.paths) return true;
+  const file = finding.path.split("#", 1)[0]!;
+  const bang = file.indexOf("!/");
+  const path = bang >= 0 ? file.slice(bang + 2) : file;
+  return review.paths.some((scope) => scope.endsWith("/") ? path.startsWith(scope) : path === scope);
+}
+
 function validateClassReviews(value: unknown): SourceCandidateClassReview[] {
   if (!Array.isArray(value)) throw new Error("Candidate class reviews must be an array");
   const seen = new Set<string>();
   return value.map((review: SourceCandidateClassReview) => {
-    if (!review || typeof review !== "object" || (review.kind !== "standardized-equation" && review.kind !== "fingerprint") ||
-        typeof review.detail !== "string" || !review.detail || !dispositions.includes(review.disposition) ||
+    const global = review && (review.kind === "standardized-equation" || review.kind === "fingerprint");
+    if (!review || typeof review !== "object" || !candidateKinds.includes(review.kind) ||
+        (review.detail !== undefined && (typeof review.detail !== "string" || !review.detail)) ||
+        (global && !review.detail) || !dispositions.includes(review.disposition) ||
         typeof review.reviewer !== "string" || !review.reviewer.trim() || typeof review.note !== "string" || !review.note.trim()) {
       throw new Error("Invalid candidate class review");
     }
-    const key = `${review.kind}\0${review.detail}`;
-    if (seen.has(key)) throw new Error(`Duplicate candidate class review: ${review.detail}`);
+    if (review.detailPattern !== undefined) {
+      let valid = typeof review.detailPattern === "string" && review.detailPattern.length > 0 && review.detailPattern.length <= 200 && review.detail === undefined;
+      if (valid) { try { new RegExp(`^(?:${review.detailPattern})$`); } catch { valid = false; } }
+      if (!valid) throw new Error("Invalid candidate class review detail pattern");
+    }
+    if (review.paths !== undefined && (!Array.isArray(review.paths) || !review.paths.length || review.paths.some((path) =>
+        typeof path !== "string" || !path || path.startsWith("/") || path.includes("\\") || path.split("/").some((part) => part === ".." || part === ".")))) {
+      throw new Error("Invalid candidate class review paths");
+    }
+    if (!global && !review.paths) throw new Error(`Candidate class review for ${review.kind} must be scoped to paths`);
+    const key = `${review.kind}\0${review.detail ?? ""}\0${review.detailPattern ?? ""}\0${(review.paths ?? []).join("\0")}`;
+    if (seen.has(key)) throw new Error(`Duplicate candidate class review: ${review.detail ?? review.kind}`);
     seen.add(key);
     return review;
   });

@@ -4,7 +4,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileS
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { assertCandidateIdentity, type AcceptanceGate, type CandidateIdentity } from "../performance/native-benchmark";
-import { collectDependencyGraph, type DependencyGraphReport, type VirtualInstallProfile } from "./dependency-graph";
+import { collectDependencyGraph, type DependencyGraphReport, type ReviewedUnresolvedDependency, type VirtualInstallProfile } from "./dependency-graph";
 import { collectSourceEvidence, parseProvenanceRecord, type SourceCandidateClassReview, type SourceEvidenceReport, type SourceFingerprint,
   type SourceProvenance, type SourceReviewCandidate } from "./source-evidence";
 import { inspectRuntimeNetwork, type RuntimeNetworkEvent, type RuntimeNetworkReport } from "./runtime-network";
@@ -22,6 +22,8 @@ interface SourceAuditOptions {
   externalHarnesses?: string[];
   /** Install-time packed consumer profiles derived from the validated candidate plan. */
   consumerProfiles?: (plan: ReleasePlan) => VirtualInstallProfile[];
+  /** Reviewed lock-unpinned dependency names that do not keep a projected profile incomplete. */
+  reviewedUnresolved?: readonly ReviewedUnresolvedDependency[];
   sourcePaths?: string[];
   provenance?: Readonly<Record<string, SourceProvenance>>;
   classReviews?: readonly SourceCandidateClassReview[];
@@ -76,6 +78,11 @@ export const defaultSourceAuditPaths = Object.freeze([
   "packages", "src", "workers", "tools", "examples", "templates", "apps", "tests", "marketing",
   "public", "fixtures"
 ]);
+
+/** Default scan roots that exist under `root`; absent ones (a staged candidate holds tracked files only) are skipped. */
+export function presentSourceAuditPaths(root: string): string[] {
+  return defaultSourceAuditPaths.filter((path) => existsSync(resolve(root, path)));
+}
 
 /** Do not interpret a fingerprint candidate as an authorship finding. */
 export function summarizeSourceEvidence(dependencies: DependencyGraphReport, source: SourceEvidenceReport): {
@@ -168,8 +175,9 @@ export function runSourceAudit(options: SourceAuditOptions, loadPlan: (root: str
   const shipped = (options.installProfiles ?? []).filter((path) => !harnesses.has(path));
   if (shipped.length !== (options.installProfiles ?? []).length) throw new Error("An external comparison harness may not be a shipped install profile");
   const dependencies = collectDependencyGraph(options.root, { payloads, installProfiles: shipped,
-    virtualProfiles: options.consumerProfiles?.(plan), externalHarnesses: options.externalHarnesses });
-  const source = collectSourceEvidence(options.root, { paths: options.sourcePaths ?? defaultSourceAuditPaths,
+    virtualProfiles: options.consumerProfiles?.(plan), externalHarnesses: options.externalHarnesses, reviewedUnresolved: options.reviewedUnresolved });
+  // Default roots that a staged candidate omits (for example untracked-only trees) are skipped; explicitly requested paths still fail when missing.
+  const source = collectSourceEvidence(options.root, { paths: options.sourcePaths ?? presentSourceAuditPaths(options.root),
     payloads, provenance: options.provenance, classReviews: options.classReviews, fingerprints: options.fingerprints });
   const summary = summarizeSourceEvidence(dependencies, source);
   return { schema: "aura3d.native-runtime-audit/1", phase: "source", ...summary,
@@ -261,7 +269,8 @@ async function main(): Promise<void> {
     result = runSourceAudit({ root, planPath: get("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN ?? "",
       installProfiles: [...new Set(profiles)], externalHarnesses: inventory.externalHarnesses,
       consumerProfiles: (plan) => packedConsumerProfiles(matrix.matrixCells(), (cell) => matrix.projectManifest(root, cell, plan)),
-      provenance: record?.provenance, classReviews: record?.classReviews, fingerprints }, release.loadValidatedReleasePlan);
+      provenance: record?.provenance, classReviews: record ? [...record.classReviews, ...record.pathScopedReviews] : undefined,
+      reviewedUnresolved: record?.reviewedUnresolvedDependencies, fingerprints }, release.loadValidatedReleasePlan);
   } else if (get("--phase") === "browser") {
     const module = await import(pathToFileURL(resolve(root, "tools/native-capability-gate/index.mjs")).href) as {
       validateAcceptanceGate(input: { root: string; gatePath: string; sourceReport: string }): BrowserAcceptanceGate | Promise<BrowserAcceptanceGate>;

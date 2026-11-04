@@ -91,8 +91,10 @@ export interface ProjectedProfileGraph {
   /** Reached nodes: `importer:<path>` for workspace packages, otherwise lock snapshot keys. */
   readonly nodes: readonly string[];
   readonly edgeCount: number;
-  /** Direct or transitive dependencies with no projected resolution. */
+  /** Direct or transitive dependencies with no projected resolution and no recorded review. */
   readonly unresolved: readonly { readonly owner: string; readonly name: string; readonly specifier: string }[];
+  /** Dependencies the root lock does not pin, accepted by a recorded name review (see ReviewedUnresolvedDependency). */
+  readonly reviewedUnresolved?: readonly { readonly owner: string; readonly name: string; readonly specifier: string; readonly reviewer: string }[];
   /** Prohibited package names reached anywhere in the projection. */
   readonly prohibited: readonly string[];
   readonly complete: boolean;
@@ -115,7 +117,21 @@ export interface DependencyGraphReport {
   readonly limitations: readonly string[];
 }
 
+/**
+ * A reviewer's recorded judgement that a package the root lock does not pin has
+ * no prohibited package anywhere in its own dependency tree (checked against the
+ * registry manifest by the reviewer), so leaving it out of the offline
+ * projection cannot hide a prohibited dependency. Matched by exact name only.
+ */
+export interface ReviewedUnresolvedDependency {
+  readonly name: string;
+  readonly reviewer: string;
+  readonly note: string;
+}
+
 export interface DependencyGraphOptions {
+  /** Reviewed names that do not keep a projected profile incomplete. */
+  readonly reviewedUnresolved?: readonly ReviewedUnresolvedDependency[];
   /** Already built tarballs or extracted package directories; never fetched here. */
   readonly payloads?: readonly string[];
   /** Standalone installation directories outside the root pnpm workspace. */
@@ -308,7 +324,7 @@ export function collectDependencyGraph(root: string, options: DependencyGraphOpt
     }
   }
   const projectedProfiles = unlockedManifests.map(({ path, manifest }) =>
-    projectProfile(path, manifest, lock.edges, manifests.filter((entry) => entry.source === "workspace"), prohibited));
+    projectProfile(path, manifest, lock.edges, manifests.filter((entry) => entry.source === "workspace"), prohibited, options.reviewedUnresolved ?? []));
   const projectedFindings: DependencyFinding[] = projectedProfiles.flatMap((profile) => profile.prohibited.map((name) => ({
     name, disposition: "projected-dependency" as const,
     edge: makeEdge("lock-snapshot", `${profile.path} (workspace-lock projection)`, "dependencies", name, "")
@@ -338,7 +354,9 @@ const projectedFields: readonly DependencyField[] = ["dependencies", "devDepende
 const installedFields = new Set<DependencyField>(["dependencies", "optionalDependencies"]);
 
 function projectProfile(path: string, manifest: JsonObject, lockEdges: readonly DependencyEdge[], workspace: readonly ManifestInventory[],
-  prohibited: ReadonlySet<string>): ProjectedProfileGraph {
+  prohibited: ReadonlySet<string>, reviewed: readonly ReviewedUnresolvedDependency[] = []): ProjectedProfileGraph {
+  const reviewedByName = new Map(reviewed.map((item) => [item.name, item.reviewer]));
+  const reviewedUnresolved: { owner: string; name: string; specifier: string; reviewer: string }[] = [];
   const importerByName = new Map<string, string>();
   for (const entry of workspace) {
     if (!entry.name) continue;
@@ -381,6 +399,7 @@ function projectProfile(path: string, manifest: JsonObject, lockEdges: readonly 
       const pinned = rootPins.get(actual);
       if (importer !== undefined) visit(`importer:${importer}`);
       else if (pinned) visit(pinned);
+      else if (reviewedByName.has(actual)) reviewedUnresolved.push({ owner: path, name: actual, specifier: redactDependencySpecifier(specifier), reviewer: reviewedByName.get(actual)! });
       else unresolved.push({ owner: path, name: actual, specifier: redactDependencySpecifier(specifier) });
     }
   }
@@ -399,7 +418,7 @@ function projectProfile(path: string, manifest: JsonObject, lockEdges: readonly 
   }
   return {
     path, resolution: "workspace-lock-projection", directFields: projectedFields,
-    nodes: [...nodes].sort(), edgeCount, unresolved,
+    nodes: [...nodes].sort(), edgeCount, unresolved, ...(reviewedUnresolved.length ? { reviewedUnresolved } : {}),
     prohibited: [...reached].filter((name) => prohibited.has(name)).sort(),
     complete: unresolved.length === 0
   };

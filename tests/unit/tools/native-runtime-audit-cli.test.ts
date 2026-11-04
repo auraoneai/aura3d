@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runBrowserAudit, summarizeSourceEvidence } from "../../../tools/native-runtime-audit/index";
-import { inspectSourceEntries } from "../../../tools/native-runtime-audit/source-evidence";
+import { defaultSourceAuditPaths, presentSourceAuditPaths, runBrowserAudit, summarizeSourceEvidence } from "../../../tools/native-runtime-audit/index";
+import { collectSourceEvidence, inspectSourceEntries } from "../../../tools/native-runtime-audit/source-evidence";
 import type { DependencyGraphReport } from "../../../tools/native-runtime-audit/dependency-graph";
 import type { AcceptanceGate, CandidateIdentity } from "../../../tools/performance/native-benchmark";
 
@@ -110,5 +110,25 @@ describe("native runtime audit orchestration", () => {
     expect(result.network.events[0]!.url).toBe("https://example.com/runtime.js");
     expect(JSON.stringify(result)).not.toContain("password");
     expect(JSON.stringify(result)).not.toContain("secret");
+  });
+});
+
+describe("source audit scan roots", () => {
+  it("skips default roots a staged candidate does not contain, such as the untracked workers/ directory", () => {
+    const root = directory();
+    for (const path of ["packages/a", "src", "tools"]) mkdirSync(join(root, path), { recursive: true });
+    writeFileSync(join(root, "src/main.ts"), "export const main = 1;\n");
+    const paths = presentSourceAuditPaths(root);
+    expect(paths).toEqual(["packages", "src", "tools"]);
+    expect(paths.every((path) => (defaultSourceAuditPaths as readonly string[]).includes(path))).toBe(true);
+    expect(() => collectSourceEvidence(root, { paths })).not.toThrow();
+    expect(collectSourceEvidence(root, { paths }).files.map((file) => file.path)).toContain("src/main.ts");
+  });
+
+  it("still fails when a path is requested explicitly and is missing", () => {
+    const root = directory();
+    mkdirSync(join(root, "src"), { recursive: true });
+    writeFileSync(join(root, "src/main.ts"), "export const main = 1;\n");
+    expect(() => collectSourceEvidence(root, { paths: ["src", "workers"] })).toThrow(/ENOENT.*workers/);
   });
 });

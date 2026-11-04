@@ -913,6 +913,13 @@ type PlanPackage = ExactReleasePlan["packages"][number] & { internalDependencies
 export interface PackedConsumerRunner {
   (command: string, args: string[], cwd: string, env: NodeJS.ProcessEnv): { status: number; output: string };
 }
+/** Last `lines` lines of a failing (already redacted) log, indented, for the error message. */
+export function failureLogTail(output: string, lines = 60): string {
+  const all = output.replace(/\s+$/, "").split(/\r?\n/);
+  const tail = all.slice(-lines);
+  const head = all.length > tail.length ? `--- last ${tail.length} of ${all.length} log lines ---` : "--- log ---";
+  return [head, ...tail.map(line => `    ${line}`)].join("\n");
+}
 const defaultPackedRunner: PackedConsumerRunner = (command, args, cwd, env) => {
   try {
     const output = execFileSync(command, args, { cwd, env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024 });
@@ -1089,7 +1096,7 @@ export async function runPackedSource(root: string, runId: string, plan: ExactRe
     const check: NativeConsumerCheck = { id: `${project}:${id}`, project, command: [cmd, ...args], status: result.status === 0 ? "passed" : "failed",
       exitCode: result.status, logPath, logSize: Buffer.byteLength(safeOutput), logSha256: hash(safeOutput) };
     checks.push(check);
-    if (check.status !== "passed") throw new Error(`Packed consumer ${project}:${id} failed (log ${logPath})`);
+    if (check.status !== "passed") throw new Error(`Packed consumer ${project}:${id} failed (log ${logPath})\n${failureLogTail(safeOutput)}`);
   };
   const npmInstall = ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--no-update-notifier", "--cache", cache, "--userconfig", emptyNpmConfigs().userconfig, "--globalconfig", emptyNpmConfigs().globalconfig];
   try {

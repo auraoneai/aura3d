@@ -9,7 +9,7 @@ import { gunzipSync, gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ExactReleasePlan } from "../../../tools/release/exact-release-plan.mjs";
 import { CREATE_AURA3D_TEMPLATES } from "../../../packages/create-aura3d/src/index";
-import { restorePackedConsumerProject, runPackedSource, validateSourceConsumerReport, type PackedConsumerRunner } from "../../../tools/package-clean-install/index";
+import { failureLogTail, restorePackedConsumerProject, runPackedSource, validateSourceConsumerReport, type PackedConsumerRunner } from "../../../tools/package-clean-install/index";
 
 const release = vi.hoisted(() => ({ current: null as ExactReleasePlan | null }));
 vi.mock("../../../tools/release/exact-release-plan.mjs", async (importOriginal) => ({
@@ -145,6 +145,27 @@ describe("packed-consumer clean-install producer", () => {
     const f = fixture(), { runner } = syntheticRunner({ badIntegrity: "@aura3d/engine" });
     await expect(runPackedSource(f.root, "bad-lock", f.plan, runner)).rejects.toThrow(/lock identity mismatch/);
     expect(existsSync(join(f.root, "tests/reports/native-consumers/bad-lock"))).toBe(false);
+  });
+
+  it("prints the tail of a failing template build in the error so a remote log needs no second download", async () => {
+    const f = fixture(), { runner } = syntheticRunner();
+    const failing: PackedConsumerRunner = (command, args, cwd, env) => {
+      if (command === "npm" && args[0] === "run" && args[1] === "build" && cwd.includes("animation-channel")) {
+        return { status: 2, output: [...Array.from({ length: 80 }, (_, index) => `noise ${index + 1}`), "src/main.ts(3,1): error TS2307: Cannot find module 'x'."].join("\n") };
+      }
+      return runner(command, args, cwd, env);
+    };
+    const error = await runPackedSource(f.root, "failing-build", f.plan, failing).then(() => null, (cause: unknown) => cause as Error);
+    expect(error?.message).toMatch(/^Packed consumer animation-channel:build failed \(log tests\/reports\/native-consumers\/failing-build\/logs\/animation-channel-build\.log\)/);
+    expect(error?.message).toContain("--- last 60 of 81 log lines ---");
+    expect(error?.message).toContain("    src/main.ts(3,1): error TS2307: Cannot find module 'x'.");
+    expect(error?.message).not.toContain("noise 20\n");
+  });
+
+  it("keeps only the last lines of a log, indented, and labels short logs whole", () => {
+    expect(failureLogTail("a\nb\nc\n", 2)).toBe("--- last 2 of 3 log lines ---\n    b\n    c");
+    expect(failureLogTail("only\n")).toBe("--- log ---\n    only");
+    expect(failureLogTail("")).toBe("--- log ---\n    ");
   });
 
   it("rejects a changed candidate archive before staging or installing", async () => {

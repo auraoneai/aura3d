@@ -65,7 +65,12 @@
     "./physics/solverless": "./dist/physics/solverless.js",
     "./physics/world": "./dist/physics/world.js",
     "./animation": "./dist/animation/index.js",
-    "./assets": "./dist/assets/index.js",
+    "./assets": {
+      "types": "./dist/assets/index.d.ts",
+      "browser": "./dist/assets/browser-index.js",
+      "import": "./dist/assets/index.js",
+      "default": "./dist/assets/index.js"
+    },
     "./input": "./dist/input/index.js",
     "./audio": "./dist/audio/index.js",
     "./scripting": "./dist/scripting/index.js",

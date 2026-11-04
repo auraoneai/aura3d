@@ -3,7 +3,7 @@
 // hello-world template failed to resolve it. These pin the narrower pattern and the build guard.
 
 import { describe, expect, it } from "vitest";
-import { findBareWorkspaceImports, specifierPattern } from "../../../tools/finalize-dist/specifiers";
+import { directoryIndexSpecifier, findBareWorkspaceImports, isDirectorySpecifier, specifierPattern } from "../../../tools/finalize-dist/specifiers";
 
 const source = [
   'markTextureStage(resource, "scalar-atlas import");',
@@ -25,5 +25,15 @@ describe("finalize-dist specifiers", () => {
       'from "@aura3d/math"'
     ]);
     expect(findBareWorkspaceImports('export * from "@aura3d/engine/rendering";', names)).toEqual([]);
+  });
+
+  it("names the index of bare directory specifiers that declaration emit produces, which NodeNext cannot resolve", () => {
+    const declaration = 'export declare const slot: import("..").ContractSlot<X>;\nblend?: import(".").BlendMode;';
+    const specifiers = [...declaration.matchAll(specifierPattern())].map((m) => m[2]);
+    expect(specifiers).toEqual(["..", "."]);
+    expect(specifiers.every(isDirectorySpecifier)).toBe(true);
+    expect(specifiers.map(directoryIndexSpecifier)).toEqual(["../index.js", "./index.js"]);
+    expect(isDirectorySpecifier("../index.js")).toBe(false);
+    expect(isDirectorySpecifier("./sibling.js")).toBe(false);
   });
 });
