@@ -61,6 +61,16 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "hoopsFloodlight", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // GU47 phase 4 WP-36 blacktopFloodlightRig: the Meshy retexture drawn for the Rucker floods on the new look (6,064 tris).
     { role: "set-dressing", assetKey: "hoops_blacktopFloodlight", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 2 WP-36 Meshy models, new look only (measured from the GLBs: BC+N+ORM, 3 JPEG maps each):
+    // fans 1,705 / 1,504 tris at 512 px, instanced on the bleachers (src/crowd.ts); set-pieces (src/setPieces.ts):
+    // Rucker mural wall 6,732, Venice lifeguard tower 10,586, Manila corrugated roofs 11,123 (x2 instanced),
+    // Shanghai dock container 7,461 (x2 instanced), all at 1024 px. No threshold was loosened.
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanB", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopFanC", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopMuralWall", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopLifeguardTower", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopCorrugatedRoof", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "aura_hoops_3d_blacktopContainer", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsBallCart", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsTrophy", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "hoopsLamp", maxTriangles: 25000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
