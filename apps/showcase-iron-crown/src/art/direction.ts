@@ -78,6 +78,18 @@ export default defineArtDirection({
     { role: "prop", assetKey: "ironcrownDockCrate", maxTriangles: 7000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownDockBarrel", maxTriangles: 11000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "ironcrownColosseumBust", maxTriangles: 18000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 2 (2026-11-03): Meshy venue dressing (WP-36 rows crownHarbourCrane .. crownSkylineBlockB), one single-material draw each;
+    // triangle caps are the decimated counts (meshopt, 1k textures). Replaces the borrowed tea house, watchtower and jet keys.
+    { role: "backdrop", assetKey: "ironcrownHarbourCrane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "ironcrownFishingBoat", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "ironcrownHangarPlane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "ironcrownTempleGate", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "ironcrownShrine", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "ironcrownTowerA", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "ironcrownTowerB", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "ironcrownBackdropRidge", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "ironcrownSkylineBlockA", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "ironcrownSkylineBlockB", maxTriangles: 22000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // Still borrowed: no CC0 catalog asset fits these without degrading the venue (lane report, Phase 9).
     // Phase 9b: the Airstrip and Monastery keep their 4.7.7 props (the CC0 swaps lost a blind panel against 4.7.7).
     { ...MESHY_PROP, assetKey: "auroraFuelDepotTankMeshy" },
@@ -87,17 +99,14 @@ export default defineArtDirection({
     { ...MESHY_PROP_E, assetKey: "clashDragonStatueMeshy" },
     { ...MESHY_PROP_E, assetKey: "courierNeonStorefrontMeshy" },
     { ...MESHY_PROP, role: "world", assetKey: "gullsiegeGatehouseMeshy" },
-    { ...MESHY_PROP, role: "world", assetKey: "gullsiegeWatchtowerMeshy" },
     { role: "world", assetKey: "heatsinkArch", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "heatsinkHoloBillboard", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
     { ...MESHY_PROP, role: "world", assetKey: "patrolCoastalRadarTowerMeshy" },
-    { ...MESHY_PROP_E, assetKey: "patrolJetAircraftMeshy" },
     { role: "set-dressing", assetKey: "propBoulder", maxTriangles: 12000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "propPineTree", maxTriangles: 50000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "propRockA", maxTriangles: 32000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "showcaseModernBuildingOne", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "showcaseModernOfficeBuilding", maxTriangles: 230000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 },
-    { role: "world", assetKey: "showcaseTeaHouse", maxTriangles: 120000, textureSet: "BC", maxTextureSize: 1024 }
+    { role: "backdrop", assetKey: "showcaseModernOfficeBuilding", maxTriangles: 230000, textureSet: "BC+N+ORM+E", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "hit", kind: "ic-forge-spark" },

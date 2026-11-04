@@ -356,7 +356,7 @@ const BANGKOK = makeStage(
   [
     modelProp(stageAssets.courierNeonStorefrontMeshy, "bk-stall-l", [-3.5, 0, -2.2], 2.8, 0.22),
     modelProp(stageAssets.courierNeonStorefrontMeshy, "bk-stall-r", [3.5, 0, -2.2], 2.8, -0.22),
-    modelProp(stageAssets.showcaseTeaHouse, "bk-shrine", [0, 0, -3.5], 3.6, 0),
+    modelProp(assets.ironcrownShrine, "bk-shrine", [0, 0, -3.5], 4.0, 0),
     modelProp(assets.ironcrownDockVendorCart, "bk-kiosk-l", [-2.1, 0, -1.8], 1.7, 0.3),
     modelProp(assets.ironcrownDockVendorCart, "bk-kiosk-r", [2.1, 0, -1.8], 1.7, -0.3),
     modelProp(assets.ironcrownBrazierPylon, "bk-lan-l", [-3.1, 0, -1.4], 1.9, 0),
@@ -377,8 +377,8 @@ const COLOSSEUM = makeStage(
   { floor: "#3a2f22", lane: "#e8c98a", aura: "#ffe9b0", warning: "#c86a3a", skyline: "#6b5636", fog: "#caa66a" },
   [
     modelProp(stageAssets.gullsiegeGatehouseMeshy, "co-gate-center", [0, 0, -3.4], 3.8, 0),
-    modelProp(stageAssets.gullsiegeWatchtowerMeshy, "co-tower-l", [-3.9, 0, -2.5], 3.4, 0.2),
-    modelProp(stageAssets.gullsiegeWatchtowerMeshy, "co-tower-r", [3.9, 0, -2.5], 3.4, -0.2),
+    modelProp(assets.ironcrownTowerA, "co-tower-l", [-3.9, 0, -2.5], 4.6, 0.2),
+    modelProp(assets.ironcrownTowerA, "co-tower-r", [3.9, 0, -2.5], 4.6, -0.2),
     modelProp(stageAssets.heatsinkArch, "co-arch-l", [-2.4, 0, -2.2], 2.6, 0.1),
     modelProp(stageAssets.heatsinkArch, "co-arch-r", [2.4, 0, -2.2], 2.6, -0.1),
     modelProp(assets.ironcrownColosseumBust, "co-bust-l", [-1.6, 0, -1.55], 1.45, 0.35),
@@ -398,7 +398,8 @@ const AIRBASE = makeStage(
   "industrial-arena",
   { floor: "#2b2620", lane: "#ffb03c", aura: "#ffe08a", warning: "#ff5c3c", skyline: "#54402a", fog: "#241a10" },
   [
-    modelProp(stageAssets.patrolJetAircraftMeshy, "ab-jet-center", [0.4, 0.15, -3.0], 3.8, -0.35),
+    // The parked plane (the name keeps the 4.6.2 "jet" id: refinedLook.ts GROUNDED_PROPS and its test key on it).
+    modelProp(assets.ironcrownHangarPlane, "ab-jet-center", [0.4, 0, -3.0], 4.6, -0.12),
     modelProp(stageAssets.patrolCoastalRadarTowerMeshy, "ab-tower-l", [-4.0, 0, -2.8], 3.5, 0.25),
     modelProp(stageAssets.auroraFuelDepotTankMeshy, "ab-fuel-r", [3.8, 0, -2.6], 2.6, -0.2),
     modelProp(stageAssets.bunkerBarrelMeshy, "ab-drum-1", [-2.6, 0, -1.5], 0.85, 0.2),
@@ -419,15 +420,15 @@ const MONASTERY = makeStage(
   "training-grid",
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
-    modelProp(stageAssets.showcaseTeaHouse, "mo-monastery", [0, 0, -3.4], 4.2, 0),
+    modelProp(assets.ironcrownTempleGate, "mo-monastery", [0, 0, -3.4], 4.4, 0),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
     modelProp(assets.ironcrownBrazierPylon, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
     modelProp(assets.ironcrownBrazierPylon, "mo-braz-r", [1.5, 0, -1.4], 1.65, 0),
     modelProp(stageAssets.propPineTree, "mo-pine-l", [-4.3, 0, -2.6], 3.2, 0.2),
     modelProp(stageAssets.propPineTree, "mo-pine-r", [4.3, 0, -2.6], 3.2, -0.2),
-    modelProp(stageAssets.propBoulder, "mo-peak-l", [-3.5, 0, -4.4], 2.8, 0.3),
-    modelProp(stageAssets.propBoulder, "mo-peak-r", [3.5, 0, -4.4], 2.6, -0.3)
+    modelProp(assets.ironcrownTowerB, "mo-pagoda-l", [-4.9, 0, -4.2], 6.2, 0.3),
+    modelProp(assets.ironcrownTowerB, "mo-pagoda-r", [4.9, 0, -4.2], 6.2, -0.3)
   ]
 );
 
