@@ -48,6 +48,7 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "aura_diamond_3d_ballparkWaterTower": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "aura_diamond_3d_ballparkRowhouseRoof": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   readonly "aura_diamond_3d_ballparkHabitat": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  readonly "aura_diamond_3d_ballparkHoodooR2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -426,6 +427,17 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-a9838fcb5ff752d50bf941cd132e97b64b659e394a0ecfb76d038bb4bfe48e25",
     bounds: [1.9, 1.54, 1.4],
     sizeBytes: 606908,
+  },
+  // GU47 wave 3 (DIA-A1): Diamond-owned Meshy set piece (sandstone hoodoo with a balanced capstone, re-roll of the wave-2 hoodoo that read as a bowling pin),
+  // generated 2026-11-04 and admitted into this app (assets/models/aura_diamond_3d_ballparkHoodooR2.glb, rights: assets/provenance/aura_diamond_3d_ballparkHoodooR2.rights.json);
+  // decimated 28,228 -> 10,000 triangles, 512 px maps (gltf-transform weld + meshopt simplify + textureCompress). Served from this app's public/aura-assets.
+  "aura_diamond_3d_ballparkHoodooR2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_diamond_3d_ballparkHoodooR2.abd8ca0c.glb",
+    hash: "sha256-abd8ca0ce0baafb75045b0536a4c6e928999858085985fbd7969191c67de17c0",
+    bounds: [0.77, 1.9, 0.76],
+    sizeBytes: 439396,
   },
 } as const);
 

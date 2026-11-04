@@ -493,7 +493,13 @@ export function wave2SetPieces(park: ParkSpec, low = false): any[] {
       return ([[-48, 285, 30, 0.2], [-4, 320, 36, -0.3], [40, 290, 28, 0.1]] as const).filter((_, i) => !low || i !== 0).map(([deg, r, h, jitter], i) => {
         const [x, z] = ring(deg, r);
         return model(assets.aura_diamond_3d_ballparkMesa, { name: `canyon-mesa-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, -0.4, z).rotate(0, farYaw(x, z) + jitter, 0);
-      });
+      }).concat(
+        // GU47 wave 3 (DIA-A1): two balanced-cap sandstone hoodoos in front of the mesas, between the rim rocks and the dust horizon.
+        ([[-30, 200, 22, 0.2], [26, 215, 26, -0.25]] as const).filter((_, i) => !low || i === 1).map(([deg, r, h, jitter], i) => {
+          const [x, z] = ring(deg, r);
+          return model(assets.aura_diamond_3d_ballparkHoodooR2, { name: `canyon-hoodoo-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, -0.2, z).rotate(0, farYaw(x, z) + jitter, 0);
+        })
+      );
     }
     case "ivy": {
       // Rowhouse blocks over the outfield wall (the 4.6.2 band stayed off: hard-edged slabs) and one water tower dead centre.

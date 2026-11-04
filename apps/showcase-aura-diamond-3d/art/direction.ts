@@ -72,6 +72,8 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkWaterTower", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkRowhouseRoof", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkHabitat", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    // GU47 wave 3 (DIA-A1): the re-rolled Meshy sandstone hoodoo, 10,000 triangles after the meshopt pass, 512 px maps.
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkHoodooR2", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "diamondHarborPier", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "diamondTower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "diamondCanyonArch", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
