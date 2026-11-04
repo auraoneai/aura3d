@@ -205,8 +205,13 @@ const STORM_TOWERS: readonly { s: number; lat: number; height: number; yaw: numb
   { s: 900, lat: -300, height: 240, yaw: 0.6 },
   { s: 1500, lat: 300, height: 240, yaw: 2.3 }
 ];
+/** CD-06 wave 2: Meshy tower B, a third column between A's two stations (its model is 1.15x taller than wide, so 420 m keeps the near edge clear of the road). */
+const STORM_TOWER_B: readonly { s: number; lat: number; height: number; yaw: number }[] = [{ s: 1200, lat: -420, height: 230, yaw: 1.1 }];
 /** Share of a tower's height sunk below the valley plane: the bottom third of the Meshy model is a grassy rock base. */
 const STORM_TOWER_SINK = 0.34;
+/** CD-13 Meshy hut: rendered height (m) and the sink (m) of its floor slab below the old procedural base plane. */
+const HUT_HEIGHT = 5.4;
+const HUT_SINK = 0.15;
 
 export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
   const b = scene().background(ACTIVE.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
@@ -272,12 +277,26 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
       name: "storm-towers", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
       transforms: STORM_TOWERS.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; })
     }));
+    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusTowerB, {
+      name: "storm-towers-b", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
+      transforms: STORM_TOWER_B.map((t) => { const p = at(t.s, t.lat, 0); return { position: [p[0], -STORM_TOWER_SINK * t.height, p[2]] as V3, rotation: [0, t.yaw, 0] as V3, scale: t.height }; })
+    }));
   }
   buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
   addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
   addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
-  const hut = buildHut(ch);
+  /* CD-13 (GU47 wave 2): the Meshy stone hut replaces the procedural wall, roof and door (storm-washed row); the mound
+     stays procedural. The door faces the track (-right), the foot sits on the hut's base plane, 5.4 m tall. */
+  const meshyHut = ACTIVE_LOOK.id === "storm-washed" && !!ch.home;
+  const hut = buildHut(ch, !meshyHut);
   if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
+  if (meshyHut && ch.home) {
+    const hf = frameAt(ch.home.s, 9.5);
+    b.add(instances.model(cumulusAssets.cloud_runner_port_cumulusHut, {
+      name: "home-hut", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true,
+      transforms: [{ position: [hf.point[0], hf.point[1] - HUT_SINK, hf.point[2]] as V3, rotation: [0, yawOf([-hf.right[0], -hf.right[1], -hf.right[2]]), 0] as V3, scale: HUT_HEIGHT }]
+    }));
+  }
   addMesh(buildCheckpointFlags(ch), "checkpoint-flags", scenerySpec({ rim: 0.3, sun: 1.3 }));
   /* CD-20: cairns and cloth-strip cord poles at the gorges, one merged draw (storm-washed row) */
   if (ACTIVE_LOOK.id === "storm-washed") addMesh(buildWaymarks(ch), "waymarks", scenerySpec({ rim: 0.25 }));

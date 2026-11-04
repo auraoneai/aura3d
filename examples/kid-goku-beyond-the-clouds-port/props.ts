@@ -189,7 +189,7 @@ export function buildGorgePosts(ch: Chapter): Mesh {
   return m;
 }
 
-export function buildHut(ch: Chapter): Mesh | null {
+export function buildHut(ch: Chapter, walls = true): Mesh | null {
   if (!ch.home) return null;
   const m = new Mesh();
   const s = ch.home.s, f = frameAt(s, 9.5);
@@ -197,9 +197,11 @@ export function buildHut(ch: Chapter): Mesh | null {
   const roof = cylinder(14, 4.1, 0.05, 2.6, hex("#c0502f"), hex("#d76a3c"));
   const door = box(1.3, 2.0, 0.2, hex("#6b4527"));
   const base: V3 = [f.point[0], f.point[1], f.point[2]];
-  m.append(wall, base, 1, 0, 0);
-  m.append(roof, [base[0], base[1] + 3.1, base[2]], 1, 0, 0);
-  m.append(door, [base[0] - f.right[0] * 3.0, base[1] + 1.0, base[2] - f.right[2] * 3.0], 1, yawOf(f.right), 0);
+  if (walls) {
+    m.append(wall, base, 1, 0, 0);
+    m.append(roof, [base[0], base[1] + 3.1, base[2]], 1, 0, 0);
+    m.append(door, [base[0] - f.right[0] * 3.0, base[1] + 1.0, base[2] - f.right[2] * 3.0], 1, yawOf(f.right), 0);
+  }
   const mount = icosphere(1, hex("#8a6a4a"), 0.2, seeded(9), true);
   m.append(mount, [base[0] + f.right[0] * 6, base[1] - 0.4, base[2] + f.right[2] * 6], [6, 2.2, 5], 0.4);
   m.computeNormals();
