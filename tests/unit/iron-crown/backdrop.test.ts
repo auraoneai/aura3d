@@ -8,7 +8,15 @@ import { venueBackdrop } from "../../../apps/showcase-iron-crown/src/game/backdr
 import { STAGES } from "../../../apps/showcase-iron-crown/src/game/stages";
 
 type Inst = { position: [number, number, number] };
-type Node = AuraSceneNode & { name?: string; castShadow?: boolean; instances?: Inst[]; material?: { emissive?: string; practical?: boolean } };
+type Node = AuraSceneNode & {
+  name?: string;
+  kind?: string;
+  castShadow?: boolean;
+  instances?: Inst[];
+  position?: [number, number, number];
+  transform?: { position?: [number, number, number] };
+  material?: { emissive?: string; practical?: boolean };
+};
 
 describe("iron-crown far backdrops (GU47 IC47-W1)", () => {
   for (const stage of STAGES) {
@@ -17,12 +25,24 @@ describe("iron-crown far backdrops (GU47 IC47-W1)", () => {
       it("crown-arena: enclosed, no far layer", () => expect(nodes).toHaveLength(0));
       continue;
     }
-    it(`${stage.id}: 2-4 instanced draws, 10-60 m out, no shadow casting, mounted in the stage dressing`, () => {
-      expect(nodes.length).toBeGreaterThanOrEqual(2);
-      expect(nodes.length).toBeLessThanOrEqual(4);
+    it(`${stage.id}: 2-4 instanced draws plus single-draw Meshy models, 10-60 m out, no shadow casting, mounted in the stage dressing`, () => {
+      // Wave 2: the Meshy backdrop models (one single-material draw each) sit beside the instanced primitive layers.
+      const models = nodes.filter((node) => node.kind === "model");
+      const layers = nodes.filter((node) => node.kind !== "model");
+      expect(layers.length).toBeGreaterThanOrEqual(1);
+      expect(layers.length).toBeLessThanOrEqual(4);
+      // Wave 3: the Dock far bank adds two warehouse rows (still one draw each, far under the 60-draw backdrop budget).
+      expect(models.length).toBeLessThanOrEqual(8);
+      expect(layers.length + models.length).toBeLessThanOrEqual(12);
       for (const node of nodes) {
         expect(node.name?.startsWith(`bd-${stage.id}-`), node.name).toBe(true);
         expect(node.castShadow).toBe(false);
+        if (node.kind === "model") {
+          const at = (node.position ?? node.transform?.position)!;
+          expect(Math.hypot(at[0], at[2]), node.name).toBeGreaterThanOrEqual(10);
+          expect(-at[2], node.name).toBeLessThanOrEqual(60);
+          continue;
+        }
         expect(node.instances?.length ?? 0).toBeGreaterThan(0);
         if (node.material?.emissive) expect(node.material.practical, node.name).toBe(true);
         for (const inst of node.instances ?? []) {

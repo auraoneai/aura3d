@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/saiyan-snake-way-port/art/direction.ts",
-  "sourceSha256": "094bf27ee17ec4ff9183af3b5b3ca62e82cae0fceda396fa120bdcffacf8233a",
+  "sourceSha256": "c7dff42c2d8be0ec3b8dd51351f5c8d65a03747c1a74a1565497432dd1dce02c",
   "id": "serpentine-sky-run-port",
   "genre": "platformer",
   "signatureEffect": "Stage colour script on a scaled serpent road: eight evening looks blended along pearl-and-jade scales with a pulsing gold spine.",
@@ -101,6 +101,27 @@
       },
       {
         "assetKey": "serpentHead",
+        "triangles": 0,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "spireB",
+        "triangles": 0,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "spireC",
+        "triangles": 0,
+        "textures": 2,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "spireA",
         "triangles": 0,
         "textures": 2,
         "unlit": false,
@@ -246,6 +267,27 @@
         "maxTriangles": 40000,
         "textureSet": "BC+N",
         "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "spireB",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "spireC",
+        "maxTriangles": 45000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "spireA",
+        "maxTriangles": 40000,
+        "textureSet": "BC+N",
+        "maxTextureSize": 1024
       }
     ],
     "vfx": [

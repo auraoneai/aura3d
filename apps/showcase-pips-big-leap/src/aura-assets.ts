@@ -1,6 +1,6 @@
 // Pip's Big Leap — typed catalog refs (no raw URLs).
 //
-// Hero, boss, and the collectible/checkpoint/gate props are bespoke Meshy
+// Hero, boss, the villagers, the diorama bases and the collectible/checkpoint/gate props are bespoke Meshy
 // generations imported into this app's own catalog (`aura.assets.json`,
 // generated key surface in `src/aura-catalog.ts`). The world props and the
 // two NPC runners come from the shared repo catalog, through the small
@@ -16,6 +16,16 @@ export const assets = {
   goldenAcorn: catalog.pipsGoldenAcorn,
   checkpointFlag: catalog.pipsCheckpointFlag,
   sungate: catalog.pipsSungate,
+  // GU47 wave 2 (PBL-A3): the two woodland villagers, generated text-to-3D, static pose.
+  hedgehog: catalog.leapHedgehog,
+  beetle: catalog.leapBeetle,
+  // GU47 wave 2 (PBL-E1): generated diorama bases that tile under the course.
+  bases: {
+    garden: catalog.leapBaseGarden,
+    canopy: catalog.leapBaseCanopy,
+    millpond: catalog.leapBaseMillpond,
+    meadow: catalog.leapBaseMeadow
+  },
   hawk: shared.heatsinkDroneNighthawk,
   sidekick: shared.showcaseSidekickRunner,
   helper: shared.helperChar,

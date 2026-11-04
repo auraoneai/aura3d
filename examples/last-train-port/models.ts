@@ -24,7 +24,10 @@ export const MESHY_ASSETS = defineModelAssets({
   lamp: entry("lamp.glb", "66bb1e5bc3780484e52f5836034afe53fdcd08872720984c78672ac9abe77204"),
   /** GU47 WP-36 lamplightTramEnamel (LT-11): Meshy retexture of tram.glb (cherry enamel, cream band, brass, teak; metallic and
    * roughness maps), task 01a18c0d-2132-746a-8858-14d692c19fd1. Band look only; `?look=original` keeps tram.glb. */
-  tramEnamel: entry("tram-enamel.glb", "05055cc8de4f22ff3cd261ae03801013b76c2a2ee89fb5064936a4283d2afc33")
+  tramEnamel: entry("tram-enamel.glb", "05055cc8de4f22ff3cd261ae03801013b76c2a2ee89fb5064936a4283d2afc33"),
+  /** GU47 wave 3 WP-36 lamplightUndersideAR2 (LT-10): Meshy text-to-3d rock-only island underside (hanging cone), task
+   * 01a1a620-a8fa-70f7-b4f0-54474b386b02, simplified to 5,994 triangles / 1024 px maps; replaces the primitive `island-rocks` cones. */
+  lamplightUndersideAR2: entry("lamplight-underside-ar2.glb", "b77a91e9bb47a9567e6dc975d898cccd40731feaeed25a509223cfc6ccb6b83e")
 }, { license: LICENSE, queryParam: null }).refs;
 
 export const MESHY_ENABLED = !(typeof location !== "undefined" && /[?&]procedural=1\b/.test(location.search));

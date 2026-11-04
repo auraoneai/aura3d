@@ -42,6 +42,65 @@ WebGPU backend and native WebGPU deferred, meshlet and visibility-buffer drawing
 
 - Experimental paths have source and mock-device tests only; no real-GPU or device result is claimed.
 
+## 4.7.12 (2026-11-04)
+
+Hotfix for Slingshot Siege plus the wave-3 Meshy models (re-rolls of rows that were skipped in 4.7.11).
+
+### Fixed
+
+- **Slingshot Siege: the egg (projectile) was not drawn in flight.** The pooled projectile nodes (the skinned hero-gull model with a `Jump_Loop` clip) were created parked at y -120 and hidden, and were then moved and shown at launch; in every deployed 4.7.x build the node API reported them visible, scaled and on a correct arc while no model was drawn, so a shot showed the toast, the hit and the score but no flying egg. The pool is now created on screen, tiny and visible, and is re-parked on screen (not hidden at y -120) on reset and when a shot ends. Verified on software WebGL2 with a remote probe: three consecutive shots in the default look and in `?look=original` (see Known limits for what the probe did and did not cover).
+
+### Added (wave 3, new Meshy models; each decimated to its game's budget)
+
+- Aura Diamond 3D: re-rolled hoodoo on Canyon (two nodes in front of the mesas) and re-rolled dome truss.
+- Aura Hoops 3D: re-rolled covered bleacher as two Rucker set-pieces flanking the far stand.
+- Aura Links 3D: re-rolled basalt columns (Cinder Rim) and cable-car station (Cloud Terrace).
+- Iron Crown: re-rolled pavilion (Monastery centre) and warehouse rows (Dock far bank).
+- Saltwind Highway: arcology towers on Halo.
+- Last Train: rock-only island underside (5,994 triangles).
+- Rows re-rolled and skipped again (wrong subject or over budget): Apex Overdrive towers/pier, Thermal Drift crystal spire, Bunker Zero pillar, Saltwind maglev tube, turbine tower and crane.
+
+### Known limits
+
+- **The wave-2 (4.7.11) and wave-3 models have not been through a blind panel.** A remote capture of the 4.7.11 swaps was started; the results are recorded in the lane docs and the memory notes, not in this release. Treat the look of the new models as unverified on a real GPU (PRD D5, owner-only).
+- The egg probe confirms the projectile is drawn mid-flight in every probed shot; it does not judge how good the egg looks.
+- Distinctness pairs, the 12-category rubric bar, 41 `borrowed-asset` and 12 `luma-band` warnings, selective bloom activation and Bunker Zero's texture deadline are unchanged from 4.7.10; real-GPU judgement is owner-only.
+- `tests/unit/rework-kit/two-hand-grip.test.ts` and 58 type errors in `tools/` and some `tests/` files predate this release.
+
+## 4.7.11 (2026-11-03)
+
+GameUpgrades47 wave 2: 61 new Meshy models (generated 2026-11-03 for the 3,722 credits available on one key) are wired into 15 games, each decimated to its game's triangle and texture budget (lane reports in `docs/prds/game-upgrades-47/lanes/`, "Wave 2 (2026-11-03)" sections). Of the 123 models generated, 62 were not used: they read wrong against their role, were unrigged T-poses, duplicated a live model, or did not fit the scene.
+
+**Not panel-judged.** Unlike 4.7.10, these swaps were not captured or blind-judged before release: they were checked by thumbnails, bounds, game-checks, eslint and the unit tests of the touched games only. Every new model is behind the existing look switch where the game has one (`?look=original` keeps the old scene). Treat the look of the new models as unverified on a real GPU (PRD D5, owner-only).
+
+### Games
+
+| Game | New models |
+|---|---|
+| Iron Crown | harbour crane, fishing boat, shrine, hangar plane, two skyline blocks, two towers, temple gate, backdrop ridge |
+| Pip's Big Leap | four course bases (academy, canopy, millpond, meadow), hedgehog and beetle villagers (static, unrigged) |
+| Aura Hoops 3D | standing fans, mural wall, lifeguard tower, corrugated roof, container |
+| Grid Dispatch | pyramid, glass and bridge towers, bridge deck, two buildings |
+| Thermal Drift | reactor ring, ladle crane, cooling tower, smokestacks, water tower |
+| Aura Diamond 3D | lighthouse, mesa, water tower, rowhouse roof, lunar habitat |
+| Slingshot Siege | lighthouse islet, quarry crane, greenhouse frame, curtain wall, crystal crater |
+| Aura Links 3D | lighthouse, clubhouse, harbour crane, lander |
+| Serpentine Sky Run | three spires (script mode) |
+| Ninja Runner | shrine gate, water wheel, pagoda silhouette (evening look) |
+| Saltwind Highway | sea stack, hoodoo, arch |
+| Cumulus Dash | storm tower, hut (storm-washed look) |
+| Aura FC 3D | player tunnel |
+| Chroma Roll | easel island (carnival look) |
+| Ion Circuit | heavy drone model (twilight look) |
+
+### Known limits
+
+- **No panel for this release** (see above); the 7 reverted swaps of 4.7.10 show that about half of unjudged swaps can read worse than a tuned scene.
+- Several models sit above the 8k triangle guideline after decimation (Iron Crown towers 11-13k, Aura FC tunnel 13k, Slingshot pieces up to 20k); Aura Hoops stays above its 1.2M triangle budget.
+- Characters from Meshy are unrigged T-poses and were not used; the rigging and animation rows that would fix this ran out of credits.
+- Distinctness pairs, the 12-category rubric bar, 41 `borrowed-asset` and 12 `luma-band` warnings, selective bloom activation, and Bunker Zero's texture deadline are unchanged from 4.7.10; real-GPU judgement is owner-only.
+- `tests/unit/rework-kit/two-hand-grip.test.ts` and 58 type errors in `tools/` and some `tests/` files predate this release.
+
 ## 4.7.10 (2026-11-02)
 
 GameUpgrades47 continuation after 4.7.9 (lane reports in `docs/prds/game-upgrades-47/lanes/`, "Wave 1 (post-4.7.9)" sections). A small release: Meshy models that had been generated but never used are wired into eight games where they did not lose a blind panel, the selective-bloom activation fixes, and a recorded decision on the five over-budget HDRIs. Presentation only: simulation, physics, scoring, input and the reference replays are unchanged.

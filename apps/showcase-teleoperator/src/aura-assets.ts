@@ -113,6 +113,51 @@ export const assets = defineAuraAssets({
     hash: "sha256-594d4a197910c149f2a1c8e1f8397c00d3d66d8af31299449cbfa21c1798b5ac",
     bounds: [0.951, 1.812, 2]
   },
+  // GU47 wave 2 (WP-36 dispatchPyramidTower/GlassTower/BridgeTower/BridgeDeck/BuildingA/BuildingB, GD-12): Meshy text-to-3D
+  // skyline landmarks, bridge set-piece and two street-front buildings, route-local like the pod. Each was simplified to
+  // <= 20k triangles (skyline and bridge at 512 px textures, buildings at 1024 px); rights and meta in public/aura-assets/meshy/provenance.
+  gridPyramidTower: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchPyramidTower.glb",
+    hash: "sha256-a3a4837c4d22fd8be80f141c66df0952e8dcd6170aebad489914b61d72b179a7",
+    bounds: [0.4607, 1.9038, 0.3966]
+  },
+  gridGlassTower: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchGlassTower.glb",
+    hash: "sha256-ca852bc8be0e46386f529c61b505981016427b6843ceb3a6a63d0a6164b3f05c",
+    bounds: [1.6673, 1.9032, 1.2667]
+  },
+  gridBridgeTower: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchBridgeTower.glb",
+    hash: "sha256-67e567a458694f2bbd91c34776257889255707e4e61a136a5dd6a5bfcb419da7",
+    bounds: [0.6058, 1.9022, 1.7849]
+  },
+  gridBridgeDeck: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchBridgeDeck.glb",
+    hash: "sha256-97f12454094a4a21acf67fbd4e7fad4ef3e7c46b9d27af8fb428d16d8acff67c",
+    bounds: [1.9004, 0.3736, 0.7851]
+  },
+  gridBldgNew1: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchBuildingA.glb",
+    hash: "sha256-c99523e53ea46a9c7e96217fabc782c147c3fdec76ae3fe9d0e1b05180a57a64",
+    bounds: [1.8926, 1.4001, 1.8972]
+  },
+  gridBldgNew2: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/meshy/models/teleoperator_dispatchBuildingB.glb",
+    hash: "sha256-f20013633822bd3822c0109122427a623d28cc3b9d84e85f307816326ecaea09",
+    bounds: [1.7699, 1.8896, 0.7724]
+  },
   gridBldgMidrise: {
     type: "model",
     format: "glb",
@@ -158,6 +203,12 @@ export const CATALOG_IDS: Readonly<Record<GridAssetKey, string | null>> = {
   gridPickup: "gridPickup",
   gridBoxTruck: "gridBoxTruck",
   gridBldgVictorian: null,
+  gridPyramidTower: null,
+  gridGlassTower: null,
+  gridBridgeTower: null,
+  gridBridgeDeck: null,
+  gridBldgNew1: null,
+  gridBldgNew2: null,
   gridBldgMidrise: "teleopBldg_midrise",
   gridBldgGlassTower: "teleopBldg_glasstower",
   gridBldgArtDeco: "teleopBldg_artdeco"

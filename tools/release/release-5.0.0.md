@@ -43,7 +43,7 @@ unset AURA3D_SOURCE_MANIFEST A3D_RELEASE_PLAN A3D_RELEASE_PACK_DIR NATIVE_RUN_ID
 GATE=tests/reports/native-capabilities/code-complete-go.json
 ACCEPT_RUN_ID=<the merged acceptance RUN_ID>   # e.g. native-5-accept-001 (MERGE_RUNS output)
 ACCEPT=tests/reports/native-5/$ACCEPT_RUN_ID/acceptance-report.json
-V=5.0.0; PREV=4.7.10
+V=5.0.0; PREV=4.7.12
 MIGRATION_URL=https://aura3d.auraone.ai/docs/migration/4-to-5   # see P4: marketing/dist/docs/migration/4-to-5.html, live after 7c
 
 FREEZE=$(node -p 'const g=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(g.schema!=="aura3d.native-code-complete/1"||g.status!=="CODE_COMPLETE_GO") throw new Error("not a GO record"); g.freezeCommit' "$GATE")
@@ -282,7 +282,7 @@ awk '/^## 5\.0\.0/{f=1;next} /^## /{if(f)exit} f' CHANGELOG.md > "$REL/notes-$V.
 test -s "$REL/notes-$V.md"
 ! grep -q 'unreleased\|not frozen' "$REL/notes-$V.md"          # P1
 
-# 6c. Merge into main. The convention is fast-forward (4.3.6, 4.7.9, 4.7.10).
+# 6c. Merge into main. The convention is fast-forward (4.3.6, 4.7.9, 4.7.12).
 git fetch origin main
 M=$REL/main-merge; git worktree add --detach "$M" origin/main; cd "$M"
 if git merge-base --is-ancestor origin/main "$FREEZE"; then
@@ -336,7 +336,7 @@ for (const { tagName } of releases) {
 console.log(`${n} older releases processed`);
 EOF
 node "$REL/banner-releases-500.mjs" "$V" "$MIGRATION_URL" | tee "$REL/logs/60-banner.log"
-gh release list --limit 3      # v5.0.0 Latest; v4.7.10 Pre-release
+gh release list --limit 3      # v5.0.0 Latest; v4.7.12 Pre-release
 ```
 
 ## 7. Cloudflare Pages deploys (preview first, then production)
@@ -458,22 +458,22 @@ for p in aura3d aura3d-wonder-world; do
 done
 ```
 
-npm: point `latest` back to 4.7.10, un-deprecate 4.7.10, and deprecate 5.0.0. `@aura3d/addons`
+npm: point `latest` back to 4.7.12, un-deprecate 4.7.12, and deprecate 5.0.0. `@aura3d/addons`
 has only 5.0.0, so it is deprecated only. Unpublishing within 72 h deletes production data and
 needs the owner's explicit go; it is not part of this rollback.
 
 ```bash
 source /tmp/aura3d-rel500/env.sh
 for n in $(node -p 'require(process.argv[1]).packages.map(p=>p.name).filter(n=>n!=="@aura3d/addons").join(" ")' "$WT/$PLAN" 2>/dev/null || node -p 'require(process.argv[1]).packages.map(p=>p.name).filter(n=>n!=="@aura3d/addons").join(" ")' "$REPO/$PLAN"); do
-  npm dist-tag add "$n@4.7.10" latest
-  npm deprecate "$n@4.7.10" ""
-  npm deprecate "$n@5.0.0" "Rolled back: use $n@4.7.10 until a fixed 5.x ships"
+  npm dist-tag add "$n@4.7.12" latest
+  npm deprecate "$n@4.7.12" ""
+  npm deprecate "$n@5.0.0" "Rolled back: use $n@4.7.12 until a fixed 5.x ships"
 done
 npm deprecate "@aura3d/addons@5.0.0" "Rolled back with Aura3D 5.0.0: do not use"
 ```
 
-GitHub: `gh release edit v5.0.0 --prerelease --latest=false && gh release edit v4.7.10 --prerelease=false --latest`.
-Then remove the 4.7.10 banner with `gh release edit v4.7.10 --notes-file <original notes>`. Leave
-the `v5.0.0` tag; deleting a published tag needs the owner. If `main` must return to 4.7.10
+GitHub: `gh release edit v5.0.0 --prerelease --latest=false && gh release edit v4.7.12 --prerelease=false --latest`.
+Then remove the 4.7.12 banner with `gh release edit v4.7.12 --notes-file <original notes>`. Leave
+the `v5.0.0` tag; deleting a published tag needs the owner. If `main` must return to 4.7.12
 content, use `git revert -m 1 <merge>` with `[skip ci]` (only after a non-ff merge). Never
 force-push `main`.

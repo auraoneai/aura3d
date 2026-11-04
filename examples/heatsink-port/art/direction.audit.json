@@ -232,7 +232,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "ionSentryDrone",
+        "assetKey": "ionHeavyDrone",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -260,7 +260,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "ionSentryDrone",
+        "assetKey": "ionHeavyDrone",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -288,7 +288,35 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "ionHeavyDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionSentryDrone",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "ionHeavyDrone",
         "triangles": 0,
         "textures": 0,
         "unlit": false,

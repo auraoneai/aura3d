@@ -65,6 +65,11 @@
       "role": "setDressing"
     },
     {
+      "typedRef": "assets.fcPlayerTunnelMeshy",
+      "quality": "candidate",
+      "role": "setDressing"
+    },
+    {
       "typedRef": "assets.fcBallCrate",
       "quality": "candidate",
       "role": "setDressing"

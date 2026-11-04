@@ -164,7 +164,13 @@ test.describe("rendering visual pixels", () => {
   });
 
   test("covers WebGL2 renderer resize with updated backing buffer and viewport pixels", async ({ page }) => {
-    await page.goto(server.origin, { waitUntil: "domcontentloaded" });
+    // #1392: this test used to load the server root. The root resolves to the repository index.html,
+    // whose <meta http-equiv="refresh" content="0; url=/marketing/"> navigates the page right after
+    // domcontentloaded and destroyed the evaluate() execution context ("Execution context was
+    // destroyed, most likely because of a navigation"). The static harness page never navigates and
+    // is the page the sibling FXAA/tone-map tests in this file already use; "load" guarantees the
+    // document has settled before the module import runs.
+    await page.goto(`${server.origin}/tests/browser/rendering-webgpu-harness.html`, { waitUntil: "load" });
     const result = await page.evaluate(async (moduleUrl) => {
       const { Geometry, Renderer, UnlitMaterial } = await import(moduleUrl);
       const canvas = document.createElement("canvas");

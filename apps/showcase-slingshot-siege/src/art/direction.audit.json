@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-slingshot-siege/src/art/direction.ts",
-  "sourceSha256": "7544d1c2e016631b605e38bfc231bbd9435a7df66187504c17ffc2b755547795",
+  "sourceSha256": "c67918831538ba4f6e9f6a445638f28198c632272e24af4b048c0516ac7cd339",
   "id": "showcase-slingshot-siege",
   "genre": "golf-physics",
   "signatureEffect": "Tilt-shift miniature focus band that keeps the toy fort crisp over a real sea horizon, through six times of one seaside day.",
@@ -37,6 +37,13 @@
     "models": [
       {
         "assetKey": "sling_seaStackIsland",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "sling_lighthouseIslet",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -1409,6 +1416,41 @@
         "maxTriangles": 200000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_lighthouseIslet",
+        "maxTriangles": 15000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_quarryCrane",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_greenhouseFrame",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_curtainWall",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "sling_crystalCrater",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       }
     ],
     "vfx": [

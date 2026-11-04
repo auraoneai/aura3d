@@ -116,9 +116,13 @@ export const PAINT_POT_PIECES: readonly number[] = [3, 6];
 /** GU47 wave 1 CR-A1: in the carnival look the right-hand tree island in slot 9 is the palette island (same slot, size
  *  10, motion and shadow flags; the GLB's 1.65 x 1.90 x 1.67 bounds match the tree island's 1.59 x 1.89 x 1.58). */
 export const PALETTE_PIECES: readonly number[] = [9];
+/** GU47 wave 2 CR-A1: in the carnival look the left-hand tower island in slot 4 is the easel island (same slot, size 12,
+ *  motion, sway and shadow flags; the GLB's 1.90 x 1.51 x 1.01 bounds are normalised to the same max dimension). */
+export const EASEL_PIECES: readonly number[] = [4];
 export function pieceModel(look: SplatLook, piece: Piece): keyof typeof MODELS {
   if (look.id === "carnival" && PAINT_POT_PIECES.includes(PIECES.indexOf(piece))) return "paintPotIsland";
   if (look.id === "carnival" && PALETTE_PIECES.includes(PIECES.indexOf(piece))) return "paletteIsland";
+  if (look.id === "carnival" && EASEL_PIECES.includes(PIECES.indexOf(piece))) return "easelIsland";
   return piece.kind;
 }
 

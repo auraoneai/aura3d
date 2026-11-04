@@ -66,6 +66,14 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "ballpark_fanA", maxTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     // GU47 wave 1: the second Meshy seated fan, 555 triangles after the same sloppy simplify, 256 px maps.
     { role: "set-dressing", assetKey: "ballpark_fanB", maxTriangles: 1000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    // GU47 wave 2 (DIA-A1): five Meshy far set pieces, decimated to 10-16k triangles with 512 px maps (art/direction notes in lanes/g08.md).
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkLighthouse", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkMesa", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkWaterTower", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkRowhouseRoof", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkHabitat", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
+    // GU47 wave 3 (DIA-A1): the re-rolled Meshy sandstone hoodoo, 10,000 triangles after the meshopt pass, 512 px maps.
+    { role: "set-dressing", assetKey: "aura_diamond_3d_ballparkHoodooR2", maxTriangles: 10000, textureSet: "BC+N+ORM", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "diamondHarborPier", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "diamondTower", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "set-dressing", assetKey: "diamondCanyonArch", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },

@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/roadster-hours-port/art/direction.ts",
-  "sourceSha256": "ec61a03bd1b7477b6c10d5d6e127660b4649ceac09cb049e6c7bf90b05d983de",
+  "sourceSha256": "0d749384f4b982d7006d21bdbd5bd3366328c6749d25b05293c5b6eae9e40ecf",
   "id": "roadster-hours-port",
   "genre": "racing",
   "signatureEffect": "Crosswind salt spray: sheets of salt, sand or mist lift off the sea-side cliff base and blow across the highway with the route wind.",
@@ -149,6 +149,34 @@
       {
         "assetKey": "tanker",
         "triangles": 5735,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "seastack",
+        "triangles": 6000,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "hoodoo",
+        "triangles": 5000,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "arch",
+        "triangles": 8000,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "arcology",
+        "triangles": 7429,
         "textures": 1,
         "unlit": false,
         "overridesTextures": false
@@ -355,6 +383,34 @@
       {
         "role": "set-dressing",
         "assetKey": "boulders",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "seastack",
+        "maxTriangles": 6000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "hoodoo",
+        "maxTriangles": 5000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "arch",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "arcology",
         "maxTriangles": 8000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024

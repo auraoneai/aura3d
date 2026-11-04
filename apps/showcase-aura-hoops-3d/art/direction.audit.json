@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-hoops-3d/art/direction.ts",
-  "sourceSha256": "e5c0f9a28cece9badb0dfdf3d7d3f0c52cf107b91472bdf555dcb1f13cf0fba1",
+  "sourceSha256": "7fe4a7df94838b48428de07ce489b6120a56a77c59554761164aa41418fd2de7",
   "id": "showcase-aura-hoops-3d",
   "genre": "basketball",
   "signatureEffect": "Spray-tag decal stencilled on the blacktop under the rim after a Jam dunk, fading over 20 s, at most 8 live, on every tier.",
@@ -53,6 +53,55 @@
       "background": true
     },
     "models": [
+      {
+        "assetKey": "aura_hoops_3d_blacktopBleacherR2",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_hoops_3d_blacktopContainer",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_hoops_3d_blacktopCorrugatedRoof",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_hoops_3d_blacktopFanB",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_hoops_3d_blacktopFanC",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_hoops_3d_blacktopLifeguardTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "aura_hoops_3d_blacktopMuralWall",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
       {
         "assetKey": "hoopsAthleteBigKit",
         "triangles": 0,
@@ -348,6 +397,55 @@
         "role": "set-dressing",
         "assetKey": "hoops_blacktopFloodlight",
         "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopFanB",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopFanC",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopMuralWall",
+        "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopLifeguardTower",
+        "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopCorrugatedRoof",
+        "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopContainer",
+        "maxTriangles": 25000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_hoops_3d_blacktopBleacherR2",
+        "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },

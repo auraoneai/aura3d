@@ -140,6 +140,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 const HIDDEN_SCALE = 0.0001;
+// GU47 wave 3: the basalt column model's taupe, wood-grained base colour is multiplied down to a cool dark grey so it reads as volcanic stone
+const BASALT_TINT = [{ color: "#8a8782", colorMode: "multiply" as const }];
 const TRAIL_COUNT = 16;
 /**
  * drawn ball radius (m): about 2.3x a real 21 mm ball, half the cup's 0.2 m width. At 0.035 the ball hid behind
@@ -490,7 +492,14 @@ function buildClubhouseNodes(
     : material.pbr({ color: "#3d5c70", roughness: 0.22, metalness: 0.35 });
   const signMat = material.pbr({ color: parkland ? "#3f2a24" : "#20372f", roughness: 0.7 });
   const shrubMat = material.pbr({ color: shade(course.palette.rough, 1.1), roughness: 0.92 });
-  const nodes: any[] = [
+  // GU47 wave 2 (golfClubhouse, LINKS-08): Maple Hollow's clubhouse is the Links-owned Meshy timber lodge (GU47 look only);
+  // fitted to 5.8 m high (11 m wide, 9 m deep, porch toward the green) it fills the old 11.2 x 8.2 m foundation. The walkway
+  // and the porch shrubs below stay. Dunes keeps the primitive postcard clubhouse (its sign and glowing windows).
+  const meshyClub = parkland && turfOn;
+  const nodes: any[] = meshyClub ? [
+    model(assets.links_clubhouse, { name: "clubhouse-lodge", targetHeight: 5.8, role: "setDressing", scaleMode: "fit" })
+      .position(...at(0, -0.08, 0.2)).rotate(0, yaw, 0)
+  ] : [
     primitives.box({ name: "clubhouse-foundation", size: [11.2, 0.7, 8.2], material: stoneMat })
       .position(...at(0, 0.32, 0)).rotate(0, yaw, 0),
     primitives.box({ name: "clubhouse-body", size: [10.0, 3.1, 7.2], material: wallMat })
@@ -516,13 +525,13 @@ function buildClubhouseNodes(
     primitives.box({ name: "clubhouse-chimney", size: [0.8, 1.5, 0.8], material: stoneMat })
       .position(...at(-3.2, 4.3, -0.8)).rotate(0, yaw, 0)
   ];
-  for (const lx of [-5.5, -1.85, 1.85, 5.5]) {
+  if (!meshyClub) for (const lx of [-5.5, -1.85, 1.85, 5.5]) {
     nodes.push(
       primitives.cylinder({ name: `clubhouse-column-${lx}`, size: [0.17, 2.65, 0.17], material: trimMat })
         .position(...at(lx, 1.75, 6.05))
     );
   }
-  for (const [wx, wz] of [[-3.3, 3.64], [3.3, 3.64]] as const) {
+  if (!meshyClub) for (const [wx, wz] of [[-3.3, 3.64], [3.3, 3.64]] as const) {
     nodes.push(
       primitives.box({ name: `clubhouse-window-trim-${wx}`, size: [2.1, 1.65, 0.08], material: trimMat })
         .position(...at(wx, 2.05, wz)).rotate(0, yaw, 0),
@@ -530,7 +539,7 @@ function buildClubhouseNodes(
         .position(...at(wx, 2.05, wz + 0.04)).rotate(0, yaw, 0)
     );
   }
-  for (const side of [-1, 1] as const) {
+  if (!meshyClub) for (const side of [-1, 1] as const) {
     nodes.push(
       primitives.box({ name: `clubhouse-side-window-${side}`, size: [0.1, 1.15, 4.1], material: glassMat })
         .position(...at(side * 5.02, 2.05, 0)).rotate(0, yaw, 0)
@@ -692,8 +701,10 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     const millX = midT[0] - fairHalf - 16;
     const millZ = midT[1] + 18;
     nodes.push(
-      model(assets.linksDunesBeaconTower, { name: "landmark-windmill", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
-        .position(millX, terrain.height(millX, millZ), millZ)
+      // GU47 wave 2 (golfLighthouse, LINKS-08): St Auroras' landmark is the Links-owned Meshy lighthouse on its rock apron
+      // (16 m high, about 13 m across, 4 m taller than the beacon tower it replaces)
+      model(assets.links_lighthouse, { name: "landmark-lighthouse", targetHeight: 16, role: "setDressing", scaleMode: "fit" })
+        .position(millX, terrain.height(millX, millZ) - 0.15, millZ)
         .rotate(0, 0.55, 0)
     );
     if (clubSpot) nodes.push(...buildClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
@@ -710,12 +721,34 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
   } else if (theme === "parkland") {
     if (clubSpot) nodes.push(...buildClubhouseNodes(course, hole, terrain, clubSpot.x, clubSpot.z));
   } else if (theme === "volcanic") {
+    // GU47 wave 3 (golfBasaltColumnsR2, LINKS-08): a Links-owned basalt column cluster beside the fairway, left of the hole,
+    // outside the rough band (10 m high, about 16 m long); the crater shard keeps the right side
+    {
+      const bcX = Math.max(terrain.bounds.minX + 10, midT[0] - fairHalf - 24);
+      const bcZ = midT[1] + 10;
+      nodes.push(
+        model(assets.links_basalt_columns, { name: "landmark-basalt-columns", targetHeight: 10, role: "setDressing", scaleMode: "fit", materialOverrides: BASALT_TINT })
+          .position(bcX, terrain.height(bcX, bcZ) - 0.2, bcZ)
+          .rotate(0, 0.9, 0)
+      );
+    }
     nodes.push(
       model(assets.linksCraterCrystal, { name: "landmark-shard", targetHeight: 14, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 18, terrain.height(terrain.bounds.maxX - 18, midT[1]), midT[1])
         .rotate(0, 0.4, 0)
     );
   } else if (theme === "alpine") {
+    // GU47 wave 3 (golfCableCarStationR2, LINKS-08): Cloud Terrace's alpine cable car station stands right of the hole,
+    // outside the rough band (11 m high, about 13 m wide), front toward the fairway and the tee camera
+    {
+      const ccX = Math.min(terrain.bounds.maxX - 10, midT[0] + fairHalf + 26);
+      const ccZ = midT[1] + 14;
+      nodes.push(
+        model(assets.links_cable_car_station, { name: "landmark-cable-car-station", targetHeight: 11, role: "setDressing", scaleMode: "fit" })
+          .position(ccX, terrain.height(ccX, ccZ) - 0.1, ccZ)
+          .rotate(0, -1.95, 0)
+      );
+    }
     // GU47 phase 9 (D2): the far treeline behind the green is this game's own CC0 snow pine, instanced in one draw; it
     // stays inside the old backdrop card's 90 m span and 60 m height at the same distance
     const alpTransforms = Array.from({ length: 15 }, (_, i) => {
@@ -739,6 +772,17 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
           .rotate(0, Math.PI, 0)
       );
     });
+    // GU47 wave 2 (golfHarbourCrane, LINKS-08): the harbour crane stands on the quay left of the hole, broadside to the
+    // tee camera (front toward the tee), 22 m high and about 35 m long, outside the rough band
+    {
+      const crX = terrain.bounds.minX + 24;
+      const crZ = midT[1];
+      nodes.push(
+        model(assets.links_harbour_crane, { name: "landmark-harbour-crane", targetHeight: 22, role: "setDressing", scaleMode: "fit" })
+          .position(crX, terrain.height(crX, crZ), crZ)
+          .rotate(0, Math.PI + 0.3, 0)
+      );
+    }
     // floodlight pylons around the green. The GU47 look lights the two behind the green as its mast spots
     // (game/lookRig.ts neonMastPositions, LINKS-16); `?look=original` keeps the 4.6.2 four lamp spots.
     for (const [lx, lz] of [[-18, -8], [18, -8], [-18, 18], [18, 18]] as const) {
@@ -753,7 +797,8 @@ function buildDressingNodes(course: CourseSpec, hole: HoleSpec, terrain: HoleTer
     }
   } else if (theme === "lunar") {
     nodes.push(
-      model(assets.linksMareLander, { name: "landmark-dome", targetHeight: 12, role: "setDressing", scaleMode: "fit" })
+      // GU47 wave 2 (golfLander, LINKS-08): the Links-owned Meshy lunar lander replaces the habitat dome, same spot
+      model(assets.links_lander, { name: "landmark-lander", targetHeight: 10, role: "setDressing", scaleMode: "fit" })
         .position(terrain.bounds.maxX - 20, terrain.height(terrain.bounds.maxX - 20, midT[1]), midT[1])
         .rotate(0, -0.9, 0),
       model(assets.linksMareRover, { name: "landmark-rover", targetHeight: 1.65, role: "setDressing", scaleMode: "fit" })

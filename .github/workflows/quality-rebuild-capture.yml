@@ -103,7 +103,15 @@ permissions:
   contents: read
 
 concurrency:
-  group: quality-rebuild-capture-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
+  # #1391: this workflow is called by many sibling legs of one caller run (quality-gate bench and
+  # game shards for none and flags=all, quality-checkpoint rounds and lane matrices,
+  # qr-prd03-captures). They share github.ref, so a ref-only group made every leg cancel its
+  # siblings on PRs (and replace pending ones on main). The group therefore carries the CALLER
+  # workflow (github.workflow is the caller's name inside a reusable workflow) and the leg's
+  # identity (artifact_suffix is unique per leg in every caller; qr_flags is the fallback for a
+  # direct push/dispatch with no suffix). A later push to the same ref reuses the same group per
+  # leg, so a superseded leg is still cancelled on PRs; main keeps cancel-in-progress false.
+  group: quality-rebuild-capture-${{ github.workflow }}-${{ github.ref }}-${{ inputs.artifact_suffix || inputs.qr_flags || 'default' }}${{ github.event_name == 'workflow_dispatch' && format('-d-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:

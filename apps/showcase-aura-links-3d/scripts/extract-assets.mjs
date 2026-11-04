@@ -33,6 +33,18 @@ export const LINKS_LOCAL_ASSETS = [
   { key: "links_marram", url: "/aura-assets/links_marram.1a43521b.glb", hash: "sha256-1a43521bacd8787754a0795d6467319e52ab6bba48a7c8eec192b08d47ce754e", bounds: [1.762, 1.27, 1.82] },
   // golfGorse (WP-36 row, LINKS-07; GU47 wave 1): meshoptimizer sloppy simplify 973,844 -> 6,541 triangles, 1k -> 512 px maps
   { key: "links_gorse", url: "/aura-assets/links_gorse.ff3e35f0.glb", hash: "sha256-ff3e35f0acbb9bc030d3f0085c276de855bf5a8a9b336274ed5776fc44574fb0", bounds: [1.84, 1.32, 1.84] },
+  // GU47 wave 2 (LINKS-08, golfLighthouse): St Auroras landmark (replaces the dunes beacon tower); meshopt-optimised pipeline copy, 27,418 triangles, 1k maps
+  { key: "links_lighthouse", url: "/aura-assets/links_lighthouse.b57243e7.glb", hash: "sha256-b57243e777f85ae52e5d95009a0f338f968c1ea7fcf3e5df04fc46a338c7b87f", bounds: [1.528, 1.903, 1.528] },
+  // GU47 wave 2 (LINKS-08, golfClubhouse): Maple Hollow timber clubhouse (replaces the primitive clubhouse body), 27,224 triangles, 1k maps
+  { key: "links_clubhouse", url: "/aura-assets/links_clubhouse.94681371.glb", hash: "sha256-94681371db566d3f6248b4bb9e3588417c5d16741069604e3563a77051cb9827", bounds: [1.895, 0.996, 1.576] },
+  // GU47 wave 2 (LINKS-08, golfHarbourCrane): Neon Bay harbour crane set-piece, 42,322 triangles, 1k maps
+  { key: "links_harbour_crane", url: "/aura-assets/links_harbour_crane.c7f94d4a.glb", hash: "sha256-c7f94d4a99f3c770bc35263d2e3af1e1b30e7429085b8ec9641d561706c73529", bounds: [1.895, 1.191, 0.475] },
+  // GU47 wave 2 (LINKS-08, golfLander): Mare Tranquil lander landmark (replaces the habitat dome), 34,906 triangles, 1k maps
+  { key: "links_lander", url: "/aura-assets/links_lander.ab8ab039.glb", hash: "sha256-ab8ab03956c40cf2f50f2120a04b3584c3fae58f299707e2a3b23844a7333a0a", bounds: [1.846, 1.797, 1.905] },
+  // GU47 wave 3 (LINKS-08, golfBasaltColumnsR2): Cinder Rim basalt column cluster (re-roll of the wave-2 totem pillars), 27,766 triangles, 1k maps
+  { key: "links_basalt_columns", url: "/aura-assets/links_basalt_columns.eab5ae99.glb", hash: "sha256-eab5ae994f1b087179150488c6c48c4a71462d379ef104208edbdc7eb1f027de", bounds: [0.915, 1.199, 1.902] },
+  // GU47 wave 3 (LINKS-08, golfCableCarStationR2): Cloud Terrace alpine cable car station (re-roll of the wave-2 log cabins), 67,228 -> 32,602 triangles, 1k maps
+  { key: "links_cable_car_station", url: "/aura-assets/links_cable_car_station.45792d70.glb", hash: "sha256-45792d7061e30a2c269bb4e65262335f0099d53cf4b9ad2d5cb841b2d7c51264", bounds: [1.803, 1.219, 1.468] },
   // GU47 phase 9 (D2): replaces the dunes landmark tower; CC0 kenney:city-kit-industrial:water-tower (Kenney), 968 triangles
   { key: "linksDunesBeaconTower", url: "/aura-assets/linksDunesBeaconTower.76dd47f8.glb", hash: "sha256-76dd47f8fefa762e1d7f6a27e545cc211f2f726a67dbd32bc86cafb2e9bac303", bounds: [0.852, 2.142, 0.832] },
   // GU47 phase 9 (D2): replaces the dunes burn bridge; CC0 kenney:mini-forest:bridge (Kenney), 372 triangles

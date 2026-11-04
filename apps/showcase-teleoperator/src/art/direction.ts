@@ -61,7 +61,13 @@ export default defineArtDirection({
     { role: "world", assetKey: "gridBldgVictorian", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "world", assetKey: "gridBldgMidrise", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "world", assetKey: "gridBldgGlassTower", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "world", assetKey: "gridBldgArtDeco", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    { role: "world", assetKey: "gridBldgArtDeco", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gridBldgNew1", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gridBldgNew2", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gridPyramidTower", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gridGlassTower", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gridBridgeTower", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    { role: "world", assetKey: "gridBridgeDeck", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
   ],
   vfx: [
     { event: "collision", kind: "grid-impact" },

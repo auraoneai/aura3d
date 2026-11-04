@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-heatsink/art/direction.ts",
-  "sourceSha256": "4972a39a2d695e360b60ce0434621de7c5ef8c4d99bad903fd840f263d1e1d30",
+  "sourceSha256": "ef017e2213a7fc227430790bd705baed3f8c9d8030b4bc7f9702ff30c823c034",
   "id": "showcase-heatsink",
   "genre": "racing",
   "signatureEffect": "Refraction heat haze: drone exhausts, lava curtains and foundry vents bend the megacity behind them, and the screen edge runs a thermal ramp as the core overheats.",
@@ -163,7 +163,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkStatue",
+        "assetKey": "heatsink_thermalLadleCrane",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -191,7 +191,21 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkTowerX",
+        "assetKey": "heatsink_thermalCoolingTower",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsink_thermalSmokestacks",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "heatsink_thermalWaterTower",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -233,7 +247,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "heatsinkCheckpointRing",
+        "assetKey": "heatsink_thermalReactorRing",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -522,7 +536,7 @@
       },
       {
         "role": "set-dressing",
-        "assetKey": "heatsinkStatue",
+        "assetKey": "heatsink_thermalLadleCrane",
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
@@ -543,9 +557,23 @@
       },
       {
         "role": "backdrop",
-        "assetKey": "heatsinkTowerX",
+        "assetKey": "heatsink_thermalSmokestacks",
         "maxTriangles": 60000,
-        "textureSet": "BC+N+ORM+E",
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "heatsink_thermalCoolingTower",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "heatsink_thermalWaterTower",
+        "maxTriangles": 60000,
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {
@@ -578,9 +606,9 @@
       },
       {
         "role": "prop",
-        "assetKey": "heatsinkCheckpointRing",
+        "assetKey": "heatsink_thermalReactorRing",
         "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
       {

@@ -24,7 +24,9 @@ export const MODELS = defineModelAssets({
   pickupRepair: entry("pickup-repair", "sha256-884e0b311177e6c45e7fad2c6af7c10d0b4ee748478daee41bb454954f5d9b27"),
   ruinMonolith: entry("ruin-monolith", "sha256-49711ae57d13f48205f007592c7f755e43363629633e379d1bd791401104c8e8"),
   /* GU47 WP-36 (IC-13): the sentry target, admitted with `aura3d assets import-meshy` (provenance/heatsink_port_ionSentryDrone.*) */
-  ionSentryDrone: entry("heatsink_port_ionSentryDrone", "sha256-7af110b660a44dac0e457b86e4eac10a4b47620743a3ba5d79aea07dde3c3f44")
+  ionSentryDrone: entry("heatsink_port_ionSentryDrone", "sha256-7af110b660a44dac0e457b86e4eac10a4b47620743a3ba5d79aea07dde3c3f44"),
+  /* GU47 wave 2 (IC-13): the heavy target, admitted with `aura3d assets import-meshy` (provenance/heatsink_port_ionHeavyDrone.*) */
+  ionHeavyDrone: entry("heatsink_port_ionHeavyDrone", "sha256-d1ef5d347eb44725b7b21a87c21faad8e1529e83792369efd9436f9976c6c346")
 }, { license: LICENSE, queryParam: null }).refs;
 
 /**
@@ -42,7 +44,8 @@ export const MODELS_LITE = defineModelAssets({
   ruinArch: lite("ruin-arch", "sha256-34d6774bbd3b2a1aa1cd76b3741564c070650cb134add40592be7705753b41d9"),
   pickupRepair: lite("pickup-repair", "sha256-6b31f37cf7c13f2f4b7a071462b9adb9d10a24d83bb152f15e609b9955eab2b3"),
   ruinMonolith: lite("ruin-monolith", "sha256-1b9d87322a320075cc659dc32a8dc7eee69a875e55d890db3cb5920486789b94"),
-  ionSentryDrone: lite("heatsink_port_ionSentryDrone", "sha256-9ad8177417df8fa6c8cd13f92f614144d230d77e6e8da9a2bb229ce92568ab9f")
+  ionSentryDrone: lite("heatsink_port_ionSentryDrone", "sha256-9ad8177417df8fa6c8cd13f92f614144d230d77e6e8da9a2bb229ce92568ab9f"),
+  ionHeavyDrone: lite("heatsink_port_ionHeavyDrone", "sha256-e9faec2358b1a056ef64fc47e520b3c55e071a2071b4eb01e066f613ce690ed3")
 }, { license: LICENSE, queryParam: null }).refs;
 
 export type ModelSet = typeof MODELS;
@@ -58,6 +61,10 @@ export const droneHull = (set: ModelSet = MODELS, casts = false): NodeB =>
 /** GU47 WP-36 IC-13: the Meshy sentry drone as a strike target's core (twilight; presentation only, the hit radius is unchanged) */
 export const sentryModel = (id: number, size: number, set: ModelSet = MODELS): NodeB =>
   model(set.ionSentryDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: false, receiveShadow: false });
+
+/** GU47 wave 2 IC-13: the Meshy heavy drone as the heavy strike target's core (twilight; presentation only, the hit radius is unchanged) */
+export const heavyModel = (id: number, size: number, set: ModelSet = MODELS): NodeB =>
+  model(set.ionHeavyDrone, { name: `target-${id}`, targetMaxDimension: size, castShadow: false, receiveShadow: false });
 
 export const barrelModel = (i: number, set: ModelSet = MODELS): NodeB =>
   model(set.barrel, { name: `barrel-${i}`, targetHeight: 2.2, castShadow: false, receiveShadow: false });

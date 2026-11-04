@@ -465,6 +465,11 @@ export const UNSHADOWED_ANCHOR_ASSETS: ReadonlySet<string> = new Set([
   "heatsink_thermalTowerLIron",
   "heatsink_thermalTowerTIron",
   "heatsinkTowerX",
+  // GU47 wave 2 (HS-20): the far Meshy set pieces cast no shadow (each caster is drawn once per cascade).
+  "heatsink_thermalCoolingTower",
+  "heatsink_thermalSmokestacks",
+  "heatsink_thermalWaterTower",
+  "heatsink_thermalReactorRing",
   "heatsinkHoloBillboard",
   "heatsinkCheckpointRing",
   "heatsinkLavaFall"

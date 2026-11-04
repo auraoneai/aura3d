@@ -172,5 +172,53 @@
   ],
   "tex": 1024,
   "flip": true
+ },
+ {
+  "key": "seastack",
+  "kind": "prop",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindSeaStack/opt/model.glb",
+  "dims": [
+   17,
+   28,
+   15
+  ],
+  "tex": 1024,
+  "maxTris": 6000
+ },
+ {
+  "key": "hoodoo",
+  "kind": "prop",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindHoodoo/opt/model.glb",
+  "dims": [
+   10,
+   12,
+   10
+  ],
+  "tex": 1024,
+  "maxTris": 5000
+ },
+ {
+  "key": "arch",
+  "kind": "prop",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindArch/opt/model.glb",
+  "dims": [
+   70,
+   39,
+   50
+  ],
+  "tex": 1024,
+  "maxTris": 8000
+ },
+ {
+  "key": "arcology",
+  "kind": "prop",
+  "glb": "artifacts/gu47-meshy/roadster-hours-port/saltwindArcologyR2/opt/model.glb",
+  "dims": [
+   95,
+   200,
+   92
+  ],
+  "tex": 1024,
+  "maxTris": 8000
  }
 ]

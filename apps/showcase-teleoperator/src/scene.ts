@@ -40,7 +40,9 @@ export const BUILDING_SPECS = [
   { key: "gridBldgVictorian", x: 0.951, y: 1.812, z: 2 },
   { key: "gridBldgGlassTower", x: 0.844, y: 1.902, z: 0.87 },
   { key: "gridBldgMidrise", x: 1.85, y: 1.893, z: 1.641 },
-  { key: "gridBldgArtDeco", x: 0.952, y: 1.902, z: 0.951 }
+  { key: "gridBldgArtDeco", x: 0.952, y: 1.902, z: 0.951 },
+  { key: "gridBldgNew1", x: 1.8926, y: 1.4001, z: 1.8972 },
+  { key: "gridBldgNew2", x: 1.7699, y: 1.8896, z: 0.7724 }
 ] as const satisfies ReadonlyArray<{ key: GridAssetKey; x: number; y: number; z: number }>;
 const BUILDING_ROAD_EDGE_X = 19.5;
 const BUILDING_MAX_DEPTH = 24;
@@ -443,28 +445,26 @@ export function buildGridDispatchScene(weather: WeatherPreset, opts: { readonly 
     skyNode(look)
   ]);
 
-  // 2. Skyline landmarks: a white pyramid tower, a glass obelisk and two suspension-bridge towers on the bay
-  const pyramidMat = material.pbr({ color: "#f1f5f9", roughness: 0.42, metalness: 0.18 });
-  // GU47 phase 3: slate bay glass (the saturated #38bdf8 read as a glowing glitch at the vanishing point; rubric environment).
-  const glassMat = material.pbr({ color: "#5b7d90", roughness: 0.22, metalness: 0.6 });
-  const bridgeMat = material.pbr({ color: "#c0362c", roughness: 0.48, metalness: 0.35 });
+  // 2. Skyline landmarks (GU47 wave 2, GD-12): Meshy pyramid-spire and glass landmark towers and a suspension-bridge set-piece
+  // (two bridge towers whose own deck runs through them, plus a truss span closing the gap between them) on the bay. The
+  // box/cylinder/sphere stand-ins are gone. The tower deck sits at y ~ 36.7 m at 118 m tower height; the truss span is
+  // centred at the same level (its model centre is 0.187 of 1.9 above its base).
+  const BRIDGE_Z = -315;
+  const BRIDGE_TOWER_X = 88;
   s.addMany([
-    primitives.cylinder({ name: "sf-pyramid-spire", size: [22, 145, 22], material: pyramidMat }).position(44, 72, -210),
-    primitives.box({ name: "sf-pyramid-wing", size: [28, 78, 8], material: pyramidMat }).position(44, 39, -210),
-    primitives.sphere({ name: "sf-pyramid-crown", size: [3.2, 5.5, 3.2], material: material.emissive({ color: "#e0f2fe", emissive: "#3fd6c6", emissiveIntensity: 2.2 }) }).position(44, 145, -210),
-    primitives.cylinder({ name: "sf-glass-obelisk", size: [22, 158, 22], material: glassMat }).position(-48, 79, -235),
-    primitives.cylinder({ name: "sf-glass-obelisk-crown", size: [18.5, 16, 18.5], material: material.emissive({ color: "#9fb8c6", emissive: "#7fa6bb", emissiveIntensity: 0.55 }) }).position(-48, 162, -235),
-    instances.box({ name: "sf-bridge-towers", size: [3.5, 118, 3.5], material: bridgeMat, transforms: placed([[-96, 59, -315], [-78, 59, -315], [78, 59, -315], [96, 59, -315]]) }),
-    instances.box({ name: "sf-bridge-struts", size: [21, 3.2, 3.8], material: bridgeMat, transforms: placed([[-87, 108, -315], [-87, 78, -315], [87, 108, -315]]) }),
-    primitives.box({ name: "sf-bridge-deck", size: [260, 2.2, 12], material: bridgeMat }).position(0, 36, -315)
+    model(assets.gridPyramidTower, { name: "sf-pyramid-tower", role: "setDressing", scaleMode: "fit", targetMaxDimension: 150 }).position(44, 0, -210),
+    model(assets.gridGlassTower, { name: "sf-glass-landmark", role: "setDressing", scaleMode: "fit", targetMaxDimension: 110 }).position(-70, 0, -235),
+    model(assets.gridBridgeTower, { name: "sf-bridge-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118 }).position(-BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, Math.PI / 2, 0),
+    model(assets.gridBridgeTower, { name: "sf-bridge-tower-r", role: "setDressing", scaleMode: "fit", targetMaxDimension: 118 }).position(BRIDGE_TOWER_X, 0, BRIDGE_Z).rotate(0, -Math.PI / 2, 0),
+    model(assets.gridBridgeDeck, { name: "sf-bridge-span", role: "setDressing", scaleMode: "fit", targetMaxDimension: 66 }).position(0, 30.2, BRIDGE_Z)
   ]);
 
   // 3. Skyline towers: this game's own glass and art-deco towers at skyline scale (GU47: the borrowed Heatsink towers
-  // and overpass are gone, D2). The marine layer swallows their tops. GU47(WP-36): Meshy pyramid and glass landmark towers.
+  // and overpass are gone, D2). The marine layer swallows their tops.
   s.addMany([
     model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-l", role: "setDressing", scaleMode: "fit", targetMaxDimension: 72 }).position(-58, 0, -145),
     model(assets.gridBldgArtDeco, { name: "sf-skyline-tower-t", role: "setDressing", scaleMode: "fit", targetMaxDimension: 68 }).position(58, 0, -135),
-    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74 }).position(-62, 0, -255)
+    model(assets.gridBldgGlassTower, { name: "sf-skyline-tower-x", role: "setDressing", scaleMode: "fit", targetMaxDimension: 74 }).position(-128, 0, -250)
   ]);
 
   // 4. Repeated street furniture as instanced nodes (C12): lane dashes, intersections, signal masts, lamps and trees.

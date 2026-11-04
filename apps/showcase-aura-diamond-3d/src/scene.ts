@@ -24,6 +24,7 @@ import {
   shellPlacements,
   scoreboardPlacement,
   propSpot,
+  clearOfFence,
   HARBOR_WATER,
   type Vec3,
   type ParkId,
@@ -468,6 +469,56 @@ function ivyOriginalDressing(park: ParkSpec): any[] {
   ];
 }
 
+/**
+ * GU47 wave 2 (DIA-A1): the Meshy set pieces that stand behind each park's far fence. GU47 variant only (`?look=original`
+ * keeps the 4.6.2 dressing). Each piece is its own node so it culls on its own (an instanced group spread across the
+ * horizon never leaves the frustum); every yaw turns the model's front (+z) toward home plate. Presentation only.
+ */
+const farYaw = (x: number, z: number): number => Math.atan2(-x, -z);
+
+export function wave2SetPieces(park: ParkSpec, low = false): any[] {
+  const ring = (deg: number, r: number): [number, number] => {
+    const rad = (deg * Math.PI) / 180;
+    return [Math.sin(rad) * r, -Math.cos(rad) * r];
+  };
+  switch (park.id) {
+    case "sandlot": {
+      // The harbor lighthouse stands on the far shore past the bay (HARBOR_WATER z -200), right of centre field.
+      const [x, z] = [105, -212];
+      return [model(assets.aura_diamond_3d_ballparkLighthouse, { name: "harbor-lighthouse", targetHeight: 24, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, farYaw(x, z), 0)];
+    }
+    case "canyon": {
+      // Three flat-topped mesas far behind the rim; the dust and height fog soften them into the horizon.
+      return ([[-48, 285, 30, 0.2], [-4, 320, 36, -0.3], [40, 290, 28, 0.1]] as const).filter((_, i) => !low || i !== 0).map(([deg, r, h, jitter], i) => {
+        const [x, z] = ring(deg, r);
+        return model(assets.aura_diamond_3d_ballparkMesa, { name: `canyon-mesa-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, -0.4, z).rotate(0, farYaw(x, z) + jitter, 0);
+      }).concat(
+        // GU47 wave 3 (DIA-A1): two balanced-cap sandstone hoodoos in front of the mesas, between the rim rocks and the dust horizon.
+        ([[-30, 200, 22, 0.2], [26, 215, 26, -0.25]] as const).filter((_, i) => !low || i === 1).map(([deg, r, h, jitter], i) => {
+          const [x, z] = ring(deg, r);
+          return model(assets.aura_diamond_3d_ballparkHoodooR2, { name: `canyon-hoodoo-${i}`, targetHeight: h, role: "setDressing", scaleMode: "fit" }).position(x, -0.2, z).rotate(0, farYaw(x, z) + jitter, 0);
+        })
+      );
+    }
+    case "ivy": {
+      // Rowhouse blocks over the outfield wall (the 4.6.2 band stayed off: hard-edged slabs) and one water tower dead centre.
+      const houses = ([[-46, 0.1], [-22, -0.12], [22, 0.14], [46, -0.08]] as const).filter((_, i) => !low || i % 2 === 1).map(([deg, jitter], i) => {
+        const [x, z] = ring(deg, 168);
+        return model(assets.aura_diamond_3d_ballparkRowhouseRoof, { name: `ivy-rowhouse-${i}`, targetHeight: 18, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, farYaw(x, z) + jitter, 0);
+      });
+      const [tx, tz] = ring(0, 175);
+      return [...houses, model(assets.aura_diamond_3d_ballparkWaterTower, { name: "ivy-water-tower", targetHeight: 22, role: "setDressing", scaleMode: "fit" }).position(tx, 0, tz)];
+    }
+    case "lunar": {
+      // The moon base habitat, left of centre, clear of the fence like the comms dome on the right.
+      const [x, z] = clearOfFence(park, -62, -100, 16);
+      return [model(assets.aura_diamond_3d_ballparkHabitat, { name: "lunar-habitat", targetHeight: 10, role: "setDressing", scaleMode: "fit" }).position(x, 0, z).rotate(0, farYaw(x, z), 0)];
+    }
+    default:
+      return [];
+  }
+}
+
 export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAULT_SCENE_CONTEXT): any[] {
   const nodes: any[] = [];
   const gu47 = ctx.variant === "gu47";
@@ -625,6 +676,7 @@ export function buildParkExtras(park: ParkSpec, ctx: DiamondSceneContext = DEFAU
   if (gu47) {
     const band = horizonBand(park.id);
     if (band) nodes.push(horizonNode(horizonForTier(band, ctx.tier === "low")));
+    nodes.push(...wave2SetPieces(park, ctx.tier === "low"));
   }
   return nodes;
 }

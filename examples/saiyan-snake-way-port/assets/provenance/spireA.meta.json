@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a1a4d3-2103-739a-be80-4f02326df343",
+    "operation": "text-to-3d-refine",
+    "promptHash": "sha256-86c34902af2bc3da39f40db4659ddb38db49a1a9927d4dc085e667a34e19ac0f",
+    "createdAt": "2026-11-04T04:31:02.831Z",
+    "finishedAt": "2026-11-04T04:34:30.188Z",
+    "consumedCredits": 10
+  }
+}

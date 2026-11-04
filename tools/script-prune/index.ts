@@ -57,6 +57,7 @@ const REVIEW_KEEP: Readonly<Record<string, string>> = {
   "check:engine-skills": "skills gate — the engine-skills namespace checker runs in CI",
   "check:public-surface-diff": "PRD-15 T5.9 honest diff gate — wired in qr-prd15-arch-gates.yml",
   "check:bundle-migration": "PRD-15 T2/T6 migration surface check — wired in lane workflows",
+  "verify:asset-urls": "documented release gate (docs/project/release-process.md \"Site deploys have two asset gates\"); mirrors the final step of marketing/package.json build, whose reference the pruner cannot see (docs/project is excluded from its corpus)",
   "verify:source-cleanliness": "PRD-15 T7.2 backstop (emitted artifacts in src)",
   "verify:architecture": "T7.7 alias — kept as the stable entry name, retargeted to arch:check",
   "verify:public-demo-deployment": "external-demo-export deploymentCommandPlan validationCommands contract + public-demo-deploy.yml step name",

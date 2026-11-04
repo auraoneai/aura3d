@@ -52,6 +52,7 @@ export default defineArtDirection({
     vehicle("semi", 12000), vehicle("tanker", 12000),
     { role: "world", assetKey: "lighthouse", maxTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     prop("townhouse"), prop("villa"), prop("pine"), prop("palm"), prop("boulders"),
+    prop("seastack", 6000), prop("hoodoo", 5000), prop("arch", 8000), prop("arcology", 8000),
     { role: "vehicle", assetKey: "sportsCar", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "vehicle", assetKey: "baked-cc0-cars", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],

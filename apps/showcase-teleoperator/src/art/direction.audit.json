@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-teleoperator/src/art/direction.ts",
-  "sourceSha256": "8fc554c3d274690c3b7a48738579bffb1241bc9aa3d4590dbd838a713ad14398",
+  "sourceSha256": "c24610af56e7c473573e6003f603731052f00f4994cf34244b2b9d5d4ea73fef",
   "id": "showcase-teleoperator",
   "genre": "racing",
   "signatureEffect": "Marine-layer fog deck that swallows the bay-city tower tops above a clear street, swept by a teal LiDAR scan pulse from the robotaxi's sensor feed.",
@@ -60,6 +60,41 @@
     },
     "models": [
       {
+        "assetKey": "gridPyramidTower",
+        "triangles": 19818,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridGlassTower",
+        "triangles": 19946,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBridgeTower",
+        "triangles": 19864,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBridgeTower",
+        "triangles": 19864,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBridgeDeck",
+        "triangles": 19800,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "gridBldgGlassTower",
         "triangles": 7831,
         "textures": 3,
@@ -130,6 +165,34 @@
         "overridesTextures": false
       },
       {
+        "assetKey": "gridBldgNew1",
+        "triangles": 19152,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgNew1",
+        "triangles": 19152,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgNew2",
+        "triangles": 19906,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "gridBldgNew2",
+        "triangles": 19906,
+        "textures": 3,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "gridBldgVictorian",
         "triangles": 5858,
         "textures": 3,
@@ -160,34 +223,6 @@
       {
         "assetKey": "gridBldgMidrise",
         "triangles": 5940,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gridBldgMidrise",
-        "triangles": 5940,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gridBldgArtDeco",
-        "triangles": 5558,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gridBldgArtDeco",
-        "triangles": 5558,
-        "textures": 3,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "gridBldgVictorian",
-        "triangles": 5858,
         "textures": 3,
         "unlit": false,
         "overridesTextures": false
@@ -400,40 +435,6 @@
       },
       {
         "node": "sf-sidewalk-right",
-        "practical": false
-      },
-      {
-        "node": "sf-pyramid-spire",
-        "practical": false
-      },
-      {
-        "node": "sf-pyramid-wing",
-        "practical": false
-      },
-      {
-        "node": "sf-pyramid-crown",
-        "emissiveIntensity": 2.2,
-        "practical": true
-      },
-      {
-        "node": "sf-glass-obelisk",
-        "practical": false
-      },
-      {
-        "node": "sf-glass-obelisk-crown",
-        "emissiveIntensity": 0.55,
-        "practical": true
-      },
-      {
-        "node": "sf-bridge-towers",
-        "practical": false
-      },
-      {
-        "node": "sf-bridge-struts",
-        "practical": false
-      },
-      {
-        "node": "sf-bridge-deck",
         "practical": false
       },
       {
@@ -799,6 +800,48 @@
       {
         "role": "world",
         "assetKey": "gridBldgArtDeco",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBldgNew1",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBldgNew2",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridPyramidTower",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridGlassTower",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBridgeTower",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 2048
+      },
+      {
+        "role": "world",
+        "assetKey": "gridBridgeDeck",
         "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048

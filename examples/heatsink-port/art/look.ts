@@ -67,7 +67,7 @@ export interface HeatsinkLookRow {
    */
   readonly shade: { readonly sunGain: number; readonly ambientGain: number; readonly glassShadow: number; readonly hazeSun: Rgb; readonly blob: number; readonly blobCore: number; readonly neonReflect: number; /** contact shadow drawn inside the road shader under the drone (0 = none) */ readonly contact: number };
   /** WP-36 Meshy assets swapped in (presentation only; collision unchanged) */
-  readonly assets: { readonly sentryModel: boolean };
+  readonly assets: { readonly sentryModel: boolean; readonly heavyModel: boolean };
   /** fog: the base haze colour and how far each district's HUD colour pulls it (IC-06) */
   readonly fog: { readonly color: Rgb; readonly districtMix: number; readonly districtMetres: number };
   /** obsidian-glass causeway (IC-10): 0 = today's asphalt */
@@ -127,7 +127,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     lit: { scale: 0.45, bounce: [0.26, 0.10, 0.04], topFill: [0.09, 0.08, 0.24], roadAlbedo: 0.34, rockTint: [0.44, 0.62, 0.68] },
     /* GU47 phase 4: the judge read "flat even ambient, no cast shadow, uniform haze"; a stronger low sun over less ambient, shadows that cut the glass, warm sun-side haze */
     shade: { sunGain: 1.55, ambientGain: 0.72, glassShadow: 0.3, hazeSun: [0.22, 0.07, 0.07], blob: 0.9, blobCore: 1, neonReflect: 0.6, contact: 0.72 },
-    assets: { sentryModel: true },
+    assets: { sentryModel: true, heavyModel: true },
     /* the haze stays the map's `atmosphere.low` (linear; sRGB ~#457b7f) so the distance does not go dark; #0f3a40 is the deep haze below the horizon in the dome */
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0.2, districtMetres: 120 },
     causeway: { glass: 1, veinHdr: 1.7, seams: 0.6 },
@@ -151,7 +151,7 @@ export const LOOKS: Readonly<Record<HeatsinkLookId, HeatsinkLookRow>> = {
     environment: { kind: "neutral", intensity: 1.0 },
     lit: { scale: 0.26, bounce: [0, 0, 0], topFill: [0, 0, 0], roadAlbedo: 0.23, rockTint: [1, 1, 1] },
     shade: { sunGain: 1, ambientGain: 1, glassShadow: 0, hazeSun: [0, 0, 0], blob: 0.6, blobCore: 0, neonReflect: 0, contact: 0 },
-    assets: { sentryModel: false },
+    assets: { sentryModel: false, heavyModel: false },
     fog: { color: [0.06, 0.19, 0.21], districtMix: 0, districtMetres: 120 },
     causeway: { glass: 0, veinHdr: 0, seams: 0 },
     bloom: { intensity: 0.6, threshold: 1.0 },

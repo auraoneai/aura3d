@@ -14,7 +14,7 @@ import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFra
 import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
 import { ROAD_LENGTH, STAGES, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
-import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY, runnerModelForLook } from "./models";
+import { ENTITY_MODELS, ISLAND_COUNT, ISLAND_VARIANTS, LANTERN_COUNT, MESHY, runnerModelForLook } from "./models";
 import { STAGE_LOOK, lookAt, lookDistance, lookParams, type LookMode, type LookParams, type ResolvedLook } from "./art/colorScript";
 import { createLookDriver, type LookAppLike, type LookNodeHandle } from "./art/lookRuntime";
 import { SERPENT_RUNNER_TRAIL, registerSerpentVfx, serpentRainPreset } from "./art/vfx";
@@ -423,7 +423,10 @@ export function buildWorld(options: WorldOptions = {}): World {
    * the islands' shadows fell only on the unlit cloud sea; the lanterns stand outside the road top. They still write contact depth.
    */
   for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
-  for (let i = 0; i < ISLAND_COUNT; i++) builder.add(model(MESHY.island, { name: `island-${i}`, targetHeight: 15, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `island-${i}` }));
+  for (let i = 0; i < ISLAND_COUNT; i++) {
+    const variant = script ? ISLAND_VARIANTS[i % ISLAND_VARIANTS.length]! : { key: "island" as const, targetHeight: 15 };
+    builder.add(model(MESHY[variant.key], { name: `island-${i}`, targetHeight: variant.targetHeight, ...(script ? { castShadow: false } : {}) }).position(0, -500, 0).runtime({ id: `island-${i}` }));
+  }
   if (script) builder.add(model(MESHY.serpentHead, { name: "serpent-head", targetHeight: SERPENT_HEAD.height, castShadow: false, receiveShadow: false }).position(0, -500, 0).runtime({ id: "serpent-head" }));
 
   /* the runner and the aura shell */

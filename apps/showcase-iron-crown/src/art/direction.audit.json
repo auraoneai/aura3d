@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "a631bbe03c8ddcd6e0fef5941b3d5ebbe66331f1b428eed3b32c3bde223b2845",
+  "sourceSha256": "df4806a0c0330dbcd3827c3128467236d2c5ecaa6b9e8e694132f95f14ca67a3",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -713,6 +713,83 @@
         "maxTextureSize": 1024
       },
       {
+        "role": "backdrop",
+        "assetKey": "ironcrownHarbourCrane",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "ironcrownFishingBoat",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "ironcrownHangarPlane",
+        "maxTriangles": 20000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "ironcrownHall",
+        "maxTriangles": 27000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "ironcrownShrine",
+        "maxTriangles": 30000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "ironcrownTowerA",
+        "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "ironcrownTowerB",
+        "maxTriangles": 14000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "ironcrownBackdropRidge",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "ironcrownSkylineBlockA",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "ironcrownSkylineBlockB",
+        "maxTriangles": 22000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "ironcrownSkylineBlockC",
+        "maxTriangles": 22000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
         "role": "prop",
         "maxTriangles": 20000,
         "textureSet": "BC+N+ORM",
@@ -763,13 +840,6 @@
       },
       {
         "role": "world",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM",
-        "maxTextureSize": 2048,
-        "assetKey": "gullsiegeWatchtowerMeshy"
-      },
-      {
-        "role": "world",
         "assetKey": "heatsinkArch",
         "maxTriangles": 2000,
         "textureSet": "BC",
@@ -788,13 +858,6 @@
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048,
         "assetKey": "patrolCoastalRadarTowerMeshy"
-      },
-      {
-        "role": "prop",
-        "maxTriangles": 20000,
-        "textureSet": "BC+N+ORM+E",
-        "maxTextureSize": 2048,
-        "assetKey": "patrolJetAircraftMeshy"
       },
       {
         "role": "set-dressing",
@@ -830,13 +893,6 @@
         "maxTriangles": 230000,
         "textureSet": "BC+N+ORM+E",
         "maxTextureSize": 2048
-      },
-      {
-        "role": "world",
-        "assetKey": "showcaseTeaHouse",
-        "maxTriangles": 120000,
-        "textureSet": "BC",
-        "maxTextureSize": 1024
       }
     ],
     "vfx": [

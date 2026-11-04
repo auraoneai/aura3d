@@ -37,3 +37,8 @@ Credits for this game come from `/tmp/meshy/ledger.jsonl` (game tag `ninja`); th
 ## 4.3.0 art pass (2026-10-25)
 
 Ten more generated models replace the placeholder box houses, flat-faceted cliffs, cone tufts, low-poly rocks and smooth sphere hills: `houseC`, `houseD` (two more village house designs), `teahouse` (plaza building and the rooftops pagoda stacks), `marketStall`, `cliffA`/`cliffB` (valley cliffs), `boulder` (forest and riverbank rocks), `bush` (verge and forest-floor shrubs), `ridge` (distant hills and peaks) and `fenceRail`. Same call path as above (Meshy text-to-3D preview + PBR refine, then remesh to about 4,500 triangles, through Kiro Prism), own text prompts, no image input. Optimised with dedup, weld, 512-640 px textures and meshopt. Ledger tag `ninja`; the Meshy spend is uncapped by owner decision on 2026-10-25 and tracked for visibility only. `bush` was generated twice because the first run looked stuck: the second run reused the first refine, so one extra preview (20 credits) is recorded in the ledger and unused.
+
+
+## GU47 wave 2 set-pieces (2026-11-03)
+
+`models/ninja_runner_port_ninjaShrineGate.glb`, `ninja_runner_port_ninjaWaterWheel.glb` and `ninja_runner_port_ninjaPagodaSilhouette.glb`: Meshy text-to-3D from own text prompts (rights and task metadata in `provenance/ninja_runner_port_*.json`), decimated locally (gltf-transform weld + meshopt simplify, then a sloppy pass for the cap) to 5,678 / 7,297 / 7,452 triangles with 1024 px textures. Drawn in the evening look only (`setpieces.ts`).
