@@ -69,6 +69,8 @@ export default defineArtDirection({
     // GU47 phase 9 (D2): the game's own CC0 team bench and ball crate (Poly Haven painted_wooden_bench, plastic_crate_02;
     // 512 px maps); WP-36's Meshy dugout (pitchDugout) is blocked on Meshy credits
     { role: "set-dressing", assetKey: "fcTeamBench", maxTriangles: 16000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 2 (FC47-A1): inflatable players' tunnel on the far touchline; the simplifier stops at 13.0k on UV seams
+    { role: "set-dressing", assetKey: "fcPlayerTunnelMeshy", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "fcBallCrate", maxTriangles: 14000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [

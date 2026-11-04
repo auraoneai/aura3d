@@ -187,6 +187,16 @@ export const assets = defineAuraAssets({
     hash: "sha256-b34d0da4051e4273db0ec44d748ec07026b6c243056e7c5d824c0c66d8c51220",
     bounds: [1.903, 0.832, 0.543]
   },
+  // GU47 wave 2 (FC47-A1): the players' tunnel (plan key pitchPlayerTunnel, Meshy text-to-3d refine, task
+  // 01a1a4e0-6342-7568-8045-6f6e61a3e896), optimized then simplified to 12,968 triangles with 1024 px maps. Rights and
+  // metadata: apps/showcase-aura-fc-3d/aura-evidence/meshy/fcPlayerTunnelMeshy.{rights,metadata}.json.
+  fcPlayerTunnelMeshy: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/fcPlayerTunnelMeshy.a5d607e8.glb",
+    hash: "sha256-a5d607e86c4c2fa7391e21af3fe453b35b542c0291d2393689a922cea9b4fe22",
+    bounds: [1.674, 0.795, 1.901]
+  },
   // GU47 phase 9 (D2): referee whistle, keeper save, crowd bed and goal swell, synthesised by tools/aura-fc/synth-sfx.mjs
   // (original, CC0-1.0), replacing the cues borrowed from the bank-shot, basketball and baseball games.
   fcWhistleSfx: {
