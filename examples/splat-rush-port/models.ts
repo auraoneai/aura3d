@@ -20,6 +20,9 @@ export const MODELS = defineModelAssets({
    * tower, carnival look only (backdrop.ts). Served from the app's public/aura-assets as a ROOT-RELATIVE url (never an
    * absolute import.meta.url: the engine refuses it as unsafe-url and the scene would not mount). */
   paletteIsland: { url: "/aura-assets/chroma-palette-island.glb", sha256: "sha256-bbbbb4084e86aa32998e0e805563fcfd6af6af6a00efffc483866a05084ce452" },
+  /* GU47 wave 2 CR-A1 (key chromaEaselIsland, typed splat_rush_port_chromaEaselIsland): floating island with an easel and a
+   * blank canvas plus two small satellite islets, carnival look only (backdrop.ts). Same root-relative rule as above. */
+  easelIsland: { url: "/aura-assets/chroma-easel-island.glb", sha256: "sha256-6f6d5f35f6a8ae63b9f37eb0be69dbe43395c944b57aac1e61518d3d2f101287" },
   gemRainbow: glb("gem-rainbow.glb", "sha256-5533b1776bca95726dc68ace33b8b93bec11abc9bdff0c09cb73a42d596c6d35"),
   gemShield: glb("gem-shield.glb", "sha256-f1d1c0078ebacfd434d3bd2e89543b5cc4e60f5ed73d6acbab5e73111d2b5a26"),
   gemDouble: glb("gem-double.glb", "sha256-4234b67b834fffef6af45cae16ea3adc9a8517b2cc18ea87d02ba5528c6af333"),
