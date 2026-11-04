@@ -36,8 +36,8 @@ import {
   type AnimationMixerSnapshot,
   type AnimationTarget
 } from "@aura3d/animation";
+import { PhysicsWorld } from "@aura3d/physics/world";
 import {
-  PhysicsWorld,
   Shape,
   type CollisionEvent,
   type ConstraintType,
@@ -45,7 +45,7 @@ import {
   type RigidBody,
   type RigidBodyType,
   type Vec3
-} from "@aura3d/physics";
+} from "@aura3d/physics/solverless";
 import type {
   CameraFrameBounds,
   CameraLike,

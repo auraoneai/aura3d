@@ -2,7 +2,7 @@
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "@aura3d/physics";
+import type { PhysicsWorldDescriptor } from "@aura3d/physics/solverless";
 import { legacyPhysicsWorldAccess } from "../public/legacy-physics-access.js";
 import {
   createGameCollisionWorldWithPhysicsWorldAccess,

@@ -11,12 +11,14 @@ export * from "./physics-core.js";
 const legacyNamespaceAccess: PhysicsWorldAccess = {
   requireReady: () => legacyPhysicsWorldAccess.requireReady(),
   async preload() {
-    const { ensurePhysics } = await import("@aura3d/physics");
+    const { ensurePhysics } = await import("@aura3d/physics/world");
     await ensurePhysics();
   }
 };
 
-export const physics = createPhysicsWithAccess(legacyNamespaceAccess);
+// Annotated explicitly: an inferred type would let tsc spell the physics types through the `@aura3d/physics` root barrel, whose
+// declarations reach the optional Rapier peer. `physics-core` names them from the solver-free `@aura3d/physics/solverless`.
+export const physics: ReturnType<typeof createPhysicsWithAccess> = createPhysicsWithAccess(legacyNamespaceAccess);
 
 export function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined {
   return createRuntimeScenePhysicsWithAccess(legacyPhysicsWorldAccess, snapshot);
