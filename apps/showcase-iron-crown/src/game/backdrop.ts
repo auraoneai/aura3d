@@ -2,12 +2,16 @@
  * IRON CROWN far backdrops (GU47 WP-15 IC47-W1): a 10-60 m silhouette layer behind each open-air venue so the top rows
  * of the frame read as a place (skyline, river boats, colosseum wall ring, hangars, ridge) instead of bare sky.
  *
- * Interim until the WP-36 backdrop assets (ridge, wall ring, 3 tower blocks) land: instanced primitives, at most four
- * draws per venue (budget <= 60), no shadows cast, inside each venue's fog. Lit windows and boat lamps are practicals
+ * Instanced primitives (at most four draws per venue, budget <= 60) plus, from wave 2 (2026-11-03), the Meshy backdrop
+ * models that read well at 12-60 m: harbour cranes and fishing boats (Dock), skyline blocks (Neo-Tokyo), hangar
+ * clusters (Airstrip) and the rock ridge (Monastery). Each is one single-material draw, casts no shadow and sits inside
+ * the venue's fog. The Colosseum wall (dark slate, not sandstone) and the waterfront block (does not read as
+ * warehouses) were not wired. Lit windows and boat lamps are practicals
  * (art-direction `emissive-fill` rule). The Crown Arena is enclosed (back wall at 12 m) and has no far layer.
  * Layouts are fixed tables (no randomness): the venue looks the same on every load.
  */
-import { material, primitives, type AuraColor, type AuraSceneNode } from "@aura3d/engine";
+import { material, model, primitives, type AuraColor, type AuraSceneNode } from "@aura3d/engine";
+import { assets } from "../aura-assets";
 import type { StageId } from "./stages";
 
 type V3 = [number, number, number];
@@ -23,6 +27,14 @@ const hash01 = (i: number, salt: number) => {
   const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
   return x - Math.floor(x);
 };
+
+/** A far Meshy model: one single-material draw, no shadows, base at `y`, `size` metres on its longest side. */
+function farModel(asset: Parameters<typeof model>[0], name: string, position: V3, size: number, rotY = 0): AuraSceneNode {
+  return model(asset, { name, targetMaxDimension: size, role: "primaryWorld", castShadow: false, receiveShadow: false })
+    .position(position[0], position[1], position[2])
+    .rotate(0, rotY, 0)
+    .toJSON();
+}
 
 function layer(name: string, kind: "box" | "cone" | "cylinder", color: AuraColor, parts: readonly Part[], emissive?: { color: AuraColor; intensity: number }) {
   const factory = kind === "box" ? primitives.box : kind === "cone" ? primitives.cone : primitives.cylinder;
@@ -61,21 +73,32 @@ function neoTokyoSkyline(): AuraSceneNode[] {
   return [
     layer("bd-neo-tokyo-rooftop-towers", "box", "#0c1222", towers),
     layer("bd-neo-tokyo-rooftop-bands-magenta", "box", "#2a0a1c", bandsMagenta, { color: "#ff3fa4", intensity: 0.9 }),
-    layer("bd-neo-tokyo-rooftop-bands-cyan", "box", "#0a1e2a", bandsCyan, { color: "#3fe0ff", intensity: 0.8 })
+    layer("bd-neo-tokyo-rooftop-bands-cyan", "box", "#0a1e2a", bandsCyan, { color: "#3fe0ff", intensity: 0.8 }),
+    // IC47-W1 (wave 2): three detailed skyline blocks (rooftop tanks, arched windows) in front of the box rows.
+    farModel(assets.ironcrownSkylineBlockA, "bd-neo-tokyo-rooftop-block-1", [-23, -0.2, -27], 26, 0.15),
+    farModel(assets.ironcrownSkylineBlockA, "bd-neo-tokyo-rooftop-block-2", [22, -0.2, -29], 22, -0.25),
+    farModel(assets.ironcrownSkylineBlockA, "bd-neo-tokyo-rooftop-block-3", [1, -0.2, -45], 34, 0.05)
   ];
 }
 
-/** Lantern Dock: the river 12-60 m out, moored long-tail boats with lamps, and the far bank's low shophouses. */
+/**
+ * Lantern Dock: the river 12-60 m out, moored Meshy fishing boats with their mast lamps, two harbour cranes on the
+ * far bank, and the far bank's low shophouses.
+ */
 function dockRiver(): AuraSceneNode[] {
-  const hulls: Part[] = [];
   const lamps: Part[] = [];
   const bank: Part[] = [];
-  for (let i = 0; i < 7; i += 1) {
-    const x = -21 + i * 7 + (hash01(i, 6) - 0.5) * 2;
-    const z = -19 - 9 * hash01(i, 7); // beyond the deck edge (z -16)
-    const yaw = (hash01(i, 8) - 0.5) * 0.6;
-    hulls.push(part([x, -0.15, z], [4.4, 0.5, 1.1], yaw));
-    lamps.push(part([x + 1.4, 0.75, z], [0.16, 0.22, 0.16]));
+  const boats: AuraSceneNode[] = [];
+  const BOAT_LENGTH = 7;
+  for (let i = 0; i < 5; i += 1) {
+    const x = -24 + i * 12 + (hash01(i, 6) - 0.5) * 3;
+    const z = -20 - 8 * hash01(i, 7); // beyond the deck edge (z -16)
+    const yaw = (hash01(i, 8) - 0.5) * 0.5;
+    const length = BOAT_LENGTH * (0.85 + 0.3 * hash01(i, 21));
+    boats.push(farModel(assets.ironcrownFishingBoat, `bd-bangkok-dock-boat-${i + 1}`, [x, -1.1, z], length, yaw));
+    // The mast lantern sits 0.30 of the hull length forward and 0.7 of the hull height up (read off the model).
+    const mast = length * 0.3;
+    lamps.push(part([x + mast * Math.cos(yaw), -1.1 + length * (1.14 / 1.9) * 0.7, z - mast * Math.sin(yaw)], [0.2, 0.28, 0.2]));
   }
   for (let i = 0; i < 14; i += 1) {
     const h = 3 + 4 * hash01(i, 9);
@@ -83,9 +106,12 @@ function dockRiver(): AuraSceneNode[] {
   }
   return [
     layer("bd-bangkok-dock-river", "box", "#1c3a3a", [part([0, -0.42, -34], [140, 0.05, 44])]),
-    layer("bd-bangkok-dock-boats", "box", "#3b2414", hulls),
+    ...boats,
     layer("bd-bangkok-dock-lamps", "box", "#5a3a10", lamps, { color: "#ffb04a", intensity: 1.4 }),
-    layer("bd-bangkok-dock-far-bank", "box", "#3a2a20", bank)
+    layer("bd-bangkok-dock-far-bank", "box", "#3a2a20", bank),
+    // IC47-A1 (wave 2): two riveted harbour cranes tower over the far bank.
+    farModel(assets.ironcrownHarbourCrane, "bd-bangkok-dock-crane-1", [-27, -0.4, -47], 26, 0.1),
+    farModel(assets.ironcrownHarbourCrane, "bd-bangkok-dock-crane-2", [31, -0.4, -52], 20, -0.35)
   ];
 }
 
@@ -106,24 +132,17 @@ function colosseumWallRing(): AuraSceneNode[] {
   return [layer("bd-colosseum-ruins-piers", "box", "#b89868", piers), layer("bd-colosseum-ruins-tiers", "box", "#a88858", tiers)];
 }
 
-/** Dustline Airstrip: three hangars with vaulted roofs 24-40 m out and the mesa line at 55 m. */
+/** Dustline Airstrip: three Meshy hangar clusters 26-36 m out (IC47-W1) and the mesa line at 55 m. */
 function airstripHangars(): AuraSceneNode[] {
-  const walls: Part[] = [];
-  const roofs: Part[] = [];
   const mesas: Part[] = [];
-  [-18, 0, 18].forEach((x, i) => {
-    const z = -26 - 6 * i * 0.5;
-    walls.push(part([x, 3, z], [14, 6, 12]));
-    // A vault: a cylinder on its side (rotated about z), its axis running front to back.
-    roofs.push({ position: [x, 6, z], rotation: [Math.PI / 2, 0, 0], scale: [14, 12, 5] });
-  });
   for (let i = 0; i < 6; i += 1) {
     const h = 6 + 6 * hash01(i, 14);
     mesas.push(part([-60 + i * 24, h / 2 - 0.5, -52 - 6 * hash01(i, 15)], [20 + 8 * hash01(i, 16), h, 10]));
   }
   return [
-    layer("bd-desert-airbase-hangar-walls", "box", "#6a5a48", walls),
-    layer("bd-desert-airbase-hangar-roofs", "cylinder", "#7a6a56", roofs),
+    farModel(assets.ironcrownSkylineBlockB, "bd-desert-airbase-hangars-1", [-22, -0.2, -30], 24, 0.2),
+    farModel(assets.ironcrownSkylineBlockB, "bd-desert-airbase-hangars-2", [6, -0.2, -36], 28, -0.15),
+    farModel(assets.ironcrownSkylineBlockB, "bd-desert-airbase-hangars-3", [34, -0.2, -31], 22, 0.35),
     layer("bd-desert-airbase-mesas", "box", "#8a5a3a", mesas)
   ];
 }
@@ -140,7 +159,15 @@ function monasteryRidge(): AuraSceneNode[] {
     peaks.push(part([x, h / 2 - 0.5, z], [r, h, r]));
     caps.push(part([x, h - 0.5 - h * 0.18, z], [r * 0.36, h * 0.36, r * 0.36]));
   }
-  return [layer("bd-himalayan-monastery-ridge", "cone", "#4a5360", peaks), layer("bd-himalayan-monastery-caps", "cone", "#e8eef6", caps)];
+  return [
+    // IC47-W1 (wave 2): the Meshy rock ridge stands behind the snow cones, so the skyline layers (dark rock peaks above
+    // white-capped slopes) instead of a single row of cones.
+    farModel(assets.ironcrownBackdropRidge, "bd-himalayan-monastery-ridge-1", [-38, -1, -58], 42, 0.3),
+    farModel(assets.ironcrownBackdropRidge, "bd-himalayan-monastery-ridge-2", [6, -1, -59], 48, -0.4),
+    farModel(assets.ironcrownBackdropRidge, "bd-himalayan-monastery-ridge-3", [42, -1, -58], 40, 1.2),
+    layer("bd-himalayan-monastery-ridge", "cone", "#4a5360", peaks),
+    layer("bd-himalayan-monastery-caps", "cone", "#e8eef6", caps)
+  ];
 }
 
 /** The far backdrop nodes of a venue (empty for the enclosed Crown). */
