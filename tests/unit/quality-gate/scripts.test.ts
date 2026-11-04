@@ -63,9 +63,11 @@ describe("root manifest script paths (Q-15-1 pending until merged)", () => {
   });
 
   // Re-baselined 2026-11-02 for 5.0 (owner-delegated): Q-15-1 ≤80 target carried as 5.x debt; cap prevents growth.
-  // 123 = exact root script count at the 5.0 re-baseline (120 on main + check:clean-install:source,
-  // check:clean-install:browser, verify:api-docs). No new root scripts; lower this when scripts are removed.
-  const ROOT_SCRIPT_CAP = 123;
+  // 121 = exact root script count after the 5.0 re-baseline (120 on main + verify:api-docs; the
+  // check:clean-install:source/:browser aliases added with it were unreferenced, so script-prune
+  // --check removed them: tools/package-clean-install is run by tools/remote-acr/*.sh directly).
+  // No new root scripts; lower this when scripts are removed.
+  const ROOT_SCRIPT_CAP = 121;
 
   it("caps the script count at the 5.0 re-baseline (Q-15-1 ≤80 target is 5.x debt)", () => {
     const count = Object.keys(pkg.scripts).length;
