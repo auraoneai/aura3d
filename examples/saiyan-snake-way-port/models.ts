@@ -19,7 +19,9 @@ export const MESHY = defineModelAssets({
   /** GU47 wave 2 `serpSpireB` (admitted 2026-11-03, provenance/spireB.*): twisted red rock spire with hanging lanterns, a near-island variant in script mode (SSR-10). */
   spireB: glb("spireB.glb", "sha256-29693db9f821da39921adefbf0359b7c7f449935c444b47fa4109a4ef7ca2cf0"),
   /** GU47 wave 2 `serpSpireC` (admitted 2026-11-03, provenance/spireC.*): lacquer pagoda on a floating rock island, a near-island variant in script mode (SSR-10). */
-  spireC: glb("spireC.glb", "sha256-667c6275cebd1596364e4d626ff51eb685db2d8fe6dd1d44797d8e3c5dfd18e7")
+  spireC: glb("spireC.glb", "sha256-667c6275cebd1596364e4d626ff51eb685db2d8fe6dd1d44797d8e3c5dfd18e7"),
+  /** GU47 wave 2 `serpSpireA` (admitted 2026-11-03, decimated 116,262 -> 29,996 tris at 1024 px, provenance/spireA.*): four-tier lacquer pagoda on a rock island with gold trees (SSR-10). */
+  spireA: glb("spireA.glb", "sha256-41758a150ff3f2fac901c5de4889042b7d0872c3652bde256e4a45a89e549ca6")
 }, { license: LICENSE, queryParam: null }).refs;
 
 /** Both versions retain the same rig and clips; only the original uses the 4.6.2 teal atlas. */
@@ -52,12 +54,12 @@ export const ENTITY_MODELS: Readonly<Record<string, { readonly key: MeshyKey; re
 export const LANTERN_COUNT = 10;
 export const ISLAND_COUNT = 6;
 /**
- * GU47 wave 2 (SSR-10): in script mode the six near islands cycle through the pagoda island, the red lantern spire and the
- * original island (`?look=original` keeps six original islands). `targetHeight` is the model height in metres before the
+ * GU47 wave 2 (SSR-10): in script mode the six near islands cycle through the tall pagoda island, the red lantern spire and the
+ * second pagoda island (`?look=original` keeps six original islands). `targetHeight` is the model height in metres before the
  * per-slot `1 + (i % 3) * 0.35` scale the original islands already used.
  */
 export const ISLAND_VARIANTS: readonly { readonly key: MeshyKey; readonly targetHeight: number }[] = [
   { key: "spireC", targetHeight: 22 },
   { key: "spireB", targetHeight: 15 },
-  { key: "island", targetHeight: 15 }
+  { key: "spireA", targetHeight: 14 }
 ];

@@ -55,7 +55,8 @@ export default defineArtDirection({
     { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 },
     // GU47 wave 2 (SSR-10): near-island variants, 42.6k and 28.3k triangles, 1024 px textures
     { role: "backdrop", assetKey: "spireB", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
-    { role: "backdrop", assetKey: "spireC", maxTriangles: 45000, textureSet: "BC+N", maxTextureSize: 1024 }
+    { role: "backdrop", assetKey: "spireC", maxTriangles: 45000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "spireA", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "orb-pickup", kind: "serpent-orb" },

@@ -25,6 +25,7 @@ time (recorded per asset in `provenance/<name>.rights.json`; Meshy task ids in `
 | `serpentHead.glb` | Colossal serpent landmark beside the road (GU47 WP-36 `serpSerpentHead`, generated 2026-10-30, admitted with `aura3d assets import-meshy` 2026-10-31; provenance/serpentHead.*) | 1.6 MB | 21,986 verts | colossal serpent dragon head with pearl and jade scales, gold whiskers and glowing eyes, emerging from clouds |
 | `spireB.glb` | Near-island variant: twisted red rock spire with hanging lanterns and gold rings (GU47 wave 2 `serpSpireB`, generated 2026-11-03, isolated-admitted; provenance/spireB.*) | 1.3 MB | 21,688 verts | red lacquer-toned rock spire with a string of gold lanterns |
 | `spireC.glb` | Near-island variant: red lacquer pagoda on a floating rock island (GU47 wave 2 `serpSpireC`, generated 2026-11-03, isolated-admitted; provenance/spireC.*) | 2.4 MB | 40,063 verts | seven-tier red and gold pagoda on a rock island with a pool |
+| `spireA.glb` | Near-island variant: four-tier red lacquer pagoda on a rock island with gold trees (GU47 wave 2 `serpSpireA`, generated 2026-11-03, decimated from 116,262 to 29,996 triangles with 1024 px textures; provenance/spireA.*) | 2.2 MB | 38,702 verts | red and gold pagoda on a rock island |
 
 The runner's clips are Meshy rig clips merged into one GLB (`Run_Loop` basic running, `Idle_Loop` action 0, `Jump_Loop` 466 Regular_Jump,
 `Slide_Loop` 516 slide_light, `Flight_Loop` 501 Leap_of_Faith, `Dive_Loop` 506 Dive_Down_and_Land, `Hit_React` 178 Hit_Reaction).
