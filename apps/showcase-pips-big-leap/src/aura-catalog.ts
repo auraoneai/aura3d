@@ -2,6 +2,12 @@ import { defineAuraAssets } from "@aura3d/engine";
 import type { AuraAssetDefinition, AuraAssetMap } from "@aura3d/engine";
 
 type AuraGeneratedAssetDefinitions = {
+  readonly "leapBaseCanopy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "leapBaseGarden": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "leapBaseMeadow": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "leapBaseMillpond": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "leapBeetle": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
+  readonly "leapHedgehog": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; readonly integrity: { readonly version: 1; readonly digest: string; readonly dependencies?: Readonly<Record<string, string>>; readonly requireDependencies?: boolean }; };
   readonly "pipsBrambleback": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsCheckpointFlag": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "pipsGoldenAcorn": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
@@ -11,6 +17,870 @@ type AuraGeneratedAssetDefinitions = {
 };
 
 export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
+  "leapBaseCanopy": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/leapBaseCanopy.1ac50631.glb",
+    hash: "sha256-1ac506313a8854fd254ea65ea4338a87442aaa73b8768c3d7b9c31269f9ed327",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-1ac506313a8854fd254ea65ea4338a87442aaa73b8768c3d7b9c31269f9ed327"
+    },
+    bounds: [
+      1.722,
+      0.695,
+      1.903
+    ],
+    sizeBytes: 1192020,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapBaseCanopy.1ac50631.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, pips-big-leap/leapBaseCanopy). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:39:55.921Z",
+        "evidence": [
+          "aura-evidence/meshy/leapBaseCanopy.rights.209061eeb72d.json",
+          "aura-evidence/meshy/leapBaseCanopy.metadata.6cf10074989b.json",
+          "public/aura-assets/leapBaseCanopy.meshy-candidate.8677baf0.png"
+        ],
+        "checkedAt": "2026-11-04T04:39:55.921Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "public/aura-assets/leapBaseCanopy.1ac50631.glb",
+      "outputPath": "public/aura-assets/leapBaseCanopy.1ac50631.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.86,
+          -0.348,
+          -0.952
+        ],
+        "max": [
+          0.862,
+          0.347,
+          0.951
+        ],
+        "size": [
+          1.722,
+          0.695,
+          1.903
+        ],
+        "center": [
+          0.001,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/leapBaseCanopy.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/aura-assets/leapBaseCanopy.meshy-candidate.8677baf0.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-8677baf0b874a825285a22c75c376e09bc60d684710e5d3756e392ee4ba65546",
+        "checkedAt": "2026-11-04T05:05:18.958Z"
+      }
+    },
+  },
+  "leapBaseGarden": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/leapBaseGarden.2e280ae8.glb",
+    hash: "sha256-2e280ae8942a74ee0e5513ccefa902c985fcbe6ef71c8a4179eadf8373354717",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-2e280ae8942a74ee0e5513ccefa902c985fcbe6ef71c8a4179eadf8373354717"
+    },
+    bounds: [
+      1.898,
+      0.669,
+      1.618
+    ],
+    sizeBytes: 2300356,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapBaseGarden.2e280ae8.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, pips-big-leap/leapBaseGarden). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:43:13.153Z",
+        "evidence": [
+          "aura-evidence/meshy/leapBaseGarden.rights.6af9f8899a38.json",
+          "aura-evidence/meshy/leapBaseGarden.metadata.a6f284322822.json",
+          "public/aura-assets/leapBaseGarden.meshy-candidate.d9649bad.png"
+        ],
+        "checkedAt": "2026-11-04T04:43:13.153Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "public/aura-assets/leapBaseGarden.2e280ae8.glb",
+      "outputPath": "public/aura-assets/leapBaseGarden.2e280ae8.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.944,
+          -0.34,
+          -0.812
+        ],
+        "max": [
+          0.954,
+          0.33,
+          0.806
+        ],
+        "size": [
+          1.898,
+          0.669,
+          1.618
+        ],
+        "center": [
+          0.005,
+          -0.005,
+          -0.003
+        ],
+        "maxDimension": 1.898,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/leapBaseGarden.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/aura-assets/leapBaseGarden.meshy-candidate.d9649bad.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-d9649bad662fe510bdb342b2197f34b2a9a2f0d4555aaafdbd168da9ca816a7d",
+        "checkedAt": "2026-11-04T05:05:15.067Z"
+      }
+    },
+  },
+  "leapBaseMeadow": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/leapBaseMeadow.db3308e9.glb",
+    hash: "sha256-db3308e915f0fc7bad7439049d6799eec493a4cfe60f991727329cb558004ac9",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-db3308e915f0fc7bad7439049d6799eec493a4cfe60f991727329cb558004ac9"
+    },
+    bounds: [
+      1.884,
+      0.495,
+      1.897
+    ],
+    sizeBytes: 1496952,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapBaseMeadow.db3308e9.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, pips-big-leap/leapBaseMeadow). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:42:04.327Z",
+        "evidence": [
+          "aura-evidence/meshy/leapBaseMeadow.rights.aceb5d3cd0b3.json",
+          "aura-evidence/meshy/leapBaseMeadow.metadata.2d2ae239c4b3.json",
+          "public/aura-assets/leapBaseMeadow.meshy-candidate.3da6f3ea.png"
+        ],
+        "checkedAt": "2026-11-04T04:42:04.327Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "public/aura-assets/leapBaseMeadow.db3308e9.glb",
+      "outputPath": "public/aura-assets/leapBaseMeadow.db3308e9.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.947,
+          -0.245,
+          -0.952
+        ],
+        "max": [
+          0.937,
+          0.25,
+          0.945
+        ],
+        "size": [
+          1.884,
+          0.495,
+          1.897
+        ],
+        "center": [
+          -0.005,
+          0.003,
+          -0.003
+        ],
+        "maxDimension": 1.897,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/leapBaseMeadow.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/aura-assets/leapBaseMeadow.meshy-candidate.3da6f3ea.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-3da6f3ea49b4b0d315bc3df21a53248f887ffde3239a6ff629620893676dba4e",
+        "checkedAt": "2026-11-04T05:05:25.508Z"
+      }
+    },
+  },
+  "leapBaseMillpond": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/leapBaseMillpond.975e0e54.glb",
+    hash: "sha256-975e0e54dae17f9bc4f5434cc147d46c4a885ca8eb69891d6c3e12be2925914c",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-975e0e54dae17f9bc4f5434cc147d46c4a885ca8eb69891d6c3e12be2925914c"
+    },
+    bounds: [
+      1.89,
+      1.139,
+      1.902
+    ],
+    sizeBytes: 1182868,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapBaseMillpond.975e0e54.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, pips-big-leap/leapBaseMillpond). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:40:13.503Z",
+        "evidence": [
+          "aura-evidence/meshy/leapBaseMillpond.rights.e94169b0f1fa.json",
+          "aura-evidence/meshy/leapBaseMillpond.metadata.d64c5d6ce201.json",
+          "public/aura-assets/leapBaseMillpond.meshy-candidate.3ae16cab.png"
+        ],
+        "checkedAt": "2026-11-04T04:40:13.503Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "public/aura-assets/leapBaseMillpond.975e0e54.glb",
+      "outputPath": "public/aura-assets/leapBaseMillpond.975e0e54.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.949,
+          -0.569,
+          -0.952
+        ],
+        "max": [
+          0.941,
+          0.57,
+          0.951
+        ],
+        "size": [
+          1.89,
+          1.139,
+          1.902
+        ],
+        "center": [
+          -0.004,
+          0.001,
+          0
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/leapBaseMillpond.thumb.svg",
+      "quality": "candidate",
+      "role": "environment",
+      "renderedProbe": {
+        "url": "/aura-assets/leapBaseMillpond.meshy-candidate.3ae16cab.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-3ae16caba849167c889324426f939fcaf8fe1574a59d28e90db165b426cf9926",
+        "checkedAt": "2026-11-04T05:05:20.145Z"
+      }
+    },
+  },
+  "leapBeetle": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/leapBeetle.dec49842.glb",
+    hash: "sha256-dec498424adac49e471eb8c924b0ad0ac2cc3cda1dbeae3c80da82687d2a53f5",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-dec498424adac49e471eb8c924b0ad0ac2cc3cda1dbeae3c80da82687d2a53f5"
+    },
+    bounds: [
+      1.377,
+      1.903,
+      0.589
+    ],
+    sizeBytes: 1380760,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapBeetle.dec49842.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, pips-big-leap/leapBeetle). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:18:37.381Z",
+        "evidence": [
+          "aura-evidence/meshy/leapBeetle.rights.873641dd6e46.json",
+          "aura-evidence/meshy/leapBeetle.metadata.205ff20318b7.json",
+          "public/aura-assets/leapBeetle.meshy-candidate.0c82a572.png"
+        ],
+        "checkedAt": "2026-11-04T04:18:37.381Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "public/aura-assets/leapBeetle.dec49842.glb",
+      "outputPath": "public/aura-assets/leapBeetle.dec49842.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.689,
+          -0.952,
+          -0.295
+        ],
+        "max": [
+          0.688,
+          0.951,
+          0.294
+        ],
+        "size": [
+          1.377,
+          1.903,
+          0.589
+        ],
+        "center": [
+          0,
+          -0.001,
+          -0.001
+        ],
+        "maxDimension": 1.903,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/leapBeetle.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/leapBeetle.meshy-candidate.0c82a572.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-0c82a572b576d3d75e961c3197f6fdd68d868c8f4492f709271828ed8963b8a0",
+        "checkedAt": "2026-11-04T05:05:27.413Z"
+      }
+    },
+  },
+  "leapHedgehog": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/leapHedgehog.1fe9217f.glb",
+    hash: "sha256-1fe9217fe8160eca0888b1eda62f18ce2a6bad1e234374df3b3c74fbf85e532b",
+    integrity: {
+      "version": 1,
+      "digest": "sha256-1fe9217fe8160eca0888b1eda62f18ce2a6bad1e234374df3b3c74fbf85e532b"
+    },
+    bounds: [
+      1.825,
+      1.902,
+      1.71
+    ],
+    sizeBytes: 1652060,
+    metadata: {
+      "materials": [
+        "material-0"
+      ],
+      "animations": [],
+      "animationClips": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": false,
+      "humanoidStatus": "non-humanoid",
+      "humanoidConfidence": "low",
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "node-0"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapHedgehog.1fe9217f.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-04 through the AuraOne Meshy account via Kiro Prism from an original text prompt (GU47 WP-36, pips-big-leap/leapHedgehog). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-04T04:20:53.336Z",
+        "evidence": [
+          "aura-evidence/meshy/leapHedgehog.rights.6ba992133737.json",
+          "aura-evidence/meshy/leapHedgehog.metadata.d64eead11ace.json",
+          "public/aura-assets/leapHedgehog.meshy-candidate.5c257172.png"
+        ],
+        "checkedAt": "2026-11-04T04:20:53.336Z"
+      },
+      "modelInspection": {
+        "version": 1,
+        "status": "metadata-only"
+      },
+      "sourcePath": "public/aura-assets/leapHedgehog.1fe9217f.glb",
+      "outputPath": "public/aura-assets/leapHedgehog.1fe9217f.glb",
+      "license": "Meshy generated asset (paid API, plan terms at generation time)",
+      "boundsMetadata": {
+        "min": [
+          -0.916,
+          -0.952,
+          -0.854
+        ],
+        "max": [
+          0.91,
+          0.95,
+          0.856
+        ],
+        "size": [
+          1.825,
+          1.902,
+          1.71
+        ],
+        "center": [
+          -0.003,
+          -0.001,
+          0.001
+        ],
+        "maxDimension": 1.902,
+        "grounded": false
+      },
+      "materialMetadata": [
+        {
+          "name": "material-0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "node-0"
+      ],
+      "textures": [
+        "image-0",
+        "image-1",
+        "image-2"
+      ],
+      "dependencies": [],
+      "thumbnailUrl": "/aura-assets/leapHedgehog.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/leapHedgehog.meshy-candidate.5c257172.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-5c2571726b9031e81b30830637738f1dc3fbefea8c593afe43459153faf6875f",
+        "checkedAt": "2026-11-04T05:05:26.551Z"
+      }
+    },
+  },
   "pipsBrambleback": {
     type: "model",
     format: "glb",

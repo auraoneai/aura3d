@@ -46,6 +46,7 @@ export const dioramaName = {
   baseClay: "pbl-base-clay",
   baseSkirt: "pbl-base-skirt",
   baseMounds: "pbl-base-mounds",
+  baseTiles: "pbl-base-tiles",
   sky: "pbl-sky",
   ambient: "pbl-ambient",
   vignette: "pbl-vignette",
@@ -265,11 +266,59 @@ export interface DioramaBase {
 }
 
 /**
+ * GU47 wave 2 (PBL-E1): a generated Meshy base island that tiles the plinth top. The
+ * tile is stretched over the course footprint (X to the plinth width, Z to the same
+ * scale) and squashed in Y so its toadstools and reeds stay below the course floor.
+ */
+export interface BaseTile {
+  readonly asset: Parameters<typeof instances.model>[0];
+  /** The GLB's own extents (x, y, z) in model units. */
+  readonly size: readonly [number, number, number];
+  /** Height fraction (0-1) at which the walkable surface of the island sits. */
+  readonly surface: number;
+}
+
+/** Y squash of a base tile against its XZ stretch (1 = uniform scale). */
+export const BASE_TILE_SQUASH = 0.5;
+/** The tile surface rides this far above the base top so it reads over the felt filler. */
+export const BASE_TILE_LIFT = 0.2;
+/** Tallest feature stays this far under the course floor (y = 0). */
+export const BASE_TILE_CLEARANCE = 1.2;
+
+/** Transforms of the base tiles along the course (pure, for the node and the tests). */
+export function baseTileTransforms(spec: WorldSpec, tile: BaseTile, depth: number): { readonly transforms: readonly AuraTransformSpec[]; readonly height: number } {
+  const b = courseBounds(spec);
+  const top = -depth;
+  const cx = (b.minX + b.maxX) / 2;
+  const cz = (b.minZ + b.maxZ) / 2;
+  const width = b.maxX - b.minX + 16;
+  const length = b.maxZ - b.minZ + 22;
+  const [sx, sy, sz] = tile.size;
+  const maxDim = Math.max(sx, sy, sz);
+  const nx = sx / maxDim, ny = sy / maxDim, nz = sz / maxDim;
+  const scaleXZ = width / nx;
+  const cap = (depth - BASE_TILE_LIFT - BASE_TILE_CLEARANCE) / (1 - tile.surface);
+  const height = Math.max(1, Math.min(BASE_TILE_SQUASH * scaleXZ * ny, cap));
+  const scaleY = height / ny;
+  const tileLength = scaleXZ * nz;
+  const spacing = tileLength * 0.96;
+  const count = Math.max(1, Math.ceil(length / spacing));
+  const y = top + BASE_TILE_LIFT - tile.surface * height;
+  const transforms: AuraTransformSpec[] = [];
+  for (let i = 0; i < count; i += 1) {
+    transforms.push({ position: [cx, y, cz + (i - (count - 1) / 2) * spacing], rotation: [0, (i % 2) * Math.PI, 0], scale: [scaleXZ, scaleY, scaleXZ] });
+  }
+  return { transforms, height };
+}
+
+/**
  * The closed diorama: a felt-topped clay plinth under the whole course with a darker
  * skirt, plus seeded felt mounds along both flanks. The base only receives shadows
- * (4 draws, under the PRD's +6).
+ * (4 draws, under the PRD's +6). With a Meshy `tile` the mounds give way to one instanced
+ * draw of base tiles (the flat felt stays as the filler between and under them), so the
+ * draw count is unchanged.
  */
-export function dioramaBase(spec: WorldSpec, look: WorldLook, depth: number): DioramaBase {
+export function dioramaBase(spec: WorldSpec, look: WorldLook, depth: number, tile?: BaseTile): DioramaBase {
   const b = courseBounds(spec);
   const top = -depth;
   const cx = (b.minX + b.maxX) / 2;
@@ -286,13 +335,22 @@ export function dioramaBase(spec: WorldSpec, look: WorldLook, depth: number): Di
     const r = 1.6 + rand() * 2.2;
     mounds.push({ position: [edge, top - 0.1, z], scale: [r * 1.4, r * 0.55, r] });
   }
+  const last: DioramaNode = tile
+    ? instances.model(tile.asset, {
+        name: dioramaName.baseTiles,
+        targetMaxDimension: 1,
+        castShadow: false,
+        receiveShadow: true,
+        transforms: baseTileTransforms(spec, tile, depth).transforms
+      })
+    : instances.sphere({ name: dioramaName.baseMounds, transforms: mounds, material: felt(look.base.mound), castShadow: false, receiveShadow: true });
   return {
     top,
     nodes: [
       primitives.roundedBox({ name: dioramaName.baseFelt, size: [w, 0.6, d], position: [cx, top - 0.3, cz], params: { radius: 0.25 }, material: felt(look.base.felt), castShadow: false, receiveShadow: true }),
       primitives.box({ name: dioramaName.baseClay, size: [w + 0.5, plinth, d + 0.5], position: [cx, top - 0.6 - plinth / 2, cz], material: clay(look.base.clay), castShadow: false, receiveShadow: false }),
       primitives.box({ name: dioramaName.baseSkirt, size: [w + 0.9, 0.5, d + 0.9], position: [cx, top - 0.6 - plinth - 0.25, cz], material: clay(look.base.skirt), castShadow: false, receiveShadow: false }),
-      instances.sphere({ name: dioramaName.baseMounds, transforms: mounds, material: felt(look.base.mound), castShadow: false, receiveShadow: true })
+      last
     ]
   };
 }

@@ -1,8 +1,8 @@
 // GU47 WP-16 (G06): the diorama scene per world (PBL-L1, L2, E1, E2, E3, P1, P2, P3, M1, M2, W1, PF1) and
 // the PRD D8 guarantee that the collision world is identical in the diorama and the original look.
 import { describe, expect, it } from "vitest";
-import { buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
-import { dioramaName, floraLayers, hazardMaterial, SURFACES } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
+import { BASE_TILES, buildWorld, nodeName } from "../../../apps/showcase-pips-big-leap/src/game/world";
+import { baseTileTransforms, dioramaName, floraLayers, hazardMaterial, SURFACES } from "../../../apps/showcase-pips-big-leap/src/game/diorama";
 import { WORLD_IDS, WORLD_LOOKS, baseDepthFor } from "../../../apps/showcase-pips-big-leap/src/game/looks";
 import { worldSpec } from "../../../apps/showcase-pips-big-leap/src/game/worlds";
 
@@ -77,13 +77,30 @@ describe("pips-big-leap diorama scene", () => {
       const built = buildWorld(worldSpec(id));
       expect(built.presentation.baseTop).toBe(-baseDepthFor(worldSpec(id)));
       const nodes = sceneOf(id);
-      for (const name of [dioramaName.baseFelt, dioramaName.baseClay, dioramaName.baseSkirt, dioramaName.baseMounds]) {
+      // GU47 wave 2: a generated base tile replaces the felt mounds (one instanced draw either way).
+      const tiled = BASE_TILES[id] !== undefined;
+      for (const name of [dioramaName.baseFelt, dioramaName.baseClay, dioramaName.baseSkirt, tiled ? dioramaName.baseTiles : dioramaName.baseMounds]) {
         const node = nodes.find((n) => n.name === name);
         expect(node, `${id} ${name}`).toBeDefined();
         expect(node?.castShadow).toBe(false);
       }
       const fog = nodes.filter((n) => n.kind === "effect" && n.effect === "fog");
       expect(fog.map((n) => n.name)).toEqual(["look fog"]);
+    }
+  });
+
+  it("keeps every base tile below the course floor and covering the plinth (PBL-E1, wave 2)", () => {
+    for (const id of WORLD_IDS) {
+      const tile = BASE_TILES[id];
+      if (!tile) continue;
+      const spec = worldSpec(id);
+      const depth = baseDepthFor(spec);
+      const { transforms, height } = baseTileTransforms(spec, tile, depth);
+      expect(transforms.length, id).toBeGreaterThanOrEqual(1);
+      // surface 0.2 m over the base top; the tallest feature stays 1.2 m under the course floor (y = 0)
+      const bottom = (transforms[0]!.position as readonly number[])[1]!;
+      expect(bottom + height, id).toBeLessThanOrEqual(-1.2 + 1e-6);
+      expect(bottom + tile.surface * height, id).toBeCloseTo(-depth + 0.2, 6);
     }
   });
 

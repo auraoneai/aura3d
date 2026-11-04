@@ -32,6 +32,7 @@ import {
   ambientEmitterNode,
   auroraNode,
   dioramaBase,
+  type BaseTile,
   floraLayers,
   floraNodes,
   hazardMaterial,
@@ -57,11 +58,27 @@ import {
 } from "./looks.js";
 import type {
   CheckpointSpec, DecorSpec, HazardBox, HazardSpec, PickupSpec,
-  PlatformKind, PlatSpec, SolidBox, SpringSpec, WaterSpec, WorldSpec
+  PlatformKind, PlatSpec, SolidBox, SpringSpec, WaterSpec, WorldId, WorldSpec
 } from "./types.js";
 
 type SceneBuilder = ReturnType<typeof scene>;
 type SceneNodeArg = Parameters<SceneBuilder["add"]>[0];
+
+/**
+ * GU47 wave 2 (PBL-E1): the generated Meshy base island each world tiles under its course
+ * (extents are the decimated GLBs'; `surface` is the height fraction of the walkable top).
+ * Starfall Garden (w6) and the two worlds whose generated islands read wrong (the basalt
+ * cellar and the hollow palace) keep the primitive base.
+ */
+export const BASE_TILES: Readonly<Partial<Record<WorldId, BaseTile>>> = {
+  academy: { asset: assets.bases.garden, size: [1.898, 0.669, 1.618], surface: 0.45 },
+  w1: { asset: assets.bases.canopy, size: [1.722, 0.695, 1.903], surface: 0.39 },
+  w2: { asset: assets.bases.millpond, size: [1.89, 1.139, 1.902], surface: 0.3 },
+  w3: { asset: assets.bases.meadow, size: [1.884, 0.495, 1.897], surface: 0.58 }
+};
+
+/** The villager that stands in for each NPC runner in the diorama look (PBL-A3). */
+export const VILLAGER_BY_WHO = { helper: { asset: assets.hedgehog, height: 1.25 }, sidekick: { asset: assets.beetle, height: 1.4 } } as const;
 
 // ---------------------------------------------------------------- palettes
 
@@ -544,7 +561,7 @@ function addOriginalAtmosphere(builder: SceneBuilder, spec: WorldSpec, options: 
 function addDioramaAtmosphere(builder: SceneBuilder, spec: WorldSpec, look: WorldLook, depth: number, options: BuildWorldOptions, scale: PresentationScale): number {
   const shafts = sunShaftsNode(look);
   if (shafts) builder.add(shafts);
-  const base = dioramaBase(spec, look, depth);
+  const base = dioramaBase(spec, look, depth, BASE_TILES[spec.id]);
   const preset = looks.preset(look.baseLook, lookOverridesFor(look, base.top));
   if (options.ambientOcclusion === false) {
     const group = preset.toJSON();
@@ -828,11 +845,20 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     // letting a 1.35 m runner fill the foreground.
     cameraObstacles.push({ x: n.x, z: n.z, baseY: n.y, radius: 0.45, height: 1.35 });
     // GU47 phase 4: the diorama draws no voxel NPCs. Every rubric judgement named the blocky
-    // helper/sidekick as the style clash in the frame (modeling, composition, animation); the
-    // rigged hedgehog and beetle villagers (PBL-A3, WP-36) take their places when they land.
-    // The NPCs are pure decor (no runtime node, no collider); the camera obstacle stays so the
-    // camera and collision world are identical in both looks (PRD D8).
-    if (diorama) continue;
+    // helper/sidekick as the style clash in the frame (modeling, composition, animation).
+    // GU47 wave 2 (PBL-A3): the generated hedgehog and beetle villagers take their places, in a
+    // static pose (the text-to-3D models are unrigged; a rig is the open follow-up). They are
+    // pure decor (no runtime node, no collider); the camera obstacle stays so the camera and
+    // collision world are identical in both looks (PRD D8).
+    if (diorama) {
+      const villager = VILLAGER_BY_WHO[n.who];
+      builder.add(
+        model(villager.asset, { name: `pbl-villager:${n.id}`, castShadow: true, receiveShadow: true, targetHeight: villager.height, scaleMode: "fit" })
+          .position(n.x, n.y, n.z)
+          .rotate(0, -0.45, 0)
+      );
+      continue;
+    }
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;
     const clip = n.clip ?? "idle";
     builder.add(
