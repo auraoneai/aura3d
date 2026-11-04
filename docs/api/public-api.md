@@ -141,7 +141,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 ## @aura3d/addons
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1271,7 +1271,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/addons/effects/AsciiOutput
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1348,7 +1348,7 @@ export declare class AsciiOutput {
 ## @aura3d/addons/effects/OutlineOutput
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1423,7 +1423,7 @@ export declare class OutlineOutput {
 ## @aura3d/addons/effects/StereoOutputs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1546,7 +1546,7 @@ export declare class StereoOutput {
 ## @aura3d/addons/generators/EnvironmentGenerators
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1663,7 +1663,7 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 ## @aura3d/addons/objects/MarchingCubes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1760,7 +1760,7 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 ## @aura3d/addons/objects/SpecializedObjects
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -1927,7 +1927,7 @@ export {};
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -2020,7 +2020,7 @@ export declare class SpatialDOMRenderer {
 ## @aura3d/addons/renderers/VectorRenderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -2135,7 +2135,7 @@ export {};
 ## @aura3d/addons/tools/Fracture
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -2239,7 +2239,7 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 ## @aura3d/addons/tools/Sculptor
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -2340,7 +2340,7 @@ export declare class Sculptor {
 ## @aura3d/addons/tools/TubePainter
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -2404,7 +2404,7 @@ export declare class TubePainter {
 ## @aura3d/addons/utils/WorkerPool
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=ea9fcca4b92ff9e8465e0f1c69b5c50aeba6bcd57cf7505423275eea77c4854e`
+- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
 
 ### Export conditions
 
@@ -2514,7 +2514,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/animation
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
 
 ### Export conditions
 
@@ -5386,7 +5386,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/animation/contracts
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
 
 ### Export conditions
 
@@ -5433,7 +5433,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/animation/lanes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
 
 ### Export conditions
 
@@ -7207,7 +7207,7 @@ export {};
 ## @aura3d/animation/pose
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=67ce2624ba531e72b3d0fdace017c603a372bfd70852c375123dbe9c81c02faf`
+- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
 
 ### Export conditions
 
@@ -7247,7 +7247,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/apps
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/apps@5.0.0#sha256=2db9e9b02c261fe80cf70dc2a8e0dda4f0d9ca736f3ad698e6c709e369a7ce61`
+- Packed identity: `archive:@aura3d/apps@5.0.0#sha256=f9d6491f9a6a2bb8326d79e27d70f6949cbea36420ef76ba2049063a65b7a0f2`
 
 ### Export conditions
 
@@ -7312,7 +7312,7 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 ## @aura3d/asset-index
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/asset-index@5.0.0#sha256=332f8880e7f2f84d7fbb68a13840383eca34db9360c14f18c0b2c0af4a03d20a`
+- Packed identity: `archive:@aura3d/asset-index@5.0.0#sha256=25947b0f5f590969be13750ecfe5640a0f963448fb00dd23bc81ae2179904631`
 
 ### Export conditions
 
@@ -8050,7 +8050,7 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 ## @aura3d/assets
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -13775,7 +13775,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/assets/browser
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -18478,7 +18478,7 @@ export declare class GLTFSharedTextureCache {
 ## @aura3d/assets/exporters
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -19387,7 +19387,7 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 ## @aura3d/assets/gltf-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -21822,7 +21822,7 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 ## @aura3d/assets/importers
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -23582,7 +23582,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ## @aura3d/assets/vite
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -23679,7 +23679,7 @@ export {};
 ## @aura3d/assets/vite-client
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=f6f268918f7b869b4ff173d29eddf4f8705f32091000b1ada8ecbd9374404713`
+- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
 
 ### Export conditions
 
@@ -23699,7 +23699,7 @@ declare module "virtual:aura3d-decoder-deployment" {
 ## @aura3d/audio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/audio@5.0.0#sha256=b8b9618e2f3c205df201dd1f661732105448c6b278a4019ebf427a2854352406`
+- Packed identity: `archive:@aura3d/audio@5.0.0#sha256=c8110be382ce2854c3918662b516acdd96afe84c7888b0fac6efde61fa5a2e7c`
 
 ### Export conditions
 
@@ -26325,7 +26325,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/cli@5.0.0#sha256=27856aa5a9574bf26fd846f5dc11b2d2f99c379e60196f0e348a1cf520f35228`
+- Packed identity: `archive:@aura3d/cli@5.0.0#sha256=e18dc9b95f608138a42f82d296023d2e5e0a0c98c09037f70e888bf09069fbda`
 
 ### Export conditions
 
@@ -28496,7 +28496,7 @@ export interface CharacterAssemblyResolvedPart {
 ## @aura3d/controls
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/controls@5.0.0#sha256=5ed762c6a4248a277b6c042f6bc2671d464a0f78245e1573bb23c522bed72883`
+- Packed identity: `archive:@aura3d/controls@5.0.0#sha256=e7350f45fc6351399bfc557eba570cf016c756dd261dd8d8fc3ae5b9be0af896`
 
 ### Export conditions
 
@@ -30299,7 +30299,7 @@ export declare class FirstPersonControls {
 ## @aura3d/core
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/core@5.0.0#sha256=c7e44f860fa5a0ed779bb54ad183a138e49018a620b4cb34ea644fc7721241e1`
+- Packed identity: `archive:@aura3d/core@5.0.0#sha256=a7ebcb94a460128ad66376127af57d821d4c0ce18045b276b38d7403168106a5`
 
 ### Export conditions
 
@@ -30814,7 +30814,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.0.0`
-- Packed identity: `archive:create-aura3d@5.0.0#sha256=8dcdaf5b0f38cb0901fd6e7cb62a673d3ef04afbdce5c2bf92b8168cc13d8ad8`
+- Packed identity: `archive:create-aura3d@5.0.0#sha256=81deb80117b2daff56d5cf3c990ca890ff0b850aadf988a9ac82573a494f5ea2`
 
 ### Export conditions
 
@@ -31584,7 +31584,7 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 ## @aura3d/debug
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=93883ac7569c887dfceffcc4d42ad2de692b5b42e3e2c40ed4efe2f9a1e57f66`
+- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=abb003d8a2a50fada9aa6e7bb194dd452f009d85ee6552eb9e659843dc201269`
 
 ### Export conditions
 
@@ -32964,7 +32964,7 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 ## @aura3d/debug/helpers
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=93883ac7569c887dfceffcc4d42ad2de692b5b42e3e2c40ed4efe2f9a1e57f66`
+- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=abb003d8a2a50fada9aa6e7bb194dd452f009d85ee6552eb9e659843dc201269`
 
 ### Export conditions
 
@@ -33172,7 +33172,7 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 ## @aura3d/ecs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/ecs@5.0.0#sha256=c62d68838f4c187d383cd0a115c9b4932dc896a0e04990599687b86812b86ab2`
+- Packed identity: `archive:@aura3d/ecs@5.0.0#sha256=29511fdb37c26d3705741ea704f14d87afce81507050cb5b5a84fd5fa22bd23d`
 
 ### Export conditions
 
@@ -33840,7 +33840,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/editor-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/editor-runtime@5.0.0#sha256=404ea099dad25823b3ff5cbedf276be697563b3d710e94e184bb8448bd38a022`
+- Packed identity: `archive:@aura3d/editor-runtime@5.0.0#sha256=5bbd002885699146fb5797b0051cf87984009bc4ed3f1c96525c7a630ff9e58a`
 
 ### Export conditions
 
@@ -36423,7 +36423,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -120708,7 +120708,7 @@ export declare function estimateGlbResourceBytes(sizeBytes: number | undefined, 
 ## @aura3d/engine/animation
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -123579,7 +123579,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -129305,7 +129305,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -131930,7 +131930,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -133732,7 +133732,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -215826,7 +215826,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -216493,7 +216493,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -219075,7 +219075,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -305983,7 +305983,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -309077,7 +309077,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -392629,7 +392629,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -392640,7 +392640,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -392666,7 +392666,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -393393,7 +393393,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -394634,7 +394634,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -395273,7 +395273,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -397263,7 +397263,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -397888,7 +397888,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -400526,7 +400526,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -401778,7 +401778,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -402039,7 +402039,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/engine/renderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -486061,7 +486061,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -486194,7 +486194,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -487319,7 +487319,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -487403,7 +487403,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -488583,7 +488583,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -492782,7 +492782,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -559664,7 +559664,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -559910,7 +559910,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -646790,7 +646790,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -651977,7 +651977,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -652165,7 +652165,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -652665,7 +652665,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=902c2671b6f5a3445d53e2082fc544e701a5003a2e14cd7ea4fb6c8cc4606284`
 
 ### Export conditions
 
@@ -653123,7 +653123,7 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 ## @aura3d/input
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/input@5.0.0#sha256=b4773e3425a69da6ad1e552c45c5ff6d998bd8eb6797955685c31761057e9279`
+- Packed identity: `archive:@aura3d/input@5.0.0#sha256=523cb624bf76df44c4028e81d6565b35d5dba8a2037677734b1d6d41fbd0995d`
 
 ### Export conditions
 
@@ -654365,7 +654365,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/math@5.0.0#sha256=7ac85c136f03e97fa3387e767b66c186d88be2e87d85f79c6c659750d3bc29b1`
+- Packed identity: `archive:@aura3d/math@5.0.0#sha256=cd92bae16c0703caabb1c9db9c9045ecae0666830eb0bf0d6447001ad84b0fd6`
 
 ### Export conditions
 
@@ -656352,7 +656352,7 @@ export declare class NURBSVolume {
 ## @aura3d/math/three
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/math@5.0.0#sha256=7ac85c136f03e97fa3387e767b66c186d88be2e87d85f79c6c659750d3bc29b1`
+- Packed identity: `archive:@aura3d/math@5.0.0#sha256=cd92bae16c0703caabb1c9db9c9045ecae0666830eb0bf0d6447001ad84b0fd6`
 
 ### Export conditions
 
@@ -657600,7 +657600,7 @@ export {};
 ## @aura3d/navigation-recast
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/navigation-recast@5.0.0#sha256=d94220b4b6c22826c9fca8792a7a1d2b9657c3b5189ee6fd5a8031ea88885009`
+- Packed identity: `archive:@aura3d/navigation-recast@5.0.0#sha256=6257b54923804682df47a77e2ecff0fc10670b533b266ec8a284059a7b915240`
 
 ### Export conditions
 
@@ -657731,7 +657731,7 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 ## @aura3d/physics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=7881967bdc16829e1a33088dfd05bce28e5924292d296466ace5418391853e6e`
+- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f79aa598ba3211c763c9a9bb6b11cb566f9b7463e6a3badd7e8010f241cb0a03`
 
 ### Export conditions
 
@@ -659955,7 +659955,7 @@ export {};
 ## @aura3d/physics-rapier
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics-rapier@5.0.0#sha256=bdd4eac6b61e09f059c44e6ed5aeab212b902ff371f25ba979fe733c6ee1754b`
+- Packed identity: `archive:@aura3d/physics-rapier@5.0.0#sha256=d186e3109fac88e254f9ed295c69423e3f184e4c5cb555cebbfb265b59296caf`
 
 ### Export conditions
 
@@ -660380,7 +660380,7 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 ## @aura3d/physics/solverless
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=7881967bdc16829e1a33088dfd05bce28e5924292d296466ace5418391853e6e`
+- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f79aa598ba3211c763c9a9bb6b11cb566f9b7463e6a3badd7e8010f241cb0a03`
 
 ### Export conditions
 
@@ -661633,7 +661633,7 @@ export declare class PhysicsWorld {
 ## @aura3d/physics/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=7881967bdc16829e1a33088dfd05bce28e5924292d296466ace5418391853e6e`
+- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f79aa598ba3211c763c9a9bb6b11cb566f9b7463e6a3badd7e8010f241cb0a03`
 
 ### Export conditions
 
@@ -661895,7 +661895,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/product-studio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/product-studio@5.0.0#sha256=882cde5788ce17b9398f9f97316272d48052fae8fe871e87f295ece083ea1887`
+- Packed identity: `archive:@aura3d/product-studio@5.0.0#sha256=cc8f7300b136d7dc91dc4185f15df3558d0ca9936bad99dbe3d2c0a8f3f17c13`
 
 ### Export conditions
 
@@ -662177,7 +662177,7 @@ export interface ProductStudio {
 ## @aura3d/react
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/react@5.0.0#sha256=edf1758d34e6668ffb778de28aa73421cebaf1428c479a1ceac128b17d7f7550`
+- Packed identity: `archive:@aura3d/react@5.0.0#sha256=7f6419d9f9d98d852d62e8dee133e3a96496e58f4c0d765b39231d17293b37a2`
 
 ### Export conditions
 
@@ -662484,7 +662484,7 @@ export {};
 ## @aura3d/rendering
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -694060,7 +694060,7 @@ export declare function registerBatchedDrawShader(): void;
 ## @aura3d/rendering/contracts
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -695649,7 +695649,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/atmosphere
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -695694,7 +695694,7 @@ export {};
 ## @aura3d/rendering/contracts/blend
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -695739,7 +695739,7 @@ export declare function renderStateKey(state: RenderCommandState): number;
 ## @aura3d/rendering/contracts/core
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -695809,7 +695809,7 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 ## @aura3d/rendering/contracts/deform
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -695862,7 +695862,7 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 ## @aura3d/rendering/contracts/device
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -695948,7 +695948,7 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 ## @aura3d/rendering/contracts/environment
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -696018,7 +696018,7 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 ## @aura3d/rendering/contracts/flags.state
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -696048,7 +696048,7 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 ## @aura3d/rendering/contracts/frameGraph
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -696192,7 +696192,7 @@ export {};
 ## @aura3d/rendering/contracts/frameUniforms
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -696250,7 +696250,7 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 ## @aura3d/rendering/contracts/geometry
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -696298,7 +696298,7 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 ## @aura3d/rendering/contracts/index
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -697887,7 +697887,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/materialLobes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -697947,7 +697947,7 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 ## @aura3d/rendering/contracts/output
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698019,7 +698019,7 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 ## @aura3d/rendering/contracts/particles
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698076,7 +698076,7 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 ## @aura3d/rendering/contracts/post
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698184,7 +698184,7 @@ export interface PostPipelineOptions {
 ## @aura3d/rendering/contracts/program
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698390,7 +698390,7 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 ## @aura3d/rendering/contracts/quality
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698519,7 +698519,7 @@ export declare class StubQualityController implements AuraQualityController {
 ## @aura3d/rendering/contracts/rendererFactory
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698579,7 +698579,7 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 ## @aura3d/rendering/contracts/renderItem
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698697,7 +698697,7 @@ export interface RenderItem {
 ## @aura3d/rendering/contracts/renderSource
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698793,7 +698793,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/sampling
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698854,7 +698854,7 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 ## @aura3d/rendering/contracts/shadows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698930,7 +698930,7 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 ## @aura3d/rendering/contracts/structuralMemo
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -698968,7 +698968,7 @@ export declare class StructuralMemo<V> {
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -699001,7 +699001,7 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 ## @aura3d/rendering/contracts/textureFormats
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -699034,7 +699034,7 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 ## @aura3d/rendering/contracts/velocity
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -699106,7 +699106,7 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 ## @aura3d/rendering/extension-scalar-atlas
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -699147,7 +699147,7 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 ## @aura3d/rendering/lanes
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -705999,7 +705999,7 @@ export {};
 ## @aura3d/rendering/lighting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -706638,7 +706638,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/rendering/production-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -710130,7 +710130,7 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 ## @aura3d/rendering/reference
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -710863,7 +710863,7 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 ## @aura3d/rendering/reflection-surfaces
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -710998,7 +710998,7 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 ## @aura3d/rendering/shader-graph
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -711241,7 +711241,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/rendering/volumetrics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -711797,7 +711797,7 @@ export {};
 ## @aura3d/rendering/webgpu
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -714487,7 +714487,7 @@ export declare class GaussianSplatRenderer {
 ## @aura3d/rendering/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=a28a81fe46d385fa5ba3bef83b9815a073fc0799372751b7e7e4b7fc24445e09`
+- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
 
 ### Export conditions
 
@@ -715586,7 +715586,7 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 ## @aura3d/scene
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=dfc8a7f526d24b397993e1d61c1070f4d55931954054124826971ffd0366da4a`
+- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=0b9b3e45acc068415a5c33f23a98ad081188135cc635c5da6c25ca57817415e9`
 
 ### Export conditions
 
@@ -716712,7 +716712,7 @@ export {};
 ## @aura3d/scene/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=dfc8a7f526d24b397993e1d61c1070f4d55931954054124826971ffd0366da4a`
+- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=0b9b3e45acc068415a5c33f23a98ad081188135cc635c5da6c25ca57817415e9`
 
 ### Export conditions
 
@@ -716797,7 +716797,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/scripting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/scripting@5.0.0#sha256=5acbb73c2ca94b69bcfc125d366623d8abbdd5dfeca9d6ff8abad19c681533c0`
+- Packed identity: `archive:@aura3d/scripting@5.0.0#sha256=e5bfbac3b257d07c4e6be0a5bafc511c680818fd57e443d33ec72536caa657ae`
 
 ### Export conditions
 
@@ -717978,7 +717978,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/workflows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/workflows@5.0.0#sha256=84b0486e2d57e59ac1f8e7e79960defca605e00acef9b080f264ccb4aadc14ac`
+- Packed identity: `archive:@aura3d/workflows@5.0.0#sha256=635577a4aca36777af3e00e574621f0521148ada5bd2e506bbc5eb01d70c6051`
 
 ### Export conditions
 
