@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-iron-crown/src/art/direction.ts",
-  "sourceSha256": "abe773f3143df0a14a218f6be5a22bf98d2ae68e7e3630d9eb590b69d962707d",
+  "sourceSha256": "df4806a0c0330dbcd3827c3128467236d2c5ecaa6b9e8e694132f95f14ca67a3",
   "id": "showcase-iron-crown",
   "genre": "fighting",
   "signatureEffect": "Single follow-spot chiaroscuro: one hard overhead spot through forge smoke holds the pair on black iron, with letterboxed intro and K.O. cinematics.",
@@ -735,8 +735,8 @@
       },
       {
         "role": "world",
-        "assetKey": "ironcrownTempleGate",
-        "maxTriangles": 20000,
+        "assetKey": "ironcrownHall",
+        "maxTriangles": 27000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
       },
@@ -778,6 +778,13 @@
       {
         "role": "backdrop",
         "assetKey": "ironcrownSkylineBlockB",
+        "maxTriangles": 22000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "backdrop",
+        "assetKey": "ironcrownSkylineBlockC",
         "maxTriangles": 22000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024

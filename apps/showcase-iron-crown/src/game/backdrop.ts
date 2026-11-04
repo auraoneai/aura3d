@@ -5,8 +5,8 @@
  * Instanced primitives (at most four draws per venue, budget <= 60) plus, from wave 2 (2026-11-03), the Meshy backdrop
  * models that read well at 12-60 m: harbour cranes and fishing boats (Dock), skyline blocks (Neo-Tokyo), hangar
  * clusters (Airstrip) and the rock ridge (Monastery). Each is one single-material draw, casts no shadow and sits inside
- * the venue's fog. The Colosseum wall (dark slate, not sandstone) and the waterfront block (does not read as
- * warehouses) were not wired. Lit windows and boat lamps are practicals
+ * the venue's fog. The Colosseum wall (dark slate, not sandstone, skipped again in wave 3) was not wired; the
+ * wave-3 waterfront block (arched-door warehouses) stands on the Dock far bank. Lit windows and boat lamps are practicals
  * (art-direction `emissive-fill` rule). The Crown Arena is enclosed (back wall at 12 m) and has no far layer.
  * Layouts are fixed tables (no randomness): the venue looks the same on every load.
  */
@@ -111,7 +111,10 @@ function dockRiver(): AuraSceneNode[] {
     layer("bd-bangkok-dock-far-bank", "box", "#3a2a20", bank),
     // IC47-A1 (wave 2): two riveted harbour cranes tower over the far bank.
     farModel(assets.ironcrownHarbourCrane, "bd-bangkok-dock-crane-1", [-27, -0.4, -47], 26, 0.1),
-    farModel(assets.ironcrownHarbourCrane, "bd-bangkok-dock-crane-2", [31, -0.4, -52], 20, -0.35)
+    farModel(assets.ironcrownHarbourCrane, "bd-bangkok-dock-crane-2", [31, -0.4, -52], 20, -0.35),
+    // IC47-W1 (wave 3): two arched-door warehouse rows (Meshy, slate with copper trim) stand on the far bank between the cranes.
+    farModel(assets.ironcrownSkylineBlockC, "bd-bangkok-dock-warehouse-1", [-6, -0.4, -53], 22, 0.08),
+    farModel(assets.ironcrownSkylineBlockC, "bd-bangkok-dock-warehouse-2", [13, -0.4, -55], 18, -0.1)
   ];
 }
 

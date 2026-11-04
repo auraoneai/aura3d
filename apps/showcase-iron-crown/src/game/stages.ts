@@ -420,7 +420,7 @@ const MONASTERY = makeStage(
   "training-grid",
   { floor: "#1c2230", lane: "#7dd7ff", aura: "#bfeaff", warning: "#ffb84d", skyline: "#2c3a55", fog: "#0d1420" },
   [
-    modelProp(assets.ironcrownTempleGate, "mo-monastery", [0, 0, -3.4], 4.4, 0),
+    modelProp(assets.ironcrownHall, "mo-monastery", [0, 0, -3.4], 4.6, 0),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-l", [-2.8, 0, -1.6], 1.85, 0.45),
     modelProp(stageAssets.clashDragonStatueMeshy, "mo-dragon-r", [2.8, 0, -1.6], 1.85, -0.45),
     modelProp(assets.ironcrownBrazierPylon, "mo-braz-l", [-1.5, 0, -1.4], 1.65, 0),
