@@ -78,7 +78,7 @@ export async function mountExternalInteriorScene(id: string): Promise<void> {
       activeInteriorLightCount: architecturalLighting.activeInteriorLightCount,
       supportedRendererLights: ["point", "spot"],
       shadowStrategy: "contact-shadow-receiver-geometry",
-      shadowReceiverCount: renderItems.filter((item) => item.label.includes("shadow")).length,
+      shadowReceiverCount: renderItems.filter((item) => item.label?.includes("shadow")).length,
       spatialDepthMeters: 6.4,
       drawCalls: diagnostics.drawCalls,
       pixelBucketCount: countPixelBuckets(frame.pixels),

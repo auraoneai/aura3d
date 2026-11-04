@@ -13,8 +13,16 @@
  * buffers, renderTargets) to stay within 5% of cycle 1.
  */
 import { camera, createAuraApp, lights, material, primitives, scene, texture, type AuraApp } from "@aura3d/engine";
-import { createRenderTarget } from "@aura3d/engine/renderer";
 import { Geometry, Renderer, Texture, TexturedUnlitMaterial } from "@aura3d/rendering";
+
+/**
+ * Create a render target on the renderer's own device. Written against the standalone `@aura3d/rendering` types so the
+ * target belongs to the same declaration set as the `Renderer` that consumes it.
+ */
+function createRenderTarget(host: Renderer, descriptor: Parameters<Renderer["device"]["createRenderTarget"]>[0]): ReturnType<Renderer["device"]["createRenderTarget"]> {
+  return host.device.createRenderTarget({ label: "engine-render-target", ...descriptor });
+}
+
 
 interface Gauges {
   readonly approximateGpuMemoryBytes: number;

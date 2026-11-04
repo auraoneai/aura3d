@@ -70,9 +70,12 @@ async function run(): Promise<void> {
 
     const registered: string[] = [];
     const rejected: string[] = [];
+    // `addPostPass` is optional on the published app type (a headless or stub app has no post surface).
+    const addPostPass = app.addPostPass?.bind(app);
+    if (!addPostPass) throw new Error(`${APP_ID} requires an app with a post surface.`);
 
     // §6.12: a before-tonemap pass receives linear RGBA16F (values > 1 hold).
-    const releaseTint = app.addPostPass({
+    const releaseTint = addPostPass({
       name: "warm-highlight-tint",
       insertAt: "before-tonemap",
       uniforms: { u_tint: [1.04, 0.97, 0.9] },
@@ -87,7 +90,7 @@ void main() {
     registered.push("warm-highlight-tint@before-tonemap");
 
     // §6.12: an after-tonemap pass receives display-referred RGBA8.
-    const releaseScanlines = app.addPostPass({
+    const releaseScanlines = addPostPass({
       name: "crt-scanlines",
       insertAt: "after-tonemap",
       uniforms: { u_strength: 0.12 },

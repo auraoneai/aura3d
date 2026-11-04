@@ -2,7 +2,7 @@
 // Summer-league streetball shot like a late-night mixtape broadcast: asphalt and acrylic, chain-link, sodium floods,
 // spray paint and rain, a low long-lens sideline camera. The per-court look table is src/courtRigs.ts; the runtime VFX
 // pack is src/fxPack.ts. Audited by tests/unit/aura-hoops/art-direction.test.ts, which writes art/direction.audit.json.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-aura-hoops-3d",

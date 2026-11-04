@@ -14,7 +14,8 @@ import { assets } from "../../src/aura-assets.js";
 const characterAsset = assets.showcaseExpressiveRobot;
 const clipNames = characterAsset.metadata?.animationClips ?? [];
 const initialClip = clipNames.includes("Wave") ? "Wave" : clipNames[0] ?? "";
-const morphNames = characterAsset.metadata?.morphTargets.targetNames ?? [];
+// The published asset metadata types `morphTargets` as an opaque record; read the inspected target names explicitly.
+const morphNames: readonly string[] = (characterAsset.metadata?.morphTargets as { readonly targetNames?: readonly string[] } | undefined)?.targetNames ?? [];
 type ExpressionName = "Neutral" | (typeof morphNames)[number];
 
 interface CharacterAnimationViewerState {

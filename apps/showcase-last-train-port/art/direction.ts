@@ -2,7 +2,7 @@
 // The look table is examples/last-train-port/bands.ts (bands A-E); the effect pack is examples/last-train-port/vfx.ts. The audit
 // record (direction.audit.json beside this file) is written by tests/unit/last-train-port/art-direction.test.ts, which audits
 // the authored band scenes the world builds (lights, environment, models and emissive materials read from the scene JSON).
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { BANDS, HDRI_URL, LAMPLIGHT_PALETTE as P } from "../../../examples/last-train-port/bands";
 import { PRACTICAL_COUNT } from "../../../examples/last-train-port/lights";
 import { LAMPLIGHT_VFX_KINDS } from "../../../examples/last-train-port/vfx";

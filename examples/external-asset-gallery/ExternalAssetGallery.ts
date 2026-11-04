@@ -38,6 +38,8 @@ export async function mountExternalAssetGallery(id: string): Promise<void> {
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='hr4-asset-canvas']")!;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Asset Studio Pro requires a 2D preview canvas.");
+  // Hoisted `render` below does not inherit the narrowing above.
+  const drawingContext: CanvasRenderingContext2D = context;
 
   select.innerHTML = manifest.assets.map((asset) => `<option value="${asset.id}">${asset.id}</option>`).join("");
   grid.innerHTML = manifest.assets.slice(0, 18).map((asset) => `
@@ -47,7 +49,7 @@ export async function mountExternalAssetGallery(id: string): Promise<void> {
 
   function render(): void {
     const selected = manifest.assets.find((asset) => asset.id === select.value) ?? manifest.assets[0]!;
-    drawAssetPreview(context, canvas, selected);
+    drawAssetPreview(drawingContext, canvas, selected);
     const diagnostics = createAssetDiagnostics(selected, manifest);
     const visualEvidenceSlots = manifest.assets.filter((asset) => asset.expectedStatus === "pass").length;
     const advancedMaterialAssets = manifest.assets.filter((asset) => asset.tags.some((tag) => /material|pbr|texture|extension/i.test(tag))).length;

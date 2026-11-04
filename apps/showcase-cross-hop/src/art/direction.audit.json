@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-cross-hop/src/art/direction.ts",
-  "sourceSha256": "3b8021ab32efa1f09d98eff4061b6d70208ab0655792afe6bc55ab0491088131",
+  "sourceSha256": "b0d1a0fc68e20cb836d466527fe01dab6931daa2a29a616f266b2220092fc3c4",
   "id": "cross-hop",
   "genre": "platformer",
   "signatureEffect": "tilt-shift diorama + day clock: tilt-shift blur bands on the player row and a sun that moves with progress",

@@ -7,7 +7,7 @@
 // Asset roles list every model a venue mounts today, including the borrowed cross-game keys IC47-A1 replaces (WP-36
 // generates the Iron Crown props; the lane report lists each key and its replacement). The fighters are base-colour
 // only today: their contracted "BC+N" set is the target of the WP-36 retexture (asset needs in the lane report).
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 const FIGHTER = { role: "character", maxTriangles: 40000, minTriangles: 20000, textureSet: "BC+N", maxTextureSize: 2048 } as const;
 const MESHY_PROP = { role: "prop", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 2048 } as const;

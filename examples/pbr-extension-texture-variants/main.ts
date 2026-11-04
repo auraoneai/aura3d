@@ -123,12 +123,12 @@ async function run(): Promise<void> {
   scene.root.addChild(camera);
   const key = scene.createLight("directional", "variant-key");
   key.intensity = 0.95;
-  key.color = { x: 0.9, y: 0.84, z: 0.76 };
+  key.color = [0.9, 0.84, 0.76];
   scene.root.addChild(key);
   const fill = scene.createLight("point", "variant-fill");
   fill.intensity = 0.24;
   fill.range = 9;
-  fill.color = { x: 0.4, y: 0.62, z: 1 };
+  fill.color = [0.4, 0.62, 1];
   fill.transform.setPosition(-2.8, 1.6, 3);
   scene.root.addChild(fill);
 

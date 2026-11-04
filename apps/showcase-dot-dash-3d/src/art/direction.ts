@@ -5,7 +5,7 @@
 //
 // Proven by tests/unit/dot-dash-3d/art-direction.test.ts, which audits the authored scene (buildScene) with
 // auditArtDirection and writes art/direction.audit.json for the `art-direction` game-check.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "dot-dash-3d",

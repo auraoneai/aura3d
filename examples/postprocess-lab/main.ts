@@ -1002,6 +1002,13 @@ function createShell(): {
   readonly whitePointControl: HTMLInputElement;
   readonly inputColorSpaceControl: HTMLSelectElement;
   readonly outputColorSpaceControl: HTMLSelectElement;
+  readonly contrastControl: HTMLInputElement;
+  readonly temperatureControl: HTMLInputElement;
+  readonly tintControl: HTMLInputElement;
+  readonly saturationControl: HTMLInputElement;
+  readonly vibranceControl: HTMLInputElement;
+  readonly vignetteControl: HTMLInputElement;
+  readonly sharpeningControl: HTMLInputElement;
 } {
   const root = document.querySelector<HTMLElement>("#app") ?? document.body;
   root.replaceChildren();

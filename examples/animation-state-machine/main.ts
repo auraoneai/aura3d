@@ -93,7 +93,7 @@ if (typeof document !== "undefined") {
     function publishState(stateMachine: AnimationStateMachine): AnimationStateMachineExampleState {
       const graph = stateMachine.graphSnapshot();
       const state = {
-        id: "animation-state-machine",
+        id: "animation-state-machine" as const,
         status: "ready" as const,
         renderer: "canvas2d" as const,
         visualClaim: "bounded-animation-state-machine-debug-view" as const,

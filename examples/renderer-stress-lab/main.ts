@@ -1,5 +1,5 @@
 import { GPUProfiler, type GPUProfilerSnapshot } from "@aura3d/debug";
-import { Renderable, Scene } from "@aura3d/scene";
+import { PointLight, Renderable, Scene } from "@aura3d/scene";
 import { Geometry, PBRMaterial, Renderer, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 declare global {
@@ -180,7 +180,7 @@ function createStressScene(objectCount: number, materialCount: number, lightCoun
     const light = scene.createLight(index === 0 ? "directional" : "point", `stress-light-${index}`);
     light.intensity = index === 0 ? 2.2 : 0.45 + index * 0.08;
     light.color = palette(index).slice(0, 3) as [number, number, number];
-    if (light.kind === "point") {
+    if (light instanceof PointLight) {
       light.transform.setPosition(Math.cos(index) * 5.2, 2.2 + (index % 3) * 0.4, 4.2 + Math.sin(index) * 1.6);
       light.range = 13;
     }

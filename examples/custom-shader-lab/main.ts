@@ -173,10 +173,17 @@ const renderFrame = async (): Promise<void> => {
   publish();
 };
 
+// `setUniform` is optional on the published node handle type (a stub app has no GPU material to write).
+const setNodeUniform = (id: string, name: string, value: number): void => {
+  const handle = app?.nodes.require(id);
+  if (!handle?.setUniform) throw new Error(`custom-shader-lab: node ${id} cannot take uniforms`);
+  handle.setUniform(name, value);
+};
+
 const applyClock = (): void => {
   if (!app) return;
   for (const id of ["pulse-box", "chunk-sphere", "rim-plane"]) {
-    app.nodes.require(id).setUniform("clock", clockValue);
+    setNodeUniform(id, "clock", clockValue);
   }
   evidence.uTime = { pulse: clockValue, rim: clockValue };
   evidence.setUniformApplied = true;
@@ -220,7 +227,7 @@ void main() { vec4 c = texture(u_color, v_uv); outColor = vec4(mix(c.rgb, 1.0 - 
   };
   window.__AURA_CUSTOM_SHADER_LAB_SET_STRENGTH__ = (value: number) => {
     strengthValue = value;
-    app?.nodes.require("rim-plane").setUniform("strength", strengthValue);
+    setNodeUniform("rim-plane", "strength", strengthValue);
   };
   window.__AURA_CUSTOM_SHADER_LAB_SET_PASS_GAIN__ = (value: number) => {
     passGain = value;

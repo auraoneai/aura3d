@@ -1,6 +1,6 @@
 // apps/showcase-cross-hop/src/art/direction.ts — GU47 WP-24 art direction (PRD §3.2 item 1, CH47-20).
 // Fantasy: a handmade tabletop toy diorama seen through a tilt-shift lens, with a day clock across six themes.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 const CRITTERS = ["hop", "chick", "turtle", "bun", "axolotl", "ducky", "roboFrog", "toastCat", "mushroomKid", "knightToad", "astroFrog", "goldenHop"] as const;
 const VEHICLES = ["trafficSedan", "trafficHatch", "trafficSuv", "trafficTaxi", "trafficVan", "trafficPickup", "trafficBoxtruck", "tramCar", "trainCar", "trafficSkyCar"] as const;

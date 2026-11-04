@@ -364,4 +364,16 @@ describe("packed example harness fixes from the first full ACR examples run", ()
     expect(withBuildTools(root, { dependencies: {} }, [["tsc", "-p", "tsconfig.json"]]).devDependencies).toEqual({ typescript: "^5.8.3" });
     expect(withBuildTools(root, { devDependencies: { typescript: "^5", vite: "^7" } }, [["tsc"], ["vite", "build"]]).devDependencies).toEqual({ typescript: "^5", vite: "^7" });
   });
+  it("treats public provenance and funding links as text, template literals as code, and signed URLs as credentials", () => {
+    const ok = scratch();
+    put(ok, "package-lock.json", '{"funding":{"url":"https://github.com/vitejs/vite?sponsor=1"}}');
+    put(ok, "provenance.json", '{"url":"https://ambientcg.com/view?id=Asphalt033","download":"https://ambientcg.com/get?file=Asphalt033_1K-JPG.zip"}');
+    put(ok, "src/main.ts", "const sig = `${state.course.id}|${hole.number}|${state.lab ? 'lab' : 'round'}`;");
+    expect(() => collectExampleRetainedFiles(ok)).not.toThrow();
+    for (const [name, text] of [["a.json", '{"model":"https://assets.example.test/m.glb?Expires=1793828448&Signature=abcdef"}'], ["b.json", '{"u":"https://x.example.test/a?sv=2024&sig=abc123"}'], ["c.md", "https://x.example.test/a?token=abc123"]] as const) {
+      const bad = scratch();
+      put(bad, name, text);
+      expect(() => collectExampleRetainedFiles(bad), name).toThrow(/credential-like text/);
+    }
+  });
 });

@@ -209,12 +209,12 @@ function createShowroomScene(aspect: number, preset: MaterialShowroomEnvironment
   const key = scene.createLight("directional", "showroom-key");
   const lighting = materialShowroomLightingPreset(preset);
   key.intensity = lighting.keyIntensity;
-  key.color = lighting.keyColor;
+  key.color = [...lighting.keyColor];
   scene.root.addChild(key);
   const fill = scene.createLight("point", "showroom-cool-fill");
   fill.intensity = lighting.fillIntensity;
   fill.range = 10;
-  fill.color = lighting.fillColor;
+  fill.color = [...lighting.fillColor];
   fill.transform.setPosition(-2.5, 1.4, 3.0);
   scene.root.addChild(fill);
 

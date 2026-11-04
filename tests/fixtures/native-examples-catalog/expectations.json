@@ -17,7 +17,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "706ff77ded6494a0ec2d268e250beca2cc0b70931f19ca001f7f32c5b64b8224" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" }
       ],
       "regions": [
         {
@@ -50,7 +50,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "706ff77ded6494a0ec2d268e250beca2cc0b70931f19ca001f7f32c5b64b8224" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" }
       ],
       "regions": [
         {
@@ -83,7 +83,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "706ff77ded6494a0ec2d268e250beca2cc0b70931f19ca001f7f32c5b64b8224" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" }
       ],
       "regions": [
         {
@@ -116,7 +116,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "706ff77ded6494a0ec2d268e250beca2cc0b70931f19ca001f7f32c5b64b8224" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" }
       ],
       "regions": [
         {
@@ -149,7 +149,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "706ff77ded6494a0ec2d268e250beca2cc0b70931f19ca001f7f32c5b64b8224" },
+        { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
         { "path": "packages/engine/src/public/index.ts", "sha256": "ca16c33801350e840efb9ef14bc526e95b6caf982db4935e6768e3eaf13421f8" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
@@ -209,7 +209,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "apps/instancing-performance/src/main.ts",
-        "sha256": "ece97d9c50f8a24207704a9454e9c340f55bfa8dc9ae4228cbfb5535501f0271"
+        "sha256": "7108c31974deb387baab7f9710807558d7f58a3ad04c28b3b9f6d546dc00b56c"
       },
       "sourceDependencies": [
         { "path": "apps/instancing-performance/index.html", "sha256": "9c962ca117e323a7d7241c9fc430f547de316e637a2e7e20e1507afbb4694b09" },
@@ -613,7 +613,7 @@
         { "path": "packages/create-aura3d/templates/mini-game/src/aura-assets.ts", "sha256": "494a632565db1e3cc99ceb32735f45109e25ea737ca52276d6cf0c54b55ca248" },
         { "path": "packages/create-aura3d/templates/mini-game/aura.assets.json", "sha256": "3feebe7a7c03e55f0abec5e651ed5a4053711814ee20847c2df5f99fb734c1aa" },
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
-        { "path": "tools/agent-examples/index.ts", "sha256": "706ff77ded6494a0ec2d268e250beca2cc0b70931f19ca001f7f32c5b64b8224" }
+        { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" }
       ],
       "regions": [
         {
@@ -1873,7 +1873,7 @@
       },
       "source": {
         "path": "apps/postprocessing-custom/src/main.ts",
-        "sha256": "4723e279d8f406a147fd6273e8315a161567593e27b641320948c036eff6b095"
+        "sha256": "edd0629e2f9bfb27a03134bcf4eabbd7daf8d703fbd157134927d3e0769957d9"
       },
       "sourceDependencies": [
         {
@@ -2840,7 +2840,7 @@
       "provenance": "Source-derived: authored camera.perspective position [0, 1.6, 6.2], target [0, 0.4, 0], fov 46 (vertical) on the 1120x490 canvas (resize: false, aspect 16/7) shown at 1178x515.4 CSS px from x=51. The unit primitive sphere (radius 0.5, compiler/geometry.ts) scaled 0.8 and centred at [0, 0.75, 0] (primitives are not unit-normalized) projects to centre x 640, radius ~39 px, at canvas-y 224.2. The canvas top depends on the header text wrap (3-4 lines of the 24.8px paragraph): 218.3..246.1 px, so the sphere centre lies at y 442.5..470.3; the region spans the sphere's full width at y 441-473 (disc fraction ~0.70, the rest the #080a18 background) for that whole range. The gold band is grounded in the authored tint #f3b75c (243,183,92) mixed toward white by at most 0.4 (clock 0) and allows for the authored 4-level before-tonemap posterize pass, default ACES output and sRGB encode. No reference capture was used. Font metrics, real layout, the custom/post-pass color pipeline and rendered appearance remain unverified.",
       "source": {
         "path": "examples/custom-shader-lab/main.ts",
-        "sha256": "1d25b4549d7e7d9975dc7039c0bc4758bb03600dfb6767813c57dcc8e3eb4b29"
+        "sha256": "ce571a9d5943b1b310b0ca4587d76080b91602c4bc05dfe5cb0f65a8e1ea309b"
       },
       "sourceDependencies": [
         {
@@ -2906,7 +2906,7 @@
       "provenance": "Independently derived from the authored orthographic camera (left/right ±max(7.9, 4.45*960/540)=±7.91, bottom -2.9, top 2.5, resizeMode preserve-frustum) after the renderer's per-render camera resize to the 960x540 viewport (OrthographicCamera.resize preserve-frustum => y range [-4.649, 4.249]); 960x540 buffer presented as a full-width 1280x720 CSS canvas at (0,0) per installStyles (16:9 aspect, grid row 1). Sphere center projects to page (559, 423), radius ~51 px; region is the inscribed square. Cross-checked against the example's own readMaterialPixels emissive search box (x 370-490, y 150-265 from bottom in buffer pixels). Color from the authored emissiveColor [0.02, 0.95, 0.32] x 1.95 over baseColor [0.12, 0.44, 0.24] (green dominant). No reference capture. Lighting, environment reflections, tone response and rendered appearance remain unverified.",
       "source": {
         "path": "examples/material-showroom/main.ts",
-        "sha256": "52d95052744147fc920a7795032a66374f7e4959791613cd737592a4f7efe176"
+        "sha256": "e53298a6637cc89600b0ff9c4c0ce52765bf5e8e19731a113e8c9d6b093fbefd"
       },
       "sourceDependencies": [
         {
@@ -3043,7 +3043,7 @@
       "provenance": "Independently derived from the authored orthographic camera (left/right ±4.8, bottom/top ±2.7 at z=8; the default fit-vertical resize to 960x540 leaves it unchanged) and the installStyles layout: grid columns minmax(0,1fr) 320px at a 1280 px viewport give a 960x540 CSS canvas vertically centered at page (0, 90). 100 px per world unit puts the sphere center at canvas (150, 270) — matching the example's own variantCenters.clearcoat readback pixel — i.e. page (150, 360), radius ~82 px; region is the inscribed square. Color from the authored linear baseColor [0.72, 0.95, 0.86] (sRGB ~219, 249, 239, mint). The bottom variant-label strip (inset 18 px) lies below the sphere. No reference capture. Clearcoat shading, lighting and rendered appearance remain unverified.",
       "source": {
         "path": "examples/pbr-extension-texture-variants/main.ts",
-        "sha256": "90695afb3b8a981a1905128a355d92ad3198ab3361dbff752dc01b710bfbcbec"
+        "sha256": "070ba7bf6986de920a0c311210c1eefba85eaf3dc0481427df3d7839c126521d"
       },
       "sourceDependencies": [
         {
@@ -3159,7 +3159,7 @@
       },
       "source": {
         "path": "examples/recast-crowd-lab/main.ts",
-        "sha256": "52226e9b69f6bd3c895e77f56e3afbb65fb0d313e1fb2fda538553d156c552fb"
+        "sha256": "d5b612b619d0bc1cefe515c5ffe5e8250dc3af3b152cb1e7c760697c7394c2f2"
       },
       "sourceDependencies": [
         {
@@ -3423,7 +3423,7 @@
       },
       "source": {
         "path": "examples/spatial-text-lab/main.ts",
-        "sha256": "e72696e0ab19f27ede016b8dabb21bc990c04f18baeed62042ccb717931e3022"
+        "sha256": "548cb7180bc85dad19b57870bc99ce868c6f6c7f45c3044362a3c415478491f0"
       },
       "sourceDependencies": [
         {
@@ -3642,7 +3642,7 @@
         },
         {
           "path": "apps/showcase-digital-twin-ops/src/styles.css",
-          "sha256": "de4a99d346df58b3af8e740dbc9780bdbd4f4fb33489426c7bfd057f60b64892"
+          "sha256": "a1a3e151d9b6d0d8b440112834b6ef297124569b9a03131743a6821a5c085ead"
         },
         {
           "path": "src/aura-assets.ts",
@@ -6867,7 +6867,7 @@
       },
       "source": {
         "path": "examples/10-particles/main.ts",
-        "sha256": "ad51c46c1289fe103d13cae01bc7b836c4ef9c3853f00e0539c324c2ed47f3f0"
+        "sha256": "a2d73308af804bb67bec6ef185f000f730ea35d89b706319af2599f505678a02"
       },
       "sourceDependencies": [
         {
@@ -7013,7 +7013,7 @@
       },
       "source": {
         "path": "examples/animation-state-machine/main.ts",
-        "sha256": "65cbd33e6a9f8656d9bdc6f9264618071024462acb1b2743c1e32dc547709a7e"
+        "sha256": "07b2dad99f65ef8e689b9caf9d9969cb61b6cc4ec31613e9c76e52ce1f6c58d8"
       },
       "sourceDependencies": [
         {
@@ -7144,7 +7144,7 @@
       },
       "source": {
         "path": "examples/parity-animation/main.ts",
-        "sha256": "272bc0bfa0f898029613fa4a6b804c2a0df75e10c242fee1ec4de94244f7772f"
+        "sha256": "bee677dc5a4b4432b44804f5a1a7c5d5f5c857cf23ad8f0c265730064bdcab07"
       },
       "sourceDependencies": [
         {
@@ -7208,7 +7208,7 @@
       },
       "source": {
         "path": "examples/parity-runtime-lab/main.ts",
-        "sha256": "31a9385741aa3555cefd663e40eec5ec57bbc179005f8dee758c57b96cb60085"
+        "sha256": "21c27c73dcb418d5aa4a8cc7c6dd2547e1a1eaccb477296d59a7f3579fca0512"
       },
       "sourceDependencies": [
         {
@@ -7339,7 +7339,7 @@
       },
       "source": {
         "path": "examples/external-asset-gallery/ExternalAssetGallery.ts",
-        "sha256": "df6f19e5ee5615957f15d683fb7b150ccb560f68f2c5126b11a35017d965a3e3"
+        "sha256": "328269a3ced12c5634afccd0734548294fd98e35591c8a433cefa0c347ce3ecf"
       },
       "sourceDependencies": [
         {
@@ -7402,7 +7402,7 @@
       },
       "source": {
         "path": "examples/external-interactive-showcase/ExternalInteractiveShowcase.ts",
-        "sha256": "a89212794fd07e47d886deae67c1f657f7e597994136d01c4c11794ee05f7dd2"
+        "sha256": "a141f5585c8d068fe681789697ced7b383d8392c5e5b8b7283172748bf432ed4"
       },
       "sourceDependencies": [
         {
@@ -7578,7 +7578,7 @@
       },
       "source": {
         "path": "examples/external-interior-scene/ExternalInteriorScene.ts",
-        "sha256": "943e5c24b2f63caaf5c1a2ea6d690ab2aaaab7343f10f002f42bc6e2ff31cd07"
+        "sha256": "2224cf7279fa9bb5db1553afc42f275b4dbbba9ca226f67cd07141388eb1f4b3"
       },
       "sourceDependencies": [
         {
@@ -7772,7 +7772,7 @@
       },
       "source": {
         "path": "examples/external-character-viewer/ExternalCharacterViewer.ts",
-        "sha256": "3f7117a3b12ee5220f589019854e8c153e9dd82cf408fb2db20d86593e3e8095"
+        "sha256": "3f4a358367e4a389b31055a1f154adf5e7ac2318927a9eca2747d61dba92884c"
       },
       "sourceDependencies": [
         {
@@ -7842,7 +7842,7 @@
       },
       "source": {
         "path": "examples/asset-viewer/main.ts",
-        "sha256": "5f00a60d827923fbd4809eaadcc9a62827be9d61873ad35c7477e441ba0f187f"
+        "sha256": "35c807b08b5544e570c4289142a82401863452a5077dc3d9fbf71fac1546cb5b"
       },
       "sourceDependencies": [
         {
@@ -7984,7 +7984,7 @@
       },
       "source": {
         "path": "examples/custom-shader-webgpu-lab/main.ts",
-        "sha256": "c3d3f8e4221e9cb33e9fb2a4d1334ba2e04bb363f7659eec5c3c7a4c19031d8d"
+        "sha256": "16e385a3dc7d60191bde5380502f217e2d88409a3f8ccdf62d3e57d45e5e28eb"
       },
       "sourceDependencies": [
         {
@@ -8047,7 +8047,7 @@
       },
       "source": {
         "path": "examples/product-configurator/main.ts",
-        "sha256": "a03c09c679c168c4b9760c5664cef4f2fea78ca9dc1f037316aa3f504f02ab06"
+        "sha256": "8a2fb45821a25833e3bb8ac0bf2c503138e7f5a4c48850a0a073822d6ef928af"
       },
       "sourceDependencies": [
         {
@@ -8145,7 +8145,7 @@
       },
       "source": {
         "path": "examples/character-animation-viewer/main.ts",
-        "sha256": "88c08dd7354e35073832ee5bf2e4893223d0e8089176e30f34266d55425c0b99"
+        "sha256": "5fc0625f6ae2e9558460907d64491386f480b21cbda50c209292828d16bd0e33"
       },
       "sourceDependencies": [
         {
@@ -8548,7 +8548,7 @@
       "sourceDependencies": [
         {
           "path": "apps/showcase-aura-diamond-3d/src/scene.ts",
-          "sha256": "3f647932d813652420760f66c9da9322481bdbc504f5e91cb479842df00aa06e"
+          "sha256": "b9cac44a04381e1f5e41870f7b9b94e4c2007230f2651a96fd607076eb9d3214"
         },
         {
           "path": "apps/showcase-aura-diamond-3d/src/rules.ts",
@@ -8635,7 +8635,7 @@
       },
       "source": {
         "path": "examples/external-product-configurator/ExternalProductConfigurator.ts",
-        "sha256": "e45641c260554b1a0578f031bb78a977cdf56b637ab88dd4092d297c6573d301"
+        "sha256": "ffc25ee9c54d91736f0fe8cdcc93c47de52beb300e61ffedf04ee894cac4b046"
       },
       "sourceDependencies": [
         {
@@ -8739,7 +8739,7 @@
       "presentation": "canvas2d",
       "source": {
         "path": "examples/postprocess-lab/main.ts",
-        "sha256": "283191fa60684fea42c9626fbc33438e703b31f5312bd8535628830667dbf821"
+        "sha256": "957b4bb5d37b501020164252669418f54feaeec9e9e817350dda109aeaee90ba"
       },
       "sourceDependencies": [
         {
@@ -8814,7 +8814,7 @@
       },
       "source": {
         "path": "examples/renderer-stress-lab/main.ts",
-        "sha256": "a96abc9417517aaa626e2ff2da7082ca5cbb9b3d80520c55418cb6b1f87ac1d4"
+        "sha256": "f90483ab92a45636d49fbdf56537f751b65137e4085f305f6cf2e635b9482a0e"
       },
       "sourceDependencies": [
         {

@@ -168,7 +168,9 @@ async function boot(): Promise<void> {
       // C-05 sanctioned readback: `app.capture()` renders + reads in-task, so
       // the frame is real regardless of preserveDrawingBuffer state — reading
       // the backbuffer after compositing returns a cleared/undefined buffer.
-      const bitmap = await app.capture({ type: "image-bitmap" }) as ImageBitmap;
+      // `capture` is optional on the published app type; a headless app has no frame to read.
+      const bitmap = await app.capture?.({ type: "image-bitmap" }) as ImageBitmap | undefined;
+      if (!bitmap) throw new Error("parity-animation requires an app that can capture a frame.");
       const probe = document.createElement("canvas");
       probe.width = bitmap.width;
       probe.height = bitmap.height;

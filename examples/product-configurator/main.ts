@@ -70,8 +70,8 @@ if (typeof document !== "undefined") {
         url: productAsset.url,
         hash: productAsset.hash,
         source: "typed-provenance-backed-asset",
-        license: productAsset.metadata?.provenance?.license ?? productAsset.license ?? "unknown",
-        author: productAsset.metadata?.provenance?.author ?? productAsset.author ?? "unknown",
+        license: (productAsset.metadata?.provenance?.license as string | undefined) ?? productAsset.metadata?.license ?? "unknown",
+        author: (productAsset.metadata?.provenance?.author as string | undefined) ?? productAsset.metadata?.author ?? "unknown",
         meshCount: 0,
         materialCount: 0,
         textureCount: 0
@@ -157,8 +157,8 @@ async function run(): Promise<void> {
         url: productAsset.url,
         hash: productAsset.hash,
         source: "typed-provenance-backed-asset",
-        license: productAsset.metadata?.provenance?.license ?? productAsset.license ?? "unknown",
-        author: productAsset.metadata?.provenance?.author ?? productAsset.author ?? "unknown",
+        license: (productAsset.metadata?.provenance?.license as string | undefined) ?? productAsset.metadata?.license ?? "unknown",
+        author: (productAsset.metadata?.provenance?.author as string | undefined) ?? productAsset.metadata?.author ?? "unknown",
         meshCount: gltf.meshes.length,
         materialCount: gltf.materials.length,
         textureCount: gltf.textures.length
@@ -278,7 +278,7 @@ function exposureValue(exposure: Exposure): number {
 
 function withExposure(source: ProductConfiguratorWorkflowResult["source"], exposure: Exposure): ProductConfiguratorWorkflowResult["source"] {
   const postprocess = typeof source.postprocess === "object" ? source.postprocess : undefined;
-  const toneMapping = postprocess?.toneMapping;
+  const toneMapping = typeof postprocess?.toneMapping === "object" ? postprocess.toneMapping : undefined;
   return {
     ...source,
     postprocess: {

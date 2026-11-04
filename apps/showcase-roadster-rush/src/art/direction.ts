@@ -1,7 +1,7 @@
 // apps/showcase-roadster-rush/src/art/direction.ts: C-35 art direction for Apex Overdrive (GU47 WP-12 "Blue-hour skyway").
 // The look table is src/art/look.ts; the audit record (direction.audit.json beside this file) is written by
 // tests/unit/roadster-rush-native/art-direction.test.ts, which audits a mirror of the mounted scene built from that table.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { APEX_IBL_HDRI, APEX_PALETTE, APEX_PRACTICAL_COUNT } from "./look";
 
 export default defineArtDirection({

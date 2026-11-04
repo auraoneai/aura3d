@@ -2,7 +2,7 @@
 // "Marine-layer dispatch feed": a remote operator's sensor feed over a cool bay-city avenue at dusk.
 // Not imported by the route (no bundle cost); tests/unit/teleoperator/art-direction.test.ts audits it against the
 // mounted scene and writes art/direction.audit.json for the `art-direction` game-check.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-teleoperator",

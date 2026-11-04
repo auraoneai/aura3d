@@ -5,6 +5,7 @@ import {
   createMeshoptDecoder,
   createGLTFRenderResources,
   inspectGLTFAsset,
+  type AssetHandle,
   type GLTFAsset,
   type GLTFDracoDecodedPrimitive,
   type GLTFDracoDecoder,
@@ -27,7 +28,7 @@ import {
   type ExternalParityLdrPostprocessSummary,
   type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
-import { Camera, quatFromEuler, type Light } from "@aura3d/scene";
+import { Camera, quatFromEuler, type Light, type PointLight } from "@aura3d/scene";
 import { installExampleStyles } from "../shared/exampleHarness.js";
 
 const KHRONOS_BOX_GLB =
@@ -711,7 +712,7 @@ async function boot(): Promise<void> {
     meshoptDecoder: compressionDecoders.meshoptDecoder,
     dracoDecoder: compressionDecoders.dracoDecoder
   }));
-  let loaded: { readonly handle: Awaited<ReturnType<AssetManager["load"]>>; readonly resources: GLTFRenderResources } | undefined;
+  let loaded: { readonly handle: AssetHandle<GLTFAsset>; readonly resources: GLTFRenderResources } | undefined;
   let lastResult: AssetViewerResult | undefined;
   let localObjectUrls: string[] = [];
   let animationFrame: number | undefined;
@@ -1965,14 +1966,14 @@ function renderLoadedAsset(
   key.intensity = 2.4;
   key.color = [1, 0.94, 0.82];
 
-  const fill = getOrCreateLight(scene, "point", "asset-viewer-fill");
+  const fill = getOrCreateLight(scene, "point", "asset-viewer-fill") as PointLight;
   const environment = environmentPreset(lookControls.environmentPreset, lookControls.environmentIntensity);
   const lightingBundle = createExternalParityEnvironmentLighting(assetViewerExternalParityEnvironmentPreset(lookControls.environmentPreset));
   key.intensity = environment.keyIntensity;
-  key.color = environment.keyColor;
+  key.color = [...environment.keyColor];
   fill.intensity = environment.fillIntensity;
   fill.range = distance * 3;
-  fill.color = environment.fillColor;
+  fill.color = [...environment.fillColor];
   fill.transform.setPosition(-distance * 0.45, distance * 0.35, distance * 0.55);
   applyMaterialLookControls(resources, lookControls);
 
@@ -2086,7 +2087,7 @@ function renderDiagnosticOverlay(overlay: HTMLCanvasElement, asset: GLTFAsset, r
   };
 
   if (renderMode === "wireframe") {
-    const indices = mesh.indices.length > 0 ? mesh.indices : mesh.positions.map((_, index) => index);
+    const indices = mesh.indices && mesh.indices.length > 0 ? mesh.indices : mesh.positions.map((_, index) => index);
     context.save();
     context.strokeStyle = "#76d7ff";
     context.lineWidth = 3;

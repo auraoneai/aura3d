@@ -1,5 +1,5 @@
-import { InstancedMesh, Scene, composeMat4 } from "/packages/scene/src/index.ts";
-import { Geometry, InstancedPBRMaterial, Renderer, createExternalParityEnvironmentLighting } from "/packages/rendering/src/index.ts";
+import { InstancedMesh, Scene, composeMat4 } from "@aura3d/scene";
+import { Geometry, InstancedPBRMaterial, Renderer, createExternalParityEnvironmentLighting } from "@aura3d/rendering";
 
 /**
  * Instanced-mesh performance route.

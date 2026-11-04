@@ -148,7 +148,7 @@ async function runTrace(): Promise<void> {
   publish();
 }
 
-function advance(count = NAVIGATION.pulseSteps): void {
+function advance(count: number = NAVIGATION.pulseSteps): void {
   if (!crowd || !app || steps >= NAVIGATION.traceSteps) return;
   const accepted = Math.min(count, NAVIGATION.traceSteps - steps);
   for (let index = 0; index < accepted; index += 1) crowd.update(NAVIGATION.dt);

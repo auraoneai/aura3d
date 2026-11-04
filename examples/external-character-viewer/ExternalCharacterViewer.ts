@@ -60,6 +60,8 @@ export async function mountExternalCharacterViewer(id: string): Promise<void> {
   const actor = app.nodes.require("external-animated-character");
   const canvas = root.querySelector<HTMLCanvasElement>(`#${stageId} canvas`);
   if (!canvas) throw new Error("Animation Studio canvas was not created.");
+  const stageCanvas: HTMLCanvasElement = canvas; // `publish` is hoisted and does not inherit the null check above
+  const skeletonMetadata = characterAsset.metadata?.skeleton as { readonly jointCount?: number; readonly skinCount?: number } | undefined;
   canvas.dataset.testid = "hr4-character-canvas";
   canvas.style.cssText = "width:100%;height:100%;display:block";
   const timeline = root.querySelector<HTMLInputElement>("[data-testid='hr4-character-timeline']")!;
@@ -122,20 +124,20 @@ export async function mountExternalCharacterViewer(id: string): Promise<void> {
       runtimeBackend: diagnostics.renderer?.runtime.backend,
       characterId: characterAsset.id,
       assetHash: characterAsset.hash,
-      sourceLicense: characterAsset.metadata?.provenance?.license ?? characterAsset.license,
-      sourceAuthor: characterAsset.metadata?.provenance?.author ?? characterAsset.author,
+      sourceLicense: (characterAsset.metadata?.provenance?.license as string | undefined) ?? characterAsset.metadata?.license,
+      sourceAuthor: (characterAsset.metadata?.provenance?.author as string | undefined) ?? characterAsset.metadata?.author,
       licenseReviewRequired: false,
       clipCount: clips.length,
       clipNames: clips,
       activeClip: evidence?.activeClip ?? activeClip,
-      skeletonJointCount: characterAsset.metadata?.skeleton?.jointCount ?? 0,
-      skinnedMeshCount: characterAsset.metadata?.skeleton?.skinCount ?? 0,
+      skeletonJointCount: skeletonMetadata?.jointCount ?? 0,
+      skinnedMeshCount: skeletonMetadata?.skinCount ?? 0,
       timelineScrub: true,
       playPause: true,
       playing,
       normalizedTime: Number((sampleTime / 2).toFixed(4)),
       drawCalls: diagnostics.drawCalls,
-      litPixels: countLitPixels(canvas),
+      litPixels: countLitPixels(stageCanvas),
       featureChecklist: ["typed-character-asset", "timeline-scrub", "play-pause", "root-skinned-animation", "named-clip-diagnostics", "app-ui"],
       claimBoundary
     };

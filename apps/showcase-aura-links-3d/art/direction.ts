@@ -2,7 +2,7 @@
 // Fantasy: a golf-broadcast postcard tour; six courses, six places and hours (look table: src/game/lighting.ts,
 // VFX pack: src/game/vfx.ts). Audited by tests/unit/aura-links-3d/art-direction.test.ts, which writes
 // art/direction.audit.json for the `art-direction` and `look-identity` game-checks.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-aura-links-3d",

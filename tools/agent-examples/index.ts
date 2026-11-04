@@ -58,20 +58,25 @@ function readmeMarksNonPublic(text: string, publicDocumentation: boolean): boole
 const hash = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const readJson = (path: string): any => JSON.parse(readFileSync(path, "utf8"));
 const portable = (path: string) => path.split(sep).join("/");
-const redactSensitiveText = (text: string) => text
-  .replace(/(https:\/\/[^\s"'<>?]+)\?[^\s"'<>]+/gi, "$1?[redacted]")
+/**
+ * A URL query is credential-like only when it carries a credential-named parameter (a SAS `sig`/`sv`/`se`, an AWS or
+ * GCS signature, `token`, `key`, ...). Public provenance and funding links such as `https://ambientcg.com/view?id=Grass005`
+ * or `https://github.com/vitejs/vite?sponsor=1` (npm records the latter in every lockfile) are ordinary text.
+ */
+const credentialQuery = /(?:^|[&;])(?:sig|sas|sv|se|sp|st|spr|srt|ss|token|(?:access|id|refresh)[_-]?token|key|api[_-]?key|apikey|auth|authorization|signature|credential|password|passwd|pwd|secret|jwt|expires|x-amz-[a-z0-9-]+|x-goog-[a-z0-9-]+)=/i;
+const redactUrlQuery = (text: string) => text.replace(/(https:\/\/[^\s"'<>?]+)\?([^\s"'<>]+)/gi, (match, base: string, query: string) => (credentialQuery.test(query) ? `${base}?[redacted]` : match));
+const redactSensitiveText = (text: string) => redactUrlQuery(text)
   .replace(/(Bearer\s+)[A-Za-z0-9._~+\/-]+=*/gi, "$1[redacted]")
   .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]");
 /**
  * Source and bundled-output scan. In code a key such as `sig`, `sas` or `authorization` is an ordinary
  * identifier (`sig = parentSignature(world)`, `sig=sig.replace(...)` in vendored decoders), so only a
- * quoted string literal of credential length counts as a credential-like value there; URLs with
- * query strings and bearer tokens stay forbidden everywhere.
+ * quoted string literal of credential length (not a `${}` template) counts as a credential-like value there; URLs with
+ * credential-named query parameters and bearer tokens stay forbidden everywhere.
  */
-const redactCodeSensitiveText = (text: string) => text
-  .replace(/(https:\/\/[^\s"'<>?]+)\?[^\s"'<>]+/gi, "$1?[redacted]")
+const redactCodeSensitiveText = (text: string) => redactUrlQuery(text)
   .replace(/(Bearer\s+)[A-Za-z0-9._~+\/-]+=*/gi, "$1[redacted]")
-  .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["'`])[^\s,"'`&}]{8,}/gi, "$1[redacted]");
+  .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["'`])[^\s,"'`&}$]{8,}/gi, "$1[redacted]");
 const safeLogText = (text: string) => redactSensitiveText(text)
   .replace(/((?:api[-_]?key|credential|private[-_]?key|token)["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]")
   .replace(/(https?:\/\/)[^/@\s]+@/gi, "$1[redacted]@");
@@ -228,6 +233,9 @@ export function discoverExampleCatalog(root: string): { entries: ExampleCatalogE
       // The ACR source pass writes its staged-file list (every path in the
       // candidate) here; it is a file inventory, not a reference to a route.
       if (portable(relative(root, file)) === "tools/remote-acr/.source5-manifest.txt") continue;
+      // The generated public API declaration listing repeats every package-relative import (`../../apps/index.js`);
+      // those are module specifiers, not routes.
+      if (portable(relative(root, file)) === "docs/api/public-api.md") continue;
       const text = readFileSync(file, "utf8");
       const isDocument = base === "docs" || base === "packages" || base === "README.md" || base === "llms.txt";
       // Docs and retained specs also use root-relative and ../ links. Preserve
@@ -1110,6 +1118,28 @@ function exampleProjectPath(wrapper: string, entry: ExampleSourceEntry): string 
 }
 
 /**
+ * Many `apps/*` Vite configs extend the repository root config (`import rootConfig from "../../vite.config"`), which
+ * aliases workspace package source and is not part of any candidate. The packed build resolves `@aura3d/*` from the
+ * installed candidate archives instead, so the wrapper carries a typed, empty stand-in at that path (the example's own
+ * config and sources are unchanged). Returns the harness record entries for what it wrote.
+ */
+function stageNeutralWorkspaceConfig(wrapper: string, project: string): string[] {
+  const written: string[] = [];
+  for (const name of ["vite.config.ts", "vite.config.mts", "vite.config.js", "vite.config.mjs"]) {
+    const file = resolve(project, name);
+    if (!existsSync(file)) continue;
+    for (const specifier of relativeSpecifiers(file, readFileSync(file, "utf8"))) {
+      if (!/^(?:\.\.\/)+vite\.config$/.test(specifier)) continue;
+      const target = resolve(dirname(file), `${specifier}.ts`);
+      if (!inside(wrapper, target) || [target, target.replace(/\.ts$/, ".js"), target.replace(/\.ts$/, ".mjs"), target.replace(/\.ts$/, ".mts")].some((candidate) => existsSync(candidate))) continue;
+      writeFileSync(target, 'import type { UserConfig } from "vite";\n\n// Neutral workspace config: a packed consumer has no repository root config.\nconst workspaceConfig: UserConfig = {};\nexport default workspaceConfig;\n');
+      written.push(`${portable(relative(wrapper, target))} (neutral workspace config stand-in)`);
+    }
+  }
+  return written;
+}
+
+/**
  * Copy (or scaffold) one catalog consumer into its wrapper with exactly the
  * source support it needs, and resolve its allowlisted build/typecheck
  * commands. Shared by the custody-lock and packed-candidate source producers.
@@ -1140,6 +1170,7 @@ function prepareExampleHarness(root: string, wrapper: string, project: string, e
       harness.push(`${portable(relative(wrapper, destination))} (staged root public file)`);
     }
   }
+  if (entry.kind !== "capability-example" && !isStandalone) harness.push(...stageNeutralWorkspaceConfig(wrapper, project));
   // Standalone examples stage their dependencies (and fixture host) in standaloneHarness.
   const standalone = isStandalone ? standaloneHarness(root, wrapper, project, entry as ExampleCatalogEntry) : undefined;
   if (standalone) harness.push(...standalone.files);

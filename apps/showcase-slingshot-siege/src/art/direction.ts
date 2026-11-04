@@ -3,7 +3,7 @@
 // chapters from a crisp morning to a lantern-lit starry night. The look table is src/game/look.ts, the VFX preset
 // pack src/game/vfx.ts; tests/unit/slingshot-siege/art-direction.test.ts audits this file against every chapter's
 // authored scene and writes direction.audit.json beside it.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-slingshot-siege",

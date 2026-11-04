@@ -12,17 +12,17 @@
     "expires_at": 1793828448352,
     "task_error": null,
     "model_urls": {
-      "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/model.glb?Expires=1793828448&Signature=S1MI~6yA7YjuUATj~XLhou9f3MmRscIfPyco7aZQnOjhuWrbfVpLEMzF0K32cz7bgBAwnUeo3OZqhioBJt38TZ1khSQagbi46GDARczinwNdjxhjnD1B3kCutkNdkykf~iHOEMpyOCH1AqUF5o5fa~1AMb0vwJg8LHnBD1LRuUjHdx80Ews-7Ninm4zZGbCAUvjl5JHcIlVgk6yCtWqY46YMFkJjeHEgf7-cpZUEMaasH55YmDuFG76BQv1G95wdS8iaftXfDvfYJs8NKvxmmIONoawL4Di6WXFB~bM4Zvo6vdiTZ~mr69XznLyn-j~IKflwXfpTlN-vtytCOPpaUw__&Key-Pair-Id=K1VGYTHIYLM9UM"
+      "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/model.glb"
     },
     "texture_urls": [
       {
-        "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0.png?Expires=1793828448&Signature=Pe1AGUpQiQh75RbHDpCkR-pLNJJyMpaLnYllBIIR5XtxaRhddQr2Yx1piWAbqlYJweCjlENkCr3l-dLCj06SUQ44TFRx~a9ExaOLno997W7cBx~MI4AwLHiji3LXiWOw74WMCrPE19zAPQ559SLlBUTSMOAtDw9dU2HhUNOTBXTN5wsGiBJaGE9FLeUMJ155gZzwrBVqZWWhLziY9mwr1IUDxpK61r8oWRXUqnVX2U4uu2SHh8wfHT1FRtH1yheRGCp70R19nSQxf7IbV~IYbv3dmsrcdZPCm-kFq3GbmzDbEsYk5HnimHblwD35GMiMyJElBCK8VdfbY~Da6Vsyyw__&Key-Pair-Id=K1VGYTHIYLM9UM",
-        "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0_metallic.png?Expires=1793828448&Signature=KIr1ShfmQu1Z2~WgYokbybyJ~SoF~~8du7jky7GepO8lvUjRLFYGLG0qFA8KGsZk~b4rrJk1dtJq1riaCjEk52ZZZVZUc9o-SoTlOO7w8P20FFp1kGNWlMLXGJXYANTykCjCu9N42sAEfdPjtEVNbjVizZuG0FZ~0W66EcLqjCtgpGauaB-vsST0~6giNdJgGbzmRguKtWEPOWQfhUaVdl68G-yXMJYfid82Mp2-LywiK2sPCGrtPoJdAQzVrbNfKLA2RozgIkp7nUDc1gPBZQu5wg2Y2uCHxFHj4fXgCe9omA5Dw3UCvCjZcLD48mdC534JXk1gc9JoeBoTae8oIQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
-        "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0_normal.png?Expires=1793828448&Signature=dHM82uoORvXnwcLbv5Uum9v9-27HrHcwK2o9-9~f26zZYGpM1hYeaPcEOZZxXDSDIdo18uf-CfiIviZ-MfCroI~gqMQ2dLKvM5tL2sXGKBz5ZFGfVhjFQY8w1eKem2Hs8add3Mt8G01eMUbEi~NL~Y3sKUlj7naNT13w8Yrget1xEutEyiuxbioTuAoEHe3AEfvZJMvf8k1fcdp0neDklygif5k9312ZF3E6SORTff~dJnJyxcNXBdvMPrQCXIXojJJOwWVNAiROSsR5ctvnYRykdFkP4icOaorjPIHLJKdn833x2gLtjXqwJPl54kbkPgz81vdb~hCuszG59tVQkg__&Key-Pair-Id=K1VGYTHIYLM9UM",
-        "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0_roughness.png?Expires=1793828448&Signature=X-bGSMZ2f~VYzZqcRMBDJ1fOHU2J~Bo9uvGzaLPQ3HkOnjlQrEn6w5xSfqArQRH2bvAoK6kgItbwdhlQvKwseBZDJ2ZHOLS-msH8e18lJCD2Phg5xTzgg2SCiYrfXRYe-p4~35tpUIoCHIIHBposMXi-5NinvlkRjpdZYUskQ68wpmfccj5Ro4~xULeCK0GpN7Zh82Hr5NuYTNufn2j-WpLM3H4E3jo1lVo-UmV28fs0A3RS-IhtMv~d-NORLH5mQulGP0ZT5tHm3WLrjKVArhBn0cz-v1mh~HeYXHk1VOcC63Rc0eFliwIthvKaxnT7uR~PzbRtTIJ8QaD3Ya1zxw__&Key-Pair-Id=K1VGYTHIYLM9UM"
+        "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0.png",
+        "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0_metallic.png",
+        "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0_normal.png",
+        "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/texture_0_roughness.png"
       }
     ],
-    "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/preview.png?Expires=1793828448&Signature=VBs2IT0FKt5K4XlGadGKdQ-Oiobdm-hpp0EltrIAKAhILhR1MafuQDbQ5GxsTgp2gQAbkthr1Ur6TRgVujezO1n7bWvx4U6L5sA8GrhXwzz-tslrY5Y~578M4Z2aC5kS2-6NicPElss-idrDgHGVA-dMBwe4LD1auwR2jP1n9pbfhPeKiym36twYiVm7ZuMobxg0q4BlVe9pxOd6h6UQt6ddyx-GItWs1YONafBLoJOdabeaAlF0BJ9YIYEazzd0hLwu1f5LVHdZtj1Fm00fq66--mbCgg5R30mofnKAfUKH-rSnTNJzywCIYAhYx-Q2S5X-N4zfPDgA-LZ8rX2qZQ__&Key-Pair-Id=K1VGYTHIYLM9UM",
+    "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/preview.png",
     "texture_prompt": "",
     "texture_image_url": "",
     "text_style_prompt": "coach bus in salt white and sea teal, full PBR with normal and roughness, salt-faded coastal palette. coastal salt-haze PBR: sun-bleached limestone, salt-faded paint, galvanised steel; salt white #e9e4d6, sea teal #12606e, ochre #c9a25e, signal red #c8321f accents",
@@ -32,7 +32,7 @@
     "object_prompt": "",
     "style_prompt": "",
     "negative_prompt": "",
-    "model_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/model.glb?Expires=1793828448&Signature=S1MI~6yA7YjuUATj~XLhou9f3MmRscIfPyco7aZQnOjhuWrbfVpLEMzF0K32cz7bgBAwnUeo3OZqhioBJt38TZ1khSQagbi46GDARczinwNdjxhjnD1B3kCutkNdkykf~iHOEMpyOCH1AqUF5o5fa~1AMb0vwJg8LHnBD1LRuUjHdx80Ews-7Ninm4zZGbCAUvjl5JHcIlVgk6yCtWqY46YMFkJjeHEgf7-cpZUEMaasH55YmDuFG76BQv1G95wdS8iaftXfDvfYJs8NKvxmmIONoawL4Di6WXFB~bM4Zvo6vdiTZ~mr69XznLyn-j~IKflwXfpTlN-vtytCOPpaUw__&Key-Pair-Id=K1VGYTHIYLM9UM",
+    "model_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a1990e-654b-7063-a039-3f3e66252648/output/model.glb",
     "consumed_credits": 10
   },
   "saved_files": [

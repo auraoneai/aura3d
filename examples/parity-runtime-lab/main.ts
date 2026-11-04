@@ -27,10 +27,18 @@ import {
   type AuraApp
 } from "@aura3d/engine";
 import { multiplyMat4, perspectiveMat4 } from "@aura3d/engine/scene";
-import { createRenderTarget } from "@aura3d/engine/renderer";
 import { CubeCameraReflectionCapture, Geometry, PBRMaterial, Renderer, TexturedUnlitMaterial, UnlitMaterial, createReflectionProbe } from "@aura3d/rendering";
 
 type Rgb = readonly [number, number, number];
+
+/**
+ * Create a render target on the renderer's own device. Written against the standalone `@aura3d/rendering` types so the
+ * target belongs to the same declaration set as the `Renderer` that consumes it.
+ */
+function createRenderTarget(host: Renderer, descriptor: Parameters<Renderer["device"]["createRenderTarget"]>[0]): ReturnType<Renderer["device"]["createRenderTarget"]> {
+  return host.device.createRenderTarget({ label: "engine-render-target", ...descriptor });
+}
+
 
 interface Shot {
   readonly width: number;

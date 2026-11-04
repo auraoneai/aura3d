@@ -204,7 +204,13 @@ function publishReady(): void {
   if (!app) return;
   const diagnostics = app.diagnostics();
   const snapshot = buildScene(activeView).toJSON();
-  const textNodes = snapshot.nodes.filter((node) => node.kind === "primitive" && node.text3D);
+  // The published scene-node union does not carry the primitive-only mesh-text fields; read them through a narrow view.
+  const snapshotNodes = snapshot.nodes as readonly {
+    readonly kind: string;
+    readonly text3D?: { readonly glyphCount?: number; readonly method?: string; readonly unsupportedCharacters?: readonly string[] };
+    readonly geometry?: { readonly positions: readonly (readonly number[])[]; readonly indices: readonly number[]; readonly normals?: readonly number[] };
+  }[];
+  const textNodes = snapshotNodes.filter((node) => node.kind === "primitive" && node.text3D);
   const labelNodes = snapshot.nodes.filter((node) => node.kind === "label");
   const layer = document.querySelector<HTMLElement>(".aura-world-label-layer");
   const notes = [...document.querySelectorAll<HTMLElement>(".aura-world-label-layer [role='note']")];

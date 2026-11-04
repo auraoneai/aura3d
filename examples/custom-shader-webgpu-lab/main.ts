@@ -1,4 +1,6 @@
-import { Geometry, Renderer, createDefaultShaderLibrary } from "@aura3d/rendering";
+// Renderer, Geometry and the custom-shader material come from one declaration set (`@aura3d/engine/renderer`), so the
+// material is a `RenderMaterial` of the same `Renderer` (the standalone `@aura3d/rendering` package has its own classes).
+import { Geometry, Renderer } from "@aura3d/engine/renderer";
 // `material.custom` lowers to this adapter (public via `@aura3d/engine/shader-graph-runtime`); the lab
 // drives the exact GLSL/WGSL pair through `Renderer.create({ backend })` (createAuraApp is WebGL2-only).
 import { createCustomShaderMaterial } from "@aura3d/engine/shader-graph-runtime";
@@ -80,8 +82,7 @@ try {
     ...(offscreen ? {} : { canvas }),
     width: canvas.width,
     height: canvas.height,
-    clearColor: [0.018, 0.024, 0.07, 1],
-    shaderLibrary: createDefaultShaderLibrary()
+    clearColor: [0.018, 0.024, 0.07, 1]
   });
   const offscreenTarget = offscreen
     ? renderer.device.createRenderTarget({ width: canvas.width, height: canvas.height, label: "backend-lab-target", format: "rgba8", depth: true })
@@ -137,7 +138,7 @@ try {
     const readPixelsAsync = renderer.device.readPixelsAsync;
     if (!offscreenTarget || typeof readPixelsAsync !== "function") throw new Error("GPU readback requires ?present=offscreen on a device with readPixelsAsync");
     const pixels = await readPixelsAsync.call(renderer.device, 0, 0, canvas.width, canvas.height);
-    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", pixels));
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new Uint8Array(pixels)));
     const sum = [0, 0, 0];
     let lit = 0;
     for (let i = 0; i < pixels.length; i += 4) {

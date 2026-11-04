@@ -48,7 +48,7 @@ if (typeof document !== "undefined") {
     const renderer = new ParticleRenderer();
 
     return {
-      metrics: () => system.getStats(),
+      metrics: () => ({ ...system.getStats() }),
       draw(context, canvas) {
         system.update(1 / 60);
         const batch = renderer.buildBatch(system.particles);

@@ -2,7 +2,7 @@
 // its own fixtures"). The look table is src/art/look.ts, the light rig src/art/lightRig.ts, the effect pack src/art/vfx.ts.
 // The audit record (direction.audit.json beside this file) is written by tests/unit/bunker-zero/art-direction.test.ts,
 // which audits the rig's per-floor mounted lights, the IBL node and every model key main.ts mounts.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { BZ_HDRI, BZ_PALETTE, BZ_PRACTICALS } from "./look";
 
 const enemy = (assetKey: string, maxTriangles: number) =>

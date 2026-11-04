@@ -5,7 +5,7 @@
 // game-checks read). Rerun that test after every edit of this file and commit both.
 //
 // Per-venue look rows: src/game/look.ts (VENUE_LOOKS). Runtime VFX pack: src/game/vfx.ts.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-aura-fc-3d",

@@ -9,7 +9,6 @@ import { PARK_LOOKS, lookPlan, parkPracticals, type DiamondLookPlan, type Diamon
 import { ivyBrickTexture, turfTextures } from "./turfTextures";
 import { boardTexture } from "./boardTexture";
 import { windowTexture } from "./windowTexture";
-import { probes } from "@aura3d/engine/lanes";
 import { horizonBand, horizonForTier, type HorizonBand } from "../art/horizon";
 import { FAN_MODEL, fanColors, fanModelYaw, fanSeats, fanTint, fanVariantB } from "../art/crowd";
 import {
@@ -689,15 +688,22 @@ export function wallNameChord(park: ParkSpec): { centre: Vec3; yaw: number; leng
 export const DOME_PROBE_ENABLED = false;
 
 export function domeInfieldProbe(): any {
-  return probes.reflection({
+  // The 5.0 public engine surface has no probe builder (`probes` lived in the retired `@aura3d/engine/lanes` entry), so this
+  // is the node the builder emitted, written out. It is only mounted when DOME_PROBE_ENABLED returns.
+  return {
+    kind: "probe",
+    probe: "reflection",
     name: "dome-infield-probe",
-    position: [0, 6, -14],
-    box: { min: [-95, -0.5, -120], max: [95, 40, 30] },
-    resolution: 128,
-    update: "once",
-    blendDistance: 6,
-    intensity: 0.85
-  });
+    options: {
+      name: "dome-infield-probe",
+      position: [0, 6, -14],
+      box: { min: [-95, -0.5, -120], max: [95, 40, 30] },
+      resolution: 128,
+      update: "once",
+      blendDistance: 6,
+      intensity: 0.85
+    }
+  };
 }
 
 /**

@@ -1,7 +1,7 @@
 // apps/showcase-heatsink/art/direction.ts: C-35 art direction for Thermal Drift (GU47 WP-13, G03).
 // Fantasy: a race through a foundry megacity seen through heat. The three circuits are three times of day of one
 // foundry city (look table: src/look.ts); the signature effect is a refraction heat haze (src/heatHaze.ts).
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-heatsink",

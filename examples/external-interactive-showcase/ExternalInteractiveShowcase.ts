@@ -29,6 +29,8 @@ export async function mountExternalInteractiveShowcase(id: string): Promise<void
   const canvas = root.querySelector<HTMLCanvasElement>("[data-testid='hr4-interactive-canvas']")!;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Interactive Showcase requires a 2D evidence canvas.");
+  // Hoisted `render` below does not inherit the narrowing above.
+  const drawingContext: CanvasRenderingContext2D = context;
   const camera = root.querySelector<HTMLInputElement>("[data-testid='hr4-interactive-camera']")!;
   const variant = root.querySelector<HTMLSelectElement>("[data-testid='hr4-interactive-variant']")!;
   const select = root.querySelector<HTMLButtonElement>("[data-testid='hr4-interactive-select']")!;
@@ -37,7 +39,7 @@ export async function mountExternalInteractiveShowcase(id: string): Promise<void
   let interactions = 0;
 
   function render(): void {
-    drawShowcase(context, canvas, Number(camera.value), variant.value as Variant, selectedObject);
+    drawShowcase(drawingContext, canvas, Number(camera.value), variant.value as Variant, selectedObject);
     const state = {
       id,
       status: "ready",

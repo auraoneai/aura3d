@@ -1,7 +1,7 @@
 // apps/showcase-aura-diamond-3d/art/direction.ts — C-35 art direction (GU47 WP-18 DIA-X1, PRD 3.2).
 // Fantasy: summer baseball on broadcast TV, six ballparks each a postcard with its own hour, sky and light.
 // The per-park numbers live in ./look.ts (one row per park); this file is the game-level contract the audit reads.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 import { DIAMOND_PALETTE, PARK_LOOKS, SIGNATURE_EFFECT } from "./look";
 
 const boot = PARK_LOOKS.sandlot;
