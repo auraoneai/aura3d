@@ -5,6 +5,8 @@ export class VertexBuffer {
   public readonly data: ArrayBuffer;
   public readonly floats: Float32Array;
   private gpuBuffer: RenderBuffer | null = null;
+  /** The device that created `gpuBuffer`; a buffer owned by another (older, not yet disposed) device is never reused. */
+  private gpuDevice: WeakRef<RenderDevice> | null = null;
   private dirtyStart = Number.POSITIVE_INFINITY;
   private dirtyEnd = 0;
   private disposed = false;
@@ -58,7 +60,8 @@ export class VertexBuffer {
 
   upload(device: RenderDevice): RenderBuffer {
     this.assertAlive();
-    if (!this.gpuBuffer || this.gpuBuffer.disposed) {
+    if (!this.gpuBuffer || this.gpuBuffer.disposed || this.gpuDevice?.deref() !== device) {
+      this.gpuDevice = new WeakRef(device);
       this.gpuBuffer = device.createBuffer("vertex", this.byteLength, new Uint8Array(this.data));
       this.clearDirty();
       return this.gpuBuffer;
