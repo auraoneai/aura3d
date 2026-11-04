@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildPlan, checkGateBinding, CODE_COMPLETE_RECORD, classifyPlaywrightTest, collectPlaywrightTests, estimateSpecTests, extractMarkedPayload,
   fetchReports, hardwareLabels, mergeAcceptance, parseInventory, parseTaskRunExits, planBatches, planShards,
-  readHeadCommit, summarizeVitest, validateInventory
+  readHeadCommit, selectGroups, summarizeVitest, validateInventory
 } from '../../../tools/remote-acr/acceptance5.mjs';
 
 const INVENTORY = `
@@ -113,6 +113,70 @@ describe('acceptance5 shard and batch planning', () => {
     expect(plan.limits).toEqual({ acrTimeoutSeconds: 1800, maxConcurrentRuns: 2, playwrightGlobalTimeoutMs: 1_200_000 });
     expect(plan.evidence).toEqual({ group: 'ev', runId: 'r1-evidence', files: ['tests/unit/a.test.ts', 'tests/unit/b.test.ts'] });
     expect(() => buildPlan(parse(), { runId: 'r1', estimate, batch: 9 })).toThrow(/batch must be/);
+  });
+});
+
+describe('acceptance5 optional and test-split groups (visual-compare)', () => {
+  const OPTIONAL = `${INVENTORY}
+[group opt]
+project = chromium-automation
+optional = true
+split = tests
+seconds-per-test = 300
+reason = optional visual comparison
+tests/browser/visual-compare-5.0.spec.ts tests=16
+`;
+  const estimate = () => 3;
+
+  it('parses optional and split, defaulting to a required one-shard-per-file group', () => {
+    const inv = parse(OPTIONAL);
+    expect(inv.groups.find((g: { id: string }) => g.id === 'opt')).toMatchObject({ optional: true, split: 'tests', secondsPerTest: 300 });
+    expect(inv.groups[0]).toMatchObject({ optional: false, split: 'files' });
+    expect(() => parse('[group g]\nproject = chromium-automation\nreason = r\noptional = maybe\ntests/browser/a.spec.ts')).toThrow(/optional must be/);
+    expect(() => parse('[group g]\nproject = chromium-automation\nreason = r\nsplit = lines\ntests/browser/a.spec.ts')).toThrow(/split must be/);
+  });
+
+  it('leaves optional groups out of the default plan and its batches', () => {
+    const plan = buildPlan(parse(OPTIONAL), { runId: 'r1', estimate, batch: null });
+    expect(plan.shards.some((s: { group: string }) => s.group === 'opt')).toBe(false);
+    expect(plan.batches.flat().some((id: string) => id.startsWith('opt'))).toBe(false);
+    expect(plan.groupSelection).toBeNull();
+    const without = buildPlan(parse(), { runId: 'r1', estimate, batch: null });
+    expect(plan.shards.map((s: { id: string }) => s.id)).toEqual(without.shards.map((s: { id: string }) => s.id));
+    expect(plan.batches).toEqual(without.batches);
+  });
+
+  it('plans only the named groups; split = tests may use several shards for one file', () => {
+    const plan = buildPlan(parse(OPTIONAL), { runId: 'r1', estimate, batch: null, groups: ['opt'] });
+    expect(plan.groupSelection).toEqual(['opt']);
+    // 16 tests x 300 s = 4800 s over a 900 s budget -> 6 shards of one spec file, none of the other groups.
+    expect(plan.shards.map((s: { id: string }) => s.id)).toEqual(Array.from({ length: 6 }, (_, i) => `opt-${i + 1}of6`));
+    expect(plan.shards.every((s: { specs: string[]; shard: string }) => s.specs.length === 1 && /^[1-6]\/6$/.test(s.shard))).toBe(true);
+    expect(plan.shards[0].runId).toBe('r1-opt-1of6');
+    expect(plan.evidence).toBeNull();
+    expect(plan.warnings.some((w: string) => w.includes('visual-compare-5.0'))).toBe(false);
+    expect(() => selectGroups(parse(OPTIONAL), ['nope'])).toThrow(/unknown group nope/);
+    // the same group without split = tests stays capped at one shard per file and warns
+    const files = planShards(parse(OPTIONAL.replace('split = tests', 'split = files')), { runId: 'r1', estimate, budgetSeconds: 900 });
+    expect(files.shards.filter((s: { group: string }) => s.group === 'opt')).toHaveLength(1);
+    expect(files.warnings.some((w: string) => w.includes('visual-compare-5.0'))).toBe(true);
+  });
+
+  it('the committed inventory carries visual-compare as an optional, split group whose spec and plan exist', () => {
+    const root = new URL('../../../', import.meta.url).pathname;
+    const inv = parseInventory(readFileSync(join(root, 'tools/remote-acr/acceptance5-inventory.txt'), 'utf8'),
+      { readInclude: (p: string) => readFileSync(join(root, p), 'utf8') });
+    const group = inv.groups.find((g: { id: string }) => g.id === 'visual-compare');
+    expect(group).toMatchObject({ kind: 'browser', optional: true, split: 'tests', project: 'chromium-automation' });
+    expect(group.entries.map((e: { path: string }) => e.path)).toEqual(['tests/browser/visual-compare-5.0.spec.ts']);
+    const planViews = JSON.parse(readFileSync(join(root, 'tools/release/visual-compare-5.0/plan.json'), 'utf8')).views.length;
+    expect(group.entries[0].tests).toBe(planViews);
+    const dflt = buildPlan(inv, { runId: 'r1', estimate, batch: null });
+    expect(dflt.shards.some((s: { group: string }) => s.group === 'visual-compare')).toBe(false);
+    const only = buildPlan(inv, { runId: 'r1', estimate, batch: null, groups: ['visual-compare'] });
+    expect(only.shards.length).toBeGreaterThan(1);
+    expect(only.shards.every((s: { estimatedSeconds: number }) => s.estimatedSeconds <= 1800)).toBe(true);
+    expect(only.batchCount).toBe(1);
   });
 });
 

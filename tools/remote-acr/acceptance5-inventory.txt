@@ -115,6 +115,14 @@ tests/visual/screenshot-diff.spec.ts
 tests/visual/shadow-cascade-motion.spec.ts
 tests/visual/skinned-animation-pixels.spec.ts
 
+[group visual-compare]
+project = chromium-automation
+optional = true
+split = tests
+seconds-per-test = 300
+reason = Optional 4.7.10-vs-5.0 paired visual comparison (tools/release/visual-compare-5.0/plan.json, docs/release/5.0-visual-comparison.md): 16 game views captured at the baselines' 1280x720 DPR 1 with the game-luma protocol, one 25 s shot each (about 3.5 min median on software WebGL2; 60 s-only baselines take 5-12 min). Not part of the default plan: run it on its own after batch 2 with ACCEPT_GROUPS=visual-compare (own SAS and shards, about 6 shards of 3 views, each under the 1200 s Playwright timeout in the median case). The spec runs in parallel mode so --shard splits views across shards; split = tests lets the planner use more than one shard for the single file. Showcase (5.0-only) frames are harvested from batch outputs and need no capture here.
+tests/browser/visual-compare-5.0.spec.ts tests=16
+
 [group evidence]
 kind = evidence
 reason = Evidence-reading unit tests deferred from the 5.0 source pass (acceptance-evidence-tests.txt). Run last, in one ACR run, after this batch's browser shard reports are fetched into tests/reports/ (candidate files are never overwritten). Most read evidence the native specs do not produce (vehicle-wheel-visibility, claim-lineage, bundle-scenarios, ...); a missing evidence file is reported as no-data.

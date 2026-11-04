@@ -5,7 +5,8 @@
  * tests; the CLI at the bottom is the only part that touches the file system
  * or network. Nothing here launches Azure work.
  *
- *   plan          --inventory <file> --run-id <id> [--batch <k>] --out <plan.json>
+ *   plan          --inventory <file> --run-id <id> [--batch <k>] [--groups <a,b>] --out <plan.json>
+ *                 (optional groups, e.g. visual-compare, run only when named in --groups)
  *   gate-binding  --gate <path> --head <commit> --tracked-clean <0|1>   (reads HEAD's parent/diff with git)
  *   safe-inputs   <inputs.json> <gate> [<extra.json>]      (NUL list on stdout)
  *   merge         --out <report.json> --run-dir <dir> [--run-dir <dir>...]
@@ -56,7 +57,7 @@ export function parseInventory(text, { readInclude = () => { throw new Error('in
     const header = /^\[group ([a-z0-9][a-z0-9-]{0,23})\]$/.exec(line);
     if (header) {
       if (groups.some(g => g.id === header[1])) throw new Error(`${where}: duplicate group ${header[1]}`);
-      group = { id: header[1], kind: 'browser', project: null, config: null, configDir: '', secondsPerTest: 60, reason: '', entries: [] };
+      group = { id: header[1], kind: 'browser', project: null, config: null, configDir: '', secondsPerTest: 60, reason: '', optional: false, split: 'files', entries: [] };
       groups.push(group); return;
     }
     if (!group) throw new Error(`${where}: entry outside a group`);
@@ -67,6 +68,10 @@ export function parseInventory(text, { readInclude = () => { throw new Error('in
       else if (key === 'project') { if (!PROJECTS.includes(value)) throw new Error(`${where}: unsupported project ${value}`); group.project = value; }
       else if (key === 'config') { if (!(value in ALLOWED_CONFIGS)) throw new Error(`${where}: unsupported config ${value}`); group.config = value; group.configDir = ALLOWED_CONFIGS[value]; }
       else if (key === 'seconds-per-test') group.secondsPerTest = positiveInt(value, where);
+      // optional = true: planned only when named in --groups (never part of the default plan or its batches).
+      else if (key === 'optional') { if (!['true', 'false'].includes(value)) throw new Error(`${where}: optional must be true or false`); group.optional = value === 'true'; }
+      // split = tests: the group's specs run their tests in Playwright parallel mode, so --shard may split inside a file.
+      else if (key === 'split') { if (!['files', 'tests'].includes(value)) throw new Error(`${where}: split must be files or tests`); group.split = value; }
       else if (key === 'reason') group.reason = group.reason ? `${group.reason} ${value}` : value;
       else if (key === 'include') {
         if (!safeRel(value)) throw new Error(`${where}: unsafe include`);
@@ -150,11 +155,12 @@ export function planShards(inventory, { runId, estimate, budgetSeconds = DEFAULT
     const specs = g.entries.map(e => {
       const tests = e.tests ?? estimate(e.path);
       const seconds = tests * (e.secondsPerTest ?? g.secondsPerTest);
-      if (seconds > budgetSeconds) warnings.push(`${g.id}: ${e.path} alone is estimated at ${seconds}s (> ${budgetSeconds}s shard budget); Playwright cannot split a file, so its tail may be interrupted (recorded as no-data)`);
+      if (seconds > budgetSeconds && g.split !== 'tests') warnings.push(`${g.id}: ${e.path} alone is estimated at ${seconds}s (> ${budgetSeconds}s shard budget); Playwright cannot split a file, so its tail may be interrupted (recorded as no-data)`);
       return { path: e.path, tests, seconds };
     });
     const tests = specs.reduce((a, s) => a + s.tests, 0), seconds = specs.reduce((a, s) => a + s.seconds, 0);
-    const total = Math.max(1, Math.min(specs.length, Math.ceil(seconds / budgetSeconds)));
+    const cap = g.split === 'tests' ? Math.max(specs.length, tests) : specs.length;
+    const total = Math.max(1, Math.min(cap, Math.ceil(seconds / budgetSeconds)));
     for (let i = 1; i <= total; i++) {
       shards.push({ id: `${g.id}-${i}of${total}`, runId: shardRunId(runId, g.id, i, total), group: g.id, project: g.project,
         config: g.config, configDir: g.configDir, specs: specs.map(s => s.path), shard: total > 1 ? `${i}/${total}` : null,
@@ -198,7 +204,19 @@ export function planBatches(shards, { hasEvidence, ttlSeconds = DEFAULTS.sasTtlS
   return batches.map(batch => batch.map(s => s.id));
 }
 
-export function buildPlan(inventory, options) {
+/**
+ * Groups the plan runs: the named ones (optional groups included), or every non-optional group when none are named.
+ * `groups` null/empty means the default plan. Unknown ids fail.
+ */
+export function selectGroups(inventory, groups) {
+  const wanted = Array.isArray(groups) ? groups.filter(Boolean) : [];
+  if (!wanted.length) return { groups: inventory.groups.filter(g => !g.optional) };
+  for (const id of wanted) if (!inventory.groups.some(g => g.id === id)) throw new Error(`unknown group ${id}`);
+  return { groups: inventory.groups.filter(g => wanted.includes(g.id)) };
+}
+
+export function buildPlan(fullInventory, options) {
+  const inventory = selectGroups(fullInventory, options.groups);
   const { shards, warnings } = planShards(inventory, options);
   const evidenceGroup = inventory.groups.find(g => g.kind === 'evidence');
   const batches = planBatches(shards, { ...options, hasEvidence: Boolean(evidenceGroup) });
@@ -210,7 +228,8 @@ export function buildPlan(inventory, options) {
     schema: 'aura3d.acceptance5-plan/1', runId: options.runId, batch, batchCount: batches.length, batches,
     shards: shards.filter(s => selected.has(s.id)),
     evidence: evidenceGroup && selected.has('evidence') ? { group: evidenceGroup.id, runId: `${options.runId}-evidence`, files: evidenceGroup.entries.map(e => e.path) } : null,
-    groups: inventory.groups.map(g => ({ id: g.id, kind: g.kind, project: g.project, config: g.config, reason: g.reason, entries: g.entries.map(e => e.path) })),
+    groupSelection: options.groups?.length ? [...options.groups] : null,
+    groups: inventory.groups.map(g => ({ id: g.id, kind: g.kind, project: g.project, config: g.config, reason: g.reason, optional: g.optional, entries: g.entries.map(e => e.path) })),
     limits: { acrTimeoutSeconds: ACR_TIMEOUT_SECONDS, maxConcurrentRuns: MAX_CONCURRENT_RUNS,
       playwrightGlobalTimeoutMs: (ACR_TIMEOUT_SECONDS - (options.overheadSeconds ?? DEFAULTS.overheadSeconds)) * 1000 },
     warnings,
@@ -596,6 +615,7 @@ export async function main(argv) {
     const inventory = parseInventory(readFileSync(opts.inventory, 'utf8'), { readInclude: p => readFileSync(join(root, p), 'utf8') });
     validateInventory(inventory, { exists: p => existsSync(join(root, p)), nativeSpecs: listNativeSpecs(root) });
     const plan = buildPlan(inventory, { runId: opts['run-id'], batch: opts.batch ? Number(opts.batch) : null,
+      groups: opts.groups ? String(opts.groups).split(',').map(x => x.trim()).filter(Boolean) : null,
       ttlSeconds: opts['sas-ttl-seconds'] ? Number(opts['sas-ttl-seconds']) : DEFAULTS.sasTtlSeconds,
       estimate: p => estimateSpecTests(readFileSync(join(root, p), 'utf8')) });
     if (opts.out) writeFileSync(opts.out, `${JSON.stringify(plan, null, 2)}\n`);

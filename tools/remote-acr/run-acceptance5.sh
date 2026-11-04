@@ -28,6 +28,7 @@
 # Usage:
 #   PLAN_ONLY=1 tools/remote-acr/run-acceptance5.sh           # print the shard plan, no gate, no Azure
 #   RUN_ID=native-5-accept-001-b1 BATCH=1 tools/remote-acr/run-acceptance5.sh
+#   ACCEPT_GROUPS=visual-compare RUN_ID=native-5-accept-001-vc tools/remote-acr/run-acceptance5.sh   # optional 4.7.10-vs-5.0 visual comparison only
 #   MERGE_RUNS="<run-id> <run-id>" RUN_ID=<combined> tools/remote-acr/run-acceptance5.sh   # merge batch reports only
 set -euo pipefail
 if [ "${AURA3D_SOURCE_PROCESS_GUARD:-0}" = 1 ]; then
@@ -91,7 +92,8 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 # ---- plan (pure; no gate or Azure needed) ------------------------------------
-node tools/remote-acr/acceptance5.mjs plan --inventory "$INVENTORY" --run-id "$RUN_ID" ${BATCH:+--batch "$BATCH"} \
+# ACCEPT_GROUPS=visual-compare plans only that optional group (default plans every non-optional group).
+node tools/remote-acr/acceptance5.mjs plan --inventory "$INVENTORY" --run-id "$RUN_ID" ${BATCH:+--batch "$BATCH"} ${ACCEPT_GROUPS:+--groups "$ACCEPT_GROUPS"} \
   --sas-ttl-seconds "$((SAS_TTL_MINUTES * 60))" --out "$PLAN_TMP"
 if [ "${PLAN_ONLY:-0}" = 1 ]; then exit 0; fi
 BATCH_COUNT="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).batchCount' "$PLAN_TMP")"

@@ -1,0 +1,1273 @@
+{
+  "schema": "aura3d.visual-compare-plan/1",
+  "purpose": "Compare one 5.0 acceptance capture against existing 4.7.x frames of record (4.7.10 was released 2026-11-02). Baselines are never re-captured.",
+  "from": {
+    "release": "4.7.10 (frames of record, see baselineCapture per view)",
+    "environment": "ACR software WebGL2 (SwiftShader), headless Chromium, 1280x720, DPR 1, canvas-only screenshot re-encoded as JPEG quality 0.7 (tests/browser/game-luma-capture.spec.ts, legacy-chromium project of the 4.x ACR path)"
+  },
+  "to": {
+    "release": "5.0.0",
+    "environment": "recorded at capture time in tests/reports/visual-compare-5.0/<run>/environment.json (browser, WebGL renderer, project, candidate commit)"
+  },
+  "baselineRoots": {
+    "repo": "."
+  },
+  "shotNote": "settle-25s is the default (about 3.5 min per view on the runner); settle-60s is taken 300-700 s after ready on software GL, so animated scenes drift: enable it with VC_SHOTS=25,60 only for static views.",
+  "views": [
+    {
+      "kind": "paired",
+      "id": "orbit-neutral",
+      "target": "strange-orbit-port--neutral-env",
+      "slug": "strange-orbit-port",
+      "variant": "neutral-env",
+      "template": null,
+      "categories": [
+        "neutral-env-pbr",
+        "glass"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-strange-orbit-port/",
+      "query": "?env=neutral",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "hover-bike PBR under ?env=neutral (the one neutral-environment-lit view with a 4.7 baseline)",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-60s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "phase 9c (2026-11-01, about 4.7.8; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/strange-orbit-port/p9c/strange-orbit-port/frames/g15p9c-3",
+      "baselines": {
+        "settle-25s": null,
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/strange-orbit-port/p9c/strange-orbit-port/frames/g15p9c-3/strange-orbit-port--neutral-env--settle-60s.jpg",
+          "sha256": "4ef24ffecb0fc0d162d6237581c17164211737851fa9be884d1b7fbb3a6f0d9c",
+          "bytes": 51016,
+          "trackedInGit": true
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:orbit-neutral$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/orbit-neutral.png",
+        "outputShots": {
+          "settle-60s": "frames/orbit-neutral.png",
+          "settle-25s": "frames/orbit-neutral--settle-25s.png"
+        },
+        "primaryShot": "settle-60s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "orbit-glass",
+      "target": "strange-orbit-port--default",
+      "slug": "strange-orbit-port",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "glass",
+        "night-indoor"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-strange-orbit-port/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "canopy transmission/glass plus lit water",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/strange-orbit-port/f48/strange-orbit-port/frames/f48-strange-orbit-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/strange-orbit-port/f48/strange-orbit-port/frames/f48-strange-orbit-default/strange-orbit-port--default--settle-25s.jpg",
+          "sha256": "5ce76d8f58ac5058a439f8d073b36445675643bbd9e5b381ac4ede7244ee85e5",
+          "bytes": 50792,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/strange-orbit-port/f48/strange-orbit-port/frames/f48-strange-orbit-default/strange-orbit-port--default--settle-60s.jpg",
+          "sha256": "ebd1adb8b31c4702b193ba30e23d9f37fb110ee357e1865deea1d89b8239f736",
+          "bytes": 50615,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:orbit-glass$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/orbit-glass.png",
+        "outputShots": {
+          "settle-25s": "frames/orbit-glass.png",
+          "settle-60s": "frames/orbit-glass--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "wind-day",
+      "target": "where-the-wind-wanders-port--default",
+      "slug": "where-the-wind-wanders-port",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "sky-daylight",
+        "outdoor"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-where-the-wind-wanders-port/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "daylight meadow, foliage sway only",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "phase 7 (2026-11-01, about 4.7.6/4.7.7; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/where-the-wind-wanders-port/p7-r1/where-the-wind-wanders-port/frames/g23p7-r1-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p7-r1/where-the-wind-wanders-port/frames/g23p7-r1-default/where-the-wind-wanders-port--default--settle-25s.jpg",
+          "sha256": "8baf423034647230975e78f9a2dba79503c74146dc9227845f5ec438dbb6a6da",
+          "bytes": 215986,
+          "trackedInGit": true
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/where-the-wind-wanders-port/p7-r1/where-the-wind-wanders-port/frames/g23p7-r1-default/where-the-wind-wanders-port--default--settle-60s.jpg",
+          "sha256": "1e242ae98b6e73746287ff374b6ab42491bf0cd41d11131f2e17fb3b71273d59",
+          "bytes": 215828,
+          "trackedInGit": true
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:wind-day$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/wind-day.png",
+        "outputShots": {
+          "settle-25s": "frames/wind-day.png",
+          "settle-60s": "frames/wind-day--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "links-day",
+      "target": "aura-links-3d--stAuroras",
+      "slug": "aura-links-3d",
+      "variant": "stAuroras",
+      "template": null,
+      "categories": [
+        "sky-daylight",
+        "outdoor",
+        "skinned"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-aura-links-3d/index.html",
+      "query": "?course=stAuroras",
+      "changedIn4710": "Meshy gorse added",
+      "expectedDelta": "localized change from 4.7.10 content (Meshy gorse added) is expected; the baseline predates it",
+      "note": "golfer on the tee under a clear sky",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-1",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-1/aura-links-3d--stAuroras--settle-25s.jpg",
+          "sha256": "dcb2078ffe2b302160b1ab655b058ef7d1b873571d250ac36a479e5a3c545521",
+          "bytes": 93357,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/aura-links-3d/f48/aura-links-3d/frames/f48-aura-links-1/aura-links-3d--stAuroras--settle-60s.jpg",
+          "sha256": "2345de6470440163387617db5bd0a7f96c481f1c90d87979d2e24d0ebba13409",
+          "bytes": 93315,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:links-day$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/links-day.png",
+        "outputShots": {
+          "settle-25s": "frames/links-day.png",
+          "settle-60s": "frames/links-day--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "tele-noon",
+      "target": "teleoperator--noon",
+      "slug": "teleoperator",
+      "variant": "noon",
+      "template": null,
+      "categories": [
+        "sky-daylight",
+        "outdoor"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-teleoperator/",
+      "query": "?sky=noon&intro=0",
+      "changedIn4710": "Victorian facade added",
+      "expectedDelta": "localized change from 4.7.10 content (Victorian facade added) is expected; the baseline predates it",
+      "note": "city street at noon (traffic is time-driven)",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-1",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-1/teleoperator--noon--settle-25s.jpg",
+          "sha256": "246a2e3db50b0bb826e19ce6894b2fa50700cb74e83ed8a1b9ca8474f5de5630",
+          "bytes": 91899,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-1/teleoperator--noon--settle-60s.jpg",
+          "sha256": "d82f1d8a22c389f03fe0f53521d7bc857903fe610fc7f664b5487c8968b99fde",
+          "bytes": 87562,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:tele-noon$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/tele-noon.png",
+        "outputShots": {
+          "settle-25s": "frames/tele-noon.png",
+          "settle-60s": "frames/tele-noon--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "tele-night",
+      "target": "teleoperator--night",
+      "slug": "teleoperator",
+      "variant": "night",
+      "template": null,
+      "categories": [
+        "night",
+        "emissive",
+        "transparent"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-teleoperator/",
+      "query": "?sky=night&intro=0",
+      "changedIn4710": "Victorian facade added",
+      "expectedDelta": "localized change from 4.7.10 content (Victorian facade added) is expected; the baseline predates it",
+      "note": "night street with headlights and window glow",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-2",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-2/teleoperator--night--settle-25s.jpg",
+          "sha256": "c8fde05ec2843c9e9e63e8bb4587c1fc3de1e67ab2fecc666ed09c9a2d74df8c",
+          "bytes": 108782,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/teleoperator/f48/teleoperator/frames/f48-teleoperator-2/teleoperator--night--settle-60s.jpg",
+          "sha256": "896c1d37650284dd645fcfae939643b028e9e8381b33e4f843ab3bd99b546ec9",
+          "bytes": 108250,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:tele-night$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/tele-night.png",
+        "outputShots": {
+          "settle-25s": "frames/tele-night.png",
+          "settle-60s": "frames/tele-night--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "rush-sunset",
+      "target": "roadster-rush--default",
+      "slug": "roadster-rush",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "sky-daylight",
+        "emissive"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-roadster-rush/",
+      "query": "?seed=42&capture=1",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "sunset highway (seed=42 traffic is time-driven)",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/roadster-rush/f48/roadster-rush/frames/f48-roadster-rush-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/roadster-rush/f48/roadster-rush/frames/f48-roadster-rush-default/roadster-rush--default--settle-25s.jpg",
+          "sha256": "186d45c7f7c5c1c790b8a6ab8efcd62702c1db08fa583d5a08e61d81d95ebf54",
+          "bytes": 92387,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/roadster-rush/f48/roadster-rush/frames/f48-roadster-rush-default/roadster-rush--default--settle-60s.jpg",
+          "sha256": "ee196e77856d73e7b2b87dea0065cd981d842a1f40dc5eac66862cdd2641c499",
+          "bytes": 94579,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:rush-sunset$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/rush-sunset.png",
+        "outputShots": {
+          "settle-25s": "frames/rush-sunset.png",
+          "settle-60s": "frames/rush-sunset--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "bunker-indoor",
+      "target": "bunker-zero--default",
+      "slug": "bunker-zero",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "indoor",
+        "night-indoor"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-bunker-zero/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "concrete corridor lit by fixtures, first-person weapon",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-60s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "phase 7 (2026-11-01, about 4.7.6/4.7.7; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-default",
+      "baselines": {
+        "settle-25s": null,
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/bunker-zero/p7-r1/bunker-zero/frames/g11p7-r1-default/bunker-zero--default--settle-60s.jpg",
+          "sha256": "1167b80e64d192228fc8afa8801140501503333a9c7f975c1c4bba973311b8b6",
+          "bytes": 55462,
+          "trackedInGit": true
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:bunker-indoor$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/bunker-indoor.png",
+        "outputShots": {
+          "settle-60s": "frames/bunker-indoor.png",
+          "settle-25s": "frames/bunker-indoor--settle-25s.png"
+        },
+        "primaryShot": "settle-60s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "silt-ring",
+      "target": "silt-and-signal-port--default",
+      "slug": "silt-and-signal-port",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "transparent",
+        "outdoor"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-silt-and-signal-port/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "translucent in-canvas ring, haze and rock arches",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/silt-and-signal-port/f48/silt-and-signal-port/frames/f48-silt-and-signal-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/silt-and-signal-port/f48/silt-and-signal-port/frames/f48-silt-and-signal-default/silt-and-signal-port--default--settle-25s.jpg",
+          "sha256": "f0b9202a3aeaa7cb8ae93b92297c1bc1881e4e7e5e4f614ebaac4fbb850ba782",
+          "bytes": 127210,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/silt-and-signal-port/f48/silt-and-signal-port/frames/f48-silt-and-signal-default/silt-and-signal-port--default--settle-60s.jpg",
+          "sha256": "c3955edf77e2580236bb62e26f0f6b0d982c497a4cea801c50a71c5520fcd65c",
+          "bytes": 128493,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:silt-ring$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/silt-ring.png",
+        "outputShots": {
+          "settle-25s": "frames/silt-ring.png",
+          "settle-60s": "frames/silt-ring--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "drift-vfx",
+      "target": "heatsink--default",
+      "slug": "heatsink",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "particles-vfx",
+        "emissive",
+        "night-indoor"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-heatsink/",
+      "query": "",
+      "changedIn4710": "two Meshy towers added",
+      "expectedDelta": "localized change from 4.7.10 content (two Meshy towers added) is expected; the baseline predates it",
+      "note": "Thermal Drift sunset circuit: sparks, bloom, lit traffic",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f50 (4.7.9 Thermal Drift fix 319641cb9; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/heatsink/f50/heatsink/frames/f50-heatsink-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/heatsink/f50/heatsink/frames/f50-heatsink-default/heatsink--default--settle-25s.jpg",
+          "sha256": "5895910616f9db894831cae55baddc8e2c98e13f2557c4f6c69c1e00ba40511f",
+          "bytes": 131964,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/heatsink/f50/heatsink/frames/f50-heatsink-default/heatsink--default--settle-60s.jpg",
+          "sha256": "64a03cea68fa8d73bbe8153f78a5a6b99daaa2522de66fe5df553095979d079e",
+          "bytes": 131483,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:drift-vfx$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/drift-vfx.png",
+        "outputShots": {
+          "settle-25s": "frames/drift-vfx.png",
+          "settle-60s": "frames/drift-vfx--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "chroma-vfx",
+      "target": "splat-rush-port--default",
+      "slug": "splat-rush-port",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "particles-vfx",
+        "sky-daylight"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-splat-rush-port/",
+      "query": "",
+      "changedIn4710": "palette island added",
+      "expectedDelta": "localized change from 4.7.10 content (palette island added) is expected; the baseline predates it",
+      "note": "Chroma Roll: cloud sea, particles and an emissive ball",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/splat-rush-port/f48/splat-rush-port/frames/f48-splat-rush-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/splat-rush-port/f48/splat-rush-port/frames/f48-splat-rush-default/splat-rush-port--default--settle-25s.jpg",
+          "sha256": "b6869e17dd132aaad2418e7a50a95432d6adc52df65ff240349e6fd3ce00de03",
+          "bytes": 41964,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/splat-rush-port/f48/splat-rush-port/frames/f48-splat-rush-default/splat-rush-port--default--settle-60s.jpg",
+          "sha256": "aed81ff5d4a8e7054665732e208f6a0fd97a1ecf206374d133645678b0b8df85",
+          "bytes": 37469,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:chroma-vfx$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/chroma-vfx.png",
+        "outputShots": {
+          "settle-25s": "frames/chroma-vfx.png",
+          "settle-60s": "frames/chroma-vfx--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "tennis-text",
+      "target": "top-tennis--default",
+      "slug": "top-tennis",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "text-ui",
+        "outdoor"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-top-tennis/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "in-canvas 3D scoreboard text and banners (DOM HUD is hidden by the canvas-only capture)",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-60s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "phase 7 (2026-11-01, about 4.7.6/4.7.7; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-1",
+      "baselines": {
+        "settle-25s": null,
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/top-tennis/p7/top-tennis/frames/g01p7-1/top-tennis--default--settle-60s.jpg",
+          "sha256": "0282933b19bfea4a0056973db2038e4e3ef1378a59e83c79e44bd446996c5cd0",
+          "bytes": 81623,
+          "trackedInGit": true
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:tennis-text$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/tennis-text.png",
+        "outputShots": {
+          "settle-60s": "frames/tennis-text.png",
+          "settle-25s": "frames/tennis-text--settle-25s.png"
+        },
+        "primaryShot": "settle-60s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "crown-skinned",
+      "target": "iron-crown--colosseum-ruins",
+      "slug": "iron-crown",
+      "variant": "colosseum-ruins",
+      "template": null,
+      "categories": [
+        "skinned",
+        "outdoor"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-iron-crown/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "two skinned fighters in idle pose",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-60s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "phase 9 (2026-11-01, about 4.7.8; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/iron-crown/p9-r1/iron-crown/frames/g05p9-r1-4",
+      "baselines": {
+        "settle-25s": null,
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/iron-crown/p9-r1/iron-crown/frames/g05p9-r1-4/iron-crown--colosseum-ruins--settle-60s.jpg",
+          "sha256": "f3f12d0e2df72ac2ee639cff558e9b2a37fe5ac673c65a61035256d6e1795381",
+          "bytes": 96485,
+          "trackedInGit": true
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:crown-skinned$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/crown-skinned.png",
+        "outputShots": {
+          "settle-60s": "frames/crown-skinned.png",
+          "settle-25s": "frames/crown-skinned--settle-25s.png"
+        },
+        "primaryShot": "settle-60s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "ninja-skinned",
+      "target": "ninja-runner-port--village",
+      "slug": "ninja-runner-port",
+      "variant": "village",
+      "template": null,
+      "categories": [
+        "skinned",
+        "outdoor"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-ninja-runner-port/",
+      "query": "?at=100",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "runner and crowd on a cobbled road; animation phase differs per capture",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "phase 7 (2026-11-01, about 4.7.6/4.7.7; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/ninja-runner-port/p7-r1/ninja-runner-port/frames/g20p7-r1-3",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/ninja-runner-port/p7-r1/ninja-runner-port/frames/g20p7-r1-3/ninja-runner-port--village--settle-25s.jpg",
+          "sha256": "9a19b056ead37ca3c6235e5780880921029a3ac00c46c7de7d82ecdf7eb13ff6",
+          "bytes": 122769,
+          "trackedInGit": true
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/ninja-runner-port/p7-r1/ninja-runner-port/frames/g20p7-r1-3/ninja-runner-port--village--settle-60s.jpg",
+          "sha256": "3d701501d6eb3ed8a1223bbda7368d73e54309cd949e9f4103022a962107d9f2",
+          "bytes": 122744,
+          "trackedInGit": true
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:ninja-skinned$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/ninja-skinned.png",
+        "outputShots": {
+          "settle-25s": "frames/ninja-skinned.png",
+          "settle-60s": "frames/ninja-skinned--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "dotdash-static",
+      "target": "dot-dash-3d--default",
+      "slug": "dot-dash-3d",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "indoor",
+        "emissive",
+        "text-ui"
+      ],
+      "motion": "light",
+      "route": "/apps/showcase-dot-dash-3d/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "maze board under point lights; mostly static",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f48-6e8a461 (frozen 6e8a46152, 4.7.9 candidate; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/dot-dash-3d/f48/dot-dash-3d/frames/f48-dot-dash-default",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/dot-dash-3d/f48/dot-dash-3d/frames/f48-dot-dash-default/dot-dash-3d--default--settle-25s.jpg",
+          "sha256": "fde40a22b97461ea25ad20d8a8152d5832918e1e225da339ff7d752056b4c185",
+          "bytes": 106386,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/dot-dash-3d/f48/dot-dash-3d/frames/f48-dot-dash-default/dot-dash-3d--default--settle-60s.jpg",
+          "sha256": "11e9239601bb153bb91defe0c591c9f8113a94db90c4cfe04559696fa9db653c",
+          "bytes": 106438,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:dotdash-static$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/dotdash-static.png",
+        "outputShots": {
+          "settle-25s": "frames/dotdash-static.png",
+          "settle-60s": "frames/dotdash-static--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    },
+    {
+      "kind": "paired",
+      "id": "serpent-sky",
+      "target": "serpentine-sky-run-port--default",
+      "slug": "serpentine-sky-run-port",
+      "variant": "default",
+      "template": null,
+      "categories": [
+        "sky-daylight",
+        "skinned"
+      ],
+      "motion": "animated",
+      "route": "/apps/showcase-serpentine-sky-run-port/",
+      "query": "",
+      "changedIn4710": null,
+      "expectedDelta": "none from 4.7.10 content",
+      "note": "dusk cloud sea and runner",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "deviceScaleFactor": 1,
+      "settle": {
+        "ready": "READY (data-aura3d-ready or LIVE_APPS drawCalls > 0) then target.prepare(page)",
+        "shots": [
+          "settle-25s",
+          "settle-60s"
+        ],
+        "defaultShots": [
+          "settle-25s"
+        ],
+        "waitSeconds": {
+          "settle-25s": 25,
+          "settle-60s": 60
+        }
+      },
+      "baselineCapture": "f49-c24731c (c24731c8d after reverts; ACR software WebGL2)",
+      "baselineFramesDir": "evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-1",
+      "baselines": {
+        "settle-25s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-1/serpentine-sky-run-port--default--settle-25s.jpg",
+          "sha256": "4c00de8a25fece2cd9851fc87338128fa30bffeb542a382b5fc36a8fca974bdd",
+          "bytes": 59936,
+          "trackedInGit": false
+        },
+        "settle-60s": {
+          "root": "repo",
+          "path": "evidence/game-upgrades-47/serpentine-sky-run-port/f49/serpentine-sky-run-port/frames/f49-serpentine-sky-run-1/serpentine-sky-run-port--default--settle-60s.jpg",
+          "sha256": "f4fd3e49f662cfc98e6b228523541c153afb196e29fc78dc36f5154871ddcd6c",
+          "bytes": 59967,
+          "trackedInGit": false
+        }
+      },
+      "capture": {
+        "spec": "tests/browser/visual-compare-5.0.spec.ts",
+        "grep": "@vc:serpent-sky$",
+        "output": "tests/reports/visual-compare-5.0/<run>/frames/serpent-sky.png",
+        "outputShots": {
+          "settle-25s": "frames/serpent-sky.png",
+          "settle-60s": "frames/serpent-sky--settle-60s.png"
+        },
+        "primaryShot": "settle-25s"
+      }
+    }
+  ],
+  "missingBaselines": [
+    {
+      "want": "neutral-environment-lit PBR product viewer (template)",
+      "candidates": [
+        "apps/product-studio",
+        "apps/flagship-viewer",
+        "apps/material-lab"
+      ],
+      "why": "no 4.7.x capture of any viewer or product app exists under evidence/ or tests/reports/; the closest 4.7 frame is orbit-neutral (a game under ?env=neutral)"
+    },
+    {
+      "want": "transmission / glass material lab",
+      "candidates": [
+        "apps/materials-transmission",
+        "apps/showcase-material-asset-inspector"
+      ],
+      "why": "no 4.7.x frame; orbit-glass covers a canopy only"
+    },
+    {
+      "want": "skinned character viewer",
+      "candidates": [
+        "apps/character-viewer",
+        "apps/animation-walk"
+      ],
+      "why": "no 4.7.x frame; crown-skinned / ninja-skinned are in-game poses"
+    },
+    {
+      "want": "create-aura3d templates (mini-game, racing-starter, falling-blocks-starter, character-controller)",
+      "candidates": [
+        "packages/create-aura3d/templates/*"
+      ],
+      "why": "templates were never captured at 4.7.x; evidence/live-4xx frames are 4.1-4.2 production hero shots (older, JPEG, other viewport)"
+    },
+    {
+      "want": "dedicated particle/VFX showcase",
+      "candidates": [
+        "apps/showcase-blockfall-reactor",
+        "examples/effects-*"
+      ],
+      "why": "no 4.7.x frame; drift-vfx and chroma-vfx are in-game particles"
+    },
+    {
+      "want": "the released 4.7.10 frames of the four changed games",
+      "candidates": [
+        "heatsink",
+        "aura-links-3d",
+        "teleoperator",
+        "splat-rush-port"
+      ],
+      "why": "the wave-1 after capture (tag w1c-11022359) kept only decoded luma rows (/tmp/gu47-lanes/state81/w1c/*.decode.txt), not frames; the listed baselines are the live frames of record before the 4.7.10 model swaps, so those four views carry an expectedDelta"
+    },
+    {
+      "want": "real-GPU baseline",
+      "candidates": [],
+      "why": "every 4.7.x frame is software WebGL2 (SwiftShader); no physical-GPU frame of the same views exists"
+    }
+  ],
+  "showcase": [
+    {
+      "kind": "showcase",
+      "id": "sc-product-neutral",
+      "title": "Premium product viewer (independent studio look)",
+      "capability": "neutral-environment PBR lighting with independent sky, physical material lobes",
+      "enable": "scene().add(looks.preset(\"product-studio\")) in templates/premium-product-viewer (createAuraApp); physical lobes via material.pbr clearcoat/sheen/anisotropy",
+      "source": {
+        "type": "examples-catalog",
+        "item": "template:premium-product-viewer"
+      },
+      "fallback": {
+        "type": "examples-catalog",
+        "item": "template:product-viewer",
+        "note": "sibling template without the premium look; not the same scene"
+      }
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-character-viewer",
+      "title": "Character viewer template (skinned rig)",
+      "capability": "skinned character in the packed 5.0 template",
+      "enable": "npm create aura3d@latest -- --template character-viewer",
+      "source": {
+        "type": "examples-catalog",
+        "item": "template:character-viewer"
+      },
+      "fallback": null
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-custom-shader",
+      "title": "material.custom on the shader-graph runtime",
+      "capability": "authored GLSL/WGSL custom material lowered by @aura3d/engine/shader-graph-runtime",
+      "enable": "material.custom({ ... }) from @aura3d/engine; examples/native-capabilities scenario \"custom-shader\"",
+      "source": {
+        "type": "examples-catalog",
+        "item": "capability-example:custom-shader"
+      },
+      "fallback": {
+        "type": "examples-catalog",
+        "item": "capability-example:typed-model",
+        "note": "same typed model with the stock material (no custom shader)"
+      }
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-world-text",
+      "title": "World text (extruded text3D)",
+      "capability": "native world text: extruded glyph geometry, ligature/kern and script fallback",
+      "enable": "text3D(\"AURA3D\", { size, depth, material }) from @aura3d/engine",
+      "source": {
+        "type": "examples-catalog",
+        "item": "capability-example:world-text"
+      },
+      "fallback": {
+        "type": "examples-catalog",
+        "item": "capability-example:typed-model",
+        "note": "same typed model without the text node"
+      }
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-worker-render",
+      "title": "Worker-owned rendering (opt-in)",
+      "capability": "the same typed scene rendered by a dedicated render worker",
+      "enable": "createAuraApp(target, { worker: { createWorker: createWorkerRendererWorker, fallback: \"error\" } }) with createWorkerRendererWorker from @aura3d/engine/worker",
+      "source": {
+        "type": "examples-catalog",
+        "item": "capability-example:worker-render"
+      },
+      "fallback": {
+        "type": "examples-catalog",
+        "item": "capability-example:typed-model",
+        "note": "identical typed scene rendered on the main thread (4.7.10-equivalent default path)"
+      }
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-postprocess",
+      "title": "Root color-grade post effect",
+      "capability": "v2 display-stage post effects over the typed scene",
+      "enable": "effects.* builders (for example the color grade used by examples/native-capabilities \"postprocess\")",
+      "source": {
+        "type": "examples-catalog",
+        "item": "capability-example:postprocess"
+      },
+      "fallback": {
+        "type": "examples-catalog",
+        "item": "capability-example:typed-model",
+        "note": "same typed model without the effect"
+      }
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-shader-graph",
+      "title": "Shader graph materials on WebGL2",
+      "capability": "shader-graph material variants (baseline vs normal-map graph)",
+      "enable": "shader-graph material lowered through @aura3d/rendering/shader-graph (see tests/browser/native-shader-graph.spec.ts)",
+      "source": {
+        "type": "spec-attachment",
+        "spec": "native-shader-graph",
+        "names": [
+          "webgl2-graph-normal.png"
+        ]
+      },
+      "fallback": {
+        "type": "spec-attachment",
+        "spec": "native-shader-graph",
+        "names": [
+          "webgl2-graph-baseline.png"
+        ],
+        "note": "the same graph without the normal path"
+      }
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-alt-outputs",
+      "title": "Alternative outputs (addons)",
+      "capability": "vector (SVG), outline and stereo outputs of one scene from @aura3d/addons",
+      "enable": "import the spatial/vector/outline/stereo outputs from @aura3d/addons (tests/browser/native-alternative-outputs.spec.ts)",
+      "source": {
+        "type": "spec-attachment",
+        "spec": "native-alternative-outputs",
+        "names": [
+          "vector-output.png",
+          "outline-output.png",
+          "stereo-output.png"
+        ]
+      },
+      "fallback": null
+    },
+    {
+      "kind": "showcase",
+      "id": "sc-geometry-tools",
+      "title": "Procedural geometry tools (addons)",
+      "capability": "surface/loft/teapot generators and a deformation interaction",
+      "enable": "@aura3d/engine/geometry-tools and @aura3d/addons generators (tests/browser/native-geometry-tools.spec.ts)",
+      "source": {
+        "type": "spec-attachment",
+        "spec": "native-geometry-tools",
+        "names": [
+          "surface.png",
+          "loft.png",
+          "teapot.png",
+          "deformed.png"
+        ]
+      },
+      "fallback": null
+    }
+  ],
+  "showcaseNotShown": [
+    {
+      "feature": "WebGPU backend opt-in (renderer.backend \"webgpu\" / qualityProfile \"experimental-webgpu\")",
+      "why": "ACR containers have no GPU adapter; native-gpu-render-compute (webgpu-before / webgpu-after) reports unsupported or software no-data, and a WebGPU frame would equal the WebGL2 frame anyway. If native-gpu emits the two PNG attachments they can be added as a spec-attachment view."
+    },
+    {
+      "feature": "reversed / logarithmic camera depth",
+      "why": "visible only in a far-plane z-fighting scene; native-camera-depth checks numbers, not a presentable frame, and no existing scene shows the difference."
+    },
+    {
+      "feature": "weighted order-independent transparency, clipping planes, per-view velocity/temporal reconstruction",
+      "why": "native-transparency, native-clipping and native-temporal-reconstruction evaluate fixtures on 32x32-class canvases and attach no frames."
+    },
+    {
+      "feature": "Gaussian splats and scalar volumes (experimental)",
+      "why": "native-splats-volume builds numeric fixtures and attaches no frame; there is no example scene."
+    },
+    {
+      "feature": "clustered lights, IES photometric lights, probe grids, voxel GI (experimental)",
+      "why": "native-advanced-lighting only retains a Lambertian calibration card, not a showcase scene."
+    },
+    {
+      "feature": "wide-gamut (display-p3) output",
+      "why": "an sRGB headless capture cannot show it; native-color-output asserts numbers."
+    },
+    {
+      "feature": "selective bloom",
+      "why": "inert on the software-WebGL2 runner (generated-programs-unavailable), unchanged since 4.7.10 and no shipping game requests it."
+    }
+  ],
+  "problems": []
+}
