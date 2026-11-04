@@ -94,7 +94,7 @@ AURA3D_ARTIFACTS_BLOB_URL="${AURA3D_ARTIFACTS_BLOB_URL:-}"
 AURA3D_ACR_IDENTITY_TASK="${AURA3D_ACR_IDENTITY_TASK:-}"
 AURA3D_ARTIFACT_TRANSPORT="${AURA3D_ARTIFACT_TRANSPORT:-managed-identity}"
 case "$AURA3D_ARTIFACT_TRANSPORT" in managed-identity|legacy-sas) ;; *) echo "FATAL: invalid artifact transport." >&2; exit 2;; esac
-ACR_TIMEOUT_ARGS=()
+ACR_TIMEOUT_ARGS=(--timeout 1800)  # policy: every ACR build/run is bounded at 1800 s
 BUILD="${BUILD:-1}"
 KEEP_IMAGE="${KEEP_IMAGE:-}"
 CONTEXT_PROFILE="${CONTEXT_PROFILE:-slim}"
