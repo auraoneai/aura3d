@@ -1,0 +1,11 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a1a620-a8fa-70f7-b4f0-54474b386b02",
+    "operation": "text-to-3d-refine",
+    "createdAt": "2026-11-04T10:35:22.513Z",
+    "finishedAt": "2026-11-04T10:36:25.878Z",
+    "consumedCredits": 10,
+    "postProcess": "meshopt simplify 27,702 -> 5,994 triangles, 1024 px maps (decimate.cjs), bounds unchanged"
+  }
+}
