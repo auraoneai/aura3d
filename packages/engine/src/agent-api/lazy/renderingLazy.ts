@@ -1,6 +1,6 @@
 /**
  * Narrow lazy facade for `@aura3d/rendering` (see `assetsBrowserLazy.ts`).
- * A bare `import("@aura3d/rendering")` keeps the entire rendering barrel namespace alive; deferred call
+ * A bare `import("@aura3d/rendering")` keeps the entire rendering barrel namespace alive; lazy call
  * sites import this module instead and receive exactly the names they destructure.
  */
 export {

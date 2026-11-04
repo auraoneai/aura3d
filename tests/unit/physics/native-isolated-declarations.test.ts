@@ -179,9 +179,11 @@ describe("physics declaration isolation", () => {
       // Test the second guard even if the adapter itself is missing.
       expect(() => checkConsumer(directory, 'import type * as Rapier from "@dimforge/rapier3d-compat"; export type T = typeof Rapier;'))
         .toThrow("Forbidden optional backend resolution: @dimforge/rapier3d-compat");
-      // The exact loader contract intentionally retains its backend module type.
-      expect(() => checkConsumer(directory, 'import type { PhysicsWorldModule } from "./engine-physics/PhysicsWorldProvider.js"; export type T = PhysicsWorldModule;'))
-        .toThrow("Forbidden optional backend resolution: @aura3d/physics-rapier");
+      // The engine loader contract reaches the solver only through `@aura3d/physics/world`, whose `ensurePhysics` is typed
+      // structurally (ensureOpaque.ts), so the engine's declarations stay solver-free for strict consumers without the optional peer.
+      const loader = checkConsumer(directory, 'import type { PhysicsWorldModule } from "./engine-physics/PhysicsWorldProvider.js"; export type T = PhysicsWorldModule;');
+      expect(loader.diagnostics).toBe("");
+      expect(loader.resolved.filter((name) => forbidden.has(name))).toEqual([]);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

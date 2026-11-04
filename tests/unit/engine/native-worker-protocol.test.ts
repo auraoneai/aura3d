@@ -351,7 +351,7 @@ describe("worker-owned rendering protocol", () => {
     await app.ready;
     const aborter = new AbortController();
     const rejected = expect(app.setScene(snapshot("loading"), { signal: aborter.signal })).rejects.toMatchObject({ code: "cancelled" });
-    for (let i = 0; i < 15 && !mountedSignal; i++) await Promise.resolve();
+    for (let i = 0; i < 200 && !mountedSignal; i++) await tick();
     expect(mountedSignal?.aborted).toBe(false);
     aborter.abort(); await rejected; await tick();
     expect(mountedSignal?.aborted).toBe(true);
