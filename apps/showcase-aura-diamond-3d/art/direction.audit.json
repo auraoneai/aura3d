@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-diamond-3d/art/direction.ts",
-  "sourceSha256": "736107afb38b6ae60b12cee20e910d6cee26de34a5a3e984a9a1bcebab80055d",
+  "sourceSha256": "dc02f542c5ec48a7f038ebb229b3d8063d553f8ef08727e7a162bf2f3f3e123e",
   "id": "showcase-aura-diamond-3d",
   "genre": "golf-physics",
   "signatureEffect": "bat-crack splinter flash",
@@ -843,6 +843,13 @@
         "role": "set-dressing",
         "assetKey": "aura_diamond_3d_ballparkHabitat",
         "maxTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "aura_diamond_3d_ballparkHoodooR2",
+        "maxTriangles": 10000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 512
       },
