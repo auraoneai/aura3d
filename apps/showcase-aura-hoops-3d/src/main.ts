@@ -920,7 +920,8 @@ function buildVenueDressing(v: VenueSpec): any[] {
       mural: assets.aura_hoops_3d_blacktopMuralWall,
       lifeguardTower: assets.aura_hoops_3d_blacktopLifeguardTower,
       corrugatedRoof: assets.aura_hoops_3d_blacktopCorrugatedRoof,
-      container: assets.aura_hoops_3d_blacktopContainer
+      container: assets.aura_hoops_3d_blacktopContainer,
+      bleacher: assets.aura_hoops_3d_blacktopBleacherR2
     }));
   }
 

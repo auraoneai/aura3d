@@ -55,6 +55,8 @@ type AuraGeneratedRouteAssetDefinitions = {
   readonly "aura_hoops_3d_blacktopCorrugatedRoof": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
   /** GU47 wave 2 WP-36 blacktopContainer: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopContainer.*). */
   readonly "aura_hoops_3d_blacktopContainer": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
+  /** GU47 wave 3 WP-36 blacktopBleacherR2: Meshy text-to-3d (assets/provenance/aura_hoops_3d_blacktopBleacherR2.*). */
+  readonly "aura_hoops_3d_blacktopBleacherR2": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly sizeBytes: number; readonly bounds: readonly [number, number, number]; };
 };
 
 export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAuraAssets({
@@ -411,6 +413,14 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
     hash: "sha256-84ed1f44049780cba2f77290c0db0cc49c0a7cfbeea9eea63cdd6d935984a7d9",
     bounds: [1.891,1.279,1.262],
     sizeBytes: 919316,
+  },
+  "aura_hoops_3d_blacktopBleacherR2": {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/aura_hoops_3d_blacktopBleacherR2.716d8377.glb",
+    hash: "sha256-716d8377a0185e4cc1051ad36e75842105eb97d1b77ed85ec10d26fee5186bea",
+    bounds: [1.9,0.541,0.484],
+    sizeBytes: 1493996,
   },
 } as const);
 
