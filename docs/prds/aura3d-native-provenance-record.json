@@ -326,6 +326,124 @@
       "disposition": "false-positive",
       "reviewer": "agent (owner-delegated, 2026-11-02)",
       "note": "Four lines reviewed individually: ProgramCache.ts 'captured prewarm' is the shader-program prewarm signal twin (technical sense of captured/derived); aura-assets-v2.ts '(original, CC0-1.0)' names Aura-commissioned audio replacing earlier in-repo cues; fighters.ts 'adapted from the create-aura3d fighting template' is Aura's own template; native-legacy-scene-formats.test.ts says the formats are NOT adapted from another engine's corpus. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "package/templates/animation-studio/studio/src/components/Icon.tsx",
+        "package/templates/animation-studio/studio/src/state/util.ts"
+      ],
+      "disposition": "independent-implementation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "Packed-archive copies of the animation-studio template's studio Icon.tsx and util.ts (create-aura3d ships templates/animation-studio). The 'ported from design' comments name the owner's own Animation Studio design mock; the workspace copies are digest-bound in this record (same bytes), 2D UI helpers with no 3D engine code. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "examples/drift-and-deliver-port/chase.ts",
+        "examples/heatsink-port/track.ts",
+        "examples/last-train-port/sim.ts",
+        "examples/roadster-hours-port/camera.ts",
+        "examples/roadster-hours-port/course.ts",
+        "examples/roadster-hours-port/hud.ts",
+        "examples/strange-orbit-port/course.ts",
+        "examples/strange-orbit-port/palette.ts",
+        "examples/strange-orbit-port/race.ts",
+        "examples/strange-orbit-port/reentry.ts",
+        "examples/strange-orbit-port/shaders.ts",
+        "examples/strange-orbit-port/track.ts"
+      ],
+      "disposition": "compatibility-contract",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "Repo-only behavioural port of a captured Crayon game used as the parity reference for the R-20 Phase B exit (see the port's PORTING-NOTES.md and tests/fixtures/crayon/<game>/PROVENANCE.md). The comment says the logic/constants follow the captured original's game logic (the original is third-party game code, NOT three.js or any 3D-engine source: overlap against the three r185 build is zero and the port is written on Aura3D APIs). Some game logic and constants follow the original statement-for-statement as the oracle-replay tests require; the file stays replacementStatus unreviewed because ownership/licence of the original game's logic is not established in this repository (open owner item). examples/ is in no package `files` list and is never staged into a consumer or archive. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "tests/fixtures/camera-rig/drift-chase-reference.ts"
+      ],
+      "disposition": "compatibility-contract",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "Pure-math reference of the captured Drift & Deliver chase camera used as a test oracle for the port (tests/ is in no package archive). The original is third-party game logic, not three.js or other 3D-engine source; ownership/licence of the original's logic is not established here (open owner item); the file stays unrecorded. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "examples/last-train-port/townkit.ts",
+        "examples/where-the-wind-wanders-port/scenery.ts"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "Both matches are negations: 'nothing is loaded or copied from the original' (townkit.ts) and 'nothing is copied from the original's art' (scenery.ts); the geometry and textures are generated in code on Aura3D APIs, with no engine-source text. Repo-only (examples/ ships in no archive). Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "provenance-reference",
+      "paths": [
+        "tests/browser/silt-and-signal-port.spec.ts"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "'tolerance derived from the original's own repeatability' describes how a test tolerance was chosen from two capture runs; it is a data-flow statement in a Playwright spec (tests/ ships in no archive), not copied code. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "embedded-data",
+      "detailPattern": "Base64 block \\d+: \\d+ decoded bytes require provenance review",
+      "paths": [
+        "examples/roadster-hours-port/cars.baked.ts"
+      ],
+      "disposition": "licensed-notice",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "GENERATED by examples/roadster-hours-port/tools/bake-cars.mjs from CC0 models (Quaternius via poly.pizza, Kenney racing kit), as stated in the file header and in assets/ATTRIBUTION.md; the base64 blocks are baked vertex/index buffers of those CC0 meshes, not engine code or captured game data. CC0 needs no notice; sources are recorded. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "embedded-data",
+      "detail": "Large numeric table requires provenance review",
+      "paths": [
+        "examples/last-train-port/data/route.json"
+      ],
+      "disposition": "compatibility-contract",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "Route measurements (six legs sampled every 2 m: position, curvature, grade, bank) taken from the captured Last Train original's own route functions, per PORTING-NOTES.md, to reproduce its route in the parity port. Third-party game data, not engine code; ownership/licence of the original route is not established here (open owner item). Repo-only: examples/ ships in no archive. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "embedded-data",
+      "detail": "Large numeric table requires provenance review",
+      "paths": [
+        "src/aura-assets.ts"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "src/aura-assets.ts is GENERATED by the Aura3D `assets typegen` registry: the numeric table is the drivableMesh / racingTopology data extracted from the admitted showcaseTsukubaCircuit GLB (source 'asset-mesh-extracted', hash sha256-a845b09b..., brand-cleaned per docs/audit/likeness-brand-audit.md), whose own provenance is in aura.assets.json. Derived asset data, not engine code, and the file changes on every asset admission, so it is path-scoped rather than digest-bound. src/ ships in no package archive. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "embedded-data",
+      "detail": "Large numeric table requires provenance review",
+      "paths": [
+        "apps/loader-compression/src/main.ts"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "COMPRESSED_POSITION_BYTES is a tiny meshopt-encoded vertex stream (a few hundred bytes) used as the decode input of the loader-compression demo; the codec is the vendored meshoptimizer (MIT, packages/assets/vendor/codec-provenance.json). A byte fixture for the demo app, not engine code. apps/ ships in no package archive. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "embedded-data",
+      "detail": "Large numeric table requires provenance review",
+      "paths": [
+        "apps/showcase-blockfall-reactor/src/gameplay/reactor-scene.ts"
+      ],
+      "disposition": "independent-implementation",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "BLOCK_TILE_GEOMETRY positions/indices are the showcase's own chamfered jewel-tile mesh, described and authored in the preceding comment (octagonal front ring, broader back ring, eight side facets); simple coordinates with no third-party source. apps/ ships in no package archive. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
+    },
+    {
+      "kind": "embedded-data",
+      "detail": "Large numeric table requires provenance review",
+      "paths": [
+        "examples/custom-material-lab/main.ts"
+      ],
+      "disposition": "false-positive",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "A 4x4 RGBA8 texel array (64 bytes of hand-picked colours) for the portable-dissolve-signal test texture of the custom-material lab; no third-party data. examples/ ships in no package archive. Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested); expires 2027-01-31."
     }
   ],
   "$reviewedUnresolvedDependencies": [
@@ -1070,6 +1188,121 @@
         "disposition": "false-positive",
         "reviewer": "agent (owner-delegated, 2026-11-02)",
         "note": "The header names the public `@aura3d/math/three` subpath that re-exports this entry; it is a package path, not a reference to three.js source."
+      }
+    ]
+  },
+  "examples/aura-slam/audio/audio.ts": {
+    "sha256": "10c2d8caa2bc0e8ed408f206851e1e7ad6570905c5a763d7f292121675c22d84",
+    "license": "MIT (Aura3D package license)",
+    "owner": "Aura3D",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "First-party port of Aura's own earlier release: the originals are hand-written scripts committed in this repository (tests/fixtures/aura-slam-original/, copied unchanged from apps/showcase-top-tennis at 655a8e67c, release 4.1.2; README there). No third-party 3D engine code; examples/ is in no package archive."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "detail": "M-AUDIO: Aura Slam's sound layer, ported from public/toptennis/tennis-audio.js onto the Aura3D synth kit.",
+        "disposition": "independent-implementation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "The 'ported from public/toptennis/tennis-audio.js' comment names Aura's own earlier first-party game script (tests/fixtures/aura-slam-original/toptennis/, release 4.1.2), re-expressed on the Aura3D synth kit; no third-party engine or game code. examples/ ships in no package archive."
+      },
+      {
+        "kind": "standardized-equation",
+        "detail": "Numerical Recipes linear congruential generator",
+        "disposition": "standardized-equation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "1664525 / 1013904223 are the published Numerical Recipes LCG parameters, used here for the deterministic seeded noise of the synth fallback; a published constant pair every LCG shares, not copied code (the same class is reviewed globally in $candidateClassReviews). Reviewed by an agent under the owner's 2026-11-02 delegation (no sign-off requested)."
+      }
+    ]
+  },
+  "examples/aura-slam/view/appearance.ts": {
+    "sha256": "85833a85dd9ab4c9dfc34f614f1cf0fa8acc7260c1eb38ea324657524e508105",
+    "license": "MIT (Aura3D package license)",
+    "owner": "Aura3D",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "First-party port of Aura's own earlier release: the originals are hand-written scripts committed in this repository (tests/fixtures/aura-slam-original/, copied unchanged from apps/showcase-top-tennis at 655a8e67c, release 4.1.2; README there). No third-party 3D engine code; examples/ is in no package archive."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "detail": "Cosmetic palette: ids are validated before entering a match; ported from player-appearance.js (same ids, labels, colours).",
+        "disposition": "independent-implementation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "'ported from player-appearance.js' names Aura's own earlier first-party script (tests/fixtures/aura-slam-original/toptennis/player-appearance.js, release 4.1.2): cosmetic ids, labels and colours of Aura's own game; no third-party engine or game code. examples/ ships in no package archive."
+      }
+    ]
+  },
+  "apps/animation-studio-web/src/components/Icon.tsx": {
+    "sha256": "0fe09b2a4b14990990b5f80c2f1c391820f37850ef153cc8c4dfb12565b08a96",
+    "license": "MIT (Aura3D package license)",
+    "owner": "Aura3D",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Animation Studio UI helpers/icons ported from the owner's own Animation Studio design mock (icons.jsx / design source): 2D DOM/SVG UI code, no 3D engine code. The stroke-icon path data is short hand-compacted SVG path text, authored for this studio (Lucide-style look only); first commit by the repository owner (gchahal1982, Aura3D 1.3.0, 2026-06-08)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "detail": "Icon set — stroke icons, Lucide-ish. Ported from design `icons.jsx`.",
+        "disposition": "independent-implementation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "'Ported from design icons.jsx' refers to the owner's own Animation Studio design mock; this is a 2D SVG stroke-icon table with no 3D engine code and no three.js/Babylon.js text (checked for overlap against the three r185 build: none)."
+      }
+    ]
+  },
+  "packages/create-aura3d/templates/animation-studio/studio/src/components/Icon.tsx": {
+    "sha256": "0fe09b2a4b14990990b5f80c2f1c391820f37850ef153cc8c4dfb12565b08a96",
+    "license": "MIT (Aura3D package license)",
+    "owner": "Aura3D",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Animation Studio UI helpers/icons ported from the owner's own Animation Studio design mock (icons.jsx / design source): 2D DOM/SVG UI code, no 3D engine code. The stroke-icon path data is short hand-compacted SVG path text, authored for this studio (Lucide-style look only); first commit by the repository owner (gchahal1982, Aura3D 1.3.0, 2026-06-08)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "detail": "Icon set — stroke icons, Lucide-ish. Ported from design `icons.jsx`.",
+        "disposition": "independent-implementation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "'Ported from design icons.jsx' refers to the owner's own Animation Studio design mock; this is a 2D SVG stroke-icon table with no 3D engine code and no three.js/Babylon.js text (checked for overlap against the three r185 build: none)."
+      }
+    ]
+  },
+  "apps/animation-studio-web/src/state/util.ts": {
+    "sha256": "7a32fb5e5a6866343ff408c8923a289682bf2914afda00af9d6a8592efc67918",
+    "license": "MIT (Aura3D package license)",
+    "owner": "Aura3D",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Animation Studio UI helpers/icons ported from the owner's own Animation Studio design mock (icons.jsx / design source): 2D DOM/SVG UI code, no 3D engine code. The stroke-icon path data is short hand-compacted SVG path text, authored for this studio (Lucide-style look only); first commit by the repository owner (gchahal1982, Aura3D 1.3.0, 2026-06-08)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "detail": "Shared formatting + small text helpers (ported from the design source).",
+        "disposition": "independent-implementation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "'ported from the design source' refers to the owner's own Animation Studio design mock; these are generic string/time formatting helpers (fmt, cap, boldHtml, highlightArgs, hash, shade), not 3D engine code."
+      }
+    ]
+  },
+  "packages/create-aura3d/templates/animation-studio/studio/src/state/util.ts": {
+    "sha256": "7a32fb5e5a6866343ff408c8923a289682bf2914afda00af9d6a8592efc67918",
+    "license": "MIT (Aura3D package license)",
+    "owner": "Aura3D",
+    "replacementStatus": "independent",
+    "reviewEvidence": [
+      "Animation Studio UI helpers/icons ported from the owner's own Animation Studio design mock (icons.jsx / design source): 2D DOM/SVG UI code, no 3D engine code. The stroke-icon path data is short hand-compacted SVG path text, authored for this studio (Lucide-style look only); first commit by the repository owner (gchahal1982, Aura3D 1.3.0, 2026-06-08)."
+    ],
+    "candidateReviews": [
+      {
+        "kind": "provenance-reference",
+        "detail": "Shared formatting + small text helpers (ported from the design source).",
+        "disposition": "independent-implementation",
+        "reviewer": "agent (owner-delegated, 2026-11-02)",
+        "note": "'ported from the design source' refers to the owner's own Animation Studio design mock; these are generic string/time formatting helpers (fmt, cap, boldHtml, highlightArgs, hash, shade), not 3D engine code."
       }
     ]
   }

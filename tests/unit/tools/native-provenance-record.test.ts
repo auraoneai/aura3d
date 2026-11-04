@@ -112,6 +112,18 @@ describe("native provenance record", () => {
     expect(wholesale).toEqual([]);
   });
 
+  it("scopes port-of-captured-game reviews to exact repo-only files and never calls third-party game logic independent", () => {
+    const ports = pathScopedReviews.filter((review) => review.kind === "provenance-reference" && review.paths?.some((path) => path.startsWith("examples/") && path.includes("-port/")));
+    expect(ports.length).toBeGreaterThan(0);
+    for (const review of ports) {
+      expect(review.paths!.every((path) => !path.endsWith("/") && !path.startsWith("package/")), review.note).toBe(true);
+      expect(["compatibility-contract", "false-positive"]).toContain(review.disposition);
+      if (review.disposition === "compatibility-contract") expect(review.note).toMatch(/third-party game|ownership\/licence/);
+    }
+    // Ported files keep no file-level independence claim: only the own-code files carry a digest-bound record.
+    for (const review of ports) for (const path of review.paths!) expect(record[path], path).toBeUndefined();
+  });
+
   it("matches a path-scoped review only inside its paths, on its kind, and by payload entry path", () => {
     const review = { kind: "text-reference" as const, paths: ["tests/", "package/dist/", "tools/exact.ts"], disposition: "false-positive" as const, reviewer: delegatedReviewer, note: "scoped" };
     const finding = (path: string, kind = "text-reference" as const) => ({ path, kind, detail: "three" });
