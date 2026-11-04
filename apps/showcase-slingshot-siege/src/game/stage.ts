@@ -63,6 +63,9 @@ export function barrelNodeId(i: number): string { return `v-barrel-${i}`; }
 export function plankNodeId(i: number): string { return `v-plank-${i}`; }
 export function gullPartId(g: number, part: "body" | "head" | "beak" | "wingL" | "wingR" | "tail"): string { return `v-gull-${g}-${part}`; }
 export function projectileNodeId(i: number): string { return `v-proj-${i}`; }
+/** Where idle projectile nodes wait: on screen (at the sling) and tiny, never hidden or parked off-screen (see buildStage). */
+export const PROJECTILE_PARK = [-7.4, 1.7, 0] as const;
+export const PROJECTILE_PARK_SCALE = 0.001;
 export function debrisNodeId(i: number): string { return `v-debris-${i}`; }
 export function dotNodeId(i: number): string { return `v-dot-${i}`; }
 export function bladeNodeId(mill: number, blade: number): string { return `v-mill-${mill}-blade-${blade}`; }
@@ -658,8 +661,11 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
 
   // ------------------------------------------------- projectiles + debris ---
   for (let i = 0; i < POOL.projectiles; i += 1) {
-    nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [0, -120, 0], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(0.48)
+    // 4.7.12: the pool is created ON-SCREEN at a tiny scale, never parked at y -120. A skinned, animated model that is
+    // created hidden/off-screen is never drawn once it is shown (the egg vanished after release); syncVisuals sets the
+    // real scale when a shot uses the node and re-parks it here, still visible, when the shot ends.
+    nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [...PROJECTILE_PARK], rotation: [0, Math.PI * 0.5, 0] })
+      .scale(PROJECTILE_PARK_SCALE)
       .animate({ clip: "Jump_Loop", loop: true, speed: 1.45 })
       .runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
   }

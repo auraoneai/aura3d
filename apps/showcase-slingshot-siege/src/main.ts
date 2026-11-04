@@ -25,7 +25,7 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockLook, blockNodeId, solidBlockMaterial, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS, SOLID_BLOCK_MATERIALS
+  pooledNodeIds, PROJECTILE_PARK, PROJECTILE_PARK_SCALE, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS, SOLID_BLOCK_MATERIALS
 } from "./game/stage";
 import { BlockInstancePool } from "./game/blockInstances";
 import { sanitizeRenderParams } from "./game/urlGuard";
@@ -208,11 +208,21 @@ const pieceVisuals = new Map<number, PieceVisual>();
 let gullVisualCount = 0;
 const tweenList: { id: string; t: number; dur: number; base: readonly [number, number, number]; kind: "squash" | "hop" }[] = [];
 
+/** 4.7.12: wait on screen, tiny and visible (see PROJECTILE_PARK in game/stage.ts). */
+function parkProjectile(id: string): void {
+  node(id)?.setPosition(PROJECTILE_PARK[0], PROJECTILE_PARK[1], PROJECTILE_PARK[2]).setScale(PROJECTILE_PARK_SCALE).setVisible(true);
+}
+
 function assignPieceVisuals(): void {
   pieceVisuals.clear();
   // Park AND hide every pooled piece/projectile/debris/puff node, including ones never touched yet
   // (never hide static stage/sling/prop nodes). Gull rigs and windmills are toggled below.
-  for (const id of POOLED_IDS) node(id)?.setPosition(0, -120, 0).setVisible(false);
+  for (const id of POOLED_IDS) {
+    // 4.7.12: idle projectile nodes stay on screen, tiny and visible (a node parked hidden off-screen is never drawn
+    // once a shot shows it); every other pooled node keeps the park-and-hide.
+    if (id.startsWith("v-proj-")) parkProjectile(id);
+    else node(id)?.setPosition(0, -120, 0).setVisible(false);
+  }
   const pieces = sim.pieceList();
   pieceSlots = assignPoolSlots(pieces.map((p) => p.spec), POOL);
   pieces.forEach((p, i) => {
@@ -934,8 +944,10 @@ function syncVisuals(): void {
       // so a live newer shot always wins its slot over a dead older one.
       const i = Number(u.id.slice(11)) % POOL.projectiles;
       const pid = projectileNodeId(i);
-      setPose(pid, u, 0.48);
-      if (u.visible) setNodeAnim(pid, "Jump_Loop", 1.5);
+      if (u.visible) {
+        setPose(pid, u, 0.48);
+        setNodeAnim(pid, "Jump_Loop", 1.5);
+      } else parkProjectile(pid);
     } else if (u.id.startsWith("debris-")) {
       const i = Number(u.id.slice(7));
       const d = sim.debrisList()[i];
