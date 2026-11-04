@@ -36423,7 +36423,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -46289,7 +46289,7 @@ export declare function createGameInspector(): GameInspector;
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "../../physics/index.js";
+import type { PhysicsWorldDescriptor } from "../../physics/solverless.js";
 import { type GameCollisionWorld } from "./GameRuntimeCore.js";
 export * from "./GameRuntimeCore.js";
 export declare function createGameCollisionWorld(descriptor?: PhysicsWorldDescriptor): GameCollisionWorld;
@@ -54568,47 +54568,9 @@ export declare const builtInCharacterAssets: import("./types.js").AuraAssetMap<{
 ```ts
 /** Compatibility bindings for the 4.x synchronous physics entry. */
 import type { AuraSceneSnapshot } from "./types.js";
-import { type AuraRuntimeScenePhysics } from "./physics-core.js";
+import { createPhysicsWithAccess, type AuraRuntimeScenePhysics } from "./physics-core.js";
 export * from "./physics-core.js";
-export declare const physics: {
-    readonly world: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldAsync: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly worldFromScene: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldFromSceneAsync: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly body: (options?: import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    }) => import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    };
-    readonly collider: (descriptor: import("../../../physics/index.js").ColliderDescriptor) => import("../../../physics/index.js").ColliderDescriptor;
-    readonly box: (x?: number, y?: number, z?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly sphere: (radius?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly capsule: (radius?: number, halfHeight?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly plane: (normal?: import("./types.js").AuraVec3, constant?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly mesh: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly convexHull: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly heightfield: (rows: readonly (readonly number[])[], cellSize?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly constraint: (descriptor: import("../../../physics/index.js").ConstraintDescriptor) => import("../../../physics/index.js").ConstraintDescriptor;
-    readonly bindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number, node: import("../../../physics/index.js").ScenePhysicsNode, mode?: "dynamic" | "kinematic") => void;
-    readonly unbindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number) => void;
-    readonly dispose: (world: import("./types.js").AuraPhysicsWorldController) => void;
-    readonly step: (world: import("./types.js").AuraPhysicsWorldController, options?: number | import("./types.js").AuraPhysicsStepOptions) => readonly import("../../../physics/index.js").CollisionEvent[];
-    readonly contacts: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("../../../physics/index.js").Contact[];
-    readonly liveContactCount: (world: import("./types.js").AuraPhysicsWorldController) => number;
-    readonly raycast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").RaycastHit | undefined;
-    readonly sphereCast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, radius: number, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").SphereCastHit | undefined;
-    readonly debug: (world: import("./types.js").AuraPhysicsWorldController) => import("./types.js").AuraPhysicsDebugSnapshot;
-    readonly debugNodes: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("./types.js").AuraSceneNode[];
-    readonly sceneBinding: (node: import("../../../physics/index.js").ScenePhysicsNode) => import("../../../physics/index.js").ScenePhysicsNode;
-    readonly nodeSpec: (spec: import("./types.js").AuraNodePhysicsSpec) => import("./types.js").AuraNodePhysicsSpec;
-    readonly resolveShape: (spec: import("./types.js").AuraNodePhysicsSpec) => import("../../../physics/index.js").PhysicsShape;
-};
+export declare const physics: ReturnType<typeof createPhysicsWithAccess>;
 export declare function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined;
 //# sourceMappingURL=physics.d.ts.map
 ```
@@ -120746,7 +120708,7 @@ export declare function estimateGlbResourceBytes(sizeBytes: number | undefined, 
 ## @aura3d/engine/animation
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -123617,7 +123579,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -129343,7 +129305,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -131968,7 +131930,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -133770,7 +133732,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -143589,7 +143551,7 @@ export declare function createGameInspector(): GameInspector;
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "../../physics/index.js";
+import type { PhysicsWorldDescriptor } from "../../physics/solverless.js";
 import { type GameCollisionWorld } from "./GameRuntimeCore.js";
 export * from "./GameRuntimeCore.js";
 export declare function createGameCollisionWorld(descriptor?: PhysicsWorldDescriptor): GameCollisionWorld;
@@ -151868,47 +151830,9 @@ export declare const builtInCharacterAssets: import("./types.js").AuraAssetMap<{
 ```ts
 /** Compatibility bindings for the 4.x synchronous physics entry. */
 import type { AuraSceneSnapshot } from "./types.js";
-import { type AuraRuntimeScenePhysics } from "./physics-core.js";
+import { createPhysicsWithAccess, type AuraRuntimeScenePhysics } from "./physics-core.js";
 export * from "./physics-core.js";
-export declare const physics: {
-    readonly world: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldAsync: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly worldFromScene: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldFromSceneAsync: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly body: (options?: import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    }) => import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    };
-    readonly collider: (descriptor: import("../../../physics/index.js").ColliderDescriptor) => import("../../../physics/index.js").ColliderDescriptor;
-    readonly box: (x?: number, y?: number, z?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly sphere: (radius?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly capsule: (radius?: number, halfHeight?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly plane: (normal?: import("./types.js").AuraVec3, constant?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly mesh: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly convexHull: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly heightfield: (rows: readonly (readonly number[])[], cellSize?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly constraint: (descriptor: import("../../../physics/index.js").ConstraintDescriptor) => import("../../../physics/index.js").ConstraintDescriptor;
-    readonly bindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number, node: import("../../../physics/index.js").ScenePhysicsNode, mode?: "dynamic" | "kinematic") => void;
-    readonly unbindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number) => void;
-    readonly dispose: (world: import("./types.js").AuraPhysicsWorldController) => void;
-    readonly step: (world: import("./types.js").AuraPhysicsWorldController, options?: number | import("./types.js").AuraPhysicsStepOptions) => readonly import("../../../physics/index.js").CollisionEvent[];
-    readonly contacts: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("../../../physics/index.js").Contact[];
-    readonly liveContactCount: (world: import("./types.js").AuraPhysicsWorldController) => number;
-    readonly raycast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").RaycastHit | undefined;
-    readonly sphereCast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, radius: number, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").SphereCastHit | undefined;
-    readonly debug: (world: import("./types.js").AuraPhysicsWorldController) => import("./types.js").AuraPhysicsDebugSnapshot;
-    readonly debugNodes: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("./types.js").AuraSceneNode[];
-    readonly sceneBinding: (node: import("../../../physics/index.js").ScenePhysicsNode) => import("../../../physics/index.js").ScenePhysicsNode;
-    readonly nodeSpec: (spec: import("./types.js").AuraNodePhysicsSpec) => import("./types.js").AuraNodePhysicsSpec;
-    readonly resolveShape: (spec: import("./types.js").AuraNodePhysicsSpec) => import("../../../physics/index.js").PhysicsShape;
-};
+export declare const physics: ReturnType<typeof createPhysicsWithAccess>;
 export declare function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined;
 //# sourceMappingURL=physics.d.ts.map
 ```
@@ -215902,7 +215826,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -216569,7 +216493,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -219151,7 +219075,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -268017,7 +267941,7 @@ export declare function createGameInspector(): GameInspector;
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "../../physics/index.js";
+import type { PhysicsWorldDescriptor } from "../../physics/solverless.js";
 import { type GameCollisionWorld } from "./GameRuntimeCore.js";
 export * from "./GameRuntimeCore.js";
 export declare function createGameCollisionWorld(descriptor?: PhysicsWorldDescriptor): GameCollisionWorld;
@@ -276296,47 +276220,9 @@ export declare const builtInCharacterAssets: import("./types.js").AuraAssetMap<{
 ```ts
 /** Compatibility bindings for the 4.x synchronous physics entry. */
 import type { AuraSceneSnapshot } from "./types.js";
-import { type AuraRuntimeScenePhysics } from "./physics-core.js";
+import { createPhysicsWithAccess, type AuraRuntimeScenePhysics } from "./physics-core.js";
 export * from "./physics-core.js";
-export declare const physics: {
-    readonly world: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldAsync: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly worldFromScene: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldFromSceneAsync: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly body: (options?: import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    }) => import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    };
-    readonly collider: (descriptor: import("../../../physics/index.js").ColliderDescriptor) => import("../../../physics/index.js").ColliderDescriptor;
-    readonly box: (x?: number, y?: number, z?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly sphere: (radius?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly capsule: (radius?: number, halfHeight?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly plane: (normal?: import("./types.js").AuraVec3, constant?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly mesh: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly convexHull: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly heightfield: (rows: readonly (readonly number[])[], cellSize?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly constraint: (descriptor: import("../../../physics/index.js").ConstraintDescriptor) => import("../../../physics/index.js").ConstraintDescriptor;
-    readonly bindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number, node: import("../../../physics/index.js").ScenePhysicsNode, mode?: "dynamic" | "kinematic") => void;
-    readonly unbindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number) => void;
-    readonly dispose: (world: import("./types.js").AuraPhysicsWorldController) => void;
-    readonly step: (world: import("./types.js").AuraPhysicsWorldController, options?: number | import("./types.js").AuraPhysicsStepOptions) => readonly import("../../../physics/index.js").CollisionEvent[];
-    readonly contacts: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("../../../physics/index.js").Contact[];
-    readonly liveContactCount: (world: import("./types.js").AuraPhysicsWorldController) => number;
-    readonly raycast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").RaycastHit | undefined;
-    readonly sphereCast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, radius: number, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").SphereCastHit | undefined;
-    readonly debug: (world: import("./types.js").AuraPhysicsWorldController) => import("./types.js").AuraPhysicsDebugSnapshot;
-    readonly debugNodes: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("./types.js").AuraSceneNode[];
-    readonly sceneBinding: (node: import("../../../physics/index.js").ScenePhysicsNode) => import("../../../physics/index.js").ScenePhysicsNode;
-    readonly nodeSpec: (spec: import("./types.js").AuraNodePhysicsSpec) => import("./types.js").AuraNodePhysicsSpec;
-    readonly resolveShape: (spec: import("./types.js").AuraNodePhysicsSpec) => import("../../../physics/index.js").PhysicsShape;
-};
+export declare const physics: ReturnType<typeof createPhysicsWithAccess>;
 export declare function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined;
 //# sourceMappingURL=physics.d.ts.map
 ```
@@ -306097,7 +305983,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -309191,7 +309077,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -357851,7 +357737,7 @@ export declare function createGameInspector(): GameInspector;
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "../../physics/index.js";
+import type { PhysicsWorldDescriptor } from "../../physics/solverless.js";
 import { type GameCollisionWorld } from "./GameRuntimeCore.js";
 export * from "./GameRuntimeCore.js";
 export declare function createGameCollisionWorld(descriptor?: PhysicsWorldDescriptor): GameCollisionWorld;
@@ -366130,47 +366016,9 @@ export declare const builtInCharacterAssets: import("./types.js").AuraAssetMap<{
 ```ts
 /** Compatibility bindings for the 4.x synchronous physics entry. */
 import type { AuraSceneSnapshot } from "./types.js";
-import { type AuraRuntimeScenePhysics } from "./physics-core.js";
+import { createPhysicsWithAccess, type AuraRuntimeScenePhysics } from "./physics-core.js";
 export * from "./physics-core.js";
-export declare const physics: {
-    readonly world: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldAsync: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly worldFromScene: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldFromSceneAsync: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly body: (options?: import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    }) => import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    };
-    readonly collider: (descriptor: import("../../../physics/index.js").ColliderDescriptor) => import("../../../physics/index.js").ColliderDescriptor;
-    readonly box: (x?: number, y?: number, z?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly sphere: (radius?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly capsule: (radius?: number, halfHeight?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly plane: (normal?: import("./types.js").AuraVec3, constant?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly mesh: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly convexHull: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly heightfield: (rows: readonly (readonly number[])[], cellSize?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly constraint: (descriptor: import("../../../physics/index.js").ConstraintDescriptor) => import("../../../physics/index.js").ConstraintDescriptor;
-    readonly bindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number, node: import("../../../physics/index.js").ScenePhysicsNode, mode?: "dynamic" | "kinematic") => void;
-    readonly unbindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number) => void;
-    readonly dispose: (world: import("./types.js").AuraPhysicsWorldController) => void;
-    readonly step: (world: import("./types.js").AuraPhysicsWorldController, options?: number | import("./types.js").AuraPhysicsStepOptions) => readonly import("../../../physics/index.js").CollisionEvent[];
-    readonly contacts: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("../../../physics/index.js").Contact[];
-    readonly liveContactCount: (world: import("./types.js").AuraPhysicsWorldController) => number;
-    readonly raycast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").RaycastHit | undefined;
-    readonly sphereCast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, radius: number, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").SphereCastHit | undefined;
-    readonly debug: (world: import("./types.js").AuraPhysicsWorldController) => import("./types.js").AuraPhysicsDebugSnapshot;
-    readonly debugNodes: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("./types.js").AuraSceneNode[];
-    readonly sceneBinding: (node: import("../../../physics/index.js").ScenePhysicsNode) => import("../../../physics/index.js").ScenePhysicsNode;
-    readonly nodeSpec: (spec: import("./types.js").AuraNodePhysicsSpec) => import("./types.js").AuraNodePhysicsSpec;
-    readonly resolveShape: (spec: import("./types.js").AuraNodePhysicsSpec) => import("../../../physics/index.js").PhysicsShape;
-};
+export declare const physics: ReturnType<typeof createPhysicsWithAccess>;
 export declare function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined;
 //# sourceMappingURL=physics.d.ts.map
 ```
@@ -392781,7 +392629,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -392792,7 +392640,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -392818,7 +392666,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -393545,7 +393393,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -394786,7 +394634,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -395425,7 +395273,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -397415,7 +397263,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -398040,7 +397888,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -400678,7 +400526,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -401930,7 +401778,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -402191,7 +402039,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/engine/renderer
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -444715,7 +444563,7 @@ export declare function createGameInspector(): GameInspector;
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "../../physics/index.js";
+import type { PhysicsWorldDescriptor } from "../../physics/solverless.js";
 import { type GameCollisionWorld } from "./GameRuntimeCore.js";
 export * from "./GameRuntimeCore.js";
 export declare function createGameCollisionWorld(descriptor?: PhysicsWorldDescriptor): GameCollisionWorld;
@@ -452994,47 +452842,9 @@ export declare const builtInCharacterAssets: import("./types.js").AuraAssetMap<{
 ```ts
 /** Compatibility bindings for the 4.x synchronous physics entry. */
 import type { AuraSceneSnapshot } from "./types.js";
-import { type AuraRuntimeScenePhysics } from "./physics-core.js";
+import { createPhysicsWithAccess, type AuraRuntimeScenePhysics } from "./physics-core.js";
 export * from "./physics-core.js";
-export declare const physics: {
-    readonly world: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldAsync: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly worldFromScene: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldFromSceneAsync: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly body: (options?: import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    }) => import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    };
-    readonly collider: (descriptor: import("../../../physics/index.js").ColliderDescriptor) => import("../../../physics/index.js").ColliderDescriptor;
-    readonly box: (x?: number, y?: number, z?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly sphere: (radius?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly capsule: (radius?: number, halfHeight?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly plane: (normal?: import("./types.js").AuraVec3, constant?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly mesh: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly convexHull: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly heightfield: (rows: readonly (readonly number[])[], cellSize?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly constraint: (descriptor: import("../../../physics/index.js").ConstraintDescriptor) => import("../../../physics/index.js").ConstraintDescriptor;
-    readonly bindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number, node: import("../../../physics/index.js").ScenePhysicsNode, mode?: "dynamic" | "kinematic") => void;
-    readonly unbindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number) => void;
-    readonly dispose: (world: import("./types.js").AuraPhysicsWorldController) => void;
-    readonly step: (world: import("./types.js").AuraPhysicsWorldController, options?: number | import("./types.js").AuraPhysicsStepOptions) => readonly import("../../../physics/index.js").CollisionEvent[];
-    readonly contacts: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("../../../physics/index.js").Contact[];
-    readonly liveContactCount: (world: import("./types.js").AuraPhysicsWorldController) => number;
-    readonly raycast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").RaycastHit | undefined;
-    readonly sphereCast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, radius: number, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").SphereCastHit | undefined;
-    readonly debug: (world: import("./types.js").AuraPhysicsWorldController) => import("./types.js").AuraPhysicsDebugSnapshot;
-    readonly debugNodes: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("./types.js").AuraSceneNode[];
-    readonly sceneBinding: (node: import("../../../physics/index.js").ScenePhysicsNode) => import("../../../physics/index.js").ScenePhysicsNode;
-    readonly nodeSpec: (spec: import("./types.js").AuraNodePhysicsSpec) => import("./types.js").AuraNodePhysicsSpec;
-    readonly resolveShape: (spec: import("./types.js").AuraNodePhysicsSpec) => import("../../../physics/index.js").PhysicsShape;
-};
+export declare const physics: ReturnType<typeof createPhysicsWithAccess>;
 export declare function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined;
 //# sourceMappingURL=physics.d.ts.map
 ```
@@ -485510,7 +485320,8 @@ export { attachRootRenderSource, type RootRenderSourceBridge } from "./RootRende
 import { summarizeProductionProductionProof, type ProductionEnvironmentLightingResources, type ProductionPbrHdrPipeline, type ProductionToneMappingOperator, type ProductionRenderProof, type ContactShadowPassDiagnostics, type ProductionRuntimeRendererBackendPreference, type ProductionRuntimeRendererOptions } from "../../rendering/index.js";
 import { createProductionGLTFRenderMetadata, loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult, type GLTFSceneAnimationMixerBinding, type GLTFSceneAnimationMixerOptions, type GLTFSceneAnimationRuntime, type GLTFSceneAnimationRuntimeSnapshot, type ProductionGLTFRenderMetadata, type ProductionGLTFRenderPipeline } from "../../assets/browser-index.js";
 import { AnimationAction, AnimationMixer, type AnimationClip, type AnimationEvent, type AnimationMixerSnapshot, type AnimationTarget } from "../../animation/index.js";
-import { PhysicsWorld, type CollisionEvent, type ConstraintType, type PhysicsSnapshot, type RigidBody, type RigidBodyType, type Vec3 } from "../../physics/index.js";
+import { PhysicsWorld } from "../../physics/world.js";
+import { type CollisionEvent, type ConstraintType, type PhysicsSnapshot, type RigidBody, type RigidBodyType, type Vec3 } from "../../physics/solverless.js";
 import type { CameraFrameBounds, CameraLike, CollectedLight, EnvironmentLightingOptions, ProductionRendererFeature, RenderDeviceDiagnostics, RenderItem, RenderSource, RendererPostProcessOptions, RendererShadowOptions } from "../../rendering/index.js";
 import type { RendererFrameResult } from "../../rendering/production-runtime/index.js";
 import { Renderer } from "../../rendering/index.js";
@@ -486250,7 +486061,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -486383,7 +486194,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -487508,7 +487319,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -487592,7 +487403,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -488772,7 +488583,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -492971,7 +492782,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -559853,7 +559664,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -560099,7 +559910,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -608844,7 +608655,7 @@ export declare function createGameInspector(): GameInspector;
  * Compatibility entry for the 4.x synchronous collision-world factories.
  * Other game runtime operations live in the access-independent core.
  */
-import type { PhysicsWorldDescriptor } from "../../physics/index.js";
+import type { PhysicsWorldDescriptor } from "../../physics/solverless.js";
 import { type GameCollisionWorld } from "./GameRuntimeCore.js";
 export * from "./GameRuntimeCore.js";
 export declare function createGameCollisionWorld(descriptor?: PhysicsWorldDescriptor): GameCollisionWorld;
@@ -617123,47 +616934,9 @@ export declare const builtInCharacterAssets: import("./types.js").AuraAssetMap<{
 ```ts
 /** Compatibility bindings for the 4.x synchronous physics entry. */
 import type { AuraSceneSnapshot } from "./types.js";
-import { type AuraRuntimeScenePhysics } from "./physics-core.js";
+import { createPhysicsWithAccess, type AuraRuntimeScenePhysics } from "./physics-core.js";
 export * from "./physics-core.js";
-export declare const physics: {
-    readonly world: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldAsync: (descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly worldFromScene: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => import("./types.js").AuraPhysicsWorldController;
-    readonly worldFromSceneAsync: (sceneValue: import("./scene.js").AuraSceneBuilder | AuraSceneSnapshot, descriptor?: import("../../../physics/index.js").PhysicsWorldDescriptor) => Promise<import("./types.js").AuraPhysicsWorldController>;
-    readonly body: (options?: import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    }) => import("../../../physics/index.js").RigidBodyDescriptor & {
-        readonly shape?: import("../../../physics/index.js").PhysicsShape;
-        readonly sensor?: boolean;
-        readonly material?: import("../../../physics/index.js").ColliderDescriptor["material"];
-        readonly filter?: import("../../../physics/index.js").ColliderDescriptor["filter"];
-    };
-    readonly collider: (descriptor: import("../../../physics/index.js").ColliderDescriptor) => import("../../../physics/index.js").ColliderDescriptor;
-    readonly box: (x?: number, y?: number, z?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly sphere: (radius?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly capsule: (radius?: number, halfHeight?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly plane: (normal?: import("./types.js").AuraVec3, constant?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly mesh: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly convexHull: (vertices: readonly import("./types.js").AuraVec3[], indices: readonly number[]) => import("../../../physics/index.js").PhysicsShape;
-    readonly heightfield: (rows: readonly (readonly number[])[], cellSize?: number) => import("../../../physics/index.js").PhysicsShape;
-    readonly constraint: (descriptor: import("../../../physics/index.js").ConstraintDescriptor) => import("../../../physics/index.js").ConstraintDescriptor;
-    readonly bindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number, node: import("../../../physics/index.js").ScenePhysicsNode, mode?: "dynamic" | "kinematic") => void;
-    readonly unbindNode: (world: import("./types.js").AuraPhysicsWorldController, body: import("../../../physics/index.js").RigidBody | number) => void;
-    readonly dispose: (world: import("./types.js").AuraPhysicsWorldController) => void;
-    readonly step: (world: import("./types.js").AuraPhysicsWorldController, options?: number | import("./types.js").AuraPhysicsStepOptions) => readonly import("../../../physics/index.js").CollisionEvent[];
-    readonly contacts: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("../../../physics/index.js").Contact[];
-    readonly liveContactCount: (world: import("./types.js").AuraPhysicsWorldController) => number;
-    readonly raycast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").RaycastHit | undefined;
-    readonly sphereCast: (world: import("./types.js").AuraPhysicsWorldController, origin: import("./types.js").AuraVec3, radius: number, direction: import("./types.js").AuraVec3, options?: import("../../../physics/index.js").RaycastOptions) => import("../../../physics/index.js").SphereCastHit | undefined;
-    readonly debug: (world: import("./types.js").AuraPhysicsWorldController) => import("./types.js").AuraPhysicsDebugSnapshot;
-    readonly debugNodes: (world: import("./types.js").AuraPhysicsWorldController) => readonly import("./types.js").AuraSceneNode[];
-    readonly sceneBinding: (node: import("../../../physics/index.js").ScenePhysicsNode) => import("../../../physics/index.js").ScenePhysicsNode;
-    readonly nodeSpec: (spec: import("./types.js").AuraNodePhysicsSpec) => import("./types.js").AuraNodePhysicsSpec;
-    readonly resolveShape: (spec: import("./types.js").AuraNodePhysicsSpec) => import("../../../physics/index.js").PhysicsShape;
-};
+export declare const physics: ReturnType<typeof createPhysicsWithAccess>;
 export declare function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScenePhysics | undefined;
 //# sourceMappingURL=physics.d.ts.map
 ```
@@ -647017,7 +646790,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -652204,7 +651977,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -652392,7 +652165,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
@@ -652892,7 +652665,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.0.0`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=fd7d76a28bd86c37e18621fcbbde17b281ae13da6f398e65bfa42b49dfa91a78`
+- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=8236a117539978d1a19f3e54f2d8fb915d88cb62a5ff46829fab7b75dd76e91b`
 
 ### Export conditions
 
