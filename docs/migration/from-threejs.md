@@ -1,6 +1,6 @@
 # Porting three.js code to Aura3D
 
-Version: 4.7.11
+Version: 4.7.12
 
 Status: verified against `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 rows: 48 exact, 150 approximate, 47 none, 0 pending) and against `tools/bench-vs-threejs` on current main, 2026-10-24.
 

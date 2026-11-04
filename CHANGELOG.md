@@ -1,8 +1,33 @@
 # Changelog
 
-Version: 4.7.11
+Version: 4.7.12
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.12 (2026-11-04)
+
+Hotfix for Slingshot Siege plus the wave-3 Meshy models (re-rolls of rows that were skipped in 4.7.11).
+
+### Fixed
+
+- **Slingshot Siege: the egg (projectile) was not drawn in flight.** The pooled projectile nodes (the skinned hero-gull model with a `Jump_Loop` clip) were created parked at y -120 and hidden, and were then moved and shown at launch; in every deployed 4.7.x build the node API reported them visible, scaled and on a correct arc while no model was drawn, so a shot showed the toast, the hit and the score but no flying egg. The pool is now created on screen, tiny and visible, and is re-parked on screen (not hidden at y -120) on reset and when a shot ends. Verified on software WebGL2 with a remote probe: three consecutive shots in the default look and in `?look=original` (see Known limits for what the probe did and did not cover).
+
+### Added (wave 3, new Meshy models; each decimated to its game's budget)
+
+- Aura Diamond 3D: re-rolled hoodoo on Canyon (two nodes in front of the mesas) and re-rolled dome truss.
+- Aura Hoops 3D: re-rolled covered bleacher as two Rucker set-pieces flanking the far stand.
+- Aura Links 3D: re-rolled basalt columns (Cinder Rim) and cable-car station (Cloud Terrace).
+- Iron Crown: re-rolled pavilion (Monastery centre) and warehouse rows (Dock far bank).
+- Saltwind Highway: arcology towers on Halo.
+- Last Train: rock-only island underside (5,994 triangles).
+- Rows re-rolled and skipped again (wrong subject or over budget): Apex Overdrive towers/pier, Thermal Drift crystal spire, Bunker Zero pillar, Saltwind maglev tube, turbine tower and crane.
+
+### Known limits
+
+- **The wave-2 (4.7.11) and wave-3 models have not been through a blind panel.** A remote capture of the 4.7.11 swaps was started; the results are recorded in the lane docs and the memory notes, not in this release. Treat the look of the new models as unverified on a real GPU (PRD D5, owner-only).
+- The egg probe confirms the projectile is drawn mid-flight in every probed shot; it does not judge how good the egg looks.
+- Distinctness pairs, the 12-category rubric bar, 41 `borrowed-asset` and 12 `luma-band` warnings, selective bloom activation and Bunker Zero's texture deadline are unchanged from 4.7.10; real-GPU judgement is owner-only.
+- `tests/unit/rework-kit/two-hand-grip.test.ts` and 58 type errors in `tools/` and some `tests/` files predate this release.
 
 ## 4.7.11 (2026-11-03)
 
