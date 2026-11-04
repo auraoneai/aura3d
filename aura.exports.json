@@ -1,5 +1,5 @@
 {
-  "$comment": "Single resolution truth for @aura3d/engine (PRD-15 \u00a76.9). \"entries\" are the published subpaths: source file, \"conditions\":true emits the types+browser+import+default object, \"browser\" names a browser-variant source (emits a browser condition and retargets the in-repo Vite alias). \"paths\" is the in-repo specifier table in vite-safe order (deeper subpaths precede the bare package); flags: vite:false excludes from generated Vite aliases, browser301:false excludes from the browser-301 resolution set, browser:<file> swaps the Vite replacement. \"deprecated\" entries keep their dist target but emit a re-export stub source at the mapped path. \"workspaceExports\" generates each workspace package.json#exports: package dir -> subpath -> {source, conditions (default [types, import]; types/import/default map source to dist, browser maps browserSource or source), browserSource} or {literal}. Consumed by tools/generate-resolution-maps.",
+  "$comment": "Single resolution truth for @aura3d/engine (PRD-15 \u00a76.9). \"entries\" are the published subpaths: source file, \"conditions\":true emits the types+browser+import+default object, \"browser\" names a browser-variant source (emits a browser condition and retargets the in-repo Vite alias). \"paths\" is the in-repo specifier table in vite-safe order (deeper subpaths precede the bare package); flags: vite:false excludes from generated Vite aliases, browser301:false excludes from the browser-301 resolution set, browser:<file> swaps the Vite replacement. \"deprecated\" entries keep their dist target but emit a re-export stub source at the mapped path. \"workspaceExports\" generates each workspace package.json#exports: package dir -> subpath -> {source, conditions (default [types, import]; types/import/default map source to dist, browser maps browserSource or source; browserTypes:true emits browser as {types, default} typed from browserSource), browserSource, browserTypes} or {literal}. Consumed by tools/generate-resolution-maps.",
   "package": "@aura3d/engine",
   "entries": {
     ".": {
@@ -814,11 +814,12 @@
       ".": {
         "source": "src/index.ts",
         "conditions": [
-          "types",
           "browser",
+          "types",
           "import"
         ],
-        "browserSource": "src/browser-index.ts"
+        "browserSource": "src/browser-index.ts",
+        "browserTypes": true
       },
       "./browser": {
         "source": "src/browser-index.ts"

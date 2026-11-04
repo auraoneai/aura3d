@@ -41,7 +41,13 @@ export type AuraWorkspaceCondition = "types" | "browser" | "import" | "default";
 
 /** One workspace package subpath: a package-relative `src/` source, or a verbatim export target. */
 export type AuraWorkspaceExportEntry =
-  | { readonly source: string; readonly conditions?: readonly AuraWorkspaceCondition[]; readonly browserSource?: string }
+  | {
+      readonly source: string;
+      readonly conditions?: readonly AuraWorkspaceCondition[];
+      readonly browserSource?: string;
+      /** Emit `browser` as an object `{ types, default }` typed from the browser source (browser builds must not promise Node-only helper types). Requires browserSource. */
+      readonly browserTypes?: boolean;
+    }
   | { readonly literal: unknown };
 
 export interface AuraExportsFile {
@@ -73,10 +79,16 @@ export function buildWorkspacePackageExports(aura: AuraExportsFile, packageDir: 
       throw new Error(`${packageDir}${subpath.slice(1)}: conditions must list types and import once`);
     }
     if (entry.browserSource && !conditions.includes("browser")) throw new Error(`${packageDir}${subpath.slice(1)}: browserSource without a browser condition`);
-    const target: Record<string, string> = {};
+    if (entry.browserTypes && (!entry.browserSource || !conditions.includes("browser"))) throw new Error(`${packageDir}${subpath.slice(1)}: browserTypes needs browserSource and a browser condition`);
+    const target: Record<string, string | Record<string, string>> = {};
     for (const condition of conditions) {
       if (condition === "types") target.types = workspaceDistTarget(entry.source, "d.ts");
-      else if (condition === "browser") target.browser = workspaceDistTarget(entry.browserSource ?? entry.source, "js");
+      else if (condition === "browser") {
+        const browserJs = workspaceDistTarget(entry.browserSource ?? entry.source, "js");
+        target.browser = entry.browserTypes
+          ? { types: workspaceDistTarget(entry.browserSource!, "d.ts"), default: browserJs }
+          : browserJs;
+      }
       else if (condition === "import" || condition === "default") target[condition] = workspaceDistTarget(entry.source, "js");
       else throw new Error(`${packageDir}${subpath.slice(1)}: unknown condition ${String(condition)}`);
     }
