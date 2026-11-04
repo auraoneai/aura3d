@@ -58,3 +58,17 @@ export const DUSK_PROP_ASSETS = defineModelAssets({
 export const DUSK_PROP_SCALE: Readonly<Partial<Record<keyof typeof DUSK_PROP_ASSETS, number>>> = { houseA: 1.9 / 2.0 };
 /** WP-36 plan keys of the swaps (lane report and checklist). */
 export const DUSK_PROP_KEYS: Readonly<Record<keyof typeof DUSK_PROP_ASSETS, string>> = { houseA: "ninjaHouseADusk" };
+
+/**
+ * GU47 wave 2 (2026-11-03) set-pieces (NR-12/NR-13), Meshy text-to-3D rows `ninjaShrineGate`, `ninjaWaterWheel` and
+ * `ninjaPagodaSilhouette`, admitted under the typed keys `ninja_runner_port_<row>` (rights and task metadata in
+ * assets/provenance/ninja_runner_port_*.json). The optimized GLBs (50k-56k triangles) were decimated to the NR-12 prop cap
+ * (< 8k triangles, 1024 px textures); the three draw only in the evening look (`?look=original` is unchanged).
+ */
+const SET_PIECE_LICENSE = "Meshy generated asset (paid API, AuraOne account plan terms at generation time), own text prompt, GU47 WP-36 wave 2 2026-11-03";
+const piece = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}.glb`, import.meta.url).pathname, sha256 });
+export const SET_PIECE_ASSETS = defineModelAssets({
+  shrineGate: piece("ninja_runner_port_ninjaShrineGate", "680e8045efca4f8c222309b764b255d44ce6e6a498fec90b678d761b98917775"),
+  waterWheel: piece("ninja_runner_port_ninjaWaterWheel", "d5339b79bb7474e49de2c77b949889132137e7d0684d6f07d39b69d35552adfe"),
+  pagoda: piece("ninja_runner_port_ninjaPagodaSilhouette", "5c44fcd1de5b0a0fa62f45114619ea1ee4d8c321a90f0d8a986145fa9d49a3d3")
+}, { license: SET_PIECE_LICENSE, queryParam: null }).refs;

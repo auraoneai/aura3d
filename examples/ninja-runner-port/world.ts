@@ -20,7 +20,8 @@ import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintL
 import type { CameraShake } from "@aura3d/engine/game";
 import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
 import { TUNING, crosshairTarget, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
-import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
+import { CHARACTER_URLS, DUSK_PROP_ASSETS, DUSK_PROP_SCALE, PROP_ASSETS, SET_PIECE_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
+import { eveningSetPieces, shrineCentre } from "./setpieces";
 import { ENVIRONMENT_GAIN, EVENING_FILL, KEY_GAIN, EVENING_SURFACES, LANTERN_GLOW, LANTERN_POOL, WOODBLOCK_POST, DISTRICT_LOOKS, lanternGlowAt, linearToHex, lookAtDistance, nearestLanterns, type DistrictId, type LanternGlow, type LookMode } from "./districtLook";
 import { lanternPoolSize, lightRig, shadowTuneFromSearch } from "./lighting";
 import { SCARF, registerNinjaVfx, type NinjaVfx, type NinjaVfxEvent } from "./vfx";
@@ -394,6 +395,14 @@ export function buildWorld(options: WorldOptions): World {
   // GU47 phase 6: in the evening the valley falls pour from a rock cliff (two more cliffB instances in the existing
   // layer: +0 draws, +2 x 3276 triangles) instead of hanging in the sky ("no visible source", blind panel g20p6g).
   if (evening && modelSink.cliffB) modelSink.cliffB.push(...fallsCliff(groundFrame(COURSE_LENGTH - 90, 0, 0)));
+  // GU47 wave 2 (NR-12): the evening's three set-pieces; the pines, bushes and rocks inside the shrine clearing step aside.
+  const setPieces = evening ? eveningSetPieces() : null;
+  if (setPieces) {
+    const clearing = shrineCentre();
+    for (const id of ["pine", "oak", "bush", "boulder"]) {
+      if (modelSink[id]) modelSink[id] = modelSink[id]!.filter((p) => Math.hypot(p.position[0] - clearing.x, p.position[2] - clearing.z) > (id === "pine" || id === "oak" ? 10 : 8));
+    }
+  }
   for (const p of modelSink.lantern ?? []) lanternSpots.push([p.position[0], p.position[1] + p.scale[1] * 0.8, p.position[2]]);
   for (const [id, list] of Object.entries(modelSink)) {
     if (list.length === 0) continue;
@@ -407,6 +416,16 @@ export function buildWorld(options: WorldOptions): World {
       transforms: list.map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: [p.scale[0] * k, p.scale[1] * k, p.scale[2] * k] as [number, number, number] })),
       ...(list.some((p) => p.tint) ? { colors: list.map((p) => p.tint ?? "#ffffff") } : {})
     }));
+  }
+
+  if (setPieces) {
+    for (const id of Object.keys(setPieces) as (keyof typeof setPieces)[]) {
+      builder.add(instances.model(SET_PIECE_ASSETS[id], {
+        name: `setpiece-${id}`,
+        castShadow: false,
+        transforms: setPieces[id].map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: p.scale }))
+      }));
+    }
   }
 
   const water = buildWater();
