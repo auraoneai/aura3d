@@ -760,6 +760,9 @@ export function standTransforms(v: VenueSpec): { position: [number, number, numb
 
 /** WP-36 stand module (GLB 1.903 x 0.832 x 0.543 m, centred, seats facing +Z): scale and the four far-deck slots. */
 export const STAND_MODULE_SCALE = 10.5;
+/** Wave-2 players' tunnel (GLB 1.674 x 0.795 x 1.901 m, mouth toward +Z): fitted depth and far-side x. */
+const PLAYER_TUNNEL_DEPTH = 5.1;
+const PLAYER_TUNNEL_X = -13;
 export function standModuleTransforms(v: VenueSpec): { position: [number, number, number]; scale: [number, number, number] }[] {
   const s = STAND_MODULE_SCALE;
   const topTier = Math.max(0, v.standCount - 1);
@@ -896,6 +899,11 @@ function stadiumNodes(v: VenueSpec, gates: FcEngineGates = fcEngineGates(), mode
     // deck behind the far stand (replaces the borrowed diamond stadium band).
     (instances as any).model(assets.fcStandModuleMeshy, { name: "fc-stadium-bowl", transforms: standModuleTransforms(v) })
       .runtime(gameRuntime("fc-stadium-bowl")),
+    // GU47 wave 2 (FC47-A1): the game's own inflatable players' tunnel, on the far side where the broadcast frame sees
+    // it (mouth toward the pitch, set behind the hoarding line so it replaces a stretch of boards and sinks into the
+    // first stand tier). 5.1 m deep, 4.5 m wide, 2.2 m high; presentation only, nothing collides with it.
+    model(assets.fcPlayerTunnelMeshy, { name: "fc-player-tunnel", targetMaxDimension: PLAYER_TUNNEL_DEPTH })
+      .position(PLAYER_TUNNEL_X, 0, -(PITCH_HZ + 1.9 + PLAYER_TUNNEL_DEPTH / 2)),
     model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
       targetHeight: REFEREE_TARGET_HEIGHT,

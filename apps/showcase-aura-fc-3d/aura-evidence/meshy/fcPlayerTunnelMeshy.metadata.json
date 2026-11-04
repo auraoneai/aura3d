@@ -1,0 +1,18 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a1a4e0-6342-7568-8045-6f6e61a3e896",
+    "operation": "text-to-3d-refine",
+    "promptHash": "sha256-5a2094028cf4b4d9ced701619dfdf96a674c8854578b18782ceca7a61946633f",
+    "createdAt": "2026-11-04T04:45:31.864Z",
+    "finishedAt": "2026-11-04T04:46:25.834Z",
+    "consumedCredits": 10
+  },
+  "wave2": {
+    "planKey": "pitchPlayerTunnel",
+    "usedBy": ["FC47-A1"],
+    "importedAs": "fcPlayerTunnelMeshy",
+    "postProcess": "pipeline optimize (26,964 triangles, 1024 px maps), then gltf-transform weld+meshopt simplify twice (13,342 then 12,968 triangles; the cap of 8k was not reachable without tearing the textured seams) and 1024 px texture recompress",
+    "sha256": "a5d607e86c4c2fa7391e21af3fe453b35b542c0291d2393689a922cea9b4fe22"
+  }
+}
