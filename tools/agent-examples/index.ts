@@ -8,7 +8,7 @@
  */
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { emptyNpmConfigs } from "../release/npm-empty-config.mjs";
 import { exampleCostUnits, exampleShardRecord, exampleShardRecordProblems, exampleShardReportName, parseExampleShard } from "./shard.mjs";
@@ -62,6 +62,16 @@ const redactSensitiveText = (text: string) => text
   .replace(/(https:\/\/[^\s"'<>?]+)\?[^\s"'<>]+/gi, "$1?[redacted]")
   .replace(/(Bearer\s+)[A-Za-z0-9._~+\/-]+=*/gi, "$1[redacted]")
   .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]");
+/**
+ * Source and bundled-output scan. In code a key such as `sig`, `sas` or `authorization` is an ordinary
+ * identifier (`sig = parentSignature(world)`, `sig=sig.replace(...)` in vendored decoders), so only a
+ * quoted string literal of credential length counts as a credential-like value there; URLs with
+ * query strings and bearer tokens stay forbidden everywhere.
+ */
+const redactCodeSensitiveText = (text: string) => text
+  .replace(/(https:\/\/[^\s"'<>?]+)\?[^\s"'<>]+/gi, "$1?[redacted]")
+  .replace(/(Bearer\s+)[A-Za-z0-9._~+\/-]+=*/gi, "$1[redacted]")
+  .replace(/((?:access[_-]?token|authorization|password|secret|sig|sas)["']?\s*[:=]\s*["'`])[^\s,"'`&}]{8,}/gi, "$1[redacted]");
 const safeLogText = (text: string) => redactSensitiveText(text)
   .replace(/((?:api[-_]?key|credential|private[-_]?key|token)["']?\s*[:=]\s*["']?)[^\s,"'&}]+/gi, "$1[redacted]")
   .replace(/(https?:\/\/)[^/@\s]+@/gi, "$1[redacted]@");
@@ -113,7 +123,8 @@ export function collectExampleRetainedFiles(directory: string, options: { readon
         const bytes = readFileSync(absolute);
         if (/\.(?:js|mjs|cjs|ts|tsx|jsx|json|html|css|svg|md|txt|log|xml|yaml|yml)$/i.test(entry.name)) {
           const text = bytes.toString("utf8");
-          if (redactSensitiveText(text) !== text) throw new Error("Example contains credential-like text");
+          const scan = /\.(?:[cm]?js|[cm]?ts|[jt]sx)$/i.test(entry.name) ? redactCodeSensitiveText : redactSensitiveText;
+          if (scan(text) !== text) throw new Error("Example contains credential-like text");
         }
         files.push({ path: portable(relative(root, absolute)), sha256: hash(bytes), bytes: bytes.byteLength });
       } else throw new Error("Example contains an unsupported filesystem entry");
@@ -573,14 +584,28 @@ async function runSequenceAsync(root: string, project: string, wrapper: string, 
   const failure = steps.find((step) => step.status !== "passed");
   return { id, status: !failure && steps.length === commands.length && commands.length > 0 ? "passed" : "failed", command: commands.flatMap((command, index) => index ? ["&&", ...command] : command), exitCode: failure ? failure.exitCode : 0, logPath: portable(relative(root, log)), logSha256: hash(readFileSync(log)) };
 }
-function copyProject(source: string, target: string): void {
+/**
+ * Copy a consumer directory. A symlink fails closed, except a relative `public/` alias to an existing
+ * in-repository directory (`public/packs -> ../../../assets/packs`): it is not staged (a build does not
+ * need the aliased asset pack, and following it would copy a shared pack into every retained wrapper),
+ * and it is returned so the harness record names every alias that was left out.
+ */
+function copyProject(source: string, target: string): string[] {
+  const omitted: string[] = [];
   cpSync(source, target, { recursive: true, filter: (path) => {
     const parts = relative(source, path).split(sep);
-    if (lstatSync(path).isSymbolicLink()) throw new Error("Consumer contains a symlink");
+    if (lstatSync(path).isSymbolicLink()) {
+      const alias = readlinkSync(path);
+      let directory = false;
+      try { directory = statSync(path).isDirectory(); } catch { directory = false; }
+      if (parts.slice(0, -1).includes("public") && !isAbsolute(alias) && directory) { omitted.push(portable(relative(source, path))); return false; }
+      throw new Error("Consumer contains a symlink");
+    }
     if (parts.some((part) => ignored.has(part))) return false;
     for (const part of parts.filter(Boolean)) assertRetainableName(part);
     return true;
   } });
+  return omitted;
 }
 
 const STAGED_PUBLIC_EXTENSIONS = /\.(?:glb|gltf|bin|png|jpe?g|webp|avif|ktx2|hdr|exr|wav|mp3|ogg|json|svg|woff2?|ttf|otf|css|basis|wasm|m?js)$/i;
@@ -840,7 +865,7 @@ function standaloneHarness(root: string, wrapper: string, project: string, entry
   const projectRelative = portable(relative(wrapper, project));
   const htmlRelative = portable(relative(wrapper, html));
   writeFileSync(resolve(wrapper, "aura-example.vite.mjs"), `import { defineConfig } from "vite";\nimport { existsSync } from "node:fs";\nimport { dirname, resolve } from "node:path";\nimport { fileURLToPath } from "node:url";\nconst root = dirname(fileURLToPath(import.meta.url));\nconst project = resolve(root, ${JSON.stringify(projectRelative)});\nconst publicDir = ${publicRelative ? `resolve(root, ${JSON.stringify(publicRelative)})` : `resolve(project, "public")`};\nexport default defineConfig({ root, publicDir: existsSync(publicDir) ? publicDir : false, build: { outDir: resolve(project, "dist"), emptyOutDir: true, rollupOptions: { input: resolve(root, ${JSON.stringify(htmlRelative)}) } } });\n`);
-  writeFileSync(resolve(wrapper, "aura-example.tsconfig.json"), `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "ESNext", moduleResolution: "Bundler", lib: ["ES2022", "DOM", "DOM.Iterable"], strict: true, skipLibCheck: true, noEmit: true }, include: [`${projectRelative}/**/*.ts`, `${projectRelative}/**/*.tsx`, `${portable(dirname(htmlRelative))}/**/*.ts`] }, null, 2)}\n`);
+  writeFileSync(resolve(wrapper, "aura-example.tsconfig.json"), `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "ESNext", moduleResolution: "Bundler", lib: ["ES2022", "DOM", "DOM.Iterable"], strict: true, skipLibCheck: true, noEmit: true, allowJs: true, checkJs: false }, include: [`${projectRelative}/**/*.ts`, `${projectRelative}/**/*.tsx`, `${projectRelative}/**/*.js`, `${projectRelative}/**/*.mjs`, `${portable(dirname(htmlRelative))}/**/*.ts`] }, null, 2)}\n`);
   return { manifest: { dependencies, devDependencies: { typescript, vite } }, files, outputEntry: htmlRelative };
 }
 
@@ -1090,7 +1115,7 @@ function exampleProjectPath(wrapper: string, entry: ExampleSourceEntry): string 
  * commands. Shared by the custody-lock and packed-candidate source producers.
  */
 function prepareExampleHarness(root: string, wrapper: string, project: string, entry: ExampleSourceEntry): { harness: string[]; manifest: any; isStandalone: boolean; standalone?: ReturnType<typeof standaloneHarness>; scripts: string; buildCommands: string[][]; typeCommands: string[][] } {
-  const harness = entry.kind === "capability-example" ? makeCapabilityProject(root, project, entry.id.split(":")[1]!) : (copyProject(resolve(root, entry.sourcePath), project), []);
+  const harness = entry.kind === "capability-example" ? makeCapabilityProject(root, project, entry.id.split(":")[1]!) : copyProject(resolve(root, entry.sourcePath), project).map((path) => `${portable(relative(wrapper, project))}/${path} (public asset alias not staged)`);
   if (entry.kind === "documented-example" && entry.sourcePath.startsWith("examples/")) {
     const sharedPath = resolve(root, "examples/shared");
     if (existsSync(sharedPath)) { copyProject(sharedPath, resolve(wrapper, "examples/shared")); harness.push("examples/shared (source support)"); }
@@ -1283,10 +1308,39 @@ type PackedPlanPackage = PackedPlan["packages"][number] & { internalDependencies
 interface PackedSubstitution { readonly section: string; readonly name: string; readonly before: string; readonly after: string }
 interface PackedInstalledPackage { readonly name: string; readonly installPath: string; readonly version: string; readonly sha256: string; readonly integrity: string; readonly contentsSha256: string }
 
+/** An example whose scripts run `tsc`/`vite` without declaring them gets the source manifest's versions in the wrapper. */
+export function withBuildTools(root: string, manifest: any, commands: readonly (readonly string[])[]): any {
+  const declared = { ...manifest.dependencies, ...manifest.devDependencies, ...manifest.optionalDependencies, ...manifest.peerDependencies } as Record<string, string>;
+  const wanted = new Map([["tsc", "typescript"], ["vite", "vite"]]);
+  const missing = [...new Set(commands.map((command) => wanted.get(command[0] ?? "")).filter((name): name is string => !!name && !(name in declared)))];
+  if (!missing.length) return manifest;
+  const rootManifest = readJson(resolve(root, "package.json"));
+  const devDependencies = { ...manifest.devDependencies } as Record<string, string>;
+  for (const name of missing) {
+    const version = rootManifest.devDependencies?.[name];
+    if (typeof version !== "string") throw new Error(`Source manifest does not declare ${name} for an example that runs it`);
+    devDependencies[name] = version;
+  }
+  return { ...manifest, devDependencies };
+}
+
+/** Candidate package roots (`@aura3d/x`, `create-aura3d`) that the staged example sources import, sorted. */
+export function importedCandidatePackages(directory: string): string[] {
+  const names = new Set<string>();
+  for (const file of walkFiles(directory).filter((path) => /\.[cm]?[jt]sx?$/.test(path))) {
+    const text = readFileSync(file, "utf8");
+    for (const match of text.matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*|\bimport\s+)["'](@aura3d\/[a-z0-9-]+|create-aura3d)(?:\/[^"']*)?["']/g)) names.add(match[1]!);
+  }
+  return [...names].sort();
+}
+
 /** Wrapper manifest for one example: its declared dependencies with candidate packages replaced by the staged plan archives. */
-export function packedExampleWrapper(manifest: any, plan: PackedPlan): { wrapper: Record<string, unknown>; closure: PackedPlanPackage[]; substitutions: PackedSubstitution[] } {
+export function packedExampleWrapper(manifest: any, plan: PackedPlan, sourceImports: Iterable<string> = []): { wrapper: Record<string, unknown>; closure: PackedPlanPackage[]; substitutions: PackedSubstitution[] } {
   const declared = { ...manifest.dependencies, ...manifest.devDependencies, ...manifest.optionalDependencies, ...manifest.peerDependencies } as Record<string, string>;
   const candidates = new Set(plan.packages.map((entry) => entry.name));
+  // A workspace example resolves every `@aura3d/*` package through the workspace; the installed wrapper must
+  // declare each candidate package the example's own sources import (for example `@aura3d/debug`).
+  for (const name of sourceImports) if (candidates.has(name) && !(name in declared)) declared[name] = "workspace:*";
   for (const name of Object.keys(declared)) if (/^(?:three|babylonjs|@babylonjs\/)/.test(name)) throw new Error(`Consumer declares a prohibited external 3D engine: ${name}`);
   for (const name of Object.keys(declared)) if ((name.startsWith("@aura3d/") || name === "create-aura3d") && !candidates.has(name)) throw new Error(`Missing candidate package ${name}`);
   for (const [name, version] of Object.entries(declared)) if (!candidates.has(name) && (typeof version !== "string" || version.startsWith("workspace:") || version.startsWith("file:") || version.startsWith("link:"))) throw new Error(`Dependency ${name} requires an unstaged local workspace/file`);
@@ -1507,7 +1561,7 @@ export async function producePackedSource(root: string, runId: string, candidate
     let record: any;
     try {
       const { harness, manifest, isStandalone, standalone, scripts, buildCommands, typeCommands } = prepareExampleHarness(root, wrapper, project, entry);
-      const { wrapper: wrapperManifest, closure, substitutions } = packedExampleWrapper(manifest, plan);
+      const { wrapper: wrapperManifest, closure, substitutions } = packedExampleWrapper(withBuildTools(root, manifest, [...buildCommands, ...typeCommands]), plan, isStandalone ? [] : importedCandidatePackages(wrapper));
       writeFileSync(resolve(wrapper, "package.json"), `${JSON.stringify(wrapperManifest, null, 2)}\n`);
       stagePackedArchives(root, wrapper, closure as never);
       const before = contentIdentity(project);

@@ -10,10 +10,10 @@
 # (tools/remote-acr/sas-transport.sh) and reaches packed-a only via the 0600
 # --values file; packed-a uploads the tested plan, archives and packed reports
 # to source5/<run>/artifacts/, which are downloaded into <run>/artifacts/ and
-# re-hashed against the plan (tools/remote-acr/source5-artifacts.mjs). packed-b
-# gets the same SAS (same values file) and uploads its consumer source reports
+# re-hashed against the plan (tools/remote-acr/source5-artifacts.mjs). packed-b1 and packed-b2
+# get the same SAS (same values file) and upload their consumer source reports
 # (clean-install source.json, matrix-source.json)
-# with every file under their run directories to source5/<run>/consumers/ (one
+# with every file under their run directories to source5/<run>/consumers-1/ and consumers-2/ (one
 # upload per <= 128 MiB chunk); they are downloaded, re-hashed and
 # extracted under <run>/artifacts/consumers/<job path> and recorded as
 # `artifacts.consumers` (source5-artifacts.mjs verify-consumers). The packed examples
@@ -48,15 +48,16 @@ EXAMPLE_SHARDS="${EXAMPLE_SHARDS:-4}"
 EXAMPLE_STAGES=""
 for i in $(seq 1 "$EXAMPLE_SHARDS"); do EXAMPLE_STAGES="$EXAMPLE_STAGES packed-c$i"; done
 EXAMPLE_STAGES="${EXAMPLE_STAGES# }"
-DEFAULT_STAGES="packed-a packed-b $EXAMPLE_STAGES static suites"
+DEFAULT_STAGES="packed-a packed-b1 packed-b2 $EXAMPLE_STAGES static suites"
 for i in $(seq 1 "$UNIT_SHARDS"); do DEFAULT_STAGES="$DEFAULT_STAGES unit-$i-of-$UNIT_SHARDS"; done
 STAGES="${STAGES:-$DEFAULT_STAGES}"
-# packed-a, packed-b and the example shards upload with the run's single SAS, so they are
-# queued first (packed-a, packed-b, packed-c1..cN), well inside the SAS lifetime.
+# packed-a, packed-b1, packed-b2 and the example shards upload with the run's single SAS, so they are
+# queued first (packed-a, packed-b1, packed-b2, packed-c1..cN), well inside the SAS lifetime.
 WANT_ARTIFACTS=0; WANT_CONSUMERS=0; WANT_EXAMPLES=0
 want_stage() { case " $STAGES " in *" $1 "*) return 0;; esac; return 1; }
 for tok in $STAGES; do
   case "$tok" in
+    packed-b) echo "FATAL: stage packed-b was split into packed-b1 (clean-install, tree-shaking) and packed-b2 (consumer-matrix, runtime-audit)" >&2; exit 2;;
     packed-c) echo "FATAL: stage packed-c was replaced by the example shards: $EXAMPLE_STAGES" >&2; exit 2;;
     packed-c*) idx="${tok#packed-c}"
       [[ "$idx" =~ ^[1-9][0-9]*$ ]] && [ "$idx" -le "$EXAMPLE_SHARDS" ] || { echo "FATAL: unknown example shard stage $tok (EXAMPLE_SHARDS=$EXAMPLE_SHARDS)" >&2; exit 2; };;
@@ -68,11 +69,15 @@ if [ "$EXAMPLE_PRESENT" -gt 0 ]; then
   [ "$EXAMPLE_PRESENT" = "$EXAMPLE_SHARDS" ] || { echo "FATAL: the example shards merge into one report per run; run all of them together (STAGES=\"$EXAMPLE_STAGES\")" >&2; exit 2; }
   WANT_EXAMPLES=1
 fi
-want_stage packed-b && WANT_CONSUMERS=1
+# The consumers bundle merges both parts (clean-install + matrix source reports), so both stages run together.
+if want_stage packed-b1 || want_stage packed-b2; then
+  { want_stage packed-b1 && want_stage packed-b2; } || { echo "FATAL: the consumer reports merge from packed-b1 and packed-b2; run both (STAGES=\"packed-b1 packed-b2\")" >&2; exit 2; }
+  WANT_CONSUMERS=1
+fi
 want_stage packed-a && WANT_ARTIFACTS=1
 ORDERED=""
-for first in packed-a packed-b $EXAMPLE_STAGES; do want_stage "$first" && ORDERED="$ORDERED $first"; done
-for tok in $STAGES; do case "$tok" in packed-a|packed-b|packed-c*) ;; *) ORDERED="$ORDERED $tok";; esac; done
+for first in packed-a packed-b1 packed-b2 $EXAMPLE_STAGES; do want_stage "$first" && ORDERED="$ORDERED $first"; done
+for tok in $STAGES; do case "$tok" in packed-a|packed-b1|packed-b2|packed-c*) ;; *) ORDERED="$ORDERED $tok";; esac; done
 STAGES="${ORDERED# }"
 SAS_TTL_MINUTES="${SAS_TTL_MINUTES:-120}"
 MAX_PARALLEL=2
@@ -166,7 +171,7 @@ run_stage() {
   local stage="$1" log="$OUT_DIR/acr-run-$1.log" rc=0
   local common=(--timeout 1800 --set "LOGIN_SERVER=$LOGIN_SERVER" --set "IMAGE=$IMAGE_REPO:$IMAGE_TAG"
     --set "RUN_ID=$RUN_ID" --set "RELEASE_KIND=$RELEASE_KIND" --set "STAGE=$stage" --set "PLAN_GENERATED_AT=$PLAN_GENERATED_AT" --set "EXAMPLE_SHARDS=$EXAMPLE_SHARDS")
-  if [ "$stage" = packed-a ] || [ "$stage" = packed-b ] || [[ "$stage" =~ ^packed-c[1-9][0-9]*$ ]]; then
+  if [ "$stage" = packed-a ] || [ "$stage" = packed-b1 ] || [ "$stage" = packed-b2 ] || [[ "$stage" =~ ^packed-c[1-9][0-9]*$ ]]; then
     # The upload must finish before the SAS expires.
     if [ "$(sas_seconds_left)" -lt 2100 ]; then
       echo "$stage not started: SAS has $(sas_seconds_left)s left (< 2100s)" > "$log"; rc=97
@@ -193,7 +198,7 @@ wait
 ARTIFACTS_JSON="$OUT_DIR/artifacts-verification.json"
 CONSUMERS_JSON="$OUT_DIR/consumers-verification.json"
 EXAMPLES_JSON="$OUT_DIR/examples-verification.json"
-[ "$WANT_CONSUMERS" = 1 ] && sas_redact_file "$OUT_DIR/acr-run-packed-b.log"
+[ "$WANT_CONSUMERS" = 1 ] && { sas_redact_file "$OUT_DIR/acr-run-packed-b1.log"; sas_redact_file "$OUT_DIR/acr-run-packed-b2.log"; }
 if [ "$WANT_EXAMPLES" = 1 ]; then for stage in $EXAMPLE_STAGES; do sas_redact_file "$OUT_DIR/acr-run-$stage.log"; done; fi
 if [ "$WANT_ARTIFACTS" = 1 ]; then
   sas_redact_file "$OUT_DIR/acr-run-packed-a.log"
@@ -212,19 +217,19 @@ if [ "$WANT_ARTIFACTS" = 1 ]; then
   # Verified before the consumer files land under artifacts/consumers/.
   node tools/remote-acr/source5-artifacts.mjs verify "$OUT_DIR/artifacts" "$REPO_ROOT" "$COMMIT" "$LOCK_SHA" "$INPUT_DIGEST" "$ARTIFACTS_JSON" || true
 fi
-# packed-b consumer bundle (consumers): download, re-hash and extract under
+# packed-b1/packed-b2 consumer bundle (consumers-1, consumers-2): download, re-hash and extract the union under
 # <run>/artifacts/consumers/<job path> (source5-artifacts.mjs verify-consumers).
 download_consumers() {
   local dl="$OUT_DIR/.consumers-download"
-  echo "== downloading source5/$RUN_ID/consumers"
+  echo "== downloading source5/$RUN_ID/consumers-1..2"
   rm -rf "$dl" "$OUT_DIR/artifacts/consumers"; mkdir -p "$dl"
   if AZURE_STORAGE_KEY="$A3D_SAS_KEY" "$AZ_WRAPPER" storage blob download-batch --source "$A3D_SAS_CONTAINER" \
-      --account-name "$A3D_SAS_STORAGE_ACCOUNT" --auth-mode key --pattern "source5/$RUN_ID/consumers/*" \
+      --account-name "$A3D_SAS_STORAGE_ACCOUNT" --auth-mode key --pattern "source5/$RUN_ID/consumers-*/*" \
       --destination "$dl" -o none --only-show-errors > "$OUT_DIR/consumers-download.log" 2>&1 \
-      && [ -d "$dl/source5/$RUN_ID/consumers" ]; then :; else
-    echo "   consumers download failed ($OUT_DIR/consumers-download.log)"; mkdir -p "$dl/source5/$RUN_ID/consumers"
+      && [ -d "$dl/source5/$RUN_ID" ]; then :; else
+    echo "   consumers download failed ($OUT_DIR/consumers-download.log)"; mkdir -p "$dl/source5/$RUN_ID"
   fi
-  node tools/remote-acr/source5-artifacts.mjs verify-consumers "$dl/source5/$RUN_ID/consumers" "$OUT_DIR/artifacts/consumers" \
+  node tools/remote-acr/source5-artifacts.mjs verify-consumers "$dl/source5/$RUN_ID" "$OUT_DIR/artifacts/consumers" \
     "$REPO_ROOT" "$RUN_ID" "$CONSUMERS_JSON" || true
   rm -rf "$dl"
 }
@@ -292,9 +297,9 @@ COMMIT="$COMMIT" TREE="$TREE" MANIFEST_SHA="$MANIFEST_SHA" LOCK_SHA="$LOCK_SHA" 
     passed: commands.filter((c) => c.exitCode === 0).map((c) => c.id),
     failed: commands.filter((c) => c.exitCode !== 0).map((c) => c.id),
     problems,
-    candidatePlan: plans["packed-a"] || plans["packed-b"] || Object.entries(plans).find(([stage]) => /^packed-c[0-9]+$/.test(stage))?.[1] || null,
+    candidatePlan: plans["packed-a"] || plans["packed-b1"] || plans["packed-b2"] || Object.entries(plans).find(([stage]) => /^packed-c[0-9]+$/.test(stage))?.[1] || null,
     // Downloaded tested archives (tools/remote-acr/source5-artifacts.mjs verify; packed-a),
-    // `artifacts.consumers` (verify-consumers; packed-b) and `artifacts.examples` (verify-examples; the
+    // `artifacts.consumers` (verify-consumers; packed-b1 + packed-b2) and `artifacts.examples` (verify-examples; the
     // merged union of the packed-c1..cN shard bundles); null when no packed stage ran.
     artifacts,
     browserAcceptance: "not-run"

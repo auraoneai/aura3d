@@ -40,6 +40,7 @@
 //     from the environment and never logged: `--otp` is appended to the argv of the
 //     child process only.
 
+import { normalizeNpmArchiveFile } from "./deterministic-archive.mjs";
 import { assertReleaseInventory, releaseInventoryId } from './release-inventory.mjs';
 import { execFileSync, execSync } from "node:child_process";
 import { sourceIdentity, assertCommittedReleaseSource } from "./source-identity.mjs";
@@ -244,6 +245,8 @@ try {
       const packOutput = retained ? resolve(ROOT,retained.tarball) : sh(`pnpm pack --pack-destination ${JSON.stringify(PACK_DIR)}`, { cwd: dir });
       const tarball = packOutput.split("\n").pop();
       if (!tarball || !existsSync(tarball)) throw new Error(`pack produced no tarball (output: ${packOutput})`);
+      // pnpm writes small archives in async-read completion order; sort entries so the same commit packs to the same bytes in every ACR stage.
+      if (!retained) normalizeNpmArchiveFile(tarball);
       const tarballBytes = readFileSync(tarball);
       const integrity = `sha512-${createHash("sha512").update(tarballBytes).digest("base64")}`;
       const sha256 = createHash("sha256").update(tarballBytes).digest("hex");

@@ -33,7 +33,7 @@ export interface Source5GateInputs {
 }
 export interface ScopeLike { rows: Array<{ id: string; remaining: string }>; required: string[] }
 
-export const STAGE_COMMANDS: Readonly<Record<'static' | 'suites' | 'packed-a' | 'packed-b', readonly string[]>>;
+export const STAGE_COMMANDS: Readonly<Record<'static' | 'suites' | 'packed-a' | 'packed-b1' | 'packed-b2', readonly string[]>>;
 /** Commands of every example shard stage `packed-c<I>` (I = 1..N), in run order. */
 export const EXAMPLE_SHARD_COMMANDS: readonly string[];
 export const EXPECTED_CHECKS: readonly Source5ExpectedCheck[];

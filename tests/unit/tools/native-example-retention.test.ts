@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { assertExampleRetainedIdentity, assertPackedExampleLock, collectExampleRetainedFiles, packedExampleWrapper, exampleOfflineNpmCommand, exampleRetainedFilesDigest, prepareExampleLockedInstall, readExampleCandidateReviews, readExampleInstallBundle, rootServedFile, sourceScriptCommands, stageExampleDependencies, stageExampleVerifiedArchives } from "../../../tools/agent-examples/index.js";
+import { assertExampleRetainedIdentity, assertPackedExampleLock, collectExampleRetainedFiles, packedExampleWrapper, exampleOfflineNpmCommand, exampleRetainedFilesDigest, importedCandidatePackages, prepareExampleLockedInstall, readExampleCandidateReviews, readExampleInstallBundle, rootServedFile, sourceScriptCommands, stageExampleDependencies, stageExampleVerifiedArchives, withBuildTools } from "../../../tools/agent-examples/index.js";
 import * as archiveAdmission from "../../../tools/release/archive-admission.mjs";
 
 const roots: string[] = [];
@@ -340,5 +340,28 @@ describe("packed-candidate example installs (ACR source5 path, no custody lock i
     expect(() => assertPackedExampleLock({ ...wrapper, dependencies: { ...(wrapper.dependencies as object), extra: "file:../x.tgz" } }, lockFor(), plan as never, substitutions, installed)).toThrow(/unrecorded local dependency/);
     expect(() => assertPackedExampleLock(wrapper, lockFor(), plan as never, substitutions, installed.slice(0, 1))).toThrow(/inventory is incomplete/);
     expect(() => assertPackedExampleLock(wrapper, lockFor(), plan as never, [], installed)).toThrow(/substitutions are missing/);
+  });
+});
+
+describe("packed example harness fixes from the first full ACR examples run", () => {
+  it("does not mistake identifiers in built or vendored code for credentials, but still refuses string credentials", () => {
+    const root = scratch();
+    put(root, "dist/assets/transcoder.js", "var sig=sig.replace(/p/g,'');authorization = staticPairFrames.get(this);const sig = parentSignature(world);");
+    expect(() => collectExampleRetainedFiles(root)).not.toThrow();
+    for (const [name, text] of [["a.js", 'const password = "synthetic-password-value";'], ["b.mjs", 'fetch(url, { headers: { Authorization: `Bearer synthetic-token-value` } });'], ["c.ts", 'const u = "https://example.test/x?sig=abc123";']] as const) {
+      const bad = scratch();
+      put(bad, name, text);
+      expect(() => collectExampleRetainedFiles(bad), name).toThrow(/credential-like text/);
+    }
+  });
+
+  it("declares candidate packages the staged sources import and tools the scripts run", () => {
+    const root = scratch();
+    put(root, "apps/a/src/main.ts", 'import { installBlackFrameGuard } from "@aura3d/debug";\nimport x from "@aura3d/engine/lanes";\nexport * from "@aura3d/math";\nconst y = import("@aura3d/rendering");');
+    put(root, "apps/a/README.md", 'import "@aura3d/ignored";');
+    expect(importedCandidatePackages(root)).toEqual(["@aura3d/debug", "@aura3d/engine", "@aura3d/math", "@aura3d/rendering"]);
+    put(root, "package.json", JSON.stringify({ devDependencies: { typescript: "^5.8.3", vite: "^7.3.2" } }));
+    expect(withBuildTools(root, { dependencies: {} }, [["tsc", "-p", "tsconfig.json"]]).devDependencies).toEqual({ typescript: "^5.8.3" });
+    expect(withBuildTools(root, { devDependencies: { typescript: "^5", vite: "^7" } }, [["tsc"], ["vite", "build"]]).devDependencies).toEqual({ typescript: "^5", vite: "^7" });
   });
 });

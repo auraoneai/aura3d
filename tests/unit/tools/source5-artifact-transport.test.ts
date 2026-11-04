@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { gitSourceInputDigest, sourceIdentity, stagedSourceIdentity } from '../../../tools/release/source-identity.mjs';
 import { buildSource5Manifest, SOURCE5_MANIFEST_NAME, writeSource5Manifest } from '../../../tools/remote-acr/source5-manifest.mjs';
 import { readSource5Manifest } from '../../../tools/remote-acr/source5-files.mjs';
-import { CONSUMER_INDEX_NAME, planArchives, shardDownloadDir, shardIndexName, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumers, verifyDownloadedExamples } from '../../../tools/remote-acr/source5-artifacts.mjs';
+import { CONSUMER_INDEX_NAME, consumerPartDir, planArchives, shardDownloadDir, shardIndexName, stageArtifacts, stageConsumers, verifyDownloadedArtifacts, verifyDownloadedConsumerParts, verifyDownloadedConsumers, verifyDownloadedExamples } from '../../../tools/remote-acr/source5-artifacts.mjs';
 import { exampleShardRecord, exampleShardReportName } from '../../../tools/agent-examples/shard.mjs';
 
 const REPO = resolve(__dirname, '../../..');
@@ -321,7 +321,7 @@ describe('source5 packed example shard bundles (stage-examples I/N -> verify-exa
     const index = stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'e'), kind: 'examples', shard: { index: 2, count: COUNT } });
     expect(index).toMatchObject({ kind: 'examples', shard: { index: 2, count: COUNT }, reports: { examplesShardReport: { path: `tests/reports/native-examples-catalog/${RUN}/examples-source.shard-2-of-3.json` } } });
     expect(index.files).toHaveLength(1 + 2 * shard.ids.length);
-    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'x'), kind: 'consumers', shard: { index: 1, count: 2 } })).toThrow(/only the examples bundle is sharded/);
+    expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'x'), kind: 'consumers', shard: { index: 1, count: 3 } })).toThrow(/the consumers bundle has 2 parts/);
     expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'y'), kind: 'examples', shard: { index: 4, count: 3 } })).toThrow(/invalid shard/);
     expect(() => stageConsumers({ root, runId: RUN, outDir: join(temp('up'), 'z'), kind: 'examples', shard: { index: 1, count: COUNT } })).toThrow(/examplesShardReport was not produced/);
   });
@@ -407,5 +407,54 @@ describe('source5 packed example shard bundles (stage-examples I/N -> verify-exa
     forged.files[0].path = `tests/reports/native-examples-catalog/${RUN}/examples-source.json`;
     writeFileSync(join(dir, shardDownloadDir(2), CONSUMER_INDEX_NAME), JSON.stringify(forged));
     expect(verifyDownloadedConsumers({ dir: join(dir, shardDownloadDir(2)), dest: m.dest, root: m.root, runId: RUN, kind: 'examples', shard: { index: 2, count: COUNT } }).problems[0]).toMatch(/unsafe or duplicate consumer path/);
+  });
+});
+
+describe('source5 consumer parts (packed-b1 clean-install + packed-b2 consumer-matrix -> one merged bundle)', () => {
+  const RUN = 'run-1';
+  const partJob = (index: 1 | 2) => {
+    const root = temp('part-job');
+    if (index === 1) {
+      put(root, `tests/reports/native-consumers/${RUN}/source.json`, '{"part":1}\n');
+      put(root, `tests/reports/native-consumers/${RUN}/projects/a/package.json`, '{}\n');
+    } else {
+      put(root, `tests/reports/native-consumers/${RUN}/matrix-source.json`, '{"part":2}\n');
+      put(root, `tests/reports/native-consumer-matrix/${RUN}/projects/b/package.json`, '{}\n');
+    }
+    return root;
+  };
+  const stageParts = (indexes: Array<1 | 2> = [1, 2]) => {
+    const partsDir = temp('parts');
+    for (const index of indexes) stageConsumers({ root: partJob(index), runId: RUN, outDir: join(partsDir, consumerPartDir(index)), kind: 'consumers', shard: { index, count: 2 } });
+    return partsDir;
+  };
+
+  it('each part carries only its own report; a part without it fails', () => {
+    const one = stageConsumers({ root: partJob(1), runId: RUN, outDir: join(temp('up'), 'one'), kind: 'consumers', shard: { index: 1, count: 2 } });
+    expect(Object.keys(one.reports)).toEqual(['sourceConsumerReport']);
+    const two = stageConsumers({ root: partJob(2), runId: RUN, outDir: join(temp('up'), 'two'), kind: 'consumers', shard: { index: 2, count: 2 } });
+    expect(Object.keys(two.reports)).toEqual(['matrixSourceReport']);
+    expect(() => stageConsumers({ root: partJob(1), runId: RUN, outDir: join(temp('up'), 'bad'), kind: 'consumers', shard: { index: 2, count: 2 } })).toThrow(/matrixSourceReport was not produced/);
+  });
+
+  it('merges both parts into one consumer index binding both source reports', () => {
+    const dest = join(temp('dest'), 'consumers');
+    const result = verifyDownloadedConsumerParts({ partsDir: stageParts(), dest, root: dirname(dest), runId: RUN });
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(result.sourceConsumerReport?.jobPath).toBe(`tests/reports/native-consumers/${RUN}/source.json`);
+    expect(result.matrixSourceReport?.jobPath).toBe(`tests/reports/native-consumers/${RUN}/matrix-source.json`);
+    const index = JSON.parse(readFileSync(join(dest, CONSUMER_INDEX_NAME), 'utf8'));
+    expect(index).toMatchObject({ kind: 'consumers', merged: true, partCount: 2 });
+    expect(index.files.map((file: { path: string }) => file.path)).toHaveLength(4);
+    expect(existsSync(join(dest, `tests/reports/native-consumer-matrix/${RUN}/projects/b/package.json`))).toBe(true);
+  });
+
+  it('a missing part fails and nothing is merged', () => {
+    const dest = join(temp('dest'), 'consumers');
+    const result = verifyDownloadedConsumerParts({ partsDir: stageParts([1]), dest, root: dirname(dest), runId: RUN });
+    expect(result.ok).toBe(false);
+    expect(result.problems.join('\n')).toMatch(/consumers part 2\/2 was not downloaded/);
+    expect(existsSync(join(dest, CONSUMER_INDEX_NAME))).toBe(false);
   });
 });

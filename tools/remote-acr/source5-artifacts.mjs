@@ -13,8 +13,9 @@
 // integrity), checks the plan against the staged candidate identity, and
 // writes the result merged into source-report.json as `artifacts`.
 //
-// packed-b (command `consumers-upload`): `stage-consumers <run-id> <out-dir>`
-// packs its consumer source reports and the files they reference; packed-c
+// packed-b1 / packed-b2 (command `consumers-upload`): `stage-consumers <run-id> <out-dir> <P>/2`
+// packs that part's consumer source report (clean-install / consumer-matrix) and the files it
+// references; the Mac merges both parts into one `consumers` bundle; packed-c
 // (command `examples-upload`): `stage-examples` packs the packed example source
 // report and its retained projects. On the Mac `verify-consumers` /
 // `verify-examples` re-hash and extract them into <run>/artifacts/consumers/ and
@@ -150,8 +151,8 @@ export function verifyDownloadedArtifacts({ dir, root = process.cwd(), expected 
   return result;
 }
 
-// ---- packed-b consumer reports / packed-c example reports -----------------------
-// Two bundle kinds, same format. `consumers` (packed-b): the clean-install and
+// ---- packed-b1/packed-b2 consumer reports / packed-c example reports -----------------------
+// Two bundle kinds, same format. `consumers` (packed-b1 + packed-b2): the clean-install and
 // consumer-matrix source reports with the projects, logs and dependency archives
 // they reference. `examples` (packed-c): the packed example source report with
 // its retained wrappers, builds and logs. The acceptance consumer phase
@@ -172,16 +173,24 @@ const RUN_ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
 const CHUNK_NAME = /^bundle-\d{3}\.bin$/;
 export const BUNDLE_KINDS = Object.freeze(['consumers', 'examples']);
 const kindOf = kind => { if (!BUNDLE_KINDS.includes(kind)) throw new Error(`unknown consumer bundle kind ${kind}`); return kind; };
-/** Job repository-relative directories one bundle kind retains for a run (consumers: packed-b, examples: packed-c). */
+/** Job repository-relative directories one bundle kind retains for a run (consumers: packed-b1/packed-b2, examples: packed-c). */
 export const consumerRoots = (runId, kind = 'consumers') => (kindOf(kind) === 'examples'
   ? [`tests/reports/native-examples-catalog/${runId}`]
   : [`tests/reports/native-consumers/${runId}`, `tests/reports/native-consumer-matrix/${runId}`]);
+/** The consumers bundle is two parts (stages packed-b1: clean-install, packed-b2: consumer-matrix), merged on the Mac. */
+export const CONSUMER_PARTS = 2;
+/** Roots one stage retains: consumers part 1 = clean-install's run directory, part 2 adds the matrix's. */
+const stageRoots = (runId, kind, shard) => (kind === 'consumers' && shard?.index === 1 ? consumerRoots(runId, kind).slice(0, 1) : consumerRoots(runId, kind));
 /**
  * The source reports a bundle kind carries and the gate binds (field name -> job path). A shard bundle
  * (`examples` with `shard`) carries only its own `examplesShardReport`; the merged report is built on the Mac.
  */
 export const consumerReportPaths = (runId, kind = 'consumers', shard = null) => {
-  if (kindOf(kind) === 'consumers') return { sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`, matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json` };
+  if (kindOf(kind) === 'consumers') {
+    const reports = { sourceConsumerReport: `tests/reports/native-consumers/${runId}/source.json`, matrixSourceReport: `tests/reports/native-consumers/${runId}/matrix-source.json` };
+    // Part 1 (packed-b1) carries clean-install's source report, part 2 (packed-b2) the matrix source report.
+    return shard ? Object.fromEntries(Object.entries(reports).filter((_, i) => i === shard.index - 1)) : reports;
+  }
   return shard
     ? { examplesShardReport: `tests/reports/native-examples-catalog/${runId}/${exampleShardReportName(shard.index, shard.count)}` }
     : { examplesSourceReport: `tests/reports/native-examples-catalog/${runId}/examples-source.json` };
@@ -197,12 +206,12 @@ const safeJobPath = (path, runId, kind) => typeof path === 'string' && !path.inc
 /** In-image: pack one bundle kind's run directories into chunks + index under `outDir`. */
 export function stageConsumers({ root, runId, outDir, kind = 'consumers', shard = null, chunkBytes = CONSUMER_CHUNK_BYTES, maxBytes = CONSUMER_MAX_BYTES }) {
   if (!RUN_ID.test(runId ?? '')) throw new Error('invalid run id');
-  if (shard && kind !== 'examples') throw new Error('only the examples bundle is sharded');
   shard = shardOf(shard);
+  if (shard && kind === 'consumers' && shard.count !== CONSUMER_PARTS) throw new Error(`the consumers bundle has ${CONSUMER_PARTS} parts`);
   const reports = consumerReportPaths(runId, kind, shard);
   for (const [field, path] of Object.entries(reports)) if (!regularFile(join(root, path))) throw new Error(`${field} was not produced: ${path}`);
   const files = [];
-  for (const dir of consumerRoots(runId, kind)) {
+  for (const dir of stageRoots(runId, kind, shard)) {
     const absolute = join(root, dir);
     let stat;
     try { stat = lstatSync(absolute); } catch { throw new Error(`consumer report directory missing: ${dir}`); }
@@ -269,8 +278,8 @@ function listEntries(root, dir) {
 export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), runId, kind = 'consumers', shard = null }) {
   const problems = [], rel = path => relative(root, path).split(sep).join('/');
   kindOf(kind);
-  const wanted = kind === 'examples' ? shardOf(shard) : null;
-  if (shard && !wanted) problems.push('only the examples bundle is sharded');
+  const wanted = shardOf(shard);
+  if (wanted && kind === 'consumers' && wanted.count !== CONSUMER_PARTS) problems.push(`the consumers bundle has ${CONSUMER_PARTS} parts`);
   const indexName = wanted ? shardIndexName(wanted.index, wanted.count) : CONSUMER_INDEX_NAME;
   const result = { schema: CONSUMERS_SCHEMA, kind, ...(wanted ? { shard: wanted } : {}), ok: false, runId, dir: rel(dest), index: null,
     ...Object.fromEntries(Object.keys(consumerReportPaths('x', kind, wanted)).map(field => [field, null])),
@@ -325,6 +334,57 @@ export function verifyDownloadedConsumers({ dir, dest, root = process.cwd(), run
   }
   result.files = extracted.length;
   result.bytes = extracted.reduce((sum, file) => sum + file.data.length, 0);
+  result.ok = true;
+  return result;
+}
+
+/** Download directory name of one consumers part (`source5/<run>/consumers-<P>/` in the run container). */
+export const consumerPartDir = part => `consumers-${part}`;
+
+/**
+ * Mac side: verify both downloaded consumers parts (`partsDir/consumers-1` = packed-b1, `consumers-2` = packed-b2),
+ * extract the union under `dest` and write the merged `consumer-index.json` (every retained file, both bound reports
+ * and the per-part indexes). A missing, duplicate or overlapping part fails (`ok: false`, nothing merged). Returns the
+ * record merged into source-report.json as `artifacts.consumers`.
+ */
+export function verifyDownloadedConsumerParts({ partsDir, dest, root = process.cwd(), runId }) {
+  const problems = [], rel = path => relative(root, path).split(sep).join('/');
+  const reportFields = Object.keys(consumerReportPaths('x', 'consumers'));
+  const result = { schema: CONSUMERS_SCHEMA, kind: 'consumers', ok: false, runId, dir: rel(dest), index: null, ...Object.fromEntries(reportFields.map(field => [field, null])), parts: [], files: 0, bytes: 0, problems };
+  if (!RUN_ID.test(runId ?? '')) { problems.push('invalid run id'); return result; }
+  if (existsSync(dest) && readdirSync(dest).length) { problems.push(`extraction directory is not empty: ${rel(dest)}`); return result; }
+  const present = existsSync(partsDir) ? readdirSync(partsDir) : [];
+  const names = new Set(Array.from({ length: CONSUMER_PARTS }, (_, i) => consumerPartDir(i + 1)));
+  for (const name of present) if (!names.has(name)) problems.push(`unexpected downloaded consumers directory: ${name}`);
+  const partResults = [];
+  for (let i = 1; i <= CONSUMER_PARTS; i += 1) {
+    const dir = join(partsDir, consumerPartDir(i));
+    if (!existsSync(dir)) { problems.push(`consumers part ${i}/${CONSUMER_PARTS} was not downloaded`); continue; }
+    const part = verifyDownloadedConsumers({ dir, dest, root, runId, kind: 'consumers', shard: { index: i, count: CONSUMER_PARTS } });
+    problems.push(...part.problems.map(problem => `part ${i}/${CONSUMER_PARTS}: ${problem}`));
+    if (part.ok) partResults.push(part);
+  }
+  if (problems.length) return result;
+  const files = [], parts = [], reports = {};
+  for (const part of partResults) {
+    const name = shardIndexName(part.shard.index, CONSUMER_PARTS);
+    const partIndexBytes = readFileSync(join(dest, name));
+    for (const file of JSON.parse(partIndexBytes).files) files.push({ path: file.path, sha256: file.sha256, size: file.size });
+    parts.push({ part: part.shard.index, count: CONSUMER_PARTS, indexFile: { path: name, sha256: part.index.sha256 } });
+    for (const field of Object.keys(consumerReportPaths(runId, 'consumers', part.shard))) {
+      reports[field] = { path: part[field].jobPath, sha256: part[field].sha256 };
+      result[field] = part[field];
+    }
+  }
+  files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  if (new Set(files.map(file => file.path)).size !== files.length) { problems.push('consumers parts retain the same file twice'); return result; }
+  const index = { schema: CONSUMERS_SCHEMA, kind: 'consumers', runId, merged: true, partCount: CONSUMER_PARTS, roots: consumerRoots(runId, 'consumers'), reports, parts, files, totalBytes: files.reduce((sum, file) => sum + file.size, 0) };
+  const indexBytes = Buffer.from(`${JSON.stringify(index, null, 2)}\n`);
+  writeFileSync(join(dest, CONSUMER_INDEX_NAME), indexBytes, { flag: 'wx' });
+  result.index = { localPath: rel(join(dest, CONSUMER_INDEX_NAME)), sha256: sha256(indexBytes) };
+  result.parts = parts;
+  result.files = files.length;
+  result.bytes = index.totalBytes;
   result.ok = true;
   return result;
 }
@@ -416,15 +476,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       console.log(`   artifacts  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.archives.filter(a => a.verified).length}/${result.archives.length} archives)`);
       for (const p of result.problems) console.log(`   artifact problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
-    } else if ((command === 'stage-consumers' && args.length === 2) || (command === 'stage-examples' && args.length === 3)) {
+    } else if ((command === 'stage-consumers' && args.length === 3) || (command === 'stage-examples' && args.length === 3)) {
       const [runId, outDir, shardSpec] = args, kind = command === 'stage-examples' ? 'examples' : 'consumers';
       const index = stageConsumers({ root: process.cwd(), runId, outDir, kind, shard: shardSpec ? parseExampleShard(shardSpec) : null });
       console.log(`[${kind}${shardSpec ? ` ${shardSpec}` : ''}] staged ${index.files.length} files (${index.totalBytes} bytes) in ${index.chunks.length} chunks`);
     } else if (command === 'verify-consumers' && args.length === 5) {
       const [dir, dest, root, runId, outJson] = args;
-      const result = verifyDownloadedConsumers({ dir: resolve(dir), dest: resolve(dest), root: resolve(root), runId, kind: 'consumers' });
+      const result = verifyDownloadedConsumerParts({ partsDir: resolve(dir), dest: resolve(dest), root: resolve(root), runId });
       writeFileSync(outJson, `${JSON.stringify(result, null, 2)}\n`);
-      console.log(`   consumers  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.files} files)`);
+      console.log(`   consumers  : ${result.ok ? 'verified' : 'NOT VERIFIED'} (${result.parts.length}/${CONSUMER_PARTS} parts, ${result.files} files)`);
       for (const p of result.problems) console.log(`   consumers problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
     } else if (command === 'verify-examples' && args.length === 6) {
@@ -435,7 +495,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       for (const p of result.problems) console.log(`   examples problem: ${p}`);
       if (!result.ok) process.exitCode = 1;
     } else {
-      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers <run-id> <out-dir> | stage-examples <run-id> <out-dir> <I/N> | verify-consumers <download-dir> <dest-dir> <repo-root> <run-id> <out-json> | verify-examples <shards-download-dir> <dest-dir> <repo-root> <run-id> <out-json> <N>');
+      throw new Error('usage: source5-artifacts.mjs stage <plan> <report-dir> <out-dir> <run-id> | verify <dir> <repo-root> <commit|-> <lock-sha256|-> <input-digest|-> <out-json> | stage-consumers <run-id> <out-dir> <P/2> | stage-examples <run-id> <out-dir> <I/N> | verify-consumers <parts-download-dir> <dest-dir> <repo-root> <run-id> <out-json> | verify-examples <shards-download-dir> <dest-dir> <repo-root> <run-id> <out-json> <N>');
     }
   } catch (error) {
     console.error(`[artifacts] ${error.message}`);

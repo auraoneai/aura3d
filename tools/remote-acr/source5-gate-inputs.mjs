@@ -81,7 +81,7 @@ const GIT_SHA = /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/;
 const UNIT_STAGE = /^unit-([1-9]\d*)-of-([1-9]\d*)$/;
 /** packed-c<I>: example shard I (of N, N taken from the `--shard I/N` its examples-source command ran). */
 const EXAMPLE_STAGE = /^packed-c([1-9]\d*)$/;
-const STAGE = /^(?:static|suites|packed-a|packed-b|packed-c[1-9]\d*|unit-[1-9]\d*-of-[1-9]\d*)$/;
+const STAGE = /^(?:static|suites|packed-a|packed-b[12]|packed-c[1-9]\d*|unit-[1-9]\d*-of-[1-9]\d*)$/;
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 const sha512 = data => `sha512-${createHash('sha512').update(data).digest('base64')}`;
 const canonical = value => value === null || typeof value !== 'object' ? JSON.stringify(value)
@@ -95,7 +95,9 @@ export const STAGE_COMMANDS = Object.freeze({
   suites: ['assets-qr', 'packages'],
   'packed-a': ['build', 'pack', 'package-dist-unit', 'api-baseline', 'integration', 'packages-dist', 'verify-exports', 'verify-imports',
     'tarballs', 'bundle-size', 'api-diff', 'api-contract', 'api-docs-packed', 'api-docs', 'artifacts-upload'],
-  'packed-b': ['build', 'pack', 'clean-install', 'tree-shaking', 'consumer-matrix', 'runtime-audit', 'consumers-upload']
+  // The consumer stages are split so each stays well under the 1800 s ACR cap (clean-install alone takes ~980 s).
+  'packed-b1': ['build', 'pack', 'clean-install', 'tree-shaking', 'consumers-upload'],
+  'packed-b2': ['build', 'pack', 'consumer-matrix', 'runtime-audit', 'consumers-upload']
 });
 /** Commands of every example shard stage `packed-c<I>`, in run order. */
 export const EXAMPLE_SHARD_COMMANDS = Object.freeze(['build', 'pack', 'examples-source', 'examples-upload']);
@@ -122,8 +124,8 @@ export const EXPECTED_CHECKS = Object.freeze([
   { id: 'assets-qr', section4: 'pnpm exec vitest run tests/assets tests/qr', from: ['suites:assets-qr'] },
   { id: 'packages', section4: 'pnpm test:packages', from: ['suites:packages'] },
   { id: 'release-tools', section4: 'node --test tools/release/*.test.mjs', from: ['static:release-tools'] },
-  { id: 'build', section4: 'pnpm build', from: ['packed-a:build', 'packed-b:build', 'example-shards:build'] },
-  { id: 'pack', section4: 'node tools/release/publish-all.mjs --pack-only', from: ['packed-a:pack', 'packed-b:pack', 'example-shards:pack'] },
+  { id: 'build', section4: 'pnpm build', from: ['packed-a:build', 'packed-b1:build', 'packed-b2:build', 'example-shards:build'] },
+  { id: 'pack', section4: 'node tools/release/publish-all.mjs --pack-only', from: ['packed-a:pack', 'packed-b1:pack', 'packed-b2:pack', 'example-shards:pack'] },
   { id: 'api-baseline', section4: 'tools/public-surface-diff/prepare-baseline.ts', from: ['packed-a:api-baseline'] },
   { id: 'integration', section4: 'pnpm test:integration', from: ['packed-a:integration'] },
   { id: 'packages-dist', section4: 'pnpm test:packages:dist', from: ['packed-a:packages-dist'] },
@@ -131,16 +133,16 @@ export const EXPECTED_CHECKS = Object.freeze([
   { id: 'verify-exports', section4: 'pnpm verify:exports', from: ['packed-a:verify-exports'] },
   { id: 'verify-imports', section4: 'pnpm verify:imports', from: ['packed-a:verify-imports'] },
   { id: 'tarballs', section4: 'pnpm check:tarballs', from: ['packed-a:tarballs'] },
-  { id: 'clean-install', section4: 'tools/package-clean-install/index.ts --phase source', from: ['packed-b:clean-install', 'example-shards:examples-source'] },
-  { id: 'tree-shaking', section4: 'tools/installed-tree-shaking/index.ts', from: ['packed-b:tree-shaking'] },
+  { id: 'clean-install', section4: 'tools/package-clean-install/index.ts --phase source', from: ['packed-b1:clean-install', 'example-shards:examples-source'] },
+  { id: 'tree-shaking', section4: 'tools/installed-tree-shaking/index.ts', from: ['packed-b1:tree-shaking'] },
   { id: 'bundle-size', section4: 'pnpm check:bundle-size', from: ['packed-a:bundle-size'] },
   { id: 'api-diff', section4: 'tools/public-surface-diff/index.ts', from: ['packed-a:api-diff'] },
   { id: 'api-contract', section4: 'tools/public-api-contract/index.ts', from: ['packed-a:api-contract'] },
-  { id: 'consumer-matrix', section4: 'tools/native-consumer-matrix/index.ts --phase source', from: ['packed-b:consumer-matrix'] },
-  { id: 'runtime-audit', section4: 'tools/native-runtime-audit/index.ts --phase source', from: ['packed-b:runtime-audit'] },
+  { id: 'consumer-matrix', section4: 'tools/native-consumer-matrix/index.ts --phase source', from: ['packed-b2:consumer-matrix'] },
+  { id: 'runtime-audit', section4: 'tools/native-runtime-audit/index.ts --phase source', from: ['packed-b2:runtime-audit'] },
   { id: 'api-docs-packed', section4: null, runner: 'S5-WP24-03', from: ['packed-a:api-docs-packed'] },
   { id: 'api-docs', section4: null, runner: 'S5-WP24-03', from: ['packed-a:api-docs'] },
-  { id: 'artifacts-upload', section4: null, runner: 'candidate retention (plan, archives, packed reports; packed-b consumer reports; packed-c1..cN example reports)', from: ['packed-a:artifacts-upload', 'packed-b:consumers-upload', 'example-shards:examples-upload'] }
+  { id: 'artifacts-upload', section4: null, runner: 'candidate retention (plan, archives, packed reports; packed-b1/packed-b2 consumer reports; packed-c1..cN example reports)', from: ['packed-a:artifacts-upload', 'packed-b1:consumers-upload', 'packed-b2:consumers-upload', 'example-shards:examples-upload'] }
 ].map(Object.freeze));
 
 /**
@@ -243,7 +245,7 @@ export function loadRun(io, dir) {
   const manifestPath = `${dir}/${SOURCE_MANIFEST_FILE}`;
   if (io.exists(manifestPath)) { const file = ref(io, manifestPath); run.manifest = { ...strip(file), content: json(file.data) }; }
   const recorded = run.report.artifacts;
-  // packed-a's part; a packed-b-only rerun records just `artifacts.consumers`.
+  // packed-a's part; a packed-b1/b2-only rerun records just `artifacts.consumers`.
   if (recorded && typeof recorded === 'object' && !Array.isArray(recorded) && ['schema', 'ok', 'plan'].some(key => recorded[key] !== undefined)) {
     const artifacts = { candidatePlan: null, archives: [], problems: [] };
     if (recorded.schema !== ARTIFACTS_SCHEMA || recorded.ok !== true) artifacts.problems.push(`retained artifacts were not verified by the launcher (${ARTIFACTS_SCHEMA}, ok: ${recorded.ok}): ${(recorded.problems ?? []).join('; ')}`);
@@ -412,19 +414,21 @@ export function mergeRuns(runs) {
   if (exampleCounts.length !== 1 || exampleCounts[0] === '?') problems.push(`example shards: expected one shard count in the examples-source commands, found ${exampleCounts.join(', ') || 'no packed-c shard stage'}`);
   const exampleShards = exampleCounts.length === 1 && exampleCounts[0] !== '?' ? Number(exampleCounts[0]) : 0;
   const exampleStages = range(exampleShards).map(i => `packed-c${i}`);
-  const required = ['static', 'suites', 'packed-a', 'packed-b', ...exampleStages, ...range(shards).map(i => `unit-${i}-of-${shards}`)];
+  const required = ['static', 'suites', 'packed-a', 'packed-b1', 'packed-b2', ...exampleStages, ...range(shards).map(i => `unit-${i}-of-${shards}`)];
   // The shards' reports are merged into one examples report per run, so all of them come from one run.
   for (const stage of exampleStages) {
     const run = winners.get(stage), first = winners.get('packed-c1');
     if (run && first && run !== first) problems.push(`${stage} ran in ${run.dir} but packed-c1 in ${first.dir}: the example shards merge into one report per run, so rerun all ${exampleShards} together (STAGES="${exampleStages.join(' ')}")`);
   }
+  // The consumer bundle merges both parts (clean-install + matrix source reports), so they come from one run.
+  if (winners.has('packed-b1') && winners.has('packed-b2') && winners.get('packed-b1') !== winners.get('packed-b2')) problems.push(`packed-b2 ran in ${winners.get('packed-b2').dir} but packed-b1 in ${winners.get('packed-b1').dir}: the consumer reports merge into one bundle per run, so rerun both together (STAGES="packed-b1 packed-b2")`);
   for (const stage of required) if (!winners.has(stage)) problems.push(`stage ${stage} never ran`);
   for (const stage of winners.keys()) if (!required.includes(stage)) problems.push(`unexpected stage ${stage}`);
   for (const run of runs) for (const problem of Array.isArray(run.report?.problems) ? run.report.problems : []) {
     const stage = /^stage (\S+): report missing/.exec(problem)?.[1];
     if (stage && winners.get(stage) !== run) continue; // superseded by a later attempt of that stage
     if (/^artifacts: /.test(problem) && winners.get('packed-a') !== run) continue; // packed-a artifacts superseded by a later packed-a run
-    if (/^consumers: /.test(problem) && winners.get('packed-b') !== run) continue; // packed-b consumer reports superseded by a later packed-b run
+    if (/^consumers: /.test(problem) && winners.get('packed-b1') !== run) continue; // consumer reports superseded by a later run of the packed-b1/packed-b2 pair
     if (/^examples: /.test(problem) && winners.get('packed-c1') !== run) continue; // example reports superseded by a later run of the shards
     if (/^candidate archive digests differ/.test(problem)) continue; // recomputed below from the winning packed stages
     problems.push(`${run.dir}: ${problem}`);
@@ -459,7 +463,7 @@ export function mergeRuns(runs) {
     if (!Array.isArray(list) || !list.length || list.some(item => typeof item !== 'string' || !item)) problems.push(`${where}: deferredToAcceptance missing`);
     else if (deferred === null) deferred = list;
     else if (canonical(list) !== canonical(deferred)) problems.push(`${where}: deferredToAcceptance differs between stages`);
-    if (/^packed-[ab]$/.test(stage) || EXAMPLE_STAGE.test(stage)) plans[stage] = content.candidatePlan;
+    if (/^packed-(?:a|b[12])$/.test(stage) || EXAMPLE_STAGE.test(stage)) plans[stage] = content.candidatePlan;
     stageSources[stage] = { runId: run.runId, stageReport: { path: entry.json.path, sha256: entry.json.sha256 }, log: entry.log };
   }
   if (!['patch', 'minor', 'major'].includes(releaseKind)) problems.push(`release kind ${JSON.stringify(releaseKind)} is invalid`);
@@ -483,7 +487,7 @@ export function mergeRuns(runs) {
   const digests = plan => canonical(plan.packages.map(pkg => [pkg.name, pkg.version, pkg.sha256, pkg.integrity]));
   // packed-b's and the example shards' reports bind their own plan bytes; acceptance places packed-a's retained
   // plan at their in-job path, so every packed stage's plan must be identical (the launcher pins generatedAt).
-  for (const stage of ['packed-b', ...exampleStages]) {
+  for (const stage of ['packed-b1', 'packed-b2', ...exampleStages]) {
     const other = checkPlan(plans[stage], `${stage} candidate plan`, commit, lockfileSha256, problems);
     if (!planA || !other) continue;
     if (digests(planA) !== digests(other)) problems.push(`candidate archive digests differ between packed-a and ${stage} (rebuild/repack is not reproducible)`);
@@ -517,7 +521,7 @@ export function mergeRuns(runs) {
   // plan's SHA-256; acceptance stages that plan at the consumer reports' in-job path (the clean-install and
   // matrix tools compare paths; the example validator binds the plan by SHA-256).
   const bundles = {};
-  for (const [stage, kind] of [['packed-b', 'consumers'], ['packed-c1', 'examples']]) {
+  for (const [stage, kind] of [['packed-b1', 'consumers'], ['packed-c1', 'examples']]) {
     const run = winners.get(stage);
     if (!run) continue;
     const bundle = run[kind];

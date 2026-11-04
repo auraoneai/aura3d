@@ -1,7 +1,7 @@
 version: v1.1.0
 # Aura3D 5.0 source pass, one stage per run (no browser). All --set values are
 # nonsecret. ARTIFACTS_SAS is a short-lived container SAS that reaches packed-a,
-# packed-b and the example shard stages packed-c1..cN only through the 0600 --values file
+# packed-b1, packed-b2 and the example shard stages packed-c1..cN only through the 0600 --values file
 # in the run context (tools/remote-acr/sas-transport.sh); every other stage gets
 # ARTIFACTS_SAS=none. PLAN_GENERATED_AT is the frozen commit's UTC committer time, so
 # every packed stage writes a byte-identical candidate plan. EXAMPLE_SHARDS is N of the

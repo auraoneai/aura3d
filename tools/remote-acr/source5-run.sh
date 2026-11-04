@@ -5,8 +5,9 @@
 # browser stage runs here. Results are printed between SOURCE5_REPORT markers.
 # packed-a also uploads the tested plan, archives and packed reports to
 # source5/<run>/artifacts/ in the run container (artifacts-upload below), and
-# packed-b uploads its consumer source reports with the projects, logs and
-# archives they reference to source5/<run>/consumers/ (consumers-upload). The packed
+# packed-b1 (clean-install, tree-shaking) and packed-b2 (consumer-matrix, runtime-audit) upload their
+# consumer source reports with the projects, logs and archives they reference to
+# source5/<run>/consumers-1/ and consumers-2/ (consumers-upload); the launcher merges the two parts. The packed
 # examples run as SOURCE5_EXAMPLE_SHARDS shards, one stage each (packed-c1..packed-cN):
 # shard I installs and builds its deterministic, cost-balanced slice of the catalog
 # (`agent-examples --packed --shard I/N`, 2 projects at a time, one npm cache) and uploads its
@@ -29,27 +30,97 @@ mkdir -p "$NATIVE_REPORT_DIR" /tmp/source5-logs
 RESULTS=/tmp/source5-results.tsv
 : > "$RESULTS"
 
+# Stage wall-clock budget: the ACR run is cut at 1800 s and a cut run writes no stage report. Every command
+# is therefore capped at the time left in the budget (minus a reserve for the report and upload tail), so a
+# slow command fails with rc 124 and the stage still prints its report; skipped commands are recorded rc 124.
+STAGE_STARTED=$(date +%s)
+STAGE_BUDGET="${SOURCE5_STAGE_BUDGET:-1740}"
+CURRENT_ID=""; CURRENT_STARTED=0; CURRENT_PID=""
+
 run() {
   local id="$1"; shift
   local log="/tmp/source5-logs/${id}.log"
-  local started ended rc
+  local started ended rc limit left
   started=$(date +%s)
+  left=$((STAGE_BUDGET - (started - STAGE_STARTED) - 20))
+  limit="${SOURCE5_CMD_TIMEOUT:-1620}"
+  [ "$left" -lt "$limit" ] && limit="$left"
   echo "::: SOURCE5_BEGIN ${id} :: $*"
+  if [ "$limit" -lt 5 ]; then
+    echo "::: SOURCE5_END ${id} rc=124 secs=0 (stage budget exhausted)"
+    printf '%s\t%s\t%s\t%s\n' "$id" 124 0 "$*" >> "$RESULTS"
+    return
+  fi
+  CURRENT_ID="$id"; CURRENT_STARTED="$started"
+  # Background + wait so a TERM to this script reaches the trap while a command runs.
   # Only the upload commands see the SAS (as SOURCE5_SAS, never in the command text).
   if [ "$id" = artifacts-upload ] || [ "$id" = consumers-upload ] || [ "$id" = examples-upload ]; then
-    SOURCE5_SAS="$A3D_ARTIFACT_SAS" timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
+    SOURCE5_SAS="$A3D_ARTIFACT_SAS" timeout --kill-after=15 "$limit" bash -c "$*" > "$log" 2>&1 &
   else
-    timeout --kill-after=15 "${SOURCE5_CMD_TIMEOUT:-1620}" bash -c "$*" > "$log" 2>&1
+    timeout --kill-after=15 "$limit" bash -c "$*" > "$log" 2>&1 &
   fi
+  CURRENT_PID=$!
+  wait "$CURRENT_PID"
   rc=$?
+  CURRENT_PID=""; CURRENT_ID=""
   ended=$(date +%s)
   if [ "$rc" = 0 ]; then tail -n 20 "$log"; else tail -n "${SOURCE5_FAIL_LINES:-2000}" "$log"; fi | sed "s/^/[${id}] /"
   echo "::: SOURCE5_END ${id} rc=${rc} secs=$((ended - started))"
   printf '%s\t%s\t%s\t%s\n' "$id" "$rc" "$((ended - started))" "$*" >> "$RESULTS"
 }
 
+# A TERM/INT (ACR cancel or timeout grace) records the interrupted command as rc 143 and still writes the stage report.
+interrupted() {
+  trap '' TERM INT
+  if [ -n "$CURRENT_PID" ]; then kill -TERM "$CURRENT_PID" 2>/dev/null; sleep 1; kill -KILL "$CURRENT_PID" 2>/dev/null; fi
+  if [ -n "$CURRENT_ID" ]; then
+    local now; now=$(date +%s)
+    tail -n 200 "/tmp/source5-logs/${CURRENT_ID}.log" 2>/dev/null | sed "s/^/[${CURRENT_ID}] /"
+    echo "::: SOURCE5_END ${CURRENT_ID} rc=143 secs=$((now - CURRENT_STARTED)) (interrupted)"
+    printf '%s\t%s\t%s\t%s\n' "$CURRENT_ID" 143 "$((now - CURRENT_STARTED))" "interrupted" >> "$RESULTS"
+  fi
+  emit_report
+  exit 0
+}
+trap interrupted TERM INT
+
+emit_report() {
+  echo "::: SOURCE5_REPORT_BEGIN"
+  RESULTS="$RESULTS" SOURCE5_STAGE="$STAGE" A3D_RELEASE_PLAN="${A3D_RELEASE_PLAN:-}" node -e '
+    const fs = require("fs");
+    const rows = fs.readFileSync(process.env.RESULTS, "utf8").trim().split("\n").filter(Boolean).map((l) => {
+      const [id, rc, secs, ...cmd] = l.split("\t");
+      return { id, exitCode: Number(rc), seconds: Number(secs), command: cmd.join("\t") };
+    });
+    const plan = process.env.A3D_RELEASE_PLAN;
+    const out = {
+      schema: "aura3d.source5-report/1",
+      runId: process.env.NATIVE_RUN_ID,
+      releaseKind: process.env.NATIVE_RELEASE_KIND,
+      finishedUtc: new Date().toISOString(),
+      candidatePlan: fs.existsSync(plan) ? JSON.parse(fs.readFileSync(plan, "utf8")) : null,
+      commands: rows,
+      passed: rows.filter((r) => r.exitCode === 0).map((r) => r.id),
+      failed: rows.filter((r) => r.exitCode !== 0).map((r) => r.id),
+      stage: process.env.SOURCE5_STAGE,
+      deferredToAcceptance: fs.readFileSync("tools/remote-acr/acceptance-evidence-tests.txt", "utf8").split("\n").filter((l) => l && !l.startsWith("#")),
+      browserAcceptance: "not-run",
+      // Packed-candidate reference for docs/api/public-api.md (written by api-docs-packed).
+      generatedApiReference: (() => {
+        const file = `${process.env.NATIVE_REPORT_DIR}/public-api.md`;
+        if (!fs.existsSync(file)) return null;
+        // The ~35 MB text itself comes back through artifacts-upload; the report carries only its identity.
+        const bytes = fs.readFileSync(file);
+        return { path: "docs/api/public-api.md", sha256: require("crypto").createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length };
+      })()
+    };
+    process.stdout.write(Buffer.from(JSON.stringify(out)).toString("base64").replace(/(.{76})/g, "$1\n") + "\n");
+  '
+  echo "::: SOURCE5_REPORT_END"
+}
+
 # Stages (each ACR run executes one stage; <= 30 min each per the ACR policy).
-# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b | packed-c<i> (example shard i of SOURCE5_EXAMPLE_SHARDS)
+# SOURCE5_STAGE: static | unit-<i>-of-<n> | suites | packed-a | packed-b1 | packed-b2 | packed-c<i> (example shard i of SOURCE5_EXAMPLE_SHARDS)
 STAGE="${SOURCE5_STAGE:?SOURCE5_STAGE required}"
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=6144}"
 # Every packed stage packs the same commit; the launcher's pinned plan time
@@ -105,22 +176,27 @@ case "$STAGE" in
     run api-docs-packed      'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN" --out "tests/reports/native-5/$NATIVE_RUN_ID/public-api.md" --write'
     run api-docs             'pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --candidate-plan "$A3D_RELEASE_PLAN"'
     # Tested plan + archives + packed reports back to the Mac (packed-a only;
-    # packed-b's archives are compared byte-for-byte by the launcher). An upload
+    # the other packed stages' archives are compared byte-for-byte by the launcher). An upload
     # or staging failure fails this command and therefore the stage.
     run artifacts-upload     'rm -rf /tmp/source5-artifacts && mkdir -p /tmp/source5-artifacts && node tools/remote-acr/source5-artifacts.mjs stage "$A3D_RELEASE_PLAN" "$NATIVE_REPORT_DIR" /tmp/source5-artifacts/artifacts "$NATIVE_RUN_ID"; s=$?; AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" /tmp/source5-artifacts/artifacts; u=$?; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
-  packed-b)
+  packed-b1)
+    # Part 1 of the consumer stages (the former single packed-b exceeded the 1800 s ACR cap: clean-install
+    # alone took ~980 s). clean-install + tree-shaking, then the clean-install source report with its projects,
+    # logs and dependency archives back to the Mac (source5/<run>/consumers-1/), one upload per <= 128 MiB
+    # chunk. A staging or upload failure fails this command and therefore the stage.
     pack_candidate
     run clean-install        'pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
     run tree-shaking         'pnpm exec tsx --tsconfig tsconfig.base.json tools/installed-tree-shaking/index.ts --source-report "tests/reports/native-consumers/$NATIVE_RUN_ID/source.json"'
+    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers 1/2; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers-1/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
+    ;;
+  packed-b2)
+    # Part 2: consumer-matrix + runtime-audit, then the matrix source report (matrix-source.json) with its
+    # projects and logs (source5/<run>/consumers-2/). The Mac merges both parts into one `consumers` bundle.
+    pack_candidate
     run consumer-matrix      'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-consumer-matrix/index.ts --phase source --run-id "$NATIVE_RUN_ID"'
     run runtime-audit        'pnpm exec tsx --tsconfig tsconfig.base.json tools/native-runtime-audit/index.ts --phase source'
-    # Consumer source reports (clean-install source.json, matrix-source.json) and
-    # every file under their run directories back to the Mac, so the gate can bind
-    # them for the acceptance consumer phase. One upload per <= 128 MiB chunk keeps
-    # each upload-artifacts.mjs call under its 512 MiB limit. A staging or upload
-    # failure fails this command and therefore the stage.
-    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
+    run consumers-upload     'rm -rf /tmp/source5-consumers && mkdir -p /tmp/source5-consumers && node tools/remote-acr/source5-artifacts.mjs stage-consumers "$NATIVE_RUN_ID" /tmp/source5-consumers/consumers 2/2; s=$?; u=1; if [ "$s" = 0 ]; then u=0; for f in /tmp/source5-consumers/consumers/*; do AURA3D_ARTIFACTS_SAS="$SOURCE5_SAS" node tools/remote-acr/upload-artifacts.mjs --prefix "source5/$NATIVE_RUN_ID" --copy "$f" "consumers-2/${f##*/}" || { u=1; break; }; done; fi; [ "$s" = 0 ] && [ "$u" = 0 ]'
     ;;
   packed-c[1-9]*)
     # Example shard I of N: every catalog example of the shard installed from the packed
@@ -139,38 +215,7 @@ case "$STAGE" in
   *) echo "unknown SOURCE5_STAGE $STAGE" >&2; exit 2 ;;
 esac
 
-echo "::: SOURCE5_REPORT_BEGIN"
-RESULTS="$RESULTS" SOURCE5_STAGE="$STAGE" A3D_RELEASE_PLAN="${A3D_RELEASE_PLAN:-}" node -e '
-  const fs = require("fs");
-  const rows = fs.readFileSync(process.env.RESULTS, "utf8").trim().split("\n").filter(Boolean).map((l) => {
-    const [id, rc, secs, ...cmd] = l.split("\t");
-    return { id, exitCode: Number(rc), seconds: Number(secs), command: cmd.join("\t") };
-  });
-  const plan = process.env.A3D_RELEASE_PLAN;
-  const out = {
-    schema: "aura3d.source5-report/1",
-    runId: process.env.NATIVE_RUN_ID,
-    releaseKind: process.env.NATIVE_RELEASE_KIND,
-    finishedUtc: new Date().toISOString(),
-    candidatePlan: fs.existsSync(plan) ? JSON.parse(fs.readFileSync(plan, "utf8")) : null,
-    commands: rows,
-    passed: rows.filter((r) => r.exitCode === 0).map((r) => r.id),
-    failed: rows.filter((r) => r.exitCode !== 0).map((r) => r.id),
-    stage: process.env.SOURCE5_STAGE,
-    deferredToAcceptance: fs.readFileSync("tools/remote-acr/acceptance-evidence-tests.txt", "utf8").split("\n").filter((l) => l && !l.startsWith("#")),
-    browserAcceptance: "not-run",
-    // Packed-candidate reference for docs/api/public-api.md (written by api-docs-packed).
-    generatedApiReference: (() => {
-      const file = `${process.env.NATIVE_REPORT_DIR}/public-api.md`;
-      if (!fs.existsSync(file)) return null;
-      // The ~35 MB text itself comes back through artifacts-upload; the report carries only its identity.
-      const bytes = fs.readFileSync(file);
-      return { path: "docs/api/public-api.md", sha256: require("crypto").createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length };
-    })()
-  };
-  process.stdout.write(Buffer.from(JSON.stringify(out)).toString("base64").replace(/(.{76})/g, "$1\n") + "\n");
-'
-echo "::: SOURCE5_REPORT_END"
+emit_report
 FAILED=$(awk -F'\t' '$2 != 0' "$RESULTS" | wc -l | tr -d ' ')
 echo "SOURCE5_EXIT=${FAILED}"
 exit 0
