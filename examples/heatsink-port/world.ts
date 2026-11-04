@@ -17,7 +17,7 @@ import { createPoolUniforms, glowEmitters, nearestPools } from "./art/pools";
 import { HEATSINK_VFX, registerHeatsinkVfx, vfxScale } from "./art/vfx";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
-import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel } from "./models";
+import { barrelModel, droneHull, gatePylonNodes, modelSet, sceneryNodes, pickupModel, sentryModel, heavyModel } from "./models";
 import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
@@ -225,7 +225,9 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high", lookI
     const r = STRIKE.radius[t.kind];
     const core = material.custom(solidSpec(hexLinear(heavy ? "#5a1414" : "#c82828"), hexLinear("#ff5a3a"), heavy ? 1.6 : 2.2));
     b.add((heavy
-      ? primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
+      ? look.assets.heavyModel
+        ? heavyModel(t.id, r * 1.9, models)
+        : primitives.box({ name: `target-${t.id}`, size: [r * 1.35, r * 1.35, r * 1.35], material: core, castShadow: false })
       : look.assets.sentryModel
         ? sentryModel(t.id, r * 2.1, models)
         : primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: core, castShadow: false })).runtime({ id: `target-${t.id}` }));
@@ -626,10 +628,11 @@ function bindRuntime(app: AuraApp, track: Track, points: number, row: HeatsinkLo
         if (!t.alive) continue;
         const bob = Math.sin(time * 1.7 + t.id) * 0.35;
         core.setPosition(t.world.x, t.world.y + bob, t.world.z);
-        if (t.kind === "heavy" || !row.assets.sentryModel) core.setUniform?.("flash", targetFlash[t.id] ?? 0);
-        if (t.kind === "heavy") core.setRotation(time * 0.7 + t.id, Math.PI / 4 + time * 0.5, Math.PI / 4);
-        /* WP-36 sentry model: faces back down the track toward the oncoming drone, with a slow scan sway */
-        else if (row.assets.sentryModel) { const tf = track.frame(t.s, scratchFrame); core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0); }
+        const modelCore = t.kind === "heavy" ? row.assets.heavyModel : row.assets.sentryModel;
+        if (!modelCore) core.setUniform?.("flash", targetFlash[t.id] ?? 0);
+        if (t.kind === "heavy" && !modelCore) core.setRotation(time * 0.7 + t.id, Math.PI / 4 + time * 0.5, Math.PI / 4);
+        /* WP-36 sentry and heavy models: face back down the track toward the oncoming drone, with a slow scan sway */
+        else if (modelCore) { const tf = track.frame(t.s, scratchFrame); core.setRotation(0, Math.atan2(-tf.tx, -tf.tz) + Math.sin(time * 0.9 + t.id) * 0.35, 0); }
         ring.setPosition(t.world.x, t.world.y + bob, t.world.z);
         ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.3, time * 2.2 + t.id, 0);
         if (ring2) {
