@@ -476,6 +476,11 @@
       "name": "@sveltejs/vite-plugin-svelte",
       "reviewer": "agent (owner-delegated, 2026-11-02)",
       "note": "@sveltejs/vite-plugin-svelte: not pinned by the root pnpm lock (only the standalone framework templates, the animation-studio template/app and the React 18 consumer cells use it). Its registry dependency tree (npm view @sveltejs/vite-plugin-svelte dependencies, checked 2026-11-03) contains no prohibited package (three, babylonjs, playcanvas and their wrappers), so omitting it from the offline projection cannot hide one; expires 2027-01-31."
+    },
+    {
+      "name": "@gltf-transform/cli",
+      "reviewer": "agent (owner-delegated, 2026-11-02)",
+      "note": "@gltf-transform/cli: devDependency of apps/showcase-cross-hop (a glTF command-line optimizer used only at asset-authoring time), not pinned by the root pnpm lock because that app's package-lock.json is git-ignored and absent from the staged candidate. Its registry dependency tree (npm install --package-lock-only @gltf-transform/cli@4.5.1, 200 packages, checked 2026-11-03) contains no prohibited package (three, babylonjs, playcanvas and their wrappers), so omitting it from the offline projection cannot hide one; expires 2027-01-31."
     }
   ],
   "packages/rendering/src/geometry/Support.ts": {

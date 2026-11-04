@@ -109,6 +109,69 @@ export function summarizeSourceEvidence(dependencies: DependencyGraphReport, sou
     unresolvedReviewCandidates, unreviewedGatedCandidates, unreviewedGatedSample, unreviewedFileCount, independence: "not-established", unlockedProfiles, unprojectedProfiles };
 }
 
+const FAILURE_FINDING_LIMIT = 40;
+const oneLine = (text: string, max = 220): string => { const flat = text.replace(/\s+/g, " ").trim(); return flat.length > max ? `${flat.slice(0, max - 3)}...` : flat; };
+
+/**
+ * Concise human-readable reason for a non-passing audit: status, counts by kind, the first findings with
+ * path and reason, and unresolved review candidate samples. The full report is still written to `--out`
+ * or NATIVE_REPORT_DIR; this text exists so a CI log that only keeps stdout/stderr names the cause.
+ */
+export function formatAuditFailureSummary(result: SourceAuditReport | BrowserAuditReport): string {
+  const lines: string[] = [];
+  const bullet = (text: string) => lines.push(`  - ${oneLine(text)}`);
+  if (result.phase === "browser") {
+    lines.push(`[native-runtime-audit] phase=browser status=${result.status} observedEvents=${result.network.events.length} findings=${result.network.findings.length} unexpected=${result.network.unexpected.length}`);
+    for (const test of result.tests.filter((item) => item.status !== "passed")) bullet(`test ${test.id}: status ${test.status}`);
+    for (const finding of result.network.findings.slice(0, FAILURE_FINDING_LIMIT)) bullet(`network ${finding.kind} (event ${finding.event}): ${finding.description}`);
+    for (const event of result.network.unexpected.slice(0, FAILURE_FINDING_LIMIT)) bullet(`unexpected request: ${event.resourceType} ${event.url}`);
+    if (!result.network.findings.length && !result.network.unexpected.length && !result.tests.some((item) => item.status !== "passed") && result.network.events.length) {
+      bullet(`${result.network.events.length} request(s) were observed but the offline fixture requires none`);
+    }
+    return `${lines.join("\n")}\n`;
+  }
+  const unresolved = result.source.findings.filter((finding) => !finding.review || finding.review.disposition === "replacement-needed");
+  const byKind = new Map<string, number>();
+  for (const finding of unresolved) byKind.set(finding.kind, (byKind.get(finding.kind) ?? 0) + 1);
+  const kinds = [...byKind].sort((left, right) => right[1] - left[1]).map(([kind, count]) => `${kind}=${count}`).join(" ") || "none";
+  const neededReplacement = result.source.files.filter((file) => file.replacementStatus === "replacement-needed");
+  lines.push(`[native-runtime-audit] phase=source status=${result.status} dependencyFindings=${result.dependencies.findings.length} ` +
+    `replacementNeededFiles=${neededReplacement.length} unreviewedGatedCandidates=${result.unreviewedGatedCandidates} ` +
+    `unresolvedReviewCandidates=${result.unresolvedReviewCandidates} (${kinds}) unprojectedProfiles=${result.unprojectedProfiles.length} ` +
+    `files=${result.source.files.length} archives=${result.candidate.archives.length}`);
+  const rows: string[] = [];
+  for (const finding of result.dependencies.findings) {
+    rows.push(`dependency ${finding.disposition}: ${finding.name} ${finding.edge.specifier} (${finding.edge.field}) in ${finding.edge.owner} [${finding.edge.document}]`);
+  }
+  for (const file of neededReplacement) rows.push(`replacement-needed file: ${file.path}`);
+  for (const sample of result.unreviewedGatedSample) {
+    rows.push(`unreviewed gated ${sample.kind}: ${sample.path}${sample.line !== undefined ? `:${sample.line}` : ""} ${sample.detail}`);
+  }
+  const profiles = new Map((result.dependencies.projectedProfiles ?? []).map((profile) => [profile.path, profile]));
+  for (const path of result.unprojectedProfiles) {
+    const profile = profiles.get(path);
+    const detail = profile
+      ? [...profile.unresolved.map((item) => `unresolved ${item.name}@${item.specifier} (owner ${item.owner})`), ...profile.prohibited.map((name) => `prohibited ${name}`)].join("; ")
+      : "no projection was produced";
+    rows.push(`unprojected install profile: ${path}: ${detail || "projection incomplete"}`);
+  }
+  lines.push(`findings (first ${Math.min(rows.length, FAILURE_FINDING_LIMIT)} of ${rows.length}):`);
+  for (const row of rows.slice(0, FAILURE_FINDING_LIMIT)) bullet(row);
+  if (unresolved.length) {
+    lines.push(`unresolved review candidates (first ${Math.min(unresolved.length, 20)} of ${unresolved.length}):`);
+    for (const finding of unresolved.slice(0, 20)) {
+      bullet(`${finding.kind}: ${finding.path}${finding.line !== undefined ? `:${finding.line}` : ""} ${finding.detail}${finding.review ? ` [review: ${finding.review.disposition}]` : ""}`);
+    }
+  }
+  if (!rows.length && !unresolved.length) bullet(`status ${result.status} without a finding; unreviewed files=${result.unreviewedFileCount} unlockedProfiles=${result.unlockedProfiles.length}`);
+  return `${lines.join("\n")}\n`;
+}
+
+/** Entry-point failure text: the stack for a crash, so an unexpected exception never exits silently. */
+export function formatAuditCrash(error: unknown): string {
+  return `[native-runtime-audit] crashed: ${error instanceof Error ? error.stack ?? error.message : String(error)}\n`;
+}
+
 /** Determine active published scaffolds from the actual create-aura3d catalog. */
 export function activeTemplateProfiles(root: string): string[] {
   const path = resolve(root, "packages/create-aura3d/src/index.ts");
@@ -284,9 +347,13 @@ async function main(): Promise<void> {
   const json = `${JSON.stringify(result, null, 2)}\n`;
   if (out) { const path = resolve(root, out); mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, json); }
   else process.stdout.write(json);
-  if (result.status !== "scan-complete" && result.status !== "passed") process.exitCode = 1;
+  if (result.status !== "scan-complete" && result.status !== "passed") {
+    process.stderr.write(formatAuditFailureSummary(result));
+    if (out) process.stderr.write(`[native-runtime-audit] full report: ${resolve(root, out)}\n`);
+    process.exitCode = 1;
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  main().catch((error: unknown) => { process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`); process.exitCode = 1; });
+  main().catch((error: unknown) => { process.stderr.write(formatAuditCrash(error)); process.exitCode = 1; });
 }

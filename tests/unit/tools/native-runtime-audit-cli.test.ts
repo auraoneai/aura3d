@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { defaultSourceAuditPaths, presentSourceAuditPaths, runBrowserAudit, summarizeSourceEvidence } from "../../../tools/native-runtime-audit/index";
+import { defaultSourceAuditPaths, formatAuditCrash, formatAuditFailureSummary, presentSourceAuditPaths, runBrowserAudit, summarizeSourceEvidence } from "../../../tools/native-runtime-audit/index";
 import { collectSourceEvidence, inspectSourceEntries } from "../../../tools/native-runtime-audit/source-evidence";
 import type { DependencyGraphReport } from "../../../tools/native-runtime-audit/dependency-graph";
 import type { AcceptanceGate, CandidateIdentity } from "../../../tools/performance/native-benchmark";
@@ -130,5 +131,52 @@ describe("source audit scan roots", () => {
     mkdirSync(join(root, "src"), { recursive: true });
     writeFileSync(join(root, "src/main.ts"), "export const main = 1;\n");
     expect(() => collectSourceEvidence(root, { paths: ["src", "workers"] })).toThrow(/ENOENT.*workers/);
+  });
+});
+
+describe("audit failure output", () => {
+  const sourceReport = (dependencies: DependencyGraphReport, source: ReturnType<typeof inspectSourceEntries>, unlocked: string[] = []) => {
+    const summary = summarizeSourceEvidence(dependencies, source);
+    return { schema: "aura3d.native-runtime-audit/1" as const, phase: "source" as const, ...summary, unlockedProfiles: unlocked,
+      candidate: { sourceSha256: "a".repeat(64), lockfileSha256: "b".repeat(64), candidatePlan: { path: "plan.json", sha256: "c".repeat(64) }, archives: [] },
+      dependencies, source, limitations: [] };
+  };
+
+  it("names unprojected profiles, dependency findings and unresolved review candidates with path and reason", () => {
+    const source = inspectSourceEntries([{ path: "runtime.js", bytes: Buffer.from('const note = "three";') }]);
+    const projection = { path: "apps/demo", resolution: "workspace-lock-projection" as const, directFields: [], nodes: [], edgeCount: 0, prohibited: [],
+      unresolved: [{ owner: "apps/demo", name: "left-pad", specifier: "^1.0.0" }], complete: false };
+    const dependencies: DependencyGraphReport = { ...graph(), installProfiles: [{ path: "apps/demo", lockfile: null, lockVersion: null }], projectedProfiles: [projection],
+      findings: [{ name: "three", disposition: "lock-review", edge: { source: "npm-lock-package", owner: "apps/demo/package-lock.json#x", field: "devDependencies",
+        name: "three", resolvedName: "three", specifier: "0.185.1", alias: false, optional: false, document: "apps/demo/package-lock.json" } }] };
+    const report = sourceReport(dependencies, source, ["apps/demo"]);
+    expect(report.status).toBe("failed");
+    const text = formatAuditFailureSummary(report);
+    expect(text).toContain("status=failed");
+    expect(text).toMatch(/dependencyFindings=1/);
+    expect(text).toContain("dependency lock-review: three 0.185.1 (devDependencies) in apps/demo/package-lock.json#x");
+    expect(text).toContain("unprojected install profile: apps/demo: unresolved left-pad@^1.0.0 (owner apps/demo)");
+    expect(text).toContain("unresolved review candidates");
+    expect(text).toContain("runtime.js");
+    const only = formatAuditFailureSummary(sourceReport({ ...dependencies, findings: [] }, inspectSourceEntries([{ path: "ok.js", bytes: Buffer.from("export const a = 1;") }]), ["apps/demo"]));
+    expect(only).toContain("status=review-required");
+    expect(only).toContain("unprojected install profile: apps/demo");
+  });
+
+  it("limits the printed findings to 40 rows", () => {
+    const edge = { source: "manifest" as const, owner: "p", field: "dependencies" as const, name: "three", resolvedName: "three", specifier: "1", alias: false, optional: false, document: "package.json" };
+    const dependencies: DependencyGraphReport = { ...graph(), findings: Array.from({ length: 75 }, (_, index) => ({ name: `three-${index}`, disposition: "declared-dependency" as const, edge })) };
+    const text = formatAuditFailureSummary(sourceReport(dependencies, inspectSourceEntries([{ path: "ok.js", bytes: Buffer.from("export const a = 1;") }])));
+    expect(text).toContain("findings (first 40 of 75)");
+    expect(text.split("\n").filter((line) => line.startsWith("  - dependency ")).length).toBe(40);
+  });
+
+  it("prints the stack of a crash and exits non-zero instead of failing silently", () => {
+    expect(formatAuditCrash(new Error("boom"))).toMatch(/crashed: Error: boom\n\s+at /);
+    const run = spawnSync(join(process.cwd(), "node_modules/.bin/tsx"), ["--tsconfig", "tsconfig.base.json", "tools/native-runtime-audit/index.ts", "--phase", "source"],
+      { cwd: process.cwd(), encoding: "utf8", env: { ...process.env, A3D_RELEASE_PLAN: "", NATIVE_REPORT_DIR: "" } });
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain("[native-runtime-audit] crashed: Error: Source audit requires a validated candidate release plan");
+    expect(run.stderr).toMatch(/\n\s+at /);
   });
 });

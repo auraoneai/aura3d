@@ -156,7 +156,7 @@ describe("native provenance record", () => {
 
   it("records a delegated name review for every lock-unpinned dependency that would otherwise keep a profile unprojected", () => {
     expect(reviewedUnresolvedDependencies.map((item) => item.name).sort()).toEqual([
-      "@sveltejs/vite-plugin-svelte", "@types/react-dom", "@vitejs/plugin-react", "@vitejs/plugin-vue", "svelte", "vue"
+      "@gltf-transform/cli", "@sveltejs/vite-plugin-svelte", "@types/react-dom", "@vitejs/plugin-react", "@vitejs/plugin-vue", "svelte", "vue"
     ]);
     for (const item of reviewedUnresolvedDependencies) {
       expect(item.reviewer, item.name).toBe(delegatedReviewer);
