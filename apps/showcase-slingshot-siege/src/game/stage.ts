@@ -32,7 +32,7 @@ import type { ChapterDef } from "./levels";
 import { chapterLook, sunDirection, type ChapterLook } from "./look";
 import { beachDressing } from "./dressing";
 import { islandSurface } from "../art/surfaces";
-import { SEA_STACK_PLACEMENT, setPieces } from "../art/setPieces";
+import { SEA_STACK_PLACEMENT, farSetPiecesFor, setPieces } from "../art/setPieces";
 import { levelSignNodes } from "./sign";
 import { BLOCK_FAMILIES, PARKED_BLOCK, blockFamilyNodeId } from "./blockInstances";
 
@@ -540,6 +540,11 @@ export function buildStage(chapter: ChapterDef, options: StageOptions): StageNod
     // GU47 WP-36 (SS47-A1): the game's own Meshy sea-stack islet on the far sea (1 draw, no shadow, no collider).
     model(setPieces.sling_seaStackIsland, { name: "far-sea-stack", position: SEA_STACK_PLACEMENT.position, rotation: [0, SEA_STACK_PLACEMENT.rotationY, 0], castShadow: false, receiveShadow: false })
       .scale(SEA_STACK_PLACEMENT.scale),
+    // GU47 wave 2 (WP-36 second batch): the far lighthouse islet (every chapter) and this chapter's set piece (crane,
+    // greenhouse frame, curtain wall or crystal crater); one draw each, no shadow, no collider.
+    ...farSetPiecesFor(chapter.id).map((piece) =>
+      model(setPieces[piece.key], { name: `far-${piece.key.slice(6)}`, position: [piece.position[0], piece.position[1], piece.position[2]], rotation: [0, piece.rotationY, 0], castShadow: false, receiveShadow: false })
+        .scale(piece.scale)),
     // GU47 phase 7 (4.7.6, Task B): the launch knoll and the stone-bridge prop are one instanced draw of the bridge GLB.
     instances.model(assets.gullsiegeBridgeMeshy, {
       name: "launch-knoll-and-bridge", castShadow: true, receiveShadow: true,
