@@ -574,7 +574,17 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   });
   b.add(primitives.cylinder({ name: "islands", size: [150, 6, 150], instances: islandTop, instanceColors: islandColors, material: pbr("#ffffff", 0.95), castShadow: false }));
   b.add(primitives.cylinder({ name: "island-rims", size: [146, 3.2, 146], instances: islandRim, material: pbr("#b59a78", 1), castShadow: false }));
-  b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: row ? 0.08 : 0.55 }), castShadow: false }));
+  if (MESHY_ENABLED) {
+    /* LT-10 (GU47 wave 3): the Meshy rock-only underside hangs under each island in one instanced draw. The model is centred
+       with raw bounds 1.857 x 1.9 x 1.83, so the world scale fills the old cone's 136 x 108 x 136 m; it is flipped (apex down)
+       and its pale cap sits inside the island slab and rim. */
+    b.add(instances.model(MESHY_ASSETS.lamplightUndersideAR2, {
+      name: "island-rocks", scaleMode: "world", castShadow: false, receiveShadow: false, instancingAware: true,
+      transforms: islandRock.map((r) => ({ position: [r.position[0], r.position[1] + 2, r.position[2]] as V3, rotation: r.rotation as V3, scale: [73.2, 56.8, 74.3] as V3 }))
+    }));
+  } else {
+    b.add(primitives.cone({ name: "island-rocks", size: [136, 108, 136], params: { radialSegments: 11 }, instances: islandRock, material: material.pbr({ color: "#d3c9c0", roughness: 1, emissive: "#8c8793", emissiveIntensity: row ? 0.08 : 0.55 }), castShadow: false }));
+  }
   b.add(primitives.box({ name: "platforms", size: [4.4, 0.9, 30], instances: platformAt, material: pbr("#d9cfba", 0.82), castShadow: cast }).runtime({ id: "platforms" }));
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));

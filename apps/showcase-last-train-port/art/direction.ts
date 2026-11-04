@@ -66,7 +66,9 @@ export default defineArtDirection({
     { role: "prop", assetKey: "lamp", maxTriangles: 8000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     // GU47 phase 9 (D2): CC0 Kenney Pirate Kit towers this game owns (a 512 px colormap, base colour only)
     { role: "backdrop", assetKey: "lamplightKeep", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "backdrop", assetKey: "lamplightTower", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 }
+    { role: "backdrop", assetKey: "lamplightTower", maxTriangles: 40000, textureSet: "BC", maxTextureSize: 512 },
+    // GU47 wave 3 (LT-10): the Meshy rock-only island underside, one instanced draw under all six towns (5,994 triangles, three 1024 px maps)
+    { role: "backdrop", assetKey: "lamplightUndersideAR2", maxTriangles: 6000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "clean-arrival", kind: "sky-lanterns" },
@@ -87,7 +89,6 @@ export default defineArtDirection({
   signatureEffect: "Earned sky lanterns: every clean arrival releases paper lanterns that stay aloft, so the dusk sky fills with the lights the driver earned.",
   standIns: [
     { feature: "primitive tree canopies, pines, bushes, rocks and cloud puffs (until the WP-36 tree, rock and cloud kits land)", file: "examples/last-train-port/world.ts", request: "R-14-21", removeWhen: "WP-36 Lamplight tree, rock and cloud-puff kits admitted (LT-10)" },
-    { feature: "primitive island undersides (cones until the island-underside models land)", file: "examples/last-train-port/world.ts", request: "R-14-22", removeWhen: "WP-36 Lamplight island undersides admitted (LT-10)" },
     { feature: "sky lanterns drawn as one instanced emissive capsule (until the paper-lantern model lands)", file: "examples/last-train-port/lanterns.ts", request: "R-14-23", removeWhen: "WP-36 paper sky lantern admitted (LT-13)" }
   ],
   criticalCategories: ["lighting", "atmospheric_effects", "environment_world", "vfx"],
