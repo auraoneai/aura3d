@@ -82,7 +82,7 @@ export const meshyTriangles = (key: MeshyKey): number => MESHY_MODELS[key]?.tria
 
 type TextureKey = keyof typeof MESHY_ASSETS;
 /** Textured PBR material for one baked model (`tint` multiplies the texture per mesh; per-instance colours also multiply). */
-type MeshyMaterialOptions = { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number; clearcoat?: number; clearcoatRoughness?: number };
+type MeshyMaterialOptions = { tint?: string; roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number; clearcoat?: number; clearcoatRoughness?: number };
 /**
  * The far-LOD material: the model's scalars over a flat colour, the area-weighted mean of its texture under the LOD's
  * triangles (`tools/bake-lod.mjs`). Untextured on purpose: textured materials upgrade one per presented frame, and on the
@@ -94,5 +94,5 @@ export function meshyLodMaterial(key: MeshyKey, options: MeshyMaterialOptions = 
 }
 export function meshyMaterial(key: MeshyKey, options: MeshyMaterialOptions = {}) {
   const texture = MESHY_ASSETS[key as TextureKey];
-  return material.pbr({ color: "#ffffff", roughness: options.roughness ?? 0.55, metallic: options.metallic ?? 0.1, texture, ...(options.specular !== undefined ? { specularIntensity: options.specular } : {}), ...(options.clearcoat ? { clearcoat: options.clearcoat, clearcoatRoughness: options.clearcoatRoughness ?? 0.1 } : {}), ...(options.doubleSided ? { side: "double" } : {}) } as never);
+  return material.pbr({ color: options.tint ?? "#ffffff", roughness: options.roughness ?? 0.55, metallic: options.metallic ?? 0.1, texture, ...(options.specular !== undefined ? { specularIntensity: options.specular } : {}), ...(options.clearcoat ? { clearcoat: options.clearcoat, clearcoatRoughness: options.clearcoatRoughness ?? 0.1 } : {}), ...(options.doubleSided ? { side: "double" } : {}) } as never);
 }

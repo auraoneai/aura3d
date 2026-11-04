@@ -3,6 +3,8 @@
 // geometry file (Int16 positions, Int8 normals, Float32 uvs, Uint16/32 indices) plus a base-colour JPEG per model under assets/meshy/.
 // Vehicles are stretched into the unit box [-0.5, 0.5]^3 with the front at -Z (the sim's convention), props are scaled to
 // height 1 with the base at y = 0 and the footprint centred. Output: ../meshy.baked.ts (a generated module, do not edit).
+// GU47 wave 2: entries with maxTris were pre-decimated to that triangle count (gltf-transform weld + meshopt simplify, textures capped at 1024 px)
+// before this bake; `glb` names the optimized Meshy source, the baked bin is the decimated mesh.
 // Usage (repo root): node examples/roadster-hours-port/tools/bake-meshy.mjs
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
