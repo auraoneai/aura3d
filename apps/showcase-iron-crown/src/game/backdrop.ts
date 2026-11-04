@@ -82,7 +82,7 @@ function neoTokyoSkyline(): AuraSceneNode[] {
 }
 
 /**
- * Lantern Dock: the river 12-60 m out, moored Meshy fishing boats with their mast lamps, two harbour cranes on the
+ * Lantern Dock: the river 12-60 m out, four moored Meshy fishing boats with their mast lamps (one draw each; the per-world ceiling is 6 models, so 4 boats + 2 cranes), two harbour cranes on the
  * far bank, and the far bank's low shophouses.
  */
 function dockRiver(): AuraSceneNode[] {
@@ -90,8 +90,8 @@ function dockRiver(): AuraSceneNode[] {
   const bank: Part[] = [];
   const boats: AuraSceneNode[] = [];
   const BOAT_LENGTH = 7;
-  for (let i = 0; i < 5; i += 1) {
-    const x = -24 + i * 12 + (hash01(i, 6) - 0.5) * 3;
+  for (let i = 0; i < 4; i += 1) {
+    const x = -21 + i * 14 + (hash01(i, 6) - 0.5) * 3;
     const z = -20 - 8 * hash01(i, 7); // beyond the deck edge (z -16)
     const yaw = (hash01(i, 8) - 0.5) * 0.5;
     const length = BOAT_LENGTH * (0.85 + 0.3 * hash01(i, 21));
