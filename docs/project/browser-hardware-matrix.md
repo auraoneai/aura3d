@@ -1,6 +1,6 @@
 # Browser And Hardware Matrix
 
-Version: 4.7.10
+Version: 4.7.11
 
 ## Aura3D advantage
 

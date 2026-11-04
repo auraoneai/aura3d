@@ -1,8 +1,42 @@
 # Changelog
 
-Version: 4.7.10
+Version: 4.7.11
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.7.11 (2026-11-03)
+
+GameUpgrades47 wave 2: 61 new Meshy models (generated 2026-11-03 for the 3,722 credits available on one key) are wired into 15 games, each decimated to its game's triangle and texture budget (lane reports in `docs/prds/game-upgrades-47/lanes/`, "Wave 2 (2026-11-03)" sections). Of the 123 models generated, 62 were not used: they read wrong against their role, were unrigged T-poses, duplicated a live model, or did not fit the scene.
+
+**Not panel-judged.** Unlike 4.7.10, these swaps were not captured or blind-judged before release: they were checked by thumbnails, bounds, game-checks, eslint and the unit tests of the touched games only. Every new model is behind the existing look switch where the game has one (`?look=original` keeps the old scene). Treat the look of the new models as unverified on a real GPU (PRD D5, owner-only).
+
+### Games
+
+| Game | New models |
+|---|---|
+| Iron Crown | harbour crane, fishing boat, shrine, hangar plane, two skyline blocks, two towers, temple gate, backdrop ridge |
+| Pip's Big Leap | four course bases (academy, canopy, millpond, meadow), hedgehog and beetle villagers (static, unrigged) |
+| Aura Hoops 3D | standing fans, mural wall, lifeguard tower, corrugated roof, container |
+| Grid Dispatch | pyramid, glass and bridge towers, bridge deck, two buildings |
+| Thermal Drift | reactor ring, ladle crane, cooling tower, smokestacks, water tower |
+| Aura Diamond 3D | lighthouse, mesa, water tower, rowhouse roof, lunar habitat |
+| Slingshot Siege | lighthouse islet, quarry crane, greenhouse frame, curtain wall, crystal crater |
+| Aura Links 3D | lighthouse, clubhouse, harbour crane, lander |
+| Serpentine Sky Run | three spires (script mode) |
+| Ninja Runner | shrine gate, water wheel, pagoda silhouette (evening look) |
+| Saltwind Highway | sea stack, hoodoo, arch |
+| Cumulus Dash | storm tower, hut (storm-washed look) |
+| Aura FC 3D | player tunnel |
+| Chroma Roll | easel island (carnival look) |
+| Ion Circuit | heavy drone model (twilight look) |
+
+### Known limits
+
+- **No panel for this release** (see above); the 7 reverted swaps of 4.7.10 show that about half of unjudged swaps can read worse than a tuned scene.
+- Several models sit above the 8k triangle guideline after decimation (Iron Crown towers 11-13k, Aura FC tunnel 13k, Slingshot pieces up to 20k); Aura Hoops stays above its 1.2M triangle budget.
+- Characters from Meshy are unrigged T-poses and were not used; the rigging and animation rows that would fix this ran out of credits.
+- Distinctness pairs, the 12-category rubric bar, 41 `borrowed-asset` and 12 `luma-band` warnings, selective bloom activation, and Bunker Zero's texture deadline are unchanged from 4.7.10; real-GPU judgement is owner-only.
+- `tests/unit/rework-kit/two-hand-grip.test.ts` and 58 type errors in `tools/` and some `tests/` files predate this release.
 
 ## 4.7.10 (2026-11-02)
 
