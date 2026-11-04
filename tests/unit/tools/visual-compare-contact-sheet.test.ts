@@ -7,7 +7,6 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { GAME_LUMA_TARGETS } from '../../browser/game-luma-targets';
 import {
   buildSheet, compareRgb, findAttachment, findCatalogShot, frameFor, heatmapRgb, indexFrames, matchSize, resolveBaseline
-// @ts-expect-error plain .mjs tool without declarations
 } from '../../../tools/release/visual-compare-5.0/contact-sheet.mjs';
 
 const ROOT = new URL('../../../', import.meta.url).pathname;

@@ -31,7 +31,7 @@ function close(actual: number, expected: number, tolerance = TOLERANCE): void {
   expect(Number.isFinite(actual)).toBe(true);
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance);
 }
-function vec(actual: Vector3, x: number, y: number, z: number, tolerance = TOLERANCE): void {
+function vec(actual: { readonly x: number; readonly y: number; readonly z: number }, x: number, y: number, z: number, tolerance = TOLERANCE): void {
   close(actual.x, x, tolerance); close(actual.y, y, tolerance); close(actual.z, z, tolerance);
 }
 function vecLike(actual: Vector3, expected: Vector3, tolerance = TOLERANCE): void {
@@ -531,7 +531,7 @@ describe("convex hull: topology and independent solids", () => {
       vec(hull.intersectRay(ray)!, -3, y, z, 1e-7); expect(hull.intersectsRay(ray)).toBe(true);
     }
     expect(hull.intersectsRay(new Ray(new Vector3(-8, 4, 0), new Vector3(1, 0, 0)))).toBe(false);
-    expect(new ConvexHull().setFromPoints(points.slice(0, 3)).faces).toHaveLength(0);
+    expect(new ConvexHull().setFromPoints(points.slice(0, 3)).faces).toHaveLength(2); expect(new ConvexHull().setFromPoints(points.slice(0, 2)).faces).toHaveLength(0);
   }, 30_000);
 
   it("encloses seeded irregular, spherical and thin point clouds with outward supporting planes", () => {
