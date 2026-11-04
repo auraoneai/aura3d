@@ -43,7 +43,7 @@ describe("root physics world contracts", () => {
     let release = () => {};
     let notifyStarted = () => {};
     let ready: Promise<void> = Promise.resolve();
-    vi.doMock("@aura3d/physics", () => ({
+    vi.doMock("@aura3d/physics/world", () => ({
       ensurePhysics: () => { notifyStarted(); return ready; }
     }));
     try {
@@ -61,7 +61,7 @@ describe("root physics world contracts", () => {
         }
       }
     } finally {
-      vi.doUnmock("@aura3d/physics");
+      vi.doUnmock("@aura3d/physics/world");
     }
   });
 

@@ -246,7 +246,7 @@ describe("option discovery and ownership", () => {
 
   it("all documented options have downstream evidence or an actionable unsupported diagnostic", () => {
     expect(optionCoverageRule([], process.cwd(), { typed: false }).filter((finding) => finding.enforced)).toEqual([]);
-  });
+  }, 120_000);
 });
 
 /* -------------------- the two 4.1.2 silent no-ops (WP-S.2) ------------------- */

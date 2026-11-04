@@ -59,7 +59,9 @@ export function validateDocsVersionAlignment(root = process.cwd()): DocsVersionA
   checkedFiles.add("docs/api/public-api.md");
   const apiDocsText = readText(root, "docs/api/public-api.md");
   for (const pkg of publicPackages) {
-    if (!apiDocsText.includes(`| \`${pkg.packageName}\` | \`${version}\` | \`${pkg.entrypointPath}\``)) {
+    // The reference is generated from packed archives (`./dist/...d.ts` entrypoints), not workspace source paths, so the
+    // row is identified by package name + version. Declaration-level currency is enforced by `verify:api-docs`.
+    if (!apiDocsText.includes(`| \`${pkg.packageName}\` | \`${version}\` | `)) {
       violations.push(`docs/api/public-api.md is not current for ${pkg.packageName} ${version}. Run pnpm verify:api-docs -- --write.`);
     }
   }
