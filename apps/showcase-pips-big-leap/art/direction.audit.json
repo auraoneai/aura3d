@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "6a8c5d70b0cb8a8f2e1548ad8f3ea0ae1bc068149c63c6e3ff2aa4e8b738f16d",
+  "sourceSha256": "1533649b91d547f7d15219adb21f4ba92c1310e8375e87696ca28a86cc405b25",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -45,6 +45,13 @@
           "background": true
         },
         "models": [
+          {
+            "assetKey": "leapBaseGarden",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
           {
             "assetKey": "pipsSunseed",
             "triangles": 0,
@@ -228,6 +235,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "leapHedgehog",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -249,11 +263,6 @@
           {
             "name": "matte clay",
             "node": "pbl-base-skirt",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "pbl-base-mounds",
             "practical": false
           },
           {
@@ -388,6 +397,13 @@
         },
         "models": [
           {
+            "assetKey": "leapBaseCanopy",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsSunseed",
             "triangles": 0,
             "textures": 1,
@@ -598,6 +614,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "leapBeetle",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -619,11 +642,6 @@
           {
             "name": "matte clay",
             "node": "pbl-base-skirt",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "pbl-base-mounds",
             "practical": false
           },
           {
@@ -752,6 +770,13 @@
           "background": true
         },
         "models": [
+          {
+            "assetKey": "leapBaseMillpond",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
           {
             "assetKey": "pipsSunseed",
             "triangles": 0,
@@ -956,6 +981,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "leapHedgehog",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -982,11 +1014,6 @@
           {
             "name": "matte clay",
             "node": "pbl-base-skirt",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "pbl-base-mounds",
             "practical": false
           },
           {
@@ -1113,6 +1140,13 @@
           "background": true
         },
         "models": [
+          {
+            "assetKey": "leapBaseMeadow",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
           {
             "assetKey": "pipsSunseed",
             "triangles": 0,
@@ -1317,6 +1351,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "leapBeetle",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -1338,11 +1379,6 @@
           {
             "name": "matte clay",
             "node": "pbl-base-skirt",
-            "practical": false
-          },
-          {
-            "name": "felt",
-            "node": "pbl-base-mounds",
             "practical": false
           },
           {
@@ -1677,6 +1713,13 @@
             "assetKey": "neonStreetLampProp",
             "triangles": 0,
             "textures": 9,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
+            "assetKey": "leapHedgehog",
+            "triangles": 0,
+            "textures": 3,
             "unlit": false,
             "overridesTextures": false
           },
@@ -2453,6 +2496,13 @@
             "overridesTextures": false
           },
           {
+            "assetKey": "leapBeetle",
+            "triangles": 0,
+            "textures": 3,
+            "unlit": false,
+            "overridesTextures": false
+          },
+          {
             "assetKey": "pipsPip",
             "triangles": 0,
             "textures": 1,
@@ -2699,6 +2749,54 @@
             "idle"
           ]
         }
+      },
+      {
+        "role": "character",
+        "assetKey": "leapHedgehog",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "character",
+        "assetKey": "leapBeetle",
+        "maxTriangles": 30000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "leapBaseGarden",
+        "maxTriangles": 32000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "leapBaseCanopy",
+        "maxTriangles": 24000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "leapBaseMillpond",
+        "maxTriangles": 24000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "world",
+        "assetKey": "leapBaseMeadow",
+        "maxTriangles": 24000,
+        "minTriangles": 2000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       },
       {
         "role": "prop",

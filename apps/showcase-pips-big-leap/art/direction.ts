@@ -59,6 +59,15 @@ const direction: GameArtDirection = {
     // NPC runners: kept until the rigged villagers (PBL-A3, WP-36) replace them.
     { role: "character", assetKey: "showcaseSidekickRunner", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
     { role: "character", assetKey: "helperChar", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 1024, animated: { clips: ["idle"] } },
+    // GU47 wave 2 (PBL-A3): the two woodland villagers, Meshy text-to-3D, static pose (no rig, no clips);
+    // counts, JPEG maps (base colour + normal + metallic-roughness) and 1024 px sizes read from the GLBs.
+    { role: "character", assetKey: "leapHedgehog", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "character", assetKey: "leapBeetle", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 2 (PBL-E1): generated diorama bases that tile under the course (23,964 to 31,866 triangles each).
+    { role: "world", assetKey: "leapBaseGarden", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "leapBaseCanopy", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "leapBaseMillpond", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "world", assetKey: "leapBaseMeadow", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsSunseed", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsGoldenAcorn", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "pipsCheckpointFlag", maxTriangles: 8000, textureSet: "BC", maxTextureSize: 1024 },
