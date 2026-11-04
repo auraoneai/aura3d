@@ -15,7 +15,11 @@ export const MESHY = defineModelAssets({
   feast: glb("feast.glb", "sha256-ef57f499e2352bb73b9098a73190f88412b86aa54a1b9b711d7f69b2e856bac7"),
   lantern: glb("lantern.glb", "sha256-e7455a1ef72d8e5fe0e9a460f8cd68e7ba6ef85292b823979a22d7df7d3f730b"),
   /** GU47 WP-36 `serpSerpentHead` (admitted 2026-10-31, provenance/serpentHead.*): the colossal serpent landmark (SSR-10/17). */
-  serpentHead: glb("serpentHead.glb", "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34")
+  serpentHead: glb("serpentHead.glb", "sha256-8376edc24e11fc99cebd4b5ab2fcda24afa3ba56c34f2cedb073c47cfa1afe34"),
+  /** GU47 wave 2 `serpSpireB` (admitted 2026-11-03, provenance/spireB.*): twisted red rock spire with hanging lanterns, a near-island variant in script mode (SSR-10). */
+  spireB: glb("spireB.glb", "sha256-29693db9f821da39921adefbf0359b7c7f449935c444b47fa4109a4ef7ca2cf0"),
+  /** GU47 wave 2 `serpSpireC` (admitted 2026-11-03, provenance/spireC.*): lacquer pagoda on a floating rock island, a near-island variant in script mode (SSR-10). */
+  spireC: glb("spireC.glb", "sha256-667c6275cebd1596364e4d626ff51eb685db2d8fe6dd1d44797d8e3c5dfd18e7")
 }, { license: LICENSE, queryParam: null }).refs;
 
 /** Both versions retain the same rig and clips; only the original uses the 4.6.2 teal atlas. */
@@ -47,3 +51,13 @@ export const ENTITY_MODELS: Readonly<Record<string, { readonly key: MeshyKey; re
 
 export const LANTERN_COUNT = 10;
 export const ISLAND_COUNT = 6;
+/**
+ * GU47 wave 2 (SSR-10): in script mode the six near islands cycle through the pagoda island, the red lantern spire and the
+ * original island (`?look=original` keeps six original islands). `targetHeight` is the model height in metres before the
+ * per-slot `1 + (i % 3) * 0.35` scale the original islands already used.
+ */
+export const ISLAND_VARIANTS: readonly { readonly key: MeshyKey; readonly targetHeight: number }[] = [
+  { key: "spireC", targetHeight: 22 },
+  { key: "spireB", targetHeight: 15 },
+  { key: "island", targetHeight: 15 }
+];
