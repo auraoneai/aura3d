@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/roadster-hours-port/art/direction.ts",
-  "sourceSha256": "cc9587da875d861f4479e08d0f8fa02f705fd1d130c003958aa68e6788a88815",
+  "sourceSha256": "0d749384f4b982d7006d21bdbd5bd3366328c6749d25b05293c5b6eae9e40ecf",
   "id": "roadster-hours-port",
   "genre": "racing",
   "signatureEffect": "Crosswind salt spray: sheets of salt, sand or mist lift off the sea-side cliff base and blow across the highway with the route wind.",
@@ -170,6 +170,13 @@
       {
         "assetKey": "arch",
         "triangles": 8000,
+        "textures": 1,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "arcology",
+        "triangles": 7429,
         "textures": 1,
         "unlit": false,
         "overridesTextures": false
@@ -397,6 +404,13 @@
       {
         "role": "set-dressing",
         "assetKey": "arch",
+        "maxTriangles": 8000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "arcology",
         "maxTriangles": 8000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 1024
