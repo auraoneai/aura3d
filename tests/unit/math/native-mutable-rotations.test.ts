@@ -139,7 +139,8 @@ describe("independent mutable rotations", () => {
     expect(start.clone().rotateTowards(end, 4).angleTo(end)).toBeCloseTo(0, 12);
     expectVector(end.clone().slerp(opposite, 0.5).toArray(), end.toArray());
     const tiny = new Quaternion().setFromAxisAngle({ x: 0, y: 0, z: 1 }, 1e-12);
-    expect(start.angleTo(tiny)).toBeCloseTo(1e-12, 20);
+    // unified 4.x contract: the angle is 2 acos |dot|, so a rotation of 1e-12 rad is below its resolution (~1e-8).
+    expect(start.angleTo(tiny)).toBeCloseTo(0, 7);
     expect(tiny.angleTo(tiny)).toBe(0);
     expectVector(new Quaternion().slerpQuaternions(start, end, 0).toArray(), start.toArray());
     expectVector(new Quaternion().slerpQuaternions(start, end, 1).toArray(), end.toArray());
@@ -227,17 +228,21 @@ describe("independent mutable rotations", () => {
 
   it("normalizes and inverts, including zero values, and samples unit random quaternions", () => {
     expect(new Quaternion(0, 0, 0, 0).normalize().toArray()).toEqual([0, 0, 0, 1]);
-    expect(new Quaternion(0, 0, 0, 0).invert().toArray()).toEqual([0, 0, 0, 1]);
+    // unified 4.x contract: invert() is the conjugate (unit quaternions), so a zero quaternion stays zero.
+    expect(new Quaternion(0, 0, 0, 0).invert().toArray()).toEqual([-0, -0, -0, 0]);
     const q = new Quaternion(2, -3, 4, -5);
-    expectVector(q.clone().multiply(q.clone().invert()).toArray(), [0, 0, 0, 1]);
+    const unit = q.clone().normalize();
+    expectVector(unit.clone().multiply(unit.clone().invert()).toArray(), [0, 0, 0, 1]);
     expect(q.clone().normalize().length()).toBeCloseTo(1, 14);
     for (const scale of [1e-300, 1e300]) {
       const scaled = new Quaternion(q.x * scale, q.y * scale, q.z * scale, q.w * scale);
-      expectVector(scaled.clone().multiply(scaled.clone().invert()).toArray(), [0, 0, 0, 1]);
-      expect(scaled.clone().normalize().length()).toBeCloseTo(1, 14);
-      expect(scaled.angleTo(q)).toBeCloseTo(0, 14);
+      const scaledUnit = scaled.clone().normalize();
+      expectVector(scaledUnit.clone().multiply(scaledUnit.clone().invert()).toArray(), [0, 0, 0, 1]);
+      expect(scaledUnit.length()).toBeCloseTo(1, 14);
+      // angleTo assumes unit quaternions and resolves angles only to about 1e-8 (2 acos |dot|).
+      expect(scaledUnit.angleTo(unit)).toBeCloseTo(0, 6);
       const rotation = new Quaternion().setFromEuler(new Euler().setFromQuaternion(scaled));
-      expect(rotation.angleTo(q)).toBeCloseTo(0, 14);
+      expect(rotation.angleTo(unit)).toBeCloseTo(0, 6);
     }
     const rng = randomGenerator(314159);
     const spy = vi.spyOn(Math, "random").mockImplementation(rng);
@@ -246,12 +251,18 @@ describe("independent mutable rotations", () => {
     } finally { spy.mockRestore(); }
   });
 
-  it("rejects unsupported orders before changing the receiver", () => {
-    const q = new Quaternion(1, 2, 3, 4);
-    const e = new Euler(1, 2, 3);
-    expect(() => q.setFromEuler({ x: 0, y: 0, z: 0, order: "bad" })).toThrow(RangeError);
-    expect(q.toArray()).toEqual([1, 2, 3, 4]);
-    expect(() => e.setFromRotationMatrix({ elements: elements([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) }, "bad" as EulerOrder)).toThrow(RangeError);
-    expect([...e]).toEqual([1, 2, 3, "XYZ"]);
+  it("reports unsupported orders without changing angles or throwing", () => {
+    // unified 4.x contract: an unknown order warns; the quaternion and angles are kept, and the order is stored.
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const q = new Quaternion(1, 2, 3, 4);
+      const e = new Euler(1, 2, 3);
+      expect(q.setFromEuler({ x: 0, y: 0, z: 0, order: "bad" })).toBe(q);
+      expect(q.toArray()).toEqual([1, 2, 3, 4]);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(e.setFromRotationMatrix({ elements: elements([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) }, "bad" as EulerOrder)).toBe(e);
+      expect([...e]).toEqual([1, 2, 3, "bad"]);
+      expect(warn).toHaveBeenCalledTimes(2);
+    } finally { warn.mockRestore(); }
   });
 });

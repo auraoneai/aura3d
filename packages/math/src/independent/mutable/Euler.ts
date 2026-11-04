@@ -1,11 +1,15 @@
 import { Euler as ImmutableEuler } from "../../Euler.js";
 import type { EulerLike, EulerOrder, QuaternionLike } from "./Quaternion.js";
 
+// Diagnostics go through the host console; declared locally so the package needs no DOM or Node type libraries.
+declare const console: { warn(...data: unknown[]): void };
+
 interface ElementsLike {
   readonly elements: ArrayLike<number>;
 }
 
-function axes(order: string): [number, number, number, number] {
+/** Axis indices and parity for a supported order, or undefined for an unrecognized one. */
+function axesOrUndefined(order: string): [number, number, number, number] | undefined {
   switch (order) {
     case "XYZ": return [0, 1, 2, 1];
     case "YZX": return [1, 2, 0, 1];
@@ -13,7 +17,7 @@ function axes(order: string): [number, number, number, number] {
     case "XZY": return [0, 2, 1, -1];
     case "ZYX": return [2, 1, 0, -1];
     case "YXZ": return [1, 0, 2, -1];
-    default: throw new RangeError(`Unsupported Euler order: ${order}`);
+    default: return undefined;
   }
 }
 
@@ -34,7 +38,8 @@ function quaternionMatrix(q: QuaternionLike): number[] {
 
 /** Intrinsic axis rotations multiply on the right in the stated order. */
 function eulerMatrix(x: number, y: number, z: number, order: EulerOrder): number[] {
-  axes(order);
+  // An unrecognized order contributes no rotation (4.x: its quaternion stays at identity).
+  if (!axesOrUndefined(order)) return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   let current = [1, 0, 0, 0, 1, 0, 0, 0, 1]; // row-major 3x3
   const values = { X: x, Y: y, Z: z };
   for (const axis of order) {
@@ -64,7 +69,6 @@ export class Euler implements EulerLike {
   _order: string;
 
   constructor(x = 0, y = 0, z = 0, order: EulerOrder = Euler.DEFAULT_ORDER as EulerOrder) {
-    axes(order);
     this._x = x; this._y = y; this._z = z; this._order = order;
   }
 
@@ -75,13 +79,12 @@ export class Euler implements EulerLike {
   get z(): number { return this._z; }
   set z(value: number) { this._z = value; this._onChangeCallback(); }
   get order(): EulerOrder { return this._order as EulerOrder; }
-  set order(value: EulerOrder) { axes(value); this._order = value; this._onChangeCallback(); }
+  set order(value: EulerOrder) { this._order = value; this._onChangeCallback(); }
 
   fromImmutable(euler: EulerLike): this { return this.copy(euler); }
   toImmutable(): ImmutableEuler { return new ImmutableEuler(this._x, this._y, this._z, this.order); }
 
   set(x: number, y: number, z: number, order: EulerOrder = this.order): this {
-    axes(order);
     this._x = x; this._y = y; this._z = z; this._order = order;
     this._onChangeCallback();
     return this;
@@ -95,7 +98,15 @@ export class Euler implements EulerLike {
   copy(euler: EulerLike): this { return this.set(euler.x, euler.y, euler.z, euler.order as EulerOrder); }
 
   setFromRotationMatrix(m: ElementsLike, order: EulerOrder = this.order, update = true): this {
-    const [i, j, k, parity] = axes(order);
+    const found = axesOrUndefined(order);
+    if (!found) {
+      // 4.x behavior: an unknown order is reported; the angles are kept and the order is stored.
+      console.warn(`Euler.setFromRotationMatrix: unknown order: ${String(order)}`);
+      this._order = order;
+      if (update) this._onChangeCallback();
+      return this;
+    }
+    const [i, j, k, parity] = found;
     const e = m.elements;
     const entry = (row: number, column: number): number => e[4 * column + row];
     const sinMiddle = Math.max(-1, Math.min(1, parity * entry(i, k)));

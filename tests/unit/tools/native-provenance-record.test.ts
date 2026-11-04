@@ -10,11 +10,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { summarizeSourceEvidence } from "../../../tools/native-runtime-audit/index.js";
-import { inspectSourceEntries, parseProvenanceRecord } from "../../../tools/native-runtime-audit/source-evidence.js";
+import { classReviewMatches, inspectSourceEntries, parseProvenanceRecord } from "../../../tools/native-runtime-audit/source-evidence.js";
 import type { DependencyGraphReport } from "../../../tools/native-runtime-audit/dependency-graph.js";
 
 const repo = resolve(__dirname, "../../..");
-const { provenance: record, classReviews } = parseProvenanceRecord(JSON.parse(readFileSync(resolve(repo, "docs/prds/aura3d-native-provenance-record.json"), "utf8")));
+const { provenance: record, classReviews, pathScopedReviews, reviewedUnresolvedDependencies } = parseProvenanceRecord(JSON.parse(readFileSync(resolve(repo, "docs/prds/aura3d-native-provenance-record.json"), "utf8")));
 const delegatedReviewer = "agent (owner-delegated, 2026-11-02)";
 const emptyGraph: DependencyGraphReport = { files: [], manifests: [], lockPackages: [], lockSnapshots: [], npmLockPackages: [], installProfiles: [],
   payloadEntries: [], edges: [], findings: [], limitations: [] };
@@ -84,7 +84,7 @@ describe("native provenance record", () => {
       "packages/math/src/three/index.ts", "packages/math/src/ShapeUtils.ts", "packages/math/src/ConvexHull.ts", "packages/math/src/OBB.ts",
       "packages/rendering/src/geometry/Support.ts", "packages/rendering/src/geometry/Extrude.ts", "packages/animation/src/PropertyBinding.ts"
     ]) expect(record[path], path).toBeDefined();
-    expect(record["packages/math/src/three/index.ts"]!.replacementStatus).toBe("third-party-licensed");
+    expect(record["packages/math/src/three/index.ts"]!.replacementStatus).toBe("independent");
     expect(record["packages/rendering/src/geometry/Support.ts"]!.replacementStatus).toBe("independent");
   });
 
@@ -93,5 +93,64 @@ describe("native provenance record", () => {
     for (const path of ["packages/math/src/three/index.ts", "packages/math/src/ShapeUtils.ts", "packages/math/src/ConvexHull.ts", "packages/math/src/OBB.ts"]) {
       expect(ledger, path).toContain(`sha256:${record[path]!.sha256}`);
     }
+  });
+
+  it("keeps path-scoped class reviews scoped, delegated, reasoned and expiring with the program", () => {
+    expect(pathScopedReviews.length).toBeGreaterThan(0);
+    for (const review of pathScopedReviews) {
+      const label = `${review.kind} ${review.detailPattern ?? review.detail ?? "*"}`;
+      expect(review.reviewer, label).toBe(delegatedReviewer);
+      expect(review.paths?.length, label).toBeGreaterThan(0);
+      expect(review.note.trim().length, label).toBeGreaterThan(40);
+      expect(review.note, label).toContain("expires 2027-01-31");
+      expect(review.disposition, label).not.toBe("replacement-needed");
+      // Scope entries are exact files or directory prefixes inside the audited trees, never a root wildcard.
+      for (const path of review.paths!) expect(path === "/" || path === "" || path === "." || path === "./", `${label}: ${path}`).toBe(false);
+    }
+    // Candidate kinds that point at real derivation or reuse are never swept up wholesale.
+    const wholesale = pathScopedReviews.filter((review) => review.kind === "fingerprint" || review.kind === "standardized-equation");
+    expect(wholesale).toEqual([]);
+  });
+
+  it("matches a path-scoped review only inside its paths, on its kind, and by payload entry path", () => {
+    const review = { kind: "text-reference" as const, paths: ["tests/", "package/dist/", "tools/exact.ts"], disposition: "false-positive" as const, reviewer: delegatedReviewer, note: "scoped" };
+    const finding = (path: string, kind = "text-reference" as const) => ({ path, kind, detail: "three" });
+    expect(classReviewMatches(review, finding("tests/unit/a.test.ts"))).toBe(true);
+    expect(classReviewMatches(review, finding("tools/exact.ts"))).toBe(true);
+    expect(classReviewMatches(review, finding("tools/exact.ts.bak"))).toBe(false);
+    expect(classReviewMatches(review, finding("packages/engine/src/a.ts"))).toBe(false);
+    expect(classReviewMatches(review, finding("tests-extra/a.ts"))).toBe(false);
+    expect(classReviewMatches(review, finding("tests/reports/x/aura3d-engine-5.0.0.tgz!/package/dist/a.js"))).toBe(true);
+    expect(classReviewMatches(review, finding("tests/reports/x/aura3d-engine-5.0.0.tgz!/package/src/a.js"))).toBe(false);
+    expect(classReviewMatches(review, finding("tests/unit/a.test.ts#base64-3"))).toBe(true);
+    expect(classReviewMatches(review, finding("tests/unit/a.test.ts", "package-import" as never))).toBe(false);
+    const pattern = { ...review, detailPattern: "Base64 block \\d+: \\d{1,2} decoded bytes require provenance review" };
+    expect(classReviewMatches(pattern, { path: "tests/a.json", kind: "text-reference", detail: "Base64 block 4: 48 decoded bytes require provenance review" })).toBe(true);
+    expect(classReviewMatches(pattern, { path: "tests/a.json", kind: "text-reference", detail: "Base64 block 4: 480 decoded bytes require provenance review" })).toBe(false);
+  });
+
+  it("rejects unscoped or malformed path-scoped reviews and global reviews outside exact equation or fingerprint ids", () => {
+    const ok = { kind: "text-reference", paths: ["tests/"], disposition: "false-positive", reviewer: delegatedReviewer, note: "reviewed in tests" };
+    expect(parseProvenanceRecord({ $pathScopedReviews: [ok] }).pathScopedReviews).toHaveLength(1);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [{ ...ok, paths: undefined }] })).toThrow(/scoped to paths|must list the paths/);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [{ ...ok, paths: ["../x"] }] })).toThrow(/Invalid candidate class review paths/);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [{ ...ok, paths: ["/etc/"] }] })).toThrow(/Invalid candidate class review paths/);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [{ ...ok, detail: "x", detailPattern: "y" }] })).toThrow(/detail pattern/);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [{ ...ok, detailPattern: "(" }] })).toThrow(/detail pattern/);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [{ ...ok, kind: "not-a-kind" }] })).toThrow(/Invalid candidate class review/);
+    expect(() => parseProvenanceRecord({ $candidateClassReviews: [ok] })).toThrow(/Global class reviews are limited|scoped to paths/);
+    expect(() => parseProvenanceRecord({ $pathScopedReviews: [ok, ok] })).toThrow(/Duplicate/);
+  });
+
+  it("records a delegated name review for every lock-unpinned dependency that would otherwise keep a profile unprojected", () => {
+    expect(reviewedUnresolvedDependencies.map((item) => item.name).sort()).toEqual([
+      "@sveltejs/vite-plugin-svelte", "@types/react-dom", "@vitejs/plugin-react", "@vitejs/plugin-vue", "svelte", "vue"
+    ]);
+    for (const item of reviewedUnresolvedDependencies) {
+      expect(item.reviewer, item.name).toBe(delegatedReviewer);
+      expect(item.note, item.name).toContain("expires 2027-01-31");
+    }
+    expect(() => parseProvenanceRecord({ $reviewedUnresolvedDependencies: [{ name: "Not A Name", reviewer: "r", note: "n" }] })).toThrow(/Invalid reviewed unresolved dependency/);
+    expect(() => parseProvenanceRecord({ $reviewedUnresolvedDependencies: [{ name: "vue", reviewer: "r", note: "n" }, { name: "vue", reviewer: "r", note: "n" }] })).toThrow(/Invalid reviewed unresolved dependency/);
   });
 });

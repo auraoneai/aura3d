@@ -109,12 +109,18 @@ describe("independent mutable matrix storage and operations", () => {
     x3.setFromMatrix3Column = (m, i) => { m3.identity(); return original3(m, i); };
     expect(m3.extractBasis(x3, y3, z3)).toBe(m3);
     expect([x3.x, x3.y, x3.z, y3.x, y3.y, y3.z, z3.x, z3.y, z3.z]).toEqual([1, 4, 7, 2, 5, 8, 3, 6, 9]);
-    const m4 = new Matrix4().makeBasis({ x: 1, y: 2, z: 3 }, { x: 4, y: 5, z: 6 }, { x: 7, y: 8, z: 9 });
+    // unified 4.x contract: a singular linear part reports the standard basis, so use a nonsingular basis here.
+    const m4 = new Matrix4().makeBasis({ x: 1, y: 2, z: 3 }, { x: 4, y: 5, z: 6 }, { x: 7, y: 8, z: 10 });
     const x4 = new Target3(), y4 = new Target3(), z4 = new Target3();
     const original4 = x4.setFromMatrixColumn.bind(x4);
     x4.setFromMatrixColumn = (m, i) => { m4.identity(); return original4(m, i); };
     m4.extractBasis(x4, y4, z4);
-    expect([x4.x, x4.y, x4.z, y4.x, y4.y, y4.z, z4.x, z4.y, z4.z]).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect([x4.x, x4.y, x4.z, y4.x, y4.y, y4.z, z4.x, z4.y, z4.z]).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 10]);
+    // unified 4.x contract: a singular matrix reports the standard basis.
+    const singular = new Matrix4().makeBasis({ x: 1, y: 2, z: 3 }, { x: 4, y: 5, z: 6 }, { x: 7, y: 8, z: 9 });
+    const sx = new Target3(), sy = new Target3(), sz = new Target3();
+    singular.extractBasis(sx, sy, sz);
+    expect([sx.x, sx.y, sx.z, sy.x, sy.y, sy.z, sz.x, sz.y, sz.z]).toEqual([1, 0, 0, 0, 1, 0, 0, 0, 1]);
   });
 
   it("multiplies in column-vector order and handles aliases of either input", () => {
@@ -217,7 +223,8 @@ describe("independent mutable matrix storage and operations", () => {
     expect(m.elements).toEqual([2, 0, 0, 0, 3, 0, 4, 5, 1]);
     const rotated = new Matrix3().makeRotation(Math.PI / 2);
     closeArray(rotated.elements, [0, 1, 0, -1, 0, 0, 0, 0, 1]);
-    closeArray(new Matrix3().rotate(Math.PI / 2).elements, rotated.elements);
+    // unified 4.x contract: the deprecated rotate() negates its angle.
+    closeArray(new Matrix3().rotate(Math.PI / 2).elements, new Matrix3().makeRotation(-Math.PI / 2).elements);
     const uv = new Matrix3().setUvTransform(0.2, -0.1, 2, 3, Math.PI / 2, 0.5, 0.25).elements;
     closeArray([uv[0] * 0.5 + uv[3] * 0.25 + uv[6], uv[1] * 0.5 + uv[4] * 0.25 + uv[7]], [0.7, 0.15]);
     const embedded = new Matrix4().setFromMatrix3(m);
@@ -238,7 +245,8 @@ describe("independent mutable matrix storage and operations", () => {
     closeArray(new Matrix4().extractRotation(new Matrix4().makeRotationZ(Math.PI / 2).scale({ x: 2, y: 3, z: 4 })).elements, new Matrix4().makeRotationZ(Math.PI / 2).elements);
     new Matrix4().makeScale(0, 2, 3).decompose(pos, q, scale);
     expect(q.rotation).toBeNull();
-    expect([q.x, q.y, q.z, q.w, scale.x, scale.y, scale.z]).toEqual([0, 0, 0, 1, 0, 2, 3]);
+    // unified 4.x contract: a singular linear part reports unit scale and the identity rotation.
+    expect([q.x, q.y, q.z, q.w, scale.x, scale.y, scale.z]).toEqual([0, 0, 0, 1, 1, 1, 1]);
     expect(new Matrix4().copyPosition(matrix).elements.slice(12, 15)).toEqual([3, -4, 5]);
     expect(new Matrix4().makeTranslation({ x: 1, y: 2, z: 3 }).setPosition({ x: 4, y: 5, z: 6 }).elements.slice(12, 15)).toEqual([4, 5, 6]);
     expect(new Matrix4().multiplyScalar(2).elements).toEqual(identity(4).map(v => v * 2));
@@ -279,7 +287,8 @@ describe("independent mutable matrix storage and operations", () => {
       closeArray(look.clone().transpose().multiply(look).elements, identity(4));
       expect(look.determinant()).toBeCloseTo(1);
     }
-    expect(point(new Matrix4().makeShear(2, 3, 4, 5, 6, 7), 1, 2, 3)).toEqual([14, 21, 23]);
+    // unified 4.x contract: makeShear(xy, xz, yx, yz, zx, zy) shears x by y (xy) and so on, so x' = 1 + yx*2 + zx*3.
+    expect(point(new Matrix4().makeShear(2, 3, 4, 5, 6, 7), 1, 2, 3)).toEqual([27, 25, 16]);
   });
 });
 

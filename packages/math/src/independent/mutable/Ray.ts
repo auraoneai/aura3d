@@ -110,46 +110,44 @@ export class Ray {
     return x * x + y * y + z * z;
   }
 
+  /**
+   * Squared distance to the segment v0-v1, optionally reporting the closest points. Minimizes
+   * |w + t d - s a|^2 over t >= 0 and |s| <= half-length, where d is the ray direction, a the segment
+   * axis and w the origin relative to the segment midpoint. A direction parallel to the segment
+   * reports the segment end lying farthest along the ray; NaN input propagates to the result.
+   */
   distanceSqToSegment(v0: Vector3, v1: Vector3, optionalPointOnRay?: Vector3, optionalPointOnSegment?: Vector3): number {
-    const ox = this.origin.x, oy = this.origin.y, oz = this.origin.z;
+    const mx = (v0.x + v1.x) / 2, my = (v0.y + v1.y) / 2, mz = (v0.z + v1.z) / 2;
+    const [ax, ay, az] = unitDirection({ x: v1.x - v0.x, y: v1.y - v0.y, z: v1.z - v0.z });
+    const extent = Math.hypot(v0.x - v1.x, v0.y - v1.y, v0.z - v1.z) / 2;
     const [dx, dy, dz] = unitDirection(this.direction);
-    const ax = v0.x, ay = v0.y, az = v0.z;
-    const originalEx = v1.x - ax, originalEy = v1.y - ay, originalEz = v1.z - az;
-    const originalWx = ox - ax, originalWy = oy - ay, originalWz = oz - az;
-    const scale = Math.max(Math.abs(originalEx), Math.abs(originalEy), Math.abs(originalEz), Math.abs(originalWx), Math.abs(originalWy), Math.abs(originalWz)) || 1;
-    const ex = originalEx / scale, ey = originalEy / scale, ez = originalEz / scale;
-    const wx = originalWx / scale, wy = originalWy / scale, wz = originalWz / scale;
-    const a = dx * dx + dy * dy + dz * dz;
-    const b = dx * ex + dy * ey + dz * ez;
-    const c = ex * ex + ey * ey + ez * ez;
-    const d = dx * wx + dy * wy + dz * wz;
-    const e = ex * wx + ey * wy + ez * wz;
-    let bestDistance = Infinity, bestRay = 0, bestSegment = 0;
-    const consider = (s: number, t: number): void => {
-      const x = wx + s * dx - t * ex, y = wy + s * dy - t * ey, z = wz + s * dz - t * ez;
-      const distance = x * x + y * y + z * z;
-      if (distance < bestDistance) { bestDistance = distance; bestRay = s; bestSegment = t; }
-    };
-    const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
-    // The minimum of this convex quadratic lies in the interior or on one
-    // of the three constrained edges of the ray/segment parameter domain.
-    consider(0, c === 0 ? 0 : clamp01(e / c));
-    consider(a === 0 ? 0 : Math.max(0, -d / a), 0);
-    consider(a === 0 ? 0 : Math.max(0, (b - d) / a), 1);
-    const qx = dy * ez - dz * ey, qy = dz * ex - dx * ez, qz = dx * ey - dy * ex;
-    const determinant = qx * qx + qy * qy + qz * qz;
-    if (determinant > 0) {
-      const ewx = ey * wz - ez * wy, ewy = ez * wx - ex * wz, ewz = ex * wy - ey * wx;
-      const dwx = dy * wz - dz * wy, dwy = dz * wx - dx * wz, dwz = dx * wy - dy * wx;
-      const s = (ewx * qx + ewy * qy + ewz * qz) / determinant;
-      const t = (dwx * qx + dwy * qy + dwz * qz) / determinant;
-      if (s >= 0 && t >= 0 && t <= 1) consider(s, t);
+    const wx = this.origin.x - mx, wy = this.origin.y - my, wz = this.origin.z - mz;
+    const dd = dx * ax + dy * ay + dz * az;
+    const wd = wx * dx + wy * dy + wz * dz;
+    const wa = wx * ax + wy * ay + wz * az;
+    const segmentFor = (t: number): number => Math.max(-extent, Math.min(extent, wa + t * dd));
+    const rayFor = (s: number): number => Math.max(0, s * dd - wd);
+    const gram = 1 - dd * dd;
+    const candidates: Array<[number, number]> = [];
+    if (Math.abs(gram) > 0 && Number.isNaN(wd + wa)) {
+      candidates.push([NaN, NaN]);
+    } else if (Math.abs(gram) > 0) {
+      const t = (dd * wa - wd) / gram, u = (wa - dd * wd) / gram;
+      if (t >= 0 && Math.abs(u) <= extent) candidates.push([t, u]);
+      else candidates.push([0, segmentFor(0)], [rayFor(extent), extent], [rayFor(-extent), -extent]);
+    } else {
+      const u = dd < 0 ? -extent : extent;
+      candidates.push([rayFor(u), u]);
     }
-    const rayDistance = bestRay * scale;
-    optionalPointOnRay?.set(ox + rayDistance * dx, oy + rayDistance * dy, oz + rayDistance * dz);
-    optionalPointOnSegment?.set(ax + bestSegment * originalEx, ay + bestSegment * originalEy, az + bestSegment * originalEz);
-    const distance = Math.sqrt(bestDistance) * scale;
-    return distance * distance;
+    let bestT = 0, bestS = 0, bestGap = NaN, chosen = false;
+    for (const [t, u] of candidates) {
+      const gx = wx + t * dx - u * ax, gy = wy + t * dy - u * ay, gz = wz + t * dz - u * az;
+      const gap = gx * gx + gy * gy + gz * gz;
+      if (!chosen || gap < bestGap) { bestT = t; bestS = u; bestGap = gap; chosen = true; }
+    }
+    optionalPointOnRay?.set(this.origin.x + bestT * dx, this.origin.y + bestT * dy, this.origin.z + bestT * dz);
+    optionalPointOnSegment?.set(mx + bestS * ax, my + bestS * ay, mz + bestS * az);
+    return bestGap;
   }
 
   intersectSphere(sphere: SphereLike, target: Vector3): Vector3 | null {
@@ -228,7 +226,8 @@ export class Ray {
     const [dx, dy, dz] = unitDirection(this.direction);
     const px = dy * e2z - dz * e2y, py = dz * e2x - dx * e2z, pz = dx * e2y - dy * e2x;
     const determinant = e1x * px + e1y * py + e1z * pz;
-    if (backfaceCulling ? determinant <= 0 : determinant === 0) return null;
+    // Written so a NaN determinant (non-finite input) also misses.
+    if (!(determinant > 0 || determinant < 0) || (backfaceCulling && determinant < 0)) return null;
     const inv = 1 / determinant;
     const tx = this.origin.x - a.x, ty = this.origin.y - a.y, tz = this.origin.z - a.z;
     const u = (tx * px + ty * py + tz * pz) * inv;

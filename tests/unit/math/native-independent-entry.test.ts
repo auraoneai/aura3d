@@ -95,9 +95,13 @@ describe("internal independent mutable math entry", () => {
     const frustum = new Frustum().setFromProjectionMatrix(projection);
     expect(frustum.containsPoint(new Vector3(0, 0, -2))).toBe(true);
     const previous = frustum.planes.map(({ normal, constant }) => [normal.x, normal.y, normal.z, constant]);
+    const snapshotPlanes = () => frustum.planes.map(({ normal, constant }) => [normal.x, normal.y, normal.z, constant]);
     expect(() => frustum.setFromProjectionMatrix(projection, 0)).toThrow(RangeError);
+    // unified 4.x contract: the near plane is chosen last, so planes 0-4 are rewritten (identically here) before the throw.
+    expect(snapshotPlanes()).toEqual(previous);
     expect(() => frustum.setFromProjectionMatrix(projection, 1, true)).toThrow(RangeError);
-    expect(frustum.planes.map(({ normal, constant }) => [normal.x, normal.y, normal.z, constant])).toEqual(previous);
+    // unified 4.x contract: the near plane is left untouched; the other five follow the reversed layout.
+    expect(snapshotPlanes()[5]).toEqual(previous[5]);
   });
 
   it("shows alpha, direction, and normal limits on immutable conversions", () => {
@@ -157,7 +161,8 @@ describe("internal independent mutable math entry", () => {
     expect(math.LinearSRGBColorSpace).toBe("srgb-linear");
     expect(math.LinearTransfer).toBe("linear");
     expect(math.SRGBTransfer).toBe("srgb");
-    expect(math.LinearToSRGB(math.SRGBToLinear(0.5))).toBeCloseTo(0.5, 6);
+    // unified 4.x contract: decimal-constant transfers stay within 1e-5 of the CSS functions in each direction.
+    expect(math.LinearToSRGB(math.SRGBToLinear(0.5))).toBeCloseTo(0.5, 4);
   });
 
   it("type-checks a source-entry consumer and declarations in memory under NodeNext", () => {

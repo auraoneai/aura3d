@@ -1,5 +1,8 @@
 import { Quaternion as ImmutableQuaternion } from "../../Quaternion.js";
 
+// Diagnostics go through the host console; declared locally so the package needs no DOM or Node type libraries.
+declare const console: { warn(...data: unknown[]): void };
+
 export interface QuaternionLike {
   readonly x: number;
   readonly y: number;
@@ -60,34 +63,30 @@ function product(a: QuaternionLike, b: QuaternionLike): Components {
   ];
 }
 
+/**
+ * Shortest-arc spherical interpolation of two quaternions. Inputs are assumed
+ * to be unit length; nearly parallel inputs (cosine at least 0.9995) use a
+ * normalized linear blend instead of the sine weights.
+ */
 function interpolate(a: QuaternionLike, b: QuaternionLike, t: number): Components {
-  const ax = a.x, ay = a.y, az = a.z, aw = a.w;
   let bx = b.x, by = b.y, bz = b.z, bw = b.w;
-  if (t === 0) return [ax, ay, az, aw];
-  if (t === 1) return [bx, by, bz, bw];
-
-  let cosine = ax * bx + ay * by + az * bz + aw * bw;
-  // Antipodal unit quaternions describe the same rotation. Choose the short arc.
+  let cosine = a.x * bx + a.y * by + a.z * bz + a.w * bw;
   if (cosine < 0) {
     cosine = -cosine;
     bx = -bx; by = -by; bz = -bz; bw = -bw;
   }
-  cosine = Math.max(-1, Math.min(1, cosine));
-  let left: number;
-  let right: number;
-  if (cosine > 1 - 1e-12) {
-    left = 1 - t;
-    right = t;
-    const x = left * ax + right * bx, y = left * ay + right * by;
-    const z = left * az + right * bz, w = left * aw + right * bw;
-    const length = Math.hypot(x, y, z, w);
-    return length === 0 ? [0, 0, 0, 1] : [x / length, y / length, z / length, w / length];
+  if (cosine < 0.9995) {
+    const angle = Math.acos(cosine);
+    const denominator = Math.sin(angle);
+    const left = Math.sin((1 - t) * angle) / denominator;
+    const right = Math.sin(t * angle) / denominator;
+    return [left * a.x + right * bx, left * a.y + right * by, left * a.z + right * bz, left * a.w + right * bw];
   }
-  const angle = Math.acos(cosine);
-  const denominator = Math.sin(angle);
-  left = Math.sin((1 - t) * angle) / denominator;
-  right = Math.sin(t * angle) / denominator;
-  return [left * ax + right * bx, left * ay + right * by, left * az + right * bz, left * aw + right * bw];
+  const left = 1 - t, right = t;
+  const x = left * a.x + right * bx, y = left * a.y + right * by;
+  const z = left * a.z + right * bz, w = left * a.w + right * bw;
+  const length = Math.sqrt(x * x + y * y + z * z + w * w);
+  return length === 0 ? [0, 0, 0, 1] : [x / length, y / length, z / length, w / length];
 }
 
 export class Quaternion implements QuaternionLike {
@@ -105,7 +104,8 @@ export class Quaternion implements QuaternionLike {
     src1: ArrayLike<number>, srcOffset1: number, t: number): void {
     const a = { x: src0[srcOffset0], y: src0[srcOffset0 + 1], z: src0[srcOffset0 + 2], w: src0[srcOffset0 + 3] };
     const b = { x: src1[srcOffset1], y: src1[srcOffset1 + 1], z: src1[srcOffset1 + 2], w: src1[srcOffset1 + 3] };
-    const values = interpolate(a, b, t);
+    const same = a.x === b.x && a.y === b.y && a.z === b.z && a.w === b.w;
+    const values: Components = same ? [a.x, a.y, a.z, a.w] : interpolate(a, b, t);
     for (let i = 0; i < 4; i++) dst[dstOffset + i] = values[i];
   }
 
@@ -144,7 +144,12 @@ export class Quaternion implements QuaternionLike {
   copy(q: QuaternionLike): this { return this.set(q.x, q.y, q.z, q.w); }
 
   setFromEuler(euler: EulerLike, update = true): this {
-    if (!validOrder(euler.order)) throw new RangeError(`Unsupported Euler order: ${euler.order}`);
+    if (!validOrder(euler.order)) {
+      // 4.x behavior: an unknown order is reported and leaves the quaternion unchanged.
+      console.warn(`Quaternion.setFromEuler: unknown Euler order: ${String(euler.order)}`);
+      if (update) this._onChangeCallback();
+      return this;
+    }
     const angles = { X: euler.x, Y: euler.y, Z: euler.z };
     let current: QuaternionLike = { x: 0, y: 0, z: 0, w: 1 };
     for (const axis of euler.order) {
@@ -205,14 +210,8 @@ export class Quaternion implements QuaternionLike {
   }
 
   angleTo(q: QuaternionLike): number {
-    const a = unit(this), b = unit(q);
-    if (!a || !b) return 0;
-    const sign = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3] < 0 ? -1 : 1;
-    // The chord formula avoids losing very small angles to acos rounding.
-    return 4 * Math.atan2(
-      Math.hypot(a[0] - sign * b[0], a[1] - sign * b[1], a[2] - sign * b[2], a[3] - sign * b[3]),
-      Math.hypot(a[0] + sign * b[0], a[1] + sign * b[1], a[2] + sign * b[2], a[3] + sign * b[3])
-    );
+    // Unit quaternions: the rotation angle is 2 acos |a . b|.
+    return 2 * Math.acos(Math.abs(Math.max(-1, Math.min(1, this.dot(q)))));
   }
 
   rotateTowards(q: QuaternionLike, step: number): this {
@@ -221,14 +220,8 @@ export class Quaternion implements QuaternionLike {
   }
 
   identity(): this { return this.set(0, 0, 0, 1); }
-  invert(): this {
-    const scale = Math.max(Math.abs(this._x), Math.abs(this._y), Math.abs(this._z), Math.abs(this._w));
-    if (scale === 0) return this.identity();
-    const x = this._x / scale, y = this._y / scale, z = this._z / scale, w = this._w / scale;
-    const factor = (1 / (x * x + y * y + z * z + w * w)) / scale;
-    const multiply = (value: number): number => value === 0 ? value : value * factor;
-    return this.set(multiply(-x), multiply(-y), multiply(-z), multiply(w));
-  }
+  /** The inverse of a unit quaternion, which is its conjugate (4.x behavior; non-unit input is not rescaled). */
+  invert(): this { return this.conjugate(); }
   conjugate(): this { return this.set(-this._x, -this._y, -this._z, this._w); }
   dot(q: QuaternionLike): number { return this._x * q.x + this._y * q.y + this._z * q.z + this._w * q.w; }
   lengthSq(): number { return this.dot(this); }
@@ -243,14 +236,15 @@ export class Quaternion implements QuaternionLike {
     return this.set(...product(a, b));
   }
   slerp(q: QuaternionLike, t: number): this {
-    if (t === 0) return this;
     return this.set(...interpolate(this, q, t));
   }
   slerpQuaternions(a: QuaternionLike, b: QuaternionLike, t: number): this {
+    // Interpolate from snapshots so either input may be the receiver.
     return this.set(...interpolate(a, b, t));
   }
   random(): this {
-    const u = Math.random(), v = 2 * Math.PI * Math.random(), w = 2 * Math.PI * Math.random();
+    // Draw order: first angle, second angle, then the radius split.
+    const v = 2 * Math.PI * Math.random(), w = 2 * Math.PI * Math.random(), u = Math.random();
     const a = Math.sqrt(1 - u), b = Math.sqrt(u);
     return this.set(a * Math.sin(v), a * Math.cos(v), b * Math.sin(w), b * Math.cos(w));
   }

@@ -60,16 +60,26 @@ describe("public math polygon utilities", () => {
       groups: { native: { name: string; functions: { name: string; signature: string }[] }[] };
     };
     const expected = contract.groups.native.find((unit) => unit.name === "ShapeUtils")!.functions;
-    const path = new URL("../../../packages/math/src/ShapeUtils.ts", import.meta.url);
+    // The public module only re-exports the independent implementation; the declarations live there. Its
+    // structural `PolygonPoint` input type is the supertype the frozen contract names `Vector2` (a Vector2
+    // satisfies it), so the contract is compared with that one name substituted.
+    const publicPath = new URL("../../../packages/math/src/ShapeUtils.ts", import.meta.url);
+    const publicSource = ts.createSourceFile(publicPath.pathname, readFileSync(publicPath, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    expect(publicSource.statements.every((statement) => ts.isExportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier!) && statement.moduleSpecifier.text === "./independent/PolygonTriangulation.js")).toBe(true);
+    const path = new URL("../../../packages/math/src/independent/PolygonTriangulation.ts", import.meta.url);
     const source = ts.createSourceFile(path.pathname, readFileSync(path, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
     const declarations = source.statements.filter((statement): statement is ts.FunctionDeclaration =>
       ts.isFunctionDeclaration(statement) && !!statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword));
     const actual = declarations.map((declaration) => ({
       name: declaration.name!.getText(source),
       signature: `(${declaration.parameters.map((parameter) =>
-        `${parameter.name.getText(source)}${parameter.questionToken || parameter.initializer ? "?" : ""}: ${parameter.type!.getText(source)}`).join(", ")}): ${declaration.type!.getText(source)}`,
+        `${parameter.name.getText(source)}${parameter.questionToken || parameter.initializer ? "?" : ""}: ${parameter.type?.getText(source) ?? "number"}`).join(", ")}): ${declaration.type!.getText(source)}`
+        .replace(/\bPolygonPoint\b/g, "Vector2"),
     }));
-    expect(actual).toEqual(expected);
+    // Declaration order in the implementation module is not part of the contract.
+    const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+    expect(actual.sort(byName)).toEqual([...expected].sort(byName));
     expect(publicContract.ShapeUtils.area).toBe(publicContract.shapeArea);
     expect(publicContract.ShapeUtils.isClockWise).toBe(publicContract.isClockWise);
     expect(publicContract.ShapeUtils.triangulateShape).toBe(publicContract.triangulateShape);

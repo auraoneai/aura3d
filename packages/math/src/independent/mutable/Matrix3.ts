@@ -1,5 +1,16 @@
 import { Matrix3 as ImmutableMatrix3 } from "../../Matrix3.js";
 
+// Diagnostics go through the host console; declared locally so the package needs no DOM or Node type libraries.
+declare const console: { warn(...data: unknown[]): void };
+
+const warnedDeprecations = new Set<string>();
+/** Report a deprecated method the first time it is used. */
+function warnDeprecatedOnce(message: string): void {
+  if (warnedDeprecations.has(message)) return;
+  warnedDeprecations.add(message);
+  console.warn(message);
+}
+
 /** A column-major 3×3 matrix acting on column vectors. */
 interface ElementsLike {
   readonly elements: ArrayLike<number>;
@@ -254,22 +265,30 @@ export class Matrix3 {
   /** Maps UVs by scaling and then rotating around the supplied center. */
   setUvTransform(tx: number, ty: number, sx: number, sy: number, rotation: number, cx: number, cy: number): this {
     const c = Math.cos(rotation), s = Math.sin(rotation);
-    const a = c * sx, b = -s * sy, d = s * sx, e = c * sy;
+    // M = T(center + offset) S(repeat) R(-rotation) T(-center), with the rotation negated as texture
+    // coordinates conventionally are.
+    const a = c * sx, b = s * sx, d = -s * sy, e = c * sy;
     return this.set(a, b, cx + tx - a * cx - b * cy, d, e, cy + ty - d * cx - e * cy, 0, 0, 1);
   }
 
-  /** Apply a 2D scale after the transform already in this matrix. */
+  /** Apply a 2D scale after the transform already in this matrix. Deprecated: use `makeScale`. */
   scale(sx: number, sy: number): this {
+    warnDeprecatedOnce("Matrix3.scale() is deprecated. Use makeScale() instead.");
     return this.premultiply(new Matrix3().makeScale(sx, sy));
   }
 
-  /** Apply a counterclockwise 2D rotation after the current transform. */
+  /**
+   * Apply a 2D rotation by `theta`, clockwise for positive angles (the angle is negated), after the
+   * current transform. Deprecated: use `makeRotation`.
+   */
   rotate(theta: number): this {
-    return this.premultiply(new Matrix3().makeRotation(theta));
+    warnDeprecatedOnce("Matrix3.rotate() is deprecated. Use makeRotation() instead.");
+    return this.premultiply(new Matrix3().makeRotation(-theta));
   }
 
-  /** Apply a 2D translation after the transform already in this matrix. */
+  /** Apply a 2D translation after the transform already in this matrix. Deprecated: use `makeTranslation`. */
   translate(tx: number, ty: number): this {
+    warnDeprecatedOnce("Matrix3.translate() is deprecated. Use makeTranslation() instead.");
     return this.premultiply(new Matrix3().makeTranslation(tx, ty));
   }
 

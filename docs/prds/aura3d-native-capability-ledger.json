@@ -98701,17 +98701,17 @@
           {
             "source": "packages/math/src/three/index.ts: reference-following mutable compatibility entry; replacementStatus third-party-licensed, owner WP-29 / WP-01 (math); not yet independently replaced; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
             "license": "MIT (three.js authors notice retained)",
-            "digest": "sha256:fe168076fb805d4e884eb1f3322a36e05cf39bfea5b8785b16f52de7777778a5"
+            "digest": "sha256:0868a2319cbc6ea74d0824f2ce00878c47a9503ecae65f973d4a8cd886a9ea0f"
           },
           {
             "source": "packages/math/src/ShapeUtils.ts: wrapper over independent/PolygonTriangulation.ts; replacementStatus independent, owner WP-29 (repair_math_triangulation); 2.0% token containment vs the 2de1ba18a vendored version; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
             "license": "MIT (Aura3D)",
-            "digest": "sha256:378adef06bdaf89021739e67719d0868e55767b9cfb1f6d2185e06df042d1e27"
+            "digest": "sha256:7e2a50432185677c83ee50a6464f1f5c702d69a41061de048780eb993d73988b"
           },
           {
             "source": "packages/math/src/ConvexHull.ts: rewritten hull; replacementStatus independent, owner WP-29 (repair_math_hull); 7.9% token containment vs the 2de1ba18a verbatim port, shared runs are the public 4.x face-graph declarations; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",
             "license": "MIT (Aura3D)",
-            "digest": "sha256:61f3e462a0a2627eab9be4a83d946ba4547af51e4b88451c2e470d04a5d311d9"
+            "digest": "sha256:344cd3d21767e66528150a5bf98d795dce82d432be189200cbdacf1a236e89e9"
           },
           {
             "source": "packages/math/src/OBB.ts: re-export of independent/OrientedBox.ts; replacementStatus independent, owner WP-29 (repair_math_obb); 5.9% token containment of OrientedBox.ts vs the 2de1ba18a port; reviewed 2026-11-02 (docs/prds/aura3d-native-provenance-record.json)",

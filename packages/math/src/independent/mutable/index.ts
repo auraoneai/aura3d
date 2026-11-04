@@ -1,12 +1,15 @@
 /**
- * Internal source entry for the independent mutable math candidates.
- * This entry is not a public package subpath or a compatibility guarantee.
+ * Source entry for the independent mutable math classes. The public
+ * `@aura3d/math/three` subpath re-exports it (packages/math/src/three/index.ts).
  *
  * Projection supports numeric WebGL/WebGPU clip-space identifiers and explicit
  * depth ranges through
  * `Matrix4.makePerspectiveForDepthRange`, `Matrix4.makeOrthographicForDepthRange`,
- * and `Frustum.setFromProjectionMatrixDepthRange`. Reversed depth exchanges the
- * near and far endpoints of the selected clip-space interval.
+ * and `Frustum.setFromProjectionMatrixDepthRange`. On those explicit entries,
+ * reversed depth exchanges the near and far endpoints of the selected clip-space
+ * interval. The numeric-identifier entries (`makePerspective`, `makeOrthographic`,
+ * `Frustum.setFromProjectionMatrix`) keep the 4.x convention: reversed depth maps
+ * near to 1 and far to 0 for either identifier.
  *
  * Mutable-to-immutable conversions have representation limits: Color drops
  * alpha on `fromImmutable` and `toImmutable` defaults alpha to 1; Ray conversion

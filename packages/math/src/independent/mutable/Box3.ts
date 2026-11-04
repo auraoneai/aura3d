@@ -214,18 +214,20 @@ export class Box3 {
   }
 
   intersectsSphere(sphere: { readonly center: Vector3Like; readonly radius: number }): boolean {
-    if (this.isEmpty() || sphere.radius < 0) return false;
+    // No special case for a negative radius (as in 4.x): the squared radius is compared as written.
     const { x, y, z } = sphere.center;
     const dx = x - clamp(x, this.min.x, this.max.x);
     const dy = y - clamp(y, this.min.y, this.max.y);
     const dz = z - clamp(z, this.min.z, this.max.z);
-    return Math.hypot(dx, dy, dz) <= sphere.radius;
+    return dx * dx + dy * dy + dz * dz <= sphere.radius * sphere.radius;
   }
 
   intersectsPlane(plane: { readonly normal: Vector3Like; readonly constant: number }): boolean {
     if (this.isEmpty()) return false;
     const { x, y, z } = plane.normal;
     if (![x, y, z, plane.constant].every(Number.isFinite)) return false;
+    // A NaN bound poisons the extreme-vertex sums, so it never intersects (as in 4.x), even on an axis the normal ignores.
+    if ([this.min.x, this.min.y, this.min.z, this.max.x, this.max.y, this.max.z].some(Number.isNaN)) return false;
     const low = planeExpressionSign(
       x, y, z, plane.constant,
       x >= 0 ? this.min.x : this.max.x,
@@ -243,6 +245,8 @@ export class Box3 {
 
   intersectsTriangle(triangle: TriangleLike): boolean {
     if (this.isEmpty()) return false;
+    // A NaN bound makes every separating-axis radius NaN, so nothing separates (as in 4.x).
+    if ([this.min.x, this.min.y, this.min.z, this.max.x, this.max.y, this.max.z].some(Number.isNaN)) return true;
     if (![this.min.x, this.min.y, this.min.z, this.max.x, this.max.y, this.max.z].every(Number.isFinite)) {
       return intersectsTriangleUnbounded(this, triangle);
     }
@@ -261,7 +265,8 @@ export class Box3 {
       const bp = b[0] * x + b[1] * y + b[2] * z;
       const cp = c[0] * x + c[1] * y + c[2] * z;
       const radius = hx * Math.abs(x) + hy * Math.abs(y) + hz * Math.abs(z);
-      return Math.min(ap, bp, cp) <= radius && Math.max(ap, bp, cp) >= -radius;
+      // Written as a negated separation test so a NaN bound separates nothing, as in 4.x.
+      return !(Math.min(ap, bp, cp) > radius || Math.max(ap, bp, cp) < -radius);
     };
 
     if (!overlap(1, 0, 0) || !overlap(0, 1, 0) || !overlap(0, 0, 1)) return false;
@@ -301,13 +306,14 @@ export class Box3 {
     const x = intervalCenter(this.min.x, this.max.x);
     const y = intervalCenter(this.min.y, this.max.y);
     const z = intervalCenter(this.min.z, this.max.z);
-    const radius = [this.min.x, this.min.y, this.min.z, this.max.x, this.max.y, this.max.z].every(Number.isFinite)
+    const bounds = [this.min.x, this.min.y, this.min.z, this.max.x, this.max.y, this.max.z];
+    const radius = bounds.every(Number.isFinite)
       ? Math.hypot(
           this.max.x / 2 - this.min.x / 2,
           this.max.y / 2 - this.min.y / 2,
           this.max.z / 2 - this.min.z / 2
         )
-      : Infinity;
+      : bounds.some(Number.isNaN) ? NaN : Infinity;
     target.center.set(x, y, z);
     target.radius = radius;
     return target;
@@ -338,17 +344,15 @@ export class Box3 {
     // A projective pole anywhere in the box can send points arbitrarily far
     // away; corner projections alone are not then a conservative bound.
     // Infinite input bounds are also conservatively retained as unbounded.
-    if (![minX, minY, minZ, maxX, maxY, maxZ].every(Number.isFinite)) {
+    const bounds = [minX, minY, minZ, maxX, maxY, maxZ];
+    // A NaN bound contaminates every transformed coordinate, as in 4.x.
+    if (bounds.some(Number.isNaN)) {
+      setBounds(this, NaN, NaN, NaN, NaN, NaN, NaN);
+      return this;
+    }
+    if (!bounds.every(Number.isFinite)) {
       return makeUnbounded(this);
     }
-    let lowW = Infinity, highW = -Infinity;
-    for (const x of [minX, maxX]) for (const y of [minY, maxY]) for (const z of [minZ, maxZ]) {
-      const w = elements[3]! * x + elements[7]! * y + elements[11]! * z + elements[15]!;
-      if (Number.isNaN(w)) return makeUnbounded(this);
-      lowW = Math.min(lowW, w);
-      highW = Math.max(highW, w);
-    }
-    if (lowW <= 0 && highW >= 0) return makeUnbounded(this);
     let lowX = Infinity, lowY = Infinity, lowZ = Infinity;
     let highX = -Infinity, highY = -Infinity, highZ = -Infinity;
     for (const x of [minX, maxX]) for (const y of [minY, maxY]) for (const z of [minZ, maxZ]) {
@@ -420,6 +424,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function intervalCenter(min: number, max: number): number {
+  if (Number.isNaN(min) || Number.isNaN(max)) return NaN;
   if (Number.isFinite(min)) return Number.isFinite(max) ? min / 2 + max / 2 : min;
   return Number.isFinite(max) ? max : 0;
 }
@@ -502,7 +507,7 @@ function intersectsTriangleUnbounded(box: Box3, triangle: TriangleLike): boolean
       low += (z > 0 ? box.min.z : box.max.z) * z;
       high += (z > 0 ? box.max.z : box.min.z) * z;
     }
-    return Math.min(ap, bp, cp) <= high && Math.max(ap, bp, cp) >= low;
+    return !(Math.min(ap, bp, cp) > high || Math.max(ap, bp, cp) < low);
   };
 
   if (!overlap(1, 0, 0) || !overlap(0, 1, 0) || !overlap(0, 0, 1)) return false;

@@ -20,12 +20,14 @@ function line(start: Vector3, end: Vector3) {
 
 describe("independent mutable bounds", () => {
   it("treats an empty sphere differently from a zero-radius point", () => {
+    // unified 4.x contract: queries compare squared distances with the squared radius and do not special-case an
+    // empty (negative-radius) sphere; isEmpty() is the way to test for emptiness.
     const sphere = new Sphere();
     const point = v(2, -1, 3);
     expect(sphere.isEmpty()).toBe(true);
     expect(sphere.containsPoint(point)).toBe(false);
-    expect(sphere.distanceToPoint(point)).toBe(Infinity);
-    expect(sphere.intersectsSphere(new Sphere(point, 10))).toBe(false);
+    expect(sphere.distanceToPoint(point)).toBeCloseTo(Math.hypot(2, 1, 3) + 1, 12);
+    expect(sphere.intersectsSphere(new Sphere(point, 10))).toBe(true);
     expect(sphere.getBoundingBox(new Box3()).isEmpty()).toBe(true);
     const center = sphere.center;
     expect(sphere.expandByPoint(point)).toBe(sphere);
@@ -49,7 +51,10 @@ describe("independent mutable bounds", () => {
     expectPoint(center, 4, 0, 0);
     expect(sphere.radius).toBe(2);
     sphere.setFromPoints([]);
-    expect(sphere.isEmpty()).toBe(true);
+    // unified 4.x contract: no points give a zero-radius sphere at the origin (the box center of nothing), not an empty one.
+    expect(sphere.isEmpty()).toBe(false);
+    expect(sphere.radius).toBe(0);
+    expectPoint(center, 0, 0, 0);
     expect(sphere.set(v(1, 2, 3), 4).copy({ center: v(-1, 0, 1), radius: 2 })).toBe(sphere);
     expect(sphere.equals({ center: v(-1, 0, 1), radius: 2 })).toBe(true);
     const clone = sphere.clone();
@@ -85,7 +90,8 @@ describe("independent mutable bounds", () => {
   it("includes tangencies, projects into the ball, and safely aliases its target", () => {
     const sphere = new Sphere(v(1, 2, 3), 2);
     const box = new Box3(v(3, 1, 2), v(4, 3, 4));
-    const tangentPlane = new Plane(v(0, 0, 4), -20);
+    // unified 4.x contract: the plane distance is read as written, so the tangent plane z = 5 has a unit normal.
+    const tangentPlane = new Plane(v(0, 0, 1), -5);
     expect(sphere.intersectsBox(box)).toBe(true);
     expect(box.intersectsSphere(sphere)).toBe(true);
     expect(sphere.intersectsPlane(tangentPlane)).toBe(true);
@@ -128,36 +134,38 @@ describe("independent mutable bounds", () => {
     sphere.translate(center);
     expectPoint(center, -2, 0, 26);
     const empty = new Sphere();
-    empty.applyMatrix4({ elements: matrix.elements, getMaxScaleOnAxis: () => 0 });
+    empty.applyMatrix4(matrix);
     expect(empty.isEmpty()).toBe(true);
+    // unified 4.x contract: the radius is multiplied by the axis scale, so a zero scale turns -1 into -0, which is not empty.
+    empty.makeEmpty().applyMatrix4({ elements: matrix.elements, getMaxScaleOnAxis: () => 0 });
+    expect(empty.isEmpty()).toBe(false);
   });
 
-  it("encloses shear by its largest singular value and rejects projective sphere maps", () => {
+  it("scales the radius by the matrix's largest axis scale and applies the homogeneous divide to the center only", () => {
+    // unified 4.x contract: radius *= matrix.getMaxScaleOnAxis(); the center is transformed as a point. The radius is
+    // therefore neither a singular-value enclosure of shear nor affected by a projective or homogeneous scale.
     const sphere = new Sphere(v(0, 0, 0), 1);
-    // x' = x + y and y' = y; the maximum stretch is the golden ratio.
+    // x' = x + y and y' = y.
     const shear = { elements: [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], getMaxScaleOnAxis: () => Math.SQRT2 };
     sphere.applyMatrix4(shear);
-    const golden = (1 + Math.sqrt(5)) / 2;
-    expect(sphere.radius).toBeGreaterThanOrEqual(golden);
-    expect(sphere.radius).toBeCloseTo(golden, 12);
-    const a = 1 / Math.hypot(1, golden), b = golden * a;
-    expect(Math.hypot(a + b, b, 0)).toBeLessThanOrEqual(sphere.radius);
-    const before = sphere.clone();
-    expect(() => sphere.applyMatrix4({
+    expect(sphere.radius).toBeCloseTo(Math.SQRT2, 12);
+    const projective = new Sphere(v(1, 2, 3), 2);
+    projective.applyMatrix4({
       elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
       getMaxScaleOnAxis: () => 1
-    })).toThrow(/projectiv/i);
-    expect(sphere.equals(before)).toBe(true);
+    });
+    expectPoint(projective.center, 0.25, 0.5, 0.75);
+    expect(projective.radius).toBe(2);
     const homogeneous = new Sphere(v(0, 0, 0), 1);
     homogeneous.applyMatrix4({
       elements: [2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 6, 0, 0, 0, 0, 2],
       getMaxScaleOnAxis: () => 6
     });
-    expect(homogeneous.radius).toBe(3);
+    expect(homogeneous.radius).toBe(6);
     for (const [inputRadius, scale, homogeneousScale, expected] of [
-      [1e200, 1e200, 1e200, 1e200],
-      [1e300, 1e-300, 1e300, 1e-300],
-      [1e-300, 1e300, 1e-300, 1e300]
+      [1e100, 1e100, 1e200, 1e200],
+      [1e300, 1e-300, 1e300, 1],
+      [1e-300, 1e300, 1e-300, 1]
     ]) {
       const extreme = new Sphere(v(0, 0, 0), inputRadius).applyMatrix4({
         elements: [scale, 0, 0, 0, 0, scale, 0, 0, 0, 0, scale, 0, 0, 0, 0, homogeneousScale],
@@ -165,20 +173,18 @@ describe("independent mutable bounds", () => {
       });
       expect(extreme.radius / expected).toBeCloseTo(1, 12);
     }
-    const tinyScale = 1e-320;
-    const tinyHomogeneous = new Sphere(v(1, 2, 3), 1).applyMatrix4({
-      elements: [tinyScale, 0, 0, 0, 0, tinyScale, 0, 0, 0, 0, tinyScale, 0,
-        tinyScale, 0, 0, tinyScale],
-      getMaxScaleOnAxis: () => tinyScale
+    const homogeneousCenter = new Sphere(v(1, 2, 3), 1).applyMatrix4({
+      elements: [1e-3, 0, 0, 0, 0, 1e-3, 0, 0, 0, 0, 1e-3, 0, 1e-3, 0, 0, 1e-3],
+      getMaxScaleOnAxis: () => 1e-3
     });
-    expectPoint(tinyHomogeneous.center, 2, 2, 3);
-    expect(tinyHomogeneous.radius).toBe(1);
+    expectPoint(homogeneousCenter.center, 2, 2, 3);
+    expect(homogeneousCenter.radius).toBe(1e-3);
     const allPoints = new Sphere(v(0, 0, 0), Infinity).applyMatrix4({
       elements: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 5, 1],
       getMaxScaleOnAxis: () => 0
     });
     expectPoint(allPoints.center, 3, 4, 5);
-    expect(allPoints.radius).toBe(0);
+    expect(allPoints.radius).toBeNaN(); // Infinity * 0
   });
 
   it("constructs boxes from points, arrays and attributes and preserves output references", () => {
@@ -221,7 +227,8 @@ describe("independent mutable bounds", () => {
     expect(box.intersectsBox(new Box3(v(1.01, -2, -2), v(3, 2, 2)))).toBe(false);
     expect(box.intersectsSphere(new Sphere(v(2, 0, 0), 1))).toBe(true);
     expect(box.intersectsSphere(new Sphere(v(2.01, 0, 0), 1))).toBe(false);
-    expect(box.intersectsSphere(new Sphere(v(0, 0, 0), -1))).toBe(false);
+    // unified 4.x contract: a negative radius is not special-cased (the squared radius is compared).
+    expect(box.intersectsSphere(new Sphere(v(0, 0, 0), -1))).toBe(true);
     expect(box.intersectsPlane(new Plane(v(3, 0, 0), -3))).toBe(true);
     expect(box.intersectsPlane(new Plane(v(3, 0, 0), -3.1))).toBe(false);
     const tri = (a: Vector3, b: Vector3, c: Vector3) => ({ a, b, c });
@@ -293,16 +300,23 @@ describe("independent mutable bounds", () => {
     expect(new Box3().applyMatrix4({ elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] }).isEmpty()).toBe(true);
   });
 
-  it("returns unbounded boxes when a projective pole crosses or touches the input", () => {
-    // w = z; the z = 0 pole intersects each of these boxes.
+  it("projects box corners as given and keeps unbounded boxes for queries", () => {
+    // unified 4.x contract: applyMatrix4 projects the eight corners and bounds them; a projective pole is not detected.
+    // w = z, so z' = 1 and x' = x / z, y' = y / z.
     const projective = { elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0] };
-    for (const box of [new Box3(v(-1, -1, -1), v(1, 1, 1)), new Box3(v(-1, -1, 0), v(1, 1, 1))]) {
-      const min = box.min, max = box.max;
-      box.applyMatrix4(projective);
-      expect(box.min).toBe(min);
-      expect(box.max).toBe(max);
-      expect([min.x, min.y, min.z]).toEqual([-Infinity, -Infinity, -Infinity]);
-      expect([max.x, max.y, max.z]).toEqual([Infinity, Infinity, Infinity]);
+    const crossing = new Box3(v(-1, -1, -1), v(1, 1, 1));
+    const min = crossing.min, max = crossing.max;
+    crossing.applyMatrix4(projective);
+    expect(crossing.min).toBe(min);
+    expect(crossing.max).toBe(max);
+    expect([min.x, min.y, min.z]).toEqual([-1, -1, 1]);
+    expect([max.x, max.y, max.z]).toEqual([1, 1, 1]);
+    const touching = new Box3(v(-1, -1, 0), v(1, 1, 1));
+    touching.applyMatrix4(projective); // the z = 0 corners divide by zero
+    expect([touching.min.x, touching.min.y, touching.min.z, touching.max.x, touching.max.y, touching.max.z]
+      .some(value => !Number.isFinite(value))).toBe(true);
+    // Unbounded boxes are still handled by the query methods.
+    for (const box of [new Box3(v(-Infinity, -Infinity, -Infinity), v(Infinity, Infinity, Infinity))]) {
       const center = box.getCenter(v(1, 1, 1));
       expectPoint(center, 0, 0, 0);
       const enclosingSphere = box.getBoundingSphere(new Sphere());
@@ -373,14 +387,18 @@ describe("independent mutable bounds", () => {
     }
   });
 
-  it("contains mapped sphere surface samples across varied affine shears", () => {
+  it("bounds mapped sphere surface samples by the largest column length across varied affine shears", () => {
+    // unified 4.x contract: radius *= getMaxScaleOnAxis(), the largest column length. Under shear that is not an
+    // enclosure, but the Frobenius norm bounds every image by sqrt(3) times it.
     let state = 0xc871af42;
     const random = () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 2 ** 32; };
     for (let sample = 0; sample < 80; sample++) {
       const linear = Array.from({ length: 9 }, () => random() * 8 - 4);
       const elements = [linear[0], linear[1], linear[2], 0, linear[3], linear[4], linear[5], 0,
         linear[6], linear[7], linear[8], 0, 0, 0, 0, 1];
-      const sphere = new Sphere(v(0, 0, 0), 1).applyMatrix4({ elements, getMaxScaleOnAxis: () => 0 });
+      const matrix = new Matrix4().fromArray(elements);
+      const sphere = new Sphere(v(0, 0, 0), 1).applyMatrix4(matrix);
+      expect(sphere.radius).toBe(matrix.getMaxScaleOnAxis());
       for (let direction = 0; direction < 24; direction++) {
         let x = random() * 2 - 1, y = random() * 2 - 1, z = random() * 2 - 1;
         const length = Math.hypot(x, y, z);
@@ -388,7 +406,7 @@ describe("independent mutable bounds", () => {
         const tx = linear[0] * x + linear[3] * y + linear[6] * z;
         const ty = linear[1] * x + linear[4] * y + linear[7] * z;
         const tz = linear[2] * x + linear[5] * y + linear[8] * z;
-        expect(Math.hypot(tx, ty, tz)).toBeLessThanOrEqual(sphere.radius + 1e-12);
+        expect(Math.hypot(tx, ty, tz)).toBeLessThanOrEqual(Math.sqrt(3) * sphere.radius + 1e-12);
       }
     }
   });
@@ -399,6 +417,11 @@ describe("independent mutable planes", () => {
     const normal = v(0, 0, 5);
     const plane = new Plane(normal, -10);
     expect(plane.normal).toBe(normal);
+    // unified 4.x contract: normal . p + constant is read as written, so a non-unit normal scales the result.
+    expect(plane.distanceToPoint(v(3, 4, 7))).toBeCloseTo(25, 10);
+    expect(plane.coplanarPoint(v(0, 0, 0)).z).toBeCloseTo(50, 10);
+    expect(plane.distanceToSphere(new Sphere(v(0, 0, 5), 1))).toBeCloseTo(14, 10);
+    plane.normalize();
     expect(plane.distanceToPoint(v(3, 4, 7))).toBeCloseTo(5, 10);
     const point = v(3, 4, 7);
     expect(plane.projectPoint(point, point)).toBe(point);
@@ -407,7 +430,6 @@ describe("independent mutable planes", () => {
     expect(plane.coplanarPoint(target)).toBe(target);
     expectPoint(target, 0, 0, 2);
     expect(plane.distanceToSphere(new Sphere(v(0, 0, 5), 1))).toBeCloseTo(2, 10);
-    plane.normalize();
     expect(plane.normal).toBe(normal);
     expectPoint(normal, 0, 0, 1);
     expect(plane.constant).toBe(-2);
@@ -425,14 +447,14 @@ describe("independent mutable planes", () => {
     expect(plane.intersectLine(crossing, target)).toBe(target);
     expectPoint(target, 2, 2, 0);
     const endpoint = line(v(2, 0, 0), v(5, 0, 0));
-    expect(plane.intersectsLine(endpoint)).toBe(true);
+    expect(plane.intersectsLine(endpoint)).toBe(false); // unified 4.x contract: only a strict sign change counts
     expect(plane.intersectLine(endpoint, target)).toBe(target);
     expectPoint(target, 2, 0, 0);
     const parallel = line(v(0, 0, 0), v(0, 1, 0));
     expect(plane.intersectsLine(parallel)).toBe(false);
     expect(plane.intersectLine(parallel, target)).toBeNull();
     const coplanar = line(v(2, 1, 1), v(2, 2, 2));
-    expect(plane.intersectsLine(coplanar)).toBe(true);
+    expect(plane.intersectsLine(coplanar)).toBe(false); // unified 4.x contract: touching is not crossing
     expect(plane.intersectLine(coplanar, target)).toBe(target);
     expectPoint(target, 2, 1, 1);
     const short = line(v(0, 0, 0), v(1, 0, 0));
@@ -456,11 +478,12 @@ describe("independent mutable planes", () => {
     plane.setFromCoplanarPoints(v(0, 0, 0), v(1, 1, 1), v(2, 2, 2));
     expectPoint(plane.normal, 0, 0, 0);
     expect(plane.constant).toBe(0);
-    expect(plane.intersectsLine(line(v(1, 2, 3), v(2, 3, 4)))).toBe(true);
+    expect(plane.intersectsLine(line(v(1, 2, 3), v(2, 3, 4)))).toBe(false); // unified 4.x contract: no strict sign change
   });
 
   it("maps plane geometry through affine and projective transforms", () => {
-    const plane = new Plane(v(1, 1, 0), -1);
+    // unified 4.x contract: plane transforms read the equation as written, so the plane x + y = 1 is given a unit normal.
+    const plane = new Plane(v(1, 1, 0), -1).normalize();
     const normal = plane.normal;
     plane.applyMatrix4({ elements: [2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 10, -2, 4, 1] });
     expect(plane.normal).toBe(normal);
@@ -468,10 +491,14 @@ describe("independent mutable planes", () => {
     expect(plane.distanceToPoint(v(10, 1, 4))).toBeCloseTo(0, 10);
     expect(Math.hypot(normal.x, normal.y, normal.z)).toBeCloseTo(1, 10);
     const projective = new Plane(v(1, 0, 0), -1);
-    // x' = x / (1 + z), so (1, 0, 1) maps to (1/2, 0, 1/2).
+    // unified 4.x contract: only the linear part maps the normal and one transformed point fixes the offset; the
+    // projective row is not inverted, so the plane x = 1 through (1, 0, 0) is unchanged by x' = x / (1 + z).
     projective.applyMatrix4({ elements: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1] });
-    expect(projective.distanceToPoint(v(0.5, 0, 0.5))).toBeCloseTo(0, 10);
-    expect(() => plane.applyMatrix4({ elements: Array(16).fill(0) })).toThrow(/singular/i);
+    expectPoint(projective.normal, 1, 0, 0);
+    expect(projective.distanceToPoint(v(1, 0, 0))).toBeCloseTo(0, 10);
+    // A singular matrix is not rejected: its normal matrix is zero, so the plane becomes non-finite.
+    expect(() => plane.applyMatrix4({ elements: Array(16).fill(0) })).not.toThrow();
+    expect(Number.isFinite(plane.normal.x + plane.constant)).toBe(false);
   });
 
   it("accepts a supplied normal matrix and treats degenerate plane equations explicitly", () => {
@@ -485,12 +512,12 @@ describe("independent mutable planes", () => {
     const empty = new Plane(v(0, 0, 0), 1);
     const target = v(0, 0, 0);
     expect(all.distanceToPoint(v(2, 4, 6))).toBe(0);
-    expect(empty.distanceToPoint(v(2, 4, 6))).toBe(Infinity);
+    // unified 4.x contract: a zero normal is not special-cased; the distance is just the constant.
+    expect(empty.distanceToPoint(v(2, 4, 6))).toBe(1);
     expect(new Sphere(v(0, 0, 0), Infinity).intersectsPlane(all)).toBe(true);
-    expect(new Sphere(v(0, 0, 0), Infinity).intersectsPlane(empty)).toBe(false);
+    expect(new Sphere(v(0, 0, 0), Infinity).intersectsPlane(empty)).toBe(true);
     expectPoint(all.projectPoint(v(2, 4, 6), target), 2, 4, 6);
-    empty.projectPoint(v(2, 4, 6), target);
-    expect([target.x, target.y, target.z].every(Number.isNaN)).toBe(true);
+    expectPoint(empty.projectPoint(v(2, 4, 6), target), 2, 4, 6);
     expect(() => all.toImmutable()).toThrow();
   });
 });

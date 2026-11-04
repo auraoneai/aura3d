@@ -219,9 +219,10 @@ describe("independent mutable Vector3", () => {
       .mockReturnValueOnce(0.5).mockReturnValueOnce(0.25).mockReturnValueOnce(1).mockReturnValueOnce(0);
     expect(new Vector3().random().toArray()).toEqual([0.1, 0.2, 0.3]);
     const equator = new Vector3().randomDirection();
-    closeVector(equator, [0, 1, 0]);
+    // unified 4.x contract: azimuth is drawn first, then height, and height is the y component.
+    closeVector(equator, [-Math.sqrt(3) / 2, -0.5, 0]);
     expect(equator.length()).toBeCloseTo(1, 12);
-    closeVector(new Vector3().randomDirection(), [0, 0, 1]);
+    closeVector(new Vector3().randomDirection(), [0, -1, 0]);
     expect(random).toHaveBeenCalledTimes(7);
   });
 

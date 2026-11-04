@@ -73,9 +73,12 @@ describe("independent mutable ray geometry", () => {
     expect(stationary.distanceSqToSegment(v(0, 0, 0), v(2, 0, 0), onRay, onSegment)).toBeCloseTo(1);
     expectVector(onRay, [1, 1, 0]);
     expectVector(onSegment, [1, 0, 0]);
-    expect(ray.distanceSqToSegment(v(1, 1e-8, 0), v(3, -1e-8, 0), onRay, onSegment)).toBeLessThan(1e-30);
-    expectVector(onRay, [2, 0, 0]);
-    expectVector(onSegment, [2, 0, 0]);
+    // unified 4.x contract: a segment whose axis rounds to exactly parallel with the ray takes the parallel branch,
+    // which reports the segment end lying farthest along the ray (here (3, -1e-8, 0), 1e-8 off the ray), not the
+    // crossing.
+    expect(ray.distanceSqToSegment(v(1, 1e-8, 0), v(3, -1e-8, 0), onRay, onSegment)).toBeCloseTo(1e-16, 20);
+    expectVector(onRay, [3, 0, 0]);
+    expectVector(onSegment, [3, -1e-8, 0]);
   });
 
   it("finds sphere tangencies and exits, preserving targets on misses", () => {
@@ -229,11 +232,11 @@ describe("independent mutable triangle geometry", () => {
     expectVector(t.closestPointToPoint(v(3, 2, 0), out), [2.4, 0.8, 0]);
   });
 
-  it("returns null without changing targets for degenerate barycentrics and finds closest segments", () => {
+  it("returns null and zeroes the target for degenerate barycentrics and finds closest segments", () => {
     const t = new Triangle(v(0, 0, 0), v(2, 0, 0), v(5, 0, 0)), out = v(7, 8, 9);
     expect(t.getArea()).toBe(0);
     expect(t.getBarycoord(v(1, 1, 0), out)).toBeNull();
-    expectVector(out, [7, 8, 9]);
+    expectVector(out, [0, 0, 0]); // unified 4.x contract: a degenerate triangle zeroes the target
     expect(t.containsPoint(v(1, 0, 0))).toBe(false);
     expectVector(t.closestPointToPoint(v(4, 3, 0), out), [4, 0, 0]);
     expectVector(t.getNormal(out), [0, 0, 0]);
@@ -257,7 +260,7 @@ describe("independent mutable triangle geometry", () => {
     const degenerate = new Triangle();
     out3.set(7, 8, 9);
     expect(degenerate.getInterpolation(v(0, 0, 0), first, second, third, out3)).toBeNull();
-    expectVector(out3, [7, 8, 9]);
+    expectVector(out3, [0, 0, 0]); // unified 4.x contract: the target is cleared when there are no weights
   });
 
   it("loads indexed vertices, clones, and delegates box intersection", () => {

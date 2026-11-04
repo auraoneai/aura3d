@@ -67,7 +67,7 @@ export class Vector3 {
       case 0: this.x = value; break;
       case 1: this.y = value; break;
       case 2: this.z = value; break;
-      default: throw new RangeError(`Vector3 component index out of range: ${index}`);
+      default: throw new RangeError(`THREE.Vector3: index is out of range: ${index}`);
     }
     return this;
   }
@@ -77,7 +77,7 @@ export class Vector3 {
       case 0: return this.x;
       case 1: return this.y;
       case 2: return this.z;
-      default: throw new RangeError(`Vector3 component index out of range: ${index}`);
+      default: throw new RangeError(`THREE.Vector3: index is out of range: ${index}`);
     }
   }
 
@@ -141,14 +141,14 @@ export class Vector3 {
   applyQuaternion(q: { readonly x: number; readonly y: number; readonly z: number; readonly w: number }): this {
     const { x, y, z } = this;
     const { x: qx, y: qy, z: qz, w: qw } = q;
-    // Compute q * (0, v) * conjugate(q); unit q preserves lengths.
-    const ix = qw * x + qy * z - qz * y;
-    const iy = qw * y + qz * x - qx * z;
-    const iz = qw * z + qx * y - qy * x;
-    const iw = -qx * x - qy * y - qz * z;
-    return this.set(ix * qw - iw * qx - iy * qz + iz * qy,
-      iy * qw - iw * qy - iz * qx + ix * qz,
-      iz * qw - iw * qz - ix * qy + iy * qx);
+    // v' = v + w t + u x t with u = (qx, qy, qz) and t = 2 (u x v). For a unit q this is q v conj(q);
+    // a non-unit q is applied as written, as in 4.x.
+    const tx = 2 * (qy * z - qz * y);
+    const ty = 2 * (qz * x - qx * z);
+    const tz = 2 * (qx * y - qy * x);
+    return this.set(x + qw * tx + (qy * tz - qz * ty),
+      y + qw * ty + (qz * tx - qx * tz),
+      z + qw * tz + (qx * ty - qy * tx));
   }
 
   project(camera: ProjectionCameraLike): this {
@@ -193,6 +193,8 @@ export class Vector3 {
   length(): number { return Math.hypot(this.x, this.y, this.z); }
   manhattanLength(): number { return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z); }
   normalize(): this {
+    // A zero vector has no direction; a vector with a NaN component keeps its components (4.x `length || 1`).
+    if (Number.isNaN(this.x + this.y + this.z)) return this;
     const unit = unitComponents(this.x, this.y, this.z);
     return unit ? this.set(unit[0], unit[1], unit[2]) : this;
   }
@@ -228,6 +230,12 @@ export class Vector3 {
     return this.set(this.x - factor * normal.x, this.y - factor * normal.y, this.z - factor * normal.z);
   }
   angleTo(v: Vector3Like): number {
+    const denominator = Math.sqrt(this.lengthSq() * (v.x * v.x + v.y * v.y + v.z * v.z));
+    if (denominator !== 0 && Number.isFinite(denominator)) {
+      return Math.acos(Math.max(-1, Math.min(1, this.dot(v) / denominator)));
+    }
+    if (Number.isNaN(this.x + this.y + this.z + v.x + v.y + v.z)) return NaN;
+    // Zero, underflowed or overflowed squared lengths: compare the scaled directions instead.
     const a = unitComponents(this.x, this.y, this.z), b = unitComponents(v.x, v.y, v.z);
     if (!a || !b) return Math.PI / 2;
     return Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
@@ -273,9 +281,11 @@ export class Vector3 {
   }
   random(): this { return this.set(Math.random(), Math.random(), Math.random()); }
   randomDirection(): this {
-    const z = 2 * Math.random() - 1, angle = 2 * Math.PI * Math.random();
+    // Draw order: azimuth first, then height (uniform on the sphere).
+    const angle = 2 * Math.PI * Math.random();
+    const z = 2 * Math.random() - 1;
     const radius = Math.sqrt(Math.max(0, 1 - z * z));
-    return this.set(radius * Math.cos(angle), radius * Math.sin(angle), z);
+    return this.set(radius * Math.cos(angle), z, radius * Math.sin(angle));
   }
   *[Symbol.iterator](): Generator<number, void, undefined> {
     yield this.x; yield this.y; yield this.z;

@@ -1,6 +1,9 @@
 import { Color as ImmutableColor } from "../../Color.js";
 import { Matrix3 } from "./Matrix3.js";
 
+// Diagnostics go through the host console; declared locally so the package needs no DOM or Node type libraries.
+declare const console: { warn(...data: unknown[]): void };
+
 export interface HSL { h: number; s: number; l: number }
 export interface RGB { r: number; g: number; b: number }
 export interface ColorLike { readonly r: number; readonly g: number; readonly b: number }
@@ -176,22 +179,24 @@ export const COLOR_KEYWORDS: Readonly<Record<string, number>> = {
   yellowgreen: 0x9acd32,
 };
 
-// W3C CSS Color 4, section 10 and Appendix B: sRGB's transfer functions
-// extend by reflection for negative, out-of-gamut channel values.
-// https://www.w3.org/TR/2026/CRD-css-color-4-20261029/#predefined-sRGB
-// https://www.w3.org/TR/2026/CRD-css-color-4-20261029/#color-conversion-code
+// sRGB transfer functions (W3C CSS Color 4 section 10.2), in the 4.x compatibility form: the spec
+// constants 1/12.92, 1/1.055 and 0.055/1.055 are rounded to 10 decimal places and the encode exponent
+// 1/2.4 is truncated to 5 places, the breakpoints are strict `<`, and negative channels stay on the
+// linear segment (no sign reflection). The largest deviation from the exact CSS functions on [0, 1]
+// is below 1e-5, less than one 8-bit step.
+// https://www.w3.org/TR/css-color-4/#predefined-sRGB
+const roundTo = (value: number, places: number): number => Math.round(value * 10 ** places) / 10 ** places;
+const DECODE_LINEAR_SLOPE = roundTo(1 / 12.92, 10);
+const DECODE_SCALE = roundTo(1 / 1.055, 10);
+const DECODE_OFFSET = roundTo(0.055 / 1.055, 10);
+const ENCODE_EXPONENT = Math.trunc((1 / 2.4) * 1e5) / 1e5;
+
 export function SRGBToLinear(value: number): number {
-  const magnitude = Math.abs(value);
-  return magnitude <= 0.04045
-    ? value / 12.92
-    : Math.sign(value) * ((magnitude + 0.055) / 1.055) ** 2.4;
+  return value < 0.04045 ? value * DECODE_LINEAR_SLOPE : Math.pow(value * DECODE_SCALE + DECODE_OFFSET, 2.4);
 }
 
 export function LinearToSRGB(value: number): number {
-  const magnitude = Math.abs(value);
-  return magnitude <= 0.0031308
-    ? value * 12.92
-    : Math.sign(value) * (1.055 * magnitude ** (1 / 2.4) - 0.055);
+  return value < 0.0031308 ? value * 12.92 : 1.055 * Math.pow(value, ENCODE_EXPONENT) - 0.055;
 }
 
 // CIE XYZ D65 matrices and chromaticities specified in CSS Color 4 Appendix B.
@@ -208,7 +213,8 @@ const fromXYZ = new Matrix3(
 );
 const primaries = [0.64, 0.33, 0.3, 0.6, 0.15, 0.06] as const;
 const whitePoint = [0.3127, 0.329] as const;
-const luminance = [87098 / 409605, 175762 / 245763, 12673 / 175545] as const;
+// Rec. 709 luminance weights in the four-decimal form used by 4.x.
+const luminance = [0.2126, 0.7152, 0.0722] as const;
 
 function definition(name: string, spaces: Record<string, ColorSpaceDefinition>): ColorSpaceDefinition {
   if (!Object.hasOwn(spaces, name)) throw new RangeError(`Unknown color space: ${name}`);
@@ -367,10 +373,12 @@ export class Color {
   toImmutable(alpha = 1): ImmutableColor { return new ImmutableColor(this.r, this.g, this.b, alpha); }
 
   set(r: ColorLike | number | string, g?: number, b?: number): this {
-    if (typeof r === "number") {
-      return g !== undefined && b !== undefined ? this.setRGB(r, g, b) : this.setHex(r);
+    // A lone argument is a color, hex number or style; any second or third argument makes it a channel triple.
+    if (g === undefined && b === undefined) {
+      if (typeof r === "number") return this.setHex(r);
+      return typeof r === "string" ? this.setStyle(r) : this.copy(r);
     }
-    return typeof r === "string" ? this.setStyle(r) : this.copy(r);
+    return this.setRGB(r as number, g as number, b as number);
   }
 
   setScalar(scalar: number): this { this.r = scalar; this.g = scalar; this.b = scalar; return this; }
@@ -395,10 +403,16 @@ export class Color {
 
   setStyle(style: string, colorSpace = SRGBColorSpace): this {
     const text = style.trim();
-    const hex = /^#([\da-f]{3,4}|[\da-f]{6}|[\da-f]{8})$/i.exec(text);
+    if (text === "") return this;
+    const hex = /^#([\da-f]+)$/i.exec(text);
     if (hex) {
       const digits = hex[1];
-      const rgb = digits.length <= 4 ? digits.slice(0, 3).split("").map(char => char + char).join("") : digits.slice(0, 6);
+      if (digits.length !== 3 && digits.length !== 6) {
+        // Only #rgb and #rrggbb are understood; 4- and 8-digit forms would carry alpha, which is not stored.
+        console.warn(`Color.setStyle: invalid hex color ${style}`);
+        return this;
+      }
+      const rgb = digits.length === 3 ? digits.split("").map(char => char + char).join("") : digits;
       return this.setHex(Number.parseInt(rgb, 16), colorSpace);
     }
     const functional = /^([a-z]+)\(([\s\S]*)\)$/i.exec(text);
@@ -413,9 +427,14 @@ export class Color {
       body = prefix[2];
       if (body.includes(",")) return this;
     }
-    if (!["rgb", "rgba", "hsl", "hsla", "color"].includes(kind)) return this;
+    if (!["rgb", "rgba", "hsl", "hsla", "color"].includes(kind)) {
+      console.warn(`Color.setStyle: unknown color model ${style}`);
+      return this;
+    }
     const parts = colorArguments(body);
     if (!parts || (parts.length === 4 && numberToken(parts[3]) === undefined)) return this;
+    // Alpha is not stored by this class; say so when it would have mattered.
+    if (parts.length === 4 && numberToken(parts[3])! < 1) console.warn(`Color.setStyle: the alpha of ${style} is ignored`);
     const legacy = body.includes(",");
     if (legacy && parts.some(part => part.toLowerCase() === "none")) return this;
     if (kind === "hsl" || kind === "hsla") {
@@ -438,7 +457,9 @@ export class Color {
 
   setColorName(name: string, colorSpace = SRGBColorSpace): this {
     const key = name.trim().toLowerCase();
-    return Object.hasOwn(Color.NAMES, key) ? this.setHex(Color.NAMES[key], colorSpace) : this;
+    if (Object.hasOwn(Color.NAMES, key)) return this.setHex(Color.NAMES[key], colorSpace);
+    console.warn(`Color.setColorName: unknown color name ${name}`);
+    return this;
   }
 
   clone(): this {
@@ -458,8 +479,9 @@ export class Color {
 
   getHex(colorSpace = SRGBColorSpace): number {
     const color = ColorManagement.workingToColorSpace(this.clone(), colorSpace);
-    const r = Math.round(clamp01(color.r) * 255), g = Math.round(clamp01(color.g) * 255), b = Math.round(clamp01(color.b) * 255);
-    return (r << 16) | (g << 8) | b;
+    const byte = (channel: number): number => Math.round(Math.min(255, Math.max(0, channel * 255)));
+    // Arithmetic rather than bit operations: a NaN channel makes the result NaN, as in 4.x.
+    return byte(color.r) * 65536 + byte(color.g) * 256 + byte(color.b);
   }
   getHexString(colorSpace = SRGBColorSpace): string { return this.getHex(colorSpace).toString(16).padStart(6, "0"); }
 
@@ -469,15 +491,16 @@ export class Color {
     const l = (max + min) / 2;
     let h = 0, s = 0;
     if (delta !== 0) {
-      // CSS Color 4 §7.2 defines behavior for out-of-gamut values where the
-      // saturation denominator can vanish or become negative.
-      s = Math.abs(l) <= 1e-5 || Math.abs(1 - l) < 1e-5 ? 0 : (max - l) / Math.min(l, 1 - l);
+      // CSS Color 4 §7.2 with the 4.x treatment of out-of-gamut channels: the saturation denominator is
+      // chosen by the lightness side, so negative or above-one channels can give a negative saturation.
+      const denominator = l <= 0.5 ? max + min : 2 - max - min;
+      // At lightness 0 or 1 the textbook divisor vanishes (out-of-gamut channels): report no hue or saturation.
+      if (denominator === 0) { target.h = 0; target.s = 0; target.l = l; return target; }
+      s = delta / denominator;
       if (max === r) h = (g - b) / delta + (g < b ? 6 : 0);
       else if (max === g) h = (b - r) / delta + 2;
       else h = (r - g) / delta + 4;
       h /= 6;
-      if (s < 0) { h = normalizedHue(h + 0.5); s = -s; }
-      if (s <= 1e-5) { h = 0; s = 0; }
     }
     target.h = h; target.s = s; target.l = l;
     return target;
@@ -491,10 +514,9 @@ export class Color {
 
   getStyle(colorSpace = SRGBColorSpace): string {
     const { r, g, b } = ColorManagement.workingToColorSpace(this.clone(), colorSpace);
-    if (colorSpace === SRGBColorSpace || colorSpace === NoColorSpace) {
-      return `rgb(${Math.round(clamp01(r) * 255)},${Math.round(clamp01(g) * 255)},${Math.round(clamp01(b) * 255)})`;
-    }
-    return `color(${colorSpace} ${r} ${g} ${b})`;
+    // Channels are not clamped: an out-of-gamut color reports its out-of-range channel values.
+    if (colorSpace === SRGBColorSpace) return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`;
+    return `color(${colorSpace} ${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)})`;
   }
 
   offsetHSL(h: number, s: number, l: number): this {

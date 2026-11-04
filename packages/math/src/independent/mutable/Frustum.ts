@@ -6,7 +6,7 @@ import { Vector3, type Vector3Like } from "./Vector3.js";
 import type { Vector2 } from "./Vector2.js";
 import type { Box3Like } from "./Box3.js";
 import type { Sphere } from "./Sphere.js";
-import { projectionDepthRange, WebGLCoordinateSystem } from "./Matrix4.js";
+import { numericDepthRange, WebGLCoordinateSystem, WebGPUCoordinateSystem } from "./Matrix4.js";
 
 export interface FrustumLike {
   readonly planes: readonly PlaneLike[];
@@ -120,7 +120,21 @@ export class Frustum {
     coordinateSystem: number = WebGLCoordinateSystem,
     reversedDepth = false,
   ): this {
-    return this.setFromProjectionMatrixDepthRange(m, projectionDepthRange(coordinateSystem), reversedDepth);
+    // Reversed depth always uses the [0, 1] interval (near 1, far 0), as in 4.x.
+    try {
+      const range = numericDepthRange(coordinateSystem, reversedDepth, "Frustum.setFromProjectionMatrix()");
+      return this.setFromProjectionMatrixDepthRange(m, range, reversedDepth);
+    } catch (error) {
+      // 4.x chooses the near plane last, so an unsupported identifier is reported after the other five
+      // planes were written and leaves the near plane unchanged.
+      if (coordinateSystem !== WebGLCoordinateSystem && coordinateSystem !== WebGPUCoordinateSystem) {
+        const near = this.planes[5];
+        const kept = { x: near.normal.x, y: near.normal.y, z: near.normal.z, constant: near.constant };
+        this.setFromProjectionMatrixDepthRange(m, "minus-one-to-one", reversedDepth);
+        near.setComponents(kept.x, kept.y, kept.z, kept.constant);
+      }
+      throw error;
+    }
   }
 
   /** Extract planes from column-major clip transform, with an explicit clip-space z range. */

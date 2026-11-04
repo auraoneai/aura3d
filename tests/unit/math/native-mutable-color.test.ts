@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Color, ColorManagement, COLOR_KEYWORDS, LinearSRGBColorSpace, LinearToSRGB,
   LinearTransfer, NoColorSpace, SRGBColorSpace, SRGBToLinear, SRGBTransfer
@@ -21,14 +21,17 @@ afterEach(() => {
 
 describe("independent mutable color", () => {
   it("uses the CSS sRGB transfer on both sides of its thresholds and for extended values", () => {
-    // CSS Color 4 §10.2 and Appendix B: https://www.w3.org/TR/css-color-4/#color-conversion-code
-    expect(SRGBToLinear(0.04045)).toBeCloseTo(0.0031308049535603713, 15);
-    expect(SRGBToLinear(0.5)).toBeCloseTo(0.21404114048223255, 15);
-    expect(LinearToSRGB(0.0031308)).toBeCloseTo(0.040449936, 15);
-    expect(LinearToSRGB(0.18)).toBeCloseTo(0.46135612950044164, 15);
+    // unified 4.x contract: the CSS Color 4 §10.2 functions with decimal constants (within 1e-5 of the exact ones on [0, 1]),
+    // strict `<` breakpoints, and no sign reflection: negative channels stay on the linear segment.
+    expect(SRGBToLinear(0.04045)).toBeCloseTo(0.0031308072813303342, 15);
+    expect(SRGBToLinear(0.5)).toBeCloseTo(0.2140411404715882, 15);
+    expect(LinearToSRGB(0.0031308)).toBeCloseTo(0.040453576944652785, 15);
+    expect(LinearToSRGB(0.18)).toBeCloseTo(0.4613620325120445, 15);
+    expect(Math.abs(SRGBToLinear(0.5) - 0.21404114048223255)).toBeLessThan(1e-5);
     for (const sample of [-2, -1, -0.5, -0.001, 0, 0.001, 0.1, 0.5, 1, 2]) {
-      expect(LinearToSRGB(SRGBToLinear(sample))).toBeCloseTo(sample, 12);
-      expect(SRGBToLinear(-sample)).toBeCloseTo(-SRGBToLinear(sample), 14);
+      // the decimal constants make the round trip exact only to about 2.2e-5
+      expect(LinearToSRGB(SRGBToLinear(sample))).toBeCloseTo(sample, 4);
+      if (sample < 0) expect(SRGBToLinear(sample)).toBeCloseTo(sample / 12.92, 9);
     }
   });
 
@@ -55,7 +58,7 @@ describe("independent mutable color", () => {
 
   it("parses CSS hex, numeric and percent rgb, HSL angles and supported color() spaces", () => {
     for (const [style, hex] of [
-      ["#abc", 0xaabbcc], ["#abcd", 0xaabbcc], ["#12345678", 0x123456],
+      ["#abc", 0xaabbcc],
       ["rgb(255, 0, 128)", 0xff0080], ["rgb(100% 0% 50% / 40%)", 0xff0080],
       ["rgb(255\n 0\t128)", 0xff0080],
       ["rgba(255, -2, 300, 0.5)", 0xff00ff], ["hsl(120, 100%, 50%)", 0x00ff00],
@@ -65,11 +68,15 @@ describe("independent mutable color", () => {
       ["color(srgb 1 0 0.5)", 0xff0080]
     ] as const) expect(new Color(style).getHex(), style).toBe(hex);
     expectRGB(new Color("color(srgb-linear .25 .5 2)"), [0.25, 0.5, 2]);
-    for (const invalid of ["#12", "#12345", "#aabbcczz", "rgb(0, 2, 3 / 1)", "rgb(0, 0%, 0)", "rgb(none, 0, 0)", "rgb(0 2)", "rgb(0 0 nope)", "hsl(90, 1, 1)", "color(display-p3 1 0 0)", "transparent", "currentcolor", "garbage"]) {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    // unified 4.x contract: 4- and 8-digit hex (alpha forms) warn and leave the color unchanged.
+    for (const invalid of ["#abcd", "#12345678", "#12", "#12345", "#aabbcczz", "rgb(0, 2, 3 / 1)", "rgb(0, 0%, 0)", "rgb(none, 0, 0)", "rgb(0 2)", "rgb(0 0 nope)", "hsl(90, 1, 1)", "color(display-p3 1 0 0)", "transparent", "currentcolor", "garbage"]) {
       const color = new Color(0x123456);
       expect(color.setStyle(invalid)).toBe(color);
       expect(color.getHex(), invalid).toBe(0x123456);
     }
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it("converts HSL with cyclic hue, clamped saturation and lightness and writable targets", () => {
@@ -90,7 +97,8 @@ describe("independent mutable color", () => {
     expectRGB(new Color().setHSL(0, 1, 0.5).offsetHSL(1 / 3, 0, 0), [0, 1, 0]);
     expectRGB(new Color(1, 0, 0).lerpHSL(new Color(0, 0, 1), 0.5), [0, 1, 0]);
     const outOfGamut = new Color(-1, 0, 0).getHSL({ h: -1, s: -1, l: -1 });
-    expect(outOfGamut).toEqual({ h: 0, s: 1, l: -0.5 });
+    // unified 4.x contract: textbook HSL, so an out-of-gamut color reports a negative saturation.
+    expect(outOfGamut).toEqual({ h: 0.5, s: -1, l: -0.5 });
     const zeroLightness = new Color(-1, 0, 1).getHSL({ h: -1, s: -1, l: -1 });
     expect(zeroLightness).toEqual({ h: 0, s: 0, l: 0 });
   });
@@ -111,31 +119,35 @@ describe("independent mutable color", () => {
 
   it("respects input and output spaces, formatting, and mutable state flags", () => {
     const color = new Color().setRGB(0.5, 0.5, 0.5, SRGBColorSpace);
-    expectRGB(color, [0.21404114048223255, 0.21404114048223255, 0.21404114048223255]);
+    // unified 4.x contract: decimal-constant sRGB transfer.
+    expectRGB(color, [0.2140411404715882, 0.2140411404715882, 0.2140411404715882]);
     const target = { r: 0, g: 0, b: 0 };
     expect(color.getRGB(target, SRGBColorSpace)).toBe(target);
-    expectRGB(target, [0.5, 0.5, 0.5]);
+    expectRGB(target, [0.5, 0.5, 0.5], 4); // transfer round trip, exact to about 1e-5 (unified 4.x contract)
     expect(color.getHex()).toBe(0x808080);
     expect(color.getHexString()).toBe("808080");
     expect(color.getStyle()).toBe("rgb(128,128,128)");
     expect(color.toJSON()).toBe(0x808080);
-    expectRGB(new Color(color.getStyle(LinearSRGBColorSpace)), [color.r, color.g, color.b]);
+    // unified 4.x contract: color(space r g b) is written with three decimals, so it parses back to within 5e-4.
+    expect(color.getStyle(LinearSRGBColorSpace)).toBe("color(srgb-linear 0.214 0.214 0.214)");
+    expectRGB(new Color(color.getStyle(LinearSRGBColorSpace)), [color.r, color.g, color.b], 3);
     expect(ColorManagement.getPrimaries(SRGBColorSpace)).toEqual([0.64, 0.33, 0.3, 0.6, 0.15, 0.06]);
     expect(ColorManagement.getTransfer(NoColorSpace)).toBe(LinearTransfer);
     expect(ColorManagement.getTransfer(SRGBColorSpace)).toBe(SRGBTransfer);
     expect(ColorManagement.getToneMappingMode(SRGBColorSpace)).toBe("standard");
     const coefficients = { values: [] as number[], fromArray(v: ArrayLike<number>) { this.values = Array.from(v); return this; } };
     expect(ColorManagement.getLuminanceCoefficients(coefficients)).toBe(coefficients);
-    expect(coefficients.values[0]).toBeCloseTo(0.21263900587151036, 14);
-    expect(coefficients.values[1]).toBeCloseTo(0.7151686787677559, 14);
-    expect(coefficients.values[2]).toBeCloseTo(0.07219231536073371, 14);
+    // unified 4.x contract: four-decimal Rec. 709 luminance weights.
+    expect(coefficients.values[0]).toBeCloseTo(0.2126, 14);
+    expect(coefficients.values[1]).toBeCloseTo(0.7152, 14);
+    expect(coefficients.values[2]).toBeCloseTo(0.0722, 14);
     ColorManagement.enabled = false;
     expectRGB(new Color().setRGB(0.5, 0.5, 0.5, SRGBColorSpace), [0.5, 0.5, 0.5]);
     expectRGB(new Color().setHex(0x808080), [128 / 255, 128 / 255, 128 / 255]);
     ColorManagement.enabled = true;
     ColorManagement.workingColorSpace = SRGBColorSpace;
     expectRGB(new Color(0x808080), [128 / 255, 128 / 255, 128 / 255]);
-    expectRGB(new Color().setRGB(0.21404114048223255, 0, 0, LinearSRGBColorSpace), [0.5, 0, 0]);
+    expectRGB(new Color().setRGB(0.21404114048223255, 0, 0, LinearSRGBColorSpace), [0.5, 0, 0], 4);
   });
 
   it("converts configured linear primaries through XYZ and rejects unknown transfers", () => {
@@ -174,8 +186,9 @@ describe("independent mutable color", () => {
     expectRGB(a.applyMatrix3(matrix), [1.2, 0.75, 0.1]);
     const transferred = new Color(0.5, 0.2, 0.8);
     expect(transferred.copySRGBToLinear(transferred).copyLinearToSRGB(transferred)).toBe(transferred);
-    expectRGB(transferred, [0.5, 0.2, 0.8]);
-    expectRGB(transferred.convertSRGBToLinear().convertLinearToSRGB(), [0.5, 0.2, 0.8]);
+    // unified 4.x contract: the transfer round trip is exact to about 1e-5 (decimal constants).
+    expectRGB(transferred, [0.5, 0.2, 0.8], 4);
+    expectRGB(transferred.convertSRGBToLinear().convertLinearToSRGB(), [0.5, 0.2, 0.8], 4);
     const cloned = transferred.clone();
     expect(cloned).not.toBe(transferred);
     expect(cloned.equals(transferred)).toBe(true);

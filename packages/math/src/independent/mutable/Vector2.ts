@@ -17,8 +17,10 @@ interface Matrix3Like {
 /**
  * A mutable two-dimensional vector. Arithmetic methods update and return the
  * receiver; scalar queries leave it unchanged. Angles are in radians.
- * A zero vector stays zero when normalized or assigned a length. Its angle to
- * any vector is defined as pi / 2, because it has no preferred direction.
+ * A zero vector stays zero when normalized or assigned a length; a vector with
+ * a NaN length is left unchanged by `normalize`. Its angle to any vector is
+ * defined as pi / 2 when either has zero length, because it has no preferred
+ * direction. Out-of-range component indices throw a `RangeError` carrying the 4.x message.
  */
 export class Vector2 {
   readonly isVector2: boolean = true;
@@ -46,14 +48,14 @@ export class Vector2 {
   setComponent(index: number, value: number): this {
     if (index === 0) this.x = value;
     else if (index === 1) this.y = value;
-    else throw new RangeError(`Vector2 component index out of range: ${index}`);
+    else throw new RangeError(`THREE.Vector2: index is out of range: ${index}`);
     return this;
   }
 
   getComponent(index: number): number {
     if (index === 0) return this.x;
     if (index === 1) return this.y;
-    throw new RangeError(`Vector2 component index out of range: ${index}`);
+    throw new RangeError(`THREE.Vector2: index is out of range: ${index}`);
   }
 
   clone(): this {
@@ -117,10 +119,7 @@ export class Vector2 {
   length(): number { return Math.hypot(this.x, this.y); }
   manhattanLength(): number { return Math.abs(this.x) + Math.abs(this.y); }
 
-  normalize(): this {
-    const length = this.length();
-    return length === 0 ? this : this.divideScalar(length);
-  }
+  normalize(): this { return this.divideScalar(this.length() || 1); }
 
   /** Counterclockwise angle from the positive x-axis, in [0, 2*pi). */
   angle(): number {
@@ -129,11 +128,9 @@ export class Vector2 {
   }
 
   angleTo(v: Vector2): number {
-    const aLength = this.length();
-    const bLength = v.length();
-    if (aLength === 0 || bLength === 0) return Math.PI / 2;
-    const cosine = (this.x / aLength) * (v.x / bLength) + (this.y / aLength) * (v.y / bLength);
-    return Math.acos(Math.max(-1, Math.min(1, cosine)));
+    const denominator = Math.sqrt(this.lengthSq() * v.lengthSq());
+    if (denominator === 0) return Math.PI / 2;
+    return Math.acos(Math.max(-1, Math.min(1, this.dot(v) / denominator)));
   }
 
   distanceTo(v: Vector2Like): number { return Math.hypot(this.x - v.x, this.y - v.y); }
@@ -144,9 +141,7 @@ export class Vector2 {
   }
   manhattanDistanceTo(v: Vector2Like): number { return Math.abs(this.x - v.x) + Math.abs(this.y - v.y); }
   setLength(length: number): this {
-    const oldLength = this.length();
-    if (oldLength === 0 || oldLength === length) return this;
-    return this.set((this.x / oldLength) * length, (this.y / oldLength) * length);
+    return this.normalize().multiplyScalar(length);
   }
 
   lerp(v: Vector2Like, alpha: number): this {

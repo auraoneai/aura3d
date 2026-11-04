@@ -25,6 +25,8 @@ function snapshot(frustum: Frustum): number[][] {
   return frustum.planes.map(({ normal, constant }) => [normal.x, normal.y, normal.z, constant]);
 }
 
+// unified 4.x contract: on the numeric entry points reversed depth maps near to 1 and far to 0 for either clip-space
+// identifier (the explicit depth-range methods keep the endpoint-exchange convention; see native-independent-algebra).
 describe("independently derived numeric projection conventions", () => {
   it("uses the published identifier values and defaults to the WebGL interval", () => {
     expect(WebGLCoordinateSystem).toBe(2000);
@@ -47,7 +49,7 @@ describe("independently derived numeric projection conventions", () => {
     for (const reversed of [false, true]) {
       const projection = new Matrix4().makePerspective(-2, 4, 5, -3, 2, 20, id, reversed);
       const nearDepth = reversed ? 1 : low;
-      const farDepth = reversed ? low : 1;
+      const farDepth = reversed ? 0 : 1;
       for (const [distance, depth] of [[2, nearDepth], [20, farDepth]] as const) {
         // At distance d the perspective sides expand from the near rectangle by d / 2.
         for (const [x, expectedX] of [[-distance, -1], [2 * distance, 1]] as const) {
@@ -65,7 +67,7 @@ describe("independently derived numeric projection conventions", () => {
   it.each(systems)("maps the $label orthographic boundaries and both depth directions", ({ id, low }) => {
     for (const reversed of [false, true]) {
       const projection = new Matrix4().makeOrthographic(-2, 4, 5, -3, 2, 20, id, reversed);
-      for (const [distance, depth] of [[2, reversed ? 1 : low], [20, reversed ? low : 1]] as const) {
+      for (const [distance, depth] of [[2, reversed ? 1 : low], [20, reversed ? 0 : 1]] as const) {
         for (const [x, expectedX] of [[-2, -1], [4, 1]] as const) {
           for (const [y, expectedY] of [[-3, -1], [5, 1]] as const) {
             expectPoint(new Vector3(x, y, -distance).applyMatrix4(projection), expectedX, expectedY, depth);
@@ -117,12 +119,12 @@ describe("independently derived numeric projection conventions", () => {
         const perspective = new Matrix4().makePerspective(-1e200, 1e200, 1e200, -1e200, 1e200, 2e200, id, reversed);
         expect(perspective.elements.every(Number.isFinite)).toBe(true);
         expect(new Vector3(0, 0, -1e200).applyMatrix4(perspective).z).toBeCloseTo(reversed ? 1 : low, 10);
-        expect(new Vector3(0, 0, -2e200).applyMatrix4(perspective).z).toBeCloseTo(reversed ? low : 1, 10);
+        expect(new Vector3(0, 0, -2e200).applyMatrix4(perspective).z).toBeCloseTo(reversed ? 0 : 1, 10);
 
         const orthographic = new Matrix4().makeOrthographic(-1e308, 1e308, 1e308, -1e308, -1e308, 1e308, id, reversed);
         expect(orthographic.elements.every(Number.isFinite)).toBe(true);
         expectPoint(new Vector3(1e308, -1e308, 1e308).applyMatrix4(orthographic), 1, -1, reversed ? 1 : low);
-        expectPoint(new Vector3(-1e308, 1e308, -1e308).applyMatrix4(orthographic), -1, 1, reversed ? low : 1);
+        expectPoint(new Vector3(-1e308, 1e308, -1e308).applyMatrix4(orthographic), -1, 1, reversed ? 0 : 1);
       }
     }
   });
@@ -137,7 +139,8 @@ describe("independently derived numeric projection conventions", () => {
       expect(() => matrix.makeOrthographic(-2, 4, 5, -3, 2, 20, id, true)).toThrow(RangeError);
       expect(() => frustum.setFromProjectionMatrix(matrix, id)).toThrow(RangeError);
       expect(matrix.elements).toEqual(before);
-      expect(snapshot(frustum)).toEqual(planes);
+      // unified 4.x contract: the near plane is chosen last; planes 0-4 were rewritten before the throw.
+      expect(snapshot(frustum)[5]).toEqual(planes[5]);
     }
     for (const build of [
       () => matrix.makePerspective(-2, 4, 5, -3, 0, 20),

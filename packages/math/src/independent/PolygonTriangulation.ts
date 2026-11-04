@@ -622,8 +622,8 @@ export function shapeArea(contour: readonly PolygonPoint[]): number {
   return scaledInteger(twiceArea(result.rings[0]), 2 * result.exponent - 1);
 }
 
-export function isClockWise(points: readonly PolygonPoint[]): boolean {
-  return twiceArea(verticesOf([points]).rings[0]) < 0n;
+export function isClockWise(pts: readonly PolygonPoint[]): boolean {
+  return twiceArea(verticesOf([pts]).rings[0]) < 0n;
 }
 
 function triangulateRings(input: readonly (readonly PolygonPoint[])[]): [number, number, number][] {

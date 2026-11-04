@@ -1,11 +1,3 @@
-import type { Vector2 } from "./Vector2.js";
-import {
-  earcut as triangulateFlat,
-  isClockWise as polygonIsClockWise,
-  shapeArea as polygonArea,
-  triangulateShape as triangulatePolygon,
-} from "./independent/PolygonTriangulation.js";
-
 /**
  * Polygon utilities backed by Aura3D's independent triangulator.
  *
@@ -21,24 +13,4 @@ import {
  * followed by its holes, after removing one repeated closing point from each
  * ring. Flat-data indices refer to the original, unmodified vertex array.
  */
-export function earcut(data: ArrayLike<number>, holeIndices: readonly number[] | null, dim: number = 2): number[] {
-  return triangulateFlat(data, holeIndices, dim);
-}
-
-export function shapeArea(contour: readonly Vector2[]): number {
-  return polygonArea(contour);
-}
-
-export function isClockWise(pts: readonly Vector2[]): boolean {
-  return polygonIsClockWise(pts);
-}
-
-export function triangulateShape(contour: readonly Vector2[], holes: readonly (readonly Vector2[])[]): [number, number, number][] {
-  return triangulatePolygon(contour, holes);
-}
-
-export const ShapeUtils = {
-  area: shapeArea,
-  isClockWise,
-  triangulateShape,
-} as const;
+export { earcut, shapeArea, isClockWise, triangulateShape, ShapeUtils } from "./independent/PolygonTriangulation.js";

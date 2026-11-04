@@ -53,6 +53,17 @@ export function projectionDepthRange(coordinateSystem: number): ProjectionDepthR
   throw new RangeError(`Unsupported projection coordinate system: ${coordinateSystem}`);
 }
 
+/**
+ * Depth interval for a numeric entry point. The identifier is always validated; reversed depth uses
+ * the [0, 1] interval for either system (near 1, far 0), as in 4.x.
+ */
+export function numericDepthRange(coordinateSystem: number, reversedDepth: boolean, caller: string): ProjectionDepthRange {
+  if (coordinateSystem !== WebGLCoordinateSystem && coordinateSystem !== WebGPUCoordinateSystem) {
+    throw new RangeError(`THREE.${caller}: Invalid coordinate system: ${coordinateSystem}`);
+  }
+  return reversedDepth ? "zero-to-one" : projectionDepthRange(coordinateSystem);
+}
+
 // Form the span and midpoint ratios without overflowing when opposite, large
 // finite bounds are supplied. The half-scaled path is only needed on overflow,
 // preserving precision for subnormal and nearly coincident finite bounds.
@@ -131,7 +142,14 @@ export class Matrix4 {
     return this.set(e[0], e[3], e[6], 0, e[1], e[4], e[7], 0, e[2], e[5], e[8], 0, 0, 0, 0, 1);
   }
 
+  /** The three basis columns; a matrix whose linear part is singular reports the standard basis. */
   extractBasis(xAxis: Vec3Target, yAxis: Vec3Target, zAxis: Vec3Target): this {
+    if (this.determinantAffine() === 0) {
+      xAxis.set(1, 0, 0);
+      yAxis.set(0, 1, 0);
+      zAxis.set(0, 0, 1);
+      return this;
+    }
     const snapshot = this.clone();
     xAxis.setFromMatrixColumn(snapshot, 0);
     yAxis.setFromMatrixColumn(snapshot, 1);
@@ -148,16 +166,17 @@ export class Matrix4 {
     );
   }
 
-  /** Normalizes each spatial column; zero-length columns remain zero. */
+  /** Normalizes each spatial column (reflections are not undone); a singular linear part gives the identity. */
   extractRotation(m: Matrix4): this {
+    if (m.determinantAffine() === 0) return this.identity();
     const e = m.elements.slice(0, 16);
     const sx = Math.hypot(e[0], e[1], e[2]);
     const sy = Math.hypot(e[4], e[5], e[6]);
     const sz = Math.hypot(e[8], e[9], e[10]);
     return this.set(
-      sx ? e[0] / sx : 0, sy ? e[4] / sy : 0, sz ? e[8] / sz : 0, 0,
-      sx ? e[1] / sx : 0, sy ? e[5] / sy : 0, sz ? e[9] / sz : 0, 0,
-      sx ? e[2] / sx : 0, sy ? e[6] / sy : 0, sz ? e[10] / sz : 0, 0,
+      e[0] / sx, e[4] / sy, e[8] / sz, 0,
+      e[1] / sx, e[5] / sy, e[9] / sz, 0,
+      e[2] / sx, e[6] / sy, e[10] / sz, 0,
       0, 0, 0, 1,
     );
   }
@@ -198,19 +217,30 @@ export class Matrix4 {
     );
   }
 
-  /** Set the orientation so local +Z points from target to eye. */
+  /**
+   * Set the orientation so local +Z points from target to eye. Only the upper-left 3x3 block is
+   * written. A zero eye-target offset looks along +Z, and an up vector parallel to the view direction
+   * nudges the view direction by 1e-4 (along X when up is exactly +/-Z, otherwise along Z).
+   */
   lookAt(eye: Vec3Like, target: Vec3Like, up: Vec3Like): this {
     let zx = eye.x - target.x, zy = eye.y - target.y, zz = eye.z - target.z;
-    const zLength = Math.hypot(zx, zy, zz);
-    if (zLength === 0) { zx = 0; zy = 0; zz = 1; }
-    else { zx /= zLength; zy /= zLength; zz /= zLength; }
+    if (zx * zx + zy * zy + zz * zz === 0) zz = 1;
+    let zLength = Math.hypot(zx, zy, zz);
+    zx /= zLength; zy /= zLength; zz /= zLength;
     let xx = up.y * zz - up.z * zy;
     let xy = up.z * zx - up.x * zz;
     let xz = up.x * zy - up.y * zx;
+    if (xx * xx + xy * xy + xz * xz === 0) {
+      if (Math.abs(up.z) === 1) zx += 0.0001; else zz += 0.0001;
+      zLength = Math.hypot(zx, zy, zz);
+      zx /= zLength; zy /= zLength; zz /= zLength;
+      xx = up.y * zz - up.z * zy;
+      xy = up.z * zx - up.x * zz;
+      xz = up.x * zy - up.y * zx;
+    }
     let xLength = Math.hypot(xx, xy, xz);
     if (xLength === 0) {
-      // Choose a well-separated fallback up vector when the supplied one
-      // cannot determine a basis (zero or parallel to the viewing direction).
+      // Still no basis (a zero up vector): use a well-separated fallback up vector, so the result stays a rotation.
       const ux = Math.abs(zy) < 0.9 ? 0 : 1;
       const uy = ux === 0 ? 1 : 0;
       xx = uy * zz; xy = -ux * zz; xz = ux * zy - uy * zx;
@@ -380,9 +410,9 @@ export class Matrix4 {
     return this.set(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1);
   }
 
-  /** Each coefficient names the output axis followed by the input axis. */
+  /** Each coefficient names the axis it shears followed by the axis that drives it (`xy` shears X by Y). */
   makeShear(xy: number, xz: number, yx: number, yz: number, zx: number, zy: number): this {
-    return this.set(1, xy, xz, 0, yx, 1, yz, 0, zx, zy, 1, 0, 0, 0, 0, 1);
+    return this.set(1, yx, zx, 0, xy, 1, zy, 0, xz, yz, 1, 0, 0, 0, 0, 1);
   }
 
   compose(position: Vec3Like, quaternion: QuaternionLike, scale: Vec3Like): this {
@@ -396,24 +426,29 @@ export class Matrix4 {
 
   /**
    * Decompose a translation, rotation, and axis scale. A reflection is
-   * assigned to X. A zero scale leaves rotation underdetermined, so returns
-   * the identity quaternion instead of producing non-finite components.
+   * assigned to X. A singular linear part leaves the rotation underdetermined,
+   * so it reports unit scale and the identity quaternion; the translation is
+   * always reported.
    */
   decompose(position: Vec3Target, quaternion: QuaternionTarget, scale: Vec3Target): this {
     const e = this.elements.slice(0, 16);
+    const determinant = this.determinantAffine();
+    position.set(e[12], e[13], e[14]);
+    if (determinant === 0) {
+      quaternion.identity();
+      scale.set(1, 1, 1);
+      return this;
+    }
     let sx = Math.hypot(e[0], e[1], e[2]);
     const sy = Math.hypot(e[4], e[5], e[6]);
     const sz = Math.hypot(e[8], e[9], e[10]);
-    if (this.determinantAffine() < 0) sx = -sx;
-    const rotation = sx !== 0 && sy !== 0 && sz !== 0 ? new Matrix4().set(
+    if (determinant < 0) sx = -sx;
+    quaternion.setFromRotationMatrix(new Matrix4().set(
       e[0] / sx, e[4] / sy, e[8] / sz, 0,
       e[1] / sx, e[5] / sy, e[9] / sz, 0,
       e[2] / sx, e[6] / sy, e[10] / sz, 0,
       0, 0, 0, 1,
-    ) : null;
-    position.set(e[12], e[13], e[14]);
-    if (rotation) quaternion.setFromRotationMatrix(rotation);
-    else quaternion.identity();
+    ));
     scale.set(sx, sy, sz);
     return this;
   }
@@ -452,14 +487,17 @@ export class Matrix4 {
     );
   }
 
-  /** Builds a perspective projection for a numeric clip-space identifier. */
+  /**
+   * Builds a perspective projection for a numeric clip-space identifier. Reversed depth always maps
+   * near to 1 and far to 0, whichever identifier is given (use `makePerspectiveForDepthRange` to
+   * exchange the endpoints of the full selected interval instead).
+   */
   makePerspective(
     left: number, right: number, top: number, bottom: number,
     near: number, far: number, coordinateSystem: number = WebGLCoordinateSystem, reversedDepth = false,
   ): this {
-    return this.makePerspectiveForDepthRange(
-      left, right, top, bottom, near, far, projectionDepthRange(coordinateSystem), reversedDepth,
-    );
+    const range = numericDepthRange(coordinateSystem, reversedDepth, "Matrix4.makePerspective()");
+    return this.makePerspectiveForDepthRange(left, right, top, bottom, near, far, range, reversedDepth);
   }
 
   /** Builds a right-handed orthographic projection with an explicit depth interval. */
@@ -493,14 +531,13 @@ export class Matrix4 {
     );
   }
 
-  /** Builds an orthographic projection for a numeric clip-space identifier. */
+  /** Builds an orthographic projection for a numeric clip-space identifier; reversed depth maps near to 1 and far to 0. */
   makeOrthographic(
     left: number, right: number, top: number, bottom: number,
     near: number, far: number, coordinateSystem: number = WebGLCoordinateSystem, reversedDepth = false,
   ): this {
-    return this.makeOrthographicForDepthRange(
-      left, right, top, bottom, near, far, projectionDepthRange(coordinateSystem), reversedDepth,
-    );
+    const range = numericDepthRange(coordinateSystem, reversedDepth, "Matrix4.makeOrthographic()");
+    return this.makeOrthographicForDepthRange(left, right, top, bottom, near, far, range, reversedDepth);
   }
 
   equals(matrix: ElementsLike): boolean {

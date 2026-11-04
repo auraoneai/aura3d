@@ -138,6 +138,17 @@ describe("independent mutable Vector4", () => {
         const matrix = rotationMatrix(axis, angle);
         const v = new Vector4();
         expect(v.setAxisAngleFromRotationMatrix(matrix)).toBe(v);
+        if (angle === 1e-8) {
+          // unified 4.x contract: a matrix within 0.1 of the identity reports the +x axis and angle 0.
+          expect(v.toArray()).toEqual([1, 0, 0, 0]);
+          continue;
+        }
+        if (angle === Math.PI - 1e-7) {
+          // unified 4.x contract: a near-symmetric matrix (within 0.01) is a half turn, angle exactly pi.
+          expect(Math.hypot(v.x, v.y, v.z)).toBeCloseTo(1, 6);
+          expect(v.w).toBeCloseTo(Math.PI, 10);
+          continue;
+        }
         expect(Math.hypot(v.x, v.y, v.z)).toBeCloseTo(1, 10);
         expect(v.w).toBeCloseTo(angle, 10);
         const rebuilt = rotationMatrix([v.x, v.y, v.z], v.w);

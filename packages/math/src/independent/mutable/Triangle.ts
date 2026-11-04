@@ -36,20 +36,52 @@ export class Triangle {
     return length === 0 ? target.set(0, 0, 0) : target.set(x / length, y / length, z / length);
   }
 
-  /** Barycentric coordinates refer to the orthogonal projection onto the triangle plane. */
+  /**
+   * Barycentric coordinates of the orthogonal projection of `point` onto the triangle plane. A
+   * degenerate triangle (zero area) has none: the target is zeroed and null is returned. Non-finite
+   * input propagates as NaN weights.
+   */
   static getBarycoord(point: Vector3Like, a: Vector3Like, b: Vector3Like, c: Vector3Like, target: Vector3): Vector3 | null {
-    let ux = b.x - a.x, uy = b.y - a.y, uz = b.z - a.z;
-    let vx = c.x - a.x, vy = c.y - a.y, vz = c.z - a.z;
-    const scale = Math.max(Math.abs(ux), Math.abs(uy), Math.abs(uz), Math.abs(vx), Math.abs(vy), Math.abs(vz));
-    if (scale === 0 || !Number.isFinite(scale)) return null;
-    ux /= scale; uy /= scale; uz /= scale; vx /= scale; vy /= scale; vz /= scale;
-    const wx = (point.x - a.x) / scale, wy = (point.y - a.y) / scale, wz = (point.z - a.z) / scale;
-    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-    const determinant = nx * nx + ny * ny + nz * nz;
-    if (determinant <= 0 || !Number.isFinite(determinant)) return null;
-    const bWeight = ((wy * vz - wz * vy) * nx + (wz * vx - wx * vz) * ny + (wx * vy - wy * vx) * nz) / determinant;
-    const cWeight = ((uy * wz - uz * wy) * nx + (uz * wx - ux * wz) * ny + (ux * wy - uy * wx) * nz) / determinant;
-    return target.set(1 - bWeight - cWeight, bWeight, cWeight);
+    const edgesAndPoint = (scale: number) => ({
+      ux: (b.x - a.x) / scale, uy: (b.y - a.y) / scale, uz: (b.z - a.z) / scale,
+      vx: (c.x - a.x) / scale, vy: (c.y - a.y) / scale, vz: (c.z - a.z) / scale,
+      wx: (point.x - a.x) / scale, wy: (point.y - a.y) / scale, wz: (point.z - a.z) / scale
+    });
+    const solve = (scale: number): { weights: [number, number, number] | null; denominator: number } => {
+      const { ux, uy, uz, vx, vy, vz, wx, wy, wz } = edgesAndPoint(scale);
+      const d00 = ux * ux + uy * uy + uz * uz, d01 = ux * vx + uy * vy + uz * vz, d11 = vx * vx + vy * vy + vz * vz;
+      const d20 = wx * ux + wy * uy + wz * uz, d21 = wx * vx + wy * vy + wz * vz;
+      let denominator = d00 * d11 - d01 * d01;
+      if (Math.abs(denominator) <= 1e-9 * d00 * d11) {
+        // Catastrophic cancellation (a very thin triangle): use the Lagrange form |u x v|^2 of the same
+        // quantity, which has no subtraction of nearly equal products.
+        const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+        denominator = nx * nx + ny * ny + nz * nz;
+        if (denominator === 0) return { weights: null, denominator };
+        const beta = (((wy * vz - wz * vy) * nx) + ((wz * vx - wx * vz) * ny) + ((wx * vy - wy * vx) * nz)) / denominator;
+        const gamma = (((uy * wz - uz * wy) * nx) + ((uz * wx - ux * wz) * ny) + ((ux * wy - uy * wx) * nz)) / denominator;
+        return { weights: [1 - beta - gamma, beta, gamma], denominator };
+      }
+      if (denominator === 0) return { weights: null, denominator };
+      const v = (d11 * d20 - d01 * d21) / denominator;
+      const w = (d00 * d21 - d01 * d20) / denominator;
+      return { weights: [1 - v - w, v, w], denominator };
+    };
+    let result = solve(1);
+    if (result.denominator === 0 || !Number.isFinite(result.denominator) && !Number.isNaN(result.denominator)) {
+      // The squared edge lengths underflowed or overflowed; barycentric coordinates are invariant under
+      // a uniform rescaling of the whole configuration.
+      const scale = Math.max(
+        Math.abs(b.x - a.x), Math.abs(b.y - a.y), Math.abs(b.z - a.z),
+        Math.abs(c.x - a.x), Math.abs(c.y - a.y), Math.abs(c.z - a.z)
+      );
+      if (scale !== 0 && Number.isFinite(scale)) result = solve(scale);
+    }
+    if (result.weights === null) {
+      target.set(0, 0, 0);
+      return null;
+    }
+    return target.set(result.weights[0], result.weights[1], result.weights[2]);
   }
 
   static containsPoint(point: Vector3Like, a: Vector3Like, b: Vector3Like, c: Vector3Like): boolean {
@@ -59,7 +91,14 @@ export class Triangle {
 
   static getInterpolation<T extends InterpolationTarget>(point: Vector3Like, p1: Vector3Like, p2: Vector3Like, p3: Vector3Like, v1: unknown, v2: unknown, v3: unknown, target: T): T | null {
     const weights = Triangle.getBarycoord(point, p1, p2, p3, new Vector3());
-    if (weights === null) return null;
+    if (weights === null) {
+      // No barycentric coordinates: the target is cleared (every component it has) and null returned.
+      const out = target as unknown as { x: number; y: number; z?: number; w?: number };
+      out.x = 0; out.y = 0;
+      if ("z" in out) out.z = 0;
+      if ("w" in out) out.w = 0;
+      return null;
+    }
     // Preserve a source when callers interpolate in place into that source.
     const values = [v1, v2, v3];
     const factors = [weights.x, weights.y, weights.z];
@@ -122,7 +161,7 @@ export class Triangle {
   }
 
   getNormal(target: Vector3): Vector3 { return Triangle.getNormal(this.a, this.b, this.c, target); }
-  getPlane(target: Plane): Plane { return target.setFromNormalAndCoplanarPoint(this.getNormal(new Vector3()), this.a); }
+  getPlane(target: Plane): Plane { return target.setFromCoplanarPoints(this.a, this.b, this.c); }
   getBarycoord(point: Vector3Like, target: Vector3): Vector3 | null { return Triangle.getBarycoord(point, this.a, this.b, this.c, target); }
   getInterpolation<T extends InterpolationTarget>(point: Vector3Like, v1: unknown, v2: unknown, v3: unknown, target: T): T | null {
     return Triangle.getInterpolation(point, this.a, this.b, this.c, v1, v2, v3, target);
@@ -133,6 +172,8 @@ export class Triangle {
 
   closestPointToPoint(p: Vector3Like, target: Vector3): Vector3 {
     const weights = this.getBarycoord(p, new Vector3());
+    // Non-finite input has no closest point; every component is NaN.
+    if (weights && Number.isNaN(weights.x + weights.y + weights.z)) return target.set(NaN, NaN, NaN);
     if (weights && weights.x >= 0 && weights.y >= 0 && weights.z >= 0) {
       return target.set(
         weights.x * this.a.x + weights.y * this.b.x + weights.z * this.c.x,
