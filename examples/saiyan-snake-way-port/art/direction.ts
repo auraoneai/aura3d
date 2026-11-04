@@ -52,7 +52,11 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "lantern", maxTriangles: 12000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "backdrop", assetKey: "island", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
     // GU47 phase 4 (WP-36 serpSerpentHead): the colossal serpent landmark
-    { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 }
+    { role: "backdrop", assetKey: "serpentHead", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048 },
+    // GU47 wave 2 (SSR-10): near-island variants, 42.6k and 28.3k triangles, 1024 px textures
+    { role: "backdrop", assetKey: "spireB", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "spireC", maxTriangles: 45000, textureSet: "BC+N", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "spireA", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "orb-pickup", kind: "serpent-orb" },
