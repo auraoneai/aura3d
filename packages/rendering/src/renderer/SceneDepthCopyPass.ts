@@ -1,6 +1,7 @@
 /** Snapshot opaque depth before transparent draws mutate the forward target. */
 import { Geometry } from "../Geometry";
-import { DEFAULT_RENDER_STATE } from "../Material";
+import { DEFAULT_RENDER_STATE, type ColorWriteMask, type PolygonOffsetState, type ScissorRect, type StencilState } from "../Material";
+import type { BlendMode } from "../contracts/blend";
 import { RenderDeviceError, type RenderDevice, type RenderShaderProgram, type RenderTarget, type ShaderSources, type UniformValue } from "../RenderDevice";
 import { RenderPipeline } from "../RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "../RenderPass";

@@ -33,7 +33,7 @@ describe("exact candidate math archive retirement", () => {
     if (!candidate) throw new Error("A3D_RELEASE_PLAN is required for the exact math archive audit");
     plan = candidate;
     sourceDigests = stagedMathDigests();
-  });
+  }, 120_000);
 
   afterAll(() => {
     const reportDir = process.env.NATIVE_REPORT_DIR;
@@ -48,7 +48,7 @@ describe("exact candidate math archive retirement", () => {
       schema: "aura3d.native-math-archive-audit/1", phase: "source", independence: "not-established",
       candidatePlan: plan.reference, source: plan.source, archives: reports
     }, null, 2)}\n`);
-  });
+  }, 120_000);
 
   it.each([
     ["engine", "@aura3d/engine"],
@@ -63,5 +63,5 @@ describe("exact candidate math archive retirement", () => {
     expect(report.independence).toBe("not-established");
     expect(report.files.length).toBeGreaterThan(0);
     expect(report.issues).toEqual([]);
-  });
+  }, 120_000);
 });

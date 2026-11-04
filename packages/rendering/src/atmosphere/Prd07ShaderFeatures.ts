@@ -9,11 +9,12 @@
  * one object and both the replay guard and this selective-bloom verifier
  * authenticate that same object.
  */
+import type { ShaderFeature } from "../contracts/program";
 import { stockFeatureVerifier } from "../program/FeatureSelect";
 import { PRD07_FOG_FEATURE, PRD07_WETNESS_FEATURE } from "../vfx/replayFeatureIdentity";
 
-export const PRD07_FOG_SHADER_FEATURE = PRD07_FOG_FEATURE;
-export const PRD07_WETNESS_SHADER_FEATURE = PRD07_WETNESS_FEATURE;
+export const PRD07_FOG_SHADER_FEATURE: ShaderFeature = PRD07_FOG_FEATURE;
+export const PRD07_WETNESS_SHADER_FEATURE: ShaderFeature = PRD07_WETNESS_FEATURE;
 
 /** Authenticate the original objects and functions, not their public IDs. */
 export const isStockPrd07BloomFeature = stockFeatureVerifier([PRD07_FOG_SHADER_FEATURE, PRD07_WETNESS_SHADER_FEATURE]);

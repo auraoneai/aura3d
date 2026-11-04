@@ -1,4 +1,4 @@
-import { defineContractSlot, type QrFlags } from "../contracts/core";
+import { defineContractSlot, type ContractSlot, type QrFlags } from "../contracts/core";
 import {
   claimScopedTemporalHistory,
   type TemporalCameraMatrices,
@@ -426,7 +426,7 @@ function issueBuiltinScopedHistory<T extends TemporalHistoryLike>(history: T): T
 function createBuiltinLegacyHistory(): TemporalHistoryLike { return issueBuiltinScopedHistory(new LegacyVelocityHistoryStub()); }
 function createBuiltinVelocityHistory(): TemporalHistoryLike { return issueBuiltinScopedHistory(new VelocityHistory()); }
 
-export const velocityHistorySlot = defineContractSlot<VelocitySurface>(
+export const velocityHistorySlot: ContractSlot<VelocitySurface> = defineContractSlot<VelocitySurface>(
   "C-14", "prd03", "A3D_QR_POST", { kind: "legacy", createHistory: createBuiltinLegacyHistory }
 );
 

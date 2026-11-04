@@ -271,7 +271,9 @@ export interface AuraCanvasEventHandlers {
  * Add these to the scene alongside `AuraCanvas` event props: the props hear
  * canvas-level DOM events, these nodes declare what the picking stack tracks.
  */
-export function eventInteractionNodes(target?: string) {
+// Named through the public builders: the node type itself is not a public `@aura3d/engine` export, and an
+// inferred return type would emit an absolute `import("/packages/engine/src")` into the published declarations.
+export function eventInteractionNodes(target?: string): readonly [ReturnType<typeof interactions.pointer>, ReturnType<typeof interactions.hover>] {
   return [
     interactions.pointer(target ? { target } : {}),
     interactions.hover(target ? { target } : {})

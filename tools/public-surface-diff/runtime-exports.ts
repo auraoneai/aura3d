@@ -105,9 +105,14 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
     return undefined;
   };
 
-  const resolveRelative = (info: ModuleInfo, specifier: string, depth: number): string | undefined => {
-    if (!specifier.startsWith("./") && !specifier.startsWith("../")) {
-      issue(info, `external module is not verified: ${specifier}`);
+  const isExternalSpecifier = (specifier: string): boolean => !specifier.startsWith("./") && !specifier.startsWith("../");
+  /** `external: "opaque"` is for specifiers whose target cannot change this
+   * module's export NAMES (plain imports, and named or namespace re-exports,
+   * whose exported names are written in this file). Only `export * from` an
+   * external module makes the name set unknowable, so that stays an issue. */
+  const resolveRelative = (info: ModuleInfo, specifier: string, depth: number, external: "issue" | "opaque" = "issue"): string | undefined => {
+    if (isExternalSpecifier(specifier)) {
+      if (external === "issue") issue(info, `external module is not verified: ${specifier}`);
       return undefined;
     }
     if (/[\\%?#\0]/.test(specifier)) {
@@ -124,10 +129,32 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
     return target;
   };
 
+  /** Names that this file declares anywhere (parameters, locals, functions,
+   * classes, catch bindings, imports). A reference to `module`/`exports` that
+   * resolves to one of them is an ordinary local, not the CommonJS binding. */
+  const declaredNames = (root: ts.Node): Set<string> => {
+    const names = new Set<string>();
+    const walk = (node: ts.Node): void => {
+      if ((ts.isParameter(node) || ts.isVariableDeclaration(node) || ts.isBindingElement(node)) && node.name) for (const name of bindingNames(node.name)) names.add(name);
+      else if ((ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isClassDeclaration(node) || ts.isClassExpression(node)) && node.name) names.add(node.name.text);
+      else if (ts.isImportClause(node) && node.name) names.add(node.name.text);
+      else if (ts.isNamespaceImport(node) || ts.isImportSpecifier(node)) names.add(node.name.text);
+      ts.forEachChild(node, walk);
+    };
+    walk(root);
+    return names;
+  };
   const inspect = (info: ModuleInfo, root: ts.Node, commonjs: boolean, esmLocals?: ReadonlyMap<string, Binding>): void => {
+    const declared = commonjs ? undefined : declaredNames(root);
     const visit = (node: ts.Node, depth: number): void => {
       if (depth > 1_000) { issue(info, "JavaScript syntax tree exceeds inspection depth"); return; }
-      if (ts.isTypeNode(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)
+      // A class heritage `extends Base` is an ExpressionWithTypeArguments node, which
+      // `ts.isTypeNode` also reports. It is plain JavaScript unless it carries type
+      // arguments or sits in an `implements` clause.
+      const typeSyntax = ts.isExpressionWithTypeArguments(node)
+        ? node.typeArguments !== undefined || (ts.isHeritageClause(node.parent) && node.parent.token !== ts.SyntaxKind.ExtendsKeyword)
+        : ts.isTypeNode(node);
+      if (typeSyntax || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)
         || ts.isEnumDeclaration(node) || ts.isModuleDeclaration(node) || ts.isAsExpression(node)
         || ts.isTypeAssertionExpression(node) || ts.isNonNullExpression(node) || ts.isSatisfiesExpression(node)
         || ts.isImportEqualsDeclaration(node) || ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
@@ -142,25 +169,29 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
         const base = node.expression;
         const property = ts.isPropertyAccessExpression(node) ? node.name.text
           : ts.isStringLiteral(node.argumentExpression) ? node.argumentExpression.text : undefined;
-        if (ts.isIdentifier(base) && !esmLocals?.has(base.text)
+        if (ts.isIdentifier(base) && !esmLocals?.has(base.text) && !declared?.has(base.text)
           && (base.text === "exports" || (base.text === "module" && (property === "exports" || property === undefined)))) {
           issue(info, "CommonJS export mutation in an ES module is not verified");
         }
       }
       if (ts.isWithStatement(node)) issue(info, "dynamic with statement");
-      if (ts.isCallExpression(node)) {
+      // ES module export names are fixed by the module's own export declarations, so
+      // run-time code evaluation, dynamic import() and global property access cannot
+      // add or remove them. They can rewrite a CommonJS module's `exports`, so the
+      // dynamic-evaluation diagnostics apply to CommonJS modules only.
+      if (commonjs && ts.isCallExpression(node)) {
         if (node.expression.kind === ts.SyntaxKind.ImportKeyword) issue(info, "dynamic import is not verified");
         if (ts.isIdentifier(node.expression) && ["eval", "Function", "require"].includes(node.expression.text)) {
           issue(info, `dynamic or external ${node.expression.text} call is not verified`);
         }
       }
-      if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "Function") {
+      if (commonjs && ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "Function") {
         issue(info, "dynamic Function constructor is not verified");
       }
-      if (ts.isIdentifier(node) && (node.text === "eval" || node.text === "Function")) {
+      if (commonjs && ts.isIdentifier(node) && (node.text === "eval" || node.text === "Function")) {
         issue(info, `dynamic ${node.text} reference is not verified`);
       }
-      if (ts.isElementAccessExpression(node) && ts.isIdentifier(node.expression)
+      if (commonjs && ts.isElementAccessExpression(node) && ts.isIdentifier(node.expression)
         && ["globalThis", "global", "window", "self"].includes(node.expression.text)) {
         const argument = node.argumentExpression;
         if (!ts.isStringLiteral(argument) || argument.text === "eval" || argument.text === "Function") {
@@ -172,9 +203,13 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
       }
       if (commonjs && node.kind === ts.SyntaxKind.ThisKeyword) issue(info, "CommonJS this reference is not verified");
       if (!commonjs && ts.isIdentifier(node) && (node.text === "exports" || node.text === "module")
-        && !esmLocals?.has(node.text)
+        && !esmLocals?.has(node.text) && !declared?.has(node.text)
         && !(ts.isPropertyAccessExpression(node.parent) && node.parent.name === node)
-        && !(ts.isPropertyAssignment(node.parent) && node.parent.name === node)) {
+        && !(ts.isPropertyAssignment(node.parent) && node.parent.name === node)
+        // Names, not references: `{ module: local } = x`, `class { module() {} }`.
+        && !(ts.isBindingElement(node.parent) && node.parent.propertyName === node)
+        && !((ts.isMethodDeclaration(node.parent) || ts.isPropertyDeclaration(node.parent)
+          || ts.isGetAccessorDeclaration(node.parent) || ts.isSetAccessorDeclaration(node.parent)) && node.parent.name === node)) {
         issue(info, "CommonJS binding reference in an ES module is not verified");
       }
       ts.forEachChild(node, (child) => visit(child, depth + 1));
@@ -193,14 +228,16 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
       if (info.exports.has(name)) issue(info, `duplicate explicit export: ${name}`);
       else info.exports.set(name, binding);
     };
-    const source = (node: ts.Expression | undefined): string | undefined => {
+    const source = (node: ts.Expression | undefined, external: "issue" | "opaque" = "issue"): string | undefined => {
       if (!node || !ts.isStringLiteral(node)) { issue(info, "non-literal module specifier"); return undefined; }
-      return resolveRelative(info, node.text, depth);
+      return resolveRelative(info, node.text, depth, external);
     };
+    const externalSpecifier = (node: ts.Expression | undefined): string | undefined =>
+      node && ts.isStringLiteral(node) && isExternalSpecifier(node.text) ? node.text : undefined;
 
     for (const statement of file.statements) {
       if (ts.isImportDeclaration(statement)) {
-        const target = source(statement.moduleSpecifier);
+        const target = source(statement.moduleSpecifier, "opaque");
         const clause = statement.importClause;
         if (!clause) continue;
         if (clause.isTypeOnly) issue(info, "type-only import in JavaScript");
@@ -231,12 +268,14 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
     for (const statement of file.statements) {
       if (ts.isExportDeclaration(statement)) {
         if (statement.isTypeOnly) issue(info, "type-only export in JavaScript");
-        const target = statement.moduleSpecifier ? source(statement.moduleSpecifier) : undefined;
+        const target = statement.moduleSpecifier ? source(statement.moduleSpecifier, statement.exportClause ? "opaque" : "issue") : undefined;
+        const external = externalSpecifier(statement.moduleSpecifier);
         if (!statement.exportClause) {
           if (target) info.stars.push(target);
           else if (!statement.moduleSpecifier) issue(info, "export star has no module");
         } else if (ts.isNamespaceExport(statement.exportClause)) {
           if (target) addExport(statement.exportClause.name.text, { kind: "namespace", target });
+          else if (external) addExport(statement.exportClause.name.text, { kind: "local", name: `*external*${external}#*namespace*` });
           else issue(info, "namespace export has no verifiable module");
         } else {
           for (const element of statement.exportClause.elements) {
@@ -244,6 +283,7 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
             const exported = element.name.text, imported = element.propertyName?.text ?? exported;
             if (statement.moduleSpecifier) {
               if (target) addExport(exported, { kind: "indirect", target, name: imported });
+              else if (external) addExport(exported, { kind: "local", name: `*external*${external}#${imported}` });
             } else pending.push({ exported, local: imported });
           }
         }
@@ -437,6 +477,9 @@ export function createRuntimeExportAnalyzer(pkg: PackedPackage): { analyze(targe
       spend();
       if (seen.has(info.path)) { issues.add(`${info.path}: cyclic CommonJS reexport is not verified`); return []; }
       if (seen.size > MAX_DEPTH) { issues.add(`${info.path}: CommonJS reexport depth exceeds analysis limit`); return []; }
+      // `require()` of an ES module (Node >= 22.12, the declared engines range)
+      // returns its namespace object, so the CommonJS names are the module's ES names.
+      if (info.format === "esm") return esmNames(info);
       if (info.format !== "commonjs") { issues.add(`${info.path}: CommonJS reexport target format is not verified`); return []; }
       let names = new Set<string>(), attached = true, reexported = false;
       const nextSeen = new Set(seen).add(info.path);

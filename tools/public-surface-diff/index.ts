@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -279,8 +280,12 @@ function declarationValues(checker: ts.TypeChecker): (file: ts.SourceFile, name:
 
 function symbols(checker: ts.TypeChecker, file: ts.SourceFile, valueOf: (file: ts.SourceFile, name: string) => DeclarationValue): Map<string, SymbolInfo> {
   const module = checker.getSymbolAtLocation(file);
-  if (!module) throw new Error(`Declaration is not a module: ${file.fileName}`);
   const result = new Map<string, SymbolInfo>();
+  // A script (non-module) declaration file, such as `vite-client.d.ts`, declares
+  // ambient modules and exports nothing importable. It has no export names to
+  // compare; its text is compared as a whole where the entrypoints are paired.
+  if (!module && !ts.isExternalModule(file)) return result;
+  if (!module) throw new Error(`Declaration is not a module: ${file.fileName}`);
   for (const exported of checker.getExportsOfModule(module)) {
     const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
     const aliasDeclarations = exported.getDeclarations() ?? [];
@@ -304,28 +309,84 @@ function symbols(checker: ts.TypeChecker, file: ts.SourceFile, valueOf: (file: t
 /** Compare the declaration dependency closure when TypeScript's nominal private
  * class members make the two physically separate package copies incompatible.
  * Equal source text alone is insufficient: referenced hidden types may change. */
-function declarationClosure(checker: ts.TypeChecker, root: ts.Symbol): string {
-  const visited = new Set<ts.Symbol>();
-  const contents: string[] = [];
-  const visitSymbol = (input: ts.Symbol): void => {
-    const symbol = input.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(input) : input;
-    if (visited.has(symbol)) return;
-    visited.add(symbol);
-    if (visited.size > 20_000) throw new Error("Declaration dependency closure exceeds limit");
+/** Hard bounds for declaration-closure walks. A closure follows every identifier
+ * through compiler libraries as well as package declarations, so its size is
+ * driven by the surface a symbol reaches, not by the number of packages. The
+ * per-closure cap bounds one exported symbol's reach (including the lib and
+ * ambient types it touches); the global cap grows with the number of compared
+ * entrypoints so a many-entrypoint release is not rejected for its breadth,
+ * while a runaway walk still fails hard. */
+export const DECLARATION_CLOSURE_PER_ENTRYPOINT_LIMIT = 200_000;
+export const DECLARATION_CLOSURE_GLOBAL_LIMIT_PER_ENTRYPOINT = 400_000;
+export interface DeclarationClosureBudget {
+  readonly perEntrypoint: number;
+  readonly global: number;
+  /** Symbols visited by all closures so far. */
+  spent: number;
+}
+export function createDeclarationClosureBudget(entrypoints: number, limits: { perEntrypoint?: number; globalPerEntrypoint?: number } = {}): DeclarationClosureBudget {
+  const perEntrypoint = limits.perEntrypoint ?? DECLARATION_CLOSURE_PER_ENTRYPOINT_LIMIT;
+  const globalPerEntrypoint = limits.globalPerEntrypoint ?? DECLARATION_CLOSURE_GLOBAL_LIMIT_PER_ENTRYPOINT;
+  return { perEntrypoint, global: Math.max(1, entrypoints) * globalPerEntrypoint, spent: 0 };
+}
+/** What one symbol contributes to a closure: its declaration texts and the
+ * symbols its declarations name. Cached per symbol so the many closures of one
+ * run share the (expensive) syntax walk. */
+export interface ClosureNode { readonly texts: readonly string[]; readonly dependencies: readonly ts.Symbol[] }
+export interface DeclarationClosureCache { readonly nodes: Map<ts.Symbol, ClosureNode>; readonly digests: Map<ts.Symbol, string> }
+export function createDeclarationClosureCache(): DeclarationClosureCache { return { nodes: new Map(), digests: new Map() }; }
+/** Digest of the sorted declaration texts reachable from `root`. Equal digests mean
+ * equal closures. Results are cached per root symbol because barrel entrypoints
+ * re-export the same symbols many times. */
+export function declarationClosure(checker: ts.TypeChecker, root: ts.Symbol, budget: DeclarationClosureBudget, label = "<symbol>", cache: DeclarationClosureCache = createDeclarationClosureCache()): string {
+  const known = cache.digests.get(root);
+  if (known !== undefined) return known;
+  const digest = computeDeclarationClosure(checker, root, budget, label, cache.nodes);
+  cache.digests.set(root, digest);
+  return digest;
+}
+function computeDeclarationClosure(checker: ts.TypeChecker, root: ts.Symbol, budget: DeclarationClosureBudget, label: string, nodes: Map<ts.Symbol, ClosureNode>): string {
+  const resolveAlias = (input: ts.Symbol): ts.Symbol => input.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(input) : input;
+  const nodeOf = (symbol: ts.Symbol): ClosureNode => {
+    const cached = nodes.get(symbol);
+    if (cached) return cached;
+    const texts: string[] = [], dependencies: ts.Symbol[] = [];
     for (const node of symbol.getDeclarations() ?? []) {
-      contents.push(`${symbol.name}:${node.getText().replace(/\s+/g, " ").trim()}`);
+      texts.push(`${symbol.name}:${node.getText().replace(/\s+/g, " ").trim()}`);
       const visitNode = (child: ts.Node): void => {
         if (ts.isIdentifier(child)) {
           const dependency = checker.getSymbolAtLocation(child);
-          if (dependency) visitSymbol(dependency);
+          if (dependency) dependencies.push(dependency);
         }
         ts.forEachChild(child, visitNode);
       };
       ts.forEachChild(node, visitNode);
     }
+    const created = { texts, dependencies };
+    nodes.set(symbol, created);
+    return created;
   };
-  visitSymbol(root);
-  return contents.sort().join("\n");
+  const visited = new Set<ts.Symbol>();
+  const contents: string[] = [];
+  const pending: ts.Symbol[] = [root];
+  while (pending.length) {
+    const symbol = resolveAlias(pending.pop()!);
+    if (visited.has(symbol)) continue;
+    visited.add(symbol);
+    budget.spent += 1;
+    if (visited.size > budget.perEntrypoint) {
+      throw new Error(`Declaration dependency closure exceeds limit: ${label} reaches more than ${budget.perEntrypoint} symbols`);
+    }
+    if (budget.spent > budget.global) {
+      throw new Error(`Declaration dependency closures exceed the global limit of ${budget.global} symbols at ${label}`);
+    }
+    const node = nodeOf(symbol);
+    contents.push(...node.texts);
+    for (const dependency of node.dependencies) pending.push(dependency);
+  }
+  const hash = createHash("sha256");
+  for (const text of contents.sort()) hash.update(text).update("\0");
+  return hash.digest("hex");
 }
 /** A retarget is conservatively treated as a break: matching declarations do
  * not establish the actual exports of the newly targeted runtime file. */
@@ -385,6 +446,9 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
   pass: boolean;
   changes: Change[];
   diagnostics: string[];
+  /** Compiler errors with an equivalent on the published baseline, or in third-party declarations: reported, not blocking. */
+  inheritedDiagnostics: string[];
+  inheritedRuntimeDiagnostics: string[];
   packagesCompared: number;
   runtimeExportsVerified: boolean;
   runtimeDiagnostics: string[];
@@ -481,7 +545,25 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
     };
     const program = ts.createProgram(paths, options, host);
     const checker = program.getTypeChecker();
-    const diagnostics = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error).map((d) => `${d.file ? relative(temp, d.file.fileName) : ""}:${d.start ?? 0} TS${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`);
+    // Compiler errors. The published baseline's own declaration errors (and errors in
+    // third-party declarations) cannot be repaired by this release, so only errors
+    // that appear on the candidate side with no equivalent on the baseline side block.
+    // Positions are dropped from the equivalence key because the files differ.
+    const sideOf = (path: string): "before" | "after" | undefined => { const first = path.split(sep)[0]; return first === "before" || first === "after" ? first : undefined; };
+    const compilerErrors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error).map((d) => {
+      const file = d.file ? relative(temp, d.file.fileName) : "", message = ts.flattenDiagnosticMessageText(d.messageText, " ");
+      const normalize = (text: string) => text.replaceAll(`${temp}${sep}`, "").replace(/(^|[\\/"'])(?:before|after)([\\/]node_modules[\\/])/g, "$1<side>$2");
+      // The baseline and candidate copies share one compiler program, so a `declare global`
+      // block that both define can collide across sides (TS2717 and similar, with the
+      // earlier declaration in `relatedInformation`). That is produced by the comparison
+      // harness, not by either archive on its own: classify it as cross-side.
+      const crossSide = (d.relatedInformation ?? []).some((related) => related.file && sideOf(relative(temp, related.file.fileName)) !== undefined && sideOf(relative(temp, related.file.fileName)) !== sideOf(file));
+      return { side: crossSide ? undefined : sideOf(file), key: normalize(`${file}|TS${d.code}|${message}`), text: `${crossSide ? "[cross-side] " : ""}${file}:${d.start ?? 0} TS${d.code} ${message}` };
+    });
+    const baselineErrorKeys = new Set(compilerErrors.filter((error) => error.side === "before").map((error) => error.key));
+    const introducedErrors = compilerErrors.filter((error) => error.side === "after" && !baselineErrorKeys.has(error.key));
+    const diagnostics: string[] = introducedErrors.map((error) => error.text);
+    const inheritedDiagnostics = compilerErrors.filter((error) => !introducedErrors.includes(error)).map((error) => error.text);
     const valueOf = declarationValues(checker);
     const symbolCache = new Map<string, Map<string, SymbolInfo>>();
     const symbolsFor = (path: string, name: string, subpath: string): Map<string, SymbolInfo> => {
@@ -496,8 +578,21 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
       symbolCache.set(path, result);
       return result;
     };
+    const closureBudget = createDeclarationClosureBudget(pairs.length), closureCache = createDeclarationClosureCache();
     for (const pair of pairs) {
       const before = symbolsFor(pair.before, pair.name, pair.entry.subpath), after = symbolsFor(pair.after, pair.name, pair.entry.subpath);
+      const ambientBefore = program.getSourceFile(pair.before), ambientAfter = program.getSourceFile(pair.after);
+      if (ambientBefore && ambientAfter && (!ts.isExternalModule(ambientBefore) || !ts.isExternalModule(ambientAfter))) {
+        // Ambient declaration files: any textual change (or a module/script flip)
+        // is a declaration change because no named exports exist to compare.
+        const normalize = (file: ts.SourceFile) => `${ts.isExternalModule(file) ? "module" : "script"}:${file.text.replace(/\s+/g, " ").trim()}`;
+        const beforeText = normalize(ambientBefore), afterText = normalize(ambientAfter);
+        if (beforeText !== afterText) {
+          const change = { kind: "declaration-change" as const, before: beforeText, after: afterText };
+          changes.push({ package: pair.name, subpath: pair.entry.subpath, name: "<ambient declarations>", ...change, classification: classifyReleaseChange(change, release, version) });
+        }
+        continue;
+      }
       for (const symbol of before.values()) {
         const next = after.get(symbol.name);
         const report = (kind: ReleaseChange["kind"], beforeText?: string, afterText?: string) => changes.push({ package: pair.name, subpath: pair.entry.subpath, name: symbol.name, kind, before: beforeText, after: afterText, classification: classifyReleaseChange({ kind, before: beforeText, after: afterText, removalVersion: symbol.removalVersion }, release, version) });
@@ -510,11 +605,14 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
           const oldType = checker.getDeclaredTypeOfSymbol(symbol.symbol), newType = checker.getDeclaredTypeOfSymbol(next.symbol);
           compatible &&= checker.isTypeAssignableTo(oldType, newType) && checker.isTypeAssignableTo(newType, oldType);
         }
-        if (!compatible && symbol.signature === next.signature && declarationClosure(checker, symbol.symbol) === declarationClosure(checker, next.symbol)) compatible = true;
+        if (!compatible && symbol.signature === next.signature) {
+          const label = `${pair.name}${pair.entry.subpath === "." ? "" : pair.entry.subpath.slice(1)}#${symbol.name}`;
+          if (declarationClosure(checker, symbol.symbol, closureBudget, label, closureCache) === declarationClosure(checker, next.symbol, closureBudget, label, closureCache)) compatible = true;
+        }
         if (!compatible || diagnostics.length > 0) report("declaration-change", symbol.signature, next.signature);
       }
     }
-    const runtimeDiagnostics: string[] = [];
+    const runtimeDiagnostics: string[] = [], inheritedRuntimeDiagnostics: string[] = [];
     for (const { report, beforeDecl, afterDecl } of runtimeWork) {
       const scope = `${report.package}:${report.subpath} [${report.condition}]`;
       for (const [side, surface, declaration] of [
@@ -535,7 +633,9 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
           } else if (symbol.value && symbol.name === "export=") {
             runtimeDiagnostics.push(`${side} ${scope}: export= declaration cannot be safely reconciled with runtime names`);
           } else if (symbol.value && !surface.names.includes(symbol.name)) {
-            runtimeDiagnostics.push(`${side} ${scope}: declared value ${JSON.stringify(symbol.name)} is missing from ${surface.target}`);
+            // A published baseline whose declarations over-promise its runtime cannot be
+            // repaired by this release; the same defect on the candidate still blocks.
+            (side === "baseline" ? inheritedRuntimeDiagnostics : runtimeDiagnostics).push(`${side} ${scope}: declared value ${JSON.stringify(symbol.name)} is missing from ${surface.target}`);
           }
         }
       }
@@ -558,7 +658,7 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
     const declarationDiagnostics = [...new Set(diagnostics)], runtimeProblems = [...new Set(runtimeDiagnostics)];
     const pass = declarationDiagnostics.length === 0 && runtimeProblems.length === 0 && runtimeExportsVerified
       && changes.every((change) => change.classification.compatible);
-    return { pass, changes, diagnostics: declarationDiagnostics, packagesCompared: baseline.size, runtimeExportsVerified, runtimeDiagnostics: runtimeProblems, runtimeExports };
+    return { pass, changes, diagnostics: declarationDiagnostics, inheritedDiagnostics, inheritedRuntimeDiagnostics: [...new Set(inheritedRuntimeDiagnostics)], packagesCompared: baseline.size, runtimeExportsVerified, runtimeDiagnostics: runtimeProblems, runtimeExports };
   } finally { rmSync(temp, { recursive: true, force: true }); }
 }
 function option(name: string): string | undefined { const i = process.argv.indexOf(name); return i < 0 ? undefined : process.argv[i + 1]; }

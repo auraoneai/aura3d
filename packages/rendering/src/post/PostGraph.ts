@@ -17,7 +17,7 @@
  * validates and returns the plan the executor runs (03-S18c).
  */
 
-import { defineContractSlot, type QrFlags } from "../contracts/core";
+import { defineContractSlot, type ContractSlot, type QrFlags } from "../contracts/core";
 import {
   registeredPostPasses,
   validatePostPassSpace as contractsValidatePostPassSpace,
@@ -707,7 +707,7 @@ export class PostGraph implements PostGraphLike {
  * provides it from `lanes/prd03.ts`; `get(flags)` returns the real PostGraph
  * only once provided AND the flag is on — the legacy stub otherwise.
  */
-export const postPipelineSlot = defineContractSlot<PostGraphLike>(
+export const postPipelineSlot: ContractSlot<PostGraphLike> = defineContractSlot<PostGraphLike>(
   "C-13",
   "prd03",
   "A3D_QR_POST",

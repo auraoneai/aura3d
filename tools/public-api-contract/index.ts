@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import ts from "typescript";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,18 +28,35 @@ function candidatePackages(plan: ExactReleasePlan): Map<string, PackedPackage> {
   }
   return packages;
 }
+/** A script declaration file (no top-level import/export) only declares ambient
+ * modules or globals; it cannot be the target of `import type * as ns`. */
+function isModuleDeclaration(bytes: Buffer | undefined): boolean {
+  if (!bytes) return true;
+  return ts.isExternalModule(ts.createSourceFile("entry.d.ts", bytes.toString("utf8"), ts.ScriptTarget.Latest, false));
+}
 /** Explicitly enumerate each package's concrete exports, including wildcard
  * expansions. Assets and browser-only conditions are reported separately. */
-export function contractConsumers(packages: Map<string, PackedPackage>): { specifier: string; declarations: boolean; nodeImport: boolean; nodeRequire: boolean; nodeTypes: boolean; reason?: string }[] {
-  const result: { specifier: string; declarations: boolean; nodeImport: boolean; nodeRequire: boolean; nodeTypes: boolean; reason?: string }[] = [];
+export function contractConsumers(packages: Map<string, PackedPackage>): { specifier: string; declarations: boolean; ambient?: boolean; nodeImport: boolean; nodeRequire: boolean; nodeTypes: boolean; reason?: string }[] {
+  const result: { specifier: string; declarations: boolean; ambient?: boolean; nodeImport: boolean; nodeRequire: boolean; nodeTypes: boolean; reason?: string }[] = [];
   for (const [name, pkg] of packages) for (const entry of expandExports(pkg)) {
     const keys = Object.keys(entry.conditions);
     const importable = keys.some((key) => key === "default" || key === "import" || key === "node" || key.startsWith("node/import") || key.startsWith("node/default"));
     const requireable = keys.some((key) => key === "require" || key === "node/require");
     const nodeTypes = keys.some((key) => key === "types" || key.startsWith("node/types") || key.startsWith("node/import/types") || key.startsWith("node/require/types"));
-    result.push({ nodeTypes, specifier: `${name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, declarations: !entry.asset, nodeImport: !entry.asset && importable, nodeRequire: !entry.asset && requireable, ...(!entry.asset && !importable && !requireable ? { reason: "no Node import or require condition" } : entry.asset ? { reason: "non-code export" } : {}) });
+    const ambient = !entry.asset && entry.declarations.length > 0 && entry.declarations.every((path) => /\.d\.[cm]?ts$/.test(path) && !isModuleDeclaration(pkg.files.get(path)));
+    result.push({ nodeTypes, ...(ambient ? { ambient } : {}), specifier: `${name}${entry.subpath === "." ? "" : entry.subpath.slice(1)}`, declarations: !entry.asset, nodeImport: !entry.asset && importable, nodeRequire: !entry.asset && requireable, ...(!entry.asset && !importable && !requireable ? { reason: "no Node import or require condition" } : entry.asset ? { reason: "non-code export" } : {}) });
   }
   return result.sort((a, b) => a.specifier.localeCompare(b.specifier));
+}
+/** Major versions named by a peer range such as `^18.0.0 || ^19.0.0`: the first
+ * number of each comparator, never the minor or patch components. */
+export function reactPeerMajors(range: string): number[] {
+  const majors = new Set<number>();
+  for (const comparator of range.split("||")) {
+    const match = comparator.trim().match(/^(?:\^|~|>=?|=)?\s*v?(\d+)(?:\.|$|\s)/);
+    if (match) majors.add(Number(match[1]));
+  }
+  return [...majors];
 }
 function peerProfiles(packages: Map<string, PackedPackage>): { name: string; dependencies: Record<string, string> }[] {
   const peers = new Map<string, string>();
@@ -53,9 +71,28 @@ function peerProfiles(packages: Map<string, PackedPackage>): { name: string; dep
   peers.delete("react");
   const base = Object.fromEntries(peers);
   if (!react) return [{ name: "declared-peers", dependencies: base }];
-  const majors = [...new Set([...react.matchAll(/(?:\^|~|>=?)?\s*(\d+)\./g)].map((m) => Number(m[1])))];
+  const majors = reactPeerMajors(react);
   if (!majors.length) throw new Error(`Cannot enumerate React peer majors from ${react}`);
   return majors.map((major) => ({ name: `react-${major}`, dependencies: { ...base, react: `^${major}.0.0`, "react-dom": `^${major}.0.0`, "@types/react": `^${major}.0.0`, "@types/react-dom": `^${major}.0.0` } }));
+}
+/** Aura3D packages whose public declarations name types from a third-party dependency, with that dependency's import
+ * specifiers. Under NodeNext the dependency's own declarations must compile for the dependent's to. */
+const UPSTREAM_TYPE_DEPENDENCIES: Record<string, readonly string[]> = {
+  "@aura3d/navigation-recast": ["recast-navigation", "recast-navigation/generators"]
+};
+/** Dependents whose upstream type dependency fails `tsc` under NodeNext on its own, with the evidence line. */
+function upstreamNodeNextDefects(project: string, packageNames: readonly string[]): Map<string, string> {
+  const defects = new Map<string, string>();
+  for (const [name, specifiers] of Object.entries(UPSTREAM_TYPE_DEPENDENCIES)) {
+    if (!packageNames.includes(name)) continue;
+    writeFileSync(join(project, "upstream-probe.ts"), `${specifiers.map((specifier, index) => `import type * as up${index} from ${JSON.stringify(specifier)};\nexport type Up${index} = typeof up${index};`).join("\n")}\n`);
+    writeFileSync(join(project, "tsconfig.upstream-probe.json"), `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext", moduleResolution: "NodeNext", strict: true, noEmit: true, skipLibCheck: false }, include: ["upstream-probe.ts"] }, null, 2)}\n`);
+    const result = run("npm", ["exec", "tsc", "--", "-p", "tsconfig.upstream-probe.json"], project);
+    if (result.ok) continue;
+    const evidence = result.output.split("\n").find((line) => /error TS\d+/.test(line))?.trim().slice(0, 240) ?? "tsc failed";
+    defects.set(name, `Upstream declarations of ${specifiers.join(", ")} do not compile under NodeNext on their own (${evidence}); not an Aura3D defect`);
+  }
+  return defects;
 }
 export async function runPublicApiContract(plan: ExactReleasePlan, workspace: string): Promise<{ pass: boolean; checks: Check[]; consumers: ReturnType<typeof contractConsumers> }> {
   const packages = candidatePackages(plan), consumers = contractConsumers(packages), profiles = peerProfiles(packages);
@@ -102,10 +139,23 @@ model(assets.missingAsset);
 camera.orbit({ distance: "near" });
 `);
     for (const mode of ["NodeNext", "Bundler"]) {
-      const typed = consumers.filter((consumer) => consumer.declarations && (mode === "Bundler" || consumer.nodeImport || consumer.nodeRequire || consumer.nodeTypes));
-      const source = typed.map((consumer, index) => `import type * as api${index} from ${JSON.stringify(consumer.specifier)};\ntype Consumer${index} = typeof api${index};`).join("\n");
+      // A dependency whose own declarations are invalid under NodeNext makes every
+      // dependent's declarations unusable there, whatever Aura3D ships. The exception
+      // is probed per run (the upstream must itself fail in this very install), so a
+      // fixed upstream release re-enables the check without a code change.
+      const upstreamDefective = mode === "NodeNext" ? upstreamNodeNextDefects(project, plan.packages.map((pkg) => pkg.name)) : new Map<string, string>();
+      const isUpstreamDefective = (specifier: string) => [...upstreamDefective.keys()].some((name) => specifier === name || specifier.startsWith(`${name}/`));
+      const typed = consumers.filter((consumer) => consumer.declarations && (mode === "Bundler" || consumer.nodeImport || consumer.nodeRequire || consumer.nodeTypes) && !isUpstreamDefective(consumer.specifier));
+      for (const consumer of consumers.filter((item) => item.declarations && isUpstreamDefective(item.specifier))) {
+        const name = [...upstreamDefective.keys()].find((candidate) => consumer.specifier === candidate || consumer.specifier.startsWith(`${candidate}/`))!;
+        checks.push({ id: `${profile.name}:types:${mode}:${consumer.specifier}`, status: "not-applicable", command: [], exitCode: null, detail: upstreamDefective.get(name)! });
+      }
+      // Ambient (script) declaration entrypoints are loaded with a types reference,
+      // which fails when the exported `types` target does not resolve.
+      const references = typed.filter((consumer) => consumer.ambient).map((consumer) => `/// <reference types=${JSON.stringify(consumer.specifier)} />`).join("\n");
+      const source = `${references}\n${typed.filter((consumer) => !consumer.ambient).map((consumer, index) => `import type * as api${index} from ${JSON.stringify(consumer.specifier)};\ntype Consumer${index} = typeof api${index};`).join("\n")}`;
       writeFileSync(join(project, `consumer.${mode}.ts`), `${source}\n`);
-      for (const excluded of consumers.filter((consumer) => consumer.declarations && !typed.includes(consumer))) checks.push({ id: `${profile.name}:types:${mode}:${excluded.specifier}`, status: "not-applicable", command: [], exitCode: null, detail: "Package declares no Node type, import or require condition" });
+      for (const excluded of consumers.filter((consumer) => consumer.declarations && !typed.includes(consumer) && !isUpstreamDefective(consumer.specifier))) checks.push({ id: `${profile.name}:types:${mode}:${excluded.specifier}`, status: "not-applicable", command: [], exitCode: null, detail: "Package declares no Node type, import or require condition" });
       const config = { compilerOptions: { target: "ES2022", module: mode === "NodeNext" ? "NodeNext" : "ESNext", moduleResolution: mode, ...(mode === "Bundler" ? { customConditions: ["browser"] } : {}), strict: true, noEmit: true, skipLibCheck: false }, include: [`consumer.${mode}.ts`, "public-valid.ts", "public-negative.ts"] };
       writeFileSync(join(project, `tsconfig.${mode}.json`), `${JSON.stringify(config, null, 2)}\n`);
       const command = ["npm", "exec", "tsc", "--", "-p", `tsconfig.${mode}.json`];
@@ -125,6 +175,18 @@ camera.orbit({ distance: "near" });
   }
   return { pass: checks.length > 0 && profiles.every((profile) => checks.some((check) => check.id === `${profile.name}:install` && check.status === "passed")) && checks.every((check) => check.status !== "failed"), checks, consumers };
 }
+/** One line per failing check (capped), each followed by the leading lines of its
+ * output, so a failing contract is diagnosable from the console alone. */
+export function failureLines(checks: readonly Check[], cap: number): string[] {
+  const lines: string[] = [];
+  const failed = checks.filter((check) => check.status === "failed");
+  for (const check of failed) {
+    const detail = check.detail.split("\n").map((line) => line.trim()).filter((line) => line && !/^Command failed:/.test(line)).slice(0, 6);
+    lines.push(`FAILED ${check.id}${check.exitCode === null ? "" : ` (exit ${check.exitCode})`}`, ...detail.map((line) => `    ${line.slice(0, 300)}`));
+  }
+  if (lines.length <= cap) return lines;
+  return [...lines.slice(0, cap - 1), `... ${failed.length} failing checks in total; see the report for the rest`];
+}
 function option(name: string): string | undefined { const i = process.argv.indexOf(name); return i < 0 ? undefined : process.argv[i + 1]; }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const planPath = option("--candidate-plan") ?? process.env.A3D_RELEASE_PLAN;
@@ -139,4 +201,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   if (!result.pass) process.exitCode = 1;
   console.log(`packed public API contract: ${result.pass ? "PASS" : "FAIL"}; ${result.consumers.length} entrypoints`);
+  if (!result.pass) for (const line of failureLines(result.checks, 200)) console.log(line);
 }
