@@ -62,7 +62,10 @@ export default defineArtDirection({
     { role: "backdrop", assetKey: "linksHarbourTowerC", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
     { role: "set-dressing", assetKey: "linksMareLander", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "set-dressing", assetKey: "linksMareRover", maxTriangles: 4000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "linksMareRelay", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 }
+    { role: "set-dressing", assetKey: "linksMareRelay", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
+    // GU47 wave 3 (LINKS-08): two Links-owned Meshy landmarks, 27,766 and 32,602 triangles (pipeline copy / one meshopt pass), 1k maps
+    { role: "set-dressing", assetKey: "links_basalt_columns", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "set-dressing", assetKey: "links_cable_car_station", maxTriangles: 34000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "tee-strike", kind: "links-strike" },
