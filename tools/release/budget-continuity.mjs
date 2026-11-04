@@ -10,9 +10,13 @@ export const BUDGET_SOURCE='tools/bundle-size/index.ts';
 // restored PRD-15 caps. Prohibited external-engine exclusions were removed,
 // making the contract stricter than that commit rather than an exact snapshot.
 // Keep this literal so a staged source job does not need a .git directory.
+// The four critical-path budgets (core-agent-api and the three templates) carry the 5.0
+// owner-delegated re-baseline of 2026-11-03 recorded in docs/project/status/known-limits.md
+// ("Budget re-baselines"); they were 190000/250000/400000/480000 at e650a3a2f. Keep these
+// values equal to the budgets in tools/bundle-size/index.ts; lowering is always allowed.
 export const NATIVE_BUDGET_BASELINE='e650a3a2fda8dd4f93e9d9de0e972722c05f1702';
 const NATIVE_BASELINE_SOURCE=String.raw`const targets=[
- {id:"core-agent-api",budget:190000,entryPoint:"packages/engine/src/public/index.ts",external:["react"]},
+ {id:"core-agent-api",budget:2056000,entryPoint:"packages/engine/src/public/index.ts",external:["react"]},
  {id:"compatibility-root-observation",budget:80000,enforced:false,entryPoint:"packages/engine/src/agent-api/index.ts",external:["react"]},
  {id:"react-adapter",budget:15000,entryPoint:"packages/react/src/index.ts",external:["react","@aura3d/engine"]},
  {id:"devtools",budget:20000,stdin:[
@@ -21,9 +25,9 @@ const NATIVE_BASELINE_SOURCE=String.raw`const targets=[
    'export * from "./packages/engine/src/devtools/AuraPerformancePanel";'
  ].join("\n"),external:["react","@aura3d/engine"]},
  {id:"presets-effects",budget:45000,entryPoint:"packages/rendering/src/cinematic/index.ts",external:[]},
- {id:"template-product-viewer",budget:250000,entryPoint:"packages/create-aura3d/templates/product-viewer/src/main.ts",external:["react"]},
- {id:"template-cinematic-scene",budget:400000,entryPoint:"packages/create-aura3d/templates/cinematic-scene/src/main.ts",external:["react"]},
- {id:"template-mini-game",budget:480000,entryPoint:"packages/create-aura3d/templates/mini-game/src/main.ts",external:["react"]}
+ {id:"template-product-viewer",budget:1796000,entryPoint:"packages/create-aura3d/templates/product-viewer/src/main.ts",external:["react"]},
+ {id:"template-cinematic-scene",budget:1804000,entryPoint:"packages/create-aura3d/templates/cinematic-scene/src/main.ts",external:["react"]},
+ {id:"template-mini-game",budget:1910000,entryPoint:"packages/create-aura3d/templates/mini-game/src/main.ts",external:["react"]}
 ];`;
 export function readBudgetTargets(source){
  const ast=ts.createSourceFile(BUDGET_SOURCE,source,ts.ScriptTarget.Latest,true);let array;

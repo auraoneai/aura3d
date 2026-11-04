@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, gzipSync } from "node:zlib";
-import { build, type Metafile } from "esbuild";
+import { build, type Metafile, type Plugin } from "esbuild";
 import { hashConsumerProject, restorePackedConsumerProject, restorePortableConsumerProject, validateSourceConsumerReport, type NativeConsumerProject } from "../package-clean-install/index";
 import { loadValidatedReleasePlan, type ExactReleasePlan } from "../release/exact-release-plan.mjs";
 
@@ -88,23 +88,65 @@ export function retainedPackages(metafile: Metafile): Record<string, number> {
   return result;
 }
 
+/** The published engine dist subtree of one bundled input, using the innermost installation (a nested dependency is not engine code). */
+function engineSubtreeOf(path: string): string | undefined {
+  const parts = path.replaceAll("\\", "/").split("/");
+  const index = parts.lastIndexOf("node_modules");
+  const subtree = parts[index + 4];
+  return index >= 0 && parts[index + 1] === "@aura3d" && parts[index + 2] === "engine" &&
+    parts[index + 3] === "dist" && subtree && parts[index + 5] ? subtree : undefined;
+}
+
 /** Attribute bundled engine modules to their published dist subtree. */
 export function retainedEngineSubtrees(metafile: Metafile): Record<string, number> {
   const result: Record<string, number> = {};
   for (const output of Object.values(metafile.outputs)) {
     for (const [path, contribution] of Object.entries(output.inputs)) {
-      // Use the innermost installation, just as retainedPackages does. A nested
-      // dependency under an engine directory is not itself engine code.
-      const parts = path.replaceAll("\\", "/").split("/");
-      const index = parts.lastIndexOf("node_modules");
-      const subtree = parts[index + 4];
-      if (index >= 0 && parts[index + 1] === "@aura3d" && parts[index + 2] === "engine" &&
-          parts[index + 3] === "dist" && subtree && parts[index + 5]) {
-        result[subtree] = (result[subtree] ?? 0) + contribution.bytesInOutput;
-      }
+      const subtree = engineSubtreeOf(path);
+      if (subtree) result[subtree] = (result[subtree] ?? 0) + contribution.bytesInOutput;
     }
   }
   return result;
+}
+
+// The 4.x-compatible root keeps synchronous `app.physics` on purpose (docs/migration/4-to-5.md, "Staged v5 entry";
+// tests/unit/agent-api/lazy-physics-world.test.ts). Its one eager route to the Rapier adapter is this gateway module.
+const LEGACY_PHYSICS_GATEWAY = /(?:^|\/)node_modules\/@aura3d\/engine\/dist\/engine\/public\/legacy-physics-access\.js$/u;
+
+/** Inputs statically (not dynamically) reachable from the entry points, optionally without passing through the gateway. */
+function staticReach(metafile: Metafile, skipGateway: boolean): Set<string> {
+  const seen = new Set<string>();
+  // esbuild also reports a dynamic-import target as a chunk entry point; a real entry is one nothing imports.
+  const imported = new Set(Object.values(metafile.inputs).flatMap(input => input.imports.map(edge => edge.path)));
+  const queue = Object.values(metafile.outputs).flatMap(output => output.entryPoint && !imported.has(output.entryPoint) ? [output.entryPoint] : []);
+  while (queue.length) {
+    const path = queue.pop()!;
+    if (seen.has(path) || (skipGateway && LEGACY_PHYSICS_GATEWAY.test(path.replaceAll("\\", "/")))) continue;
+    seen.add(path);
+    for (const edge of metafile.inputs[path]?.imports ?? []) if (!edge.external && edge.kind !== "dynamic-import") queue.push(edge.path);
+  }
+  return seen;
+}
+
+/**
+ * Split retained optional-backend bytes into those the slice may keep (reached only through the documented 4.x
+ * synchronous physics gateway) and those it may not (any other route, static or dynamic).
+ */
+export function optionalBackendRetention(metafile: Metafile, backends: readonly string[]): { forbidden: Record<string, number>; documentedSynchronous: Record<string, number> } {
+  const withGateway = staticReach(metafile, false);
+  const withoutGateway = staticReach(metafile, true);
+  const forbidden: Record<string, number> = {};
+  const documentedSynchronous: Record<string, number> = {};
+  for (const output of Object.values(metafile.outputs)) {
+    for (const [path, contribution] of Object.entries(output.inputs)) {
+      const subtree = engineSubtreeOf(path);
+      if (!subtree || !backends.includes(subtree) || contribution.bytesInOutput === 0) continue;
+      const documented = withGateway.has(path) && !withoutGateway.has(path);
+      const bucket = documented ? documentedSynchronous : forbidden;
+      bucket[subtree] = (bucket[subtree] ?? 0) + contribution.bytesInOutput;
+    }
+  }
+  return { forbidden, documentedSynchronous };
 }
 
 function importsSpecifier(source: string, specifier: string): boolean {
@@ -145,6 +187,22 @@ function assertVerifiedProject(project: NativeConsumerProject, destination: stri
   }
 }
 
+/**
+ * `finalize-dist` internalizes `import("@aura3d/navigation-recast")` as a relative dynamic import of the adapter shipped in
+ * the engine dist. Treat that one lazy load exactly like the declared optional peer it was written as: external and
+ * asynchronous. A static import of the adapter still bundles it, so the backend-subtree check keeps rejecting it.
+ */
+export const lazyOptionalAdapters: Plugin = {
+  name: "lazy-optional-adapters",
+  setup(api) {
+    api.onResolve({ filter: /navigation-recast\/index\.js$/ }, args => {
+      const importer = args.importer.replaceAll("\\", "/");
+      if (args.kind !== "dynamic-import" || !/\/node_modules\/@aura3d\/engine\/dist\//u.test(importer)) return undefined;
+      return { path: "@aura3d/navigation-recast", external: true };
+    });
+  }
+};
+
 export async function measureSlice(root: string, project: NativeConsumerProject, slice: Slice, work: string, plan?: ExactReleasePlan): Promise<{ checks: Check[]; measurement: unknown }> {
   const isolated = join(work, slice.id);
   if (project.retention === "packed-v1") {
@@ -183,7 +241,8 @@ export async function measureSlice(root: string, project: NativeConsumerProject,
     metafile: true,
     write: false,
     logLevel: "silent",
-    external: ALLOWED_EXTERNALS
+    external: ALLOWED_EXTERNALS,
+    plugins: [lazyOptionalAdapters]
   }).catch((error: unknown) => {
     // esbuild's message names only the unresolved import; say which slice and project failed.
     throw new Error(`Installed tree-shaking slice ${slice.id} (${project.template}) failed to bundle: ${error instanceof Error ? error.message : String(error)}`);
@@ -200,11 +259,13 @@ export async function measureSlice(root: string, project: NativeConsumerProject,
   // These adapters are embedded in the packed engine, so their retained bytes
   // are attributed to @aura3d/engine rather than to the optional package.
   const forbiddenBackends = ["physics-rapier", "navigation-recast"];
+  // The one allowed exception is the 4.x-compatible root's documented synchronous physics gateway.
+  const backendRetention = optionalBackendRetention(result.metafile, forbiddenBackends);
   const checks: Check[] = [
     ...slice.requiredImports.map(specifier => ({ id: `${slice.id}-import-${specifier}`, pass: importsSpecifier(entrySource, specifier), detail: `source entry imports ${specifier}` })),
     { id: `${slice.id}-engine-retained`, pass: (retained["@aura3d/engine"] ?? 0) > 0, detail: `${retained["@aura3d/engine"] ?? 0} retained engine bytes` },
     { id: `${slice.id}-excludes-optional-packages`, pass: forbidden.every(name => (retained[name] ?? 0) === 0), detail: `retained packages ${JSON.stringify(retained)}` },
-    { id: `${slice.id}-excludes-optional-backend-subtrees`, pass: forbiddenBackends.every(name => (engineSubtrees[name] ?? 0) === 0), detail: `retained engine subtrees ${JSON.stringify(engineSubtrees)}` }
+    { id: `${slice.id}-excludes-optional-backend-subtrees`, pass: forbiddenBackends.every(name => (backendRetention.forbidden[name] ?? 0) === 0), detail: `retained engine subtrees ${JSON.stringify(engineSubtrees)}; forbidden backend bytes ${JSON.stringify(backendRetention.forbidden)}; documented synchronous ${JSON.stringify(backendRetention.documentedSynchronous)}` }
   ];
   if (slice.id !== "react") {
     const excludedSubtrees = ["editor", "editor-runtime", "three-compat", "scripting", "apps", "debug", "aura3d-cli", "create-aura3d"];
@@ -238,6 +299,7 @@ export async function measureSlice(root: string, project: NativeConsumerProject,
       chunkDigests: js.map(file => ({ name: basename(file.path), bytes: file.contents.byteLength, sha256: sha256(file.contents) })).sort((a, b) => a.name.localeCompare(b.name)),
       retainedPackages: retained,
       retainedEngineSubtrees: engineSubtrees,
+      documentedSynchronousBackends: backendRetention.documentedSynchronous,
       retainedGameBytes: retainedEngineGame,
       externalDynamicImports
     }

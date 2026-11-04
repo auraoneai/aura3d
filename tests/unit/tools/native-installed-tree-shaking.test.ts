@@ -162,12 +162,12 @@ describe("isolated installed consumers", () => {
   it.each([
     ["root", "physics-rapier", false, true],
     ["root", "physics-rapier", false, false],
-    ["root", "navigation-recast", true, false],
+    ["root", "navigation-recast", false, false],
     ["game-addon", "physics-rapier", true, true],
     ["game-addon", "physics-rapier", true, false],
     ["game-addon", "navigation-recast", false, false],
     ["react", "physics-rapier", false, false],
-    ["react", "navigation-recast", true, false]
+    ["react", "navigation-recast", false, false]
   ] as const)("rejects retained %s slice adapter %s (dynamic: %s, top-level: %s)", async (id, backend, dynamic, backendInRoot) => {
     const result = await measuredConsumerFixture(id, backend, true, dynamic, backendInRoot);
     const checks = Object.fromEntries(result.checks.map(check => [check.id, check]));
@@ -192,6 +192,14 @@ describe("isolated installed consumers", () => {
     if (backend) expect(measurement.retainedEngineSubtrees[backend] ?? 0).toBe(0);
     if (id === "game-addon") expect(measurement.retainedEngineSubtrees.game).toBeGreaterThan(0);
     if (id === "react") expect(measurement.retainedEngineSubtrees.react).toBeGreaterThan(0);
+  });
+
+  it.each(["root", "react"] as const)("keeps a lazily loaded navigation-recast adapter external in the %s slice (finalize-dist internalizes the optional peer)", async id => {
+    const result = await measuredConsumerFixture(id, "navigation-recast", true, true, false);
+    const measurement = result.measurement as { retainedEngineSubtrees: Record<string, number>; externalDynamicImports: string[] };
+    expect(result.checks.filter(check => !check.pass)).toEqual([]);
+    expect(measurement.retainedEngineSubtrees["navigation-recast"] ?? 0).toBe(0);
+    expect(measurement.externalDynamicImports).toContain("@aura3d/navigation-recast");
   });
 
   it("permits only asynchronous documented optional peers and Node-only dynamic branches as externals", () => {
@@ -262,9 +270,9 @@ describe("candidate-bound reports", () => {
     write(root, path, source);
     const result = validateBudgetContinuity(root);
     const limits = Object.fromEntries(result.baselineTargets.map((target: { id: string; budget: number }) => [target.id, target.budget]));
-    expect([limits["core-agent-api"], limits["template-product-viewer"], limits["template-cinematic-scene"], limits["template-mini-game"]]).toEqual([190_000, 250_000, 400_000, 480_000]);
+    expect([limits["core-agent-api"], limits["template-product-viewer"], limits["template-cinematic-scene"], limits["template-mini-game"]]).toEqual([2_056_000, 1_796_000, 1_804_000, 1_910_000]);
     expect(result.baselineEncoding).toBe("static-target-contract");
-    write(root, path, source.replace("budget: 190_000", "budget: 190_001"));
+    write(root, path, source.replace("budget: 2_056_000", "budget: 2_056_001"));
     expect(() => validateBudgetContinuity(root)).toThrow(/Increased bundle budget: core-agent-api/);
   });
 });

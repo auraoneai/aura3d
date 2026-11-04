@@ -190,6 +190,18 @@ candidate. Final release claims require regeneration and source-bound receipts.
 
 ## Budget re-baselines
 
+- **Installed tree-shaking optional backends** (`tools/installed-tree-shaking/index.ts`):
+  the 4.x-compatible `@aura3d/engine` root, its `/game` addon and `@aura3d/react`
+  (via `createAuraApp`) keep synchronous `app.physics`, so 28,697 B of the
+  `physics-rapier` adapter is retained on purpose through the single documented
+  gateway `public/legacy-physics-access.js` (`docs/migration/4-to-5.md`,
+  `retired-tests.md` 12b). The `*-excludes-optional-backend-subtrees` checks accept
+  that one route only (reported as `documentedSynchronousBackends`); any other
+  static or dynamic route still fails. `finalize-dist` internalizes the lazy
+  `import("@aura3d/navigation-recast")` as a relative dynamic import, so the tool
+  now treats that single lazy load as the declared optional peer (external).
+  The lazy isolated entry (`public/v5.ts`) retains neither backend.
+
 - **PRD-13 lane bundle delta** (`tests/qr/prd13/bundle-delta.test.ts`):
   re-baselined 2026-11-02 for 5.0 (owner-delegated) from 9,216 B to
   19,968 B gzip (measured 18,091 B + 10%, rounded up to the next 256 B). The
@@ -212,7 +224,9 @@ candidate. Final release claims require regeneration and source-bound receipts.
   quarantined are still invoked by `.github/workflows/public-demo-deploy.yml`
   and `tools/public-demo-deployment-artifacts`, so they are not dead.
 - **Bundle-size critical paths** (`core-agent-api`, `template-product-viewer`,
-  `template-cinematic-scene`, `template-mini-game` in `tools/bundle-size/index.ts`):
+  `template-cinematic-scene`, `template-mini-game` in `tools/bundle-size/index.ts`; the budget-continuity baseline literal in
+  `tools/release/budget-continuity.mjs` and the `native-installed-tree-shaking`
+  starter-budget test carry the same four values):
   re-baselined 2026-11-03 for 5.0 (owner-delegated) from 190,000 / 250,000 /
   400,000 / 480,000 B to 2,056,000 / 1,796,000 / 1,804,000 / 1,910,000 B gzip
   (measured 1,868,919 / 1,632,392 / 1,639,097 / 1,735,649 B + 10%, rounded up
