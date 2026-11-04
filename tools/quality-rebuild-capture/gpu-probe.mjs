@@ -3,7 +3,8 @@
 // whether the browser survives. This finds a launch configuration that is stable on a runner.
 // Usage: node tools/quality-rebuild-capture/gpu-probe.mjs [--out probe.json]
 import { chromium } from "@playwright/test";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 
 const outIdx = process.argv.indexOf("--out");
 const outFile = outIdx >= 0 ? process.argv[outIdx + 1] : "tools/quality-rebuild-capture/out/gpu-probe.json";
@@ -46,4 +47,6 @@ for (const c of configs) {
   console.log(JSON.stringify({ name: r.name, ok: r.ok, renderer: r.runs[0]?.renderer ?? null, error: r.error ?? null }));
   results.push(r);
 }
+// #1392: the default out/ directory is not committed; create it so the write cannot ENOENT.
+mkdirSync(dirname(outFile), { recursive: true });
 writeFileSync(outFile, JSON.stringify({ platform: process.platform, arch: process.arch, results }, null, 2));
