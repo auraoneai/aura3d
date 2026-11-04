@@ -70,7 +70,14 @@ export default defineArtDirection({
     // placements and materials; propRockA/B, propPineTree and propConifer stay for the ?look=original stage.
     { role: "backdrop", assetKey: "sling_rocksA", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
     { role: "backdrop", assetKey: "sling_rocksB", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "set-dressing", assetKey: "sling_islandTrees", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    { role: "set-dressing", assetKey: "sling_islandTrees", maxTriangles: 200000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    // GU47 wave 2 (WP-36 second batch): five far Meshy set pieces (../art/setPieces.ts), each one draw, no shadow, no collider.
+    // Measured from the optimized GLBs: 14,998 / 19,998 / 19,284 / 20,000 / 19,994 triangles, one BC+N+ORM material, 1024 px.
+    { role: "backdrop", assetKey: "sling_lighthouseIslet", maxTriangles: 15000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "sling_quarryCrane", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "sling_greenhouseFrame", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "sling_curtainWall", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    { role: "backdrop", assetKey: "sling_crystalCrater", maxTriangles: 20000, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "launch", kind: "siege-launch-dust", flipbook: "dust-mote" },
