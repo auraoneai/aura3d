@@ -645,7 +645,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
   const lodOn = row !== null && enabled("lod");
   const lodScatter: LodScatter[] = [];
   const lodFarNodes: Parameters<typeof builder.add>[0][] = [];
-  const scatter = (key: string, name: string, items: readonly ScatterItem[], options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}): void => {
+  const scatter = (key: string, name: string, items: readonly ScatterItem[], options: { tint?: string; roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number; castShadow?: boolean } = {}): void => {
     const data = meshyGeometry(key);
     if (!data || !items.length) return;
     texturedScenery++;
@@ -654,7 +654,7 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     const lod = lodOn && items.length > 1 ? meshyLodGeometry(key) : undefined;
     // With a LOD both nodes start with every instance; the first runtime update splits them by camera distance.
     builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
-      name, material: meshyMaterial(key, options), transforms: items.map(scatterTransform), ...wind
+      name, material: meshyMaterial(key, options), transforms: items.map(scatterTransform), ...(options.castShadow === false ? { castShadow: false } : {}), ...wind
     } as never).runtime({ id: name }));
     if (!lod) return;
     texturedScenery++;
@@ -734,16 +734,30 @@ export function buildWorld(levelIndex: number, mode: "gu47" | "original" = typeo
     });
     const pbr = (color: string, roughness = 0.85, metallic = 0) => material.pbr({ color, roughness, metallic });
     const s = row.surfaces;
+    // GU47 wave 2 (g22): generated (Meshy) rocks at the landmark spots (props: height 1, base at y = 0, so the instance sits on the base point);
+    // false when the model did not load, so the instanced stand-ins below still draw.
+    const meshyAt = (kind: LandmarkKind, key: string, name: string, sizeOf: (p: LandmarkPlacement) => Vec3, options: Parameters<typeof scatter>[3]): boolean => {
+      if (!hasMeshy(key)) return false;
+      scatter(key, name, landmarkPlacements(kind, level.length, width, look.seaSide, seed).map((p) => ({ p: landBase(p), yaw: p.yaw - roadProfile(level, p.s).heading, size: sizeOf(p) })), options);
+      return true;
+    };
     if (look.style === "coast") {
       const towers = place("turbine");
       builder.add(instances.cylinder({ name: "turbine-towers", transforms: towers, material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
       builder.add(instances.box({ name: "turbine-nacelles", transforms: towers.map((t) => ({ position: [t.position[0], t.position[1] + t.scale[1] / 2 + 1, t.position[2]] as Vec3, rotation: [0, 0, 0] as Vec3, scale: [5, 2.4, 2.4] as Vec3 })), material: pbr("#ecebe6", 0.45, 0.1), castShadow: false }));
       for (const t of towers) turbineHubs.push([t.position[0] - 3, t.position[1] + t.scale[1] / 2 + 1, t.position[2]]);
-      builder.add(instances.cone({ name: "sea-stacks", transforms: place("sea-stack"), material: material.custom(terrainSpec(look)), castShadow: false }));
+      if (!meshyAt("sea-stack", "seastack", "sea-stacks", (p) => [p.size[1] * 0.85, p.size[1], p.size[1] * 0.85], { tint: "#f0e7d8", roughness: 0.92, metallic: 0, castShadow: false })) {
+        builder.add(instances.cone({ name: "sea-stacks", transforms: place("sea-stack"), material: material.custom(terrainSpec(look)), castShadow: false }));
+      }
     } else if (look.style === "canyon") {
       builder.add(instances.cylinder({ name: "mesas", transforms: place("mesa"), material: material.custom(terrainSpec(look)), castShadow: false }));
-      builder.add(instances.capsule({ name: "hoodoos", transforms: place("hoodoo"), material: pbr(s.rockA), castShadow: true }));
-      builder.add(instances.torus({ name: "arch", transforms: place("arch", 0), material: pbr(s.rockB), castShadow: false }));
+      // the hoodoo model is a wide boulder (1.56 : 1), stretched into a spire; the arch keeps its own proportions (1.8 : 1 span to height)
+      if (!meshyAt("hoodoo", "hoodoo", "hoodoos", (p) => [p.size[1] * 0.45, p.size[1] * 0.9, p.size[1] * 0.45], { tint: s.rockA, roughness: 0.95, metallic: 0 })) {
+        builder.add(instances.capsule({ name: "hoodoos", transforms: place("hoodoo"), material: pbr(s.rockA), castShadow: true }));
+      }
+      if (!meshyAt("arch", "arch", "arch", (p) => [p.size[0] / 1.8, p.size[0] / 1.8, p.size[0] / 1.8], { tint: s.rockA, roughness: 0.95, metallic: 0, castShadow: false })) {
+        builder.add(instances.torus({ name: "arch", transforms: place("arch", 0), material: pbr(s.rockB), castShadow: false }));
+      }
       builder.add(instances.cylinder({ name: "uplink-masts", transforms: place("uplink-mast"), material: pbr("#3a3b40", 0.5, 0.6), castShadow: false }));
     } else {
       const masts = place("antenna");
