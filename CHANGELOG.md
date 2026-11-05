@@ -1,10 +1,33 @@
 # Changelog
 
-Version: 5.0.0
+Version: 5.0.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 5.0.1 (2026-11-05)
+
+Fixes the 5.0.0 regression where none of the showcase games drew. The public API is unchanged: every package keeps the 5.0.0 exports, and 5.0.1 is 5.0.0 plus the render fixes below. Use 5.0.1 instead of 5.0.0.
+
+### Fixes
+
+- **Contact-shadow mount guard no longer blanks the scene.** In 5.0.0 a scene that used contact shadows together with another depth consumer threw `CONTACT_SHADOW_DEPTH_UNSUPPORTED` during mount, so the canvas stayed empty. Contact shadows now degrade to no mask and the scene draws.
+- **Eleven other new 5.0.0 hard throws now degrade with a one-time `console.warn` code** instead of failing the frame. Default mode degrades; strict mode (`A3D_QR_STRICT`) still rejects with the original error. Warning codes: `CONTACT_SHADOW_DEGRADED` (reason follows), `DEPTH_ALPHA_HASH_DEGRADED` (alpha-hashed caster casts as opaque, as in 4.7.x), `DEPTH_ALPHA_COVERAGE_DEGRADED` (alpha-to-coverage caster), `TRANSMISSION_DEGRADED` and `DIFFUSE_TRANSMISSION_DEGRADED` (draws without the transmission lobe), `TEXTURE_FLIPY_DEGRADED` (an `ImageBitmap` that needs `flipY` uploads unflipped, as in 4.7.x). The atmosphere-snapshot check (`PRD07_ATMOSPHERE_SNAPSHOT_STALE`) now re-binds to the live snapshot during precompile; frames still fail closed.
+- **Vertex shader no longer reads an undeclared `a_tangent`** when only the wind deform hook is active (GLSL compile error that blanked Pips Big Leap).
+- **`instances.mesh` is registered by the engine public entry** (side-effect imports), so source-aliased and tree-shaken builds no longer lose it (Gridlock Courier).
+- **Reduced-motion water:** `world.water` with zero waves under reduced motion threw `at least one wave is required`; the Aura Links 3D pond now keeps one wave (this also failed on 4.7.13 under reduced motion). The validation itself is unchanged.
+- **Corrected asset hashes.** 39 manifest entries in three showcase route manifests no longer matched the shipped GLBs, and 5.0 verifies SHA-256 at load. The manifests now carry the hashes of the shipped files; `AssetIntegrityError` still rejects real mismatches.
+- Evidence: all 25 live games draw with zero error-level console messages in a real-GPU Chrome capture of the deploy route build (`tests/reports/render-census-501.md`).
+
+### Known limits
+
+- Contact shadows are skipped (not applied) in any scene that has another contributor pass or a transparent queue; 4.7.13 applied them there.
+- Other new 5.0.0 throws were not exercised by any of the 25 games (specialized-geometry, packed-member, instance-alpha and forward-alpha masked-depth contracts, output-alpha, temporal, native depth-of-field, splat, volume and transmission-replay checks) and were left as they are.
+- Still open from 5.0.0: clipping planes together with shadows, KTX2/Basis decoding under a CSP without `unsafe-eval`, infinite far plane, the skinning diagnostic, and device-lost event delivery is unconfirmed on real hardware.
+- Browser acceptance and real-GPU/WebGPU evidence are still incomplete; WebGPU and the other experimental paths keep their 5.0.0 status (source and mock-device tests only). The create-aura3d templates were not captured in the render census.
+
 ## 5.0.0 — 2026-11-03
+
+Superseded by 5.0.1: 5.0.0 blanks the showcase games; use 5.0.1.
 
 The native-capability release. Aura3D is a standalone browser 3D engine with its own renderer, and 5.0.0 widens what that renderer, its asset pipeline and its runtime do natively, across the 33 work packages of the [native capability roadmap](docs/prds/aura3d-native-capability-roadmap.md) and the fixed [5.0 scope list](docs/prds/aura3d-5.0-scope.md). Upgrade every `@aura3d/*` package together, then follow the [4.x to 5.0 migration guide](docs/migration/4-to-5.md). WebGL2 remains the default backend. Everything listed under "Experimental" is opt-in with a documented fallback, and browser, GPU and device evidence for it is still pending.
 

@@ -19,6 +19,7 @@
 //
 // Usage:
 //   node tools/release/publish-all.mjs --pack-only
+//   node tools/release/publish-all.mjs --from-plan <plan> --tag next   (publish under a non-latest dist-tag; promote later with npm dist-tag add)
 //   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs --from-plan tests/reports/release-tarballs/release-plan.json
 //
 // `--dry-run` is a release-candidate preflight and therefore requires the
@@ -45,11 +46,13 @@ import { assertReleaseInventory, releaseInventoryId } from './release-inventory.
 import { execFileSync, execSync } from "node:child_process";
 import { sourceIdentity, assertCommittedReleaseSource } from "./source-identity.mjs";
 import { bindReleasePlanToCurrentCommit, loadValidatedReleasePlan } from "./exact-release-plan.mjs";
+import { parsePublishTag, publishCommand, registryViewSpec } from './publish-tag.mjs';
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
+const PUBLISH_TAG = parsePublishTag(process.argv);
 const DRY_RUN = process.argv.includes("--dry-run");
 const PACK_ONLY = process.argv.includes("--pack-only");
 const planArgument = process.argv.indexOf("--from-plan");
@@ -254,7 +257,7 @@ try {
       if (DRY_RUN || PACK_ONLY) {
         console.log(`[${DRY_RUN ? "dry-run" : "pack-only"}] ${retained ? "validated retained" : "packed"} ${label} -> ${tarball}`);
       } else {
-        sh(`npm publish ${JSON.stringify(tarball)} --access public${OTP_ARG}`, { cwd: dir });
+        sh(publishCommand(tarball, PUBLISH_TAG, OTP_ARG), { cwd: dir });
         console.log(`published ${label}`);
       }
     } catch (error) {
@@ -330,7 +333,7 @@ if (!DRY_RUN && !PACK_ONLY) {
     const expectedVersion = manifest.version;
     const packed = packedPackages.get(manifest.name);
     try {
-      const latest = sh(`npm view ${manifest.name} version`, { cwd: dir });
+      const latest = sh(`npm view ${registryViewSpec(manifest.name, PUBLISH_TAG)} version`, { cwd: dir });
       const registryIntegrity = sh(`npm view ${manifest.name}@${expectedVersion} dist.integrity`, { cwd: dir });
       const versionMatches = latest === expectedVersion;
       const integrityMatches = Boolean(packed) && registryIntegrity === packed.integrity;

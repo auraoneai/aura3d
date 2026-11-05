@@ -4,28 +4,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Migrate from Aura3D 4.x to 5.0.0</title>
-<meta name="description" content="Upgrade guide from Aura3D 4.x to 5.0.0: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs." />
+<title>Migrate from Aura3D 4.x to 5.0.1</title>
+<meta name="description" content="Upgrade guide from Aura3D 4.x to 5.0.1: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs." />
 
     
     <meta name="keywords" content="Aura3D 5.0 migration, Aura3D upgrade guide, Aura3D breaking changes, @aura3d/engine 5.0.0" /><meta name="robots" content="index, follow, max-image-preview:large" /><link rel="canonical" href="https://aura3d.auraone.ai/docs/migration/4-to-5" />
 <meta property="og:site_name" content="Aura3D" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Migrate from Aura3D 4.x to 5.0.0" />
-<meta property="og:description" content="Upgrade guide from Aura3D 4.x to 5.0.0: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs." />
+<meta property="og:title" content="Migrate from Aura3D 4.x to 5.0.1" />
+<meta property="og:description" content="Upgrade guide from Aura3D 4.x to 5.0.1: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs." />
 <meta property="og:url" content="https://aura3d.auraone.ai/docs/migration/4-to-5" />
 <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x630.png" />
-<meta name="twitter:title" content="Migrate from Aura3D 4.x to 5.0.0" />
-<meta name="twitter:description" content="Upgrade guide from Aura3D 4.x to 5.0.0: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs." />
+<meta name="twitter:title" content="Migrate from Aura3D 4.x to 5.0.1" />
+<meta name="twitter:description" content="Upgrade guide from Aura3D 4.x to 5.0.1: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs." />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="shortcut icon" href="/favicon.svg" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preload" href="/fonts/graphik/Graphik-Regular-Web.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/graphik/Graphik-Medium-Web.woff2" as="font" type="font/woff2" crossorigin />
 <meta name="theme-color" content="#fbfbf8" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Migrate from Aura3D 4.x to 5.0.0","description":"Upgrade guide from Aura3D 4.x to 5.0.0: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs.","softwareVersion":"5.0.0","url":"https://aura3d.auraone.ai/docs/migration/4-to-5","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Migrate from Aura3D 4.x to 5.0.1","description":"Upgrade guide from Aura3D 4.x to 5.0.1: who is affected, upgrade steps, breaking changes, behavior changes, new opt-in features and removed deprecated APIs.","softwareVersion":"5.0.1","url":"https://aura3d.auraone.ai/docs/migration/4-to-5","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
 <link rel="stylesheet" href="/marketing/src/styles.css" />
 <style>
   .doc-prose { max-width: 960px; font-size: 16px; line-height: 1.6; color: var(--ink-1); }
@@ -80,7 +80,7 @@
           <span>npm</span>
         </a>
       </div>
-      <span class="nav-version">v5.0.0</span>
+      <span class="nav-version">v5.0.1</span>
       <a class="btn btn-ghost" href="/">Docs</a>
       <a class="btn btn-primary" href="/docs/agent-quickstart.html">Get&nbsp;started</a>
     </div>
@@ -89,7 +89,7 @@
 <header class="doc-hero">
   <div class="wrap">
     <div>
-      <span class="hero-tag"><span class="pill">DOCS</span><b>Migration</b><span class="mute">Aura3D 5.0.0</span></span>
+      <span class="hero-tag"><span class="pill">DOCS</span><b>Migration</b><span class="mute">Aura3D 5.0.1</span></span>
       <h1>Migrating from Aura3D 4.x to 5.0.0</h1>
       <p class="hero-lede">Upgrade every <code>@aura3d/*</code> package together, fix the breaking changes listed below, then rebuild and run <code>check-deploy</code>. WebGL2 stays the default backend.</p>
       <div class="hero-cta">
@@ -118,7 +118,8 @@
 <section class="section-tight">
   <div class="wrap">
     <article class="doc-prose">
-<p>Status: released 2026-11-03. This guide covers every breaking and behavior change between Aura3D 4.7.13 and 5.0.0, checked against the packed 5.0.0 packages.</p>
+<p>Status: 5.0.0 released 2026-11-03 and superseded by 5.0.1 (2026-11-05); install 5.0.1. This guide covers every breaking and behavior change between Aura3D 4.7.13 and 5.0.0, checked against the packed 5.0.0 packages.</p>
+<p><strong>5.0.1 note.</strong> 5.0.1 is 5.0.0 plus render fixes; the public API and every row below are unchanged. 5.0.0 blanked the showcase games because contact shadows and eleven other new hard throws rejected the mount. In 5.0.1 those paths degrade with a one-time <code>console.warn</code> code (<code>CONTACT_SHADOW_DEGRADED</code>, <code>DEPTH_ALPHA_HASH_DEGRADED</code>, <code>DEPTH_ALPHA_COVERAGE_DEGRADED</code>, <code>TRANSMISSION_DEGRADED</code>, <code>DIFFUSE_TRANSMISSION_DEGRADED</code>, <code>TEXTURE_FLIPY_DEGRADED</code>); strict mode still throws. Contact shadows are skipped in scenes with an extra contributor pass or a transparent queue. Behaviours quoted below as 5.0.0 behaviour that throw on these paths apply to strict mode only in 5.0.1. See the <a href="https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md" rel="noopener">changelog</a>.</p>
 <h2 id="1-summary">1. Summary</h2>
 <p>5.0.0 is 4.7.13 plus the native-capability program (<a href="https://github.com/auraoneai/aura3d/blob/main/docs/prds/aura3d-native-capability-roadmap.md" rel="noopener">roadmap</a>, <a href="https://github.com/auraoneai/aura3d/blob/main/docs/prds/aura3d-native-code-complete.md" rel="noopener">decision record</a>). Most of the change is additive: new subpaths, a new <code>@aura3d/addons</code> package, an explicit readiness contract, request-policy-aware asset loading, and opt-in WebGPU, worker, depth, color and volumetric paths. Under the <a href="https://github.com/auraoneai/aura3d/blob/main/docs/api/stability-policy.md#deprecation-window" rel="noopener">deprecation policy</a>, 5.0.0 also removes what 4.x scheduled for removal: nine legacy <code>@aura3d/engine</code> subpaths and 38 deprecated root values (B14, B15). Nothing first deprecated in 5.x is removed.</p>
 <p>The breaking changes are narrower than the major number suggests:</p>
@@ -372,7 +373,7 @@ await awaitTypedGLBActorDisposals(); // ownerless actors</code></pre>
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Aura3D, @aura3d/engine v5.0.0, MIT (declared in package.json)</span>
+      <span>© 2026 Aura3D, @aura3d/engine v5.0.1, MIT (declared in package.json)</span>
       <span>Prompt-to-3D workflows, typed assets, editable TypeScript</span>
     </div>
   </div>

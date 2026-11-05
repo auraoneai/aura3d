@@ -13,6 +13,9 @@ test('versioned inventories retain historical names and require the complete nat
  assert.equal(expectedPublicPackageCount('4.7.13'), 24);
  assert.ok(!publicPackageNames('4.7.13').includes('@aura3d/addons'));
  assert.equal(releaseInventoryId('5.0.0'), 'native-1');
+ assert.equal(releaseInventoryId('5.0.1'), 'native-1');
+ assert.equal(expectedPublicPackageCount('5.0.1'), 25);
+ assert.ok(publicPackageNames('5.0.1').includes('@aura3d/addons'));
  assert.ok(publicPackageNames('3.0.1').includes('@aura3d/three-compat'));
  assert.ok(publicPackageNames('5.0.0').includes('@aura3d/addons'));
  const names = [...publicPackageNames('5.0.0')];

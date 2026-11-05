@@ -151,7 +151,7 @@
         { "path": "packages/engine/src/agent-api/sceneMath.ts", "sha256": "eb3586629b73e81e8ae83fae75fb272b915e61c0389091286c1cc1a85d8f6bde" },
         { "path": "tools/agent-examples/index.ts", "sha256": "a481c9ec294e833cbf230fd51bcb7795e1d5f55cd453d53e699859e0e2f9d80b" },
         { "path": "packages/engine/src/agent-api/camera/rigs/orbit.ts", "sha256": "8b622c1c3c1ccfb0cd6c1c74e47cdfef5ea772883b2cb7f42e2b303a7ae4699d" },
-        { "path": "packages/engine/src/public/index.ts", "sha256": "ca16c33801350e840efb9ef14bc526e95b6caf982db4935e6768e3eaf13421f8" },
+        { "path": "packages/engine/src/public/index.ts", "sha256": "89eb91147ca9c92390193ae4fb2e49f9cd3b49cc462595105381750eb23884ba" },
         { "path": "packages/input/src/index.ts", "sha256": "a7817f91eec0987896d69c708d219de3ded0301158f41317fe4462f1ec5ab8c9" },
         { "path": "packages/input/src/PointerLeases.ts", "sha256": "800495f86fbb9ebce90da342e51c868afb14ac1138166735c216ccac4176d8d5" }
       ],
@@ -1968,7 +1968,7 @@
         },
         {
           "path": "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts",
-          "sha256": "fcdd19ddc2437b1ccbf96cf2b6a422bec76920ead6c962b9015b4668f89ffe22"
+          "sha256": "1ee1eda69d8a3752d31e2d559f9b552ac57b8ee209da7afae2d4a4835477a9cf"
         },
         {
           "path": "public/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
@@ -2042,7 +2042,7 @@
         },
         {
           "path": "apps/showcase-aura-hoops-3d/src/aura-assets.route.ts",
-          "sha256": "dfe7eb839fa24a41f73c3e7d221d83b036bbaf2e595c46350be8cc96318c2783"
+          "sha256": "76e7ed0d21653d1f7a60f2670a045e479a1327dcf7924749cbaebde98a76a8dc"
         },
         {
           "path": "apps/showcase-aura-hoops-3d/public/aura-assets/hoopsAthleteGuardKit.5c0f9a76.glb",
@@ -2919,7 +2919,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
+          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
         }
       ],
       "regions": [
@@ -3056,7 +3056,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
+          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
         }
       ],
       "regions": [
@@ -3989,7 +3989,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-links-3d/src/main.ts",
-        "sha256": "d6dc60309e94ad2aa4dd3371061a4790a388bc95a7edfc4a26223769b0a95f5a"
+        "sha256": "de19a4c8a3c77af67e69f0ad264e5676f594014c000788d0d4092b3a236771f4"
       },
       "sourceDependencies": [
         {
@@ -3998,7 +3998,7 @@
         },
         {
           "path": "apps/showcase-aura-links-3d/src/game/rig.ts",
-          "sha256": "c4af0ceba93105414fc6a6e229346779484273fd161d4d03460728b9f777711e"
+          "sha256": "31e851294e52d064f8b83940f8d956408e118642e130da32d041381d0dfbb1bd"
         },
         {
           "path": "apps/showcase-aura-links-3d/src/game/flow.ts",
@@ -4010,7 +4010,7 @@
         },
         {
           "path": "apps/showcase-aura-links-3d/src/aura-assets.ts",
-          "sha256": "af0c00ca41e8b5084a251e5dce3e0b733a26ce06914329688c43014a851e88d3"
+          "sha256": "4c3faa243769bba29001103f39a189d579d5759fcf6719adec3e10d8c32f5b3f"
         },
         {
           "path": "apps/showcase-aura-links-3d/index.html",
@@ -7595,7 +7595,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
+          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
         }
       ],
       "regions": [
@@ -7665,7 +7665,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "cff09fafcf445026afbe22563eb900f9d880fc10ebdce252283bb10fcf4e02e3"
+          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
         }
       ],
       "regions": [
@@ -8843,7 +8843,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "131ef0926fa5cd4ac227dd4d5be900adfff5ac74584c8b5880236e882e86591c"
+          "sha256": "c9ff4066b27c37e83e5f0771d76aebc92709a38bedf8ff51b6662af888b34327"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",
