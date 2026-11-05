@@ -189,6 +189,15 @@ export const SHAFT_BIND_R: V3 = (() => {
 export const CLUB_REACH = 0.88;
 /** left palm sits this far up the shaft from the right palm (stacked grip) */
 export const GRIP_SPAN = 0.105;
+/**
+ * Lead palm sits this far up the shaft at address (hands side by side, so the lead arm is not folded to 87 deg); it opens
+ * to GRIP_SPAN as the grip rises toward the top of the backswing, where the lead shoulder is the limiting reach.
+ */
+export const GRIP_SPAN_ADDRESS = 0.03;
+export const gripSpanAt = (gripY: number): number => {
+  const u = Math.max(0, Math.min(1, (gripY - 0.9) / 0.5));
+  return GRIP_SPAN_ADDRESS + (GRIP_SPAN - GRIP_SPAN_ADDRESS) * u * u * (3 - 2 * u);
+};
 /** pole vectors (model space) that pick the natural elbow of the two solutions */
 const POLE_R: V3 = [-0.62, -0.72, 0.10];
 /**
@@ -337,7 +346,9 @@ export const LEG = {
   /** hips sit this much lower (m) than the standing bind: the knee-flex crouch */
   crouch: 0.012,
   /** hips sit this far behind the ankle line (m): hinge at the hips, not a lean from the feet */
-  hipsBack: 0.03
+  hipsBack: 0.03,
+  /** hips shift sideways (model +x = the golfer's left, m): centres the shoulders over the grip */
+  hipsSide: 0.04
 };
 const BIND_ANKLE_Y = RIG.hipsBind[1] + LEG.hipJointL[1] - LEG.thigh - LEG.shin;
 const ANKLE_L: V3 = [RIG.hipsBind[0] + LEG.hipJointL[0], BIND_ANKLE_Y, 0];
@@ -440,7 +451,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const spineW = qMul(hipsW, spineLocal);
   const chestW = qMul(spineW, chestLocal);
   const headW = qMul(chestW, headLocal);
-  const hipsPos = vAdd(RIG.hipsBind, [0, key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
+  const hipsPos = vAdd(RIG.hipsBind, [LEG.hipsSide, key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
   const spinePos = vAdd(hipsPos, qRotate(hipsW, RIG.tSpine));
   const chestPos = vAdd(spinePos, qRotate(spineW, RIG.tChest));
   const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead)); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -469,7 +480,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const foreLocalR = qMul(qConj(upperWorld), foreVisR);
 
   // ---- left arm: palm IK onto the shaft, a hand-span up from the right ----
-  const leftPalmM = vSub(gripM, vScale(dirM, GRIP_SPAN));
+  const leftPalmM = vSub(gripM, vScale(dirM, gripSpanAt(key.grip[1])));
   const elbowL = solveElbowPole(shoulderL, leftPalmM, ARM_POLES.left);
   const upperWorldL = qFromTo(BIND_UPPER_L, unit(vSub(elbowL, shoulderL)));
   const foreWorldL = qFromTo(BIND_PALM_L, unit(vSub(leftPalmM, elbowL)));
