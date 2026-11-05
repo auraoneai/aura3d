@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Request } from "@playwright/test";
 import { build } from "esbuild";
+import { NATIVE_BUNDLE_EXTERNALS } from "./native-bundle-externals";
 import { hashConsumerProject, restoreMatrixProject, validateGateMatchesSource, validateSourceMatrixReport } from "../../tools/native-consumer-matrix/index";
 import { bindBrowserGate, type BrowserGateRecord } from "../../tools/native-capability-gate/browser-contract";
 import { inspectRuntimeNetwork, redactRuntimeNetworkEvents, type RuntimeNetworkEvent } from "../../tools/native-runtime-audit/runtime-network";
@@ -122,6 +123,7 @@ async function bundleInstalledConsumer(project: string) {
   const result = await build({
     stdin: { contents: FIXTURE, resolveDir: project, sourcefile: "native-offline-fixture.js", loader: "js" },
     absWorkingDir: project, bundle: true, write: false, metafile: true, platform: "browser", format: "iife",
+    external: NATIVE_BUNDLE_EXTERNALS,
     target: "es2022", tsconfigRaw: { compilerOptions: {} }, logLevel: "silent"
   });
   let engineInputs = 0;

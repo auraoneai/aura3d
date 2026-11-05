@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { NATIVE_BUNDLE_EXTERNALS } from "./native-bundle-externals";
 import { build } from "esbuild";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
@@ -22,8 +23,8 @@ test.describe("native world text", () => {
       stdin: { contents: 'export * as engine from "@aura3d/engine"; export * as rendering from "@aura3d/rendering";',
         resolveDir: consumerRoot, sourcefile: "native-world-text-consumer.mjs", loader: "js" },
       bundle: true, write: false, format: "esm", platform: "browser",
-      // Optional peers of the packed engine are not installed in the restored consumer (it installs only declared deps).
-      external: ["@dimforge/rapier3d-compat", "recast-navigation", "recast-navigation/*"]
+      // Optional peers / node-only dynamic imports of the packed engine; see native-bundle-externals.ts.
+      external: NATIVE_BUNDLE_EXTERNALS
     });
     await page.route(`${server.origin}/native-world-text-consumer.mjs`, (route) => route.fulfill({
       status: 200, contentType: "text/javascript", body: bundle.outputFiles[0]!.text

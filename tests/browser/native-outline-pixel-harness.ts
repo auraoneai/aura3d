@@ -219,7 +219,7 @@ async function run(): Promise<void> {
   } catch (error) {
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "error",
-      error: error instanceof Error ? error.stack ?? error.message : String(error)
+      error: `${error instanceof Error ? error.stack ?? error.message : String(error)}${(error as { code?: unknown })?.code ? ` code=${String((error as { code?: unknown }).code)}` : ""}${(error as { details?: unknown })?.details ? ` details=${JSON.stringify((error as { details?: unknown }).details)}` : ""}`
     };
   }
 }
@@ -292,9 +292,14 @@ function createGlDepthFixture(width: number, height: number): Float32Array {
 function uploadDepthFixture(canvas: HTMLCanvasElement, texture: WebGLTexture, depth: Float32Array): void {
   const gl = canvas.getContext("webgl2");
   if (!gl) throw new Error("WebGL2 context unavailable for depth fixture upload.");
+  // A fixed render target's sampleable depth is DEPTH24_STENCIL8 (WebGL2Device depth-format table), so the only valid
+  // upload is format DEPTH_STENCIL / type UNSIGNED_INT_24_8: depth in the high 24 bits, stencil 0. The previous
+  // DEPTH_COMPONENT/UNSIGNED_INT upload raised INVALID_OPERATION that nobody read, and the device's next
+  // writeRenderTargetPixels() attributed it to itself ("WebGL2 render-target pixel upload failed").
+  while (gl.getError() !== gl.NO_ERROR) { /* drop errors that are not this upload's */ }
   const encoded = new Uint32Array(depth.length);
   for (let index = 0; index < depth.length; index += 1) {
-    encoded[index] = Math.round((depth[index] ?? 1) * 0xffffffff);
+    encoded[index] = (Math.round(Math.min(1, Math.max(0, depth[index] ?? 1)) * 0xffffff) << 8) >>> 0;
   }
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texSubImage2D(
@@ -304,10 +309,12 @@ function uploadDepthFixture(canvas: HTMLCanvasElement, texture: WebGLTexture, de
     0,
     canvas.width,
     canvas.height,
-    gl.DEPTH_COMPONENT,
-    gl.UNSIGNED_INT,
+    gl.DEPTH_STENCIL,
+    gl.UNSIGNED_INT_24_8,
     encoded
   );
+  const error = gl.getError();
+  if (error !== gl.NO_ERROR) throw new Error(`Depth fixture upload raised GL error 0x${error.toString(16)}`);
 }
 
 function createVelocityFixture(width: number, height: number): Float32Array {

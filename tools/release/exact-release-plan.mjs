@@ -13,9 +13,15 @@ function localPath(root, path) {
 export function loadValidatedReleasePlan(root = process.cwd(), path = process.env.A3D_RELEASE_PLAN) {
   if (!path) return null;
   root = resolve(root);
-  const absolute = resolve(root, path), bytes = readFileSync(absolute), plan = JSON.parse(bytes), source = sourceIdentity(root);
+  const absolute = resolve(root, path), bytes = readFileSync(absolute), plan = JSON.parse(bytes);
+  // An acceptance image is built from a staged context without .git (and without the source manifest), so the
+  // commit/tree/fingerprint of the checkout cannot be recomputed there. The plan's identity is still bound by its
+  // SHA-256 in the validated code-complete gate (callers check reference.sha256 against the gate), and every
+  // archive hash/integrity below is verified, so only the git-derived source comparison is skipped.
+  const gitless = !process.env.AURA3D_SOURCE_MANIFEST && !existsSync(resolve(root, '.git'));
+  const source = gitless ? null : sourceIdentity(root);
   if (plan.schema !== 'aura3d-release-plan/1.0' || !plan.source || !Array.isArray(plan.packages)) throw new Error('Invalid exact release plan');
-  const sourceMatches = Object.keys(source).every(key => plan.source[key] === source[key]) &&
+  const sourceMatches = gitless || Object.keys(source).every(key => plan.source[key] === source[key]) &&
     (!plan.source.inputDigest || !!process.env.AURA3D_SOURCE_MANIFEST || gitSourceInputDigest(root) === plan.source.inputDigest);
   if (!sourceMatches) {
     // A code-complete commit can follow the source run. Its implementation

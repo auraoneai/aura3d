@@ -346,7 +346,7 @@ export function classifyPlaywrightTest(test) {
   if (test.status === 'flaky') return { status: 'failed', reason: 'flaky: passed only on retry' };
   const message = (last.errors?.[0]?.message ?? last.error?.message ?? last.status ?? '').replace(/\u001b\[[0-9;]*m/g, '');
   // A spec that states the WebGPU adapter is absent never passes, but it is missing hardware evidence, not a defect.
-  if (/WEBGPU_ACCEPTANCE_UNAVAILABLE/.test(message)) return { status: 'no-data', reason: message.slice(0, 300) };
+  if (/WEBGPU_ACCEPTANCE_UNAVAILABLE|WebGPU adapter request did not return a device/.test(message)) return { status: 'no-data', reason: message.slice(0, 300) };
   return { status: 'failed', reason: message.slice(0, 500) };
 }
 

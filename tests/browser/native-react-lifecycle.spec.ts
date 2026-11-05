@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { join, relative, resolve, sep } from "node:path";
 import { expect as baseExpect, test, type Page } from "@playwright/test";
 import { build } from "esbuild";
+import { NATIVE_BUNDLE_EXTERNALS } from "./native-bundle-externals";
 
 /**
  * Run remotely after the code-complete gate. The runner supplies two separate
@@ -388,6 +389,7 @@ async function bundle(consumer: Consumer, contents: string): Promise<string> {
     format: "esm",
     target: "es2022",
     define: { "process.env.NODE_ENV": '"development"' },
+    external: NATIVE_BUNDLE_EXTERNALS,
     logLevel: "silent"
   });
   const output = result.outputFiles[0]?.text;
