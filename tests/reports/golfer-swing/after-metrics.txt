@@ -1,0 +1,31 @@
+== after meshy (links_golfer_player) ==
+sample      elbL elbR  shElL shElR  shTurn hipTurn  X-fac  handsAbvLeadSh  sideL  sideR  shaftEl headClr hipShift palmFace extL extR elbRiseL elbRiseR
+address      32.8   31.3   25.4  25.5    -1.8    -0.4   -1.4       -0.501   0.013 -0.013   -68.0   0.586    0.052     0.30  0.96  0.96   -0.231   -0.248
+back .33     39.4   42.1   48.6  42.2    23.8     9.8   14.1       -0.333   0.001  0.009     5.7   0.533    0.012     0.47  0.94  0.93   -0.203   -0.234
+back .66     59.6   92.3   59.7  41.0    56.9    27.0   29.9       -0.009  -0.101  0.149    70.3   0.406   -0.013     0.50  0.87  0.70   -0.137   -0.209
+top          37.0  115.9   95.2  52.1    85.7    43.8   42.0        0.285  -0.169  0.160    11.7   0.182   -0.028     0.70  0.95  0.54    0.043   -0.172
+down .3      39.4  119.6   73.9  23.8    73.7    29.8   43.9        0.121  -0.181  0.173    37.7   0.200   -0.003     0.62  0.94  0.52   -0.041   -0.220
+down .65     68.9   49.5   41.1  37.7    29.3    -2.4   31.7       -0.256   0.052 -0.043   -10.2   0.495    0.039     0.34  0.83  0.91   -0.221   -0.237
+down .85     53.4   46.1   38.3  32.8    11.6   -14.9   26.5       -0.348   0.023 -0.021   -35.6   0.528    0.051     0.25  0.90  0.92   -0.223   -0.241
+impact       45.2   33.8   29.4  29.7   -12.6   -32.6   20.0       -0.448   0.035 -0.035   -73.7   0.563    0.067     0.22  0.93  0.96   -0.231   -0.247
+thru .2      51.7   52.6   33.9  38.3   -37.8   -44.4    6.6       -0.415  -0.007 -0.000   -13.4   0.516    0.067     0.25  0.90  0.90   -0.226   -0.237
+thru .45     83.3   72.5   17.1  41.1   -60.2   -52.2   -8.0       -0.323   0.008 -0.037    33.9   0.431    0.072     0.02  0.76  0.81   -0.214   -0.215
+thru .7     106.4   72.5   35.6  60.0   -79.1   -56.9  -22.2       -0.214   0.085 -0.135    69.2   0.364    0.079    -0.29  0.62  0.81   -0.140   -0.124
+finish      145.0   68.0   51.3  84.3   -94.7   -59.1  -35.6        0.162   0.192 -0.263   -17.6   0.266    0.087     0.61  0.35  0.83   -0.128    0.033
+sheets: /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-meshy-front.png, /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-meshy-dtl.png, /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-meshy-game.png, /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-meshy-keys.png
+
+== after old (linksGolferAthleteMeshy) ==
+sample      elbL elbR  shElL shElR  shTurn hipTurn  X-fac  handsAbvLeadSh  sideL  sideR  shaftEl headClr hipShift palmFace extL extR elbRiseL elbRiseR
+address      67.4   45.6   49.7  44.8     3.4     1.3    2.1       -0.432   0.030 -0.030   -68.0   0.559    0.064    -0.40  0.83  0.92   -0.230   -0.237
+back .33     63.6   71.1   42.9  54.9     9.1     3.4    5.7       -0.393  -0.048  0.058   -63.4   0.536    0.064    -0.34  0.85  0.82   -0.240   -0.218
+back .66     78.5  113.0   48.3  92.5    21.5     8.0   13.5       -0.225  -0.137  0.164   -39.6   0.435    0.064    -0.16  0.78  0.56   -0.221   -0.085
+top          10.4   86.1  101.9  85.2    55.2    20.1   35.1        0.152  -0.262  0.322    30.1   0.472    0.064    -0.87  1.00  0.73    0.056   -0.114
+down .3      72.6  126.1   72.2  81.1    43.3    16.0   27.4        0.021  -0.216  0.276     2.7   0.385    0.064    -0.65  0.81  0.46   -0.111   -0.133
+down .65     84.5  107.5   42.7  83.4    24.3     9.1   15.2       -0.221  -0.098  0.117   -41.9   0.437    0.064    -0.12  0.74  0.60   -0.233   -0.125
+down .85     90.3   85.0   49.6  64.5    14.7     5.6    9.1       -0.301  -0.005  0.012   -59.0   0.467    0.064    -0.08  0.71  0.74   -0.233   -0.196
+impact       83.5   42.9   60.6  48.6     4.4     1.7    2.7       -0.391   0.090 -0.091   -69.9   0.532    0.064    -0.32  0.75  0.93   -0.210   -0.235
+thru .2      97.7   58.0   73.3  45.4   -15.7    -5.9   -9.8       -0.358   0.094 -0.119   -26.9   0.481    0.064    -0.18  0.66  0.88   -0.163   -0.232
+thru .45    102.2   57.4   86.0  44.9   -31.4   -11.6  -19.8       -0.347   0.116 -0.153    13.7   0.457    0.064    -0.23  0.63  0.88   -0.108   -0.219
+thru .7     125.0  105.5  100.8  40.7   -52.7   -19.2  -33.5       -0.226   0.036 -0.087    36.6   0.273    0.064     0.63  0.47  0.61   -0.034   -0.233
+finish      136.0  123.1   94.3  36.3   -69.0   -25.0  -44.0       -0.130   0.009 -0.057    53.2   0.133    0.064    -0.90  0.38  0.48   -0.046   -0.223
+sheets: /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-old-front.png, /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-old-dtl.png, /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-old-game.png, /Users/gurbakshchahal/platforms/aura3d/.git-worktrees-w8/tests/reports/golfer-swing/after-old-keys.png
