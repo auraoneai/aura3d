@@ -13371,6 +13371,68 @@
    "textureRes": "2k",
    "prompt": "low-poly ochre sandstone fortress wall segment with crenellations, warm sandy yellow-orange colour, simple geometry, no slate, no dark stone, isolated single object, game-ready, no text or logos. theatrical royal forge tournament, black iron, molten gold and ember crimson, hammered iron, gilded trim, scorched stone and smoked leather, dramatic hero prop",
    "texturePrompt": "dramatic forged PBR: hammered black iron, gilded gold trim, scorched stone, smoked leather; black #0e0b0d, molten gold #d9a441, ember crimson #9e1b22"
+  },
+  {
+   "slug": "aura-links-3d",
+   "lane": "G10",
+   "key": "golfPlayerR2",
+   "op": "text-to-3d",
+   "priority": "P1",
+   "usedBy": [
+    "LINKS-13"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "prompt": "full body, standing in an A-pose with arms slightly away from the body and feet apart, athletic male golfer with natural human proportions and a straight upright posture, white cap, light blue polo shirt, navy trousers and dark golf shoes, symmetrical, clean simple clothing, isolated single object, game-ready, no text or logos. golf broadcast postcard landscape in natural light, weathered timber, dry stone, painted steel and natural foliage, calm and premium",
+   "texturePrompt": "natural landscape PBR: weathered timber, dry stone, painted steel, living foliage; soft natural colours, premium broadcast clarity",
+   "poseMode": "a-pose"
+  },
+  {
+   "slug": "aura-links-3d",
+   "lane": "G10",
+   "key": "golfPlayerRigR2",
+   "op": "rig",
+   "priority": "P1",
+   "usedBy": [
+    "LINKS-13"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "golfPlayerR2",
+   "heightMeters": 1.82
+  },
+  {
+   "slug": "aura-links-3d",
+   "lane": "G10",
+   "key": "golfPlayerAnimR2",
+   "op": "animate",
+   "priority": "P1",
+   "usedBy": [
+    "LINKS-13"
+   ],
+   "profile": "humanoid",
+   "role": "character",
+   "importRole": "character",
+   "textureRes": "2k",
+   "dependsOn": "golfPlayerRigR2",
+   "clips": [
+    {
+     "clip": "idle",
+     "actionId": 0
+    },
+    {
+     "clip": "wave",
+     "actionId": 28
+    },
+    {
+     "clip": "cheer",
+     "actionId": 59
+    }
+   ]
   }
  ]
 }

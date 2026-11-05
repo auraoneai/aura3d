@@ -42,6 +42,20 @@ WebGPU backend and native WebGPU deferred, meshlet and visibility-buffer drawing
 
 - Experimental paths have source and mock-device tests only; no real-GPU or device result is claimed.
 
+## 4.7.13 (2026-11-05)
+
+Fixes found by the owner's testing of 4.7.12 (screenshots), each reproduced with a remote software-WebGL2 probe before fixing.
+
+### Fixes
+
+- **Aura Links 3D: every course switch killed the renderer.** Clicking a course button (Cinder, Maple, Cloud, Neon Bay, Mare) threw `RENDERER_MOUNT_FAILED: Buffer is not a live WebGL2 resource owned by this device` and nothing drew or answered to keys afterwards (reproduced on 4.7.9 to 4.7.12). Cause, in the engine: `world.water` kept the grid buffers of the previous scene's water (a per-device cache and a module-level GPU state keyed by node id) after `setScene` disposed them, and the next scene's water draw used the disposed buffers. A cached grid is now reused only while its buffers are live and the same size, and a GPU state whose buffers were disposed is rebuilt. Geometry vertex and index buffers also record the device that created them and are recreated when uploaded to a different device (found on the way; unit test `tests/unit/rendering/geometry-buffer-device-ownership.test.ts`).
+- **Aura Links 3D: the golfer's lead arm was folded at address** (elbow 87 degrees, read as a hunch). The procedural swing pose now centres the hips over the lead side and eases the lead-hand span; elbow 112 degrees. The 28 degree spine tilt is unchanged, so the upright posture is only partly improved; the Meshy golfer generated for it has no golf swing clips and is not used.
+
+### Known limits
+
+- Everything listed under 4.7.11 and 4.7.12 stands: the Meshy models of waves 2 and 3 were not blind-panel judged, characters from Meshy are unrigged for game use, and distinctness, rubric, selective bloom and real-GPU items are open.
+- Pre-existing and unrelated: 16 test files (47 tests) in `tests/unit/rendering` and `tests/unit/engine` fail on 4.7.12 and 4.7.13 alike; `tests/unit/rework-kit/two-hand-grip.test.ts` fails; 58 type errors in `tools/` and some `tests/` files.
+
 ## 4.7.12 (2026-11-04)
 
 Hotfix for Slingshot Siege plus the wave-3 Meshy models (re-rolls of rows that were skipped in 4.7.11).
