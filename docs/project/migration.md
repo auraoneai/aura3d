@@ -1,8 +1,8 @@
 # Migrating three.js code to Aura3D
 
-Version: 4.7.14
+Version: 4.7.15
 
-Current release: Aura3D 4.7.14.
+Current release: Aura3D 4.7.15.
 
 ## Current migration surface
 

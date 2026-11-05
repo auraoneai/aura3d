@@ -4,6 +4,14 @@ Version: 4.7.12
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.7.15 (2026-11-05)
+
+- **Aura Links 3D: the Meshy golfer's swing now reads as a golf swing.** In 4.7.14 the arms were pulled flat across a front-facing chest at the top of the backswing (shoulders turned 52 degrees against hips of 20, both arms across the sternum, hands splayed). The Meshy-only solve in `swingMath.ts` now turns the shoulders and hips together (86 and 44 degrees at the top), drives each arm with two-bone IK limited to 3-150 degrees of elbow flexion with chest-relative elbow poles, sets the forearm roll so the palms face each other, shifts weight and lifts the trail heel at the finish; the hands finish 0.16 m above the lead shoulder. `?golfer=old` is untouched (a test pins it). Checked with offline stick-figure sheets (`tests/reports/golfer-swing/`, tool `apps/showcase-aura-links-3d/scripts/golfer-swing-sheet.ts`) and a remote software-WebGL2 capture of the backswing; the Meshy hand has no finger bones, so the hands still read as open mittens.
+
+### Known limits
+
+- Everything under 4.7.11 to 4.7.14 stands. The game camera cuts away right after impact, so the follow-through is only briefly on screen.
+
 ## 4.7.14 (2026-11-05)
 
 - **Aura Links 3D: a new Meshy golfer replaces the old athlete.** The old golfer looked stiff and deformed in play (hunched torso, boxy limbs). The new player is a rigged Meshy model (athletic golfer, white cap, light-blue polo, navy trousers; 16,420 triangles, three 1024 px maps, 1.66 MB, skin weights intact). The existing procedural swing now solves on a swappable skeleton profile built from the new model's bind pose (`swingMath.ts`), and `golferRetarget.ts` maps the solved rotations onto the Meshy bones; the club, hands and feet follow the same solve (forward-kinematics tests keep both hands within 5 mm of the grip in 17 sampled poses). The Meshy idle clip plays under the swing and cheer plays on holing out. `?golfer=old` or `?look=original` brings the old athlete back; the caddy and gallery fans stay the old athlete.
