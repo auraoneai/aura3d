@@ -153,6 +153,10 @@ node tools/remote-acr/acceptance-staging.mjs place-job-paths "$CTX" "$AURA3D_COD
 node tools/remote-acr/acceptance-staging.mjs verify-context "$CTX" "$INPUTS_LIST" $SCAN_FILES || exit 2
 (cd "$CTX" && node tools/native-capability-gate/index.mjs --phase acceptance --gate "$AURA3D_CODE_COMPLETE_GATE") \
   || { echo "FATAL: staged context failed gate validation" >&2; exit 2; }
+# `az acr build` silently drops every file named .gitignore ("default ignore rules"), but the
+# in-image gate check needs them (source identity). Ship them renamed, after the local gate
+# validation above; Dockerfile.playwright restores the names right after COPY (same as run-source5.sh).
+find "$CTX" -name .gitignore -not -path '*/node_modules/*' -print0 | while IFS= read -r -d '' g; do mv "$g" "$(dirname "$g")/.gitignore.a3d-staged"; done
 du -sh "$CTX" | awk '{print "   context    : "$1}'
 
 # ---- 3. Azure context, one image build ---------------------------------------
