@@ -45,6 +45,8 @@ export const LINKS_LOCAL_ASSETS = [
   { key: "links_basalt_columns", url: "/aura-assets/links_basalt_columns.eab5ae99.glb", hash: "sha256-eab5ae994f1b087179150488c6c48c4a71462d379ef104208edbdc7eb1f027de", bounds: [0.915, 1.199, 1.902] },
   // GU47 wave 3 (LINKS-08, golfCableCarStationR2): Cloud Terrace alpine cable car station (re-roll of the wave-2 log cabins), 67,228 -> 32,602 triangles, 1k maps
   { key: "links_cable_car_station", url: "/aura-assets/links_cable_car_station.45792d70.glb", hash: "sha256-45792d7061e30a2c269bb4e65262335f0099d53cf4b9ad2d5cb841b2d7c51264", bounds: [1.803, 1.219, 1.468] },
+  // GU47 wave 7 (golfer): Meshy rigged golfer (golfPlayerR2 mesh, golfPlayerRigR2 24-joint humanoid, golfPlayerAnimR2 clips idle/wave/cheer), meshoptimizer 54,734 -> 16,420 triangles, 1k maps; replaces linksGolferAthleteMeshy as the player (?golfer=old keeps the old athlete)
+  { key: "links_golfer_player", url: "/aura-assets/links_golfer_player.44bc191c.glb", hash: "sha256-44bc191c4cb57bad19827eeabcc548689061d65b7afb32f153e879bb3577e9c9", bounds: [1.75, 1.82, 0.349] },
   // GU47 phase 9 (D2): replaces the dunes landmark tower; CC0 kenney:city-kit-industrial:water-tower (Kenney), 968 triangles
   { key: "linksDunesBeaconTower", url: "/aura-assets/linksDunesBeaconTower.76dd47f8.glb", hash: "sha256-76dd47f8fefa762e1d7f6a27e545cc211f2f726a67dbd32bc86cafb2e9bac303", bounds: [0.852, 2.142, 0.832] },
   // GU47 phase 9 (D2): replaces the dunes burn bridge; CC0 kenney:mini-forest:bridge (Kenney), 372 triangles

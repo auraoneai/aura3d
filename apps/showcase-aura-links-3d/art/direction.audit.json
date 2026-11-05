@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "fe54c65cba50d23417a24b5e406d68681287a5ecd3d3f6af9a490feda775556f",
+  "sourceSha256": "32d8e5498edead0d10aff537f88c63f0ce8c6ba8e74e704153b31828ca9b71b1",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",
@@ -40,7 +40,7 @@
     },
     "models": [
       {
-        "assetKey": "linksGolferAthleteMeshy",
+        "assetKey": "links_golfer_player",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -234,9 +234,23 @@
     "assets": [
       {
         "role": "hero",
+        "assetKey": "links_golfer_player",
+        "maxTriangles": 20000,
+        "minTriangles": 12000,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle",
+            "wave",
+            "cheer"
+          ]
+        }
+      },
+      {
+        "role": "set-dressing",
         "assetKey": "linksGolferAthleteMeshy",
         "maxTriangles": 40000,
-        "minTriangles": 2000,
         "textureSet": "BC+N",
         "maxTextureSize": 2048,
         "animated": {

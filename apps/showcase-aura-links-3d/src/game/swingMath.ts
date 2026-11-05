@@ -153,25 +153,86 @@ export const eulerXYZFromQuat = (q: Quat): V3 => {
  *  Skeleton constants (GLB model space, bind)                        *
  * ------------------------------------------------------------------ */
 
-export const RIG = {
-  hipsBind: [0, 0.937, 0] as V3,
-  tSpine: [0, 0.150, 0] as V3,
-  tChest: [0, 0.262, 0] as V3,
-  tHead: [0, 0.225, 0] as V3,
-  tShoulderL: [0.199, 0.112, 0.001] as V3,
-  tShoulderR: [-0.201, 0.112, 0.001] as V3,
-  tForearmL: [0.050, -0.250, 0.010] as V3,
-  tForearmR: [-0.050, -0.250, 0.010] as V3,
-  /** calibrated palm point in each forearm's bone space (no hand bones) */
-  palmR: [-0.117, -0.245, 0.137] as V3,
-  palmL: [0.117, -0.245, 0.137] as V3
+/**
+ * The virtual skeleton the swing is solved on (GLB model space, metres, the bind pose has identity rotations in the SOLVE:
+ * a retarget maps the solved world deltas onto a rig whose own bind rotations differ, see golferRetarget.ts). The default is
+ * the original athlete; `useSkeleton` swaps in another rig's proportions (the Meshy golfer) and re-derives every constant.
+ */
+export interface SkeletonProfile {
+  readonly id: string;
+  readonly rig: {
+    readonly hipsBind: V3; readonly tSpine: V3; readonly tChest: V3; readonly tHead: V3;
+    readonly tShoulderL: V3; readonly tShoulderR: V3; readonly tForearmL: V3; readonly tForearmR: V3;
+    /** palm point in each forearm's bone space, from the elbow */
+    readonly palmR: V3; readonly palmL: V3;
+  };
+  readonly leg: {
+    readonly thighL: number; readonly shinL: number; readonly thighR: number; readonly shinR: number;
+    readonly hipJointL: V3; readonly hipJointR: V3;
+    /** bind directions hip->knee and knee->ankle per side (down for the original athlete) */
+    readonly thighBindL: V3; readonly shinBindL: V3; readonly thighBindR: V3; readonly shinBindR: V3;
+    /** planted ankle positions (model space, bind) */
+    readonly ankleL: V3; readonly ankleR: V3;
+    readonly crouch: number; readonly hipsBack: number; readonly hipsSide: number;
+  };
+  /** uniform GLB to shot scale (targetHeight / GLB height) */
+  readonly fitScale: number;
+  /** club part layout and reach scale (model units) so the club keeps the same world length on every rig */
+  readonly clubScale: number;
+  /** multiplies FLEX_SPLIT (the base spine flex) */
+  readonly flexScale: number;
+}
+
+const OLD_LEG = {
+  thigh: 0.4123,
+  shin: 0.3373,
+  hipJointL: [0.1143, -0.0375, 0] as V3,
+  hipJointR: [-0.1624, -0.0375, 0] as V3,
+  crouch: 0.012,
+  hipsBack: 0.03,
+  hipsSide: 0.04
 };
-export const UPPER_ARM_LEN = vLen(RIG.tForearmR); // 0.255
-export const FOREARM_PALM_LEN = vLen(RIG.palmR); // 0.304
-export const BIND_UPPER_R = unit(RIG.tForearmR);
-export const BIND_UPPER_L = unit(RIG.tForearmL);
-export const BIND_PALM_R = unit(RIG.palmR);
-export const BIND_PALM_L = unit(RIG.palmL);
+const OLD_HIPS: V3 = [0, 0.937, 0];
+const OLD_ANKLE_Y = OLD_HIPS[1] + OLD_LEG.hipJointL[1] - OLD_LEG.thigh - OLD_LEG.shin;
+/** targetHeight 1.84 / bounds height 1.897 of the original athlete */
+const OLD_FIT_SCALE = 1.84 / 1.897;
+
+export const SKELETON_ATHLETE: SkeletonProfile = {
+  id: "linksGolferAthleteMeshy",
+  rig: {
+    hipsBind: OLD_HIPS,
+    tSpine: [0, 0.150, 0],
+    tChest: [0, 0.262, 0],
+    tHead: [0, 0.225, 0],
+    tShoulderL: [0.199, 0.112, 0.001],
+    tShoulderR: [-0.201, 0.112, 0.001],
+    tForearmL: [0.050, -0.250, 0.010],
+    tForearmR: [-0.050, -0.250, 0.010],
+    palmR: [-0.117, -0.245, 0.137],
+    palmL: [0.117, -0.245, 0.137]
+  },
+  leg: {
+    thighL: OLD_LEG.thigh, shinL: OLD_LEG.shin, thighR: OLD_LEG.thigh, shinR: OLD_LEG.shin,
+    hipJointL: OLD_LEG.hipJointL, hipJointR: OLD_LEG.hipJointR,
+    thighBindL: [0, -1, 0], shinBindL: [0, -1, 0], thighBindR: [0, -1, 0], shinBindR: [0, -1, 0],
+    ankleL: [OLD_HIPS[0] + OLD_LEG.hipJointL[0], OLD_ANKLE_Y, 0],
+    ankleR: [OLD_HIPS[0] + OLD_LEG.hipJointR[0], OLD_ANKLE_Y, 0],
+    crouch: OLD_LEG.crouch, hipsBack: OLD_LEG.hipsBack, hipsSide: OLD_LEG.hipsSide
+  },
+  fitScale: OLD_FIT_SCALE,
+  clubScale: 1,
+  flexScale: 1
+};
+export const OLD_ATHLETE_FIT_SCALE = OLD_FIT_SCALE;
+
+export let SKELETON: SkeletonProfile = SKELETON_ATHLETE;
+export let RIG = SKELETON_ATHLETE.rig;
+export let UPPER_ARM_LEN = vLen(RIG.tForearmR); // 0.255
+export let FOREARM_PALM_LEN = vLen(RIG.palmR); // 0.304
+export let BIND_UPPER_R = unit(RIG.tForearmR);
+export let BIND_UPPER_L = unit(RIG.tForearmL);
+export let BIND_PALM_R = unit(RIG.palmR);
+export let BIND_PALM_L = unit(RIG.palmL);
 
 /**
  * Shaft direction in RIGHT-forearm bone space — the wrist-cock calibration.
@@ -179,14 +240,16 @@ export const BIND_PALM_L = unit(RIG.palmL);
  * palm/down plane so the club leaves the hand like a real grip.
  */
 export const WRIST_BETA = 0.92; // rad ≈ 53° palm→shaft (rigid golf grip)
-export const SHAFT_BIND_R: V3 = (() => {
-  const e1 = BIND_PALM_R;
+const shaftBindFor = (palm: V3): V3 => {
+  const e1 = palm;
   const e2 = unit(ortho([0, -1, 0], e1));
   return unit(vAdd(vScale(e1, Math.cos(WRIST_BETA)), vScale(e2, Math.sin(WRIST_BETA))));
-})();
+};
+export let SHAFT_BIND_R: V3 = shaftBindFor(BIND_PALM_R);
 
 /** club geometry, palm → head-centre (the rendered club head is exactly here) */
-export const CLUB_REACH = 0.88;
+const CLUB_REACH_BASE = 0.88;
+export let CLUB_REACH = CLUB_REACH_BASE;
 /** left palm sits this far up the shaft from the right palm (stacked grip) */
 export const GRIP_SPAN = 0.105;
 /**
@@ -223,7 +286,7 @@ export interface RootFrame {
 
 /** shot-local stance of a right-handed golfer: 0.52 m behind the ball line */
 export const STANCE_SHOT: V3 = [0.52, 0, -0.02];
-export const HERO_FIT_SCALE = 1.84 / 1.897; // targetHeight / GLB bounds height
+export let HERO_FIT_SCALE = OLD_FIT_SCALE; // targetHeight / GLB bounds height of the active skeleton
 
 export const makeRoot = (stanceGroundDy: number, s: number = HERO_FIT_SCALE): RootFrame => ({
   c: [STANCE_SHOT[0], stanceGroundDy, STANCE_SHOT[2]],
@@ -277,7 +340,8 @@ export interface SwingKey {
 const keyAtBall = (dir: V3, rest: Omit<SwingKey, "grip" | "dir">): SwingKey => {
   const d = unit(dir);
   // the club is rigid in MODEL space (palm→head = CLUB_REACH); shot-local
-  // distances shrink by the hero fit scale, so derive the grip accordingly
+  // distances shrink by the hero fit scale, so derive the grip accordingly. CLUB_REACH x HERO_FIT_SCALE (the club's world
+  // length) is the same for every skeleton profile (clubScale compensates the fit scale), so the keys are built once.
   return { ...rest, dir: d, grip: vSub(BALL_SHOT, vScale(d, CLUB_REACH * HERO_FIT_SCALE)) };
 };
 
@@ -337,43 +401,61 @@ export function evaluateSwing(phase: SwingPosePhase, t: number): SwingKey {
 /** base address spine flex split across Hips/Spine/Chest (rad, + = forward over the ball) */
 export const FLEX_SPLIT = { hips: 0.30, spine: 0.19, chest: 0.12 };
 
-/** golfer leg bind (GLB model space): thigh/shin lengths and hip-joint offsets from Hips */
-export const LEG = {
-  thigh: 0.4123,
-  shin: 0.3373,
-  hipJointL: [0.1143, -0.0375, 0] as V3,
-  hipJointR: [-0.1624, -0.0375, 0] as V3,
+/** golfer leg bind (GLB model space) of the active skeleton: thigh/shin lengths and hip-joint offsets from Hips */
+export let LEG = {
+  thigh: OLD_LEG.thigh,
+  shin: OLD_LEG.shin,
+  hipJointL: OLD_LEG.hipJointL,
+  hipJointR: OLD_LEG.hipJointR,
   /** hips sit this much lower (m) than the standing bind: the knee-flex crouch */
-  crouch: 0.012,
+  crouch: OLD_LEG.crouch,
   /** hips sit this far behind the ankle line (m): hinge at the hips, not a lean from the feet */
-  hipsBack: 0.03,
+  hipsBack: OLD_LEG.hipsBack,
   /** hips shift sideways (model +x = the golfer's left, m): centres the shoulders over the grip */
-  hipsSide: 0.04
+  hipsSide: OLD_LEG.hipsSide
 };
-const BIND_ANKLE_Y = RIG.hipsBind[1] + LEG.hipJointL[1] - LEG.thigh - LEG.shin;
-const ANKLE_L: V3 = [RIG.hipsBind[0] + LEG.hipJointL[0], BIND_ANKLE_Y, 0];
-const ANKLE_R: V3 = [RIG.hipsBind[0] + LEG.hipJointR[0], BIND_ANKLE_Y, 0];
-const DOWN: V3 = [0, -1, 0];
 const KNEE_POLE: V3 = [0, 0, 1];
 
+/** swap the virtual skeleton the swing is solved on (the original athlete by default) and re-derive every constant */
+export function useSkeleton(profile: SkeletonProfile): void {
+  SKELETON = profile;
+  RIG = profile.rig;
+  UPPER_ARM_LEN = vLen(RIG.tForearmR);
+  FOREARM_PALM_LEN = vLen(RIG.palmR);
+  BIND_UPPER_R = unit(RIG.tForearmR);
+  BIND_UPPER_L = unit(RIG.tForearmL);
+  BIND_PALM_R = unit(RIG.palmR);
+  BIND_PALM_L = unit(RIG.palmL);
+  SHAFT_BIND_R = shaftBindFor(BIND_PALM_R);
+  CLUB_REACH = CLUB_REACH_BASE * profile.clubScale;
+  HERO_FIT_SCALE = profile.fitScale;
+  LEG = {
+    thigh: profile.leg.thighL, shin: profile.leg.shinL,
+    hipJointL: profile.leg.hipJointL, hipJointR: profile.leg.hipJointR,
+    crouch: profile.leg.crouch, hipsBack: profile.leg.hipsBack, hipsSide: profile.leg.hipsSide
+  };
+}
+
 /** two-bone leg IK onto a planted ankle; knees bend toward +Z (the facing direction) */
-function solveLeg(hip: V3, ankle: V3): { thighW: Quat; shinW: Quat; knee: V3; flexRad: number; miss: number } {
+function solveLeg(
+  hip: V3, ankle: V3, thigh: number, shin: number, thighBind: V3, shinBind: V3
+): { thighW: Quat; shinW: Quat; knee: V3; flexRad: number; miss: number } {
   const toA = vSub(ankle, hip);
-  const maxD = LEG.thigh + LEG.shin - 1e-4;
-  const minD = Math.abs(LEG.thigh - LEG.shin) + 1e-4;
+  const maxD = thigh + shin - 1e-4;
+  const minD = Math.abs(thigh - shin) + 1e-4;
   const d = Math.min(maxD, Math.max(minD, vLen(toA)));
   const dir = unit(toA);
-  const cosA = (LEG.thigh * LEG.thigh + d * d - LEG.shin * LEG.shin) / (2 * LEG.thigh * d);
+  const cosA = (thigh * thigh + d * d - shin * shin) / (2 * thigh * d);
   const a = Math.acos(Math.max(-1, Math.min(1, cosA)));
   const perp = unit(ortho(KNEE_POLE, dir));
   const thighDir = unit(vAdd(vScale(dir, Math.cos(a)), vScale(perp, Math.sin(a))));
-  const knee = vAdd(hip, vScale(thighDir, LEG.thigh));
+  const knee = vAdd(hip, vScale(thighDir, thigh));
   const reach = vAdd(hip, vScale(dir, d));
   const shinDir = unit(vSub(reach, knee));
-  const cosK = (LEG.thigh * LEG.thigh + LEG.shin * LEG.shin - d * d) / (2 * LEG.thigh * LEG.shin);
+  const cosK = (thigh * thigh + shin * shin - d * d) / (2 * thigh * shin);
   return {
-    thighW: qFromTo(DOWN, thighDir),
-    shinW: qFromTo(DOWN, shinDir),
+    thighW: qFromTo(thighBind, thighDir),
+    shinW: qFromTo(shinBind, shinDir),
     knee,
     flexRad: Math.PI - Math.acos(Math.max(-1, Math.min(1, cosK))),
     miss: vDist(ankle, reach)
@@ -389,6 +471,8 @@ export interface SolvedSwing {
   readonly bones: Readonly<Record<string, Quat>>;
   /** Hips local position (model space) */
   readonly hipsPos: V3;
+  /** world rotation DELTAS (model space, relative to the virtual bind pose) of every solved segment: the input of a retarget */
+  readonly deltas: SolvedDeltas;
   /** world (shot-local) club telemetry */
   readonly clubHead: V3;
   readonly grip: V3;
@@ -409,6 +493,12 @@ export interface SolvedSwing {
   readonly wristError: number;
   /** posture read-outs for the acceptance trace and the unit tests */
   readonly posture: GolferPosture;
+}
+
+export interface SolvedDeltas {
+  readonly hips: Quat; readonly spine: Quat; readonly chest: Quat; readonly head: Quat;
+  readonly upperArmL: Quat; readonly foreArmL: Quat; readonly upperArmR: Quat; readonly foreArmR: Quat;
+  readonly thighL: Quat; readonly shinL: Quat; readonly thighR: Quat; readonly shinR: Quat;
 }
 
 export interface GolferPosture {
@@ -433,7 +523,8 @@ export interface GolferPosture {
  * space and reported back in shot-local for telemetry.
  */
 export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedSwing {
-  const flex = { ...FLEX_SPLIT };
+  const fs = SKELETON.flexScale;
+  const flex = { hips: FLEX_SPLIT.hips * fs, spine: FLEX_SPLIT.spine * fs, chest: FLEX_SPLIT.chest * fs };
   const flexScale = 1 + key.flex;
   const coilH = -key.coil * 0.40;
   const coilS = -key.coil * 0.30;
@@ -454,7 +545,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const hipsPos = vAdd(RIG.hipsBind, [LEG.hipsSide, key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
   const spinePos = vAdd(hipsPos, qRotate(hipsW, RIG.tSpine));
   const chestPos = vAdd(spinePos, qRotate(spineW, RIG.tChest));
-  const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead)); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead));
   const shoulderR = vAdd(chestPos, qRotate(chestW, RIG.tShoulderR));
   const shoulderL = vAdd(chestPos, qRotate(chestW, RIG.tShoulderL));
 
@@ -462,8 +553,9 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   // The legs are children of Hips, so the hip hinge must be cancelled in their local rotations.
   const hipJointL = vAdd(hipsPos, qRotate(hipsW, LEG.hipJointL));
   const hipJointR = vAdd(hipsPos, qRotate(hipsW, LEG.hipJointR));
-  const legL = solveLeg(hipJointL, ANKLE_L);
-  const legR = solveLeg(hipJointR, ANKLE_R);
+  const lg = SKELETON.leg;
+  const legL = solveLeg(hipJointL, lg.ankleL, lg.thighL, lg.shinL, lg.thighBindL, lg.shinBindL);
+  const legR = solveLeg(hipJointR, lg.ankleR, lg.thighR, lg.shinR, lg.thighBindR, lg.shinBindR);
   const hipsInv = qConj(hipsW);
 
   // targets into model space
@@ -481,7 +573,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
 
   // ---- left arm: palm IK onto the shaft, a hand-span up from the right ----
   const leftPalmM = vSub(gripM, vScale(dirM, gripSpanAt(key.grip[1])));
-  const elbowL = solveElbowPole(shoulderL, leftPalmM, ARM_POLES.left);
+  const elbowL = solveElbowPole(shoulderL, leftPalmM, ARM_POLES.left, vLen(RIG.tForearmL), vLen(RIG.palmL));
   const upperWorldL = qFromTo(BIND_UPPER_L, unit(vSub(elbowL, shoulderL)));
   const foreWorldL = qFromTo(BIND_PALM_L, unit(vSub(leftPalmM, elbowL)));
   const upperLocalL = qMul(qConj(chestW), upperWorldL);
@@ -528,6 +620,11 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
       LeftForearm: foreLocalL
     },
     hipsPos,
+    deltas: {
+      hips: hipsW, spine: spineW, chest: chestW, head: headW,
+      upperArmL: upperWorldL, foreArmL: foreWorldL, upperArmR: upperWorld, foreArmR: foreVisR,
+      thighL: legL.thighW, shinL: legL.shinW, thighR: legR.thighW, shinR: legR.shinW
+    },
     clubHead,
     grip: key.grip,
     shaftDir: key.dir,
@@ -586,9 +683,7 @@ function solveTrailArm(S: V3, G: V3, d: V3): { elbow: V3; foreWorld: Quat; wrist
 }
 
 /** classic 2-bone elbow with a pole (lead arm reaching down the shaft) */
-function solveElbowPole(shoulder: V3, palm: V3, pole: V3): V3 {
-  const L1 = UPPER_ARM_LEN;
-  const L2 = FOREARM_PALM_LEN;
+function solveElbowPole(shoulder: V3, palm: V3, pole: V3, L1: number = UPPER_ARM_LEN, L2: number = FOREARM_PALM_LEN): V3 {
   const raw = vDist(shoulder, palm) || 1;
   const D = Math.max(1e-4, Math.min(raw, L1 + L2 - 1e-4));
   const u = unit(vSub(palm, shoulder));
@@ -648,7 +743,7 @@ export function clubAttachOffsets(
   const faceLen = vLen(faceM);
   const face = faceLen > 1e-4 ? vScale(faceM, 1 / faceLen) : ortho([1, 0, 0], dirM);
   return CLUB_PARTS.map((part) => {
-    const centre = vAdd(gripM, vScale(dirM, part.along));
+    const centre = vAdd(gripM, vScale(dirM, part.along * SKELETON.clubScale));
     const quat = part.faceAim
       ? qFromFrame([0, 1, 0], [0, 0, 1], dirM, face)
       : qFromTo([0, 1, 0], dirM);

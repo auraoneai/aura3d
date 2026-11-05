@@ -46,7 +46,10 @@ export default defineArtDirection({
   },
   framing: { rig: "shoulder", subjectHeightFraction: [0.22, 0.6], fovDeg: [30, 58], mobile: "both" },
   assets: [
-    { role: "hero", assetKey: "linksGolferAthleteMeshy", maxTriangles: 40000, minTriangles: 2000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Idle_Loop"] } },
+    // GU47 wave 7: the player is the Meshy rigged golfer (16,420 triangles after the meshopt pass from 54,734; three 1024 px maps: base colour, normal, ORM); it drives the swing overlay and the idle/cheer clips
+    { role: "hero", assetKey: "links_golfer_player", maxTriangles: 20000, minTriangles: 12000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle", "wave", "cheer"] } },
+    // the original athlete: the caddy, the gallery fans and the `?golfer=old` player
+    { role: "set-dressing", assetKey: "linksGolferAthleteMeshy", maxTriangles: 40000, textureSet: "BC+N", maxTextureSize: 2048, animated: { clips: ["Ready", "Idle_Loop"] } },
     { role: "prop", assetKey: "linksGolfCartMeshy", maxTriangles: 16000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "linksPinFlagMeshy", maxTriangles: 20000, textureSet: "BC+N", maxTextureSize: 1024 },
     { role: "prop", assetKey: "linksGolfBall", maxTriangles: 2000, textureSet: "BC", maxTextureSize: 512 },
