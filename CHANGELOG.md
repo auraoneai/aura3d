@@ -4,6 +4,15 @@ Version: 4.7.12
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.7.14 (2026-11-05)
+
+- **Aura Links 3D: a new Meshy golfer replaces the old athlete.** The old golfer looked stiff and deformed in play (hunched torso, boxy limbs). The new player is a rigged Meshy model (athletic golfer, white cap, light-blue polo, navy trousers; 16,420 triangles, three 1024 px maps, 1.66 MB, skin weights intact). The existing procedural swing now solves on a swappable skeleton profile built from the new model's bind pose (`swingMath.ts`), and `golferRetarget.ts` maps the solved rotations onto the Meshy bones; the club, hands and feet follow the same solve (forward-kinematics tests keep both hands within 5 mm of the grip in 17 sampled poses). The Meshy idle clip plays under the swing and cheer plays on holing out. `?golfer=old` or `?look=original` brings the old athlete back; the caddy and gallery fans stay the old athlete.
+- Verified with a remote software-WebGL2 probe of the dev build: default and old golfer at address, power, backswing, impact, follow-through and after, and Cinder and Mare course switches with keys.
+
+### Known limits
+
+- The new golfer has no golf-specific clips (Meshy's library has none); the swing is procedural. Everything listed under 4.7.11 to 4.7.13 stands.
+
 ## 4.7.13 (2026-11-05)
 
 Fixes found by the owner's testing of 4.7.12 (screenshots), each reproduced with a remote software-WebGL2 probe before fixing.

@@ -1,8 +1,8 @@
 # Release Process
 
-Version: 4.7.13
+Version: 4.7.14
 
-Current release: Aura3D 4.7.13.
+Current release: Aura3D 4.7.14.
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
