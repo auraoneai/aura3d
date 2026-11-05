@@ -1,6 +1,6 @@
 # Deployment
 
-Version: 4.7.12
+Version: 4.7.13
 
 Build with Vite, check, deploy a clean export, then verify the live URL.
 
