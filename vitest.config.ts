@@ -16,6 +16,10 @@ export const sourceAliases = registry.paths
 export default defineConfig({
   test: {
     environment: "node",
+    // Source-pass runs (ACR, 2 vCPU) are 5-10x slower than a laptop; the 5 s default flaked on heavy simulations
+    // (certified rigs, 24-match stall probes). Local runs keep the strict default.
+    testTimeout: process.env.AURA3D_SOURCE_MANIFEST ? 60_000 : 5_000,
+    hookTimeout: process.env.AURA3D_SOURCE_MANIFEST ? 60_000 : 10_000,
     // `tests/assets/**` is a vitest suite that the 3.0.1 obligation ledger names as
     // production-path evidence (for example tests/assets/gltf-extension-support.test.ts for
     // M1). It was absent from `include`, so passing such a file on the command line matched

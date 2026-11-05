@@ -141,7 +141,7 @@ pnpm verify:api-docs -- --candidate-plan path/to/candidate-plan.json
 ## @aura3d/addons
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1271,7 +1271,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/addons/effects/AsciiOutput
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1348,7 +1348,7 @@ export declare class AsciiOutput {
 ## @aura3d/addons/effects/OutlineOutput
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1423,7 +1423,7 @@ export declare class OutlineOutput {
 ## @aura3d/addons/effects/StereoOutputs
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1546,7 +1546,7 @@ export declare class StereoOutput {
 ## @aura3d/addons/generators/EnvironmentGenerators
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1663,7 +1663,7 @@ export declare function generateStreetAssets(options: StreetAssetGeneratorOption
 ## @aura3d/addons/objects/MarchingCubes
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1760,7 +1760,7 @@ export declare function createMarchingCubes(options: MarchingCubesOptions): Marc
 ## @aura3d/addons/objects/SpecializedObjects
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -1927,7 +1927,7 @@ export {};
 ## @aura3d/addons/renderers/SpatialDOMRenderer
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -2020,7 +2020,7 @@ export declare class SpatialDOMRenderer {
 ## @aura3d/addons/renderers/VectorRenderer
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -2135,7 +2135,7 @@ export {};
 ## @aura3d/addons/tools/Fracture
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -2239,7 +2239,7 @@ export declare function fractureConvex(input: ConvexFractureInput, options?: Con
 ## @aura3d/addons/tools/Sculptor
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -2340,7 +2340,7 @@ export declare class Sculptor {
 ## @aura3d/addons/tools/TubePainter
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -2404,7 +2404,7 @@ export declare class TubePainter {
 ## @aura3d/addons/utils/WorkerPool
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/addons@5.0.0#sha256=4b7708b58b8455ea8b70d888e3c3d8403adf7ee09a6d2cd44693b34445899010`
+- Packed identity: `archive:@aura3d/addons@5.0.1#sha256=7a239a6e7998192216051085af8ca9fb78fe2033b1ffb3d7de2a9dbf17c4797d`
 
 ### Export conditions
 
@@ -2514,7 +2514,7 @@ export declare function installWorkerPoolHandler<Task, Result>(port: WorkerPoolH
 ## @aura3d/animation
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
+- Packed identity: `archive:@aura3d/animation@5.0.1#sha256=9f50b7738d3203345934c39147a92033825a4471dc8d3b5a5fa20690e60cb366`
 
 ### Export conditions
 
@@ -5386,7 +5386,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/animation/contracts
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
+- Packed identity: `archive:@aura3d/animation@5.0.1#sha256=9f50b7738d3203345934c39147a92033825a4471dc8d3b5a5fa20690e60cb366`
 
 ### Export conditions
 
@@ -5433,7 +5433,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/animation/lanes
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
+- Packed identity: `archive:@aura3d/animation@5.0.1#sha256=9f50b7738d3203345934c39147a92033825a4471dc8d3b5a5fa20690e60cb366`
 
 ### Export conditions
 
@@ -7207,7 +7207,7 @@ export {};
 ## @aura3d/animation/pose
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/animation@5.0.0#sha256=30bb9a058297a0b4b3c25e3b646aeb06bceae614372df3a0c01ec043f00ecb37`
+- Packed identity: `archive:@aura3d/animation@5.0.1#sha256=9f50b7738d3203345934c39147a92033825a4471dc8d3b5a5fa20690e60cb366`
 
 ### Export conditions
 
@@ -7247,7 +7247,7 @@ export declare function createPoseMixer(_options?: PoseMixerOptions): PoseMixer;
 ## @aura3d/apps
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/apps@5.0.0#sha256=f9d6491f9a6a2bb8326d79e27d70f6949cbea36420ef76ba2049063a65b7a0f2`
+- Packed identity: `archive:@aura3d/apps@5.0.1#sha256=dc9bb1161c24152f53b0164959b3d09a72c07124b8abd396034d940c9874aa58`
 
 ### Export conditions
 
@@ -7312,7 +7312,7 @@ export declare function createA3DApp(options?: A3DAppOptions): Promise<A3DApp>;
 ## @aura3d/asset-index
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/asset-index@5.0.0#sha256=25947b0f5f590969be13750ecfe5640a0f963448fb00dd23bc81ae2179904631`
+- Packed identity: `archive:@aura3d/asset-index@5.0.1#sha256=9d6dcb5ff552bdd340d16263367a60779c30afed4af89e1944e24924d4819f65`
 
 ### Export conditions
 
@@ -8050,7 +8050,7 @@ export declare function embeddingRanker(provider: EmbeddingProvider, query: stri
 ## @aura3d/assets
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -13775,7 +13775,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/assets/browser
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -18478,7 +18478,7 @@ export declare class GLTFSharedTextureCache {
 ## @aura3d/assets/exporters
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -19387,7 +19387,7 @@ export declare function encodeRgb9e5ProbeKTX2(mipLevels: readonly Rgb9e5ProbeLev
 ## @aura3d/assets/gltf-runtime
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -21822,7 +21822,7 @@ export declare function createGLTFTextureResidencySource(texture: Texture, fallb
 ## @aura3d/assets/importers
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -23582,7 +23582,7 @@ export declare function admitNativeFormat(input: Uint8Array | ArrayBuffer, forma
 ## @aura3d/assets/vite
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -23679,7 +23679,7 @@ export {};
 ## @aura3d/assets/vite-client
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/assets@5.0.0#sha256=9a05252cad91c94623b61f86e0913f008bde97225250eadb571ad36dc6773b40`
+- Packed identity: `archive:@aura3d/assets@5.0.1#sha256=8079ba7108552a58283eaf271d7493321cf8c2fafcce08be5d876e410b317591`
 
 ### Export conditions
 
@@ -23699,7 +23699,7 @@ declare module "virtual:aura3d-decoder-deployment" {
 ## @aura3d/audio
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/audio@5.0.0#sha256=c8110be382ce2854c3918662b516acdd96afe84c7888b0fac6efde61fa5a2e7c`
+- Packed identity: `archive:@aura3d/audio@5.0.1#sha256=7ce9248c7a5b621d63c5f7166f228f2dbc0b1b1f36173194effd4d1bba5e92f8`
 
 ### Export conditions
 
@@ -26325,7 +26325,7 @@ export interface SynthVoice {
 ## @aura3d/cli
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/cli@5.0.0#sha256=e18dc9b95f608138a42f82d296023d2e5e0a0c98c09037f70e888bf09069fbda`
+- Packed identity: `archive:@aura3d/cli@5.0.1#sha256=5235af0ac7a847d675a58339a8fefa5b391bc87b7151500261d370c9ff4a4b37`
 
 ### Export conditions
 
@@ -28496,7 +28496,7 @@ export interface CharacterAssemblyResolvedPart {
 ## @aura3d/controls
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/controls@5.0.0#sha256=e7350f45fc6351399bfc557eba570cf016c756dd261dd8d8fc3ae5b9be0af896`
+- Packed identity: `archive:@aura3d/controls@5.0.1#sha256=6e62489b39762cae21aa6ea0df0c6c07962da46c540a3070b5e8e9c938781ab3`
 
 ### Export conditions
 
@@ -30299,7 +30299,7 @@ export declare class FirstPersonControls {
 ## @aura3d/core
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/core@5.0.0#sha256=a7ebcb94a460128ad66376127af57d821d4c0ce18045b276b38d7403168106a5`
+- Packed identity: `archive:@aura3d/core@5.0.1#sha256=e6dcd207d4e5e2c8e2a39f45a0b93aa32b4b9c3c9280e68a42d9b5e7dc9f6fe7`
 
 ### Export conditions
 
@@ -30814,7 +30814,7 @@ export declare function currentWorkerAssets(): Readonly<AuraWorkerAssetUrls> | u
 ## create-aura3d
 
 - Version: `5.0.1`
-- Packed identity: `archive:create-aura3d@5.0.0#sha256=81deb80117b2daff56d5cf3c990ca890ff0b850aadf988a9ac82573a494f5ea2`
+- Packed identity: `archive:create-aura3d@5.0.1#sha256=582733796ab5c55e72d434d6c61c9fcecf602296544c2d129639be8968577736`
 
 ### Export conditions
 
@@ -31584,7 +31584,7 @@ export declare function writeAgentSkills(options: WriteAgentSkillsOptions): Writ
 ## @aura3d/debug
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=abb003d8a2a50fada9aa6e7bb194dd452f009d85ee6552eb9e659843dc201269`
+- Packed identity: `archive:@aura3d/debug@5.0.1#sha256=03f8a9678abe1f91a069e465f8b4d823a8bf2e16b0102bd8496cc27f560b1bc0`
 
 ### Export conditions
 
@@ -32964,7 +32964,7 @@ export declare function resolveQualitySwitches(options?: ResolveQualitySwitchesO
 ## @aura3d/debug/helpers
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/debug@5.0.0#sha256=abb003d8a2a50fada9aa6e7bb194dd452f009d85ee6552eb9e659843dc201269`
+- Packed identity: `archive:@aura3d/debug@5.0.1#sha256=03f8a9678abe1f91a069e465f8b4d823a8bf2e16b0102bd8496cc27f560b1bc0`
 
 ### Export conditions
 
@@ -33172,7 +33172,7 @@ export declare function buildTangentHelper(options: TangentHelperOptions): reado
 ## @aura3d/ecs
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/ecs@5.0.0#sha256=29511fdb37c26d3705741ea704f14d87afce81507050cb5b5a84fd5fa22bd23d`
+- Packed identity: `archive:@aura3d/ecs@5.0.1#sha256=3504626dae7b1ca52db7759909ed05c8f31c35238a6b2b18fcb1c0cbf6fad653`
 
 ### Export conditions
 
@@ -33840,7 +33840,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/editor-runtime
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/editor-runtime@5.0.0#sha256=5bbd002885699146fb5797b0051cf87984009bc4ed3f1c96525c7a630ff9e58a`
+- Packed identity: `archive:@aura3d/editor-runtime@5.0.1#sha256=4d2d7a459f46ae74bdbcbb063ef5301d09702b0abce5040183a36cf462c5c933`
 
 ### Export conditions
 
@@ -36423,7 +36423,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -36445,6 +36445,8 @@ export declare class TransformCommand implements Command {
  * names a replacement that exists or says there is none). Do not regenerate over them.
  */
 import "../lanes/index.js";
+import "../agent-api/nodes/instancedMesh.js";
+import "../agent-api/nodes/batched.js";
 export { AnimationController, appExtensionsAll, asRuntimeCompiled, atmosphere, auditArtDirection, AuraAdvancedLightingUnavailableError, AuraColorParseError, AuraSceneBuilder, batched, bindGameTouchControls, bindRuntimeCompiled, blendSkyBandColor, camera, cameras, captionCueAtTime, captureFromUrl, characterAssembly, characters, charts, checkSpatialInvariants, city, clearFocus, Clock, cloneSkinned, combatFrameAdvantage, compilePromptEpisodePlan, compilePromptPlanV2, compilerSlot, compileScene, composeWorldMatrix, compute, computeLineDistances, createAnimationPerformanceCoverage, createAnimationRenderOutputPackageMetadata, createArchitectureKit, createAssetDiagnostics, createAudioStemManifest, createAuraApp, createAuraRouteHealthSnapshot, createAuraText3DGeometry, createAuraVoiceBridgePackage, createAuraVoiceVisemeTrack, createCameraPathFromPreset, createCinematicKit, createCollisionLayers, createCombatAi, createDiagnosticsPanel, createDigitalTwinKit, createEnvironment, createFightingGameKit, createFrameLoop, createGame, createGameApp, createGameArcadeVehicle, createGameAudio, createGlbBlendshapeVisemeCue, createInitialDiagnostics, createMeshSurfaceQuery, createPrimitiveMouthVisemeCues, createProductConfiguratorKit, createProductionRuntimeCollectedLights, createPromptAnimationDeterministicScreenshotFixtureMetadata, createShotPlaybackPlan, createSmartCityKit, createVehicleChassis, createVehicleDriverAi, decomposeMatrix, defineAuraAssets, defineDubMap, defineModelAssets, definePromptPlan, DIAGNOSTIC_ONLY_FIELDS, DIAGNOSTICS_SECTION_KEYS, diagnosticsSectionsAll, distanceLod, distributeInRegion, effects, enforceFrameBudget, environments, eulerToQuaternion, fat, fitSizeToRegion, focusCameraIntent, focusObject, focusSemanticRegion, game, gameFeel, games, geometry, glbVisemeBlendshapeExample, groundedFittedModelPosition, groundedRenderedAssetPlacement, group, groups, helpers, installShotPlayback, instances, interactions, labels, lights, line, lines, lookLint, looks, loop, material, model, modelsEnabledFromUrl, nodeHandleExtensionFor, nodeHandleExtensionsAll, nodeHandlerFor, nodeHandlersAll, normalizeLinePositions, optionCoverageRows, parseAuraColor, parseAuraColorSrgb, particles, physics, placedBounds, placedBoundsFromAsset, planLayeredSceneComposition, planScatterInstances, planSkyBackdrop, platformerCompositionSpec, points, postPresets, prefabs, primitiveMouthVisemeExample, primitives, product, promptPlanToScene, promptRecipes, raycast, raycastFirst, registerAppExtension, registerDiagnosticsSection, registerEnvironmentSource, registerLookLintRule, registerNodeHandleExtension, registerNodeHandler, registerOptionCoverage, renderer, resolveBoundsAnchor, resolveCameraFrame, resolveChaseFraming, resolveEnvironment, resolveQrFlags, resolveSemanticRegion, sampleAuraVoiceBridgeAtTime, sampleCameraPath, sampleShotPlaybackPlan, sampleVisemeTrack, scatterWindOffset, scene, sceneKits, SCREEN_FEEL_BLACKBOARD_KEY, segments, setCompilerImpl, shadows, skyBandCountForRamp, snapshotDiagnostics, solar, solveCombatFrameData, solvePlatformerMotion, sprite, sprites, StubActorAnimationApi, StubAppAtmosphere, StubAppEffects, stubCameraRigFactories, StubFeelBus, StubLightingRuntime, StubModelMaterialHandle, StubPostSurface, StubTimeController, surfaces, text3D, timeline, tsl, ui, updateCompiledScene, validateAuraVoiceBridgePackage, validateCombatFrameData, vehicleChassisSpecFromBounds, WIND_CHUNK, workflows, worldQueriesSlot } from "../agent-api/index.js";
 export type { AuraModelAssetEntry, AuraModelAssetRefs, AuraModelAssetSet, AuraModelAssetsOptions, AuraSceneInit, A3DAppLifecycleSnapshot, A3DDisposable, AnyNodeHandler, AppExtension, ArtDirectionViolation, AuraActorAnimationApi, AuraActorAnimationStateSnapshot, AuraAnimationAssetLike, AuraAnimationDiagnostics, AuraAntiAliasMode, AuraAdvancedIndirectOptions, AuraAdvancedIndirectSource, AuraClusteredLightingOptions, AuraLightmapAttachmentOptions, AuraPhotometricProfile, AuraPivotTransformSpec, AuraPostPassInput, AuraProbeGridAttachmentOptions, AuraProjectedLightImage, AuraVoxelAttachmentOptions, AuraApp, AuraAppAtmosphere, AuraAppEffects, AuraAppExtensionMap, AuraAppTarget, AuraAssetBudget, AuraAssetDecodersOption, AuraAssetDefinition, AuraAssetLodLevel, AuraAssetLodOption, AuraAssetMap, AuraAssetRef, AuraAssetRefIdentity, AuraAssetRequiredDecoder, AuraAssetsOption, AuraAssetVariants, AuraAutoExposureOptions, AuraBatchedGeometryInput, AuraBatchedMeshHandle, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedNode, AuraBiomeId, AuraBiomeRig, AuraBodyHandle, AuraBoneAttachSpec, AuraBoneMaskSpec, AuraBoneSocket, AuraCameraController, AuraCameraLayer, AuraCameraOption, AuraCameraPose, AuraCameraRailOptions, AuraCameraRig, AuraCameraRigContext, AuraCameraRigFactories, AuraCameraSequence, AuraCameraSequencePlayback, AuraCameraShot, AuraCameraSpec, AuraCameraSubject, AuraCompiledFeature, AuraComputeBuffer, TslCompileResult, TslEvalContext, TslInput, TslMaterialNodeOptions, TslType, TslUniformKind, TslUniformOptions, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface, AuraCreateAppAnimationOptions, AuraCustomGeometrySpec, AuraCustomPostPass, AuraDecalOptions, AuraDegradation, AuraDegradationCode, AuraDiagnostics, AuraDiagnosticsSectionKey, AuraDirectionalShadowOptions, AuraEaseName, AuraEffectInstanceHandle, AuraEffectsDiagnostics, AuraEnvironmentSource, AuraEnvironmentSourceKind, AuraEnvironmentSourceResolution, AuraEulerOrder, AuraFatLineOptions, AuraFeelBus, AuraFeelEventSpec, AuraFovKickLayer, AuraHeightFogSpec, AuraHeightQuery, AuraHelperBaseOptions, AuraInstancedBufferView, AuraInstancedGeometryInput, AuraInstancedMeshBoundingSphere, AuraInstancedMeshHandle, AuraLightingDiagnostics, AuraLightingModel, AuraLightingOptions, AuraLightingRuntime, AuraLightsApiAdditions, AuraLineNode, AuraLineOptions, AuraLinePositionsInput, AuraLocalShadowOptions, AuraLookDiagnostics, AuraLookId, AuraLookLintCode, AuraLookLintContext, AuraLookLintFinding, AuraLookLintRule, AuraLookNode, AuraLookOverrides, AuraLoopOptions, AuraMaterialDiagnostics, AuraMaterialSpec, AuraMaterialTextureSlot, AuraModelColliderOption, AuraModelLodOption, AuraModelMaterialHandle, AuraModelMaterialOverride, AuraNamedAnimationClipDefinition, AuraNodeHandleExtensionMap, AuraNodeInput, AuraNodeKindMap, AuraOutputDiagnostics, AuraOutputOptions, AuraOutputOverlay, AuraOutputSurface, AuraPhysicsRuntime, AuraPointsNode, AuraPointsOptions, AuraPostDiagnostics, AuraPostPreset, AuraPostPresetId, AuraPostSurface, AuraPunchLayer, AuraQuat, AuraRendererMaterialOptions, AuraResolvedClipInfo, AuraResolvedMaterialInfo, AuraRootLodLevelSpec, AuraRootMotionSpec, AuraRootVec3, AuraRuntimeNodeHandle, AuraRuntimeNodeRegistryV2, AuraSceneNode, AuraSceneSnapshot, AuraScreenFeelUniforms, AuraShadowOptions, AuraSkyNode, AuraSkySpec, AuraSkySunSpec, AuraSpriteNode, AuraSpriteOptions, AuraStudioLookId, AuraTimeController, AuraToneMappingOperator, AuraTransformSpec, AuraTraumaLayer, AuraVec3, AuraVfxEffectSpec, AuraVfxKind, AuraVolumetricFogSpec, AuraWindSpec, AuraWorldQualityTier, AuraWorldQueries, AuraWorldTransform, CameraPath, CameraPresetId, CaptureContext, CharacterAssemblyPlan, ClonedSkinnedModel, CloneSkinnedModelInput, CloneSkinnedOptions, CombatAi, CombatAiAggression, CombatFrameAdvantage, CombatFrameData, CompiledActor, CompiledScene, CompilerImpl, CreateGameOptions, DiagnosticsSection, DriverRoute, FightingGameSnapshot, FocusResult, FrameLoopCallback, FrameLoopFrame, FrameLoopOptions, FrameLoopSnapshot, FrameLoopSource, Game, GameAcceptance, GameArcadeVehicle, GameArcadeVehicleInput, GameArcadeVehicleState, GameAudio, GameAudioContextLike, GameAudioOptions, GameBeacon, GameBudgets, GameCombatEvent, GameCombatMove, GameCombatWorld, GameCombatWorldSnapshot, GameEffectsController, GameEntryV2, GameFallingBlockAction, GameFallingBlocksEvent, GameFallingBlocksSnapshot, GameFxKind, GameFxLayer, GameGenre, GameInputController, GameInputReplayEvent, GameInputReplayPlan, GameKitRect, GamePlatformerSnapshot, GameRacingKit, GameRacingSnapshot, GameScenario, GameSession, GameSessionState, GameShell, GameShellLayout, GroundRaycaster, Hud, HudMountOptions, HudWidgetSpec, MeshSurfaceQuery, NodeHandleExtension, NodeHandler, OptionCoverageRow, PauseReason, QrFlagInput, RebuildTier, RenderSourceContributions, RouteHealthQualityGate, RuntimeCompiledSceneInternals, RuntimeNodeHandleLike, SceneCompileContext, SceneQueryHit, SceneQueryTarget, SceneRay, SceneRaycastCamera, SceneRaycastInput, SceneRaycastOptions, SemanticRegion, SurfaceSample, TouchControls, TouchPreset, TransitionSpec, VehicleChassis, VehicleDriverAi, VehiclePose, VehicleSurface, VehicleVec3 } from "../agent-api/index.js";
 export { loadFont } from "../agent-api/index.js";
@@ -36465,22 +36467,22 @@ export type { AuraMergeStaticOptions, AuraScatterAlongPathOptions, AuraScatterAr
 export type { A3DEnvironment } from "../agent-api/index.js";
 export { AnimationAction } from "../agent-api/index.js";
 export type { AuraColor } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraCreateAppOptions } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraCreateGameAppOptions } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Use `@aura3d/engine/devtools`. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraDiagnosticsOverlay } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraEffectNode } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraLightNode } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraModelOptions } from "../agent-api/index.js";
 export { AuraNodeBuilder } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraPerformanceQuality } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { AuraPrimitiveNode } from "../agent-api/index.js";
 export { character } from "../agent-api/index.js";
 export { collectAuraSceneEvidence } from "../agent-api/index.js";
@@ -36492,7 +36494,7 @@ export { decals } from "../agent-api/index.js";
 export { editor } from "../agent-api/index.js";
 export { evaluatePromptAnimationPublishReadiness } from "../agent-api/index.js";
 export type { GamePlatformerEvent } from "../agent-api/index.js";
-/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.1 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
+/** @deprecated Internal or advanced helper outside the supported authoring path; no replacement. Type-only export retained in 5.0.0 (public signatures and `@aura3d/react` still reference these types); removal no earlier than 6.0.0. */
 export type { CharacterAssemblyValidationReport } from "../agent-api/index.js";
 export { navigation } from "../agent-api/index.js";
 export { sky } from "../agent-api/index.js";
@@ -84248,7 +84250,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -84277,7 +84280,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -120708,7 +120711,7 @@ export declare function estimateGlbResourceBytes(sizeBytes: number | undefined, 
 ## @aura3d/engine/animation
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -123579,7 +123582,7 @@ export declare function createThreeCompatAnimationDiagnostics(mixer: AnimationMi
 ## @aura3d/engine/assets
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -129305,7 +129308,7 @@ export { HDRLoaderThreeCompat as HDRLoader } from "./loaders/HDRLoader.js";
 ## @aura3d/engine/audio
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -131930,7 +131933,7 @@ export interface SynthVoice {
 ## @aura3d/engine/controls
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -133732,7 +133735,7 @@ export declare class FirstPersonControls {
 ## @aura3d/engine/devtools
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -181510,7 +181513,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -181539,7 +181543,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -215826,7 +215830,7 @@ export declare const sky: {
 ## @aura3d/engine/ecs
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -216493,7 +216497,7 @@ export declare class CameraSystem implements System {
 ## @aura3d/engine/editor-runtime
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -219075,7 +219079,7 @@ export declare class TransformCommand implements Command {
 ## @aura3d/engine/game
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -249002,7 +249006,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -249031,7 +249036,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -305983,7 +305988,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/game/art
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -309077,7 +309082,7 @@ export declare function canvasBlankCheck(rgba: Uint8ClampedArray, width: number,
 ## @aura3d/engine/game/capture
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -338798,7 +338803,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -338827,7 +338833,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -392629,7 +392635,7 @@ export {};
 ## @aura3d/engine/game/styles.css
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -392640,7 +392646,7 @@ This export has no TypeScript declaration (non-code or explicitly blocked target
 ## @aura3d/engine/game/util
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -392666,7 +392672,7 @@ export declare function nowSeconds(): number;
 ## @aura3d/engine/geometry-tools
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -393393,7 +393399,7 @@ export declare function createAuraText3DGeometry(text: string, options?: AuraTex
 ## @aura3d/engine/input
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -394634,7 +394640,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/engine/lighting
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -395273,7 +395279,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/engine/math
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -397263,7 +397269,7 @@ export declare class NURBSVolume {
 ## @aura3d/engine/media-node
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -397888,7 +397894,7 @@ export declare function createCloudRenderAdapter(options?: CreateCloudRenderAdap
 ## @aura3d/engine/physics
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -400526,7 +400532,7 @@ export {};
 ## @aura3d/engine/physics/solverless
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -401778,7 +401784,7 @@ export declare class PhysicsWorld {
 ## @aura3d/engine/physics/world
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -402039,7 +402045,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/engine/renderer
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -431137,7 +431143,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -431166,7 +431173,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -486061,7 +486068,7 @@ export declare function gamePresetMeasuredPasses(preset: GameRenderPreset): read
 ## @aura3d/engine/scatter
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -486194,7 +486201,7 @@ export {};
 ## @aura3d/engine/scene
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -487319,7 +487326,7 @@ export {};
 ## @aura3d/engine/scene/math
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -487403,7 +487410,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/engine/scripting
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -488583,7 +488590,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/engine/shader-graph-runtime
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -492782,7 +492789,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/engine/v5
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -524327,7 +524334,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -524356,7 +524364,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -559664,7 +559672,7 @@ export declare function bindFeelSound(app: AuraApp, sound: FeelSoundListener | F
 ## @aura3d/engine/v5/context
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -559910,7 +559918,7 @@ export { createGameAppWithPhysicsWorldAccess };
 ## @aura3d/engine/v5/game
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -589716,7 +589724,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -589745,7 +589754,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -646790,7 +646799,7 @@ export declare function createBindingStore(options: BindingStoreOptions): Bindin
 ## @aura3d/engine/v5/internal
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -651977,7 +651986,7 @@ export declare function createGameAppRuntime<TApp extends AuraAppHandle>(app: TA
 ## @aura3d/engine/v5/math/hull
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -652165,7 +652174,7 @@ export declare class ConvexHull {
 ## @aura3d/engine/worker
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -652665,7 +652674,7 @@ export declare function createWorkerFrameScheduler<Input>(options: WorkerFrameSc
 ## @aura3d/engine/workflows
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/engine@5.0.0#sha256=7d9067ac663e831b89a01cf9a9e52ccfb06533f96330486dae423aaf111e8eed`
+- Packed identity: `archive:@aura3d/engine@5.0.1#sha256=effc2e78929eb6e7548be87fdbbdf1e5a23f5708869cda7d7865221f0048bfdb`
 
 ### Export conditions
 
@@ -653123,7 +653132,7 @@ export declare function createWorkflowDiagnosticsSummary(): WorkflowDiagnosticsS
 ## @aura3d/input
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/input@5.0.0#sha256=523cb624bf76df44c4028e81d6565b35d5dba8a2037677734b1d6d41fbd0995d`
+- Packed identity: `archive:@aura3d/input@5.0.1#sha256=56ff28f36ef61ae9859cf06f311275b953edb13efe15f2d69d7028fd5ea78857`
 
 ### Export conditions
 
@@ -654365,7 +654374,7 @@ export type { Gesture } from "./GestureRecognizer.js";
 ## @aura3d/math
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/math@5.0.0#sha256=cd92bae16c0703caabb1c9db9c9045ecae0666830eb0bf0d6447001ad84b0fd6`
+- Packed identity: `archive:@aura3d/math@5.0.1#sha256=1c2d8a4b3b37b1d89323c49286e1f45b03fbebf1f0b6770e4e557fd9f8378086`
 
 ### Export conditions
 
@@ -656352,7 +656361,7 @@ export declare class NURBSVolume {
 ## @aura3d/math/three
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/math@5.0.0#sha256=cd92bae16c0703caabb1c9db9c9045ecae0666830eb0bf0d6447001ad84b0fd6`
+- Packed identity: `archive:@aura3d/math@5.0.1#sha256=1c2d8a4b3b37b1d89323c49286e1f45b03fbebf1f0b6770e4e557fd9f8378086`
 
 ### Export conditions
 
@@ -657600,7 +657609,7 @@ export {};
 ## @aura3d/navigation-recast
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/navigation-recast@5.0.0#sha256=6257b54923804682df47a77e2ecff0fc10670b533b266ec8a284059a7b915240`
+- Packed identity: `archive:@aura3d/navigation-recast@5.0.1#sha256=046c33be6dd5f13293924897c0c090e5680e5eaa76b50375a234fb5d606a7728`
 
 ### Export conditions
 
@@ -657731,7 +657740,7 @@ export declare function createRecastNavigation(options?: RecastNavigationOptions
 ## @aura3d/physics
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f79aa598ba3211c763c9a9bb6b11cb566f9b7463e6a3badd7e8010f241cb0a03`
+- Packed identity: `archive:@aura3d/physics@5.0.1#sha256=17f009c6f94f992716a4aae015e61530ce0f09698e2c83e062251f08b881276d`
 
 ### Export conditions
 
@@ -659955,7 +659964,7 @@ export {};
 ## @aura3d/physics-rapier
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/physics-rapier@5.0.0#sha256=d186e3109fac88e254f9ed295c69423e3f184e4c5cb555cebbfb265b59296caf`
+- Packed identity: `archive:@aura3d/physics-rapier@5.0.1#sha256=67f12804d452de9fe977a700c00f22fb809614f91fd0e6ab0c80eff5e9a34fba`
 
 ### Export conditions
 
@@ -660380,7 +660389,7 @@ export declare function createCollidersFromSidecar(world: RapierPhysicsWorld, so
 ## @aura3d/physics/solverless
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f79aa598ba3211c763c9a9bb6b11cb566f9b7463e6a3badd7e8010f241cb0a03`
+- Packed identity: `archive:@aura3d/physics@5.0.1#sha256=17f009c6f94f992716a4aae015e61530ce0f09698e2c83e062251f08b881276d`
 
 ### Export conditions
 
@@ -661633,7 +661642,7 @@ export declare class PhysicsWorld {
 ## @aura3d/physics/world
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/physics@5.0.0#sha256=f79aa598ba3211c763c9a9bb6b11cb566f9b7463e6a3badd7e8010f241cb0a03`
+- Packed identity: `archive:@aura3d/physics@5.0.1#sha256=17f009c6f94f992716a4aae015e61530ce0f09698e2c83e062251f08b881276d`
 
 ### Export conditions
 
@@ -661895,7 +661904,7 @@ export declare const physicsInitMode: "top-level-await" | "lazy";
 ## @aura3d/product-studio
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/product-studio@5.0.0#sha256=cc8f7300b136d7dc91dc4185f15df3558d0ca9936bad99dbe3d2c0a8f3f17c13`
+- Packed identity: `archive:@aura3d/product-studio@5.0.1#sha256=61badb7bb3bb0d906ae7be623ddd4df0baeff522f4b6ffad2fd70eca43336c02`
 
 ### Export conditions
 
@@ -662177,7 +662186,7 @@ export interface ProductStudio {
 ## @aura3d/react
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/react@5.0.0#sha256=7f6419d9f9d98d852d62e8dee133e3a96496e58f4c0d765b39231d17293b37a2`
+- Packed identity: `archive:@aura3d/react@5.0.1#sha256=35fbace16579a92b6520394d8d7730c370b98e52e1003595073bbebed40872bb`
 
 ### Export conditions
 
@@ -662484,7 +662493,7 @@ export {};
 ## @aura3d/rendering
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -691542,7 +691551,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -691571,7 +691581,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -694060,7 +694070,7 @@ export declare function registerBatchedDrawShader(): void;
 ## @aura3d/rendering/contracts
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -695649,7 +695659,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/atmosphere
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -695694,7 +695704,7 @@ export {};
 ## @aura3d/rendering/contracts/blend
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -695739,7 +695749,7 @@ export declare function renderStateKey(state: RenderCommandState): number;
 ## @aura3d/rendering/contracts/core
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -695809,7 +695819,7 @@ export declare function createRegistry<E extends RegistryEntry>(name: string): R
 ## @aura3d/rendering/contracts/deform
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -695862,7 +695872,7 @@ export declare function buildMorphTargetTexture(item: import("./renderItem.js").
 ## @aura3d/rendering/contracts/device
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -695948,7 +695958,7 @@ export declare const renderTargetPoolSlot: ContractSlot<(device: RenderDevice) =
 ## @aura3d/rendering/contracts/environment
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -696018,7 +696028,7 @@ export declare const PRD02_IBL_FEATURE: "prd02.ibl";
 ## @aura3d/rendering/contracts/flags.state
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -696048,7 +696058,7 @@ export declare const REMOVED_QR_FLAGS: readonly QrFlagName[];
 ## @aura3d/rendering/contracts/frameGraph
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -696192,7 +696202,7 @@ export {};
 ## @aura3d/rendering/contracts/frameUniforms
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -696250,7 +696260,7 @@ export declare const frameUniformsSlot: ContractSlot<(device: RenderDevice) => F
 ## @aura3d/rendering/contracts/geometry
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -696298,7 +696308,7 @@ export declare const instanceBufferSlot: ContractSlot<(device: RenderDevice, cap
 ## @aura3d/rendering/contracts/index
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -697887,7 +697897,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/materialLobes
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -697947,7 +697957,7 @@ export declare function potentiallyActiveMaterialLobes(flags: QrFlags): readonly
 ## @aura3d/rendering/contracts/output
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698019,7 +698029,7 @@ export declare function probeHdrTargetFormat(device: RenderDevice): HdrTargetFor
 ## @aura3d/rendering/contracts/particles
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698076,7 +698086,7 @@ export declare const PARTICLE_PROGRAM_DEFINES: readonly ["PARTICLE_SOURCE", "STR
 ## @aura3d/rendering/contracts/post
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698184,7 +698194,7 @@ export interface PostPipelineOptions {
 ## @aura3d/rendering/contracts/program
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698390,7 +698400,7 @@ export declare const programCacheSlot: ContractSlot<(device: RenderDevice, o?: P
 ## @aura3d/rendering/contracts/quality
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698519,7 +698529,7 @@ export declare class StubQualityController implements AuraQualityController {
 ## @aura3d/rendering/contracts/rendererFactory
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698579,7 +698589,7 @@ export declare const resourceRegistrySlot: ContractSlot<() => ResourceRegistryLi
 ## @aura3d/rendering/contracts/renderItem
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698697,7 +698707,7 @@ export interface RenderItem {
 ## @aura3d/rendering/contracts/renderSource
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698793,7 +698803,7 @@ export interface RenderSource {
 ## @aura3d/rendering/contracts/sampling
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698854,7 +698864,7 @@ export declare const LIGHTING_SAMPLER_DROP_ORDER: readonly ["contact-shadow", "i
 ## @aura3d/rendering/contracts/shadows
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698930,7 +698940,7 @@ export declare function skinnedWorldBounds(item: RenderItem): Float32Array | nul
 ## @aura3d/rendering/contracts/structuralMemo
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -698968,7 +698978,7 @@ export declare class StructuralMemo<V> {
 ## @aura3d/rendering/contracts/testing/ChunkHarness
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -699001,7 +699011,7 @@ export declare function buildChunkHarnessProgram(chunks: readonly ShaderChunk[],
 ## @aura3d/rendering/contracts/textureFormats
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -699034,7 +699044,7 @@ export declare function resolveCompressedTextureFormatSlot(): ContractSlot<(form
 ## @aura3d/rendering/contracts/velocity
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -699106,7 +699116,7 @@ export declare function resetTemporalHistory(reason: TemporalResetReason, target
 ## @aura3d/rendering/extension-scalar-atlas
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -699147,7 +699157,7 @@ export declare function createExtensionScalarAtlas(inputs: Readonly<Partial<Reco
 ## @aura3d/rendering/lanes
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -705518,7 +705528,8 @@ interface Mount {
 export interface Prd07RendererOperation {
     readonly mount: Mount;
     readonly lease: Prd07DeviceLease;
-    readonly snapshot: Prd07RendererSnapshot;
+    /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
+    snapshot: Prd07RendererSnapshot;
     closed: boolean;
 }
 export interface Prd07RendererView {
@@ -705547,7 +705558,7 @@ export declare function takePrd07RendererOperation(renderer: object): {
     readonly owned: boolean;
 };
 /** Revalidate after any yield and before every managed packet consumption. */
-export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation): void;
+export declare function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot?: boolean): void;
 export declare function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void;
 export declare function beginPrd07RendererView(operation: Prd07RendererOperation | undefined, view: Prd07ViewId, index: number): Prd07RendererView | undefined;
 export declare function endPrd07RendererView(view: Prd07RendererView | undefined): void;
@@ -705999,7 +706010,7 @@ export {};
 ## @aura3d/rendering/lighting
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -706638,7 +706649,7 @@ export declare function advancedLightingItemBinding(item: RenderItem, frame?: Ad
 ## @aura3d/rendering/production-runtime
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -710130,7 +710141,7 @@ export declare function createNativeFrameGraphBindings(options: NativeFrameGraph
 ## @aura3d/rendering/reference
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -710863,7 +710874,7 @@ export declare function createCinematicDepthHazePass(options?: Partial<Omit<Cine
 ## @aura3d/rendering/reflection-surfaces
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -710998,7 +711009,7 @@ export declare function listReflectionSurfaceKinds(): readonly ReflectionSurface
 ## @aura3d/rendering/shader-graph
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -711241,7 +711252,7 @@ export declare function compileShaderGraph(graph: ShaderGraphDocument, target: S
 ## @aura3d/rendering/volumetrics
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -711797,7 +711808,7 @@ export {};
 ## @aura3d/rendering/webgpu
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -714487,7 +714498,7 @@ export declare class GaussianSplatRenderer {
 ## @aura3d/rendering/world
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/rendering@5.0.0#sha256=3e762dff962cac18d5755d6f4c8bf4ba0513d6c8a3af03b4dce7a3acac257ef1`
+- Packed identity: `archive:@aura3d/rendering@5.0.1#sha256=7cf5b3f05acac9752777370a7338725c42f33e5bf60bfc62d5aa8cfb722dbda5`
 
 ### Export conditions
 
@@ -715586,7 +715597,7 @@ export declare function meanLinearLuma(data: Float32Array, pixelCount: number): 
 ## @aura3d/scene
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=0b9b3e45acc068415a5c33f23a98ad081188135cc635c5da6c25ca57817415e9`
+- Packed identity: `archive:@aura3d/scene@5.0.1#sha256=0ce3c2f1a72d9ff611b5d25d798edb30891f0a3595ae23e10b08585ab2d98c3e`
 
 ### Export conditions
 
@@ -716712,7 +716723,7 @@ export {};
 ## @aura3d/scene/math
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/scene@5.0.0#sha256=0b9b3e45acc068415a5c33f23a98ad081188135cc635c5da6c25ca57817415e9`
+- Packed identity: `archive:@aura3d/scene@5.0.1#sha256=0ce3c2f1a72d9ff611b5d25d798edb30891f0a3595ae23e10b08585ab2d98c3e`
 
 ### Export conditions
 
@@ -716797,7 +716808,7 @@ export declare function decomposeMat4(matrix: Readonly<Mat4>): {
 ## @aura3d/scripting
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/scripting@5.0.0#sha256=e5bfbac3b257d07c4e6be0a5bafc511c680818fd57e443d33ec72536caa657ae`
+- Packed identity: `archive:@aura3d/scripting@5.0.1#sha256=298582b1a167bb8b4ae8b4e2c82f143d81d4b9e15a4ef549c49ca63051a5d554`
 
 ### Export conditions
 
@@ -717978,7 +717989,7 @@ export declare function validateNode(node: VisualNode): readonly string[];
 ## @aura3d/workflows
 
 - Version: `5.0.1`
-- Packed identity: `archive:@aura3d/workflows@5.0.0#sha256=635577a4aca36777af3e00e574621f0521148ada5bd2e506bbc5eb01d70c6051`
+- Packed identity: `archive:@aura3d/workflows@5.0.1#sha256=89b3ccc2a1263254dafc20a7fa4b4d268a530dc0c4a39f5984f3489f4fff5ed8`
 
 ### Export conditions
 

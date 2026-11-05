@@ -218,14 +218,14 @@ function warnDepthDegradedOnce(code: string, label: string | undefined, detail: 
   console.warn(`${code}: "${label ?? "unlabelled item"}" ${detail}`);
 }
 function warnAlphaHashDegradedOnce(label: string | undefined): void {
-  warnDepthDegradedOnce("DEPTH_ALPHA_HASH_DEGRADED", label, "is a blended shadow caster; alpha-hashed depth is not implemented, so it casts as an opaque caster.");
+  warnDepthDegradedOnce("DEPTH_ALPHA_HASH_DEGRADED", label, "is a blended shadow caster; alpha-hashed depth has no implementation here, so it casts as an opaque caster.");
 }
 
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey {
   if (key.alphaHash) {
     // 4.7.x drew a blended caster as an ordinary opaque caster. Keep that outside strict mode instead of failing the frame.
-    if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth is not implemented", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: item.label });
+    if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth has no implementation", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: item.label });
     warnAlphaHashDegradedOnce(item.label);
     key = { ...key, alphaHash: false };
   }
@@ -887,7 +887,7 @@ export class DepthPass extends BaseRenderPass {
       && (base.renderState.blend === true || (base.renderState.blendMode !== undefined && base.renderState.blendMode !== "opaque"))
       && source.castShadow === true;
     if (alphaHash) {
-      if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth is not implemented", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: source.label });
+      if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth has no implementation", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: source.label });
       warnAlphaHashDegradedOnce(source.label);
     }
     const cutoff = material?.getParameter("u_alphaCutoff");
