@@ -204,7 +204,9 @@ function buildGrid(record: WaterRecord, res = 64): { vertices: Float32Array; ind
 }
 
 function gridFor(device: RenderDevice, ds: WaterDeviceState, st: WaterGpuState): boolean {
-  if (st.vb && st.ib) return true;
+  // The GPU state outlives a setScene when the water record does (module-level, keyed by node id): its buffers belong to the
+  // disposed device then, so a state whose buffers are gone is rebuilt below instead of drawn.
+  if (st.vb && st.ib && !st.vb.disposed && !st.ib.disposed) return true;
   const grid = buildGrid(st.record);
   // A cached grid is reused only while its device buffers are still live and match this grid's size: setScene disposes the
   // previous scene's water buffers, and handing a disposed buffer to the next scene's water draw throws "Buffer is not a
