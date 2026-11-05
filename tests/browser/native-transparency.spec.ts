@@ -33,6 +33,8 @@ for (const backend of ["webgl2", "webgpu"] as const) {
         if (selectedBackend === "webgpu" && !adapter) return { unsupported: "WebGPU adapter unavailable" };
         const device: any = selectedBackend === "webgl2" ? glModule.WebGL2Device.create({ canvas, alpha: true, antialias: false, errorCheckMode: "strict" })
           : await gpuModule.WebGPUDevice.create({ gpu, adapter, canvas, requireNativeRendering: true });
+        // The product gates weighted OIT on this capability (Renderer float-blending); the fixture forces floatBlend support, so require the same.
+        if (selectedBackend === "webgl2" && !device.info?.capabilities?.includes("float-blending")) { device.dispose(); return { unsupported: "EXT_float_blend unavailable for weighted blending" }; }
         const scene = device.createRenderTarget({ width: 32, height: 32, format: "rgba8", depth: "texture", sampleCount: 1 });
         const pass = new oitModule.WeightedTransparency(device);
         const vertices = new vertexModule.VertexBuffer(formatModule.VertexFormat.P3, 3);
@@ -174,6 +176,14 @@ void main(){ if(gl_FragCoord.x >= 16.) discard; outColor=u_baseColor; }`,
             isolatedViews: forward.accumulation !== unobstructed.accumulation, sortedFallback, transmissionFallback, transmissionCode };
           pass.dispose();
           return { ...result, retired: forward.accumulation.disposed && forward.revealage.disposed && unobstructed.accumulation.disposed, sceneAlive: !scene.disposed };
+        } catch (error) {
+          if (selectedBackend === "webgl2") {
+            const gl = canvas.getContext("webgl2") as WebGL2RenderingContext | null;
+            const status = gl ? gl.checkFramebufferStatus(gl.FRAMEBUFFER) : -1;
+            const extensions = gl ? (gl.getSupportedExtensions() ?? []).filter(name => /float|blend/i.test(name)).join(",") : "";
+            throw new Error(`${error instanceof Error ? error.message : String(error)} [framebufferStatus=0x${status.toString(16)} extensions=${extensions}]`);
+          }
+          throw error;
         } finally {
           device.endFrame();
           pass.dispose();

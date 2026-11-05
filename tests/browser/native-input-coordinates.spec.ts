@@ -163,11 +163,27 @@ for (const dpr of [1, 2]) {
         const h = (window as any).__nativeInput;
         const id = h.input.update().pointer.primaryId;
         h.input.endFrame();
+        const log: string[] = [];
+        (window as any).__captureLog = log;
+        for (const type of ["lostpointercapture", "pointermove", "pointerup", "pointercancel"]) {
+          h.canvas.addEventListener(type, (event: PointerEvent) => log.push(`${type}:${event.pointerId}`));
+        }
+        log.push(`before:id=${id}:has=${h.canvas.hasPointerCapture(id)}`);
         h.canvas.releasePointerCapture(id);
+        log.push(`after:has=${h.canvas.hasPointerCapture(id)}`);
       });
-      await page.mouse.move(resized.x + resized.width * 0.3, resized.y + resized.height * 0.5);
-      await expect.poll(async () => page.evaluate(() => (window as any).__nativeInput.inspect().cancellations.map((c: { reason: string }) => c.reason)))
-        .toContain("lostpointercapture");
+      // Chromium delivers lostpointercapture with the next pointer event, so keep the pointer moving while polling.
+      let jitter = 0;
+      try {
+        await expect.poll(async () => {
+          jitter += 1;
+          await page.mouse.move(resized.x + resized.width * (0.3 + (jitter % 2) * 0.02), resized.y + resized.height * 0.5);
+          return page.evaluate(() => (window as any).__nativeInput.inspect().cancellations.map((c: { reason: string }) => c.reason));
+        }).toContain("lostpointercapture");
+      } catch (error) {
+        const log = await page.evaluate(() => JSON.stringify((window as any).__captureLog));
+        throw new Error(`${error instanceof Error ? error.message : String(error)}\npointer event log: ${log}`);
+      }
       observed = await page.evaluate(() => (window as any).__nativeInput.inspect());
       expect(observed.released).toBe(false);
       await page.mouse.up();
