@@ -366,6 +366,17 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         loader: "js",
         contents: `export default ${JSON.stringify(moduleUrlPath(root, args.path))};`,
       }));
+      // The editor's export runtime is a Vite virtual module (vite.config.ts); serve the same self-contained IIFE
+      // source string from esbuild so the editor boots under this dev server.
+      build.onResolve({ filter: /^virtual:aura3d-editor-export-runtime$/ }, (args) => ({ path: args.path, namespace: "aura3d-editor-export" }));
+      build.onLoad({ filter: /.*/, namespace: "aura3d-editor-export" }, async () => {
+        const exportBundle = await esbuild.build({
+          entryPoints: [resolve(root, "apps/editor/src/export/exportRuntimeEntry.ts")],
+          bundle: true, format: "iife", globalName: "Aura3DExport", platform: "browser", write: false, logLevel: "silent",
+          plugins: [auraResolvePlugin],
+        });
+        return { loader: "js", contents: `export default ${JSON.stringify(exportBundle.outputFiles[0]!.text)};`, resolveDir: root };
+      });
       const candidateResolveProbe = {};
       build.onResolve({ filter: /.*/ }, async (args) => {
         if (args.pluginData === candidateResolveProbe) return undefined;

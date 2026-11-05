@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-aura-links-3d/art/direction.ts",
-  "sourceSha256": "32d8e5498edead0d10aff537f88c63f0ce8c6ba8e74e704153b31828ca9b71b1",
+  "sourceSha256": "b35afb46fe94168a43be20677234ee8f0cf55fee6cab0b56d8aecf543c53272a",
   "id": "showcase-aura-links-3d",
   "genre": "golf-physics",
   "signatureEffect": "Golf-broadcast camera language: a three-shot hole flyover under letterbox bars, a live shot tracer on every drive and a low cup cam on short putts.",

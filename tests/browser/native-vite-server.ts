@@ -6,13 +6,15 @@ import { createServer as createViteServer, type Alias, type InlineConfig, type V
  * Candidate fixture servers use `root: process.cwd()`, so Vite's default watcher registers every
  * file of the repository (including assets/packs). The ACR container's inotify limit is smaller
  * than that, and the resulting ENOSPC kills the test worker. Fixture servers serve static files
- * and never need HMR, so file watching is disabled.
+ * and never need HMR, so file watching is disabled (`ignored: ["**"]`; `watch: null` is not honoured after config merging).
  */
 export function createServer(config: InlineConfig): Promise<ViteDevServer> {
   return createViteServer({
     ...config,
     resolve: { ...config.resolve, alias: [...aliasList(config.resolve?.alias), ...missingOptionalPeerAliases()] },
-    server: { ...config.server, watch: null }
+    // `watch: null` is dropped by Vite's mergeConfig (null/undefined overrides are skipped) whenever a vite.config.ts
+    // defines `server`, which re-enables the default watcher over the whole repository. Ignore every path instead.
+    server: { ...config.server, watch: { ...config.server?.watch, ignored: ["**"] } }
   });
 }
 

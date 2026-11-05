@@ -185,7 +185,7 @@ function fixturePlugin(aliases: readonly InstalledPackageAlias[]): Plugin {
     configureServer(server) {
       server.middlewares.use("/wp30-camera-depth.html", (_req, res) => {
         res.setHeader("Content-Type", "text/html");
-        res.end('<!doctype html><style>html,body{margin:0}#stage{width:192px;height:192px}</style><div id="stage"></div><script type="module" src="/@id/__x00__virtual:aura3d-native-camera-depth-fixture"></script>');
+        res.end('<!doctype html><style>html,body{margin:0}#stage{width:192px;height:192px}</style><div id="stage" style="width:192px;height:192px;min-height:0"></div><script type="module" src="/@id/__x00__virtual:aura3d-native-camera-depth-fixture"></script>');
       });
     }
   };

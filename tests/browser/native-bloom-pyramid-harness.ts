@@ -164,7 +164,7 @@ function sceneForVariant(id: PyramidVariantId) {
     }).position(0, 1.05, -1.2).scale([2.6, 0.18, 0.18]))
     .add(lights.directional({ name: "bloom pyramid key", position: [2.6, 4.2, 2.4], intensity: 2 }));
   if (id === "bloom-performance") {
-    builder.add(effects.bloom({ name: "pyramid performance probe", intensity: 1.4, threshold: 0.45, radius: 4 }));
+    builder.add(effects.bloom({ name: "pyramid performance probe", intensity: 1.4, threshold: 0.45, radius: 4, quality: "performance" }));
   } else if (id === "bloom-balanced") {
     builder.add(effects.bloom({ name: "pyramid balanced probe", intensity: 1.4, threshold: 0.45, radius: 4, quality: "balanced" }));
   } else if (id === "bloom-cinematic") {
