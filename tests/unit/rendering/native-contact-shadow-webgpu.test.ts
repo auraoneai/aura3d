@@ -351,7 +351,7 @@ describe("contact-aware renderer program warmup", () => {
 describe("public renderer contact route", () => {
   it.each([false, true])("clears the previous mask when a later unsafe graph is rejected (async=%s)", async asynchronous => {
     const f = await fixture();
-    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_CORE_OUTPUT: false });
+    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_STRICT: true, A3D_QR_CORE_OUTPUT: false });
     const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
       shaderLibrary: createDefaultShaderLibrary() }, new TemporalHistory());
     const contributor = createPrd02ContactShadowsContributor();
@@ -378,12 +378,40 @@ describe("public renderer contact route", () => {
     } finally { unregisterMutation?.(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); }
   });
 
+  it.each([false, true])("degrades to no mask instead of throwing when the graph is unverified and strict is off (async=%s)", async asynchronous => {
+    const f = await fixture();
+    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_CORE_OUTPUT: false });
+    const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
+      shaderLibrary: createDefaultShaderLibrary() }, new TemporalHistory());
+    const contributor = createPrd02ContactShadowsContributor();
+    const unregisterContact = registerFrameContributor(contributor);
+    const geometry = Geometry.litCube(1), material = new PBRMaterial();
+    const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 32 / 24, near: 0.1, far: 50 });
+    camera.transform.setPosition(0, 3, 8); camera.updateCameraMatrices();
+    const sun = new DirectionalLight("degrade-sun"); sun.castsShadow = true; sun.transform.updateWorld(undefined, true);
+    const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false, prd02Contact: {} } };
+    let invoked = false;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const unregisterOther = registerFrameContributor({
+      id: "prd02.test-extra-contact-pass", owner: "prd02", flag: "A3D_QR_LIGHTING", phases: ["after-opaque"],
+      passes: () => [new class extends BaseRenderPass { constructor() { super("extra-after-opaque"); } execute() { invoked = true; } }()]
+    });
+    try {
+      if (asynchronous) await renderer.renderAsync(source as never, camera as never);
+      else renderer.render(source as never, camera as never);
+      expect(invoked).toBe(true);
+      expect(contactShadowMask(f.device)).toBeUndefined();
+      // The warning is once per reason per page, so only the first (sync) run observes it.
+      if (!asynchronous) expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_DEGRADED"))).toBe(true);
+    } finally { warn.mockRestore(); unregisterOther(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); }
+  });
+
   it.each([
     [false, "shadows"], [true, "shadows"], [false, "background"], [true, "background"],
     [false, "after-opaque"], [true, "after-opaque"], [false, "transparent"], [true, "transparent"]
   ] as const)("rejects an unverified %s=%s mutation before graph execution", async (asynchronous, phase) => {
     const f = await fixture();
-    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_CORE_OUTPUT: false });
+    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_STRICT: true, A3D_QR_CORE_OUTPUT: false });
     const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
       shaderLibrary: createDefaultShaderLibrary() }, new TemporalHistory());
     const contributor = createPrd02ContactShadowsContributor();
@@ -521,7 +549,7 @@ describe("graph contact producer integration", () => {
     const material = createCustomShaderMaterial(shaderGraph.material({ graph }).custom!);
     const geometry = Geometry.litCube(1);
     const receiver = { label: "graph-contact-occluder", geometry, material, receiveShadow: false };
-    const ctx = { ...base, items: [base.items[0]!, receiver] };
+    const ctx = { ...base, items: [base.items[0]!, receiver], flags: createTrustedQrFlags({ A3D_QR_LIGHTING: true, A3D_QR_STRICT: true }) };
     try {
       f.device.beginFrame(32, 24);
       const submissions = f.native.queue.submit.mock.calls.length;
@@ -530,6 +558,19 @@ describe("graph contact producer integration", () => {
       expect(contactShadowMask(f.device)).toBeUndefined();
       expect(ctx.blackboard.has("prd02.contactShadowMask")).toBe(false);
       f.device.endFrame();
+      // Non-strict (the default): the same frame degrades to no mask instead of failing the mount, and warns once.
+      const lenient = { ...ctx, flags: createTrustedQrFlags({ A3D_QR_LIGHTING: true }) };
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      try {
+        f.device.beginFrame(32, 24);
+        const lenientSubmissions = f.native.queue.submit.mock.calls.length;
+        expect(() => contributor.passes!("shadows", lenient)[0]!.execute({ device: f.device, width: 32, height: 24 })).not.toThrow();
+        expect(f.native.queue.submit.mock.calls).toHaveLength(lenientSubmissions);
+        expect(contactShadowMask(f.device)).toBeUndefined();
+        expect(lenient.blackboard.has("prd02.contactShadowMask")).toBe(false);
+        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_DEGRADED"))).toBe(true);
+        f.device.endFrame();
+      } finally { warn.mockRestore(); }
     } finally {
       contributor.dispose?.(); geometry.dispose(); material.dispose();
       base.items[0]!.geometry.dispose(); (base.items[0]!.material as UnlitMaterial).dispose(); f.device.dispose();

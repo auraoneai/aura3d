@@ -354,7 +354,7 @@ describe("prd02.contactShadows contributor publishes the mask to forward shading
       source: { renderItems: [caster, floor], collectedLights: lights } as never,
       items: [caster, floor],
       tier: QUALITY_TIERS.high,
-      flags: flagsOn(["A3D_QR_LIGHTING"]),
+      flags: flagsOn(["A3D_QR_LIGHTING", "A3D_QR_STRICT"]),
       sceneDepth: { texture: null, available: false, linearize: { near: 0.1, far: 50, orthographic: false } },
       blackboard: new Map(),
       ...overrides

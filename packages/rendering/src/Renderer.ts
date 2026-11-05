@@ -841,6 +841,14 @@ const staticBatchFrameItems = new WeakMap<RenderSource, {
   readonly collect: () => readonly RenderItem[];
 }>();
 
+const CONTACT_SHADOW_DEGRADED_KEY = "prd02.contactShadowDegraded";
+const contactShadowDegradedWarned = new Set<string>();
+function warnContactShadowDegradedOnce(reason: string): void {
+  if (contactShadowDegradedWarned.has(reason)) return;
+  contactShadowDegradedWarned.add(reason);
+  console.warn(`CONTACT_SHADOW_DEGRADED: ${reason}. The contact shadow mask is skipped for these frames; the scene still draws.`);
+}
+
 export class Renderer {
   /** @internal Bind a materialized, compiler-owned frame to the existing collector contract. */
   static bindCompilerFrameItems(source: RenderSource, items: readonly RenderItem[]): void {
@@ -4225,11 +4233,24 @@ export class Renderer {
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
         throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
       }
-      if (contactReads.length && (!frameHooks.contactGraphIsSafe() || gaussianSplats.length > 0 || scalarVolumes.length > 0 || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
-        || !forwardDrawReplaySafe(items, rendererQrFlags(this.device)))) {
-        setContactShadowMask(this.device, undefined);
-        frameHooks.frameContext(items).blackboard.delete("prd02.contactShadowMask");
-        throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED");
+      if (contactReads.length) {
+        const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
+          : gaussianSplats.length > 0 ? "gaussian-splats"
+          : scalarVolumes.length > 0 ? "scalar-volumes"
+          : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
+          : !forwardDrawReplaySafe(items, rendererQrFlags(this.device)) ? "unverified-draw-participants" : undefined;
+        if (degradeReason) {
+          // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
+          // the forward draws run without the mask. Only strict mode keeps the old hard failure.
+          setContactShadowMask(this.device, undefined);
+          const blackboard = frameHooks.frameContext(items).blackboard;
+          blackboard.delete("prd02.contactShadowMask");
+          if (rendererQrFlags(this.device).on("A3D_QR_STRICT")) {
+            throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: degradeReason });
+          }
+          blackboard.set(CONTACT_SHADOW_DEGRADED_KEY, degradeReason);
+          warnContactShadowDegradedOnce(degradeReason);
+        }
       }
       if (this.benchmarkMaskArmed) {
         benchmarkFrame = this.makeBenchmarkMaskFrame({ items, viewProjection: rasterViewProjection, layerMask: resolvedCamera?.layerMask, cameraPosition, postprocess, output: explicitRenderTarget, mergedIdentities, hasExtraSceneGeometry: frameHooks.hasExtraSceneGeometry() || scalarVolumes.length > 0, hasSplats: gaussianSplats.length > 0 });
@@ -5079,11 +5100,24 @@ export class Renderer {
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
         throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
       }
-      if (contactReads.length && (!frameHooks.contactGraphIsSafe() || gaussianSplats.length > 0 || scalarVolumes.length > 0 || !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary)
-        || !forwardDrawReplaySafe(items, rendererQrFlags(this.device)))) {
-        setContactShadowMask(this.device, undefined);
-        frameHooks.frameContext(items).blackboard.delete("prd02.contactShadowMask");
-        throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED");
+      if (contactReads.length) {
+        const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
+          : gaussianSplats.length > 0 ? "gaussian-splats"
+          : scalarVolumes.length > 0 ? "scalar-volumes"
+          : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
+          : !forwardDrawReplaySafe(items, rendererQrFlags(this.device)) ? "unverified-draw-participants" : undefined;
+        if (degradeReason) {
+          // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
+          // the forward draws run without the mask. Only strict mode keeps the old hard failure.
+          setContactShadowMask(this.device, undefined);
+          const blackboard = frameHooks.frameContext(items).blackboard;
+          blackboard.delete("prd02.contactShadowMask");
+          if (rendererQrFlags(this.device).on("A3D_QR_STRICT")) {
+            throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: degradeReason });
+          }
+          blackboard.set(CONTACT_SHADOW_DEGRADED_KEY, degradeReason);
+          warnContactShadowDegradedOnce(degradeReason);
+        }
       }
       if (this.benchmarkMaskArmed) {
         benchmarkFrame = this.makeBenchmarkMaskFrame({ items, viewProjection: rasterViewProjection, layerMask: resolvedCamera?.layerMask, cameraPosition, postprocess, output: explicitRenderTarget, mergedIdentities, hasExtraSceneGeometry: frameHooks.hasExtraSceneGeometry() || scalarVolumes.length > 0, hasSplats: gaussianSplats.length > 0 });

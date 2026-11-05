@@ -356,7 +356,22 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
       if (this.mode === "shading" && !this.sourceLight) {
         throw new RenderDeviceError("Contact shadows require an identifiable directional light", "CONTACT_SHADOW_LIGHT_IDENTITY_REQUIRED");
       }
-      if (this.mode === "shading") validateContactDepthItems(this.ctx);
+      if (this.mode === "shading") {
+        const strict = this.ctx.flags.on("A3D_QR_STRICT");
+        // The renderer already decided this frame's graph cannot carry a verified mask: publish nothing.
+        const degraded = this.ctx.blackboard.get(CONTACT_SHADOW_DEGRADED_KEY);
+        if (!strict && typeof degraded === "string") {
+          recordUnavailable(this.ctx, `degraded:${degraded}`, `CONTACT_SHADOW_DEGRADED: ${degraded}. The contact shadow mask is skipped; the scene still draws.`);
+          return;
+        }
+        try { validateContactDepthItems(this.ctx); }
+        catch (error) {
+          if (strict || !(error instanceof RenderDeviceError) || error.code !== "CONTACT_SHADOW_DEPTH_UNSUPPORTED") throw error;
+          // A participant the mask's camera depth cannot represent: degrade to no mask for the frame instead of failing the mount.
+          recordUnavailable(this.ctx, "degraded:depth-participants", `CONTACT_SHADOW_DEGRADED: ${error.message}. The contact shadow mask is skipped; the scene still draws.`);
+          return;
+        }
+      }
       // The reusable pass may have been referenced by another queued graph;
       // select this particular graph's camera and items immediately before use.
       this.pass.configure(this.mode === "shading" ? {
@@ -413,6 +428,8 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
     };
   }
 }
+
+const CONTACT_SHADOW_DEGRADED_KEY = "prd02.contactShadowDegraded";
 
 const originalShadingPassExecute = Prd02ContactShadowsRenderPass.prototype.execute;
 
