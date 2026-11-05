@@ -88,7 +88,7 @@ import {
   suggestClub
 } from "./game/sim";
 import { defaultAimYaw, pinArrowDegrees, stepAimOffset, wrapAngle, yawToward } from "./game/aim";
-import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
+import { applyGolferFit, buildGolferNodes, golferTelemetry, golferVariantFromSearch, poseGolfer, resolveGolferRig, setGolferVariant, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
 import { COURSE_LOOKS, contactShadowIntensity, courseFill, flagFlutterAmplitude, type LinksTier } from "./game/lighting";
@@ -160,6 +160,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const presentationParams = new URLSearchParams(window.location.search);
 /** `?look=original` mounts the 4.6.2 light, atmosphere and post rig (PRD §8 reversibility); default: the GU47 course look */
 const lookMode: "gu47" | "original" = presentationParams.get("look") === "original" ? "original" : "gu47";
+/** the player is the Meshy golfer (links_golfer_player); `?golfer=old` or `?look=original` keeps the original athlete */
+setGolferVariant(golferVariantFromSearch(window.location.search));
 /**
  * Presentation tier (PRD §6.4): `?aura3d-quality=low` (the engine's own tier override) or `?tier=low` builds the Low
  * variant: 1 cascade PCF key, no grain, god rays, sun flare or ambient particles. The engine gates its post stages by
@@ -3092,6 +3094,7 @@ function setupFxAndTouch(): void {
 
 /** typed catalog keys the game shows in its evidence (hoisted: the evidence is built every 500 ms, not every frame, audit C13) */
 const CATALOG_ASSETS: readonly string[] = [
+  "links_golfer_player",
   "linksGolferAthleteMeshy",
   "linksGolfCartMeshy",
   "linksPinFlagMeshy",
