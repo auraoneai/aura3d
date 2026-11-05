@@ -382,7 +382,7 @@ export function assertIndependentLock(root, files) {
 }
 
 const SCRIPT_VALUES = Object.freeze({
-  typecheck: 'tsc -p tsconfig.check.json --noEmit',
+  typecheck: 'node --max-old-space-size=8192 ./node_modules/typescript/lib/tsc.js -p tsconfig.check.json --noEmit',
   lint: 'eslint .',
   'resolution:check': 'tsx --tsconfig tsconfig.base.json tools/generate-resolution-maps/index.ts --check',
   'check:docs-codeblocks': 'pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts',

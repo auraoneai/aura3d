@@ -11,6 +11,17 @@
    "kind": "aura-asset-ref",
    "id": "balloon"
   },
+  "easelIsland": {
+   "type": "model",
+   "format": "glb",
+   "url": "/aura-assets/chroma-easel-island.glb",
+   "hash": "sha256-6f6d5f35f6a8ae63b9f37eb0be69dbe43395c944b57aac1e61518d3d2f101287",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "easelIsland"
+  },
   "gemDouble": {
    "type": "model",
    "format": "glb",
@@ -279,6 +290,17 @@
    "kind": "aura-asset-ref",
    "id": "drone"
   },
+  "ionHeavyDrone": {
+   "type": "model",
+   "format": "glb",
+   "url": "<root>/examples/heatsink-port/assets/models/heatsink_port_ionHeavyDrone.glb",
+   "hash": "sha256-d1ef5d347eb44725b7b21a87c21faad8e1529e83792369efd9436f9976c6c346",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "ionHeavyDrone"
+  },
   "ionSentryDrone": {
    "type": "model",
    "format": "glb",
@@ -524,6 +546,17 @@
    },
    "kind": "aura-asset-ref",
    "id": "lamp"
+  },
+  "lamplightUndersideAR2": {
+   "type": "model",
+   "format": "glb",
+   "url": "<root>/examples/last-train-port/assets/meshy/lamplight-underside-ar2.glb",
+   "hash": "sha256-b77a91e9bb47a9567e6dc975d898cccd40731feaeed25a509223cfc6ccb6b83e",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "lamplightUndersideAR2"
   },
   "lighthouse": {
    "type": "model",
@@ -880,6 +913,39 @@
    },
    "kind": "aura-asset-ref",
    "id": "serpentHead"
+  },
+  "spireA": {
+   "type": "model",
+   "format": "glb",
+   "url": "<root>/examples/saiyan-snake-way-port/assets/spireA.glb",
+   "hash": "sha256-41758a150ff3f2fac901c5de4889042b7d0872c3652bde256e4a45a89e549ca6",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "spireA"
+  },
+  "spireB": {
+   "type": "model",
+   "format": "glb",
+   "url": "<root>/examples/saiyan-snake-way-port/assets/spireB.glb",
+   "hash": "sha256-29693db9f821da39921adefbf0359b7c7f449935c444b47fa4109a4ef7ca2cf0",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "spireB"
+  },
+  "spireC": {
+   "type": "model",
+   "format": "glb",
+   "url": "<root>/examples/saiyan-snake-way-port/assets/spireC.glb",
+   "hash": "sha256-667c6275cebd1596364e4d626ff51eb685db2d8fe6dd1d44797d8e3c5dfd18e7",
+   "metadata": {
+    "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23"
+   },
+   "kind": "aura-asset-ref",
+   "id": "spireC"
   }
  },
  "strange-orbit MESHY": {
