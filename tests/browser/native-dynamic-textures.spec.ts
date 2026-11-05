@@ -1,7 +1,8 @@
 import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { createServer, type Plugin, type ViteDevServer } from "vite";
+import { type Plugin, type ViteDevServer } from "vite";
+import { createServer } from "./native-vite-server";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 // Phase B only. The fixture is authored here from primary-color pixels and

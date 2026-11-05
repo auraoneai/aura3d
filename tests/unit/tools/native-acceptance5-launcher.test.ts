@@ -339,6 +339,7 @@ describe('acceptance5 result classification', () => {
     expect(classifyPlaywrightTest(t('unexpected', { status: 'failed', errors: [{ message: '\u001b[31mboom' }] }))).toEqual({ status: 'failed', reason: 'boom' });
     expect(classifyPlaywrightTest(t('flaky')).status).toBe('failed');
     expect(classifyPlaywrightTest(t('unexpected', { status: 'interrupted' })).status).toBe('no-data');
+    expect(classifyPlaywrightTest(t('unexpected', { status: 'failed', errors: [{ message: 'Error: WEBGPU_ACCEPTANCE_UNAVAILABLE: no browser WebGPU adapter' }] })).status).toBe('no-data');
     expect(classifyPlaywrightTest(t('skipped', { status: 'skipped' }, [{ type: 'skip', description: 'WebGPU unsupported here' }])).status).toBe('unsupported');
     expect(classifyPlaywrightTest(t('skipped', { status: 'skipped' }, [{ type: 'skip', description: 'adapter unavailable' }])).status).toBe('no-data');
     expect(classifyPlaywrightTest(t('skipped', { status: 'skipped' })).status).toBe('skipped');

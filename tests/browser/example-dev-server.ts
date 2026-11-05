@@ -126,6 +126,9 @@ for (const [specifier, source] of addonRegistry.paths) {
   }
 }
 
+/** Optional peerDependencies of the root package that a restored candidate consumer does not install. */
+const OPTIONAL_PEER_SPECIFIERS = ["@dimforge/rapier3d-compat", "recast-navigation"] as const;
+
 const installedUrlPrefix = "/__aura3d_installed__/";
 
 interface InstalledCandidatePackage {
@@ -198,12 +201,20 @@ function externalInstalledCandidate(): ExternalInstalledCandidate | undefined {
 
 const externalCandidate = externalInstalledCandidate();
 const installedWildcardAliases: Array<readonly [string, string]> = [];
-const installedAliases = installedAuraPackageAliases();
+const installedAliases = installedAuraPackageAliases({ includeWildcards: true });
 if (externalCandidate) {
-  // A missing candidate export must never fall back to a workspace source.
-  for (const name of packageEntryPoints.keys()) {
-    if (name.startsWith("@aura3d/")) packageEntryPoints.delete(name);
+  // A missing export of an INSTALLED candidate package must never fall back to a workspace source.
+  // A package the restored consumer does not contain at all (internal workspace packages such as
+  // editor-runtime, audio, physics, game that the candidate bundles or does not ship to this consumer)
+  // can only be imported by workspace-source pages (apps/editor, /packages/engine/src/...); those
+  // keep their workspace mapping so the graph loads. Installed packages stay strictly candidate-only.
+  for (const name of [...packageEntryPoints.keys()]) {
+    if (name.startsWith("@aura3d/") && externalCandidate.packages.has(name.split("/")[1] ?? "")) packageEntryPoints.delete(name);
   }
+}
+/** True when `specifier` names an @aura3d package that the restored candidate consumer does not install. */
+function isWorkspaceOnlyPackage(specifier: string): boolean {
+  return externalCandidate !== undefined && specifier.startsWith("@aura3d/") && !externalCandidate.packages.has(specifier.split("/")[1] ?? "");
 }
 const seenInstalledAliases = new Set<string>();
 for (const entry of installedAliases) {
@@ -366,8 +377,8 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
         }
         if (externalCandidate && args.path.startsWith("@aura3d/")) {
           const target = packageTarget(args.path);
-          const file = target && isInstalledUrl(target) ? mappedFile(root, target) : undefined;
-          return file ? { path: file } : {
+          const file = target && (isInstalledUrl(target) || isWorkspaceOnlyPackage(args.path)) ? mappedFile(root, target) : undefined;
+          return file && existsSync(file) ? { path: file } : {
             errors: [{ text: `Installed candidate export is unavailable: ${args.path}` }],
           };
         }
@@ -379,7 +390,17 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
             importer: args.importer, namespace: args.namespace, resolveDir: args.resolveDir,
             kind: args.kind, with: args.with, pluginData: candidateResolveProbe,
           });
-          if (result.errors.length) return { errors: result.errors, warnings: result.warnings };
+          if (result.errors.length) {
+            // Optional peers of the packed engine (physics-rapier, navigation-recast) are not part of the
+            // restored consumer, which installs only what the candidate declares. Serve the repository's
+            // pinned third-party copy instead of failing the whole harness bundle; Aura3D code is never
+            // served from the workspace through this path.
+            const peer = OPTIONAL_PEER_SPECIFIERS.some((name) => args.path === name || args.path.startsWith(`${name}/`));
+            const mapped = peer ? packageTarget(args.path) : undefined;
+            const peerFile = mapped && !isInstalledUrl(mapped) ? mappedFile(root, mapped) : undefined;
+            if (peerFile && existsSync(peerFile)) return { path: peerFile };
+            return { errors: result.errors, warnings: result.warnings };
+          }
           let real: string | undefined;
           try { real = result.namespace === "file" && !result.external ? realpathSync(result.path) : undefined; }
           catch { /* a missing dependency is not an installed candidate file */ }
@@ -613,6 +634,9 @@ function resolveRequest(root: string, pathname: string): string | undefined {
 
   if (normalizedPath === "/" || normalizedPath === ".") {
     candidates.push(join(root, "examples", "00-basic-triangle", "index.html"));
+    // examples/00-basic-triangle was removed; the repository-root index.html is a meta-refresh to /marketing/,
+    // which navigates away under page.setContent/evaluate. Serve the empty same-origin harness page at "/".
+    candidates.push(join(root, "tests", "browser", "parity-audio-harness.html"));
   } else if (normalizedPath.startsWith("assets/draco/") || normalizedPath.startsWith("/assets/draco/")) {
     const decoderFile = normalizedPath.replace(/^[/\\]?assets[/\\]draco[/\\]/, "");
     candidates.push(join(root, "marketing", "public", "assets", "draco", decoderFile));
@@ -757,26 +781,32 @@ function transpileForBrowser(source: string, fileName: string, rootDir: string):
 
 function rewritePackageImports(source: string, fileName: string): string {
   if (externalCandidate) {
-    const patterns = [
-      /(\bfrom\s*["'])([^"']+)(["'])/g,
-      /(\bimport\s*["'])([^"']+)(["'])/g,
-      /(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'])([^"']+)(["']\s*\))/g,
-    ];
-    let output = source;
-    for (const pattern of patterns) {
-      output = output.replace(pattern, (statement, head: string, specifier: string, tail: string) => {
-        if (installedPackageForFile(fileName) && !specifier.startsWith(".") && !specifier.startsWith("/") &&
-            !specifier.startsWith("@aura3d/") && !specifier.startsWith("node:")) {
-          throw new Error(`Installed dependency requires an isolated bundle: ${specifier}`);
-        }
-        const target = packageTarget(specifier);
-        if (specifier.startsWith("@aura3d/") && target === undefined) {
-          throw new Error(`Installed candidate export is unavailable: ${specifier}`);
-        }
-        return target === undefined ? statement : `${head}${target}${tail}`;
-      });
+    // Locate real module specifiers with the TypeScript scanner. A text regex also matches
+    // `from "..."` inside comments, template literals and prose of packed dist files, which
+    // made the server reject (or rewrite) code that is not an import at all.
+    const found = ts.preProcessFile(source, true, true).importedFiles
+      .map((reference) => ({ specifier: reference.fileName, start: reference.pos + 1 }))
+      .filter((reference) => source.startsWith(reference.specifier, reference.start))
+      .sort((left, right) => left.start - right.start);
+    let output = "";
+    let cursor = 0;
+    for (const { specifier, start } of found) {
+      if (start < cursor) continue;
+      const target = packageTarget(specifier);
+      // A third-party dependency of a packed file is served from this server's pinned dependency map
+      // (the same versions the lockfile installs); an unmapped one still needs an isolated bundle.
+      if (target === undefined && installedPackageForFile(fileName) && !specifier.startsWith(".") && !specifier.startsWith("/") &&
+          !specifier.startsWith("@aura3d/") && !specifier.startsWith("node:")) {
+        throw new Error(`Installed dependency requires an isolated bundle: ${specifier}`);
+      }
+      if (specifier.startsWith("@aura3d/") && target === undefined) {
+        throw new Error(`Installed candidate export is unavailable: ${specifier}`);
+      }
+      if (target === undefined) continue;
+      output += source.slice(cursor, start) + target;
+      cursor = start + specifier.length;
     }
-    return output;
+    return output + source.slice(cursor);
   }
   let output = source;
   for (const [specifier, target] of packageEntryPoints) {
@@ -833,6 +863,8 @@ function resolveModuleSpecifier(fromFile: string, root: string, specifier: strin
   }
   const pkg = installedPackageForFile(fromFile);
   if (pkg) {
+    // `/node_modules/...` is only ever produced by rewritePackageImports from the pinned third-party map.
+    if (specifier.startsWith("/node_modules/")) return undefined;
     if (specifier.startsWith("/")) throw new Error("Installed candidate cannot import a repository-absolute module.");
     const base = resolve(dirname(fromFile), specifier);
     if (!isWithin(pkg.directory, base)) throw new Error("Installed candidate module escapes its package.");

@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { readFileSync, realpathSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { createServer, type Plugin } from "vite";
+import { type Plugin } from "vite";
+import { createServer } from "./native-vite-server";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 /**

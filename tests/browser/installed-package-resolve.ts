@@ -8,7 +8,12 @@ export interface InstalledPackageAlias {
   readonly replacement: string;
 }
 
-export function installedAuraPackageAliases(): readonly InstalledPackageAlias[] {
+/**
+ * Aliases for the installed candidate's exports. Wildcard subpath exports (`./contracts/*`) are a
+ * pattern, not a file: callers that stat or hand the alias to Vite would see a literal `*`, so they
+ * are returned only to a caller that expands them (the example dev server).
+ */
+export function installedAuraPackageAliases(options: { readonly includeWildcards?: boolean } = {}): readonly InstalledPackageAlias[] {
   const root = process.env.A3D_INSTALLED_PACKAGE_ROOT;
   if (!root) return [];
   const scopeDirectory = resolve(root, "node_modules/@aura3d");
@@ -30,6 +35,7 @@ export function installedAuraPackageAliases(): readonly InstalledPackageAlias[] 
     for (const [subpath, target] of Object.entries(exportsMap)) {
       const selected = selectTarget(target);
       if (!selected) continue;
+      if (subpath.includes("*") && !options.includeWildcards) continue;
       aliases.push({
         find: subpath === "." ? manifest.name : `${manifest.name}/${subpath.slice(2)}`,
         replacement: resolve(packageDirectory, selected)

@@ -167,6 +167,9 @@ test.describe("native Gaussian splats and scalar volumes", () => {
       document.body.appendChild(canvas);
       // Do not silently substitute WebGL or a CPU mock when this backend is
       // unavailable. The acceptance run records that as a missing WebGPU case.
+      const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
+      if (!gpu) { canvas.remove(); return { unsupported: "navigator.gpu is unavailable" }; }
+      if (!await gpu.requestAdapter()) { canvas.remove(); return { unsupported: "WebGPU adapter unavailable" }; }
       const device = await rendering.createRenderDevice({ backend: "webgpu", canvas });
       const bytes = new Uint8Array(64);
       const binary = new DataView(bytes.buffer);
@@ -207,6 +210,7 @@ test.describe("native Gaussian splats and scalar volumes", () => {
       return { fromFront, fromBack, diagnostics, adapter };
     }, { renderingUrl: `${server.origin}/packages/rendering/src/index.ts`, assetsUrl: `${server.origin}/packages/assets/src/browser-index.ts` });
 
+    if ("unsupported" in result) { test.skip(true, result.unsupported); return; }
     expect(result.fromFront).toMatchObject({ visibleCount: 2, order: [1, 0], backend: "webgpu" });
     expect(result.fromBack).toMatchObject({ visibleCount: 2, order: [0, 1], backend: "webgpu" });
     expect(result.fromFront.center[0]).toBeGreaterThan(result.fromFront.center[2] + 20);

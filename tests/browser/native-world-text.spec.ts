@@ -21,7 +21,9 @@ test.describe("native world text", () => {
     const bundle = await build({
       stdin: { contents: 'export * as engine from "@aura3d/engine"; export * as rendering from "@aura3d/rendering";',
         resolveDir: consumerRoot, sourcefile: "native-world-text-consumer.mjs", loader: "js" },
-      bundle: true, write: false, format: "esm", platform: "browser"
+      bundle: true, write: false, format: "esm", platform: "browser",
+      // Optional peers of the packed engine are not installed in the restored consumer (it installs only declared deps).
+      external: ["@dimforge/rapier3d-compat", "recast-navigation", "recast-navigation/*"]
     });
     await page.route(`${server.origin}/native-world-text-consumer.mjs`, (route) => route.fulfill({
       status: 200, contentType: "text/javascript", body: bundle.outputFiles[0]!.text

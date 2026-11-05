@@ -80,9 +80,20 @@ test.afterAll(async () => {
 });
 
 for (const base of ["/", "/nested/"]) {
-  test(`packed KTX2 decodes offline with same-origin worker at ${base}`, async ({ page, context }) => {
+  test(`packed KTX2 decodes offline with same-origin worker at ${base}`, async ({ page, context }, testInfo) => {
     observed.length = 0;
     const blocked: string[] = [];
+    // Diagnostics for AssetDecoderUnavailable, which hides the real worker/wasm failure.
+    const diagnostics: string[] = [];
+    page.on("console", (message) => diagnostics.push(`[console.${message.type()}] ${message.text()} @${message.location().url}:${message.location().lineNumber}`));
+    page.on("pageerror", (error) => diagnostics.push(`[pageerror] ${error.name}: ${error.message}\n${error.stack ?? ""}`));
+    page.on("worker", (worker) => { diagnostics.push(`[worker] created ${worker.url()}`); worker.on("close", () => diagnostics.push(`[worker] closed ${worker.url()}`)); });
+    page.on("requestfailed", (request) => diagnostics.push(`[requestfailed] ${request.url()} ${request.failure()?.errorText ?? ""}`));
+    page.on("response", (response) => { if (response.status() >= 400) diagnostics.push(`[http ${response.status()}] ${response.url()}`); });
+    const attachDiagnostics = async (): Promise<void> => {
+      diagnostics.push(`[observed] ${JSON.stringify(observed)}`, `[blocked] ${JSON.stringify(blocked)}`);
+      await testInfo.attach("ktx2-page-diagnostics", { body: diagnostics.join("\n"), contentType: "text/plain" });
+    };
     await context.route("**/*", async (route) => {
       if (new URL(route.request().url()).origin !== origin) { blocked.push(route.request().url()); await route.abort(); }
       else await route.continue();
@@ -97,6 +108,13 @@ for (const base of ["/", "/nested/"]) {
       // Trigger abort after the actual transcode has been sent to the real
       // same-origin worker, rather than testing only an already-aborted signal.
       window.Worker = class extends OriginalWorker {
+        constructor(url: string | URL, workerOptions?: WorkerOptions) {
+          super(url, workerOptions);
+          console.log(`[worker-ctor] ${String(url)}`);
+          this.addEventListener("error", (event) => console.log(`[worker-error] ${event.message} ${event.filename}:${event.lineno}:${event.colno}`));
+          this.addEventListener("messageerror", () => console.log("[worker-messageerror]"));
+          this.addEventListener("message", (event) => { const data = event.data as { type?: string; error?: unknown; message?: unknown } | undefined; if (data?.type === "error" || data?.error) console.log(`[worker-message] ${JSON.stringify({ type: data?.type, error: String(data?.error ?? data?.message) })}`); });
+        }
         override postMessage(message: unknown, transfer: Transferable[]): void;
         override postMessage(message: unknown, options?: StructuredSerializeOptions): void;
         override postMessage(message: unknown, options?: Transferable[] | StructuredSerializeOptions): void {
@@ -105,10 +123,14 @@ for (const base of ["/", "/nested/"]) {
           if ((message as { type?: string }).type === "transcode" && !started) { started = true; abort.abort(); }
         }
       } as typeof Worker;
-      const cancelled = await run(abort.signal).then(() => "unexpected-success", (error: Error) => error.name);
+      const cancelled = await run(abort.signal).then(() => "unexpected-success", (error: Error) => { console.log(`[first-run] ${error.name}: ${error.message}`); return error.name; });
+      let image: { width: number; height: number; first: number[]; length: number };
+      try { image = await run(); }
+      catch (error) { console.log(`[second-run] ${(error as Error).name}: ${(error as Error).message} cause=${String((error as { cause?: unknown }).cause)}`); window.Worker = OriginalWorker; throw error; }
       window.Worker = OriginalWorker;
-      return { image: await run(), cancelled, started };
-    });
+      return { image, cancelled, started };
+    }).catch(async (error: unknown) => { await attachDiagnostics(); throw new Error(`${String(error)}\n--- page diagnostics ---\n${diagnostics.join("\n")}`); });
+    await attachDiagnostics();
     expect(decoded.started).toBe(true);
     expect(decoded.cancelled).toBe("AbortError");
     expect([decoded.image.width, decoded.image.height, decoded.image.length]).toEqual([4, 4, 64]);

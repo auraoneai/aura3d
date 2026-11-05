@@ -1,7 +1,8 @@
 import { realpathSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import { expect, test } from "@playwright/test";
-import { createServer, type Plugin, type ViteDevServer } from "vite";
+import { type Plugin, type ViteDevServer } from "vite";
+import { createServer } from "./native-vite-server";
 import { installedAuraPackageAliases, type InstalledPackageAlias } from "./installed-package-resolve";
 
 // Authored in Phase A; execute only after CODE_COMPLETE_GO against the packed

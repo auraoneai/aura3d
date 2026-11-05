@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
-import { createServer, type Plugin, type ViteDevServer } from "vite";
+import { type Plugin, type ViteDevServer } from "vite";
+import { createServer } from "./native-vite-server";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 // The fixture is authored here, rather than imported from another engine or a

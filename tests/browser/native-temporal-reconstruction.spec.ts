@@ -11,7 +11,7 @@ import { startExampleDevServer } from "./example-dev-server";
 test("temporal resolve rejects stale history and reconstructs a higher-resolution grid", async ({ page }) => {
   const server = await startExampleDevServer();
   try {
-    await page.goto(server.origin);
+    await page.goto(`${server.origin}/tests/browser/parity-audio-harness.html`);
     const results = await page.evaluate((fragment) => {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl2", { antialias: false });
@@ -134,7 +134,7 @@ void main() {
 test("motion blur preserves energy, symmetry, transparent edges and HDR alpha tags", async ({ page }) => {
   const server = await startExampleDevServer();
   try {
-    await page.goto(server.origin);
+    await page.goto(`${server.origin}/tests/browser/parity-audio-harness.html`);
     const result = await page.evaluate((fragment) => {
       const gl = document.createElement("canvas").getContext("webgl2", { antialias: false });
       if (!gl || !gl.getExtension("EXT_color_buffer_float")) throw new Error("Float-renderable WebGL2 is required");

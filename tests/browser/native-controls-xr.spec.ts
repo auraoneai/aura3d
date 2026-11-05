@@ -7,7 +7,7 @@ test.describe("native controls and injected XR session", () => {
   test.afterAll(async () => { await server.close(); });
 
   test("real mouse events drive a captured drag and cancellation never emits dragend", async ({ page }) => {
-    await page.goto(server.origin);
+    await page.goto(`${server.origin}/tests/browser/parity-audio-harness.html`);
     await page.setContent('<canvas id="target" width="300" height="200" style="width:300px;height:200px"></canvas>');
     await page.evaluate(async () => {
       const path = "/packages/controls/src/DragControls.ts";
@@ -48,7 +48,7 @@ test.describe("native controls and injected XR session", () => {
 
   test("injected browser-shaped XR session routes a native pose and cleans up (not hardware evidence)", async ({ page }) => {
     test.info().annotations.push({ type: "xr-evidence", description: "injected browser-shaped session; no physical device" });
-    await page.goto(server.origin);
+    await page.goto(`${server.origin}/tests/browser/parity-audio-harness.html`);
     const result = await page.evaluate(async () => {
       const path = "/packages/engine/src/agent-api/xr/xrRuntime.ts";
       const { createAuraXRRuntime } = await import(/* @vite-ignore */ path);

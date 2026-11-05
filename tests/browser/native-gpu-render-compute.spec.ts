@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 import { realpathSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import sharp from "sharp";
-import { createServer, type Plugin, type ViteDevServer } from "vite";
+import { type Plugin, type ViteDevServer } from "vite";
+import { createServer } from "./native-vite-server";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
 
 const moduleName = "virtual:aura3d-native-gpu-render-compute";

@@ -2,7 +2,7 @@
  * Browser test collection must not initialize unrelated publication tooling. */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { lstatSync, readFileSync, readlinkSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync, readlinkSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 
 export interface SourceIdentity { commit: string; tree: string; lockfileSha256: string; fingerprint: string }
@@ -54,10 +54,24 @@ function sourceBytes(root: string, path: string): string | Uint8Array {
   if (stat.isDirectory()) return '<directory>';
   return readFileSync(absolute);
 }
+/** Source files of a tree that is not a Git checkout (the ACR acceptance image ships no `.git`). */
+function walkSourcePaths(root: string, directory = ''): string[] {
+  const found: string[] = [];
+  for (const entry of readdirSync(resolve(root, directory), { withFileTypes: true })) {
+    const path = directory ? `${directory}/${entry.name}` : entry.name;
+    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'test-results') continue;
+    if (entry.isDirectory()) found.push(...walkSourcePaths(root, path));
+    else if (isSourceInput(path)) found.push(path);
+  }
+  return found;
+}
 /** Hash tracked source and untracked source; exclude only generated outputs, not dirty source. */
 export function sourceIdentity(root: string): SourceIdentity {
+  const hasGit = existsSync(resolve(root, '.git'));
   const git = (...args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-  const paths = git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0')
+  // Without a checkout there is no commit or tree: the fingerprint of the staged files, which the
+  // acceptance gate already binds, identifies the source, and commit/tree record the absence.
+  const paths = (hasGit ? git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0') : walkSourcePaths(root))
     .filter(isSourceInput);
   const hash = createHash('sha256');
   for (const path of [...new Set(paths)].sort()) {
@@ -65,7 +79,7 @@ export function sourceIdentity(root: string): SourceIdentity {
     hash.update(sourceBytes(root, path));
     hash.update('\0');
   }
-  return { commit: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'),
+  return { commit: hasGit ? git('rev-parse', 'HEAD') : 'no-git-checkout', tree: hasGit ? git('rev-parse', 'HEAD^{tree}') : 'no-git-checkout',
     lockfileSha256: artifact(root, 'pnpm-lock.yaml').sha256, fingerprint: hash.digest('hex') };
 }
 export const sameSource = (a: SourceIdentity, b: SourceIdentity): boolean =>
