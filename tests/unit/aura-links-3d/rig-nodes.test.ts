@@ -10,7 +10,8 @@ describe("Links golfer and caddy models", () => {
     const nodes = buildGolferNodes({} as any).map((n: any) => (typeof n?.toJSON === "function" ? n.toJSON() : n));
     const golfer = nodes.find((n: any) => n.name === "golfer-body");
     const caddy = nodes.find((n: any) => n.name === "caddy-body");
-    expect(golfer?.animation).toMatchObject({ clip: "Ready", loop: true, speed: 1 });
+    // the default player is the Meshy golfer (clip "idle"); the original athlete ("Ready") stays behind ?golfer=old
+    expect(golfer?.animation).toMatchObject({ clip: "idle", loop: true, speed: 1 });
     expect(caddy?.animation).toMatchObject({ clip: "Idle_Loop", loop: true, speed: 0.9 });
     const rig = readFileSync(resolve(appSrc, "game/rig.ts"), "utf8");
     expect(rig).not.toMatch(/model\([^)]*\{[^}]*animation:/s);

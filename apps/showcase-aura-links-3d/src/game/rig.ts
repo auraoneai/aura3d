@@ -1,8 +1,10 @@
 /**
  * Aura Links 3D — rigged golfer driver (linksGolferAthleteMeshy GLB).
  *
- * The GLB is a real skinned character (15 joints: Root Hips Spine Chest Head
- * L/R UpperLeg LowerLeg Foot L/R UpperArm Forearm; 23 clips). This module
+ * The default golfer is the Meshy `links_golfer_player` (24-joint humanoid, clips idle/wave/cheer); `?golfer=old` (or
+ * `?look=original`) keeps the original athlete, a skinned character of 15 joints (Root Hips Spine Chest Head
+ * L/R UpperLeg LowerLeg Foot L/R UpperArm Forearm; 23 clips). The swing is solved on the athlete's virtual skeleton and
+ * retargeted onto the Meshy bones (golferRetarget.ts). This module
  * makes it perform an actual golf swing using the engine's PRD-06 animation
  * APIs:
  *
@@ -34,14 +36,17 @@ import { game, material, model, primitives } from "@aura3d/engine";
 import { gripQToEulerZYX } from "@aura3d/engine/game";
 import { assets } from "../aura-assets";
 import type { GolferFit, Vec3 } from "./types";
+import { meshyProfile, retargetSolved } from "./golferRetarget";
 import {
   BALL_SHOT,
   CLUB_PARTS,
   clubAttachOffsets,
   clubPartPose,
+  SKELETON_ATHLETE,
   evaluateSwing,
   makeRoot,
   solveSwing,
+  useSkeleton,
   vDist,
   type Quat,
   type RootFrame,
@@ -63,6 +68,57 @@ export type GolferPhase =
   | "putt-through";
 
 const golfKit = game.racketSports("aura-links-golfer");
+
+/** which golfer the scene mounts: the Meshy player (default) or the original athlete (`?golfer=old`, `?look=original`) */
+export type GolferVariant = "meshy" | "athlete";
+let golferVariant: GolferVariant = "meshy";
+let appliedVariant: GolferVariant | null = null;
+
+interface VariantSpec {
+  /** model asset of the player */
+  readonly asset: () => any;
+  /** clip under the swing overlay (address, idle, swing) */
+  readonly ready: string;
+  readonly readySpeed: number;
+  /** clip while the player turns the aim, no swing solve */
+  readonly walk: { clip: string; speed: number } | null;
+  /** clip for the hole-out celebration */
+  readonly celebrate: { clip: string; speed: number };
+}
+const VARIANTS: Record<GolferVariant, VariantSpec> = {
+  meshy: {
+    asset: () => assets.links_golfer_player,
+    ready: "idle",
+    readySpeed: 1,
+    // no walk clip on the Meshy rig: turning the aim keeps the address pose (club in hand) instead of popping to a club-less idle
+    walk: null,
+    celebrate: { clip: "cheer", speed: 1 }
+  },
+  athlete: {
+    asset: () => assets.linksGolferAthleteMeshy,
+    ready: "Ready",
+    readySpeed: 1,
+    walk: { clip: "Walk_Loop", speed: 1.1 },
+    celebrate: { clip: "Jump_Loop", speed: 1.2 }
+  }
+};
+
+/** pick the golfer before the scene is built (main.ts reads the URL); the swing solve follows the matching skeleton */
+export function setGolferVariant(variant: GolferVariant): void {
+  golferVariant = variant;
+  appliedVariant = null;
+  calibGroundDy = null;
+  lastGolferAnimKey = "";
+}
+export const golferVariantFromSearch = (search: string): GolferVariant => {
+  const q = new URLSearchParams(search);
+  return q.get("golfer") === "old" || q.get("look") === "original" ? "athlete" : "meshy";
+};
+const ensureSkeleton = (): void => {
+  if (appliedVariant === golferVariant) return;
+  useSkeleton(golferVariant === "meshy" ? meshyProfile() : SKELETON_ATHLETE);
+  appliedVariant = golferVariant;
+};
 
 const HIDDEN = 0.0001;
 const GOLFER_BONES = ["Root", "Hips", "Spine", "Chest", "Head", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot", "RightUpperLeg", "RightLowerLeg", "RightFoot", "LeftUpperArm", "LeftForearm", "RightUpperArm", "RightForearm"] as const;
@@ -129,13 +185,13 @@ export function buildGolferNodes(fit: GolferFit, refined = false): any[] {
       .runtime(rt("golfer-ring")),
     // 3D Bespoke Meshy-6 Pro Golfer + Caddy + Bag + Golf Cart (minY = 0 grounded).
     // model() has no `animation` option (it was dropped silently); .animate() sets the clip.
-    model(assets.linksGolferAthleteMeshy, {
+    model(VARIANTS[golferVariant].asset(), {
       name: "golfer-body",
       targetHeight: 1.84,
       role: "primaryCharacter",
       scaleMode: "fit"
     })
-      .animate({ clip: "Ready", loop: true, speed: 1 })
+      .animate({ clip: VARIANTS[golferVariant].ready, loop: true, speed: VARIANTS[golferVariant].readySpeed })
       .runtime(rt("golfer-body")),
     model(assets.linksGolferAthleteMeshy, {
       name: "caddy-body",
@@ -205,9 +261,10 @@ export function resolveGolferRig(app: any): GolferRig {
   const req = (n: string) => app.nodes.require(n);
   const golferBody = req("golfer-body");
   const caddyBody = req("caddy-body");
-  golferBody?.setAnimation?.({ clip: "Ready", loop: true, speed: 1 });
+  const variant = VARIANTS[golferVariant];
+  golferBody?.setAnimation?.({ clip: variant.ready, loop: true, speed: variant.readySpeed });
   caddyBody?.setAnimation?.({ clip: "Idle_Loop", loop: true, speed: 0.9 });
-  lastGolferAnimKey = "Ready:1";
+  lastGolferAnimKey = `${variant.ready}:${variant.readySpeed}`;
   lastCaddyAnimKey = "Idle_Loop:0.9";
   // scene rebuild — drop stale bone attachments; poseGolfer recalibrates
   for (const dispose of attachDisposers) dispose();
@@ -294,10 +351,16 @@ export function applyGolferFit(rig: GolferRig, fit: GolferFit): void {
  *  poseGolfer — per-frame swing driver                                *
  * ------------------------------------------------------------------ */
 
-const clipFor = (phase: GolferPhase): { clip: string; speed: number } =>
-  phase === "walk" ? { clip: "Walk_Loop", speed: 1.1 } :
-  phase === "celebrate" ? { clip: "Jump_Loop", speed: 1.2 } :
-  { clip: "Ready", speed: 1 };
+const clipFor = (phase: GolferPhase): { clip: string; speed: number } => {
+  const v = VARIANTS[golferVariant];
+  if (phase === "walk" && v.walk) return v.walk;
+  if (phase === "celebrate") return v.celebrate;
+  return { clip: v.ready, speed: v.readySpeed };
+};
+
+/** the Meshy rig has no walk clip: a turning player stays in the address pose */
+const effectivePhase = (phase: GolferPhase): GolferPhase =>
+  phase === "walk" && !VARIANTS[golferVariant].walk ? "address" : phase;
 
 export function poseGolfer(
   rig: GolferRig,
@@ -307,6 +370,8 @@ export function poseGolfer(
   faceYaw: number,
   heightFn?: (x: number, z: number) => number
 ): void {
+  ensureSkeleton();
+  phase = effectivePhase(phase);
   const W = (v: readonly number[]) => golfKit.localToWorld(at, faceYaw, UNI, v as any);
   const stanceW = W([0.52, 0, -0.02]);
   const stanceGround = heightFn ? heightFn(stanceW[0], stanceW[2]) : at[1];
@@ -350,12 +415,18 @@ export function poseGolfer(
     // Build the overlay pose. Hips and Root also carry POSITION so the clip's
     // own hips translation cannot desync the rendered skeleton from the club
     // solve (the bone attachment reads the same skeleton).
-    const bones: Record<string, { position?: { x: number; y: number; z: number }; rotation: Quat }> = {};
-    for (const [bone, q] of Object.entries(solved.bones)) {
-      bones[bone] = { rotation: { x: q.x, y: q.y, z: q.z, w: q.w } };
+    let bones: Record<string, { position?: { x: number; y: number; z: number }; rotation: Quat }> = {};
+    if (golferVariant === "meshy") {
+      // the Meshy bones carry other bind rotations and proportions: retarget the solved world deltas (golferRetarget.ts);
+      // the Hips position is in centimetres (the Armature node scales its children by 0.01)
+      bones = retargetSolved(solved);
+    } else {
+      for (const [bone, q] of Object.entries(solved.bones)) {
+        bones[bone] = { rotation: { x: q.x, y: q.y, z: q.z, w: q.w } };
+      }
+      bones.Root = { rotation: { ...bones.Root!.rotation }, position: { x: 0, y: 0, z: 0 } };
+      bones.Hips = { rotation: bones.Hips!.rotation, position: { x: solved.hipsPos[0], y: solved.hipsPos[1], z: solved.hipsPos[2] } };
     }
-    bones.Root = { rotation: { ...bones.Root!.rotation }, position: { x: 0, y: 0, z: 0 } };
-    bones.Hips = { rotation: bones.Hips!.rotation, position: { x: solved.hipsPos[0], y: solved.hipsPos[1], z: solved.hipsPos[2] } };
     rig.golferBody?.setAnimationPose?.({ bones, mode: "overlay" } as any);
 
     // Drive the club parts from the same solve as the arms, every frame.
