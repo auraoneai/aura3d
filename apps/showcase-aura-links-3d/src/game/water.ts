@@ -63,6 +63,8 @@ export const POND_RIPPLES = [
   { directionDeg: 115, wavelength: 1.7, steepness: 0.03, speed: 0.6 }
 ] as const;
 
+export const POND_STILL = [{ directionDeg: 0, wavelength: 3.2, steepness: 0, speed: 0 }] as const;
+
 /**
  * The `world.water` options of one reflecting pond. Reduced motion (PRD §6.3): no waves and still detail normals, so
  * the surface holds still and only the reflection moves with the camera.
@@ -74,7 +76,8 @@ export function pondWaterOptions(pond: ReflectivePond, water: string, reducedMot
     shape: { kind: "circle" as const, center: pond.center, radius: pond.radius },
     height: pond.y,
     ...pondColors(water),
-    waves: reducedMotion ? [] : POND_RIPPLES,
+    // `world.water` requires at least one wave: reduced motion keeps a single flat (steepness 0, speed 0) wave.
+    waves: reducedMotion ? POND_STILL : POND_RIPPLES,
     normalScale: 0.15,
     normalSpeed: reducedMotion ? 0 : 0.6,
     // GU47 phase 3: on High the planar capture drew black speckle bands and white shore-foam rings across the pond

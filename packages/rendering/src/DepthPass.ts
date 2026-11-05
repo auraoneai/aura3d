@@ -31,6 +31,7 @@ import { batchMembersFor, expandLogicalBatchItems, isEngineBatchInstanceItem, is
 import { featuresForGeometry, materialRoutesToGeneratedProgram, withLiveAlphaCutoff } from "./program/MaterialFeatures";
 import { withLivePhysicalMapFeatures } from "./materials/PhysicalFeatures";
 import { rendererQrFlags } from "./renderer/FrameGraph";
+import { ALPHA_TO_COVERAGE_FEATURE } from "./webgpu/GeneratedAlphaToCoverage";
 import { QUALITY_TIERS } from "./contracts/quality";
 import { materialInstanceColorTarget } from "./shaders/chunks/instance_color_target.glsl";
 import { shaderFeaturesFor } from "./contracts/program";
@@ -210,13 +211,30 @@ function depthUsesGeometryMatrix(source: RenderItem): boolean {
     || (base instanceof PortableShaderMaterial && base.graphMaterial && base.graphSourcesPristine);
 }
 
+const depthDegradedWarned = new Set<string>();
+function warnDepthDegradedOnce(code: string, label: string | undefined, detail: string): void {
+  if (depthDegradedWarned.has(code)) return;
+  depthDegradedWarned.add(code);
+  console.warn(`${code}: "${label ?? "unlabelled item"}" ${detail}`);
+}
+function warnAlphaHashDegradedOnce(label: string | undefined): void {
+  warnDepthDegradedOnce("DEPTH_ALPHA_HASH_DEGRADED", label, "is a blended shadow caster; alpha-hashed depth is not implemented, so it casts as an opaque caster.");
+}
+
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey {
-  if (key.alphaHash) throw new RenderDeviceError("Alpha-hashed depth is not implemented", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: item.label });
+  if (key.alphaHash) {
+    // 4.7.x drew a blended caster as an ordinary opaque caster. Keep that outside strict mode instead of failing the frame.
+    if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth is not implemented", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: item.label });
+    warnAlphaHashDegradedOnce(item.label);
+    key = { ...key, alphaHash: false };
+  }
   if (!key.alphaTest) return key;
   const base = item.material instanceof MaterialInstance ? item.material.baseMaterial : item.material;
   if (base?.renderState.alphaToCoverage) {
-    throw new RenderDeviceError("Alpha-to-coverage depth requires matching multisample coverage", "DEPTH_ALPHA_COVERAGE_UNSUPPORTED", { label: item.label });
+    // A shadow/depth caster has no multisample coverage to match; 4.7.x used the plain alpha-test cutoff for it.
+    if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-to-coverage depth requires matching multisample coverage", "DEPTH_ALPHA_COVERAGE_UNSUPPORTED", { label: item.label });
+    warnDepthDegradedOnce("DEPTH_ALPHA_COVERAGE_DEGRADED", item.label, "uses alpha-to-coverage; its depth/shadow pass uses the alpha-test cutoff instead.");
   }
   if (item.geometry.topology === "points" || base?.shaderKey === DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME || item.material?.getParameter("u_spriteMode") === 1) {
     throw new RenderDeviceError("Masked depth requires matching specialized primitive coverage", "DEPTH_ALPHA_SPECIALIZED_GEOMETRY_UNSUPPORTED", { label: item.label });
@@ -272,6 +290,11 @@ export function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVari
       for (const feature of shaderFeaturesFor(context.flags)) {
         if (!feature.hooks.some((hook) => hook === "fragment:material" || hook === "fragment:alpha")) continue;
         if (selected[feature.id] !== undefined || materialFeatures.features[feature.id] !== undefined) {
+          // Alpha-to-coverage is a multisample refinement of the same cutoff: the depth pass can use the plain cutoff (as 4.7.x did).
+          if (feature.id === ALPHA_TO_COVERAGE_FEATURE && !rendererQrFlags(device).on("A3D_QR_STRICT")) {
+            warnDepthDegradedOnce("DEPTH_ALPHA_COVERAGE_DEGRADED", item.label, "uses alpha-to-coverage; its depth/shadow pass uses the alpha-test cutoff instead.");
+            continue;
+          }
           throw new RenderDeviceError("Masked depth cannot reproduce a forward alpha feature", "DEPTH_ALPHA_PROVIDER_UNSUPPORTED", { label: item.label, feature: feature.id });
         }
       }
@@ -863,7 +886,10 @@ export class DepthPass extends BaseRenderPass {
     const alphaHash = (this.options.clippingPass ?? "shadow") === "shadow" && base !== undefined
       && (base.renderState.blend === true || (base.renderState.blendMode !== undefined && base.renderState.blendMode !== "opaque"))
       && source.castShadow === true;
-    if (alphaHash) throw new RenderDeviceError("Alpha-hashed depth is not implemented", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: source.label });
+    if (alphaHash) {
+      if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth is not implemented", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: source.label });
+      warnAlphaHashDegradedOnce(source.label);
+    }
     const cutoff = material?.getParameter("u_alphaCutoff");
     const alphaTest = typeof cutoff === "number" && cutoff > 0;
     if (customDepthShaderKeyOf(material) && alphaTest) {

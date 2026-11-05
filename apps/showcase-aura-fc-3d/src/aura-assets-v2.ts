@@ -106,35 +106,35 @@ export const assets = defineAuraAssets({
     type: "model",
     format: "glb",
     url: "/aura-assets/fcFloodlightPylonMeshy.636dc3fc.glb",
-    hash: "sha256-636dc3fcd362a58d33a876063bd33cfc7904bb59d7f06cbeb30f82d4ca6fda8a",
+    hash: "sha256-b3934b632eaf01fd38ebaf76e9c1aef4f813d05947c95c5fa574671ec8850364",
     bounds: [0.631, 1.903, 0.239]
   },
   fcGlacierDomeMeshy: {
     type: "model",
     format: "glb",
     url: "/aura-assets/fcGlacierDomeMeshy.32b82759.glb",
-    hash: "sha256-32b827592359ba3734fe1553d0bdcac014923101d45c3886c6b097f04c2cb4d5",
+    hash: "sha256-7afa457a17061fe25970c2576b9a61355f9c912158d4efcadd6c4c21587a954e",
     bounds: [1.818, 1.209, 1.903]
   },
   fcHeroTrophyMeshy: {
     type: "model",
     format: "glb",
     url: "/aura-assets/fcHeroTrophyMeshy.b101d73c.glb",
-    hash: "sha256-b101d73c079fd37ba3114d42a002ff2b965f7ca31ab340a90aa245f9866e949a",
+    hash: "sha256-194ea9dacaffc30dae8c681bb0a583e6c553b6b77cc03d028a86848270197eb7",
     bounds: [1.024, 1.902, 0.613]
   },
   fcMatchBallMeshy: {
     type: "model",
     format: "glb",
     url: "/aura-assets/fcMatchBallMeshy.b97f043f.glb",
-    hash: "sha256-b97f043fb34c695590425933afcce9008aba484d6df9cf14a8b114484d340004",
+    hash: "sha256-421d358ea396c6f287a302e21e70625c74e4b710d06a96b995fff9517a038d7c",
     bounds: [1.902, 1.902, 1.901]
   },
   fcScoreboardGantryMeshy: {
     type: "model",
     format: "glb",
     url: "/aura-assets/fcScoreboardGantryMeshy.0c6d8221.glb",
-    hash: "sha256-0c6d8221b111f6b1f2be65ba369aa1d15f013acd586c9149e34719a8273eb5c6",
+    hash: "sha256-3cd931cca24b1337c9a1c6051e157172dcc3cccafc1cba5e34d38580ae5a7bc3",
     bounds: [1.902, 1.284, 0.246]
   },
   fcSoccerStrikerMeshy: {
@@ -155,7 +155,7 @@ export const assets = defineAuraAssets({
     type: "model",
     format: "glb",
     url: "/aura-assets/fcSoccerGoalNetMeshy.9750a4a6.glb",
-    hash: "sha256-011c9e65cc2a229025f233dc80015bb3e9d3405146b59182d1c8e07593273eb4",
+    hash: "sha256-9750a4a66bf380706700241c3aaf53b6dbf53397cae756562633cb538cd40f7f",
     bounds: [1.897, 1.282, 0.8]
   },
   // GU47 phase 9 (D2: no borrowed keys): the game's own CC0 set dressing, replacing the borrowed baseball dugout and basketball ball cart.

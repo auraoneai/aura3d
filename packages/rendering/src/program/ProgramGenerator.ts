@@ -493,7 +493,8 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef A3D_LOG_DEPTH\nuniform mat4 u_a3dLogDepthView;\nout float v_a3dLogDepth;\n#endif",
     "uniform float u_pointSize;",
     VERTEX_ATTRIBUTES,
-    ...(!hasHookContributor(contributions, "vertex:deform") && defines.A3D_HAS_TANGENT ? ["layout(location = 3) in vec4 a_tangent;"] : []),
+    // A deform hook alone (e.g. wind without the prd06 deform chunk) does not declare `a_tangent`: declare it unless a spliced chunk already does.
+    ...(defines.A3D_HAS_TANGENT && !state.decls.some((declaration) => /\bin\s+vec4\s+a_tangent\b/.test(declaration)) ? ["layout(location = 3) in vec4 a_tangent;"] : []),
     f.instancing && defines.A3D_SKINNING === 8 ? INSTANCING_VERTEX_PARS_EIGHT_INFLUENCES_GLSL : INSTANCING_VERTEX_PARS_GLSL,
     `vec3 a3dWorldNormal(vec3 normal, mat4 instanceMatrix) {
   mat3 localTransform = mat3(instanceMatrix) * mat3(u_geometryMatrix);

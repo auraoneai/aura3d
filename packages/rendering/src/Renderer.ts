@@ -1335,7 +1335,7 @@ export class Renderer {
         false,
         signal
       ), [signal]);
-      if (operation) assertPrd07RendererOperation(operation);
+      if (operation) assertPrd07RendererOperation(operation, true);
       // WP-03: direct-to-canvas forward draws have a target identity known
       // before the frame; build their native pipelines now (no presentation).
       if (warmed && !views && this.warmOutputSrgb && this.drawingPathOptions.mode === "forward" && collectRenderTarget(source) === undefined) {
@@ -1349,7 +1349,7 @@ export class Renderer {
     // do not speculate about their native pipeline identity here.
     if (!operation) await this.warmNativeDrawingForPrecompile(sourceOrInput, normalized.source, views, generation, signal);
     assertWarmupActive([signal]);
-    if (operation) assertPrd07RendererOperation(operation);
+    if (operation) assertPrd07RendererOperation(operation, true);
     const afterDiagnostics = this.device.getDiagnostics();
     const after = beforeDiagnostics.programCompileCount === undefined
       ? afterDiagnostics.shaders

@@ -228,6 +228,15 @@ export function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders 
   return true;
 }
 
+const forwardDegradedWarned = new Set<string>();
+/** One console warning per code and material per page for a forward feature that degrades instead of failing the frame. */
+function warnForwardDegradedOnce(code: string, material: string | undefined, detail: string): void {
+  const key = `${code}:${material ?? ""}`;
+  if (forwardDegradedWarned.has(key)) return;
+  forwardDegradedWarned.add(key);
+  console.warn(`${code}: material "${material ?? "unnamed"}" ${detail}`);
+}
+
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean {
@@ -2591,11 +2600,14 @@ export class ForwardPass extends BaseRenderPass {
       if (this.lastProgramFeatures.lighting === "lit" && hasLiveTransmission(effectiveMaterial)
         && (!this.lastProgramFeatures.extensions.some((extension) => extension.lobe === "transmission" || extension.lobe === "KHR_materials_transmission")
           || this.lastProgramFeatures.features["prd04.transmissionTarget"] !== true)) {
-        throw new RenderDeviceError("Generated transmission requires its physical lobe and frame capture", "TRANSMISSION_CAPTURE_UNAVAILABLE", { material: material.name });
+        // 4.7.x drew such a material without transmission. Strict mode keeps the failure; otherwise degrade and say so once.
+        if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Generated transmission requires its physical lobe and frame capture", "TRANSMISSION_CAPTURE_UNAVAILABLE", { material: material.name });
+        warnForwardDegradedOnce("TRANSMISSION_DEGRADED", material.name, "needs a transmission lobe and frame capture this program lacks; it draws without transmission.");
       }
       if (this.lastProgramFeatures.lighting === "lit" && hasLiveDiffuseTransmission(effectiveMaterial)
         && !this.lastProgramFeatures.extensions.some((extension) => extension.lobe === "diffuse-transmission" || extension.lobe === "KHR_materials_diffuse_transmission")) {
-        throw new RenderDeviceError("Diffuse transmission requires its generated physical lobe", "GENERATED_DIFFUSE_TRANSMISSION_LOBE_UNAVAILABLE", { material: material.name });
+        if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Diffuse transmission requires its generated physical lobe", "GENERATED_DIFFUSE_TRANSMISSION_LOBE_UNAVAILABLE", { material: material.name });
+        warnForwardDegradedOnce("DIFFUSE_TRANSMISSION_DEGRADED", material.name, "needs a diffuse-transmission lobe this program lacks; it draws without it.");
       }
       // #867: a skinned draw needs its program to skin. When no registered
       // deform feature (prd06.deform, A3D_QR_ANIMATION) selected this item,

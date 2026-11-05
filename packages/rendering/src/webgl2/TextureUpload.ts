@@ -28,6 +28,8 @@ interface NativeTextureOwner {
   notified: boolean;
 }
 
+let imageBitmapFlipWarned = false;
+
 export class WebGL2TextureRegistry {
   constructor(readonly host: WebGL2DeviceHost) {}
 
@@ -839,7 +841,15 @@ export class WebGL2TextureRegistry {
     const imageBitmap = Object.prototype.toString.call(source) === "[object ImageBitmap]"
       || (typeof ImageBitmap !== "undefined" && source instanceof ImageBitmap);
     if (imageBitmap && texture.flipY) {
-      throw new RenderDeviceError("ImageBitmap flipY cannot be applied during WebGL upload; orient the source when creating it", "UNSUPPORTED_TEXTURE_FORMAT", { label: texture.label });
+      // WebGL ignores UNPACK_FLIP_Y for an ImageBitmap; 4.7.x uploaded it unflipped. Keep that outside strict mode (`A3D_QR_STRICT`
+      // still rejects) and say so once, instead of failing the whole mount.
+      if (rendererQrFlags(this.host.device).on("A3D_QR_STRICT")) {
+        throw new RenderDeviceError("ImageBitmap flipY cannot be applied during WebGL upload; orient the source when creating it", "UNSUPPORTED_TEXTURE_FORMAT", { label: texture.label });
+      }
+      if (!imageBitmapFlipWarned) {
+        imageBitmapFlipWarned = true;
+        console.warn(`TEXTURE_FLIPY_DEGRADED: "${texture.label ?? "texture"}" is an ImageBitmap with flipY; WebGL cannot flip it at upload, so it is uploaded unflipped (orient the source when creating the bitmap).`);
+      }
     }
   }
 

@@ -61,7 +61,7 @@ describe("LINKS-17 reflecting water", () => {
     for (const w of live.waves as readonly { wavelength: number; steepness: number }[]) expect((w.steepness * w.wavelength) / (2 * Math.PI)).toBeLessThan(0.03);
     expect(live.normalSpeed).toBeGreaterThan(0);
     const still = pondWaterOptions(pond, "#154c79", true);
-    expect(still.waves).toEqual([]);
+    expect((still.waves as readonly { steepness: number; speed: number }[]).every((w) => w.steepness === 0 && w.speed === 0)).toBe(true);
     expect(still.normalSpeed).toBe(0);
     const c = pondColors("#154c79");
     expect(c.shallowColor).not.toBe(c.deepColor);
