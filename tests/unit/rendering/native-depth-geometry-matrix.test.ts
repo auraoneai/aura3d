@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { shaderGraph } from "../../../packages/engine/src/agent-api/nodes/shaderGraph";
@@ -500,6 +500,22 @@ describe("depth alpha coverage", () => {
     } finally { material.dispose(); geometry.dispose(); device.dispose(); }
   });
 
+  it("degrades alpha-to-coverage and blended shadow casters to plain depth outside strict mode", () => {
+    const geometry = Geometry.triangle();
+    const coverage = new UnlitMaterial({ alphaTest: 0.5, renderState: { alphaToCoverage: true } });
+    const blend = new UnlitMaterial({ renderState: { blendMode: "additive" } });
+    const device = checkedMock("webgpu");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      device.beginFrame(8, 8);
+      for (const material of [coverage, blend]) {
+        const pass = new DepthPass({ checkedSubmission: true, clippingPass: "shadow", casters: [{ geometry, material, castShadow: true }] });
+        expect(() => pass.prepare({ device, width: 8, height: 8 })).not.toThrow();
+      }
+      expect(warn.mock.calls.some((call) => /DEPTH_ALPHA_(COVERAGE|HASH)_DEGRADED/.test(String(call[0])))).toBe(true);
+    } finally { warn.mockRestore(); geometry.dispose(); coverage.dispose(); blend.dispose(); device.dispose(); }
+  });
+
   it("rejects nontrivial instance alpha, alpha-to-coverage and blended shadow hashes before any draw", () => {
     const geometry = Geometry.triangle();
     const ordinary = new UnlitMaterial();
@@ -507,6 +523,7 @@ describe("depth alpha coverage", () => {
     const coverage = new UnlitMaterial({ alphaTest: 0.5, renderState: { alphaToCoverage: true } });
     const blend = new UnlitMaterial({ renderState: { blendMode: "additive" } });
     const device = checkedMock("webgpu");
+    setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
     const context = { device, width: 8, height: 8 };
     try {
       device.beginFrame(8, 8);

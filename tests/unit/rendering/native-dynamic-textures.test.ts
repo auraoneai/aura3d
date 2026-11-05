@@ -5,6 +5,8 @@ import { Sampler } from "../../../packages/rendering/src/Sampler";
 import { WebGL2SamplerRegistry } from "../../../packages/rendering/src/webgl2/Samplers";
 import { WebGL2TextureRegistry } from "../../../packages/rendering/src/webgl2/TextureUpload";
 import type { WebGL2DeviceHost } from "../../../packages/rendering/src/webgl2/DeviceHost";
+import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
+import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core";
 import { textureBudgetReport } from "../../../packages/rendering/src/textures/TextureBudget";
 
 function context(options: { readonly maxBytes?: number; readonly maxDimension?: number; readonly readError?: () => string | null; readonly onCall?: (name: string) => void; readonly unpackBuffer?: object; readonly floatLinear?: boolean } = {}) {
@@ -551,8 +553,9 @@ describe("native dynamic texture uploads", () => {
     texture.dispose();
   });
 
-  it("rejects a requested ImageBitmap flip before mutating an existing texture", () => {
+  it("rejects a requested ImageBitmap flip before mutating an existing texture (strict)", () => {
     const { calls, registry, device } = context();
+    setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device as never);
     const source = { width: 2, height: 2, [Symbol.toStringTag]: "ImageBitmap" };
     const texture = new Texture({ width: 2, height: 2, source: source as unknown as TexImageSource, dynamic: true, flipY: false, generateMipmaps: false });
     const handle = registry.getTextureHandle(texture);

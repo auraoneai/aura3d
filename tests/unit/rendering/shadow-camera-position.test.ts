@@ -541,9 +541,10 @@ describe("scene camera eye in shadow and outline depth passes", () => {
     } finally { system.dispose(); geometry.dispose(); material.dispose(); texture.dispose(); device.dispose(); }
   });
 
-  it.each(["coverage", "blend-mode"] as const)("rejects unsupported %s during shadow warmup without compiling", async (mode) => {
+  it.each(["coverage", "blend-mode"] as const)("rejects unsupported %s during shadow warmup without compiling (strict)", async (mode) => {
     const device = new MockRenderDevice();
     useWebGPUShape(device);
+    setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
     const compile = vi.spyOn(device, "createShaderProgram");
     const geometry = Geometry.triangle();
     const material = mode === "coverage"

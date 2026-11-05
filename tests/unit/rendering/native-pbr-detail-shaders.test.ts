@@ -895,8 +895,8 @@ describe("PBR detail shader integration", () => {
 
   it("rejects active generated transmission when its capture contributor is disabled", () => {
     const device = new MockRenderDevice(), geometry = Geometry.box(), material = new PBRMaterial({ transmissionFactor: 0.0001 });
-    setRendererQrFlags({ values: { A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true },
-      on: (name) => name === "A3D_QR_CORE" || name === "A3D_QR_CORE_GENERATOR" }, device);
+    setRendererQrFlags({ values: { A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_STRICT: true },
+      on: (name) => name === "A3D_QR_CORE" || name === "A3D_QR_CORE_GENERATOR" || name === "A3D_QR_STRICT" }, device);
     try {
       device.beginFrame(8, 8);
       expect(() => new ForwardPass({ items: [{ geometry, material }] }).execute({ device, width: 8, height: 8 })).toThrow(/transmission requires its physical lobe and frame capture/i);
