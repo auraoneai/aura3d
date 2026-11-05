@@ -206,8 +206,14 @@ function buildGrid(record: WaterRecord, res = 64): { vertices: Float32Array; ind
 function gridFor(device: RenderDevice, ds: WaterDeviceState, st: WaterGpuState): boolean {
   if (st.vb && st.ib) return true;
   const grid = buildGrid(st.record);
-  st.vb = ds.gridCache.get(st.record.node.id)?.vb ?? device.createBuffer("vertex", grid.vertices.byteLength, grid.vertices);
-  st.ib = ds.gridCache.get(st.record.node.id)?.ib ?? device.createBuffer("index", grid.indices.byteLength, grid.indices);
+  // A cached grid is reused only while its device buffers are still live and match this grid's size: setScene disposes the
+  // previous scene's water buffers, and handing a disposed buffer to the next scene's water draw throws "Buffer is not a
+  // live WebGL2 resource owned by this device" (Aura Links course switching, 2026-11-04).
+  const cached = ds.gridCache.get(st.record.node.id);
+  const reusable = cached !== undefined && !cached.vb.disposed && !cached.ib.disposed
+    && cached.vertexCount === grid.vertices.length / 4 && cached.indexCount === grid.indices.length;
+  st.vb = reusable ? cached.vb : device.createBuffer("vertex", grid.vertices.byteLength, grid.vertices);
+  st.ib = reusable ? cached.ib : device.createBuffer("index", grid.indices.byteLength, grid.indices);
   ds.gridCache.set(st.record.node.id, { vb: st.vb, ib: st.ib, vertexCount: grid.vertices.length / 4, indexCount: grid.indices.length });
   st.vertexCount = grid.vertices.length / 4;
   st.indexCount = grid.indices.length;
