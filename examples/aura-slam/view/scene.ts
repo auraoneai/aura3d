@@ -262,7 +262,24 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
   // turned 90 degrees to run along the back of the court and fitted by length (24 m wide, about 7.6 m tall). The floodlight GLB
   // is a 1.9 x 1.4 x 1.9 lamp head, so it sits on a 9 m mast instead of standing in for the whole tower.
   const mastMat = original ? material.pbr({ color: "#2b3a40", metalness: 0.55, roughness: 0.42 }) : material.pbr({ color: "#5d6a70", metalness: 0.95, roughness: 0.22 });
-  for (const side of [-1, 1]) {
+  // GU47 wave 10 (TT-A2): the World Tour look draws the generated lattice floodlight tower (one model per side, base on the
+  // plain, lamp bank toed in toward the court); `?look=original` keeps the cylinder mast and the rooftop lamp head.
+  if (!original) {
+    for (const side of [-1, 1]) {
+      s.add(
+        model(assets.tennisFloodMast, {
+          name: `stadium-floodlight-${side < 0 ? "left" : "right"}`,
+          role: "setDressing",
+          castShadow: false,
+          scaleMode: "fit",
+          targetHeight: FLOODLIGHT_MAST_H + 0.5
+        })
+          .position(side * 12.5, 0, -13.2)
+          .rotate(0, side * -0.2, 0)
+      );
+    }
+  }
+  for (const side of original ? [-1, 1] : []) {
     s.add(primitives.cylinder({ name: `stadium-floodlight-mast-${side < 0 ? "left" : "right"}`, size: [0.28, FLOODLIGHT_MAST_H, 0.28], material: mastMat, castShadow: false })
       .position(side * 12.5, FLOODLIGHT_MAST_H * 0.5, -13.2));
   }
@@ -286,20 +303,24 @@ export function buildTennisScene(rig: AthleteRigPort, options: TennisSceneOption
     })
       .position(...(!original && boot === "moon" ? ([GANTRY_POSITION[0], -60, GANTRY_POSITION[2]] as Vec3) : GANTRY_POSITION))
       .runtime(game.runtimeNode("stadium-scoreboard-gantry")),
-    model(assets.rooftopFloodlightTowerMeshy, {
-      name: "stadium-floodlight-left",
-      role: "setDressing",
-      castShadow: false,
-      scaleMode: "fit",
-      targetMaxDimension: 2.2
-    }).position(-12.5, FLOODLIGHT_MAST_H, -13.2),
-    model(assets.rooftopFloodlightTowerMeshy, {
-      name: "stadium-floodlight-right",
-      role: "setDressing",
-      castShadow: false,
-      scaleMode: "fit",
-      targetMaxDimension: 2.2
-    }).position(12.5, FLOODLIGHT_MAST_H, -13.2)
+    ...(original
+      ? [
+          model(assets.rooftopFloodlightTowerMeshy, {
+            name: "stadium-floodlight-left",
+            role: "setDressing",
+            castShadow: false,
+            scaleMode: "fit",
+            targetMaxDimension: 2.2
+          }).position(-12.5, FLOODLIGHT_MAST_H, -13.2),
+          model(assets.rooftopFloodlightTowerMeshy, {
+            name: "stadium-floodlight-right",
+            role: "setDressing",
+            castShadow: false,
+            scaleMode: "fit",
+            targetMaxDimension: 2.2
+          }).position(12.5, FLOODLIGHT_MAST_H, -13.2)
+        ]
+      : [])
   ]);
 
   // C7: an unlit backdrop wall at the far edge of the outer ground carries the venue `background` colour (the clear colour is fixed

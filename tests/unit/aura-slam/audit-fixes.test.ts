@@ -241,10 +241,19 @@ describe("top-tennis-C7 / C9 / C10 / C13: scene structure", () => {
     expect(stand.rotation?.[1]).toBeCloseTo(Math.PI / 2, 9);
     expect(stand.targetLength).toBe(24);
     expect(stand.targetMaxDimension).toBeUndefined();
+    // GU47 TT-A2 (wave 10): the World Tour look stands the generated lattice tower on the plain (no cylinder mast, no lamp head).
     for (const side of ["left", "right"]) {
-      const mast = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`) as { size?: number[] };
+      expect(snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`)).toBeUndefined();
+      const tower = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetHeight?: number };
+      expect(tower.position?.[1]).toBe(0);
+      expect(tower.targetHeight).toBe(9.5);
+    }
+    // ?look=original keeps the C10 cylinder mast with the rooftop lamp head on top.
+    const original = buildTennisScene(createPoseRig({ resolveAppearance }) as never, { look: "original" }).toJSON() as AuraSceneSnapshot;
+    for (const side of ["left", "right"]) {
+      const mast = original.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-mast-${side}`) as { size?: number[] };
       expect(mast.size?.[1]).toBe(9);
-      const head = snapshot.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetMaxDimension?: number };
+      const head = original.nodes.find((n) => (n as { name?: string }).name === `stadium-floodlight-${side}`) as { position?: number[]; targetMaxDimension?: number };
       expect(head.position?.[1]).toBe(9);
       expect(head.targetMaxDimension).toBe(2.2);
     }

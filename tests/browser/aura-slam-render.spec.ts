@@ -9,7 +9,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * sanity (non-blank, no console errors, draw calls within the 150 budget) and, when the committed live-game reference
  * (evidence/aura-slam/frames-reference.json, or a staged tests/browser/aura-slam-frames-reference.json) has a row for the venue, the parity thresholds:
  * luma/RGB histogram JSD <= 0.05, edge-density ratio 0.9..1.1, mean luma delta <= 4.
- * Remote run: SPECS="@headed-xvfb tests/browser/aura-slam-render.spec.ts" PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb" tools/remote-acr/run.sh
+ * Remote run: SPECS="@headed-xvfb tests/browser/aura-slam-render.spec.ts" PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb tennisFloodMast.4a0d9dee.glb" tools/remote-acr/run.sh
  *
  * GU47 WP-11 (TT-PF1): the default is the World Tour look, held to the WP budget (<= 150 draws at 1280 and 640, <= 170 at
  * 390x844). The live-game parity thresholds only apply to today's look: `SLAMR_LOOK=original` renders `?look=original`.
