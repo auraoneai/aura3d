@@ -76,6 +76,7 @@ import "../../showcase-port-shared/quickbar.css";
 import "../../showcase-port-shared/diag";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { readIesLabFlag, sodiumFloodProfile } from "./photometric";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
@@ -977,7 +978,7 @@ function buildScene(v: VenueSpec): any {
     s.background(rig.fog.color).addMany(courtLookNodes(rig, { ao: QA_AO !== "0" }));
     // H47-L2 / H47-L3: the court's practicals (sodium spots, tungsten bulb clusters, sign and rib rect lights) and the
     // emissive lamp heads they belong to (one instanced draw per court, two at Manila).
-    s.addMany(courtPracticalNodes(rig)).addMany(courtLampNodes(rig));
+    s.addMany(courtPracticalNodes(rig, IES_LAB ? sodiumFloodProfile() : undefined)).addMany(courtLampNodes(rig));
     // H47-L4 lens flares (Venice sun, Rucker floods), H47-E4 Preetham sky (Venice, Athens), H47-E2 rain, wet ground and
     // the storm court's lightning light (reduced motion halves the rain; reduced flash keeps the lightning dark).
     s.addMany(courtLensFlareNodes(rig)).addMany(courtSkyNodes(rig)).addMany(courtWeatherNodes(rig, BOOT_REDUCED_MOTION)).addMany(courtLightningNodes(rig));
@@ -1023,12 +1024,14 @@ let auraApp: ReturnType<typeof createAuraApp>;
 // 5.0 lab flags (A3): `?backend=auto|webgpu` and `?gamut=p3` are EXPERIMENTAL, default OFF, WebGL2 fallback kept.
 // `?worker=` / `?depth=` are not wired for this game (no worker entry; the camera node is built per court).
 const labFlags = readLabFlags();
+/** A5 lab: `?ies=1` gives the sodium spots a Type-C photometric profile (EXPERIMENTAL, default OFF; scalar spots otherwise). */
+const IES_LAB = readIesLabFlag();
 const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags);
 try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...looks.appOptions(venue.look),
-    ...(labRenderer ? { renderer: { ...(looks.appOptions(venue.look) as { renderer?: object }).renderer, ...labRenderer } } : {}),
+    ...(labRenderer || IES_LAB ? { renderer: { ...(looks.appOptions(venue.look) as { renderer?: object }).renderer, ...(labRenderer ?? {}), ...(IES_LAB ? { photometricProfiles: true } : {}) } } : {}),
     ...(labOutput ? { output: labOutput } : {}),
     qualityRebuild: { flags: ["game"] },
     diagnostics: false

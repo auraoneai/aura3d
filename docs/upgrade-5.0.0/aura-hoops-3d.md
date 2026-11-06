@@ -1,4 +1,4 @@
-# Aura Hoops 3D (`aura-hoops-3d`): 5.0.1 upgrade guide
+# Aura Hoops 3D (`aura-hoops-3d`): 5.0.3 upgrade guide
 
 Source: plan section 5.7 of `docs/project/5.0-games-and-examples-upgrade-plan.md` (app `apps/showcase-aura-hoops-3d`, sports). Lab flags and shared helpers: [README](./README.md). Stable features only by default; EXPERIMENTAL items stay behind lab flags (decision D1).
 
@@ -14,20 +14,20 @@ Shared (Wave 0)
 - [x] `package.json` version set to 5.0.1 (W-1, cosmetic, D6)
 - [x] `no-removed-5-0-apis` game check passes (W-2)
 - [ ] Baseline drift capture compared with the 4.7.10 frames of record, static bands only (W-3, parent-owned single ACR capture)
-- [ ] `environments.neutral`/`capture` exposure resolved (W-4, see [neutral-environment-exposure.md](./neutral-environment-exposure.md))
-- [ ] Catalog digests refreshed after any source edit: `node tools/agent-examples/refresh-catalog-digests.mjs` (W-5)
+- [ ] `environments.neutral`/`capture` exposure resolved (W-4, see [neutral-environment-exposure.md](./neutral-environment-exposure.md)) - not applicable to this game's looks (no neutral/capture environment); parent-owned
+- [ ] Catalog digests refreshed after any source edit: `node tools/agent-examples/refresh-catalog-digests.mjs` (W-5) - parent refreshes at merge
 
 Adoption (5.0 adoption row)
 
-- [x] zero GLSL-only shaders): A3 `?backend=auto` lab (default OFF via shared lab-flag parser; `?backend=` and `?gamut=` wired, `?worker=`/`?depth=` not wired; lab path not exercised on a GPU)
-- [ ] A5 IES photometric profile on arena spotlights (EXPERIMENTAL, one non-clustered WebGL2 spot) - skipped: experimental, pixel risk, outside stable scope
+- [x] A3 `?backend=auto|webgpu` lab (default OFF via shared lab-flag parser; `?backend=` and `?gamut=` wired, `?worker=`/`?depth=` not wired; lab path not exercised on a GPU)
+- [x] A5 IES photometric profile on the arena sodium spotlights, lab flag `?ies=1` (default OFF; EXPERIMENTAL). `src/photometric.ts` (Type-C flood distribution), `courtPracticalNodes(rig, profile)` in `src/courtRigs.ts`, `renderer.photometricProfiles: true` set only with the flag. Evidence: `evidence/game-upgrades-503/aura-hoops-3d/{before,after-ies}.png`
 - [x] A6 verify wet ground (Rucker frame drawn, no console errors; only Rucker captured)
-- [x] WebGPU wetness exists but a puddle-noise texture is not supported on WebGPU (4-to-5.md section 9) so do not use wetness textures
+- [x] WebGPU wetness exists but a puddle-noise texture is not supported on WebGPU (4-to-5.md section 9), so no wetness textures are used
 - [x] A2 (shared `?diag=1` panel, inert without query; backend/readiness on `window.__AURA_QA__.backendReport`; B2 `ready()` cast removed)
+- [ ] A1, A4, A7-A17: skipped, not in this game's plan row (no custom shaders, no workers, no scatter, no GLB-load UI change requested)
 
 Verification
 
-- [ ] GC, UT, CAP
-- [ ] RG for A3/A5
-- [ ] `node tools/game-checks/run.mjs aura-hoops-3d` clean - 1 pre-existing error (art-direction audit stale), unchanged vs base
-- [x] Before/after frames attached: `evidence/game-upgrades-502/aura-hoops-3d/{before,after}.png` (REA capture_browser_scenario, 960x540, 11 s settle, Rucker)
+- [x] Typecheck: `pnpm typecheck` in the game dir is clean
+- [ ] `node tools/game-checks/run.mjs aura-hoops-3d`: see final report
+- [x] Before/after frames: `evidence/game-upgrades-503/aura-hoops-3d/` (REA capture_browser_scenario, 960x540)
