@@ -572,7 +572,9 @@ async function boot(): Promise<void> {
     // 4.5.0 pipeline on purpose (bloom pass fusion); measured against `production` in evidence/roadster-hours-port/audit-fix.
     quality: "auto",
     output: output.output,
-    scene: world.scene
+    scene: world.scene,
+    // Lab flags (?backend=, ?gamut=): published by the showcase wrapper only when a flag is present; absent by default.
+    ...((window as unknown as { __A3D_LAB_APP_OPTIONS__?: Record<string, unknown> }).__A3D_LAB_APP_OPTIONS__ ?? {})
   });
   await app.ready();
   runtime = world.bind(app);
