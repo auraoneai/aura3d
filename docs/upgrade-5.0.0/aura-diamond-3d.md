@@ -19,12 +19,12 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] replace the hand-written probe node with the supported lighting entry `@aura3d/engine/lighting` (`NativeLightProbeGrid`) or drop the dormant probe (decide: drop unless `DOME_PROBE_ENABLED` is on in a shipped path; it is off) (S)
-- [ ] A3 lab
-- [ ] A5 IES lab as Hoops
+- [ ] replace the hand-written probe node with the supported lighting entry `@aura3d/engine/lighting` (`NativeLightProbeGrid`) or drop the dormant probe (decide: drop unless `DOME_PROBE_ENABLED` is on in a shipped path; it is off) (S) Skipped: probe is dormant (`DOME_PROBE_ENABLED = false`), `tests/unit/aura-diamond/wall-name.test.ts` pins its node shape, and the engine probe-capture fix it waits on is not in 5.0.2.
+- [ ] A3 lab. Skipped: no custom shaders; only the default-off lab flag wiring (`?backend=`, `?gamut=p3` via the shared parser) shipped.
+- [ ] A5 IES lab as Hoops. Skipped: experimental, not shipped by default.
 
 Verification
 
 - [ ] GC, UT, CAP
-- [ ] `node tools/game-checks/run.mjs aura-diamond-3d` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] `node tools/game-checks/run.mjs aura-diamond-3d` clean (0 errors; 2 warnings as before)
+- [x] Before/after frames attached: `evidence/game-upgrades-502/aura-diamond-3d/{before,after}.png` (REA capture_browser_scenario, 960x540, 11 s settle; animated autopilot play, so counts differ)
