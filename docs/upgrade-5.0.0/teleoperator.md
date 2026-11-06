@@ -19,13 +19,13 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A6 verify (rain + film grain + SSR)
-- [ ] A10 P3 lab flag (the grade is `output:`-driven, so P3 is a one-line flag)
-- [ ] A4 `tailTrails.ts`/`scanPulse.ts` as shader-graph pilot (small, additive)
-- [ ] A12 deferred
+- [x] A6 verify (rain + film grain + SSR): default capture at 960x540 draws on 5.0.2 (evidence/game-upgrades-502/teleoperator/after.png), no RENDERER_MOUNT_FAILED, no error-level console; only the two prd02.contactShadows warnings (also present before)
+- [x] A10 P3 lab flag: `?gamut=p3` (and `?backend=auto|webgpu`) wired via `showcase-port-shared/lab-flags`, default OFF, backend report published on `__AURA3D_SHOWCASE_TELEOPERATOR__.backendReport` (flag path itself not captured)
+- [ ] (skipped, EXPERIMENTAL D4, pixel risk) A4 `tailTrails.ts`/`scanPulse.ts` as shader-graph pilot (small, additive)
+- [ ] A12 deferred (unchanged)
 
 Verification
 
-- [ ] GC, UT, CAP
+- [ ] GC, UT, CAP: UT 151/151 pass and tsc clean; GC has 1 pre-existing error (art-direction.audit.json stale vs direction.ts), CAP is parent-owned
 - [ ] `node tools/game-checks/run.mjs teleoperator` clean
 - [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
