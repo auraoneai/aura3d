@@ -11,6 +11,8 @@
  * washed the whole frame to its fog colour and cost minutes per frame), `cones=0` (no gate light cones).
  */
 import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { publishBackendReport } from "../../apps/showcase-port-shared/backend-report";
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
@@ -596,8 +598,11 @@ function sizeCanvas(): void {
 async function boot(): Promise<void> {
   sizeCanvas();
   const status = $("loading-status");
-  actors = await loadActors(canvas, (done, total) => { status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
+  // 5.0 A1: one monotonic bar over the real boot stages (runner models 0..0.6, village build, renderer mount, first frame).
+  const loading = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
+  actors = await loadActors(canvas, (done, total) => { loading.set(0.6 * (done / Math.max(1, total))); status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
   status.textContent = "Building the village…";
+  loading.set(0.65);
   const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain });
   // EXPERIMENTAL lab flags (?backend=, ?gamut=): default OFF, WebGL2 stays the default; worker/depth are not wired for this port.
   const lab = labAppOptions(readLabFlags());
@@ -611,12 +616,18 @@ async function boot(): Promise<void> {
     output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false, ...lab.output },
     scene: world.scene
   });
+  loading.set(0.8);
   await app.ready();
+  loading.set(0.9);
   runtime = world.bind(app);
   ready = true;
   $("loading-status").textContent = config.daily ? `Ready. Daily course for ${config.seed}.` : "Ready.";
   $<HTMLButtonElement>("start").disabled = false;
   render(0);
+  // 5.0 B2/A2: report the active backend and first-frame readiness on the QA hook (`?diag=1` prints it); completes the bar.
+  const qaHook = ((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ??= {});
+  void publishBackendReport(app as unknown as Parameters<typeof publishBackendReport>[0], qaHook).then(() => loading.done(), () => loading.done());
+  setTimeout(() => loading.done(), 6000);
   updateHud();
   if (config.autostart) begin();
   if (config.at !== null) jumpTo(config.at);
