@@ -14,7 +14,7 @@ Shared (Wave 0)
 - [x] `package.json` version set to 5.0.1 (W-1, cosmetic, D6)
 - [x] `no-removed-5-0-apis` game check passes (W-2)
 - [ ] Baseline drift capture compared with the 4.7.10 frames of record, static bands only (W-3, parent-owned single ACR capture)
-- [ ] `environments.neutral`/`capture` exposure resolved (W-4): not applicable, the look uses the catalogue HDRI `hangar_interior` via `environments.hdri` (`src/main.ts:191`), never `environments.neutral`; real-GPU frame of the same view is unchanged (evidence/game-upgrades-503/bunker-zero/{before,after}.png)
+- [ ] `environments.neutral`/`capture` exposure resolved (W-4): not applicable, the look uses the catalogue HDRI `hangar_interior` via `environments.hdri` (`src/main.ts:191`), never `environments.neutral`; real-GPU frame of the same view is unchanged (the only difference is the transient floor-title banner, a settle-timing artifact) (evidence/game-upgrades-503/bunker-zero/{before,after}.png)
 - [ ] Catalog digests refreshed after any source edit: `node tools/agent-examples/refresh-catalog-digests.mjs` (W-5)
 
 Adoption (5.0 adoption row)
@@ -28,4 +28,4 @@ Verification
 
 - [ ] GC (lighting, luma-band), UT, CAP
 - [ ] `node tools/game-checks/run.mjs bunker-zero` clean
-- [x] Before/after frames attached: evidence/game-upgrades-503/bunker-zero/{before,after}.png (real GPU Apple M4 Max via headless Chrome CDP, 960x540, `?floor=1&autostart=1`, 16 s; identical, no source change shipped)
+- [x] Before/after frames attached: evidence/game-upgrades-503/bunker-zero/{before,after}.png (960x540, `?floor=1&autostart=1`, 12 s settle, REA `capture_browser_scenario`, headless Chrome launch; before = origin/main build, after = this branch build; same view, only the transient "FLOOR 1 - STONE GATEHOUSE" title banner differs (settle timing); no source change shipped)
