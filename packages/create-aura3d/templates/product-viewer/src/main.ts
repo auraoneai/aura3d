@@ -67,8 +67,8 @@ const productScene = scene()
   )
   .add(
     model(assets.product, { name: "typed studio product", castShadow: true })
-      .position(0, 1.08, -0.62)
-      .scale(0.66)
+      .position(0, 0.15, -0.62)
+      .scale(1)
   )
   .add(interactions.orbit({ target: "typed studio product" }))
   .camera(autoframe);
