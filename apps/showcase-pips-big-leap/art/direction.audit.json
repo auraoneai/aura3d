@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "apps/showcase-pips-big-leap/art/direction.ts",
-  "sourceSha256": "1533649b91d547f7d15219adb21f4ba92c1310e8375e87696ca28a86cc405b25",
+  "sourceSha256": "ae83b3e6aa0cf594173003d8e4808e6b7d25223a13ef704a93e28ff72ed42162",
   "id": "showcase-pips-big-leap",
   "genre": "platformer",
   "signatureEffect": "Shallow-focus miniature lens: an f/2 macro depth of field holds acorn-sized Pip sharp while each felt-and-clay diorama melts into bokeh over a fogged base (below High: corner vignette and base fog).",
@@ -614,7 +614,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "leapBeetle",
+            "assetKey": "leapBeetleAnim",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
@@ -1351,7 +1351,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "leapBeetle",
+            "assetKey": "leapBeetleAnim",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
@@ -2496,7 +2496,7 @@
             "overridesTextures": false
           },
           {
-            "assetKey": "leapBeetle",
+            "assetKey": "leapBeetleAnim",
             "triangles": 0,
             "textures": 3,
             "unlit": false,
@@ -2760,11 +2760,16 @@
       },
       {
         "role": "character",
-        "assetKey": "leapBeetle",
+        "assetKey": "leapBeetleAnim",
         "maxTriangles": 30000,
         "minTriangles": 2000,
         "textureSet": "BC+N+ORM",
-        "maxTextureSize": 1024
+        "maxTextureSize": 1024,
+        "animated": {
+          "clips": [
+            "idle"
+          ]
+        }
       },
       {
         "role": "world",
