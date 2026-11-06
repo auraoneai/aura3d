@@ -14,7 +14,7 @@ Shared (Wave 0)
 - [x] `package.json` version set to 5.0.1 (W-1, cosmetic, D6)
 - [x] `no-removed-5-0-apis` game check passes (W-2)
 - [ ] Baseline drift capture compared with the 4.7.10 frames of record, static bands only (W-3, parent-owned single ACR capture)
-- [ ] `environments.neutral`/`capture` exposure resolved (W-4, see [neutral-environment-exposure.md](./neutral-environment-exposure.md))
+- [x] `environments.neutral`/`capture` exposure resolved (W-4): default colour-script path uses `environments.preset("sunset")`, not the neutral file (world.ts:345-348); only `?look=original` / `?env=` read neutral, so no pin; default frame checked in evidence/game-upgrades-503/serpentine-sky-run-port/{before,after}.png
 - [ ] Catalog digests refreshed after any source edit: `node tools/agent-examples/refresh-catalog-digests.mjs` (W-5)
 
 Adoption (5.0 adoption row)
@@ -34,3 +34,17 @@ Verification
 - [x] Lab flags `?backend=` and `?gamut=` wired via the shared parser, default OFF. Skipped: `?worker=1` (no worker entry) and `?depth=` (camera node untouched, pixel risk)
 - [x] A2 `?diag=1` already provided by `apps/showcase-port-shared/diag` in the app entry
 - Unticked W-3/W-4: need the parent's 4.7.10 baseline comparison; `environments.neutral` not pinned. GC shows 1 pre-existing error (`art/direction.audit.json` stale), untouched here.
+
+## 5.0.3 full adoption notes
+
+- [x] A1 loading card now has a real progress bar driven by the shared `createLoadingProgress` (`element`): evidence/game-upgrades-503/serpentine-sky-run-port/{before,after}.png (in-run frames identical; the bar is visible only during load and was not frame-captured)
+- [x] A6 post stack verified on real GPU (motion blur, DoF, chromatic aberration, bloom, FXAA, god rays all draw; no new console errors or degrade codes vs base): same frames
+- [ ] A2 budgets: skipped, `?diag=1` already present; no new budget gate added
+- [ ] A3 backend: stays lab flag `?backend=` (custom GLSL is WebGL2-only, no WGSL parity)
+- [ ] A4 shader graph: skipped, not a designated pilot; road/sky/figures stay GLSL, WebGL2-only
+- [ ] A5 lighting (probe grid, IES, projected spot, clustered, voxel GI): skipped, EXPERIMENTAL and the world is unlit custom materials; only the rigged runner is PBR
+- [ ] A7 workers: skipped, no worker entry
+- [ ] A8 per-slot custom materials: skipped, imported GLBs (runner, Meshy props) are plain PBR; no custom surface on a GLB slot
+- [ ] A9 camera depth: tried `?depth=logarithmic` on real GPU: RENDERER_MOUNT_FAILED "Contact shadows require standard depth" (script look uses contact shadows). Not wired. Engine limitation
+- [ ] A10 wide gamut: stays lab flag `?gamut=p3`
+- [ ] A11 add-ons, A12 scatter/merge (seeded placement would change), A13 KTX2, A14 formats, A15 text3D, A16 physics, A17 splats: not applicable or skipped, no player-visible gain
