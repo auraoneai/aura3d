@@ -16,6 +16,7 @@ import { resolveCameraFrame } from "./camera.js";
 import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
+import { webgpuLacksDepthForPostprocess } from "./postprocess.js";
 import { Renderer, RenderDeviceError, webGL2MaxTextureSize, bindShaderFailureStore, shaderFailureStoreFor, subscribeProgramReadiness, type RendererOptions, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes, normalizeTextureBudgetPolicy, resolveBackendOptions, resolveDrawingPathOptions, resolvePhotometricProfilesOption, resolveProjectedSpotImagesOption, type ResolvedBackendOptions } from "../app/rendererOptions.js";
@@ -222,7 +223,13 @@ function liveClippingGroups(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRunt
 export async function createSelectedProductionRenderer(
   options: RendererOptions,
   selection: ResolvedBackendOptions,
-  create: (options: RendererOptions) => Promise<Renderer> = Renderer.create
+  create: (options: RendererOptions) => Promise<Renderer> = Renderer.create,
+  /**
+   * Capability the scene needs that WebGPU cannot provide, checked before any WebGPU device or canvas context exists.
+   * A canvas that has handed out a `webgpu` context can never hand out `webgl2`, so a gap found only when the first
+   * frame renders could not fall back. With `allowFallback` the mount goes straight to WebGL2; strict throws.
+   */
+  webgpuGap?: () => { readonly code: string; readonly missing: readonly string[] } | undefined
 ): Promise<{ readonly renderer: Renderer; readonly selection: ProductionBackendSelection }> {
   const rejectRenderer = async (renderer: Renderer, error: unknown, backend: "webgl2" | "webgpu"): Promise<never> => {
     const failures: unknown[] = [];
@@ -268,6 +275,14 @@ export async function createSelectedProductionRenderer(
   if (selection.requested === "webgl2") {
     const renderer = await make("webgl2");
     return { renderer, selection: { requested: "webgl2", active: "webgl2", missingFeatures: [], deviceLost: false } };
+  }
+  const gap = webgpuGap?.();
+  if (gap) {
+    if (!selection.allowFallback) {
+      throw new RenderDeviceError(`${gap.code}: the scene needs ${gap.missing.join(", ")}, which the WebGPU backend does not provide`, gap.code, { backend: "webgpu" });
+    }
+    const renderer = await make("webgl2");
+    return { renderer, selection: { requested: selection.requested, active: "webgl2", fallbackReason: gap.code, missingFeatures: [...gap.missing], deviceLost: false } };
   }
   try {
     const renderer = await make("webgpu");
@@ -597,7 +612,10 @@ export async function createProductionRuntimeSceneRenderer(
     // T0-28: the app's resolved flags bind to this renderer's device, so two
     // apps on one page never read each other's flags through FrameGraph.
     qrFlags: flags
-  }, resolveBackendOptions(rendererOptions));
+  }, resolveBackendOptions(rendererOptions), undefined,
+  // WebGPU never advertises sampleable depth textures; the legacy depth-aware passes need them (Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame).
+  () => !isDirectRenderPath(canvas) && webgpuLacksDepthForPostprocess(snapshot, canvas)
+    ? { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] } : undefined);
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
