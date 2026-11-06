@@ -189,8 +189,29 @@ function replayBuiltinObject(value: object, prototype: object): boolean {
   });
 }
 
-function replayGeometrySafe(geometry: Geometry): boolean {
-  if (!replayBuiltinObject(geometry, Geometry.prototype)) return false;
+const POOLED_PRIMITIVE_GEOMETRY = Symbol.for("@aura3d/rendering:pooledPrimitiveGeometry");
+
+/**
+ * The compiler's pooled primitive handle (`QrSharedPrimitiveGeometry`) is a `Geometry` subclass whose only added
+ * behaviour is a `dispose()` that releases a pool reference. It never runs during a draw, so contact depth may treat it
+ * like a plain geometry. Proven structurally: a direct subclass of Geometry carrying the registered marker, with exactly
+ * `constructor` and `dispose` on its prototype, and no own accessors or functions on the instance.
+ */
+function pooledPrimitiveGeometry(geometry: Geometry): boolean {
+  const prototype = Object.getPrototypeOf(geometry) as object | null;
+  if (!prototype || Object.getPrototypeOf(prototype) !== Geometry.prototype) return false;
+  if (Object.getOwnPropertyDescriptor(prototype, POOLED_PRIMITIVE_GEOMETRY)?.value !== true) return false;
+  const keys = Reflect.ownKeys(prototype).filter((key) => key !== POOLED_PRIMITIVE_GEOMETRY);
+  if (keys.length !== 2 || !keys.includes("constructor") || !keys.includes("dispose")) return false;
+  return Reflect.ownKeys(geometry).every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(geometry, key);
+    return descriptor !== undefined && !descriptor.get && !descriptor.set && typeof descriptor.value !== "function";
+  });
+}
+
+/** `allowPooled` is for the contact-shadow depth proof only; replay and batching keep the plain-Geometry rule. */
+function replayGeometrySafe(geometry: Geometry, allowPooled = false): boolean {
+  if (!replayBuiltinObject(geometry, Geometry.prototype) && !(allowPooled && pooledPrimitiveGeometry(geometry))) return false;
   const streams = [geometry.vertexBuffer, ...geometry.additionalVertexBuffers];
   if (streams.some((stream) => !replayBuiltinObject(stream, VertexBuffer.prototype)
     || !replayBuiltinObject(stream.format, VertexFormat.prototype))) return false;
@@ -291,17 +312,21 @@ function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFl
 /** Contact depth relies on the same built-in participant methods throughout
  * the frame. Portable/custom graph carriers need a separate identity proof. */
 export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags): boolean {
-  return forwardContactGeometrySafe(item, flags) && forwardBuiltinParticipantSafe(item);
+  return forwardContactGeometrySafe(item, flags) && builtinParticipantSafe(item, true);
 }
 
 /** Common plain-item and geometry portion for graph-specific contact proofs. */
 export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean {
   return forwardContactProvidersSafe(flags) && replayBuiltinObject(item, Object.prototype)
-    && !item.onBeforeRender && replayGeometrySafe(item.geometry);
+    && !item.onBeforeRender && replayGeometrySafe(item.geometry, true);
 }
 
 function forwardBuiltinParticipantSafe(item: RenderItem): boolean {
-  if (item.onBeforeRender || !replayGeometrySafe(item.geometry)) return false;
+  return builtinParticipantSafe(item, false);
+}
+
+function builtinParticipantSafe(item: RenderItem, allowPooledGeometry: boolean): boolean {
+  if (item.onBeforeRender || !replayGeometrySafe(item.geometry, allowPooledGeometry)) return false;
   const input = item.material;
   if (!input) return true;
   if (input instanceof MaterialInstance && !replayBuiltinObject(input, MaterialInstance.prototype)) return false;
