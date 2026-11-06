@@ -19,8 +19,13 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A8 per-slot custom shader for the GLB riders (replaces re-materialing code in `world.ts`), A4 (L; start with `POINTS_*`, `VEIL_*`, `RIDER_SHADOW_*`, keep `track`/`mineral` GLSL), A6 verify motion blur + DoF
-- [ ] note that `environments.neutral` is regenerated (S5-WP04-05): this is the first place a pixel shift will show
+- [ ] A8 per-slot custom shader for the GLB riders: SKIPPED (the riders use stable `materialOverrides` tints/clearcoat/rim, not hand-rolled re-materialing; no custom surface on the GLBs exists, so a per-slot GLSL shader would add pixel risk with no player gain)
+- [ ] A4 shader-graph rewrite of `POINTS_*`/`VEIL_*`/`RIDER_SHADOW_*`: SKIPPED (D4 pilot gate: only last-train-port, silt-and-signal-port, roadster-rush are pilots; GLSL kept, WebGL2-only)
+- [ ] A6 verify motion blur + DoF: NOT VERIFIED (no real-GPU gameplay frames available in this lane; local headless capture stayed in the shader-warm stage)
+- [x] A1 loading UI: determinate bar on the loading screen (scene build, renderer init, model upload, shader warm-up) via `apps/showcase-port-shared/loading-progress.ts`; `evidence/game-upgrades-503/strange-orbit-port/{before,after}-loading-bar.png`
+- [ ] A2 diagnostics overlay: SKIPPED (`?diag=1` already provided by the shared `diag.ts` imported in the app entry; an always-on overlay would be a player-visible regression)
+- [ ] A5 lighting (projected spot image / IES on the headlight), A9, A10, A13, A16: SKIPPED (EXPERIMENTAL or no docs-backed API in this lane; no real-GPU proof, headlight scalar spot kept)
+- [ ] `environments.neutral` regenerated (S5-WP04-05): not pinned. Default gouache look uses `environments.capture`, only `?look=original` uses neutral; 5.0.2 before/after showed no shift. No real-GPU frame of `?look=original` taken here (W-4 open)
 
 Verification
 

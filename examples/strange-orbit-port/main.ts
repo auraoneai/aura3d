@@ -14,6 +14,7 @@ import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, inst
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import type { GameSessionState } from "@aura3d/engine";
 import { labAppOptions, parseLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
 import { createOrbitAudio } from "./audio";
 import { installOrbitUi } from "./ui";
 import { bestKey, browserStorage, ghostAt, readBest, readMuted, recordBest, writeMuted, type GhostSample } from "./progress";
@@ -622,6 +623,9 @@ async function boot(): Promise<void> {
   $("rider-name").textContent = label;
   $("vehicle-name").textContent = config.vehicle === "skate" ? "Skate" : "Bike";
   sizeCanvas();
+  // A1: the loading screen carries a determinate bar (scene build, GPU init + model upload, shader warm-up).
+  const loadingBar = createLoadingProgress({ element: $("loading-bar") });
+  loadingBar.set(0.08, "Building the course");
   const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion, look: config.look });
   // The port has no render worker, so `?worker=1` is ignored here.
   const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined));
@@ -636,12 +640,16 @@ async function boot(): Promise<void> {
     output: { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false, ...lab.output },
     scene: world.scene
   });
+  loadingBar.set(0.2, "Starting the renderer");
   await app.ready();
+  loadingBar.set(0.65, "Uploading the models");
   runtime = world.bind(app);
   render(0);
   // Settle the shader programs before the first visible frame (lesson R2).
   $("loading-status").textContent = "Warming the shaders";
+  loadingBar.set(0.8, "Warming the shaders");
   await warmPrograms(app);
+  loadingBar.done("Ready");
   ready = true;
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
