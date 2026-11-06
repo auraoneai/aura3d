@@ -405,7 +405,8 @@ export function collectPlaywrightTests(report, { configDir = '' } = {}) {
       if (configDir && !file.startsWith(`${configDir}/`)) file = `${configDir}/${file}`;
       const { status, reason } = classifyPlaywrightTest(test);
       const { hardware, labels } = hardwareLabels(test, test.projectName);
-      rows.push({ file, title: spec.title, project: test.projectName, status, reason, hardware, labels });
+      const tags = [...(spec.tags ?? []), ...(test.tags ?? []), ...(test.annotations ?? []).map(a => a.type).filter(Boolean)].map(String).slice(0, 10);
+      rows.push({ file, title: spec.title, project: test.projectName, status, reason, hardware, labels, tags });
     }
     for (const child of suite.suites ?? []) visit(child);
   };
@@ -445,6 +446,17 @@ export function summarizeVitest(vitest, root = '/repo/') {
   return files;
 }
 
+/**
+ * C4-06: a no-data test may leave the report `passed` only when it carries an EXPERIMENTAL or GPU/device-only label
+ * (title, Playwright tag, annotation or hardware label). The allowed list is recorded in the report.
+ */
+export const ALLOWED_NO_DATA_LABEL = /\bEXPERIMENTAL\b|\bGPU[-/ ]?only\b|\bdevice[-/ ]?only\b|\bGPU\/device\b/i;
+export function allowedNoDataLabel(test, specRow) {
+  const texts = [test.title, ...(test.tags ?? []), ...(specRow?.labels ?? []).map(l => `${l.type} ${l.value}`)];
+  const hit = texts.find(t => ALLOWED_NO_DATA_LABEL.test(String(t ?? '')));
+  return hit === undefined ? null : String(hit).slice(0, 120);
+}
+
 const EMPTY = () => ({ passed: 0, failed: 0, skipped: 0, unsupported: 0, 'no-data': 0 });
 
 /**
@@ -479,7 +491,7 @@ export function mergeAcceptance(runs, { generatedAt = new Date().toISOString() }
         if (!row) { problems.push(`shard ${shard.id} reported an unplanned file: ${t.file}`); continue; }
         row[t.status]++; row.hardware[t.hardware]++;
         row.labels = dedupeLabels([...row.labels, ...t.labels]).slice(0, 30);
-        row.tests.push({ title: t.title, status: t.status, reason: t.reason, hardware: t.hardware });
+        row.tests.push({ title: t.title, status: t.status, reason: t.reason, hardware: t.hardware, tags: t.tags });
       }
     }
   }
@@ -511,13 +523,21 @@ export function mergeAcceptance(runs, { generatedAt = new Date().toISOString() }
     }
     if (run.evidence.fetch?.conflicts?.length) problems.push(`evidence stage kept ${run.evidence.fetch.conflicts.length} candidate files instead of browser outputs with the same path`);
   }
-  const incomplete = problems.length || totals['no-data'] || totals.skipped;
+  const allowedNoData = [], unlabeledNoData = [];
+  for (const row of specs) for (const t of row.tests) {
+    if (t.status !== 'no-data') continue;
+    const label = allowedNoDataLabel(t, row);
+    (label ? allowedNoData : unlabeledNoData).push({ spec: row.spec, test: t.title, reason: t.reason ?? null, ...(label ? { label } : {}) });
+  }
+  for (const row of evidence) for (const t of row.tests) if (t.status === 'no-data') unlabeledNoData.push({ spec: row.file, test: t.title, reason: t.reason ?? null });
+  const incomplete = problems.length || unlabeledNoData.length || totals.skipped;
   return {
     schema: 'aura3d.acceptance5-report/1', generatedAt,
     candidate: runs[0]?.binding ?? null,
     runs: runs.map(r => ({ runId: r.plan.runId, batch: r.plan.batch, image: r.image ?? null, transport: 'legacy-sas' })),
     status: totals.failed ? 'failed' : incomplete ? 'incomplete' : 'passed',
     totals, hardware,
+    noDataPolicy: { rule: 'status is passed only when failed is 0 and every no-data test is labeled EXPERIMENTAL or GPU/device-only', allowed: allowedNoData, unlabeled: unlabeledNoData },
     note: 'Hardware classes come only from labels the specs emit: software = a software rasterizer was named (or chromium-software); physical = the spec reported physical and no software adapter was named; everything else is unverified. ACR Tasks containers have no GPU.',
     specs, evidence, shards: shardRows,
     excluded: runs[0]?.plan.groups.filter(g => g.kind === 'excluded').map(g => ({ group: g.id, reason: g.reason, entries: g.entries })) ?? [],
