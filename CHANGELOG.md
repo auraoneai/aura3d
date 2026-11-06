@@ -4,6 +4,19 @@ Version: 4.7.12
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.7.17 (2026-11-06)
+
+Three more Meshy models (the last 1,000 credits) are wired in; 26 others generated in the same run were skipped (read wrong, do not fit the slot or the budget, or lost earlier).
+
+- **Pip's Big Leap:** the rigged Meshy beetle sidekick (idle clip, 30,000 triangles) replaces the static beetle in the w1, w3 and w6 sidekick slot.
+- **Aura Slam 3D:** a Meshy floodlight mast (26,506 triangles, three 1024 px maps) replaces the mast and lamp head in the World Tour look only; `?look=original` keeps 4.6.2.
+- **Duneglide:** a Meshy adobe house (3,577 triangles, 512 px maps) for the village houses in the inked look only; `?look=original` keeps the old scene.
+
+### Known limits
+
+- Not blind-panel judged, as for 4.7.11 to 4.7.16. The hedgehog, the two ninjas and the Grid Dispatch passenger were generated but Meshy rigging failed for them (409 `outcome_unknown`), so they stay unused; the Apex, Saltwind, Thermal Drift, Bunker Zero, Craterline, Chroma Roll, Serpentine and Aura Hoops/Diamond models of this run were skipped (see each lane doc, "Wave 10").
+- Everything under 4.7.11 to 4.7.16 stands.
+
 ## 4.7.16 (2026-11-05)
 
 - **Aura Links 3D: the strike sound played twice per stroke.** The `hit` juice event cued `drive` and the stroke commit cued `drive` (or `putt`) in the same frame, so every impact stacked two copies of the strike (and a putt also played the driver strike), which sounded harsh and garbled after the swing. The juice cue is removed; the commit cues the right sample once. The looping coast wind bed was also cut from gain 0.25 to 0.1 so it no longer reads as white noise once the first click starts it.

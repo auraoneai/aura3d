@@ -1,8 +1,8 @@
 # Security Policy
 
-Version: 4.7.16
+Version: 4.7.17
 
-Current release: Aura3D 4.7.16.
+Current release: Aura3D 4.7.17.
 
 ## Aura3D advantage
 

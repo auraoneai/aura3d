@@ -1,6 +1,6 @@
 # Aura3D And Unity/Unreal Web Workflows
 
-Version: 4.7.16
+Version: 4.7.17
 
 ## What you get with Aura3D
 
