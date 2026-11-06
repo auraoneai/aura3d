@@ -330,7 +330,11 @@ function createRuntimeEvidenceFromTypedGLBActor(
       skinningPalette: {
         jointCount: actorEvidence.skinningBindingCount,
         matrixCount: actorEvidence.skinningBindingCount,
-        updated: actorEvidence.lastSkinningPalettesUpdated > 0
+        // A pose apply that this actor did not record (engine-driven mixer, no
+        // `advance`/`playClip` call yet) leaves the last-apply counter at 0 even
+        // though every skinned render item already carries a live palette.
+        updated: actorEvidence.lastSkinningPalettesUpdated > 0 ||
+          renderItems.some((item) => item.skinning !== undefined && item.skinning.jointCount > 0 && item.skinning.matrices.length >= item.skinning.jointCount * 16)
       }
     } : {}),
     morphTargets,
