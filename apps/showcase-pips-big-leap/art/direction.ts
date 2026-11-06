@@ -62,7 +62,9 @@ const direction: GameArtDirection = {
     // GU47 wave 2 (PBL-A3): the two woodland villagers, Meshy text-to-3D, static pose (no rig, no clips);
     // counts, JPEG maps (base colour + normal + metallic-roughness) and 1024 px sizes read from the GLBs.
     { role: "character", assetKey: "leapHedgehog", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
-    { role: "character", assetKey: "leapBeetle", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
+    // GU47 wave 10 (PBL-A3): the beetle is the rigged Meshy row (rig + animate), decimated 54,866 to 30,000 triangles, 1024 px maps;
+    // it replaces the static wave-2 beetle and plays its idle clip.
+    { role: "character", assetKey: "leapBeetleAnim", maxTriangles: 30000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024, animated: { clips: ["idle"] } },
     // GU47 wave 2 (PBL-E1): generated diorama bases that tile under the course (23,964 to 31,866 triangles each).
     { role: "world", assetKey: "leapBaseGarden", maxTriangles: 32000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },
     { role: "world", assetKey: "leapBaseCanopy", maxTriangles: 24000, minTriangles: 2000, textureSet: "BC+N+ORM", maxTextureSize: 1024 },

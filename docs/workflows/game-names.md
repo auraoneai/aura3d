@@ -5,7 +5,7 @@ Status: 2026-10-24. Every playable game on the showcase index carries its own na
 | App folder (unchanged) | Public name | Public URL | One-line pitch |
 |---|---|---|---|
 | `apps/showcase-strange-orbit-port` | Craterline GP | `/apps/craterline-gp/` | Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget. |
-| `apps/showcase-splat-rush-port` | Chroma Roll | `/apps/chroma-roll/` | Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over. |
+| `apps/showcase-splat-rush-port` | Splat | `/apps/chroma-roll/` | Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over. |
 | `apps/showcase-serpentine-sky-run-port` | Serpentine Sky Run | `/apps/serpentine-sky-run/` | Endless runner on a winding sky road: eight stages with boost rungs, roll sections and traffic hazards. |
 | `apps/showcase-drift-and-deliver-port` | Gridlock Courier | `/apps/gridlock-courier/` | Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera. |
 | `apps/showcase-heatsink-port` | Ion Circuit | `/apps/ion-circuit/` | Anti-gravity time trial with boost pads, pickups, barrels and heat management. |

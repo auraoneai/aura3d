@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/aura-slam/art/direction.ts",
-  "sourceSha256": "ca0042bb4db42724c5a22756fe5c4931a313ae36037a6d9b6b92fe84aff82cc4",
+  "sourceSha256": "bcf797ce34cfed73733b61a75db23bb608ca5c92a3c3695e95869c33692fc3bc",
   "id": "showcase-top-tennis",
   "genre": "basketball",
   "signatureEffect": "Surface-coloured ball marks that persist where the ball landed, venue-tinted bounce puffs, and a seated crowd whose heads follow the rally.",
@@ -55,6 +55,20 @@
     },
     "models": [
       {
+        "assetKey": "tennisFloodMast",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
+        "assetKey": "tennisFloodMast",
+        "triangles": 0,
+        "textures": 0,
+        "unlit": false,
+        "overridesTextures": false
+      },
+      {
         "assetKey": "showcaseStadiumSeats",
         "triangles": 0,
         "textures": 0,
@@ -63,20 +77,6 @@
       },
       {
         "assetKey": "rooftopScoreboardRigMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rooftopFloodlightTowerMeshy",
-        "triangles": 0,
-        "textures": 0,
-        "unlit": false,
-        "overridesTextures": false
-      },
-      {
-        "assetKey": "rooftopFloodlightTowerMeshy",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -162,14 +162,6 @@
         "node": "board-venue-score",
         "emissiveIntensity": 0.55,
         "practical": true
-      },
-      {
-        "node": "stadium-floodlight-mast-left",
-        "practical": false
-      },
-      {
-        "node": "stadium-floodlight-mast-right",
-        "practical": false
       },
       {
         "node": "static-lines",
@@ -566,6 +558,13 @@
         "maxTriangles": 30000,
         "textureSet": "BC+N+ORM",
         "maxTextureSize": 2048
+      },
+      {
+        "role": "prop",
+        "assetKey": "tennisFloodMast",
+        "maxTriangles": 26506,
+        "textureSet": "BC+N+ORM",
+        "maxTextureSize": 1024
       }
     ],
     "vfx": [

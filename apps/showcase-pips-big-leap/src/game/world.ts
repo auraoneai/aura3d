@@ -78,7 +78,7 @@ export const BASE_TILES: Readonly<Partial<Record<WorldId, BaseTile>>> = {
 };
 
 /** The villager that stands in for each NPC runner in the diorama look (PBL-A3). */
-export const VILLAGER_BY_WHO = { helper: { asset: assets.hedgehog, height: 1.25 }, sidekick: { asset: assets.beetle, height: 1.4 } } as const;
+export const VILLAGER_BY_WHO = { helper: { asset: assets.hedgehog, height: 1.25 }, sidekick: { asset: assets.beetle, height: 1.4, clip: "idle" } } as const;
 
 // ---------------------------------------------------------------- palettes
 
@@ -852,11 +852,11 @@ export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): Bu
     // collision world are identical in both looks (PRD D8).
     if (diorama) {
       const villager = VILLAGER_BY_WHO[n.who];
-      builder.add(
-        model(villager.asset, { name: `pbl-villager:${n.id}`, castShadow: true, receiveShadow: true, targetHeight: villager.height, scaleMode: "fit" })
-          .position(n.x, n.y, n.z)
-          .rotate(0, -0.45, 0)
-      );
+      const villagerNode = model(villager.asset, { name: `pbl-villager:${n.id}`, castShadow: true, receiveShadow: true, targetHeight: villager.height, scaleMode: "fit" })
+        .position(n.x, n.y, n.z)
+        .rotate(0, -0.45, 0);
+      // The beetle is rigged (wave 10): it loops its idle clip; the hedgehog stays a static pose.
+      builder.add("clip" in villager ? villagerNode.animate({ clip: villager.clip, loop: true }) : villagerNode);
       continue;
     }
     const ref = n.who === "sidekick" ? assets.sidekick : assets.helper;

@@ -870,6 +870,363 @@
       }
     },
     {
+      "id": "leapBeetleAnim",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/leapBeetleAnim.2cf51094.glb",
+      "outputPath": "public/aura-assets/leapBeetleAnim.2cf51094.glb",
+      "url": "/aura-assets/leapBeetleAnim.2cf51094.glb",
+      "hash": "sha256-2cf510941bb8fac8dd69e65d445df4b2a45babf392c431a0c65752e5b5ac56c6",
+      "sizeBytes": 2530192,
+      "bounds": [
+        0.007,
+        0.01,
+        0.002
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.004,
+          0,
+          -0.001
+        ],
+        "max": [
+          0.004,
+          0.01,
+          0.001
+        ],
+        "size": [
+          0.007,
+          0.01,
+          0.002
+        ],
+        "center": [
+          0,
+          0.005,
+          0
+        ],
+        "maxDimension": 0.01,
+        "grounded": true
+      },
+      "materials": [
+        "Material_0"
+      ],
+      "materialMetadata": [
+        {
+          "name": "Material_0",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "idle",
+        "wave",
+        "cheer"
+      ],
+      "animationMetadata": {
+        "clipCount": 3,
+        "clips": [
+          {
+            "index": 0,
+            "name": "idle",
+            "channelCount": 66,
+            "samplerCount": 66,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Head",
+              "neck",
+              "LeftHand",
+              "LeftForeArm",
+              "LeftArm",
+              "LeftShoulder",
+              "RightHand",
+              "RightForeArm",
+              "RightArm",
+              "RightShoulder",
+              "Spine",
+              "Spine01",
+              "Spine02",
+              "LeftToeBase",
+              "LeftFoot",
+              "LeftLeg",
+              "LeftUpLeg",
+              "RightToeBase",
+              "RightFoot",
+              "RightLeg",
+              "RightUpLeg",
+              "Hips"
+            ],
+            "duration": 1.899999976158142,
+            "hasRootMotionCandidate": false,
+            "frameRate": 29.999974966070084
+          },
+          {
+            "index": 1,
+            "name": "wave",
+            "channelCount": 66,
+            "samplerCount": 66,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Head",
+              "neck",
+              "LeftHand",
+              "LeftForeArm",
+              "LeftArm",
+              "LeftShoulder",
+              "RightHand",
+              "RightForeArm",
+              "RightArm",
+              "RightShoulder",
+              "Spine",
+              "Spine01",
+              "Spine02",
+              "LeftToeBase",
+              "LeftFoot",
+              "LeftLeg",
+              "LeftUpLeg",
+              "RightToeBase",
+              "RightFoot",
+              "RightLeg",
+              "RightUpLeg",
+              "Hips"
+            ],
+            "duration": 4.133333206176758,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.00001519919212
+          },
+          {
+            "index": 2,
+            "name": "cheer",
+            "channelCount": 66,
+            "samplerCount": 66,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "Head",
+              "neck",
+              "LeftHand",
+              "LeftForeArm",
+              "LeftArm",
+              "LeftShoulder",
+              "RightHand",
+              "RightForeArm",
+              "RightArm",
+              "RightShoulder",
+              "Spine",
+              "Spine01",
+              "Spine02",
+              "LeftToeBase",
+              "LeftFoot",
+              "LeftLeg",
+              "LeftUpLeg",
+              "RightToeBase",
+              "RightFoot",
+              "RightLeg",
+              "RightUpLeg",
+              "Hips"
+            ],
+            "duration": 9.033333778381348,
+            "hasRootMotionCandidate": false,
+            "frameRate": 30.000028610256777
+          }
+        ],
+        "messages": [
+          "Detected 3 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 24,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 24,
+        "skins": [
+          {
+            "index": 0,
+            "name": "Armature",
+            "jointCount": 24,
+            "joints": [
+              "Hips",
+              "Spine02",
+              "Spine01",
+              "Spine",
+              "neck",
+              "Head",
+              "head_end",
+              "headfront",
+              "LeftShoulder",
+              "LeftArm",
+              "LeftForeArm",
+              "LeftHand",
+              "RightShoulder",
+              "RightArm",
+              "RightForeArm",
+              "RightHand",
+              "LeftUpLeg",
+              "LeftLeg",
+              "LeftFoot",
+              "LeftToeBase",
+              "RightUpLeg",
+              "RightLeg",
+              "RightFoot",
+              "RightToeBase"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 24 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 26,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 3,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Armature"
+        ],
+        "maxDepth": 9,
+        "messages": [
+          "Detected 26 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "public/aura-assets/leapBeetleAnim.2cf51094.glb",
+        "license": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+        "licenseUrl": "https://www.meshy.ai/terms",
+        "licenseRaw": "Generated 2026-11-06 through the AuraOne Meshy account via Kiro Prism rigged/animated by Meshy from a Meshy-generated or game-owned mesh (GU47 WP-36, pips-big-leap/leapBeetleAnimR2). Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed.",
+        "sourceFamily": "meshy",
+        "retrievedAt": "2026-11-06T05:37:49.725Z",
+        "generation": {
+          "provider": "meshy",
+          "providerCli": "@meshy-ai/cli@0.2.0",
+          "taskId": "01a1af5c-c253-763f-ae13-b53679c71d59",
+          "operation": "animate",
+          "createdAt": "2026-11-06T05:37:34.726Z",
+          "finishedAt": "2026-11-06T05:37:49.725Z",
+          "consumedCredits": 3,
+          "localMetadata": "aura-evidence/meshy/leapBeetleAnim.metadata.091ba5caf27d.json",
+          "rightsEvidence": "aura-evidence/meshy/leapBeetleAnim.rights.64ae6e25ce1c.json"
+        },
+        "evidence": [
+          "aura-evidence/meshy/leapBeetleAnim.rights.64ae6e25ce1c.json",
+          "aura-evidence/meshy/leapBeetleAnim.metadata.091ba5caf27d.json",
+          "public/aura-assets/leapBeetleAnim.meshy-candidate.cb870a08.png"
+        ],
+        "checkedAt": "2026-11-06T05:37:49.725Z"
+      },
+      "textures": [
+        "Image_2",
+        "Image_0",
+        "Image_1"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [
+        "head_end",
+        "headfront",
+        "Head",
+        "neck",
+        "LeftHand",
+        "LeftForeArm",
+        "LeftArm",
+        "LeftShoulder",
+        "RightHand",
+        "RightForeArm",
+        "RightArm",
+        "RightShoulder",
+        "Spine",
+        "Spine01",
+        "Spine02",
+        "LeftToeBase",
+        "LeftFoot",
+        "LeftLeg",
+        "LeftUpLeg",
+        "RightToeBase",
+        "RightFoot",
+        "RightLeg",
+        "RightUpLeg",
+        "Hips",
+        "char1",
+        "Armature"
+      ],
+      "thumbnailUrl": "/aura-assets/leapBeetleAnim.thumb.svg",
+      "quality": "candidate",
+      "role": "character",
+      "renderedProbe": {
+        "url": "/aura-assets/leapBeetleAnim.meshy-candidate.cb870a08.png",
+        "kind": "manual-inspection",
+        "sha256": "sha256-cb870a089b47ccf797c010313a1b03611dfd3ed439ce8746c46c93e2d32a00c1",
+        "checkedAt": "2026-11-06T06:03:50.234Z"
+      },
+      "animationClips": [
+        {
+          "name": "idle",
+          "duration": 1.899999976158142,
+          "channelCount": 66
+        },
+        {
+          "name": "wave",
+          "duration": 4.133333206176758,
+          "channelCount": 66
+        },
+        {
+          "name": "cheer",
+          "duration": 9.033333778381348,
+          "channelCount": 66
+        }
+      ],
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "leapHedgehog",
       "type": "model",
       "format": "glb",
