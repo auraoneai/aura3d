@@ -9,10 +9,10 @@ const LOOK_ID = "outdoor-day" as const;
 
 createAuraApp("#app", {
   scene: scene()
-    .add(looks.preset(LOOK_ID))
+    .add(looks.preset(LOOK_ID, { fogDensityScale: 0.15 }))
     .add(primitives.plane({ name: "harbour water", size: [26, 1, 26], material: material.pbr({ color: "#28506b", roughness: 0.35, metallic: 0.15 }), receiveShadow: true }))
-    // Pirate ship is 4.8×11×10.6 m (mast up +Y); scale to a 7 m sailboat.
-    .add(model(assets.ship, { name: "migrated ship mesh" }).position(0, 0.12, -0.4).rotate(0, -0.5, 0).scale(0.62))
+    // model() fits a GLB to ~1.55 m by default; the pirate ship is 4.8×11×10.6 m native, so ask for a 7 m sailboat explicitly.
+    .add(model(assets.ship, { name: "migrated ship mesh", targetMaxDimension: 7 }).position(0, 0.12, -0.4).rotate(0, -0.5, 0))
     .add(interactions.orbit({ target: "migrated ship mesh" }))
     .camera(camera.orbit({ target: [0, 2.4, 0], distance: 13, fov: 40 }))
 });

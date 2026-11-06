@@ -29,7 +29,7 @@ const rockTransforms = Array.from({ length: 24 }, (_, index) => {
 
 createAuraApp("#app", {
   scene: scene()
-    .add(looks.preset(LOOK_ID))
+    .add(looks.preset(LOOK_ID, { fogDensityScale: 0.15 }))
     .add(primitives.plane({ name: "meadow ground", size: [34, 1, 30], material: material.pbr({ color: "#3f5a33", roughness: 0.95 }), receiveShadow: true }))
     .add(instances.model(assets.tree, { name: "instanced forest trees", transforms: treeTransforms, castShadow: true }))
     .add(instances.model(assets.rocks, { name: "instanced scatter rocks", transforms: rockTransforms, castShadow: true, receiveShadow: true }))

@@ -254,11 +254,11 @@ renderHud(racing.snapshot());
 function buildScene() {
   const nodes: AuraNodeInput[] = [
     // Real-scale assets: kart circuit 24.651 m, sports car 3.455 m (aura-assets
-    // bounds). No 0.18 shrink — see CAR_RIDE_Y / ROUTE_SCALE comments above.
-    model(assets.trackModel, { name: "typed kart circuit asset" })
+    // bounds); scaleMode "world" opts out of model()'s default ~1.55 m fit. No 0.18 shrink — see CAR_RIDE_Y / ROUTE_SCALE comments above.
+    model(assets.trackModel, { name: "typed kart circuit asset", scaleMode: "world" })
       .position(ROUTE_BOUNDS.centerX, TRACK_Y, ROUTE_BOUNDS.centerZ)
       .scale(1),
-    model(assets.carModel, { name: "typed playable sports car", castShadow: true })
+    model(assets.carModel, { name: "typed playable sports car", castShadow: true, scaleMode: "world" })
       .position(0, CAR_RIDE_Y, 0)
       .scale(1)
       .runtime(game.runtimeNode("race-car", { tags: ["player", "vehicle", "typed-asset", "runtime"] })),
