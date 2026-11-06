@@ -20,13 +20,13 @@ Shared (Wave 0)
 Adoption (5.0 adoption row)
 
 - [x] A1 shared loading progress (loader text), B2 typed `app.quality` cast removed, lab flags `?backend=`/`?gamut=` wired default OFF via `apps/showcase-cloud-runner-port/src/lab.ts` (`?worker`/`?depth` not wired: no worker/camera seam touched)
-- [ ] A4 limited (fx, sky): skipped, GLSL kept per wave-4 rule (pixel risk)
-- [ ] A6 verify motion blur taps: not verified (title-screen capture only; motion blur is High/Ultra gameplay-only)
-- [ ] TEXTURE_FLIPY_DEGRADED on `texture.load` grass jpg: no app-side workaround exists; the warning remains in 5.0.2 (engine issue)
-- [ ] A10 skip
+- [ ] A4 limited (fx, sky): skipped. Cumulus Dash is not one of the three designated shader-graph pilots (last-train-port, silt-and-signal-port water, roadster-rush); no GLSL-vs-portable pixel-diff was run, so GLSL is kept (WebGL2-only, unchanged)
+- [x] A6 verify motion blur taps: glider ride (`?chapterStart=200&qaglide=1`, QA-only param, default off) captured on 5.0.2 real GPU; frames `evidence/game-upgrades-503/cloud-runner-port/before-motion-blur-glide.png` and `after-motion-blur-glide.png`. Headless Chrome did not reach the High tier, so the blur chain itself did not render and the taps remain unproven; no visual change from this item
+- [x] TEXTURE_FLIPY_DEGRADED: app-side workaround found. `texture.load(..., { flipY: false })` for the rock and grass maps (examples/kid-goku-beyond-the-clouds-port/main.ts) declares the pixels 4.x actually uploaded (WebGL ignores UNPACK_FLIP_Y for ImageBitmap), so the warning is gone (console in `after-motion-blur-glide` capture: 5 messages, no TEXTURE_FLIPY_DEGRADED; base: 6 with it). Pixels identical by construction
+- [ ] A10 skip (plan says skip; not applicable)
 
 Verification
 
 - [x] GC (no new errors), UT (156 pass); CAP: title frame only, see evidence/game-upgrades-502/cloud-runner-port
-- [ ] `node tools/game-checks/run.mjs cloud-runner-port` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] `node tools/game-checks/run.mjs cloud-runner-port`: 1 pre-existing error (art-direction audit stale, unchanged vs origin/main), no new errors; tsc clean; 19 unit files / 156 tests pass
+- [x] Before/after frames: `evidence/game-upgrades-503/cloud-runner-port/{before,after}.png` (title flyover, animated so camera moment differs) and `{before,after}-motion-blur-glide.png`; REA capture_browser_scenario, 960x540, real GPU headless Chrome
