@@ -73,6 +73,9 @@ import {
 } from "./courtRigs";
 import { JUICE_FX, ballTrailOptions, hoopsBurstOptions, hoopsFxKindFor, registerHoopsFx, type HoopsFxKind } from "./fxPack";
 import "../../showcase-port-shared/quickbar.css";
+import "../../showcase-port-shared/diag";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
@@ -1017,10 +1020,16 @@ let framesRendered = 0;
 let venue: VenueSpec = VENUES.rucker;
 let auraApp: ReturnType<typeof createAuraApp>;
 
+// 5.0 lab flags (A3): `?backend=auto|webgpu` and `?gamut=p3` are EXPERIMENTAL, default OFF, WebGL2 fallback kept.
+// `?worker=` / `?depth=` are not wired for this game (no worker entry; the camera node is built per court).
+const labFlags = readLabFlags();
+const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags);
 try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...looks.appOptions(venue.look),
+    ...(labRenderer ? { renderer: { ...(looks.appOptions(venue.look) as { renderer?: object }).renderer, ...labRenderer } } : {}),
+    ...(labOutput ? { output: labOutput } : {}),
     qualityRebuild: { flags: ["game"] },
     diagnostics: false
   } as any);
@@ -4212,7 +4221,10 @@ if (menuParam) {
   enterLive();
 }
 
-void Promise.resolve((auraApp as any).ready?.()).then(() => {
+void Promise.resolve(auraApp.ready()).then(() => {
+  // B2: report which backend is active and the first-frame readiness on the QA hook (tolerates apps without `readiness()`).
+  const qaHook = ((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ??= {});
+  void publishBackendReport(auraApp as unknown as Parameters<typeof publishBackendReport>[0], qaHook);
   resolveHandles();
   for (const a of athletes) syncAthlete(a, 0);
   updateCamera(0.016);
