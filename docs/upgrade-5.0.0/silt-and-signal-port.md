@@ -20,9 +20,9 @@ Shared (Wave 0)
 Adoption (5.0 adoption row)
 
 - [x] A1 (shared createLoadingProgress tracks the textured-material swap; lab flags ?backend/?gamut wired default-off via the shared parser; frames in evidence/game-upgrades-502/silt-and-signal-port/)
-- [ ] A8 for the glider slots (skipped: per-slot custom shader risks pixels, no 5.0.2 need)
+- [ ] A8 for the glider slots (skipped 5.0.3: hoverboard.glb has ONE PBR slot with three authored maps (base, normal, metal-rough); a custom shader replaces the engine PBR/IBL/CSM lighting for no visible gain, and a plain `rim` override would change the look identity)
 - [ ] A7 worker lab (animation-controller heavy, but custom attributes make it fragile: skip) (skipped per plan, EXPERIMENTAL)
-- [ ] A4 for water (skipped: shader-graph rewrite is EXPERIMENTAL per D4 and risks the water look)
+- [x] A4 for water: `examples/silt-and-signal-port/water-graph.ts` (paired GLSL+WGSL shader graph, default on, `?water=glsl` keeps the hand-written baseline). Real-GPU WebGL2 pixel diff vs GLSL on water pixels: inked mean 1.76/255 p99 5, original mean 0.44 p99 2 (`evidence/game-upgrades-503/silt-and-signal-port/{before,after}-water-{inked,original}.png`, `diff-water-inked-x4.png`); unit tests `tests/unit/silt-and-signal-port/water-graph.test.ts`. WebGPU run not done: sky and ring stay GLSL-only, so `?backend` is still WebGL2 for this game
 
 Verification
 
