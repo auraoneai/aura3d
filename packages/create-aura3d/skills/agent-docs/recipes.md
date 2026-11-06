@@ -151,7 +151,7 @@ const water = material.custom({
     vertex: /* glsl */ `
 out vec3 vPos;
 void main() {
-  vec3 p = position; // prelude names: position, normal, uv, modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime
+  vec3 p = position; // prelude names: position, normal, uv, modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime (static scenes do not advance uTime; see below)
   p.y += 0.25 * sin(p.x * 0.8 + waveClock) + 0.15 * sin(p.z * 1.3 - waveClock * 1.4);
   vPos = p;
   gl_Position = modelViewProjectionMatrix * vec4(p, 1.0);
@@ -176,7 +176,7 @@ app.onFrame(() => app.nodes.require("water").setUniform?.("waveClock", (performa
 await app.ready();
 ```
 
-`material.custom` auto-declares the uniforms you list. Prelude names: `position`, `normal` and `uv` (vertex attributes), `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition` (a uniform in both stages) and `uTime`; the fragment stage writes `outColor` (GLSL 3 `in`/`out`). There is no `eyePos`: it fails to compile with `undeclared identifier`. If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](troubleshooting.md)).
+`material.custom` auto-declares the uniforms you list. Prelude names: `position`, `normal` and `uv` (vertex attributes), `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition` (a uniform in both stages) and `uTime`. `uTime` is wall-clock seconds, but the engine redraws every frame only when the scene declares motion (a `.runtime({ id, mutable: true })` node, an `app.onFrame` callback, an animated model, particles or rain, an auto-rotating orbit camera, a looping timeline). A static scene whose only motion is `uTime` renders one frame and the shader looks frozen (measured on a real GPU). This recipe uses its own `waveClock` uniform written in `onFrame`, which also keeps the loop running; `uTime` works too when the node is `.runtime({ id, mutable: true })`. The fragment stage writes `outColor` (GLSL 3 `in`/`out`). There is no `eyePos`: it fails to compile with `undeclared identifier`. If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](troubleshooting.md)).
 
 ## 6. A ball dribbled by hand (hand and floor contact, handoffs, proof)
 
@@ -496,7 +496,7 @@ await app.ready();
 import { camera, createAuraApp, effects, geometry, lights, material, primitives, scene } from "@aura3d/engine";
 
 // Water with a custom GLSL material: vertex waves, analytic normal, fresnel mix between deep colour and sky, sun glint.
-// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime.
+// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime (uTime advances only while the scene redraws every frame; this recipe drives its own `waveClock` from onFrame).
 const N = 200, SIZE = 80;
 const positions = new Float32Array((N + 1) ** 2 * 3);
 const normals = new Float32Array(positions.length);

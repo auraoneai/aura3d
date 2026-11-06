@@ -15,7 +15,7 @@
 - Moving a node: give it `.runtime({ id, mutable: true })` at build time, then `app.nodes.require(id).setPosition(...)`. Without the runtime id `require` throws.
 - Do not invent asset paths or ids: `npx @aura3d/cli@latest assets resolve "<object>" --name <name>`, then `model(assets.<name>)`.
 - Black frame with an admitted model: a route-local URL built with `new URL(..., import.meta.url)` is absolute and blocked as unsafe-url. Use `/aura-assets/<file>`, the file under the app's `public/aura-assets/`, and list it in `aura.assets.json`.
-- Custom shader: the prelude names are `position`, `normal`, `uv`, `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition`, `uTime`. A compile error logs `CUSTOM_SHADER_COMPILE_FAILED` and that draw is skipped silently.
+- Custom shader: the prelude names are `position`, `normal`, `uv`, `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition`, `uTime` (wall-clock seconds; it only advances while the app redraws every frame, so give the shader node `.runtime({ id, mutable: true })` or register an `app.onFrame(...)`, otherwise a static scene draws one frame and the shader looks frozen). A compile error logs `CUSTOM_SHADER_COMPILE_FAILED` and that draw is skipped silently.
 - One skinned body per character: never animate primitives beside a skinned mesh (double-framed skeleton, a ghosted limb).
 - Pools (bullets, traffic, particles) must be sized from the simulation's measured peak, or objects pop in and out.
 - Judge steady state: the first frame is lit differently from the baked probe seconds later. Capture at 3, 25 and 60 s; animated scenes flip between captures, so compare static bands before reverting anything.

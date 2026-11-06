@@ -1,7 +1,7 @@
 import { camera, createAuraApp, effects, geometry, lights, material, primitives, scene } from "@aura3d/engine";
 
 // Water with a custom GLSL material: vertex waves, analytic normal, fresnel mix between deep colour and sky, sun glint.
-// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime.
+// Uniforms listed in `uniforms` are auto-declared in GLSL. Prelude names: position/normal/uv (vertex attributes), modelViewProjectionMatrix, modelMatrix, cameraPosition, uTime (uTime advances only while the scene redraws every frame; this recipe drives its own `waveClock` from onFrame).
 const N = 200, SIZE = 80;
 const positions = new Float32Array((N + 1) ** 2 * 3);
 const normals = new Float32Array(positions.length);

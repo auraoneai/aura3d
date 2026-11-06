@@ -85,7 +85,7 @@ The complete table is [`threejs-to-aura3d.md`](threejs-to-aura3d.md); signatures
 | `DirectionalLight` + `castShadow` | `lights.directional({ shadow: true })`; models cast by default |
 | `FogExp2` | `effects.fog({ density })` |
 | `EffectComposer` + bloom | `effects.bloom()` |
-| `ShaderMaterial` | `material.custom({ glsl: { fragment }, uniforms: { uTime: { type: "f32", value: 0 } } })` |
+| `ShaderMaterial` | `material.custom({ glsl: { fragment }, uniforms: { clk: { type: "f32", value: 0 } } })` (`uTime`, `uResolution` etc. are reserved prelude names: do not list them in `uniforms`; `uTime` advances only if the scene redraws every frame, so mark the node `.runtime({ id, mutable: true })` or use `app.onFrame` + `handle.setUniform("clk", t)`) |
 | `InstancedMesh` + matrices | `instances.cone/box/sphere({ transforms, colors })` |
 | `OrbitControls` | `interactions.orbit({ target: "<node name>" })` |
 | `AnimationMixer` + `crossFadeFrom` | `app.nodes.require("robot").play("Run", { crossFade: 0.2 })` |
