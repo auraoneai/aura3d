@@ -27,6 +27,18 @@ describe("refresh-catalog-digests", () => {
     expect(refreshCatalogDigests({ root, file: "t/expectations.json", write: false }).changes).toEqual([]);
   });
 
+  it("reports an un-materialised git-lfs pointer as missing instead of hashing it", () => {
+    const root = mkdtempSync(join(tmpdir(), "digest-"));
+    dirs.push(root);
+    writeFileSync(join(root, "big.glb"), "version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 10\n");
+    const original = JSON.stringify({ e: { path: "big.glb", sha256: sha("real") } });
+    writeFileSync(join(root, "e.json"), original);
+    const r = refreshCatalogDigests({ root, file: "e.json" });
+    expect(r.changes).toEqual([]);
+    expect(r.missing).toEqual(["big.glb"]);
+    expect(readFileSync(join(root, "e.json"), "utf8")).toBe(original);
+  });
+
   it("does not touch an unchanged entry that shares the stale hash with a changed one", () => {
     const stale = sha("old");
     const text = JSON.stringify({ list: [{ path: "changed.txt", sha256: stale }, { path: "kept.txt", sha256: stale }] }, null, 1);

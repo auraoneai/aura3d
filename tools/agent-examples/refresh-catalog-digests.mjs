@@ -40,7 +40,11 @@ export function refreshCatalogDigests({ root, file = DEFAULT_EXPECTATIONS, write
   const abs = resolve(root, file);
   const hashOf = (rel) => {
     const p = resolve(root, rel);
-    return existsSync(p) ? createHash("sha256").update(readFileSync(p)).digest("hex") : undefined;
+    if (!existsSync(p)) return undefined;
+    const bytes = readFileSync(p);
+    // An un-materialised git-lfs pointer hashes to the pointer text, never the real asset: treat it as unavailable.
+    if (bytes.length < 200 && bytes.subarray(0, 40).toString("utf8").startsWith("version https://git-lfs.github.com/spec")) return undefined;
+    return createHash("sha256").update(bytes).digest("hex");
   };
   const result = refreshDigestsInText(readFileSync(abs, "utf8"), hashOf);
   if (write && result.changes.length) writeFileSync(abs, result.text);
