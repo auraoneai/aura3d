@@ -21,9 +21,10 @@ Shared (Wave 0)
 Adoption (5.0 adoption row)
 
 - [x] A1 shared `createLoadingProgress` drives `game.shell` loading (app.ready + game.ready)
-- [ ] A4 pilot candidate (`diorama.ts` single shader) - skipped: EXPERIMENTAL, risks pixels (D4)
-- [ ] A6 verify DoF + volumetric fog - skipped: static before/after frames match visually, but DoF/fog not isolated; parent baseline capture W-3
-- [ ] A16 none - nothing to do
+- [ ] A4 pilot candidate (`diorama.ts` lava `material.custom` + heat-shimmer `shaderPass`) - skipped 5.0.3: pips-big-leap is not one of the three designated A4 pilots (last-train, silt-and-signal water, roadster-rush), so no GLSL-vs-portable pixel diff is owed; GLSL kept, route stays WebGL2-only
+- [x] A6 verify DoF + volumetric fog - real-GPU frame (Chrome, 960x540, 12 s settle, REA capture_browser_scenario) shows miniature DoF blur on the far course and sun-shaft/height fog intact, no degrade codes; `evidence/game-upgrades-503/pips-big-leap/after-a6-dof-fog.png` (identical to `before.png`: code unchanged)
+- [ ] A16 none - not applicable (no physics adoption in the row)
+- [ ] W-3/W-4 neutral environment pin - not applicable: no `environments.neutral`/`capture` use ([neutral-environment-exposure.md](./neutral-environment-exposure.md) section C); frame above shows no drift
 
 Verification
 
