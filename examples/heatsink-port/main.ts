@@ -8,6 +8,8 @@
  * (show the touch controls on any device), `motion=reduced|full` (override the saved or system motion setting).
  */
 import { bindGameTouchControls, createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { expandSegments, parseInputScript } from "./input-script";
 import { createHeatsinkAudio } from "./audio";
 import { runBotRace, createBot, type BotOptions } from "./bot";
@@ -523,9 +525,17 @@ function sizeCanvas(): void {
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
 
+/* A1: shared loading-progress helper drives the existing loading status line (text only; no layout or render change). */
+const loadingBase = el.loadingStatus.textContent ?? "";
+const loadingProgress = createLoadingProgress({ onProgress: (fraction) => { if (fraction < 1) setText(el.loadingStatus, `${loadingBase} ${Math.round(fraction * 100)}%`); } });
+/* W-8: experimental lab flags (?backend=, ?worker=, ?gamut=) are parsed here; all off by default, so `lab` is `{}` without a query. */
+const lab = labAppOptions(readLabFlags());
+
 async function boot(): Promise<void> {
+  loadingProgress.set(0.1);
   sizeCanvas();
   const world = buildWorld(track, config.quality);
+  loadingProgress.set(0.4);
   lookRow = world.look;
   document.body.classList.toggle("ion-telemetry", lookRow.id === "twilight");
   app = createAuraApp(canvas, {
@@ -533,15 +543,18 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", dither: false },
+    output: { toneMapping: "aces", dither: false, ...(lab.output ?? {}) },
+    ...(lab.renderer ? { renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer } } : {}),
     scene: world.scene
   });
-  await app.ready();
+  loadingProgress.set(0.6);
+  await loadingProgress.track(app.ready(), 1);
   runtime = world.bind(app);
   applyMotion();
   /* QA crops for the E-I steady-state capture (normalised to the canvas; the chase camera holds the drone there) */
   (window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ = { ...((window as unknown as { __AURA_QA__?: Record<string, unknown> }).__AURA_QA__ ?? {}), crops: [DRONE_CROP, { name: "road", x: 0.3, y: 0.72, w: 0.4, h: 0.26 }, { name: "sky", x: 0, y: 0, w: 1, h: 0.25 }] };
   ready = true;
+  loadingProgress.done();
   el.loading.classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
   if (!config.autostart && !config.manual && !started) el.menu.classList.remove("hidden");
