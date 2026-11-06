@@ -20,6 +20,8 @@ import {
 } from "./sim";
 import { DROWSE_ALERT, daysStatusLabel, drowseCue, finalScore, gapAhead, gustCue, onboardingPrompt } from "./hud";
 import { createRunInput } from "./input";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { createRenderGuard } from "./renderGuard";
 import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
@@ -469,23 +471,30 @@ function sizeCanvas(): void {
 
 async function boot(): Promise<void> {
   sizeCanvas();
-  const runner = await loadRunner(canvas, look.mode);
+  /* 5.0 adoption A1: shared loading-progress helper drives the existing loading card (text only; the look is unchanged) */
+  const loadingStatus = $("loading-status");
+  const loadingLabel = loadingStatus.textContent ?? "";
+  const loading = createLoadingProgress({ onProgress: (fraction) => { loadingStatus.textContent = fraction >= 1 ? loadingLabel : `${loadingLabel} ${Math.round(fraction * 100)}%`; } });
+  const runner = await loading.track(loadRunner(canvas, look.mode), 3);
   const world = buildWorld({ canvas, runner, look });
+  /* lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 only; worker and depth are not wired */
+  const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { quality: "auto" },
+    renderer: { quality: "auto", ...lab.renderer },
     // GU47 SSR-05: ACES under the colour script (exposure per stage from the look table); `?look=original` stays untonemapped
-    output: look.mode === "original" ? { toneMapping: "none", dither: false } : { toneMapping: "aces", exposure: STAGE_LOOK[look.pinnedStage ?? 0]!.exposure, dither: true },
+    output: { ...(look.mode === "original" ? { toneMapping: "none" as const, dither: false } : { toneMapping: "aces" as const, exposure: STAGE_LOOK[look.pinnedStage ?? 0]!.exposure, dither: true }), ...lab.output },
     scene: world.scene
   });
-  await app.ready();
+  await loading.track(app.ready(), 1);
   runtime = world.bind(app);
   runtime.setReducedMotion(Boolean(reducedMotion?.matches));
   reducedMotion?.addEventListener?.("change", (e) => runtime?.setReducedMotion(e.matches));
   selectRunner(runnerIndex, false);
   ready = true;
+  loading.done();
   $("loading").classList.add("hidden");
   setText("best-title", fmt(best));
   render(0);

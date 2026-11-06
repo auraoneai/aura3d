@@ -25,4 +25,12 @@ Verification
 
 - [ ] GC, UT, CAP
 - [ ] `node tools/game-checks/run.mjs serpentine-sky-run-port` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] Before/after frames attached: evidence/game-upgrades-502/serpentine-sky-run-port/{before,after}.png (REA capture_browser_scenario, 960x540, autostart=1, 11 s settle, real GPU; same scene, no visible change; 5.0.2 base vs branch, not the 4.7.10 frames)
+
+## 5.0.2 lane notes
+
+- [x] A1 shared loading helper wired (`createLoadingProgress`, text percent on the existing loading card)
+- [x] B2 `app as unknown as LookAppLike` casts removed (AuraApp satisfies the structural type; tsc clean)
+- [x] Lab flags `?backend=` and `?gamut=` wired via the shared parser, default OFF. Skipped: `?worker=1` (no worker entry) and `?depth=` (camera node untouched, pixel risk)
+- [x] A2 `?diag=1` already provided by `apps/showcase-port-shared/diag` in the app entry
+- Unticked W-3/W-4: need the parent's 4.7.10 baseline comparison; `environments.neutral` not pinned. GC shows 1 pre-existing error (`art/direction.audit.json` stale), untouched here.
