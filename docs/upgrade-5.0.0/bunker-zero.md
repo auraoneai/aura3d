@@ -20,8 +20,8 @@ Shared (Wave 0)
 Adoption (5.0 adoption row)
 
 - [ ] A5 (indoor bunker: best `NativeLightProbeGrid`/clustered-lights candidate; 4 point + 2 spot + rect lights)
-- [ ] A3 lab (no GLSL-only shaders)
-- [ ] A1
+- [x] A3 lab (no GLSL-only shaders): `?backend=auto|webgpu` and `?gamut=p3` wired through the shared lab-flag parser, default OFF (EXPERIMENTAL; not captured on a WebGPU runner; `?worker=`/`?depth=` not wired)
+- [x] A1 (`createLoadingProgress` over `mg.shell`, tracks `mg.ready()`; evidence/game-upgrades-502/bunker-zero/{before,after}.png, `?floor=1`, 960x540)
 - [ ] A17 `scalarVolume` for fog shafts is optional EXPERIMENTAL
 
 Verification
