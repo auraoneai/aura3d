@@ -14,17 +14,21 @@ Shared (Wave 0)
 - [x] `package.json` version set to 5.0.1 (W-1, cosmetic, D6)
 - [x] `no-removed-5-0-apis` game check passes (W-2)
 - [ ] Baseline drift capture compared with the 4.7.10 frames of record, static bands only (W-3, parent-owned single ACR capture)
-- [ ] `environments.neutral`/`capture` exposure resolved (W-4, see [neutral-environment-exposure.md](./neutral-environment-exposure.md))
+- [x] `environments.neutral`/`capture` exposure resolved (default twilight look uses an HDRI, `capture` only under `?env=capture`; before/after frames match) (W-4, see [neutral-environment-exposure.md](./neutral-environment-exposure.md))
 - [ ] Catalog digests refreshed after any source edit: `node tools/agent-examples/refresh-catalog-digests.mjs` (W-5)
 
 Adoption (5.0 adoption row)
 
-- [ ] A4 for `materials.ts` set
-- [ ] A6 verify motion blur + chromatic aberration
-- [ ] A9 optional (space-scale world)
+- [x] A1 shared loading helper (`createLoadingProgress`, drives the loading status text) and lab flags (`readLabFlags`/`labAppOptions`, default off; worker flag not wired, game has no createWorker)
+- [x] A2 diagnostics: already wired via `apps/showcase-heatsink-port/src/main.ts` (`?diag=1`)
+- [x] B2 partial AuraApp cast: none present in this game
+
+- [ ] A4 for `materials.ts` set (skipped: EXPERIMENTAL shader-graph rewrite, D4 keeps GLSL)
+- [ ] A6 verify motion blur + chromatic aberration (not verified in isolation: no post-effect diff capture; before/after static frame shows no visible change)
+- [ ] A9 optional (space-scale world) (skipped: EXPERIMENTAL depth mode)
 
 Verification
 
-- [ ] GC, UT, CAP
-- [ ] `node tools/game-checks/run.mjs heatsink-port` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [ ] GC, UT, CAP (GC and UT [17 files, 164 tests] pass; parent-owned CAP not run)
+- [x] `node tools/game-checks/run.mjs heatsink-port` clean (0 errors, same 2 warnings as base)
+- [x] Before/after frames attached (static bands) with the capture command: `evidence/game-upgrades-502/heatsink-port/{before,after}.png` (REA capture_browser_scenario, 960x540, `?autostart=1`, 11 s)
