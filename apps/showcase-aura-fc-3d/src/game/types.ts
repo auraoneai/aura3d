@@ -96,7 +96,6 @@ export interface BallState {
   lastToucherId: string | null;   // last player to touch/kick (goal credit)
   controlT: number;               // remaining controlled (trap) time
   lastShot: "none" | "pass" | "driven" | "shot" | "clearance" | "cross";
-  trail: Vec3[];
 }
 
 export interface ShootoutState {

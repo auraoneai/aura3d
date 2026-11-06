@@ -100,7 +100,17 @@ function boot(): void {
   // `?worker=1` and `?depth=` are parsed but not wired here (no worker entry, camera is built in scene.ts).
   const lab = readLabFlags();
   // 5.0.2 A1: shared loading/readiness tracker (no visible UI; the existing HUD banner stays the loading message).
-  const loading = createLoadingProgress({ onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
+  // 5.0.3 A1: a visible staged progress bar under the "Loading 3D Stadium & Athletes" banner (app created 0.2, mount
+  // 0.7, first frame 1.0); it fades out when complete (quickbar.css `.aura3d-loading`). aria progressbar for readers.
+  const loadingBar = document.createElement("div");
+  loadingBar.className = "aura3d-loading";
+  loadingBar.setAttribute("role", "progressbar");
+  loadingBar.setAttribute("aria-label", "Loading");
+  loadingBar.setAttribute("aria-valuemin", "0");
+  loadingBar.setAttribute("aria-valuemax", "100");
+  loadingBar.style.cssText = "position:fixed;left:50%;bottom:21%;width:min(260px,60vw);transform:translateX(-50%);color:#d8ff3e;z-index:60;pointer-events:none";
+  document.body.appendChild(loadingBar);
+  const loading = createLoadingProgress({ element: loadingBar, onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
   let app: ReturnType<typeof createAuraApp>;
   try {
     app = createAuraApp("#app", {
@@ -971,13 +981,15 @@ function boot(): void {
   }
   hud.banner("Loading 3D Stadium & Athletes...", 60000);
 
+  loading.set(0.2);
   const readyPromise = Promise.resolve((app as any).ready?.());
-  loading.track(readyPromise, 1, "Loading 3D Stadium & Athletes");
   readyPromise
     .catch((err) => console.warn("[fc3d] app.ready warning", err))
     .finally(() => {
       appReady = true;
-      loading.done("Ready");
+      loading.set(0.7, "Mounted");
+      // first presented frame closes the bar; any failure or missing API closes it too (never leaves it stuck)
+      Promise.resolve((app as any).readiness?.({ stage: "first-frame" })).catch(() => undefined).finally(() => loading.done("Ready"));
       // 5.0.2 W-6: backend selection + readiness for QA / ?diag=1 tooling (read-only, never throws).
       void publishBackendReport(app as any, window as unknown as Record<string, unknown>).catch(() => undefined);
       document.body.dataset.aura3dReady = "true";
