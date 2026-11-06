@@ -1,6 +1,6 @@
 # Template selection
 
-`npx create-aura3d@latest <dir> --template <name>` scaffolds one of 20 templates (list is `CREATE_AURA3D_TEMPLATES` in `packages/create-aura3d/src/index.ts`). Pick by what you are building, then follow the matching skill. Start from a template, then `sceneKits.*`, then `prefabs.*`; use `primitives.*` last, for set dressing only.
+`npx create-aura3d@latest <dir> --template <name>` scaffolds one of 21 templates (list is `CREATE_AURA3D_TEMPLATES` in `packages/create-aura3d/src/index.ts`). Pick by what you are building, then follow the matching skill. Start from a template, then `sceneKits.*`, then `prefabs.*`; use `primitives.*` last, for set dressing only.
 
 ## Scenes and viewers
 
@@ -16,6 +16,7 @@
 | `postprocess-scene` | Scenes built around `effects.*` post-processing. |
 | `large-scene` | Scenes with many objects (instancing, merge, LOD). |
 | `custom-scene` | Blank scene for a custom route (also the landing place for three.js ports). |
+| `procedural-scene` | A scene with no admitted model: a jointed robot from primitives under a look, with idle animation (recipe 8). |
 
 The last eight were `three-compat-*` before #700; each old name still scaffolds its template with a deprecation warning until the next minor.
 

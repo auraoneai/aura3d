@@ -96,6 +96,11 @@ export function writeAgentSkills(options: WriteAgentSkillsOptions): WriteAgentSk
   }
   const llmsSource = resolve(skillsDir, "llms.txt");
   if (options.writeLlms !== false && existsSync(llmsSource)) put(resolve(projectDir, "llms.txt"), readFileSync(llmsSource, "utf8"));
+  // Agent docs bundled next to the skills (three.js to Aura3D table, recipes, signatures) land in <project>/docs/agents/.
+  const docsSource = resolve(skillsDir, "agent-docs");
+  if (options.writeLlms !== false && existsSync(docsSource)) {
+    for (const file of listFiles(docsSource)) put(resolve(projectDir, "docs/agents", relative(docsSource, file)), readFileSync(file, "utf8"));
+  }
   if (written.length > 0) writeFileSync(resolve(projectDir, AURA_SKILLS_LEDGER), `${JSON.stringify(sortKeys(ledger), null, 2)}\n`);
   return { skills: names, written, skippedUserModified: skipped };
 }

@@ -25,7 +25,8 @@ export const CREATE_AURA3D_TEMPLATES = [
   "character-viewer",
   "postprocess-scene",
   "custom-scene",
-  "large-scene"
+  "large-scene",
+  "procedural-scene"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 
