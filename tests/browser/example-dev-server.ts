@@ -6,6 +6,7 @@ import ts from "typescript";
 import * as esbuild from "esbuild";
 import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
 import { installedAuraPackageAliases } from "./installed-package-resolve";
+import { mapModuleSpecifiers } from "./import-specifiers";
 
 export interface ExampleDevServer {
   readonly origin: string;
@@ -819,23 +820,7 @@ function rewritePackageImports(source: string, fileName: string): string {
     }
     return output + source.slice(cursor);
   }
-  let output = source;
-  for (const [specifier, target] of packageEntryPoints) {
-    const escapedSpecifier = escapeRegExp(specifier);
-    output = output.replace(
-      new RegExp(`(\\bfrom\\s*["'])${escapedSpecifier}(["'])`, "g"),
-      `$1${target}$2`,
-    );
-    output = output.replace(
-      new RegExp(`(\\bimport\\s*["'])${escapedSpecifier}(["'])`, "g"),
-      `$1${target}$2`,
-    );
-    output = output.replace(
-      new RegExp(`(\\bimport\\s*\\(\\s*(?:/\\*[^]*?\\*/\\s*)?["'])${escapedSpecifier}(["']\\s*\\))`, "g"),
-      `$1${target}$2`,
-    );
-  }
-  return output;
+  return mapModuleSpecifiers(source, (specifier) => packageEntryPoints.get(specifier));
 }
 
 /**
@@ -852,19 +837,7 @@ function rewriteModuleSpecifiers(source: string, fileName: string, root: string)
     const resolved = resolveModuleSpecifier(fileName, root, specifier);
     return resolved;
   };
-  const patterns = [
-    /(\bfrom\s*["'])(\.{1,2}\/[^"']+|\/[^"']+)(["'])/g,
-    /(\bimport\s*["'])(\.{1,2}\/[^"']+|\/[^"']+)(["'])/g,
-    /(\bimport\s*\(\s*(?:\/\*[^]*?\*\/\s*)?["'])(\.{1,2}\/[^"']+|\/[^"']+)(["']\s*\))/g,
-  ];
-  let output = source;
-  for (const pattern of patterns) {
-    output = output.replace(pattern, (_m, head: string, specifier: string, tail: string) => {
-      const canonical = resolveSpecifier(specifier);
-      return canonical ? `${head}${canonical}${tail}` : _m;
-    });
-  }
-  return output;
+  return mapModuleSpecifiers(source, (specifier) => (/^(?:\.{1,2}\/|\/)/.test(specifier) ? resolveSpecifier(specifier) : undefined));
 }
 
 function resolveModuleSpecifier(fromFile: string, root: string, specifier: string): string | undefined {
@@ -905,10 +878,6 @@ function resolveModuleSpecifier(fromFile: string, root: string, specifier: strin
     }
   }
   return undefined;
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function contentType(file: string): string {
