@@ -1,0 +1,3 @@
+.dist/
+# The retained real-GPU capture of each recipe is evidence: track it despite the repo-wide *.png rule.
+!*/frame.png

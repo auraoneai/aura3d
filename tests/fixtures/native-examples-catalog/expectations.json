@@ -1472,6 +1472,68 @@
       ]
     },
     {
+      "id": "template:procedural-scene",
+      "kind": "numeric",
+      "author": "Aura3D native catalog fixture authors",
+      "provenance": "Estimated from the template's own authored orbit camera ([3, 1.5, 4.2] looking at [0, 1, 0], fov 36) and the robot torso and glow-core primitives (steel #b9c1ce, emissive #8fefff); the region sits inside the projected torso. No reference capture. Lighting, shadows, grade and rendered appearance remain unverified.",
+      "subject": "Primitive-built jointed robot torso (steel body and emissive core) under the character-showcase look",
+      "surface": {
+        "kind": "canvas",
+        "selector": "canvas"
+      },
+      "source": {
+        "path": "packages/create-aura3d/templates/procedural-scene/src/main.ts",
+        "sha256": "0872d7301a7a0d2fcb269d718ba12a28961f459f8f50d1d557974e7520779b56"
+      },
+      "sourceDependencies": [
+        {
+          "path": "packages/create-aura3d/templates/procedural-scene/src/aura-assets.ts",
+          "sha256": "5e9b8075af73ec3e3cf3f95b3dca3353baed801aa70bd2cdfc122185119e7cf9"
+        },
+        {
+          "path": "packages/create-aura3d/templates/procedural-scene/index.html",
+          "sha256": "b14c29f753f3b9fed5c2dbdd8025ec8d8767db5fd44dba3386c4a32b855787d2"
+        },
+        {
+          "path": "packages/engine/src/agent-api/nodes/camera.ts",
+          "sha256": "500b8751feea18afd1fa520928a93edbf94aa02f5547e5789b473eeac746422b"
+        },
+        {
+          "path": "packages/engine/src/agent-api/looks/lookPresets.ts",
+          "sha256": "c989fc7616ea489e4b0fc1bd1353e28b7ec470e7cc2c76a2f5527c3b54767c9e"
+        }
+      ],
+      "regions": [
+        {
+          "label": "subject",
+          "x": 600,
+          "y": 235,
+          "width": 80,
+          "height": 80,
+          "minContrast": 8,
+          "colors": [
+            {
+              "name": "steel torso",
+              "red": [
+                90,
+                218
+              ],
+              "green": [
+                100,
+                228
+              ],
+              "blue": [
+                110,
+                238
+              ],
+              "minFraction": 0.1,
+              "maxFraction": 0.95
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "template:premium-product-viewer",
       "kind": "numeric",
       "author": "Aura3D native catalog fixture authors",

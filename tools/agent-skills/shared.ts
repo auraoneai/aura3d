@@ -8,6 +8,9 @@ export const SKILL_MIRRORS = [".cursor/skills", ".claude/skills", ".agents/skill
 export const CANONICAL_ONLY = new Set(["AUTHORING.md"]);
 /** llms.txt is bundled into the skills tree so scaffolded projects get a real ./llms.txt. */
 export const BUNDLED_LLMS = "llms.txt";
+/** docs/agents pages bundled with the skills (and written to <project>/docs/agents/ by create-aura3d) so a new project has the three.js table, the recipes and the signatures offline. */
+export const BUNDLED_DOCS_DIR = "agent-docs";
+export const BUNDLED_DOCS = ["threejs-to-aura3d.md", "recipes.md", "api-signatures.md"] as const;
 
 export function listTree(root: string): string[] {
   if (!existsSync(root)) return [];
@@ -29,10 +32,11 @@ export function expectedMirror(repoRoot: string): Map<string, string> {
   const root = resolve(repoRoot, CANONICAL_SKILLS_DIR);
   const files = new Map<string, string>();
   for (const file of listTree(root)) {
-    if (CANONICAL_ONLY.has(file) || file === BUNDLED_LLMS) continue;
+    if (CANONICAL_ONLY.has(file) || file === BUNDLED_LLMS || file.startsWith(`${BUNDLED_DOCS_DIR}/`)) continue;
     files.set(file, readFileSync(join(root, file), "utf8"));
   }
   files.set(BUNDLED_LLMS, readFileSync(resolve(repoRoot, "llms.txt"), "utf8"));
+  for (const doc of BUNDLED_DOCS) files.set(`${BUNDLED_DOCS_DIR}/${doc}`, readFileSync(resolve(repoRoot, "docs/agents", doc), "utf8"));
   return files;
 }
 

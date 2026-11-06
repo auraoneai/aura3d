@@ -6,12 +6,12 @@ The `llms.txt`, skills and recipes in this project are written for coding agents
 
 Aura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.
 
-Read first: this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
+Read first: [`threejs-to-aura3d.md`](threejs-to-aura3d.md) (if you would write X in three.js, write Y; every line type-checked), then this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
 
 ## 1. Scaffold and run
 
 ```bash
-npx create-aura3d@latest my-scene --template product-viewer   # 20 templates: docs/agents/templates.md
+npx create-aura3d@latest my-scene --template product-viewer   # 21 templates: docs/agents/templates.md
 cd my-scene && npm install
 npm run dev        # vite dev server
 npm run build      # typecheck + vite build
@@ -73,6 +73,8 @@ Use `targetHeight` for upright humanoids, `targetMaxDimension` for vehicles and 
 Browser runs belong on a remote or CI runner when your environment forbids local browsers. In this monorepo use `tools/remote-acr/run.sh` (never local Playwright or Docker). Frames from software WebGL2 prove the scene renders, not GPU speed.
 
 ## 5. three.js habit to Aura3D (each row checked against `packages/engine/src/agent-api`)
+
+The complete table is [`threejs-to-aura3d.md`](threejs-to-aura3d.md); signatures for the common roots are in [`api-signatures.md`](api-signatures.md). The short version:
 
 | three.js | Aura3D |
 | --- | --- |

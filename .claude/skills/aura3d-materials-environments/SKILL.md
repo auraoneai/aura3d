@@ -11,11 +11,11 @@ catalog search for textures or HDRIs today (the asset index has no texture or
 HDRI adapter), so `assets search` will not find them. Shared rules (claim
 labels, typed assets, catalog-first for models, benchmark mode) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
+No texture or model admitted: [procedural recipes](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) 9, 11, 12, 13 and 15 cover vertex-colour terrain, PBR metal under `environments.neutral`, `material.custom` water, `sky.preetham` and emissive plus bloom; 5.0 adds shader graphs (`material.node`) and depth and normal inputs for post.
 
 ## Look target
 
-Most scenes need no per-file HDRI at all: `looks.preset(<genre>)` already supplies environment light, sky/background, fog and grade — pick it from the
-recipe row in `../aura3d-art-direction/references/look-recipes.md` and only descend into manual environments when the look cannot express the mood.
+Most scenes need no per-file HDRI at all: `looks.preset(<genre>)` already supplies environment light, sky/background, fog and grade — pick it from the recipe row in `../aura3d-art-direction/references/look-recipes.md` and only descend into manual environments when the look cannot express the mood.
 From 4.7.0 a look takes overrides (a catalogued `hdri` id, environment intensity and rotation, key, rim, fog, grade, post) and the app changes light,
 environment, fog and post at runtime: [look overrides, HDRI ids and runtime setters](references/look-overrides-4.7.md).
 

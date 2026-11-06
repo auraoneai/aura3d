@@ -1,12 +1,18 @@
 // Regenerates skill mirrors from packages/aura3d-cli/skills (canonical). Run: pnpm skills:sync
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree } from "./shared";
+import { BUNDLED_DOCS_DIR, CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree } from "./shared";
 
 const repoRoot = process.cwd();
 const expected = expectedMirror(repoRoot);
 // The canonical package also ships the bundled llms.txt so `aura3d init` can write it.
 writeFileSync(resolve(repoRoot, CANONICAL_SKILLS_DIR, "llms.txt"), expected.get("llms.txt")!);
+for (const [file, contents] of expected) {
+  if (!file.startsWith(`${BUNDLED_DOCS_DIR}/`)) continue;
+  const canonicalCopy = resolve(repoRoot, CANONICAL_SKILLS_DIR, file);
+  mkdirSync(dirname(canonicalCopy), { recursive: true });
+  writeFileSync(canonicalCopy, contents);
+}
 const report: Record<string, number> = {};
 for (const mirror of SKILL_MIRRORS) {
   const root = resolve(repoRoot, mirror);

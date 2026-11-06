@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CREATE_AURA3D_TEMPLATES, writeAgentSkills, selectSkills, readSkillsManifest } from "../../packages/create-aura3d/src/index";
-import { CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree, skillNames } from "./shared";
+import { BUNDLED_DOCS_DIR, CANONICAL_SKILLS_DIR, SKILL_MIRRORS, expectedMirror, listTree, skillNames } from "./shared";
 import { runCraftRatio, type CraftFileReport } from "./craft-ratio";
 
 const MAX_BODY_LINES = 150;
@@ -473,6 +473,9 @@ function main(): void {
   // Mirrors must match canonical source byte-for-byte.
   const expected = expectedMirror(repoRoot);
   if (readIfExists(join(skillsRoot, "llms.txt")) !== expected.get("llms.txt")) fail(`${CANONICAL_SKILLS_DIR}/llms.txt is stale; run pnpm skills:sync`);
+  for (const [file, contents] of expected) {
+    if (file.startsWith(`${BUNDLED_DOCS_DIR}/`) && readIfExists(join(skillsRoot, file)) !== contents) fail(`${CANONICAL_SKILLS_DIR}/${file} is stale; run pnpm skills:sync`);
+  }
   for (const mirror of SKILL_MIRRORS) {
     const root = resolve(repoRoot, mirror);
     const actual = listTree(root);
