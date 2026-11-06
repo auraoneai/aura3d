@@ -27,11 +27,28 @@ void main() {
   outColor = vec4(c.rgb * k, c.a);
 }`;
 
+/** Name of the registered pass: `app.post.setPassUniform` addresses it by this. */
+export const PAPER_PASS_NAME = "wind-gouache-paper";
+
+/** Paper cells per axis: one cell every 3 drawing-buffer pixels, so the grain stays the same size in pixels at any canvas size. */
+export function paperScale(width: number, height: number): [number, number] {
+  return [Math.max(1, width) / 3, Math.max(1, height) / 3];
+}
+
+/**
+ * 5.0 custom-pass contract (`AuraPostPassInput`): the paper reads only the tonemapped colour, so it declares exactly
+ * `["color"]`. That is the one input the display tail (`after-tonemap`) provides on WebGL2 and on native WebGPU; `depth`
+ * is also available there but unused, and `normal`/`velocity`/`reactive` are HDR-anchor only and would refuse
+ * (`POSTPROCESS_INPUT_UNAVAILABLE`) at this stage, so they are deliberately not requested.
+ */
+export const PAPER_INPUTS = ["color"] as const;
+
 export function paperPass(width: number, height: number, strength: number = PAPER_STRENGTH) {
   return effects.shaderPass({
-    name: "wind-gouache-paper",
+    name: PAPER_PASS_NAME,
     order: "after-tonemap",
+    inputs: PAPER_INPUTS,
     glsl: PAPER_GLSL,
-    uniforms: { u_paper: strength, u_paperScale: [width / 3, height / 3] }
+    uniforms: { u_paper: strength, u_paperScale: paperScale(width, height) }
   });
 }
