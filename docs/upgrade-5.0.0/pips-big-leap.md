@@ -20,13 +20,13 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A1
-- [ ] A4 pilot candidate (`diorama.ts` single shader)
-- [ ] A6 verify DoF + volumetric fog
-- [ ] A16 none
+- [x] A1 shared `createLoadingProgress` drives `game.shell` loading (app.ready + game.ready)
+- [ ] A4 pilot candidate (`diorama.ts` single shader) - skipped: EXPERIMENTAL, risks pixels (D4)
+- [ ] A6 verify DoF + volumetric fog - skipped: static before/after frames match visually, but DoF/fog not isolated; parent baseline capture W-3
+- [ ] A16 none - nothing to do
 
 Verification
 
 - [ ] GC, UT (certified platformer geometry tests), CAP
-- [ ] `node tools/game-checks/run.mjs pips-big-leap` clean
+- [x] `node tools/game-checks/run.mjs pips-big-leap` clean (0 errors, 22 pre-existing warnings)
 - [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships

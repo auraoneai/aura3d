@@ -1,0 +1,7 @@
+{"kind":"console","level":"error","text":"Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"kind":"console","level":"error","text":"Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"kind":"console","level":"error","text":"Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"kind":"console","level":"warning","text":"The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"}
+{"kind":"console","level":"warning","text":"The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"}
+{"kind":"console","level":"error","text":"Failed to load resource: the server responded with a status of 404 (File not found)"}
+{"kind":"console","level":"warning","text":"[prd02.contactShadows] CONTACT_SHADOW_PARTIAL: participants with an unverified material or geometry participant; shader feature prd04.tangentFrame; skinning or morph deformation are outside the contac"}
