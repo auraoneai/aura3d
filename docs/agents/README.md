@@ -17,7 +17,7 @@ Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.
 
 | You are building | Read |
 | --- | --- |
-| A scene, viewer or prompt-to-scene route | [`prompt-to-3d-workflow.md`](prompt-to-3d-workflow.md), [`art-direction.md`](art-direction.md) |
+| A scene, viewer or prompt-driven scene route | [`prompt-to-3d-workflow.md`](prompt-to-3d-workflow.md), [`art-direction.md`](art-direction.md) |
 | A browser game or port (HUD, touch, audio, replay) | [`build-playbook.md`](build-playbook.md), `docs/api/game-kit.md`, `docs/api/qa-kit.md` |
 | Which template to start from (21 shipped) | [`templates.md`](templates.md) |
 | Models (catalog, your GLB, Meshy) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |

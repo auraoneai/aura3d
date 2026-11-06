@@ -24,6 +24,8 @@ createAuraApp("#app", {
 });
 ```
 
+The typed-asset form is `model(assets.robot)`; `targetHeight` and other options go in the second argument.
+
 React apps use `@aura3d/react` around the same root API.
 
 ## Pick the name by task (all live at the root)

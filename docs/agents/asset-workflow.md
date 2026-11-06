@@ -2,7 +2,7 @@
 
 The one page for getting a 3D model, character or texture into an Aura3D scene as a typed `assets.<key>`. Every command below was checked against `packages/aura3d-cli/src` and the installed `meshy` 0.2.0 help. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
-`aura3d <cmd>` below means `npx @aura3d/cli@latest <cmd>` (or the installed `aura3d` binary). Pass the Meshy key only through the environment, never as `--api-key`.
+`aura3d` followed by a subcommand below means `npx @aura3d/cli@latest` plus that subcommand (or the installed `aura3d` binary). Pass the Meshy key only through the environment, never as `--api-key`.
 
 ## 1. Resolve a need (one command decides)
 
@@ -57,7 +57,7 @@ Reject a candidate when: license, source or author is missing or temp-path only;
 
 Rules that never bend:
 - **Text prompts only, in your own words**, describing a generic object. Never image-to-3D from screenshots or frames of another game or product, never name a third-party character, brand or title in a prompt.
-- Credentials: `MESHY_API_KEY` (and for AuraOne agents `MESHY_BASE_URL_V1/V2` pointing at Kiro Prism) come from the runtime environment. Never print, log, commit or paste a key. Never run `meshy auth login`, `auth login --with-key`, or any rotation script, and never call `api.meshy.ai` directly from agent runs that are meant to go through Prism.
+- Credentials: `MESHY_API_KEY` (and for AuraOne agents `MESHY_BASE_URL_V1` and `MESHY_BASE_URL_V2` pointing at Kiro Prism) come from the runtime environment. Never print, log, commit or paste a key. Never run `meshy auth login`, `auth login --with-key`, or any rotation script, and never call `api.meshy.ai` directly from agent runs that are meant to go through Prism.
 - Meshy spend is uncapped by owner decision on 2026-10-25; credits are tracked for visibility and any cap is opt-in. Run the dry run first so the plan and its cost are visible, and never split a job to dodge a limit someone did set. A user who wants a limit sets one (`--cap`, `--global-cap`, `config`); once set it hard-stops with the credits left and the flag that raises or removes it.
 - Every paid call is reserved in the ledger (below) so spend stays visible. The only automatic stop without a cap is Prism/Meshy refusing for a zero balance (exit 9).
 

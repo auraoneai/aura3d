@@ -5,7 +5,7 @@
 ## Read first
 
 1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked); the full table is in {{ORIGIN}}/llms-full.txt under "three.js to Aura3D". Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.
-2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`; `npx create-aura3d@latest my-scene --template procedural-scene` starts from one.
+2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`; the `procedural-scene` template (`--template procedural-scene` on the create command in the fast path below) starts from one.
 3. Do not open `node_modules` or `dist` to find an API: signatures are in `docs/agents/api-signatures.md`.
 
 ## Pitfalls that cost the most turns (one-line fixes)
@@ -13,7 +13,7 @@
 - Dark or flat frame: authored lights with no environment get no image-based light. Add `environments.neutral({ intensity })` or a `looks.preset(id)`; metals need it to reflect anything.
 - Colour applied twice: instance `colors` multiply the material colour. Use a `#ffffff` base material when you pass `colors`.
 - Moving a node: give it `.runtime({ id, mutable: true })` at build time, then `app.nodes.require(id).setPosition(...)`. Without the runtime id `require` throws.
-- Never invent asset paths or ids: `npx @aura3d/cli@latest assets resolve "<object>" --name <name>`, then `model(assets.<name>)`.
+- Do not invent asset paths or ids: `npx @aura3d/cli@latest assets resolve "<object>" --name <name>`, then `model(assets.<name>)`.
 - Black frame with an admitted model: a route-local URL built with `new URL(..., import.meta.url)` is absolute and blocked as unsafe-url. Use `/aura-assets/<file>`, the file under the app's `public/aura-assets/`, and list it in `aura.assets.json`.
 - Custom shader: the prelude names are `position`, `normal`, `uv`, `modelViewProjectionMatrix`, `modelMatrix`, `cameraPosition`, `uTime`. A compile error logs `CUSTOM_SHADER_COMPILE_FAILED` and that draw is skipped silently.
 - One skinned body per character: never animate primitives beside a skinned mesh (double-framed skeleton, a ghosted limb).
@@ -52,6 +52,8 @@ Read next, in this order: `docs/agents/README.md` (index), `docs/agents/agent-qu
 Working inside the Aura3D monorepo itself: run browsers, Playwright and heavy builds on the remote runner (`tools/remote-acr/run.sh`), never local Docker or local Playwright.
 
 ## Hello world
+
+Hello world: one typed model under a look preset.
 
 ```ts
 import { createAuraApp, looks, model, scene } from "@aura3d/engine";
