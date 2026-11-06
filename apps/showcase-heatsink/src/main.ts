@@ -1,4 +1,6 @@
 import "../../showcase-port-shared/quickbar.css";
+import { readLabFlags, labAppOptions } from "../../showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { createAuraApp, createFixedStepLoop, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import { installBlackFrameGuard } from "@aura3d/debug";
 import { createFixedStepPresenter, installGameBeacon } from "@aura3d/engine/game";
@@ -107,14 +109,24 @@ async function boot(): Promise<void> {
     sceneReducedMotion = reducedMotionQuery?.matches ?? false;
     return { circuit: CIRCUITS[id], reducedMotion: sceneReducedMotion, ...(qaEv !== undefined ? { exposureEv: qaEv } : {}), ...(qaAoOff ? { ambientOcclusion: false } : {}) };
   };
+  // A1: shared loading helper. It only keeps `--aura3d-loading` / aria-valuenow on the existing boot card in step; no new pixels.
+  const loading = createLoadingProgress({ ...(document.getElementById("boot") ? { element: document.getElementById("boot") as HTMLElement } : {}) });
+  // W-8 lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 only. Worker and depth flags are not wired here.
+  const lab = readLabFlags();
+  const labOptions = labAppOptions(lab);
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(sceneOptions(selectedCircuit)),
     // "auto" mounts at the "high" tier today (the same as the old "high" string) and lets the tier follow the device once the
     // quality-tier lane is on; a fixed "high" would keep phones on the desktop tier and logs RENDERER_QUALITY_STRING.
     renderer: { quality: { tier: "auto" } },
+    // Lab flag ?backend= (default OFF): replaces the renderer block, keeping the same auto tier.
+    ...(labOptions.renderer ? { renderer: { quality: { tier: "auto" as const }, ...labOptions.renderer } } : {}),
+    ...(labOptions.output ? { output: labOptions.output } : {}),
     qualityRebuild: { flags: ["game"] },
-    diagnostics: false
+    // A2: the engine diagnostics overlay only with ?diag=1 (off by default, nothing drawn otherwise).
+    diagnostics: params.get("diag") === "1" ? { overlay: true } : false
   });
+  loading.set(0.2);
   const req = (id: string): AuraRuntimeNodeHandle => auraApp.nodes.require(id);
 
   // Every handle the draw writes; rebound after a circuit remount (HS-03).
@@ -702,7 +714,7 @@ async function boot(): Promise<void> {
       route: "showcase-heatsink",
       evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"],
       getState: () => (!started ? "title" : race.phase === "results" ? "results" : "playing"),
-      getApp: () => auraApp as never
+      getApp: () => ({ scene: auraApp.scene, diagnostics: () => ({ ...auraApp.diagnostics() }) })
     });
     gameBeacon.publishEvidence(evidence());
   }
@@ -742,7 +754,7 @@ async function boot(): Promise<void> {
     }
   };
 
-  await auraApp.ready();
+  await loading.track(auraApp.ready(), 4);
   ready = true;
   haze.mount(CIRCUIT_LOOKS[shownCircuit].haze);
   hud.selectCircuit(selectedCircuit);
@@ -759,6 +771,7 @@ async function boot(): Promise<void> {
   });
   draw(STEP);
   auraApp.step(1 / 60);
+  loading.done();
   hud.bootDone();
   document.body.dataset.aura3dReady = "true";
   auraApp.resume();
