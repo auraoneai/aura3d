@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/roadster-hours-port/art/direction.ts",
-  "sourceSha256": "0d749384f4b982d7006d21bdbd5bd3366328c6749d25b05293c5b6eae9e40ecf",
+  "sourceSha256": "1ef892c5b49bef0726c312290a2adec051758ed08640015688e8dcabeb549773",
   "id": "roadster-hours-port",
   "genre": "racing",
   "signatureEffect": "Crosswind salt spray: sheets of salt, sand or mist lift off the sea-side cliff base and blow across the highway with the route wind.",
