@@ -30,3 +30,11 @@ Generated through Kiro Prism from original text prompts (never from images of th
 | models/gatehouse.glb | sandstone gatehouse, two towers, wooden gate | 01a169d0-545f-77b5-956f-e338dbdd4136 / 01a169d1-9920-74ae-8b1d-9a44a618a8e1 |
 | models/lantern.glb | iron post with bronze lantern | 01a169d4-f1e5-7203-80a7-45142d6ebadc / 01a169d5-6543-7645-856e-1a103744e53a |
 | models/ringgate.glb | stone ring gate between two towers (used as the canyon gate landmark) | 01a169d0-54ea-73a8-98f1-840078db28f9 / 01a169d1-9a11-71b1-85ef-6cda4f95eac0 |
+
+## Meshy text-to-3d (GU47 WP-36, generated 2026-11-04, wired 2026-11-05)
+
+| File | Prompt gist | Task id |
+| --- | --- | --- |
+| apps/showcase-silt-and-signal-port/public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb | lime-washed adobe dwelling with a flat roof and wooden lintels (the inked look's village houses; decimated to 3,577 triangles, 512 px maps, baked to the Kenney house's box). | 01a1af5f-4e32-74b4-8204-af3abfb90159 |
+
+Same rights basis as above (`assets/provenance/silt_and_signal_port_duneAdobeA.rights.json`; not CC0, not exclusive).
