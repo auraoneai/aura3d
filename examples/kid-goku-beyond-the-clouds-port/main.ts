@@ -16,6 +16,7 @@ import { createGoPresenter, viewOf } from "./presentation";
 import { GameAudio } from "./audio";
 import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "./sim";
 import { Ui } from "./ui";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
 import { buildWorld, type WorldRuntime } from "./world";
 
 const STEP = 1 / 60;
@@ -305,24 +306,30 @@ async function boot(): Promise<void> {
     }
   }, { soundOn: saved.sound, reducedMotion: game.reducedMotion, difficulty: game.difficulty, best: saved.best, bestTime: saved.bestTime, bestPearls: saved.bestPearls, storm: STORM });
   if (STORM) registerHudFonts();
-  const rockMap = await texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
+  /* A1: shared loading progress drives the title loader text (the loader is hidden by ui.ready()) */
+  const progress = createLoadingProgress({ onProgress: (f) => ui?.progress(f) });
+  const rockMap = await progress.track(texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" }), 1);
   rockMap.wrapS = "repeat"; rockMap.wrapT = "repeat";
-  const grassMap = await texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
+  const grassMap = await progress.track(texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" }), 1);
   grassMap.wrapS = "repeat"; grassMap.wrapT = "repeat";
   const world = buildWorld(CH, rockMap, grassMap);
+  /* Lab flags (?backend=, ?gamut=) are parsed by the app wrapper (apps/showcase-cloud-runner-port/src/lab.ts); absent = default WebGL2 path */
+  const lab = (window as unknown as { __AURA_LAB_APP_OPTIONS__?: { renderer?: Record<string, unknown>; output?: Record<string, unknown> } }).__AURA_LAB_APP_OPTIONS__ ?? {};
   app = createAuraApp(canvas, {
     autoStart: false,
     pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", dither: false },
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
+    output: { toneMapping: "aces", dither: false, ...lab.output },
     scene: world.scene
   });
   await app.ready();
+  progress.set(0.6, "Compiling");
   runtime = world.bind(app);
   applyStartMode();
   // compile every program before the player can start, so the first seconds of play do not hitch (checklist R2)
   render(STEP);
   warmResult = await warmPrograms(app, { environmentTimeoutMs: 15_000, textureTimeoutMs: 15_000 });
+  progress.done();
   last = performance.now();
   stepper.tick(last);
   ready = true;
