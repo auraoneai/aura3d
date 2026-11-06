@@ -69,8 +69,8 @@ export const MESHY_DRIVE: Readonly<Record<string, keyof SolvedDeltas | null>> = 
   LeftToeBase: null,
   RightUpLeg: "thighR",
   RightLeg: "shinR",
-  RightFoot: null,
-  RightToeBase: null
+  RightFoot: "footR",
+  RightToeBase: "footR"
 };
 
 const bindByName = new Map<string, GolferBindJoint>(GOLFER_BIND.map((j) => [j.name, j]));
@@ -99,7 +99,7 @@ const palmFrom = (fore: string, hand: string): V3 => {
  * Tuning of the Meshy profile (what the Meshy rig needs that the original athlete did not): the legs are nearly straight at
  * bind, so the knee flex comes from lowering the hips; the torso is shorter than the athlete's, so the spine flexes a little less.
  */
-export const MESHY_TUNING = { crouch: 0.025, hipsBack: -0.06, hipsSide: 0.03, flexScale: 1.35 };
+export const MESHY_TUNING = { crouch: 0.012, hipsBack: -0.02, hipsSide: 0.05, flexScale: 1.25 };
 
 let cachedProfile: SkeletonProfile | undefined;
 
@@ -136,12 +136,14 @@ export function meshyProfile(): SkeletonProfile {
       thighL: l.thigh, shinL: l.shin, thighR: r.thigh, shinR: r.shin,
       hipJointL: vSub(P("LeftUpLeg"), hips), hipJointR: vSub(P("RightUpLeg"), hips),
       thighBindL: l.thighBind, shinBindL: l.shinBind, thighBindR: r.thighBind, shinBindR: r.shinBind,
-      ankleL: P("LeftFoot"), ankleR: P("RightFoot"),
+      ankleL: P("LeftFoot"), ankleR: P("RightFoot"), toeL: P("LeftToeBase"), toeR: P("RightToeBase"),
       crouch: MESHY_TUNING.crouch, hipsBack: MESHY_TUNING.hipsBack, hipsSide: MESHY_TUNING.hipsSide
     },
     fitScale: fit,
     clubScale: oldFit / fit,
-    flexScale: MESHY_TUNING.flexScale
+    flexScale: MESHY_TUNING.flexScale,
+    anatomic: true,
+    palmNormalBind: [0, 0, 1]
   };
   return cachedProfile;
 }
@@ -161,7 +163,8 @@ export function retargetSolved(solved: Pick<SolvedSwing, "deltas" | "hipsPos">):
     const hit = world.get(name);
     if (hit) return hit;
     const key = MESHY_DRIVE[name];
-    const w = qNormalize(key ? qMul(solved.deltas[key], Q(name)) : Q(name));
+    const delta = key ? solved.deltas[key] : undefined;
+    const w = qNormalize(delta ? qMul(delta, Q(name)) : Q(name));
     world.set(name, w);
     return w;
   };

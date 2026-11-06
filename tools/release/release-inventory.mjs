@@ -73,7 +73,7 @@ function parseVersion(version) {
 }
 export function releaseInventoryId(version, requested) {
   const [major, minor, patch] = parseVersion(version);
-  // Every 4.x release (through 4.7.13) shipped the historical package set; 5.0.0 is the first release of the native set (adds @aura3d/addons).
+  // Every 4.x release (through 4.7.16) shipped the historical package set; 5.0.0 is the first release of the native set (adds @aura3d/addons).
   const historical4Version = major === 4;
   if (requested !== undefined) {
     if (!Object.hasOwn(RELEASE_INVENTORIES, requested)) throw new Error(`Unknown release inventory: ${requested}`);

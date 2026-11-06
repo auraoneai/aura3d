@@ -377,19 +377,19 @@ npm, before section 8 (the normal failure case): `latest` is still 5.0.0, so onl
 `npm deprecate "<pkg>@5.0.1" "Do not use: fixed in the next 5.0.x"` for each package and `npm dist-tag rm <pkg> next`.
 
 npm, after section 8: point `latest` back and re-deprecate. 5.0.0 is the known-blank build, so prefer fixing forward as
-5.0.2; if a rollback to 4.7.14 is required:
+5.0.2; if a rollback to 4.7.16 is required:
 
 ```bash
 for n in $(node -p 'require(process.argv[1]).packages.map(p=>p.name).filter(n=>n!=="@aura3d/addons").join(" ")' "$WT/$PLAN"); do
-  npm dist-tag add "$n@4.7.14" latest
-  npm deprecate "$n@4.7.14" ""
-  npm deprecate "$n@5.0.1" "Rolled back: use $n@4.7.14 until a fixed 5.x ships"
+  npm dist-tag add "$n@4.7.16" latest
+  npm deprecate "$n@4.7.16" ""
+  npm deprecate "$n@5.0.1" "Rolled back: use $n@4.7.16 until a fixed 5.x ships"
 done
 npm deprecate "@aura3d/addons@5.0.1" "Rolled back with Aura3D 5.0.1: do not use"
 ```
 
 Unpublishing within 72 h deletes production data and needs the owner's explicit go; it is not part of this rollback.
 
-GitHub: `gh release edit v5.0.1 --prerelease --latest=false && gh release edit v4.7.14 --prerelease=false --latest`, then
-restore the original v4.7.14 notes to drop the banner. Never delete a pushed tag or force-push `main`; if `main` must
+GitHub: `gh release edit v5.0.1 --prerelease --latest=false && gh release edit v4.7.16 --prerelease=false --latest`, then
+restore the original v4.7.16 notes to drop the banner. Never delete a pushed tag or force-push `main`; if `main` must
 return to earlier content use `git revert -m 1 <merge>` with `[skip ci]`.

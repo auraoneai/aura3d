@@ -2919,7 +2919,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
+          "sha256": "f2cf4c1ef8f8963d026b23ff626d673f98ec66b15d8590e831c7bb8745459391"
         }
       ],
       "regions": [
@@ -3056,7 +3056,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
+          "sha256": "f2cf4c1ef8f8963d026b23ff626d673f98ec66b15d8590e831c7bb8745459391"
         }
       ],
       "regions": [
@@ -3989,7 +3989,7 @@
       },
       "source": {
         "path": "apps/showcase-aura-links-3d/src/main.ts",
-        "sha256": "de19a4c8a3c77af67e69f0ad264e5676f594014c000788d0d4092b3a236771f4"
+        "sha256": "f2f9b46367136e7cd04f351c022c7958d8220861e6dcc056d0a7270ce93339c3"
       },
       "sourceDependencies": [
         {
@@ -7595,7 +7595,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
+          "sha256": "f2cf4c1ef8f8963d026b23ff626d673f98ec66b15d8590e831c7bb8745459391"
         }
       ],
       "regions": [
@@ -7665,7 +7665,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "5f40ef2bdca4f504c5bbf1aea2f16a7883d12e6f313006d641d5ae44ed809b2b"
+          "sha256": "f2cf4c1ef8f8963d026b23ff626d673f98ec66b15d8590e831c7bb8745459391"
         }
       ],
       "regions": [

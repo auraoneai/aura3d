@@ -8,10 +8,10 @@ test('versioned inventories retain historical names and require the complete nat
  assert.equal(expectedPublicPackageCount('3.0.1'), 29);
  assert.equal(expectedPublicPackageCount('4.7.1'), 24);
  assert.equal(expectedPublicPackageCount('4.7.1', 'native-1'), 25);
- // Every 4.x release (through 4.7.13) shipped the historical 24-package set; 5.0.0 is the first release of the native set (+ @aura3d/addons).
- assert.equal(releaseInventoryId('4.7.13'), 'historical-4');
- assert.equal(expectedPublicPackageCount('4.7.13'), 24);
- assert.ok(!publicPackageNames('4.7.13').includes('@aura3d/addons'));
+ // Every 4.x release (through 4.7.16) shipped the historical 24-package set; 5.0.0 is the first release of the native set (+ @aura3d/addons).
+ assert.equal(releaseInventoryId('4.7.16'), 'historical-4');
+ assert.equal(expectedPublicPackageCount('4.7.16'), 24);
+ assert.ok(!publicPackageNames('4.7.16').includes('@aura3d/addons'));
  assert.equal(releaseInventoryId('5.0.0'), 'native-1');
  assert.equal(releaseInventoryId('5.0.1'), 'native-1');
  assert.equal(expectedPublicPackageCount('5.0.1'), 25);
