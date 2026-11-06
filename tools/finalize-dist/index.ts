@@ -266,7 +266,13 @@ function rewriteJavaScriptSpecifiers(dir: string, distRoot: string, rewriteWorks
         return nextSpecifier === specifier ? full : `${prefix}${nextSpecifier}${suffix}`;
       }
     );
-    if (rewritten !== source) writeFileSync(file, rewritten);
+    // The engine public entry imports its instancing handlers for their registration side effect (runtime only).
+    // A bare import means nothing in a declaration file, and it would pull the handlers' declarations (and a
+    // second copy of the rendering declarations) into every consumer program and into the public-surface diff.
+    const declarations = file.endsWith("public/index.d.ts")
+      ? rewritten.replace(/^import "\.\.\/agent-api\/nodes\/(?:instancedMesh|batched)\.js";\r?\n/gm, "")
+      : rewritten;
+    if (declarations !== source) writeFileSync(file, declarations);
   }
 }
 
