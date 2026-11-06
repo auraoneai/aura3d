@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -338,6 +338,31 @@ export function createDeclarationClosureCache(): DeclarationClosureCache { retur
 /** Digest of the sorted declaration texts reachable from `root`. Equal digests mean
  * equal closures. Results are cached per root symbol because barrel entrypoints
  * re-export the same symbols many times. */
+/** Digest of every declaration file of one extracted package (relative path and bytes). */
+export function declarationFilesDigest(root: string): string {
+  const files: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === "node_modules") continue;
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (entry.name.endsWith(".d.ts") || entry.name.endsWith(".d.mts") || entry.name.endsWith(".d.cts")) files.push(path);
+    }
+  };
+  walk(root);
+  const hash = createHash("sha256");
+  for (const file of files.sort()) hash.update(`${relative(root, file)}\0${createHash("sha256").update(readFileSync(file)).digest("hex")}\n`);
+  return hash.digest("hex");
+}
+/** True when every package's declaration files are byte-identical on both sides: no declaration can have changed. */
+export function allDeclarationsIdentical(before: ReadonlyMap<string, string>, after: ReadonlyMap<string, string>): boolean {
+  if (before.size !== after.size) return false;
+  for (const [name, dir] of before) {
+    const other = after.get(name);
+    if (!other || declarationFilesDigest(dir) !== declarationFilesDigest(other)) return false;
+  }
+  return true;
+}
 export function declarationClosure(checker: ts.TypeChecker, root: ts.Symbol, budget: DeclarationClosureBudget, label = "<symbol>", cache: DeclarationClosureCache = createDeclarationClosureCache()): string {
   const known = cache.digests.get(root);
   if (known !== undefined) return known;
@@ -579,7 +604,10 @@ export function diffPackedSurfaces(baseline: Map<string, PackedPackage>, candida
       return result;
     };
     const closureBudget = createDeclarationClosureBudget(pairs.length), closureCache = createDeclarationClosureCache();
-    for (const pair of pairs) {
+    // Byte-identical declaration files on every package cannot hold a declaration change; the cross-program symbol
+    // comparison is nominal for classes with private members and can report a false change for large namespace re-exports.
+    const declarationsIdentical = allDeclarationsIdentical(oldDirs, newDirs);
+    for (const pair of declarationsIdentical ? [] : pairs) {
       const before = symbolsFor(pair.before, pair.name, pair.entry.subpath), after = symbolsFor(pair.after, pair.name, pair.entry.subpath);
       const ambientBefore = program.getSourceFile(pair.before), ambientAfter = program.getSourceFile(pair.after);
       if (ambientBefore && ambientAfter && (!ts.isExternalModule(ambientBefore) || !ts.isExternalModule(ambientAfter))) {
