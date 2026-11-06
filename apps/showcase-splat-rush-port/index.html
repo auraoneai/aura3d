@@ -57,6 +57,12 @@
         .icon-btn { bottom: calc(64px + env(safe-area-inset-bottom)); }
         #hud-powerups { bottom: calc(118px + env(safe-area-inset-bottom)) !important; }
       }
+      /* A1 (5.0.3): readiness bar under PLAY NOW, driven by apps/showcase-port-shared/loading-progress; fades out when the first frame is ready */
+      .load-bar { --aura3d-loading: 0; position: relative; width: min(260px, 60%); height: 8px; margin: clamp(6px,1.6vh,12px) auto 0; border-radius: 4px; overflow: hidden; background: rgba(51,51,51,0.22); border: 2px solid #333; box-sizing: content-box; }
+      .load-bar::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: #f0433a; transition: transform 160ms linear; }
+      .load-bar[data-complete="true"] { opacity: 0; transition: opacity 240ms ease 120ms; }
+      #btn-start[aria-busy="true"] { opacity: 0.72; }
+      @media (prefers-reduced-motion: reduce) { .load-bar::after, .load-bar[data-complete="true"] { transition: none; } }
       /* GU47 CR-H1 paint-world HUD, carnival look only (body.look-carnival; ?look=original keeps everything above).
        * Licensed GT Walsheim Bold only (no system or Trebuchet fallback); plum ink on cream paper chips. */
       .paint-only { display: none; }
@@ -107,6 +113,7 @@
         <p style="font-size:clamp(14px,2.8vh,20px);margin:0 0 clamp(8px,2.5vh,20px);color:#333;font-weight:800">Drag left/right to steer.<br />Match colors for combos &amp; big scores.<br />Grab 🌈 Rainbow · 🛡 Shield · ✦ 2x · 🎨 Switch!</p>
         <div id="splash-best"></div>
         <button id="btn-start" class="btn">PLAY NOW</button>
+        <div id="load-bar" class="load-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div class="settings no-steer"><button class="toggle" type="button" data-setting="symbols" aria-pressed="false">Colour symbols: off</button><button class="toggle" type="button" data-setting="motion" aria-pressed="false">Reduced motion: off</button></div>
         <p class="hint">Mouse or touch: drag &middot; Keyboard: Space to start, &larr; &rarr; or A / D to steer, C symbols, P pause, M mute</p>
       </div>
