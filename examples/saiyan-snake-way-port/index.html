@@ -128,6 +128,9 @@
       .runner .rtag { font-size: 12px; line-height: 1.3; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, #7638b4, #dcc9f2 70%, #f2c6de); color: var(--ink); z-index: 5; }
       #loading .card { width: min(360px, 90vw); }
+      #loading .bar { margin-top: 12px; height: 6px; border-radius: 3px; background: rgba(34, 24, 70, 0.22); overflow: hidden; }
+      #loading .bar i { display: block; height: 100%; width: 100%; border-radius: 3px; background: linear-gradient(90deg, #ff8a5c, #f2b33d); transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading, 0)); transition: transform 160ms ease-out; }
+      @media (prefers-reduced-motion: reduce) { #loading .bar i { transition: none; } }
       #touch { position: fixed; right: 12px; bottom: 12px; display: none; gap: 8px; z-index: 2; }
       #touch button { height: 48px; min-width: 76px; padding: 0 14px; font-weight: 600; font-size: 14px; letter-spacing: 0.02em; }
       #touch button.ghost { color: #ffffff; background: rgba(8, 14, 30, 0.82); border: 1.5px solid rgba(255, 255, 255, 0.7); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
@@ -145,7 +148,7 @@
     <div id="fallfx"></div>
     <div id="cinebars"></div>
     <div id="drowsefx"></div>
-    <section id="loading"><div class="card"><h2>Serpentine Sky Run</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
+    <section id="loading"><div class="card"><h2>Serpentine Sky Run</h2><p id="loading-status" class="meta">Laying the road</p><div id="loading-bar" class="bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div></section>
     <section id="title" class="overlay">
       <div class="card">
         <h1>SERPENTINE SKY RUN</h1>
