@@ -237,9 +237,20 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     if ([clipped.globalClipping, clipped.materialClipping ?? materialClip].some(group => group && group.enabled !== false && !group.disposed && (group.planes?.length ?? 0) > 0)) fail(item, "clipping coverage");
     for (const feature of features) {
       if (!feature.hooks.some(hook => hook === "vertex:deform" || hook === "vertex:world" || hook === "vertex:end" || hook === "fragment:alpha")) continue;
+      // The stock tangent frame only derives a tangent varying for normal mapping: it never moves a vertex nor changes coverage.
+      if (isStockTangentFrameFeature(feature)) continue;
       if (feature.select({ item, pass: "forward", tier: ctx.tier, flags: ctx.flags, frameContext: ctx }) !== undefined) fail(item, `shader feature ${feature.id}`);
     }
   }
+}
+
+const NO_CONSUMER_WARN_FRAMES = 30;
+const noConsumerRuns = new WeakMap<object, number>();
+
+/** `prd04.tangentFrame` (hooks vertex:world + fragment:normal) writes a tangent varying only, so camera depth is unchanged. */
+function isStockTangentFrameFeature(feature: { readonly id: string; readonly owner?: string; readonly hooks: readonly string[] }): boolean {
+  return feature.id === "prd04.tangentFrame" && feature.owner === "prd04"
+    && feature.hooks.length === 2 && feature.hooks[0] === "vertex:world" && feature.hooks[1] === "fragment:normal";
 }
 
 /** Match the first visible casting sun selected by prd02SunDirection, retaining its identity. */
@@ -366,7 +377,13 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
       const last = contactShadowMaskDrawCounters(this.ctx.device);
       if (contactShadowMaskBelongsToView(this.ctx) && last.calls > 0 && last.maskedDraws === 0) {
         unavailable = CONTACT_SHADOWS_NO_CONSUMER_REASON;
-        warnOnce("effects.contactShadows() has no visible effect: no drawn program samples the mask. The mask darkens the shadow-casting sun's light on materials that receive shadows; textured-PBR materials with glTF extension textures (clearcoat, transmission and similar) do not sample it.");
+        // Programs compile asynchronously, so the first frames after a mount draw only the programs that are ready (often
+        // none of the lit ones): warn only once the mask has gone unsampled for a sustained run of frames.
+        const run = (noConsumerRuns.get(this.ctx.device) ?? 0) + 1;
+        noConsumerRuns.set(this.ctx.device, run);
+        if (run >= NO_CONSUMER_WARN_FRAMES) warnOnce("effects.contactShadows() has no visible effect: no drawn program samples the mask. The mask darkens the shadow-casting sun's light on materials that receive shadows; textured-PBR materials with glTF extension textures (clearcoat, transmission and similar) do not sample it.");
+      } else if (last.maskedDraws > 0) {
+        noConsumerRuns.delete(this.ctx.device);
       }
       setContactShadowMask(this.ctx.device, undefined);
     }

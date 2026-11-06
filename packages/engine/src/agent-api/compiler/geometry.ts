@@ -329,8 +329,10 @@ export class QrPrimitiveGeometryPool {
 /** Per-resource handle over pooled buffers; `dispose()` releases one reference (idempotent). */
 class QrSharedPrimitiveGeometry extends Geometry {
   private released = false;
+  // A `#` field is not an own property key: the renderer's contact-shadow proof rejects a geometry carrying an own function.
+  readonly #release: () => void;
 
-  constructor(base: Geometry, private readonly release: () => void) {
+  constructor(base: Geometry, release: () => void) {
     // Snapshot mutable per-geometry metadata; buffers stay shared while every
     // handle retains its own reference through Geometry's ownership contract.
     const vertexBuffer = base.getVertexBuffer(0);
@@ -350,6 +352,7 @@ class QrSharedPrimitiveGeometry extends Geometry {
       };
     });
     super(vertexBuffer, indexBuffer, base.topology, bounds, base.additionalVertexBuffers);
+    this.#release = release;
     this.groups = groups;
     this.drawRange = drawRange;
     this.morphTargets = morphTargets;
@@ -360,11 +363,15 @@ class QrSharedPrimitiveGeometry extends Geometry {
     this.released = true;
     const errors: unknown[] = [];
     try { super.dispose(); } catch (error) { errors.push(error); }
-    try { this.release(); } catch (error) { errors.push(error); }
+    try { this.#release(); } catch (error) { errors.push(error); }
     if (errors.length === 1) throw errors[0];
     if (errors.length) throw new AggregateError(errors, "Primitive geometry lease disposal failed");
   }
 }
+
+// Marks the pooled handle as a rigid, built-in geometry whose only extra behaviour is `dispose()` (reference release), so
+// the renderer's contact-shadow depth can accept it like a plain `Geometry` (see `pooledPrimitiveGeometry` in ForwardPass).
+Object.defineProperty(QrSharedPrimitiveGeometry.prototype, Symbol.for("@aura3d/rendering:pooledPrimitiveGeometry"), { value: true });
 
 /** Pool key: kind + tier segments, plus the folded size for capsules (other kinds are unit-sized). */
 export function qrPrimitiveGeometryKey(

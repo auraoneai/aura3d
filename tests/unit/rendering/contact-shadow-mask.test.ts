@@ -30,7 +30,9 @@ import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
 import { QUALITY_TIERS } from "../../../packages/rendering/src/contracts/quality";
 import type { ProgramFeatures } from "../../../packages/rendering/src/contracts/program";
 import type { FrameContributorContext } from "../../../packages/rendering/src/contracts/frameGraph";
-import { ForwardPass, registerForwardDrawHook, type RenderItem } from "../../../packages/rendering/src/ForwardPass";
+import { ForwardPass, forwardContactParticipantSafe, forwardDrawReplaySafe, registerForwardDrawHook, type RenderItem } from "../../../packages/rendering/src/ForwardPass";
+import { QrPrimitiveGeometryPool } from "../../../packages/engine/src/agent-api/compiler/geometry";
+import { registerPrd04ShaderFeatures } from "../../../packages/rendering/src/materials/features";
 import { registerShaderFeature } from "../../../packages/rendering/src/contracts/program";
 import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core";
 import type { ShaderGraphDocument } from "../../../packages/rendering/src/program/ShaderGraphCompiler";
@@ -603,6 +605,76 @@ describe("prd02.contactShadows contributor publishes the mask to forward shading
     } finally { warn.mockRestore(); unregister(); contributor.dispose?.(); device.dispose(); }
   });
 
+  describe("participants the mask depth can reproduce stay in it (C2-01b)", () => {
+    const lenient = () => flagsOn(["A3D_QR_LIGHTING", "A3D_QR_MATERIALS"]);
+    const maskDraws = (items: readonly RenderItem[], flags = lenient()) => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const contributor = createPrd02ContactShadowsContributor();
+      const ctx = ctxFor({ source: sourceWith({ prd02Contact: {} }), items, flags });
+      const device = ctx.device as MockRenderDevice;
+      try {
+        device.beginFrame(ctx.width, ctx.height);
+        contributor.passes!("shadows", ctx)[0]!.execute({ device, width: ctx.width, height: ctx.height });
+        const partial = warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_PARTIAL"));
+        const published = contactShadowMask(device) !== undefined;
+        const draws = device.drawCommands.length;
+        device.endFrame();
+        return { partial, published, draws };
+      } finally { warn.mockRestore(); contributor.dispose?.(); device.dispose(); }
+    };
+
+    it("a pooled primitive handle (the compiler's shared box/plane geometry) is drawn into the mask depth like a plain geometry", () => {
+      const pool = new QrPrimitiveGeometryPool();
+      const pooled = pool.acquire("box", () => Geometry.litCube(1));
+      try {
+        const plain = maskDraws([caster, floor]);
+        const withPooled = maskDraws([caster, { ...floor, geometry: pooled }]);
+        expect(plain).toMatchObject({ partial: false, published: true });
+        expect(withPooled).toEqual(plain);
+        expect(withPooled.draws).toBeGreaterThan(0);
+        // The proof is contact-only: replay and batching keep treating the handle as a foreign geometry.
+        expect(forwardContactParticipantSafe({ ...floor, geometry: pooled }, lenient())).toBe(true);
+        expect(forwardDrawReplaySafe([{ ...floor, geometry: pooled }], lenient())).toBe(false);
+      } finally { pooled.dispose(); }
+    });
+
+    it("a look-alike geometry is still left out: no marker, a patched prototype or an own function", () => {
+      const pool = new QrPrimitiveGeometryPool();
+      const pooled = pool.acquire("box2", () => Geometry.litCube(1));
+      class Unmarked extends Geometry { override dispose(): void { super.dispose(); } }
+      const base = Geometry.litCube(1);
+      const unmarked = new Unmarked(base.vertexBuffer, base.indexBuffer, base.topology, base.bounds, base.additionalVertexBuffers);
+      const withOwnFunction = Object.assign(pool.acquire("box3", () => Geometry.litCube(1)), { sneaky: () => undefined });
+      try {
+        expect(forwardContactParticipantSafe({ ...floor, geometry: pooled }, lenient())).toBe(true);
+        expect(forwardContactParticipantSafe({ ...floor, geometry: unmarked }, lenient())).toBe(false);
+        expect(forwardContactParticipantSafe({ ...floor, geometry: withOwnFunction }, lenient())).toBe(false);
+        expect(maskDraws([caster, { ...floor, geometry: unmarked }]).partial).toBe(true);
+      } finally { pooled.dispose(); withOwnFunction.dispose(); }
+    });
+
+    it("a normal-mapped participant (stock prd04.tangentFrame) is part of the mask depth, not a partial exclusion", () => {
+      registerPrd04ShaderFeatures();
+      const mapped = new UnlitMaterial({ name: "normal-mapped", color: [1, 1, 1, 1] });
+      mapped.setParameter("u_normalTextureEnabled", 1);
+      try {
+        const plain = maskDraws([caster, floor]);
+        const normalMapped = maskDraws([caster, { ...floor, label: "mapped", material: mapped }]);
+        expect(normalMapped.partial).toBe(false);
+        expect(normalMapped).toEqual(plain);
+      } finally { mapped.dispose(); }
+    });
+
+    it("a feature that moves vertices is still excluded even when it reuses the tangent-frame id shape", () => {
+      const unregister = registerShaderFeature({
+        id: "test.contact-fake-tangent", owner: "prd04", flag: "A3D_QR_LIGHTING", chunks: [], hooks: ["vertex:world", "vertex:deform"],
+        select: ({ item }) => item.label === "moved" ? true : undefined, defines: () => ({})
+      });
+      try { expect(maskDraws([caster, floor, { ...floor, label: "moved" }]).partial).toBe(true); }
+      finally { unregister(); }
+    });
+  });
+
   it("rejects registered forward draw hooks before publishing camera depth", () => {
     const unregister = registerForwardDrawHook({ id: "test.contact-depth-hook", bind: () => undefined });
     const contributor = createPrd02ContactShadowsContributor();
@@ -821,20 +893,46 @@ describe("prd02.contactShadows contributor publishes the mask to forward shading
   });
 
   describe("a published mask that no drawn program samples is reported", () => {
-    it("flags the next frame's diagnostics and warns once when forward drew but nothing bound the mask", () => {
+    it("flags the next frame's diagnostics at once, and warns only after a sustained run of unsampled frames (async program warm-up draws nothing lit)", () => {
       const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       const contributor = createPrd02ContactShadowsContributor();
       const device = new MockRenderDevice();
       const source = sourceWith({ prd02Contact: {} });
-      const first = ctxFor({ device, source });
-      runPhase(contributor, first);
+      let previous = ctxFor({ device, source });
+      runPhase(contributor, previous);
       expect(prd02ContactShadowDiagnostics().contactShadows.unavailable).toBeUndefined();
       // Forward draws a program that does not reflect the mask (a textured-PBR extension variant, an unlit material, ...).
       const silent = { reflection: { uniforms: new Set<string>() } } as never;
-      applyContactShadowMaskUniforms({ label: "glb" } as RenderItem, silent, new Map(), { device, width: 512, height: 256, frame: first });
+      const warned = () => warn.mock.calls.some((call) => String(call[0]).includes("no drawn program samples the mask"));
+      for (let frame = 0; frame < 29; frame += 1) {
+        applyContactShadowMaskUniforms({ label: "glb" } as RenderItem, silent, new Map(), { device, width: 512, height: 256, frame: previous });
+        previous = ctxFor({ device, source });
+        runPhase(contributor, previous);
+        expect(prd02ContactShadowDiagnostics().contactShadows.unavailable).toBe(CONTACT_SHADOWS_NO_CONSUMER_REASON);
+        expect(warned()).toBe(false);
+      }
+      applyContactShadowMaskUniforms({ label: "glb" } as RenderItem, silent, new Map(), { device, width: 512, height: 256, frame: previous });
       runPhase(contributor, ctxFor({ device, source }));
-      expect(prd02ContactShadowDiagnostics().contactShadows.unavailable).toBe(CONTACT_SHADOWS_NO_CONSUMER_REASON);
-      expect(warn.mock.calls.some((call) => String(call[0]).includes("no drawn program samples the mask"))).toBe(true);
+      expect(warned()).toBe(true);
+    });
+
+    it("a draw that binds the mask resets the unsampled run", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const contributor = createPrd02ContactShadowsContributor();
+      const device = new MockRenderDevice();
+      const source = sourceWith({ prd02Contact: {} });
+      let previous = ctxFor({ device, source });
+      runPhase(contributor, previous);
+      const silent = { reflection: { uniforms: new Set<string>() } } as never;
+      const reflecting = { reflection: { uniforms: new Set(["u_contactShadowMask"]) } } as never;
+      for (let frame = 0; frame < 80; frame += 1) {
+        const bound = frame % 20 === 19;
+        const position = previous.camera!.position;
+        applyContactShadowMaskUniforms({ label: "glb" } as RenderItem, bound ? reflecting : silent, new Map(), { device, width: 512, height: 256, cameraPosition: position, frame: previous });
+        previous = ctxFor({ device, source });
+        runPhase(contributor, previous);
+      }
+      expect(warn.mock.calls.some((call) => String(call[0]).includes("no drawn program samples the mask"))).toBe(false);
     });
 
     it("stays quiet when a draw bound the mask", () => {
