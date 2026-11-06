@@ -49,7 +49,14 @@ export function resolveProductionCameraDepth(
   // makes an invalid perspective near plane or logarithmic range valid.
   const { near, far } = resolveCameraClipping(camera);
   if (!Number.isFinite(far)) {
-    throw new RangeError(`${code}: DEPTH_MODE_UNSUPPORTED: production cameras require finite far clipping`);
+    // Typed diagnostic: the scene-level camera accepts an infinite far plane, but the
+    // production depth pipeline (clear/compare/bias, readback, fog, linear-depth
+    // consumers) is built on a finite far. Use a large finite far (for example 1e5)
+    // with depth.mode "reversed" for equivalent precision.
+    throw Object.assign(
+      new RangeError(`${code}: DEPTH_MODE_UNSUPPORTED: CAMERA_INFINITE_FAR_UNSUPPORTED: production cameras require finite far clipping; use a large finite far with depth mode "reversed"`),
+      { code: "CAMERA_INFINITE_FAR_UNSUPPORTED" as const }
+    );
   }
   if (mode === "logarithmic" && !(near > 0 && far > near)) {
     throw new RangeError(`${code}: DEPTH_MODE_UNSUPPORTED: logarithmic depth requires finite 0 < near < far`);

@@ -15,7 +15,7 @@
  */
 
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
-import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, DECODER_LOAD_TIMEOUT_MS, decoderAbortReason, decoderTimeoutMs, drainWithDeadline, withDecoderTimeout } from "./decoderLoad.js";
+import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, DECODER_LOAD_TIMEOUT_MS, decoderAbortReason, isCspBlockedFailure, decoderTimeoutMs, drainWithDeadline, withDecoderTimeout } from "./decoderLoad.js";
 import { redactAssetUrl } from "./AssetLoader.js";
 import { createMeshoptDecoder, createDracoDecoder, type GLTFMeshoptDecoderModule, type GLTFDracoDecoderModule } from "./GLTFCompressionDecoders.js";
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
@@ -186,14 +186,16 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
 
   const withRetry = async <T>(id: AssetDecoderId, url: string, load: () => Promise<T>): Promise<T> => {
     if (disposed) throw new AssetDecoderUnavailable(id, url);
+    let cspBlocked = false;
     try {
       const value = await waitForRegistry(load(), id, url);
       if (disposed) { release(value); throw new AssetDecoderUnavailable(id, url); }
       loaded.add(id);
       decoderValues.add(value);
       return value;
-    } catch {
+    } catch (firstError) {
       if (disposed) throw new AssetDecoderUnavailable(id, url);
+      cspBlocked = isCspBlockedFailure(firstError);
       // One retry, then AssetDecoderUnavailable.
       try {
         const value = await waitForRegistry(load(), id, url);
@@ -201,10 +203,12 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
         loaded.add(id);
         decoderValues.add(value);
         return value;
-      } catch {
+      } catch (secondError) {
         if (disposed) throw new AssetDecoderUnavailable(id, url);
         failed.push({ id, url });
-        throw new AssetDecoderUnavailable(id, url);
+        // Preserve the CSP classification so the main registry path surfaces KTX2_CSP_BLOCKED.
+        const csp = id === "ktx2" && (cspBlocked || isCspBlockedFailure(secondError));
+        throw new AssetDecoderUnavailable(id, url, csp ? "KTX2_CSP_BLOCKED" : undefined);
       }
     }
   };

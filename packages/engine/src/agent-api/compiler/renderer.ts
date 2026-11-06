@@ -13,7 +13,7 @@ import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
 import { createRendererDiagnosticReport, rendererFrameTimingFromInspection } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isMountableModelNode, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, RenderDeviceError, webGL2MaxTextureSize, bindShaderFailureStore, shaderFailureStoreFor, subscribeProgramReadiness, type RendererOptions, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
@@ -408,7 +408,7 @@ export async function createProductionRuntimeSceneRenderer(
   for (const node of renderableModelNodes) {
     assertFramePivotSupported(node, runtimeNodes, frameUsesLegacyModelMatrix(runtimeOwner));
   }
-  const modelNodes = renderableModelNodes.filter((node) =>
+  const modelNodes = flattened.filter(isMountableModelNode).filter((node) =>
     createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
   );
   const skippedInlineModelWarnings = renderableModelNodes
