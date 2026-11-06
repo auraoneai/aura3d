@@ -53,5 +53,19 @@
     { "id": "light", "text": "Soft lighting with ground shadow and fitting background." },
     { "id": "turn", "text": "The model slowly turns on the pedestal." },
     { "id": "fallback", "text": "A visible fallback and logged error if loading fails." }
+  ],
+  "8": [
+    { "id": "terrain", "text": "A faceted low-poly island is generated procedurally (flat shading or per-face normals), with a few trees or rocks, and no model files are loaded." },
+    { "id": "water", "text": "A visible water surface surrounds the island and is animated over time." },
+    { "id": "daynight", "text": "A time-driven day/night cycle moves the sun and changes sky colours (not a static sky)." },
+    { "id": "lighting", "text": "Lighting follows the sun and the scene stays lit (never black) through the cycle." },
+    { "id": "framing", "text": "The camera sits above the water and frames the whole island." }
+  ],
+  "9": [
+    { "id": "parts", "text": "The robot is built procedurally from primitives with head, torso, two arms and two legs and no model files." },
+    { "id": "joints", "text": "At least five articulated joints are implemented as a real hierarchy (nested groups/nodes) that animation rotates." },
+    { "id": "idle", "text": "An idle animation runs from code (breathing or weight shift, head and arm motion) so frames differ over time." },
+    { "id": "lighting", "text": "A strong key light and a visible coloured rim light are authored on a dark background, with shadows cast on a floor." },
+    { "id": "framing", "text": "The camera frames the whole robot, centred." }
   ]
 }

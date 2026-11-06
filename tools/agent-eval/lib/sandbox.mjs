@@ -111,7 +111,9 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docs
       const source = join(docsRoot, doc.from);
       if (!existsSync(source)) continue;
       mkdirSync(join(dir, doc.to, ".."), { recursive: true });
-      cpSync(source, join(dir, doc.to), { recursive: true });
+      // Text only: drop recipe frames and built samples (protocol docs502).
+      const skip = (src) => /\.(png|jpe?g|webp)$/i.test(src) || /recipes-src\/\.dist/.test(src) || /docs\/agents\/samples/.test(src);
+      cpSync(source, join(dir, doc.to), { recursive: true, filter: (src) => !skip(src) });
     }
   }
   return { dir, docs: arm === "aura" ? docSetFingerprint(dir) : null };

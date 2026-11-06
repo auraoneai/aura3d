@@ -1,0 +1,1094 @@
+[
+  {
+    "id": "docs503-t1-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 52,
+        "std": 24.6,
+        "nonblack": 1,
+        "diff": 5.12,
+        "changedFrac": 0.0838
+      }
+    },
+    "bundle": {
+      "rawKB": 6484.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t1-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 52.5,
+        "std": 25,
+        "nonblack": 1,
+        "diff": 5.89,
+        "changedFrac": 0.0851
+      }
+    },
+    "bundle": {
+      "rawKB": 6484.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t1-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 52.1,
+        "std": 24.8,
+        "nonblack": 1,
+        "diff": 5.36,
+        "changedFrac": 0.0845
+      }
+    },
+    "bundle": {
+      "rawKB": 6484.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t1-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 58.5,
+        "std": 39.6,
+        "nonblack": 1,
+        "diff": 6.42,
+        "changedFrac": 0.1172
+      }
+    },
+    "bundle": {
+      "rawKB": 525.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t1-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 53,
+        "std": 13.9,
+        "nonblack": 1,
+        "diff": 6.2,
+        "changedFrac": 0.1525
+      }
+    },
+    "bundle": {
+      "rawKB": 525.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t1-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 55,
+        "std": 24.6,
+        "nonblack": 1,
+        "diff": 6,
+        "changedFrac": 0.1315
+      }
+    },
+    "bundle": {
+      "rawKB": 525.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t2-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 193.7,
+        "std": 12.3,
+        "nonblack": 1,
+        "diff": 4.85,
+        "changedFrac": 0.2899
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t2-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 167,
+        "std": 23.6,
+        "nonblack": 1,
+        "diff": 4.51,
+        "changedFrac": 0.2542
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t2-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 173.3,
+        "std": 15.6,
+        "nonblack": 1,
+        "diff": 4,
+        "changedFrac": 0.2618
+      }
+    },
+    "bundle": {
+      "rawKB": 6485.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t2-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 143.9,
+        "std": 33.4,
+        "nonblack": 1,
+        "diff": 6.89,
+        "changedFrac": 0.2957
+      }
+    },
+    "bundle": {
+      "rawKB": 506.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t2-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 135.5,
+        "std": 35.8,
+        "nonblack": 1,
+        "diff": 9.94,
+        "changedFrac": 0.3873
+      }
+    },
+    "bundle": {
+      "rawKB": 507.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t2-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 141.6,
+        "std": 33.8,
+        "nonblack": 1,
+        "diff": 9.43,
+        "changedFrac": 0.3879
+      }
+    },
+    "bundle": {
+      "rawKB": 508.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t3-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 73.2,
+        "std": 33.5,
+        "nonblack": 0.987,
+        "diff": 0.37,
+        "changedFrac": 0.0129
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t3-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 71.7,
+        "std": 33,
+        "nonblack": 0.986,
+        "diff": 0.25,
+        "changedFrac": 0.0102
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t3-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 73.2,
+        "std": 33.5,
+        "nonblack": 0.987,
+        "diff": 0.33,
+        "changedFrac": 0.0121
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.2
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t3-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 147.7,
+        "std": 31.3,
+        "nonblack": 0.998,
+        "diff": 0.18,
+        "changedFrac": 0.0064
+      }
+    },
+    "bundle": {
+      "rawKB": 608.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t3-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 141.9,
+        "std": 37.6,
+        "nonblack": 0.996,
+        "diff": 0.19,
+        "changedFrac": 0.005
+      }
+    },
+    "bundle": {
+      "rawKB": 608.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t3-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 138.5,
+        "std": 26.9,
+        "nonblack": 0.998,
+        "diff": 0.11,
+        "changedFrac": 0.003
+      }
+    },
+    "bundle": {
+      "rawKB": 608.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t4-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": false,
+      "frame": {
+        "mean": 14.1,
+        "std": 22.7,
+        "nonblack": 0.362,
+        "diff": 0,
+        "changedFrac": 0
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t4-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 42,
+        "std": 46.3,
+        "nonblack": 0.484,
+        "diff": 0.41,
+        "changedFrac": 0.0035
+      }
+    },
+    "bundle": {
+      "rawKB": 6486
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t4-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 104.6,
+        "std": 74.6,
+        "nonblack": 1,
+        "diff": 0.6,
+        "changedFrac": 0.0114
+      }
+    },
+    "bundle": {
+      "rawKB": 6487.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t4-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 36.4,
+        "std": 15.7,
+        "nonblack": 1,
+        "diff": 0.46,
+        "changedFrac": 0.0104
+      }
+    },
+    "bundle": {
+      "rawKB": 502.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t4-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 38.1,
+        "std": 23.7,
+        "nonblack": 1,
+        "diff": 0.28,
+        "changedFrac": 0.007
+      }
+    },
+    "bundle": {
+      "rawKB": 506.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t4-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": false,
+      "frame": {
+        "mean": 35.2,
+        "std": 19.8,
+        "nonblack": 1,
+        "diff": 0.03,
+        "changedFrac": 0.0012
+      }
+    },
+    "bundle": {
+      "rawKB": 506.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t5-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 155.1,
+        "std": 65.6,
+        "nonblack": 1,
+        "diff": 24.13,
+        "changedFrac": 0.4864
+      }
+    },
+    "bundle": {
+      "rawKB": 6526
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t5-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 151.1,
+        "std": 58.9,
+        "nonblack": 1,
+        "diff": 23.82,
+        "changedFrac": 0.4632
+      }
+    },
+    "bundle": {
+      "rawKB": 6525.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t5-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 181.9,
+        "std": 46.1,
+        "nonblack": 1,
+        "diff": 15.44,
+        "changedFrac": 0.4356
+      }
+    },
+    "bundle": {
+      "rawKB": 6524.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t5-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 207.6,
+        "std": 12.4,
+        "nonblack": 1,
+        "diff": 0.83,
+        "changedFrac": 0.0469
+      }
+    },
+    "bundle": {
+      "rawKB": 499.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t5-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 155.2,
+        "std": 44.4,
+        "nonblack": 1,
+        "diff": 27.36,
+        "changedFrac": 0.4645
+      }
+    },
+    "bundle": {
+      "rawKB": 499.1
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t5-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 161.9,
+        "std": 35.8,
+        "nonblack": 1,
+        "diff": 20.8,
+        "changedFrac": 0.4554
+      }
+    },
+    "bundle": {
+      "rawKB": 498.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t8-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 182,
+        "std": 43.7,
+        "nonblack": 1,
+        "diff": 15.24,
+        "changedFrac": 0.5446
+      }
+    },
+    "bundle": {
+      "rawKB": 6533.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t8-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 217.4,
+        "std": 30.8,
+        "nonblack": 1,
+        "diff": 10.55,
+        "changedFrac": 0.3518
+      }
+    },
+    "bundle": {
+      "rawKB": 6536.3
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t8-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 170.7,
+        "std": 37.5,
+        "nonblack": 1,
+        "diff": 9.75,
+        "changedFrac": 0.3661
+      }
+    },
+    "bundle": {
+      "rawKB": 6533.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t8-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 131.9,
+        "std": 51.7,
+        "nonblack": 1,
+        "diff": 21.61,
+        "changedFrac": 0.8192
+      }
+    },
+    "bundle": {
+      "rawKB": 513
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t8-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 142.9,
+        "std": 46.8,
+        "nonblack": 1,
+        "diff": 20.07,
+        "changedFrac": 0.787
+      }
+    },
+    "bundle": {
+      "rawKB": 512.5
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t8-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 142.1,
+        "std": 42.2,
+        "nonblack": 1,
+        "diff": 14.59,
+        "changedFrac": 0.7855
+      }
+    },
+    "bundle": {
+      "rawKB": 511.4
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t9-aura-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 45.8,
+        "std": 44.9,
+        "nonblack": 0.457,
+        "diff": 1.11,
+        "changedFrac": 0.0329
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.9
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t9-aura-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 52,
+        "std": 53.3,
+        "nonblack": 0.436,
+        "diff": 0.72,
+        "changedFrac": 0.0244
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t9-aura-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 49.8,
+        "std": 48.1,
+        "nonblack": 0.471,
+        "diff": 0.61,
+        "changedFrac": 0.0176
+      }
+    },
+    "bundle": {
+      "rawKB": 6486.7
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t9-three-r1-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 39.5,
+        "std": 65,
+        "nonblack": 0.297,
+        "diff": 1.58,
+        "changedFrac": 0.0264
+      }
+    },
+    "bundle": {
+      "rawKB": 505.6
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t9-three-r2-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 29.4,
+        "std": 54.9,
+        "nonblack": 0.263,
+        "diff": 2.13,
+        "changedFrac": 0.028
+      }
+    },
+    "bundle": {
+      "rawKB": 505.8
+    },
+    "readyMs": null
+  },
+  {
+    "id": "docs503-t9-three-r3-final",
+    "build": {
+      "ok": true
+    },
+    "readyTimeout": false,
+    "page": {
+      "pageErrors": [],
+      "consoleErrorCount": 0
+    },
+    "probes": {
+      "blank": false,
+      "animated": true,
+      "frame": {
+        "mean": 34,
+        "std": 60.6,
+        "nonblack": 0.269,
+        "diff": 1.65,
+        "changedFrac": 0.0278
+      }
+    },
+    "bundle": {
+      "rawKB": 507.4
+    },
+    "readyMs": null
+  }
+]
