@@ -44,6 +44,8 @@ import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
 // A2: `?diag=1` shows the shared GPU diagnostics panel (draw calls, backend, tier); inert without the query parameter.
 import "../../showcase-port-shared/diag";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import { labAppOptions, labCameraOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, concreteMaterial } from "./art/surfaces";
@@ -340,7 +342,9 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         near: 0.25,
         far: 550,
         position: [0, 3.6, 5.2],
-        target: [0, 0.6, -6.0]
+        target: [0, 0.6, -6.0],
+        // A9 (EXPERIMENTAL, lab only): `?depth=reversed|logarithmic`; absent means the unchanged standard depth.
+        ...labCameraOptions(readLabFlags())
       })
     )
     // Camera-side fill: the sun is dead ahead, so the faces the chase camera sees are lit by this unshadowed 0.6 fill from
@@ -788,17 +792,42 @@ function showBootError(error: unknown): void {
   boot.querySelector(".boot-retry")?.addEventListener("click", () => window.location.reload());
 }
 
+/** Drives the `#boot` meter (width and percent label) from the shared loading-progress fraction. */
+function paintBootProgress(fraction: number): void {
+  const boot = document.getElementById("boot");
+  const fill = boot?.querySelector<HTMLElement>(".boot-line i");
+  const pct = boot?.querySelector<HTMLElement>(".boot-pct");
+  if (fill) {
+    fill.style.animation = "none";
+    fill.style.transform = `scaleX(${fraction})`;
+  }
+  if (pct) pct.textContent = `${Math.round(fraction * 100)}%`;
+}
+
+/** The `output` fragment of the lab flags (`?gamut=p3`), or nothing. */
+function labOutputOnly(): { output?: { outputColorSpace: "display-p3" } } {
+  const { output } = labAppOptions(readLabFlags());
+  return output ? { output } : {};
+}
+
 async function bootRoadsterRushAura3D(): Promise<void> {
   const canvas = document.getElementById("game") as HTMLCanvasElement | null;
   if (!canvas) {
     throw new Error("Missing #game canvas element for Roadster Rush.");
   }
 
+  // A1: the boot meter follows real boot work (it was a fixed 1.4 s animation over a static "100%" label).
+  const loading = createLoadingProgress({ onProgress: paintBootProgress });
+  loading.set(0.08);
   const builtScene = buildRoadsterRushScene();
+  loading.set(0.2);
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
     // "auto": the tier follows the device once the quality lane is on; with it off the mount resolves to "high", as before.
     renderer: { quality: "auto" },
+    // A10 (EXPERIMENTAL, lab only): `?gamut=p3`. Only the output fragment is taken: this game's custom sky/ground/tower GLSL has
+    // no WGSL twin, so `?backend=` is deliberately not forwarded (A3 stays blocked).
+    ...labOutputOnly(),
     qualityRebuild: { flags: ["game"] }
   });
 
@@ -2085,7 +2114,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   bindToolbar();
 
   // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
-  await auraApp.ready();
+  await loading.track(auraApp.ready(), 1);
+  loading.set(0.7);
 
   // Native Apex Overdrive simulation (apps/showcase-roadster-rush/src/native): fixed-step player, traffic, scoring and HUD
   // written for Aura3D; this page only mirrors that state onto the scene nodes below.
@@ -2120,7 +2150,9 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   if (AUTOSTART) ensureLivePlaying(nativeGame);
   syncRoadsterWorld(nativeGame);
   // Compile every program (and wait for the environment) before the boot veil lifts (checklist R2)
+  loading.set(0.85);
   await warmPrograms(auraApp);
+  loading.done();
   // AO-C1: three-shot letterboxed title intro on the title card (skippable; none for captures or reduced motion)
   if (!AUTOSTART && !REDUCED_MOTION && nativeGame.mode === "title") playTitleIntro(() => nativeGame.mode !== "title");
   document.getElementById("boot")?.classList.add("done");
