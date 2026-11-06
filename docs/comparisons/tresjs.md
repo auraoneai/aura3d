@@ -1,6 +1,6 @@
 # Aura3D And TresJS
 
-Version: 4.7.15
+Version: 4.7.16
 
 ## What you get with Aura3D
 
