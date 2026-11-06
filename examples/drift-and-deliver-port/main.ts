@@ -34,6 +34,8 @@ import { bannerNodes } from "./banners";
 import { INTRO, SIDE_SHOT, headlightFlare, introPose, introWanted, orbitPose, sideShotPose, sideShotWanted, type CarPose } from "./cinema";
 import { courierBraking, createPitch, placeHalos, stepPitch } from "./brakes";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { carModel } from "./models";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
@@ -895,6 +897,11 @@ const progressTimer = setInterval(() => {
   loadingStatus.textContent = `${bootPhase} (${Math.round((performance.now() - bootT0) / 1000)} s)`;
 }, 1000);
 
+/** A1: shared readiness helper; keeps `--aura3d-loading` / `aria-valuenow` on the loading overlay in step with the boot phases (no visual change). */
+const loadingProgress = createLoadingProgress({ element: document.getElementById("loading") ?? undefined });
+/** Lab flags (`?backend=webgpu`, `?worker=1`, `?gamut=p3`): EXPERIMENTAL, all off by default, WebGL2/main-thread fallbacks kept. */
+const lab = labAppOptions(readLabFlags());
+
 async function boot(): Promise<void> {
   mark("module");
   // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
@@ -902,13 +909,15 @@ async function boot(): Promise<void> {
     autoStart: false,
     resize: true,
     pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5),
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false },
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
+    output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false, ...lab.output },
     scene: buildScene()
   });
+  loadingProgress.set(0.2);
   bootPhase = "Uploading the city to the GPU";
   await app.ready();
   mark("appReady");
+  loadingProgress.set(0.6);
   bootPhase = "Compiling shaders";
   // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city.
   // Start unlocks once the programs settle; the sky HDRI and texture upgrades keep streaming in behind the splash
@@ -919,6 +928,7 @@ async function boot(): Promise<void> {
   if (look.shift) shiftRuntime = createShiftRuntime(app, look, look.furniture.lamps, skid, { reducedMotion: () => document.body.classList.contains("reduced-motion"), reducedFlash: () => config.reducedFlash || document.body.classList.contains("reduced-motion"), ...(config.at !== undefined ? { at: config.at } : {}) });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
+  loadingProgress.done();
   $("loading").classList.add("hidden");
   const start = $<HTMLButtonElement>("start");
   start.disabled = false;

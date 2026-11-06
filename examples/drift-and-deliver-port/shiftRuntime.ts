@@ -83,7 +83,7 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
     if (!handles.has(id)) handles.set(id, app.nodes.get(id) ?? null);
     return handles.get(id) ?? undefined;
   };
-  registerCourierFx(app.effects as never);
+  registerCourierFx(app.effects);
   const daylight: Daylight = createDaylight({
     node: (id) => node(id) as never,
     setFog: (spec) => app.atmosphere?.setFog(spec),
