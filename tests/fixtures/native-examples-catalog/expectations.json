@@ -2354,11 +2354,11 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/aura-assets.ts",
-          "sha256": "45f5e7b46c280dc3ad4ad1aec692e29301a06ff49172b919b0ddb872afa12481"
+          "sha256": "0e1b538fadf4890e096b5afbf00e95c279d5d7062eda3427c31f5109c29f30c2"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/aura-catalog.ts",
-          "sha256": "70dce41d5777184cfa775a69c2f41cd3c44da79da14f9b76075961dcced30e02"
+          "sha256": "3a3d77e833383973cdfe78496eb82e41259090c4fb8fe56a8cdb23960cdd0436"
         },
         {
           "path": "apps/showcase-pips-big-leap/public/aura-assets/pipsPip.fcd4256f.glb",
@@ -2378,7 +2378,7 @@
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/world.ts",
-          "sha256": "7a372c3419679bb6baf45aca98bd4009ab2de54b518c9f2e32726a701194ceb7"
+          "sha256": "79faafe2fb13de5e5c61f740daf3375d9c6e19b9bca46722eeb0b1835622e066"
         },
         {
           "path": "apps/showcase-pips-big-leap/src/game/diorama.ts",
@@ -4092,7 +4092,7 @@
       },
       "source": {
         "path": "apps/showcase-top-tennis/src/main.ts",
-        "sha256": "a7902931ddcdf09e6088a5553df6bdac888b5571bf97987bfa02ab786081f4e7"
+        "sha256": "684f10532b229e02317d16d5f45c602a4e3bf8d31b8c41d2e146b4f81576d0f6"
       },
       "sourceDependencies": [
         {
@@ -4113,7 +4113,7 @@
         },
         {
           "path": "examples/aura-slam/view/scene.ts",
-          "sha256": "f729ed781f09a30c93970f00ce9640a13f18955da3c461a2a6b88e58006f1227"
+          "sha256": "09b8a713b5a5df2ffceacf80066e12fb6ffb43ce440f515cc92bf3cc69e57f50"
         },
         {
           "path": "examples/aura-slam/view/venues.ts",
@@ -6013,7 +6013,7 @@
       "sourceDependencies": [
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "ba78bc850ce0533d06acd1d77d19f55ddff1ecb3abf612debaec047ad4481338"
+          "sha256": "6d6ab66348590fb05f9c7332dad5c1dc77deeb53094fbeeba5f7d752b1b333d6"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6029,7 +6029,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/assets.ts",
-          "sha256": "6572cf4e1686b77ed782420e68a4be0233bacf13f18a6a9aad47c35ca0d7322c"
+          "sha256": "85cd3fffef116eb08e12743ed516805982260e1f68ced769700a61965ec6774c"
         },
         {
           "path": "examples/silt-and-signal-port/art/look.ts",
@@ -6120,7 +6120,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
-          "sha256": "ba78bc850ce0533d06acd1d77d19f55ddff1ecb3abf612debaec047ad4481338"
+          "sha256": "6d6ab66348590fb05f9c7332dad5c1dc77deeb53094fbeeba5f7d752b1b333d6"
         },
         {
           "path": "examples/silt-and-signal-port/camera.ts",
@@ -6136,7 +6136,7 @@
         },
         {
           "path": "examples/silt-and-signal-port/assets.ts",
-          "sha256": "6572cf4e1686b77ed782420e68a4be0233bacf13f18a6a9aad47c35ca0d7322c"
+          "sha256": "85cd3fffef116eb08e12743ed516805982260e1f68ced769700a61965ec6774c"
         },
         {
           "path": "examples/silt-and-signal-port/art/look.ts",
@@ -6352,7 +6352,7 @@
         },
         {
           "path": "examples/splat-rush-port/index.html",
-          "sha256": "09b4f5b96f3e2c9b1b33429167c1f2988022599e36efe96c00d1b38da8dc6acc"
+          "sha256": "b2557b440269855c6bac55fcad9e8ad5cedbfe70a2c2935d84892c27aefbeb84"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -6447,7 +6447,7 @@
         },
         {
           "path": "apps/showcase-splat-rush-port/index.html",
-          "sha256": "8d8c1aa8aefa74dc8e3459e4cc2e3ac01f4232fe0985a740d24ad3d173ca08be"
+          "sha256": "a3b872aac5204a6c7a209b9b15aa470d8927a3c5a59bd49e6a7440fbb53b9036"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -8333,7 +8333,7 @@
         },
         {
           "path": "examples/aura-slam/view/scene.ts",
-          "sha256": "f729ed781f09a30c93970f00ce9640a13f18955da3c461a2a6b88e58006f1227"
+          "sha256": "09b8a713b5a5df2ffceacf80066e12fb6ffb43ce440f515cc92bf3cc69e57f50"
         },
         {
           "path": "examples/aura-slam/view/venues.ts",
