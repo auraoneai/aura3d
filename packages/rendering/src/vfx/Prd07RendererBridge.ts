@@ -78,8 +78,7 @@ interface Mount {
 export interface Prd07RendererOperation {
   readonly mount: Mount;
   readonly lease: Prd07DeviceLease;
-  /** Replaced only by warmup operations (`refreshSnapshot`), which consume no atmosphere packet. */
-  snapshot: Prd07RendererSnapshot;
+  readonly snapshot: Prd07RendererSnapshot;
   closed: boolean;
 }
 
@@ -270,7 +269,19 @@ export function takePrd07RendererOperation(renderer: object): { readonly operati
 }
 
 /** Revalidate after any yield and before every managed packet consumption. */
-export function assertPrd07RendererOperation(operation: Prd07RendererOperation, refreshSnapshot = false): void {
+export function assertPrd07RendererOperation(operation: Prd07RendererOperation): void {
+  assertOperation(operation, false);
+}
+
+/**
+ * Warmup variant (package-internal, not re-exported from any entrypoint): a precompile only builds programs and
+ * consumes no managed packet, so a stale snapshot is re-bound to the live one instead of failing the boot.
+ */
+export function assertPrd07RendererWarmupOperation(operation: Prd07RendererOperation): void {
+  assertOperation(operation, true);
+}
+
+function assertOperation(operation: Prd07RendererOperation, refreshSnapshot: boolean): void {
   const { mount, lease, snapshot } = operation;
   const { renderer, device, authority } = mount;
   if (operation.closed || !mount.live || activeOperations.get(renderer) !== operation || device.disposed || device.contextLost ||
@@ -283,7 +294,7 @@ export function assertPrd07RendererOperation(operation: Prd07RendererOperation, 
     // boot; a frame still fails closed because it draws with the captured packet.
     const live = refreshSnapshot ? authority.capture() : null;
     if (!live || !authority.isCurrent(live)) throw new Error("PRD07_ATMOSPHERE_SNAPSHOT_STALE");
-    operation.snapshot = live;
+    (operation as { snapshot: Prd07RendererSnapshot }).snapshot = live;
   }
 }
 
