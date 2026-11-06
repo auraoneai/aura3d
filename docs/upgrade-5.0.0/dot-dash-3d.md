@@ -19,10 +19,10 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A12 candidate (largest scatter use among small games) with a placement diff test
-- [ ] A3 lab (no GLSL)
-- [ ] A1
-- [ ] A2
+- [ ] A12 candidate (largest scatter use among small games) with a placement diff test: skipped, pixel risk
+- [ ] A3 lab (no GLSL): skipped, createGame accepts no renderer/output options, needs an engine change
+- [x] A1 (shared createLoadingProgress drives g.shell; frames in evidence/game-upgrades-502/dot-dash-3d)
+- [x] A2 (publishBackendReport -> window.__AURA3D_DOT_DASH_BACKEND__; overlay stays off)
 
 Verification
 
