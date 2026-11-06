@@ -1,0 +1,24 @@
+{
+ "date": "2026-11-06",
+ "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max)",
+ "chrome": "156.0.8078.80 headless, real CDP key events (hold D 6 s)",
+ "frames": 114,
+ "clipTransitions": [
+  {
+   "clip": "Idle",
+   "t": 9626
+  },
+  {
+   "clip": "Walk",
+   "t": 10631
+  },
+  {
+   "clip": "Idle",
+   "t": 16722
+  }
+ ],
+ "walkFrames": 88,
+ "phaseStalls": 0,
+ "maxPhaseStepSeconds": 0.1226,
+ "note": "Idle to Walk to Idle exactly once; crossfade issued twice (one per gait change); planted-foot speed (2.315 x clip rate) matched ground speed within 2 percent (3.20 vs 3.14-3.26 u/s). Page rendered at about 15 fps in vite dev; 60 Hz run (17 ms frames) gave the same single Idle-Walk-Idle sequence with 0 stalls. High refresh (120-165 Hz) is covered only by the jittered unit simulation, not a real display."
+}
