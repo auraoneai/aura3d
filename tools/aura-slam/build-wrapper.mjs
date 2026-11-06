@@ -13,7 +13,7 @@ const outDir = path.resolve(process.argv[2] ?? path.join(repoRoot, "tests/browse
 const enginePublicEntry = path.join(repoRoot, "packages/engine/src/public/index.ts");
 const gamePackageEntry = path.join(repoRoot, "packages/game/src/index.ts");
 const input = path.join(repoRoot, "apps/showcase-top-tennis/index.html");
-const STADIUM_FILES = ["showcaseStadiumSeats.afb44897.glb", "rooftopScoreboardRigMeshy.866123b7.glb", "rooftopFloodlightTowerMeshy.1bfcdd0b.glb"];
+const STADIUM_FILES = ["showcaseStadiumSeats.afb44897.glb", "rooftopScoreboardRigMeshy.866123b7.glb", "rooftopFloodlightTowerMeshy.1bfcdd0b.glb", "tennisFloodMast.4a0d9dee.glb"];
 
 const tempDir = mkdtempSync(path.join(tmpdir(), "aura-slam-build-"));
 const configPath = path.join(tempDir, "vite.config.mjs");
