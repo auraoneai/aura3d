@@ -3,6 +3,8 @@ import { game, createFixedStepLoop } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, probeScene, bindApp, step, syncVisuals, st, startRun, evidenceExtra, setPaused, setReducedMotion, setLookMode, setP4Dress, getLookMode, deathEffect, dioramaView, mountSpectators, SIM_STEP } from "./game/core";
 import { qaCrops } from "./game/qa";
+import { assets } from "./aura-assets";
+import { modelUrls, modelProgressFraction, modelLabel, watchModelDownloads, MODEL_PROGRESS_CEIL } from "./game/loadingUx";
 import { defaultLookFor, p4DressFor } from "./game/look";
 import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
@@ -119,6 +121,10 @@ const app = g.app;
 // A1: feed the engine loading screen from the shared helper (the game's one load promise is `g.ready()`).
 const loading = createLoadingProgress({ shell: g.shell });
 loading.set(0.05, "Loading Cross Hop");
+// 5.0.3 A1: the bar follows the real GLB downloads (resource timing, no extra requests) instead of sitting at 5 percent.
+const stopWatchingModels = watchModelDownloads(modelUrls(assets as unknown as Record<string, unknown>), (done, total) => {
+  loading.set(modelProgressFraction(done, total), modelLabel(done, total));
+});
 bindApp(app);
 g.start();
 
@@ -152,7 +158,19 @@ if (AUTOSTART) {
   tickUI();
 }
 
-void loading.track(g.ready(), 1, "Ready").then(() => {
+/** 5.0.3 A1: "Ready" means the first frame is on screen (`app.readiness`), not just that the renderer mounted. Bounded so a hidden tab never stalls the run. */
+async function readyForPlay(): Promise<void> {
+  await g.ready();
+  loading.set(MODEL_PROGRESS_CEIL, "Drawing the first frame");
+  stopWatchingModels();
+  const outcome = await Promise.race([
+    app.readiness({ stage: "first-frame" }).catch(() => undefined),
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 4000))
+  ]);
+  if (outcome && outcome.state === "failed") console.warn(`[cross-hop] first frame not reached: ${outcome.code}`);
+}
+
+void loading.track(readyForPlay(), 1, "Ready").then(() => {
   loading.done("Ready");
   appReady = true;
   mountSpectators();
