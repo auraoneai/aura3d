@@ -11,6 +11,7 @@ import {
 } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { labAppOptions, parseLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets";
 import {
@@ -69,6 +70,7 @@ import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { CROWD_IDS, crowdBob, signFlicker } from "./game/ambientMotion";
 import { buildArenaScene, venueVignette } from "./game/arena";
+import { ringPhotometricProfile } from "./game/ringPhotometry";
 import {
   cinematicPost,
   cinematicShot,
@@ -160,6 +162,13 @@ const debugHooks = params.get("icdebug") === "1";
 const contactShadowsOn = params.get("iccontact") !== "0";
 /** PRD §6.4: `?tier=low` halves weather and VFX particles (the engine tier drops local shadows, AO, DOF and grain). */
 const lowTier = params.get("tier") === "low";
+// 5.x lab flags (all off by default): ?backend=auto|webgpu, ?gamut=p3 (shared parser) and ?ies=1 (A5 photometric ring spots).
+// ?worker=1 is ignored: a game app needs synchronous onFrame callbacks, so the engine refuses worker rendering for createGame.
+const labFlags = parseLabFlags(params);
+const { renderer: labRenderer, output: labOutput } = labAppOptions(labFlags);
+const iesLab = params.get("ies") === "1";
+// A1: the real fraction of arena assets loaded, from the engine's asset events (the shell bar used to jump 0 to 1).
+let assetLoadProgress: ((loaded: number, total: number) => void) | undefined;
 /** Upper-body attack layering is on by default (IC47-AN1, `attackLayerEnabled`); `?iclayer=0` turns it off. */
 const attackLayerWanted = attackLayerEnabled(params);
 
@@ -266,7 +275,8 @@ function buildArena(cfg: BoutConfig) {
     reducedMotion,
     lowTier,
     // GU47 blind-panel pass: the venues the panel did not judge better default to their 4.6.2 look (`?look=` overrides).
-    lookMode: venueLookMode(cfg.stage.id, params)
+    lookMode: venueLookMode(cfg.stage.id, params),
+    ...(iesLab ? { ringPhotometry: ringPhotometricProfile(10.5) } : {})
   });
 }
 
@@ -287,6 +297,10 @@ const fightingGame = createGame({
   target: "#app",
   autoStart: true,
   diagnostics: { overlay: false, performancePanel: false },
+  onAssetProgress: (event) => assetLoadProgress?.(event.loaded, event.total),
+  // A5 lab: IES profiles need the opt-in renderer flag; scalar spots remain the fallback.
+  ...(labRenderer || iesLab ? { renderer: { ...(labRenderer ?? {}), ...(iesLab ? { photometricProfiles: true } : {}) } } : {}),
+  ...(labOutput ? { output: labOutput } : {}),
   input: inputOptions,
   loop: { fixedDt: 1 / 60 },
   scene: () => buildArena(initialConfig),
@@ -344,6 +358,11 @@ const app = fightingGame.app;
 // A1: report arena load progress through the game shell (shared helper); done() fires once the renderer and game are ready.
 const loadingProgress = createLoadingProgress({ shell: fightingGame.shell });
 loadingProgress.track(app.ready(), 1, "Loading arena");
+const loadEvents: Array<[number, number]> = [];
+assetLoadProgress = (loaded, total) => {
+  if (loadEvents.length < 64) loadEvents.push([loaded, total]);
+  if (total > 0) loadingProgress.set(Math.min(0.95, loaded / total), `Loading arena ${Math.min(loaded, total)}/${total}`);
+};
 let releaseAirstripHaze: (() => void) | undefined;
 let airstripHazeRequest = 0;
 // IC47-V1: runtime VFX back on with the Iron Crown preset pack (the floating-dot cause is fixed in the engine, E-F);
@@ -2122,7 +2141,7 @@ void app.ready().then(async () => {
   await fightingGame.ready();
   loadingProgress.done("Ready");
   // A2: publish backend selection + readiness on the QA hook (diagnostic only).
-  const backendHook: Record<string, unknown> = {};
+  const backendHook: Record<string, unknown> = { loadEvents, lab: { backend: labFlags.backend ?? null, gamut: labFlags.gamut ?? null, ies: iesLab, ignored: labFlags.ignored } };
   (window as unknown as { __IRON_CROWN_BACKEND__?: unknown }).__IRON_CROWN_BACKEND__ = backendHook;
   void publishBackendReport(app, backendHook);
   bindAnimations();
