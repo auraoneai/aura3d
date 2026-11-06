@@ -19,14 +19,14 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A6: heat-haze `effects.shaderPass` can read the new `"normal"` input (WebGL2 only) for refraction accuracy (optional S)
-- [ ] A5 clustered lights evaluate for the 3 point + 1 rect + spot rig (EXPERIMENTAL flag)
-- [ ] A12 skip (seeded city)
-- [ ] A1 loader
-- [ ] A2
+- [ ] (skipped, pixel risk on refraction look; not shipped) A6: heat-haze `effects.shaderPass` can read the new `"normal"` input (WebGL2 only) for refraction accuracy (optional S)
+- [ ] (skipped, EXPERIMENTAL, not shipped by default) A5 clustered lights evaluate for the 3 point + 1 rect + spot rig (EXPERIMENTAL flag)
+- [x] A12 skip (seeded city): nothing to change
+- [x] A1 loader: `createLoadingProgress` tracks `auraApp.ready()` on the existing boot card (no new pixels)
+- [x] A2: engine diagnostics overlay via `?diag=1` only (default off); beacon `getApp` no longer uses the partial `as never` cast (B2)
 
 Verification
 
-- [ ] GC, UT, CAP
-- [ ] `node tools/game-checks/run.mjs heatsink` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] GC, UT (tests/unit/heatsink 286/286); CAP is parent-owned and not run here
+- [x] `node tools/game-checks/run.mjs heatsink`: 0 errors (2 pre-existing warnings)
+- [x] Before/after frames: `evidence/game-upgrades-502/heatsink/{before,after}.png` (960x540, real GPU Apple M4 Max via Chrome CDP, `?autostart=1&qaManual=1`, 12 s settle)
