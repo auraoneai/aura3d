@@ -833,6 +833,40 @@
         padding: 24px;
       }
 
+      /* A1 (5.0.3): course loading bar + readiness failure code. Gone once the first frame is ready. */
+      #course-loading {
+        position: fixed;
+        left: 50%;
+        top: 44%;
+        width: min(320px, 70vw);
+        transform: translateX(-50%);
+        z-index: 90;
+        pointer-events: none;
+        color: var(--accent-2);
+        font-family: var(--font-sans);
+        text-align: center;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        transition: opacity 260ms ease 160ms;
+      }
+      #course-loading .aura3d-loading {
+        height: 3px;
+        margin: 0 0 10px;
+      }
+      #course-loading[data-complete="true"],
+      #course-loading[hidden] {
+        opacity: 0;
+      }
+      #course-loading[hidden] {
+        display: none;
+      }
+      #render-error-code {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        margin-top: 10px;
+        color: var(--muted);
+      }
+
       .touch-controls {
         display: none;
       }
@@ -970,6 +1004,10 @@
       <div id="app" aria-label="Aura Links 3D golf viewport"></div>
       <div class="screen-fx"></div>
       <div id="cup-flash" class="cup-flash"></div>
+      <div id="course-loading" role="status" aria-live="polite">
+        <div class="aura3d-loading" id="course-loading-bar" role="progressbar" aria-label="Loading course" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <span id="course-loading-label">LOADING COURSE</span>
+      </div>
 
       <nav class="aura3d-top-bar" aria-label="Aura3D Aura Links 3D quick switcher">
         <span class="bar-label">MODE</span>
@@ -1163,6 +1201,7 @@
         <div>
           <h2 style="font-family:var(--font-display);letter-spacing:0.1em">AURA LINKS 3D NEEDS WEBGL2</h2>
           <p style="color:var(--muted);margin-top:8px">Enable graphics acceleration in your browser, then reload.</p>
+          <p id="render-error-code" hidden></p>
         </div>
       </div>
     </main>
