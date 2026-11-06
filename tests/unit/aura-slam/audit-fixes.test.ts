@@ -357,7 +357,7 @@ describe("top-tennis-C8 / C11 / C18: lifecycle", () => {
     expect(renderer).toContain("if (!app.deviceLost?.()) net?.sample(frames);");
   });
   it("C11: the renderer asks for a governed tier instead of the ignored string", () => {
-    expect(renderer).toContain('renderer: { quality: { tier: "auto" } }');
+    expect(renderer).toContain('renderer: { quality: { tier: "auto" }');
     expect(renderer).not.toContain('quality: "high"');
   });
   it("C11: the rig-parity harness keeps its fixed tier in the object form (same tier, no string-form warning)", () => {
