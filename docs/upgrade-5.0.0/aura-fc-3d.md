@@ -19,10 +19,10 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A6 verify motion blur and `sky.dayNight` transitions
-- [ ] replace manual trail with `effects.trail` only if trail shape matches (S, low priority)
-- [ ] A4 pilot for the single custom material (S-M)
-- [ ] A1
+- [ ] A6 verify motion blur and `sky.dayNight` transitions  (skipped: parent CAP owns verification; static frame before/after identical on 5.0.2, see evidence/game-upgrades-502/aura-fc-3d)
+- [ ] replace manual trail with `effects.trail` only if trail shape matches (S, low priority)  (skipped: risks pixels, trail shape not compared)
+- [ ] A4 pilot for the single custom material (S-M)  (skipped: EXPERIMENTAL, D4)
+- [x] A1 (shared `createLoadingProgress` tracks `app.ready`, no visible UI change; `publishBackendReport` on `window.backendReport`)
 
 Verification
 
