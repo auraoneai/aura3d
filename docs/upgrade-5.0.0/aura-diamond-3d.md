@@ -19,9 +19,11 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] replace the hand-written probe node with the supported lighting entry `@aura3d/engine/lighting` (`NativeLightProbeGrid`) or drop the dormant probe (decide: drop unless `DOME_PROBE_ENABLED` is on in a shipped path; it is off) (S) Skipped: probe is dormant (`DOME_PROBE_ENABLED = false`), `tests/unit/aura-diamond/wall-name.test.ts` pins its node shape, and the engine probe-capture fix it waits on is not in 5.0.2.
-- [ ] A3 lab. Skipped: no custom shaders; only the default-off lab flag wiring (`?backend=`, `?gamut=p3` via the shared parser) shipped.
-- [ ] A5 IES lab as Hoops. Skipped: experimental, not shipped by default.
+- [x] Drop the dormant hand-written probe node (`DOME_PROBE_ENABLED = false`, `domeInfieldProbe`) (commit 0c5e12440; `tests/unit/aura-diamond` 131 pass). `NativeLightProbeGrid` not adopted: the Dome already lights from its HDRI and the probe smeared on capture (GU47 phase 2).
+- [x] A1 visible boot loading bar (`#boot-loading`, shared `.aura3d-loading` + `createLoadingProgress({ element })`), fades out when `ready()` resolves: `evidence/game-upgrades-503/aura-diamond-3d/after-loading.png`
+- [ ] A3 backend. Skipped: `?backend=` lab flag already wired (5.0.2); WebGPU is EXPERIMENTAL, no real-GPU proof, stays default-off.
+- [ ] A5 IES photometric / light probe grid / clustered lights / voxel GI. Skipped: EXPERIMENTAL or no engine entry usable without an engine change; no real-GPU proof.
+- [ ] A4/A7/A8/A9/A10/A11/A12/A13/A14/A15/A16/A17. Skipped: not in this game's row (0 custom shaders, no physics, no splats); `?gamut=p3` stays a default-off lab flag.
 
 Verification
 
