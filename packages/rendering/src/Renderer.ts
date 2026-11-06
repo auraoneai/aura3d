@@ -4246,7 +4246,10 @@ export class Renderer {
         frameHooks.addPasses(this.graph, "after-transparent", items);
       }
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
-        throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        if (rendererQrFlags(this.device).on("A3D_QR_STRICT")) {
+          throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        }
+        warnClippingContributorsDegradedOnce();
       }
       frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
@@ -5116,7 +5119,10 @@ export class Renderer {
         frameHooks.addPasses(this.graph, "after-transparent", items);
       }
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
-        throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        if (rendererQrFlags(this.device).on("A3D_QR_STRICT")) {
+          throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        }
+        warnClippingContributorsDegradedOnce();
       }
       frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
@@ -6474,8 +6480,18 @@ function assertClippedShadowContributors(shadow: RendererShadowOptions | undefin
   mayClip: boolean, flags: QrFlags): void {
   if (!mayClip || explicit || !shadow || shadow.enabled === false) return;
   if (!isTrustedQrFlags(flags) || potentiallyActiveFrameContributors(flags).length > 0) {
+    // Contributor-owned geometry (particles, water, terrain, effects) is not clipped by scene clip planes. Outside strict mode
+    // that is an optional-effect limit, not invalid input: the scene still draws and clips its own geometry.
+    if (isTrustedQrFlags(flags) && !flags.on("A3D_QR_STRICT")) { warnClippingContributorsDegradedOnce(); return; }
     throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
   }
+}
+
+let clippingContributorsWarned = false;
+function warnClippingContributorsDegradedOnce(): void {
+  if (clippingContributorsWarned) return;
+  clippingContributorsWarned = true;
+  console.warn("SCENE_CLIPPING_CONTRIBUTOR_DEGRADED: scene clipping clips the scene's own geometry and shadows; contributor-owned geometry (effects, water, terrain) is not clipped.");
 }
 
 /**
