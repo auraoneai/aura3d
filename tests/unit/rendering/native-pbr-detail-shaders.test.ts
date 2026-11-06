@@ -619,13 +619,15 @@ describe("PBR detail shader integration", () => {
         .execute({ device, width: 8, height: 8 })).toThrow(/stable forward providers and draw participants/);
       expect(callbacks).toBe(0);
       setRendererQrFlags(createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true }), device);
+      // A feature that cannot change camera depth (no deform/alpha hook) is no veto; a per-draw hook still is.
       const removeFeature = registerShaderFeature({ id: "contact.unsafe-provider", owner: "prd04", flag: "A3D_QR_CORE", hooks: [], chunks: [],
         select: () => { callbacks += 1; return true; }, defines: () => ({}) });
+      const removeHook = registerForwardDrawHook({ id: "contact.unsafe-hook", bind: () => { callbacks += 1; } });
       try {
         expect(() => new ForwardPass({ items: [{ geometry, material }], lights: [light], frameContext: frame, shaderLibrary: library })
           .execute({ device, width: 8, height: 8 })).toThrow(/stable forward providers and draw participants/);
         expect(callbacks).toBe(0);
-      } finally { removeFeature(); }
+      } finally { removeHook(); removeFeature(); }
       setRendererQrFlags(createTrustedQrFlags({}), device);
       const driftingFrame = { ...frame, camera: { ...frame.camera!, position: [0, 0, 2] } } as unknown as FrameContributorContext;
       expect(() => new ForwardPass({ items: [{ geometry, material, onBeforeRender: () => {
@@ -637,6 +639,18 @@ describe("PBR detail shader integration", () => {
         new ForwardPass({ items: [{ geometry, material }], lights: [light], frameContext: frame, shaderLibrary: library, ...override })
           .execute({ device, width: 8, height: 8 });
         expect(device.drawCommands.at(-1)?.uniforms?.get("u_contactShadowMaskStrength")).toBe(0);
+      }
+      // Outside strict mode a receiver whose depth state differs from the camera depth simply does not take the mask.
+      {
+        const lenient = { ...frame, flags: createTrustedQrFlags({}) } as unknown as FrameContributorContext;
+        const blended = new PBRMaterial({ renderState: { blendMode: "alpha" as const } });
+        try {
+          const before = device.drawCommands.length;
+          expect(() => new ForwardPass({ items: [{ geometry, material: blended }], lights: [light], frameContext: lenient, shaderLibrary: library })
+            .execute({ device, width: 8, height: 8 })).not.toThrow();
+          expect(device.drawCommands).toHaveLength(before + 1);
+          expect(device.drawCommands.at(-1)?.uniforms?.get("u_contactShadowMaskStrength") ?? 0).toBe(0);
+        } finally { blended.dispose(); }
       }
     } finally { setContactShadowMask(device, undefined); geometry.dispose(); material.dispose(); target.dispose(); device.dispose(); }
   });

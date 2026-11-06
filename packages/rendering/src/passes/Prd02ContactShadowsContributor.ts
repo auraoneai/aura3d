@@ -191,7 +191,7 @@ function validateContactDepthItems(ctx: FrameContributorContext): readonly Rende
     }
   }
   if (excluded.size > 0) {
-    warnOnce(`CONTACT_SHADOW_PARTIAL: ${[...excluded].map(([reason, count]) => `${count} participant(s) with ${reason}`).join(", ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
+    warnOnce(`CONTACT_SHADOW_PARTIAL: participants with ${[...excluded.keys()].sort().join("; ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
   }
   return included;
   function checkItem(item: RenderItem): void {

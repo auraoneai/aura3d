@@ -237,16 +237,15 @@ export function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedPr
   return undefined;
 }
 
-/** Vertex/alpha hooks the contact depth pass cannot reproduce; the contact contributor checks every participant against them. */
-const CONTACT_PER_ITEM_HOOKS: ReadonlySet<string> = new Set(["vertex:deform", "vertex:world", "vertex:end", "fragment:alpha"]);
-
 /**
- * Providers a contact-shadow frame needs verified. Features that only act through deform/alpha hooks (skinning, morph,
- * wind, dissolve) are not a global veto: the contact contributor asks each of them per participant and leaves the
- * participants they select out of the mask depth. Draw hooks, unverified prototypes and every other provider still veto.
+ * Providers a contact-shadow frame needs verified. The mask depth is drawn by its own lean library that runs no shader
+ * feature, so a feature can only matter by changing the geometry or coverage a participant presents to the camera:
+ * those are the deform/alpha hooks the contact contributor asks, participant by participant, and leaves out of the mask
+ * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
+ * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
  */
 export function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined {
-  return forwardDrawProvidersUnsafeReason(flags, false, feature => feature.hooks.some(hook => CONTACT_PER_ITEM_HOOKS.has(hook)));
+  return forwardDrawProvidersUnsafeReason(flags, false, () => true);
 }
 
 export function forwardContactProvidersSafe(flags: QrFlags): boolean {
@@ -3834,6 +3833,9 @@ function contactShadowLightIndex(scope: ContactShadowMaskScope | undefined, item
   if (item.receiveShadow === false) return -1;
   const mask = resolveContactShadowMask(scope);
   if (!mask) return -1;
+  // A receiver whose own depth state differs from the camera depth the mask was built from cannot take the mask: outside
+  // strict mode it simply does not receive (and was left out of the mask depth), instead of failing the frame.
+  if (item.material && scope?.frame?.flags && !scope.frame.flags.on("A3D_QR_STRICT") && !contactReceiverCompatible(getBaseMaterial(item.material), scope)) return -1;
   let selected = -1;
   for (let index = 0; index < lights.length; index += 1) {
     const light = lights[index]!;
@@ -3856,6 +3858,19 @@ function contactShadowLightIndex(scope: ContactShadowMaskScope | undefined, item
 /** The mask is computed from a single camera-depth surface per pixel. These
  * receiver states can select a different surface or coverage than its depth
  * prepass, so accepting them would apply another object's shadow. */
+function contactReceiverCompatible(material: Material, scope: ContactShadowMaskScope | undefined): boolean {
+  const state = material.renderState;
+  const frameDepth = scope?.frame?.camera?.depth;
+  const depthCompare = frameDepth?.mode === "reversed" ? "greater-equal" : "less-equal";
+  if (blendStateIsTransparent(state) || !state.depthTest || !state.depthWrite
+    || remapDepthCompare(state.depthCompareV2 ?? state.depthCompare, frameDepth) !== depthCompare
+    || state.alphaToCoverage === true || state.polygonOffset != null || state.stencil != null || state.scissor != null
+    || renderStateHasExtendedCommandFields(state)) return false;
+  if (material instanceof PortableShaderMaterial && material.graphMaterial
+    && (!material.graphSourcesPristine || material.graphDisplaced || typeof (material as Material & { readonly customDepthShaderKey?: unknown }).customDepthShaderKey === "string")) return false;
+  return true;
+}
+
 function validateContactShadowReceiver(material: Material, index: number, scope: ContactShadowMaskScope | undefined): void {
   if (index < 0) return;
   const state = material.renderState;
