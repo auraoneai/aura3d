@@ -10,6 +10,7 @@
  * holds still like `manual=1`, for the district luma targets), `lanterns=1` (opt in to the pooled lantern lights; off since the GU47 phase-2 second pass), `grain=1` (opt in to the film grain), `scarf=0` (no scarf ribbon), `godrays=1` (opt in to the volumetric god rays; off by default since GU47 phase 2: in software WebGL2 the pass
  * washed the whole frame to its fog colour and cost minutes per frame), `cones=0` (no gate light cones).
  */
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
@@ -598,14 +599,16 @@ async function boot(): Promise<void> {
   actors = await loadActors(canvas, (done, total) => { status.textContent = done < total ? `Loading the runners (${done + 1} of ${total})…` : "Building the village…"; });
   status.textContent = "Building the village…";
   const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake, mode: config.look, reducedMotion, lanterns: config.lanterns, scarf: config.scarf, godRays: config.godRays, cones: config.cones, vfx: config.vfx, ink: config.ink, grain: config.grain });
+  // EXPERIMENTAL lab flags (?backend=, ?gamut=): default OFF, WebGL2 stays the default; worker/depth are not wired for this port.
+  const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     // GU47 NR-08 woodblock grade; tone mapping per WOODBLOCK_POST (aces since the phase-2 second pass: agx read the
     // village ~2 EV under 4.6.2 in software WebGL2); `?look=original` keeps aces at exposure 1.
-    output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false },
+    output: { toneMapping: config.look === "evening" ? WOODBLOCK_POST.toneMapping : "aces", ...(config.look === "evening" ? { exposure: EVENING_EXPOSURE } : {}), dither: false, ...lab.output },
     scene: world.scene
   });
   await app.ready();

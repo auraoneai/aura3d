@@ -241,7 +241,8 @@ out float vAlpha;
 void main() {
   float a = seed.x * 6.283 + sparkTime * 9.0;
   float r = 0.1 + seed.y * 0.24;
-  vec3 p = vec3(cos(a) * r, (seed.z - 0.5) * 0.35, sin(a) * r);
+  // position is all zeros for this pool; reading it keeps a_position active so the draw is not skipped (5.0.2 binding validation).
+  vec3 p = vec3(cos(a) * r, (seed.z - 0.5) * 0.35, sin(a) * r) + position;
   vAlpha = (1.0 - seed.y) * sparkStrength;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
