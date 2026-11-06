@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import { CREDIT_NOTE, CREDIT_STYLE } from "../../tools/showcase-port-pages/lib.mjs";
 
 /**
- * "Built with Aura3D" credit over game controls (audit 2026-10-29: Chroma Roll C3 mute button, The Bellkeeper's Walk WW-2
+ * "Built with Aura3D" credit over game controls (audit 2026-10-29: Splat C3 mute button, The Bellkeeper's Walk WW-2
  * joystick, Duneglide C13 flight HUD). Remote only (tools/remote-acr/run.sh). The app pages are owned by the game lanes, so the spec swaps the page's
  * current credit for the canonical one from tools/showcase-port-pages/lib.mjs in the live DOM, then hit-tests the control:
  * BEFORE is the shipped credit, AFTER the canonical one. Output: CREDIT_META <json> lines.

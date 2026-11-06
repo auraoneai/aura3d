@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/splat-rush-port/art/direction.ts",
-  "sourceSha256": "19c798cda533acae1b951ad09c7fc69c5a4ffca8093a6ce44cfa0eb9e9ec2a35",
+  "sourceSha256": "87144b0036ad667a7ff4ac225223a6dc436e94eba47c778fb0638532fa9dfc19",
   "id": "splat-rush-port",
   "genre": "platformer",
   "signatureEffect": "Hand-inked cel paint carnival at sunset: plum-inked toon ribbon road under a golden-to-violet painted sky with gate-coloured paint splashes.",

@@ -36,13 +36,13 @@ export function readNeutralLabels(slug) {
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
- * "Built with Aura3D" credit (audit 2026-10-29, cross-cutting: the fixed bottom-left link sat over Chroma Roll's mute button and
+ * "Built with Aura3D" credit (audit 2026-10-29, cross-cutting: the fixed bottom-left link sat over Splat's mute button and
  * The Bellkeeper's Walk's joystick, so a tap could leave the game). The credit now
  *  1. takes the first corner whose box overlaps no visible control (buttons, links, inputs, `.no-steer`, touch and joystick
  *     layers) and no fixed or absolute HUD element (Duneglide's flight readout sat under it too), re-checked on resize
  *     and when the game changes its HUD, including after the initial mount, and
  *  2. fades out on the first key press or pointer press outside it, so it never covers play, and
- *  3. carries `no-steer`, so a press on it does not also steer or start the game (Chroma Roll reads that class).
+ *  3. carries `no-steer`, so a press on it does not also steer or start the game (Splat reads that class).
  * pickCreditSpot is pure so tests can drive it; the page runs the same source (read from this file).
  */
 export function pickCreditSpot(view, size, obstacles, margin) {

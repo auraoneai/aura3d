@@ -2,7 +2,7 @@ import { test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
- * Lane G16 (Chroma Roll, LIGHT-01): backdrop GLB lighting at the evidence "roll" state, steady state. Remote only
+ * Lane G16 (Splat, LIGHT-01): backdrop GLB lighting at the evidence "roll" state, steady state. Remote only
  * (tools/remote-acr/run.sh); the run has no artifact egress, so output goes to the log:
  *   GL_META <json>                         luma stats, game state and engine environment per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  full-page JPEG at 1440x900, chunked (same framing as card@2x.jpg)

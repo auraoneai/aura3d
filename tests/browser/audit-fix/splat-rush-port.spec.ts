@@ -2,7 +2,7 @@ import { test, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../example-dev-server";
 
 /**
- * Lane G16 (Chroma Roll, `splat-rush-port`) audit fixes: before/after steady-state captures. Remote only
+ * Lane G16 (Splat, `splat-rush-port`) audit fixes: before/after steady-state captures. Remote only
  * (tools/remote-acr/run.sh, never local Playwright). The run has no artifact egress, so everything goes to the log:
  *   GL_META <json>                         luma, pure-white share, game state, draw calls, texture bytes per shot
  *   GL_JPG  <target> <shot> <i>/<n> <b64>  full-page JPEG, chunked
