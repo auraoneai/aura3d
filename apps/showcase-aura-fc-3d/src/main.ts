@@ -19,6 +19,9 @@ import {
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS, withoutLookAo, applyPostAccessibility } from "./game/scene";
@@ -93,10 +96,16 @@ function boot(): void {
     return noAo ? withoutLookAo(built) : built;
   };
 
+  // 5.0.2 W-8: EXPERIMENTAL lab flags (?backend=auto|webgpu, ?gamut=p3), all off by default; WebGL2 fallback is kept.
+  // `?worker=1` and `?depth=` are parsed but not wired here (no worker entry, camera is built in scene.ts).
+  const lab = readLabFlags();
+  // 5.0.2 A1: shared loading/readiness tracker (no visible UI; the existing HUD banner stays the loading message).
+  const loading = createLoadingProgress({ onProgress: (fraction) => { document.body.dataset.aura3dLoading = fraction.toFixed(2); } });
   let app: ReturnType<typeof createAuraApp>;
   try {
     app = createAuraApp("#app", {
       scene: sceneFor(bootVenue),
+      ...labAppOptions(lab),
       ...looks.appOptions(bootOriginal ? ORIGINAL_LOOKS[bootVenue].look : VENUE_LOOKS[bootVenue].look),
       // FC47-P1: the boot venue's output preset (the look carries the same id as its output.preset child). A venue
       // switched to at runtime keeps this operator: GU47(E-C) applying the look's output.preset child makes it per scene.
@@ -962,10 +971,15 @@ function boot(): void {
   }
   hud.banner("Loading 3D Stadium & Athletes...", 60000);
 
-  Promise.resolve((app as any).ready?.())
+  const readyPromise = Promise.resolve((app as any).ready?.());
+  loading.track(readyPromise, 1, "Loading 3D Stadium & Athletes");
+  readyPromise
     .catch((err) => console.warn("[fc3d] app.ready warning", err))
     .finally(() => {
       appReady = true;
+      loading.done("Ready");
+      // 5.0.2 W-6: backend selection + readiness for QA / ?diag=1 tooling (read-only, never throws).
+      void publishBackendReport(app as any, window as unknown as Record<string, unknown>).catch(() => undefined);
       document.body.dataset.aura3dReady = "true";
       // QA settle flag for the screens spec (readyGlobals): on software WebGL2 the turf texture lands 25-60 s after
       // ready, and the card frame taken 10 s after ready showed the untextured mint tint. Set once 40 s and 5 frames
