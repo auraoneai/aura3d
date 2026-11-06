@@ -7,6 +7,8 @@ import { VertexBuffer } from "../../../packages/rendering/src/VertexBuffer";
 import { VertexFormat } from "../../../packages/rendering/src/VertexFormat";
 import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { Material } from "../../../packages/rendering/src/Material";
+import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
+import { createTrustedQrFlags } from "../../../packages/rendering/src/contracts/core";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { createLeanCoreShaderLibrary, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_UNLIT_SHADER_NAME } from "../../../packages/rendering/src/ShaderLibraryCore";
@@ -360,9 +362,15 @@ describe("depth and shadow clipping submissions", () => {
     const material = new Material({ shaderKey: DEFAULT_UNLIT_SHADER_NAME, parameters: { u_alphaCutoff: 0.4 } });
     const unknown = new Material({ shaderKey: "probe", parameters: { u_alphaCutoff: 0.4 } });
     device.beginFrame(8, 8);
+    setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
     expect(() => new DepthPass({ casters: [{ geometry, material: unknown }] }).execute({ device, width: 8, height: 8 }))
       .toThrow(expect.objectContaining({ code: "DEPTH_ALPHA_FORWARD_PROGRAM_UNSUPPORTED" }));
     expect(device.drawCommands).toHaveLength(0);
+    // Outside strict mode the same caster is drawn as an opaque caster (one-time DEPTH_ALPHA_MASK_DEGRADED warning).
+    setRendererQrFlags(createTrustedQrFlags({}), device);
+    new DepthPass({ casters: [{ geometry, material: unknown }] }).execute({ device, width: 8, height: 8 });
+    expect(device.drawCommands).toHaveLength(1);
+    device.drawCommands.length = 0;
     new DepthPass({ casters: [{ geometry, material }] }).execute({ device, width: 8, height: 8 });
     expect(device.drawCommands).toHaveLength(1);
     const draw = device.drawCommands[0]!;

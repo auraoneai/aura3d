@@ -556,6 +556,7 @@ describe("depth alpha coverage", () => {
     const context = { device, width: 8, height: 8 };
     let calls = 0;
     try {
+      setRendererQrFlags(createTrustedQrFlags({ A3D_QR_STRICT: true }), device);
       device.beginFrame(8, 8);
       const plan = pass.prepare(context);
       const remove = registerForwardDrawHook({ id: "test-depth-alpha-late-hook", bind: () => { calls += 1; } });
