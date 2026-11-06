@@ -14,7 +14,8 @@
  * are `prop` solids. The original's QA surface (`__sim`, `__dbg.nearSolids`) keeps the building-only world the reference
  * capture was recorded against, so the recorded replay hashes are unchanged.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, text3D, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, text3D, type AuraApp, type AuraPhotometricProfile } from "@aura3d/engine";
+import "../../apps/showcase-port-shared/quickbar.css";
 import { createCameraClearance, createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
 import { blendPresentedInto, createPresented, type Presented } from "./presentation";
 import { buildLook, coinMatInto, mat, matInto, type LookRig } from "./look";
@@ -101,7 +102,9 @@ const config = {
   /** GU47 WP-28: `at=N` pins the time-of-day clock at N seconds of 180 (visual only; golden 10, sunset 120, bluehour 170) */
   at: parseAt(params.get("at")),
   /** `flash=reduced` caps the delivery flash (PRD §6.3 reduced flash); reduced motion implies it */
-  reducedFlash: params.get("flash") === "reduced"
+  reducedFlash: params.get("flash") === "reduced",
+  /** 5.x A5 lab (EXPERIMENTAL, default off): `lights=ies` gives the headlight spot a measured IES low-beam profile */
+  ies: params.get("lights") === "ies"
 };
 const shiftLook = config.look === "shift";
 const skid = new SkidMarks();
@@ -195,9 +198,11 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 };
 let look: LookRig;
 
+/** Set in `boot()` before `buildScene()` when `?lights=ies` (dynamic import keeps the IES parser out of the default bundle). */
+let iesProfile: AuraPhotometricProfile | undefined;
 function buildScene() {
   const row = phaseAt(todSeconds(shift.elapsed, shift.length, config.at));
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, skyFill: config.skyFill, neutral: config.neutral, roadCells: config.roadCells, start: { x: car.x, z: car.z }, look: config.look, row, ...(iesProfile ? { headlightProfile: iesProfile } : {}) });
   setChaseFraming(look.shift ? "shift" : "original");
   const s = look.builder;
   if (look.shift) for (const n of shiftSceneNodes(skid, { reducedFlash: config.reducedFlash })) s.add(n);
@@ -897,19 +902,20 @@ const progressTimer = setInterval(() => {
   loadingStatus.textContent = `${bootPhase} (${Math.round((performance.now() - bootT0) / 1000)} s)`;
 }, 1000);
 
-/** A1: shared readiness helper; keeps `--aura3d-loading` / `aria-valuenow` on the loading overlay in step with the boot phases (no visual change). */
-const loadingProgress = createLoadingProgress({ element: document.getElementById("loading") ?? undefined });
+/** A1: shared readiness helper; drives the loading panel's progress bar (`--aura3d-loading`, `aria-valuenow`) through the boot phases. */
+const loadingProgress = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
 /** Lab flags (`?backend=webgpu`, `?worker=1`, `?gamut=p3`): EXPERIMENTAL, all off by default, WebGL2/main-thread fallbacks kept. */
 const lab = labAppOptions(readLabFlags());
 
 async function boot(): Promise<void> {
   mark("module");
+  if (config.ies) iesProfile = (await import("./headlightProfile")).headlightProfile();
   // the engine owns the canvas size: CSS and backing store follow window resizes and phone rotation (lesson R1)
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: true,
     pixelRatio: Math.min(devicePixelRatio || 1, config.quality === "low" ? 1 : 1.5),
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...(config.ies ? { photometricProfiles: true } : {}), ...lab.renderer },
     output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false, ...lab.output },
     scene: buildScene()
   });
@@ -925,7 +931,7 @@ async function boot(): Promise<void> {
   if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: false, waitForTextures: false });
   mark("programsSettled");
   clearInterval(progressTimer);
-  if (look.shift) shiftRuntime = createShiftRuntime(app, look, look.furniture.lamps, skid, { reducedMotion: () => document.body.classList.contains("reduced-motion"), reducedFlash: () => config.reducedFlash || document.body.classList.contains("reduced-motion"), ...(config.at !== undefined ? { at: config.at } : {}) });
+  if (look.shift) shiftRuntime = createShiftRuntime(app, look, look.furniture.lamps, skid, { reducedMotion: () => document.body.classList.contains("reduced-motion"), reducedFlash: () => config.reducedFlash || document.body.classList.contains("reduced-motion"), ...(config.at !== undefined ? { at: config.at } : {}), ...(config.ies ? { iesHeadlight: true } : {}) });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   loadingProgress.done();

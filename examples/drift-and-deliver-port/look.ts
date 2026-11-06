@@ -6,6 +6,7 @@
  * Public `@aura3d/engine` surface only. The original's textures, models and audio are not used: facades, roads and
  * cars are painted or built in code; the sky HDRI is CC0 (Poly Haven, see assets/ATTRIBUTION.md).
  */
+import type { AuraPhotometricProfile } from "@aura3d/engine";
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
 import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicles";
 import { TRAFFIC_MODEL, carScale, trafficInstances } from "./models";
@@ -286,6 +287,8 @@ export interface LookOptions {
   look?: LookMode;
   /** Look-table row the shift look is built at (the first frame; `daylight.ts` drives it from there). */
   row?: PhaseRow;
+  /** 5.x A5 lab (`?lights=ies`): measured IES low-beam for the headlight spot; absent = the scalar spot. */
+  headlightProfile?: AuraPhotometricProfile;
 }
 
 /**
@@ -360,7 +363,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     if (!opts.env) b.add(lights.hemisphere({ name: "sky-fill", skyColor: row.hemisphere.sky, groundColor: row.hemisphere.ground, intensity: skyFillIntensity(false, opts.skyFill) }).runtime({ id: "sky-fill" }));
     // GC-L4 sodium pool and GC-L5 headlight spot: placed by main.ts each frame, dark until sunset / headlights on
     for (let i = 0; i < SODIUM_POOL; i++) b.add(lights.point({ name: `sodium-${i}`, position: [at.x, -40, at.z], color: SODIUM_COLOR, intensity: 0, distance: SODIUM_RANGE }).runtime({ id: `sodium-${i}` }));
-    b.add(lights.spot({ name: "headlight", position: [at.x, HEADLIGHT.y, at.z + HEADLIGHT.ahead], target: [at.x, 0, at.z + 20], color: HEADLIGHT.color, intensity: 0, distance: HEADLIGHT.distance, angle: (HEADLIGHT.angleDeg * Math.PI) / 180, penumbra: HEADLIGHT.penumbra }).runtime({ id: "headlight" }));
+    b.add(lights.spot({ name: "headlight", position: [at.x, HEADLIGHT.y, at.z + HEADLIGHT.ahead], target: [at.x, 0, at.z + 20], color: HEADLIGHT.color, intensity: 0, distance: HEADLIGHT.distance, angle: (HEADLIGHT.angleDeg * Math.PI) / 180, penumbra: HEADLIGHT.penumbra, ...(opts.headlightProfile ? { photometricProfile: opts.headlightProfile } : {}) }).runtime({ id: "headlight" }));
     if (opts.fog) b.add(effects.fog({ name: "haze", color: row.fog.color, density: row.fog.density }));
     if (high && opts.ao) b.add(effects.ambientOcclusion({ name: "ao" }));
     // GC-L3: contact shadows under cars, posts and props (High only; PRD §6.4 drops them on Low)

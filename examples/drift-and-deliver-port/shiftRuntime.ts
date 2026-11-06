@@ -35,6 +35,8 @@ export interface ShiftRuntimeOptions {
   reducedFlash: () => boolean;
   /** `?at=` pin, seconds of the 180 s clock. */
   at?: number;
+  /** 5.x A5 lab: the headlight carries an IES profile (absolute candela), so beams-off hides the light instead of dimming it. */
+  iesHeadlight?: boolean;
 }
 
 /** The scene nodes the runtime adds next to the look (`main.ts` `buildScene`, shift look only). */
@@ -158,6 +160,8 @@ export function createShiftRuntime(app: AuraApp, look: LookRig, lamps: readonly 
       const c = Math.cos(car.heading);
       const hl = node("headlight");
       if (hl) {
+        // a measured profile replaces the scalar intensity, so the beams fade by visibility (pops on at 2% instead of ramping)
+        if (opts.iesHeadlight) hl.setVisible?.(beams > 0.02);
         hl.setLight?.({ intensity: HEADLIGHT.intensity * beams, position: [car.x + s * HEADLIGHT.ahead, HEADLIGHT.y, car.z + c * HEADLIGHT.ahead], direction: [s * 0.998, -0.06, c * 0.998] });
       }
       // GC-V1 tyre smoke, nitro streak and skid ribbon
