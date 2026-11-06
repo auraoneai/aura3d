@@ -525,9 +525,8 @@ function sizeCanvas(): void {
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
 
-/* A1: shared loading-progress helper drives the existing loading status line (text only; no layout or render change). */
-const loadingBase = el.loadingStatus.textContent ?? "";
-const loadingProgress = createLoadingProgress({ onProgress: (fraction) => { if (fraction < 1) setText(el.loadingStatus, `${loadingBase} ${Math.round(fraction * 100)}%`); } });
+/* A1: shared loading-progress helper drives the determinate loading bar (#loading-bar); the status line keeps its copy. */
+const loadingProgress = createLoadingProgress({ element: document.getElementById("loading-bar") ?? undefined });
 /* W-8: experimental lab flags (?backend=, ?worker=, ?gamut=) are parsed here; all off by default, so `lab` is `{}` without a query. */
 const lab = labAppOptions(readLabFlags());
 
@@ -549,6 +548,7 @@ async function boot(): Promise<void> {
   });
   loadingProgress.set(0.6);
   await loadingProgress.track(app.ready(), 1);
+  loadingProgress.set(0.92);
   runtime = world.bind(app);
   applyMotion();
   /* QA crops for the E-I steady-state capture (normalised to the canvas; the chase camera holds the drone there) */
