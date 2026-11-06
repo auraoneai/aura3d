@@ -35,6 +35,7 @@ import { MINIATURE_LIFT, lookModeFromSearch, miniatureFramingFor, worldFromSearc
 import { createDioramaPresentation, type QaCrop } from "./game/presentation.js";
 import type { ModeId, WorldId } from "./game/types.js";
 import { installBlackFrameGuard } from "@aura3d/debug";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress.js";
 
 installBlackFrameGuard();
 
@@ -1425,8 +1426,12 @@ hud.renderAtlas(save);
 hud.renderStudio(save, () => {});
 loadWorld(BOOT_WORLD, "quick");
 
-void app.ready().then(async () => {
-  await pipsGame.ready();
+// A1: drive the engine loading screen from the shared helper (monotonic fraction, rejected work still settles).
+const loading = createLoadingProgress({ shell: pipsGame.shell });
+
+void loading.track(app.ready(), 3, "Loading world").then(async () => {
+  await loading.track(pipsGame.ready(), 1, "Starting");
+  loading.done();
   nodeCache.clear();
   applyRunNodeState();
   appReady = true;
