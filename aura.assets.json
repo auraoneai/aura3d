@@ -73176,6 +73176,116 @@
       ]
     },
     {
+      "id": "tennisFloodMast",
+      "type": "model",
+      "format": "glb",
+      "source": "artifacts/meshy/tennisFloodMast/model.glb",
+      "outputPath": "public/aura-assets/tennisFloodMast.4a0d9dee.glb",
+      "url": "/aura-assets/tennisFloodMast.4a0d9dee.glb",
+      "hash": "sha256-4a0d9dee36a47919eeee0d58fcfad0ab372da1022e8b7aa9ec11de61f5a4b97a",
+      "sizeBytes": 1892376,
+      "bounds": [
+        1.2168,
+        1.904,
+        0.3523
+      ],
+      "materials": [
+        "BakedMaterial"
+      ],
+      "materialMetadata": [
+        {
+          "name": "BakedMaterial",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 1,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 3,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "output_unwrapped"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 1 node across 1 root."
+        ]
+      },
+      "provenance": {
+        "source": "meshy via kiro prism"
+      },
+      "textures": [
+        "normal",
+        "texture_0",
+        "texture_0_metallic_roughness"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "messages": [
+          "Normalized +Z forward and grounded min-Y=0 for turboHeroRaceCarMeshy."
+        ]
+      },
+      "nodeNames": [
+        "output_unwrapped"
+      ],
+      "quality": "production",
+      "path": "public/aura-assets/tennisFloodMast.4a0d9dee.glb",
+      "sha256": "4a0d9dee36a47919eeee0d58fcfad0ab372da1022e8b7aa9ec11de61f5a4b97a"
+    },
+    {
       "id": "rooftopFloodlightTowerMeshy",
       "type": "model",
       "format": "glb",
