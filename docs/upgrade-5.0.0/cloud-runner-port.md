@@ -19,11 +19,14 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A4 limited (fx, sky), A6 verify motion blur (S5-WP06-06 changes taps), A1
+- [x] A1 shared loading progress (loader text), B2 typed `app.quality` cast removed, lab flags `?backend=`/`?gamut=` wired default OFF via `apps/showcase-cloud-runner-port/src/lab.ts` (`?worker`/`?depth` not wired: no worker/camera seam touched)
+- [ ] A4 limited (fx, sky): skipped, GLSL kept per wave-4 rule (pixel risk)
+- [ ] A6 verify motion blur taps: not verified (title-screen capture only; motion blur is High/Ultra gameplay-only)
+- [ ] TEXTURE_FLIPY_DEGRADED on `texture.load` grass jpg: no app-side workaround exists; the warning remains in 5.0.2 (engine issue)
 - [ ] A10 skip
 
 Verification
 
-- [ ] GC, UT, CAP
+- [x] GC (no new errors), UT (156 pass); CAP: title frame only, see evidence/game-upgrades-502/cloud-runner-port
 - [ ] `node tools/game-checks/run.mjs cloud-runner-port` clean
 - [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships

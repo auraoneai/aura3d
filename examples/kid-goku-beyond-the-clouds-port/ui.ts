@@ -243,6 +243,8 @@ export class Ui {
     box.style.pointerEvents = "auto";
   }
   private say(text: string): void { const t = this.q.toast!; t.textContent = text; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 3600); }
+  /** A1: shared loading progress (0..1) shown in the loader text until ready(). */
+  progress(fraction: number): void { if (this.failed || !this.q.loading) return; const l = this.q.loading.firstElementChild as HTMLElement | null; if (l && l.childElementCount === 0) l.textContent = `Loading… ${Math.round(fraction * 100)}%`; }
   ready(): void { if (this.failed) return; const l = this.q.loading!.firstElementChild as HTMLElement; l.style.opacity = "0"; setTimeout(() => this.q.loading!.classList.remove("on"), 520); }
   private set(key: string, value: string | number, apply: () => void): void { if (this.last[key] !== value) { this.last[key] = value; apply(); } }
 

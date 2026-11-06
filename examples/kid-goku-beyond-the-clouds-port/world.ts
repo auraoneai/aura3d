@@ -406,7 +406,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats, culla
   const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
   let postStates: Readonly<Record<string, boolean>> = {};
   let dofFocus: number | null = null;
-  const quality = (app as unknown as { quality?: { tier?: string; onChange?(cb: () => void): unknown } }).quality;
+  const quality = app.quality; // B2: typed AuraApp.quality (no partial cast)
   if (cinematic) postStates = applyCumulusPostPlan(app.post, cumulusPostPlan({ tier: quality?.tier, coarsePointer: coarse }));
   const cullShown = new Map<string, boolean>();
   let footsteps = 0;
