@@ -24,7 +24,7 @@ import {
 import { assets } from "../aura-assets.route";
 import {
   POOL, PROP_IDS, SLING_IDS, barrelNodeId, bladeNodeId, blockNodeId, crateNodeId, debrisNodeId, dotNodeId, gullPartId,
-  millHubNodeId, millPoleNodeId, plankNodeId, projectileNodeId, PROJECTILE_PARK, PROJECTILE_PARK_SCALE, type StageNodes, type StageOptions
+  millHubNodeId, millPoleNodeId, plankNodeId, projectileNodeId, type StageNodes, type StageOptions
 } from "./stage";
 
 type StageNode = AuraSceneNode | AuraNodeBuilder<AuraSceneNode>;
@@ -339,11 +339,10 @@ function buildStageOriginal(chapter: OriginalChapterLook, options: StageOptions)
 
   // ------------------------------------------------- projectiles + debris ---
   for (let i = 0; i < POOL.projectiles; i += 1) {
-    // 4.7.12: the pool is created ON-SCREEN at a tiny scale, never parked at y -120. A skinned, animated model that is
-    // created hidden/off-screen is never drawn once it is shown (the egg vanished after release); syncVisuals sets the
-    // real scale when a shot uses the node and re-parks it here, still visible, when the shot ends.
-    nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [...PROJECTILE_PARK], rotation: [0, Math.PI * 0.5, 0] })
-      .scale(PROJECTILE_PARK_SCALE)
+    // 5.0.3: the pool is created hidden below the stage like every other pooled node (5.0.2 draws hidden-created pooled
+    // skinned models once they are shown); syncVisuals places and shows the node when a shot uses it.
+    nodes.push(model(assets.gullsiegeHeroGullMeshy, { name: projectileNodeId(i), position: [0, -120, 0], rotation: [0, Math.PI * 0.5, 0] })
+      .scale(1)
       .animate({ clip: "Jump_Loop", loop: true, speed: 1.45 })
       .runtime({ id: projectileNodeId(i), tags: ["projectile"] }));
   }

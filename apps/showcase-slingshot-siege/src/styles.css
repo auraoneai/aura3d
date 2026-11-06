@@ -668,3 +668,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 .ss-level-tag b { color: var(--ss-pennant); }
 .ss-gull-pip.down { color: var(--ss-pennant); }
 .ss-brand-mark { color: var(--ss-pennant); display: inline-flex; vertical-align: -1px; }
+
+/* 5.0.3 A1: scene-load veil with a progress bar (apps/showcase-port-shared/loading-progress.ts); removed once the renderer is ready. */
+.loading-veil { position: absolute; inset: 0; display: grid; place-items: center; background: #10243c; z-index: 55; transition: opacity 320ms ease; }
+.loading-veil.is-done { opacity: 0; pointer-events: none; }
+.loading-veil.is-gone { display: none; }
+.loading-veil-bar { width: min(280px, 50vw); color: var(--ss-gold); }
+.aura3d-loading { --aura3d-loading: 0; position: relative; height: 4px; overflow: hidden; border-radius: 2px; background: rgba(255, 255, 255, 0.16); }
+.aura3d-loading::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; transition: transform 160ms linear; }
+@media (prefers-reduced-motion: reduce) { .loading-veil, .aura3d-loading::after { transition: none; } }

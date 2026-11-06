@@ -27,7 +27,7 @@ import { SiegeSim, type VisualUpdate } from "./game/sim";
 import {
   blockLook, blockNodeId, solidBlockMaterial, bladeNodeId, buildScene, debrisLook, debrisNodeId, dotNodeId,
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
-  pooledNodeIds, PROJECTILE_PARK, PROJECTILE_PARK_SCALE, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS, SOLID_BLOCK_MATERIALS
+  pooledNodeIds, PROP_IDS, POOL, SEA_LEVEL, SLING_IDS, SOLID_BLOCK_MATERIALS
 } from "./game/stage";
 import { BlockInstancePool } from "./game/blockInstances";
 import { sanitizeRenderParams } from "./game/urlGuard";
@@ -86,7 +86,14 @@ const SOLID_BLOCKS = !ORIGINAL_LOOK && chapterLook(chapter.id).solidBlocks;
 /** W-8 lab flags (?backend=, ?gamut=): EXPERIMENTAL, default OFF; with no flag the fragment is empty. */
 const LAB = labAppOptions(readLabFlags());
 /** A1: shared readiness tracker; publishes the fraction on `body[data-aura3d-loading]` (no visible UI). */
-const loading = createLoadingProgress({ onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); } });
+const loadingVeil = document.getElementById("loading-veil");
+const loading = createLoadingProgress({
+  ...(document.getElementById("loading-bar") ? { element: document.getElementById("loading-bar") as HTMLElement } : {}),
+  onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); }
+});
+/** Visible bar while the stage mounts: real milestones plus an eased creep (capped below 0.9) so the bar moves during the GLB fetch. */
+loading.set(0.08, "boot");
+const loadingCreep = window.setInterval(() => { loading.set(Math.min(0.9, loading.fraction + (0.9 - loading.fraction) * 0.06)); }, 120);
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
@@ -215,9 +222,9 @@ const pieceVisuals = new Map<number, PieceVisual>();
 let gullVisualCount = 0;
 const tweenList: { id: string; t: number; dur: number; base: readonly [number, number, number]; kind: "squash" | "hop" }[] = [];
 
-/** 4.7.12: wait on screen, tiny and visible (see PROJECTILE_PARK in game/stage.ts). */
+/** 5.0.3: idle projectile nodes are hidden below the stage like every other pooled node. */
 function parkProjectile(id: string): void {
-  node(id)?.setPosition(PROJECTILE_PARK[0], PROJECTILE_PARK[1], PROJECTILE_PARK[2]).setScale(PROJECTILE_PARK_SCALE).setVisible(true);
+  node(id)?.setPosition(0, -120, 0).setVisible(false);
 }
 
 function assignPieceVisuals(): void {
@@ -225,10 +232,7 @@ function assignPieceVisuals(): void {
   // Park AND hide every pooled piece/projectile/debris/puff node, including ones never touched yet
   // (never hide static stage/sling/prop nodes). Gull rigs and windmills are toggled below.
   for (const id of POOLED_IDS) {
-    // 4.7.12: idle projectile nodes stay on screen, tiny and visible (a node parked hidden off-screen is never drawn
-    // once a shot shows it); every other pooled node keeps the park-and-hide.
-    if (id.startsWith("v-proj-")) parkProjectile(id);
-    else node(id)?.setPosition(0, -120, 0).setVisible(false);
+    node(id)?.setPosition(0, -120, 0).setVisible(false);
   }
   const pieces = sim.pieceList();
   pieceSlots = assignPoolSlots(pieces.map((p) => p.spec), POOL);
@@ -1592,6 +1596,9 @@ gameApp.onFrame(({ dt }) => {
   void loading.track(app.ready(), 1, "renderer").then(() => {
     appReady = true;
     loading.done("ready");
+    window.clearInterval(loadingCreep);
+    loadingVeil?.classList.add("is-done");
+    window.setTimeout(() => loadingVeil?.classList.add("is-gone"), 400);
     document.body.dataset.aura3dReady = "true";
     const diag = app.diagnostics?.();
     const errs = (diag as { errors?: readonly { message?: string }[] } | undefined)?.errors ?? [];
@@ -1600,7 +1607,7 @@ gameApp.onFrame(({ dt }) => {
     flushPendingLooks();
     publishEvidence();
     refreshHud();
-  }).catch(() => show("Renderer mount failed — WebGL2 is required."));
+  }).catch(() => { window.clearInterval(loadingCreep); loadingVeil?.classList.add("is-gone"); show("Renderer mount failed — WebGL2 is required."); });
 }
 
 // deterministic evidence hooks for capture tooling
