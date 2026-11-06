@@ -19,11 +19,15 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A1 (22 models: best candidate for `game.shell.track()` loading bar), A8 per-slot custom shader on fighter GLBs only if a custom surface exists (none now: skip), A14 none, A5 photometric spot for the 4 `lights.spot` arena lights (EXPERIMENTAL; scalar fallback exists, one non-clustered WebGL2 spot only), A16 none (kinematic bodies are the game runtime's own, `game.kinematicBody`, not Rapier), A7 worker flag (largest main-thread sim; experiment only)
+- [x] A1 shared loading helper: `createLoadingProgress({ shell: fightingGame.shell })` tracks `app.ready()`, `done()` after `fightingGame.ready()` (no visible change in frames)
+- [x] A2 backend selection + readiness published on `window.__IRON_CROWN_BACKEND__` via shared `publishBackendReport`
+- [x] A14, A16, A8: none / not applicable (no custom surface, kinematic bodies are the game runtime's own)
+- [ ] B2 partial AuraApp cast: not applicable here (the only cast is a node `animation` handle in `layerApi`, not an `AuraApp` double); skipped
+- [ ] A5 photometric spot, A7 worker flag, lab flags: skipped, `createGame` exposes no renderer/worker option passthrough for the shared lab parser (engine issue recorded), EXPERIMENTAL stays off
 
 Verification
 
-- [ ] GC, UT (fighting sim/replay), CAP
-- [ ] combat replay determinism check unchanged
-- [ ] `node tools/game-checks/run.mjs iron-crown` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] GC, UT (fighting sim/replay), CAP
+- [x] combat replay determinism check unchanged (sim untouched; unit tests pass)
+- [x] `node tools/game-checks/run.mjs iron-crown` clean (0 errors, 16 pre-existing borrowed-asset warnings)
+- [x] Before/after frames attached (`evidence/game-upgrades-502/iron-crown/{before,after}.png`) (static bands) with the capture command, per game, before the change ships
