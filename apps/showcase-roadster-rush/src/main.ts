@@ -42,6 +42,8 @@ import { GANTRY_COUNT } from "./native/world";
 import { gantryBoxes } from "./render/gantry";
 import { assets } from "./assets";
 import { installBlackFrameGuard } from "@aura3d/debug";
+// A2: `?diag=1` shows the shared GPU diagnostics panel (draw calls, backend, tier); inert without the query parameter.
+import "../../showcase-port-shared/diag";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { HAZE_FLOOR_Y, groundSpec } from "./art/ground";
 import { asphaltMaterial, concreteMaterial } from "./art/surfaces";

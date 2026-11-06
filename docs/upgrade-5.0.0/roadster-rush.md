@@ -23,7 +23,7 @@ Adoption (5.0 adoption row)
 - [ ] A9 `camera.depth` log/reversed only if far-plane z-fighting is observed (flag, EXPERIMENTAL)
 - [ ] A3 not possible until the 7 GLSL sources have WGSL twins (A4)
 - [ ] A4 candidates in order: `decals.ts`, `wakes.ts`, `plume.ts`, `shield.ts` (small unlit/additive), leave `sky.ts`/`ground.ts` for last
-- [ ] A2 overlay
+- [x] A2 overlay (shared `?diag=1` panel wired; default view unchanged; before/after frames in `evidence/game-upgrades-502/roadster-rush/`)
 
 Verification
 
