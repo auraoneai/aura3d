@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { DepthPass, depthAlphaVariantForItem } from "../../../packages/rendering/src/DepthPass";
 import { Geometry } from "../../../packages/rendering/src/Geometry";
 import { MockRenderDevice, type DrawCommand } from "../../../packages/rendering/src/RenderDevice";
@@ -14,12 +14,12 @@ import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/Fra
 const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 const transform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3, 2, -1, 1];
 
-function deviceFor(kind: "webgpu" | "webgl2"): MockRenderDevice {
+function deviceFor(kind: "webgpu" | "webgl2", strict = false): MockRenderDevice {
   const device = new MockRenderDevice();
   Object.defineProperty(device, "kind", { value: kind });
   const draw = device.draw.bind(device);
   (device as MockRenderDevice & { drawChecked: (command: DrawCommand) => void }).drawChecked = draw;
-  setRendererQrFlags(createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true }), device);
+  setRendererQrFlags(createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, ...(strict ? { A3D_QR_STRICT: true } : {}) }), device);
   return device;
 }
 
@@ -125,7 +125,7 @@ describe("single-instance masked depth coverage", () => {
 
   it("rejects a mirrored instance when culling would expand and lose its instance color", () => {
     const geometry = Geometry.triangle(), material = new UnlitMaterial({ alphaTest: 0.5 });
-    const device = deviceFor("webgpu");
+    const device = deviceFor("webgpu", true), relaxed = deviceFor("webgpu");
     const mirror = [...identity];
     mirror[0] = -1;
     const item = { geometry, material, modelMatrix: mirror,
@@ -136,12 +136,21 @@ describe("single-instance masked depth coverage", () => {
         .toThrow(/per-instance color alpha/);
       expect(device.drawCommands).toHaveLength(0);
       device.endFrame();
+      // Non-strict: degrades to an opaque caster (one-time DEPTH_ALPHA_MASK_DEGRADED warning) instead of throwing.
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      try {
+        relaxed.beginFrame(8, 8);
+        expect(() => new DepthPass({ checkedSubmission: true, casters: [item] }).execute({ device: relaxed, width: 8, height: 8 })).not.toThrow();
+        expect(() => new DepthPass({ checkedSubmission: true, casters: [item] }).execute({ device: relaxed, width: 8, height: 8 })).not.toThrow();
+        expect(warn.mock.calls.filter((c) => String(c[0]).startsWith("DEPTH_ALPHA_MASK_DEGRADED")).length).toBeLessThanOrEqual(1);
+        relaxed.endFrame();
+      } finally { warn.mockRestore(); relaxed.dispose(); }
     } finally { material.dispose(); geometry.dispose(); device.dispose(); }
   });
 
   it("keeps multi-instance alpha, legacy forward programs and forged member flags closed", () => {
     const geometry = Geometry.triangle(), material = new UnlitMaterial({ alphaTest: 0.5 });
-    const native = deviceFor("webgpu"), legacy = deviceFor("webgl2");
+    const native = deviceFor("webgpu", true), legacy = deviceFor("webgl2", true);
     const single = { geometry, material, instanceTransforms: new Float32Array(identity), instanceColors: [1, 1, 1, 0.25] };
     const multiple = { ...single, instanceTransforms: new Float32Array([...identity, ...identity]),
       instanceColors: [1, 1, 1, 0.25, 1, 1, 1, 0.75] };
@@ -166,7 +175,7 @@ describe("single-instance masked depth coverage", () => {
     const texture = new Texture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 128]) });
     const material = new TexturedPBRMaterial({ baseColorTexture: texture });
     material.setParameter("u_alphaCutoff", 0.5);
-    const device = deviceFor("webgpu");
+    const device = deviceFor("webgpu", true);
     const item = { geometry, material, instanceTransforms: new Float32Array(identity), instanceColors: [1, 1, 1, 0.25] };
     try {
       device.beginFrame(8, 8);

@@ -577,11 +577,30 @@ describe("prd02.contactShadows contributor publishes the mask to forward shading
     const device = ctx.device as MockRenderDevice;
     try {
       device.beginFrame(ctx.width, ctx.height);
-      expect(() => contributor.passes!("shadows", ctx)[0]!.execute({ device, width: ctx.width, height: ctx.height })).toThrow(/verified forward shader providers/);
+      expect(() => contributor.passes!("shadows", ctx)[0]!.execute({ device, width: ctx.width, height: ctx.height })).toThrow(/shader feature test\.contact-vertex-deform\b/);
       expect(device.drawCommands).toHaveLength(0);
       expect(contactShadowMask(device)).toBeUndefined();
       device.endFrame();
     } finally { unregister(); contributor.dispose?.(); device.dispose(); }
+  });
+
+  it("leaves a vertex-deformed participant out of the mask depth instead of dropping the scene's contact shadow when strict is off", () => {
+    const unregister = registerShaderFeature({
+      id: "test.contact-vertex-deform-lenient", owner: "prd02", flag: "A3D_QR_LIGHTING", chunks: [], hooks: ["vertex:deform"],
+      select: ({ item }) => item.label === "changed" ? true : undefined, defines: () => ({})
+    });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const contributor = createPrd02ContactShadowsContributor();
+    const ctx = ctxFor({ source: sourceWith({ prd02Contact: {} }), items: [caster, floor, { ...floor, label: "changed" }], flags: flagsOn(["A3D_QR_LIGHTING"]) });
+    const device = ctx.device as MockRenderDevice;
+    try {
+      device.beginFrame(ctx.width, ctx.height);
+      expect(() => contributor.passes!("shadows", ctx)[0]!.execute({ device, width: ctx.width, height: ctx.height })).not.toThrow();
+      expect(device.drawCommands.length).toBeGreaterThan(0);
+      expect(contactShadowMask(device)).toBeDefined();
+      expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_PARTIAL"))).toBe(true);
+      device.endFrame();
+    } finally { warn.mockRestore(); unregister(); contributor.dispose?.(); device.dispose(); }
   });
 
   it("rejects registered forward draw hooks before publishing camera depth", () => {

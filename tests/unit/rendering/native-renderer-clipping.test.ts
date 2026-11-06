@@ -17,6 +17,8 @@ import { BaseRenderPass } from "../../../packages/rendering/src/RenderPass";
 import { batchMembersFor, createEngineBatchInstanceItem, createEnginePackedBatchItem, isEngineBatchInstanceItem, isEnginePackedBatchItem, rememberBatchMembers } from "../../../packages/rendering/src/batching/BatchMembers";
 
 const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_CORE_OUTPUT: false, A3D_QR_LIGHTING: false });
+// The contributor-clipping preflight is a strict-mode contract; outside strict mode it degrades (see clipping-contributor-degrade.test.ts).
+const strictFlags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_CORE_OUTPUT: false, A3D_QR_LIGHTING: false, A3D_QR_STRICT: true });
 const planes = (draw: DrawCommand) => Array.from(draw.uniforms?.get("u_a3dClipPlanes") as Float32Array).slice(0, 8);
 
 describe("renderer frame clipping", () => {
@@ -174,7 +176,7 @@ describe("renderer frame clipping", () => {
   });
 
   it.each([false, true])("rejects scene clipping on splats and unverified contributor geometry (async=%s)", async asynchronous => {
-    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: flags });
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: strictFlags });
     const device = renderer.device as MockRenderDevice;
     const geometry = Geometry.litCube(1), material = new PBRMaterial();
     const globalClipping = { planes: [[1, 0, 0, 0] as const] };
@@ -197,7 +199,7 @@ describe("renderer frame clipping", () => {
   });
 
   it.each([[false, false], [false, true], [true, false], [true, true]])("rejects an untrusted provider before source collection or shadow work (async=%s, item=%s)", async (asynchronous, perItem) => {
-    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: flags });
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: strictFlags });
     const device = renderer.device as MockRenderDevice;
     const geometry = Geometry.litCube(1), material = new PBRMaterial();
     const sun = new DirectionalLight("accessor-provider"); sun.castsShadow = true;
@@ -220,7 +222,7 @@ describe("renderer frame clipping", () => {
   });
 
   it.each([false, true])("rejects a provider registered by a clipping resolver before shadow work (async=%s)", async asynchronous => {
-    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: flags });
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: strictFlags });
     const device = renderer.device as MockRenderDevice;
     const geometry = Geometry.litCube(1), material = new PBRMaterial();
     const sun = new DirectionalLight("dynamic-provider"); sun.castsShadow = true;
@@ -238,7 +240,7 @@ describe("renderer frame clipping", () => {
   });
 
   it.each([false, true])("does not read item-list accessors during clipped shadow preflight (async=%s)", async asynchronous => {
-    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: flags });
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: strictFlags });
     const device = renderer.device as MockRenderDevice;
     const geometry = Geometry.litCube(1), material = new PBRMaterial();
     const sun = new DirectionalLight("list-accessor"); sun.castsShadow = true;

@@ -2919,7 +2919,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "63dbe11c21f98076e4e064a671bc5c7ad09f15b5f55ed3ff1f75d77a1a47a48c"
+          "sha256": "fe92862b6ab8fc9fc8511280da85ece465a564da9b9266e1eb928ea531738c3f"
         }
       ],
       "regions": [
@@ -3056,7 +3056,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "63dbe11c21f98076e4e064a671bc5c7ad09f15b5f55ed3ff1f75d77a1a47a48c"
+          "sha256": "fe92862b6ab8fc9fc8511280da85ece465a564da9b9266e1eb928ea531738c3f"
         }
       ],
       "regions": [
@@ -7595,7 +7595,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "63dbe11c21f98076e4e064a671bc5c7ad09f15b5f55ed3ff1f75d77a1a47a48c"
+          "sha256": "fe92862b6ab8fc9fc8511280da85ece465a564da9b9266e1eb928ea531738c3f"
         }
       ],
       "regions": [
@@ -7665,7 +7665,7 @@
         },
         {
           "path": "packages/rendering/src/Renderer.ts",
-          "sha256": "63dbe11c21f98076e4e064a671bc5c7ad09f15b5f55ed3ff1f75d77a1a47a48c"
+          "sha256": "fe92862b6ab8fc9fc8511280da85ece465a564da9b9266e1eb928ea531738c3f"
         }
       ],
       "regions": [
@@ -8843,7 +8843,7 @@
         },
         {
           "path": "packages/rendering/src/ForwardPass.ts",
-          "sha256": "c9ff4066b27c37e83e5f0771d76aebc92709a38bedf8ff51b6662af888b34327"
+          "sha256": "b33401ff98c12b95ffc9c8a864d1a1dd3938e4ff3eb985d70a43f96d0bb9c8cd"
         },
         {
           "path": "packages/rendering/src/Geometry.ts",

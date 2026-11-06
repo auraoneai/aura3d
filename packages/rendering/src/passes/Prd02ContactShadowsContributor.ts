@@ -34,7 +34,7 @@ import { blendStateIsTransparent } from "../BlendModes";
 import { shaderFeaturesFor } from "../contracts/program";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { registerContactShadowShadingPass } from "../shadows/contactPassTrust";
-import { forwardContactGeometrySafe, forwardContactParticipantSafe, forwardDrawProvidersSafe, hasForwardDrawHooks, type RenderItem } from "../ForwardPass";
+import { forwardContactGeometrySafe, forwardContactParticipantSafe, forwardContactProvidersSafe, hasForwardDrawHooks, type RenderItem } from "../ForwardPass";
 import { collectShadowSystemLights } from "../shadows/Prd02ShadowsContributor";
 import { resolvePrd02ShadowCasterVariant, prd02DepthFeatures, registerPrd02DepthShader, prd02ShadowCasterEligible } from "../shadows/Prd02DepthShaderLibrary";
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "../ShaderLibraryCore";
@@ -160,7 +160,8 @@ function contactDepthItems(items: readonly RenderItem[]): RenderItem[] {
  * mask is shared by every receiver, so skipping a problematic item alone is
  * insufficient. Run immediately before depth submission, after clearing any
  * earlier publication, and re-check on every frame. */
-function validateContactDepthItems(ctx: FrameContributorContext): void {
+function validateContactDepthItems(ctx: FrameContributorContext): readonly RenderItem[] {
+  const strict = ctx.flags.on("A3D_QR_STRICT");
   const fail = (item: RenderItem, reason: string): never => {
     throw new RenderDeviceError(`Contact shadow camera depth cannot represent ${reason}`, "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { label: item.label, reason });
   };
@@ -168,20 +169,38 @@ function validateContactDepthItems(ctx: FrameContributorContext): void {
   if (hasForwardDrawHooks()) {
     throw new RenderDeviceError("Contact shadow camera depth cannot be used with forward draw hooks", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: "forward draw hooks" });
   }
-  if (!forwardDrawProvidersSafe(ctx.flags)) {
+  if (!forwardContactProvidersSafe(ctx.flags)) {
     throw new RenderDeviceError("Contact shadow camera depth requires verified forward shader providers", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: "forward shader providers" });
   }
   const identityMatrix = (matrix: ArrayLike<number>) => matrix.length === 16 && Array.from(matrix).every((value, i) => value === identity[i]);
   const sameMatrix = (a: ArrayLike<number>, b: ArrayLike<number>) => a.length === 16 && Array.from(a).every((value, i) => Number.isFinite(value) && Math.abs(value - b[i]!) <= 1e-5 * Math.max(1, Math.abs(b[i]!)));
   const features = shaderFeaturesFor(ctx.flags);
+  // Strict keeps the all-or-nothing contract. Otherwise a participant whose camera depth the mask cannot reproduce
+  // (skinned, morphed, wind-deformed, alpha-tested, blended, custom shader) is left out of the mask depth and receives
+  // the mask of the surface behind it, instead of removing the contact shadow from the whole scene.
+  const included: RenderItem[] = [];
+  const excluded = new Map<string, number>();
   for (const item of ctx.items) {
+    // A per-draw callback aborts every forward draw while a mask is published, so it cannot be left out.
+    if (item.onBeforeRender) fail(item, "a draw callback that may change the scene");
+    try { checkItem(item); included.push(item); }
+    catch (error) {
+      if (strict || !(error instanceof RenderDeviceError) || error.code !== "CONTACT_SHADOW_DEPTH_UNSUPPORTED") throw error;
+      const reason = String((error.details as { reason?: unknown } | undefined)?.reason ?? "unsupported participant");
+      excluded.set(reason, (excluded.get(reason) ?? 0) + 1);
+    }
+  }
+  if (excluded.size > 0) {
+    warnOnce(`CONTACT_SHADOW_PARTIAL: participants with ${[...excluded.keys()].sort().join("; ")} are outside the contact shadow depth and receive the mask of the surface behind them.`);
+  }
+  return included;
+  function checkItem(item: RenderItem): void {
     if (!forwardContactGeometrySafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
-    if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) continue;
+    if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     const material = item.material;
     const base = material instanceof MaterialInstance ? material.baseMaterial : material;
     if (base instanceof PortableShaderMaterial) fail(item, "an unverified custom or graph material participant");
     if (!forwardContactParticipantSafe(item, ctx.flags)) fail(item, "an unverified material or geometry participant");
-    if (item.onBeforeRender) fail(item, "a draw callback that may change the scene");
     if (item.geometry.topology !== "triangles") fail(item, "non-triangle coverage");
     if (item.geometryMatrix && !identityMatrix(item.geometryMatrix)) fail(item, "a geometry transform");
     if (item.instanceAttributes?.length || (item.instanceCount !== undefined && item.instanceCount > 1 && !item.instanceTransforms)) fail(item, "custom instance attributes");
@@ -356,6 +375,7 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
       if (this.mode === "shading" && !this.sourceLight) {
         throw new RenderDeviceError("Contact shadows require an identifiable directional light", "CONTACT_SHADOW_LIGHT_IDENTITY_REQUIRED");
       }
+      let depthItems: readonly RenderItem[] = this.ctx.items;
       if (this.mode === "shading") {
         const strict = this.ctx.flags.on("A3D_QR_STRICT");
         // The renderer already decided this frame's graph cannot carry a verified mask: publish nothing.
@@ -364,7 +384,7 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
           recordUnavailable(this.ctx, `degraded:${degraded}`, `CONTACT_SHADOW_DEGRADED: ${degraded}. The contact shadow mask is skipped; the scene still draws.`);
           return;
         }
-        try { validateContactDepthItems(this.ctx); }
+        try { depthItems = validateContactDepthItems(this.ctx); }
         catch (error) {
           if (strict || !(error instanceof RenderDeviceError) || error.code !== "CONTACT_SHADOW_DEPTH_UNSUPPORTED") throw error;
           // A participant the mask's camera depth cannot represent: degrade to no mask for the frame instead of failing the mount.
@@ -376,7 +396,7 @@ class Prd02ContactShadowsRenderPass extends BaseRenderPass {
       // select this particular graph's camera and items immediately before use.
       this.pass.configure(this.mode === "shading" ? {
         ...this.input,
-        casters: contactDepthItems(this.ctx.items),
+        casters: contactDepthItems(depthItems),
         depthPassOptions: { ...this.input.depthPassOptions, timeSeconds: this.ctx.timeSeconds, cameraPosition: this.ctx.camera!.position }
       } : this.input);
       this.pass.execute(context);

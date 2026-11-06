@@ -91,7 +91,7 @@ import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardContactFrameUnsafeReason, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
@@ -843,10 +843,10 @@ const staticBatchFrameItems = new WeakMap<RenderSource, {
 
 const CONTACT_SHADOW_DEGRADED_KEY = "prd02.contactShadowDegraded";
 const contactShadowDegradedWarned = new Set<string>();
-function warnContactShadowDegradedOnce(reason: string): void {
+function warnContactShadowDegradedOnce(reason: string, detail?: string): void {
   if (contactShadowDegradedWarned.has(reason)) return;
   contactShadowDegradedWarned.add(reason);
-  console.warn(`CONTACT_SHADOW_DEGRADED: ${reason}. The contact shadow mask is skipped for these frames; the scene still draws.`);
+  console.warn(`CONTACT_SHADOW_DEGRADED: ${reason}${detail ? ` (${detail})` : ""}. The contact shadow mask is skipped for these frames; the scene still draws.`);
 }
 
 /**
@@ -4082,6 +4082,7 @@ export class Renderer {
           || clippingFrame.mayClip || clippingFrame.hasMaterialResolver || contactReads.length || photometricFrame || projectedSpotFrame
           || this.renderingViews || this.pendingViewState || this.activeRasterViewport || this.benchmarkMaskArmed || this.staticUnlitCaptureDepth
           || frameHooks.hasExtraSceneGeometry())) : undefined;
+      frameHooks.placeContactProducers(this.graph);
       if (qrOutput || gaussianSplats.length > 0 || scalarVolumes.length > 0 || transmissionRequested || weightedPass || hasTransparentQueues) {
         // §9.1 v2 frame order: opaque → after-opaque (scene-depth copy,
         // contributors) → transmission → transmissive → transparent (engine
@@ -4245,14 +4246,19 @@ export class Renderer {
         frameHooks.addPasses(this.graph, "after-transparent", items);
       }
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
-        throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        if (rendererQrFlags(this.device).on("A3D_QR_STRICT")) {
+          throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        }
+        warnClippingContributorsDegradedOnce();
       }
+      frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
+        let replayDetail: string | undefined;
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
           : scalarVolumes.length > 0 ? "scalar-volumes"
           : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
-          : !forwardDrawReplaySafe(items, rendererQrFlags(this.device)) ? "unverified-draw-participants" : undefined;
+          : (replayDetail = forwardContactFrameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
         if (degradeReason) {
           // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
           // the forward draws run without the mask. Only strict mode keeps the old hard failure.
@@ -4263,7 +4269,7 @@ export class Renderer {
             throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: degradeReason });
           }
           blackboard.set(CONTACT_SHADOW_DEGRADED_KEY, degradeReason);
-          warnContactShadowDegradedOnce(degradeReason);
+          warnContactShadowDegradedOnce(degradeReason, replayDetail);
         }
       }
       if (this.benchmarkMaskArmed) {
@@ -4953,6 +4959,7 @@ export class Renderer {
           || clippingFrame.mayClip || clippingFrame.hasMaterialResolver || contactReads.length || photometricFrame || projectedSpotFrame
           || this.renderingViews || this.pendingViewState || this.activeRasterViewport || this.benchmarkMaskArmed || this.staticUnlitCaptureDepth
           || frameHooks.hasExtraSceneGeometry())) : undefined;
+      frameHooks.placeContactProducers(this.graph);
       if (qrOutput || gaussianSplats.length > 0 || scalarVolumes.length > 0 || transmissionRequested || weightedPass || hasTransparentQueues) {
         // §9.1 v2 frame order: opaque → after-opaque (scene-depth copy,
         // contributors) → transmission → transmissive → transparent (engine
@@ -5112,14 +5119,19 @@ export class Renderer {
         frameHooks.addPasses(this.graph, "after-transparent", items);
       }
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
-        throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        if (rendererQrFlags(this.device).on("A3D_QR_STRICT")) {
+          throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
+        }
+        warnClippingContributorsDegradedOnce();
       }
+      frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
+        let replayDetail: string | undefined;
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
           : scalarVolumes.length > 0 ? "scalar-volumes"
           : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
-          : !forwardDrawReplaySafe(items, rendererQrFlags(this.device)) ? "unverified-draw-participants" : undefined;
+          : (replayDetail = forwardContactFrameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
         if (degradeReason) {
           // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
           // the forward draws run without the mask. Only strict mode keeps the old hard failure.
@@ -5130,7 +5142,7 @@ export class Renderer {
             throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: degradeReason });
           }
           blackboard.set(CONTACT_SHADOW_DEGRADED_KEY, degradeReason);
-          warnContactShadowDegradedOnce(degradeReason);
+          warnContactShadowDegradedOnce(degradeReason, replayDetail);
         }
       }
       if (this.benchmarkMaskArmed) {
@@ -6468,8 +6480,18 @@ function assertClippedShadowContributors(shadow: RendererShadowOptions | undefin
   mayClip: boolean, flags: QrFlags): void {
   if (!mayClip || explicit || !shadow || shadow.enabled === false) return;
   if (!isTrustedQrFlags(flags) || potentiallyActiveFrameContributors(flags).length > 0) {
+    // Contributor-owned geometry (particles, water, terrain, effects) is not clipped by scene clip planes. Outside strict mode
+    // that is an optional-effect limit, not invalid input: the scene still draws and clips its own geometry.
+    if (isTrustedQrFlags(flags) && !flags.on("A3D_QR_STRICT")) { warnClippingContributorsDegradedOnce(); return; }
     throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
   }
+}
+
+let clippingContributorsWarned = false;
+function warnClippingContributorsDegradedOnce(): void {
+  if (clippingContributorsWarned) return;
+  clippingContributorsWarned = true;
+  console.warn("SCENE_CLIPPING_CONTRIBUTOR_DEGRADED: scene clipping clips the scene's own geometry and shadows; contributor-owned geometry (effects, water, terrain) is not clipped.");
 }
 
 /**

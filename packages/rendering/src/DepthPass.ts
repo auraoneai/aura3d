@@ -223,6 +223,28 @@ function warnAlphaHashDegradedOnce(label: string | undefined): void {
 
 /** Select the same base-map and vertex-alpha inputs as the forward material. */
 export function depthAlphaVariantForItem(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey {
+  try {
+    return depthAlphaVariantContract(item, key, device);
+  } catch (error) {
+    // The masked-depth contract could not reproduce the forward coverage (specialized primitive, packed member, per-instance
+    // alpha, alpha providers, legacy program). That is an optional shadow/depth refinement, not invalid input: outside strict
+    // mode the caster is drawn as an opaque caster (a conservative, slightly blockier shadow) and the frame still renders.
+    if (!(error instanceof RenderDeviceError) || !MASKED_DEPTH_DEGRADABLE.has(error.code) || rendererQrFlags(device).on("A3D_QR_STRICT")) throw error;
+    warnDepthDegradedOnce("DEPTH_ALPHA_MASK_DEGRADED", item.label, `uses a masked depth contract this device cannot reproduce (${error.code}); it casts as an opaque caster.`);
+    const features: Record<string, string | number | boolean> = { ...key.features };
+    delete features["prd02.depthAlphaMap"];
+    delete features["prd02.depthAlphaVertex"];
+    delete features["prd02.depthAlphaMember"];
+    return { ...key, alphaTest: false, alphaHash: false, features };
+  }
+}
+
+const MASKED_DEPTH_DEGRADABLE: ReadonlySet<string> = new Set([
+  "DEPTH_ALPHA_SPECIALIZED_GEOMETRY_UNSUPPORTED", "DEPTH_PACKED_MEMBER_UNSUPPORTED", "DEPTH_INSTANCE_ALPHA_UNSUPPORTED",
+  "DEPTH_ALPHA_PROVIDER_UNSUPPORTED", "DEPTH_ALPHA_FORWARD_MODE_UNSUPPORTED", "DEPTH_ALPHA_FORWARD_PROGRAM_UNSUPPORTED"
+]);
+
+function depthAlphaVariantContract(item: RenderItem, key: ShadowCasterVariantKey, device: RenderDevice): ShadowCasterVariantKey {
   if (key.alphaHash) {
     // 4.7.x drew a blended caster as an ordinary opaque caster. Keep that outside strict mode instead of failing the frame.
     if (rendererQrFlags(device).on("A3D_QR_STRICT")) throw new RenderDeviceError("Alpha-hashed depth has no implementation", "DEPTH_ALPHA_HASH_UNSUPPORTED", { label: item.label });

@@ -349,7 +349,7 @@ describe("contact-aware renderer program warmup", () => {
 });
 
 describe("public renderer contact route", () => {
-  it.each([false, true])("clears the previous mask when a later unsafe graph is rejected (async=%s)", async asynchronous => {
+  it.each([false, true])("keeps the contact mask when other contributors add passes, strict or not (async=%s)", async asynchronous => {
     const f = await fixture();
     const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_STRICT: true, A3D_QR_CORE_OUTPUT: false });
     const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
@@ -359,57 +359,59 @@ describe("public renderer contact route", () => {
     const geometry = Geometry.litCube(1), material = new PBRMaterial();
     const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 32 / 24, near: 0.1, far: 50 });
     camera.transform.setPosition(0, 3, 8); camera.updateCameraMatrices();
-    const sun = new DirectionalLight("previous-mask-sun"); sun.castsShadow = true; sun.transform.updateWorld(undefined, true);
+    const sun = new DirectionalLight("keep-mask-sun"); sun.castsShadow = true; sun.transform.updateWorld(undefined, true);
     const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false, prd02Contact: {} } };
-    let invoked = false;
-    let unregisterMutation: (() => void) | undefined;
-    try {
-      if (asynchronous) await renderer.renderAsync(source as never, camera as never);
-      else renderer.render(source as never, camera as never);
-      expect(contactShadowMask(f.device)).toBeDefined();
-      unregisterMutation = registerFrameContributor({
-        id: "prd02.test-stale-contact", owner: "prd02", flag: "A3D_QR_LIGHTING", phases: ["after-opaque"],
-        passes: () => [new class extends BaseRenderPass { constructor() { super("stale-mask-mutator"); } execute() { invoked = true; } }()]
-      });
-      if (asynchronous) await expect(renderer.renderAsync(source as never, camera as never)).rejects.toThrow(/verified graph passes/);
-      else expect(() => renderer.render(source as never, camera as never)).toThrow(/verified graph passes/);
-      expect(invoked).toBe(false);
-      expect(contactShadowMask(f.device)).toBeUndefined();
-    } finally { unregisterMutation?.(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); }
-  });
-
-  it.each([false, true])("degrades to no mask instead of throwing when the graph is unverified and strict is off (async=%s)", async asynchronous => {
-    const f = await fixture();
-    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_CORE_OUTPUT: false });
-    const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
-      shaderLibrary: createDefaultShaderLibrary() }, new TemporalHistory());
-    const contributor = createPrd02ContactShadowsContributor();
-    const unregisterContact = registerFrameContributor(contributor);
-    const geometry = Geometry.litCube(1), material = new PBRMaterial();
-    const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 32 / 24, near: 0.1, far: 50 });
-    camera.transform.setPosition(0, 3, 8); camera.updateCameraMatrices();
-    const sun = new DirectionalLight("degrade-sun"); sun.castsShadow = true; sun.transform.updateWorld(undefined, true);
-    const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false, prd02Contact: {} } };
-    let invoked = false;
+    const order: string[] = [];
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const unregisterOther = registerFrameContributor({
-      id: "prd02.test-extra-contact-pass", owner: "prd02", flag: "A3D_QR_LIGHTING", phases: ["after-opaque"],
-      passes: () => [new class extends BaseRenderPass { constructor() { super("extra-after-opaque"); } execute() { invoked = true; } }()]
+      id: "prd02.test-extra-contact-pass", owner: "prd02", flag: "A3D_QR_LIGHTING", phases: ["shadows", "background", "after-opaque"],
+      passes: (phase: string) => [new class extends BaseRenderPass { constructor() { super(`extra-${phase}`); } execute() { order.push(`extra-${phase}`); } }()]
     });
     try {
       if (asynchronous) await renderer.renderAsync(source as never, camera as never);
       else renderer.render(source as never, camera as never);
-      expect(invoked).toBe(true);
-      expect(contactShadowMask(f.device)).toBeUndefined();
-      // The warning is once per reason per page, so only the first (sync) run observes it.
-      if (!asynchronous) expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_DEGRADED"))).toBe(true);
+      expect(order).toEqual(expect.arrayContaining(["extra-shadows", "extra-after-opaque"]));
+      expect(contactShadowMask(f.device)).toBeDefined();
+      expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_DEGRADED"))).toBe(false);
+      // Contributor passes that run before the producer cannot interleave between its depth draw and the receiver.
+      const labels = f.native.queue.submit.mock.calls.flatMap(call => call[0]).map(command => command.label);
+      expect(labels.some(label => label.includes("prd02-contact-shadow-mask-encoder"))).toBe(true);
     } finally { warn.mockRestore(); unregisterOther(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); }
   });
 
+  it.each([[false, true], [true, true], [false, false]] as const)("an unattested producer of the contact mask is rejected in strict mode and degrades otherwise (async=%s, strict=%s)", async (asynchronous, strict) => {
+    const f = await fixture();
+    const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, ...(strict ? { A3D_QR_STRICT: true } : {}), A3D_QR_CORE_OUTPUT: false });
+    const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
+      shaderLibrary: createDefaultShaderLibrary() }, new TemporalHistory());
+    const geometry = Geometry.litCube(1), material = new PBRMaterial();
+    const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 32 / 24, near: 0.1, far: 50 });
+    camera.transform.setPosition(0, 3, 8); camera.updateCameraMatrices();
+    const sun = new DirectionalLight("foreign-sun"); sun.castsShadow = true; sun.transform.updateWorld(undefined, true);
+    const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false } };
+    let ran = false;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const unregisterForeign = registerFrameContributor({
+      id: "prd02.test-foreign-mask", owner: "prd02", flag: "A3D_QR_LIGHTING", phases: ["shadows"],
+      passes: () => [new class extends BaseRenderPass { constructor() { super("foreign-mask-writer", [], ["prd02.contactShadowMask"]); } execute() { ran = true; } }()]
+    });
+    try {
+      if (strict) {
+        if (asynchronous) await expect(renderer.renderAsync(source as never, camera as never)).rejects.toThrow(/verified graph passes/);
+        else expect(() => renderer.render(source as never, camera as never)).toThrow(/verified graph passes/);
+      } else {
+        if (asynchronous) await renderer.renderAsync(source as never, camera as never);
+        else renderer.render(source as never, camera as never);
+        expect(ran).toBe(true);
+        expect(contactShadowMask(f.device)).toBeUndefined();
+      }
+    } finally { warn.mockRestore(); unregisterForeign(); renderer.dispose(); geometry.dispose(); material.dispose(); }
+  });
+
   it.each([
-    [false, "shadows"], [true, "shadows"], [false, "background"], [true, "background"],
+    [false, "shadows"], [true, "shadows"],
     [false, "after-opaque"], [true, "after-opaque"], [false, "transparent"], [true, "transparent"]
-  ] as const)("rejects an unverified %s=%s mutation before graph execution", async (asynchronous, phase) => {
+  ] as const)("contributor mutation in %s=%s is ordered outside the producer-to-receiver interval", async (asynchronous, phase) => {
     const f = await fixture();
     const flags = createTrustedQrFlags({ A3D_QR_CORE: true, A3D_QR_CORE_GENERATOR: true, A3D_QR_LIGHTING: true, A3D_QR_STRICT: true, A3D_QR_CORE_OUTPUT: false });
     const renderer = new Renderer(f.device, { backend: "webgpu", width: 32, height: 24, canvas: f.canvas, qrFlags: flags,
@@ -436,10 +438,17 @@ describe("public renderer contact route", () => {
     const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false, prd02Contact: {} },
       ...(phase === "background" ? { environmentBackground: { projection: "equirect", texture: new TextureBinding({ name: "test-background", texture: background }), encoding: "srgb" } } : {}) };
     try {
-      if (asynchronous) await expect(renderer.renderAsync(source as never, camera as never)).rejects.toThrow(/verified graph passes/);
-      else expect(() => renderer.render(source as never, camera as never)).toThrow(/verified graph passes/);
-      expect(invoked).toBe(false);
-      expect(f.native.queue.submit.mock.calls.flatMap(call => call[0]).some(command => command.label.includes("prd02-contact-shadow-mask-encoder"))).toBe(false);
+      if (phase === "shadows") {
+        // The mutation now lands before the producer draws its depth, so the producer validates the mutated material.
+        if (asynchronous) await expect(renderer.renderAsync(source as never, camera as never)).rejects.toThrow(/alpha-tested coverage/);
+        else expect(() => renderer.render(source as never, camera as never)).toThrow(/alpha-tested coverage/);
+        expect(invoked).toBe(true);
+      } else {
+        if (asynchronous) await renderer.renderAsync(source as never, camera as never);
+        else renderer.render(source as never, camera as never);
+        expect(invoked).toBe(true);
+        expect(contactShadowMask(f.device)).toBeDefined();
+      }
     } finally { unregisterMutation(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); background.dispose(); }
   });
 
@@ -558,17 +567,17 @@ describe("graph contact producer integration", () => {
       expect(contactShadowMask(f.device)).toBeUndefined();
       expect(ctx.blackboard.has("prd02.contactShadowMask")).toBe(false);
       f.device.endFrame();
-      // Non-strict (the default): the same frame degrades to no mask instead of failing the mount, and warns once.
+      // Non-strict (the default): the participant is excluded from the mask depth instead of failing the mount, and warns once.
       const lenient = { ...ctx, flags: createTrustedQrFlags({ A3D_QR_LIGHTING: true }) };
       const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       try {
         f.device.beginFrame(32, 24);
         const lenientSubmissions = f.native.queue.submit.mock.calls.length;
         expect(() => contributor.passes!("shadows", lenient)[0]!.execute({ device: f.device, width: 32, height: 24 })).not.toThrow();
-        expect(f.native.queue.submit.mock.calls).toHaveLength(lenientSubmissions);
-        expect(contactShadowMask(f.device)).toBeUndefined();
-        expect(lenient.blackboard.has("prd02.contactShadowMask")).toBe(false);
-        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_DEGRADED"))).toBe(true);
+        // The unrepresentable participant is left out of the mask depth; the rest of the scene keeps its contact shadow.
+        expect(f.native.queue.submit.mock.calls.length).toBeGreaterThan(lenientSubmissions);
+        expect(contactShadowMask(f.device)).toBeDefined();
+        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_PARTIAL"))).toBe(true);
         f.device.endFrame();
       } finally { warn.mockRestore(); }
     } finally {
