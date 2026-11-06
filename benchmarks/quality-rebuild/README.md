@@ -58,13 +58,13 @@ build skips it and writes `dist/qr-assets/asset-copy-report.json`.
 
 ## Running
 
-Under the AuraOne policy, browser capture runs remotely, in GitHub Actions on macos-14. The
-`threejs-benchmark` job in `.github/workflows/quality-rebuild-capture.yml` runs `ci.sh`.
+Under the AuraOne policy (`v2026-11-05.2`), `pnpm exec playwright install chromium` and all Playwright benchmark captures run on **remote runners only** (never locally on this Mac, and `.github/workflows/*` is prohibited by policy — use serverless Azure/AWS remote runners or `auraone-remote-run` with immediate teardown).
 
 ```bash
+# Execute on a remote runner only (never run local Playwright on this Mac):
 pnpm install --frozen-lockfile
 pnpm exec playwright install chromium
-bash benchmarks/quality-rebuild/ci.sh          # LFS pull + build + capture
+bash benchmarks/quality-rebuild/ci.sh          # LFS pull + build + capture on remote runner
 # or step by step:
 pnpm exec vite build --config benchmarks/quality-rebuild/vite.config.ts
 node benchmarks/quality-rebuild/capture.mjs [--scenes 03-damaged-helmet,12-shadows] [--engines aura3d,three] [--out dir]
