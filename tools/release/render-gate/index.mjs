@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { evaluateRow, renderSummary } from "./analysis.mjs";
 import { createReaCliDriver, createSavedDriver } from "./drivers.mjs";
-import { buildTemplate, listTemplates, serveDirectory } from "./templates.mjs";
+import { buildTemplate, entryPage, listTemplates, serveDirectory } from "./templates.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -33,6 +33,7 @@ export function parseArgs(argv) {
     else if (a === "--work-dir") o.workDir = next();
     else if (a === "--rea") o.rea = next();
     else if (a === "--settle-ms") o.settleMs = Number(next());
+    else if (a === "--capture-timeout-ms") o.captureTimeoutMs = Number(next());
     else if (a === "--only") o.only = next().split(",");
     else if (a === "--help" || a === "-h") o.help = true;
     else throw new Error(`unknown argument ${a}`);
@@ -61,7 +62,7 @@ async function main() {
   mkdirSync(out, { recursive: true });
   const saved = o.driver === "saved";
   if (saved && !o.savedDir) throw new Error("--driver saved needs --saved-dir");
-  const driver = saved ? createSavedDriver(resolve(o.savedDir)) : createReaCliDriver({ reaBin: o.rea, settleMs: o.settleMs });
+  const driver = saved ? createSavedDriver(resolve(o.savedDir)) : createReaCliDriver({ reaBin: o.rea, settleMs: o.settleMs, ...(o.captureTimeoutMs ? { timeoutMs: o.captureTimeoutMs } : {}) });
   const rows = [];
   let expectedGames, expectedTemplates;
   const judge = async (target) => {
@@ -103,11 +104,11 @@ async function main() {
         try {
           const dist = await buildTemplate(source, n, work);
           server = await serveDirectory(dist);
-          await judge({ id: `template-${n}`, kind: "template", url: server.url });
+          await judge({ id: `template-${n}`, kind: "template", url: server.url + entryPage(dist) });
         } catch (e) {
           const row = evaluateRow({ id: `template-${n}`, kind: "template", url: `template:${n}` }, null);
           row.reasons = [`scaffold/build failed: ${e.message.slice(0, 300)}`];
-          console.log(`FAIL template ${n} - ${row.reasons[0]}`);
+          console.log(`FAIL template template-${n} - ${row.reasons[0]}`);
           rows.push(row);
         } finally { if (server) await server.close(); }
       }

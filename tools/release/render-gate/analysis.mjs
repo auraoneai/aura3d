@@ -115,8 +115,21 @@ function findNormalized(d, depth = 0) {
   return null;
 }
 
+/**
+ * Rows whose rendered frame is an intentional empty-state placeholder rather than a scene. The frame-content reasons
+ * (flat / no scene texture) are waived only while the page itself logs the placeholder message, so a blank page from a
+ * broken build still fails. Thresholds stay untouched; black frames, errors and mount failures are never waived.
+ */
+export const ALLOWED_PLACEHOLDERS = Object.freeze({
+  "template-animation-studio": Object.freeze({
+    why: "no episode document is loaded in a fresh scaffold: the studio route renders its empty-stage placeholder by design",
+    console: /No scene loaded/
+  })
+});
+const WAIVABLE_FRAME_REASON = /^(flat frame|no scene texture)/;
+
 /** Verdict for one row. `capture` may be null (driver failed). */
-export function evaluateRow(target, capture, thresholds) {
+export function evaluateRow(target, capture, thresholds, placeholders = ALLOWED_PLACEHOLDERS) {
   const row = { id: target.id, kind: target.kind, url: target.url, drawn: false, errorCount: 0, mountFailed: false, degradeCodes: [], errors: [], metrics: null, reasons: [], pass: false };
   if (!capture) { row.reasons.push("no capture"); return row; }
   const cls = classifyEvents(capture.events ?? []);
@@ -131,6 +144,12 @@ export function evaluateRow(target, capture, thresholds) {
       row.reasons.push(...row.metrics.reasons);
     } catch (e) { row.reasons.push(`screenshot unreadable: ${e.message}`); }
   }
+  const allowed = Object.hasOwn(placeholders, target.id) ? placeholders[target.id] : null;
+  if (allowed && row.metrics && row.metrics.p99Luma >= (thresholds ?? FRAME_THRESHOLDS).minP99Luma
+      && (capture.events ?? []).some((e) => allowed.console.test(String(e.text ?? e.message ?? "")))) {
+    const waived = row.reasons.filter((r) => WAIVABLE_FRAME_REASON.test(r));
+    if (waived.length) { row.reasons = row.reasons.filter((r) => !WAIVABLE_FRAME_REASON.test(r)); row.placeholder = allowed.why; }
+  }
   if (capture.finalUrl && target.url && capture.finalUrl !== target.url && /^https?:\/\/[^/]+\/?$/.test(capture.finalUrl)) row.reasons.push(`redirected to ${capture.finalUrl}`);
   row.pass = row.reasons.length === 0;
   return row;
@@ -143,7 +162,7 @@ export function renderSummary(rows, { title = "Render gate", expectedGames, expe
   if (expectedGames != null && games.length !== expectedGames) problems.push(`expected ${expectedGames} game rows, got ${games.length}`);
   if (expectedTemplates != null && templates.length !== expectedTemplates) problems.push(`expected ${expectedTemplates} template rows, got ${templates.length}`);
   const failed = rows.filter((r) => !r.pass);
-  const line = (r) => `| ${r.id} | ${r.drawn ? "yes" : "NO"} | ${r.errorCount} | ${r.mountFailed ? "YES" : "no"} | ${r.degradeCodes.join(", ") || "-"} | ${r.metrics ? `${(r.metrics.texturedBlockFraction * 100).toFixed(0)}% / p99 ${r.metrics.p99Luma}` : "-"} | ${r.pass ? "PASS" : "FAIL: " + r.reasons.join("; ")} |`;
+  const line = (r) => `| ${r.id} | ${r.drawn ? "yes" : r.placeholder ? "placeholder" : "NO"} | ${r.errorCount} | ${r.mountFailed ? "YES" : "no"} | ${r.degradeCodes.join(", ") || "-"} | ${r.metrics ? `${(r.metrics.texturedBlockFraction * 100).toFixed(0)}% / p99 ${r.metrics.p99Luma}` : "-"} | ${r.pass ? "PASS" : "FAIL: " + r.reasons.join("; ")} |`;
   const head = "| id | drawn | errors | mount failed | degrade codes | texture / brightness | result |\n|---|---|---|---|---|---|---|";
   const out = [`# ${title}`, "", `Generated ${generatedAt}.`, ""];
   out.push(`Games: ${games.filter((r) => r.pass).length}/${games.length} pass. Templates: ${templates.filter((r) => r.pass).length}/${templates.length} pass.`, "");

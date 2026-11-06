@@ -304,7 +304,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/product-viewer/src/main.ts",
-        "sha256": "ad3e98b411179cc0fb4b5f71c4cbb502e81e206349fe2f0db5842323165732fd"
+        "sha256": "69aeb1458f5af872714b7d153dc5f4ff88ee90708a7ae533071188ef9a12afb7"
       },
       "sourceDependencies": [
         {
@@ -809,7 +809,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
-        "sha256": "4638c1c1afe1bb93a1c9d685c800d09a9279c57d3722d573ec05cff3b603ca8f"
+        "sha256": "0bf830f3099a33d4aef2585869f73b887c3c5c94df31195c85b3122929e9c655"
       },
       "sourceDependencies": [
         {
@@ -879,7 +879,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/postprocess-scene/src/main.ts",
-        "sha256": "fca90bf5d0cfe71db49979604c4a18090f75c7dbc27cb8fce43f9e99a4210d71"
+        "sha256": "d1199c2a6dd4dfb4ee242be6eeb9bb2e09407e42dff9d9ceec2f602e7816f720"
       },
       "sourceDependencies": [
         {
@@ -949,7 +949,7 @@
       "surface": { "kind": "canvas", "selector": "canvas" },
       "source": {
         "path": "packages/create-aura3d/templates/racing-starter/src/main.ts",
-        "sha256": "8e3f6fb241780abeca83aceea3af14c82c82f0a886dcc3b0af5e4f9f7258f3d2"
+        "sha256": "da457757741987e078ab13396a57934de18064a675d7d9ec920e1520dd1bd195"
       },
       "sourceDependencies": [
         {
@@ -1112,10 +1112,10 @@
       "regions": [
         {
           "label": "subject",
-          "x": 575,
-          "y": 470,
-          "width": 55,
-          "height": 105,
+          "x": 570,
+          "y": 350,
+          "width": 140,
+          "height": 115,
           "minContrast": 8,
           "colors": [
             {
@@ -1150,7 +1150,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/architecture-interior/src/main.ts",
-        "sha256": "5edc29cf6d36868b767d18b6aa2cf552f14dd24b89c72f27342b0b83288f5497"
+        "sha256": "9d6245d1b2edf1b46c73adb4ec460860a039c64d3038b520bd0663736f010381"
       },
       "sourceDependencies": [
         {
@@ -1219,7 +1219,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/custom-scene/src/main.ts",
-        "sha256": "ad95c4a31ddb2e5b0c82b993455873002fde1375c4d8d790c55be015f06ec220"
+        "sha256": "9af5bcb023e075913a2d6febae8bb1f84b26fb513e80593ce775e82432571d3e"
       },
       "sourceDependencies": [
         {
@@ -1426,7 +1426,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/large-scene/src/main.ts",
-        "sha256": "c59a9334d573d8d12572a62ca6b79a9eac4387289d138ac65d639688e5918098"
+        "sha256": "0d71e8104b45a585675548ab9e7f08f53e33450e0f18e2ed59ec447b5f2570b8"
       },
       "sourceDependencies": [
         {
@@ -1548,7 +1548,7 @@
       },
       "source": {
         "path": "packages/create-aura3d/templates/mini-game/src/main.ts",
-        "sha256": "992e0bd3da338b9de0031ea19d873cdcfeaa9b9c3d5dafef71ca3ea6a0e73410"
+        "sha256": "516a9a4ecaa518039571f63dd76b697c3b65b96a2f20bdefbf6bf20a0bfef433"
       },
       "sourceDependencies": [
         {
