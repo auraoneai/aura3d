@@ -552,11 +552,11 @@ export function buildWorld(options: WorldOptions = {}): World {
       let reducedMotion = false;
       let title = false;
       /* GU47 SSR-01: the colour-script driver (script mode only; `?look=original` writes nothing) */
-      const lookDriver = script ? createLookDriver(app as unknown as LookAppLike, (id) => node(id) as unknown as LookNodeHandle) : null;
+      const lookDriver = script ? createLookDriver(app, (id) => node(id) as unknown as LookNodeHandle) : null;
       let lookShown: ResolvedLook | null = null;
       let lastShot: Shot | null = null;
       /* GU47 SSR-07: speed and moment post (script mode only) */
-      const cinePost = script ? createCinePostDriver(app as unknown as LookAppLike) : null;
+      const cinePost = script ? createCinePostDriver(app) : null;
       /* GU47 SSR-14: the rigged runner on the E-H mixer (script mode; `?look=original` keeps playClip) */
       const mixerActor = runner?.actor as unknown as Partial<MixerActorLike> | undefined;
       /* GU47 SSR-15: camera shots layered on the chase camera (script mode) */
