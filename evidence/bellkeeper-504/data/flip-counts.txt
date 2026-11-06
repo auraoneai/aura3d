@@ -1,0 +1,12 @@
+t60 {"hz":60,"frames":360,"flips":2,"crossfadeIssues":2,"simStepChanges":359,"walkFrames":211,"phaseBack":0,"maxWalkPhaseAdvance":0.023}
+t120 {"hz":120,"frames":720,"flips":2,"crossfadeIssues":2,"simStepChanges":359,"walkFrames":421,"phaseBack":0,"maxWalkPhaseAdvance":0.0115}
+t144 {"hz":144,"frames":864,"flips":2,"crossfadeIssues":2,"simStepChanges":359,"walkFrames":504,"phaseBack":0,"maxWalkPhaseAdvance":0.0096}
+t30 {"hz":30,"frames":180,"flips":2,"crossfadeIssues":2,"simStepChanges":179,"walkFrames":105,"phaseBack":0,"maxWalkPhaseAdvance":0.0461}
+jitter120 {"hz":120,"frames":720,"flips":2,"crossfadeIssues":2,"simStepChanges":364,"walkFrames":420,"phaseBack":0,"maxWalkPhaseAdvance":0.0161}
+jitter144 {"hz":144,"frames":864,"flips":2,"crossfadeIssues":2,"simStepChanges":363,"walkFrames":502,"phaseBack":0,"maxWalkPhaseAdvance":0.0155}
+drop120 {"hz":120,"frames":720,"flips":2,"crossfadeIssues":2,"simStepChanges":410,"walkFrames":422,"phaseBack":0,"maxWalkPhaseAdvance":0.023}
+drop144 {"hz":144,"frames":864,"flips":2,"crossfadeIssues":2,"simStepChanges":410,"walkFrames":505,"phaseBack":0,"maxWalkPhaseAdvance":0.0192}
+stepsync120 {"hz":120,"frames":720,"flips":2,"crossfadeIssues":2,"simStepChanges":378,"walkFrames":412,"phaseBack":0,"maxWalkPhaseAdvance":0.0219}
+stepsync144 {"hz":144,"frames":864,"flips":2,"crossfadeIssues":2,"simStepChanges":372,"walkFrames":501,"phaseBack":0,"maxWalkPhaseAdvance":0.0182}
+prod120 {"hz":120,"frames":720,"flips":2,"crossfadeIssues":2,"simStepChanges":359,"walkFrames":421,"phaseBack":0,"maxWalkPhaseAdvance":0.0115}
+prod60 {"hz":60,"frames":360,"flips":2,"crossfadeIssues":2,"simStepChanges":359,"walkFrames":211,"phaseBack":0,"maxWalkPhaseAdvance":0.023}
