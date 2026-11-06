@@ -48,7 +48,7 @@ import { applySplatLookAt, runtimeNodeEffectiveVisibility, runtimeNodeHandleForS
 import { localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";
 import { flattenTaggingMountedRoots, mountedGroupSpansOf, mountedRootOf, type MountedGroupSpan } from "./mountedRoots.js";
 import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
-import { createRuntimeAddedCollectedLights, isRenderableModelNode, productionRenderErrorMessage, unsupportedLightModulationDegradations } from "./observations.js";
+import { createRuntimeAddedCollectedLights, isMountableModelNode, isRenderableModelNode, productionRenderErrorMessage, unsupportedLightModulationDegradations } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
 import { sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
@@ -1360,7 +1360,7 @@ export class CompiledSceneImpl implements CompiledScene {
       }
 
       const newModelNodes = flatNodes.filter((candidate): candidate is AuraModelNode =>
-        isRenderableModelNode(candidate) && createAssetProvenance(candidate.asset).source === "typed-aura-assets-manifest"
+        isMountableModelNode(candidate) && createAssetProvenance(candidate.asset).source === "typed-aura-assets-manifest"
       );
       for (const [index, modelNode] of newModelNodes.entries()) {
         void (async () => {
@@ -1760,7 +1760,7 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
   })) recordDegrade(degradation);
 
   const modelNodes = flattened.filter((node): node is AuraModelNode =>
-    isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
+    isMountableModelNode(node) && createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"
   );
   /*
    * Loaded here rather than imported at module scope (WS-2.2). This function is only reached when the
