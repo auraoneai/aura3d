@@ -4,6 +4,7 @@
  * Without the query parameter it does nothing.
  */
 import { installSafetyNet, resolveQualitySwitches, type DiagnosticsAppLike } from "@aura3d/debug";
+import { formatBackendSelection, readBackendSelection } from "./backend-report";
 
 export const portDiagnostics = { enabled: false, lines: [] as string[] };
 
@@ -18,7 +19,10 @@ function hookApp(): DiagnosticsAppLike {
       const walk = (value: unknown, depth: number): void => {
         if (depth > 3 || value === null || typeof value !== "object") return;
         for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
-          if (/^(drawCalls|backend|fallback|fallbackReason|qualityTier|tier|triangles)$/i.test(key) && (typeof v === "number" || typeof v === "string" || typeof v === "boolean")) found[key] = v;
+          if (key === "backendSelection" && typeof v === "object" && v !== null) {
+            const selection = readBackendSelection({ backend: found.backend, backendSelection: v });
+            if (selection) found.backendSelection = formatBackendSelection(selection);
+          } else if (/^(drawCalls|backend|fallback|fallbackReason|qualityTier|tier|triangles)$/i.test(key) && (typeof v === "number" || typeof v === "string" || typeof v === "boolean")) found[key] = v;
           else if (typeof v === "object") walk(v, depth + 1);
         }
       };

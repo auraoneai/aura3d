@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-heatsink",
-  "version": "4.5.0",
+  "version": "5.0.1",
   "private": true,
   "type": "module",
   "scripts": {

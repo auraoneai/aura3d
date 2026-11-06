@@ -3831,7 +3831,7 @@
         },
         {
           "path": "apps/showcase-port-shared/quickbar.css",
-          "sha256": "9ba1a7d304eb015ac0284ecc9249f9afd9361629bd95487b97f9f662387a739a"
+          "sha256": "67da963111c93b199634e145dfbd9161afbbae638327c91df26630920ec8e183"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -4149,7 +4149,7 @@
         },
         {
           "path": "apps/showcase-port-shared/quickbar.css",
-          "sha256": "9ba1a7d304eb015ac0284ecc9249f9afd9361629bd95487b97f9f662387a739a"
+          "sha256": "67da963111c93b199634e145dfbd9161afbbae638327c91df26630920ec8e183"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
@@ -5621,7 +5621,7 @@
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
-          "sha256": "16d0e3c3bafc421cea592e2006ccec0d825feb540f7dc1302e9b8eda6188dfc3"
+          "sha256": "756523771062f023bf66ca5e73fb82e7ebe47da0b28228ff1997e6564ad3f791"
         },
         {
           "path": "examples/ninja-runner-port/world.ts",
@@ -5881,7 +5881,7 @@
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
-          "sha256": "16d0e3c3bafc421cea592e2006ccec0d825feb540f7dc1302e9b8eda6188dfc3"
+          "sha256": "756523771062f023bf66ca5e73fb82e7ebe47da0b28228ff1997e6564ad3f791"
         },
         {
           "path": "examples/roadster-hours-port/world.ts",
@@ -6116,7 +6116,7 @@
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
-          "sha256": "16d0e3c3bafc421cea592e2006ccec0d825feb540f7dc1302e9b8eda6188dfc3"
+          "sha256": "756523771062f023bf66ca5e73fb82e7ebe47da0b28228ff1997e6564ad3f791"
         },
         {
           "path": "examples/silt-and-signal-port/world.ts",
@@ -6225,7 +6225,7 @@
         },
         {
           "path": "apps/showcase-port-shared/diag.ts",
-          "sha256": "16d0e3c3bafc421cea592e2006ccec0d825feb540f7dc1302e9b8eda6188dfc3"
+          "sha256": "756523771062f023bf66ca5e73fb82e7ebe47da0b28228ff1997e6564ad3f791"
         },
         {
           "path": "examples/saiyan-snake-way-port/main.ts",
@@ -8369,7 +8369,7 @@
         },
         {
           "path": "apps/showcase-port-shared/quickbar.css",
-          "sha256": "9ba1a7d304eb015ac0284ecc9249f9afd9361629bd95487b97f9f662387a739a"
+          "sha256": "67da963111c93b199634e145dfbd9161afbbae638327c91df26630920ec8e183"
         },
         {
           "path": "packages/engine/src/agent-api/sceneMath.ts",
