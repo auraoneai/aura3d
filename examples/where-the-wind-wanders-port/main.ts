@@ -22,7 +22,10 @@ import { MODEL_ASSETS } from "./model-assets";
 import { lookPostFor, parseFoundParam, resolveLook } from "./daylight";
 import { paperPass } from "./paper-pass";
 
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+
 const params = new URLSearchParams(location.search);
+const lab = labAppOptions(readLabFlags());
 const manual = params.get("manual") === "1";
 const lowQuality = params.get("quality") === "low";
 /** `?found=0..3|bell|epilogue` pins the daylight key for captures (presentation only, the sim is untouched). The game boots the
@@ -439,8 +442,9 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     // WW47-P1: renderer.quality replaces the deprecated qualityProfile (?look=original keeps the 4.6 options)
-    renderer: originalLook ? { mode: "production", qualityProfile: "production", fallback: "safe-basic" } : { mode: "production", quality: lowQuality ? "low" : "high", fallback: "safe-basic" },
-    output: { toneMapping: "aces", exposure: originalLook ? 1.25 : 1.18, dither: false },
+    // lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with none present these spreads add nothing
+    renderer: { ...(originalLook ? { mode: "production" as const, qualityProfile: "production" as const, fallback: "safe-basic" as const } : { mode: "production" as const, quality: lowQuality ? "low" as const : "high" as const, fallback: "safe-basic" as const }), ...lab.renderer },
+    output: { toneMapping: "aces", exposure: originalLook ? 1.25 : 1.18, dither: false, ...lab.output },
     scene: world.scene
   });
   await app.ready();

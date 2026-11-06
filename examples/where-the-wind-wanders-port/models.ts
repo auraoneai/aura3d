@@ -109,6 +109,10 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
   if (set.boat) builder.add(model(MODEL_ASSETS.boat, { ...mo("boat"), name: "boat", targetLength: 5.4, castShadow, receiveShadow, collider: false }).runtime({ id: "boat" }));
 }
 
+/** Seconds over which the measured ground speed is low-passed, and the time a new dominant gait must hold before the pose switches. */
+export const SPEED_SMOOTH_SECONDS = 0.05;
+export const GAIT_DWELL_SECONDS = 0.08;
+
 export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }
 export interface HeroAnimator { update(drive: HeroDrive): Gait; reset(x: number, z: number, time?: number): void; readonly gait: Gait }
 /**
@@ -122,17 +126,27 @@ export function createHeroAnimator(app: AuraApp): HeroAnimator {
   const hero = app.nodes.require("hero");
   const loco = createLocomotion({ gaits: HERO_GAITS, minRate: 0.6, maxRate: 1.7 });
   let gait: Gait = "Idle", issued: Gait | "" = "", lastX = 0, lastZ = 0, lastTime = 0, phaseSeconds = 0, primed = false;
+  // stride phase (0..1) of the moving gaits, kept here so a held gait never jumps when the library's dominant gait flickers
+  let cycle = 0, candidate: Gait = "Idle", candidateFor = 0, speedSmooth = 0;
   return {
     get gait() { return gait; },
-    reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; primed = true; },
+    reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; cycle = 0; candidate = "Idle"; candidateFor = 0; speedSmooth = 0; primed = true; },
     update({ x, z, airborne, onBoat, time }) {
       if (!primed) { lastX = x; lastZ = z; lastTime = time; primed = true; }
       const dt = time - lastTime;
       if (dt > 0) {
-        const speed = airborne ? STRIDE_SPEED.Run : onBoat ? 0 : Math.hypot(x - lastX, z - lastZ) / dt;
-        const frame = loco.update(speed, dt);
-        gait = frame.dominant as Gait;
-        phaseSeconds = gait === "Idle" ? time % CLIP_SECONDS.Idle : frame.phase * CLIP_SECONDS[gait];
+        const raw = airborne ? STRIDE_SPEED.Run : onBoat ? 0 : Math.hypot(x - lastX, z - lastZ) / dt;
+        // a very short frame (coalesced timestamps on a 120 to 240 Hz display) makes the per-frame delta noisy: low-pass the
+        // speed over about 50 ms so one outlier cannot flip the gait; the hop and boat overrides apply at once
+        speedSmooth = airborne || onBoat ? raw : speedSmooth + (raw - speedSmooth) * Math.min(1, dt / SPEED_SMOOTH_SECONDS);
+        const frame = loco.update(speedSmooth, dt);
+        // a gait must stay dominant for GAIT_DWELL_SECONDS before the pose changes, so a borderline speed (wall slide, stop and
+        // start) cannot re-issue the crossfade every few frames
+        const dominant = frame.dominant as Gait;
+        if (dominant === gait) candidateFor = 0;
+        else { if (dominant !== candidate) candidateFor = 0; candidate = dominant; candidateFor += dt; if (candidateFor >= GAIT_DWELL_SECONDS) { gait = dominant; candidateFor = 0; } }
+        if (gait !== "Idle") cycle = (cycle + (dt * (frame.rates[gait] ?? 1)) / CLIP_SECONDS[gait]) % 1;
+        phaseSeconds = gait === "Idle" ? time % CLIP_SECONDS.Idle : cycle * CLIP_SECONDS[gait];
         lastTime = time;
         lastX = x; lastZ = z;
       }

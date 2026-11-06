@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/where-the-wind-wanders-port/art/direction.ts",
-  "sourceSha256": "a25a3350d23b3c16b639dc56560f8f730f9eb9dee18b52901b6b014009899bbb",
+  "sourceSha256": "75b09c0a49cd6384c767878b20982501b8aebfb0c5669389c8970d48efadbbaf",
   "id": "where-the-wind-wanders-port",
   "genre": "platformer",
   "signatureEffect": "Visible wind over a gouache valley: cloud shadows and gust waves roll downwind across sage grass while one continuous day moves from afternoon to lilac dusk.",
