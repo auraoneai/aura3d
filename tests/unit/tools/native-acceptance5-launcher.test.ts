@@ -420,6 +420,30 @@ describe('acceptance5 report merge', () => {
   });
 });
 
+describe('acceptance5 no-data policy (C4-06)', () => {
+  const one = { runId: 'r2', batch: 1, groups: [], evidence: null, shards: [{ id: 'h-1of1', runId: 'r2-h', group: 'h', project: 'chromium-automation', configDir: '', shard: null, specs: ['tests/browser/native-c.spec.ts'] }] };
+  const noAdapter = { status: 'unexpected', projectName: 'chromium-automation', results: [{ status: 'failed', errors: [{ message: 'WEBGPU_ACCEPTANCE_UNAVAILABLE: no adapter' }] }] };
+  const passed = { status: 'expected', projectName: 'chromium-automation', results: [{ status: 'passed' }] };
+  const merge = (title: string) => mergeAcceptance([{ plan: one, binding: null, evidence: null, shards: { 'h-1of1': { rc: 0, exits: {}, report: { suites: [{ specs: [
+    { file: 'tests/browser/native-c.spec.ts', title: 'ok', tests: [passed] },
+    { file: 'tests/browser/native-c.spec.ts', title, tests: [noAdapter] },
+  ] }] } } } }]);
+
+  it('stays passed when every no-data test is labeled EXPERIMENTAL or GPU/device-only, and records the allowed list', () => {
+    const merged = merge('[EXPERIMENTAL] webgpu compute path');
+    expect(merged.status).toBe('passed');
+    expect(merged.noDataPolicy.allowed).toHaveLength(1);
+    expect(merged.noDataPolicy.unlabeled).toHaveLength(0);
+    expect(merge('requires GPU-only adapter').status).toBe('passed');
+  });
+
+  it('is incomplete for an unlabeled no-data test and failed when anything failed', () => {
+    const merged = merge('plain webgpu test');
+    expect(merged.status).toBe('incomplete');
+    expect(merged.noDataPolicy.unlabeled[0]).toMatchObject({ test: 'plain webgpu test' });
+  });
+});
+
 describe('acceptance5 in-image evidence fetch', () => {
   it('lists the shard report prefix, writes new files and keeps candidate files', async () => {
     const dest = mkdtempSync(join(tmpdir(), 'a5-fetch-'));

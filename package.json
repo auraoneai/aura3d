@@ -277,6 +277,7 @@
     "release:gallery-index": "node tools/release/build-final-visual-review-index.mjs --version 3.0.1",
     "release:gallery-manifest": "node tools/release/build-final-visual-review-manifest.mjs --version 3.0.1",
     "release:l02": "tsx --tsconfig tsconfig.base.json tools/release/l02-producer.ts",
+    "release:render-gate": "node tools/release/render-gate/index.mjs",
     "release:prepare-version": "node tools/release/prepare-version.mjs",
     "resolution:check": "tsx --tsconfig tsconfig.base.json tools/generate-resolution-maps/index.ts --check",
     "resolution:write": "tsx --tsconfig tsconfig.base.json tools/generate-resolution-maps/index.ts --write",

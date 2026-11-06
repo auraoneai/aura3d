@@ -22,6 +22,9 @@
 #      runs the shards, <= 2 concurrent `az acr run --timeout 1800`; each run
 #      revalidates the gate in task-run.sh before discovery. The deferred
 #      evidence unit tests run last (acceptance5-evidence.sh).
+#      SHARED_IMAGE=1 (C4-07): the image is tagged by candidate + the union of ALL batches' specs, staged for that
+#      union, built once and reused by every batch (an existing tag skips staging and the build). Set
+#      RELEASE_SHARED_IMAGE=1 on the last batch (or when abandoning the run) to delete it; otherwise it is kept.
 #   5. Downloads artifacts and merges
 #      tests/reports/native-5/<RUN_ID>/acceptance-report.json.
 #
@@ -71,7 +74,8 @@ if [ -n "${MERGE_RUNS:-}" ]; then
 fi
 
 PLAN_TMP="$(mktemp /tmp/aura3d-acceptance5-plan.XXXXXX)"
-CTX=""; INPUTS_JSON=""; INPUTS_LIST=""; STAGING_RECORD=""; PUSHED=0; IMAGE_TAG=""
+CTX=""; INPUTS_JSON=""; INPUTS_LIST=""; STAGING_RECORD=""; PUSHED=0; IMAGE_TAG=""; ALL_PLAN_TMP=""; REUSED=0
+SHARED_IMAGE="${SHARED_IMAGE:-0}"; RELEASE_SHARED_IMAGE="${RELEASE_SHARED_IMAGE:-0}"
 # shellcheck source=tools/remote-acr/sas-transport.sh
 . tools/remote-acr/sas-transport.sh
 cleanup() {
@@ -84,7 +88,7 @@ cleanup() {
     "$AZ_WRAPPER" acr repository delete -n "$ACR_NAME" --image "$IMAGE_REPO:$IMAGE_TAG" --yes -o none \
       || { echo "FATAL: image cleanup could not be verified: $IMAGE_REPO:$IMAGE_TAG" >&2; rc=1; }
   fi
-  rm -rf "$PLAN_TMP" ${CTX:+"$CTX"} ${INPUTS_JSON:+"$INPUTS_JSON"} ${INPUTS_LIST:+"$INPUTS_LIST"} ${STAGING_RECORD:+"$STAGING_RECORD"}
+  rm -rf "$PLAN_TMP" ${ALL_PLAN_TMP:+"$ALL_PLAN_TMP"} ${CTX:+"$CTX"} ${INPUTS_JSON:+"$INPUTS_JSON"} ${INPUTS_LIST:+"$INPUTS_LIST"} ${STAGING_RECORD:+"$STAGING_RECORD"}
   exit "$rc"
 }
 trap cleanup EXIT
@@ -132,9 +136,36 @@ MATRIX_SOURCE_REPORT="$(bind matrixSourceReport)"
 EXAMPLES_SOURCE_REPORT="$(bind examplesSourceReport)"
 GLOBAL_TIMEOUT_MS="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).limits.playwrightGlobalTimeoutMs' "$PLAN_JSON")"
 # Evidence unit tests join the staging scan so the asset trees they read are kept.
-SCAN_FILES="$(node -p 'const p=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));[...new Set([...p.shards.flatMap(s=>s.specs), ...(p.evidence?.files ?? [])])].join(" ")' "$PLAN_JSON")"
+SCAN_PLAN_JSON="$PLAN_JSON"
+if [ "$SHARED_IMAGE" = 1 ] && [ -n "$BATCH" ]; then
+  # One image serves every batch, so stage for the union of all batches' specs (a batch plan alone would omit trees later batches read).
+  ALL_PLAN_TMP="$(mktemp /tmp/aura3d-acceptance5-allplan.XXXXXX)"
+  node tools/remote-acr/acceptance5.mjs plan --inventory "$INVENTORY" --run-id "$RUN_ID" ${ACCEPT_GROUPS:+--groups "$ACCEPT_GROUPS"} \
+    --sas-ttl-seconds "$((SAS_TTL_MINUTES * 60))" --out "$ALL_PLAN_TMP"
+  SCAN_PLAN_JSON="$ALL_PLAN_TMP"
+fi
+SCAN_FILES="$(node -p 'const p=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));[...new Set([...p.shards.flatMap(s=>s.specs), ...(p.evidence?.files ?? [])])].sort().join(" ")' "$SCAN_PLAN_JSON")"
 EVIDENCE_RUN="$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).evidence?.runId ?? ""' "$PLAN_JSON")"
 
+# ---- 2a. Azure context and image decision (after the gate, before any staging) --------------------------
+SUB="$("$AZ_WRAPPER" account show --query id -o tsv 2>/dev/null || true)"
+[ "$SUB" = "$EXPECTED_SUB" ] || { echo "FATAL: ${AZ_WRAPPER} subscription is '${SUB:-<none>}'" >&2; exit 2; }
+[ "$("$AZ_WRAPPER" account show --query tenantId -o tsv)" = "$EXPECTED_TENANT" ] || { echo "FATAL: unexpected Azure tenant" >&2; exit 2; }
+LOGIN_SERVER="$("$AZ_WRAPPER" acr show -n "$ACR_NAME" -g "$ACR_RG" --query loginServer -o tsv)"
+if [ "$SHARED_IMAGE" = 1 ]; then
+  IMAGE_TAG="shared-${COMMIT:0:12}-$(printf '%s' "$SCAN_FILES" | tr ' ' '\n' | shasum -a 256 | cut -c1-8)"
+  if [ "$("$AZ_WRAPPER" acr repository show-tags -n "$ACR_NAME" --repository "$IMAGE_REPO" --query "[?@=='$IMAGE_TAG'] | length(@)" -o tsv 2>/dev/null || echo 0)" = 1 ]; then
+    REUSED=1; echo "== reusing shared image $IMAGE_REPO:$IMAGE_TAG (no staging, no build)"
+  fi
+  # Delete only on the final batch; earlier batches keep it for reuse (the ephemeral-resource rule applies once the run ends).
+  if [ "$RELEASE_SHARED_IMAGE" = 1 ]; then PUSHED=1; else echo "   note: shared image is kept for later batches; the last batch must set RELEASE_SHARED_IMAGE=1"; fi
+else
+  IMAGE_TAG="run-${RUN_ID}-$(node -e 'process.stdout.write(require("node:crypto").randomUUID().slice(0, 8))')"
+fi
+printf '%s\n' "$IMAGE_REPO:$IMAGE_TAG" > "$OUT_DIR/image"
+
+# Stage and build only when no reusable shared image exists.
+if [ "$REUSED" != 1 ]; then
 # ---- 2. stage the gate-enumerated candidate (run.sh native browser mode) -----
 CTX="$(mktemp -d /tmp/aura3d-acceptance5-ctx.XXXXXX)"
 INPUTS_JSON="$(mktemp /tmp/aura3d-acceptance5-inputs.XXXXXX)"
@@ -159,15 +190,9 @@ node tools/remote-acr/acceptance-staging.mjs verify-context "$CTX" "$INPUTS_LIST
 find "$CTX" -name .gitignore -not -path '*/node_modules/*' -print0 | while IFS= read -r -d '' g; do mv "$g" "$(dirname "$g")/.gitignore.a3d-staged"; done
 du -sh "$CTX" | awk '{print "   context    : "$1}'
 
-# ---- 3. Azure context, one image build ---------------------------------------
-SUB="$("$AZ_WRAPPER" account show --query id -o tsv 2>/dev/null || true)"
-[ "$SUB" = "$EXPECTED_SUB" ] || { echo "FATAL: ${AZ_WRAPPER} subscription is '${SUB:-<none>}'" >&2; exit 2; }
-[ "$("$AZ_WRAPPER" account show --query tenantId -o tsv)" = "$EXPECTED_TENANT" ] || { echo "FATAL: unexpected Azure tenant" >&2; exit 2; }
-LOGIN_SERVER="$("$AZ_WRAPPER" acr show -n "$ACR_NAME" -g "$ACR_RG" --query loginServer -o tsv)"
-IMAGE_TAG="run-${RUN_ID}-$(node -e 'process.stdout.write(require("node:crypto").randomUUID().slice(0, 8))')"
-printf '%s\n' "$IMAGE_REPO:$IMAGE_TAG" > "$OUT_DIR/image"
+# ---- 3. one image build ------------------------------------------------------------------
 echo "== az acr build $IMAGE_REPO:$IMAGE_TAG (candidate $COMMIT)"
-PUSHED=1
+[ "$SHARED_IMAGE" = 1 ] || PUSHED=1
 set +e
 "$AZ_WRAPPER" acr build -r "$ACR_NAME" -g "$ACR_RG" -t "$IMAGE_REPO:$IMAGE_TAG" \
   --build-arg AURA3D_NATIVE_ACCEPTANCE=1 --build-arg "AURA3D_CODE_COMPLETE_GATE=$AURA3D_CODE_COMPLETE_GATE" \
@@ -177,6 +202,7 @@ set -e
 tail -15 "$OUT_DIR/acr-build.log"
 [ "$BUILD_RC" = 0 ] || { echo "FATAL: build failed ($OUT_DIR/acr-build.log)" >&2; exit 3; }
 rm -rf "$CTX"; CTX=""
+fi
 
 # ---- 4. one SAS, shards (<= 2 concurrent), evidence last ---------------------
 sas_transport_open "$SAS_TTL_MINUTES" tools/remote-acr/task.playwright.yaml tools/remote-acr/task.acceptance5-evidence.yaml

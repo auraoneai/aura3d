@@ -44,6 +44,18 @@ checks the code-complete gate before any Azure call. It then builds one image, r
 shards (≤ 2 concurrent, `--timeout 1800`) and the deferred evidence tests (`acceptance5-evidence.sh`), and merges
 `tests/reports/native-5/<run>/acceptance-report.json`. The commands are in `docs/prds/aura3d-native-acceptance.md`.
 
+**One image for all batches (`SHARED_IMAGE=1`).** Without it every `BATCH=n` run stages and builds its own image (the
+slowest and costliest step). With `SHARED_IMAGE=1` the image tag is `shared-<freeze12>-<hash of the union of every
+batch's specs>`, the context is staged for that union (a per-batch scan would omit trees a later batch reads), and a
+batch that finds the tag already in the registry skips staging and the build. The image is kept between batches; run the
+last batch (or an abandoned run) with `RELEASE_SHARED_IMAGE=1` so the image is deleted (teardown rule). Only the parent
+launches these runs.
+
+**Report status.** `acceptance-report.json` is `passed` only when `failed` is 0, nothing is skipped, there are no
+problems, and every `no-data` test (for example `WEBGPU_ACCEPTANCE_UNAVAILABLE`) is labeled EXPERIMENTAL or
+GPU/device-only in its title, tags, annotations or hardware labels. The allowed and unlabeled lists are recorded under
+`noDataPolicy`.
+
 ## Install & packaging decisions
 
 - **Hermetic in-image `pnpm install --frozen-lockfile`** (same command as
