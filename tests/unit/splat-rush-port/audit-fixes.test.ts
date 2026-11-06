@@ -7,7 +7,7 @@ import { IDLE, SplatRushSim, type Segment } from "../../../examples/splat-rush-p
 import { SYMBOL_FOR_COLOR, SYMBOL_VERTS, markOutline, symbolMesh } from "../../../examples/splat-rush-port/symbols";
 import { Batch, Slots } from "../../../examples/splat-rush-port/world";
 
-/** Lane G16 (Chroma Roll) audit rows: docs/audits/sections/game-16-splat-rush-port.md. */
+/** Lane G16 (Splat) audit rows: docs/audits/sections/game-16-splat-rush-port.md. */
 
 const playUntilOver = (sim: SplatRushSim, pilot: Autopilot, onStep: () => void, max = 6000): void => {
   for (let i = 0; i < max && sim.o.phase !== "gameOver"; i++) {

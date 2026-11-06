@@ -12,7 +12,7 @@ describe("Built with Aura3D credit placement (audit cross-cutting, splat-rush C3
     expect(pick({ w: 1440, h: 900 }, { w: 400, h: 27 }, []).spot).toEqual({ left: 8, bottom: 8 });
   });
 
-  it("leaves Chroma Roll's mute button free at 1440x900", () => {
+  it("leaves Splat's mute button free at 1440x900", () => {
     // Live rects from the audit: mute [16,840,44,44]; the old credit covered its lower half.
     const mute = { x: 16, y: 840, w: 44, h: 44 };
     const r = pick({ w: 1440, h: 900 }, { w: 400, h: 27 }, [mute]);
@@ -40,7 +40,7 @@ describe("Built with Aura3D credit placement (audit cross-cutting, splat-rush C3
     expect(r.spot).toEqual({ left: 8, bottom: 48 });
   });
 
-  it("leaves Chroma Roll's mute button free at 390x844, where the credit spans the width (remote run e5w2-credit)", () => {
+  it("leaves Splat's mute button free at 390x844, where the credit spans the width (remote run e5w2-credit)", () => {
     // Measured on the runner: mute [16,784,44,44], credit 382x41 at bottom-left covered it; a top HUD blocks both top corners.
     const mute = { x: 16, y: 784, w: 44, h: 44 };
     const topHud = { x: 0, y: 0, w: 390, h: 56 };
