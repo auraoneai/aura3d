@@ -185,6 +185,26 @@ describe("served KTX2 worker protocol", () => {
     await expect(shared.transcode({ bytes: encoded, transcoderFormat: 13 })).rejects.toThrow(/disposed/i);
   }, 10_000);
 
+  it("reports KTX2_CSP_BLOCKED when the page CSP refuses the decoder during worker init", async () => {
+    installWorkerTransport();
+    class CspWorker {
+      onmessage: ((event: MessageEvent) => void) | null = null;
+      onerror: ((event: ErrorEvent) => void) | null = null;
+      onmessageerror: ((event: MessageEvent) => void) | null = null;
+      constructor(readonly url: string) {}
+      postMessage(): void {
+        setTimeout(() => this.onmessage?.({ data: { type: "error", id: 0, error: "EvalError: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script" } } as MessageEvent), 0);
+      }
+      terminate(): void {}
+    }
+    vi.stubGlobal("Worker", CspWorker);
+    const decoder = pool();
+    const failure = await decoder.transcode({ bytes: encoded, transcoderFormat: 13 }).catch((error: unknown) => error);
+    expect((failure as Error).name).toBe("AssetDecoderUnavailable");
+    expect((failure as { code?: string }).code).toBe("KTX2_CSP_BLOCKED");
+    expect((failure as Error).message).toMatch(/:KTX2_CSP_BLOCKED$/);
+  }, 10_000);
+
   it("returns worker errors for oversized or malformed output and remains usable", async () => {
     const { ServedWorker } = installWorkerTransport();
     const decoder = pool({ maxOutputBytes: 32 });

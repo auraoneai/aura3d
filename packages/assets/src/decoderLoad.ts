@@ -13,12 +13,22 @@ import { redactAssetMessage } from "./AssetLoader.js";
 export class AssetDecoderUnavailable extends Error {
   public readonly decoderId: string;
   public readonly url: string;
-  constructor(decoderId: string, url: string) {
-    super(`AssetDecoderUnavailable:${decoderId}:${url}`);
+  /** Set to `KTX2_CSP_BLOCKED` when the page's Content Security Policy refused the decoder (additive). */
+  public readonly code?: "KTX2_CSP_BLOCKED";
+  constructor(decoderId: string, url: string, code?: "KTX2_CSP_BLOCKED") {
+    super(`AssetDecoderUnavailable:${decoderId}:${url}${code ? `:${code}` : ""}`);
     this.name = "AssetDecoderUnavailable";
     this.decoderId = decoderId;
     this.url = url;
+    if (code) this.code = code;
   }
+}
+
+/** True when a failure text or error says a Content Security Policy refused code generation or loading. */
+export function isCspBlockedFailure(value: unknown): boolean {
+  if (typeof EvalError !== "undefined" && value instanceof EvalError) return true;
+  const text = typeof value === "string" ? value : value instanceof Error ? `${value.name} ${value.message}` : "";
+  return /unsafe-eval|Content Security Policy|violates the following/i.test(text);
 }
 
 /** Shared bound on decoder module loads (script, wasm fetch, emscripten init). */

@@ -132,10 +132,22 @@ application: the worker needs `worker-src 'self'`; its classic script and
 the `.js` and `.mjs` decoder scripts need `script-src 'self'`, and decoder fetches need
 `connect-src 'self'`. A codec that compiles WebAssembly also needs compilation
 permitted by the browser's policy,
-normally `script-src 'wasm-unsafe-eval'` where supported. `blob:` workers and
-general JavaScript `'unsafe-eval'` are not required by the browser worker path.
-Confirm the policy against the browsers and hosting environment used by the
-application.
+normally `script-src 'wasm-unsafe-eval'` where supported. `blob:` workers are
+not required.
+
+**KTX2 (Basis) needs `'unsafe-eval'` under a strict CSP.** A real-browser
+acceptance run found that the vendored Basis transcoder (an Emscripten build)
+generates code with `eval`/`new Function` while initializing. Under a policy
+without `script-src 'unsafe-eval'` (in addition to `'wasm-unsafe-eval'`) the
+KTX2 worker fails to initialize. No CSP-safe Basis build ships yet. Draco and
+Meshopt do not have this requirement. When the failure is recognizably a
+Content Security Policy refusal (an `EvalError`, or a worker error mentioning
+`unsafe-eval` or the Content Security Policy), the rejection is an
+`AssetDecoderUnavailable` whose `code` is `KTX2_CSP_BLOCKED` and whose message
+ends with `:KTX2_CSP_BLOCKED`. Either relax the policy for pages that load KTX2
+textures, or ship PNG/JPEG textures and Draco/Meshopt geometry only on pages
+with a strict policy. Confirm the policy against the browsers and hosting
+environment used by the application.
 
 The plugin copies the compiled worker from the installed assets package. In a
 source checkout, it asks the host Vite installation to transpile the worker

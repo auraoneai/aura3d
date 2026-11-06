@@ -1,5 +1,5 @@
 /** Same-origin Basis worker pool with bounded inputs and explicit job ownership. */
-import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, drainWithDeadline, looksLikeWasmBinary } from "./decoderLoad.js";
+import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, drainWithDeadline, isCspBlockedFailure, looksLikeWasmBinary } from "./decoderLoad.js";
 import type { KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
 
 export interface KTX2WorkerTranscodeRequest {
@@ -178,6 +178,10 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   let pendingBytes = 0;
   let disposed = false;
   let disposal: Promise<void> | undefined;
+  // Set when a worker failed because the page CSP refused the decoder.
+  let cspBlocked = false;
+  const workerUrlUnavailable = (): AssetDecoderUnavailable =>
+    new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`, cspBlocked ? "KTX2_CSP_BLOCKED" : undefined);
 
   function trackInitialization(work: Promise<unknown>, cleanup = false): void {
     const tracked = work.then(
@@ -238,6 +242,7 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
       return;
     }
     if (message.type === "error" && message.id === 0) {
+      if (isCspBlockedFailure(message.error)) cspBlocked = true;
       terminate(slot, new Error(message.error ?? "KTX2 worker initialization failed"));
       return;
     }
@@ -272,7 +277,10 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
       terminate(slot, new Error(reason));
       if (wasReady) { replace(slot); pump(); }
     };
-    worker.onerror = () => workerFailed("KTX2 worker error");
+    worker.onerror = (event) => {
+      if (isCspBlockedFailure((event as ErrorEvent | undefined)?.message)) cspBlocked = true;
+      workerFailed("KTX2 worker error");
+    };
     worker.onmessageerror = () => workerFailed("KTX2 worker message error");
     try {
       const buffer = binary.slice(0);
@@ -405,7 +413,7 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
     void attempt.catch((error: unknown) => {
       if (initPromise !== attempt) return;
       initPromise = undefined;
-      const failure = error instanceof AssetDecoderUnavailable ? error : new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`);
+      const failure = error instanceof AssetDecoderUnavailable ? error : workerUrlUnavailable();
       for (const job of [...queue]) finish(job, failure);
     });
     return attempt;
@@ -422,13 +430,13 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
       void replacement.ready.then(pump, () => {
         if (slots.every((item) => item.dead)) {
           initPromise = undefined;
-          for (const job of [...queue]) finish(job, new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`));
+          for (const job of [...queue]) finish(job, workerUrlUnavailable());
         }
       });
     } catch {
       if (slots.every((item) => item.dead)) {
         initPromise = undefined;
-        for (const job of [...queue]) finish(job, new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`));
+        for (const job of [...queue]) finish(job, workerUrlUnavailable());
       }
     }
   }
