@@ -19,11 +19,13 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] **A4 pilot game** (fewest shaders; rain + sky + materials; also the lowest-risk way to prove portable materials and unlock A3 for a port), A6 verify DoF/AO
+- [x] A1 shared loading progress (`createLoadingProgress`, no visual change), B2 partial `AuraApp` cast removed (typed `app.info`/`diagnostics()`), lab flags `?backend=`/`?gamut=` via the shared parser, default OFF (5.0.2 lane, frames in `evidence/game-upgrades-502/last-train-port/`)
+- [ ] A4 pilot game (fewest shaders; rain + sky + materials): skipped, EXPERIMENTAL portable-material rewrite risks pixels (D1/D4)
+- [ ] A6 verify DoF/AO: not verified in this lane (no DoF/AO frames captured)
 
 Verification
 
 - [ ] GC, UT, CAP
 - [ ] A4 pilot: pixel diff of each converted material vs the GLSL baseline on WebGL2 before enabling WebGPU
-- [ ] `node tools/game-checks/run.mjs last-train-port` clean
+- [ ] `node tools/game-checks/run.mjs last-train-port` clean: no new errors; the pre-existing `art-direction` stale-audit error and the `screens-fresh` / unticked-items warnings remain
 - [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
