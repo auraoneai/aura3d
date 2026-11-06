@@ -187,7 +187,7 @@ export function createSim(): Sim {
       x: 0, y: BALL_R, z: 0, vx: 0, vy: 0, vz: 0, rotX: 0, rotY: 0, rotZ: 0, quat: [0, 0, 0, 1], spin: 0,
       rolling: false, lastKickPower: 0, lastKickFootDist: -1, lastKickT: -1,
       mode: "dead", ownerId: null, lastTouchTeam: null, intendedTargetId: null,
-      shotPower: 0, freeT: 99, controlT: 0, lastShot: "none", trail: [],
+      shotPower: 0, freeT: 99, controlT: 0, lastShot: "none",
       kickerId: null, lastToucherId: null
     },
     players: [], userTeam: 0, controlledId: null,
@@ -254,7 +254,7 @@ export function createSim(): Sim {
     b.x = 0; b.y = BALL_R; b.z = 0; b.vx = 0; b.vy = 0; b.vz = 0; b.spin = 0;
     b.rolling = false;
     b.mode = "dribble"; b.ownerId = null; b.intendedTargetId = null; b.freeT = 0;
-    b.lastShot = "none"; b.trail.length = 0;
+    b.lastShot = "none";
     state.phase = "kickoff"; state.phaseT = 0; state.kickoffTeam = team;
     const fw = nearestOf(team, 0, 0, false);
     if (fw) {
@@ -787,7 +787,7 @@ export function createSim(): Sim {
     const b = state.ball;
     b.x = -6; b.y = BALL_R; b.z = 0; b.vx = 4; b.vy = 0; b.vz = 0; b.spin = 0;
     b.mode = "loose"; b.ownerId = null; b.kickerId = null; b.freeT = 0; b.rolling = false;
-    b.lastShot = "none"; b.intendedTargetId = null; b.trail.length = 0;
+    b.lastShot = "none"; b.intendedTargetId = null;
     state.phase = "live"; state.phaseT = 0;
     emit({ type: "out", label: `${reason} — fresh ball`, severity: "info", position: [b.x, b.y, b.z] });
   }
@@ -1262,11 +1262,7 @@ export function createSim(): Sim {
       }
     }
 
-    // trail buffer (sample ~each 3rd frame worth of motion)
-    if (b.mode === "flight" || Math.hypot(b.vx, b.vz) > 1.5) {
-      b.trail.push([b.x, b.y, b.z]);
-      if (b.trail.length > 18) b.trail.shift();
-    } else if (b.trail.length) b.trail.length = 0;
+    // the ball trail is the engine effects.trail node (scene.ts); the old hand-rolled position buffer was never read
 
     publishPossession(dt);
     return events;
@@ -1407,7 +1403,7 @@ export function createSim(): Sim {
       toAnchors("all", true);
       const b = state.ball;
       b.x = 0; b.y = BALL_R; b.z = 0; b.vx = 0; b.vy = 0; b.vz = 0; b.spin = 0; b.rolling = false;
-      b.mode = "dead"; b.ownerId = null; b.trail.length = 0;
+      b.mode = "dead"; b.ownerId = null;
     }
   };
 }

@@ -19,13 +19,23 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A6 verify motion blur and `sky.dayNight` transitions  (skipped: parent CAP owns verification; static frame before/after identical on 5.0.2, see evidence/game-upgrades-502/aura-fc-3d)
-- [ ] replace manual trail with `effects.trail` only if trail shape matches (S, low priority)  (skipped: risks pixels, trail shape not compared)
-- [ ] A4 pilot for the single custom material (S-M)  (skipped: EXPERIMENTAL, D4)
+- [x] A6 verify motion blur and `sky.dayNight` transitions  (5.0.3: real-GPU Munich 960x540 11.5 s settle, base vs after identical in composition/lighting, no new console errors: evidence/game-upgrades-503/aura-fc-3d/before.png, after.png; capture run with reduced-motion default so blur/CA are off in the frame, Glacier star sky not re-captured)
+- [x] replace manual trail with `effects.trail` (5.0.3: the visible trail already is `effects.trail` in scene.ts; the hand-rolled `ball.trail` buffer in sim.ts/types.ts was written but never read, so it was deleted: zero pixel/sim change, 157 aura-fc-3d unit tests pass)
+- [ ] A4 pilot for the single custom material (S-M)  (skipped: not a designated A4 pilot; the light-pool additive quad is GLSL-only, kept; WebGL2-only)
+- [x] A1 visible loading bar (5.0.3: staged 0.2 app created, 0.7 mounted, 1.0 first frame via `app.readiness({stage:"first-frame"})`, fades out; evidence/game-upgrades-503/aura-fc-3d/after-loading.png)
 - [x] A1 (shared `createLoadingProgress` tracks `app.ready`, no visible UI change; `publishBackendReport` on `window.backendReport`)
 
 Verification
 
 - [ ] GC, UT, CAP (static bands)
-- [ ] `node tools/game-checks/run.mjs aura-fc-3d` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] `node tools/game-checks/run.mjs aura-fc-3d` clean (0 errors, 10 pre-existing warnings)
+- [x] Before/after frames attached (evidence/game-upgrades-503/aura-fc-3d, REA capture_browser_scenario, 960x540)
+
+5.0.3 skipped items (precise reasons)
+
+- [ ] A2 diagnostics overlay: a debug overlay is not player-visible; backend report already published (5.0.2).
+- [ ] A3 backend, A9 depth, A10 gamut, A7 worker: EXPERIMENTAL, remain default-off lab flags (`?backend=`, `?gamut=`); no real-GPU proof for default-on.
+- [ ] A5 light probe grid / IES / clustered lights: EXPERIMENTAL, not wired; the venue looks are calibrated to the existing HDRI + flood spots.
+- [ ] A8 per-slot custom material, A11 add-ons, A12 scatter/merge, A13 KTX2, A14 formats, A16 physics, A17 splats: no use in this game (or D8/D9: placement/size budgets unaffected).
+- [ ] A15 text3D: already SDF scoreboard (`scoreboard3d.ts`), nothing to change.
+- [ ] W-3/W-4 neutral environment pin: Munich base vs after frames identical on the shared environment file, so no pin needed for that venue; Kyoto/Favela/Glacier not re-captured.
