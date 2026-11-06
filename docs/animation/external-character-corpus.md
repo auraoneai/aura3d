@@ -1,6 +1,6 @@
 # External Animated Character Evidence
 
-Version: 5.0.2
+Version: 5.0.3
 
 The current checked character corpus is small and local. It is useful for loader, animation, and skinning coverage, not for a broad marketplace-character claim.
 

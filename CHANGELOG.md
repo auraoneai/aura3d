@@ -1,8 +1,26 @@
 # Changelog
 
-Version: 5.0.2
+Version: 5.0.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.0.3 (2026-11-07)
+
+Template and game fixes plus a first real-GPU look at every template. The public API is unchanged (declarations identical to 5.0.2).
+
+### Fixes
+
+- Contact shadows: pooled primitive geometry (floors, roads, walls) no longer fails the contact-depth proof, and `prd04.tangentFrame` no longer vetoes normal-mapped participants. A visible gain is confirmed on Roadster Rush only; other games' frames look unchanged (skinned, morphed and custom-material participants are still excluded and log `CONTACT_SHADOW_PARTIAL`).
+- `?backend=auto` on a scene whose post-processing needs depth textures falls back to WebGL2 before a WebGPU device is created (Cross Hop mounted with `RENDERER_MOUNT_FAILED` before).
+- Templates: all 20 rendered in a real browser for the first time. Fixed scale/camera/fog defects in `architecture-interior`, `cinematic-scene`, `custom-scene`, `large-scene`, `mini-game`, `racing-starter`, `product-viewer` and `postprocess-scene`.
+- Games: 20 of the 25 games show a determinate loading progress bar instead of a black canvas or plain text while they load; Slingshot Siege's projectile parking workaround is removed (the 5.0.2 engine draws hidden-created models).
+- Acceptance harness specs for pointer coordinates and transparency reworked (not yet run through browser acceptance).
+
+### Not fixed / unconfirmed
+
+- The Bellkeeper's Walk hero "slides instead of showing leg movement" report did not reproduce on a real GPU at 60 Hz; a 120 to 165 Hz display could not be emulated.
+- `character-viewer` fails the render gate's texture heuristic although its frame is fine.
+- Browser acceptance round 3, WebGPU evidence and a device-lost/restored browser run have not been run.
 
 ## 5.0.2 (2026-11-06)
 
