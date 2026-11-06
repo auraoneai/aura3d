@@ -7,7 +7,7 @@ import { createMatchEngine } from "../sim/create";
 import type { CreateSlamEngine } from "../ui/types";
 import { bootAuraSlam, type AuraSlamDeps, type AuraSlamHandle, type SlamRenderer } from "./boot";
 
-export type StartAuraSlamOptions = Pick<AuraSlamDeps, "app" | "routeHealth" | "nodeCount" | "autoplay" | "swipeEnabled"> & { renderer: SlamRenderer };
+export type StartAuraSlamOptions = Pick<AuraSlamDeps, "app" | "routeHealth" | "nodeCount" | "autoplay" | "swipeEnabled" | "revealBoot"> & { renderer: SlamRenderer };
 
 function pageStorage(): Storage | null {
   try { return window.localStorage; } catch { return null; }

@@ -60,6 +60,8 @@ export interface AuraSlamDeps {
   app?: () => QaHookApp | null | undefined;
   routeHealth?: () => unknown;
   nodeCount?: () => number;
+  /** A1: called instead of hiding the `#boot` splash directly; the page waits for the first drawn frame here. */
+  revealBoot?: () => void;
   /** Test seams. */
   now?: () => number;
   schedule?: (callback: (nowMs: number) => void) => unknown;
@@ -610,7 +612,8 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   render();
   if (deps.startLoop !== false) loop.start();
-  document.getElementById("boot")?.classList.add("done");
+  if (deps.revealBoot) deps.revealBoot();
+  else document.getElementById("boot")?.classList.add("done");
   document.body.dataset.auraSlamReady = "true";
 
   const handle: AuraSlamHandle = {

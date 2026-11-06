@@ -81,6 +81,27 @@
         font-weight: 600;
         color: #d8ff3e;
       }
+      .boot-bar {
+        --aura3d-loading: 0;
+        position: relative;
+        width: min(240px, 60vw);
+        height: 4px;
+        overflow: hidden;
+        border-radius: 2px;
+        color: #d8ff3e;
+        background: rgba(255, 255, 255, 0.16);
+      }
+      .boot-bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform-origin: 0 50%;
+        transform: scaleX(var(--aura3d-loading));
+        background: currentColor;
+        transition: transform 120ms linear;
+      }
+      .boot-bar[data-complete="true"] { opacity: 1; }
+      @media (prefers-reduced-motion: reduce) { .boot-bar::after { transition: none; } }
       .boot-sub {
         font-family: "TT Commons Pro Mono", monospace;
         font-size: 12px;
@@ -91,7 +112,8 @@
   <body>
     <div id="boot" class="boot" role="status" aria-live="polite">
       <div class="boot-title">AURA SLAM 3D</div>
-      <div class="boot-sub">LOADING STADIUM &amp; 3D ATHLETES…</div>
+      <div id="boot-sub" class="boot-sub">LOADING STADIUM &amp; 3D ATHLETES…</div>
+      <div id="boot-progress" class="aura3d-loading boot-bar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
     </div>
     <div class="aura3d-top-bar" data-layout="pill" role="toolbar" aria-label="Aura3D Aura Slam 3D Quick Switcher">
       <button type="button" id="aura-btn-play" class="active" title="Jump straight into a live Single Match">Quick Match</button>

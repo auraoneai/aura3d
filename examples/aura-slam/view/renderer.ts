@@ -89,6 +89,10 @@ export interface SceneRendererOptions {
   wrapHandle?: (id: string, handle: AuraRuntimeNodeHandle) => AuraRuntimeNodeHandle;
   /** Page search string for the safety switches (defaults to `location.search`). */
   search?: string;
+  /** A1: boot progress (0..1) reported as the mount advances; drives the splash loading bar. */
+  onBootProgress?: (fraction: number, label?: string) => void;
+  /** A3/A10 lab flags (`?backend=`, `?gamut=p3`), default off: extra `createAuraApp` options merged over the defaults. */
+  appOptions?: { renderer?: { backend: "auto" | "webgpu"; allowFallback: true }; output?: { outputColorSpace: "display-p3" } };
   /** Reduced-motion probe for the hit shake (defaults to a cached `prefers-reduced-motion` media query). */
   reducedMotion?: () => boolean;
 }
@@ -333,17 +337,22 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
     async mount(target: HTMLCanvasElement): Promise<void> {
       canvas = target;
+      const progress = (fraction: number, label?: string): void => { try { options.onBootProgress?.(fraction, label); } catch { /* cosmetic */ } };
+      progress(0.1, "scene");
       app = createAuraApp(target, {
         scene: buildTennisScene(rig, { venue: bootVenue, look, camera: cameraRig, ...(crowd ? { crowd } : {}) }),
         // C11: a governed tier ("auto") instead of the old string, which resolveMountQuality ignored; coarse-pointer devices get "medium".
-        renderer: { quality: { tier: "auto" } },
+        renderer: { quality: { tier: "auto" }, ...(options.appOptions?.renderer ?? {}) },
+        ...(options.appOptions?.output ? { output: options.appOptions.output } : {}),
         qualityRebuild: QUALITY_REBUILD,
         // C2: the page sizes the canvas (portrait phones put it between the score band and the control band). The engine's own
         // resize fits the canvas to its parent, which ignored that layout: on a 390 x 844 phone the canvas stayed 844 px tall,
         // pushed 196 px down, so its bottom (the near athlete) was below the screen. The renderer owns the backing size instead.
         resize: false
       });
+      progress(0.3, "renderer");
       await app.ready();
+      progress(0.65, "stadium");
       const req = (id: string): AuraRuntimeNodeHandle => (options.wrapHandle ? options.wrapHandle(id, app!.nodes.require(id)) : app!.nodes.require(id));
       // TT-L2: in the World Tour look the athletes' cylinder shadow discs leave the frame (hidden once; the rig writes to an inert
       // handle), so the PCSS key shadow and the contact-shadow pass ground the athletes instead. TT-M2: kit and racket parts
@@ -393,6 +402,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         ...(options.search !== undefined ? { search: options.search } : {})
       });
       ready = true;
+      progress(0.8, "athletes");
       if (worldTour) {
         netCord = createNetCordMotion(req(NET_MESH_ID), req(NET_TAPE_ID));
         // GU47 TT-V1 / TT-V2: the registered bounce bursts, the decal marks and the ball's trail ribbon.
@@ -412,6 +422,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         resizeObserver = new ResizeObserver(() => syncBacking());
         resizeObserver.observe(target);
       }
+      progress(0.92, "court");
       cameraFov = cameraRig.fovDeg;
       applyCameraFov();
       if (director) {
