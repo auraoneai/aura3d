@@ -4082,6 +4082,7 @@ export class Renderer {
           || clippingFrame.mayClip || clippingFrame.hasMaterialResolver || contactReads.length || photometricFrame || projectedSpotFrame
           || this.renderingViews || this.pendingViewState || this.activeRasterViewport || this.benchmarkMaskArmed || this.staticUnlitCaptureDepth
           || frameHooks.hasExtraSceneGeometry())) : undefined;
+      frameHooks.placeContactProducers(this.graph);
       if (qrOutput || gaussianSplats.length > 0 || scalarVolumes.length > 0 || transmissionRequested || weightedPass || hasTransparentQueues) {
         // §9.1 v2 frame order: opaque → after-opaque (scene-depth copy,
         // contributors) → transmission → transmissive → transparent (engine
@@ -4247,6 +4248,7 @@ export class Renderer {
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
         throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
       }
+      frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
@@ -4953,6 +4955,7 @@ export class Renderer {
           || clippingFrame.mayClip || clippingFrame.hasMaterialResolver || contactReads.length || photometricFrame || projectedSpotFrame
           || this.renderingViews || this.pendingViewState || this.activeRasterViewport || this.benchmarkMaskArmed || this.staticUnlitCaptureDepth
           || frameHooks.hasExtraSceneGeometry())) : undefined;
+      frameHooks.placeContactProducers(this.graph);
       if (qrOutput || gaussianSplats.length > 0 || scalarVolumes.length > 0 || transmissionRequested || weightedPass || hasTransparentQueues) {
         // §9.1 v2 frame order: opaque → after-opaque (scene-depth copy,
         // contributors) → transmission → transmissive → transparent (engine
@@ -5114,6 +5117,7 @@ export class Renderer {
       if (clippingFrame.hasActiveGlobal() && frameHooks.hasExtraSceneGeometry()) {
         throw new RenderDeviceError("Scene clipping cannot yet cover contributor-owned geometry", "SCENE_CLIPPING_CONTRIBUTOR_UNSUPPORTED");
       }
+      frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
