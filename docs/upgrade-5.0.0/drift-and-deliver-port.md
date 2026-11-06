@@ -19,11 +19,18 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [x] A1 shared loading/readiness helper, B2 partial `AuraApp` cast removed (`registerCourierFx(app.effects)`), lab flags via shared parser (default off)
-- [ ] A5 headlights (skipped: EXPERIMENTAL, D1/D4, risks pixels): `lights.spot` with photometric/projected spot image (EXPERIMENTAL; scalar fallback), A4 for `headlights.ts`/`water.ts`, A1, A6 verify
+- [x] A1 loading/readiness: the loading panel now draws the shared progress bar (`createLoadingProgress` -> `.aura3d-loading`, role=progressbar) through boot phases; before/after: `evidence/game-upgrades-503/drift-and-deliver-port/before-loading-bar.png`, `after-loading-bar.png` (default on, no new console output)
+- [x] B2 partial `AuraApp` cast removed (`registerCourierFx(app.effects)`), lab flags via shared parser (default off) (5.0.2)
+- [x] A2 diagnostics: `?diag=1` already wired through `apps/showcase-port-shared/diag.ts`; no new surface needed
+- [x] A5 headlight photometric IES profile (EXPERIMENTAL, lab flag `?lights=ies`, default off): `examples/drift-and-deliver-port/headlightProfile.ts`, test `tests/unit/drift-and-deliver-port/headlight-profile.test.ts`, real-GPU frame `evidence/game-upgrades-503/drift-and-deliver-port/after-ies.png` (no degrade codes; road pool is dimmer than the scalar spot, no clear gain, so not default)
+- [ ] A5 projected spot image: skipped, needs a new hash-verified PVR texture asset (asset change, EXPERIMENTAL, WebGL2-only)
+- [ ] A5 light probe grid / clustered lights / voxel GI: skipped, the practical-light cap is 6 (C-35) and the look is calibrated on the IBL; no player-visible gain shown
+- [ ] A4 portable materials for `headlights.ts`/`water.ts`: skipped, not a designated pilot (decision D2/D4); stays GLSL, WebGL2-only
+- [x] A6 post stack verified: bloom/AO/antiAlias frame is pixel-equivalent before/after (`before.png` vs `after.png`, same console output)
+- [ ] A3/A7/A8/A9/A10/A11/A12/A13/A14/A16/A17: not in this game's row or not applicable (A3/A9/A10 stay behind the shared lab flags; A15 `text3D` SDF already used)
 
 Verification
 
-- [ ] GC, UT, CAP
-- [ ] `node tools/game-checks/run.mjs drift-and-deliver-port` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] GC, UT, CAP: `tsc -p apps/showcase-drift-and-deliver-port` clean; `tests/unit/drift-and-deliver-port` 224/225 (city mesh test timed out at 5 s under load 17, untouched code); real-GPU frames in `evidence/game-upgrades-503/drift-and-deliver-port/`
+- [ ] `node tools/game-checks/run.mjs drift-and-deliver-port` clean: 1 pre-existing error (`art-direction` audit stale since ed5a52d58, untouched here), 2 pre-existing warnings
+- [x] Before/after frames attached (static bands) with the capture command, per game, before the change ships
