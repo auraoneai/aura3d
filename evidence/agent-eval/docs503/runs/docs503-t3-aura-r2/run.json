@@ -1,0 +1,144 @@
+{
+  "runId": "docs503-t3-aura-r2",
+  "batch": "docs503",
+  "arm": "aura",
+  "task": 3,
+  "idx": 2,
+  "order": 30,
+  "seed": 20261024030,
+  "model": "claude-sonnet-5.5",
+  "startedAt": "2026-11-06T20:35:01.254Z",
+  "docsCommit": "0014559039444cb824016d9e6f257d097e0a1bb2",
+  "docs": {
+    "files": 110,
+    "sha256": "418133939a1eaf1782d194aecec359daa51fd6bf2f5b5b1ad18d1abe7f7da635"
+  },
+  "base": {
+    "versions": {
+      "engine": "5.0.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 27645,
+  "usage": {
+    "input": 104896,
+    "uncachedInput": 104896,
+    "output": 1174,
+    "turns": 6
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2171,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 23
+    },
+    {
+      "i": 1,
+      "t": 2172,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 155
+    },
+    {
+      "i": 2,
+      "t": 2172,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 49
+    },
+    {
+      "i": 3,
+      "t": 8673,
+      "type": "search",
+      "pattern": "crossfade|crossFade|fadeTo"
+    },
+    {
+      "i": 4,
+      "t": 8673,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 5,
+      "t": 11607,
+      "type": "read",
+      "path": "docs/agents/recipes.md",
+      "lines": 120
+    },
+    {
+      "i": 6,
+      "t": 11607,
+      "type": "read",
+      "path": "docs/agents/api-signatures.md",
+      "lines": 53
+    },
+    {
+      "i": 7,
+      "t": 11608,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 8,
+      "t": 11608,
+      "type": "list",
+      "path": "public/assets"
+    },
+    {
+      "i": 9,
+      "t": 17050,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 10,
+      "t": 17063,
+      "type": "search",
+      "pattern": "sha256"
+    },
+    {
+      "i": 11,
+      "t": 23213,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 1772
+    },
+    {
+      "i": 12,
+      "t": 23948,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 13,
+      "t": 27645,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    "AGENTS.md",
+    "docs/agents/api-signatures.md",
+    "docs/agents/recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote src/main.ts based on docs recipe 3 (skinned character with crossfade). It passes `typecheck`. I couldn't run `vite build` or open it in a browser here, so none of the runtime behavior below has been seen working.\n\n- **Scene:** `/assets/soldier.glb` loads through `defineModelAssets` at 1.8 m height on a 12×12 ground plane. A perspective camera frames it, and one shadow-casting directional light plus a hemisphere fill light it.\n- **Animation:** it starts on `Idle`. `R` crossfades to `Run` and `I` crossfades back to `Idle`, each over 0.4 s.\n- **`window.__EVAL__`:** `clip()` returns the target clip as soon as a fade starts.\n- **Ready flag:** `window.__EVAL_READY__` is set after `app.ready()` and two animation frames.\n\nThe `sha256` and animation list in `defineModelAssets` are copied from the docs recipe, and I didn't recompute the hash from the file in `public/assets`. If the hash is checked and doesn't match, the model will fail to draw.",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

@@ -1,6 +1,6 @@
 # Trial protocol for the 5.0.2 docs release (WP-D7 and WP-D8)
 
-Status: written, not run. WP-D7 needs one shared capture and one paid job, so it is launched once by the coordinator (parent) only, never by a lane. Do not run it from a lane or in parallel.
+Status: run 2026-11-06 (see "Result of the run" at the end). Original note: WP-D7 needs one shared capture and one paid job, so it is launched once by the coordinator (parent) only, never by a lane. Do not run it from a lane or in parallel.
 
 ## Question
 
@@ -46,3 +46,22 @@ One table per task with the 4.1.2 numbers as the "before" column, the 5.0.2 numb
 
 - `material.custom` docs named a prelude uniform `eyePos` that does not exist; the real prelude is `cameraPosition`, `uTime`, `modelMatrix`, `modelViewProjectionMatrix`, `position`, `normal`, `uv` (fixed in `recipes.md`).
 - On headless Chrome 156 (Apple M4 Max, ANGLE/Metal) a scene with `effects.bloom` plus the `character.primitiveHumanoid` prefab drew only the background (4 KB PNG), while the same scene without bloom drew. Bloom with other content (recipe 15) is fine. Cause not isolated.
+
+## Result of the run (WP-D7, 2026-11-06, branch `lane/503-trial`) and WP-D8 decision
+
+Status change: the run happened. Full tables, caveats and frames: `evidence/agent-eval-503/RESULTS.md` (raw runs in `evidence/agent-eval/docs503/`). Deviations from the protocol above, all forced by the lane rules: scoring ran locally (stock `vite build`, REA `capture_browser_scenario` on Chrome 156 with a real GPU) instead of the ACR software-WebGL2 job; first-try build/render, page probes that need page evaluation and time to ready were not measured; no 100-turn cap batch (no run exceeded 28 turns); visual judging is one Prism judge call per task and run index with seeded A/B order (no agent-spawning tool), single judge, n=3 pairs per task.
+
+Aura3D 5.0.2 docs-only arm against the 4.1.2 arm, 40-turn budget, n=3 per cell, claude-sonnet-5.5:
+
+- Turns (median): task 1 40 to 5, task 2 40 to 21, task 3 35 to 9, task 4 23 to 10, task 5 40 to 17; new task 8 23, task 9 9; three.js 4 to 5.
+- Ended at the cap: 7 of 15 before, 0 of 21 after. Final renders non-black: 8 of 15 before, 21 of 21 after. First-try typecheck: 8 of 15 before, 21 of 21 after.
+- Package/type files opened: median 0 after (9 of 21 runs opened any, max 10), against 19 to 21 on tasks 1, 2, 3, 5 before.
+- Blind visual judgement: three.js won 14 of 21 pairs, Aura3D 7 (tasks 4 and 5 favour Aura3D; tasks 1, 2, 8, 9 favour three.js). No "before" exists for this metric.
+
+Decision: first branch of the WP-D8 rule holds (turns and finish rate improved materially; task 1 reached single digits; task 2 finishes inside the budget; tasks 8 and 9 do not fail and agents do not dig through `node_modules` types). The 5.0.2 docs release is already published, so there is nothing further to publish from this. Do not make claims from this trial outside `docs/agents/claims-and-boundaries.md`.
+
+Findings for a separate API-surface PRD (not worked here):
+
+- Look defaults and recipe values give weak frames: a `material.pbr({ metallic: 0.9, roughness: 0.38 })` cube under `environments.neutral` reads as flat grey and small (task 1, 3 of 3 runs); the forest is hazy and low contrast under the fog the agents chose (task 2); the procedural robot sits on a very large flat floor with a visible edge and a small figure (task 9).
+- Bundle size: a one-cube scene builds to about 6.5 MB of JS with a stock Vite build (4.1.2: 3.2 MB, three.js: 0.5 MB). Not caused by agents (same imports in all runs); not isolated here.
+- Aura3D arm still reads about 15 times the input tokens of the three.js arm in total, because it re-reads docs.

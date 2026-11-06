@@ -64,7 +64,7 @@ export function resolveTasks(spec) {
   return String(spec)
     .split(",")
     .map(Number)
-    .filter((n) => n >= 1 && n <= 7);
+    .filter((n) => n >= 1 && n <= 9);
 }
 
 async function pool(items, concurrency, worker) {

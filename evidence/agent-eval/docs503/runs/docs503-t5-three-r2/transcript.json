@@ -1,0 +1,154 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01RVaSHJd5bv5emBzLzmAUb4",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Ttm5NQzAHazmrfuHMRhhKH",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01RVaSHJd5bv5emBzLzmAUb4",
+    "content": "1\t# Task 5: custom shader water\n2\t\n3\tBuild a scene with three.js 0.185.1 (`three` and `@types/three`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A water surface made with a custom GLSL shader (not a stock material): vertex displacement by animated waves (the surface must be a subdivided grid so the waves are geometry, not just colour), a fresnel term (more sky reflection at grazing angles), a procedural noise-based ripple detail and a sun specular glint.\n7\t2. A sky: a gradient sky dome or background that the water reflects (a colour gradient is fine; no external textures).\n8\t3. The water animates over time (time uniform), the camera sits above the water looking toward the horizon.\n9\t4. Tone mapping and colour output must be correct (not washed out or black).\n10\t\n11\tThe rendering contract in the next section applies.\n12\t\n13\t## Rendering contract (all tasks)\n14\t\n15\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n16\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n17\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n18\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n19\t- When you are done, call `finish`.\n20\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Ttm5NQzAHazmrfuHMRhhKH",
+    "content": "TASK.md\nindex.html\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01RBRZry3dgZzqRi1YGBfjzP",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01411fQFTrMGTJsjsqMpcXR2",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01RBRZry3dgZzqRi1YGBfjzP",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01411fQFTrMGTJsjsqMpcXR2",
+    "content": "(empty)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm planning shader materials for the sky dome and water, sharing a GLSL sky function with gradient and sun disc so the water's reflection matches the sky, and making sure tone mapping and color space conversions apply consistently through ACES Filmic rendering.\n\nFor the geometry, I'm using a large sky dome sphere and a 400x400 water plane with fine subdivisions, fading the horizon by blending reflected sky colors with distance-based fog, and computing wave normals analytically from the Gerstner wave equations in the vertex shader.\n\nNow I'm setting up the Gerstner wave sum of four waves with displacement and normals, rotating the plane geometry so it lies flat in world space, positioning the camera to look slightly downward toward the horizon with the sun placed off to one side, and adding fragment-based noise ripples perturbed by finite-difference gradients that fade with distance to control aliasing.\n\nFor color, I'm working in linear space with a sky gradient from zenith to horizon, letting the sun glow exceed 1.0 for ACES tone mapping, and blending water color between deep and shallow tones based on wave height mixed with Fresnel-weighted reflection and a tight specular highlight for the sun glint. I'm also building a sky dome shader that outputs direction vectors from local position and projects depth correctly for a far-away dome centered at the origin.\n\nNow I'm setting up the dome geometry with a large radius, disabling depth writes so it renders behind everything, and blending water color toward the sky color near the horizon so the horizon line looks seamless with the sky's own color in that view direction. I'm sharing the sky color function between the sun and sky shaders via a common GLSL string, then wiring up the TypeScript side with a time uniform and a ready flag set after the first render.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01VW8eURuHY9BkcYcPpmzmdK",
+    "name": "write_file",
+    "input": {
+     "path": "src/main.ts",
+     "content": "import * as THREE from 'three';\n\ndeclare global {\n  interface Window {\n    __EVAL_READY__?: boolean;\n  }\n}\n\nconst canvas = document.getElementById('app') as HTMLCanvasElement;\nconst renderer = new THREE.WebGLRenderer({ canvas, antialias: true });\nrenderer.setPixelRatio(1);\nrenderer.setSize(640, 360, false);\nrenderer.outputColorSpace = THREE.SRGBColorSpace;\nrenderer.toneMapping = THREE.ACESFilmicToneMapping;\nrenderer.toneMappingExposure = 0.9;\n\nconst scene = new THREE.Scene();\nconst camera = new THREE.PerspectiveCamera(55, 640 / 360, 0.1, 2000);\ncamera.position.set(0, 3.2, 14);\ncamera.lookAt(0, 2.2, -40);\n\nconst sunDir = new THREE.Vector3(-0.35, 0.22, -1).normalize();\n\n// Shared GLSL: sky colour as a function of view direction (linear colour space).\nconst skyGlsl = /* glsl */ `\nuniform vec3 uSunDir;\n\nvec3 skyColor(vec3 d) {\n  float h = clamp(d.y, 0.0, 1.0);\n  vec3 horizon = vec3(0.62, 0.78, 0.95);\n  vec3 zenith  = vec3(0.04, 0.17, 0.52);\n  vec3 col = mix(horizon, zenith, pow(h, 0.45));\n  float s = max(dot(d, uSunDir), 0.0);\n  col += vec3(1.0, 0.65, 0.35) * pow(s, 8.0) * 0.35;   // broad glow\n  col += vec3(1.0, 0.85, 0.6) * pow(s, 200.0) * 1.5;   // inner glow\n  col += vec3(1.0, 0.95, 0.85) * smoothstep(0.9994, 0.9998, s) * 25.0; // disc\n  return col;\n}\n`;\n\n// ---------------- Sky dome ----------------\nconst skyMaterial = new THREE.ShaderMaterial({\n  uniforms: { uSunDir: { value: sunDir } },\n  side: THREE.BackSide,\n  depthWrite: false,\n  vertexShader: /* glsl */ `\n    varying vec3 vDir;\n    void main() {\n      vDir = position;\n      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n    }\n  `,\n  fragmentShader: /* glsl */ `\n    varying vec3 vDir;\n    ${skyGlsl}\n    void main() {\n      gl_FragColor = vec4(skyColor(normalize(vDir)), 1.0);\n      #include <tonemapping_fragment>\n      #include <colorspace_fragment>\n    }\n  `,\n});\nconst sky = new THREE.Mesh(new THREE.SphereGeometry(900, 48, 24), skyMaterial);\nsky.renderOrder = -1;\nsky.frustumCulled = false;\nscene.add(sky);\n\n// ---------------- Water ----------------\nconst waterGeometry = new THREE.PlaneGeometry(600, 600, 300, 300);\nwaterGeometry.rotateX(-Math.PI / 2);\n\nconst waterMaterial = new THREE.ShaderMaterial({\n  uniforms: {\n    uTime: { value: 0 },\n    uSunDir: { value: sunDir },\n  },\n  vertexShader: /* glsl */ `\n    uniform float uTime;\n    varying vec3 vWorldPos;\n    varying vec3 vNormal;\n    varying float vHeight;\n\n    // Gerstner wave: xy = direction, z = steepness, w = wavelength\n    vec3 gerstner(vec4 wave, vec2 p, inout vec3 tangent, inout vec3 binormal) {\n      float k = 6.28318530718 / wave.w;\n      float c = sqrt(9.81 / k);\n      vec2 d = normalize(wave.xy);\n      float f = k * (dot(d, p) - c * uTime);\n      float a = wave.z / k;\n      tangent  += vec3(-d.x * d.x * wave.z * sin(f), d.x * wave.z * cos(f), -d.x * d.y * wave.z * sin(f));\n      binormal += vec3(-d.x * d.y * wave.z * sin(f), d.y * wave.z * cos(f), -d.y * d.y * wave.z * sin(f));\n      return vec3(d.x * a * cos(f), a * sin(f), d.y * a * cos(f));\n    }\n\n    void main() {\n      vec3 p = position;\n      vec3 tangent = vec3(1.0, 0.0, 0.0);\n      vec3 binormal = vec3(0.0, 0.0, 1.0);\n      vec3 disp = vec3(0.0);\n      disp += gerstner(vec4(1.0, 0.3, 0.16, 38.0), p.xz, tangent, binormal);\n      disp += gerstner(vec4(-0.6, 1.0, 0.14, 22.0), p.xz, tangent, binormal);\n      disp += gerstner(vec4(0.4, -0.9, 0.12, 13.0), p.xz, tangent, binormal);\n      disp += gerstner(vec4(-1.0, -0.4, 0.08, 8.0), p.xz, tangent, binormal);\n      p += disp;\n      vNormal = normalize(cross(binormal, tangent));\n      vHeight = disp.y;\n      vec4 world = modelMatrix * vec4(p, 1.0);\n      vWorldPos = world.xyz;\n      gl_Position = projectionMatrix * viewMatrix * world;\n    }\n  `,\n  fragmentShader: /* glsl */ `\n    uniform float uTime;\n    varying vec3 vWorldPos;\n    varying vec3 vNormal;\n    varying float vHeight;\n    ${skyGlsl}\n\n    float hash(vec2 p) {\n      p = fract(p * vec2(123.34, 456.21));\n      p += dot(p, p + 45.32);\n      return fract(p.x * p.y);\n    }\n    float vnoise(vec2 p) {\n      vec2 i = floor(p), f = fract(p);\n      vec2 u = f * f * (3.0 - 2.0 * f);\n      return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x),\n                 mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);\n    }\n    float fbm(vec2 p) {\n      float v = 0.0, a = 0.5;\n      for (int i = 0; i < 4; i++) {\n        v += a * vnoise(p);\n        p = p * 2.03 + vec2(17.1, 9.2);\n        a *= 0.5;\n      }\n      return v;\n    }\n    float ripple(vec2 p) {\n      vec2 q = p * 0.9;\n      return fbm(q + vec2(uTime * 0.25, uTime * 0.15)) + fbm(q * 1.7 - vec2(uTime * 0.2, -uTime * 0.12));\n    }\n\n    void main() {\n      vec3 V = normalize(cameraPosition - vWorldPos);\n      float dist = length(cameraPosition - vWorldPos);\n\n      // Noise-based ripple detail perturbs the wave normal; fades with distance.\n      vec2 wp = vWorldPos.xz;\n      float e = 0.05;\n      float h0 = ripple(wp);\n      float hx = ripple(wp + vec2(e, 0.0));\n      float hz = ripple(wp + vec2(0.0, e));\n      float strength = 0.35 / (1.0 + dist * 0.04);\n      vec3 N = normalize(vNormal + vec3(-(hx - h0) / e, 0.0, -(hz - h0) / e) * strength);\n\n      // Fresnel (Schlick): more reflection at grazing angles.\n      float cosT = clamp(dot(N, V), 0.0, 1.0);\n      float fresnel = 0.02 + 0.98 * pow(1.0 - cosT, 5.0);\n\n      vec3 R = reflect(-V, N);\n      R.y = abs(R.y);\n      vec3 reflection = skyColor(normalize(R));\n\n      // Body colour: deeper in troughs, lighter on crests.\n      vec3 deep = vec3(0.005, 0.04, 0.09);\n      vec3 shallow = vec3(0.02, 0.18, 0.22);\n      float diffuse = clamp(dot(N, uSunDir) * 0.5 + 0.5, 0.0, 1.0);\n      vec3 body = mix(deep, shallow, clamp(vHeight * 0.6 + 0.4, 0.0, 1.0));\n      body *= 0.5 + 0.8 * diffuse;\n\n      vec3 col = mix(body, reflection, fresnel);\n\n      // Sun specular glint.\n      vec3 H = normalize(uSunDir + V);\n      float spec = pow(max(dot(N, H), 0.0), 700.0);\n      float spec2 = pow(max(dot(N, H), 0.0), 80.0);\n      col += vec3(1.0, 0.9, 0.7) * (spec * 12.0 + spec2 * 0.25);\n\n      // Blend into the sky colour toward the horizon.\n      vec3 farDir = normalize(vec3(-V.x, 0.0, -V.z));\n      vec3 horizonCol = skyColor(vec3(farDir.x, 0.02, farDir.z));\n      float fog = 1.0 - exp(-pow(dist * 0.0045, 1.6));\n      col = mix(col, horizonCol, fog);\n\n      gl_FragColor = vec4(col, 1.0);\n      #include <tonemapping_fragment>\n      #include <colorspace_fragment>\n    }\n  `,\n});\nconst water = new THREE.Mesh(waterGeometry, waterMaterial);\nwater.frustumCulled = false;\nscene.add(water);\n\nconst clock = new THREE.Clock();\nfunction frame(): void {\n  const t = clock.getElapsedTime();\n  waterMaterial.uniforms.uTime.value = t;\n  camera.position.y = 3.2 + Math.sin(t * 0.5) * 0.15;\n  renderer.render(scene, camera);\n  if (!window.__EVAL_READY__) window.__EVAL_READY__ = true;\n  requestAnimationFrame(frame);\n}\nrequestAnimationFrame(frame);\n"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JpKugWr4RwVuK54MnF9HLL",
+    "name": "typecheck",
+    "input": {}
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01VW8eURuHY9BkcYcPpmzmdK",
+    "content": "wrote src/main.ts (206 lines)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JpKugWr4RwVuK54MnF9HLL",
+    "content": "typecheck passed (no errors)"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm checking that the sun stays within the camera's field of view given the pitch and elevation angles, then verifying the Gerstner wave steepness values sum below 1 so the normals stay stable.\n\n",
+    "signature": "CAQSlggKEggTEAEYAjgBQgh0aGlua2luZxIMdwmJIkn49jvc4AmBGgzcnqgW3Z/jg027UBYiMLBgn/7+Jnyskb931BFwJj2usGgdsRxR4GPfQ+DeQ3soS2jSKn2hZAVHT2Y4AD7oQyqxB6La2DjhyFwg59GbjyEJx5lvEkFC1/9oAwF7zozwgfG3WtSxop8T28n9r6S1a+fgTo3gWzu/hUmqbLjydd2vpkpsSAfX10lBzXoRsUo+RUdI7eb9kRHfqaF9qMGerf0a/kAzZXkrpQlpRMVRWBOkSq5LDgT0iz/2V5W5KswNEQYttHySNtn0Br7GoF4tkkmjU/qZ8ZeST871AsRAgkJl9pyYqanjFXKlfeC6wzTzNjD9rNx7cdzTx16nSE5gj2tftv8kvmsr4HvCo72Vxj58yI5vzfSP0E9aYsgm7mjBBrprTH5NV4l774VVWShdodt+76o7fT6QvOKUxLjOYuiwuMC4Nh47Z5uvGzQ8jOgUtwXsEq282SdhCfK31Y/abV7w0nkF0h7a6ZBYgXlZOxvQlroSCmejURDZK4yfHYEeOLtnc4fxYSQiQHxygtTUjGnaLOEpHN6TAHO3N55JNo0q+sdECggzg3XXmsyg6A3MkuK5vHRQDK586fTYAu9nSQ46ijqoLmILXQ+8gNMYX6FVkr8c1VeZfJJ4jWZBbFpM2EDgqmgJtnB8dVokUVF18au9j77nFkWD1J9Icj7/kepL7rbLChbYH3ZuMixGC7EQ4xCPaS9hW8VeotyNRl6MQG0zv3jEzm6+qJZSkNXwXC5Awk/rEDG54VbFb2Droy+0kf73aUaEsK82Pups9C2lrnCL08eK8+nj4vwQCsH7mEZ6ghNiDS5VyAij0gzQXtR4B51uyNlsxt+LdOtgUR+k0s6dfZXy3aWAtymRoR+Gsn9ECaotR38EbEaCFfLiDPISaKGOB06ACAGNnZseoiWHnoxYolasU3uQUIcCjJcTtFLUOSOgXkZ2MVtqwumkoc18SYIcvV5M/6tlUJS3BbzUmZxJOgCVY0cCXNYGIFy/JyU+NdnvvhDdvMvXoUckbtRsAslcke+99zdIiqhw7UzLIR5Qen6+p/d27W+Fmmu4MFylIuS/810ralIaEQv6GNVO6p9xbhFKA5TsGMn6m8eRRmwcnIh3e4iwPTXpESaOqsyNmwKbeYq3T6ALjl+vWdwlRVEsYBTc/f9qZznbq2GmcrZXjWbOTlsyDqY/GZEmJp4LoNkoeB1dgYGcwqO3r1doRh7lBy3egC4knnxswiPQs4bt5EjWspH46VEb2I4IZPlaohFU+9i2O1Hw3BKTiYNPWfTyA+PRoFnD1A3Msuq29+eZq0RGyMdVn8w1cZydXxDeysZdt6IhQxLbvm0KFOFyeaQ0qRgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PDamPfYfoWyUaF7EKMAa93",
+    "name": "finish",
+    "input": {
+     "summary": "I wrote `src/main.ts`, and `typecheck` passes. I haven't run `vite build` or looked at it in a browser, so the picture itself is unchecked.\n\n- **Water:** a custom `ShaderMaterial` on a 300×300 subdivided grid. The vertex shader displaces it with four animated Gerstner waves driven by a `uTime` uniform, and it computes analytic normals.\n- **Water fragment shader:** it adds a noise-based ripple that perturbs the normal and fades with distance. It uses a Schlick fresnel term to blend the water colour with the reflected sky, and it adds a sun specular glint. Distance fog blends the water into the sky colour at the horizon.\n- **Sky:** a back-faced sphere dome with its own shader and a procedural gradient plus a sun glow and disc. The water reflects the same sky function, so the two match.\n- **Camera and colour:** the camera sits about 3 m above the water looking toward the horizon, and the sun is in view. The renderer uses ACES Filmic tone mapping with sRGB output, and both shaders include the `tonemapping_fragment` and `colorspace_fragment` chunks so colours are tone-mapped and sRGB-encoded, not washed out or black.\n- **Render contract:** it renders continuously with `requestAnimationFrame` into the existing canvas and sets `window.__EVAL_READY__` after the first frame.\n\n"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PDamPfYfoWyUaF7EKMAa93",
+    "content": "ok"
+   }
+  ]
+ }
+]

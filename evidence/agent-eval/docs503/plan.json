@@ -1,0 +1,374 @@
+{
+  "args": {
+    "arm": "both",
+    "task": "1,2,3,4,5,8,9",
+    "runs": 3,
+    "seed": 20261024,
+    "concurrency": 5,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "batch": "docs503"
+  },
+  "plan": [
+    {
+      "task": 1,
+      "arm": "aura",
+      "idx": 3,
+      "order": 0,
+      "runId": "docs503-t1-aura-r3",
+      "seed": 20261024000
+    },
+    {
+      "task": 1,
+      "arm": "three",
+      "idx": 2,
+      "order": 1,
+      "runId": "docs503-t1-three-r2",
+      "seed": 20261024001
+    },
+    {
+      "task": 4,
+      "arm": "three",
+      "idx": 3,
+      "order": 2,
+      "runId": "docs503-t4-three-r3",
+      "seed": 20261024002
+    },
+    {
+      "task": 1,
+      "arm": "three",
+      "idx": 1,
+      "order": 3,
+      "runId": "docs503-t1-three-r1",
+      "seed": 20261024003
+    },
+    {
+      "task": 8,
+      "arm": "three",
+      "idx": 2,
+      "order": 4,
+      "runId": "docs503-t8-three-r2",
+      "seed": 20261024004
+    },
+    {
+      "task": 1,
+      "arm": "three",
+      "idx": 3,
+      "order": 5,
+      "runId": "docs503-t1-three-r3",
+      "seed": 20261024005
+    },
+    {
+      "task": 5,
+      "arm": "three",
+      "idx": 3,
+      "order": 6,
+      "runId": "docs503-t5-three-r3",
+      "seed": 20261024006
+    },
+    {
+      "task": 4,
+      "arm": "aura",
+      "idx": 3,
+      "order": 7,
+      "runId": "docs503-t4-aura-r3",
+      "seed": 20261024007
+    },
+    {
+      "task": 9,
+      "arm": "aura",
+      "idx": 2,
+      "order": 8,
+      "runId": "docs503-t9-aura-r2",
+      "seed": 20261024008
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 3,
+      "order": 9,
+      "runId": "docs503-t2-aura-r3",
+      "seed": 20261024009
+    },
+    {
+      "task": 5,
+      "arm": "three",
+      "idx": 2,
+      "order": 10,
+      "runId": "docs503-t5-three-r2",
+      "seed": 20261024010
+    },
+    {
+      "task": 3,
+      "arm": "aura",
+      "idx": 1,
+      "order": 11,
+      "runId": "docs503-t3-aura-r1",
+      "seed": 20261024011
+    },
+    {
+      "task": 2,
+      "arm": "three",
+      "idx": 1,
+      "order": 12,
+      "runId": "docs503-t2-three-r1",
+      "seed": 20261024012
+    },
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 1,
+      "order": 13,
+      "runId": "docs503-t5-aura-r1",
+      "seed": 20261024013
+    },
+    {
+      "task": 5,
+      "arm": "three",
+      "idx": 1,
+      "order": 14,
+      "runId": "docs503-t5-three-r1",
+      "seed": 20261024014
+    },
+    {
+      "task": 1,
+      "arm": "aura",
+      "idx": 2,
+      "order": 15,
+      "runId": "docs503-t1-aura-r2",
+      "seed": 20261024015
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 2,
+      "order": 16,
+      "runId": "docs503-t2-aura-r2",
+      "seed": 20261024016
+    },
+    {
+      "task": 9,
+      "arm": "three",
+      "idx": 3,
+      "order": 17,
+      "runId": "docs503-t9-three-r3",
+      "seed": 20261024017
+    },
+    {
+      "task": 9,
+      "arm": "aura",
+      "idx": 3,
+      "order": 18,
+      "runId": "docs503-t9-aura-r3",
+      "seed": 20261024018
+    },
+    {
+      "task": 2,
+      "arm": "three",
+      "idx": 2,
+      "order": 19,
+      "runId": "docs503-t2-three-r2",
+      "seed": 20261024019
+    },
+    {
+      "task": 1,
+      "arm": "aura",
+      "idx": 1,
+      "order": 20,
+      "runId": "docs503-t1-aura-r1",
+      "seed": 20261024020
+    },
+    {
+      "task": 4,
+      "arm": "three",
+      "idx": 1,
+      "order": 21,
+      "runId": "docs503-t4-three-r1",
+      "seed": 20261024021
+    },
+    {
+      "task": 8,
+      "arm": "aura",
+      "idx": 1,
+      "order": 22,
+      "runId": "docs503-t8-aura-r1",
+      "seed": 20261024022
+    },
+    {
+      "task": 3,
+      "arm": "three",
+      "idx": 1,
+      "order": 23,
+      "runId": "docs503-t3-three-r1",
+      "seed": 20261024023
+    },
+    {
+      "task": 3,
+      "arm": "aura",
+      "idx": 3,
+      "order": 24,
+      "runId": "docs503-t3-aura-r3",
+      "seed": 20261024024
+    },
+    {
+      "task": 8,
+      "arm": "aura",
+      "idx": 3,
+      "order": 25,
+      "runId": "docs503-t8-aura-r3",
+      "seed": 20261024025
+    },
+    {
+      "task": 9,
+      "arm": "aura",
+      "idx": 1,
+      "order": 26,
+      "runId": "docs503-t9-aura-r1",
+      "seed": 20261024026
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 1,
+      "order": 27,
+      "runId": "docs503-t2-aura-r1",
+      "seed": 20261024027
+    },
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 3,
+      "order": 28,
+      "runId": "docs503-t5-aura-r3",
+      "seed": 20261024028
+    },
+    {
+      "task": 8,
+      "arm": "aura",
+      "idx": 2,
+      "order": 29,
+      "runId": "docs503-t8-aura-r2",
+      "seed": 20261024029
+    },
+    {
+      "task": 3,
+      "arm": "aura",
+      "idx": 2,
+      "order": 30,
+      "runId": "docs503-t3-aura-r2",
+      "seed": 20261024030
+    },
+    {
+      "task": 3,
+      "arm": "three",
+      "idx": 2,
+      "order": 31,
+      "runId": "docs503-t3-three-r2",
+      "seed": 20261024031
+    },
+    {
+      "task": 3,
+      "arm": "three",
+      "idx": 3,
+      "order": 32,
+      "runId": "docs503-t3-three-r3",
+      "seed": 20261024032
+    },
+    {
+      "task": 9,
+      "arm": "three",
+      "idx": 1,
+      "order": 33,
+      "runId": "docs503-t9-three-r1",
+      "seed": 20261024033
+    },
+    {
+      "task": 8,
+      "arm": "three",
+      "idx": 3,
+      "order": 34,
+      "runId": "docs503-t8-three-r3",
+      "seed": 20261024034
+    },
+    {
+      "task": 4,
+      "arm": "aura",
+      "idx": 2,
+      "order": 35,
+      "runId": "docs503-t4-aura-r2",
+      "seed": 20261024035
+    },
+    {
+      "task": 9,
+      "arm": "three",
+      "idx": 2,
+      "order": 36,
+      "runId": "docs503-t9-three-r2",
+      "seed": 20261024036
+    },
+    {
+      "task": 8,
+      "arm": "three",
+      "idx": 1,
+      "order": 37,
+      "runId": "docs503-t8-three-r1",
+      "seed": 20261024037
+    },
+    {
+      "task": 4,
+      "arm": "aura",
+      "idx": 1,
+      "order": 38,
+      "runId": "docs503-t4-aura-r1",
+      "seed": 20261024038
+    },
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 2,
+      "order": 39,
+      "runId": "docs503-t5-aura-r2",
+      "seed": 20261024039
+    },
+    {
+      "task": 4,
+      "arm": "three",
+      "idx": 2,
+      "order": 40,
+      "runId": "docs503-t4-three-r2",
+      "seed": 20261024040
+    },
+    {
+      "task": 2,
+      "arm": "three",
+      "idx": 3,
+      "order": 41,
+      "runId": "docs503-t2-three-r3",
+      "seed": 20261024041
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/agent-eval-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "5.0.2",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/agent-eval-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

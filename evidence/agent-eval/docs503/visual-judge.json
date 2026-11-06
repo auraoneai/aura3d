@@ -1,0 +1,637 @@
+{
+  "model": "claude-sonnet-5.5",
+  "seed": 20261106,
+  "rubricMax": 25,
+  "results": [
+    {
+      "task": 1,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "The first two frames (gold cube, which I took to be A since the candidate labels are ambiguous) show a metallic gold cube with specular gradients across the faces, while the other pair (B) is a nearly flat grey cube with little metallic or rough character."
+    },
+    {
+      "task": 1,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "This assumes the first two images are A and the last two are B, since the A slot is blank. B's copper-coloured cube has more colour variation and a more metallic feel and is well framed, while A's grey-white cube looks flat and matte."
+    },
+    {
+      "task": 1,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 4
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "B's gold cube shows metallic colour variation and specular gradients that read as PBR, while A's grey cube looks like a matte, nearly flat-shaded surface with little metallic character."
+    },
+    {
+      "task": 2,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 2,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 12,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "Assuming the first two images are A and the last two are B (the labels are ambiguous), A shows the whole forest with clear shading, a green ground and light fog. B is washed out by heavy fog, has little contrast, and its forest runs off the bottom of the frame."
+    },
+    {
+      "task": 2,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "This assumes the first two images are A and the last two are B, since Candidate A's own entry is empty. B shows the whole forest clearly, with strong per-instance colour variation and visible shading. A is washed out by fog, so tree form and shading barely read. Neither shows rocks or shadows, and f"
+    },
+    {
+      "task": 2,
+      "idx": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 16
+      },
+      "winner": "three",
+      "why": "A shows a clear, saturated forest with varied canopy colours and visible shading, while B is washed out by heavy fog, so its form, colour variation and contrast barely read."
+    },
+    {
+      "task": 3,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 20,
+        "three": 18
+      },
+      "winner": "aura",
+      "why": "Assuming the first two images are A and the last two are B (A's slot was empty), B's character is larger with stronger shading and form, and it has a clear shadow on a plane that has visible edges, while A looks flatter and smaller on a plain sky and green ground."
+    },
+    {
+      "task": 3,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "This assumes the first image pair is A and the second is B, because all four images appear after the B label. Under that reading, A frames the full character larger against a brighter background with a visible ground shadow, while B is darker and smaller with similar shading, so A is slightly more r"
+    },
+    {
+      "task": 3,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 17
+      },
+      "winner": "three",
+      "why": "This assumes the first image pair is A and the second is B, since Candidate A's label was empty; the two scenes are nearly identical, but B's brighter sky and a ground that fills the frame read more cleanly than A's dark void with a visibly finite floor edge."
+    },
+    {
+      "task": 4,
+      "idx": 1,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 17,
+        "three": 14
+      },
+      "winner": "aura",
+      "why": "B has a shaded sphere with a specular highlight, a lit arena gradient and brightness variation across the coins, while A looks flat and unlit even though its coins spin and have visible thickness."
+    },
+    {
+      "task": 4,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 2,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 19,
+        "three": 12
+      },
+      "winner": "aura",
+      "why": "B shows a visible HUD with score, time and status, a shaded sphere, and coins with cast shadows, while A has no visible HUD and flat, dim shading on the sphere and thin coins."
+    },
+    {
+      "task": 4,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "three": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 18,
+        "three": 13
+      },
+      "winner": "aura",
+      "why": "This judgement assumes the first two images are candidate A and the last two are candidate B, because the candidate A label has no image attached to it. On that reading, A has a brighter, framed arena with walls, a shaded sphere with a shadow, and clearly visible coins that change between frames. B "
+    },
+    {
+      "task": 5,
+      "idx": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "three": {
+          "readability": 2,
+          "lighting": 1,
+          "materials": 1,
+          "fidelity": 2,
+          "polish": 2
+        }
+      },
+      "totals": {
+        "aura": 22,
+        "three": 8
+      },
+      "winner": "aura",
+      "why": "Assuming the first two images are A and the last two are B (the labels don't clearly say), A shows a convincing displaced ocean with fresnel reflection, ripple detail and a sun glint under a gradient sky, while B's water is washed out to near-white with almost no visible waves or colour."
+    },
+    {
+      "task": 5,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        },
+        "aura": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 5,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 22,
+        "three": 17
+      },
+      "winner": "aura",
+      "why": "This assumes the first two images are A and the last two are B, since the A slot was blank. On that reading, B has a softer sun glow, wispy clouds in the sky, a clear glint path, finer ripple detail and less stretching in the foreground. A has a flat sun disc, a plain sky and some streaky aliasing n"
+    },
+    {
+      "task": 5,
+      "idx": 3,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 1,
+          "lighting": 1,
+          "materials": 1,
+          "fidelity": 1,
+          "polish": 1
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 5,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "No frames were attached under Candidate A, so it is scored as empty, while B shows a displaced wave surface with a fresnel sky tint, ripple detail, a sun glint and a gradient sky with sensible tone mapping."
+    },
+    {
+      "task": 8,
+      "idx": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 16,
+        "three": 20
+      },
+      "winner": "three",
+      "why": "Candidate A's frames are washed out with pale water and a hazy sky, while B's frames have stronger contrast, a shallow-water gradient around the shore, clearer shading on the faceted terrain, and a more distinct sky gradient. This judgment assumes the first two images are A and the last two are B, s"
+    },
+    {
+      "task": 8,
+      "idx": 2,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 5,
+          "lighting": 4,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "A has a well-framed island with clear faceted shading, saturated colours and a clearly visible blue water surface, while B's frames are washed out with a blank white sky, pale flat-looking terrain and weak depth."
+    },
+    {
+      "task": 8,
+      "idx": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 2
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 3,
+          "materials": 4,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 19,
+        "three": 16
+      },
+      "winner": "aura",
+      "why": "I assumed the first two frames are A and the last two are B, since the Candidate A label was blank. A has stronger shading and cast shadows, but a visible dark square water patch breaks the scene and its water looks flat. B has faceted animated water with shoreline foam and a clean horizon, though i"
+    },
+    {
+      "task": 9,
+      "idx": 1,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 2,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 4
+        }
+      },
+      "totals": {
+        "aura": 13,
+        "three": 19
+      },
+      "winner": "three",
+      "why": "Assuming the first image pair is A and the second is B, B has a more detailed robot (head with eyes and antenna, chest panel), a dark background, visible cyan and magenta coloured lighting, and a well-centred framing, whereas A's robot is small with a flat pink floor and weak, unclear key lighting."
+    },
+    {
+      "task": 9,
+      "idx": 2,
+      "order": [
+        "aura",
+        "three"
+      ],
+      "scores": {
+        "aura": {
+          "readability": 3,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        },
+        "three": {
+          "readability": 4,
+          "lighting": 4,
+          "materials": 3,
+          "fidelity": 4,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 14,
+        "three": 18
+      },
+      "winner": "three",
+      "why": "Candidate A was blank in the prompt, so I assumed the first image pair was A and the second was B; on that reading, B's larger robot, dark floor with cyan and magenta rim pools, and clearer shadow look more dramatic than A's small robot on a bright, flat gradient floor."
+    },
+    {
+      "task": 9,
+      "idx": 3,
+      "order": [
+        "three",
+        "aura"
+      ],
+      "scores": {
+        "three": {
+          "readability": 4,
+          "lighting": 5,
+          "materials": 3,
+          "fidelity": 5,
+          "polish": 4
+        },
+        "aura": {
+          "readability": 4,
+          "lighting": 2,
+          "materials": 3,
+          "fidelity": 3,
+          "polish": 3
+        }
+      },
+      "totals": {
+        "aura": 15,
+        "three": 21
+      },
+      "winner": "three",
+      "why": "This assumes the first image pair is A and the second is B, since the candidate labels did not line up with the images. On that reading, A has a dark background, a visible cyan and magenta rim and floor lighting, a floor shadow, and a centred, fully framed robot with a subtle idle motion. B has a fl"
+    }
+  ]
+}
