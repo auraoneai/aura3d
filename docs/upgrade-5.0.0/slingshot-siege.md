@@ -20,9 +20,15 @@ Shared (Wave 0)
 Adoption (5.0 adoption row)
 
 - [x] A16: keep the 4.x-compatible root (synchronous physics, no `preloadPhysics` needed)
-- [ ] verify against S5-WP27-01 and WP-01 batch-member ID changes (fix `addInstance` ids affect instanced debris? check `instances.*` usage x7)
-- [ ] A11 `Fracture` add-on for destructible blocks is the standout new capability for this game (M; changes gameplay visuals: opt-in lab first)
-- [ ] A13 skip (no KTX2 use)
+- [x] verify against S5-WP27-01 and WP-01 batch-member ID changes (`tests/unit/slingshot-siege` 64/64 pass incl. block-instances, 30-level sim boot/settle and shot tests; no id drift observed)
+- [ ] SKIPPED (5.0.3: needs pooled fragment nodes plus sim hooks for every block family and an `@aura3d/addons` dependency; no real-GPU proof possible in this pass, so it stays unshipped rather than shipping an unproven lab path) A11 `Fracture` add-on for destructible blocks is the standout new capability for this game (M; changes gameplay visuals: opt-in lab first)
+- [x] A13 skip (no KTX2 use)
+
+5.0.3 additions
+
+- [x] A1 visible scene-load veil with progress bar (index.html `#loading-veil`, `createLoadingProgress({ element })`); evidence/game-upgrades-503/slingshot-siege/{before,after}-loading.png (before: black canvas for the first seconds, after: navy veil with gold bar)
+- [x] Removed the `PROJECTILE_PARK` workaround (4.7.12): projectiles are created hidden below the stage like every other pooled node; real-GPU mid-flight frames before/after both show the gull in flight: evidence/game-upgrades-503/slingshot-siege/{before,after}-projectile-midflight.png
+- [ ] A2/A3/A5/A6/A9/A10: not applied (default-off lab flags already wired by 5.0.2; no change to the outdoor-day look identity; no in-scope player gain without GLSL or lighting changes)
 
 Verification
 
