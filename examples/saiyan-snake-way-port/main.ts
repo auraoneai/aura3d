@@ -21,7 +21,7 @@ import {
 import { DROWSE_ALERT, daysStatusLabel, drowseCue, finalScore, gapAhead, gustCue, onboardingPrompt } from "./hud";
 import { createRunInput } from "./input";
 import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
-import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { labAppOptions, labCameraOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { createRenderGuard } from "./renderGuard";
 import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
@@ -471,14 +471,15 @@ function sizeCanvas(): void {
 
 async function boot(): Promise<void> {
   sizeCanvas();
-  /* 5.0 adoption A1: shared loading-progress helper drives the existing loading card (text only; the look is unchanged) */
+  /* 5.0 adoption A1: shared loading-progress helper drives the existing loading card (percent text plus a progress bar on the card) */
   const loadingStatus = $("loading-status");
   const loadingLabel = loadingStatus.textContent ?? "";
-  const loading = createLoadingProgress({ onProgress: (fraction) => { loadingStatus.textContent = fraction >= 1 ? loadingLabel : `${loadingLabel} ${Math.round(fraction * 100)}%`; } });
+  const loading = createLoadingProgress({ ...(document.getElementById("loading-bar") ? { element: $("loading-bar") } : {}), onProgress: (fraction) => { loadingStatus.textContent = fraction >= 1 ? loadingLabel : `${loadingLabel} ${Math.round(fraction * 100)}%`; } });
   const runner = await loading.track(loadRunner(canvas, look.mode), 3);
-  const world = buildWorld({ canvas, runner, look });
-  /* lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 only; worker and depth are not wired */
-  const lab = labAppOptions(readLabFlags());
+  const labFlags = readLabFlags();
+  const world = buildWorld({ canvas, runner, look, cameraOptions: labCameraOptions(labFlags) });
+  /* lab flags (EXPERIMENTAL, default OFF): ?backend=auto|webgpu and ?gamut=p3 and ?depth=reversed|logarithmic (camera.depth, standard-depth fallback); worker is not wired */
+  const lab = labAppOptions(labFlags);
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
