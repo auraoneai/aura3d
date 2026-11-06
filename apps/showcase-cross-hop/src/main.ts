@@ -6,6 +6,8 @@ import { qaCrops } from "./game/qa";
 import { defaultLookFor, p4DressFor } from "./game/look";
 import { mountUI, tickUI, setUiSound } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import { labAppOptions, parseLabFlags } from "../../showcase-port-shared/lab-flags";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
@@ -69,7 +71,14 @@ function tameJuice(j: Record<string, JuiceSpec>): Record<string, JuiceSpec> {
   return out;
 }
 
+// 5.0.2 lab flags (EXPERIMENTAL, all off by default): ?backend=auto|webgpu and ?gamut=p3 only. No worker or depth flag is
+// wired for this game, so those query values are inert. Without a flag `labAppOptions` is `{}` and nothing changes.
+const LAB = parseLabFlags(window.location.search);
+const { renderer: labRenderer, output: labOutput } = labAppOptions(LAB);
+
 const g = createGame({
+  ...(labRenderer ? { renderer: labRenderer } : {}),
+  ...(labOutput ? { output: labOutput } : {}),
   id: "cross-hop",
   target: "#app",
   diagnostics: { overlay: false, performancePanel: false },
@@ -107,6 +116,9 @@ const g = createGame({
 });
 
 const app = g.app;
+// A1: feed the engine loading screen from the shared helper (the game's one load promise is `g.ready()`).
+const loading = createLoadingProgress({ shell: g.shell });
+loading.set(0.05, "Loading Cross Hop");
 bindApp(app);
 g.start();
 
@@ -140,7 +152,8 @@ if (AUTOSTART) {
   tickUI();
 }
 
-void g.ready().then(() => {
+void loading.track(g.ready(), 1, "Ready").then(() => {
+  loading.done("Ready");
   appReady = true;
   mountSpectators();
   syncVisuals(1);

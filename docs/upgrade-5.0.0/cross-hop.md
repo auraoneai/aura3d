@@ -19,11 +19,15 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A1 (77 assets: highest value), A13 KTX2 or mesh compression if payload budget is tight, A4 pilot for the single custom shader, A12 skip
+- [x] A1 shared loading helper (`createLoadingProgress({ shell: g.shell })` in `src/main.ts`, tracks `g.ready()`); lab flags `?backend=` / `?gamut=` wired via the shared parser, default off
+- [ ] A13 KTX2 or mesh compression: skipped, payload budget not measured here (risks pixels)
+- [ ] A4 pilot for the single custom shader: skipped, EXPERIMENTAL and risks pixels (D4)
+- [x] A12 skip (as planned); B2 partial `AuraApp` cast: none in this game (the `app.nodes as unknown as {...}` casts in `core.ts` are narrow node interfaces)
 
 Verification
 
-- [ ] GC, UT, CAP
+- [x] GC (0 errors, same 4 warnings as base), UT (`apps/showcase-cross-hop` vitest 8/8), typecheck clean
+- [ ] CAP: parent-owned single ACR capture (local before/after frames are in `evidence/game-upgrades-502/cross-hop/`)
 - [ ] `check-deploy` size budgets
 - [ ] `node tools/game-checks/run.mjs cross-hop` clean
 - [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
