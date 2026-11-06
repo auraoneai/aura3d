@@ -9,7 +9,6 @@
  */
 import "../../showcase-port-shared/quickbar.css";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
-import { createProbeController, probesRequested } from "./art/probeGrid";
 import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import {
   camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material, model,
@@ -936,11 +935,8 @@ const lightRig = createLightRigDriver((id) => opt(id) as RigLightHandle | null, 
   }
 });
 /** BZ-02 / BZ-05: one lamp colour, fog, IBL scale and white balance per floor (presentation only, PRD D8). */
-/** 5.0 A5 lab (?lighting=probes, EXPERIMENTAL, default OFF): per-floor light probe grid for bounced fixture light. */
-const probeLab = probesRequested(window.location.search) ? createProbeController(() => app.lighting as never) : null;
 function applyFloorLook(slot: number, transitionSeconds = 0) {
   const look = lookOfSlot(slot);
-  probeLab?.attach(slot);
   lightRig.applyFloor(slot);
   try { app.atmosphere?.setFog({ color: look.fog.color, density: look.fog.density }, { transitionSeconds }); } catch { /* fog runtime not mounted */ }
   try { app.lighting?.setEnvironmentIntensity(look.environmentIntensity / lookOfSlot(BOOT_SLOT).environmentIntensity); } catch { /* lighting runtime not mounted */ }
