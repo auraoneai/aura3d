@@ -7,6 +7,8 @@ import { st, frame, startRun, bootToTitle, evidenceExtra, GHOST_LABEL } from "./
 import { mountUI, tickUI, isPaused, autoPause } from "./game/hud";
 import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "@aura3d/debug";
@@ -90,6 +92,9 @@ const g = createGame({
 
 const app = g.app;
 let appReady = false;
+// A1: shared loading/readiness helper drives the engine shell loading progress.
+const loading = createLoadingProgress({ shell: g.shell });
+loading.set(0.1, "Building board");
 st.autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
 bindApp(app);
 g.start();
@@ -258,8 +263,11 @@ if (AUTOSTART) {
   tickUI();
 }
 
-void g.ready().then(() => {
+void loading.track(g.ready(), 1, "Starting").then(() => {
+  loading.done("Ready");
   appReady = true;
+  // A2: backend selection + readiness report for diagnostics and capture tools (read-only).
+  void publishBackendReport(app as Parameters<typeof publishBackendReport>[0], ((window as unknown as Record<string, unknown>).__AURA3D_DOT_DASH_BACKEND__ = {}) as Record<string, unknown>).catch(() => { /* optional */ });
   if (!vfxRegistered) vfxRegistered = safeRegister(vfxPrefs);
   document.body.dataset.aura3dReady = "true";
   syncVisuals(0);
