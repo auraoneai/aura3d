@@ -19,15 +19,15 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] zero GLSL-only shaders): A3 `?backend=auto` lab
-- [ ] A5 IES photometric profile on arena spotlights (EXPERIMENTAL, one non-clustered WebGL2 spot)
-- [ ] A6 verify wet ground
-- [ ] WebGPU wetness exists but a puddle-noise texture is not supported on WebGPU (4-to-5.md section 9) so do not use wetness textures
-- [ ] A2
+- [x] zero GLSL-only shaders): A3 `?backend=auto` lab (default OFF via shared lab-flag parser; `?backend=` and `?gamut=` wired, `?worker=`/`?depth=` not wired; lab path not exercised on a GPU)
+- [ ] A5 IES photometric profile on arena spotlights (EXPERIMENTAL, one non-clustered WebGL2 spot) - skipped: experimental, pixel risk, outside stable scope
+- [x] A6 verify wet ground (Rucker frame drawn, no console errors; only Rucker captured)
+- [x] WebGPU wetness exists but a puddle-noise texture is not supported on WebGPU (4-to-5.md section 9) so do not use wetness textures
+- [x] A2 (shared `?diag=1` panel, inert without query; backend/readiness on `window.__AURA_QA__.backendReport`; B2 `ready()` cast removed)
 
 Verification
 
 - [ ] GC, UT, CAP
 - [ ] RG for A3/A5
-- [ ] `node tools/game-checks/run.mjs aura-hoops-3d` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [ ] `node tools/game-checks/run.mjs aura-hoops-3d` clean - 1 pre-existing error (art-direction audit stale), unchanged vs base
+- [x] Before/after frames attached: `evidence/game-upgrades-502/aura-hoops-3d/{before,after}.png` (REA capture_browser_scenario, 960x540, 11 s settle, Rucker)
