@@ -212,20 +212,58 @@ function replayMaterialTexturesSafe(material: Material | MaterialInstance): bool
 
 /** Callback-free proof of the providers that may run during a forward draw. */
 export function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders = false): boolean {
-  if (!isTrustedQrFlags(flags) || forwardDrawHooks.length || !isReplaySafeVelocityBinder() || !replayPrototypesUnchanged()) return false;
+  return forwardDrawProvidersUnsafeReason(flags, allowCombinedProviders) === undefined;
+}
+
+/** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
+export function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders = false, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined {
+  if (!isTrustedQrFlags(flags)) return "untrusted-flags";
+  if (forwardDrawHooks.length) return "forward-draw-hooks";
+  if (!isReplaySafeVelocityBinder()) return "velocity-binder";
+  if (!replayPrototypesUnchanged()) return "modified-prototypes";
   for (const feature of allShaderFeatures()) {
-    if (isOriginalPrd07FeatureIdentity(feature) && originalPrd07FeatureFlag(feature) === undefined) return false;
+    if (isOriginalPrd07FeatureIdentity(feature) && originalPrd07FeatureFlag(feature) === undefined) return `prd07-feature:${feature.id}`;
   }
   // Activation uses the registry's immutable registration-time flag, so this
   // list is safe to filter without touching a provider's properties. Identity
   // guards inspect descriptors only for known built-in plain objects.
   for (const feature of potentiallyActiveShaderFeatures(flags)) {
+    if (skipFeature?.(feature)) continue;
     if (!isCoreReplaySafeFeature(feature) && !isPrd04ReplaySafeFeature(feature) && !isInstanceColorReplaySafeFeature(feature)
       && !(allowCombinedProviders && (isOriginalBatchedDrawFeature(feature) || isOriginalPrd11DrawIdFeature(feature)
-        || isOriginalPrd11InstanceEmissiveFeature(feature)))) return false;
+        || isOriginalPrd11InstanceEmissiveFeature(feature)))) return `feature:${String(feature.id)}`;
   }
-  for (const lobe of potentiallyActiveMaterialLobes(flags)) if (!isReplaySafePrd04Lobe(lobe)) return false;
-  return true;
+  for (const lobe of potentiallyActiveMaterialLobes(flags)) if (!isReplaySafePrd04Lobe(lobe)) return `lobe:${String((lobe as { id?: unknown }).id)}`;
+  return undefined;
+}
+
+/** Vertex/alpha hooks the contact depth pass cannot reproduce; the contact contributor checks every participant against them. */
+const CONTACT_PER_ITEM_HOOKS: ReadonlySet<string> = new Set(["vertex:deform", "vertex:world", "vertex:end", "fragment:alpha"]);
+
+/**
+ * Providers a contact-shadow frame needs verified. Features that only act through deform/alpha hooks (skinning, morph,
+ * wind, dissolve) are not a global veto: the contact contributor asks each of them per participant and leaves the
+ * participants they select out of the mask depth. Draw hooks, unverified prototypes and every other provider still veto.
+ */
+export function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined {
+  return forwardDrawProvidersUnsafeReason(flags, false, feature => feature.hooks.some(hook => CONTACT_PER_ITEM_HOOKS.has(hook)));
+}
+
+export function forwardContactProvidersSafe(flags: QrFlags): boolean {
+  return forwardContactProvidersUnsafeReason(flags) === undefined;
+}
+
+/**
+ * Renderer-level contact guard. Strict keeps the full replay proof. Otherwise the providers above must verify and no
+ * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
+ * the mask depth cannot represent are handled one by one by the contact contributor.
+ */
+export function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined {
+  if (strict) return forwardDrawReplayUnsafeReason(items, flags);
+  const providers = forwardContactProvidersUnsafeReason(flags);
+  if (providers) return `provider ${providers}`;
+  const bad = items.find(item => item.onBeforeRender);
+  return bad ? `draw callback ${bad.label ?? "unlabelled"}` : undefined;
 }
 
 const forwardDegradedWarned = new Set<string>();
@@ -240,8 +278,15 @@ function warnForwardDegradedOnce(code: string, material: string | undefined, det
 /** A repeated opaque draw may only use built-in callbacks with unchanged
  * identities. The caller must also reject custom or mutated shader libraries. */
 export function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFlags): boolean {
-  if (!forwardDrawProvidersSafe(flags)) return false;
-  return items.every(forwardBuiltinParticipantSafe);
+  return forwardDrawReplayUnsafeReason(items, flags) === undefined;
+}
+
+/** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
+export function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined {
+  const providers = forwardDrawProvidersUnsafeReason(flags);
+  if (providers) return `provider ${providers}`;
+  const bad = items.find(item => !forwardBuiltinParticipantSafe(item));
+  return bad ? `participant ${bad.label ?? "unlabelled"}` : undefined;
 }
 
 /** Contact depth relies on the same built-in participant methods throughout
@@ -252,7 +297,7 @@ export function forwardContactParticipantSafe(item: RenderItem, flags: QrFlags):
 
 /** Common plain-item and geometry portion for graph-specific contact proofs. */
 export function forwardContactGeometrySafe(item: RenderItem, flags: QrFlags): boolean {
-  return forwardDrawProvidersSafe(flags) && replayBuiltinObject(item, Object.prototype)
+  return forwardContactProvidersSafe(flags) && replayBuiltinObject(item, Object.prototype)
     && !item.onBeforeRender && replayGeometrySafe(item.geometry);
 }
 
@@ -1630,7 +1675,7 @@ export class ForwardPass extends BaseRenderPass {
       throw new RenderDeviceError("instanceCount must match the number of instance transforms", "INSTANCE_COUNT_MISMATCH", { instanceCount: item.instanceCount });
     }
     if (resolveContactShadowMask(this.contactMaskScope)
-      && (item.onBeforeRender || !forwardDrawProvidersSafe(rendererQrFlags(device)))) {
+      && (item.onBeforeRender || !forwardContactProvidersSafe(rendererQrFlags(device)))) {
       throw new RenderDeviceError("Contact shadows require stable forward providers and draw participants", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
     }
     const selective = this.options.selectiveBloom;
@@ -1646,7 +1691,7 @@ export class ForwardPass extends BaseRenderPass {
     if (this.options.photometricFrame || this.options.projectedSpotFrame) this.shadedLightsMemo = undefined;
     this.adoptProjectedSpotLights();
     if (resolveContactShadowMask(this.contactMaskScope)
-      && (item.onBeforeRender || !forwardDrawProvidersSafe(rendererQrFlags(device)))) {
+      && (item.onBeforeRender || !forwardContactProvidersSafe(rendererQrFlags(device)))) {
       throw new RenderDeviceError("Contact shadows require stable forward providers and draw participants", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
     }
     const material = item.material ?? new UnlitMaterial();
@@ -2210,7 +2255,7 @@ export class ForwardPass extends BaseRenderPass {
           }
         }
         const generatedContact = generated && this.lastProgramFeatures?.shadows.contact === true;
-        if (resolveContactShadowMask(this.contactMaskScope) && !forwardDrawProvidersSafe(rendererQrFlags(device))) {
+        if (resolveContactShadowMask(this.contactMaskScope) && !forwardContactProvidersSafe(rendererQrFlags(device))) {
           throw new RenderDeviceError("Contact shadow forward providers changed during the draw", "CONTACT_SHADOW_DEPTH_STALE", { label: item.label });
         }
         validateContactShadowReceiver(baseMaterial, receiverContactIndex, this.contactMaskScope);

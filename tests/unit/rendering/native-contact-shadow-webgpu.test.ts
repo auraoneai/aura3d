@@ -567,17 +567,17 @@ describe("graph contact producer integration", () => {
       expect(contactShadowMask(f.device)).toBeUndefined();
       expect(ctx.blackboard.has("prd02.contactShadowMask")).toBe(false);
       f.device.endFrame();
-      // Non-strict (the default): the same frame degrades to no mask instead of failing the mount, and warns once.
+      // Non-strict (the default): the participant is excluded from the mask depth instead of failing the mount, and warns once.
       const lenient = { ...ctx, flags: createTrustedQrFlags({ A3D_QR_LIGHTING: true }) };
       const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
       try {
         f.device.beginFrame(32, 24);
         const lenientSubmissions = f.native.queue.submit.mock.calls.length;
         expect(() => contributor.passes!("shadows", lenient)[0]!.execute({ device: f.device, width: 32, height: 24 })).not.toThrow();
-        expect(f.native.queue.submit.mock.calls).toHaveLength(lenientSubmissions);
-        expect(contactShadowMask(f.device)).toBeUndefined();
-        expect(lenient.blackboard.has("prd02.contactShadowMask")).toBe(false);
-        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_DEGRADED"))).toBe(true);
+        // The unrepresentable participant is left out of the mask depth; the rest of the scene keeps its contact shadow.
+        expect(f.native.queue.submit.mock.calls.length).toBeGreaterThan(lenientSubmissions);
+        expect(contactShadowMask(f.device)).toBeDefined();
+        expect(warn.mock.calls.some(call => String(call[0]).includes("CONTACT_SHADOW_PARTIAL"))).toBe(true);
         f.device.endFrame();
       } finally { warn.mockRestore(); }
     } finally {

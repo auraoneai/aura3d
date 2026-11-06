@@ -91,7 +91,7 @@ import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardContactFrameUnsafeReason, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
@@ -843,10 +843,10 @@ const staticBatchFrameItems = new WeakMap<RenderSource, {
 
 const CONTACT_SHADOW_DEGRADED_KEY = "prd02.contactShadowDegraded";
 const contactShadowDegradedWarned = new Set<string>();
-function warnContactShadowDegradedOnce(reason: string): void {
+function warnContactShadowDegradedOnce(reason: string, detail?: string): void {
   if (contactShadowDegradedWarned.has(reason)) return;
   contactShadowDegradedWarned.add(reason);
-  console.warn(`CONTACT_SHADOW_DEGRADED: ${reason}. The contact shadow mask is skipped for these frames; the scene still draws.`);
+  console.warn(`CONTACT_SHADOW_DEGRADED: ${reason}${detail ? ` (${detail})` : ""}. The contact shadow mask is skipped for these frames; the scene still draws.`);
 }
 
 /**
@@ -4250,11 +4250,12 @@ export class Renderer {
       }
       frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
+        let replayDetail: string | undefined;
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
           : scalarVolumes.length > 0 ? "scalar-volumes"
           : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
-          : !forwardDrawReplaySafe(items, rendererQrFlags(this.device)) ? "unverified-draw-participants" : undefined;
+          : (replayDetail = forwardContactFrameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
         if (degradeReason) {
           // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
           // the forward draws run without the mask. Only strict mode keeps the old hard failure.
@@ -4265,7 +4266,7 @@ export class Renderer {
             throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: degradeReason });
           }
           blackboard.set(CONTACT_SHADOW_DEGRADED_KEY, degradeReason);
-          warnContactShadowDegradedOnce(degradeReason);
+          warnContactShadowDegradedOnce(degradeReason, replayDetail);
         }
       }
       if (this.benchmarkMaskArmed) {
@@ -5119,11 +5120,12 @@ export class Renderer {
       }
       frameHooks.placeContactProducers(this.graph);
       if (contactReads.length) {
+        let replayDetail: string | undefined;
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
           : scalarVolumes.length > 0 ? "scalar-volumes"
           : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
-          : !forwardDrawReplaySafe(items, rendererQrFlags(this.device)) ? "unverified-draw-participants" : undefined;
+          : (replayDetail = forwardContactFrameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
         if (degradeReason) {
           // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
           // the forward draws run without the mask. Only strict mode keeps the old hard failure.
@@ -5134,7 +5136,7 @@ export class Renderer {
             throw new RenderDeviceError("Contact shadows require verified graph passes and depth participants", "CONTACT_SHADOW_DEPTH_UNSUPPORTED", { reason: degradeReason });
           }
           blackboard.set(CONTACT_SHADOW_DEGRADED_KEY, degradeReason);
-          warnContactShadowDegradedOnce(degradeReason);
+          warnContactShadowDegradedOnce(degradeReason, replayDetail);
         }
       }
       if (this.benchmarkMaskArmed) {
