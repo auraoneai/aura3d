@@ -26,4 +26,11 @@ Verification
 
 - [ ] GC, UT (the spec bake/compile test `materials.ts` is written to be unit-tested), CAP both looks
 - [ ] `node tools/game-checks/run.mjs strange-orbit-port` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] Before/after frames attached (static bands) with the capture command, per game, before the change ships (5.0.2 base vs this branch, title screen, default look only: `evidence/game-upgrades-502/strange-orbit-port/{before,after}.png`; visually identical)
+
+## 5.0.2 notes (wave 4, mechanical items only)
+
+- WebGL2 only: this port keeps its GLSL (`shaders.ts`, `#include <a3d_lights>`); no shader rewrite (D2/D4). `?backend=webgpu` is reachable only as a default-off lab flag and falls back to WebGL2.
+- Done: partial `AuraApp` cast at the game beacon (`app as never`) replaced by a typed cast; lab flags wired through `apps/showcase-port-shared/lab-flags.ts` (`?backend`, `?gamut`; `?worker` and `?depth` are ignored, the port has no worker and uses the shared camera).
+- Skipped: A8 per-slot custom shader, A4 shader-graph rewrite (experimental, pixel risk), A1 loading helper (the port already drives its own `#loading` status text and warms programs before first frame), pinned HDRI (W-4): before/after on 5.0.2 show no look change, so `environments.neutral` stays.
+- Pre-existing at base: game check `art-direction` error (`direction.audit.json` stale).
