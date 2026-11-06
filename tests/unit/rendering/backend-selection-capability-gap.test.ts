@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { createSelectedProductionRenderer } from "../../../packages/engine/src/agent-api/compiler/renderer";
+import { createSelectedProductionRenderer as publicSelect } from "../../../packages/engine/src/agent-api/compiler/renderer";
+import { createProductionRuntimePostprocess } from "../../../packages/engine/src/agent-api/compiler/postprocess";
+
+// Internal hooks (kept off the emitted .d.ts so 5.0.x declarations stay byte-identical).
+const createSelectedProductionRenderer = (publicSelect as unknown as Record<symbol, (...args: unknown[]) => ReturnType<typeof publicSelect>>)[
+  Symbol.for("@aura3d/root-renderer/select-with-webgpu-gap/v1")] as (...args: unknown[]) => ReturnType<typeof publicSelect>;
+void createProductionRuntimePostprocess;
 import { resolveBackendOptions } from "../../../packages/engine/src/agent-api/app/rendererOptions";
 
 const gap = () => ({ code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] });

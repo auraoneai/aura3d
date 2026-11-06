@@ -16,7 +16,7 @@ import { resolveCameraFrame } from "./camera.js";
 import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
-import { webgpuLacksDepthForPostprocess } from "./postprocess.js";
+import { createProductionRuntimePostprocess } from "./postprocess.js";
 import { Renderer, RenderDeviceError, webGL2MaxTextureSize, bindShaderFailureStore, shaderFailureStoreFor, subscribeProgramReadiness, type RendererOptions, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes, normalizeTextureBudgetPolicy, resolveBackendOptions, resolveDrawingPathOptions, resolvePhotometricProfilesOption, resolveProjectedSpotImagesOption, type ResolvedBackendOptions } from "../app/rendererOptions.js";
@@ -219,16 +219,19 @@ function liveClippingGroups(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRunt
   return out;
 }
 
-/** Select an initialized renderer, not merely an advertised adapter. */
-export async function createSelectedProductionRenderer(
+const webgpuLacksDepth = (createProductionRuntimePostprocess as unknown as Record<symbol, ((snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas) => boolean) | undefined>)[
+  Symbol.for("@aura3d/root-postprocess/webgpu-depth-gap/v1")];
+
+/**
+ * Initialized-renderer selection. `webgpuGap` is the capability the scene needs that
+ * WebGPU cannot provide, checked before any WebGPU device or canvas context exists (a canvas that handed out a `webgpu`
+ * context can never hand out `webgl2`). With `allowFallback` the mount goes straight to WebGL2; strict throws.
+ * Kept module-private so the public declaration of `createSelectedProductionRenderer` is unchanged.
+ */
+async function selectProductionRenderer(
   options: RendererOptions,
   selection: ResolvedBackendOptions,
   create: (options: RendererOptions) => Promise<Renderer> = Renderer.create,
-  /**
-   * Capability the scene needs that WebGPU cannot provide, checked before any WebGPU device or canvas context exists.
-   * A canvas that has handed out a `webgpu` context can never hand out `webgl2`, so a gap found only when the first
-   * frame renders could not fall back. With `allowFallback` the mount goes straight to WebGL2; strict throws.
-   */
   webgpuGap?: () => { readonly code: string; readonly missing: readonly string[] } | undefined
 ): Promise<{ readonly renderer: Renderer; readonly selection: ProductionBackendSelection }> {
   const rejectRenderer = async (renderer: Renderer, error: unknown, backend: "webgl2" | "webgpu"): Promise<never> => {
@@ -313,6 +316,18 @@ export async function createSelectedProductionRenderer(
     return { renderer, selection: { requested: selection.requested, active: "webgl2", fallbackReason: code, missingFeatures: missing, deviceLost: false } };
   }
 }
+
+/** Select an initialized renderer, not merely an advertised adapter. */
+export async function createSelectedProductionRenderer(
+  options: RendererOptions,
+  selection: ResolvedBackendOptions,
+  create: (options: RendererOptions) => Promise<Renderer> = Renderer.create
+): Promise<{ readonly renderer: Renderer; readonly selection: ProductionBackendSelection }> {
+  return selectProductionRenderer(options, selection, create);
+}
+/** Registered hook carrying the WebGPU capability-gap parameter without widening the public signature. */
+const SELECT_WITH_WEBGPU_GAP = Symbol.for("@aura3d/root-renderer/select-with-webgpu-gap/v1");
+Object.defineProperty(createSelectedProductionRenderer, SELECT_WITH_WEBGPU_GAP, { value: selectProductionRenderer, configurable: true });
 
 function webGPUOwnershipCleanupFailure(error: unknown, cleanupFailures: readonly unknown[]): RenderDeviceError {
   const failure = new RenderDeviceError(
@@ -575,7 +590,7 @@ export async function createProductionRuntimeSceneRenderer(
     : Math.min(residencyBudget, configuredTextureBudgetPolicy?.maxBytes ?? residencyBudget);
   const textureBudgetPolicy = effectiveResidencyBudget === undefined ? configuredTextureBudgetPolicy
     : { ...configuredTextureBudgetPolicy, maxBytes: effectiveResidencyBudget };
-  const { renderer: productionRenderer, selection: backendSelection } = await createSelectedProductionRenderer({
+  const { renderer: productionRenderer, selection: backendSelection } = await selectProductionRenderer({
     canvas,
     width: canvas.width,
     height: canvas.height,
@@ -614,7 +629,7 @@ export async function createProductionRuntimeSceneRenderer(
     qrFlags: flags
   }, resolveBackendOptions(rendererOptions), undefined,
   // WebGPU never advertises sampleable depth textures; the legacy depth-aware passes need them (Renderer throws DEPTH_POSTPROCESS_UNSUPPORTED on the first frame).
-  () => !isDirectRenderPath(canvas) && webgpuLacksDepthForPostprocess(snapshot, canvas)
+  () => !isDirectRenderPath(canvas) && webgpuLacksDepth?.(snapshot, canvas)
     ? { code: "DEPTH_POSTPROCESS_UNSUPPORTED", missing: ["depth-textures"] } : undefined);
   let photometricProfileAdmissionEnabled = false;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)

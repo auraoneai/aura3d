@@ -444,7 +444,7 @@ function productionTemporalSceneKey(snapshot: AuraSceneSnapshot, identity?: Prod
  * passes, and on the v2 chain the ao / god-rays / motion-blur / ssr / taa stages. Depth of field is exempt because the
  * WebGPU device runs it natively.
  */
-export function webgpuLacksDepthForPostprocess(snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
+function webgpuLacksDepthForPostprocess(snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
   let post: RendererPostProcessOptions;
   try { post = createProductionRuntimePostprocess(snapshot, [], canvas.width, canvas.height, true, { canvas }); } catch { return false; }
   if ((post.volumetricLight && !post.volumetricLight.depth) || (post.contactShadow && !post.contactShadow.depth) ||
@@ -453,3 +453,11 @@ export function webgpuLacksDepthForPostprocess(snapshot: AuraSceneSnapshot, canv
   const bag = post.pipeline as { ao?: unknown; godRays?: unknown; motionBlur?: unknown; ssr?: unknown; taa?: unknown; antiAliasing?: unknown };
   return [bag.ao, bag.godRays, bag.motionBlur, bag.ssr, bag.taa].some(Boolean) || bag.antiAliasing === "taa";
 }
+
+/**
+ * Registered hook (not an export, so the emitted declarations stay identical to the previous patch release): the
+ * renderer reads the WebGPU depth-gap check through a registered symbol on `createProductionRuntimePostprocess`.
+ */
+Object.defineProperty(createProductionRuntimePostprocess, Symbol.for("@aura3d/root-postprocess/webgpu-depth-gap/v1"), {
+  value: webgpuLacksDepthForPostprocess, configurable: true
+});
