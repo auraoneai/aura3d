@@ -63,6 +63,14 @@ export async function buildTemplate(source, template, workDir, run = execFileP) 
     catch (e) { throw new Error(`${cmd} ${args.slice(0, 3).join(" ")} failed: ${String(e.stderr || e.message).split("\n").slice(-4).join(" | ")}`); }
   }
   const dist = join(workDir, dir, "dist");
-  if (!existsSync(join(dist, "index.html"))) throw new Error("build produced no dist/index.html");
+  entryPage(dist);
   return dist;
+}
+
+/** Page a template is served at: `index.html`, else the single `*.html` route the build emitted (animation-studio builds only `live-route.html`). */
+export function entryPage(dist) {
+  if (existsSync(join(dist, "index.html"))) return "";
+  const pages = existsSync(dist) ? readdirSync(dist).filter((n) => n.endsWith(".html")) : [];
+  if (pages.length === 1) return pages[0];
+  throw new Error(pages.length ? `build produced no dist/index.html (found ${pages.join(", ")})` : "build produced no dist/index.html");
 }

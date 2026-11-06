@@ -7,7 +7,7 @@ import { analyzeFrame, classifyEvents, evaluateRow, normalizeCapture, renderSumm
 import { decodePng, encodePng } from "./png.mjs";
 import { createFunctionDriver, createSavedDriver, buildScenario } from "./drivers.mjs";
 import { gameTargets, parseArgs, parseTemplateSource } from "./index.mjs";
-import { scaffoldCommands } from "./templates.mjs";
+import { scaffoldCommands, entryPage } from "./templates.mjs";
 
 const W = 320, H = 180;
 function image(fill) {
@@ -119,4 +119,24 @@ test("template scaffold commands never use a shell and cover scaffold, install, 
   const cmds = scaffoldCommands({ kind: "registry", spec: "next" }, "mini-game", "tpl-mini-game", "/w");
   assert.deepEqual(cmds.map((c) => c.args[0]), ["-y", "install", "run"]);
   assert.ok(cmds[0].args.includes("create-aura3d@next"));
+});
+
+test("entryPage serves index.html, falls back to the single built route, and rejects ambiguous or empty dists", () => {
+  const dir = mkdtempSync(join(tmpdir(), "rg-entry-"));
+  try {
+    assert.throws(() => entryPage(dir), /no dist\/index.html/);
+    writeFileSync(join(dir, "live-route.html"), "x");
+    assert.equal(entryPage(dir), "live-route.html");
+    writeFileSync(join(dir, "other.html"), "x");
+    assert.throws(() => entryPage(dir), /live-route.html, other.html/);
+    writeFileSync(join(dir, "index.html"), "x");
+    assert.equal(entryPage(dir), "");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("driver failure reports timeout and stderr; --capture-timeout-ms parses", async () => {
+  const { createReaCliDriver } = await import("./drivers.mjs");
+  const driver = createReaCliDriver({ timeoutMs: 5, runner: async () => { throw Object.assign(new Error("x"), { killed: true, stderr: "chrome gone\n" }); } });
+  await assert.rejects(() => driver.capture({ url: "http://127.0.0.1:1/" }), /timed out after 5ms: chrome gone/);
+  assert.equal(parseArgs(["--capture-timeout-ms", "900000"]).captureTimeoutMs, 900000);
 });
