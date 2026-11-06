@@ -8,6 +8,8 @@
  * JSON evidence on window.__gameEvidence.
  */
 import "../../showcase-port-shared/quickbar.css";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import {
   camera, decals, defineAuraAssets, effects, environments, game, gameFeel, lights, material, model,
   primitives, resolveQrFlags, scene, text3D, type AuraNodeBuilder, type AuraSceneNode
@@ -844,6 +846,8 @@ type CueId = keyof typeof CUES;
 // ---------------------------------------------------------------------------
 // The game reads its own key table (flow.ts DEFAULT_BINDINGS, remappable in the Player Studio); the engine input only gets
 // the pointer.
+/** 5.0 lab flags (?backend= / ?gamut=): all off by default, EXPERIMENTAL, WebGL2 fallback kept. ?worker= and ?depth= are not wired here. */
+const labOptions = labAppOptions(readLabFlags());
 const mg = createGame({
   id: "showcase-bunker-zero",
   target: "#app",
@@ -860,10 +864,14 @@ const mg = createGame({
   },
   qualityRebuild: { flags: ["game"] },
   // BZ-08: ACES through the output, never a look preset
-  output: { toneMapping: "aces" },
+  output: { toneMapping: "aces", ...labOptions.output },
+  ...(labOptions.renderer ? { renderer: labOptions.renderer } : {}),
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
 });
 const app = mg.app;
+// A1: the shared loading helper drives the game shell's loading bar until the renderer is mounted.
+const loading = createLoadingProgress({ shell: mg.shell });
+loading.set(0.05, "Loading Bunker Zero");
 mg.start();
 const feel = gameFeel.create({ app, time: app.time });
 const cue = (id: CueId) => { void mg.sound?.cue(id); };
@@ -2241,8 +2249,10 @@ else startFloor(0, "descent", { newRun: true });
 placeAtReference();
 updateHint();
 elHud.classList.remove("hidden");
+void loading.track(mg.ready(), 1, "Starting renderer");
 void mg.ready().then(() => {
   appReady = true;
+  loading.done();
   lastWall = performance.now();
   SURFACES.prepare(activeSlot());
   // C18: visibility set before the renderer mounted does not stick, so hide the inactive floors again once it is up
