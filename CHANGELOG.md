@@ -1,8 +1,31 @@
 # Changelog
 
-Version: 5.0.1
+Version: 5.0.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 5.0.2 (2026-11-06)
+
+Restores contact shadows, removes more ways a default path could blank a scene, and adds the render gate and the AI-authoring docs. The public API is additive only.
+
+### Fixes
+
+- Contact shadows are drawn again in scenes that have other contributor passes (5.0.1 degraded them with `CONTACT_SHADOW_DEGRADED`). The producer pass now runs next to the forward receiver, forward features that cannot change camera depth no longer veto the mask, and participants the mask cannot represent are left out with a one-time `CONTACT_SHADOW_PARTIAL` warning. Receivers whose depth state differs from the mask skip it outside strict mode. Strict mode still throws.
+- Masked-depth contracts degrade to opaque casters outside strict mode (`DEPTH_ALPHA_MASK_DEGRADED`), and clipping with contributor-owned geometry no longer throws at mount (`SCENE_CLIPPING_CONTRIBUTOR_DEGRADED`; contributor geometry is not clipped).
+- Models created hidden (`visible: false`) with a runtime id now load at mount and draw when shown (pooled skinned projectiles).
+- `AssetDecoderUnavailable` carries the code `KTX2_CSP_BLOCKED` when a strict CSP blocks the Basis transcoder; `docs/assets/decoder-deployment.md` now states the real requirement. An infinite far plane throws `CAMERA_INFINITE_FAR_UNSUPPORTED`. `skinningPalette.updated` evidence reads true when skinned items render.
+
+### Added
+
+- `tools/release/render-gate`: loads the 25 games and 20 templates in a real browser and fails on blank or black frames, `RENDERER_MOUNT_FAILED` or error-level console output. Release helper scripts now live in `tools/release/`.
+- AI-authoring docs: `docs/agents/threejs-to-aura3d.md`, eight procedural recipes with rendered frames, answer-first API signature tables, a `procedural-scene` template, and refreshed skills.
+- Shared games tooling: `no-removed-5-0-apis` game check, catalog digest refresh helper, shared lab-flag parser and loading helper, per-game upgrade guides under `docs/upgrade-5.0.0/`.
+
+### Known limits
+
+- Direct-transmission device-limit throws and native WebGPU depth-of-field scene incompatibilities still throw; they are classified in `tests/reports/throw-site-audit-502.md`.
+- Device-lost/device-restored event delivery (C3-05) was not reproduced as an engine fault and still needs a real-browser run.
+- Browser acceptance round 3 and WebGPU evidence have not been run.
 
 ## 5.0.1 (2026-11-05)
 

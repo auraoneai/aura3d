@@ -1,6 +1,6 @@
 # Benchmark And Comparison Evidence
 
-Version: 5.0.1
+Version: 5.0.2
 
 Benchmark docs summarize current comparison code and generated report targets. Report files under `tests/reports/` are ignored by git and may be absent until commands run.
 
