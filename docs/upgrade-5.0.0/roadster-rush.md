@@ -19,7 +19,7 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row, 5.0.3 pass)
 
-- [x] A1 real boot progress: the `#boot` meter and percent label follow `createLoadingProgress` (scene build, `auraApp.ready()`, program warm-up) instead of a fixed 1.4 s animation over a static "100%" (`src/main.ts` `paintBootProgress`; frames `evidence/game-upgrades-503/roadster-rush/after-boot.png` when captured)
+- [x] A1 real boot progress: the `#boot` meter and percent label follow `createLoadingProgress` (scene build, `auraApp.ready()`, program warm-up) instead of a fixed 1.4 s animation over a static "100%" (`src/main.ts` `paintBootProgress`; the early-load frame was not captured (the page was already past the veil at the first REA screenshot), so the meter is verified by code and typecheck only)
 - [x] A6 motion blur (centered taps) and volumetric fog verified on real-GPU Chrome, default view unchanged and no new console errors: `evidence/game-upgrades-503/roadster-rush/{before,after}.png`
 - [ ] A9 `camera.depth` log/reversed: no far-plane z-fighting seen in the 960x540 frames, so not a default. Lab flag `?depth=reversed|logarithmic` wired (default off, `labCameraOptions`); flagged frame not captured
 - [ ] A10 wide gamut: lab flag `?gamut=p3` wired (default off); flagged frame not captured
