@@ -16,6 +16,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { Autopilot } from "./autopilot";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor, flashStrength } from "./fx";
@@ -338,13 +339,15 @@ function sampleQuality(frameSeconds: number): void {
 
 async function boot(): Promise<void> {
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look });
+  const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false,
     /* the engine owns the backing size (lessons-learned R1: never assign canvas size after ready) */
     resize: true,
     pixelRatio: { max: pixelRatio, min: 1 },
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "none", dither: false },
+    /* lab flags (?backend=, ?gamut=) are EXPERIMENTAL and default OFF: with no flag `lab` is `{}` and nothing changes */
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
+    output: { toneMapping: "none", dither: false, ...lab.output },
     scene: world.scene
   });
   await app.ready();
