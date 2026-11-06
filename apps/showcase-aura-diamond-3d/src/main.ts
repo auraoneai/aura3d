@@ -3700,7 +3700,8 @@ function boot(): void {
 
   // Wait for all GLB assets and textures to finish loading before marking ready or ticking simulation
   // A1: the shared loading helper tracks readiness and exposes progress as a data attribute (no visible UI).
-  const loading = createLoadingProgress({ onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); } });
+  const loading = createLoadingProgress({ element: document.getElementById("boot-loading") ?? undefined, onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); } });
+  loading.set(0.25, "scene");
   void loading.track(Promise.resolve((app as any).ready?.()), 1, "assets").then(() => {
     loading.done("ready");
     // A2: publish `backendSelection` and `readiness` for `?diag=1` and the QA hooks.
