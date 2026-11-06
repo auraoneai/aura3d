@@ -270,32 +270,13 @@ export function takePrd07RendererOperation(renderer: object): { readonly operati
 
 /** Revalidate after any yield and before every managed packet consumption. */
 export function assertPrd07RendererOperation(operation: Prd07RendererOperation): void {
-  assertOperation(operation, false);
-}
-
-/**
- * Warmup variant (package-internal, not re-exported from any entrypoint): a precompile only builds programs and
- * consumes no managed packet, so a stale snapshot is re-bound to the live one instead of failing the boot.
- */
-export function assertPrd07RendererWarmupOperation(operation: Prd07RendererOperation): void {
-  assertOperation(operation, true);
-}
-
-function assertOperation(operation: Prd07RendererOperation, refreshSnapshot: boolean): void {
   const { mount, lease, snapshot } = operation;
   const { renderer, device, authority } = mount;
   if (operation.closed || !mount.live || activeOperations.get(renderer) !== operation || device.disposed || device.contextLost ||
       generation(device) !== mount.generation || !authority.isLive()) throw new Error("PRD07_RENDERER_OPERATION_REVOKED");
   assertPrd07DeviceLease(lease, mount.adapter, renderer, device, mount.generation,
     authority.owner, authority.canvas, authority.overlay);
-  if (!authority.isCurrent(snapshot)) {
-    // A warmup (precompile) only builds programs and consumes no managed packet, and the app keeps publishing
-    // atmosphere revisions while its async compiles await. Re-bind to the live snapshot instead of failing the
-    // boot; a frame still fails closed because it draws with the captured packet.
-    const live = refreshSnapshot ? authority.capture() : null;
-    if (!live || !authority.isCurrent(live)) throw new Error("PRD07_ATMOSPHERE_SNAPSHOT_STALE");
-    (operation as { snapshot: Prd07RendererSnapshot }).snapshot = live;
-  }
+  if (!authority.isCurrent(snapshot)) throw new Error("PRD07_ATMOSPHERE_SNAPSHOT_STALE");
 }
 
 export function endPrd07RendererOperation(operation: Prd07RendererOperation | undefined): void {

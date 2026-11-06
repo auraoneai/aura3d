@@ -12,7 +12,7 @@ import type { DepthConvention } from "./DepthConvention";
 import { applyFrameDepthConvention, preferredFrameDepthStorage, recordFrameDepthStorage, reversedFrameUsesZeroToOne, zeroToOneReversedRasterCamera, type RasterCameraMatrices } from "./renderer/FrameDepthConvention";
 import { frameContributors, potentiallyActiveFrameContributors, type AuraFramePhase, type FrameCamera, type FrameContributorContext, type TransparentQueueItem } from "./contracts/frameGraph";
 import {
-  assertPrd07RendererOperation, assertPrd07RendererWarmupOperation, beginPrd07RendererOperation, beginPrd07RendererView,
+  assertPrd07RendererOperation, beginPrd07RendererOperation, beginPrd07RendererView,
   disposePrd07RendererAuthority, endPrd07RendererOperation, endPrd07RendererView, preparePrd07RendererView,
   prd07RendererContextSnapshot, prd07RendererLegacyFog, producePrd07RendererContext, registerPrd07RendererContext, takePrd07RendererOperation,
   type Prd07RendererOperation, type Prd07RendererView
@@ -849,6 +849,20 @@ function warnContactShadowDegradedOnce(reason: string): void {
   console.warn(`CONTACT_SHADOW_DEGRADED: ${reason}. The contact shadow mask is skipped for these frames; the scene still draws.`);
 }
 
+/**
+ * Warmup (precompile) only builds programs and consumes no managed atmosphere packet, and the app keeps publishing
+ * atmosphere revisions while its async compiles await. Re-bind the operation to the live snapshot instead of failing
+ * the boot with PRD07_ATMOSPHERE_SNAPSHOT_STALE; a revoked operation still fails in assertPrd07RendererOperation, and
+ * a frame still fails closed because it draws with its captured packet. (Kept here so the public PRD07 bridge
+ * declarations stay identical to 5.0.0.)
+ */
+function refreshPrd07WarmupSnapshot(operation: Prd07RendererOperation): void {
+  const { authority } = operation.mount;
+  if (operation.closed || !operation.mount.live || !authority.isLive() || authority.isCurrent(operation.snapshot)) return;
+  const live = authority.capture();
+  if (live && authority.isCurrent(live)) (operation as { snapshot: typeof live }).snapshot = live;
+}
+
 export class Renderer {
   /** @internal Bind a materialized, compiler-owned frame to the existing collector contract. */
   static bindCompilerFrameItems(source: RenderSource, items: readonly RenderItem[]): void {
@@ -1335,7 +1349,7 @@ export class Renderer {
         false,
         signal
       ), [signal]);
-      if (operation) assertPrd07RendererWarmupOperation(operation);
+      if (operation) refreshPrd07WarmupSnapshot(operation), assertPrd07RendererOperation(operation);
       // WP-03: direct-to-canvas forward draws have a target identity known
       // before the frame; build their native pipelines now (no presentation).
       if (warmed && !views && this.warmOutputSrgb && this.drawingPathOptions.mode === "forward" && collectRenderTarget(source) === undefined) {
@@ -1349,7 +1363,7 @@ export class Renderer {
     // do not speculate about their native pipeline identity here.
     if (!operation) await this.warmNativeDrawingForPrecompile(sourceOrInput, normalized.source, views, generation, signal);
     assertWarmupActive([signal]);
-    if (operation) assertPrd07RendererWarmupOperation(operation);
+    if (operation) refreshPrd07WarmupSnapshot(operation), assertPrd07RendererOperation(operation);
     const afterDiagnostics = this.device.getDiagnostics();
     const after = beforeDiagnostics.programCompileCount === undefined
       ? afterDiagnostics.shaders
