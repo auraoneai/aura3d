@@ -202,7 +202,18 @@ function bindNodes(app: ReturnType<typeof createAuraApp>, sky: WeatherPreset) {
   return nodes;
 }
 
+/**
+ * 5.0.3 (A1): real readiness stages drive the boot-screen bar (probe -> scene mounted -> assets ready -> shaders warmed).
+ * DOM only; the bar never touches the sim or the canvas and the boot copy is unchanged.
+ */
+function bootProgress(pct: number): void {
+  const fill = $("bootFill");
+  if (fill) fill.style.width = `${pct}%`;
+  $("bootBar")?.setAttribute("aria-valuenow", String(pct));
+}
+
 async function bootGridDispatch(): Promise<void> {
+  bootProgress(6);
   const canvas = $<HTMLCanvasElement>("c");
   if (!canvas) throw new Error("Missing #c canvas element for Grid Dispatch.");
   const params = new URLSearchParams(window.location.search);
@@ -212,6 +223,7 @@ async function bootGridDispatch(): Promise<void> {
   let weather: WeatherPreset = skyFromParam(params.get("sky"));
 
   await probeBuildingModels();
+  bootProgress(22);
   // 5.0.2: `qualityRebuild.flags` accepts the record form (QrFlagInput), so the old `as unknown as readonly string[]` cast is gone.
   // Lab flags (default OFF, EXPERIMENTAL, decision D1): `?backend=auto|webgpu` and `?gamut=p3` only; the game keeps its own
   // renderer quality tier and merges the requested backend into it. `?worker` and `?depth` are not wired (not stable for this game).
@@ -223,6 +235,7 @@ async function bootGridDispatch(): Promise<void> {
     qualityRebuild: { flags: GRID_DISPATCH_FLAGS },
     ...(labOpts.output ? { output: labOpts.output } : {})
   });
+  bootProgress(38);
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp, weather);
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
@@ -1146,11 +1159,18 @@ async function bootGridDispatch(): Promise<void> {
   if (S.career.rides > 0) hud.toast("Welcome back", hud.career(S.career));
 
   try {
-    await auraApp.ready();
+    // 5.0.3 (A1): typed readiness outcome (5.1) instead of a bare ready(); a non-ready outcome is reported and the boot continues.
+    const outcome = await auraApp.readiness({ stage: "first-frame" });
+    if (outcome.state !== "ready") {
+      const failure = outcome.state === "failed" ? new Error(`${outcome.code}: ${outcome.message}`) : new Error(`readiness ${outcome.state}`);
+      qa.reportError(failure);
+      console.error("[grid-dispatch] scene not ready; continuing with what rendered", failure);
+    }
   } catch (error) {
     qa.reportError(error);
     console.error("[grid-dispatch] scene assets failed to load; continuing with what rendered", error);
   }
+  bootProgress(72);
   applyWindowGlow();
   applyMaterialOverrides();
   lowTier = (auraApp.diagnostics() as unknown as { post?: { tier?: string } }).post?.tier === "low";
@@ -1162,6 +1182,7 @@ async function bootGridDispatch(): Promise<void> {
   } catch (error) {
     console.error("[grid-dispatch] warmPrograms failed", error);
   }
+  bootProgress(100);
   auraApp.onFrame(() => {
     loop.tick(performance.now());
   });
