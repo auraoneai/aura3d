@@ -216,8 +216,6 @@ export interface WorldOptions {
   readonly look?: LookParams;
   /** GU47 SSR-19: the quality tier the app mounts at (default: the `renderer.quality: "auto"` rule, see `autoTier`). */
   readonly tier?: string;
-  /** 5.x lab flag (`?depth=`, EXPERIMENTAL, default off): extra `camera.perspective` options, e.g. `labCameraOptions(readLabFlags())`. */
-  readonly cameraOptions?: { readonly depth?: { readonly mode: "reversed" | "logarithmic"; readonly allowFallback: true } };
 }
 
 /** The engine's `quality: "auto"` rule (compiler/shadows.ts): "medium" on coarse pointers, else "high". */
@@ -338,7 +336,7 @@ export function buildWorld(options: WorldOptions = {}): World {
   const first = STAGE_LOOK[lookConfig.pinnedStage ?? 0]!;
   const builder: Scene = scene()
     .background("#f2c6de")
-    .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000, ...options.cameraOptions }))
+    .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
     // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's).
     // GU47 SSR-02: under the colour script the hemisphere drops 1.1 -> 0.6 and the environment 0.9 -> ~0.6, and a violet
     // camera-side fill (0.6, unshadowed) keeps the backlit runner readable; `?look=original` keeps today's rig.
