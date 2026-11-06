@@ -19,7 +19,7 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A16: keep the 4.x-compatible root (synchronous physics, no `preloadPhysics` needed)
+- [x] A16: keep the 4.x-compatible root (synchronous physics, no `preloadPhysics` needed)
 - [ ] verify against S5-WP27-01 and WP-01 batch-member ID changes (fix `addInstance` ids affect instanced debris? check `instances.*` usage x7)
 - [ ] A11 `Fracture` add-on for destructible blocks is the standout new capability for this game (M; changes gameplay visuals: opt-in lab first)
 - [ ] A13 skip (no KTX2 use)
@@ -27,5 +27,5 @@ Adoption (5.0 adoption row)
 Verification
 
 - [ ] GC, UT (siege sim + replay), CAP
-- [ ] `node tools/game-checks/run.mjs slingshot-siege` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] `node tools/game-checks/run.mjs slingshot-siege` clean (0 errors, 2 pre-existing warnings)
+- [x] Before/after frames attached (evidence/game-upgrades-502/slingshot-siege/{before,after}.png) (static bands) with the capture command, per game, before the change ships

@@ -16,6 +16,8 @@ import {
   type AuraTrailHandle,
   type AuraVec3
 } from "@aura3d/engine";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { AMMO, type AmmoId } from "./game/ammo";
 import { siegeAudio } from "./game/audio";
 import { SiegeHud, starRating, type ModeId } from "./game/hud";
@@ -81,9 +83,14 @@ const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
 const ORIGINAL_LOOK = useOriginalLook(chapter.id, params.get("look"));
 /** GU47 phase 3: block pieces are rounded solid blocks (the sim's exact box) on look rows with `solidBlocks`. */
 const SOLID_BLOCKS = !ORIGINAL_LOOK && chapterLook(chapter.id).solidBlocks;
+/** W-8 lab flags (?backend=, ?gamut=): EXPERIMENTAL, default OFF; with no flag the fragment is empty. */
+const LAB = labAppOptions(readLabFlags());
+/** A1: shared readiness tracker; publishes the fraction on `body[data-aura3d-loading]` (no visible UI). */
+const loading = createLoadingProgress({ onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); } });
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
-  renderer: { qualityProfile: "production" },
+  renderer: { qualityProfile: "production", ...(LAB.renderer ?? {}) },
+  ...(LAB.output ? { output: LAB.output } : {}),
   qualityRebuild: { flags: ["game"] },
   input: {
     actions: {
@@ -1582,8 +1589,9 @@ gameApp.onFrame(({ dt }) => {
     app.onDeviceRestored(() => hide());
   } catch { /* optional */ }
   if (app.deviceLost?.()) show("The WebGL context was lost during startup.");
-  void app.ready().then(() => {
+  void loading.track(app.ready(), 1, "renderer").then(() => {
     appReady = true;
+    loading.done("ready");
     document.body.dataset.aura3dReady = "true";
     const diag = app.diagnostics?.();
     const errs = (diag as { errors?: readonly { message?: string }[] } | undefined)?.errors ?? [];
