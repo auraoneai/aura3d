@@ -172,14 +172,26 @@ for (const dpr of [1, 2]) {
         h.canvas.releasePointerCapture(id);
         log.push(`after:has=${h.canvas.hasPointerCapture(id)}`);
       });
-      // Chromium delivers lostpointercapture with the next pointer event, so keep the pointer moving while polling.
-      let jitter = 0;
+      // Chromium may deliver lostpointercapture with a later pointer event. In headless Chromium with CDP-synthesised mouse input
+      // it was observed (Chrome 156, 12 moves after releasePointerCapture) to never deliver one for a mouse pointer, so the browser
+      // cannot be the oracle for this row. Give it a few moves, then dispatch the event the browser would have sent: the product
+      // listener under test (InputSystem onLostCapture: ignore while capture is held, cancel once it is not) is what is asserted.
+      const reasons = () => page.evaluate(() => (window as any).__nativeInput.inspect().cancellations.map((c: { reason: string }) => c.reason) as string[]);
+      let delivered = false;
+      for (let jitter = 1; jitter <= 6 && !delivered; jitter += 1) {
+        await page.mouse.move(resized.x + resized.width * (0.3 + (jitter % 2) * 0.02), resized.y + resized.height * 0.5);
+        delivered = (await reasons()).includes("lostpointercapture");
+      }
+      if (!delivered) {
+        await page.evaluate(() => {
+          const h = (window as any).__nativeInput;
+          const id = h.input.update().pointer.primaryId;
+          (window as any).__captureLog.push("synthetic-lostpointercapture");
+          h.canvas.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: id, pointerType: "mouse", bubbles: false }));
+        });
+      }
       try {
-        await expect.poll(async () => {
-          jitter += 1;
-          await page.mouse.move(resized.x + resized.width * (0.3 + (jitter % 2) * 0.02), resized.y + resized.height * 0.5);
-          return page.evaluate(() => (window as any).__nativeInput.inspect().cancellations.map((c: { reason: string }) => c.reason));
-        }).toContain("lostpointercapture");
+        await expect.poll(reasons).toContain("lostpointercapture");
       } catch (error) {
         const log = await page.evaluate(() => JSON.stringify((window as any).__captureLog));
         throw new Error(`${error instanceof Error ? error.message : String(error)}\npointer event log: ${log}`);

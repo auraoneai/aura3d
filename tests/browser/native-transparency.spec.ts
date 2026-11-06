@@ -11,12 +11,12 @@ for (const backend of ["webgl2", "webgpu"] as const) {
       await page.goto(fixture);
       const result = await page.evaluate(async (selectedBackend) => {
         const load = new Function("url", "return import(url)") as (url: string) => Promise<Record<string, any>>;
-        const [glModule, gpuModule, oitModule, vertexModule, formatModule, shaderModule, pipelineModule, generatorModule, featuresModule] = await Promise.all([
+        const [glModule, gpuModule, oitModule, vertexModule, formatModule, shaderModule, pipelineModule, generatorModule, featuresModule, uniformModule] = await Promise.all([
           load("/packages/rendering/src/WebGL2Device.ts"), load("/packages/rendering/src/WebGPUDevice.ts"),
           load("/packages/rendering/src/transparency/WeightedTransparency.ts"), load("/packages/rendering/src/VertexBuffer.ts"),
           load("/packages/rendering/src/VertexFormat.ts"), load("/packages/rendering/src/ShaderModule.ts"),
           load("/packages/rendering/src/RenderPipeline.ts"), load("/packages/rendering/src/program/ProgramGenerator.ts"),
-          load("/packages/rendering/src/program/ProgramFeatures.ts")
+          load("/packages/rendering/src/program/ProgramFeatures.ts"), load("/packages/rendering/src/resources/UniformBlock.ts")
         ]);
         const [rendererModule, geometryModule, pbrModule, unlitModule] = await Promise.all([
           load("/packages/rendering/src/Renderer.ts"), load("/packages/rendering/src/Geometry.ts"),
@@ -131,6 +131,13 @@ void main(){ if(gl_FragCoord.x >= 16.) discard; outColor=u_baseColor; }`,
           return { pixels: Array.from(pixels) as number[], accumulation: result.accumulation, revealage: result.revealage };
         };
         device.beginFrame(32, 32);
+        // Generated programs read the AuraFrame block, which the Renderer binds each frame. This fixture draws without a Renderer, so it
+        // binds one itself; without it every generated draw fails GL_INVALID_OPERATION ("used but unbound uniform buffer").
+        const frameUniforms = new uniformModule.FrameUniforms(device);
+        const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        frameUniforms.viewport = { width: 32, height: 32 };
+        frameUniforms.update({ viewMatrix: identity, projectionMatrix: identity, viewProjectionMatrix: identity, position: [0, 0, 0], near: 0.1, far: 100, projection: "perspective" }, 0, 1, 0);
+        frameUniforms.bind();
         try {
           const forward = await render(false, false, true, "left");
           const reverse = await render(true, false, true, "left");
@@ -146,6 +153,7 @@ void main(){ if(gl_FragCoord.x >= 16.) discard; outColor=u_baseColor; }`,
           const msaa = device.createRenderTarget({ width: 32, height: 32, format: "rgba8", depth: "texture", sampleCount: 4 });
           try {
             if ((msaa.sampleCount ?? 1) !== 4) throw new Error(`expected a 4x multisampled target, got ${msaa.sampleCount}`);
+            device.setRenderTarget(msaa); // the pass validates that its scene target is the bound one before it reports the multisampled fallback
             pass.execute({ viewId: "fallback", width: 32, height: 32, sceneTarget: msaa, opaqueDepth: msaa.depthTexture,
               depthConvention: "standard", sampleCount: msaa.sampleCount, maxFragmentsPerPixel: 2, support: { floatBlend: true, depthTexture: true, shaderVariants: true }, items: layers,
               drawWeighted() { throw new Error("MSAA must not use weighted targets"); }, drawSorted(_items: unknown, reason: string) { sortedFallback = reason; } });
@@ -186,6 +194,7 @@ void main(){ if(gl_FragCoord.x >= 16.) discard; outColor=u_baseColor; }`,
           throw error;
         } finally {
           device.endFrame();
+          frameUniforms.dispose();
           pass.dispose();
           opaquePipeline.dispose();
           opaque.dispose();
