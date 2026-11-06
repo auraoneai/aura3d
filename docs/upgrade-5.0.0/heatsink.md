@@ -19,8 +19,8 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] (skipped, pixel risk on refraction look; not shipped) A6: heat-haze `effects.shaderPass` can read the new `"normal"` input (WebGL2 only) for refraction accuracy (optional S)
-- [ ] (skipped, EXPERIMENTAL, not shipped by default) A5 clustered lights evaluate for the 3 point + 1 rect + spot rig (EXPERIMENTAL flag)
+- [x] A6 (lab flag `?hazeNormal=1`, default OFF, WebGL2 only): heat-haze `effects.shaderPass` reads the `"normal"` input (`HEAT_HAZE_NORMAL_GLSL` in `heatHaze.ts`); unit test in `tests/unit/heatsink/heat-haze.test.ts`; frames `evidence/game-upgrades-503/heatsink/`
+- [x] A5 clustered lights (lab flag `?clustered=1`, default OFF, EXPERIMENTAL): `lighting.clustered { enabled: true, fallback: "forward" }` in `main.ts`; frames `evidence/game-upgrades-503/heatsink/`
 - [x] A12 skip (seeded city): nothing to change
 - [x] A1 loader: `createLoadingProgress` tracks `auraApp.ready()` on the existing boot card (no new pixels)
 - [x] A2: engine diagnostics overlay via `?diag=1` only (default off); beacon `getApp` no longer uses the partial `as never` cast (B2)

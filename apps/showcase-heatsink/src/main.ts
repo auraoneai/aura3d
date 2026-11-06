@@ -82,6 +82,9 @@ const qaEv = params.has("qaEv") && Number.isFinite(qaEvRaw) ? Math.min(2, Math.m
 const qaAoOff = params.get("qaAo") === "off";
 /** HS-11 QA on/off pair: `?qaHaze=off` keeps the heat-haze pass registered but disabled. */
 const qaHazeOff = params.get("qaHaze") === "off";
+/** Lab flags (EXPERIMENTAL, default OFF): `?hazeNormal=1` heat haze reads the engine normal input (A6); `?clustered=1` clustered local lights (A5). */
+const labHazeNormal = params.get("hazeNormal") === "1";
+const labClustered = params.get("clustered") === "1";
 const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
 const hud = createHud(document);
@@ -123,6 +126,7 @@ async function boot(): Promise<void> {
     ...(labOptions.renderer ? { renderer: { quality: { tier: "auto" as const }, ...labOptions.renderer } } : {}),
     ...(labOptions.output ? { output: labOptions.output } : {}),
     qualityRebuild: { flags: ["game"] },
+    ...(labClustered ? { lighting: { clustered: { enabled: true, fallback: "forward" as const } } } : {}),
     // A2: the engine diagnostics overlay only with ?diag=1 (off by default, nothing drawn otherwise).
     diagnostics: params.get("diag") === "1" ? { overlay: true } : false
   });
@@ -230,7 +234,7 @@ async function boot(): Promise<void> {
   }
 
   // ------------------------------------------------------------------------------------------ heat haze (HS-11)
-  const haze = new HeatHazeController(auraApp, CIRCUIT_LOOKS[selectedCircuit].haze, !qaHazeOff);
+  const haze = new HeatHazeController(auraApp, CIRCUIT_LOOKS[selectedCircuit].haze, !qaHazeOff, labHazeNormal);
   const hotRivals: [number, number, number][] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
   let hotRivalCount = 0;
   const lavaAt: [number, number, number] = [0, 0, 0];

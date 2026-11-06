@@ -65,6 +65,20 @@ void main() {
   outColor = c;
 }`;
 
+/**
+ * A6 lab variant (`?hazeNormal=1`, default OFF, WebGL2 only): the pass also reads the engine `"normal"` input (`u_normal`, unit
+ * view-space normal in `.xyz`, coverage in `.a`). The distortion is scaled by coverage (the open sky is not refracted) and
+ * the sample is additionally bent along the surface normal, so a hot exhaust shimmers across the deck and walls instead of
+ * only sliding the screen. The prelude declares `u_normal` when the pass lists `"normal"`.
+ */
+export const HEAT_HAZE_NORMAL_GLSL = HEAT_HAZE_GLSL.replace(
+  "  vec4 c = texture(u_color, uv + n * amount * 0.014);",
+  `  vec4 nrm = texture(u_normal, uv);
+  float cover = smoothstep(0.0, 0.5, nrm.a);
+  vec2 bend = nrm.xy * amount * 0.006 * cover;
+  vec4 c = texture(u_color, uv + n * amount * 0.014 * mix(0.35, 1.0, cover) + bend);`
+);
+
 /** Linear RGB of a "#rrggbb" tint, normalised so its brightest channel is 1 (tint multiplies, never darkens much). */
 export function tintVector(hex: string): [number, number, number] {
   const n = Number.parseInt(hex.replace("#", ""), 16);
@@ -83,7 +97,7 @@ export interface HeatHazeLook {
 }
 
 /** The pass for a circuit (registered with `app.addPostPass`). */
-export function heatHazePass(look: HeatHazeLook, enabled = true): AuraCustomPostPass {
+export function heatHazePass(look: HeatHazeLook, enabled = true, useNormal = false): AuraCustomPostPass {
   const uniforms: Record<string, number | readonly number[]> = {
     u_tdTime: 0,
     u_strength: look.strength,
@@ -94,6 +108,7 @@ export function heatHazePass(look: HeatHazeLook, enabled = true): AuraCustomPost
     u_tint: tintVector(look.tint)
   };
   for (const u of SOURCE_UNIFORMS) uniforms[u] = [0, 0, 0, 0];
+  if (useNormal) return effects.shaderPass({ name: HEAT_HAZE_PASS, order: "before-tonemap", glsl: HEAT_HAZE_NORMAL_GLSL, inputs: ["color", "normal"], uniforms, enabled });
   return effects.shaderPass({ name: HEAT_HAZE_PASS, order: "before-tonemap", glsl: HEAT_HAZE_GLSL, uniforms, enabled });
 }
 
@@ -224,7 +239,7 @@ export class HeatHazeController {
   private look: HeatHazeLook;
   readonly sources = new HeatHazeSources();
 
-  constructor(private readonly app: HazeApp, look: HeatHazeLook, private readonly enabled = true) {
+  constructor(private readonly app: HazeApp, look: HeatHazeLook, private readonly enabled = true, private readonly useNormal = false) {
     this.look = look;
   }
 
@@ -232,7 +247,7 @@ export class HeatHazeController {
   mount(look: HeatHazeLook): void {
     this.look = look;
     this.release?.();
-    this.release = this.app.addPostPass?.(heatHazePass(look, this.enabled));
+    this.release = this.app.addPostPass?.(heatHazePass(look, this.enabled, this.useNormal));
   }
 
   get mounted(): boolean { return this.release !== undefined; }
