@@ -19,10 +19,10 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A1
-- [ ] A8 for the glider slots
-- [ ] A7 worker lab (animation-controller heavy, but custom attributes make it fragile: skip)
-- [ ] A4 for water
+- [x] A1 (shared createLoadingProgress tracks the textured-material swap; lab flags ?backend/?gamut wired default-off via the shared parser; frames in evidence/game-upgrades-502/silt-and-signal-port/)
+- [ ] A8 for the glider slots (skipped: per-slot custom shader risks pixels, no 5.0.2 need)
+- [ ] A7 worker lab (animation-controller heavy, but custom attributes make it fragile: skip) (skipped per plan, EXPERIMENTAL)
+- [ ] A4 for water (skipped: shader-graph rewrite is EXPERIMENTAL per D4 and risks the water look)
 
 Verification
 

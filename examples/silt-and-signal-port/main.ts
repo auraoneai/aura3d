@@ -21,6 +21,8 @@ import { chapterLook, inkPassOptions, siltLookMode } from "./art/look";
 import { FINISH_ORBIT, RAIL_SECONDS, finishOrbitPose, railPose } from "./camera";
 import { mountSiltHud } from "./hud-look";
 import { mergeInput, objectiveHint, pageFlags, type Device } from "./controls";
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
 import { clearJourney, journeyTotals, ratingOf, readJourney, recordOf, writeChapter } from "./journey";
 
 const params = new URLSearchParams(location.search);
@@ -553,15 +555,19 @@ function wireScreens(): void {
  * runner the frame settles about 45 s after mount while one material stays pending for minutes, hence the cap.
  */
 const LOADING_CAP_MS = 45_000;
+// A1: the shared loading-progress helper tracks the textured-material swap (monotonic fraction; no shell or bar element here)
+const loadingProgress = createLoadingProgress();
 function hideLoadingWhenSettled(started: number): void {
   const rows = (app?.diagnostics() as { renderer?: { runtime?: { texturedMaterials?: readonly { status: string }[] } } } | undefined)?.renderer?.runtime?.texturedMaterials ?? [];
   const pending = rows.filter((r) => r.status === "pending").length;
   const elapsed = Date.now() - started;
   if ((rows.length > 0 && pending === 0) || elapsed > LOADING_CAP_MS) {
+    loadingProgress.done();
     $("loading").classList.add("hidden");
     (window as unknown as { __DUNEGLIDE_LOADED_MS__?: number }).__DUNEGLIDE_LOADED_MS__ = Math.round(elapsed);
     return;
   }
+  if (rows.length > 0) loadingProgress.set((rows.length - pending) / rows.length);
   $("loading-status").textContent = `Painting the valley (${rows.length - pending} of ${rows.length} surfaces)`;
   setTimeout(() => hideLoadingWhenSettled(started), 250);
 }
@@ -583,13 +589,15 @@ async function boot(): Promise<void> {
   world = buildWorld(config.chapter, { shadowMapSize: coarse ? 2048 : 4096, look: config.look, low: coarse, reducedMotion });
   const look = chapterLook(config.chapter);
   const inked = config.look === "inked";
+  // W-8 lab flags (?backend=auto|webgpu, ?gamut=p3): EXPERIMENTAL, default off; with no flag both fragments are empty
+  const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic", ...lab.renderer },
     // DG-P2: ACES with the chapter's exposure in the inked look; the original renders with no tone mapping at 0.65
-    output: inked ? { toneMapping: "aces", exposure: config.exposure ?? look.grade.exposure, dither: true } : { toneMapping: "none", exposure: config.exposure ?? 0.65, dither: false },
+    output: { ...(inked ? { toneMapping: "aces" as const, exposure: config.exposure ?? look.grade.exposure, dither: true } : { toneMapping: "none" as const, exposure: config.exposure ?? 0.65, dither: false }), ...lab.output },
     scene: world.scene
   });
   await app.ready();
