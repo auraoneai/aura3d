@@ -16,7 +16,7 @@ describe("registry KTX2 CSP classification", () => {
     const reg = createAssetDecoderRegistry({ basePath: "/aura-decoders/", capabilities: ALL_FALSE, maxTextureSize: 4096, workerCount: 1 });
     const error = await reg.require(["ktx2"]).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(AssetDecoderUnavailable);
-    expect((error as AssetDecoderUnavailable).code).toBe("KTX2_CSP_BLOCKED");
+    expect((error as AssetDecoderUnavailable & { code?: string }).code).toBe("KTX2_CSP_BLOCKED");
     await reg.dispose();
   });
 });

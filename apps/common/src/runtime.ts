@@ -17,6 +17,7 @@ import {
   type RenderSource,
   type ProductionWebGPUReport
 } from "@aura3d/rendering";
+import { withProductionReporting, type A3DProductionBackendSelection, type A3DProductionReadiness } from "./runtime-reporting";
 import { composeMat4, multiplyMat4, transformPoint, type Mat4 } from "@aura3d/scene";
 
 export interface ProductionAppAsset {
@@ -125,28 +126,7 @@ export interface A3DProductionRuntimeTiming {
   readonly durationMs: number;
 }
 
-export interface A3DProductionBackendSelection {
-  readonly requested: "webgl2";
-  readonly active: "webgl2";
-  readonly missingFeatures: readonly string[];
-  readonly deviceLost: boolean;
-}
-
-export type A3DProductionReadiness =
-  | { readonly state: "pending"; readonly status: A3DProductionRuntimeStatus }
-  | { readonly state: "ready"; readonly stage: "first-frame"; readonly backend: "webgl2" }
-  | { readonly state: "failed"; readonly code: "RENDERER_MOUNT_FAILED"; readonly message: string };
-
-/** Adds `backendSelection` and `readiness` to a runtime record (idempotent; pure). */
-export function withProductionReporting(runtime: A3DProductionRuntime): A3DProductionRuntime {
-  const readiness: A3DProductionReadiness =
-    runtime.status === "error"
-      ? { state: "failed", code: "RENDERER_MOUNT_FAILED", message: runtime.error ?? runtime.lifecycle.message }
-      : runtime.status === "ready" || runtime.status === "animating"
-        ? { state: "ready", stage: "first-frame", backend: "webgl2" }
-        : { state: "pending", status: runtime.status };
-  return { ...runtime, backendSelection: { requested: "webgl2", active: "webgl2", missingFeatures: [], deviceLost: false }, readiness };
-}
+export { withProductionReporting, type A3DProductionBackendSelection, type A3DProductionReadiness };
 
 export interface A3DProductionRuntime {
   readonly status: A3DProductionRuntimeStatus;

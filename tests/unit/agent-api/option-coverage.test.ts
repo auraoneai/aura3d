@@ -16,6 +16,7 @@ import { model, unsafeModelUrl } from "../../../packages/engine/src/agent-api/no
 import { qrPrimitiveGeometryOptions } from "../../../packages/engine/src/agent-api/compiler/geometry";
 import { createProductionModelInstanceTransforms, createProductionPrimitiveGeometry, createProductionRuntimePrimitiveEntries, qrPrimitiveMeshFor } from "../../../packages/engine/src/agent-api/compiler/primitives";
 import { createProductionRuntimeRendererInput } from "../../../packages/engine/src/agent-api/compiler/renderInput";
+import { lowerEffectNode } from "../../../packages/engine/src/production-runtime/effects/EffectNodeLowering";
 import { createProductionRuntimeEnvironmentFog } from "../../../packages/engine/src/agent-api/compiler/fog";
 import { collectPrd02Lights, physicalLightDescriptor } from "../../../packages/engine/src/agent-api/compiler/lights";
 import { applyModelTintBridge } from "../../../packages/engine/src/agent-api/compiler/modelMaterials";
@@ -61,6 +62,14 @@ function build(row: OptionCoverageRow, value: unknown): any {
     case "primitives.capsule": return primitives.capsule(option);
     case "primitives.cylinder": return primitives.cylinder(option);
     case "primitives.plane": return primitives.plane(option);
+    case "primitives.sphere": return primitives.sphere(option);
+    case "primitives.torusKnot": return primitives.torusKnot(option);
+    case "instances.box": return instances.box({ transforms: baseTransforms, ...option });
+    case "instances.sphere": return instances.sphere({ transforms: baseTransforms, ...option });
+    case "lights.point": return lights.point(option);
+    case "material.physical": return material.physical(option);
+    case "material.emissive": return material.emissive(option);
+    case "effects.particles": return effects.particles(option);
     default: throw new Error(`No consumer fixture for ${row.builder}`);
   }
 }
@@ -108,7 +117,15 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
     const param = row.observation === "pbr.color" ? "u_baseColor" : `u_${row.field}`;
     return entry.resources[0]!.material.getParameter(param);
   }
+  if (row.observation?.startsWith("material.u_")) {
+    const entry = createProductionRuntimePrimitiveEntries([primitives.box({ material: built }).toJSON()])[0]!;
+    return entry.resources[0]!.material.getParameter(row.observation.slice("material.".length));
+  }
   const node = built.toJSON();
+  if (row.observation === "effect.lowered") {
+    // The scene-node particle emitter is lowered by the production effect system; only the options it reads can change this.
+    return JSON.stringify(lowerEffectNode(node), (_key, value) => value instanceof Float32Array ? Array.from(value) : value);
+  }
   if (row.observation === "interaction.hoverTargets") return collectAuraSceneEvidence(scene().add(built).toJSON()).interactions.hoverTargets;
   if (row.observation?.startsWith("fog.")) {
     const fog = createProductionRuntimeEnvironmentFog(scene().add(node).toJSON());
@@ -127,7 +144,7 @@ function observe(row: OptionCoverageRow, value: unknown): unknown {
     const descriptor = physicalLightDescriptor(node, node.name ?? "studio");
     if (!descriptor) throw new Error("light consumer did not produce a descriptor");
     const key = row.observation.slice("light.".length);
-    return descriptor[key === "shadow" ? "shadowRequested" : key as "name" | "intensity" | "color" | "position" | "direction"];
+    return descriptor[key === "shadow" ? "shadowRequested" : key === "range" ? "range" : key as "name" | "intensity" | "color" | "position" | "direction" | "decay"];
   }
   if (row.observation?.startsWith("orbit.")) {
     const snapshot = scene().camera(camera.orbit({ target: [0, 0, 0], position: [3, 2, 3] })).add(built).toJSON();

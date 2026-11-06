@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { withProductionReporting, type A3DProductionRuntime } from "../../../apps/common/src/runtime";
+import { withProductionReporting, type A3DProductionReadiness } from "../../../apps/common/src/runtime-reporting";
+
+// Structural stand-in for A3DProductionRuntime (runtime.ts itself is renderer-bound and stays out of the test program).
+interface A3DProductionRuntime {
+  status: string;
+  error?: string;
+  appId: string;
+  sceneId: string;
+  interactionCount: number;
+  readiness?: A3DProductionReadiness;
+  lifecycle: { status: string; message: string; startedAtMs: number; updatedAtMs: number; elapsedMs: number; timings: never[] };
+}
 
 const base = (status: A3DProductionRuntime["status"], extra: Partial<A3DProductionRuntime> = {}): A3DProductionRuntime => ({
   status,

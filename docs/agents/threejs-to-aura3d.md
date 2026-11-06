@@ -21,7 +21,7 @@ Read this first. Aura3D is a standalone engine with its own renderer: you descri
 | `Raycaster.intersectObjects` | `raycast({ origin, direction })` or `interactions.pointer({ target })` + `bindPointerInteractions(app, listener)` | Returns hits against scene nodes, no object references. |
 | `EffectComposer` + `UnrealBloomPass` | `effects.bloom({ intensity, threshold, radius })`, `effects.vignette`, `effects.colorGrade` | Passes are scene nodes; no composer. |
 | `TextGeometry`, CSS2D labels | `text3D("Aura3D", { size, depth })`, `labels.billboard("score", { position })` | HUD belongs in the DOM. |
-| `Points`, particle libraries | `effects.particles({ shape: "cone", rate, lifetime: [a, b], speed, size, color, blend: "additive" })` | Built-in sprite atlas needs no art. |
+| `Points`, particle libraries | `effects.particles({ rate, lifetime: [a, b], speed, size, color, blend: "additive" })` | Built-in sprite atlas needs no art. |
 | `geometry.dispose()`, `renderer.dispose()` | `app.dispose()` | One call disposes everything the app made. |
 | `Vector3`, `Clock` | `[x, y, z]` tuples at option sites; `Clock` from `@aura3d/engine`; `Vector3` from `@aura3d/math/three` | Mutable three.js-shaped math lives only in `@aura3d/math/three`. |
 

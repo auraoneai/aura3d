@@ -76,7 +76,7 @@ stage.add(text3D("Aura3D", { size: 0.5, depth: 0.1 }));
 stage.add(labels.billboard("score 10", { position: [0, 2, 0] }));
 
 // 14 particles
-stage.add(effects.particles({ shape: "cone", rate: 30, lifetime: [0.6, 1.2], speed: [1, 2], size: [0.1, 0.3], color: "#ff8a2a", blend: "additive" }));
+stage.add(effects.particles({ rate: 30, lifetime: [0.6, 1.2], speed: [1, 2], size: [0.1, 0.3], color: "#ff8a2a", blend: "additive" }));
 void [particles, physics, shadows];
 
 // 15 disposal

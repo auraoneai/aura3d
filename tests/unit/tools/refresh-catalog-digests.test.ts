@@ -3,7 +3,6 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-// @ts-expect-error plain mjs tool
 import { refreshCatalogDigests, refreshDigestsInText } from "../../../tools/agent-examples/refresh-catalog-digests.mjs";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");

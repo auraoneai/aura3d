@@ -8,7 +8,6 @@ import { BaseRenderPass } from "../../../packages/rendering/src/RenderPass";
 import { RenderGraph } from "../../../packages/rendering/src/RenderGraph";
 import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
 import { Texture } from "../../../packages/rendering/src/Texture";
-import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
 import { WebGPUDevice, type WebGPUDeviceLike } from "../../../packages/rendering/src/WebGPUDevice";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
 import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
@@ -434,9 +433,7 @@ describe("public renderer contact route", () => {
     const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 32 / 24, near: 0.1, far: 50 });
     camera.transform.setPosition(0, 3, 8); camera.updateCameraMatrices();
     const sun = new DirectionalLight("mutation-sun"); sun.castsShadow = true; sun.transform.updateWorld(undefined, true);
-    const background = new Texture({ width: 1, height: 1, data: new Uint8Array([0, 0, 0, 255]), format: "rgba8", colorSpace: "srgb" });
-    const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false, prd02Contact: {} },
-      ...(phase === "background" ? { environmentBackground: { projection: "equirect", texture: new TextureBinding({ name: "test-background", texture: background }), encoding: "srgb" } } : {}) };
+    const source = { renderItems: [{ geometry, material }], collectedLights: [collectLight(sun)], shadow: { enabled: false, prd02Contact: {} } };
     try {
       if (phase === "shadows") {
         // The mutation now lands before the producer draws its depth, so the producer validates the mutated material.
@@ -449,7 +446,7 @@ describe("public renderer contact route", () => {
         expect(invoked).toBe(true);
         expect(contactShadowMask(f.device)).toBeDefined();
       }
-    } finally { unregisterMutation(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); background.dispose(); }
+    } finally { unregisterMutation(); unregisterContact(); contributor.dispose?.(); renderer.dispose(); geometry.dispose(); material.dispose(); }
   });
 
   it.each([[false, false], [true, false], [false, true], [true, true]] as const)("submits the produced mask and receiver in order (async=%s, hdr=%s)", async (asynchronous, hdr) => {

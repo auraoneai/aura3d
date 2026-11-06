@@ -1649,6 +1649,34 @@
    "kind": "aura-asset-ref",
    "id": "rocks"
   },
+  "silt_and_signal_port_duneAdobeA": {
+   "type": "model",
+   "format": "glb",
+   "url": "/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
+   "hash": "sha256-514e8fc2f9630b0a18414a1a47de4aa97d58c66872b66706fb64b6973cb4e703",
+   "bounds": [
+    1.64,
+    0.88,
+    0.968
+   ],
+   "sizeBytes": 423580,
+   "metadata": {
+    "license": "Meshy generated asset (paid API, plan terms at generation time)",
+    "sourcePath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
+    "outputPath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
+    "provenance": {
+     "sourcePath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
+     "outputPath": "public/aura-assets/silt_and_signal_port_duneAdobeA.514e8fc2.glb",
+     "license": "Meshy generated asset (paid API, plan terms at generation time)",
+     "licenseUrl": "https://www.meshy.ai/terms",
+     "sourceFamily": "meshy",
+     "meshyTaskId": "01a1af5f-4e32-74b4-8204-af3abfb90159",
+     "retrievedAt": "2026-11-04T04:31:29.478Z"
+    }
+   },
+   "kind": "aura-asset-ref",
+   "id": "silt_and_signal_port_duneAdobeA"
+  },
   "stall": {
    "type": "model",
    "format": "glb",

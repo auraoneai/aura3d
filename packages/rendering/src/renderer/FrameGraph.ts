@@ -489,11 +489,11 @@ export function selectiveContributorTag(contributor: FrameContributor): string {
  * else can be scheduled between the producer's own depth draw and the receiver.
  * Kept outside `RendererFrameHooks`' declared members so the published declarations are unchanged in a patch release.
  */
-interface ContactPlacement { readonly deferred: RenderPass[]; placed: boolean }
+interface ContactPlacement { readonly held: RenderPass[]; placed: boolean }
 const contactPlacements = new WeakMap<RendererFrameHooks, ContactPlacement>();
 function contactPlacementOf(hooks: RendererFrameHooks): ContactPlacement {
   let placement = contactPlacements.get(hooks);
-  if (!placement) { placement = { deferred: [], placed: false }; contactPlacements.set(hooks, placement); }
+  if (!placement) { placement = { held: [], placed: false }; contactPlacements.set(hooks, placement); }
   return placement;
 }
 
@@ -713,7 +713,7 @@ export class RendererFrameHooks {
    * mutate the shared depth participants during that interval. */
   contactGraphIsSafe(): boolean {
     const producers = this.contactGraphContributorPasses.filter(isContactShadowShadingPass);
-    return producers.length === 1 && (contactPlacements.get(this)?.placed ?? false) && (contactPlacements.get(this)?.deferred.length ?? 0) === 0;
+    return producers.length === 1 && (contactPlacements.get(this)?.placed ?? false) && (contactPlacements.get(this)?.held.length ?? 0) === 0;
   }
 
   /** "collect" phase — contributor item-list transforms, applied in order. */
@@ -773,7 +773,7 @@ export class RendererFrameHooks {
         this.contactGraphContributorPasses.push(pass);
         assertPhaseSpace(phase, pass, contributor);
         const placed = wrap ? wrap(pass) : pass;
-        if (phase === "shadows" && isContactShadowShadingPass(pass)) contactPlacementOf(this).deferred.push(placed);
+        if (phase === "shadows" && isContactShadowShadingPass(pass)) contactPlacementOf(this).held.push(placed);
         else graph.addPass(placed);
         writtenResources.push(...pass.writes);
       }
@@ -894,7 +894,7 @@ export class RendererFrameHooks {
 Object.defineProperty(RendererFrameHooks.prototype, Symbol.for("@aura3d/rendering:placeContactProducers"), {
   value(this: RendererFrameHooks, graph: RenderGraph): void {
     const placement = contactPlacementOf(this);
-    for (const pass of placement.deferred.splice(0)) graph.addPass(pass);
+    for (const pass of placement.held.splice(0)) graph.addPass(pass);
     placement.placed = true;
   }
 });

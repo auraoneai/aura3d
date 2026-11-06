@@ -224,8 +224,8 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
         failed.push({ id, url });
         // Preserve the CSP classification so the main registry path surfaces KTX2_CSP_BLOCKED.
         const csp = id === "ktx2" && (cspBlocked || isCspBlockedFailure(secondError));
-        const unavailable = new AssetDecoderUnavailable(id, url);
-        throw csp ? markKtx2CspBlocked(unavailable) : unavailable;
+        const decoderError = new AssetDecoderUnavailable(id, url);
+        throw csp ? markKtx2CspBlocked(decoderError) : decoderError;
       }
     }
   };

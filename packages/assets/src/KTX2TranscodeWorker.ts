@@ -197,8 +197,8 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   // Set when a worker failed because the page CSP refused the decoder.
   let cspBlocked = false;
   const workerUrlUnavailable = (): AssetDecoderUnavailable => {
-    const unavailable = new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`);
-    return cspBlocked ? markKtx2CspBlocked(unavailable) : unavailable;
+    const decoderError = new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`);
+    return cspBlocked ? markKtx2CspBlocked(decoderError) : decoderError;
   };
 
   function trackInitialization(work: Promise<unknown>, cleanup = false): void {

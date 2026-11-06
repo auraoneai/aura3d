@@ -19,7 +19,7 @@ function check(source: string) {
   execFileSync("git", ["init", "-q"], { cwd: root });
   execFileSync("git", ["add", "-A"], { cwd: root });
   resetGitCache();
-  return runChecks({ root, slugs: ["demo"], only: ["no-removed-5-0-apis"], global: false, env: {} }).findings;
+  return runChecks({ root, slugs: ["demo"], only: ["no-removed-5-0-apis"], global: false, env: {} }).findings as Array<{ message: string; line: number; severity: string }>;
 }
 
 describe("game-checks no-removed-5-0-apis", () => {
