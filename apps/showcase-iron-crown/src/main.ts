@@ -10,6 +10,8 @@ import {
   type GameInputController
 } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets";
 import {
   createCpuBrain,
@@ -339,6 +341,9 @@ const fightingGame = createGame({
 });
 
 const app = fightingGame.app;
+// A1: report arena load progress through the game shell (shared helper); done() fires once the renderer and game are ready.
+const loadingProgress = createLoadingProgress({ shell: fightingGame.shell });
+loadingProgress.track(app.ready(), 1, "Loading arena");
 let releaseAirstripHaze: (() => void) | undefined;
 let airstripHazeRequest = 0;
 // IC47-V1: runtime VFX back on with the Iron Crown preset pack (the floating-dot cause is fixed in the engine, E-F);
@@ -2115,6 +2120,11 @@ hud.setAutopilotButton(autoDemo);
 
 void app.ready().then(async () => {
   await fightingGame.ready();
+  loadingProgress.done("Ready");
+  // A2: publish backend selection + readiness on the QA hook (diagnostic only).
+  const backendHook: Record<string, unknown> = {};
+  (window as unknown as { __IRON_CROWN_BACKEND__?: unknown }).__IRON_CROWN_BACKEND__ = backendHook;
+  void publishBackendReport(app, backendHook);
   bindAnimations();
   syncNodes();
   director.update(0, [
