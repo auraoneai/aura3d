@@ -3,6 +3,10 @@ name: aura3d-art-direction
 description: Sets the visual target and runs the look-dev loop for any Aura3D scene or game: genre look recipe, reference frames, look preset, capture, rubric judgement and iteration. Use when starting or finishing any scene, game, product viewer or template, or when a screenshot looks flat, dark, empty, floaty or placeholder-like.
 ---
 
+Start with [threejs-to-aura3d.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/threejs-to-aura3d.md) when the author knows
+three.js, and [recipes 8 to 15](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) when no model is admitted: each
+lists the look and light values it used and has a retained real-GPU frame.
+
 ## Look target
 
 1. Find the genre row in `references/look-recipes.md` (platformer, racing, fighting, arena shooter, sports/table, product, character, outdoor, interior, night city, space, underwater, cinematic).

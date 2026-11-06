@@ -11,6 +11,13 @@ that supplies environment light, key shadow, fog, background and grade. Shared
 rules (claim labels, forbidden patterns, typed assets, benchmark mode) are in
 [boundaries](../aura3d-core/references/boundaries.md).
 
+Start from [threejs-to-aura3d.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/threejs-to-aura3d.md) (if you would write
+X in three.js, write Y) and, with no admitted model, a procedural recipe from
+[recipes.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) (recipes 8 to 15).
+No model admitted: compose `primitives.*`, `geometry.define`, `instances.*`,
+`group` joints, `material.*` and `environments.neutral` under a look, and say
+the route is procedural.
+
 ## Look target
 
 Read the genre recipe row in `../aura3d-art-direction/references/look-recipes.md`,

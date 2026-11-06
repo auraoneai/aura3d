@@ -48,41 +48,34 @@ without a look ships flat shading, void background and floating props.
    });
    ```
 
-3. Translate any three.js instinct with this table (every row compiles against
-   the engine types; the full table and the mistakes agents make are in
-   [agent-quickstart.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-quickstart.md)):
-
-   | three.js habit | Aura3D |
-   | --- | --- |
-   | `new Scene()` | `scene()`, then `.add(node)` |
-   | `GLTFLoader` + `Mesh` | `model(assets.x, { targetHeight })` |
-   | `PerspectiveCamera` | `scene({ camera: camera.perspective({ fov, position, target }) })` |
-   | `AmbientLight`/`HemisphereLight` | `lights.ambient(...)`/`lights.hemisphere(...)` or the look |
-   | `DirectionalLight` + `castShadow` | `lights.directional({ shadow: true })`; models cast by default |
-   | `FogExp2` | `effects.fog({ density })` |
-   | `EffectComposer` + bloom | `effects.bloom()` |
-   | `ShaderMaterial` | `material.custom({ glsl: { fragment }, uniforms: { uTime: { type: "f32", value: 0 } } })` |
-   | `InstancedMesh` | `instances.cone/box/sphere({ transforms, colors })` |
-   | `OrbitControls` | `interactions.orbit({ target: "<node name>" })` |
-   | `AnimationMixer` | `app.nodes.require(name).play(clip, { crossFade })` |
-
-   There is no root `output` or `world` namespace: tone mapping and grade come
-   from the look (`looks.appOptions`), environment from `environments.*`.
+3. Translate any three.js instinct with the table "if you would write X in
+   three.js, write Y" (every Aura3D line is type-checked against the engine):
+   [threejs-to-aura3d.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/threejs-to-aura3d.md). Signatures for the common
+   roots: [api-signatures.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/api-signatures.md); read them instead of
+   opening `node_modules` type files. There is no root `output` or `world`
+   namespace: tone mapping and grade come from the look (`looks.appOptions`),
+   environment from `environments.*`.
 
 4. If the prompt names a real object, run `assets resolve` before writing
    model code (load `aura3d-assets`).
 5. Load the next skill from the routing table below. Load more than one when
    the task spans them.
-6. Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or
-   architectural landmarks out of `primitives.box`, `primitives.sphere`, or
-   `primitives.cylinder` (keep every silhouette, look, and style readable):
-   every hero subject, lighting, and shadow requires a real 3D GLB via
-   `model(assets.<name>, { targetMaxDimension, role })` from `src/aura-assets.ts`
-   (use `targetHeight` only for upright humanoids and `targetMaxDimension` for
-   vehicles, rackets, weapons, barriers, and wide props so aspect ratios and
-   silhouettes stay proportional). Drive rigged characters (`skins > 0`) with
-   `handle.setAnimation({ clip, loop: true, speed })` so limbs articulate under
-   the key light and shadow rather than sliding as rigid statues.
+6. A named real object (character, athlete, vehicle, aircraft, landmark) uses a
+   real GLB via `model(assets.<name>, { targetMaxDimension, role })` from
+   `src/aura-assets.ts` (`targetHeight` only for upright humanoids, so aspect
+   ratios stay proportional); drive rigged characters (`skins > 0`) with
+   `handle.setAnimation({ clip, loop: true, speed })`. No model admitted and
+   none wanted (a world, a creature, a prop set, an abstract piece)? Build it
+   procedurally from `primitives.*`, `geometry.define`, `instances.*`,
+   `material.*`, `group` joints and `environments.neutral`, starting from a
+   recipe in [recipes.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) (recipes 8 to 15: humanoid with joints,
+   terrain, props kit, PBR viewer, custom-shader water, sky and day/night,
+   fire, night street). Label such a route `procedural`, not a showcase claim,
+   and never leave flat unlit placeholders.
+   Capabilities in the 5.0 scope list that matter for visuals (try them, judge
+   by capture, claim nothing unproven): shader graphs through `material.node`,
+   `renderOrder` on nodes, post effects through `effects.*` including
+   `effects.shaderPass`, depth and normal inputs for post, motion vectors.
 7. For interactive and game routes, gate Frame 1 on `await app.ready()` before
    fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
    mounted; default `autopilot` to `false` (manual control on Frame 1) unless

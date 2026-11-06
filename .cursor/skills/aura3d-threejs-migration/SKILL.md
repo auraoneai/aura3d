@@ -12,6 +12,11 @@ codemod plus an honest written record of what could not be reproduced is the
 on-ramp. Shared rules (claim labels, forbidden patterns, typed assets) are in
 [../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).
 
+First stop: [threejs-to-aura3d.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/threejs-to-aura3d.md), the table of three.js
+idioms and the Aura3D line for each (type-checked), then the mapping below.
+A port that loaded no GLB can use a procedural recipe from
+[recipes.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) (recipes 8 to 15) as its starting scene.
+
 ## Look target
 
 The migration replaces a hand-tuned renderer stack with a look preset: the

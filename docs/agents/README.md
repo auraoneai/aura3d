@@ -2,8 +2,9 @@
 
 Aura3D is a TypeScript engine API, an asset CLI, templates, diagnostics and a deploy checker for agents that write browser 3D apps and games. Describe the scene, bring the GLB, own the TypeScript. This page tells an agent what to read and in what order; read only the tier you need.
 
-## Tier 0: five minutes (read all three)
+## Tier 0: five minutes (read all four)
 
+0. [`threejs-to-aura3d.md`](threejs-to-aura3d.md): first stop. If you would write X in three.js, write Y in Aura3D (every Aura3D line is type-checked), plus where to look when there is no admitted model: [`recipes.md`](recipes.md) recipes 8 to 15.
 1. [`agent-quickstart.md`](agent-quickstart.md): scaffold, smallest scene, typed model, verify, three.js habit table, the mistakes agents actually make.
 2. [`claims-and-boundaries.md`](claims-and-boundaries.md): forbidden patterns and claim labels (root safe API, production-runtime, rendering internals, CLI pipeline, template scaffold, prototype, roadmap).
 3. [`../../llms.txt`](../../llms.txt): index of everything else.
@@ -45,7 +46,7 @@ A listed skill that is not installed is a gap to report, not permission to impro
 
 ## Tier 2: reference (open when a question needs it)
 
-[`api-surface.md`](api-surface.md) (what the root exports), [`claims-and-boundaries.md`](claims-and-boundaries.md) (what not to write or claim; the old anti-hallucination and no-hackjob lists are merged into it), [`troubleshooting.md`](troubleshooting.md), [`game-example-standards.md`](game-example-standards.md), [`genre-kits.md`](genre-kits.md) (what each `game.*` genre kit provides versus what is per game, one runnable example each), [`cinematic-scene-quality.md`](cinematic-scene-quality.md), [`benchmark-recipes.md`](benchmark-recipes.md) (smallest recipe per benchmark prompt), [`codebase-map.md`](codebase-map.md), and the 4.1 kit pages in `docs/api/`: `game-kit`, `qa-kit`, `safety-net`, `audio-synth`, `model-loader`, `glsl-chunks`, `scatter-merge`, `ball-flight`, `racket-athlete-rig`, `cli-asset-tools`, `toon`. Worked example logs: `skills-examples/`.
+[`api-signatures.md`](api-signatures.md) (generated signature tables for `createAuraApp`, `scene`, `looks`, `material`, `lights`, `environments`, `sky`, `primitives`, `effects`, `instances`, `geometry`, `interactions`, `physics`; read it instead of opening `node_modules` type files), [`api-surface.md`](api-surface.md) (what the root exports), [`claims-and-boundaries.md`](claims-and-boundaries.md) (what not to write or claim; the old anti-hallucination and no-hackjob lists are merged into it), [`troubleshooting.md`](troubleshooting.md), [`game-example-standards.md`](game-example-standards.md), [`genre-kits.md`](genre-kits.md) (what each `game.*` genre kit provides versus what is per game, one runnable example each), [`cinematic-scene-quality.md`](cinematic-scene-quality.md), [`benchmark-recipes.md`](benchmark-recipes.md) (smallest recipe per benchmark prompt), [`codebase-map.md`](codebase-map.md), and the 4.1 kit pages in `docs/api/`: `game-kit`, `qa-kit`, `safety-net`, `audio-synth`, `model-loader`, `glsl-chunks`, `scatter-merge`, `ball-flight`, `racket-athlete-rig`, `cli-asset-tools`, `toon`. Worked example logs: `skills-examples/`.
 
 Before shipping read `packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md`: the bugs that passed CI and failed on real GPUs.
 
