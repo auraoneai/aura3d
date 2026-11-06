@@ -62,6 +62,10 @@
       #corner { position: fixed; top: 12px; right: 12px; display: none; gap: 6px; z-index: 25; }
       #corner button { min-width: 44px; min-height: 44px; padding: 0 10px; background: var(--panel); }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #02040a; z-index: 40; }
+      /* A1: determinate loading bar driven by createLoadingProgress({ element }) (--aura3d-loading 0..1) */
+      #loading-bar { --aura3d-loading: 0; position: relative; height: 4px; margin-top: 14px; overflow: hidden; border-radius: 2px; background: rgba(64, 224, 255, 0.16); color: #40e0ff; }
+      #loading-bar::after { content: ""; position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(var(--aura3d-loading)); background: currentColor; box-shadow: 0 0 10px currentColor; transition: transform 160ms linear; }
+      @media (prefers-reduced-motion: reduce) { #loading-bar::after { transition: none; } }
       /* menu open: the race sits in its countdown behind the title card, so hide the HUD and the countdown until Start */
       #menu:not(.hidden) ~ #hud, #menu:not(.hidden) ~ #count, #menu:not(.hidden) ~ #touch { visibility: hidden; }
       /* touch controls (HP-03): steer arrows left, actions right, all at least 56 px, inside the safe area */
@@ -116,7 +120,7 @@
   </head>
   <body>
     <canvas id="world"></canvas>
-    <section id="loading"><div class="panel"><h2>ION CIRCUIT</h2><p id="loading-status" class="meta">Spinning up the grid</p></div></section>
+    <section id="loading"><div class="panel"><h2>ION CIRCUIT</h2><p id="loading-status" class="meta">Spinning up the grid</p><div id="loading-bar" role="progressbar" aria-label="Loading the track" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div></section>
     <section id="menu" class="overlay hidden">
       <div class="panel">
         <h1>ION CIRCUIT</h1>

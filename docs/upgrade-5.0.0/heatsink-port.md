@@ -19,16 +19,20 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [x] A1 shared loading helper (`createLoadingProgress`, drives the loading status text) and lab flags (`readLabFlags`/`labAppOptions`, default off; worker flag not wired, game has no createWorker)
+- [x] A1 determinate loading bar (default on): `createLoadingProgress({ element })` drives `#loading-bar` (4 stages, 10/40/60/92/100 %), replacing the 5.0.2 text-percent hack; evidence `evidence/game-upgrades-503/heatsink-port/after-a1-loading.png` (mid-load frame; base shows only the status line)
+- [x] Lab flags (`readLabFlags`/`labAppOptions`, default off; worker flag not wired, game has no createWorker): A3 `?backend=`, A10 `?gamut=p3` wired in main.ts (5.0.2)
+- [x] A9 `?depth=reversed|logarithmic` now wired into the world camera via `labCameraOptions` (default off, EXPERIMENTAL, far plane is 4200 m); flagged frame `evidence/game-upgrades-503/heatsink-port/after-depth-reversed.png` renders identically to default on WebGL2, no new console errors
 - [x] A2 diagnostics: already wired via `apps/showcase-heatsink-port/src/main.ts` (`?diag=1`)
 - [x] B2 partial AuraApp cast: none present in this game
 
-- [ ] A4 for `materials.ts` set (skipped: EXPERIMENTAL shader-graph rewrite, D4 keeps GLSL)
-- [ ] A6 verify motion blur + chromatic aberration (not verified in isolation: no post-effect diff capture; before/after static frame shows no visible change)
-- [ ] A9 optional (space-scale world) (skipped: EXPERIMENTAL depth mode)
+- [ ] A4 for `materials.ts` set (skipped: not a designated A4 pilot; stays GLSL, WebGL2-only. 10 GLSL specs read bespoke fog/twilight/pool uniforms, no pixel-diff harness exists for them)
+- [ ] A5 lighting probes/IES/clustered/voxel GI (skipped: all surfaces except 11 Meshy model nodes are custom GLSL that do not sample engine lighting resources; EXPERIMENTAL with no lab flag in the shared parser; no real-GPU proof)
+- [ ] A8 per-slot custom shader on Meshy models (skipped: the models already take HDRI + cascaded shadow lighting; a custom slot shader would change look identity with no measured gain)
+- [ ] A12 scatter/merge, A13 KTX2, A7 workers (skipped: A12 changes seeded placement of buildProps; no KTX2 textures in game; no createWorker)
+- [ ] A6 verify motion blur + chromatic aberration (twilight look enables them via postToggles; the 5.0.3 real-GPU frames at standstill show no artefact or console error, but both effects need speed to show; not isolated)
 
 Verification
 
 - [ ] GC, UT, CAP (GC and UT [17 files, 164 tests] pass; parent-owned CAP not run)
 - [x] `node tools/game-checks/run.mjs heatsink-port` clean (0 errors, same 2 warnings as base)
-- [x] Before/after frames attached (static bands) with the capture command: `evidence/game-upgrades-502/heatsink-port/{before,after}.png` (REA capture_browser_scenario, 960x540, `?autostart=1`, 11 s)
+- [x] Before/after frames attached (static bands) with the capture command: `evidence/game-upgrades-502/heatsink-port/{before,after}.png`; 5.0.3 REA capture (960x540, 11.5 s, `?autostart=1`, same view): `evidence/game-upgrades-503/heatsink-port/{before,after}.png` (frames match: HUD/scene unchanged; time differs only by sampling) (REA capture_browser_scenario, 960x540, `?autostart=1`, 11 s)
