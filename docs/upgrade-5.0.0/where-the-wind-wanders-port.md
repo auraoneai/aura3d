@@ -19,9 +19,9 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A6: `paper-pass.ts` is a custom post pass: reconcile with the stable custom-pass input contract (`AuraPostPassInput`, optional `"normal"` input, WebGL2 only)
-- [ ] A8 for hero
-- [ ] A4 for world shaders (L)
+- [ ] A6: `paper-pass.ts` is a custom post pass: reconcile with the stable custom-pass input contract (`AuraPostPassInput`, optional `"normal"` input, WebGL2 only) (skipped in 5.0.2: HIGH visual risk, paper pass reads depth/color; needs a paired capture pass)
+- [ ] A8 for hero (skipped in 5.0.2: hero already uses createLocomotion; its gait switch is hardened instead, see hero-animator-refresh.test.ts)
+- [ ] A4 for world shaders (L) (skipped in 5.0.2: EXPERIMENTAL, not shipped by default, D1/D4)
 
 Verification
 
