@@ -85,6 +85,12 @@
         z-index: 80;
       }
       #render-error[hidden] { display: none !important; }
+      /* A1 (5.0.3): visible boot bar; the shared .aura3d-loading rule fills it, it fades out once the scene is ready. */
+      #boot-loading {
+        position: fixed; left: 50%; bottom: 14vh; width: min(320px, 56vw); transform: translateX(-50%);
+        z-index: 70; color: var(--amber); pointer-events: none;
+      }
+      #boot-loading[data-complete="true"] { visibility: hidden; transition: opacity 240ms ease 200ms, visibility 0s 440ms; }
 
       /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Diamond only sets accents. */
       :root {
@@ -1024,6 +1030,7 @@
   </head>
   <body>
     <div id="app" aria-label="Aura Diamond 3D baseball viewport"></div>
+    <div id="boot-loading" class="aura3d-loading" role="progressbar" aria-label="Loading Aura Diamond 3D" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
     <div id="render-error" hidden>Aura Diamond 3D needs WebGL 2. Enable graphics acceleration in your browser, then reload.</div>
 
     <!-- Top quick-switcher bar -->
