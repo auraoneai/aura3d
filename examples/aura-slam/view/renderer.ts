@@ -11,6 +11,7 @@ import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATO
 import { POST_EFFECT, QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
 import { createPoseRig } from "./poseRig";
+import type { RigNodeResolver } from "./athleteRig";
 import type { AthleteRigPort } from "./rigPort";
 import { cachedMediaQuery } from "../ui/dom";
 import { createParticleUpdater } from "./particles";
@@ -358,7 +359,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
             return role ? materialUpgradeHandle(handle, role) : handle;
           }
         : req;
-      const resolver = options.wrapHandle || worldTour ? ({ nodes: { require: rigReq } } as unknown as AuraApp) : app;
+      const resolver = options.wrapHandle || worldTour ? ({ nodes: { require: rigReq } } satisfies RigNodeResolver) : app;
       rigs = { player: rig.resolve(resolver, "player"), rival: rig.resolve(resolver, "rival") };
       ball = resolveBallHandles(req, { trail: !worldTour, marks: !worldTour });
       h.ground = req("stadium-outer-ground");
