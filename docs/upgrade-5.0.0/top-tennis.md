@@ -20,14 +20,14 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] fix the B2 double (narrow `{ nodes: { require } }` interface) (S)
-- [ ] A1 shell loading for the 6 courts' asset sets (S)
-- [ ] A6 verify DoF/SSR/AO/contact-shadow stack after temporal rework (verify only)
-- [ ] A15 already used (`text3D` boards)
+- [x] fix the B2 double (narrow `{ nodes: { require } }` interface) (S)
+- [ ] A1 shell loading for the 6 courts' asset sets (S) (skipped: the game has its own `#boot` splash and a single `app.ready()`; no shell and no per-asset promises to track)
+- [x] A6 verify DoF/SSR/AO/contact-shadow stack after temporal rework (verify only) (5.0.2 build: frame drawn, no mount failure, only CONTACT_SHADOW_PARTIAL warnings as before)
+- [x] A15 already used (`text3D` boards)
 - [ ] A11 `SpatialDOMRenderer` for player name tags is optional (M, skip in wave 1)
 
 Verification
 
 - [ ] GC, UT (likeness-audit + aura-slam sim), CAP 25 s + 60 s
-- [ ] `node tools/game-checks/run.mjs top-tennis` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [ ] `node tools/game-checks/run.mjs top-tennis` clean (1 pre-existing error: art/direction.audit.json stale; not touched)
+- [x] Before/after frames attached (static bands) with the capture command, per game, before the change ships (`evidence/game-upgrades-502/top-tennis/{before,after}.png`)
