@@ -17,6 +17,7 @@ import {
   scene,
   weather,
   type AuraColor,
+  type AuraPhotometricProfile,
   type AuraSceneNode
 } from "@aura3d/engine";
 import { prayerFlagNodes } from "./ambientMotion";
@@ -46,6 +47,13 @@ export interface ArenaOptions {
   readonly lowTier?: boolean;
   /** The venue's look (originalLook.ts `venueLookMode`); default the GU47 look. */
   readonly lookMode?: VenueLookMode;
+  /** A5 lab (`?ies=1`): IES distribution for the two ring spots; absent keeps the scalar spots. */
+  readonly ringPhotometry?: AuraPhotometricProfile;
+}
+
+/** Spread into a ring `lights.spot`: the lab IES profile, or nothing. */
+function photometry(o: ArenaOptions): { photometricProfile?: AuraPhotometricProfile } {
+  return o.ringPhotometry ? { photometricProfile: o.ringPhotometry } : {};
 }
 
 /** The fighting kit's debug-style markers (camera safe-zone posts, centre aura beam): dropped from a finished arena. */
@@ -166,8 +174,8 @@ export function buildOriginalArenaScene(o: ArenaOptions) {
       effects.lightCone({ name: "crown key cone left", position: [-6.3, 4.8, -5.5], direction: [0.65, -0.42, 0.63], color: s.palette.warning, intensity: 0.24, length: 8.5, coneAngle: 0.34, softness: 0.6 }),
       effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: accent, intensity: 0.2, length: 8.5, coneAngle: 0.32, softness: 0.6 }),
       lights.directional({ name: "iron crown rim", color: accent, intensity: 0.75 }).position(0, 4.2, 3),
-      lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 12, color: s.palette.warning }),
-      lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 9, color: accent })
+      lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 12, color: s.palette.warning, ...photometry(o) }),
+      lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: 9, color: accent, ...photometry(o) })
     ])
     .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }
@@ -236,8 +244,8 @@ export function buildRefinedArenaScene(o: ArenaOptions, look: RefinedVenueLook) 
             effects.lightCone({ name: "crown key cone right", position: [6.3, 4.8, -5.5], direction: [-0.65, -0.42, 0.63], color: look.ringFill.color, intensity: 0.16, length: 8.5, coneAngle: 0.32, softness: 0.6 }).toJSON()
           ]
         : []),
-      lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringKey.intensity, color: look.ringKey.color }).toJSON(),
-      lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringFill.intensity, color: look.ringFill.color }).toJSON()
+      lights.spot({ name: "crown ring key", position: [-3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringKey.intensity, color: look.ringKey.color, ...photometry(o) }).toJSON(),
+      lights.spot({ name: "crown ring fill", position: [3.9, 5.4, 1.6], target: [0, 0.5, 0], angle: 0.46, penumbra: 0.85, distance: 15, decay: 1.3, intensity: look.ringFill.intensity, color: look.ringFill.color, ...photometry(o) }).toJSON()
     ])
     .camera(camera.perspective({ position: [0, 1.6, 5.6], target: [0, 0.82, 0], fov: 40 }));
 }
