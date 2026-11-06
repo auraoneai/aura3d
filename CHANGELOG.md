@@ -4,6 +4,14 @@ Version: 4.7.12
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.7.18 (2026-11-06)
+
+- **Aura Slam 3D: the default court failed to mount on 4.7.17.** The Meshy floodlight mast was missing from the site build, so the model request returned the HTML fallback and the renderer died with `Unexpected token '<'`. The mast is now registered in the asset manifest and the build ships it.
+
+### Known limits
+
+- Everything under 4.7.17 stands.
+
 ## 4.7.17 (2026-11-06)
 
 Three more Meshy models (the last 1,000 credits) are wired in; 26 others generated in the same run were skipped (read wrong, do not fit the slot or the budget, or lost earlier).

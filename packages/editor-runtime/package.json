@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/editor-runtime",
-  "version": "4.7.17",
+  "version": "4.7.18",
   "type": "module",
   "exports": {
     ".": {

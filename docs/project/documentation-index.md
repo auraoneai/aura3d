@@ -1,9 +1,9 @@
 # Aura3D documentation index
 
-Version: 4.7.17
+Version: 4.7.18
 
 Date: 2026-10-15
-Status: current for Aura3D 4.7.17
+Status: current for Aura3D 4.7.18
 
 The current tree contains product documentation, executable evidence inputs,
 required package/app entry points, and the retained release records. Superseded PRDs,

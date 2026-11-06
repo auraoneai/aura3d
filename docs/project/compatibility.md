@@ -1,8 +1,8 @@
 # Compatibility Matrix
 
-Version: 4.7.17
+Version: 4.7.18
 
-Current release: Aura3D 4.7.17.
+Current release: Aura3D 4.7.18.
 
 ## Runtime
 
