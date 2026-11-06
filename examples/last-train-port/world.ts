@@ -16,7 +16,7 @@ import { registerLamplightVfx, vfxEvents, type VfxSimView } from "./vfx";
 import { BOUNCE_ID, HEADLAMP_COLOR, HEADLAMP_ID, PLATFORM_LIGHT_COLOR, PLATFORM_LIGHT_IDS, PLATFORM_LIGHT_RANGE, headlampPose, platformLightPositions, poolTown, stationProbes, STATION_PROBE_RESOLUTION, type StationProbe } from "./lights";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM, TRAM_ENAMEL_SCALE } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
-import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
+import { cloudSpec, pointsSpec, rainGraphSpec, rainSpec, skySpec } from "./materials";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { ShotDirector, type ShotKind } from "./shots";
 import { lamplightCrops, type QaCrop, type QaCameraPose } from "./qaCrops";
@@ -282,6 +282,9 @@ function alongRoute(data: SimData, step: number, offset: number, lift: number): 
 /** Debug switches for look-dev captures: `?fx=ao,nofog,nobloom,nograde,novignette,nohdri,skyflat`. */
 const QUERY = typeof location !== "undefined" ? new URLSearchParams(location.search) : new URLSearchParams();
 const FX = new Set((QUERY.get("fx") ?? "").split(","));
+/** A4 pilot: rain streaks are a portable shader-graph material (GLSL + WGSL twin); `?fx=rainglsl` keeps the GLSL `material.custom` baseline for diffs. `?fx=forcerain` is a capture switch: rain at any station. */
+const RAIN_PORTABLE = !FX.has("rainglsl");
+const FORCE_RAIN = FX.has("forcerain");
 /** GU47 LT-01: `?band=A..E` pins a band; `?look=original` keeps today's day / night look. */
 export const PINNED_BAND = parseBand(QUERY.get("band"));
 export const LOOK = parseLook(QUERY.get("look"));
@@ -665,8 +668,9 @@ function buildScene(data: SimData, look: SceneLook, tex: TownTextures | null): S
   b.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(RAIN_COUNT * 12).fill(0)),
     indices: Uint32Array.from(Array.from({ length: RAIN_COUNT }, (_, i) => [i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3]).flat()),
-    attributes: { fade: { itemSize: 1, data: f32(new Array(RAIN_COUNT * 4).fill(0)) } }
-  }), { name: "rain", material: material.custom(rainSpec([0.75, 0.85, 1])) }).runtime({ id: "rain" }));
+    // Portable path: `fade` rides in uv0.x (graph builtins have no author attributes); GLSL path keeps the `fade` attribute.
+    ...(RAIN_PORTABLE ? { uvs: f32(new Array(RAIN_COUNT * 8).fill(0)) } : { attributes: { fade: { itemSize: 1, data: f32(new Array(RAIN_COUNT * 4).fill(0)) } } })
+  }), { name: "rain", material: RAIN_PORTABLE ? rainGraphSpec([0.75, 0.85, 1]) : material.custom(rainSpec([0.75, 0.85, 1])) }).runtime({ id: "rain" }));
   b.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(MOTE_COUNT * 3).fill(0)),
     topology: "points",
@@ -724,7 +728,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
   const wpos = new Float32Array(WEATHER_COUNT * 3), wfade = new Float32Array(WEATHER_COUNT), wsize = new Float32Array(WEATHER_COUNT);
   const mpos = new Float32Array(MOTE_COUNT * 3), mfade = new Float32Array(MOTE_COUNT), msize = new Float32Array(MOTE_COUNT);
   const sky = node("sky"), clouds = node("cloud-sea"), weather = node("weather"), motes = node("motes"), rain = node("rain");
-  const rpos = new Float32Array(RAIN_COUNT * 12), rfade = new Float32Array(RAIN_COUNT * 4);
+  const rpos = new Float32Array(RAIN_COUNT * 12), rfade = new Float32Array(RAIN_COUNT * 4), ruv = new Float32Array(RAIN_COUNT * 8);
   let shownNight = startNight ? 1 : 0;
   let nightLevel = startNight ? 1 : 0;
   let lastSeconds = 0;
@@ -941,7 +945,7 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
     cropHeadlamp = headlampPose(here, f).position;
 
     /* rain (Monsoon Exchange, index 4) or snow (Drowned Observatory, index 3) near those towns */
-    const weatherNow = weatherOf(data, sim);
+    const weatherNow = FORCE_RAIN ? "rain" : weatherOf(data, sim);
     const raining = weatherNow === "rain", snowing = weatherNow === "snow";
     /* GU47 LT-09: wet platforms in the Monsoon rain (roughness 0.82 -> 0.25), setMaterial only when the weather changes */
     if (shownBand !== null && raining !== platformsWet) { platformsWet = raining; node("platforms").setMaterial(material.pbr({ color: raining ? "#b9b2a2" : "#d9cfba", roughness: raining ? 0.25 : 0.82 })); }
@@ -972,10 +976,12 @@ function bindRuntime(app: AuraApp, data: SimData, sceneFor: (look: SceneLook) =>
         rpos[o + 6] = x + rx; rpos[o + 7] = y + len; rpos[o + 8] = z + rz;
         rpos[o + 9] = x - rx; rpos[o + 10] = y + len; rpos[o + 11] = z - rz;
         const a = raining ? 0.5 : 0;
-        rfade[i * 4] = 0; rfade[i * 4 + 1] = 0; rfade[i * 4 + 2] = a; rfade[i * 4 + 3] = a;
+        if (RAIN_PORTABLE) { for (let k = 0; k < 4; k++) { ruv[i * 8 + k * 2] = k >= 2 ? a : 0; } }
+        else { rfade[i * 4] = 0; rfade[i * 4 + 1] = 0; rfade[i * 4 + 2] = a; rfade[i * 4 + 3] = a; }
       }
       rain.updateAttribute?.("position", { array: rpos, offset: 0 });
-      rain.updateAttribute?.("fade", { array: rfade, offset: 0 });
+      if (RAIN_PORTABLE) rain.updateAttribute?.("uv", { array: ruv, offset: 0 });
+      else rain.updateAttribute?.("fade", { array: rfade, offset: 0 });
     }
     for (let i = 0; i < MOTE_COUNT; i++) {
       const [sx, sy, sz, ss] = moteSeeds[i]!;
