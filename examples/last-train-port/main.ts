@@ -19,6 +19,8 @@ import {
 import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
 import { LOOK, TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
+import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import "./enamel.css";
 
 /* GU47 LT-17: the railway-enamel HUD (enamel.css) dresses the band look; ?look=original keeps today's HUD. */
@@ -412,7 +414,7 @@ function summary() {
 }
 
 function memory() {
-  const info = app?.info as unknown as { approximateGpuMemoryBytes?: number; bufferBytes?: number; textureBytes?: number; memory: { geometries: number; textures: number; renderTargets?: number; bufferBytes?: number; textureBytes?: number }; render?: { calls?: number; triangles?: number } } | undefined;
+  const info = app?.info as (NonNullable<AuraApp["info"]> & { bufferBytes?: number; textureBytes?: number; memory: { bufferBytes?: number; textureBytes?: number } }) | undefined;
   return {
     approximateGpuMemoryBytes: info?.approximateGpuMemoryBytes ?? 0,
     bufferBytes: info?.bufferBytes ?? info?.memory.bufferBytes ?? null, textureBytes: info?.textureBytes ?? info?.memory.textureBytes ?? null,
@@ -446,10 +448,10 @@ function assetStatus(): { total: number; loaded: number } {
 }
 
 function diag(): { drawCalls: number; triangles: number; nodes: number; assets: { total: number; loaded: number }; errors: number; renderPath: unknown; post: unknown; warnings: string[] } {
-  const info = app?.info as unknown as { render?: { calls?: number; triangles?: number } } | undefined;
-  const d = app?.diagnostics() as unknown as { errors?: unknown[]; renderPath?: unknown; post?: unknown; warnings?: unknown[] } | undefined;
-  const warnings = (d?.warnings ?? []).map((w) => (typeof w === "string" ? w : String((w as { code?: unknown; message?: unknown }).code ?? (w as { message?: unknown }).message ?? JSON.stringify(w)))).slice(0, 40);
-  return { drawCalls: info?.render?.calls ?? 0, triangles: info?.render?.triangles ?? 0, nodes: runtime?.nodeCount ?? 0, assets: assetStatus(), errors: d?.errors?.length ?? 0, renderPath: d?.renderPath ?? null, post: d?.post ?? null, warnings };
+  const info = app?.info;
+  const d = app?.diagnostics();
+  const warnings = (d?.warnings ?? []).slice(0, 40);
+  return { drawCalls: info?.render?.calls ?? 0, triangles: info?.render?.triangles ?? 0, nodes: runtime?.nodeCount ?? 0, assets: assetStatus(), errors: d?.errors.length ?? 0, renderPath: d?.renderPath ?? null, post: d?.post ?? null, warnings };
 }
 
 const qa = installQaHooks("last-train", {
@@ -516,23 +518,29 @@ const mark = (stage: string): void => console.log(`LT boot: ${stage} @${Math.rou
 async function boot(): Promise<void> {
   mark("start");
   sizeCanvas();
-  const [route, tables] = await Promise.all(["route", "tables"].map(async (name) => (await fetch(new URL(`./data/${name}.json`, import.meta.url))).json()));
+  /* A1: shared loading progress keeps --aura3d-loading/aria-valuenow on the existing #loading panel; no new visuals (the bar style is not applied). */
+  const progress = createLoadingProgress({ element: $("loading") });
+  const [route, tables] = await Promise.all(["route", "tables"].map((name) => progress.track(fetch(new URL(`./data/${name}.json`, import.meta.url)).then((r) => r.json()), 1)));
   data = { route, tables } as SimData;
   mark("data loaded");
   const world = buildWorld(data);
   mark("scene built");
+  /* Lab flags (W-8): EXPERIMENTAL, default OFF. `?backend=auto|webgpu` and `?gamut=p3` only; worker/depth are not wired for this port. */
+  const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: DPR,
+    ...(lab.renderer ? { renderer: lab.renderer } : {}),
     quality: "auto",
     // GU47 LT-07: the band look renders with dither (per-band exposure is on the grade node). Phase 2: tone mapping is none on
     // both paths: agx rendered band A at mean luma 31 against 105 with none and 86 for the 4.6.2 frame (software WebGL2,
     // A/B capture g21p2a), so `?tm=agx` is opt-in only.
-    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands" },
+    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: world.look === "bands", ...lab.output },
     scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });
   mark("app created");
   await app.ready();
   mark("app ready");
+  progress.done();
   runtime = world.bind(app, data, sim.timeOfDay === "night");
   mark("runtime bound");
   ready = true;
