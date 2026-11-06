@@ -173,6 +173,8 @@ export interface SkeletonProfile {
     readonly thighBindL: V3; readonly shinBindL: V3; readonly thighBindR: V3; readonly shinBindR: V3;
     /** planted ankle positions (model space, bind) */
     readonly ankleL: V3; readonly ankleR: V3;
+    /** toe joints (optional): the trail foot pivots about its toe at the finish */
+    readonly toeL?: V3; readonly toeR?: V3;
     readonly crouch: number; readonly hipsBack: number; readonly hipsSide: number;
   };
   /** uniform GLB to shot scale (targetHeight / GLB height) */
@@ -181,6 +183,14 @@ export interface SkeletonProfile {
   readonly clubScale: number;
   /** multiplies FLEX_SPLIT (the base spine flex) */
   readonly flexScale: number;
+  /**
+   * Anatomic swing (the Meshy golfer): the key table is body-relative (shoulder / hip turn, hand targets in the turned chest's
+   * frame), the arms are 2-bone IK with chest-relative elbow poles, elbow flexion is limited and the forearm roll is set from the
+   * grip. Unset = the original trajectory solve (the original athlete, `?golfer=old`), untouched.
+   */
+  readonly anatomic?: boolean;
+  /** palm normal of the bind hands (model space), the roll reference of the anatomic arm solve */
+  readonly palmNormalBind?: V3;
 }
 
 const OLD_LEG = {
@@ -335,6 +345,12 @@ export interface SwingKey {
   readonly bend: number;
   /** hips height offset (model, m) — knee flex / extension */
   readonly hipY: number;
+  /** anatomic keys only: pelvis and total shoulder turn about the spine (rad, + = backswing, away from the target) */
+  readonly turn?: { readonly hips: number; readonly shoulders: number };
+  /** anatomic keys only: pelvis shift along the target line (model x, m; + = toward the target) */
+  readonly shift?: number;
+  /** anatomic keys only: trail heel lift 0..1 (the finish: trail foot on its toe) */
+  readonly toe?: number;
 }
 
 const keyAtBall = (dir: V3, rest: Omit<SwingKey, "grip" | "dir">): SwingKey => {
@@ -367,7 +383,12 @@ const mixKey = (a: SwingKey, b: SwingKey, t: number): SwingKey => ({
   coil: lerp(a.coil, b.coil, t),
   flex: lerp(a.flex, b.flex, t),
   bend: lerp(a.bend, b.bend, t),
-  hipY: lerp(a.hipY, b.hipY, t)
+  hipY: lerp(a.hipY, b.hipY, t),
+  ...(a.turn && b.turn
+    ? { turn: { hips: lerp(a.turn.hips, b.turn.hips, t), shoulders: lerp(a.turn.shoulders, b.turn.shoulders, t) } }
+    : {}),
+  ...(a.shift !== undefined && b.shift !== undefined ? { shift: lerp(a.shift, b.shift, t) } : {}),
+  ...(a.toe !== undefined && b.toe !== undefined ? { toe: lerp(a.toe, b.toe, t) } : {})
 });
 /** piecewise-smooth key interpolation; `ease` warps the segment parameter */
 const segKey = (keys: readonly SwingKey[], u: number, ease: (t: number) => number = smoothstep): SwingKey => {
@@ -386,6 +407,7 @@ const easeDown = (t: number) => Math.pow(Math.max(0, Math.min(1, t)), 1.7); // a
 const easeFollow = (t: number) => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 1.6); // decelerating
 
 export function evaluateSwing(phase: SwingPosePhase, t: number): SwingKey {
+  if (SKELETON.anatomic && !phase.startsWith("putt")) return evaluateAnatomic(phase, t);
   switch (phase) {
     case "backswing": return segKey([K_ADDR, K_TAKE, K_TOP], t);
     case "top": return segKey([K_TOP, K_TOP], 0);
@@ -419,6 +441,7 @@ const KNEE_POLE: V3 = [0, 0, 1];
 /** swap the virtual skeleton the swing is solved on (the original athlete by default) and re-derive every constant */
 export function useSkeleton(profile: SkeletonProfile): void {
   SKELETON = profile;
+  anatCache = undefined;
   RIG = profile.rig;
   UPPER_ARM_LEN = vLen(RIG.tForearmR);
   FOREARM_PALM_LEN = vLen(RIG.palmR);
@@ -499,6 +522,8 @@ export interface SolvedDeltas {
   readonly hips: Quat; readonly spine: Quat; readonly chest: Quat; readonly head: Quat;
   readonly upperArmL: Quat; readonly foreArmL: Quat; readonly upperArmR: Quat; readonly foreArmR: Quat;
   readonly thighL: Quat; readonly shinL: Quat; readonly thighR: Quat; readonly shinR: Quat;
+  /** trail foot pitch about the toe (anatomic finish only) */
+  readonly footR?: Quat;
 }
 
 export interface GolferPosture {
@@ -514,6 +539,8 @@ export interface GolferPosture {
   readonly headOverBallM: number;
   /** horizontal drift of the planted ankles from the bind stance (m, model space) */
   readonly ankleDriftM: number;
+  /** trail-foot heel lift (m) of the finish: 0 while the foot is flat */
+  readonly trailHeelLiftM?: number;
 }
 
 /**
@@ -522,60 +549,95 @@ export interface GolferPosture {
  * shot-local. Everything else (spine coil/flex, IK) is authored in model
  * space and reported back in shot-local for telemetry.
  */
-export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedSwing {
+/** torso chain of one key: local + world rotations and joint positions (model space), shared by the solve and the key resolver */
+interface TorsoPose {
+  hipsLocal: Quat; spineLocal: Quat; chestLocal: Quat; headLocal: Quat;
+  hipsW: Quat; spineW: Quat; chestW: Quat; headW: Quat;
+  hipsPos: V3; headPos: V3; shoulderR: V3; shoulderL: V3; flexScale: number;
+  /** heading of the shoulder line (rad about +Y; 0 faces the ball line, - turns the chest away from the target) */
+  shoulderYaw: number;
+}
+
+function torsoPose(key: SwingKey, breathe: number): TorsoPose {
   const fs = SKELETON.flexScale;
   const flex = { hips: FLEX_SPLIT.hips * fs, spine: FLEX_SPLIT.spine * fs, chest: FLEX_SPLIT.chest * fs };
   const flexScale = 1 + key.flex;
-  const coilH = -key.coil * 0.40;
-  const coilS = -key.coil * 0.30;
-  const coilC = -key.coil * 0.45;
+  let yawH: number, yawS: number, yawC: number, shoulderYaw: number;
+  if (key.turn) {
+    // anatomic: pelvis turns by turn.hips, the rest of the shoulder turn is spread over the spine (40%) and the chest (60%)
+    const rest = key.turn.shoulders - key.turn.hips;
+    yawH = -key.turn.hips; yawS = -rest * 0.4; yawC = -rest * 0.6;
+    shoulderYaw = -key.turn.shoulders;
+  } else {
+    yawH = -key.coil * 0.40; yawS = -key.coil * 0.30; yawC = -key.coil * 0.45;
+    shoulderYaw = yawH + yawS + yawC;
+  }
   const side = key.bend;
-
-  const hipsLocal = qMul(qMul(qX(flex.hips * flexScale), qY(coilH)), qZ(side * 0.5));
-  const spineLocal = qMul(qMul(qX(flex.spine * flexScale), qY(coilS)), qZ(side * 0.3));
-  const chestLocal = qMul(qMul(qX(flex.chest * flexScale + breathe), qY(coilC)), qZ(side * 0.2));
-  // head counter-rotates so the eyes stay on the ball through the coil
-  const headLocal = qMul(qX(-0.62 * (flex.hips + flex.spine + flex.chest) * flexScale * 0.55), qY(-coilC * 0.8));
-
-  // forward kinematics (model space)
+  const hipsLocal = qMul(qMul(qX(flex.hips * flexScale), qY(yawH)), qZ(side * 0.5));
+  const spineLocal = qMul(qMul(qX(flex.spine * flexScale), qY(yawS)), qZ(side * 0.3));
+  const chestLocal = qMul(qMul(qX(flex.chest * flexScale + breathe), qY(yawC)), qZ(side * 0.2));
+  // head counter-rotates so the eyes stay on the ball through the coil (anatomic: the head follows a quarter of the shoulder turn)
+  const headYaw = key.turn ? -(yawH + yawS + yawC) * 0.72 : -yawC * 0.8;
+  const headLocal = qMul(qX(-0.62 * (flex.hips + flex.spine + flex.chest) * flexScale * 0.55), qY(headYaw));
   const hipsW = hipsLocal;
   const spineW = qMul(hipsW, spineLocal);
   const chestW = qMul(spineW, chestLocal);
   const headW = qMul(chestW, headLocal);
-  const hipsPos = vAdd(RIG.hipsBind, [LEG.hipsSide, key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
+  const hipsPos = vAdd(RIG.hipsBind, [LEG.hipsSide + (key.shift ?? 0), key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
   const spinePos = vAdd(hipsPos, qRotate(hipsW, RIG.tSpine));
   const chestPos = vAdd(spinePos, qRotate(spineW, RIG.tChest));
-  const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead));
-  const shoulderR = vAdd(chestPos, qRotate(chestW, RIG.tShoulderR));
-  const shoulderL = vAdd(chestPos, qRotate(chestW, RIG.tShoulderL));
+  return {
+    hipsLocal, spineLocal, chestLocal, headLocal, hipsW, spineW, chestW, headW, hipsPos, flexScale, shoulderYaw,
+    headPos: vAdd(chestPos, qRotate(chestW, RIG.tHead)),
+    shoulderR: vAdd(chestPos, qRotate(chestW, RIG.tShoulderR)),
+    shoulderL: vAdd(chestPos, qRotate(chestW, RIG.tShoulderL))
+  };
+}
+
+export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedSwing {
+  const T = torsoPose(key, breathe);
+  const { hipsLocal, spineLocal, chestLocal, headLocal, hipsW, spineW, chestW, headW, hipsPos, headPos, shoulderR, shoulderL, flexScale } = T;
 
   // legs: planted ankles at the bind stance, knees bent toward the facing direction.
   // The legs are children of Hips, so the hip hinge must be cancelled in their local rotations.
   const hipJointL = vAdd(hipsPos, qRotate(hipsW, LEG.hipJointL));
   const hipJointR = vAdd(hipsPos, qRotate(hipsW, LEG.hipJointR));
   const lg = SKELETON.leg;
+  // finish: the trail foot rolls onto its toe (the foot pivots about the toe joint, the ankle follows)
+  const toe = SKELETON.anatomic ? Math.max(0, Math.min(1, key.toe ?? 0)) : 0;
+  const toePitch = toe * TOE_PITCH;
+  const ankleRTarget: V3 = toe > 0 && lg.toeR ? vSub(lg.toeR, qRotate(qX(toePitch), vSub(lg.toeR, lg.ankleR))) : lg.ankleR;
+  const footR = toe > 0 ? qX(toePitch) : undefined;
   const legL = solveLeg(hipJointL, lg.ankleL, lg.thighL, lg.shinL, lg.thighBindL, lg.shinBindL);
-  const legR = solveLeg(hipJointR, lg.ankleR, lg.thighR, lg.shinR, lg.thighBindR, lg.shinBindR);
+  const legR = solveLeg(hipJointR, ankleRTarget, lg.thighR, lg.shinR, lg.thighBindR, lg.shinBindR);
   const hipsInv = qConj(hipsW);
 
   // targets into model space
   const gripM = toModel(root, key.grip);
   const dirM = dirToModel(root, key.dir);
 
-  // ---- right arm: exact palm + shaft solve --------------------------------
-  const { elbow, foreWorld, wristError } = solveTrailArm(shoulderR, gripM, dirM);
-  // drawn right arm: same palm point, free outward elbow (the club keeps using the exact solve above)
-  const elbowVisR = solveElbowPole(shoulderR, gripM, ARM_POLES.right);
-  const upperWorld = qFromTo(BIND_UPPER_R, unit(vSub(elbowVisR, shoulderR)));
-  const foreVisR = qFromTo(BIND_PALM_R, unit(vSub(gripM, elbowVisR)));
+  let elbow: V3, foreWorld: Quat, wristError: number;
+  let elbowVisR: V3, upperWorld: Quat, foreVisR: Quat;
+  let elbowL: V3, upperWorldL: Quat, foreWorldL: Quat, leftPalmM: V3;
+  if (SKELETON.anatomic) {
+    const arms = solveArmsAnatomic(key, T, gripM, dirM);
+    ({ elbow, foreWorld, wristError } = arms.club);
+    ({ elbowVisR, upperWorld, foreVisR, elbowL, upperWorldL, foreWorldL, leftPalmM } = arms);
+  } else {
+    // ---- right arm: exact palm + shaft solve ----
+    ({ elbow, foreWorld, wristError } = solveTrailArm(shoulderR, gripM, dirM));
+    // drawn right arm: same palm point, free outward elbow (the club keeps using the exact solve above)
+    elbowVisR = solveElbowPole(shoulderR, gripM, ARM_POLES.right);
+    upperWorld = qFromTo(BIND_UPPER_R, unit(vSub(elbowVisR, shoulderR)));
+    foreVisR = qFromTo(BIND_PALM_R, unit(vSub(gripM, elbowVisR)));
+    // ---- left arm: palm IK onto the shaft, a hand-span up from the right ----
+    leftPalmM = vSub(gripM, vScale(dirM, gripSpanAt(key.grip[1])));
+    elbowL = solveElbowPole(shoulderL, leftPalmM, ARM_POLES.left, vLen(RIG.tForearmL), vLen(RIG.palmL));
+    upperWorldL = qFromTo(BIND_UPPER_L, unit(vSub(elbowL, shoulderL)));
+    foreWorldL = qFromTo(BIND_PALM_L, unit(vSub(leftPalmM, elbowL)));
+  }
   const upperLocalR = qMul(qConj(chestW), upperWorld);
   const foreLocalR = qMul(qConj(upperWorld), foreVisR);
-
-  // ---- left arm: palm IK onto the shaft, a hand-span up from the right ----
-  const leftPalmM = vSub(gripM, vScale(dirM, gripSpanAt(key.grip[1])));
-  const elbowL = solveElbowPole(shoulderL, leftPalmM, ARM_POLES.left, vLen(RIG.tForearmL), vLen(RIG.palmL));
-  const upperWorldL = qFromTo(BIND_UPPER_L, unit(vSub(elbowL, shoulderL)));
-  const foreWorldL = qFromTo(BIND_PALM_L, unit(vSub(leftPalmM, elbowL)));
   const upperLocalL = qMul(qConj(chestW), upperWorldL);
   const foreLocalL = qMul(qConj(upperWorldL), foreWorldL);
 
@@ -597,7 +659,8 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
     thighTiltDeg,
     kneeFlexDeg: ((legL.flexRad + legR.flexRad) / 2) * (180 / Math.PI),
     headOverBallM: Math.hypot(headShot[0] - BALL_SHOT[0], headShot[2] - BALL_SHOT[2]),
-    ankleDriftM: Math.max(legL.miss, legR.miss)
+    ankleDriftM: Math.max(legL.miss, legR.miss),
+    trailHeelLiftM: toe > 0 ? 0.09 * Math.sin(toePitch) + (ankleRTarget[1] - lg.ankleR[1]) : 0
   };
 
   return {
@@ -623,7 +686,8 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
     deltas: {
       hips: hipsW, spine: spineW, chest: chestW, head: headW,
       upperArmL: upperWorldL, foreArmL: foreWorldL, upperArmR: upperWorld, foreArmR: foreVisR,
-      thighL: legL.thighW, shinL: legL.shinW, thighR: legR.thighW, shinR: legR.shinW
+      thighL: legL.thighW, shinL: legL.shinW, thighR: legR.thighW, shinR: legR.shinW,
+      ...(footR ? { footR } : {})
     },
     clubHead,
     grip: key.grip,
@@ -639,6 +703,194 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
     reachL: vDist(leftPalmM, shoulderL),
     wristError
   };
+}
+
+/* ------------------------------------------------------------------ *
+ *  Anatomic arms (Meshy golfer): limited 2-bone IK, chest-relative     *
+ *  elbow poles, grip-driven forearm roll                               *
+ * ------------------------------------------------------------------ */
+
+/** heel-up pitch of the trail foot at the finish (rad) */
+const TOE_PITCH = 0.75;
+/** elbow flexion limits (deg): never hyperextended (soft 3 deg), never folded past 150 */
+export const ELBOW_FLEX_MIN_DEG = 3;
+export const ELBOW_FLEX_MAX_DEG = 150;
+/** arm length (upper arm + forearm to palm) the anatomic hand offsets are authored for (the Meshy golfer, metres) */
+const ARM_REF_LEN = 0.567;
+
+/** lead palm up the shaft from the trail palm: the hands sit together at address and open to a hand-span as the grip rises */
+const anatomicGripSpan = (gripY: number): number => {
+  const u = Math.max(0, Math.min(1, (gripY - 0.9) / 0.5));
+  return ANAT_GRIP_SPAN_ADDRESS + (GRIP_SPAN - ANAT_GRIP_SPAN_ADDRESS) * u * u * (3 - 2 * u);
+};
+const ANAT_GRIP_SPAN_ADDRESS = 0;
+
+/** 2-bone elbow with an elbow-flexion limit; `pole` picks the side the elbow bends toward */
+function solveElbowLimited(shoulder: V3, palm: V3, pole: V3, L1: number, L2: number): V3 {
+  const maxD = Math.sqrt(L1 * L1 + L2 * L2 - 2 * L1 * L2 * Math.cos(((180 - ELBOW_FLEX_MIN_DEG) * Math.PI) / 180));
+  const minD = Math.sqrt(L1 * L1 + L2 * L2 - 2 * L1 * L2 * Math.cos(((180 - ELBOW_FLEX_MAX_DEG) * Math.PI) / 180));
+  const raw = vDist(shoulder, palm) || 1;
+  const D = Math.max(minD, Math.min(raw, maxD));
+  const u = unit(vSub(palm, shoulder));
+  const a = (L1 * L1 - L2 * L2 + D * D) / (2 * D);
+  const h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+  const p = ortho(pole, u);
+  const pl = vLen(p);
+  const pn = pl > 1e-4 ? vScale(p, 1 / pl) : unit(ortho([0, 0, 1], u));
+  return vAdd(vAdd(shoulder, vScale(u, a)), vScale(pn, h));
+}
+
+/**
+ * Desired palm normal for a hand whose forearm points along `axis` and holds a shaft along `dir`: perpendicular to both (the palm
+ * wraps the grip), on the medial side (the palms face each other); near-parallel axis/shaft falls back to the medial direction.
+ */
+function gripPalmNormal(axis: V3, dir: V3, medial: V3): V3 {
+  const med = unit(ortho(medial, axis));
+  const c = vCross(axis, dir);
+  const cl = vLen(c);
+  const w = 0.25 * Math.max(0, Math.min(1, cl / 0.5));
+  const nc = cl > 1e-5 ? vScale(c, (vDot(c, medial) >= 0 ? 1 : -1) / cl) : med;
+  return unit(vAdd(vScale(med, 1 - w), vScale(unit(ortho(nc, axis)), w)));
+}
+
+/** bone rotation that maps (bind axis, bind palm normal) onto (axis, palm normal): the forearm / upper-arm roll */
+const rollFrame = (bindAxis: V3, bindNormal: V3, axis: V3, normal: V3): Quat => qFromFrame(bindAxis, bindNormal, axis, normal);
+
+interface AnatomicArms {
+  elbowVisR: V3; upperWorld: Quat; foreVisR: Quat;
+  elbowL: V3; upperWorldL: Quat; foreWorldL: Quat; leftPalmM: V3;
+  /** the hidden exact forearm the club is rigid to */
+  club: { elbow: V3; foreWorld: Quat; wristError: number };
+}
+
+function solveArmsAnatomic(key: SwingKey, T: TorsoPose, gripM: V3, dirM: V3): AnatomicArms {
+  const { shoulderL, shoulderR } = T;
+  const lat = unit(vSub(shoulderL, shoulderR)); // toward the lead (left) shoulder
+  const psi = T.shoulderYaw;
+  const facing: V3 = [Math.sin(psi), 0, Math.cos(psi)];
+  // elbows hang down and out of the turned chest, a touch behind the facing line, never across the sternum
+  // through the finish the hands fold up beside the head: the elbows then point down and FORWARD (toward the target), not up
+  const finishW = key.turn ? Math.max(0, Math.min(1, (key.turn.shoulders * (-180) / Math.PI - 60) / 30)) : 0;
+  const fwd = -0.12 + 1.1 * finishW;
+  const poleL: V3 = unit(vAdd(vAdd([0, -1, 0], vScale(lat, 0.45)), vScale(facing, fwd)));
+  const poleR: V3 = unit(vAdd(vAdd([0, -1, 0], vScale(lat, -0.45)), vScale(facing, fwd)));
+  const L1r = UPPER_ARM_LEN, L2r = FOREARM_PALM_LEN;
+  const L1l = vLen(RIG.tForearmL), L2l = vLen(RIG.palmL);
+
+  const elbowVisR = solveElbowLimited(shoulderR, gripM, poleR, L1r, L2r);
+  const leftPalmM = vSub(gripM, vScale(dirM, key.turn ? anatomicGripSpan(key.grip[1]) : gripSpanAt(key.grip[1])));
+  const elbowL = solveElbowLimited(shoulderL, leftPalmM, poleL, L1l, L2l);
+
+  const forearmR = unit(vSub(gripM, elbowVisR));
+  const forearmL = unit(vSub(leftPalmM, elbowL));
+  const upperDirR = unit(vSub(elbowVisR, shoulderR));
+  const upperDirL = unit(vSub(elbowL, shoulderL));
+  // forearm roll: the palm faces the grip (normal perpendicular to forearm and shaft) and the other hand; the upper arm carries the same roll
+  const nb: V3 = SKELETON.palmNormalBind ?? [0, 0, 1];
+  const nR = gripPalmNormal(forearmR, dirM, lat);
+  const nL = gripPalmNormal(forearmL, dirM, vScale(lat, -1));
+  const upperWorld = rollFrame(BIND_UPPER_R, nb, upperDirR, nR);
+  const foreVisR = rollFrame(BIND_PALM_R, nb, forearmR, nR);
+  const upperWorldL = rollFrame(BIND_UPPER_L, nb, upperDirL, nL);
+  const foreWorldL = rollFrame(BIND_PALM_L, nb, forearmL, nL);
+
+  // the club is rigid to a hidden forearm: the palm stays on the grip and the shaft is exactly `dir` (wrist hinge absorbs the rest)
+  const c2 = -vDot(BIND_PALM_R, SHAFT_BIND_R); // u . d between the elbow-from-palm direction and the shaft
+  const u0 = unit(vSub(elbowVisR, gripM));
+  const perpRaw = ortho(u0, dirM);
+  const perp = vLen(perpRaw) > 1e-4 ? unit(perpRaw) : unit(ortho([0, 1, 0], dirM));
+  const u = vAdd(vScale(dirM, c2), vScale(perp, Math.sqrt(Math.max(0, 1 - c2 * c2))));
+  const elbow = vAdd(gripM, vScale(u, L2r));
+  const foreWorld = qFromFrame(BIND_PALM_R, SHAFT_BIND_R, unit(vSub(gripM, elbow)), dirM);
+  return { elbowVisR, upperWorld, foreVisR, elbowL, upperWorldL, foreWorldL, leftPalmM, club: { elbow, foreWorld, wristError: 0 } };
+}
+
+/* ------------------------------------------------------------------ *
+ *  Anatomic key table (Meshy golfer): body-relative                    *
+ * ------------------------------------------------------------------ */
+
+interface AnatSpec {
+  /** pelvis and shoulder turn (deg, + = backswing) */
+  readonly turn: readonly [number, number];
+  readonly flex: number; readonly bend: number; readonly hipY: number;
+  /** pelvis shift toward the target (m) and trail heel lift 0..1 */
+  readonly shift: number; readonly toe: number;
+  /** ball-locked keys (address, impact): shaft direction in shot space, the grip follows from the ball */
+  readonly ball?: V3;
+  /** free keys: right-palm grip offset from the shoulder mid, in the turned chest's frame (right of the golfer, up, facing; m at the Meshy arm length) */
+  readonly hand?: V3;
+  /** shaft direction, grip -> head, in model space (+X = toward the target, +Y up, +Z = toward the ball line) */
+  readonly shaft?: V3;
+}
+
+const ANAT_SPECS = {
+  addr: { turn: [0, 0], flex: 0, bend: -0.05, hipY: -0.02, shift: 0, toe: 0, ball: [-0.37, -0.92, -0.03] },
+  take: { turn: [10, 28], flex: 0, bend: 0.03, hipY: -0.025, shift: -0.04, toe: 0, hand: [0.10, -0.40, 0.34], shaft: [-0.96, 0.10, 0.25] },
+  mid: { turn: [28, 62], flex: 0.01, bend: 0.06, hipY: -0.028, shift: -0.065, toe: 0, hand: [0.13, 0.00, 0.40], shaft: [-0.30, 0.94, 0.15] },
+  top: { turn: [45, 88], flex: 0.02, bend: 0.10, hipY: -0.03, shift: -0.08, toe: 0, hand: [0.07, 0.22, 0.30], shaft: [0.95, 0.20, 0.15] },
+  trans: { turn: [28, 76], flex: 0.03, bend: 0.08, hipY: -0.032, shift: -0.05, toe: 0, hand: [0.18, 0.06, 0.34], shaft: [0.45, 0.45, 0.20] },
+  lag: { turn: [-6, 34], flex: 0.05, bend: 0.03, hipY: -0.028, shift: -0.01, toe: 0, hand: [0.05, -0.40, 0.34], shaft: [-0.80, -0.20, 0.30] },
+  impact: { turn: [-34, -6], flex: 0.03, bend: -0.08, hipY: -0.025, shift: 0.015, toe: 0.15, ball: [-0.27, -0.96, -0.08] },
+  thru1: { turn: [-50, -46], flex: 0.04, bend: -0.04, hipY: -0.025, shift: 0.015, toe: 0.5, hand: [-0.04, -0.38, 0.34], shaft: [0.95, 0.05, 0.10] },
+  thru2: { turn: [-58, -78], flex: -0.12, bend: 0.0, hipY: -0.03, shift: 0.025, toe: 0.9, hand: [-0.16, -0.08, 0.36], shaft: [0.40, 0.88, 0.10] },
+  finish: { turn: [-60, -95], flex: -0.40, bend: 0.05, hipY: -0.03, shift: 0.035, toe: 1, hand: [-0.20, 0.20, 0.04], shaft: [-0.50, -0.30, -0.80] }
+} satisfies Record<string, AnatSpec>;
+type AnatName = keyof typeof ANAT_SPECS;
+
+let anatCache: { id: string; keys: Record<AnatName, SwingKey> } | undefined;
+
+const dirToShot = (r: RootFrame, d: V3): V3 => {
+  const c = Math.cos(r.yaw), sn = Math.sin(r.yaw);
+  return [d[0] * c + d[2] * sn, d[1], -d[0] * sn + d[2] * c];
+};
+
+/** resolve every spec to a shot-local SwingKey on the active skeleton (the hands are placed in the key's own turned chest frame) */
+function anatKeys(): Record<AnatName, SwingKey> {
+  if (anatCache && anatCache.id === SKELETON.id) return anatCache.keys;
+  const root = makeRoot(0);
+  const hs = (UPPER_ARM_LEN + FOREARM_PALM_LEN) / ARM_REF_LEN;
+  const out = {} as Record<AnatName, SwingKey>;
+  for (const name of Object.keys(ANAT_SPECS) as AnatName[]) {
+    const sp: AnatSpec = ANAT_SPECS[name];
+    const rad = Math.PI / 180;
+    const rest = {
+      coil: 0, flex: sp.flex, bend: sp.bend, hipY: sp.hipY,
+      turn: { hips: sp.turn[0] * rad, shoulders: sp.turn[1] * rad }, shift: sp.shift, toe: sp.toe
+    };
+    if (sp.ball) { out[name] = keyAtBall(sp.ball, rest); continue; }
+    const T = torsoPose({ ...rest, grip: [0, 0, 0], dir: [0, 1, 0] }, 0);
+    const mid = vScale(vAdd(T.shoulderL, T.shoulderR), 0.5);
+    const psi = T.shoulderYaw;
+    const f: V3 = [Math.sin(psi), 0, Math.cos(psi)];
+    const r: V3 = [-Math.cos(psi), 0, Math.sin(psi)];
+    const h = sp.hand!;
+    const gripModel = vAdd(mid, vAdd(vAdd(vScale(r, h[0] * hs), [0, h[1] * hs, 0]), vScale(f, h[2] * hs)));
+    // keep the hands reachable: pull the grip toward the lead shoulder until the lead arm is at most 95 percent extended (trail 97)
+    const dirModel = unit(sp.shaft!);
+    const span = anatomicGripSpan(toShot(root, gripModel)[1]);
+    let g = gripModel;
+    for (let i = 0; i < 4; i++) {
+      const lp = vSub(g, vScale(dirModel, span));
+      const dl = vDist(lp, T.shoulderL), maxL = (vLen(RIG.tForearmL) + vLen(RIG.palmL)) * 0.95;
+      if (dl > maxL) g = vSub(g, vScale(unit(vSub(lp, T.shoulderL)), dl - maxL));
+      const dr = vDist(g, T.shoulderR), maxR = (UPPER_ARM_LEN + FOREARM_PALM_LEN) * 0.97;
+      if (dr > maxR) g = vSub(g, vScale(unit(vSub(g, T.shoulderR)), dr - maxR));
+    }
+    out[name] = { ...rest, grip: toShot(root, g), dir: unit(dirToShot(root, dirModel)) };
+  }
+  anatCache = { id: SKELETON.id, keys: out };
+  return out;
+}
+
+function evaluateAnatomic(phase: SwingPosePhase, t: number): SwingKey {
+  const k = anatKeys();
+  switch (phase) {
+    case "backswing": return segKey([k.addr, k.take, k.mid, k.top], t);
+    case "top": return segKey([k.top, k.top], 0);
+    case "downswing": return segKey([k.top, k.trans, k.lag, k.impact], t, easeDown);
+    case "follow": return segKey([k.impact, k.thru1, k.thru2, k.finish], t, easeFollow);
+    default: return segKey([k.addr, k.addr], 0);
+  }
 }
 
 /**

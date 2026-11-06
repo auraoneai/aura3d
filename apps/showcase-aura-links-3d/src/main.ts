@@ -2462,7 +2462,9 @@ function juiceFire(ev: string, at?: Record<string, unknown>): void {
 }
 
 const JUICE_EVENTS_462: Record<string, any> = {
-  hit:     { fx: { kind: "spark", count: 8, color: "#ffd257", speed: 2.6 }, cue: "drive", rumble: { ms: 26, weak: 0.4 }, punch: { fovDeg: 1.4, ms: 140 } },
+  // The strike sound is cued once per stroke where the stroke commits (`audio.cue(putter ? "putt" : "drive")`); the juice event
+  // used to cue "drive" as well, so every impact played the strike twice (and a putt also played the driver strike).
+  hit:     { fx: { kind: "spark", count: 8, color: "#ffd257", speed: 2.6 }, rumble: { ms: 26, weak: 0.4 }, punch: { fovDeg: 1.4, ms: 140 } },
   bounce:  { fx: { kind: "dust", count: 6, color: "#cfc8a8", speed: 1.6 } },
   splash:  { fx: { kind: "splash", count: 18, color: "#63e2ff", speed: 3.4 }, cue: "splash", flash: { color: "#63e2ff", peak: 0.1, ms: 120 } },
   holed:   { fx: { kind: "ring", count: 24, color: "#9be84e", speed: 4.6 }, cue: "cup", hitStop: 0.09, shake: 0.42, punch: { fovDeg: 3.0, dolly: -0.4, ms: 300 }, flash: { color: "#9be84e", peak: 0.2, ms: 170 } },
@@ -3021,7 +3023,7 @@ function setupAudio(): void {
       bogey:    { id: "bogey", asset: { url: assets.linksBogeyThudSfx.url }, volume: 0.5 },
       win:      { id: "win", asset: { url: sfxUrl(sfx.stinger.win[0]) }, volume: 0.85 },
       ui:       { id: "ui", asset: { url: assets.linksMenuTickSfx.url }, volume: 0.4 },
-      wind:     { id: "wind", asset: { url: assets.linksCoastWindLoopSfx.url }, volume: 0.25, loop: true }
+      wind:     { id: "wind", asset: { url: assets.linksCoastWindLoopSfx.url }, volume: 0.1, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any) as any;

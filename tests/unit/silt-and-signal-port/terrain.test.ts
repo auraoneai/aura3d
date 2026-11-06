@@ -107,7 +107,10 @@ describe("silt-and-signal-port art assets and copy", () => {
     const attribution = readFileSync(resolve(dir, "assets/ATTRIBUTION.md"), "utf8");
     let bytes = 0;
     for (const [key, ref] of Object.entries(assets)) {
-      const file = resolve(dir, ref.url.replace(/.*examples\/silt-and-signal-port\//, ""));
+      // route-local Meshy admissions live in the app's public/aura-assets (root-relative /aura-assets/ URL)
+      const file = ref.url.startsWith("/aura-assets/")
+        ? resolve(dir, "../../apps/showcase-silt-and-signal-port/public", ref.url.slice(1))
+        : resolve(dir, ref.url.replace(/.*examples\/silt-and-signal-port\//, ""));
       expect(existsSync(file), `${key}: ${file}`).toBe(true);
       bytes += statSync(file).size;
     }

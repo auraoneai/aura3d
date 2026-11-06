@@ -204,7 +204,8 @@ describe("swing on the Meshy skeleton", () => {
       expect(vDist(fk.get("LeftArm")!.pos, toModel(root(), s.shoulderLShot)), `LS ${phase}@${t}`).toBeLessThan(0.005);
       // feet stay on the bind stance and above the ground
       expect(vDist(fk.get("LeftFoot")!.pos, prof().leg.ankleL), `LF ${phase}@${t}`).toBeLessThan(0.005);
-      expect(vDist(fk.get("RightFoot")!.pos, prof().leg.ankleR), `RF ${phase}@${t}`).toBeLessThan(0.005);
+      // the trail foot rolls onto its toe through the follow-through (heel lift), otherwise it stays planted
+      expect(vDist(fk.get("RightFoot")!.pos, prof().leg.ankleR), `RF ${phase}@${t}`).toBeLessThan(s.posture.trailHeelLiftM ? 0.09 : 0.005);
       expect(fk.get("LeftToeBase")!.pos[1], `LT ${phase}@${t}`).toBeGreaterThan(-0.005);
       expect(fk.get("RightToeBase")!.pos[1], `RT ${phase}@${t}`).toBeGreaterThan(-0.005);
       // the hips local position is in centimetres (Armature scale 0.01)

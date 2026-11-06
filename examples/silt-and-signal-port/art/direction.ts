@@ -59,7 +59,9 @@ export default defineArtDirection({
     { role: "set-dressing", assetKey: "pillar", maxTriangles: 30000, textureSet: "BC+N", maxTextureSize: 1024 },
     // WP-36 replaces these two Kenney stand-ins (DG-A1 palms/tamarisk, DG-A2 adobe dwellings)
     { role: "set-dressing", assetKey: "tree", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 512 },
-    { role: "set-dressing", assetKey: "house", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 512 }
+    { role: "set-dressing", assetKey: "house", maxTriangles: 5000, textureSet: "BC", maxTextureSize: 512 },
+    // WP-36 DG-A2 (wave 10): the inked look's instanced village houses (51 in chapter 1): 3,577 triangles, three 512 px maps (BC+N+ORM)
+    { role: "set-dressing", assetKey: "silt_and_signal_port_duneAdobeA", maxTriangles: 4000, textureSet: "BC+N+ORM", maxTextureSize: 512 }
   ],
   vfx: [
     { event: "board-low-fast", kind: "silt-sand-wake" },

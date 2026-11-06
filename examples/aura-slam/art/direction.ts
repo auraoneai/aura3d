@@ -56,7 +56,9 @@ export default defineArtDirection({
   assets: [
     { role: "set-dressing", assetKey: "showcaseStadiumSeats", kit: "K4", maxTriangles: 60000, textureSet: "BC", maxTextureSize: 1024 },
     { role: "prop", assetKey: "rooftopScoreboardRigMeshy", maxTriangles: 40000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
-    { role: "prop", assetKey: "rooftopFloodlightTowerMeshy", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 }
+    { role: "prop", assetKey: "rooftopFloodlightTowerMeshy", maxTriangles: 30000, textureSet: "BC+N+ORM", maxTextureSize: 2048 },
+    // GU47 wave 10 (TT-A2): generated lattice floodlight tower for the World Tour look (counts read from the GLB).
+    { role: "prop", assetKey: "tennisFloodMast", maxTriangles: 26506, textureSet: "BC+N+ORM", maxTextureSize: 1024 }
   ],
   vfx: [
     { event: "ball-bounce-clay", kind: "clay-puff" },

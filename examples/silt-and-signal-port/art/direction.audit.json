@@ -1,7 +1,7 @@
 {
   "schema": "aura3d.art-direction-audit/1",
   "source": "examples/silt-and-signal-port/art/direction.ts",
-  "sourceSha256": "ddd12590e66827228d7e47f505b3497a41e7e5a69471eec5fdcc9700e94ae18b",
+  "sourceSha256": "f8bd58fb594193da40a0a9dd6ca133b42b73cc3d0b5e80da95c38aae06e061ec",
   "id": "showcase-silt-and-signal-port",
   "genre": "flight",
   "signatureEffect": "Sand wake thrown up under the hoverboard at speed and low altitude, inside a hand-inked frame whose umber ink fades to nothing by 600 m.",
@@ -68,7 +68,7 @@
         "overridesTextures": false
       },
       {
-        "assetKey": "house",
+        "assetKey": "silt_and_signal_port_duneAdobeA",
         "triangles": 0,
         "textures": 0,
         "unlit": false,
@@ -572,6 +572,13 @@
         "assetKey": "house",
         "maxTriangles": 5000,
         "textureSet": "BC",
+        "maxTextureSize": 512
+      },
+      {
+        "role": "set-dressing",
+        "assetKey": "silt_and_signal_port_duneAdobeA",
+        "maxTriangles": 4000,
+        "textureSet": "BC+N+ORM",
         "maxTextureSize": 512
       }
     ],

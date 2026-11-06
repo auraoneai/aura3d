@@ -3,7 +3,7 @@ import { frameDistance, imageStats, type ImageStats } from "../../tools/crayon-c
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * Remote: PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb" SPECS="@headed-xvfb <this spec>" tools/remote-acr/run.sh
+ * Remote: PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb tennisFloodMast.4a0d9dee.glb" SPECS="@headed-xvfb <this spec>" tools/remote-acr/run.sh
  * Same comparison as aura-slam-native-vs-live at 640x360 and mobile 390x844, plus a court-line mask alignment (remote only).
  * Native Aura Slam vs the LIVE page, like for like. For each venue the live page is loaded
  * (https://aura3d.auraone.ai/apps/showcase-top-tennis/?venue=<v>), its full sim state is read from

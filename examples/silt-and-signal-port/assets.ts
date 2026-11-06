@@ -142,8 +142,45 @@ const MODELS = defineModelAssets({
   hero: model("hero", [1.6, 2.7, 0.8], { animations: HERO_CLIPS.map((c) => c.name), animationClips: HERO_CLIPS.map((c) => c.name) })
 }, { license: "CC0-1.0", queryParam: null }).refs;
 
+/**
+ * GU47 WP-36 DG-A2 (wave 10): Meshy adobe dwelling (`duneAdobeA`, text-to-3d, task 01a1af5f-4e32-74b4-8204-af3abfb90159)
+ * for the inked look's village houses. A NEW model, not a retexture (no geometry-hash claim). The optimized GLB (27,222
+ * triangles, 1024 px, 1.5 MB) was reduced to 3,577 triangles (meshopt simplify plus a sloppy pass), its textures to 512 px
+ * JPEG, and its mesh was baked to house.glb's exact 1.64 x 0.88 x 0.968 box (non-uniform x0.862, y1.008, z0.698, minimum
+ * y 0, x/z framed like house.glb) so the instanced slot, the `-0.064` placement offset and the house colliders in
+ * terrain.ts are unchanged. Route-local: the file lives in apps/showcase-silt-and-signal-port/public/aura-assets and the
+ * URL stays root-relative (an absolute `new URL(..., import.meta.url)` model is `unsafe-url` and blocks the whole scene).
+ */
+const DUNE_ADOBE_A_FILE = "silt_and_signal_port_duneAdobeA.514e8fc2.glb";
+const MESHY_ADOBE_LICENSE = "Meshy generated asset (paid API, plan terms at generation time)";
+const ROUTE_LOCAL = defineAuraAssets({
+  silt_and_signal_port_duneAdobeA: {
+    type: "model",
+    format: "glb",
+    url: `/aura-assets/${DUNE_ADOBE_A_FILE}`,
+    hash: "sha256-514e8fc2f9630b0a18414a1a47de4aa97d58c66872b66706fb64b6973cb4e703",
+    bounds: [1.64, 0.88, 0.968],
+    sizeBytes: 423580,
+    metadata: {
+      license: MESHY_ADOBE_LICENSE,
+      sourcePath: `public/aura-assets/${DUNE_ADOBE_A_FILE}`,
+      outputPath: `public/aura-assets/${DUNE_ADOBE_A_FILE}`,
+      provenance: {
+        sourcePath: `public/aura-assets/${DUNE_ADOBE_A_FILE}`,
+        outputPath: `public/aura-assets/${DUNE_ADOBE_A_FILE}`,
+        license: MESHY_ADOBE_LICENSE,
+        licenseUrl: "https://www.meshy.ai/terms",
+        sourceFamily: "meshy",
+        meshyTaskId: "01a1af5f-4e32-74b4-8204-af3abfb90159",
+        retrievedAt: "2026-11-04T04:31:29.478Z"
+      }
+    }
+  }
+});
+
 export const assets = defineAuraAssets({
   ...MODELS,
+  ...ROUTE_LOCAL,
   grassColor: tex("grass", "Color"),
   grassNormal: tex("grass", "NormalGL"),
   grassRough: tex("grass", "Roughness"),

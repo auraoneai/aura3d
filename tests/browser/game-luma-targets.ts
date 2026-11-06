@@ -111,7 +111,7 @@ export const BUNKER_FLOORS = [["floor1", "1"], ["floor2", "2"], ["floor3", "3"],
 export const SLINGSHOT_CHAPTERS = [0, 1, 2, 3, 4, 5] as const;
 /** Dot Dash boards in MAZE_ORDER; `classic` is the boot board, shot here through `?maze=` as one of the six board rows. */
 export const DOT_DASH_MAZES = ["classic", "spiral", "twin", "garden", "foundry", "zerocore"] as const;
-/** Chroma Roll looks besides the boot look `carnival`. */
+/** Splat looks besides the boot look `carnival`. */
 export const SPLAT_RUSH_LOOKS = ["original"] as const;
 /** Serpentine Sky Run stages (STAGES, 8 entries), 1-based. */
 export const SERPENTINE_STAGES = [1, 2, 3, 4, 5, 6, 7, 8] as const;

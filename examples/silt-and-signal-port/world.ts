@@ -606,7 +606,9 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
       }))
     }));
   }
-  if (props.houses.length) builder.add(instances.model(assets.house, { name: "houses", transforms: placements(props.houses, { x: 0, y: 0, z: -0.064 }), castShadow: true, receiveShadow: true }));
+  // GU47 WP-36 DG-A2 (wave 10): the inked look's village houses are the Meshy adobe dwelling baked to house.glb's box (same
+  // slot, placement offset and colliders, 1 draw); `?look=original` keeps the Kenney house.
+  if (props.houses.length) builder.add(instances.model(inked ? assets.silt_and_signal_port_duneAdobeA : assets.house, { name: "houses", transforms: placements(props.houses, { x: 0, y: 0, z: -0.064 }), castShadow: true, receiveShadow: true }));
   // lamp.glb keeps its source offset: centre (2.038, 0, 7), height -0.3..0.3
   if (props.lamps.length) {
     builder.add(instances.model(assets.lantern, {
