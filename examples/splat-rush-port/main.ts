@@ -16,6 +16,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { warmPrograms } from "@aura3d/engine/game";
+import { createLoadingProgress } from "../../apps/showcase-port-shared/loading-progress";
 import { labAppOptions, readLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { Autopilot } from "./autopilot";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
@@ -338,6 +339,11 @@ function sampleQuality(frameSeconds: number): void {
 }
 
 async function boot(): Promise<void> {
+  /* A1: the shared loading-progress helper drives a bar under PLAY NOW until the programs are compiled and the first frame is ready */
+  const startButton = document.getElementById("btn-start");
+  const loading = createLoadingProgress({ element: document.getElementById("load-bar") ?? undefined });
+  startButton?.setAttribute("aria-busy", "true");
+  loading.set(0.1);
   const world = buildWorld({ sim, aspect: canvas.clientWidth / Math.max(1, canvas.clientHeight), look });
   const lab = labAppOptions(readLabFlags());
   app = createAuraApp(canvas, {
@@ -350,12 +356,14 @@ async function boot(): Promise<void> {
     output: { toneMapping: "none", dither: false, ...lab.output },
     scene: world.scene
   });
-  await app.ready();
+  await loading.track(app.ready(), 1);
+  loading.set(0.5);
   if (look.vfx && app.effects) registerPaintPresets(app.effects);
   runtime = world.bind(app);
   /* C14: compile every program, the pooled pickups and overlays included, before the first frame is shown */
   runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight), { symbols: true });
   runtime.warm(true);
+  loading.set(0.65);
   try {
     warmResult = await warmPrograms(app, { maxFrames: 6 });
   } catch (error) {
@@ -363,6 +371,8 @@ async function boot(): Promise<void> {
   }
   runtime.warm(false);
   ready = true;
+  loading.done();
+  startButton?.removeAttribute("aria-busy");
   if (config.autostart) {
     for (let i = 0; i < config.warmup; i++) advance(IDLE);
     steps = 0;
