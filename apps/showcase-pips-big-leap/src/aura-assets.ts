@@ -18,7 +18,8 @@ export const assets = {
   sungate: catalog.pipsSungate,
   // GU47 wave 2 (PBL-A3): the two woodland villagers, generated text-to-3D, static pose.
   hedgehog: catalog.leapHedgehog,
-  beetle: catalog.leapBeetle,
+  // GU47 wave 10 (PBL-A3): the beetle is the rigged row (idle/wave/cheer), replacing the static wave-2 model.
+  beetle: catalog.leapBeetleAnim,
   // GU47 wave 2 (PBL-E1): generated diorama bases that tile under the course.
   bases: {
     garden: catalog.leapBaseGarden,
