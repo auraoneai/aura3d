@@ -19,15 +19,15 @@ Shared (Wave 0)
 
 Adoption (5.0 adoption row)
 
-- [ ] A4 water to shader graph (best A4 case: also unlocks WebGPU for the whole game)
+- [ ] A4 water to shader graph (best A4 case: also unlocks WebGPU for the whole game) - skipped: EXPERIMENTAL, water look risk
 - [ ] A12 `splitScatterByDistance` + `mergeStatic` to cut draw calls (M, changes placement unless the same seed/stream is replayed: evaluate by diffing placements in a unit test before switching)
-- [ ] A9 `camera.depth` log only if far-course flicker exists
+- [ ] A9 `camera.depth` log only if far-course flicker exists - skipped: no flicker observed, EXPERIMENTAL (lab `?depth=` not wired, no camera node hook)
 - [ ] A13 KTX2 for course textures if bundle budget exceeded
-- [ ] A1 (14 GLB)
+- [ ] A1 (14 GLB) - partial: `?backend=`/`?gamut=p3` lab flags wired default OFF and backend/readiness report published on `__AURA_QA__.backendReport` (A2); loading bar not wired (would add DOM/pixels)
 
 Verification
 
 - [ ] GC, UT, CAP
 - [ ] before/after draw-call count via A2
-- [ ] `node tools/game-checks/run.mjs aura-links-3d` clean
-- [ ] Before/after frames attached (static bands) with the capture command, per game, before the change ships
+- [x] `node tools/game-checks/run.mjs aura-links-3d` clean (0 errors; 2 pre-existing warnings: screens-fresh, upgrade-guide)
+- [x] Before/after frames attached: `evidence/game-upgrades-502/aura-links-3d/{before,after}.png` (REA capture_browser_scenario, 960x540, 12 s settle, identical)

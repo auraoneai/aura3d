@@ -48,6 +48,8 @@ import {
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { formatBackendSelection, publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { assets } from "./aura-assets";
 import type {
   BallEvent,
@@ -3332,10 +3334,21 @@ function boot(): void {
   if (holeCardEl) holeCardEl.style.transition = holeCardTransition(state.reducedMotion);
 
   bootStage("scene-build");
+  // 5.0 lab flags (EXPERIMENTAL, default OFF): only ?backend= and ?gamut=p3 are wired; ?worker and ?depth are ignored here.
+  // With no flag in the URL both fragments are empty and the options are exactly the 4.x/5.0.1 ones.
+  const lab = readLabFlags();
+  const labFragment = labAppOptions(lab);
+  const labOptions: Record<string, unknown> = {};
+  if (labFragment.renderer || labFragment.output) {
+    const base = looks.appOptions(state.course.look) as Record<string, any>;
+    if (labFragment.renderer) labOptions.renderer = { ...(base.renderer ?? {}), ...labFragment.renderer };
+    if (labFragment.output) labOptions.output = { ...(base.output ?? {}), ...labFragment.output };
+  }
   mountedHoleSig = `${state.course.id}|${state.hole.number}|round`;
   auraApp = createAuraApp("#app", {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
     ...looks.appOptions(state.course.look),
+    ...labOptions,
     qualityRebuild: { flags: ["game"] }
   } as any);
   // GU47 LINKS-11: runtime VFX are on again (E-F root-caused and fixed the floating dots in the engine; `?vfx=off` still
@@ -3406,6 +3419,11 @@ function boot(): void {
       "errors:", JSON.stringify(diag?.errors ?? []),
       "warnings:", JSON.stringify((diag?.warnings ?? []).slice(0, 4)));
     (auraApp as any).resume?.();
+    // A2: publish the backend selection and readiness report on the QA hook (and the ?diag=1 log)
+    const qaHook = ((window as any).__AURA_QA__ ??= {}) as Record<string, unknown>;
+    void publishBackendReport(auraApp as any, qaHook).then((report) => {
+      if (report.backendSelection) diagLog("[links]", formatBackendSelection(report.backendSelection));
+    }).catch(() => undefined);
     publishEvidence();
   }).catch((e: any) =>
     console.error("[links] mount failed:", String(e), (e as Error)?.stack ?? ""));
