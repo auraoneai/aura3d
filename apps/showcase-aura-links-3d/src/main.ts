@@ -49,6 +49,7 @@ import {
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
 import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { formatBackendSelection, publishBackendReport } from "../../showcase-port-shared/backend-report";
 import { assets } from "./aura-assets";
 import type {
@@ -3290,8 +3291,33 @@ function diagLog(...args: unknown[]): void {
   if (DIAG) console.log(...args);
 }
 
+/** A1: the course loading bar; stages move it, the first-frame readiness completes it. */
+const BOOT_PROGRESS: Record<string, number> = { "scene-build": 0.2, audio: 0.4, "fx-touch": 0.5, "bind-ui": 0.55, studio: 0.6, "resolve-handles": 0.65 };
+const courseLoading = createLoadingProgress({
+  element: typeof document !== "undefined" ? (document.getElementById("course-loading-bar") ?? undefined) : undefined,
+  onProgress: (f) => {
+    document.body.dataset.aura3dLoading = f.toFixed(2);
+    if (f >= 1) document.getElementById("course-loading")?.setAttribute("data-complete", "true");
+  }
+});
+
+/** A1: a typed readiness failure (`app.readiness()` state "failed") is shown to the player with its code instead of a silent console error. */
+function showRenderFailure(code: string): void {
+  document.getElementById("course-loading")?.setAttribute("hidden", "");
+  const box = $("render-error");
+  const title = box?.querySelector("h2");
+  const hint = box?.querySelector("p");
+  if (title) title.textContent = "AURA LINKS 3D COULD NOT START";
+  if (hint) hint.textContent = "Reload the page. If it keeps happening, report the code below.";
+  const line = $("render-error-code");
+  if (line) { line.textContent = `ERROR ${code}`; line.hidden = false; }
+  if (box) box.hidden = false;
+}
+
 function bootStage(name: string): void {
   (window as any).__BOOT_STAGE__ = name;
+  const staged = BOOT_PROGRESS[name];
+  if (staged !== undefined) courseLoading.set(staged, name);
   diagLog("[links] boot:", name);
 }
 
@@ -3334,7 +3360,7 @@ function boot(): void {
   if (holeCardEl) holeCardEl.style.transition = holeCardTransition(state.reducedMotion);
 
   bootStage("scene-build");
-  // 5.0 lab flags (EXPERIMENTAL, default OFF): only ?backend= and ?gamut=p3 are wired; ?worker and ?depth are ignored here.
+  // 5.0 lab flags (EXPERIMENTAL, default OFF): only ?backend= and ?gamut=p3 are wired; ?worker and ?depth are ignored here (?depth fails the contact-shadow mount: CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED).
   // With no flag in the URL both fragments are empty and the options are exactly the 4.x/5.0.1 ones.
   const lab = readLabFlags();
   const labFragment = labAppOptions(lab);
@@ -3411,6 +3437,7 @@ function boot(): void {
     document.body.dataset.aura3dReady = "true";
     bootStage("ready");
     bootStage("mounted");
+    courseLoading.done("ready");
     const rr = (window as any).__AURA3D_ROUTE_READY__;
     const diag = (auraApp as any).diagnostics?.() ?? rr?.diagnostics;
     diagLog("[links] route-state:", rr?.status ?? "?",
@@ -3422,11 +3449,14 @@ function boot(): void {
     // A2: publish the backend selection and readiness report on the QA hook (and the ?diag=1 log)
     const qaHook = ((window as any).__AURA_QA__ ??= {}) as Record<string, unknown>;
     void publishBackendReport(auraApp as any, qaHook).then((report) => {
+      if (report.readiness.state === "failed") showRenderFailure(report.readiness.code);
       if (report.backendSelection) diagLog("[links]", formatBackendSelection(report.backendSelection));
     }).catch(() => undefined);
     publishEvidence();
-  }).catch((e: any) =>
-    console.error("[links] mount failed:", String(e), (e as Error)?.stack ?? ""));
+  }).catch((e: any) => {
+    console.error("[links] mount failed:", String(e), (e as Error)?.stack ?? "");
+    showRenderFailure("MOUNT_FAILED");
+  });
 
   // ?still=N — deterministic capture mode: pause the live loop, step N fixed
   // frames through app.step() (runs frame() + a single simulated-time render

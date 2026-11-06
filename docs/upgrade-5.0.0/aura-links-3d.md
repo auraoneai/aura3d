@@ -13,21 +13,24 @@ Shared (Wave 0)
 
 - [x] `package.json` version set to 5.0.1 (W-1, cosmetic, D6)
 - [x] `no-removed-5-0-apis` game check passes (W-2)
-- [ ] Baseline drift capture compared with the 4.7.10 frames of record, static bands only (W-3, parent-owned single ACR capture)
-- [ ] `environments.neutral`/`capture` exposure resolved (W-4, see [neutral-environment-exposure.md](./neutral-environment-exposure.md))
-- [ ] Catalog digests refreshed after any source edit: `node tools/agent-examples/refresh-catalog-digests.mjs` (W-5)
+- [ ] Baseline drift capture compared with the 4.7.10 frames of record, static bands only (W-3, parent-owned single ACR capture) - skipped: parent-owned; local before/after of this lane are identical (`evidence/game-upgrades-503/aura-links-3d/{before,after}.png`)
+- [x] `environments.neutral`/`capture` exposure resolved (W-4): every course row names an explicit HDRI (`src/game/lighting.ts`), no neutral dependency, nothing to pin; base and after frames match
+- [ ] Catalog digests refreshed (W-5) - skipped: parent refreshes digests at merge
 
 Adoption (5.0 adoption row)
 
-- [ ] A4 water to shader graph (best A4 case: also unlocks WebGPU for the whole game) - skipped: EXPERIMENTAL, water look risk
-- [ ] A12 `splitScatterByDistance` + `mergeStatic` to cut draw calls (M, changes placement unless the same seed/stream is replayed: evaluate by diffing placements in a unit test before switching)
-- [ ] A9 `camera.depth` log only if far-course flicker exists - skipped: no flicker observed, EXPERIMENTAL (lab `?depth=` not wired, no camera node hook)
-- [ ] A13 KTX2 for course textures if bundle budget exceeded
-- [ ] A1 (14 GLB) - partial: `?backend=`/`?gamut=p3` lab flags wired default OFF and backend/readiness report published on `__AURA_QA__.backendReport` (A2); loading bar not wired (would add DOM/pixels)
+- [ ] A4 water to shader graph - skipped: ponds are already the engine `world.water` (no hand-rolled water shader to port); the only GLSL is Cinder Rim's lava (`game/water.ts`), which is not a designated pilot (last-train, silt-and-signal water, roadster-rush), so it stays GLSL and the game stays WebGL2-only
+- [ ] A12 `splitScatterByDistance` + `mergeStatic` - skipped: dressing is already instanced (90 draw calls on hole 1), placement draws from the shared per-hole `rng` stream interleaved with other draws, and `scatterInArea` uses a different draw order, so switching changes placements (forbidden: seeds); a distance-LOD split would swap GLBs for cones and change the look
+- [ ] A9 `camera.depth` - skipped: no far-course flicker, EXPERIMENTAL; tried the lab `?depth=logarithmic` on `holeOpeningCamera`: the mount fails with `CONTACT_SHADOW_DEPTH_CONVENTION_UNSUPPORTED` (contact shadows need standard depth), so the flag is not wired (engine issue: contact shadows vs non-standard depth)
+- [ ] A13 KTX2 - skipped: course textures are live `texture.canvas` handles (`game/turfTextures.ts`), no image textures ship, so there is nothing to compress
+- [x] A1 loading bar and typed failure: a course loading bar (shared `createLoadingProgress`, stage-driven, completes at first-frame ready, `body[data-aura3d-loading]`) and a readiness `failed` / mount failure now shows the code on the error card; `evidence/game-upgrades-503/aura-links-3d/after-a1-loading.png`, `after-a1-failure-code.png` (captured with the earlier headline text), `after.png` (bar gone, scene identical)
+- [x] A2 diagnostics: `__AURA_QA__.backendReport` (5.0.2); draw calls 90 before and 90 after, no new warnings or degrade codes
+- [x] A3 backend / A10 wide gamut: `?backend=` and `?gamut=p3` stay default-off lab flags
+- [ ] A5-A8, A11, A14-A17 - not in this game's adoption row, not applicable
 
 Verification
 
-- [ ] GC, UT, CAP
-- [ ] before/after draw-call count via A2
+- [x] GC (0 errors, same 2 pre-existing warnings), UT (`tests/unit/aura-links-3d`, `showcase-port-shared`: 156 passed), CAP (REA 960x540, 12 s, identical)
+- [x] before/after draw-call count via A2: 90 / 90
 - [x] `node tools/game-checks/run.mjs aura-links-3d` clean (0 errors; 2 pre-existing warnings: screens-fresh, upgrade-guide)
 - [x] Before/after frames attached: `evidence/game-upgrades-502/aura-links-3d/{before,after}.png` (REA capture_browser_scenario, 960x540, 12 s settle, identical)
