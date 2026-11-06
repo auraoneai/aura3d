@@ -5,7 +5,7 @@
 ## Read first
 
 1. Coming from three.js? `docs/agents/threejs-to-aura3d.md` maps each three.js idiom to the Aura3D line (every line type-checked); the full table is in https://aura3d.auraone.ai/llms-full.txt under "three.js to Aura3D". Do not port renderer, resize, loop or disposal code: `createAuraApp` owns them.
-2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`; the `procedural-scene` template (`--template procedural-scene` on the create command in the fast path below) starts from one.
+2. No model admitted yet? Build it procedurally from `primitives.*`, `geometry.define`, `instances.*`, `material.*` and `environments.neutral`. Eight complete scenes (humanoid, terrain, props kit, PBR viewer, custom-shader water, sky and day/night, fire, night street with bloom) are `docs/agents/recipes.md` recipes 8 to 15, sources in `docs/agents/recipes-src/`.
 3. Do not open `node_modules` or `dist` to find an API: signatures are in `docs/agents/api-signatures.md`.
 
 ## Pitfalls that cost the most turns (one-line fixes)

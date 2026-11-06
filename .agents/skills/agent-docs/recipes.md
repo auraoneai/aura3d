@@ -230,7 +230,7 @@ Both drawn palms stay on the handle in every phase (stance, load, swing, follow-
 
 Use these when the prompt names a world, a creature, a prop set or an effect and no GLB has been admitted. Every recipe is a complete `main.ts` in [`recipes-src/`](recipes-src/), typechecked with `tsc` against the engine and captured on a real GPU (Chrome 156, Apple M4 Max through ANGLE/Metal, `capture_browser_scenario` at 1280x720) with zero console events; the capture is `recipes-src/<name>/frame.png`. One capture on one GPU proves the recipe draws a readable frame, not parity or a quality score. The sources below are copies: `recipes-src/<name>/main.ts` is the checked version.
 
-Build and view any of them from the monorepo: `pnpm exec vite build --config docs/agents/recipes-src/vite.config.ts` then `pnpm exec vite preview --config docs/agents/recipes-src/vite.config.ts` and open `/<name>/index.html`. In a scaffolded project put `main.ts` in `src/` (the imports are the same). `npx create-aura3d@latest my-scene --template procedural-scene` starts from recipe 8.
+Build and view any of them from the monorepo: `pnpm exec vite build --config docs/agents/recipes-src/vite.config.ts` then `pnpm exec vite preview --config docs/agents/recipes-src/vite.config.ts` and open `/<name>/index.html`. In a scaffolded project put `main.ts` in `src/` (the imports are the same).
 
 ### 8. A jointed robot from primitives with an idle animation
 

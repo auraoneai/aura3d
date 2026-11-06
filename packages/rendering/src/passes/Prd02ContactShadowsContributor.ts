@@ -34,13 +34,22 @@ import { blendStateIsTransparent } from "../BlendModes";
 import { shaderFeaturesFor } from "../contracts/program";
 import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { registerContactShadowShadingPass } from "../shadows/contactPassTrust";
-import { forwardContactGeometrySafe, forwardContactParticipantSafe, forwardContactProvidersSafe, hasForwardDrawHooks, type RenderItem } from "../ForwardPass";
+import { forwardContactGeometrySafe, forwardContactParticipantSafe, hasForwardDrawHooks, ForwardPass, type RenderItem } from "../ForwardPass";
+import type { QrFlags } from "../contracts/core";
 import { collectShadowSystemLights } from "../shadows/Prd02ShadowsContributor";
 import { resolvePrd02ShadowCasterVariant, prd02DepthFeatures, registerPrd02DepthShader, prd02ShadowCasterEligible } from "../shadows/Prd02DepthShaderLibrary";
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "../ShaderLibraryCore";
 import { QUALITY_TIERS } from "../contracts/quality";
 import type { AuraQualityTier } from "../contracts/quality";
 import { prd02SubFlagOff, readPrd02KillSwitches, SUB_FLAG_CONTACT } from "./Prd02SubFlags";
+
+/** Contact-shadow forward guards attached to `ForwardPass` by its module (internal; see the end of ForwardPass.ts). */
+const forwardContactGuards = (): {
+  providersSafe(flags: QrFlags): boolean;
+  frameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
+} => (ForwardPass as unknown as Record<symbol, never>)[Symbol.for("@aura3d/rendering:forwardContactGuards")];
+const forwardContactProvidersSafe = (flags: QrFlags): boolean => forwardContactGuards().providersSafe(flags);
+
 
 export const CONTACT_SHADOWS_SUB_FLAG = SUB_FLAG_CONTACT;
 

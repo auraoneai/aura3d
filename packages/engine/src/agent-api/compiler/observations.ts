@@ -63,13 +63,10 @@ export function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNod
   return node.kind === "model" && node.visible !== false && Boolean(node.asset.url);
 }
 
-/**
- * Models that need a loaded actor at mount. A model hidden at mount that has a runtime
- * handle can be shown later through `setVisible(true)`; without an actor it was never
- * drawn (D1-01, Slingshot Siege pooled projectile). The per-frame loop still skips a
- * hidden actor, so the cost of an idle hidden model is its loaded asset, not draws.
- */
-export function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode {
+/** Models that need a loaded actor at mount: a model hidden at mount that has a runtime handle can be shown later through
+ * `setVisible(true)` (D1-01, pooled projectile). Module-private on purpose (patch releases keep declarations unchanged);
+ * kept identical in observations.ts, compileScene.ts and renderer.ts. */
+function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode {
   return node.kind === "model" && Boolean(node.asset.url) && (node.visible !== false || node.runtime?.id !== undefined);
 }
 

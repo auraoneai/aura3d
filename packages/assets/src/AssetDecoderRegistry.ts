@@ -15,7 +15,7 @@
  */
 
 import type { CompressedTextureCapabilities } from "@aura3d/rendering/contracts";
-import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, DECODER_LOAD_TIMEOUT_MS, decoderAbortReason, isCspBlockedFailure, decoderTimeoutMs, drainWithDeadline, withDecoderTimeout } from "./decoderLoad.js";
+import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, DECODER_LOAD_TIMEOUT_MS, decoderAbortReason, decoderTimeoutMs, drainWithDeadline, withDecoderTimeout } from "./decoderLoad.js";
 import { redactAssetUrl } from "./AssetLoader.js";
 import { createMeshoptDecoder, createDracoDecoder, type GLTFMeshoptDecoderModule, type GLTFDracoDecoderModule } from "./GLTFCompressionDecoders.js";
 import { selectKTX2TargetFormat, type KTX2BasisTargetFormat } from "./KTX2TargetSelection.js";
@@ -25,6 +25,22 @@ import { createKTX2TranscodeWorkerPool, isDecoderWorkerScope, loadDecoderWorkerF
 import { read as readKtx2Container, KHR_DF_MODEL_UASTC, KHR_DF_TRANSFER_SRGB } from "ktx-parse";
 import type { DecodedGLTFImage, GLTFImageDecoder } from "./GLTFRenderResources.js";
 import type { GLTFAsset, GLTFImageAsset } from "./GLTFLoader.js";
+
+/** True when a failure text or error says a Content Security Policy refused code generation or loading. Module-private: the
+ * published `decoderLoad` declarations are unchanged in a patch release (same helper in KTX2TranscodeWorker.ts). */
+function isCspBlockedFailure(value: unknown): boolean {
+  if (typeof EvalError !== "undefined" && value instanceof EvalError) return true;
+  const text = typeof value === "string" ? value : value instanceof Error ? `${value.name} ${value.message}` : "";
+  return /unsafe-eval|Content Security Policy|violates the following/i.test(text);
+}
+
+/** Mark an `AssetDecoderUnavailable` as blocked by the page CSP: `code === "KTX2_CSP_BLOCKED"` (set at runtime, not declared). */
+function markKtx2CspBlocked<T extends Error>(error: T): T {
+  error.message = `${error.message}:KTX2_CSP_BLOCKED`;
+  Object.defineProperty(error, "code", { value: "KTX2_CSP_BLOCKED", enumerable: true, writable: false, configurable: true });
+  return error;
+}
+
 
 export type { KTX2BasisTargetFormat };
 
@@ -208,7 +224,8 @@ export function createAssetDecoderRegistry(options: AssetDecoderRegistryOptions)
         failed.push({ id, url });
         // Preserve the CSP classification so the main registry path surfaces KTX2_CSP_BLOCKED.
         const csp = id === "ktx2" && (cspBlocked || isCspBlockedFailure(secondError));
-        throw new AssetDecoderUnavailable(id, url, csp ? "KTX2_CSP_BLOCKED" : undefined);
+        const unavailable = new AssetDecoderUnavailable(id, url);
+        throw csp ? markKtx2CspBlocked(unavailable) : unavailable;
       }
     }
   };

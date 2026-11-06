@@ -13,7 +13,7 @@ import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
 import { createRendererDiagnosticReport, rendererFrameTimingFromInspection } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isMountableModelNode, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, formatLightModulationWarning, isRenderableModelNode, unsupportedLightModulationDegradations } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, RenderDeviceError, webGL2MaxTextureSize, bindShaderFailureStore, shaderFailureStoreFor, subscribeProgramReadiness, type RendererOptions, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
@@ -67,6 +67,13 @@ import { assertPrd07RendererLeaseAvailable, assertPrd07RendererOperation, beginP
   endPrd07RendererOperation, withBorrowedPrd07RendererOperation, withPrd07RendererCanvasLock,
   type Prd07RendererOperation } from "@aura3d/rendering";
 import type { AtmosphereRenderSnapshot } from "../../production-runtime/effects/LiveAtmosphere.js";
+
+/** Models that need a loaded actor at mount (hidden-at-mount models with a runtime handle can be shown later); module-private,
+ * identical to the predicate in observations.ts. */
+function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode {
+  return node.kind === "model" && Boolean(node.asset.url) && (node.visible !== false || node.runtime?.id !== undefined);
+}
+
 
 const syncProductionFrames = new WeakSet<object>();
 const prd07ProbeSnapshots = new WeakMap<object, { readonly renderer: Renderer; readonly device: Renderer["device"]; readonly snapshot: Prd07RendererOperation["snapshot"] }>();

@@ -1354,7 +1354,6 @@ describe("source-backed native example catalog fixture", () => {
       "template:asset-inspector": [[103, 103, 124], [244, 103, 67]],
       "template:character-viewer": [[171, 95, 65], [120, 190, 136]],
       "template:large-scene": [[100, 177, 137]],
-      "template:procedural-scene": [[160, 170, 185]],
       "template:premium-product-viewer": [[0, 120, 41], [138, 41, 22]],
       "template:mini-game": [[246, 190, 153], [110, 60, 60]],
       "template:character-controller": [[100, 65, 40], [215, 229, 236]],

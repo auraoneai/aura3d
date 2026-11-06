@@ -481,6 +481,22 @@ export function selectiveContributorTag(contributor: FrameContributor): string {
   return typeof id === "string" && /^[\w.:-]{1,64}$/.test(id) ? id : "unnamed";
 }
 
+/**
+ * Contact-producer placement state. The graph is a dependency-ordered DFS in insertion order, so a contact producer
+ * inserted in the `shadows` phase would sit before every pass added later and ahead of the forward receiver
+ * (background, planar reflection and other contributor passes in between). The exact attested producer is therefore
+ * held back and inserted immediately before the forward receiver; the forward pass reads its mask resource, so nothing
+ * else can be scheduled between the producer's own depth draw and the receiver.
+ * Kept outside `RendererFrameHooks`' declared members so the published declarations are unchanged in a patch release.
+ */
+interface ContactPlacement { readonly deferred: RenderPass[]; placed: boolean }
+const contactPlacements = new WeakMap<RendererFrameHooks, ContactPlacement>();
+function contactPlacementOf(hooks: RendererFrameHooks): ContactPlacement {
+  let placement = contactPlacements.get(hooks);
+  if (!placement) { placement = { deferred: [], placed: false }; contactPlacements.set(hooks, placement); }
+  return placement;
+}
+
 export class RendererFrameHooks {
   private readonly flags: QrFlags;
   private readonly blackboard = new Map<string, unknown>();
@@ -488,9 +504,7 @@ export class RendererFrameHooks {
   private extraSceneGeometryPossible = false;
   private readonly phasePassCounts = new Map<AuraFramePhase, number>();
   private readonly contactGraphContributorPasses: RenderPass[] = [];
-  /** Attested contact producers held out of the graph until just before the forward receiver is added. */
-  private readonly deferredContactPasses: RenderPass[] = [];
-  private contactProducersPlaced = false;
+  private contactGraphHasTransparentQueue = false;
   readonly timeSeconds: number;
   private readonly renderSource: RenderSource;
   private readonly rasterViewProjectionMatrix: Float32Array | undefined;
@@ -693,22 +707,13 @@ export class RendererFrameHooks {
   hasExtraSceneGeometry(): boolean { return this.extraSceneGeometryPossible; }
   hasPasses(phase: AuraFramePhase): boolean { return (this.phasePassCounts.get(phase) ?? 0) > 0; }
 
-  /**
-   * The graph is a dependency-ordered DFS in insertion order, so a contact producer inserted in the `shadows` phase
-   * would sit before every pass added later and ahead of the forward receiver (background, planar reflection and
-   * other contributor passes in between). The exact attested producer is therefore held back and inserted
-   * immediately before the forward receiver; the forward pass reads its mask resource, so nothing else can be
-   * scheduled between the producer's own depth draw and the receiver. Idempotent.
-   */
-  placeContactProducers(graph: RenderGraph): void {
-    for (const pass of this.deferredContactPasses.splice(0)) graph.addPass(pass);
-    this.contactProducersPlaced = true;
-  }
-
-  /** The attested contact producer is the one pass that publishes the mask and is placed adjacent to its receiver. */
+  /** The graph runs synchronously, but its dependency sort may interleave any
+   * contributor pass with contact predepth and the last forward receiver.
+   * Only the exact attested contact producer is currently proven not to
+   * mutate the shared depth participants during that interval. */
   contactGraphIsSafe(): boolean {
     const producers = this.contactGraphContributorPasses.filter(isContactShadowShadingPass);
-    return producers.length === 1 && this.deferredContactPasses.length === 0 && this.contactProducersPlaced;
+    return producers.length === 1 && (contactPlacements.get(this)?.placed ?? false) && (contactPlacements.get(this)?.deferred.length ?? 0) === 0;
   }
 
   /** "collect" phase — contributor item-list transforms, applied in order. */
@@ -768,14 +773,14 @@ export class RendererFrameHooks {
         this.contactGraphContributorPasses.push(pass);
         assertPhaseSpace(phase, pass, contributor);
         const placed = wrap ? wrap(pass) : pass;
-        if (phase === "shadows" && isContactShadowShadingPass(pass)) this.deferredContactPasses.push(placed);
+        if (phase === "shadows" && isContactShadowShadingPass(pass)) contactPlacementOf(this).deferred.push(placed);
         else graph.addPass(placed);
         writtenResources.push(...pass.writes);
       }
       if (phase === "transparent") {
         const queue = contributor.transparentItems?.(ctx);
         if (this.selectiveObservation) this.observeQueue(contributor, queue);
-        if (queue && queue.length > 0) { this.extraSceneGeometryPossible = true; transparentQueue.push(...queue); }
+        if (queue && queue.length > 0) { this.extraSceneGeometryPossible = true; this.contactGraphHasTransparentQueue = true; transparentQueue.push(...queue); }
       }
     }
     if (transparentQueue.length > 0) graph.addPass(new ContributorTransparentPass(transparentQueue, ctx));
@@ -800,7 +805,7 @@ export class RendererFrameHooks {
       this.selectiveContract(contributor);
       const queue = contributor.transparentItems?.(ctx);
       if (this.selectiveObservation) this.observeQueue(contributor, queue);
-      if (queue?.length) { this.extraSceneGeometryPossible = true; queues.push(...queue); }
+      if (queue?.length) { this.extraSceneGeometryPossible = true; this.contactGraphHasTransparentQueue = true; queues.push(...queue); }
     }
     return { ctx, queues };
   }
@@ -883,6 +888,16 @@ export class RendererFrameHooks {
     }
   }
 }
+
+// Internal: `Renderer` inserts the held-back contact producers through this registered-symbol method (not a declared
+// member, so it is absent from the published declarations). Idempotent.
+Object.defineProperty(RendererFrameHooks.prototype, Symbol.for("@aura3d/rendering:placeContactProducers"), {
+  value(this: RendererFrameHooks, graph: RenderGraph): void {
+    const placement = contactPlacementOf(this);
+    for (const pass of placement.deferred.splice(0)) graph.addPass(pass);
+    placement.placed = true;
+  }
+});
 
 /**
  * §8.4 step 4 (lane 01's half of C-13): a contributor pass in `post-hdr` that

@@ -1,6 +1,22 @@
 /** Same-origin Basis worker pool with bounded inputs and explicit job ownership. */
-import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, drainWithDeadline, isCspBlockedFailure, looksLikeWasmBinary } from "./decoderLoad.js";
+import { AssetDecoderDisposeTimeout, AssetDecoderUnavailable, DECODER_DISPOSE_TIMEOUT_MS, drainWithDeadline, looksLikeWasmBinary } from "./decoderLoad.js";
 import type { KTX2TranscodedLevel } from "./KTX2TranscodeDriver.js";
+
+/** True when a failure text or error says a Content Security Policy refused code generation or loading. Module-private: the
+ * published `decoderLoad` declarations are unchanged in a patch release (same helper in KTX2TranscodeWorker.ts). */
+function isCspBlockedFailure(value: unknown): boolean {
+  if (typeof EvalError !== "undefined" && value instanceof EvalError) return true;
+  const text = typeof value === "string" ? value : value instanceof Error ? `${value.name} ${value.message}` : "";
+  return /unsafe-eval|Content Security Policy|violates the following/i.test(text);
+}
+
+/** Mark an `AssetDecoderUnavailable` as blocked by the page CSP: `code === "KTX2_CSP_BLOCKED"` (set at runtime, not declared). */
+function markKtx2CspBlocked<T extends Error>(error: T): T {
+  error.message = `${error.message}:KTX2_CSP_BLOCKED`;
+  Object.defineProperty(error, "code", { value: "KTX2_CSP_BLOCKED", enumerable: true, writable: false, configurable: true });
+  return error;
+}
+
 
 export interface KTX2WorkerTranscodeRequest {
   readonly bytes: Uint8Array;
@@ -180,8 +196,10 @@ export function createKTX2TranscodeWorkerPool(transcoderUrl: string, workerCount
   let disposal: Promise<void> | undefined;
   // Set when a worker failed because the page CSP refused the decoder.
   let cspBlocked = false;
-  const workerUrlUnavailable = (): AssetDecoderUnavailable =>
-    new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`, cspBlocked ? "KTX2_CSP_BLOCKED" : undefined);
+  const workerUrlUnavailable = (): AssetDecoderUnavailable => {
+    const unavailable = new AssetDecoderUnavailable("ktx2", `${base}ktx2.worker.js`);
+    return cspBlocked ? markKtx2CspBlocked(unavailable) : unavailable;
+  };
 
   function trackInitialization(work: Promise<unknown>, cleanup = false): void {
     const tracked = work.then(

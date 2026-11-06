@@ -46,8 +46,6 @@ const REPEAT = new Sampler({ minFilter: "linear", magFilter: "linear", addressU:
 
 interface WaterGpuState {
   readonly record: WaterRecord;
-  /** Device that created `vb`/`ib`; a state outliving a setScene can meet a new device before the old buffers are disposed. */
-  gridDevice?: RenderDevice;
   vb: RenderBuffer | null;
   ib: RenderBuffer | null;
   vertexCount: number;
@@ -205,10 +203,13 @@ function buildGrid(record: WaterRecord, res = 64): { vertices: Float32Array; ind
   return { vertices: verts, indices: idx, extent, center: [cx, cz] };
 }
 
+/** Device that created each state's `vb`/`ib`: a state outliving a setScene can meet a new device before the old buffers are disposed. */
+const gridDevices = new WeakMap<WaterGpuState, RenderDevice>();
+
 function gridFor(device: RenderDevice, ds: WaterDeviceState, st: WaterGpuState): boolean {
   // The GPU state outlives a setScene when the water record does (module-level, keyed by node id): its buffers belong to the
   // disposed device then, so a state whose buffers are gone is rebuilt below instead of drawn.
-  if (st.vb && st.ib && st.gridDevice === device && !st.vb.disposed && !st.ib.disposed) return true;
+  if (st.vb && st.ib && gridDevices.get(st) === device && !st.vb.disposed && !st.ib.disposed) return true;
   const grid = buildGrid(st.record);
   // A cached grid is reused only while its device buffers are still live and match this grid's size: setScene disposes the
   // previous scene's water buffers, and handing a disposed buffer to the next scene's water draw throws "Buffer is not a
@@ -216,7 +217,7 @@ function gridFor(device: RenderDevice, ds: WaterDeviceState, st: WaterGpuState):
   const cached = ds.gridCache.get(st.record.node.id);
   const reusable = cached !== undefined && !cached.vb.disposed && !cached.ib.disposed
     && cached.vertexCount === grid.vertices.length / 4 && cached.indexCount === grid.indices.length;
-  st.gridDevice = device;
+  gridDevices.set(st, device);
   st.vb = reusable ? cached.vb : device.createBuffer("vertex", grid.vertices.byteLength, grid.vertices);
   st.ib = reusable ? cached.ib : device.createBuffer("index", grid.indices.byteLength, grid.indices);
   ds.gridCache.set(st.record.node.id, { vb: st.vb, ib: st.ib, vertexCount: grid.vertices.length / 4, indexCount: grid.indices.length });
@@ -227,10 +228,11 @@ function gridFor(device: RenderDevice, ds: WaterDeviceState, st: WaterGpuState):
   return true;
 }
 
-/** Internal (regression tests): build or reuse the water grid on `device`. */
-export function ensureWaterGrid(device: RenderDevice, st: WaterGpuState): boolean {
-  return gridFor(device, deviceState(device), st);
-}
+// Internal regression-test hook (not a declared export): build or reuse the water grid on `device`, reachable under a
+// registered symbol on `allWaterStates` so the published declarations of this module are unchanged in a patch release.
+Object.defineProperty(allWaterStates, Symbol.for("@aura3d/engine:ensureWaterGrid"), {
+  value: (device: RenderDevice, st: WaterGpuState): boolean => gridFor(device, deviceState(device), st)
+});
 
 // ---- procedural detail textures (§8.6 normal0/normal1, §8.7 foam/caustics)
 // Deterministic small textures; the real atlases come from T5.7's bake.

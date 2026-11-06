@@ -16,7 +16,6 @@
 | `postprocess-scene` | Scenes built around `effects.*` post-processing. |
 | `large-scene` | Scenes with many objects (instancing, merge, LOD). |
 | `custom-scene` | Blank scene for a custom route (also the landing place for three.js ports). |
-| `procedural-scene` | A scene with no admitted model: a jointed robot from primitives under a look, with idle animation (recipe 8). |
 
 The last eight were `three-compat-*` before #700; each old name still scaffolds its template with a deprecation warning until the next minor.
 

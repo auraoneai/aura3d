@@ -152,10 +152,6 @@
     "large-scene": [
       "aura3d-threejs-migration",
       "aura3d-performance"
-    ],
-    "procedural-scene": [
-      "aura3d-scene-authoring",
-      "aura3d-materials-environments"
     ]
   },
   "clients": {

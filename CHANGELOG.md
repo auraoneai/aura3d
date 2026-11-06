@@ -18,8 +18,12 @@ Restores contact shadows, removes more ways a default path could blank a scene, 
 ### Added
 
 - `tools/release/render-gate`: loads the 25 games and 20 templates in a real browser and fails on blank or black frames, `RENDERER_MOUNT_FAILED` or error-level console output. Release helper scripts now live in `tools/release/`.
-- AI-authoring docs: `docs/agents/threejs-to-aura3d.md`, eight procedural recipes with rendered frames, answer-first API signature tables, a `procedural-scene` template, and refreshed skills.
+- AI-authoring docs: `docs/agents/threejs-to-aura3d.md`, eight procedural recipes with rendered frames, answer-first API signature tables, and refreshed skills.
 - Shared games tooling: `no-removed-5-0-apis` game check, catalog digest refresh helper, shared lab-flag parser and loading helper, per-game upgrade guides under `docs/upgrade-5.0.0/`.
+
+### Deferred to 5.1
+
+- `procedural-scene` starter template: adding it widens the exported `CREATE_AURA3D_TEMPLATES` types, so it needs a minor release.
 
 ### Known limits
 

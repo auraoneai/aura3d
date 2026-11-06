@@ -32,7 +32,6 @@
     "templates/postprocess-scene",
     "templates/custom-scene",
     "templates/large-scene",
-    "templates/procedural-scene",
     "!templates/**/node_modules/**",
     "!templates/**/node_modules.publish-aside/**",
     "!templates/**/dist/**",

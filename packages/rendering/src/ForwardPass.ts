@@ -216,7 +216,7 @@ export function forwardDrawProvidersSafe(flags: QrFlags, allowCombinedProviders 
 }
 
 /** Why `forwardDrawProvidersSafe` is false (a short diagnostic token), or undefined when the providers are verified. */
-export function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders = false, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined {
+function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedProviders = false, skipFeature?: (feature: ShaderFeature) => boolean): string | undefined {
   if (!isTrustedQrFlags(flags)) return "untrusted-flags";
   if (forwardDrawHooks.length) return "forward-draw-hooks";
   if (!isReplaySafeVelocityBinder()) return "velocity-binder";
@@ -244,11 +244,11 @@ export function forwardDrawProvidersUnsafeReason(flags: QrFlags, allowCombinedPr
  * depth when selected. Every other feature (fog, IBL, filters, rim, debug) cannot change that depth and is not a veto.
  * Draw hooks, unverified prototypes/velocity binder and unverified material lobes still veto.
  */
-export function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined {
+function forwardContactProvidersUnsafeReason(flags: QrFlags): string | undefined {
   return forwardDrawProvidersUnsafeReason(flags, false, () => true);
 }
 
-export function forwardContactProvidersSafe(flags: QrFlags): boolean {
+function forwardContactProvidersSafe(flags: QrFlags): boolean {
   return forwardContactProvidersUnsafeReason(flags) === undefined;
 }
 
@@ -257,7 +257,7 @@ export function forwardContactProvidersSafe(flags: QrFlags): boolean {
  * draw may run a per-draw callback (the forward pass refuses to draw with a published mask in that case); participants
  * the mask depth cannot represent are handled one by one by the contact contributor.
  */
-export function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined {
+function forwardContactFrameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined {
   if (strict) return forwardDrawReplayUnsafeReason(items, flags);
   const providers = forwardContactProvidersUnsafeReason(flags);
   if (providers) return `provider ${providers}`;
@@ -281,7 +281,7 @@ export function forwardDrawReplaySafe(items: readonly RenderItem[], flags: QrFla
 }
 
 /** Diagnostic form of `forwardDrawReplaySafe`: which provider or participant fails, or undefined when all are verified. */
-export function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined {
+function forwardDrawReplayUnsafeReason(items: readonly RenderItem[], flags: QrFlags): string | undefined {
   const providers = forwardDrawProvidersUnsafeReason(flags);
   if (providers) return `provider ${providers}`;
   const bad = items.find(item => !forwardBuiltinParticipantSafe(item));
@@ -5532,3 +5532,10 @@ function mat4FromArrayLike(values: ArrayLike<number>, offset: number): Mat4 {
     values[offset + 12]!, values[offset + 13]!, values[offset + 14]!, values[offset + 15]!
   ];
 }
+
+// Internal bridge for the renderer and the contact contributor: the contact-shadow forward guards stay module-private so
+// the published declarations of this module are unchanged in a patch release. They are attached to the class under a
+// registered symbol (not an export, not part of any entry point); readers cast.
+Object.defineProperty(ForwardPass, Symbol.for("@aura3d/rendering:forwardContactGuards"), {
+  value: { providersSafe: forwardContactProvidersSafe, frameUnsafeReason: forwardContactFrameUnsafeReason }
+});

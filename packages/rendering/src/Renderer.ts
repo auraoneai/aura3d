@@ -91,7 +91,7 @@ import { webgl2DeviceHost } from "./webgl2/Counters";
 import { postDiagnostics, type PostDiagnosticSnapshot, type PostDiagnosticToken } from "./renderer/PostDiagnosticsScope";
 import { disposeRendererProgramCaches, qrCoreGeneratorOn, qrCoreOutputOn, qrGeneratedProgramsOn, qrMaterialsLobeProgramsOn, rendererOutputPass, rendererProgramCache } from "./renderer/qrSubFlags";
 import { resolveCoreOutputPostRoute, withCoreOutputOff, type CoreOutputPostSkipped } from "./renderer/coreOutputPostRoute";
-import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardContactFrameUnsafeReason, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
+import { applyPrd02EnvironmentUniforms, assertForwardClippingSupported, forwardDrawReplaySafe, forwardItemBucket, forwardPassFeatureAxes, hasForwardDrawHooks, nativeUnlitPrimitiveForGeometry, physicalVertexColorsForGeometry, prd02IblEnvironmentAvailable, selectiveItemsDecline, sortForwardRenderItems, splitForwardItems, type ForwardPassOptions } from "./ForwardPass";
 import { PRD02_IBL_FEATURE } from "./contracts/environment";
 import { prd02ItemIrradianceBindings, prd02ItemProbeBindings } from "./probes/ProbeBoxProjection";
 import { inheritProbeSourceOwner } from "./probes/ProbeSourceOwner";
@@ -122,6 +122,17 @@ import { assertWarmupActive, waitForWarmup } from "./webgpu/NativePipelineWarmup
 import { forwardPipelineWarmRequests } from "./webgpu/ForwardPipelineWarmup";
 import type { WebGPUDevice } from "./WebGPUDevice";
 import type { GaussianSplatRenderer } from "./GaussianSplatRenderer";
+
+/** Contact-shadow forward guards attached to `ForwardPass` by its module (internal; see the end of ForwardPass.ts). */
+const forwardContactGuards = (): {
+  providersSafe(flags: QrFlags): boolean;
+  frameUnsafeReason(items: readonly RenderItem[], flags: QrFlags, strict: boolean): string | undefined;
+} => (ForwardPass as unknown as Record<symbol, never>)[Symbol.for("@aura3d/rendering:forwardContactGuards")];
+
+/** Insert the contact producers held back by `RendererFrameHooks` just before the forward receiver (internal; see FrameGraph.ts). */
+const placeContactProducers = (hooks: object, graph: RenderGraph): void =>
+  (hooks as Record<symbol, (graph: RenderGraph) => void>)[Symbol.for("@aura3d/rendering:placeContactProducers")]!(graph);
+
 
 // A device passed to more than one Renderer remains live until its last owner
 // disposes. Per-renderer targets and histories are still released immediately.
@@ -4082,7 +4093,7 @@ export class Renderer {
           || clippingFrame.mayClip || clippingFrame.hasMaterialResolver || contactReads.length || photometricFrame || projectedSpotFrame
           || this.renderingViews || this.pendingViewState || this.activeRasterViewport || this.benchmarkMaskArmed || this.staticUnlitCaptureDepth
           || frameHooks.hasExtraSceneGeometry())) : undefined;
-      frameHooks.placeContactProducers(this.graph);
+      placeContactProducers(frameHooks, this.graph);
       if (qrOutput || gaussianSplats.length > 0 || scalarVolumes.length > 0 || transmissionRequested || weightedPass || hasTransparentQueues) {
         // §9.1 v2 frame order: opaque → after-opaque (scene-depth copy,
         // contributors) → transmission → transmissive → transparent (engine
@@ -4251,14 +4262,14 @@ export class Renderer {
         }
         warnClippingContributorsDegradedOnce();
       }
-      frameHooks.placeContactProducers(this.graph);
+      placeContactProducers(frameHooks, this.graph);
       if (contactReads.length) {
         let replayDetail: string | undefined;
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
           : scalarVolumes.length > 0 ? "scalar-volumes"
           : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
-          : (replayDetail = forwardContactFrameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
+          : (replayDetail = forwardContactGuards().frameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
         if (degradeReason) {
           // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
           // the forward draws run without the mask. Only strict mode keeps the old hard failure.
@@ -4959,7 +4970,7 @@ export class Renderer {
           || clippingFrame.mayClip || clippingFrame.hasMaterialResolver || contactReads.length || photometricFrame || projectedSpotFrame
           || this.renderingViews || this.pendingViewState || this.activeRasterViewport || this.benchmarkMaskArmed || this.staticUnlitCaptureDepth
           || frameHooks.hasExtraSceneGeometry())) : undefined;
-      frameHooks.placeContactProducers(this.graph);
+      placeContactProducers(frameHooks, this.graph);
       if (qrOutput || gaussianSplats.length > 0 || scalarVolumes.length > 0 || transmissionRequested || weightedPass || hasTransparentQueues) {
         // §9.1 v2 frame order: opaque → after-opaque (scene-depth copy,
         // contributors) → transmission → transmissive → transparent (engine
@@ -5124,14 +5135,14 @@ export class Renderer {
         }
         warnClippingContributorsDegradedOnce();
       }
-      frameHooks.placeContactProducers(this.graph);
+      placeContactProducers(frameHooks, this.graph);
       if (contactReads.length) {
         let replayDetail: string | undefined;
         const degradeReason = !frameHooks.contactGraphIsSafe() ? "unverified-graph-passes"
           : gaussianSplats.length > 0 ? "gaussian-splats"
           : scalarVolumes.length > 0 ? "scalar-volumes"
           : !isUnmodifiedDefaultShaderLibrary(this.shaderLibrary) ? "custom-shader-library"
-          : (replayDetail = forwardContactFrameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
+          : (replayDetail = forwardContactGuards().frameUnsafeReason(items, rendererQrFlags(this.device), rendererQrFlags(this.device).on("A3D_QR_STRICT"))) !== undefined ? "unverified-draw-participants" : undefined;
         if (degradeReason) {
           // The producer pass stays in the graph (the mask resource keeps its writer), but it publishes nothing:
           // the forward draws run without the mask. Only strict mode keeps the old hard failure.

@@ -48,7 +48,7 @@ import { applySplatLookAt, runtimeNodeEffectiveVisibility, runtimeNodeHandleForS
 import { localMatrixOf, multiplyMat4Into } from "../sceneGraph.js";
 import { flattenTaggingMountedRoots, mountedGroupSpansOf, mountedRootOf, type MountedGroupSpan } from "./mountedRoots.js";
 import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
-import { createRuntimeAddedCollectedLights, isMountableModelNode, isRenderableModelNode, productionRenderErrorMessage, unsupportedLightModulationDegradations } from "./observations.js";
+import { createRuntimeAddedCollectedLights, isRenderableModelNode, productionRenderErrorMessage, unsupportedLightModulationDegradations } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
 import { sanitizeDiagnosticText } from "../sanitizeDiagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
@@ -72,6 +72,13 @@ import { isKnownNodeKind, nodeHandlers, resolveNodeHandler } from "./handlers.js
 import { AuraRuntimeError } from "./errors.js";
 import { bindRuntimeCompiled, compilerSlot } from "../../contracts/compiler.js";
 import type { RuntimeCompiledSceneInternals } from "../../contracts/compiler.js";
+
+/** Models that need a loaded actor at mount (hidden-at-mount models with a runtime handle can be shown later); module-private,
+ * identical to the predicate in observations.ts. */
+function isMountableModelNode(node: AuraSceneNode): node is AuraModelNode {
+  return node.kind === "model" && Boolean(node.asset.url) && (node.visible !== false || node.runtime?.id !== undefined);
+}
+
 export { asRuntimeCompiled } from "../../contracts/compiler.js";
 
 /** Internal context fields the mount supplies beyond the frozen C-36 shape. */

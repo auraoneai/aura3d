@@ -3,7 +3,7 @@
  * can draw it before the old device's buffers are disposed, so the grid must follow the device that owns the buffers.
  */
 import { describe, expect, it } from "vitest";
-import { ensureWaterGrid } from "../../../packages/engine/src/production-runtime/world/WaterRuntime";
+import { allWaterStates } from "../../../packages/engine/src/production-runtime/world/WaterRuntime";
 import type { RenderDevice } from "../../../packages/rendering/src/RenderDevice";
 
 function fakeDevice() {
@@ -23,8 +23,10 @@ function waterState() {
   return {
     record, vb: null, ib: null, vertexCount: 0, indexCount: 0, extent: 0, centerX: 0, centerZ: 0,
     normalTex: null, foamTex: null, causticTex: null
-  } as unknown as Parameters<typeof ensureWaterGrid>[1];
+  } as unknown as { vb: { disposed: boolean } | null };
 }
+
+const ensureWaterGrid = (device: RenderDevice, st: { vb: unknown }): boolean => (allWaterStates as unknown as Record<symbol, (device: RenderDevice, st: unknown) => boolean>)[Symbol.for("@aura3d/engine:ensureWaterGrid")]!(device, st);
 
 describe("water grid buffers follow the drawing device", () => {
   it("keeps the grid on one device, rebuilds after disposal, and rebuilds for a different still-live device", () => {
