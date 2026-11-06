@@ -131,3 +131,15 @@ describe("heatsink heat haze pass", () => {
     expect(Math.min(...t)).toBeGreaterThan(0);
   });
 });
+
+describe("heatsink heat haze normal lab variant (A6, default off)", () => {
+  it("default pass does not request the normal input; the lab pass does and reads u_normal", async () => {
+    const { HEAT_HAZE_NORMAL_GLSL } = await import("../../../apps/showcase-heatsink/src/heatHaze");
+    expect(heatHazePass(look).inputs ?? []).not.toContain("normal");
+    expect(HEAT_HAZE_GLSL).not.toContain("u_normal");
+    const lab = heatHazePass(look, true, true);
+    expect(lab.inputs).toContain("normal");
+    expect(HEAT_HAZE_NORMAL_GLSL).toContain("texture(u_normal");
+    expect(HEAT_HAZE_NORMAL_GLSL).not.toBe(HEAT_HAZE_GLSL);
+  });
+});
