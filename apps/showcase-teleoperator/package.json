@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-teleoperator",
-  "version": "4.5.0",
+  "version": "5.0.1",
   "private": true,
   "type": "module",
   "description": "Grid Dispatch: drive a robotaxi along a San Francisco avenue, stop at kerb beacons to pick up and drop off five fares per shift, with five driver-assist levels, AI rival cars, signals and a scored results screen. Built with Aura3D.",

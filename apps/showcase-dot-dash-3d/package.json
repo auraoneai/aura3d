@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-dot-dash-3d",
-  "version": "0.1.0",
+  "version": "5.0.1",
   "private": true,
   "type": "module",
   "description": "Glint Courier: guide a courier drone across six circuit boards, collect data shards and dodge four patrol sentries with their own routines. Grid-snapped buffered movement, surge cells, cache gems, procedural 3D.",

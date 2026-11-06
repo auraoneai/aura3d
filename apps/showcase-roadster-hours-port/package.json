@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-roadster-hours-port",
-  "version": "4.5.0",
+  "version": "5.0.1",
   "private": true,
   "type": "module",
   "description": "Coastal highway drive with jumps, traffic and relay gates: 33 to 35 vehicles per route in batched meshes, with sun shadows, sky and ocean.",

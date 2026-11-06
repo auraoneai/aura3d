@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-cross-hop",
-  "version": "0.1.0",
+  "version": "5.0.1",
   "private": true,
   "type": "module",
   "description": "Aura3D Cross Hop showcase, an endless lane-hopping game with 6 remixed themes, 12 typed-asset critters, 5 hazard lane types, and a full shell (Quick Play, Timing School, World Tour, Player Studio).",

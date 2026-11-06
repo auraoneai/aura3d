@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-aura-hoops-3d",
-  "version": "4.5.0",
+  "version": "5.0.1",
   "private": true,
   "type": "module",
   "description": "Aura Hoops 3D — 5v5 street basketball showcase for the Aura3D engine: check ball, a timed shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab, Player Studio and a 32-team Street Tour.",

@@ -1053,6 +1053,49 @@ function checkLumaBand({ game, root }) {
   return out;
 }
 
+/**
+ * 5.0.0 removed APIs (docs/migration/4-to-5.md section 7, B14/B15, plus B1 `createGame` from the root). A later merge of 4.x
+ * game code must not reintroduce them: an import of a removed root value or of a removed legacy `@aura3d/engine/*` subpath
+ * is an error. Type-only root exports that stay (e.g. `AuraEffectNode`) are not listed.
+ */
+export const REMOVED_5_0_ROOT_VALUES = Object.freeze([
+  "createA3DApp", "A3DRenderer", "Renderer", "createGameAppRuntime",
+  "AnimationClip", "AnimationLayer", "AnimationMixer", "AnimationTrack",
+  "GLTFLoader", "inspectGLTFAsset", "loadRenderableAsset",
+  "captureAuraAppScreenshot", "createAssetCompatibilityReport", "gameAssetValidation", "quaterniusGameReadyFighterValidationContract", "validateQuaterniusGameReadyFighterAsset",
+  "createAssetViewerWorkflow", "createInteractiveSceneWorkflow", "createProductConfiguratorWorkflow",
+  "unsafeModelUrl",
+  "A3DAppLifecycle", "captureScreenshot", "compositeMetallicRoughnessPixels", "createExternalParityEnvironmentPipeline", "createProductionPrimitiveTextureIntent", "crowds", "describeProductionSpotShadow", "inspectAsset", "listExternalParityEnvironmentTargets", "loadAsset", "meshVehicleSurface", "mipChainBytesCoarseToFine", "normalizeSceneSnapshot", "normalizeTextureBudgetBytes", "resolveProductionRuntimeShadowTuning", "resolveProductionShadowCasterIndex", "summarizeExternalParityGLTFCorpus", "upgradeProductionPrimitiveTextures",
+  "createGame"
+]);
+export const REMOVED_5_0_SUBPATHS = Object.freeze([
+  "production-runtime", "advanced-runtime", "rendering", "rendering/webgpu", "rendering/production-runtime", "assets/browser", "workflows/production", "contracts", "apps"
+]);
+const REMOVED_ROOT_SET = new Set(REMOVED_5_0_ROOT_VALUES);
+const REMOVED_SUBPATH_RE = new RegExp(`^@aura3d/engine/(?:${REMOVED_5_0_SUBPATHS.map((p) => p.replace(/\//g, "\\/")).join("|")})$`);
+const IMPORT_FROM_ROOT_RE = /\b(import|export)\s+(type\s+)?(?:[\w$]+\s*,\s*)?\{([^}]*)\}\s*from\s*["']@aura3d\/engine["']/g;
+const MODULE_SPEC_RE = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["'](@aura3d\/engine\/[^"']+)["']/g;
+
+function checkNoRemoved50Apis({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!CODE_KIND.test(f.kind)) continue;
+    const lineOf = (index) => f.text.slice(0, index).split("\n").length;
+    for (const m of f.text.matchAll(IMPORT_FROM_ROOT_RE)) {
+      for (const part of m[3].split(",")) {
+        const spec = part.trim().replace(/^type\s+/, "");
+        if (!spec) continue;
+        const name = spec.split(/\s+as\s+/)[0].trim();
+        if (REMOVED_ROOT_SET.has(name)) out.push(finding("no-removed-5-0-apis", "error", game, f.rel, lineOf(m.index), `"${name}" was removed from the @aura3d/engine root in 5.0.0 (B14${name === "createGame" ? "/B1: import createGame from @aura3d/engine/game" : ""}); see docs/migration/4-to-5.md section 7`));
+      }
+    }
+    for (const m of f.text.matchAll(MODULE_SPEC_RE)) {
+      if (REMOVED_SUBPATH_RE.test(m[1])) out.push(finding("no-removed-5-0-apis", "error", game, f.rel, lineOf(m.index), `"${m[1]}" is a legacy subpath removed in 5.0.0 (B15); see docs/migration/4-to-5.md section 7`));
+    }
+  }
+  return out;
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -1086,7 +1129,8 @@ export const GAME_CHECKS = {
   "look-identity": checkLookIdentity,
   "borrowed-asset": checkBorrowedAsset,
   "prop-exclusivity": checkPropExclusivity,
-  "luma-band": checkLumaBand
+  "luma-band": checkLumaBand,
+  "no-removed-5-0-apis": checkNoRemoved50Apis
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
