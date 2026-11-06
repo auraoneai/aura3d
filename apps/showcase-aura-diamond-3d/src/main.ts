@@ -42,6 +42,9 @@ import {
   boneWorldPosition,
   type AttachableActor
 } from "@aura3d/engine/game";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
+import { createLoadingProgress } from "../../showcase-port-shared/loading-progress";
 import { assets } from "./aura-assets.route";
 import { batContact, boundedBlend } from "./contact";
 import {
@@ -386,12 +389,16 @@ function boot(): void {
   };
   let auraApp: ReturnType<typeof createAuraApp>;
   try {
+    // Lab flags (EXPERIMENTAL, default OFF): `?backend=webgpu`, `?gamut=p3`. With no flag the fragments are empty and the
+    // options below are exactly what shipped before.
+    const lab = labAppOptions(readLabFlags());
     auraApp = createAuraApp("#app", {
       scene: buildParkScene(PARKS[bootPark], sceneCtx),
       // `post` is default-on since 4.5; named so `diagnostics().post.stagesRan` is reported whatever the defaults (DIA-P1).
       qualityRebuild: { flags: ["game", "animation", "post"] },
-      renderer: { quality: sceneCtx.tier }
-    } as any);
+      renderer: { quality: sceneCtx.tier, ...lab.renderer },
+      ...(lab.output ? { output: lab.output } : {})
+    });
   } catch (err) {
     if (renderError) {
       renderError.hidden = false;
@@ -3692,7 +3699,12 @@ function boot(): void {
   }
 
   // Wait for all GLB assets and textures to finish loading before marking ready or ticking simulation
-  void Promise.resolve((app as any).ready?.()).then(() => {
+  // A1: the shared loading helper tracks readiness and exposes progress as a data attribute (no visible UI).
+  const loading = createLoadingProgress({ onProgress: (f) => { document.body.dataset.aura3dLoading = f.toFixed(2); } });
+  void loading.track(Promise.resolve((app as any).ready?.()), 1, "assets").then(() => {
+    loading.done("ready");
+    // A2: publish `backendSelection` and `readiness` for `?diag=1` and the QA hooks.
+    void publishBackendReport(app as any, (window as any).__AURA3D_GAME_DIAMOND__ ?? undefined);
     bindHandles();
     applyUniforms();
     // Socket the bat to the (now loaded) batter rig; the calibration probe
