@@ -13,6 +13,7 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createCameraShake, createHitStop, createImpactFeedback, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
 import type { GameSessionState } from "@aura3d/engine";
+import { labAppOptions, parseLabFlags } from "../../apps/showcase-port-shared/lab-flags";
 import { createOrbitAudio } from "./audio";
 import { installOrbitUi } from "./ui";
 import { bestKey, browserStorage, ghostAt, readBest, readMuted, recordBest, writeMuted, type GhostSample } from "./progress";
@@ -593,11 +594,12 @@ window.__orbit = orbit;
 
 /** Shared game beacon (`window.__AURA3D_GAME__`, `__AURA3D_GAME_EVIDENCE__`) next to the port's own hooks (SO-E6). */
 const SESSION_STATE: Record<string, GameSessionState> = { menu: "title", countdown: "playing", racing: "playing", paused: "paused", finished: "results", lost: "results" };
+type BeaconApp = NonNullable<ReturnType<NonNullable<Parameters<typeof installGameBeacon>[0]["getApp"]>>>;
 const beacon = installGameBeacon({
   route: "craterline-gp",
   getState: () => (ready ? SESSION_STATE[race.phase] ?? "playing" : "loading"),
   getFrame: () => frames,
-  getApp: () => app as never,
+  getApp: () => app as unknown as BeaconApp | undefined,
   evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"]
 });
 beacon.publishEvidence({
@@ -621,13 +623,17 @@ async function boot(): Promise<void> {
   $("vehicle-name").textContent = config.vehicle === "skate" ? "Skate" : "Bike";
   sizeCanvas();
   const world = buildWorld({ vehicle: config.vehicle, rider: config.rider, quality: config.quality, ghost: config.mode === "trial", reducedMotion: config.reducedMotion, look: config.look });
+  // The port has no render worker, so `?worker=1` is ignored here.
+  const lab = labAppOptions(parseLabFlags(typeof location !== "undefined" ? location.search : undefined));
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
+    // Lab flags (?backend=webgpu, ?worker=1, ?gamut=p3) are all off by default; this port keeps its GLSL, so WebGPU falls back to WebGL2.
+    ...(lab.renderer ? { renderer: lab.renderer } : {}),
     // No `renderer` keys (SO-E4): since 4.5.0 they do not pick the pipeline, `mode`/`fallback` are deprecated and
     // `qualityProfile` warns. Quality stays `auto` (the pipeline the lighting was calibrated on); `pixelRatio: 1` is explicit.
-    output: { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false },
+    output: { toneMapping: "aces", exposure: lookExposure(config.look, typeof location !== "undefined" ? location.search : null), dither: false, ...lab.output },
     scene: world.scene
   });
   await app.ready();
