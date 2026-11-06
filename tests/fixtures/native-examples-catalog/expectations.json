@@ -1070,7 +1070,7 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/actors.ts",
-          "sha256": "93f022c9190fc91e094401ea3fa3d6579f1c1baf328be4361ad5af099cc2b683"
+          "sha256": "cfc58862fcac954db135e5d31d0f0af1968595abc31ae899c328d61b6121961a"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderInput.ts",
@@ -1078,11 +1078,11 @@
         },
         {
           "path": "packages/engine/src/agent-api/compiler/renderer.ts",
-          "sha256": "63084afb2308826e762f369d677252f5dec3acb3eefa86d7058b65efc0fd75e6"
+          "sha256": "aedf47e976f761cf5af713b9e7fb2574da24dfcd03b2b8079115f07c33467288"
         },
         {
           "path": "packages/engine/src/agent-api/compiler/compileScene.ts",
-          "sha256": "82d990c4805a6c8d775756ab58ce43e3ff8d0d73f20f47e0b256f54138cf367d"
+          "sha256": "bf0146715e0fb95af366de57aadd75eafa0c012fd952d0e99a162401c631a312"
         },
         {
           "path": "packages/engine/src/production-runtime/TypedGLBActor.ts",
