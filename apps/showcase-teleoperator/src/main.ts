@@ -1,6 +1,8 @@
 import { camera, createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraModelMaterialHandle, type AuraRuntimeNodeHandle, type AuraTransformSpec, type AuraVec3 } from "@aura3d/engine";
 import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
 import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import { publishBackendReport } from "../../showcase-port-shared/backend-report";
+import { labAppOptions, readLabFlags } from "../../showcase-port-shared/lab-flags";
 import { createGridAudio } from "./audio";
 import { createTrafficContacts } from "./collision";
 import { createHud, drawMinimap, formatClock } from "./hud";
@@ -210,9 +212,17 @@ async function bootGridDispatch(): Promise<void> {
   let weather: WeatherPreset = skyFromParam(params.get("sky"));
 
   await probeBuildingModels();
-  // GU47(E-D): `qualityRebuild.flags` is typed `readonly string[]` but createAuraApp hands it to resolveQrFlags, which
-  // takes the record form (QrFlagInput); drop the cast once the option type is widened (lane report handoff).
-  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather, { motionOk: motionOk() }), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: GRID_DISPATCH_FLAGS as unknown as readonly string[] } });
+  // 5.0.2: `qualityRebuild.flags` accepts the record form (QrFlagInput), so the old `as unknown as readonly string[]` cast is gone.
+  // Lab flags (default OFF, EXPERIMENTAL, decision D1): `?backend=auto|webgpu` and `?gamut=p3` only; the game keeps its own
+  // renderer quality tier and merges the requested backend into it. `?worker` and `?depth` are not wired (not stable for this game).
+  const lab = readLabFlags();
+  const labOpts = labAppOptions(lab);
+  const auraApp = createAuraApp(canvas, {
+    scene: buildGridDispatchScene(weather, { motionOk: motionOk() }),
+    renderer: { ...GRID_DISPATCH_RENDERER, ...(labOpts.renderer ?? {}) },
+    qualityRebuild: { flags: GRID_DISPATCH_FLAGS },
+    ...(labOpts.output ? { output: labOpts.output } : {})
+  });
   installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
   let N = bindNodes(auraApp, weather);
   // GD-05/GD-09: the sensor pass (marine deck aloft + LiDAR scan pulse); registered once, it survives sky remounts.
@@ -1159,6 +1169,7 @@ async function bootGridDispatch(): Promise<void> {
   presenter.reset();
   $("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
+  if (lab.backend || lab.gamut) void publishBackendReport(auraApp, legacy as unknown as Record<string, unknown>).catch(() => undefined);
   canvas.dataset.ready = "true";
   auraApp.resume();
   if (autoplay) setAutopilotLevel("L5");
